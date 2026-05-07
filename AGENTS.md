@@ -6,8 +6,20 @@ Clipr is currently in planning stage. The repository root contains project docum
 
 - `project-scope.md` defines the MVP, target architecture, routes, data model, and video-processing decisions.
 - `coding-guidelines.md` defines the required Atomic Code Splitting approach.
+- `docs/media-bunny/media-bunny-llms.md` contains the full Media Bunny guide content. Read this first for Media Bunny workflows, recommended patterns, and conceptual guidance.
+- `docs/media-bunny/media-bunny-api.md` contains the Media Bunny TypeScript API declarations. Use this as the source of truth for exact class names, option shapes, method signatures, and return types.
 
-When implementation is added, keep the planned Next.js shape from `project-scope.md`: app routes such as `/`, `/dashboard`, and `/dashboard/create`; browser-first storage for MVP using IndexedDB; and video stitching via FFmpeg.wasm. Place source, tests, and assets in conventional framework directories once the app is scaffolded, and update this guide with exact paths.
+When implementation is added, keep the planned Next.js shape from `project-scope.md`: app routes such as `/`, `/dashboard`, and `/dashboard/create`; browser-first storage for MVP using IndexedDB; video processing via Media Bunny; upload normalization to TikTok 9:16; and UGC-then-Demo stitching for preview, creation, and download. Place source, tests, and assets in conventional framework directories once the app is scaffolded, and update this guide with exact paths.
+
+## Media Bunny Implementation Guidance
+
+For any Media Bunny-related change, read the relevant parts of these files before editing code:
+
+- Start with `project-scope.md` to confirm product behavior, especially 9:16 normalization, UGC-then-Demo sequencing, and MVP exclusions.
+- Read `docs/media-bunny/media-bunny-llms.md` for implementation patterns from the official guides, such as reading files, conversions, media sinks, media sources, output formats, and codec support checks.
+- Use `docs/media-bunny/media-bunny-api.md` to verify exact imports, constructor options, method signatures, and types before writing TypeScript.
+
+Use Media Bunny's `Conversion` API for single-upload normalization from one input file to one normalized 9:16 output. Do not use `Conversion` for UGC + Demo stitching; create a fresh `Output`, read both normalized clips with sinks, re-timestamp samples, and write them with media sources as described in `project-scope.md`.
 
 ## Build, Test, and Development Commands
 
@@ -35,9 +47,9 @@ Use TypeScript for application code. Prefer descriptive PascalCase component nam
 
 ## Testing Guidelines
 
-No testing framework is configured yet. When tests are introduced, colocate or mirror them near the unit under test and keep them scoped to the single-purpose file being verified. Use clear names such as `VideoClipCard.test.tsx` or `stitchVideos.test.ts`.
+No testing framework is configured yet. When tests are introduced, colocate or mirror them near the unit under test and keep them scoped to the single-purpose file being verified. Use clear names such as `VideoClipCard.test.tsx`, `normalizeVideo.test.ts`, or `stitchVideos.test.ts`.
 
-Cover browser storage, FFmpeg.wasm stitching, overlay timing, thumbnail export, and route-level dashboard flows before treating the MVP as complete.
+Cover browser storage, Media Bunny upload normalization, TikTok 9:16 output dimensions, UGC-then-Demo stitching, download creation, and route-level dashboard flows before treating the MVP as complete. Text overlays are post-MVP, and thumbnail generation/editing is out of scope.
 
 ## Commit & Pull Request Guidelines
 
@@ -47,4 +59,4 @@ Pull requests should include a short summary, testing performed, linked issue or
 
 ## Security & Configuration Tips
 
-Do not commit uploaded media, generated videos, secrets, or local environment files. Browser video processing may require COOP/COEP headers for `SharedArrayBuffer`; document any header changes with the FFmpeg.wasm setup.
+Do not commit uploaded media, generated videos, secrets, or local environment files. Browser video processing depends on Media Bunny and browser codec support; document any codec polyfills, worker/WASM assets, or response-header changes with the Media Bunny setup.

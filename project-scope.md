@@ -8,9 +8,9 @@
 
 ## 1. Vision
 
-**Clipr** is a web application that lets users upload UGC (User-Generated Content) reaction clips and product demo videos, then seamlessly stitch them together to produce polished marketing videos — all from the browser.
+**Clipr** is a web application that lets users upload UGC (User-Generated Content) reaction clips and product demo videos, normalize them to TikTok-ready 9:16 format, then seamlessly stitch them together to produce polished marketing videos — all from the browser.
 
-Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique videos** — each pairing a different UGC clip (first) with the same product demo (second) — in minutes, without leaving the app.
+Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique 9:16 videos** — each pairing a different UGC clip (first) with the same product demo (second) — in minutes, without leaving the app.
 
 ---
 
@@ -24,6 +24,12 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique vide
        │                   │
        ▼                   ▼
 ┌──────────────────────────────────┐
+│ Normalize uploads to TikTok 9:16 │
+│   using Media Bunny in-browser   │
+└──────────────┬───────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
 │        Video Library / Dashboard │
 │  (browse, preview, organize)     │
 └──────────────┬───────────────────┘
@@ -31,19 +37,18 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique vide
                ▼
 ┌──────────────────────────────────┐
 │     Select UGC + Demo Clip       │
+│   Preview: UGC, then Demo        │
+└──────────────┬───────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
 │     Click "Create Video"         │
+│ Stitch: UGC immediately → Demo   │
 └──────────────┬───────────────────┘
                │
                ▼
 ┌──────────────────────────────────┐
-│   Stitch: UGC first → Demo second│
-│   Add text overlays (timeline)   │
-│   Edit thumbnail                 │
-└──────────────┬───────────────────┘
-               │
-               ▼
-┌──────────────────────────────────┐
-│     Preview & Download           │
+│ Download single TikTok 9:16 file │
 └──────────────────────────────────┘
 ```
 
@@ -58,7 +63,7 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique vide
 | **Auth**           | Clerk                          | None — open dashboard     |
 | **Backend / DB**   | Convex                         | None — local state only   |
 | **Object Storage** | Cloudflare R2                  | IndexedDB (blob storage)  |
-| **Video Engine**   | FFmpeg.wasm → server-side FFmpeg | FFmpeg.wasm (browser)    |
+| **Video Engine**   | Media Bunny with optional server-side processing later | Media Bunny (browser) |
 
 ---
 
@@ -71,41 +76,36 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique vide
 | 1 | Upload UGC reaction clips (drag & drop or file picker) | ✅ | ✅ |
 | 2 | Upload product demo videos | ✅ | ✅ |
 | 3 | Categorize uploads as **UGC** or **Demo** | ✅ | ✅ |
-| 4 | Preview uploaded clips in-browser | ✅ | ✅ |
-| 5 | Delete / rename clips | ✅ | ✅ |
-| 6 | Store files in local storage / IndexedDB | ✅ | — |
-| 7 | Store files in Cloudflare R2 | — | ✅ |
+| 4 | Normalize every uploaded video to TikTok 9:16 using Media Bunny | ✅ | ✅ |
+| 5 | Preview normalized clips in-browser | ✅ | ✅ |
+| 6 | Delete / rename clips | ✅ | ✅ |
+| 7 | Store normalized files in local storage / IndexedDB | ✅ | — |
+| 8 | Store normalized files in Cloudflare R2 | — | ✅ |
 
 ### 4.2 Video Stitching / Creation
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
 | 1 | User **selects** one UGC clip and one Demo clip | ✅ | ✅ |
-| 2 | Click **"Create Video"** to stitch them (UGC first, Demo second) | ✅ | ✅ |
-| 3 | Processing happens in-browser (no server-side rendering for MVP) | ✅ | ✅ |
-| 4 | Output a single combined video file | ✅ | ✅ |
-| 5 | Progress indicator during stitching | ✅ | ✅ |
-| 6 | Download finished video | ✅ | ✅ |
+| 2 | Preview selection as UGC clip followed immediately by Demo clip | ✅ | ✅ |
+| 3 | Click **"Create Video"** to stitch them with the same UGC-then-Demo sequence | ✅ | ✅ |
+| 4 | Processing happens in-browser (no server-side rendering for MVP) | ✅ | ✅ |
+| 5 | Output a single combined TikTok 9:16 video file | ✅ | ✅ |
+| 6 | Progress indicator during normalization and stitching | ✅ | ✅ |
+| 7 | Download finished video | ✅ | ✅ |
 
-### 4.3 Text Overlays
+### 4.3 Text Overlays (Post-MVP)
 
-| # | Feature | MVP | Prod |
-|---|---------|-----|------|
-| 1 | Add text on top of the stitched video | ✅ | ✅ |
-| 2 | Timeline control — set start time & end time for text appearance | ✅ | ✅ |
-| 3 | Basic text styling (font size, color, position) | ✅ | ✅ |
-| 4 | Multiple text layers | ✅ | ✅ |
+Text overlays are planned for later, but they are not required for the MVP.
 
-### 4.4 Thumbnail Editing
+| # | Feature | MVP | Future |
+|---|---------|-----|--------|
+| 1 | Add text on top of the stitched video | — | ✅ |
+| 2 | Timeline control — set start time & end time for text appearance | — | ✅ |
+| 3 | Basic text styling (font size, color, position) | — | ✅ |
+| 4 | Multiple text layers | — | ✅ |
 
-| # | Feature | MVP | Prod |
-|---|---------|-----|------|
-| 1 | Auto-generate thumbnail from a frame in the video | ✅ | ✅ |
-| 2 | User can select which frame to use as thumbnail | ✅ | ✅ |
-| 3 | Add text / overlays to the thumbnail | ✅ | ✅ |
-| 4 | Export thumbnail as image file | ✅ | ✅ |
-
-### 4.5 Dashboard & Navigation
+### 4.4 Dashboard & Navigation
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
@@ -139,18 +139,19 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique vide
 │  │  Landing Page  →  Dashboard        │   │
 │  │                    │               │   │
 │  │              Upload Panel          │   │
+│  │              9:16 Normalizer       │   │
 │  │              Video Library         │   │
 │  │              Creation Studio       │   │
 │  │                    │               │   │
 │  │         ┌──────────┴──────────┐    │   │
 │  │         │  Video Engine       │    │   │
-│  │         │  (FFmpeg.wasm)      │    │   │
+│  │         │  (Media Bunny)      │    │   │
 │  │         │                     │    │   │
 │  │         └─────────────────────┘    │   │
 │  └────────────────────────────────────┘   │
 │                                           │
 │  IndexedDB                                │
-│  (video blobs, metadata, thumbnails)      │
+│  (9:16 video blobs, metadata)             │
 └──────────────────────────────────────────┘
 ```
 
@@ -173,25 +174,93 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique vide
 
 ---
 
-## 7. Video Processing Engine — ✅ FFmpeg.wasm
+## 7. Video Processing Engine — ✅ Media Bunny
 
-**Decision:** FFmpeg.wasm is the chosen video processing engine for Clipr.
+**Decision:** Media Bunny is the chosen video processing engine for Clipr.
 
-### Why FFmpeg.wasm
+**Implementation reference:** use the local Media Bunny docs in `docs/media-bunny/`, especially `docs/media-bunny/media-bunny-llms.md` and `docs/media-bunny/media-bunny-api.md`.
 
-- **Full FFmpeg in the browser** — handles concatenation, text overlays (`drawtext` filter), and thumbnail extraction natively.
-- **Single dependency** covers all current and near-future video editing needs.
-- **Free and open source** — no licensing concerns.
-- **Well-documented** with an active community.
-- **Clear upgrade path** — can be swapped for server-side FFmpeg in production for better performance on large files.
+### Why Media Bunny
+
+- **Browser-first TypeScript media toolkit** — supports reading, converting, and writing media files directly in the browser.
+- **Upload-time normalization** — can resize, fit, crop, transcode, and track progress while converting uploads into a consistent 9:16 format.
+- **Output control** — supports writing MP4/WebM-style outputs with explicit video dimensions, frame timing, and audio/video tracks.
+- **Good MVP fit** — keeps rendering local and avoids external processing services for the first version.
+
+### Processing Policy
+
+- Every uploaded UGC and Demo video must be normalized before it is saved to the library.
+- Normalized clips must use a TikTok-ready 9:16 canvas. The MVP target is `1080x1920` when browser encoding support allows it.
+- Do not stretch source footage. For non-9:16 uploads, preserve the source aspect ratio inside the 9:16 output; crop/fill presets can be added later.
+- Preview, Create Video, and Download must all use the same sequence: the normalized UGC clip starts first, and the normalized Demo clip starts immediately after the UGC clip ends.
+- The final created video must be a single 9:16 file using the same normalized assets shown in preview.
+
+### Media Bunny API Map (MVP)
+
+Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs/media-bunny/media-bunny-api.md` as the API reference.
+
+#### Upload Read / Validation
+
+- Create an `Input` from each uploaded browser `File` with `new BlobSource(file)`.
+- Use `ALL_FORMATS` during MVP unless bundle size becomes a problem; narrow to specific input formats later.
+- Read metadata with `input.canRead()`, `input.getMimeType()`, `input.computeDuration()`, `input.getPrimaryVideoTrack()`, and `input.getPrimaryAudioTrack()`.
+- Validate video dimensions and rotation with `videoTrack.getDisplayWidth()`, `videoTrack.getDisplayHeight()`, and `videoTrack.getRotation()`.
+- Gate browser support with `videoTrack.canDecode()`, `audioTrack.canDecode()` when audio is present, `canEncodeVideo()`, `canEncodeAudio()`, `getFirstEncodableVideoCodec()`, and `getFirstEncodableAudioCodec()`.
+- Dispose short-lived inputs with `input.dispose()` when metadata or processing is complete.
+
+#### Upload Normalization
+
+- Use `Conversion` for upload normalization because it handles one input file into one normalized output file.
+- Create the normalized output with `new Output({ format: new Mp4OutputFormat(), target: new BufferTarget() })`.
+- Run `Conversion.init({ input, output, tracks: 'primary', video, audio })`, inspect `conversion.isValid` and `conversion.discardedTracks`, then call `conversion.execute()`.
+- Set video conversion options to target TikTok format:
+  - `width: 1080`
+  - `height: 1920`
+  - `fit: 'contain'` for MVP so source footage is not stretched
+  - `allowRotationMetadata: false` so rotation is baked into the normalized output
+  - `forceTranscode: true` so uploaded assets have consistent dimensions and codec settings
+- Prefer MP4-compatible codecs. Prefer `avc` for video and `aac` for audio when browser support allows them.
+- Use `conversion.onProgress` for upload-normalization progress.
+- Store the normalized `BufferTarget.buffer` as a browser `Blob` in IndexedDB.
+
+#### Sequence Preview
+
+- Preview should use the normalized clip blobs, not the original uploads.
+- The preview player should use the same sequence as export: play UGC first, then start Demo immediately on the UGC `ended` event.
+- The preview does not need to render a temporary stitched file for MVP; it only needs to prove the exact ordering and normalized 9:16 playback.
+
+#### Stitched Export / Download
+
+- Do not use `Conversion` for stitching because it is a single-input conversion abstraction, not a multi-input composition API.
+- Create a fresh `Output` with `Mp4OutputFormat` and `BufferTarget` for each created video.
+- Add one `VideoSampleSource` and, when at least one selected clip has audio, one `AudioSampleSource`.
+- Add all output tracks before calling `output.start()`.
+- Read normalized clips with `Input` + `BlobSource`, then use `VideoSampleSink` and `AudioSampleSink` to stream decoded samples.
+- Re-timestamp samples before adding them to the output:
+  - UGC samples start at `0`
+  - Demo samples start at `ugcDuration`
+  - For each sample, subtract the source track's first timestamp and add the output timeline offset
+- Pipe video and audio concurrently or in short interleaved chunks so MP4 packet buffering does not hold an entire video track in memory while waiting for audio.
+- Await every media-source `add(...)` call to respect Media Bunny backpressure.
+- Close every `VideoSample` and `AudioSample` after it has been added.
+- Close media sources when their streams are complete, then call `output.finalize()`.
+- Convert the final `BufferTarget.buffer` into the downloadable video `Blob`, using `output.getMimeType()` for the blob type when available.
+- Dispose each stitched-export `Input` after its samples have been processed.
+- Keep encoded-packet passthrough with `EncodedPacketSink`, `EncodedVideoPacketSource`, and `EncodedAudioPacketSource` as a later optimization only; MVP should re-encode from samples because it is more robust across separate input files.
+
+#### Future Text Overlays
+
+- Text overlays should be implemented after MVP with a canvas-based `process` function.
+- For one-file conversion flows, use `ConversionVideoOptions.process`.
+- For custom export flows, use `VideoSampleSource` transform processing or draw onto a canvas before creating/adding a `VideoSample`.
 
 ### Trade-offs Accepted
 
 | Concern | Mitigation |
 |---------|------------|
-| Large WASM bundle (~25 MB) | Lazy-load only when user enters the creation studio; cache aggressively via service worker |
-| Slower than native FFmpeg | Acceptable for MVP; server-side processing planned for Phase 3 |
-| Requires `SharedArrayBuffer` (COOP/COEP headers) | Configure Next.js response headers accordingly |
+| Browser codec support varies | Detect Media Bunny/WebCodecs support before processing and show an actionable unsupported-browser message |
+| Upload normalization adds waiting time | Normalize once on upload, store the normalized blob, and show progress |
+| Large files can pressure IndexedDB storage | Keep MVP local-first, surface storage errors clearly, and add cloud storage in Phase 2 |
 
 ### Alternatives Considered (Not Selected)
 
@@ -199,7 +268,7 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique vide
 |--------|---------------------|
 | WebCodecs API | Too low-level; no muxing built-in; limited browser support |
 | Remotion | Requires server or Lambda for rendering; not purely client-side |
-| MP4Box.js + Canvas | Insufficient editing capabilities for text overlays and future features |
+| MP4Box.js + Canvas | Too much custom media plumbing for normalization, stitching, and later overlays |
 
 ---
 
@@ -212,8 +281,10 @@ interface VideoClip {
   id: string;
   name: string;
   type: 'ugc' | 'demo';
-  blob: Blob;
-  thumbnailBlob: Blob | null;
+  blob: Blob; // normalized 9:16 clip used for preview and stitching
+  width: number; // target 1080
+  height: number; // target 1920
+  aspectRatio: '9:16';
   duration: number; // seconds
   createdAt: string; // ISO timestamp
 }
@@ -223,22 +294,12 @@ interface CreatedVideo {
   name: string;
   ugcClipId: string;
   demoClipId: string;
-  blob: Blob;
-  thumbnailBlob: Blob | null;
-  textOverlays: TextOverlay[];
-  duration: number;
+  blob: Blob; // final 9:16 video: UGC immediately followed by Demo
+  width: number; // target 1080
+  height: number; // target 1920
+  aspectRatio: '9:16';
+  duration: number; // ugc duration + demo duration
   createdAt: string;
-}
-
-interface TextOverlay {
-  id: string;
-  text: string;
-  startTime: number; // seconds
-  endTime: number;   // seconds
-  x: number;         // position
-  y: number;
-  fontSize: number;
-  color: string;
 }
 ```
 
@@ -251,11 +312,11 @@ interface TextOverlay {
 - [x] Scaffold project with `npx create-starship-app`
 - [ ] Landing page with "Dashboard" button
 - [ ] Dashboard with drag-and-drop video upload
+- [ ] Media Bunny upload normalization to TikTok 9:16
 - [ ] Video library (UGC vs Demo categorization)
-- [ ] Video preview player
-- [ ] Video stitching (UGC + Demo → single output)
-- [ ] Text overlay editor with timeline controls
-- [ ] Thumbnail editor (frame selection + text overlay)
+- [ ] Video preview player for normalized uploads
+- [ ] UGC + Demo sequence preview
+- [ ] Video stitching (UGC immediately followed by Demo → single 9:16 output)
 - [ ] Download finished videos
 - [ ] All data stored locally (IndexedDB)
 - [ ] No authentication required
@@ -273,6 +334,7 @@ interface TextOverlay {
 - [ ] Server-side video processing option (for speed / mobile)
 - [ ] Batch video creation (auto-generate all UGC × Demo combos)
 - [ ] Video templates & presets
+- [ ] Text overlay editor with timeline controls
 - [ ] Advanced text styling (fonts, animations, shadows)
 - [ ] Export quality settings
 - [ ] Usage analytics
@@ -295,6 +357,8 @@ interface TextOverlay {
 - ❌ Server-side video rendering
 - ❌ Mobile-native app
 - ❌ Collaborative editing
+- ❌ Text overlays — planned after MVP
+- ❌ Thumbnail generation / thumbnail editing
 - ❌ Video trimming / cutting — deferred to **Phase 4** with AI-powered smart cuts (only full-clip concatenation for now)
 
 ---
@@ -304,15 +368,16 @@ interface TextOverlay {
 1. **Browser-first:** All video processing must happen client-side in the MVP.
 2. **No external services:** MVP should work fully offline after initial page load.
 3. **Free tooling only:** No paid video processing APIs or licensed codecs.
-4. **Fast iteration:** The starship boilerplate gives us Next.js + good defaults — build on top of it, don't fight it.
+4. **TikTok-first output:** All uploaded clips and created videos must be normalized to 9:16 before preview, stitching, or download.
+5. **Fast iteration:** The starship boilerplate gives us Next.js + good defaults — build on top of it, don't fight it.
 
 ---
 
 ## 12. Success Criteria (MVP)
 
 - [ ] User can upload 5 UGC clips and 1 demo video.
-- [ ] User can select any UGC + the demo and create a stitched video.
-- [ ] Text overlays can be added with configurable timing.
-- [ ] Thumbnails can be customized per created video.
-- [ ] All 5 resulting videos can be downloaded.
+- [ ] Each uploaded video is normalized to TikTok 9:16 using Media Bunny before it appears in the usable library.
+- [ ] User can select any UGC + the demo and preview the exact UGC-then-Demo sequence.
+- [ ] User can create a stitched 9:16 video where the Demo starts immediately after the UGC clip ends.
+- [ ] All 5 resulting 9:16 videos can be downloaded.
 - [ ] Everything works on `localhost` with no external dependencies.
