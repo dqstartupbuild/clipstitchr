@@ -23,12 +23,14 @@ export function CreatedVideoCard({
   const posterUrl = useObjectUrl(createdVideo.posterBlob);
 
   return (
-    <Panel className="overflow-hidden">
-      <VideoPreview
-        src={url}
-        posterSrc={posterUrl}
-        label={createdVideo.name}
-      />
+    <Panel className="w-full max-w-[390px] justify-self-center overflow-hidden">
+      <div className="mx-auto max-w-[390px]">
+        <VideoPreview
+          src={url}
+          posterSrc={posterUrl}
+          label={createdVideo.name}
+        />
+      </div>
       <div className="p-4">
         <h3 className="truncate text-sm font-bold text-text-primary">
           {createdVideo.name}

@@ -43,11 +43,13 @@ export function DownloadCreatedVideoPanel({
           Download
         </a>
       </div>
-      <VideoPreview
-        src={url}
-        posterSrc={posterUrl}
-        label={createdVideo.name}
-      />
+      <div className="mx-auto max-w-[390px]">
+        <VideoPreview
+          src={url}
+          posterSrc={posterUrl}
+          label={createdVideo.name}
+        />
+      </div>
     </Panel>
   );
 }
