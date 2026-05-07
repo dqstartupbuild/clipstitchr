@@ -19,15 +19,18 @@ export function LandingHero() {
       <div className="relative mx-auto flex min-h-[82svh] w-full max-w-6xl items-center px-6 py-28">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold text-accent-dark">
-            Browser-first UGC video builder
+            Create better videos, faster
           </p>
           <h1 className="mt-5 max-w-2xl text-5xl font-bold leading-[1.05] text-text-primary md:text-6xl">
-            Stitch. Style. Share. All in your browser.
+            Stitch. Style. Share.
+            <br className="hidden md:block" />
+            <span className="mt-2 block text-accent md:mt-0 md:inline">
+              All in your browser.
+            </span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-text-secondary">
-            Upload reaction clips and product demos, normalize them to TikTok
-            9:16, preview the exact UGC-then-demo sequence, and export a single
-            MP4 without server rendering.
+            Combine UGC reaction clips with product demos to create high-converting
+            marketing videos in minutes.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <PrimaryButtonLink
