@@ -15,6 +15,7 @@ export function VideoPreview({
     <div className="aspect-[9/16] overflow-hidden rounded-lg bg-slate-950">
       {src ? (
         <video
+          key={src}
           aria-label={label}
           className="h-full w-full object-contain"
           controls={controls}
