@@ -8,4 +8,5 @@ export type TextOverlayStyleId =
   | "outline"
   | "luxe"
   | "neon"
-  | "soft";
+  | "soft"
+  | "snapchat";

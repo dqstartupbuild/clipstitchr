@@ -40,15 +40,15 @@ export function TextOverlayBox({
         }em ${overlayStyle.shadowBlurRatio}em ${overlayStyle.shadowColor}`
       : undefined;
   const style: CSSProperties = {
-    left: `${textOverlay.x * 100}%`,
+    left: overlayStyle.fullWidthBand ? 0 : `${textOverlay.x * 100}%`,
     top: `${textOverlay.y * 100}%`,
-    width: `${textOverlay.width * 100}%`,
-    fontSize: `${textOverlay.fontSize * 100}cqh`,
+    width: overlayStyle.fullWidthBand ? "100%" : `${textOverlay.width * 100}%`,
+    fontSize: `${textOverlay.fontSize * (overlayStyle.fontScale ?? 1) * 100}cqh`,
     fontFamily: overlayStyle.fontFamily,
     fontWeight: overlayStyle.fontWeight,
     color: getTextOverlayColor(textOverlay),
     backgroundColor: overlayStyle.backgroundColor,
-    borderRadius: overlayStyle.borderRadiusRatio
+    borderRadius: overlayStyle.borderRadiusRatio && !overlayStyle.fullWidthBand
       ? `${overlayStyle.borderRadiusRatio}em`
       : undefined,
     padding:

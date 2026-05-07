@@ -43,9 +43,16 @@ export function TextOverlayStylePicker({
             onClick={() => onChange({ ...textOverlay, styleId: style.id })}
           >
             <span
-              className="inline-flex h-7 min-w-12 items-center justify-center rounded-md px-2 text-base leading-none shadow-inner"
+              className={[
+                "inline-flex h-7 min-w-12 items-center justify-center px-2 text-base leading-none shadow-inner",
+                style.fullWidthBand ? "w-16 rounded-none" : "rounded-md",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               style={{
-                backgroundColor: previewBackgroundColor,
+                backgroundColor: style.fullWidthBand
+                  ? style.backgroundColor
+                  : previewBackgroundColor,
                 color: previewColor,
               }}
             >

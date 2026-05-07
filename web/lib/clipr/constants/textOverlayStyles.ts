@@ -131,4 +131,18 @@ export const TEXT_OVERLAY_STYLES: TextOverlayStyle[] = [
     paddingYRatio: 0.2,
     borderRadiusRatio: 0.18,
   },
+  {
+    id: "snapchat",
+    label: "Snapchat",
+    fontFamily:
+      "Avenir Next, Avenir, Public Sans, Helvetica Neue, Helvetica, Arial, sans-serif",
+    fontWeight: "400",
+    fontScale: 0.78,
+    color: "#ffffff",
+    backgroundColor: "rgba(108, 108, 108, 0.84)",
+    paddingXRatio: 0.22,
+    paddingYRatio: 0.14,
+    borderRadiusRatio: 0,
+    fullWidthBand: true,
+  },
 ];

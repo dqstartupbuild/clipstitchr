@@ -19,13 +19,18 @@ export function drawTextOverlay(
   const style = getTextOverlayStyle(textOverlay.styleId);
   const canvasWidth = context.canvas.width;
   const canvasHeight = context.canvas.height;
-  const fontSize = Math.max(1, textOverlay.fontSize * canvasHeight);
+  const fontSize = Math.max(
+    1,
+    textOverlay.fontSize * (style.fontScale ?? 1) * canvasHeight,
+  );
   const boxLeft = textOverlay.x * canvasWidth;
   const boxTop = textOverlay.y * canvasHeight;
   const boxWidth = textOverlay.width * canvasWidth;
+  const backgroundLeft = style.fullWidthBand ? 0 : boxLeft;
+  const backgroundWidth = style.fullWidthBand ? canvasWidth : boxWidth;
   const paddingX = (style.paddingXRatio ?? 0) * fontSize;
   const paddingY = (style.paddingYRatio ?? 0) * fontSize;
-  const maxTextWidth = Math.max(fontSize, boxWidth - paddingX * 2);
+  const maxTextWidth = Math.max(fontSize, backgroundWidth - paddingX * 2);
   const text =
     style.textTransform === "uppercase"
       ? textOverlay.text.toUpperCase()
@@ -41,17 +46,19 @@ export function drawTextOverlay(
   const lineHeight = fontSize * 1.12;
   const blockHeight = lines.length * lineHeight + paddingY * 2;
   const safeBoxTop = Math.min(boxTop, canvasHeight - blockHeight);
-  const textCenterX = boxLeft + boxWidth / 2;
+  const textCenterX = backgroundLeft + backgroundWidth / 2;
 
   if (style.backgroundColor) {
-    const radius = (style.borderRadiusRatio ?? 0) * fontSize;
+    const radius = style.fullWidthBand
+      ? 0
+      : (style.borderRadiusRatio ?? 0) * fontSize;
 
     context.fillStyle = style.backgroundColor;
     drawRoundRect(
       context,
-      boxLeft,
+      backgroundLeft,
       Math.max(0, safeBoxTop),
-      boxWidth,
+      backgroundWidth,
       blockHeight,
       radius,
     );

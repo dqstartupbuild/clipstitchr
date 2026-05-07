@@ -5,6 +5,7 @@ export type TextOverlayStyle = {
   label: string;
   fontFamily: string;
   fontWeight: string;
+  fontScale?: number;
   color: string;
   backgroundColor?: string;
   strokeColor?: string;
@@ -17,4 +18,5 @@ export type TextOverlayStyle = {
   paddingXRatio?: number;
   paddingYRatio?: number;
   borderRadiusRatio?: number;
+  fullWidthBand?: boolean;
 };
