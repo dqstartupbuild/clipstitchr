@@ -1,3 +1,5 @@
+import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
+
 export type CreatedVideo = {
   id: string;
   name: string;
@@ -13,5 +15,6 @@ export type CreatedVideo = {
   width: number;
   height: number;
   duration: number;
+  textOverlay?: TextOverlay;
   createdAt: string;
 };

@@ -1,34 +1,62 @@
 "use client";
 
 import { RotateCcw } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/app/_components/ui/Button";
+import { TextOverlayBox } from "@/app/_components/create/TextOverlayBox";
 import { useObjectUrl } from "@/lib/clipr/hooks/useObjectUrl";
 import { useSequenceVideoPlayer } from "@/lib/clipr/hooks/useSequenceVideoPlayer";
+import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipr/types/VideoClip";
 
 type SequenceVideoPlayerProps = {
   ugcClip: VideoClip;
   demoClip: VideoClip;
+  textOverlay: TextOverlay | null;
+  totalDuration: number;
+  onTextOverlayChange: (textOverlay: TextOverlay) => void;
+  onPlaybackTimeChange: (currentTime: number) => void;
 };
 
 export function SequenceVideoPlayer({
   ugcClip,
   demoClip,
+  textOverlay,
+  totalDuration,
+  onTextOverlayChange,
+  onPlaybackTimeChange,
 }: SequenceVideoPlayerProps) {
+  const stageRef = useRef<HTMLDivElement | null>(null);
   const ugcUrl = useObjectUrl(ugcClip.blob);
   const demoUrl = useObjectUrl(demoClip.blob);
   const ugcPosterUrl = useObjectUrl(ugcClip.posterBlob);
   const demoPosterUrl = useObjectUrl(demoClip.posterBlob);
-  const { activeSegment, handleEnded, restart, videoRef } =
-    useSequenceVideoPlayer();
+  const {
+    activeSegment,
+    currentTime,
+    handleEnded,
+    restart,
+    updateCurrentTime,
+    videoRef,
+  } = useSequenceVideoPlayer({
+    ugcDuration: ugcClip.duration,
+  });
   const activeUrl = activeSegment === "ugc" ? ugcUrl : demoUrl;
   const activePosterUrl =
     activeSegment === "ugc" ? ugcPosterUrl : demoPosterUrl;
   const activeName = activeSegment === "ugc" ? ugcClip.name : demoClip.name;
 
+  useEffect(() => {
+    onPlaybackTimeChange(currentTime);
+  }, [currentTime, onPlaybackTimeChange]);
+
   return (
     <div>
-      <div className="aspect-[9/16] overflow-hidden rounded-lg bg-slate-950">
+      <div
+        ref={stageRef}
+        className="relative aspect-[9/16] overflow-hidden rounded-lg bg-slate-950"
+        style={{ containerType: "size" }}
+      >
         {activeUrl ? (
           <video
             key={`${activeUrl}:${activePosterUrl ?? "no-poster"}`}
@@ -40,12 +68,24 @@ export function SequenceVideoPlayer({
             preload="metadata"
             src={activeUrl}
             onEnded={handleEnded}
+            onLoadedMetadata={updateCurrentTime}
+            onSeeking={updateCurrentTime}
+            onTimeUpdate={updateCurrentTime}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-slate-400">
             Preview unavailable
           </div>
         )}
+        {textOverlay ? (
+          <TextOverlayBox
+            textOverlay={textOverlay}
+            currentTime={currentTime}
+            stageRef={stageRef}
+            totalDuration={totalDuration}
+            onChange={onTextOverlayChange}
+          />
+        ) : null}
       </div>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <div>

@@ -8,9 +8,11 @@ import {
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipr/constants/videoPosterCaptureVersion";
 import { createVideoPosterBlob } from "@/lib/clipr/media/createVideoPosterBlob";
 import { stitchNormalizedVideos } from "@/lib/clipr/media/stitchNormalizedVideos";
+import { stitchNormalizedVideosWithTextOverlay } from "@/lib/clipr/media/stitchNormalizedVideosWithTextOverlay";
 import { saveCreatedVideo } from "@/lib/clipr/storage/saveCreatedVideo";
 import type { CreatedVideo } from "@/lib/clipr/types/CreatedVideo";
 import type { ProcessingStatus } from "@/lib/clipr/types/ProcessingStatus";
+import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipr/types/VideoClip";
 import { createId } from "@/lib/clipr/utils/createId";
 import { getDownloadFileName } from "@/lib/clipr/utils/getDownloadFileName";
@@ -26,18 +28,25 @@ export function useCreateVideo({ onCreated }: UseCreateVideoOptions) {
   const [createdVideo, setCreatedVideo] = useState<CreatedVideo | null>(null);
 
   const createVideo = useCallback(
-    async (ugcClip: VideoClip, demoClip: VideoClip) => {
+    async (
+      ugcClip: VideoClip,
+      demoClip: VideoClip,
+      textOverlay: TextOverlay | null = null,
+    ) => {
       setStatus("stitching");
       setProgress(0);
       setError(null);
       setCreatedVideo(null);
 
       try {
-        const stitched = await stitchNormalizedVideos(
-          ugcClip,
-          demoClip,
-          setProgress,
-        );
+        const stitched = textOverlay
+          ? await stitchNormalizedVideosWithTextOverlay(
+              ugcClip,
+              demoClip,
+              textOverlay,
+              setProgress,
+            )
+          : await stitchNormalizedVideos(ugcClip, demoClip, setProgress);
         let posterBlob: Blob | undefined;
 
         try {
@@ -62,6 +71,7 @@ export function useCreateVideo({ onCreated }: UseCreateVideoOptions) {
           width: TIKTOK_OUTPUT_WIDTH,
           height: TIKTOK_OUTPUT_HEIGHT,
           duration: stitched.duration,
+          textOverlay: textOverlay ?? undefined,
           createdAt: now,
         };
 

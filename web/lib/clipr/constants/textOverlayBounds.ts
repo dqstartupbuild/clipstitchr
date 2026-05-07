@@ -1,0 +1,9 @@
+export const TEXT_OVERLAY_MIN_WIDTH = 0.22;
+
+export const TEXT_OVERLAY_MAX_WIDTH = 0.92;
+
+export const TEXT_OVERLAY_MIN_FONT_SIZE = 0.026;
+
+export const TEXT_OVERLAY_MAX_FONT_SIZE = 0.09;
+
+export const TEXT_OVERLAY_MIN_DURATION = 0.25;

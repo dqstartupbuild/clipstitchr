@@ -10,11 +10,14 @@ import { DownloadCreatedVideoPanel } from "@/app/_components/create/DownloadCrea
 import { SequencePreviewPanel } from "@/app/_components/create/SequencePreviewPanel";
 import { useClipLibrary } from "@/lib/clipr/hooks/useClipLibrary";
 import { useCreateVideo } from "@/lib/clipr/hooks/useCreateVideo";
+import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
+import { clampTextOverlay } from "@/lib/clipr/utils/clampTextOverlay";
 import { filterClipsByType } from "@/lib/clipr/utils/filterClipsByType";
 
 export function CreateVideoPageClient() {
   const library = useClipLibrary();
   const createVideoState = useCreateVideo({ onCreated: library.refresh });
+  const [textOverlay, setTextOverlay] = useState<TextOverlay | null>(null);
   const ugcClips = useMemo(
     () => filterClipsByType(library.clips, "ugc"),
     [library.clips],
@@ -30,9 +33,24 @@ export function CreateVideoPageClient() {
   const selectedDemoClip =
     demoClips.find((clip) => clip.id === selectedDemoId) ?? demoClips[0] ?? null;
   const canCreate = Boolean(selectedUgcClip && selectedDemoClip);
+  const totalDuration =
+    (selectedUgcClip?.duration ?? 0) + (selectedDemoClip?.duration ?? 0);
+  const clampedTextOverlay = textOverlay
+    ? clampTextOverlay(textOverlay, totalDuration)
+    : null;
+
   const handleCreateVideo = () => {
     if (selectedUgcClip && selectedDemoClip) {
-      void createVideoState.createVideo(selectedUgcClip, selectedDemoClip);
+      const exportTextOverlay =
+        clampedTextOverlay && clampedTextOverlay.text.trim().length > 0
+          ? clampedTextOverlay
+          : null;
+
+      void createVideoState.createVideo(
+        selectedUgcClip,
+        selectedDemoClip,
+        exportTextOverlay,
+      );
     }
   };
 
@@ -71,6 +89,8 @@ export function CreateVideoPageClient() {
             <SequencePreviewPanel
               ugcClip={selectedUgcClip}
               demoClip={selectedDemoClip}
+              textOverlay={clampedTextOverlay}
+              onTextOverlayChange={setTextOverlay}
             />
           </div>
         ) : (
