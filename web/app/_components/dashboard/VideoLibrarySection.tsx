@@ -12,6 +12,7 @@ type VideoLibrarySectionProps = {
   title: string;
   clips: VideoClip[];
   emptyDescription: string;
+  emptyTitle?: string;
   onDelete: (id: string) => void | Promise<void>;
   onRename: (clip: VideoClip, name: string) => void | Promise<void>;
 };
@@ -21,6 +22,7 @@ export function VideoLibrarySection({
   title,
   clips,
   emptyDescription,
+  emptyTitle = "No videos yet",
   onDelete,
   onRename,
 }: VideoLibrarySectionProps) {
@@ -63,7 +65,7 @@ export function VideoLibrarySection({
           ) : null}
         </>
       ) : (
-        <DashboardEmptyState title="No videos yet" description={emptyDescription} />
+        <DashboardEmptyState title={emptyTitle} description={emptyDescription} />
       )}
     </section>
   );

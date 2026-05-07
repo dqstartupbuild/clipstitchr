@@ -1,10 +1,13 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { ClipPickerActionBar } from "@/app/_components/create/ClipPickerActionBar";
 import { DemoClipSelector } from "@/app/_components/create/DemoClipSelector";
 import { UgcClipSelector } from "@/app/_components/create/UgcClipSelector";
 import { Panel } from "@/app/_components/ui/Panel";
+import { SearchInput } from "@/app/_components/ui/SearchInput";
 import type { VideoClip } from "@/lib/clipr/types/VideoClip";
+import { filterClipsByName } from "@/lib/clipr/utils/filterClipsByName";
 
 type ClipPickerPanelProps = {
   ugcClips: VideoClip[];
@@ -29,6 +32,16 @@ export function ClipPickerPanel({
   isCreating,
   onCreate,
 }: ClipPickerPanelProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredUgcClips = useMemo(
+    () => filterClipsByName(ugcClips, searchQuery),
+    [searchQuery, ugcClips],
+  );
+  const filteredDemoClips = useMemo(
+    () => filterClipsByName(demoClips, searchQuery),
+    [demoClips, searchQuery],
+  );
+
   return (
     <Panel className="p-5">
       <ClipPickerActionBar
@@ -36,14 +49,23 @@ export function ClipPickerPanel({
         isCreating={isCreating}
         onCreate={onCreate}
       />
+      <SearchInput
+        label="Search clip picker videos"
+        value={searchQuery}
+        onChange={setSearchQuery}
+        placeholder="Search UGC and demo videos"
+        className="mb-5"
+      />
       <div className="grid gap-6 xl:grid-cols-2">
         <UgcClipSelector
-          clips={ugcClips}
+          key={`ugc-${searchQuery}`}
+          clips={filteredUgcClips}
           selectedId={selectedUgcId}
           onSelect={onSelectUgc}
         />
         <DemoClipSelector
-          clips={demoClips}
+          key={`demo-${searchQuery}`}
+          clips={filteredDemoClips}
           selectedId={selectedDemoId}
           onSelect={onSelectDemo}
         />

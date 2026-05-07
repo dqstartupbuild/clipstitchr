@@ -6,9 +6,11 @@ import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { LibraryPageHeader } from "@/app/_components/dashboard/LibraryPageHeader";
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
 import { VideoLibrarySection } from "@/app/_components/dashboard/VideoLibrarySection";
+import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { useClipLibrary } from "@/lib/clipr/hooks/useClipLibrary";
 import { useShowUploadControls } from "@/lib/clipr/hooks/useShowUploadControls";
 import type { ClipType } from "@/lib/clipr/types/ClipType";
+import { filterClipsByName } from "@/lib/clipr/utils/filterClipsByName";
 import { filterClipsByType } from "@/lib/clipr/utils/filterClipsByType";
 
 const uploadLibraryContent: Record<
@@ -37,11 +39,17 @@ export function UploadsPageClient() {
   const library = useClipLibrary();
   const showUploadControls = useShowUploadControls();
   const [selectedClipType, setSelectedClipType] = useState<ClipType>("ugc");
+  const [searchQuery, setSearchQuery] = useState("");
   const selectedContent = uploadLibraryContent[selectedClipType];
-  const clips = useMemo(
-    () => filterClipsByType(library.clips, selectedClipType),
-    [library.clips, selectedClipType],
+  const searchFilteredClips = useMemo(
+    () => filterClipsByName(library.clips, searchQuery),
+    [library.clips, searchQuery],
   );
+  const clips = useMemo(
+    () => filterClipsByType(searchFilteredClips, selectedClipType),
+    [searchFilteredClips, selectedClipType],
+  );
+  const hasSearchQuery = searchQuery.trim().length > 0;
 
   return (
     <DashboardShell>
@@ -57,18 +65,30 @@ export function UploadsPageClient() {
           </div>
         ) : null}
         {showUploadControls ? <UploadPanel onUploaded={library.refresh} /> : null}
-        <div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <ClipTypeTabs
             value={selectedClipType}
             onChange={setSelectedClipType}
           />
+          <SearchInput
+            label="Search uploaded videos"
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search UGC and demo videos"
+            className="w-full sm:max-w-sm"
+          />
         </div>
         <VideoLibrarySection
-          key={selectedClipType}
+          key={`${selectedClipType}-${searchQuery}`}
           id={selectedContent.sectionId}
           title={selectedContent.title}
           clips={clips}
-          emptyDescription={selectedContent.emptyDescription}
+          emptyTitle={hasSearchQuery ? "No matching videos" : undefined}
+          emptyDescription={
+            hasSearchQuery
+              ? "No saved videos in this tab match that name."
+              : selectedContent.emptyDescription
+          }
           onDelete={library.removeClip}
           onRename={library.renameClip}
         />

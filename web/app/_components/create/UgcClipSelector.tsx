@@ -25,14 +25,20 @@ export function UgcClipSelector({
     <div>
       <h2 className="text-base font-bold text-text-primary">UGC Clip</h2>
       <div className="mt-3 space-y-2">
-        {pagination.pageItems.map((clip) => (
-          <SelectableClipRow
-            key={clip.id}
-            clip={clip}
-            isSelected={clip.id === selectedId}
-            onSelect={onSelect}
-          />
-        ))}
+        {pagination.pageItems.length ? (
+          pagination.pageItems.map((clip) => (
+            <SelectableClipRow
+              key={clip.id}
+              clip={clip}
+              isSelected={clip.id === selectedId}
+              onSelect={onSelect}
+            />
+          ))
+        ) : (
+          <p className="rounded-lg border border-dashed border-border bg-slate-50 p-4 text-sm font-semibold text-text-tertiary">
+            No UGC clips match this search.
+          </p>
+        )}
       </div>
       {pagination.totalPages > 1 ? (
         <PaginationControls

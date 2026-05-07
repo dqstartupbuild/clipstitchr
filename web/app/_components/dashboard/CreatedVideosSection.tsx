@@ -6,11 +6,15 @@ import type { CreatedVideo } from "@/lib/clipr/types/CreatedVideo";
 
 type CreatedVideosSectionProps = {
   createdVideos: CreatedVideo[];
+  emptyDescription?: string;
+  emptyTitle?: string;
   onDelete: (id: string) => void | Promise<void>;
 };
 
 export function CreatedVideosSection({
   createdVideos,
+  emptyDescription = "Create a video after you have at least one UGC clip and one demo video.",
+  emptyTitle = "No created videos yet",
   onDelete,
 }: CreatedVideosSectionProps) {
   return (
@@ -33,8 +37,8 @@ export function CreatedVideosSection({
         </div>
       ) : (
         <DashboardEmptyState
-          title="No created videos yet"
-          description="Create a video after you have at least one UGC clip and one demo video."
+          title={emptyTitle}
+          description={emptyDescription}
         />
       )}
     </section>
