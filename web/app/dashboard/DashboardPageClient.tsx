@@ -5,9 +5,14 @@ import { CreateVideoCallout } from "@/app/_components/dashboard/CreateVideoCallo
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
-import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
+import { RecentCreatedVideosSection } from "@/app/_components/dashboard/RecentCreatedVideosSection";
+import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
 import { useClipLibrary } from "@/lib/clipr/hooks/useClipLibrary";
 import { filterClipsByType } from "@/lib/clipr/utils/filterClipsByType";
+import { getRecentCreatedVideos } from "@/lib/clipr/utils/getRecentCreatedVideos";
+import { getRecentVideoClips } from "@/lib/clipr/utils/getRecentVideoClips";
+
+const RECENT_DASHBOARD_ITEM_LIMIT = 4;
 
 export function DashboardPageClient() {
   const library = useClipLibrary();
@@ -18,6 +23,18 @@ export function DashboardPageClient() {
   const demoClips = useMemo(
     () => filterClipsByType(library.clips, "demo"),
     [library.clips],
+  );
+  const recentUploads = useMemo(
+    () => getRecentVideoClips(library.clips, RECENT_DASHBOARD_ITEM_LIMIT),
+    [library.clips],
+  );
+  const recentCreatedVideos = useMemo(
+    () =>
+      getRecentCreatedVideos(
+        library.createdVideos,
+        RECENT_DASHBOARD_ITEM_LIMIT,
+      ),
+    [library.createdVideos],
   );
 
   return (
@@ -34,7 +51,15 @@ export function DashboardPageClient() {
           demoCount={demoClips.length}
           createdCount={library.createdVideos.length}
         />
-        <UploadPanel onUploaded={library.refresh} />
+        <RecentCreatedVideosSection
+          createdVideos={recentCreatedVideos}
+          onDelete={library.removeCreatedVideo}
+        />
+        <RecentUploadsSection
+          clips={recentUploads}
+          onDelete={library.removeClip}
+          onRename={library.renameClip}
+        />
         <CreateVideoCallout />
       </div>
     </DashboardShell>

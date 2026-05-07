@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { PRIMARY_BUTTON_CLASS_NAME } from "@/app/_components/ui/primaryButtonClassName";
 
 type PrimaryButtonLinkProps = {
   href: string;
@@ -18,7 +19,7 @@ export function PrimaryButtonLink({
     <Link
       href={href}
       className={[
-        "inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+        PRIMARY_BUTTON_CLASS_NAME,
         className,
       ].join(" ")}
     >

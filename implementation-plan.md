@@ -7,7 +7,7 @@
 ### Product Scope
 
 - `project-scope.md`
-  - MVP routes are `/`, `/dashboard`, `/dashboard/create`, `/ugc`, `/demos`, and `/created`.
+  - MVP routes are `/`, `/dashboard`, `/dashboard/create`, `/uploads`, and `/created`.
   - Uploads are UGC clips and Demo videos.
   - Every uploaded clip must be normalized to TikTok 9:16 before it is usable.
   - Preview and export must use the same sequence: UGC plays first, Demo starts immediately after UGC ends.
@@ -214,7 +214,7 @@ Modify:
   - Change to `Go to Dashboard`.
 - `staticPages`
   - Keep `/`, `/blog`, `/privacy`, `/terms`.
-  - Add `/dashboard`, `/dashboard/create`, `/ugc`, `/demos`, and `/created` so sitemap includes the MVP app routes.
+  - Add `/dashboard`, `/dashboard/create`, `/uploads`, and `/created` so sitemap includes the MVP app routes.
 
 Do not remove:
 
@@ -369,7 +369,7 @@ Create:
 
 - Client component entry for `/dashboard`.
 - Owns dashboard page-level loading and interactions through hooks.
-- Composes dashboard layout, upload panel, stats, library sections, and created video section.
+- Composes dashboard layout, stats, recent upload sections, recent created video sections, and create-video callout.
 
 ### `web/app/_components/dashboard/DashboardShell.tsx`
 
@@ -384,15 +384,15 @@ Create:
 Create:
 
 - Sidebar inspired by mockup.
-- Links: Dashboard, Uploads, UGC Clips, Demo Videos, Created Videos, Create Video.
+- Links: Dashboard, Uploads, Created Videos, Create Video.
 - Uses `next/link` and lucide icons.
 
 ### `web/app/_components/dashboard/DashboardHeader.tsx`
 
 Create:
 
-- Dashboard top row with welcome copy and Upload action.
-- Upload action routes focus to upload panel or links to dashboard upload area.
+- Dashboard top row with welcome copy and Create Video action.
+- Header actions include Upload Videos and Create Video across dashboard screens.
 
 ### `web/app/_components/dashboard/DashboardStats.tsx`
 

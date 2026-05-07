@@ -30,19 +30,16 @@ export function CreateVideoPageClient() {
   const selectedDemoClip =
     demoClips.find((clip) => clip.id === selectedDemoId) ?? demoClips[0] ?? null;
   const canCreate = Boolean(selectedUgcClip && selectedDemoClip);
+  const handleCreateVideo = () => {
+    if (selectedUgcClip && selectedDemoClip) {
+      void createVideoState.createVideo(selectedUgcClip, selectedDemoClip);
+    }
+  };
 
   return (
     <CreateVideoShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
-        <CreateVideoHeader
-          canCreate={canCreate}
-          isCreating={createVideoState.status === "stitching"}
-          onCreate={() => {
-            if (selectedUgcClip && selectedDemoClip) {
-              void createVideoState.createVideo(selectedUgcClip, selectedDemoClip);
-            }
-          }}
-        />
+        <CreateVideoHeader />
         {library.error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {library.error}
@@ -58,6 +55,9 @@ export function CreateVideoPageClient() {
                 selectedDemoId={selectedDemoClip?.id ?? null}
                 onSelectUgc={setSelectedUgcId}
                 onSelectDemo={setSelectedDemoId}
+                canCreate={canCreate}
+                isCreating={createVideoState.status === "stitching"}
+                onCreate={handleCreateVideo}
               />
               <CreateProgressPanel
                 status={createVideoState.status}

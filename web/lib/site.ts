@@ -67,12 +67,7 @@ export const site = {
       priority: 0.72,
     },
     {
-      pathname: "/ugc",
-      changeFrequency: "weekly" as const,
-      priority: 0.68,
-    },
-    {
-      pathname: "/demos",
+      pathname: "/uploads",
       changeFrequency: "weekly" as const,
       priority: 0.68,
     },

@@ -110,10 +110,12 @@ Text overlays are planned for later, but they are not required for the MVP.
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
 | 1 | Landing page with a **"Dashboard"** button | ✅ | ✅ |
-| 2 | Dashboard shows upload controls, workspace status, and creation entry points | ✅ | ✅ |
+| 2 | Dashboard shows workspace status, recent uploads, recent created videos, and creation entry points | ✅ | ✅ |
 | 3 | No login required — dashboard is directly accessible | ✅ | — |
 | 4 | Clerk-authenticated access to dashboard | — | ✅ |
-| 5 | UGC clips, demo videos, and created videos have dedicated library pages | ✅ | ✅ |
+| 5 | Uploaded UGC clips and demo videos share a tabbed uploads library page | ✅ | ✅ |
+| 6 | Created videos have a dedicated library page | ✅ | ✅ |
+| 7 | Upload controls live on the uploads page and open from dashboard header actions | ✅ | ✅ |
 
 ---
 
@@ -123,8 +125,7 @@ Text overlays are planned for later, but they are not required for the MVP.
 /                → Landing page (marketing + "Go to Dashboard" CTA)
 /dashboard       → Main workspace
 /dashboard/create → Video creation / stitching interface
-/ugc             → UGC clip library
-/demos           → Demo video library
+/uploads         → Upload library with UGC and Demo tabs; upload controls open from header action
 /created         → Created video library
 ```
 

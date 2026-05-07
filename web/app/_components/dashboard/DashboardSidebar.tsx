@@ -1,9 +1,6 @@
 import {
-  Clapperboard,
-  FileVideo,
-  Film,
   Home,
-  LayoutDashboard,
+  Play,
   PlusCircle,
   UploadCloud,
 } from "lucide-react";
@@ -11,12 +8,10 @@ import Link from "next/link";
 import { BrandMark } from "@/app/_components/BrandMark";
 
 const links = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard#upload-panel", label: "Uploads", icon: UploadCloud },
-  { href: "/ugc", label: "UGC Clips", icon: Film },
-  { href: "/demos", label: "Demo Videos", icon: Clapperboard },
-  { href: "/created", label: "Created Videos", icon: FileVideo },
-  { href: "/dashboard/create", label: "Create Video", icon: PlusCircle },
+  { href: "/dashboard", label: "Dashboard", icon: Home },
+  { href: "/dashboard/create", label: "Create", icon: PlusCircle },
+  { href: "/uploads", label: "Uploads", icon: UploadCloud },
+  { href: "/created", label: "Created Videos", icon: Play },
 ];
 
 export function DashboardSidebar() {

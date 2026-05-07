@@ -1,6 +1,7 @@
 import { UploadCloud } from "lucide-react";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 import { Panel } from "@/app/_components/ui/Panel";
+import { UPLOAD_CONTROLS_HREF } from "@/lib/clipr/constants/uploadControlsHref";
 
 export function CreateVideoEmptyState() {
   return (
@@ -13,7 +14,7 @@ export function CreateVideoEmptyState() {
         The create studio only works with clips that have already been
         normalized into the local Clipr library.
       </p>
-      <SecondaryButtonLink href="/dashboard#upload-panel" className="mt-5">
+      <SecondaryButtonLink href={UPLOAD_CONTROLS_HREF} className="mt-5">
         Go to Uploads
       </SecondaryButtonLink>
     </Panel>
