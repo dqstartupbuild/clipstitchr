@@ -7,7 +7,7 @@
 ### Product Scope
 
 - `project-scope.md`
-  - MVP routes are `/`, `/dashboard`, `/dashboard/create`, `/uploads`, and `/created`.
+  - MVP routes are `/`, `/dashboard`, `/dashboard/create`, `/dashboard/uploads`, `/dashboard/swapr`, and `/dashboard/created`.
   - Uploads are UGC clips and Demo videos.
   - Every uploaded clip must be normalized to TikTok 9:16 before it is usable.
   - Preview and export must use the same sequence: UGC plays first, Demo starts immediately after UGC ends.
@@ -217,7 +217,7 @@ Modify:
   - Change to `Go to Dashboard`.
 - `staticPages`
   - Keep `/`, `/blog`, `/privacy`, `/terms`.
-  - Add `/dashboard`, `/dashboard/create`, `/uploads`, and `/created` so sitemap includes the MVP app routes.
+  - Add `/dashboard`, `/dashboard/create`, `/dashboard/uploads`, `/dashboard/swapr`, and `/dashboard/created` so sitemap includes the MVP app routes.
 
 Do not remove:
 
@@ -328,7 +328,7 @@ Create:
 
 Create:
 
-- H1 inspired by mockup: `Stitch. Style. Share. All in your browser.`
+- H1 inspired by mockup: `Stitch. Swap. Share. All in your browser.`
 - Copy adjusted to MVP: UGC + demo stitching, TikTok-ready 9:16 output, browser-local processing.
 - CTA to `/dashboard`.
 - Secondary CTA scrolls to workflow/features.

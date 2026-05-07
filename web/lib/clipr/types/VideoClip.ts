@@ -1,4 +1,5 @@
 import type { ClipType } from "@/lib/clipr/types/ClipType";
+import type { SwaprOutputMetadata } from "@/lib/clipr/types/SwaprOutputMetadata";
 import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
 
 export type VideoClip = {
@@ -19,6 +20,7 @@ export type VideoClip = {
   duration: number;
   defaultTrimRange?: VideoTrimRange;
   hasAudio: boolean;
+  swaprMetadata?: SwaprOutputMetadata;
   createdAt: string;
   updatedAt: string;
 };

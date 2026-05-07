@@ -117,8 +117,9 @@ Text overlays are planned for later, but they are not required for the MVP.
 | 3 | No login required — dashboard is directly accessible | ✅ | — |
 | 4 | Clerk-authenticated access to dashboard | — | ✅ |
 | 5 | Uploaded UGC clips and demo videos share a tabbed uploads library page | ✅ | ✅ |
-| 6 | Created videos have a dedicated library page | ✅ | ✅ |
-| 7 | Upload controls live on the uploads page and open from dashboard header actions | ✅ | ✅ |
+| 6 | Uploaded Swapr photos appear in the uploads library Photos tab; AI expansion is optional and off by default | ✅ | ✅ |
+| 7 | Created videos have a dedicated library page | ✅ | ✅ |
+| 8 | A unified upload control supports UGC, Demo, and Photo uploads from the dashboard header action | ✅ | ✅ |
 
 ---
 
@@ -128,8 +129,9 @@ Text overlays are planned for later, but they are not required for the MVP.
 /                → Landing page (marketing + "Go to Dashboard" CTA)
 /dashboard       → Main workspace
 /dashboard/create → Video creation / stitching interface
-/uploads         → Upload library with UGC and Demo tabs; upload controls open from header action
-/created         → Created video library
+/dashboard/swapr → AI motion-transfer studio using saved photos and UGC clips
+/dashboard/uploads → Upload library with UGC, Demo, and Photos tabs; unified upload controls open from header action
+/dashboard/created → Created video library
 ```
 
 ---
@@ -366,6 +368,7 @@ interface CreatedVideo {
 ### Phase 4 — AI-Powered Editing
 
 - [ ] Video trimming & cutting tools
+- [ ] Swapr — upload saved photos, choose existing UGC clips, and generate AI motion-transfer UGC outputs through Replicate
 - [ ] AI video analysis to detect optimal trim/cut points (e.g., scene changes, pauses, energy peaks)
 - [ ] AI-suggested highlights — automatically surface the best moments from UGC clips
 - [ ] Smart auto-edit — one-click to trim dead air, awkward pauses, or low-energy segments

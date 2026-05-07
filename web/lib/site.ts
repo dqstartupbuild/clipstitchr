@@ -67,12 +67,17 @@ export const site = {
       priority: 0.72,
     },
     {
-      pathname: "/uploads",
+      pathname: "/dashboard/uploads",
       changeFrequency: "weekly" as const,
       priority: 0.68,
     },
     {
-      pathname: "/created",
+      pathname: "/dashboard/swapr",
+      changeFrequency: "weekly" as const,
+      priority: 0.68,
+    },
+    {
+      pathname: "/dashboard/created",
       changeFrequency: "weekly" as const,
       priority: 0.68,
     },

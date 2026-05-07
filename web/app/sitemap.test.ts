@@ -9,8 +9,9 @@ describe("sitemap", () => {
     expect(urls).toContain("http://localhost:3000/");
     expect(urls).toContain("http://localhost:3000/dashboard");
     expect(urls).toContain("http://localhost:3000/dashboard/create");
-    expect(urls).toContain("http://localhost:3000/uploads");
-    expect(urls).toContain("http://localhost:3000/created");
+    expect(urls).toContain("http://localhost:3000/dashboard/uploads");
+    expect(urls).toContain("http://localhost:3000/dashboard/swapr");
+    expect(urls).toContain("http://localhost:3000/dashboard/created");
     expect(urls).toContain("http://localhost:3000/blog");
     expect(urls).toContain(
       "http://localhost:3000/blog/getting-started",

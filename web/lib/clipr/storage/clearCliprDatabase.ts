@@ -1,5 +1,6 @@
 import {
   CREATED_VIDEOS_STORE_NAME,
+  PHOTO_ASSETS_STORE_NAME,
   VIDEO_CLIPS_STORE_NAME,
 } from "@/lib/clipr/constants/objectStoreNames";
 import { getObjectStore } from "@/lib/clipr/storage/getObjectStore";
@@ -11,4 +12,7 @@ export async function clearCliprDatabase() {
 
   const createdVideos = await getObjectStore(CREATED_VIDEOS_STORE_NAME, "readwrite");
   await requestToPromise(createdVideos.store.clear());
+
+  const photoAssets = await getObjectStore(PHOTO_ASSETS_STORE_NAME, "readwrite");
+  await requestToPromise(photoAssets.store.clear());
 }

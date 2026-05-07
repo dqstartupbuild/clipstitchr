@@ -22,7 +22,7 @@ export function LandingHero() {
             Create better videos, faster
           </p>
           <h1 className="mt-5 max-w-2xl text-5xl font-bold leading-[1.05] text-text-primary md:text-6xl">
-            Stitch. Style. Share.
+            Stitch. Swap. Share.
             <br className="hidden md:block" />
             <span className="mt-2 block text-accent md:mt-0 md:inline">
               All in your browser.

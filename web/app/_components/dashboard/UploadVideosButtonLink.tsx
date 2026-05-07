@@ -14,12 +14,12 @@ export function UploadVideosButtonLink() {
       href={UPLOAD_CONTROLS_HREF}
       icon={<UploadCloud aria-hidden className="h-4 w-4" />}
       onClick={() => {
-        if (pathname === "/uploads") {
+        if (pathname === "/dashboard/uploads") {
           dispatchShowUploadControlsEvent();
         }
       }}
     >
-      Upload Videos
+      Upload
     </SecondaryButtonLink>
   );
 }

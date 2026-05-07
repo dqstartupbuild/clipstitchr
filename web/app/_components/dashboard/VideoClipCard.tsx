@@ -1,10 +1,11 @@
 "use client";
 
-import { Edit3, Scissors, Trash2 } from "lucide-react";
+import { Download, Edit3, Scissors, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { VideoTrimDialog } from "@/app/_components/trim/VideoTrimDialog";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { IconLink } from "@/app/_components/ui/IconLink";
 import { Panel } from "@/app/_components/ui/Panel";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
 import { useObjectUrl } from "@/lib/clipr/hooks/useObjectUrl";
@@ -12,7 +13,9 @@ import type { VideoClip } from "@/lib/clipr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
 import { formatBytes } from "@/lib/clipr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipr/utils/formatDuration";
+import { getAssetDownloadFileName } from "@/lib/clipr/utils/getAssetDownloadFileName";
 import { getDefaultVideoTrimRange } from "@/lib/clipr/utils/getDefaultVideoTrimRange";
+import { getBlobFileExtension } from "@/lib/clipr/utils/getBlobFileExtension";
 import { getVideoTrimRangeDuration } from "@/lib/clipr/utils/getVideoTrimRangeDuration";
 
 type VideoClipCardProps = {
@@ -57,6 +60,17 @@ export function VideoClipCard({
             </Badge>
           </div>
           <div className="mt-4 flex gap-2">
+            {url ? (
+              <IconLink
+                label="Download clip"
+                href={url}
+                download={getAssetDownloadFileName(
+                  clip.name,
+                  getBlobFileExtension(clip.blob, "mp4"),
+                )}
+                icon={<Download aria-hidden className="h-4 w-4" />}
+              />
+            ) : null}
             <IconButton
               label="Rename clip"
               icon={<Edit3 aria-hidden className="h-4 w-4" />}

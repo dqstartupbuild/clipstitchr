@@ -1,0 +1,182 @@
+"use client";
+
+import { Sparkles } from "lucide-react";
+import { Button } from "@/app/_components/ui/Button";
+import { Panel } from "@/app/_components/ui/Panel";
+import type { SwaprCharacterOrientation } from "@/lib/clipr/types/SwaprCharacterOrientation";
+import type { SwaprMode } from "@/lib/clipr/types/SwaprMode";
+import type { VideoClip } from "@/lib/clipr/types/VideoClip";
+import { formatBytes } from "@/lib/clipr/utils/formatBytes";
+import { formatDuration } from "@/lib/clipr/utils/formatDuration";
+import { getSwaprReferenceDurationLimit } from "@/lib/clipr/utils/getSwaprReferenceDurationLimit";
+
+type SwaprControlsPanelProps = {
+  prompt: string;
+  mode: SwaprMode;
+  characterOrientation: SwaprCharacterOrientation;
+  keepOriginalSound: boolean;
+  hasConsent: boolean;
+  isGenerating: boolean;
+  selectedClip?: VideoClip;
+  isReady: boolean;
+  referenceVideoMaxSizeBytes: number;
+  onPromptChange: (prompt: string) => void;
+  onModeChange: (mode: SwaprMode) => void;
+  onCharacterOrientationChange: (
+    characterOrientation: SwaprCharacterOrientation,
+  ) => void;
+  onKeepOriginalSoundChange: (keepOriginalSound: boolean) => void;
+  onConsentChange: (hasConsent: boolean) => void;
+  onGenerate: () => void;
+};
+
+export function SwaprControlsPanel({
+  prompt,
+  mode,
+  characterOrientation,
+  keepOriginalSound,
+  hasConsent,
+  isGenerating,
+  selectedClip,
+  isReady,
+  referenceVideoMaxSizeBytes,
+  onPromptChange,
+  onModeChange,
+  onCharacterOrientationChange,
+  onKeepOriginalSoundChange,
+  onConsentChange,
+  onGenerate,
+}: SwaprControlsPanelProps) {
+  const durationLimit = getSwaprReferenceDurationLimit(characterOrientation);
+  const isDurationValid = selectedClip
+    ? selectedClip.duration >= 3 && selectedClip.duration <= durationLimit
+    : true;
+  const isSizeValid = selectedClip
+    ? selectedClip.size <= referenceVideoMaxSizeBytes
+    : true;
+
+  return (
+    <Panel className="p-5">
+      <div>
+        <p className="text-sm font-semibold text-accent-dark">Swapr setup</p>
+        <h2 className="mt-2 text-xl font-bold text-text-primary">
+          Generate the swap
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-text-secondary">
+          The photo supplies the person. The UGC clip supplies the motion.
+        </p>
+      </div>
+
+      <label className="mt-5 block">
+        <span className="text-sm font-semibold text-text-primary">
+          Prompt guidance
+        </span>
+        <textarea
+          value={prompt}
+          rows={4}
+          className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
+          placeholder="Keep the creator in the same casual indoor setting, natural phone-camera lighting."
+          onChange={(event) => onPromptChange(event.target.value)}
+        />
+      </label>
+
+      <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <div>
+          <p className="text-sm font-semibold text-text-primary">Quality</p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant={mode === "pro" ? "primary" : "secondary"}
+              onClick={() => onModeChange("pro")}
+            >
+              Pro 1080p
+            </Button>
+            <Button
+              type="button"
+              variant={mode === "std" ? "primary" : "secondary"}
+              onClick={() => onModeChange("std")}
+            >
+              Std 720p
+            </Button>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold text-text-primary">
+            Orientation
+          </p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant={characterOrientation === "video" ? "primary" : "secondary"}
+              onClick={() => onCharacterOrientationChange("video")}
+            >
+              Match Video
+            </Button>
+            <Button
+              type="button"
+              variant={characterOrientation === "image" ? "primary" : "secondary"}
+              onClick={() => onCharacterOrientationChange("image")}
+            >
+              Match Photo
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <label className="mt-5 flex items-start gap-3 rounded-lg border border-border bg-surface-elevated p-3">
+        <input
+          type="checkbox"
+          checked={keepOriginalSound}
+          className="mt-1 h-4 w-4 accent-accent"
+          onChange={(event) =>
+            onKeepOriginalSoundChange(event.currentTarget.checked)
+          }
+        />
+        <span className="text-sm leading-6 text-text-secondary">
+          Keep original UGC sound when the model supports it.
+        </span>
+      </label>
+
+      <label className="mt-3 flex items-start gap-3 rounded-lg border border-border bg-surface-elevated p-3">
+        <input
+          type="checkbox"
+          checked={hasConsent}
+          className="mt-1 h-4 w-4 accent-accent"
+          onChange={(event) => onConsentChange(event.currentTarget.checked)}
+        />
+        <span className="text-sm leading-6 text-text-secondary">
+          I have rights and consent to use the selected photo and UGC clip for
+          AI generation.
+        </span>
+      </label>
+
+      {selectedClip && !isDurationValid ? (
+        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          This mode supports 3s to {durationLimit}s reference videos. Selected:
+          {" "}
+          {formatDuration(selectedClip.duration)}.
+        </div>
+      ) : null}
+
+      {selectedClip && !isSizeValid ? (
+        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          Replicate accepts reference videos up to{" "}
+          {formatBytes(referenceVideoMaxSizeBytes)}. Selected:{" "}
+          {formatBytes(selectedClip.size)}.
+        </div>
+      ) : null}
+
+      <Button
+        type="button"
+        className="mt-5 w-full"
+        icon={<Sparkles aria-hidden className="h-4 w-4" />}
+        isLoading={isGenerating}
+        disabled={!isReady || !isDurationValid || !isSizeValid}
+        onClick={onGenerate}
+      >
+        Generate Swapr Video
+      </Button>
+    </Panel>
+  );
+}

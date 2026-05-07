@@ -11,11 +11,15 @@ import type { VideoClip } from "@/lib/clipr/types/VideoClip";
 import { createId } from "@/lib/clipr/utils/createId";
 
 type UseUploadProcessorOptions = {
+  initialClipType?: ClipType;
   onClipSaved?: (clip: VideoClip) => void | Promise<void>;
 };
 
-export function useUploadProcessor({ onClipSaved }: UseUploadProcessorOptions) {
-  const [clipType, setClipType] = useState<ClipType>("ugc");
+export function useUploadProcessor({
+  initialClipType = "ugc",
+  onClipSaved,
+}: UseUploadProcessorOptions) {
+  const [clipType, setClipType] = useState<ClipType>(initialClipType);
   const [queue, setQueue] = useState<UploadQueueItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 

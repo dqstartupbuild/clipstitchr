@@ -2,6 +2,7 @@ import {
   Home,
   Play,
   PlusCircle,
+  Shuffle,
   UploadCloud,
 } from "lucide-react";
 import Link from "next/link";
@@ -9,9 +10,10 @@ import { BrandMark } from "@/app/_components/BrandMark";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
+  { href: "/dashboard/uploads", label: "Uploads", icon: UploadCloud },
   { href: "/dashboard/create", label: "Create", icon: PlusCircle },
-  { href: "/uploads", label: "Uploads", icon: UploadCloud },
-  { href: "/created", label: "Created Videos", icon: Play },
+  { href: "/dashboard/swapr", label: "Swapr", icon: Shuffle },
+  { href: "/dashboard/created", label: "Created Videos", icon: Play },
 ];
 
 export function DashboardSidebar() {

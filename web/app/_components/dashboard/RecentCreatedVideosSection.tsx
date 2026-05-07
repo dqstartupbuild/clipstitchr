@@ -20,7 +20,10 @@ export function RecentCreatedVideosSection({
         <h2 className="text-xl font-bold text-text-primary">
           Recent Created Videos
         </h2>
-        <SecondaryButtonLink href="/created" className="h-9 px-3 text-xs">
+        <SecondaryButtonLink
+          href="/dashboard/created"
+          className="h-9 px-3 text-xs"
+        >
           See all
         </SecondaryButtonLink>
       </div>

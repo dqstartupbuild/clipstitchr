@@ -22,9 +22,14 @@ type NormalizeUploadedVideoResult = {
   mimeType: string;
 };
 
+type NormalizeUploadedVideoOptions = {
+  fit?: "contain" | "cover";
+};
+
 export async function normalizeUploadedVideo(
   file: File,
   onProgress?: (progress: number) => void,
+  options: NormalizeUploadedVideoOptions = {},
 ): Promise<NormalizeUploadedVideoResult> {
   const input = createMediaInput(file);
 
@@ -61,7 +66,7 @@ export async function normalizeUploadedVideo(
       video: {
         width: TIKTOK_OUTPUT_WIDTH,
         height: TIKTOK_OUTPUT_HEIGHT,
-        fit: "contain",
+        fit: options.fit ?? "contain",
         allowRotationMetadata: false,
         forceTranscode: true,
         codec: codecs.videoCodec,
