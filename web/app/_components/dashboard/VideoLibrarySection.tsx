@@ -6,6 +6,7 @@ import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { uploadLibraryPageSize } from "@/lib/clipr/constants/uploadLibraryPageSize";
 import { usePagination } from "@/lib/clipr/hooks/usePagination";
 import type { VideoClip } from "@/lib/clipr/types/VideoClip";
+import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
 
 type VideoLibrarySectionProps = {
   id: string;
@@ -15,6 +16,10 @@ type VideoLibrarySectionProps = {
   emptyTitle?: string;
   onDelete: (id: string) => void | Promise<void>;
   onRename: (clip: VideoClip, name: string) => void | Promise<void>;
+  onUpdateTrim: (
+    clip: VideoClip,
+    trimRange: VideoTrimRange,
+  ) => void | Promise<void>;
 };
 
 export function VideoLibrarySection({
@@ -25,6 +30,7 @@ export function VideoLibrarySection({
   emptyTitle = "No videos yet",
   onDelete,
   onRename,
+  onUpdateTrim,
 }: VideoLibrarySectionProps) {
   const pagination = usePagination(clips, {
     pageSize: uploadLibraryPageSize,
@@ -47,6 +53,7 @@ export function VideoLibrarySection({
                 clip={clip}
                 onDelete={onDelete}
                 onRename={onRename}
+                onUpdateTrim={onUpdateTrim}
               />
             ))}
           </div>

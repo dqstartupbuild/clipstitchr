@@ -1,4 +1,5 @@
 import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
+import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
 
 export type CreatedVideo = {
   id: string;
@@ -7,6 +8,8 @@ export type CreatedVideo = {
   demoClipId: string;
   ugcClipName: string;
   demoClipName: string;
+  ugcTrimRange?: VideoTrimRange;
+  demoTrimRange?: VideoTrimRange;
   blob: Blob;
   posterBlob?: Blob;
   posterVersion?: number;

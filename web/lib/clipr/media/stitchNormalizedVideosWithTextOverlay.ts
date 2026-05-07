@@ -14,12 +14,14 @@ import { createMp4Output } from "@/lib/clipr/media/createMp4Output";
 import { createTextOverlayRenderContext } from "@/lib/clipr/media/createTextOverlayRenderContext";
 import { createVideoBlobFromBuffer } from "@/lib/clipr/media/createVideoBlobFromBuffer";
 import { getInputAudioParameters } from "@/lib/clipr/media/getInputAudioParameters";
-import { getInputDuration } from "@/lib/clipr/media/getInputDuration";
 import { getSupportedOutputCodecs } from "@/lib/clipr/media/getSupportedOutputCodecs";
 import { getVideoMimeType } from "@/lib/clipr/media/getVideoMimeType";
 import { registerAacEncoderIfNeeded } from "@/lib/clipr/media/registerAacEncoderIfNeeded";
 import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipr/types/VideoClip";
+import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
+import { clampVideoTrimRange } from "@/lib/clipr/utils/clampVideoTrimRange";
+import { getVideoTrimRangeDuration } from "@/lib/clipr/utils/getVideoTrimRangeDuration";
 
 type StitchNormalizedVideosWithTextOverlayResult = {
   blob: Blob;
@@ -27,11 +29,22 @@ type StitchNormalizedVideosWithTextOverlayResult = {
   duration: number;
 };
 
+type StitchNormalizedVideosWithTextOverlayOptions = {
+  ugcTrimRange: VideoTrimRange;
+  demoTrimRange: VideoTrimRange;
+  textOverlay: TextOverlay;
+  onProgress?: (progress: number) => void;
+};
+
 export async function stitchNormalizedVideosWithTextOverlay(
   ugcClip: VideoClip,
   demoClip: VideoClip,
-  textOverlay: TextOverlay,
-  onProgress?: (progress: number) => void,
+  {
+    ugcTrimRange,
+    demoTrimRange,
+    textOverlay,
+    onProgress,
+  }: StitchNormalizedVideosWithTextOverlayOptions,
 ): Promise<StitchNormalizedVideosWithTextOverlayResult> {
   const ugcInput = createMediaInput(ugcClip.blob);
   const demoInput = createMediaInput(demoClip.blob);
@@ -39,12 +52,20 @@ export async function stitchNormalizedVideosWithTextOverlay(
   try {
     await registerAacEncoderIfNeeded();
 
-    const [ugcAudioParameters, demoAudioParameters, ugcDuration] =
-      await Promise.all([
-        getInputAudioParameters(ugcInput),
-        getInputAudioParameters(demoInput),
-        getInputDuration(ugcInput),
-      ]);
+    const [ugcAudioParameters, demoAudioParameters] = await Promise.all([
+      getInputAudioParameters(ugcInput),
+      getInputAudioParameters(demoInput),
+    ]);
+    const clampedUgcTrimRange = clampVideoTrimRange(
+      ugcTrimRange,
+      ugcClip.duration,
+    );
+    const clampedDemoTrimRange = clampVideoTrimRange(
+      demoTrimRange,
+      demoClip.duration,
+    );
+    const ugcDuration = getVideoTrimRangeDuration(clampedUgcTrimRange);
+    const demoDuration = getVideoTrimRangeDuration(clampedDemoTrimRange);
     const includeAudio = Boolean(ugcAudioParameters || demoAudioParameters);
     const unsupportedAudioParameters = [
       ugcAudioParameters,
@@ -108,6 +129,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
       source: videoSource,
       renderContext,
       timelineOffset: 0,
+      trimRange: clampedUgcTrimRange,
       textOverlay,
       onProgress: (progress) => onProgress?.(progress * 0.35),
     });
@@ -117,6 +139,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
       source: videoSource,
       renderContext,
       timelineOffset: demoTimelineOffset,
+      trimRange: clampedDemoTrimRange,
       textOverlay,
       onProgress: (progress) => onProgress?.(0.35 + progress * 0.35),
     });
@@ -127,12 +150,14 @@ export async function stitchNormalizedVideosWithTextOverlay(
         input: ugcInput,
         source: audioSource,
         timelineOffset: 0,
+        trimRange: clampedUgcTrimRange,
         onProgress: (progress) => onProgress?.(0.7 + progress * 0.15),
       });
       const demoAudio = await copyAudioSamplesToSource({
         input: demoInput,
         source: audioSource,
         timelineOffset: demoTimelineOffset,
+        trimRange: clampedDemoTrimRange,
         onProgress: (progress) => onProgress?.(0.85 + progress * 0.1),
       });
       endTimestamp = Math.max(
@@ -155,7 +180,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
     return {
       blob,
       mimeType,
-      duration: endTimestamp,
+      duration: Math.max(endTimestamp, ugcDuration + demoDuration),
     };
   } finally {
     ugcInput.dispose();

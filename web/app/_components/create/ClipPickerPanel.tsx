@@ -7,6 +7,7 @@ import { UgcClipSelector } from "@/app/_components/create/UgcClipSelector";
 import { Panel } from "@/app/_components/ui/Panel";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import type { VideoClip } from "@/lib/clipr/types/VideoClip";
+import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
 import { filterClipsByName } from "@/lib/clipr/utils/filterClipsByName";
 
 type ClipPickerPanelProps = {
@@ -14,8 +15,12 @@ type ClipPickerPanelProps = {
   demoClips: VideoClip[];
   selectedUgcId: string | null;
   selectedDemoId: string | null;
+  selectedUgcTrimRange: VideoTrimRange | null;
+  selectedDemoTrimRange: VideoTrimRange | null;
   onSelectUgc: (id: string) => void;
   onSelectDemo: (id: string) => void;
+  onEditUgcTrim: (clip: VideoClip) => void;
+  onEditDemoTrim: (clip: VideoClip) => void;
   canCreate: boolean;
   isCreating: boolean;
   onCreate: () => void;
@@ -26,8 +31,12 @@ export function ClipPickerPanel({
   demoClips,
   selectedUgcId,
   selectedDemoId,
+  selectedUgcTrimRange,
+  selectedDemoTrimRange,
   onSelectUgc,
   onSelectDemo,
+  onEditUgcTrim,
+  onEditDemoTrim,
   canCreate,
   isCreating,
   onCreate,
@@ -61,13 +70,17 @@ export function ClipPickerPanel({
           key={`ugc-${searchQuery}`}
           clips={filteredUgcClips}
           selectedId={selectedUgcId}
+          selectedTrimRange={selectedUgcTrimRange}
           onSelect={onSelectUgc}
+          onEditTrim={onEditUgcTrim}
         />
         <DemoClipSelector
           key={`demo-${searchQuery}`}
           clips={filteredDemoClips}
           selectedId={selectedDemoId}
+          selectedTrimRange={selectedDemoTrimRange}
           onSelect={onSelectDemo}
+          onEditTrim={onEditDemoTrim}
         />
       </div>
     </Panel>

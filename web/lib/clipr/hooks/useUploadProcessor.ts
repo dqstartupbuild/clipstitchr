@@ -90,6 +90,10 @@ export function useUploadProcessor({ onClipSaved }: UseUploadProcessorOptions) {
               height: normalized.metadata.height,
               aspectRatio: normalized.metadata.aspectRatio,
               duration: normalized.metadata.duration,
+              defaultTrimRange: {
+                start: 0,
+                end: normalized.metadata.duration,
+              },
               hasAudio: normalized.metadata.hasAudio,
               createdAt: now,
               updatedAt: now,

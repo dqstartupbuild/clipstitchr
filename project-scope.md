@@ -79,8 +79,9 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique 9:16
 | 4 | Normalize every uploaded video to TikTok 9:16 using Media Bunny | ✅ | ✅ |
 | 5 | Preview normalized clips in-browser with generated poster images | ✅ | ✅ |
 | 6 | Delete / rename clips | ✅ | ✅ |
-| 7 | Store normalized files and preview poster images in local storage / IndexedDB | ✅ | — |
-| 8 | Store normalized files and preview poster images in Cloudflare R2 | — | ✅ |
+| 7 | Set a non-destructive default trim range for each uploaded clip | ✅ | ✅ |
+| 8 | Store normalized files and preview poster images in local storage / IndexedDB | ✅ | — |
+| 9 | Store normalized files and preview poster images in Cloudflare R2 | — | ✅ |
 
 ### 4.2 Video Stitching / Creation
 
@@ -88,11 +89,13 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique 9:16
 |---|---------|-----|------|
 | 1 | User **selects** one UGC clip and one Demo clip | ✅ | ✅ |
 | 2 | Preview selection as UGC clip followed immediately by Demo clip | ✅ | ✅ |
-| 3 | Click **"Create Video"** to stitch them with the same UGC-then-Demo sequence | ✅ | ✅ |
-| 4 | Processing happens in-browser (no server-side rendering for MVP) | ✅ | ✅ |
-| 5 | Output a single combined TikTok 9:16 video file | ✅ | ✅ |
-| 6 | Progress indicator during normalization and stitching | ✅ | ✅ |
-| 7 | Download finished video | ✅ | ✅ |
+| 3 | Copy upload default trims into each new creation selection | ✅ | ✅ |
+| 4 | Override copied trim ranges while creating without changing upload defaults | ✅ | ✅ |
+| 5 | Click **"Create Video"** to stitch them with the same UGC-then-Demo sequence | ✅ | ✅ |
+| 6 | Processing happens in-browser (no server-side rendering for MVP) | ✅ | ✅ |
+| 7 | Output a single combined TikTok 9:16 video file | ✅ | ✅ |
+| 8 | Progress indicator during normalization and stitching | ✅ | ✅ |
+| 9 | Download finished video | ✅ | ✅ |
 
 ### 4.3 Text Overlays (Post-MVP)
 
@@ -198,6 +201,8 @@ Text overlays are planned for later, but they are not required for the MVP.
 - Normalized clips must use a TikTok-ready 9:16 canvas. The MVP target is `1080x1920` when browser encoding support allows it.
 - Do not stretch source footage. For non-9:16 uploads, preserve the source aspect ratio inside the 9:16 output; crop/fill presets can be added later.
 - Preview, Create Video, and Download must all use the same sequence: the normalized UGC clip starts first, and the normalized Demo clip starts immediately after the UGC clip ends.
+- Trimming is non-destructive metadata. Uploads store a default trim range. When a clip is selected for a creation, the default trim range is copied into that creation and can be changed independently.
+- Preview, Create Video, and Download must use the copied creation trim ranges when present.
 - The final created video must be a single 9:16 file using the same normalized assets shown in preview.
 - Clip and created-video cards should use the HTML video `poster` attribute for the static preview state. Generate poster images in the browser by seeking through early candidate frames, choosing the first visibly non-black frame, encoding it as JPEG, and storing it beside the video blob.
 - Poster generation is infrastructure for video previews. User-authored thumbnail generation, thumbnail selection, and thumbnail editing remain out of scope for the MVP.
@@ -298,6 +303,7 @@ interface VideoClip {
   height: number; // target 1920
   aspectRatio: '9:16';
   duration: number; // seconds
+  defaultTrimRange?: { start: number; end: number }; // seconds, non-destructive default
   createdAt: string; // ISO timestamp
 }
 
@@ -306,6 +312,8 @@ interface CreatedVideo {
   name: string;
   ugcClipId: string;
   demoClipId: string;
+  ugcTrimRange?: { start: number; end: number }; // copied creation trim
+  demoTrimRange?: { start: number; end: number }; // copied creation trim
   blob: Blob; // final 9:16 video: UGC immediately followed by Demo
   posterBlob?: Blob; // generated JPEG poster used by the video poster attribute
   posterVersion?: number; // capture algorithm version for backfilling stale posters
@@ -374,7 +382,7 @@ interface CreatedVideo {
 - ❌ Collaborative editing
 - ❌ Text overlays — planned after MVP
 - ❌ User-authored thumbnail generation / thumbnail editing
-- ❌ Video trimming / cutting — deferred to **Phase 4** with AI-powered smart cuts (only full-clip concatenation for now)
+- ❌ Destructive video cutting — trims are editable metadata only
 
 ---
 

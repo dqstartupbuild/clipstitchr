@@ -14,6 +14,8 @@ import type { CreatedVideo } from "@/lib/clipr/types/CreatedVideo";
 import type { ProcessingStatus } from "@/lib/clipr/types/ProcessingStatus";
 import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipr/types/VideoClip";
+import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
+import { clampVideoTrimRange } from "@/lib/clipr/utils/clampVideoTrimRange";
 import { createId } from "@/lib/clipr/utils/createId";
 import { getDownloadFileName } from "@/lib/clipr/utils/getDownloadFileName";
 
@@ -31,6 +33,8 @@ export function useCreateVideo({ onCreated }: UseCreateVideoOptions) {
     async (
       ugcClip: VideoClip,
       demoClip: VideoClip,
+      ugcTrimRange: VideoTrimRange,
+      demoTrimRange: VideoTrimRange,
       textOverlay: TextOverlay | null = null,
     ) => {
       setStatus("stitching");
@@ -39,14 +43,26 @@ export function useCreateVideo({ onCreated }: UseCreateVideoOptions) {
       setCreatedVideo(null);
 
       try {
+        const clampedUgcTrimRange = clampVideoTrimRange(
+          ugcTrimRange,
+          ugcClip.duration,
+        );
+        const clampedDemoTrimRange = clampVideoTrimRange(
+          demoTrimRange,
+          demoClip.duration,
+        );
         const stitched = textOverlay
-          ? await stitchNormalizedVideosWithTextOverlay(
-              ugcClip,
-              demoClip,
+          ? await stitchNormalizedVideosWithTextOverlay(ugcClip, demoClip, {
+              ugcTrimRange: clampedUgcTrimRange,
+              demoTrimRange: clampedDemoTrimRange,
               textOverlay,
-              setProgress,
-            )
-          : await stitchNormalizedVideos(ugcClip, demoClip, setProgress);
+              onProgress: setProgress,
+            })
+          : await stitchNormalizedVideos(ugcClip, demoClip, {
+              ugcTrimRange: clampedUgcTrimRange,
+              demoTrimRange: clampedDemoTrimRange,
+              onProgress: setProgress,
+            });
         let posterBlob: Blob | undefined;
 
         try {
@@ -63,6 +79,8 @@ export function useCreateVideo({ onCreated }: UseCreateVideoOptions) {
           demoClipId: demoClip.id,
           ugcClipName: ugcClip.name,
           demoClipName: demoClip.name,
+          ugcTrimRange: clampedUgcTrimRange,
+          demoTrimRange: clampedDemoTrimRange,
           blob: stitched.blob,
           posterBlob,
           posterVersion: posterBlob ? VIDEO_POSTER_CAPTURE_VERSION : undefined,

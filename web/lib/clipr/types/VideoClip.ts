@@ -1,4 +1,5 @@
 import type { ClipType } from "@/lib/clipr/types/ClipType";
+import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
 
 export type VideoClip = {
   id: string;
@@ -16,6 +17,7 @@ export type VideoClip = {
   height: number;
   aspectRatio: number;
   duration: number;
+  defaultTrimRange?: VideoTrimRange;
   hasAudio: boolean;
   createdAt: string;
   updatedAt: string;

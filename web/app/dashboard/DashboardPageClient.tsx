@@ -59,6 +59,7 @@ export function DashboardPageClient() {
           clips={recentUploads}
           onDelete={library.removeClip}
           onRename={library.renameClip}
+          onUpdateTrim={library.updateClipTrimRange}
         />
         <CreateVideoCallout />
       </div>

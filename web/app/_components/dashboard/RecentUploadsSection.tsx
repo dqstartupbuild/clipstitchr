@@ -4,17 +4,23 @@ import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyS
 import { VideoClipCard } from "@/app/_components/dashboard/VideoClipCard";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 import type { VideoClip } from "@/lib/clipr/types/VideoClip";
+import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
 
 type RecentUploadsSectionProps = {
   clips: VideoClip[];
   onDelete: (id: string) => void | Promise<void>;
   onRename: (clip: VideoClip, name: string) => void | Promise<void>;
+  onUpdateTrim: (
+    clip: VideoClip,
+    trimRange: VideoTrimRange,
+  ) => void | Promise<void>;
 };
 
 export function RecentUploadsSection({
   clips,
   onDelete,
   onRename,
+  onUpdateTrim,
 }: RecentUploadsSectionProps) {
   return (
     <section id="recent-uploads">
@@ -32,6 +38,7 @@ export function RecentUploadsSection({
               clip={clip}
               onDelete={onDelete}
               onRename={onRename}
+              onUpdateTrim={onUpdateTrim}
             />
           ))}
         </div>

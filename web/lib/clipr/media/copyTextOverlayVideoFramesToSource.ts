@@ -6,12 +6,16 @@ import {
 import { drawTextOverlay } from "@/lib/clipr/media/drawTextOverlay";
 import type { TextOverlayRenderContext } from "@/lib/clipr/media/createTextOverlayRenderContext";
 import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
+import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
+import { clampVideoTrimRange } from "@/lib/clipr/utils/clampVideoTrimRange";
+import { getVideoTrimRangeDuration } from "@/lib/clipr/utils/getVideoTrimRangeDuration";
 
 type CopyTextOverlayVideoFramesOptions = {
   input: Input;
   source: CanvasSource;
   renderContext: TextOverlayRenderContext;
   timelineOffset: number;
+  trimRange: VideoTrimRange;
   textOverlay: TextOverlay;
   onProgress?: (progress: number) => void;
 };
@@ -25,6 +29,7 @@ export async function copyTextOverlayVideoFramesToSource({
   source,
   renderContext,
   timelineOffset,
+  trimRange,
   textOverlay,
   onProgress,
 }: CopyTextOverlayVideoFramesOptions): Promise<CopyTextOverlayVideoFramesResult> {
@@ -43,14 +48,36 @@ export async function copyTextOverlayVideoFramesToSource({
   });
   const sourceOffset = await track.getFirstTimestamp();
   const duration = await track.computeDuration();
+  const clampedTrimRange = clampVideoTrimRange(trimRange, duration);
+  const trimDuration = getVideoTrimRangeDuration(clampedTrimRange);
+  const sourceStartTimestamp = sourceOffset + clampedTrimRange.start;
+  const sourceEndTimestamp = sourceOffset + clampedTrimRange.end;
+  const outputEndTimestamp = timelineOffset + trimDuration;
   let isFirstFrame = true;
   let endTimestamp = timelineOffset;
 
-  for await (const frame of sink.canvases()) {
+  for await (const frame of sink.canvases(
+    sourceStartTimestamp,
+    sourceEndTimestamp,
+  )) {
     const sourceTimestamp = frame.timestamp;
-    const outputTimestamp = Math.max(0, sourceTimestamp - sourceOffset) + timelineOffset;
+    const outputTimestamp =
+      Math.max(0, sourceTimestamp - sourceStartTimestamp) + timelineOffset;
+    const frameDuration = Math.min(
+      frame.duration,
+      outputEndTimestamp - outputTimestamp,
+    );
 
-    renderContext.context.clearRect(0, 0, TIKTOK_OUTPUT_WIDTH, TIKTOK_OUTPUT_HEIGHT);
+    if (frameDuration <= 0) {
+      continue;
+    }
+
+    renderContext.context.clearRect(
+      0,
+      0,
+      TIKTOK_OUTPUT_WIDTH,
+      TIKTOK_OUTPUT_HEIGHT,
+    );
     renderContext.context.drawImage(
       frame.canvas,
       0,
@@ -62,17 +89,25 @@ export async function copyTextOverlayVideoFramesToSource({
 
     await source.add(
       outputTimestamp,
-      frame.duration,
+      frameDuration,
       isFirstFrame ? { keyFrame: true } : undefined,
     );
     isFirstFrame = false;
-    endTimestamp = Math.max(endTimestamp, outputTimestamp + frame.duration);
+    endTimestamp = Math.max(endTimestamp, outputTimestamp + frameDuration);
     onProgress?.(
-      duration > 0
-        ? Math.min(1, Math.max(0, (sourceTimestamp - sourceOffset) / duration))
+      trimDuration > 0
+        ? Math.min(
+            1,
+            Math.max(
+              0,
+              (sourceTimestamp - sourceStartTimestamp) / trimDuration,
+            ),
+          )
         : 1,
     );
   }
+
+  onProgress?.(1);
 
   return { endTimestamp };
 }

@@ -91,6 +91,7 @@ export function UploadsPageClient() {
           }
           onDelete={library.removeClip}
           onRename={library.renameClip}
+          onUpdateTrim={library.updateClipTrimRange}
         />
       </div>
     </DashboardShell>

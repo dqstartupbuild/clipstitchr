@@ -9,6 +9,8 @@ import { getVideoClips } from "@/lib/clipr/storage/getVideoClips";
 import { saveVideoClip } from "@/lib/clipr/storage/saveVideoClip";
 import type { CreatedVideo } from "@/lib/clipr/types/CreatedVideo";
 import type { VideoClip } from "@/lib/clipr/types/VideoClip";
+import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
+import { clampVideoTrimRange } from "@/lib/clipr/utils/clampVideoTrimRange";
 
 export function useClipLibrary() {
   const [clips, setClips] = useState<VideoClip[]>([]);
@@ -58,6 +60,18 @@ export function useClipLibrary() {
     [refresh],
   );
 
+  const updateClipTrimRange = useCallback(
+    async (clip: VideoClip, defaultTrimRange: VideoTrimRange) => {
+      await saveVideoClip({
+        ...clip,
+        defaultTrimRange: clampVideoTrimRange(defaultTrimRange, clip.duration),
+        updatedAt: new Date().toISOString(),
+      });
+      await refresh();
+    },
+    [refresh],
+  );
+
   const removeCreatedVideo = useCallback(
     async (id: string) => {
       await deleteCreatedVideo(id);
@@ -85,6 +99,7 @@ export function useClipLibrary() {
     refresh,
     removeClip,
     renameClip,
+    updateClipTrimRange,
     removeCreatedVideo,
   };
 }

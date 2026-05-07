@@ -5,17 +5,23 @@ import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { clipSelectorPageSize } from "@/lib/clipr/constants/clipSelectorPageSize";
 import { usePagination } from "@/lib/clipr/hooks/usePagination";
 import type { VideoClip } from "@/lib/clipr/types/VideoClip";
+import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
+import { getDefaultVideoTrimRange } from "@/lib/clipr/utils/getDefaultVideoTrimRange";
 
 type DemoClipSelectorProps = {
   clips: VideoClip[];
   selectedId: string | null;
+  selectedTrimRange: VideoTrimRange | null;
   onSelect: (id: string) => void;
+  onEditTrim: (clip: VideoClip) => void;
 };
 
 export function DemoClipSelector({
   clips,
   selectedId,
+  selectedTrimRange,
   onSelect,
+  onEditTrim,
 }: DemoClipSelectorProps) {
   const pagination = usePagination(clips, {
     pageSize: clipSelectorPageSize,
@@ -30,8 +36,14 @@ export function DemoClipSelector({
             <SelectableClipRow
               key={clip.id}
               clip={clip}
+              trimRange={
+                clip.id === selectedId && selectedTrimRange
+                  ? selectedTrimRange
+                  : getDefaultVideoTrimRange(clip)
+              }
               isSelected={clip.id === selectedId}
               onSelect={onSelect}
+              onEditTrim={onEditTrim}
             />
           ))
         ) : (

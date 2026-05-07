@@ -8,10 +8,13 @@ import { useObjectUrl } from "@/lib/clipr/hooks/useObjectUrl";
 import { useSequenceVideoPlayer } from "@/lib/clipr/hooks/useSequenceVideoPlayer";
 import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipr/types/VideoClip";
+import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
 
 type SequenceVideoPlayerProps = {
   ugcClip: VideoClip;
   demoClip: VideoClip;
+  ugcTrimRange: VideoTrimRange;
+  demoTrimRange: VideoTrimRange;
   textOverlay: TextOverlay | null;
   totalDuration: number;
   onTextOverlayChange: (textOverlay: TextOverlay) => void;
@@ -21,6 +24,8 @@ type SequenceVideoPlayerProps = {
 export function SequenceVideoPlayer({
   ugcClip,
   demoClip,
+  ugcTrimRange,
+  demoTrimRange,
   textOverlay,
   totalDuration,
   onTextOverlayChange,
@@ -35,11 +40,14 @@ export function SequenceVideoPlayer({
     activeSegment,
     currentTime,
     handleEnded,
+    handleLoadedMetadata,
+    handleSeeking,
+    handleTimeUpdate,
     restart,
-    updateCurrentTime,
     videoRef,
   } = useSequenceVideoPlayer({
-    ugcDuration: ugcClip.duration,
+    ugcTrimRange,
+    demoTrimRange,
   });
   const activeUrl = activeSegment === "ugc" ? ugcUrl : demoUrl;
   const activePosterUrl =
@@ -68,9 +76,9 @@ export function SequenceVideoPlayer({
             preload="metadata"
             src={activeUrl}
             onEnded={handleEnded}
-            onLoadedMetadata={updateCurrentTime}
-            onSeeking={updateCurrentTime}
-            onTimeUpdate={updateCurrentTime}
+            onLoadedMetadata={handleLoadedMetadata}
+            onSeeking={handleSeeking}
+            onTimeUpdate={handleTimeUpdate}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-slate-400">
