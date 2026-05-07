@@ -1,6 +1,8 @@
 import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
+import { getTextOverlayBackgroundColor } from "@/lib/clipr/utils/getTextOverlayBackgroundColor";
 import { getTextOverlayColor } from "@/lib/clipr/utils/getTextOverlayColor";
 import { getTextOverlayIsVisible } from "@/lib/clipr/utils/getTextOverlayIsVisible";
+import { getTextOverlayStrokeColor } from "@/lib/clipr/utils/getTextOverlayStrokeColor";
 import { getTextOverlayStyle } from "@/lib/clipr/utils/getTextOverlayStyle";
 
 type TextOverlayCanvasContext =
@@ -48,12 +50,14 @@ export function drawTextOverlay(
   const safeBoxTop = Math.min(boxTop, canvasHeight - blockHeight);
   const textCenterX = backgroundLeft + backgroundWidth / 2;
 
-  if (style.backgroundColor) {
+  const backgroundColor = getTextOverlayBackgroundColor(textOverlay);
+
+  if (backgroundColor) {
     const radius = style.fullWidthBand
       ? 0
       : (style.borderRadiusRatio ?? 0) * fontSize;
 
-    context.fillStyle = style.backgroundColor;
+    context.fillStyle = backgroundColor;
     drawRoundRect(
       context,
       backgroundLeft,
@@ -66,7 +70,7 @@ export function drawTextOverlay(
   }
 
   context.fillStyle = getTextOverlayColor(textOverlay);
-  context.strokeStyle = style.strokeColor ?? "transparent";
+  context.strokeStyle = getTextOverlayStrokeColor(textOverlay) ?? "transparent";
   context.lineWidth = (style.strokeWidthRatio ?? 0) * fontSize;
   context.shadowColor = style.shadowColor ?? "transparent";
   context.shadowBlur = (style.shadowBlurRatio ?? 0) * fontSize;

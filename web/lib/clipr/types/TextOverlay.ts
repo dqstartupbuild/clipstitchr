@@ -10,4 +10,6 @@ export type TextOverlay = {
   fontSize: number;
   styleId: TextOverlayStyleId;
   color?: string;
+  backgroundColor?: string;
+  strokeColor?: string;
 };

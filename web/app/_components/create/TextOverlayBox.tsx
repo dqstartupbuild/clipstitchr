@@ -4,7 +4,9 @@ import type { CSSProperties, RefObject } from "react";
 import { useTextOverlayDrag } from "@/lib/clipr/hooks/useTextOverlayDrag";
 import { useTextOverlayResize } from "@/lib/clipr/hooks/useTextOverlayResize";
 import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
+import { getTextOverlayBackgroundColor } from "@/lib/clipr/utils/getTextOverlayBackgroundColor";
 import { getTextOverlayColor } from "@/lib/clipr/utils/getTextOverlayColor";
+import { getTextOverlayStrokeColor } from "@/lib/clipr/utils/getTextOverlayStrokeColor";
 import { getTextOverlayStyle } from "@/lib/clipr/utils/getTextOverlayStyle";
 
 type TextOverlayBoxProps = {
@@ -47,7 +49,7 @@ export function TextOverlayBox({
     fontFamily: overlayStyle.fontFamily,
     fontWeight: overlayStyle.fontWeight,
     color: getTextOverlayColor(textOverlay),
-    backgroundColor: overlayStyle.backgroundColor,
+    backgroundColor: getTextOverlayBackgroundColor(textOverlay),
     borderRadius: overlayStyle.borderRadiusRatio && !overlayStyle.fullWidthBand
       ? `${overlayStyle.borderRadiusRatio}em`
       : undefined,
@@ -61,7 +63,9 @@ export function TextOverlayBox({
     textTransform: overlayStyle.textTransform,
     WebkitTextStroke:
       overlayStyle.strokeColor && overlayStyle.strokeWidthRatio
-        ? `${overlayStyle.strokeWidthRatio}em ${overlayStyle.strokeColor}`
+        ? `${overlayStyle.strokeWidthRatio}em ${getTextOverlayStrokeColor(
+            textOverlay,
+          )}`
         : undefined,
   };
 

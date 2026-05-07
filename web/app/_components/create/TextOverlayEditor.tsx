@@ -3,7 +3,9 @@
 import { Trash2, Type } from "lucide-react";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { TextOverlayBackgroundColorPicker } from "@/app/_components/create/TextOverlayBackgroundColorPicker";
 import { TextOverlayColorPicker } from "@/app/_components/create/TextOverlayColorPicker";
+import { TextOverlayStrokeColorPicker } from "@/app/_components/create/TextOverlayStrokeColorPicker";
 import { TextOverlayStylePicker } from "@/app/_components/create/TextOverlayStylePicker";
 import { TextOverlayTimeline } from "@/app/_components/create/TextOverlayTimeline";
 import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
@@ -77,6 +79,18 @@ export function TextOverlayEditor({
           }
         />
         <TextOverlayColorPicker
+          textOverlay={textOverlay}
+          onChange={(nextOverlay) =>
+            onChange(clampTextOverlay(nextOverlay, totalDuration))
+          }
+        />
+        <TextOverlayBackgroundColorPicker
+          textOverlay={textOverlay}
+          onChange={(nextOverlay) =>
+            onChange(clampTextOverlay(nextOverlay, totalDuration))
+          }
+        />
+        <TextOverlayStrokeColorPicker
           textOverlay={textOverlay}
           onChange={(nextOverlay) =>
             onChange(clampTextOverlay(nextOverlay, totalDuration))

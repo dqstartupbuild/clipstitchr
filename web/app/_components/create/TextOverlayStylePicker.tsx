@@ -2,6 +2,8 @@
 
 import { TEXT_OVERLAY_STYLES } from "@/lib/clipr/constants/textOverlayStyles";
 import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
+import { applyCssColorAlpha } from "@/lib/clipr/utils/applyCssColorAlpha";
+import { getCssColorAlpha } from "@/lib/clipr/utils/getCssColorAlpha";
 import { getTextPreviewBackgroundColor } from "@/lib/clipr/utils/getTextPreviewBackgroundColor";
 
 type TextOverlayStylePickerProps = {
@@ -19,7 +21,14 @@ export function TextOverlayStylePicker({
         const isSelected = style.id === textOverlay.styleId;
         const previewColor = textOverlay.color ?? style.color;
         const previewBackgroundColor =
-          getTextPreviewBackgroundColor(previewColor);
+          style.backgroundColor && textOverlay.backgroundColor
+            ? applyCssColorAlpha(
+                textOverlay.backgroundColor,
+                getCssColorAlpha(style.backgroundColor),
+              )
+            : (style.backgroundColor ??
+              getTextPreviewBackgroundColor(previewColor));
+        const previewStrokeColor = textOverlay.strokeColor ?? style.strokeColor;
 
         return (
           <button
@@ -50,10 +59,12 @@ export function TextOverlayStylePicker({
                 .filter(Boolean)
                 .join(" ")}
               style={{
-                backgroundColor: style.fullWidthBand
-                  ? style.backgroundColor
-                  : previewBackgroundColor,
+                backgroundColor: previewBackgroundColor,
                 color: previewColor,
+                WebkitTextStroke:
+                  previewStrokeColor && style.strokeWidthRatio
+                    ? `${style.strokeWidthRatio}em ${previewStrokeColor}`
+                    : undefined,
               }}
             >
               Aa
