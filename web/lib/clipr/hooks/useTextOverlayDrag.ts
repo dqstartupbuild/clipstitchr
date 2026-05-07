@@ -7,19 +7,29 @@ import {
 } from "react";
 import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
 import { clampTextOverlay } from "@/lib/clipr/utils/clampTextOverlay";
+import { getTextOverlayStyle } from "@/lib/clipr/utils/getTextOverlayStyle";
+
+type TextOverlaySnapGuides = {
+  vertical: boolean;
+  horizontal: boolean;
+};
 
 type UseTextOverlayDragOptions = {
   textOverlay: TextOverlay;
   stageRef: RefObject<HTMLDivElement | null>;
+  overlayRef: RefObject<HTMLDivElement | null>;
   totalDuration: number;
   onChange: (textOverlay: TextOverlay) => void;
+  onSnapGuidesChange: (snapGuides: TextOverlaySnapGuides) => void;
 };
 
 export function useTextOverlayDrag({
   textOverlay,
   stageRef,
+  overlayRef,
   totalDuration,
   onChange,
+  onSnapGuidesChange,
 }: UseTextOverlayDragOptions) {
   return useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -36,15 +46,42 @@ export function useTextOverlayDrag({
       event.preventDefault();
 
       const stageRect = stage.getBoundingClientRect();
+      const overlayRect = overlayRef.current?.getBoundingClientRect();
+      const overlayStyle = getTextOverlayStyle(textOverlay.styleId);
+      const overlayWidth = overlayStyle.fullWidthBand ? 1 : textOverlay.width;
+      const overlayHeight = overlayRect
+        ? overlayRect.height / stageRect.height
+        : 0;
+      const snapThresholdX = 12 / stageRect.width;
+      const snapThresholdY = 12 / stageRect.height;
       const startPointerX = event.clientX;
       const startPointerY = event.clientY;
       const startX = textOverlay.x;
       const startY = textOverlay.y;
 
       const handlePointerMove = (moveEvent: globalThis.PointerEvent) => {
-        const nextX = startX + (moveEvent.clientX - startPointerX) / stageRect.width;
-        const nextY =
+        let nextX = startX + (moveEvent.clientX - startPointerX) / stageRect.width;
+        let nextY =
           startY + (moveEvent.clientY - startPointerY) / stageRect.height;
+        const isNearVerticalCenter =
+          !overlayStyle.fullWidthBand &&
+          Math.abs(nextX + overlayWidth / 2 - 0.5) <= snapThresholdX;
+        const isNearHorizontalCenter =
+          overlayHeight > 0 &&
+          Math.abs(nextY + overlayHeight / 2 - 0.5) <= snapThresholdY;
+
+        if (isNearVerticalCenter) {
+          nextX = 0.5 - overlayWidth / 2;
+        }
+
+        if (isNearHorizontalCenter) {
+          nextY = 0.5 - overlayHeight / 2;
+        }
+
+        onSnapGuidesChange({
+          vertical: isNearVerticalCenter,
+          horizontal: isNearHorizontalCenter,
+        });
 
         onChange(
           clampTextOverlay(
@@ -59,6 +96,7 @@ export function useTextOverlayDrag({
       };
 
       const handlePointerUp = () => {
+        onSnapGuidesChange({ vertical: false, horizontal: false });
         window.removeEventListener("pointermove", handlePointerMove);
         window.removeEventListener("pointerup", handlePointerUp);
       };
@@ -66,6 +104,13 @@ export function useTextOverlayDrag({
       window.addEventListener("pointermove", handlePointerMove);
       window.addEventListener("pointerup", handlePointerUp);
     },
-    [onChange, stageRef, textOverlay, totalDuration],
+    [
+      onChange,
+      onSnapGuidesChange,
+      overlayRef,
+      stageRef,
+      textOverlay,
+      totalDuration,
+    ],
   );
 }
