@@ -1,0 +1,70 @@
+---
+title: "Getting Started"
+seoTitle: "Getting Started — Everything You Need to Know to Get Up and Running"
+slug: "getting-started"
+description: "Welcome to your new site. This guide walks you through the essentials — from content authoring to deployment — so you can ship your first update with confidence."
+date: "2026-01-01"
+author: "@dqstartupbuild"
+category: "guides"
+tags:
+  - "getting-started"
+  - "setup"
+image: "/og/default.png"
+canonical: "http://localhost:3000/blog/getting-started"
+targetKeyword: "getting started"
+intent: "informational"
+ctaVariant: "primary"
+schemaTypeHints:
+  - "article"
+  - "faq"
+faq:
+  - question: "How do I add a new blog post?"
+    answer: "Create a new .mdx file in the content/blog directory with the required frontmatter fields. Run npm run dev and your post will appear automatically."
+  - question: "How do I deploy this site?"
+    answer: "This site is built with Next.js and can be deployed to Vercel, Netlify, or any platform that supports Node.js. Run npm run build to create a production bundle."
+---
+
+## Welcome
+
+This is your first blog post. It was created automatically when you scaffolded this project. You can edit or delete this file and replace it with your own content.
+
+## Writing Content
+
+All blog content lives in the `content/blog/` directory as MDX files. Each file needs frontmatter with the required fields defined in `lib/content/schema.ts`.
+
+Key rules:
+
+- **seoTitle** must be 50–70 characters
+- **description** must be 110–170 characters
+- **canonical** must match the configured `SITE_URL` plus the slug
+- **slug** must be lowercase and hyphenated
+
+## Development
+
+Run the dev server with:
+
+```bash
+npm run dev
+```
+
+This starts both the content collections watcher and the Next.js dev server. Any changes to MDX files will be picked up automatically.
+
+## What's Included
+
+This boilerplate includes:
+
+- **Content Collections** — Type-safe MDX with Zod schema validation
+- **SEO** — Sitemap, robots.txt, JSON-LD, Open Graph, and canonical URLs
+- **RSS Feed** — Auto-generated at `/feed.xml`
+- **LLMs.txt** — Machine-readable site context at `/llms.txt`
+- **Testing** — Vitest with coverage for schema, SEO, and metadata
+- **Design System** — Dark theme with animations, cards, and buttons
+
+## Next Steps
+
+1. Update `lib/site.ts` with your site details
+2. Replace this post with your own content
+3. Add your favicon and OG images to the `public/` directory
+4. Deploy to your hosting platform of choice
+
+<CallToAction />
