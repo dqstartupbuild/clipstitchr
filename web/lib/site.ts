@@ -32,13 +32,19 @@ function normalizePathname(pathname = "/") {
 export const site = {
   name: "Clipr",
   url: configuredSiteUrl.replace(/\/$/, ""),
-  publisherName: "@dqstartupbuild",
-  defaultTitle: "Clipr",
+  publisherName: "Clipr",
+  defaultTitle: "Clipr | Browser UGC Video Stitching",
   defaultDescription:
-    "Clipr lets users upload UGC reaction clips and product demo videos, then automatically stitches them together to produce polished marketing videos.",
-  keywords: [] as string[],
-  ctaUrl: "#",
-  ctaLabel: "Get Started",
+    "Clipr lets teams normalize UGC clips and product demos to TikTok 9:16, stitch UGC first then demo, and export browser-created MP4 videos.",
+  keywords: [
+    "UGC video editor",
+    "TikTok video maker",
+    "product demo videos",
+    "browser video stitching",
+    "9:16 video editor",
+  ],
+  ctaUrl: "/dashboard",
+  ctaLabel: "Go to Dashboard",
   staticPages: [
     {
       pathname: "/",
@@ -49,6 +55,16 @@ export const site = {
       pathname: "/blog",
       changeFrequency: "weekly" as const,
       priority: 0.88,
+    },
+    {
+      pathname: "/dashboard",
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    },
+    {
+      pathname: "/dashboard/create",
+      changeFrequency: "weekly" as const,
+      priority: 0.72,
     },
     {
       pathname: "/privacy",

@@ -4,24 +4,21 @@ import { site } from "@/lib/site";
 
 export const metadata: Metadata = createPageMetadata({
   title: `Terms of Use | ${site.name}`,
-  description: `Terms and conditions for using the ${site.name} website. Simple, fair terms for all visitors and users of our service.`,
+  description: `Terms for using ${site.name}, including browser-local video processing, user responsibility for uploaded media, and MVP service limits.`,
   canonical: "/terms",
 });
 
 export default function TermsPage() {
-  const lastUpdated = "January 1, 2026";
+  const lastUpdated = "May 7, 2026";
 
   return (
     <article className="px-6 py-20 md:py-28">
-      <div className="max-w-3xl mx-auto">
+      <div className="mx-auto max-w-3xl rounded-lg border border-border bg-white p-6 shadow-sm md:p-10">
         <header className="mb-12">
-          <p
-            className="uppercase text-xs tracking-[0.2em] font-semibold mb-4"
-            style={{ color: "var(--accent)" }}
-          >
+          <p className="mb-4 text-sm font-semibold text-accent-dark">
             Legal
           </p>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-primary mb-4">
+          <h1 className="mb-4 text-3xl font-bold text-text-primary md:text-5xl">
             Terms of Use
           </h1>
           <p className="text-sm text-text-tertiary">
@@ -43,15 +40,19 @@ export default function TermsPage() {
           <section>
             <h2>Description of Service</h2>
             <p>
-              {site.name} operates an informational website and blog. The
-              Site provides articles, guides, and resources. Our offerings
-              may evolve over time as we develop new products and services.
+              {site.name} provides a browser-local MVP for uploading UGC clips
+              and product demo videos, normalizing them to TikTok-ready 9:16,
+              previewing UGC-then-demo sequences, and creating downloadable
+              MP4 files. The Site also provides articles and resources.
             </p>
           </section>
 
           <section>
             <h2>Use of the Site</h2>
-            <p>You agree to use the Site only for lawful purposes and in a manner that does not:</p>
+            <p>
+              You agree to use the Site only for lawful purposes and in a manner
+              that does not:
+            </p>
             <ul>
               <li>Infringe upon the rights of others</li>
               <li>
@@ -72,24 +73,31 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2>Intellectual Property</h2>
+            <h2>Your Uploaded Media</h2>
             <p>
-              All content on the Site — including text, images, graphics,
-              logos, and design elements — is the property of {site.name} or
-              its licensors and is protected by applicable intellectual
-              property laws. You may not reproduce, distribute, or create
-              derivative works from this content without explicit written
-              permission.
+              You are responsible for the videos you upload, process, stitch,
+              and download. You must have the rights and permissions needed to
+              use any UGC clips, product demos, audio, trademarks, or other
+              content included in those files.
             </p>
           </section>
 
           <section>
-            <h2>User-Submitted Content</h2>
+            <h2>Browser-Local MVP Limits</h2>
             <p>
-              By submitting content through the Site, you grant {site.name} a
-              non-exclusive, royalty-free, perpetual license to use that
-              content for product development, research, and marketing
-              purposes.
+              Video processing for the MVP happens in your browser and depends
+              on your device, browser codec support, and available memory. We do
+              not guarantee that every video file can be decoded, encoded,
+              stitched, stored, or downloaded successfully.
+            </p>
+          </section>
+
+          <section>
+            <h2>Intellectual Property</h2>
+            <p>
+              Site content, brand assets, design elements, and documentation
+              are the property of {site.name} or its licensors and are protected
+              by applicable intellectual property laws.
             </p>
           </section>
 

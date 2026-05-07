@@ -1,0 +1,3 @@
+export const TIKTOK_OUTPUT_WIDTH = 1080;
+
+export const TIKTOK_OUTPUT_HEIGHT = 1920;

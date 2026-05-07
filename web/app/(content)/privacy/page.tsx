@@ -4,24 +4,21 @@ import { site } from "@/lib/site";
 
 export const metadata: Metadata = createPageMetadata({
   title: `Privacy Policy | ${site.name}`,
-  description: `Learn how ${site.name} handles your information. Our privacy practices are transparent, straightforward, and designed to respect your data.`,
+  description: `Learn how ${site.name} handles browser-local uploads, IndexedDB video storage, website data, and user privacy for the MVP application.`,
   canonical: "/privacy",
 });
 
 export default function PrivacyPage() {
-  const lastUpdated = "January 1, 2026";
+  const lastUpdated = "May 7, 2026";
 
   return (
     <article className="px-6 py-20 md:py-28">
-      <div className="max-w-3xl mx-auto">
+      <div className="mx-auto max-w-3xl rounded-lg border border-border bg-white p-6 shadow-sm md:p-10">
         <header className="mb-12">
-          <p
-            className="uppercase text-xs tracking-[0.2em] font-semibold mb-4"
-            style={{ color: "var(--accent)" }}
-          >
+          <p className="mb-4 text-sm font-semibold text-accent-dark">
             Legal
           </p>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-primary mb-4">
+          <h1 className="mb-4 text-3xl font-bold text-text-primary md:text-5xl">
             Privacy Policy
           </h1>
           <p className="text-sm text-text-tertiary">
@@ -35,9 +32,25 @@ export default function PrivacyPage() {
             <p>
               {site.name} (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;)
               operates the website located at{" "}
-              <strong>{site.url}</strong>. This Privacy Policy
-              explains what information we collect, how we use it, and your
-              choices regarding that information.
+              <strong>{site.url}</strong>. This Privacy Policy explains what
+              information the MVP stores locally in your browser, what website
+              data may be processed, and your choices regarding that
+              information.
+            </p>
+          </section>
+
+          <section>
+            <h2>Browser-Local Video Storage</h2>
+            <p>
+              Clipr processes uploaded videos in your browser for the MVP.
+              Normalized clips and created videos are saved in your browser
+              IndexedDB under the <strong>clipr-mvp</strong> database. We do
+              not upload those video files to a Clipr server as part of the MVP.
+            </p>
+            <p>
+              Anyone with access to your browser profile may be able to access
+              local Clipr data. You can delete clips in the dashboard or clear
+              site data from your browser settings.
             </p>
           </section>
 
@@ -56,8 +69,7 @@ export default function PrivacyPage() {
 
             <h3>Information Collected Automatically</h3>
             <p>
-              When you visit our website, standard web server logs may
-              record:
+              When you visit our website, standard hosting logs may record:
             </p>
             <ul>
               <li>IP address</li>
@@ -75,6 +87,7 @@ export default function PrivacyPage() {
             <h2>How We Use Your Information</h2>
             <p>We use the information we collect to:</p>
             <ul>
+              <li>Run browser-local video normalization and stitching</li>
               <li>Improve our website content and user experience</li>
               <li>Respond to your inquiries or feedback</li>
               <li>Analyze site traffic and usage patterns</li>
@@ -84,8 +97,8 @@ export default function PrivacyPage() {
           <section>
             <h2>Information Sharing</h2>
             <p>
-              We do not sell, rent, or trade your personal information. We
-              may share information only in the following circumstances:
+              We do not sell, rent, or trade your personal information. We may
+              share non-video website data only in the following circumstances:
             </p>
             <ul>
               <li>
@@ -103,9 +116,9 @@ export default function PrivacyPage() {
           <section>
             <h2>Cookies</h2>
             <p>
-              Our website may use essential cookies for basic functionality.
-              We do not use advertising cookies or cross-site tracking
-              cookies.
+              The MVP does not require an account cookie. Hosting or framework
+              infrastructure may use essential storage for basic functionality.
+              We do not use advertising cookies or cross-site tracking cookies.
             </p>
           </section>
 

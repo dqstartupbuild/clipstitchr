@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { BrandMark } from "@/app/_components/BrandMark";
 import { site } from "@/lib/site";
 
 /**
@@ -18,70 +20,75 @@ export function SiteHeader({
   return (
     <nav
       id="navbar"
-      className={`flex items-center justify-between px-6 py-4 backdrop-blur-xl z-50 ${
-        isLanding ? "fixed top-0 left-0 right-0" : "border-b border-border"
+      className={`z-50 flex items-center justify-between px-6 py-4 ${
+        isLanding
+          ? "fixed left-0 right-0 top-0 border-b border-border bg-white/90 backdrop-blur-xl"
+          : "border-b border-border bg-white"
       }`}
-      style={{
-        background: isLanding ? "rgba(12, 12, 14, 0.8)" : "var(--background)",
-        ...(isLanding
-          ? { borderBottom: "1px solid var(--border)" }
-          : {}),
-      }}
     >
-      <Link href="/" className="flex items-center gap-2.5">
-        <span className="text-base font-semibold tracking-tight text-text-primary">
-          {site.name}
-        </span>
-      </Link>
+      <BrandMark />
 
       <div className="hidden sm:flex items-center gap-6 text-sm text-text-secondary">
         {isLanding ? (
           <>
             <a
               href="#features"
-              className="transition-colors hover:text-text-primary"
+              className="font-semibold transition-colors hover:text-text-primary"
             >
               Features
             </a>
+            <a
+              href="#workflow"
+              className="font-semibold transition-colors hover:text-text-primary"
+            >
+              How it Works
+            </a>
             <Link
               href="/blog"
-              className="transition-colors hover:text-text-primary"
+              className="font-semibold transition-colors hover:text-text-primary"
             >
               Blog
             </Link>
+            <span className="font-semibold text-text-tertiary">Pricing</span>
           </>
         ) : (
           <>
             <Link
               href="/"
-              className="transition-colors hover:text-text-primary"
+              className="font-semibold transition-colors hover:text-text-primary"
             >
               Home
             </Link>
             <Link
               href="/blog"
-              className="transition-colors hover:text-text-primary"
+              className="font-semibold transition-colors hover:text-text-primary"
             >
               Blog
             </Link>
+            <Link
+              href="/dashboard"
+              className="font-semibold transition-colors hover:text-text-primary"
+            >
+              Dashboard
+            </Link>
           </>
         )}
-        <a
+        <Link
           href={site.ctaUrl}
-          className="btn-primary !py-2 !px-5 !text-sm"
+          className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
         >
           {site.ctaLabel}
-        </a>
+          <ArrowRight aria-hidden className="h-4 w-4" />
+        </Link>
       </div>
 
-      {/* Mobile CTA */}
       <div className="sm:hidden">
-        <a
+        <Link
           href={site.ctaUrl}
-          className="btn-primary !py-2 !px-4 !text-xs"
+          className="inline-flex h-9 items-center rounded-lg bg-accent px-3 text-xs font-semibold text-white"
         >
-          {site.ctaLabel}
-        </a>
+          Dashboard
+        </Link>
       </div>
     </nav>
   );

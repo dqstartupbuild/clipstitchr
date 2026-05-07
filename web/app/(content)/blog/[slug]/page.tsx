@@ -58,15 +58,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       ))}
 
       <div className="mx-auto max-w-3xl">
-        <Link href="/blog" className="text-sm text-text-tertiary hover:text-accent">
-          ← Back to the blog
+        <Link href="/blog" className="text-sm font-semibold text-text-tertiary hover:text-accent">
+          Back to the blog
         </Link>
 
         <header className="mt-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">
+          <p className="text-sm font-semibold text-accent-dark">
             {post.category}
           </p>
-          <h1 className="mt-4 text-4xl font-bold tracking-tight text-text-primary md:text-6xl">
+          <h1 className="mt-4 text-4xl font-bold text-text-primary md:text-5xl">
             {post.title}
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
@@ -74,16 +74,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </p>
           <div className="mt-6 flex flex-wrap gap-4 text-sm text-text-tertiary">
             <span>{post.author}</span>
-            <span>•</span>
+            <span>.</span>
             <span>{post.date}</span>
-            <span>•</span>
+            <span>.</span>
             <span>{post.readingTimeMinutes} min read</span>
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
             {post.tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full border border-border px-3 py-1 text-xs text-text-tertiary"
+                className="rounded-md border border-border bg-white px-3 py-1 text-xs text-text-tertiary"
               >
                 {tag}
               </span>
@@ -96,14 +96,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </article>
 
         {post.faq?.length ? (
-          <section className="mt-16 rounded-3xl border border-border bg-surface p-8">
-            <h2 className="text-2xl font-semibold text-text-primary">
+          <section className="mt-16 rounded-lg border border-border bg-surface p-8">
+            <h2 className="text-2xl font-bold text-text-primary">
               Frequently asked questions
             </h2>
             <div className="mt-8 space-y-6">
               {post.faq.map((entry) => (
                 <div key={entry.question}>
-                  <h3 className="text-lg font-semibold text-text-primary">
+                  <h3 className="text-lg font-bold text-text-primary">
                     {entry.question}
                   </h3>
                   <p className="mt-2 leading-8 text-text-secondary">
@@ -117,7 +117,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
         {relatedPosts.length ? (
           <section className="mt-16">
-            <h2 className="text-2xl font-semibold text-text-primary">
+            <h2 className="text-2xl font-bold text-text-primary">
               Keep reading
             </h2>
             <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -125,12 +125,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 <Link
                   key={relatedPost.slug}
                   href={relatedPost.url}
-                  className="rounded-3xl border border-border bg-surface p-6 transition-transform duration-300 hover:-translate-y-1"
+                  className="rounded-lg border border-border bg-surface p-6 transition-colors hover:border-accent"
                 >
                   <p className="text-sm text-text-tertiary">
                     {relatedPost.category}
                   </p>
-                  <h3 className="mt-2 text-lg font-semibold text-text-primary">
+                  <h3 className="mt-2 text-lg font-bold text-text-primary">
                     {relatedPost.title}
                   </h3>
                   <p className="mt-3 text-sm leading-7 text-text-secondary">

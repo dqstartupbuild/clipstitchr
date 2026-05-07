@@ -1,7 +1,7 @@
 # Clear Clipr IndexedDB
 
-Clipr stores uploaded clips, normalized copies, thumbnails, and created videos in
-browser IndexedDB during the MVP.
+Clipr stores normalized clips and created stitched videos in browser IndexedDB
+during the MVP.
 
 To clear the local library, open Clipr in the browser, open DevTools Console, and
 run:
