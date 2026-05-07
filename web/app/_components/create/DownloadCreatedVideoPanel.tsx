@@ -16,6 +16,7 @@ export function DownloadCreatedVideoPanel({
   createdVideo,
 }: DownloadCreatedVideoPanelProps) {
   const url = useObjectUrl(createdVideo?.blob);
+  const posterUrl = useObjectUrl(createdVideo?.posterBlob);
 
   if (!createdVideo) {
     return null;
@@ -42,7 +43,11 @@ export function DownloadCreatedVideoPanel({
           Download
         </a>
       </div>
-      <VideoPreview src={url} label={createdVideo.name} />
+      <VideoPreview
+        src={url}
+        posterSrc={posterUrl}
+        label={createdVideo.name}
+      />
     </Panel>
   );
 }

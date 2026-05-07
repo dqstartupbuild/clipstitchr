@@ -6,6 +6,8 @@ export type VideoClip = {
   originalName: string;
   clipType: ClipType;
   blob: Blob;
+  posterBlob?: Blob;
+  posterVersion?: number;
   mimeType: string;
   sourceMimeType: string;
   size: number;

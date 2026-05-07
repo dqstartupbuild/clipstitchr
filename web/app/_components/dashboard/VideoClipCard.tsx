@@ -18,10 +18,11 @@ type VideoClipCardProps = {
 
 export function VideoClipCard({ clip, onDelete, onRename }: VideoClipCardProps) {
   const url = useObjectUrl(clip.blob);
+  const posterUrl = useObjectUrl(clip.posterBlob);
 
   return (
     <Panel className="overflow-hidden">
-      <VideoPreview src={url} label={clip.name} />
+      <VideoPreview src={url} posterSrc={posterUrl} label={clip.name} />
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">

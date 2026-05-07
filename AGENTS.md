@@ -2,14 +2,14 @@
 
 ## Project Structure & Module Organization
 
-Clipr is currently in planning stage. The repository root contains project documentation:
+Clipr is a browser-local Next.js MVP app under `web/`. The repository root contains project documentation:
 
 - `project-scope.md` defines the MVP, target architecture, routes, data model, and video-processing decisions.
 - `coding-guidelines.md` defines the required Atomic Code Splitting approach.
 - `docs/media-bunny/media-bunny-llms.md` contains the full Media Bunny guide content. Read this first for Media Bunny workflows, recommended patterns, and conceptual guidance.
 - `docs/media-bunny/media-bunny-api.md` contains the Media Bunny TypeScript API declarations. Use this as the source of truth for exact class names, option shapes, method signatures, and return types.
 
-When implementation is added, keep the planned Next.js shape from `project-scope.md`: app routes such as `/`, `/dashboard`, and `/dashboard/create`; browser-first storage for MVP using IndexedDB; video processing via Media Bunny; upload normalization to TikTok 9:16; and UGC-then-Demo stitching for preview, creation, and download. Place source, tests, and assets in conventional framework directories once the app is scaffolded, and update this guide with exact paths.
+The app uses the planned Next.js shape from `project-scope.md`: app routes such as `/`, `/dashboard`, `/dashboard/create`, `/uploads`, and `/created`; browser-first storage for MVP using IndexedDB; video processing via Media Bunny; upload normalization to TikTok 9:16; automatic generated poster images for video preview default states; and UGC-then-Demo stitching for preview, creation, and download.
 
 ## Media Bunny Implementation Guidance
 
@@ -23,16 +23,16 @@ Use Media Bunny's `Conversion` API for single-upload normalization from one inpu
 
 ## Build, Test, and Development Commands
 
-No package manifest or build system exists yet. Do not invent commands until the scaffold is committed. After the Next.js app is created, document the canonical scripts from `package.json`, for example:
+Run app commands from `web/`. Prefer the package manager indicated by the committed lockfile.
 
 ```bash
 npm install
 npm run dev
 npm run build
+npm run lint
+npm run typecheck
 npm test
 ```
-
-Prefer the package manager indicated by the committed lockfile.
 
 ## Coding Style & Naming Conventions
 
@@ -47,9 +47,9 @@ Use TypeScript for application code. Prefer descriptive PascalCase component nam
 
 ## Testing Guidelines
 
-No testing framework is configured yet. When tests are introduced, colocate or mirror them near the unit under test and keep them scoped to the single-purpose file being verified. Use clear names such as `VideoClipCard.test.tsx`, `normalizeVideo.test.ts`, or `stitchVideos.test.ts`.
+Vitest is configured. Colocate or mirror tests near the unit under test and keep them scoped to the single-purpose file being verified. Use clear names such as `VideoClipCard.test.tsx`, `normalizeVideo.test.ts`, or `stitchVideos.test.ts`.
 
-Cover browser storage, Media Bunny upload normalization, TikTok 9:16 output dimensions, UGC-then-Demo stitching, download creation, and route-level dashboard flows before treating the MVP as complete. Text overlays are post-MVP, and thumbnail generation/editing is out of scope.
+Cover browser storage, Media Bunny upload normalization, TikTok 9:16 output dimensions, generated poster image behavior, UGC-then-Demo stitching, download creation, and route-level dashboard flows before treating the MVP as complete. Text overlays are post-MVP, and user-authored thumbnail generation/editing is out of scope.
 
 ## Commit & Pull Request Guidelines
 

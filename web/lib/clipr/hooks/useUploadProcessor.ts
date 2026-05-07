@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipr/constants/videoPosterCaptureVersion";
+import { createVideoPosterBlob } from "@/lib/clipr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipr/media/normalizeUploadedVideo";
 import { saveVideoClip } from "@/lib/clipr/storage/saveVideoClip";
 import type { ClipType } from "@/lib/clipr/types/ClipType";
@@ -61,6 +63,14 @@ export function useUploadProcessor({ onClipSaved }: UseUploadProcessorOptions) {
                 progress: Math.max(0.05, Math.min(0.95, progress)),
               });
             });
+            let posterBlob: Blob | undefined;
+
+            try {
+              posterBlob = await createVideoPosterBlob(normalized.blob);
+            } catch {
+              posterBlob = undefined;
+            }
+
             const now = new Date().toISOString();
             const clip: VideoClip = {
               id: createId(),
@@ -68,6 +78,10 @@ export function useUploadProcessor({ onClipSaved }: UseUploadProcessorOptions) {
               originalName: file.name,
               clipType: item.clipType,
               blob: normalized.blob,
+              posterBlob,
+              posterVersion: posterBlob
+                ? VIDEO_POSTER_CAPTURE_VERSION
+                : undefined,
               mimeType: normalized.mimeType,
               sourceMimeType: file.type || normalized.metadata.mimeType,
               size: normalized.blob.size,

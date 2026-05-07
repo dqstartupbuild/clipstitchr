@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useClipLibraryPosterBackfill } from "@/lib/clipr/hooks/useClipLibraryPosterBackfill";
 import { deleteCreatedVideo } from "@/lib/clipr/storage/deleteCreatedVideo";
 import { deleteVideoClip } from "@/lib/clipr/storage/deleteVideoClip";
 import { getCreatedVideos } from "@/lib/clipr/storage/getCreatedVideos";
@@ -68,6 +69,13 @@ export function useClipLibrary() {
   useEffect(() => {
     void Promise.resolve().then(refresh);
   }, [refresh]);
+
+  useClipLibraryPosterBackfill({
+    clips,
+    createdVideos,
+    setClips,
+    setCreatedVideos,
+  });
 
   return {
     clips,

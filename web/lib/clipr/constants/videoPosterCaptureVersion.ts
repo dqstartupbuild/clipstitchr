@@ -1,0 +1,1 @@
+export const VIDEO_POSTER_CAPTURE_VERSION = 2;

@@ -6,6 +6,8 @@ export type CreatedVideo = {
   ugcClipName: string;
   demoClipName: string;
   blob: Blob;
+  posterBlob?: Blob;
+  posterVersion?: number;
   mimeType: string;
   size: number;
   width: number;

@@ -17,9 +17,13 @@ export function SequenceVideoPlayer({
 }: SequenceVideoPlayerProps) {
   const ugcUrl = useObjectUrl(ugcClip.blob);
   const demoUrl = useObjectUrl(demoClip.blob);
+  const ugcPosterUrl = useObjectUrl(ugcClip.posterBlob);
+  const demoPosterUrl = useObjectUrl(demoClip.posterBlob);
   const { activeSegment, handleEnded, restart, videoRef } =
     useSequenceVideoPlayer();
   const activeUrl = activeSegment === "ugc" ? ugcUrl : demoUrl;
+  const activePosterUrl =
+    activeSegment === "ugc" ? ugcPosterUrl : demoPosterUrl;
   const activeName = activeSegment === "ugc" ? ugcClip.name : demoClip.name;
 
   return (
@@ -27,11 +31,12 @@ export function SequenceVideoPlayer({
       <div className="aspect-[9/16] overflow-hidden rounded-lg bg-slate-950">
         {activeUrl ? (
           <video
-            key={activeUrl}
+            key={`${activeUrl}:${activePosterUrl ?? "no-poster"}`}
             ref={videoRef}
             className="h-full w-full object-contain"
             controls
             playsInline
+            poster={activePosterUrl ?? undefined}
             preload="metadata"
             src={activeUrl}
             onEnded={handleEnded}

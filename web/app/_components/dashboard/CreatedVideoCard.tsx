@@ -20,10 +20,15 @@ export function CreatedVideoCard({
   onDelete,
 }: CreatedVideoCardProps) {
   const url = useObjectUrl(createdVideo.blob);
+  const posterUrl = useObjectUrl(createdVideo.posterBlob);
 
   return (
     <Panel className="overflow-hidden">
-      <VideoPreview src={url} label={createdVideo.name} />
+      <VideoPreview
+        src={url}
+        posterSrc={posterUrl}
+        label={createdVideo.name}
+      />
       <div className="p-4">
         <h3 className="truncate text-sm font-bold text-text-primary">
           {createdVideo.name}

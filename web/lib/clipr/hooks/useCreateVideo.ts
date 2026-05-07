@@ -5,6 +5,8 @@ import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipr/constants/tiktokOutputSize";
+import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipr/constants/videoPosterCaptureVersion";
+import { createVideoPosterBlob } from "@/lib/clipr/media/createVideoPosterBlob";
 import { stitchNormalizedVideos } from "@/lib/clipr/media/stitchNormalizedVideos";
 import { saveCreatedVideo } from "@/lib/clipr/storage/saveCreatedVideo";
 import type { CreatedVideo } from "@/lib/clipr/types/CreatedVideo";
@@ -36,6 +38,14 @@ export function useCreateVideo({ onCreated }: UseCreateVideoOptions) {
           demoClip,
           setProgress,
         );
+        let posterBlob: Blob | undefined;
+
+        try {
+          posterBlob = await createVideoPosterBlob(stitched.blob);
+        } catch {
+          posterBlob = undefined;
+        }
+
         const now = new Date().toISOString();
         const nextCreatedVideo: CreatedVideo = {
           id: createId(),
@@ -45,6 +55,8 @@ export function useCreateVideo({ onCreated }: UseCreateVideoOptions) {
           ugcClipName: ugcClip.name,
           demoClipName: demoClip.name,
           blob: stitched.blob,
+          posterBlob,
+          posterVersion: posterBlob ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
           mimeType: stitched.mimeType,
           size: stitched.blob.size,
           width: TIKTOK_OUTPUT_WIDTH,

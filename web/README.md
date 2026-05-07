@@ -2,7 +2,7 @@
 
 Clipr lets users upload UGC reaction clips and product demo videos, then automatically stitches them together to produce polished marketing videos.
 
-Built with [Next.js](https://nextjs.org), [Tailwind CSS](https://tailwindcss.com), and [Content Collections](https://www.content-collections.dev).
+Built with [Next.js](https://nextjs.org), [Tailwind CSS](https://tailwindcss.com), [Content Collections](https://www.content-collections.dev), and [Media Bunny](https://mediabunny.dev).
 
 ## Quick Start
 
@@ -25,11 +25,26 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run content:build` | Build content collections |
 | `npm run content:watch` | Watch content for changes |
 
+## Local Media Workflow
+
+The MVP is browser-local:
+
+- Uploaded UGC and Demo videos are normalized to TikTok 9:16 before they are saved.
+- Normalized clips and created stitched videos are stored as `Blob` values in IndexedDB.
+- Each saved video also stores a generated JPEG `posterBlob` plus `posterVersion`.
+- Posters are generated in the browser by seeking through candidate frames and choosing a visibly non-black frame for the video element's `poster` attribute.
+- Older records without posters, or with stale poster versions, are backfilled when the library loads.
+- User-authored thumbnail generation and thumbnail editing are not part of the MVP.
+
 ## Project Structure
 
 ```
 ├── app/
 │   ├── page.tsx                 # Landing page
+│   ├── dashboard/               # Dashboard and creation routes
+│   ├── uploads/                 # Upload library route
+│   ├── created/                 # Created video library route
+│   ├── _components/             # Atomic UI, dashboard, create, and landing components
 │   ├── layout.tsx               # Root layout (fonts, JSON-LD)
 │   ├── globals.css              # Design system tokens + utilities
 │   ├── site-header.tsx          # Shared header
@@ -49,6 +64,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 │   ├── site.ts                  # Site config (single source of truth)
 │   ├── metadata.ts              # Page metadata helper
 │   ├── llms.ts                  # LLMs.txt generator
+│   ├── clipr/
+│   │   ├── media/               # Media Bunny processing + poster capture helpers
+│   │   ├── storage/             # IndexedDB helpers
+│   │   ├── hooks/               # Browser-local app state hooks
+│   │   ├── types/               # Clipr data model types
+│   │   └── constants/           # Clipr media/storage constants
 │   ├── content/
 │   │   ├── schema.ts            # Blog frontmatter schema (Zod)
 │   │   ├── queries.ts           # Content query helpers

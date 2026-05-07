@@ -77,10 +77,10 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique 9:16
 | 2 | Upload product demo videos | ✅ | ✅ |
 | 3 | Categorize uploads as **UGC** or **Demo** | ✅ | ✅ |
 | 4 | Normalize every uploaded video to TikTok 9:16 using Media Bunny | ✅ | ✅ |
-| 5 | Preview normalized clips in-browser | ✅ | ✅ |
+| 5 | Preview normalized clips in-browser with generated poster images | ✅ | ✅ |
 | 6 | Delete / rename clips | ✅ | ✅ |
-| 7 | Store normalized files in local storage / IndexedDB | ✅ | — |
-| 8 | Store normalized files in Cloudflare R2 | — | ✅ |
+| 7 | Store normalized files and preview poster images in local storage / IndexedDB | ✅ | — |
+| 8 | Store normalized files and preview poster images in Cloudflare R2 | — | ✅ |
 
 ### 4.2 Video Stitching / Creation
 
@@ -156,7 +156,7 @@ Text overlays are planned for later, but they are not required for the MVP.
 │  └────────────────────────────────────┘   │
 │                                           │
 │  IndexedDB                                │
-│  (9:16 video blobs, metadata)             │
+│  (video blobs, poster blobs, metadata)    │
 └──────────────────────────────────────────┘
 ```
 
@@ -199,6 +199,8 @@ Text overlays are planned for later, but they are not required for the MVP.
 - Do not stretch source footage. For non-9:16 uploads, preserve the source aspect ratio inside the 9:16 output; crop/fill presets can be added later.
 - Preview, Create Video, and Download must all use the same sequence: the normalized UGC clip starts first, and the normalized Demo clip starts immediately after the UGC clip ends.
 - The final created video must be a single 9:16 file using the same normalized assets shown in preview.
+- Clip and created-video cards should use the HTML video `poster` attribute for the static preview state. Generate poster images in the browser by seeking through early candidate frames, choosing the first visibly non-black frame, encoding it as JPEG, and storing it beside the video blob.
+- Poster generation is infrastructure for video previews. User-authored thumbnail generation, thumbnail selection, and thumbnail editing remain out of scope for the MVP.
 
 ### Media Bunny API Map (MVP)
 
@@ -227,10 +229,12 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
 - Prefer MP4-compatible codecs. Prefer `avc` for video and `aac` for audio when browser support allows them.
 - Use `conversion.onProgress` for upload-normalization progress.
 - Store the normalized `BufferTarget.buffer` as a browser `Blob` in IndexedDB.
+- After normalization succeeds, generate a poster `Blob` from the normalized video and store it with the clip record.
 
 #### Sequence Preview
 
 - Preview should use the normalized clip blobs, not the original uploads.
+- Static preview state should use the generated poster blob through the video element's `poster` attribute.
 - The preview player should use the same sequence as export: play UGC first, then start Demo immediately on the UGC `ended` event.
 - The preview does not need to render a temporary stitched file for MVP; it only needs to prove the exact ordering and normalized 9:16 playback.
 
@@ -250,6 +254,7 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
 - Close every `VideoSample` and `AudioSample` after it has been added.
 - Close media sources when their streams are complete, then call `output.finalize()`.
 - Convert the final `BufferTarget.buffer` into the downloadable video `Blob`, using `output.getMimeType()` for the blob type when available.
+- Generate and store a poster `Blob` for each created stitched video after export succeeds.
 - Dispose each stitched-export `Input` after its samples have been processed.
 - Keep encoded-packet passthrough with `EncodedPacketSink`, `EncodedVideoPacketSource`, and `EncodedAudioPacketSource` as a later optimization only; MVP should re-encode from samples because it is more robust across separate input files.
 
@@ -287,6 +292,8 @@ interface VideoClip {
   name: string;
   type: 'ugc' | 'demo';
   blob: Blob; // normalized 9:16 clip used for preview and stitching
+  posterBlob?: Blob; // generated JPEG poster used by the video poster attribute
+  posterVersion?: number; // capture algorithm version for backfilling stale posters
   width: number; // target 1080
   height: number; // target 1920
   aspectRatio: '9:16';
@@ -300,6 +307,8 @@ interface CreatedVideo {
   ugcClipId: string;
   demoClipId: string;
   blob: Blob; // final 9:16 video: UGC immediately followed by Demo
+  posterBlob?: Blob; // generated JPEG poster used by the video poster attribute
+  posterVersion?: number; // capture algorithm version for backfilling stale posters
   width: number; // target 1080
   height: number; // target 1920
   aspectRatio: '9:16';
@@ -320,6 +329,7 @@ interface CreatedVideo {
 - [ ] Media Bunny upload normalization to TikTok 9:16
 - [ ] Video library (UGC vs Demo categorization)
 - [ ] Video preview player for normalized uploads
+- [ ] Generated poster images for normalized uploads and created videos
 - [ ] UGC + Demo sequence preview
 - [ ] Video stitching (UGC immediately followed by Demo → single 9:16 output)
 - [ ] Download finished videos
@@ -363,7 +373,7 @@ interface CreatedVideo {
 - ❌ Mobile-native app
 - ❌ Collaborative editing
 - ❌ Text overlays — planned after MVP
-- ❌ Thumbnail generation / thumbnail editing
+- ❌ User-authored thumbnail generation / thumbnail editing
 - ❌ Video trimming / cutting — deferred to **Phase 4** with AI-powered smart cuts (only full-clip concatenation for now)
 
 ---
@@ -382,6 +392,7 @@ interface CreatedVideo {
 
 - [ ] User can upload 5 UGC clips and 1 demo video.
 - [ ] Each uploaded video is normalized to TikTok 9:16 using Media Bunny before it appears in the usable library.
+- [ ] Each uploaded and created video has a non-black generated poster image in its default/static preview state.
 - [ ] User can select any UGC + the demo and preview the exact UGC-then-Demo sequence.
 - [ ] User can create a stitched 9:16 video where the Demo starts immediately after the UGC clip ends.
 - [ ] All 5 resulting 9:16 videos can be downloaded.

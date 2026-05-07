@@ -13,7 +13,8 @@
   - Preview and export must use the same sequence: UGC plays first, Demo starts immediately after UGC ends.
   - Output is a single downloadable 9:16 video.
   - Text overlays are post-MVP.
-  - Thumbnail generation and thumbnail editing are out of scope.
+  - User-authored thumbnail generation and thumbnail editing are out of scope.
+  - Automatic poster-image capture is preview infrastructure and is in scope.
 
 ### Code Structure Rules
 
@@ -73,7 +74,7 @@
   - Post-MVP mockup elements to avoid as implemented features:
     - Text overlay editor.
     - Thumbnail editor.
-    - Generated/custom thumbnails.
+    - User-authored/generated custom thumbnails.
 - `assets/brand/icon.png`, `assets/brand/logo.png`, `assets/brand/text.png`
   - 1536 x 1024 PNG brand assets.
   - These should be copied into public/static locations for use by `next/image`, favicon metadata, header, sidebar, footer, and OG fallback.
@@ -96,11 +97,13 @@
 
 4. Match the mockup, but keep MVP scope honest.
    - Recreate the visual language: purple accents, compact panels, dashboard layout, rounded-but-not-overlarge cards, and product-like page density.
-   - Do not implement text overlays or thumbnails as MVP functionality.
+   - Do not implement text overlays or user-authored thumbnails as MVP functionality.
+   - Use automatic poster images for video preview default/static states.
    - Replace mockup thumbnail-oriented cards with real normalized video previews.
 
 5. Media Bunny-first video pipeline.
    - Normalize on upload and store normalized blobs.
+   - Generate and store poster blobs for uploaded clips and created videos.
    - Preview from normalized blobs.
    - Stitch from normalized blobs.
    - Download final stitched blob.
@@ -588,7 +591,8 @@ Create:
 Create:
 
 - Generic video preview component.
-- Accepts object URL, label, aspect behavior, and controls flag.
+- Accepts object URL, poster object URL, label, aspect behavior, and controls flag.
+- Passes the poster URL to the video element's `poster` attribute.
 
 ## 13. Types Plan
 
@@ -603,13 +607,14 @@ Create:
 Create:
 
 - Exports `VideoClip` interface matching MVP data model.
-- Includes normalized blob, dimensions, aspect ratio, duration, and timestamps.
+- Includes normalized blob, optional poster blob, poster capture version, dimensions, aspect ratio, duration, and timestamps.
 
 ### `web/lib/clipr/types/CreatedVideo.ts`
 
 Create:
 
 - Exports `CreatedVideo` interface matching MVP data model.
+- Includes the stitched blob plus optional poster blob and poster capture version.
 
 ### `web/lib/clipr/types/UploadQueueItem.ts`
 
@@ -673,6 +678,12 @@ Create:
 
 - Preferred video/audio codec order for MP4 output.
 
+### `web/lib/clipr/constants/videoPosterCaptureVersion.ts`
+
+Create:
+
+- Exports the current poster-capture algorithm version for backfilling stale poster images.
+
 ## 15. IndexedDB Storage Plan
 
 ### `web/lib/clipr/storage/openCliprDatabase.ts`
@@ -712,6 +723,12 @@ Create:
 
 - Reads all normalized clips.
 
+### `web/lib/clipr/storage/getVideoClip.ts`
+
+Create:
+
+- Reads one normalized clip by ID for poster backfill.
+
 ### `web/lib/clipr/storage/deleteVideoClip.ts`
 
 Create:
@@ -729,6 +746,12 @@ Create:
 Create:
 
 - Reads all created videos.
+
+### `web/lib/clipr/storage/getCreatedVideo.ts`
+
+Create:
+
+- Reads one created video by ID for poster backfill.
 
 ### `web/lib/clipr/storage/deleteCreatedVideo.ts`
 
@@ -842,6 +865,37 @@ Create:
 - Calls `output.getMimeType()` when available.
 - Provides fallback `video/mp4`.
 
+### `web/lib/clipr/media/createVideoPosterBlob.ts`
+
+Create:
+
+- Generates a JPEG poster blob from a video blob in the browser.
+- Seeks through multiple candidate frames and uses the first visibly non-black frame.
+
+### `web/lib/clipr/media/createVideoPosterCandidateTimes.ts`
+
+Create:
+
+- Returns fixed and duration-relative candidate seek times for poster capture.
+
+### `web/lib/clipr/media/getCanvasVisiblePixelRatio.ts`
+
+Create:
+
+- Samples canvas pixels to detect whether a candidate poster frame is visibly non-black.
+
+### `web/lib/clipr/media/seekVideoToTime.ts`
+
+Create:
+
+- Seeks an `HTMLVideoElement` and resolves when frame data is ready.
+
+### `web/lib/clipr/media/encodeCanvasAsPosterBlob.ts`
+
+Create:
+
+- Encodes a canvas frame as a JPEG poster blob.
+
 ## 17. Hook Plan
 
 ### `web/lib/clipr/hooks/useObjectUrl.ts`
@@ -857,6 +911,13 @@ Create:
 - Loads clips and created videos from IndexedDB.
 - Exposes refresh/delete helpers.
 
+### `web/lib/clipr/hooks/useClipLibraryPosterBackfill.ts`
+
+Create:
+
+- Generates missing or stale poster blobs for existing clips and created videos.
+- Saves regenerated posters back to IndexedDB.
+
 ### `web/lib/clipr/hooks/useUploadProcessor.ts`
 
 Create:
@@ -864,6 +925,7 @@ Create:
 - Handles selected files.
 - Calls `normalizeUploadedVideo`.
 - Saves normalized clips.
+- Generates and stores a poster blob after normalization.
 - Updates upload queue state.
 
 ### `web/lib/clipr/hooks/useCreateVideo.ts`
@@ -872,6 +934,7 @@ Create:
 
 - Calls `stitchNormalizedVideos`.
 - Saves `CreatedVideo`.
+- Generates and stores a poster blob after export.
 - Tracks stitch status/progress/error.
 
 ### `web/lib/clipr/hooks/useSequenceVideoPlayer.ts`
@@ -962,9 +1025,8 @@ Create only if time allows:
 
 Modify:
 
-- Remove stale thumbnail wording.
+- Mention normalized video blobs, created video blobs, generated poster blobs, and poster capture versions.
 - Keep database name `clipr-mvp`.
-- Mention normalized clips and created videos only.
 
 ## 21. Intended Structure Tree
 
@@ -1073,9 +1135,11 @@ Modify:
     │   │   │   ├── databaseVersion.ts
     │   │   │   ├── mediaBunnyCodecPreferences.ts
     │   │   │   ├── objectStoreNames.ts
-    │   │   │   └── tiktokOutputSize.ts
+    │   │   │   ├── tiktokOutputSize.ts
+    │   │   │   └── videoPosterCaptureVersion.ts
     │   │   ├── hooks
     │   │   │   ├── useClipLibrary.ts
+    │   │   │   ├── useClipLibraryPosterBackfill.ts
     │   │   │   ├── useCreateVideo.ts
     │   │   │   ├── useObjectUrl.ts
     │   │   │   ├── useSequenceVideoPlayer.ts
@@ -1088,18 +1152,25 @@ Modify:
     │   │   │   ├── createRetimedAudioSample.ts
     │   │   │   ├── createRetimedVideoSample.ts
     │   │   │   ├── createVideoBlobFromBuffer.ts
+    │   │   │   ├── createVideoPosterBlob.ts
+    │   │   │   ├── createVideoPosterCandidateTimes.ts
+    │   │   │   ├── encodeCanvasAsPosterBlob.ts
     │   │   │   ├── getClipMetadata.ts
+    │   │   │   ├── getCanvasVisiblePixelRatio.ts
     │   │   │   ├── getSupportedOutputCodecs.ts
     │   │   │   ├── getVideoMimeType.ts
     │   │   │   ├── normalizeUploadedVideo.ts
     │   │   │   ├── registerAacEncoderIfNeeded.ts
+    │   │   │   ├── seekVideoToTime.ts
     │   │   │   └── stitchNormalizedVideos.ts
     │   │   ├── storage
     │   │   │   ├── clearCliprDatabase.ts
     │   │   │   ├── deleteCreatedVideo.ts
     │   │   │   ├── deleteVideoClip.ts
+    │   │   │   ├── getCreatedVideo.ts
     │   │   │   ├── getCreatedVideos.ts
     │   │   │   ├── getObjectStore.ts
+    │   │   │   ├── getVideoClip.ts
     │   │   │   ├── getVideoClips.ts
     │   │   │   ├── openCliprDatabase.ts
     │   │   │   ├── requestToPromise.ts
@@ -1160,7 +1231,7 @@ Modify:
 10. Implement dashboard route and components.
 11. Implement create-video route and components.
 12. Restyle blog/privacy/terms to match the mockup without removing content/SEO systems.
-13. Update maintenance doc stale thumbnail reference.
+13. Update maintenance docs for normalized video and poster IndexedDB records.
 14. Run verification:
     - `npm run typecheck`
     - `npm run lint`
@@ -1173,6 +1244,7 @@ Modify:
     - Upload UGC and Demo clips.
     - Uploaded clips normalize to 9:16.
     - IndexedDB persists normalized clips.
+    - Uploaded and created video cards show non-black generated posters before playback.
     - Create page previews UGC then Demo.
     - Create Video produces one downloadable 9:16 video.
     - Blog/legal/discovery routes still work.
@@ -1183,5 +1255,5 @@ Modify:
 - MP4 + AAC may require `@mediabunny/aac-encoder`; if the fallback has bundling constraints, document them in `next.config.ts` or a dedicated setup note.
 - Large videos can exceed memory limits with `BufferTarget`. MVP will keep `BufferTarget`, but errors must be surfaced clearly.
 - `fit: "contain"` avoids stretching but may letterbox non-9:16 uploads. This matches the current MVP scope; crop/cover presets can be added later.
-- The mockup shows text and thumbnail features, but those remain excluded from MVP.
+- The mockup shows text and custom thumbnail features, but those remain excluded from MVP. Automatic poster capture is included for preview usability.
 - If implementation discovers that any planned file is unnecessary or should be split further to satisfy atomic guidelines, update this plan before proceeding with that structural change.
