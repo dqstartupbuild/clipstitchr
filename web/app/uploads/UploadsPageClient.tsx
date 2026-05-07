@@ -64,6 +64,7 @@ export function UploadsPageClient() {
           />
         </div>
         <VideoLibrarySection
+          key={selectedClipType}
           id={selectedContent.sectionId}
           title={selectedContent.title}
           clips={clips}
