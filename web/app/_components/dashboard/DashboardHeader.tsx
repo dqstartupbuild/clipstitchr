@@ -1,5 +1,5 @@
-import { UploadCloud } from "lucide-react";
-import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
+import { Wand2 } from "lucide-react";
+import { PrimaryButtonLink } from "@/app/_components/PrimaryButtonLink";
 
 export function DashboardHeader() {
   return (
@@ -14,12 +14,12 @@ export function DashboardHeader() {
           downloadable 9:16 videos.
         </p>
       </div>
-      <SecondaryButtonLink
-        href="#upload-panel"
-        icon={<UploadCloud aria-hidden className="h-4 w-4" />}
+      <PrimaryButtonLink
+        href="/dashboard/create"
+        icon={<Wand2 aria-hidden className="h-4 w-4" />}
       >
-        Upload Videos
-      </SecondaryButtonLink>
+        Create Video
+      </PrimaryButtonLink>
     </header>
   );
 }

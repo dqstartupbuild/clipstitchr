@@ -9,14 +9,13 @@ export function BrandMark() {
       className="inline-flex items-center gap-2 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <Image
-        src="/brand/icon.png"
-        alt=""
-        width={32}
-        height={32}
-        className="h-8 w-8 rounded-lg"
+        src="/brand/logo.png"
+        alt={site.name}
+        width={131}
+        height={51}
+        className="h-10 w-auto shrink-0 object-contain"
         priority
       />
-      <span className="text-base font-bold text-text-primary">{site.name}</span>
     </Link>
   );
 }

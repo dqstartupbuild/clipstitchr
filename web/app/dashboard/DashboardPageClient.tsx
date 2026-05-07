@@ -2,12 +2,10 @@
 
 import { useMemo } from "react";
 import { CreateVideoCallout } from "@/app/_components/dashboard/CreateVideoCallout";
-import { CreatedVideosSection } from "@/app/_components/dashboard/CreatedVideosSection";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
-import { VideoLibrarySection } from "@/app/_components/dashboard/VideoLibrarySection";
 import { useClipLibrary } from "@/lib/clipr/hooks/useClipLibrary";
 import { filterClipsByType } from "@/lib/clipr/utils/filterClipsByType";
 
@@ -38,26 +36,6 @@ export function DashboardPageClient() {
         />
         <UploadPanel onUploaded={library.refresh} />
         <CreateVideoCallout />
-        <VideoLibrarySection
-          id="ugc-clips"
-          title="UGC Clips"
-          clips={ugcClips}
-          emptyDescription="Upload reaction clips and classify them as UGC."
-          onDelete={library.removeClip}
-          onRename={library.renameClip}
-        />
-        <VideoLibrarySection
-          id="demo-videos"
-          title="Demo Videos"
-          clips={demoClips}
-          emptyDescription="Upload product walkthroughs and classify them as Demo."
-          onDelete={library.removeClip}
-          onRename={library.renameClip}
-        />
-        <CreatedVideosSection
-          createdVideos={library.createdVideos}
-          onDelete={library.removeCreatedVideo}
-        />
       </div>
     </DashboardShell>
   );

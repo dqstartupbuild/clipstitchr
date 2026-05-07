@@ -13,9 +13,9 @@ import { BrandMark } from "@/app/_components/BrandMark";
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard#upload-panel", label: "Uploads", icon: UploadCloud },
-  { href: "/dashboard#ugc-clips", label: "UGC Clips", icon: Film },
-  { href: "/dashboard#demo-videos", label: "Demo Videos", icon: Clapperboard },
-  { href: "/dashboard#created-videos", label: "Created Videos", icon: FileVideo },
+  { href: "/ugc", label: "UGC Clips", icon: Film },
+  { href: "/demos", label: "Demo Videos", icon: Clapperboard },
+  { href: "/created", label: "Created Videos", icon: FileVideo },
   { href: "/dashboard/create", label: "Create Video", icon: PlusCircle },
 ];
 

@@ -7,7 +7,7 @@
 ### Product Scope
 
 - `project-scope.md`
-  - MVP routes are `/`, `/dashboard`, and `/dashboard/create`.
+  - MVP routes are `/`, `/dashboard`, `/dashboard/create`, `/ugc`, `/demos`, and `/created`.
   - Uploads are UGC clips and Demo videos.
   - Every uploaded clip must be normalized to TikTok 9:16 before it is usable.
   - Preview and export must use the same sequence: UGC plays first, Demo starts immediately after UGC ends.
@@ -214,7 +214,7 @@ Modify:
   - Change to `Go to Dashboard`.
 - `staticPages`
   - Keep `/`, `/blog`, `/privacy`, `/terms`.
-  - Add `/dashboard` and `/dashboard/create` so sitemap includes the MVP app routes.
+  - Add `/dashboard`, `/dashboard/create`, `/ugc`, `/demos`, and `/created` so sitemap includes the MVP app routes.
 
 Do not remove:
 
