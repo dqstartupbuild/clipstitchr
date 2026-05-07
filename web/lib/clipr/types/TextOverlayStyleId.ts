@@ -3,4 +3,9 @@ export type TextOverlayStyleId =
   | "hook"
   | "caption"
   | "serif"
-  | "mono";
+  | "mono"
+  | "badge"
+  | "outline"
+  | "luxe"
+  | "neon"
+  | "soft";

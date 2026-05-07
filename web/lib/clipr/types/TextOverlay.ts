@@ -9,4 +9,5 @@ export type TextOverlay = {
   width: number;
   fontSize: number;
   styleId: TextOverlayStyleId;
+  color?: string;
 };

@@ -11,6 +11,7 @@ const baseTextOverlay: TextOverlay = {
   width: 0.6,
   fontSize: 0.045,
   styleId: "clean",
+  color: "#ffffff",
 };
 
 describe("clampTextOverlay", () => {

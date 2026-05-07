@@ -1,4 +1,5 @@
 import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
+import { getTextOverlayColor } from "@/lib/clipr/utils/getTextOverlayColor";
 import { getTextOverlayIsVisible } from "@/lib/clipr/utils/getTextOverlayIsVisible";
 import { getTextOverlayStyle } from "@/lib/clipr/utils/getTextOverlayStyle";
 
@@ -57,7 +58,7 @@ export function drawTextOverlay(
     context.fill();
   }
 
-  context.fillStyle = style.color;
+  context.fillStyle = getTextOverlayColor(textOverlay);
   context.strokeStyle = style.strokeColor ?? "transparent";
   context.lineWidth = (style.strokeWidthRatio ?? 0) * fontSize;
   context.shadowColor = style.shadowColor ?? "transparent";

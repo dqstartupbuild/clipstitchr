@@ -80,7 +80,6 @@ export function SequenceVideoPlayer({
         {textOverlay ? (
           <TextOverlayBox
             textOverlay={textOverlay}
-            currentTime={currentTime}
             stageRef={stageRef}
             totalDuration={totalDuration}
             onChange={onTextOverlayChange}

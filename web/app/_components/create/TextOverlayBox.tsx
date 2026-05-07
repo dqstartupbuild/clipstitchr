@@ -4,12 +4,11 @@ import type { CSSProperties, RefObject } from "react";
 import { useTextOverlayDrag } from "@/lib/clipr/hooks/useTextOverlayDrag";
 import { useTextOverlayResize } from "@/lib/clipr/hooks/useTextOverlayResize";
 import type { TextOverlay } from "@/lib/clipr/types/TextOverlay";
-import { getTextOverlayIsVisible } from "@/lib/clipr/utils/getTextOverlayIsVisible";
+import { getTextOverlayColor } from "@/lib/clipr/utils/getTextOverlayColor";
 import { getTextOverlayStyle } from "@/lib/clipr/utils/getTextOverlayStyle";
 
 type TextOverlayBoxProps = {
   textOverlay: TextOverlay;
-  currentTime: number;
   stageRef: RefObject<HTMLDivElement | null>;
   totalDuration: number;
   onChange: (textOverlay: TextOverlay) => void;
@@ -17,13 +16,11 @@ type TextOverlayBoxProps = {
 
 export function TextOverlayBox({
   textOverlay,
-  currentTime,
   stageRef,
   totalDuration,
   onChange,
 }: TextOverlayBoxProps) {
   const overlayStyle = getTextOverlayStyle(textOverlay.styleId);
-  const isVisible = getTextOverlayIsVisible(textOverlay, currentTime);
   const handleDrag = useTextOverlayDrag({
     textOverlay,
     stageRef,
@@ -49,7 +46,7 @@ export function TextOverlayBox({
     fontSize: `${textOverlay.fontSize * 100}cqh`,
     fontFamily: overlayStyle.fontFamily,
     fontWeight: overlayStyle.fontWeight,
-    color: overlayStyle.color,
+    color: getTextOverlayColor(textOverlay),
     backgroundColor: overlayStyle.backgroundColor,
     borderRadius: overlayStyle.borderRadiusRatio
       ? `${overlayStyle.borderRadiusRatio}em`
@@ -60,7 +57,6 @@ export function TextOverlayBox({
             overlayStyle.paddingXRatio ?? 0
           }em`
         : undefined,
-    opacity: isVisible ? 1 : 0.35,
     textShadow,
     textTransform: overlayStyle.textTransform,
     WebkitTextStroke:
