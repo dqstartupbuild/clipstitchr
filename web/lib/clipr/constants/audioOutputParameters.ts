@@ -1,0 +1,3 @@
+export const OUTPUT_AUDIO_NUMBER_OF_CHANNELS = 2;
+
+export const OUTPUT_AUDIO_SAMPLE_RATE = 48000;

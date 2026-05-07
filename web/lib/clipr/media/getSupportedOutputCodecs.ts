@@ -8,6 +8,10 @@ import {
   PREFERRED_VIDEO_CODECS,
 } from "@/lib/clipr/constants/mediaBunnyCodecPreferences";
 import {
+  OUTPUT_AUDIO_NUMBER_OF_CHANNELS,
+  OUTPUT_AUDIO_SAMPLE_RATE,
+} from "@/lib/clipr/constants/audioOutputParameters";
+import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipr/constants/tiktokOutputSize";
@@ -32,6 +36,8 @@ export async function getSupportedOutputCodecs(
   });
   const audioCodec = includeAudio
     ? await getFirstEncodableAudioCodec(audioPreferences, {
+        numberOfChannels: OUTPUT_AUDIO_NUMBER_OF_CHANNELS,
+        sampleRate: OUTPUT_AUDIO_SAMPLE_RATE,
         bitrate: 160_000,
       })
     : null;

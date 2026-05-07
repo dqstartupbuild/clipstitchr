@@ -8,12 +8,16 @@ type CopyVideoSamplesOptions = {
   onProgress?: (progress: number) => void;
 };
 
+type CopyVideoSamplesResult = {
+  endTimestamp: number;
+};
+
 export async function copyVideoSamplesToSource({
   input,
   source,
   timelineOffset,
   onProgress,
-}: CopyVideoSamplesOptions) {
+}: CopyVideoSamplesOptions): Promise<CopyVideoSamplesResult> {
   const track = await input.getPrimaryVideoTrack();
 
   if (!track) {
@@ -24,6 +28,7 @@ export async function copyVideoSamplesToSource({
   const sourceOffset = await track.getFirstTimestamp();
   const duration = await track.computeDuration();
   let isFirstSample = true;
+  let endTimestamp = timelineOffset;
 
   for await (const sample of sink.samples()) {
     const sourceTimestamp = sample.timestamp;
@@ -39,11 +44,19 @@ export async function copyVideoSamplesToSource({
         isFirstSample ? { keyFrame: true } : undefined,
       );
       isFirstSample = false;
+      endTimestamp = Math.max(
+        endTimestamp,
+        retimedSample.timestamp + retimedSample.duration,
+      );
       onProgress?.(
-        Math.min(1, Math.max(0, (sourceTimestamp - sourceOffset) / duration)),
+        duration > 0
+          ? Math.min(1, Math.max(0, (sourceTimestamp - sourceOffset) / duration))
+          : 1,
       );
     } finally {
       retimedSample.close();
     }
   }
+
+  return { endTimestamp };
 }

@@ -1,5 +1,9 @@
 import { Conversion } from "mediabunny";
 import {
+  OUTPUT_AUDIO_NUMBER_OF_CHANNELS,
+  OUTPUT_AUDIO_SAMPLE_RATE,
+} from "@/lib/clipr/constants/audioOutputParameters";
+import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipr/constants/tiktokOutputSize";
@@ -65,6 +69,8 @@ export async function normalizeUploadedVideo(
       },
       audio: metadata.hasAudio
         ? {
+            numberOfChannels: OUTPUT_AUDIO_NUMBER_OF_CHANNELS,
+            sampleRate: OUTPUT_AUDIO_SAMPLE_RATE,
             codec: codecs.audioCodec ?? "aac",
             bitrate: 160_000,
             forceTranscode: true,
@@ -85,18 +91,25 @@ export async function normalizeUploadedVideo(
 
     const mimeType = await getVideoMimeType(output);
     const blob = createVideoBlobFromBuffer(output.target.buffer, mimeType);
+    const normalizedInput = createMediaInput(blob);
 
-    return {
-      blob,
-      mimeType,
-      metadata: {
-        ...metadata,
-        width: TIKTOK_OUTPUT_WIDTH,
-        height: TIKTOK_OUTPUT_HEIGHT,
-        aspectRatio: TIKTOK_OUTPUT_WIDTH / TIKTOK_OUTPUT_HEIGHT,
+    try {
+      const normalizedMetadata = await getClipMetadata(normalizedInput);
+
+      return {
+        blob,
         mimeType,
-      },
-    };
+        metadata: {
+          ...normalizedMetadata,
+          width: TIKTOK_OUTPUT_WIDTH,
+          height: TIKTOK_OUTPUT_HEIGHT,
+          aspectRatio: TIKTOK_OUTPUT_WIDTH / TIKTOK_OUTPUT_HEIGHT,
+          mimeType,
+        },
+      };
+    } finally {
+      normalizedInput.dispose();
+    }
   } finally {
     input.dispose();
   }

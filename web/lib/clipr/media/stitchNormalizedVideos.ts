@@ -1,5 +1,9 @@
 import { AudioSampleSource, VideoSampleSource } from "mediabunny";
 import {
+  OUTPUT_AUDIO_NUMBER_OF_CHANNELS,
+  OUTPUT_AUDIO_SAMPLE_RATE,
+} from "@/lib/clipr/constants/audioOutputParameters";
+import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipr/constants/tiktokOutputSize";
@@ -8,6 +12,8 @@ import { copyVideoSamplesToSource } from "@/lib/clipr/media/copyVideoSamplesToSo
 import { createMediaInput } from "@/lib/clipr/media/createMediaInput";
 import { createMp4Output } from "@/lib/clipr/media/createMp4Output";
 import { createVideoBlobFromBuffer } from "@/lib/clipr/media/createVideoBlobFromBuffer";
+import { getInputAudioParameters } from "@/lib/clipr/media/getInputAudioParameters";
+import { getInputDuration } from "@/lib/clipr/media/getInputDuration";
 import { getSupportedOutputCodecs } from "@/lib/clipr/media/getSupportedOutputCodecs";
 import { getVideoMimeType } from "@/lib/clipr/media/getVideoMimeType";
 import { registerAacEncoderIfNeeded } from "@/lib/clipr/media/registerAacEncoderIfNeeded";
@@ -30,7 +36,31 @@ export async function stitchNormalizedVideos(
   try {
     await registerAacEncoderIfNeeded();
 
-    const includeAudio = ugcClip.hasAudio || demoClip.hasAudio;
+    const [ugcAudioParameters, demoAudioParameters, ugcDuration] =
+      await Promise.all([
+        getInputAudioParameters(ugcInput),
+        getInputAudioParameters(demoInput),
+        getInputDuration(ugcInput),
+      ]);
+    const includeAudio = Boolean(ugcAudioParameters || demoAudioParameters);
+    const unsupportedAudioParameters = [
+      ugcAudioParameters,
+      demoAudioParameters,
+    ].find(
+      (parameters) =>
+        parameters &&
+        (parameters.numberOfChannels !== OUTPUT_AUDIO_NUMBER_OF_CHANNELS ||
+          parameters.sampleRate !== OUTPUT_AUDIO_SAMPLE_RATE),
+    );
+
+    if (unsupportedAudioParameters) {
+      throw new Error(
+        `One selected clip has audio at ${unsupportedAudioParameters.numberOfChannels} channels and ` +
+          `${unsupportedAudioParameters.sampleRate} Hz. Re-upload it so Clipr can normalize audio to ` +
+          `${OUTPUT_AUDIO_NUMBER_OF_CHANNELS} channels at ${OUTPUT_AUDIO_SAMPLE_RATE} Hz before stitching.`,
+      );
+    }
+
     const codecs = await getSupportedOutputCodecs(includeAudio);
 
     if (!codecs.videoCodec) {
@@ -71,33 +101,43 @@ export async function stitchNormalizedVideos(
 
     await output.start();
 
-    await copyVideoSamplesToSource({
+    const ugcVideo = await copyVideoSamplesToSource({
       input: ugcInput,
       source: videoSource,
       timelineOffset: 0,
       onProgress: (progress) => onProgress?.(progress * 0.35),
     });
-    await copyVideoSamplesToSource({
+    const demoTimelineOffset = Math.max(ugcDuration, ugcVideo.endTimestamp);
+    const demoVideo = await copyVideoSamplesToSource({
       input: demoInput,
       source: videoSource,
-      timelineOffset: ugcClip.duration,
+      timelineOffset: demoTimelineOffset,
       onProgress: (progress) => onProgress?.(0.35 + progress * 0.35),
     });
+    let endTimestamp = Math.max(ugcVideo.endTimestamp, demoVideo.endTimestamp);
 
     if (audioSource) {
-      await copyAudioSamplesToSource({
+      const ugcAudio = await copyAudioSamplesToSource({
         input: ugcInput,
         source: audioSource,
         timelineOffset: 0,
         onProgress: (progress) => onProgress?.(0.7 + progress * 0.15),
       });
-      await copyAudioSamplesToSource({
+      const demoAudio = await copyAudioSamplesToSource({
         input: demoInput,
         source: audioSource,
-        timelineOffset: ugcClip.duration,
+        timelineOffset: demoTimelineOffset,
         onProgress: (progress) => onProgress?.(0.85 + progress * 0.1),
       });
+      endTimestamp = Math.max(
+        endTimestamp,
+        ugcAudio.endTimestamp,
+        demoAudio.endTimestamp,
+      );
     }
+
+    videoSource.close();
+    audioSource?.close();
 
     await output.finalize();
 
@@ -109,7 +149,7 @@ export async function stitchNormalizedVideos(
     return {
       blob,
       mimeType,
-      duration: ugcClip.duration + demoClip.duration,
+      duration: endTimestamp,
     };
   } finally {
     ugcInput.dispose();
