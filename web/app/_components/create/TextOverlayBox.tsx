@@ -71,14 +71,15 @@ export function TextOverlayBox({
 
   return (
     <div
-      className="absolute z-10 cursor-move touch-none select-none border border-white/80 text-center leading-[1.08] outline outline-2 outline-accent/80 transition-opacity [overflow-wrap:anywhere]"
+      className="group absolute z-10 cursor-move touch-none select-none border border-transparent text-center leading-[1.08] outline outline-2 outline-transparent transition-colors [overflow-wrap:anywhere] hover:border-white/80 hover:outline-accent/80 focus-visible:border-white/80 focus-visible:outline-accent/80"
       style={style}
+      tabIndex={0}
       onPointerDown={handleDrag}
     >
       {textOverlay.text}
       <div
         aria-hidden
-        className="absolute -bottom-2 -right-2 h-4 w-4 cursor-nwse-resize rounded-sm border border-white bg-accent shadow-sm"
+        className="absolute -bottom-2 -right-2 h-4 w-4 cursor-nwse-resize rounded-sm border border-white bg-accent opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
         onPointerDown={handleResize}
       />
     </div>
