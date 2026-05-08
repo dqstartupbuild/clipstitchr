@@ -27,12 +27,6 @@ export function SiteFooter() {
             Blog
           </Link>
           <Link
-            href="/dashboard"
-            className="transition-colors hover:text-text-primary"
-          >
-            Dashboard
-          </Link>
-          <Link
             href="/privacy"
             className="transition-colors hover:text-text-primary"
           >
