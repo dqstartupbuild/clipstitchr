@@ -61,8 +61,8 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique 9:16
 | **Scaffolding**    | `npx create-starship-app`      | Same                      |
 | **Framework**      | Next.js (from starship boilerplate) | Same                 |
 | **Auth**           | Clerk                          | Clerk-protected dashboard |
-| **Backend / DB**   | Convex                         | None — local state only   |
-| **Object Storage** | Cloudflare R2                  | IndexedDB (blob storage)  |
+| **Backend / DB**   | Convex                         | Convex                    |
+| **Object Storage** | Cloudflare R2                  | Cloudflare R2             |
 | **Video Engine**   | Media Bunny with optional server-side processing later | Media Bunny (browser) |
 
 ---
@@ -80,8 +80,8 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique 9:16
 | 5 | Preview normalized clips in-browser with generated poster images | ✅ | ✅ |
 | 6 | Delete / rename clips | ✅ | ✅ |
 | 7 | Set a non-destructive default trim range for each uploaded clip | ✅ | ✅ |
-| 8 | Store normalized files and preview poster images in local storage / IndexedDB | ✅ | — |
-| 9 | Store normalized files and preview poster images in Cloudflare R2 | — | ✅ |
+| 8 | Store normalized files and preview poster images in Cloudflare R2 | ✅ | ✅ |
+| 9 | Store clip metadata, tags, trim ranges, and object references in Convex | ✅ | ✅ |
 
 ### 4.2 Video Stitching
 
@@ -138,7 +138,7 @@ Text overlays are planned for later, but they are not required for the MVP.
 
 ## 6. Architecture Overview
 
-### MVP (Local-First)
+### MVP (Backend-Backed)
 
 ```
 ┌──────────────────────────────────────────┐
@@ -160,12 +160,16 @@ Text overlays are planned for later, but they are not required for the MVP.
 │  │         └─────────────────────┘    │   │
 │  └────────────────────────────────────┘   │
 │                                           │
-│  IndexedDB                                │
-│  (video blobs, poster blobs, metadata)    │
 └──────────────────────────────────────────┘
+          │                         │
+          ▼                         ▼
+┌────────────────┐          ┌────────────────┐
+│    Convex      │          │ Cloudflare R2  │
+│  metadata/DB   │          │ media objects  │
+└────────────────┘          └────────────────┘
 ```
 
-### Production
+### Production Target
 
 ```
 ┌────────────┐      ┌──────────────┐      ┌────────────────┐
@@ -235,8 +239,8 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
   - `forceTranscode: true` so uploaded assets have consistent dimensions and codec settings
 - Prefer MP4-compatible codecs. Prefer `avc` for video and `aac` for audio when browser support allows them.
 - Use `conversion.onProgress` for upload-normalization progress.
-- Store the normalized `BufferTarget.buffer` as a browser `Blob` in IndexedDB.
-- After normalization succeeds, generate a poster `Blob` from the normalized video and store it with the clip record.
+- Store the normalized `BufferTarget.buffer` as a browser `Blob` only long enough to upload it to R2.
+- After normalization succeeds, generate a poster `Blob` from the normalized video, upload the poster to R2, and save both R2 object references with the Convex clip record.
 
 #### Sequence Preview
 
@@ -277,7 +281,7 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
 |---------|------------|
 | Browser codec support varies | Detect Media Bunny/WebCodecs support before processing and show an actionable unsupported-browser message |
 | Upload normalization adds waiting time | Normalize once on upload, store the normalized blob, and show progress |
-| Large files can pressure IndexedDB storage | Keep MVP local-first, surface storage errors clearly, and add cloud storage in Phase 2 |
+| Large files can pressure browser memory | Normalize one file at a time, upload outputs to R2, hydrate full blobs only on demand |
 
 ### Alternatives Considered (Not Selected)
 
@@ -289,19 +293,19 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
 
 ---
 
-## 8. Data Model (MVP — Local)
+## 8. Data Model (MVP — Convex + R2)
 
 ```typescript
-// Logical local records. IndexedDB stores metadata separately from large blobs
-// so library pages can load names, posters, thumbnails, and counts before full
-// media blobs are requested for preview, export, generation, or download.
+// Convex stores metadata and R2 object references. R2 stores every durable
+// media object. Browser Blobs are temporary hydrated values for preview,
+// export, generation, and download.
 
 interface VideoClip {
   id: string;
   name: string;
   type: 'ugc' | 'demo';
-  blob: Blob; // normalized 9:16 clip stored in videoClipBlobs
-  posterBlob?: Blob; // generated JPEG poster used by the video poster attribute
+  videoObject: R2ObjectReference; // normalized 9:16 clip in R2
+  posterObject?: R2ObjectReference; // generated JPEG poster in R2
   posterVersion?: number; // capture algorithm version for backfilling stale posters
   width: number; // target 1080
   height: number; // target 1920
@@ -318,8 +322,8 @@ interface Stitch {
   demoClipId: string;
   ugcTrimRange?: { start: number; end: number }; // copied Stitchr trim
   demoTrimRange?: { start: number; end: number }; // copied Stitchr trim
-  blob: Blob; // final 9:16 video: UGC immediately followed by Demo
-  posterBlob?: Blob; // generated JPEG poster used by the video poster attribute
+  stitchObject: R2ObjectReference; // final 9:16 video in R2
+  posterObject?: R2ObjectReference; // generated JPEG poster in R2
   posterVersion?: number; // capture algorithm version for backfilling stale posters
   width: number; // target 1080
   height: number; // target 1920
@@ -345,13 +349,13 @@ interface Stitch {
 - [ ] UGC + Demo sequence preview
 - [ ] Video stitching (UGC immediately followed by Demo → single 9:16 output)
 - [ ] Download finished videos
-- [ ] All data stored locally (IndexedDB)
+- [x] Convex metadata and Cloudflare R2 object storage
 - [x] Integrate Clerk authentication for dashboard and API routes
 
 ### Phase 2 — Backend Integration
 
-- [ ] Set up Convex backend (video metadata, user data)
-- [ ] Migrate file storage to Cloudflare R2
+- [x] Set up Convex backend (video metadata, user data)
+- [x] Migrate file storage to Cloudflare R2
 - [ ] User accounts with personal video libraries
 - [ ] Cloud-synced projects
 

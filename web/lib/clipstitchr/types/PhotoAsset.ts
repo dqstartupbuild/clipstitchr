@@ -1,3 +1,4 @@
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SwaprPhotoPreparation } from "@/lib/clipstitchr/types/SwaprPhotoPreparation";
 
 export type PhotoAsset = {
@@ -5,8 +6,11 @@ export type PhotoAsset = {
   name: string;
   tags?: string[];
   originalName: string;
+  photoObject: R2ObjectReference;
   blob: Blob;
+  originalObject?: R2ObjectReference;
   originalBlob?: Blob;
+  thumbnailObject?: R2ObjectReference;
   thumbnailBlob?: Blob;
   mimeType: string;
   originalMimeType?: string;

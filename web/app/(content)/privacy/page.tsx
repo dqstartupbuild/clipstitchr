@@ -4,12 +4,12 @@ import { site } from "@/lib/site";
 
 export const metadata: Metadata = createPageMetadata({
   title: `Privacy Policy | ${site.name}`,
-  description: `Learn how ${site.name} handles browser-local uploads, IndexedDB video storage, website data, and user privacy for the MVP application.`,
+  description: `Learn how ${site.name} handles uploads, cloud media storage, website data, and user privacy for the MVP application.`,
   canonical: "/privacy",
 });
 
 export default function PrivacyPage() {
-  const lastUpdated = "May 7, 2026";
+  const lastUpdated = "May 8, 2026";
 
   return (
     <article className="px-6 py-20 md:py-28">
@@ -33,24 +33,25 @@ export default function PrivacyPage() {
               {site.name} (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;)
               operates the website located at{" "}
               <strong>{site.url}</strong>. This Privacy Policy explains what
-              information the MVP stores locally in your browser, what website
-              data may be processed, and your choices regarding that
+              information the MVP stores, how uploaded media is processed, what
+              website data may be processed, and your choices regarding that
               information.
             </p>
           </section>
 
           <section>
-            <h2>Browser-Local Video Storage</h2>
+            <h2>Media Processing and Storage</h2>
             <p>
-              ClipStitchr processes uploaded videos in your browser for the MVP.
-              Normalized clips and stitches are saved in your browser
-              IndexedDB under the <strong>clipstitchr-mvp</strong> database. We do
-              not upload those video files to a ClipStitchr server as part of the MVP.
+              ClipStitchr processes uploaded videos and photos in your browser
+              when normalizing, previewing, stitching, or preparing media. Saved
+              media files are stored in Cloudflare R2, and related metadata such
+              as names, tags, trim ranges, and object references is stored in
+              Convex.
             </p>
             <p>
-              Anyone with access to your browser profile may be able to access
-              local ClipStitchr data. You can delete clips in the dashboard or clear
-              site data from your browser settings.
+              You can delete clips, photos, and stitches in the dashboard. Those
+              actions remove the saved record and associated media objects for
+              your account.
             </p>
           </section>
 
@@ -87,7 +88,7 @@ export default function PrivacyPage() {
             <h2>How We Use Your Information</h2>
             <p>We use the information we collect to:</p>
             <ul>
-              <li>Run browser-local video normalization and stitching</li>
+              <li>Run video normalization and stitching workflows</li>
               <li>Improve our website content and user experience</li>
               <li>Respond to your inquiries or feedback</li>
               <li>Analyze site traffic and usage patterns</li>
@@ -116,9 +117,10 @@ export default function PrivacyPage() {
           <section>
             <h2>Cookies</h2>
             <p>
-              The MVP does not require an account cookie. Hosting or framework
-              infrastructure may use essential storage for basic functionality.
-              We do not use advertising cookies or cross-site tracking cookies.
+              Clerk authentication uses essential cookies and storage to keep you
+              signed in. Hosting or framework infrastructure may use essential
+              storage for basic functionality. We do not use advertising cookies
+              or cross-site tracking cookies.
             </p>
           </section>
 

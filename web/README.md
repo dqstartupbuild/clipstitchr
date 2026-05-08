@@ -17,6 +17,11 @@ Clerk is required for the dashboard and private API routes:
 ```bash
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key
 CLERK_SECRET_KEY=your_secret_key
+NEXT_PUBLIC_CONVEX_URL=your_convex_deployment_url
+R2_ACCOUNT_ID=your_cloudflare_account_id
+R2_BUCKET_NAME=your_bucket_name
+R2_ACCESS_KEY_ID=your_r2_access_key_id
+R2_SECRET_ACCESS_KEY=your_r2_secret_access_key
 ```
 
 ## Commands
@@ -32,17 +37,16 @@ CLERK_SECRET_KEY=your_secret_key
 | `npm run content:build` | Build content collections |
 | `npm run content:watch` | Watch content for changes |
 
-## Local Media Workflow
+## Media Workflow
 
-The MVP is browser-local:
+The app processes media in the browser and stores durable data in Convex and Cloudflare R2:
 
 - Uploaded UGC and Demo videos are normalized to TikTok 9:16 before they are saved.
-- Normalized clip/photo metadata is stored separately from full media blobs in IndexedDB.
-- Library views read metadata and poster/thumbnail blobs first; full media blobs are loaded on demand for preview, export, generation, and download.
-- Stitches are stored as `Blob` values in IndexedDB with their export metadata.
-- Each saved video also stores a generated JPEG `posterBlob` plus `posterVersion`.
+- Convex stores clip, photo, stitch, tag, trim, and R2 object metadata.
+- Cloudflare R2 stores normalized videos, stitched videos, photos, posters, and thumbnails.
+- Library views read Convex metadata first; preview media is hydrated from R2 as needed.
+- Each saved video also stores a generated JPEG poster object plus `posterVersion`.
 - Posters are generated in the browser by seeking through candidate frames and choosing a visibly non-black frame for the video element's `poster` attribute.
-- Older records without posters, or with stale poster versions, are backfilled when the library loads.
 - User-authored thumbnail generation and thumbnail editing are not part of the MVP.
 
 ## Project Structure
@@ -74,11 +78,12 @@ The MVP is browser-local:
 │   ├── metadata.ts              # Page metadata helper
 │   ├── llms.ts                  # LLMs.txt generator
 │   ├── clipstitchr/
+│   │   ├── backend/             # Convex/R2 document hydration helpers
+│   │   ├── client/r2/           # Browser helpers for signed R2 object access
 │   │   ├── media/               # Media Bunny processing + poster capture helpers
-│   │   ├── storage/             # IndexedDB helpers
 │   │   ├── hooks/               # Browser-local app state hooks
 │   │   ├── types/               # ClipStitchr data model types
-│   │   └── constants/           # ClipStitchr media/storage constants
+│   │   └── constants/           # ClipStitchr media constants
 │   ├── content/
 │   │   ├── schema.ts            # Blog frontmatter schema (Zod)
 │   │   ├── queries.ts           # Content query helpers

@@ -93,7 +93,7 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
 | 1 | Upload person/reference photos from file picker or drag-and-drop | Yes | Yes |
-| 2 | Store uploaded photo files and metadata | IndexedDB | R2 for files, Convex for metadata |
+| 2 | Store uploaded photo files and metadata | R2 for files, Convex for metadata | R2 for files, Convex for metadata |
 | 3 | Save uploaded photos as 1080 x 1920 portrait references; AI expansion is optional and off by default | Yes | Yes |
 | 4 | Generate lightweight preview thumbnails for photo cards | Yes | Yes |
 | 5 | Rename and delete uploaded photos | Yes | Yes |
@@ -247,10 +247,10 @@ Swapr cannot be fully offline because it depends on Replicate. It also cannot sa
 | - Swapr studio                           |
 | - Job status UI                          |
 |                                          |
-| IndexedDB                                |
-| - Photo blobs and metadata               |
-| - Normalized UGC video blobs             |
-| - Swapr output blobs and job metadata    |
+| Convex + R2                              |
+| - Photo metadata and object refs         |
+| - Normalized UGC video object refs       |
+| - Swapr output objects and metadata      |
 +-------------------+----------------------+
                     |
                     | multipart/form-data or signed asset URLs
@@ -301,14 +301,14 @@ Production should use webhooks for long-running predictions and immediately copy
 
 ## 8. Data Model
 
-### MVP IndexedDB Types
+### MVP Convex + R2 Types
 
 ```typescript
 interface PhotoAsset {
   id: string;
   name: string;
-  blob: Blob;
-  thumbnailBlob?: Blob;
+  photoObject: R2ObjectReference;
+  thumbnailObject?: R2ObjectReference;
   mimeType: string;
   width: number;
   height: number;
@@ -393,7 +393,7 @@ Required server endpoints:
 | `POST /api/swapr/jobs` | Validate selected assets, create a Replicate prediction, store initial job state |
 | `GET /api/swapr/jobs/:id` | Return job status and output metadata |
 | `POST /api/swapr/jobs/:id/cancel` | Cancel an active prediction if supported |
-| `GET /api/swapr/output?url=...` | Proxy a completed Replicate output file so the browser can persist it to IndexedDB |
+| `GET /api/swapr/output?url=...` | Proxy a completed Replicate output file so the browser can normalize it and persist the result to R2 + Convex |
 | `POST /api/swapr/webhook` | Production webhook endpoint for Replicate completion events |
 
 MVP can poll job status. Production should prefer webhooks so completed files are persisted quickly.
@@ -477,7 +477,7 @@ Use careful language:
 - [ ] Add optional prompt and basic scene mode.
 - [ ] Add server-side Replicate API route using `REPLICATE_API_TOKEN`.
 - [ ] Poll job status from the client.
-- [ ] Persist successful output to IndexedDB.
+- [ ] Persist successful output to R2 and Convex.
 - [ ] Generate output poster image.
 - [ ] Save output as a UGC-style clip for reuse in `/dashboard/stitchr`.
 

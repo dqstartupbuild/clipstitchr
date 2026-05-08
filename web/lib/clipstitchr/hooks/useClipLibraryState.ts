@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useClipLibraryPosterBackfill } from "@/lib/clipstitchr/hooks/useClipLibraryPosterBackfill";
-import { deleteStitch } from "@/lib/clipstitchr/storage/deleteStitch";
-import { deleteVideoClip } from "@/lib/clipstitchr/storage/deleteVideoClip";
-import { getStitches } from "@/lib/clipstitchr/storage/getStitches";
-import { getVideoClip } from "@/lib/clipstitchr/storage/getVideoClip";
-import { getVideoClips } from "@/lib/clipstitchr/storage/getVideoClips";
-import { saveVideoClipMetadata } from "@/lib/clipstitchr/storage/saveVideoClipMetadata";
+import { useConvex, useConvexAuth, useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { createStitchFromConvexDocument } from "@/lib/clipstitchr/backend/createStitchFromConvexDocument";
+import { createVideoClipFromConvexDocument } from "@/lib/clipstitchr/backend/createVideoClipFromConvexDocument";
+import { createVideoClipMetadataFromConvexDocument } from "@/lib/clipstitchr/backend/createVideoClipMetadataFromConvexDocument";
+import { getDefinedR2Objects } from "@/lib/clipstitchr/backend/getDefinedR2Objects";
+import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
+import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { ClipLibraryValue } from "@/lib/clipstitchr/types/ClipLibraryValue";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
@@ -18,32 +19,28 @@ import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
 export function useClipLibraryState(): ClipLibraryValue {
+  const convex = useConvex();
+  const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
+  const clipDocuments = useQuery(
+    api.videoClips.list,
+    isAuthenticated ? {} : "skip",
+  );
+  const stitchDocuments = useQuery(
+    api.stitches.list,
+    isAuthenticated ? {} : "skip",
+  );
+  const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
+  const removeClipMutation = useMutation(api.videoClips.remove);
+  const removeStitchMutation = useMutation(api.stitches.remove);
   const [clips, setClips] = useState<VideoClipMetadata[]>([]);
   const [stitches, setStitches] = useState<Stitch[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isHydrating, setIsHydrating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshNonce, setRefreshNonce] = useState(0);
   const clipCacheRef = useRef(new Map<string, VideoClip>());
 
   const refresh = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const [nextClips, nextStitches] = await Promise.all([
-        getVideoClips(),
-        getStitches(),
-      ]);
-      setClips(nextClips);
-      setStitches(nextStitches);
-    } catch (nextError) {
-      setError(
-        nextError instanceof Error
-          ? nextError.message
-          : "Unable to load the local ClipStitchr library.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    setRefreshNonce((currentNonce) => currentNonce + 1);
   }, []);
 
   const loadClip = useCallback(async (id: string) => {
@@ -53,23 +50,53 @@ export function useClipLibraryState(): ClipLibraryValue {
       return cachedClip;
     }
 
-    const clip = await getVideoClip(id);
+    const clipDocument =
+      clipDocuments?.find((clip) => clip.id === id) ??
+      (await convex.query(api.videoClips.get, { id }));
 
-    if (!clip) {
+    if (!clipDocument) {
       return null;
     }
 
+    const hydratedClipMetadata = clips.find((clip) => clip.id === id);
+    const [blob, posterBlob] = await Promise.all([
+      downloadBlobFromR2(clipDocument.videoObject),
+      hydratedClipMetadata?.posterBlob
+        ? Promise.resolve(hydratedClipMetadata.posterBlob)
+        : clipDocument.posterObject
+          ? downloadBlobFromR2(clipDocument.posterObject)
+          : Promise.resolve(undefined),
+    ]);
+    const clip = createVideoClipFromConvexDocument({
+      clip: clipDocument,
+      blob,
+      posterBlob,
+    });
+
     clipCacheRef.current.set(id, clip);
     return clip;
-  }, []);
+  }, [clips, convex, clipDocuments]);
 
   const removeClip = useCallback(
     async (id: string) => {
-      await deleteVideoClip(id);
+      const clipDocument =
+        clipDocuments?.find((clip) => clip.id === id) ??
+        (await convex.query(api.videoClips.get, { id }));
+
+      if (clipDocument) {
+        await deleteObjectsFromR2(
+          getDefinedR2Objects([
+            clipDocument.videoObject,
+            clipDocument.posterObject,
+          ]),
+        );
+      }
+
+      await removeClipMutation({ id });
       clipCacheRef.current.delete(id);
       await refresh();
     },
-    [refresh],
+    [clipDocuments, convex, refresh, removeClipMutation],
   );
 
   const renameClip = useCallback(
@@ -80,11 +107,15 @@ export function useClipLibraryState(): ClipLibraryValue {
         updatedAt: new Date().toISOString(),
       };
 
-      await saveVideoClipMetadata(updatedClip);
+      await updateClipMetadataMutation({
+        id: clip.id,
+        name: updatedClip.name,
+        updatedAt: updatedClip.updatedAt,
+      });
       clipCacheRef.current.delete(clip.id);
       await refresh();
     },
-    [refresh],
+    [refresh, updateClipMetadataMutation],
   );
 
   const updateClipMetadata = useCallback(
@@ -96,11 +127,16 @@ export function useClipLibraryState(): ClipLibraryValue {
         updatedAt: new Date().toISOString(),
       };
 
-      await saveVideoClipMetadata(updatedClip);
+      await updateClipMetadataMutation({
+        id: clip.id,
+        name: updatedClip.name,
+        tags: updatedClip.tags ?? [],
+        updatedAt: updatedClip.updatedAt,
+      });
       clipCacheRef.current.delete(clip.id);
       await refresh();
     },
-    [refresh],
+    [refresh, updateClipMetadataMutation],
   );
 
   const updateClipTrimRange = useCallback(
@@ -111,37 +147,139 @@ export function useClipLibraryState(): ClipLibraryValue {
         updatedAt: new Date().toISOString(),
       };
 
-      await saveVideoClipMetadata(updatedClip);
+      await updateClipMetadataMutation({
+        id: clip.id,
+        defaultTrimRange: updatedClip.defaultTrimRange,
+        updatedAt: updatedClip.updatedAt,
+      });
       clipCacheRef.current.delete(clip.id);
       await refresh();
     },
-    [refresh],
+    [refresh, updateClipMetadataMutation],
   );
 
   const removeStitch = useCallback(
     async (id: string) => {
-      await deleteStitch(id);
+      const stitchDocument =
+        stitchDocuments?.find((stitch) => stitch.id === id) ??
+        (await convex.query(api.stitches.get, { id }));
+
+      if (stitchDocument) {
+        await deleteObjectsFromR2(
+          getDefinedR2Objects([
+            stitchDocument.stitchObject,
+            stitchDocument.posterObject,
+          ]),
+        );
+      }
+
+      await removeStitchMutation({ id });
       await refresh();
     },
-    [refresh],
+    [convex, refresh, removeStitchMutation, stitchDocuments],
   );
 
   useEffect(() => {
-    void Promise.resolve().then(refresh);
-  }, [refresh]);
+    if (
+      isAuthLoading ||
+      !isAuthenticated ||
+      !clipDocuments ||
+      !stitchDocuments
+    ) {
+      if (!isAuthLoading && !isAuthenticated) {
+        void Promise.resolve().then(() => {
+          setClips([]);
+          setStitches([]);
+        });
+      }
 
-  useClipLibraryPosterBackfill({
-    clips,
-    stitches,
-    setClips,
-    setStitches,
-    loadClip,
-  });
+      return;
+    }
+
+    let isCancelled = false;
+
+    void Promise.resolve().then(async () => {
+      if (isCancelled) {
+        return;
+      }
+
+      setIsHydrating(true);
+      setError(null);
+
+      try {
+        const [nextClips, nextStitches] = await Promise.all([
+          Promise.all(
+            clipDocuments.map(async (clip) => {
+              const posterBlob = clip.posterObject
+                ? await downloadBlobFromR2(clip.posterObject).catch(
+                    () => undefined,
+                  )
+                : undefined;
+
+              return createVideoClipMetadataFromConvexDocument(
+                clip,
+                posterBlob,
+              );
+            }),
+          ),
+          Promise.all(
+            stitchDocuments.map(async (stitch) => {
+              const [blob, posterBlob] = await Promise.all([
+                downloadBlobFromR2(stitch.stitchObject),
+                stitch.posterObject
+                  ? downloadBlobFromR2(stitch.posterObject).catch(
+                      () => undefined,
+                    )
+                  : Promise.resolve(undefined),
+              ]);
+
+              return createStitchFromConvexDocument({
+                stitch,
+                blob,
+                posterBlob,
+              });
+            }),
+          ),
+        ]);
+
+        if (!isCancelled) {
+          setClips(nextClips);
+          setStitches(nextStitches);
+        }
+      } catch (nextError) {
+        if (!isCancelled) {
+          setError(
+            nextError instanceof Error
+              ? nextError.message
+              : "Unable to load the ClipStitchr library.",
+          );
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsHydrating(false);
+        }
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    clipDocuments,
+    isAuthenticated,
+    isAuthLoading,
+    refreshNonce,
+    stitchDocuments,
+  ]);
 
   return {
     clips,
     stitches,
-    isLoading,
+    isLoading:
+      isAuthLoading ||
+      (isAuthenticated &&
+        (clipDocuments === undefined || stitchDocuments === undefined)) ||
+      isHydrating,
     error,
     refresh,
     loadClip,

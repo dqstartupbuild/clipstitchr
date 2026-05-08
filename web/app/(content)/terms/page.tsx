@@ -4,12 +4,12 @@ import { site } from "@/lib/site";
 
 export const metadata: Metadata = createPageMetadata({
   title: `Terms of Use | ${site.name}`,
-  description: `Terms for using ${site.name}, including browser-local video processing, user responsibility for uploaded media, and MVP service limits.`,
+  description: `Terms for using ${site.name}, including browser video processing, user responsibility for uploaded media, and MVP service limits.`,
   canonical: "/terms",
 });
 
 export default function TermsPage() {
-  const lastUpdated = "May 7, 2026";
+  const lastUpdated = "May 8, 2026";
 
   return (
     <article className="px-6 py-20 md:py-28">
@@ -40,10 +40,12 @@ export default function TermsPage() {
           <section>
             <h2>Description of Service</h2>
             <p>
-              {site.name} provides a browser-local MVP for uploading UGC clips
+              {site.name} provides an MVP for uploading UGC clips
               and product demo videos, normalizing them to TikTok-ready 9:16,
               previewing UGC-then-demo sequences, and creating downloadable
-              MP4 files. The Site also provides articles and resources.
+              MP4 files. Media processing runs in the browser, while saved
+              media and metadata use backend storage. The Site also provides
+              articles and resources.
             </p>
           </section>
 
@@ -83,7 +85,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2>Browser-Local MVP Limits</h2>
+            <h2>Browser Processing Limits</h2>
             <p>
               Video processing for the MVP happens in your browser and depends
               on your device, browser codec support, and available memory. We do

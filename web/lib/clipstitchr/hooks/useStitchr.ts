@@ -1,15 +1,17 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
+import { uploadBlobToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobToR2";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { stitchNormalizedVideos } from "@/lib/clipstitchr/media/stitchNormalizedVideos";
 import { stitchNormalizedVideosWithTextOverlay } from "@/lib/clipstitchr/media/stitchNormalizedVideosWithTextOverlay";
-import { saveStitch } from "@/lib/clipstitchr/storage/saveStitch";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -24,6 +26,7 @@ type UseStitchrOptions = {
 };
 
 export function useStitchr({ onCreated }: UseStitchrOptions) {
+  const saveStitch = useMutation(api.stitches.save);
   const [status, setStatus] = useState<ProcessingStatus>("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -72,8 +75,21 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
         }
 
         const now = new Date().toISOString();
+        const stitchId = createId();
+        const stitchObject = await uploadBlobToR2({
+          blob: stitched.blob,
+          kind: "stitch-video",
+          recordId: stitchId,
+        });
+        const posterObject = posterBlob
+          ? await uploadBlobToR2({
+              blob: posterBlob,
+              kind: "stitch-poster",
+              recordId: stitchId,
+            })
+          : undefined;
         const nextStitch: Stitch = {
-          id: createId(),
+          id: stitchId,
           name: getDownloadFileName(ugcClip.name, demoClip.name),
           ugcClipId: ugcClip.id,
           demoClipId: demoClip.id,
@@ -81,7 +97,9 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
           demoClipName: demoClip.name,
           ugcTrimRange: clampedUgcTrimRange,
           demoTrimRange: clampedDemoTrimRange,
+          stitchObject,
           blob: stitched.blob,
+          posterObject,
           posterBlob,
           posterVersion: posterBlob ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
           mimeType: stitched.mimeType,
@@ -93,7 +111,26 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
           createdAt: now,
         };
 
-        await saveStitch(nextStitch);
+        await saveStitch({
+          id: nextStitch.id,
+          name: nextStitch.name,
+          ugcClipId: nextStitch.ugcClipId,
+          demoClipId: nextStitch.demoClipId,
+          ugcClipName: nextStitch.ugcClipName,
+          demoClipName: nextStitch.demoClipName,
+          ugcTrimRange: nextStitch.ugcTrimRange,
+          demoTrimRange: nextStitch.demoTrimRange,
+          stitchObject: nextStitch.stitchObject,
+          posterObject: nextStitch.posterObject,
+          posterVersion: nextStitch.posterVersion,
+          mimeType: nextStitch.mimeType,
+          size: nextStitch.size,
+          width: nextStitch.width,
+          height: nextStitch.height,
+          duration: nextStitch.duration,
+          textOverlay: nextStitch.textOverlay,
+          createdAt: nextStitch.createdAt,
+        });
         await onCreated?.(nextStitch);
 
         setStitch(nextStitch);
@@ -111,7 +148,7 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
         return null;
       }
     },
-    [onCreated],
+    [onCreated, saveStitch],
   );
 
   return {

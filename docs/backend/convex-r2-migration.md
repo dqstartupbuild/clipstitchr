@@ -116,7 +116,7 @@ Every Convex function must call `ctx.auth.getUserIdentity()` and scope reads/wri
 Add authenticated Next.js route handlers:
 
 - `POST /api/r2/upload-url`
-  - Body: object kind, app record ID, filename, content type.
+  - Body: object kind, app record ID, content type.
   - Returns: R2 object key, signed PUT URL, expiration seconds.
 - `POST /api/r2/download-url`
   - Body: R2 object key.
@@ -146,7 +146,7 @@ Replace `useClipLibraryState` and `usePhotoLibraryState` internals:
 - Keep existing in-memory `Map` caches for full video/photo blobs.
 - Use R2 upload helpers during upload, Swapr generation, and stitch generation before saving Convex records.
 
-Remove `useClipLibraryPosterBackfill` or rewrite it to update poster objects in R2 and Convex. No IndexedDB backfill logic remains.
+Remove `useClipLibraryPosterBackfill`. No IndexedDB backfill logic remains.
 
 ## Environment Variables
 
@@ -229,18 +229,17 @@ npm run build
 
 ## Migration Cutover Checklist
 
-- [ ] Convex provider is mounted under Clerk provider.
+- [x] Convex provider is mounted under Clerk provider.
 - [ ] Convex schema and auth config are deployed.
-- [ ] R2 signed URL routes reject unauthenticated users.
-- [ ] R2 signed URL routes reject keys outside `users/{clerkUserId}/`.
-- [ ] Upload normalization saves normalized video and poster to R2 before Convex metadata.
-- [ ] Photo upload saves normalized photo, original photo, and thumbnail to R2 before Convex metadata.
-- [ ] Stitch generation saves stitched output and poster to R2 before Convex metadata.
-- [ ] Library list views query Convex and hydrate thumbnails/posters from R2.
-- [ ] Preview, trim, Swapr, Stitchr, and download flows hydrate full media blobs from R2 on demand.
-- [ ] Rename/tag/trim edits update Convex only.
-- [ ] Deletions remove R2 objects and Convex records.
-- [ ] No application code imports `web/lib/clipstitchr/storage/*`.
-- [ ] No application code references `indexedDB`.
-- [ ] User-facing docs and privacy copy no longer claim browser-local media persistence.
-
+- [x] R2 signed URL routes reject unauthenticated users.
+- [x] R2 signed URL routes reject keys outside `users/{clerkUserId}/`.
+- [x] Upload normalization saves normalized video and poster to R2 before Convex metadata.
+- [x] Photo upload saves normalized photo, original photo, and thumbnail to R2 before Convex metadata.
+- [x] Stitch generation saves stitched output and poster to R2 before Convex metadata.
+- [x] Library list views query Convex and hydrate thumbnails/posters from R2.
+- [x] Preview, trim, Swapr, Stitchr, and download flows hydrate full media blobs from R2 on demand.
+- [x] Rename/tag/trim edits update Convex only.
+- [x] Deletions remove R2 objects and Convex records.
+- [x] No application code imports `web/lib/clipstitchr/storage/*`.
+- [x] No application code references `indexedDB`.
+- [x] User-facing docs and privacy copy no longer claim browser-local media persistence.

@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { analyzeUploadAsset } from "@/lib/clipstitchr/client/analyzeUploadAsset";
+import { uploadBlobToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobToR2";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
-import { saveVideoClip } from "@/lib/clipstitchr/storage/saveVideoClip";
 import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
 import type { UploadQueueItem } from "@/lib/clipstitchr/types/UploadQueueItem";
 import type { UploadAssetAnalysis } from "@/lib/clipstitchr/types/UploadAssetAnalysis";
@@ -23,6 +25,7 @@ export function useUploadProcessor({
   initialClipType = "ugc",
   onClipSaved,
 }: UseUploadProcessorOptions) {
+  const saveVideoClip = useMutation(api.videoClips.save);
   const [clipType, setClipType] = useState<ClipType>(initialClipType);
   const [queue, setQueue] = useState<UploadQueueItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -106,8 +109,21 @@ export function useUploadProcessor({
             }
 
             const now = new Date().toISOString();
+            const clipId = createId();
+            const videoObject = await uploadBlobToR2({
+              blob: normalized.blob,
+              kind: "video-clip-video",
+              recordId: clipId,
+            });
+            const posterObject = posterBlob
+              ? await uploadBlobToR2({
+                  blob: posterBlob,
+                  kind: "video-clip-poster",
+                  recordId: clipId,
+                })
+              : undefined;
             const clip: VideoClip = {
-              id: createId(),
+              id: clipId,
               name: analysis.name,
               tags: normalizeAssetTagsWithRequiredTag(
                 analysis.tags,
@@ -115,7 +131,9 @@ export function useUploadProcessor({
               ),
               originalName: file.name,
               clipType: item.clipType,
+              videoObject,
               blob: normalized.blob,
+              posterObject,
               posterBlob,
               posterVersion: posterBlob
                 ? VIDEO_POSTER_CAPTURE_VERSION
@@ -137,7 +155,29 @@ export function useUploadProcessor({
               updatedAt: now,
             };
 
-            await saveVideoClip(clip);
+            await saveVideoClip({
+              id: clip.id,
+              name: clip.name,
+              tags: clip.tags ?? [],
+              originalName: clip.originalName,
+              clipType: clip.clipType,
+              videoObject: clip.videoObject,
+              posterObject: clip.posterObject,
+              posterVersion: clip.posterVersion,
+              mimeType: clip.mimeType,
+              sourceMimeType: clip.sourceMimeType,
+              size: clip.size,
+              originalSize: clip.originalSize,
+              width: clip.width,
+              height: clip.height,
+              aspectRatio: clip.aspectRatio,
+              duration: clip.duration,
+              defaultTrimRange: clip.defaultTrimRange,
+              hasAudio: clip.hasAudio,
+              swaprMetadata: clip.swaprMetadata,
+              createdAt: clip.createdAt,
+              updatedAt: clip.updatedAt,
+            });
             await onClipSaved?.(clip);
 
             updateQueueItem(item.id, {
@@ -159,7 +199,7 @@ export function useUploadProcessor({
         setIsProcessing(false);
       }
     },
-    [clipType, onClipSaved, updateQueueItem],
+    [clipType, onClipSaved, saveVideoClip, updateQueueItem],
   );
 
   const clearQueue = useCallback(() => setQueue([]), []);

@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { createSwaprGenerationPhotoBlob } from "@/lib/clipstitchr/client/createSwaprGenerationPhotoBlob";
+import { uploadBlobToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobToR2";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
-import { saveVideoClip } from "@/lib/clipstitchr/storage/saveVideoClip";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
 import type { SwaprGenerationStatus } from "@/lib/clipstitchr/types/SwaprGenerationStatus";
@@ -28,6 +30,7 @@ type GenerateSwaprVideoOptions = {
 };
 
 export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
+  const saveVideoClip = useMutation(api.videoClips.save);
   const [status, setStatus] = useState<SwaprGenerationStatus>("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -144,12 +147,27 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
         setProgress(0.96);
 
         const now = new Date().toISOString();
+        const clipId = createId();
+        const videoObject = await uploadBlobToR2({
+          blob: normalized.blob,
+          kind: "video-clip-video",
+          recordId: clipId,
+        });
+        const posterObject = posterBlob
+          ? await uploadBlobToR2({
+              blob: posterBlob,
+              kind: "video-clip-poster",
+              recordId: clipId,
+            })
+          : undefined;
         const nextClip: VideoClip = {
-          id: createId(),
+          id: clipId,
           name: `Swapr - ${photo.name} in ${clip.name}`,
           originalName: outputFile.name,
           clipType: "ugc",
+          videoObject,
           blob: normalized.blob,
+          posterObject,
           posterBlob,
           posterVersion: posterBlob ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
           mimeType: normalized.mimeType,
@@ -180,7 +198,29 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
           updatedAt: now,
         };
 
-        await saveVideoClip(nextClip);
+        await saveVideoClip({
+          id: nextClip.id,
+          name: nextClip.name,
+          tags: nextClip.tags ?? [],
+          originalName: nextClip.originalName,
+          clipType: nextClip.clipType,
+          videoObject: nextClip.videoObject,
+          posterObject: nextClip.posterObject,
+          posterVersion: nextClip.posterVersion,
+          mimeType: nextClip.mimeType,
+          sourceMimeType: nextClip.sourceMimeType,
+          size: nextClip.size,
+          originalSize: nextClip.originalSize,
+          width: nextClip.width,
+          height: nextClip.height,
+          aspectRatio: nextClip.aspectRatio,
+          duration: nextClip.duration,
+          defaultTrimRange: nextClip.defaultTrimRange,
+          hasAudio: nextClip.hasAudio,
+          swaprMetadata: nextClip.swaprMetadata,
+          createdAt: nextClip.createdAt,
+          updatedAt: nextClip.updatedAt,
+        });
         await onClipSaved?.();
         setGeneratedClip(nextClip);
         setStatus("succeeded");
@@ -195,7 +235,7 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
         );
       }
     },
-    [onClipSaved],
+    [onClipSaved, saveVideoClip],
   );
 
   return {

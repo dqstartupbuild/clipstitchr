@@ -23,7 +23,7 @@ export function StitchesPageClient() {
         <LibraryPageHeader
           eyebrow="Exports"
           title="Stitches"
-          description="Browse stitched UGC-first videos saved in this browser."
+          description="Browse stitched UGC-first videos saved to your account."
         />
         {library.error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">

@@ -1,4 +1,5 @@
 import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SwaprOutputMetadata } from "@/lib/clipstitchr/types/SwaprOutputMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
@@ -8,7 +9,9 @@ export type VideoClip = {
   tags?: string[];
   originalName: string;
   clipType: ClipType;
+  videoObject: R2ObjectReference;
   blob: Blob;
+  posterObject?: R2ObjectReference;
   posterBlob?: Blob;
   posterVersion?: number;
   mimeType: string;

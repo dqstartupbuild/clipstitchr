@@ -12,7 +12,7 @@ export function StitchrEmptyState() {
       </h2>
       <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-text-secondary">
         The Stitchr studio only works with clips that have already been
-        normalized into the local ClipStitchr library.
+        normalized and saved to your ClipStitchr library.
       </p>
       <SecondaryButtonLink href={UPLOAD_CONTROLS_HREF} className="mt-5">
         Go to Uploads

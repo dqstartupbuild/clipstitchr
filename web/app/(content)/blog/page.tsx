@@ -10,7 +10,7 @@ import {
 
 export const metadata = createPageMetadata({
   title: `Blog | ${site.name}`,
-  description: `Articles and guides from ${site.name} on browser-local UGC video workflows, TikTok-ready 9:16 output, and product demo creation.`,
+  description: `Articles and guides from ${site.name} on UGC video workflows, TikTok-ready 9:16 output, and product demo creation.`,
   canonical: "/blog",
 });
 
