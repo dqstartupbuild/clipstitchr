@@ -1,11 +1,11 @@
 import { Panel } from "@/app/_components/ui/Panel";
 
 const steps = [
-  "Upload UGC",
-  "Upload Demo",
-  "Normalize",
-  "Preview",
-  "Create",
+  "Upload",
+  "Organize",
+  "Generate",
+  "Stitch",
+  "Finish",
   "Download",
 ];
 
@@ -15,11 +15,15 @@ export function LandingWorkflow() {
       <div className="mx-auto max-w-6xl">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
-            MVP workflow
+            How it works
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            The sequence stays identical from preview to export.
+            Start with what you have. Leave with a finished vertical video.
           </h2>
+          <p className="mt-4 leading-7 text-text-secondary">
+            Add your assets, choose the clips that belong together, make quick
+            adjustments, and export a video that is ready to post.
+          </p>
         </div>
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
           {steps.map((step, index) => (

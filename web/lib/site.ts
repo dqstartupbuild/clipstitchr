@@ -33,14 +33,14 @@ export const site = {
   name: "ClipStitchr",
   url: configuredSiteUrl.replace(/\/$/, ""),
   publisherName: "ClipStitchr",
-  defaultTitle: "ClipStitchr | Browser UGC Video Stitching",
+  defaultTitle: "ClipStitchr | Short-Form UGC Video Workspace",
   defaultDescription:
-    "ClipStitchr lets teams normalize UGC clips and product demos to TikTok 9:16, stitch UGC first then demo, and export browser-created MP4 videos.",
+    "ClipStitchr helps teams turn UGC clips, product demos, and photos into ready-to-post vertical videos with organized uploads, generated UGC-style clips, stitching, text, and downloads.",
   keywords: [
     "UGC video editor",
     "TikTok video maker",
     "product demo videos",
-    "browser video stitching",
+    "short-form video workspace",
     "9:16 video editor",
   ],
   ctaUrl: "/dashboard",

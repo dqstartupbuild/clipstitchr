@@ -8,8 +8,9 @@ export function LandingBottomBand() {
         <div>
           <h2 className="text-3xl font-bold">Create your first ClipStitchr video.</h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-purple-100">
-            Open the dashboard, add one UGC clip and one demo, then export a
-            TikTok-ready video from your browser.
+            Upload clips, demos, or photos. Build a stitched ad, create
+            a new UGC-style clip, or keep everything organized for the next
+            campaign.
           </p>
         </div>
         <PrimaryButtonLink

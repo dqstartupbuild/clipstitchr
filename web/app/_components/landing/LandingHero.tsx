@@ -1,4 +1,4 @@
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { PrimaryButtonLink } from "@/app/_components/PrimaryButtonLink";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
@@ -19,18 +19,18 @@ export function LandingHero() {
       <div className="relative mx-auto flex min-h-[82svh] w-full max-w-6xl items-center px-6 py-28">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold text-accent-dark">
-            Stitch better videos, faster
+            Create ad videos, faster
           </p>
           <h1 className="mt-5 max-w-2xl text-5xl font-bold leading-[1.05] text-text-primary md:text-6xl">
-            Stitch. Swap. Share.
+            Turn raw clips into
             <br className="hidden md:block" />
             <span className="mt-2 block text-accent md:mt-0 md:inline">
-              All in your browser.
+              ready-to-post videos.
             </span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-text-secondary">
-            Combine UGC reaction clips with product demos to stitch high-converting
-            marketing videos in minutes.
+            Upload creator clips, product demos, and photos. ClipStitchr helps
+            you turn them into UGC-style marketing videos for TikTok, Reels, and Shorts.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <PrimaryButtonLink
@@ -40,10 +40,10 @@ export function LandingHero() {
               Go to Dashboard
             </PrimaryButtonLink>
             <SecondaryButtonLink
-              href="#workflow"
-              icon={<Play aria-hidden className="h-4 w-4" />}
+              href="#features"
+              icon={<Sparkles aria-hidden className="h-4 w-4" />}
             >
-              View Workflow
+              Learn more
             </SecondaryButtonLink>
           </div>
         </div>
