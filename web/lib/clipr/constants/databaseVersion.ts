@@ -1,1 +1,0 @@
-export const CLIPR_DATABASE_VERSION = 3;

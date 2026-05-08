@@ -1,6 +1,6 @@
 "use client";
 
-import type { UploadAssetType } from "@/lib/clipr/types/UploadAssetType";
+import type { UploadAssetType } from "@/lib/clipstitchr/types/UploadAssetType";
 
 type UploadAssetTabsProps = {
   value: UploadAssetType;

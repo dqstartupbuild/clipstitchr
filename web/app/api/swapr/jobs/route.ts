@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { createReplicateClient } from "@/lib/clipr/server/createReplicateClient";
-import { createSwaprPredictionJson } from "@/lib/clipr/server/createSwaprPredictionJson";
-import { getSwaprCharacterOrientation } from "@/lib/clipr/server/getSwaprCharacterOrientation";
-import { getSwaprFormBoolean } from "@/lib/clipr/server/getSwaprFormBoolean";
-import { getSwaprFormFile } from "@/lib/clipr/server/getSwaprFormFile";
-import { getSwaprFormString } from "@/lib/clipr/server/getSwaprFormString";
-import { getSwaprMode } from "@/lib/clipr/server/getSwaprMode";
+import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
+import { createSwaprPredictionJson } from "@/lib/clipstitchr/server/createSwaprPredictionJson";
+import { getSwaprCharacterOrientation } from "@/lib/clipstitchr/server/getSwaprCharacterOrientation";
+import { getSwaprFormBoolean } from "@/lib/clipstitchr/server/getSwaprFormBoolean";
+import { getSwaprFormFile } from "@/lib/clipstitchr/server/getSwaprFormFile";
+import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString";
+import { getSwaprMode } from "@/lib/clipstitchr/server/getSwaprMode";
 
 export const runtime = "nodejs";
 

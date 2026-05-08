@@ -20,8 +20,8 @@ export function LandingPreview() {
         </div>
         <Panel className="overflow-hidden p-2">
           <Image
-            src="/mockups/clipr-product-mockup.png"
-            alt="Clipr dashboard and video creation interface mockup"
+            src="/mockups/clipstitchr-product-mockup.png"
+            alt="ClipStitchr dashboard and video stitching interface mockup"
             width={1536}
             height={1024}
             className="h-auto w-full rounded-md"

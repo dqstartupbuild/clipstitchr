@@ -3,7 +3,7 @@
 import { CreatedVideoCard } from "@/app/_components/dashboard/CreatedVideoCard";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
-import type { CreatedVideo } from "@/lib/clipr/types/CreatedVideo";
+import type { CreatedVideo } from "@/lib/clipstitchr/types/CreatedVideo";
 
 type RecentCreatedVideosSectionProps = {
   createdVideos: CreatedVideo[];
@@ -40,7 +40,7 @@ export function RecentCreatedVideosSection({
       ) : (
         <DashboardEmptyState
           title="No created videos yet"
-          description="Create a video after you have at least one UGC clip and one demo video."
+          description="Stitch a video after you have at least one UGC clip and one demo video."
         />
       )}
     </section>

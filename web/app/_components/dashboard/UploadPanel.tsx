@@ -6,10 +6,10 @@ import { UploadAssetTabs } from "@/app/_components/dashboard/UploadAssetTabs";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { UploadQueueList } from "@/app/_components/dashboard/UploadQueueList";
-import { ACCEPTED_PHOTO_TYPES } from "@/lib/clipr/constants/acceptedPhotoTypes";
-import { ACCEPTED_VIDEO_TYPES } from "@/lib/clipr/constants/acceptedVideoTypes";
-import { useUploadProcessor } from "@/lib/clipr/hooks/useUploadProcessor";
-import type { UploadAssetType } from "@/lib/clipr/types/UploadAssetType";
+import { ACCEPTED_PHOTO_TYPES } from "@/lib/clipstitchr/constants/acceptedPhotoTypes";
+import { ACCEPTED_VIDEO_TYPES } from "@/lib/clipstitchr/constants/acceptedVideoTypes";
+import { useUploadProcessor } from "@/lib/clipstitchr/hooks/useUploadProcessor";
+import type { UploadAssetType } from "@/lib/clipstitchr/types/UploadAssetType";
 
 type UploadPanelProps = {
   onUploaded: () => void | Promise<void>;
@@ -33,7 +33,7 @@ const contentByAssetType: Record<
   }
 > = {
   ugc: {
-    title: "Add UGC videos to the local library",
+    title: "Add UGC clips to the library",
     description:
       "Selected UGC files are normalized to 1080 x 1920 before they are saved.",
     dropTitle: "Drop UGC videos here",
@@ -41,7 +41,7 @@ const contentByAssetType: Record<
     acceptedTypes: ACCEPTED_VIDEO_TYPES,
   },
   demo: {
-    title: "Add demo videos to the local library",
+    title: "Add product demos to the library",
     description:
       "Selected demo files are normalized to 1080 x 1920 before they are saved.",
     dropTitle: "Drop demo videos here",
@@ -49,7 +49,7 @@ const contentByAssetType: Record<
     acceptedTypes: ACCEPTED_VIDEO_TYPES,
   },
   photo: {
-    title: "Add photos to the local library",
+    title: "Add photos to the library",
     description:
       "Photos are saved as 1080 x 1920 portrait references for Swapr.",
     dropTitle: "Drop photos here",

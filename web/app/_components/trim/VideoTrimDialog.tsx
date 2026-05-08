@@ -4,12 +4,12 @@ import { Save, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { useObjectUrl } from "@/lib/clipr/hooks/useObjectUrl";
-import type { VideoClip } from "@/lib/clipr/types/VideoClip";
-import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
-import { clampVideoTrimRange } from "@/lib/clipr/utils/clampVideoTrimRange";
-import { formatDuration } from "@/lib/clipr/utils/formatDuration";
-import { getVideoTrimRangeDuration } from "@/lib/clipr/utils/getVideoTrimRangeDuration";
+import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type VideoTrimDialogProps = {
   clip: VideoClip;

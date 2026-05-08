@@ -1,0 +1,1 @@
+export const CLIPSTITCHR_DATABASE_VERSION = 3;

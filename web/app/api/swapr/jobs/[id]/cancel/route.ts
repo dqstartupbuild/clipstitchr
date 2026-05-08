@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createReplicateClient } from "@/lib/clipr/server/createReplicateClient";
-import { createSwaprPredictionJson } from "@/lib/clipr/server/createSwaprPredictionJson";
+import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
+import { createSwaprPredictionJson } from "@/lib/clipstitchr/server/createSwaprPredictionJson";
 
 export const runtime = "nodejs";
 

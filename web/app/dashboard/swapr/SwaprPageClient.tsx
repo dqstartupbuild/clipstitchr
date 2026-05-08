@@ -7,15 +7,15 @@ import { SwaprControlsPanel } from "@/app/_components/swapr/SwaprControlsPanel";
 import { SwaprOutputPanel } from "@/app/_components/swapr/SwaprOutputPanel";
 import { SwaprPhotoSelector } from "@/app/_components/swapr/SwaprPhotoSelector";
 import { SwaprUgcSelector } from "@/app/_components/swapr/SwaprUgcSelector";
-import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipr/constants/swaprReferenceVideoMaxSizeBytes";
-import { useClipLibrary } from "@/lib/clipr/hooks/useClipLibrary";
-import { usePhotoLibrary } from "@/lib/clipr/hooks/usePhotoLibrary";
-import { useSwaprGeneration } from "@/lib/clipr/hooks/useSwaprGeneration";
-import type { PhotoAsset } from "@/lib/clipr/types/PhotoAsset";
-import type { SwaprCharacterOrientation } from "@/lib/clipr/types/SwaprCharacterOrientation";
-import type { SwaprMode } from "@/lib/clipr/types/SwaprMode";
-import type { VideoClip } from "@/lib/clipr/types/VideoClip";
-import { filterClipsByType } from "@/lib/clipr/utils/filterClipsByType";
+import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipstitchr/constants/swaprReferenceVideoMaxSizeBytes";
+import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
+import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
+import { useSwaprGeneration } from "@/lib/clipstitchr/hooks/useSwaprGeneration";
+import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
+import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
+import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 
 export function SwaprPageClient() {
   const library = useClipLibrary();

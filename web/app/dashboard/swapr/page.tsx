@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `Swapr | ${site.name}`,
   description:
-    "Use Swapr to generate AI UGC by pairing a saved person photo with motion from an uploaded Clipr UGC video.",
+    "Use Swapr to generate AI UGC by pairing a saved person photo with motion from an uploaded ClipStitchr UGC video.",
   canonical: "/dashboard/swapr",
 });
 

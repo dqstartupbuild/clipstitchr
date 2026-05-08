@@ -3,10 +3,10 @@
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { VideoClipCard } from "@/app/_components/dashboard/VideoClipCard";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
-import { uploadLibraryPageSize } from "@/lib/clipr/constants/uploadLibraryPageSize";
-import { usePagination } from "@/lib/clipr/hooks/usePagination";
-import type { VideoClip } from "@/lib/clipr/types/VideoClip";
-import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
+import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
+import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 type VideoLibrarySectionProps = {
   id: string;

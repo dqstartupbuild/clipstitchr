@@ -42,14 +42,14 @@ export default function PrivacyPage() {
           <section>
             <h2>Browser-Local Video Storage</h2>
             <p>
-              Clipr processes uploaded videos in your browser for the MVP.
+              ClipStitchr processes uploaded videos in your browser for the MVP.
               Normalized clips and created videos are saved in your browser
-              IndexedDB under the <strong>clipr-mvp</strong> database. We do
-              not upload those video files to a Clipr server as part of the MVP.
+              IndexedDB under the <strong>clipstitchr-mvp</strong> database. We do
+              not upload those video files to a ClipStitchr server as part of the MVP.
             </p>
             <p>
               Anyone with access to your browser profile may be able to access
-              local Clipr data. You can delete clips in the dashboard or clear
+              local ClipStitchr data. You can delete clips in the dashboard or clear
               site data from your browser settings.
             </p>
           </section>

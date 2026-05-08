@@ -1,16 +1,16 @@
 "use client";
 
 import { useMemo } from "react";
-import { CreateVideoCallout } from "@/app/_components/dashboard/CreateVideoCallout";
+import { StitchrCallout } from "@/app/_components/dashboard/StitchrCallout";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
 import { RecentCreatedVideosSection } from "@/app/_components/dashboard/RecentCreatedVideosSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
-import { useClipLibrary } from "@/lib/clipr/hooks/useClipLibrary";
-import { filterClipsByType } from "@/lib/clipr/utils/filterClipsByType";
-import { getRecentCreatedVideos } from "@/lib/clipr/utils/getRecentCreatedVideos";
-import { getRecentVideoClips } from "@/lib/clipr/utils/getRecentVideoClips";
+import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
+import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
+import { getRecentCreatedVideos } from "@/lib/clipstitchr/utils/getRecentCreatedVideos";
+import { getRecentVideoClips } from "@/lib/clipstitchr/utils/getRecentVideoClips";
 
 const RECENT_DASHBOARD_ITEM_LIMIT = 4;
 
@@ -61,7 +61,7 @@ export function DashboardPageClient() {
           onRename={library.renameClip}
           onUpdateTrim={library.updateClipTrimRange}
         />
-        <CreateVideoCallout />
+        <StitchrCallout />
       </div>
     </DashboardShell>
   );

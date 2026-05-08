@@ -3,11 +3,11 @@
 import { Check, Download, Trash2 } from "lucide-react";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { IconLink } from "@/app/_components/ui/IconLink";
-import { useObjectUrl } from "@/lib/clipr/hooks/useObjectUrl";
-import type { PhotoAsset } from "@/lib/clipr/types/PhotoAsset";
-import { formatBytes } from "@/lib/clipr/utils/formatBytes";
-import { getAssetDownloadFileName } from "@/lib/clipr/utils/getAssetDownloadFileName";
-import { getBlobFileExtension } from "@/lib/clipr/utils/getBlobFileExtension";
+import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
+import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
+import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
+import { getBlobFileExtension } from "@/lib/clipstitchr/utils/getBlobFileExtension";
 
 type PhotoAssetCardProps = {
   photo: PhotoAsset;

@@ -30,12 +30,12 @@ function normalizePathname(pathname = "/") {
 }
 
 export const site = {
-  name: "Clipr",
+  name: "ClipStitchr",
   url: configuredSiteUrl.replace(/\/$/, ""),
-  publisherName: "Clipr",
-  defaultTitle: "Clipr | Browser UGC Video Stitching",
+  publisherName: "ClipStitchr",
+  defaultTitle: "ClipStitchr | Browser UGC Video Stitching",
   defaultDescription:
-    "Clipr lets teams normalize UGC clips and product demos to TikTok 9:16, stitch UGC first then demo, and export browser-created MP4 videos.",
+    "ClipStitchr lets teams normalize UGC clips and product demos to TikTok 9:16, stitch UGC first then demo, and export browser-created MP4 videos.",
   keywords: [
     "UGC video editor",
     "TikTok video maker",
@@ -62,7 +62,7 @@ export const site = {
       priority: 0.75,
     },
     {
-      pathname: "/dashboard/create",
+      pathname: "/dashboard/stitchr",
       changeFrequency: "weekly" as const,
       priority: 0.72,
     },

@@ -4,10 +4,10 @@ import { Check } from "lucide-react";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
-import { useObjectUrl } from "@/lib/clipr/hooks/useObjectUrl";
-import type { VideoClip } from "@/lib/clipr/types/VideoClip";
-import { formatBytes } from "@/lib/clipr/utils/formatBytes";
-import { formatDuration } from "@/lib/clipr/utils/formatDuration";
+import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
+import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 
 type SwaprUgcClipCardProps = {
   clip: VideoClip;

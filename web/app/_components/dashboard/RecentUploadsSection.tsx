@@ -3,8 +3,8 @@
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { VideoClipCard } from "@/app/_components/dashboard/VideoClipCard";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
-import type { VideoClip } from "@/lib/clipr/types/VideoClip";
-import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 type RecentUploadsSectionProps = {
   clips: VideoClip[];

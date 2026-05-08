@@ -8,17 +8,17 @@ import { VideoLibrarySection } from "@/app/_components/dashboard/VideoLibrarySec
 import { PhotoLibrarySection } from "@/app/_components/uploads/PhotoLibrarySection";
 import { UploadLibraryTabs } from "@/app/_components/uploads/UploadLibraryTabs";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
-import { useClipLibrary } from "@/lib/clipr/hooks/useClipLibrary";
-import { usePhotoLibrary } from "@/lib/clipr/hooks/usePhotoLibrary";
-import { useShowUploadControls } from "@/lib/clipr/hooks/useShowUploadControls";
-import type { ClipType } from "@/lib/clipr/types/ClipType";
-import type { UploadLibraryTab } from "@/lib/clipr/types/UploadLibraryTab";
-import { filterClipsByName } from "@/lib/clipr/utils/filterClipsByName";
-import { filterClipsByType } from "@/lib/clipr/utils/filterClipsByType";
-import { filterPhotosByName } from "@/lib/clipr/utils/filterPhotosByName";
-import { getInitialUploadLibraryTab } from "@/lib/clipr/utils/getInitialUploadLibraryTab";
-import { getUploadAssetTypeFromLibraryTab } from "@/lib/clipr/utils/getUploadAssetTypeFromLibraryTab";
-import { getUploadLibraryTabFromAssetType } from "@/lib/clipr/utils/getUploadLibraryTabFromAssetType";
+import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
+import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
+import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
+import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
+import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab";
+import { filterClipsByName } from "@/lib/clipstitchr/utils/filterClipsByName";
+import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
+import { filterPhotosByName } from "@/lib/clipstitchr/utils/filterPhotosByName";
+import { getInitialUploadLibraryTab } from "@/lib/clipstitchr/utils/getInitialUploadLibraryTab";
+import { getUploadAssetTypeFromLibraryTab } from "@/lib/clipstitchr/utils/getUploadAssetTypeFromLibraryTab";
+import { getUploadLibraryTabFromAssetType } from "@/lib/clipstitchr/utils/getUploadLibraryTabFromAssetType";
 
 const uploadLibraryContent: Record<
   ClipType,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchReplicateOutput } from "@/lib/clipr/server/fetchReplicateOutput";
+import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
 
 export const runtime = "nodejs";
 

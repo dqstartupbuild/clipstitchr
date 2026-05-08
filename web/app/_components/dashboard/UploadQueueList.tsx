@@ -1,6 +1,6 @@
 import { ProgressBar } from "@/app/_components/ui/ProgressBar";
-import type { UploadQueueItem } from "@/lib/clipr/types/UploadQueueItem";
-import { formatBytes } from "@/lib/clipr/utils/formatBytes";
+import type { UploadQueueItem } from "@/lib/clipstitchr/types/UploadQueueItem";
+import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 
 type UploadQueueListProps = {
   queue: UploadQueueItem[];

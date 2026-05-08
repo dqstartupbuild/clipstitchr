@@ -4,11 +4,11 @@ import { Download, Trash2 } from "lucide-react";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { Panel } from "@/app/_components/ui/Panel";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
-import { useObjectUrl } from "@/lib/clipr/hooks/useObjectUrl";
-import type { CreatedVideo } from "@/lib/clipr/types/CreatedVideo";
-import { formatBytes } from "@/lib/clipr/utils/formatBytes";
-import { formatDate } from "@/lib/clipr/utils/formatDate";
-import { formatDuration } from "@/lib/clipr/utils/formatDuration";
+import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import type { CreatedVideo } from "@/lib/clipstitchr/types/CreatedVideo";
+import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
+import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
+import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 
 type CreatedVideoCardProps = {
   createdVideo: CreatedVideo;

@@ -1,6 +1,6 @@
-# Clipr
+# ClipStitchr
 
-Clipr lets users upload UGC reaction clips and product demo videos, then automatically stitches them together to produce polished marketing videos.
+ClipStitchr lets users upload UGC reaction clips and product demo videos, then automatically stitches them together to produce polished marketing videos.
 
 Built with [Next.js](https://nextjs.org), [Tailwind CSS](https://tailwindcss.com), [Content Collections](https://www.content-collections.dev), and [Media Bunny](https://mediabunny.dev).
 
@@ -41,10 +41,10 @@ The MVP is browser-local:
 ```
 ├── app/
 │   ├── page.tsx                 # Landing page
-│   ├── dashboard/               # Dashboard and creation routes
+│   ├── dashboard/               # Dashboard, Stitchr, Uploads, Swapr, and Created routes
 │   ├── uploads/                 # Upload library route
 │   ├── created/                 # Created video library route
-│   ├── _components/             # Atomic UI, dashboard, create, and landing components
+│   ├── _components/             # Atomic UI, dashboard, Stitchr, and landing components
 │   ├── layout.tsx               # Root layout (fonts, JSON-LD)
 │   ├── globals.css              # Design system tokens + utilities
 │   ├── site-header.tsx          # Shared header
@@ -64,12 +64,12 @@ The MVP is browser-local:
 │   ├── site.ts                  # Site config (single source of truth)
 │   ├── metadata.ts              # Page metadata helper
 │   ├── llms.ts                  # LLMs.txt generator
-│   ├── clipr/
+│   ├── clipstitchr/
 │   │   ├── media/               # Media Bunny processing + poster capture helpers
 │   │   ├── storage/             # IndexedDB helpers
 │   │   ├── hooks/               # Browser-local app state hooks
-│   │   ├── types/               # Clipr data model types
-│   │   └── constants/           # Clipr media/storage constants
+│   │   ├── types/               # ClipStitchr data model types
+│   │   └── constants/           # ClipStitchr media/storage constants
 │   ├── content/
 │   │   ├── schema.ts            # Blog frontmatter schema (Zod)
 │   │   ├── queries.ts           # Content query helpers

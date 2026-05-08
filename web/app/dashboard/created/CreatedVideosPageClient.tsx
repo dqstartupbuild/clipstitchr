@@ -5,8 +5,8 @@ import { CreatedVideosSection } from "@/app/_components/dashboard/CreatedVideosS
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { LibraryPageHeader } from "@/app/_components/dashboard/LibraryPageHeader";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
-import { useClipLibrary } from "@/lib/clipr/hooks/useClipLibrary";
-import { filterCreatedVideosByName } from "@/lib/clipr/utils/filterCreatedVideosByName";
+import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
+import { filterCreatedVideosByName } from "@/lib/clipstitchr/utils/filterCreatedVideosByName";
 
 export function CreatedVideosPageClient() {
   const library = useClipLibrary();

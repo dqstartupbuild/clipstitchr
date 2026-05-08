@@ -4,9 +4,9 @@ import Link from "next/link";
 import { SwaprUgcClipCard } from "@/app/_components/swapr/SwaprUgcClipCard";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { Panel } from "@/app/_components/ui/Panel";
-import { clipSelectorPageSize } from "@/lib/clipr/constants/clipSelectorPageSize";
-import { usePagination } from "@/lib/clipr/hooks/usePagination";
-import type { VideoClip } from "@/lib/clipr/types/VideoClip";
+import { clipSelectorPageSize } from "@/lib/clipstitchr/constants/clipSelectorPageSize";
+import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 
 type SwaprUgcSelectorProps = {
   clips: VideoClip[];

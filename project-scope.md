@@ -1,4 +1,4 @@
-# Clipr — Project Scope
+# ClipStitchr — Project Scope
 
 > **Version:** 0.1 (MVP Definition)
 > **Created:** 2026-05-05
@@ -8,7 +8,7 @@
 
 ## 1. Vision
 
-**Clipr** is a web application that lets users upload UGC (User-Generated Content) reaction clips and product demo videos, normalize them to TikTok-ready 9:16 format, then seamlessly stitch them together to produce polished marketing videos — all from the browser.
+**ClipStitchr** is a web application that lets users upload UGC (User-Generated Content) reaction clips and product demo videos, normalize them to TikTok-ready 9:16 format, then seamlessly stitch them together to produce polished marketing videos — all from the browser.
 
 Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique 9:16 videos** — each pairing a different UGC clip (first) with the same product demo (second) — in minutes, without leaving the app.
 
@@ -42,7 +42,7 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique 9:16
                │
                ▼
 ┌──────────────────────────────────┐
-│     Click "Create Video"         │
+│     Click "Stitch Video"         │
 │ Stitch: UGC immediately → Demo   │
 └──────────────┬───────────────────┘
                │
@@ -83,15 +83,15 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique 9:16
 | 8 | Store normalized files and preview poster images in local storage / IndexedDB | ✅ | — |
 | 9 | Store normalized files and preview poster images in Cloudflare R2 | — | ✅ |
 
-### 4.2 Video Stitching / Creation
+### 4.2 Video Stitching
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
 | 1 | User **selects** one UGC clip and one Demo clip | ✅ | ✅ |
 | 2 | Preview selection as UGC clip followed immediately by Demo clip | ✅ | ✅ |
-| 3 | Copy upload default trims into each new creation selection | ✅ | ✅ |
-| 4 | Override copied trim ranges while creating without changing upload defaults | ✅ | ✅ |
-| 5 | Click **"Create Video"** to stitch them with the same UGC-then-Demo sequence | ✅ | ✅ |
+| 3 | Copy upload default trims into each new Stitchr selection | ✅ | ✅ |
+| 4 | Override copied trim ranges while stitching without changing upload defaults | ✅ | ✅ |
+| 5 | Click **"Stitch Video"** to stitch them with the same UGC-then-Demo sequence | ✅ | ✅ |
 | 6 | Processing happens in-browser (no server-side rendering for MVP) | ✅ | ✅ |
 | 7 | Output a single combined TikTok 9:16 video file | ✅ | ✅ |
 | 8 | Progress indicator during normalization and stitching | ✅ | ✅ |
@@ -113,7 +113,7 @@ Text overlays are planned for later, but they are not required for the MVP.
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
 | 1 | Landing page with a **"Dashboard"** button | ✅ | ✅ |
-| 2 | Dashboard shows workspace status, recent uploads, recent created videos, and creation entry points | ✅ | ✅ |
+| 2 | Dashboard shows workspace status, recent uploads, recent created videos, and Stitchr entry points | ✅ | ✅ |
 | 3 | No login required — dashboard is directly accessible | ✅ | — |
 | 4 | Clerk-authenticated access to dashboard | — | ✅ |
 | 5 | Uploaded UGC clips and demo videos share a tabbed uploads library page | ✅ | ✅ |
@@ -128,7 +128,7 @@ Text overlays are planned for later, but they are not required for the MVP.
 ```
 /                → Landing page (marketing + "Go to Dashboard" CTA)
 /dashboard       → Main workspace
-/dashboard/create → Video creation / stitching interface
+/dashboard/stitchr → Stitchr video stitching interface
 /dashboard/swapr → AI motion-transfer studio using saved photos and UGC clips
 /dashboard/uploads → Upload library with UGC, Demo, and Photos tabs; unified upload controls open from header action
 /dashboard/created → Created video library
@@ -151,7 +151,7 @@ Text overlays are planned for later, but they are not required for the MVP.
 │  │              Upload Panel          │   │
 │  │              9:16 Normalizer       │   │
 │  │              Video Library         │   │
-│  │              Creation Studio       │   │
+│  │              Stitchr Studio        │   │
 │  │                    │               │   │
 │  │         ┌──────────┴──────────┐    │   │
 │  │         │  Video Engine       │    │   │
@@ -186,7 +186,7 @@ Text overlays are planned for later, but they are not required for the MVP.
 
 ## 7. Video Processing Engine — ✅ Media Bunny
 
-**Decision:** Media Bunny is the chosen video processing engine for Clipr.
+**Decision:** Media Bunny is the chosen video processing engine for ClipStitchr.
 
 **Implementation reference:** use the local Media Bunny docs in `docs/media-bunny/`, especially `docs/media-bunny/media-bunny-llms.md` and `docs/media-bunny/media-bunny-api.md`.
 
@@ -202,9 +202,9 @@ Text overlays are planned for later, but they are not required for the MVP.
 - Every uploaded UGC and Demo video must be normalized before it is saved to the library.
 - Normalized clips must use a TikTok-ready 9:16 canvas. The MVP target is `1080x1920` when browser encoding support allows it.
 - Do not stretch source footage. For non-9:16 uploads, preserve the source aspect ratio inside the 9:16 output; crop/fill presets can be added later.
-- Preview, Create Video, and Download must all use the same sequence: the normalized UGC clip starts first, and the normalized Demo clip starts immediately after the UGC clip ends.
-- Trimming is non-destructive metadata. Uploads store a default trim range. When a clip is selected for a creation, the default trim range is copied into that creation and can be changed independently.
-- Preview, Create Video, and Download must use the copied creation trim ranges when present.
+- Preview, Stitch Video, and Download must all use the same sequence: the normalized UGC clip starts first, and the normalized Demo clip starts immediately after the UGC clip ends.
+- Trimming is non-destructive metadata. Uploads store a default trim range. When a clip is selected in Stitchr, the default trim range is copied into that Stitchr session and can be changed independently.
+- Preview, Stitch Video, and Download must use the copied Stitchr trim ranges when present.
 - The final created video must be a single 9:16 file using the same normalized assets shown in preview.
 - Clip and created-video cards should use the HTML video `poster` attribute for the static preview state. Generate poster images in the browser by seeking through early candidate frames, choosing the first visibly non-black frame, encoding it as JPEG, and storing it beside the video blob.
 - Poster generation is infrastructure for video previews. User-authored thumbnail generation, thumbnail selection, and thumbnail editing remain out of scope for the MVP.
@@ -314,8 +314,8 @@ interface CreatedVideo {
   name: string;
   ugcClipId: string;
   demoClipId: string;
-  ugcTrimRange?: { start: number; end: number }; // copied creation trim
-  demoTrimRange?: { start: number; end: number }; // copied creation trim
+  ugcTrimRange?: { start: number; end: number }; // copied Stitchr trim
+  demoTrimRange?: { start: number; end: number }; // copied Stitchr trim
   blob: Blob; // final 9:16 video: UGC immediately followed by Demo
   posterBlob?: Blob; // generated JPEG poster used by the video poster attribute
   posterVersion?: number; // capture algorithm version for backfilling stale posters

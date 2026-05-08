@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import type { Prediction } from "replicate";
-import { createReplicateClient } from "@/lib/clipr/server/createReplicateClient";
-import { fetchReplicateOutput } from "@/lib/clipr/server/fetchReplicateOutput";
-import { getReplicateOutputUrl } from "@/lib/clipr/server/getReplicateOutputUrl";
-import { getSwaprFormFile } from "@/lib/clipr/server/getSwaprFormFile";
-import { getSwaprFormString } from "@/lib/clipr/server/getSwaprFormString";
+import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
+import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
+import { getReplicateOutputUrl } from "@/lib/clipstitchr/server/getReplicateOutputUrl";
+import { getSwaprFormFile } from "@/lib/clipstitchr/server/getSwaprFormFile";
+import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString";
 
 export const runtime = "nodejs";
 

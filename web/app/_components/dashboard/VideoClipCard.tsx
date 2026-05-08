@@ -8,15 +8,15 @@ import { IconButton } from "@/app/_components/ui/IconButton";
 import { IconLink } from "@/app/_components/ui/IconLink";
 import { Panel } from "@/app/_components/ui/Panel";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
-import { useObjectUrl } from "@/lib/clipr/hooks/useObjectUrl";
-import type { VideoClip } from "@/lib/clipr/types/VideoClip";
-import type { VideoTrimRange } from "@/lib/clipr/types/VideoTrimRange";
-import { formatBytes } from "@/lib/clipr/utils/formatBytes";
-import { formatDuration } from "@/lib/clipr/utils/formatDuration";
-import { getAssetDownloadFileName } from "@/lib/clipr/utils/getAssetDownloadFileName";
-import { getDefaultVideoTrimRange } from "@/lib/clipr/utils/getDefaultVideoTrimRange";
-import { getBlobFileExtension } from "@/lib/clipr/utils/getBlobFileExtension";
-import { getVideoTrimRangeDuration } from "@/lib/clipr/utils/getVideoTrimRangeDuration";
+import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
+import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
+import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
+import { getBlobFileExtension } from "@/lib/clipstitchr/utils/getBlobFileExtension";
+import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type VideoClipCardProps = {
   clip: VideoClip;

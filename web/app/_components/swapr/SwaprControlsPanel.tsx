@@ -3,12 +3,12 @@
 import { Sparkles } from "lucide-react";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
-import type { SwaprCharacterOrientation } from "@/lib/clipr/types/SwaprCharacterOrientation";
-import type { SwaprMode } from "@/lib/clipr/types/SwaprMode";
-import type { VideoClip } from "@/lib/clipr/types/VideoClip";
-import { formatBytes } from "@/lib/clipr/utils/formatBytes";
-import { formatDuration } from "@/lib/clipr/utils/formatDuration";
-import { getSwaprReferenceDurationLimit } from "@/lib/clipr/utils/getSwaprReferenceDurationLimit";
+import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
+import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
+import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getSwaprReferenceDurationLimit } from "@/lib/clipstitchr/utils/getSwaprReferenceDurationLimit";
 
 type SwaprControlsPanelProps = {
   prompt: string;

@@ -5,11 +5,11 @@ import { ExternalLink } from "lucide-react";
 import { ProgressBar } from "@/app/_components/ui/ProgressBar";
 import { Panel } from "@/app/_components/ui/Panel";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
-import { useObjectUrl } from "@/lib/clipr/hooks/useObjectUrl";
-import type { SwaprGenerationStatus } from "@/lib/clipr/types/SwaprGenerationStatus";
-import type { VideoClip } from "@/lib/clipr/types/VideoClip";
-import { formatDuration } from "@/lib/clipr/utils/formatDuration";
-import { getSwaprGenerationMessage } from "@/lib/clipr/utils/getSwaprGenerationMessage";
+import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import type { SwaprGenerationStatus } from "@/lib/clipstitchr/types/SwaprGenerationStatus";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getSwaprGenerationMessage } from "@/lib/clipstitchr/utils/getSwaprGenerationMessage";
 
 type SwaprOutputPanelProps = {
   status: SwaprGenerationStatus;
@@ -38,7 +38,7 @@ export function SwaprOutputPanel({
         </h2>
         <p className="mt-2 text-sm leading-6 text-text-secondary">
           Successful generations are normalized, saved, and made available in
-          the Create flow.
+          Stitchr.
         </p>
       </div>
 
@@ -93,9 +93,9 @@ export function SwaprOutputPanel({
                   Download
                 </a>
               ) : null}
-              <Link href="/dashboard/create" className="btn-primary">
+              <Link href="/dashboard/stitchr" className="btn-primary">
                 <ExternalLink aria-hidden className="h-4 w-4" />
-                Use in Create
+                Use in Stitchr
               </Link>
             </div>
           </div>

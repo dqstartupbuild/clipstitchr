@@ -3,9 +3,9 @@
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { PhotoAssetCard } from "@/app/_components/swapr/PhotoAssetCard";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
-import { uploadLibraryPageSize } from "@/lib/clipr/constants/uploadLibraryPageSize";
-import { usePagination } from "@/lib/clipr/hooks/usePagination";
-import type { PhotoAsset } from "@/lib/clipr/types/PhotoAsset";
+import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
+import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
+import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 
 type PhotoLibrarySectionProps = {
   id: string;

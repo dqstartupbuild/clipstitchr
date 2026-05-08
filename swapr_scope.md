@@ -8,16 +8,16 @@
 
 ## 1. Vision
 
-**Swapr** is an AI-powered Clipr feature that lets a user choose:
+**Swapr** is an AI-powered ClipStitchr feature that lets a user choose:
 
 1. a saved photo of a person or character, and
-2. a saved UGC video from the existing Clipr UGC library,
+2. a saved UGC video from the existing ClipStitchr UGC library,
 
 then generate a new AI video where the person from the photo appears to follow the action, pose, motion, or performance from the selected UGC video.
 
 The intended user-facing language is "swap the person in the video with the person from the photo." Technically, the first version should be scoped as **motion and appearance transfer**, not guaranteed frame-perfect face replacement. The selected UGC video acts as the reference motion video. The selected photo acts as the reference identity or character image.
 
-The generated output should be saved back into Clipr as a usable UGC-style asset so it can be previewed, downloaded, and selected in the existing UGC-then-Demo creation workflow.
+The generated output should be saved back into ClipStitchr as a usable UGC-style asset so it can be previewed, downloaded, and selected in the existing UGC-then-Demo Stitchr workflow.
 
 ---
 
@@ -49,7 +49,7 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
            v
 +---------------------+
 | Select UGC video    |
-| from Clipr library  |
+| from ClipStitchr library  |
 | Demo videos hidden  |
 +----------+----------+
            |
@@ -130,7 +130,7 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
 |---|---------|-----|------|
 | 1 | Preview generated Swapr output in the app | Yes | Yes |
 | 2 | Download generated Swapr output directly | Yes | Yes |
-| 3 | Make generated Swapr output selectable as a UGC clip in `/dashboard/create` | Yes | Yes |
+| 3 | Make generated Swapr output selectable as a UGC clip in `/dashboard/stitchr` | Yes | Yes |
 | 4 | Preserve provenance showing the output came from Swapr | Yes | Yes |
 | 5 | Link back to source photo, source UGC clip, model, and prompt metadata | Yes | Yes |
 
@@ -162,7 +162,7 @@ Current candidates checked on 2026-05-07:
 | Preferred | `kwaivgi/kling-v3-motion-control` | Transfers character motion from a reference video to a reference image. Better fit for "photo person follows UGC video motion." |
 | Fallback / comparison | `kwaivgi/kling-v2.6-motion-control` | Motion-control model that may support reference-video or brush/path workflows depending on the exact API schema. Use only after schema verification. |
 
-The selected model must be configurable through environment variables or server config so Clipr can switch models without rewriting the feature.
+The selected model must be configurable through environment variables or server config so ClipStitchr can switch models without rewriting the feature.
 
 ### Confirmed Kling v3 Input Schema
 
@@ -187,7 +187,7 @@ Kling v3 motion control is a better conceptual match for Swapr because its docum
 
 This is not the same as deterministic video editing. The output may change face details, body shape, clothing, background, hand details, or timing. The UI and scope should avoid claims like "perfectly replaces the person" or "keeps the same location exactly."
 
-Swapr must prepare uploaded photos as 9:16 references before sending them to the motion-control model. By default, non-9:16 photos should be locally crop-filled to 1080 x 1920 so no AI credits are used and no poor-aspect source is saved. If the user explicitly enables AI expansion during upload, Clipr should build a 1080 x 1920 source canvas, preserve the original image area with a black mask, mark the missing portrait regions with a white mask, and call a Replicate image outpainting model before saving the photo asset. This gives the motion-control model a real portrait reference instead of a square image.
+Swapr must prepare uploaded photos as 9:16 references before sending them to the motion-control model. By default, non-9:16 photos should be locally crop-filled to 1080 x 1920 so no AI credits are used and no poor-aspect source is saved. If the user explicitly enables AI expansion during upload, ClipStitchr should build a 1080 x 1920 source canvas, preserve the original image area with a black mask, mark the missing portrait regions with a white mask, and call a Replicate image outpainting model before saving the photo asset. This gives the motion-control model a real portrait reference instead of a square image.
 
 Current photo-expansion model checked on 2026-05-07:
 
@@ -195,7 +195,7 @@ Current photo-expansion model checked on 2026-05-07:
 |-----------|-----------------|-----|
 | Preferred | `black-forest-labs/flux-fill-pro` | Inpainting/outpainting model that accepts `image`, `mask`, `prompt`, `steps`, `guidance`, `safety_tolerance`, `prompt_upsampling`, and `output_format`. |
 
-Photo outpainting should happen server-side through a Clipr API route so the Replicate key remains private. The browser may create the source canvas and mask because that work does not require secrets.
+Photo outpainting should happen server-side through a ClipStitchr API route so the Replicate key remains private. The browser may create the source canvas and mask because that work does not require secrets.
 
 The outpaint prompt must explicitly constrain the model to real-world scene continuation. It should ask for location, room, wall, floor, sky, furniture, clothing edges, hair edges, lighting, shadows, camera quality, and perspective to continue naturally. It must explicitly forbid social media interfaces, phone screens, app UI, websites, captions, usernames, like/comment bars, buttons, icons, frames, posters, logos, watermarks, templates, and graphic design elements.
 
@@ -212,7 +212,7 @@ Known constraints to plan around:
 - Some motion-control modes cap generation length, for example 10 seconds for image-oriented output and up to 30 seconds for video-oriented output in Kling v3 documentation.
 - Some APIs require a minimum reference video duration.
 - Higher quality modes may output 1080p but cost more and take longer.
-- Standard modes may output 720p and require Media Bunny normalization before saving to Clipr.
+- Standard modes may output 720p and require Media Bunny normalization before saving to ClipStitchr.
 
 ### Scene / Location Swapping
 
@@ -350,7 +350,7 @@ interface SwaprOutputMetadata {
 }
 ```
 
-Generated Swapr outputs should be stored as normal `VideoClip` records with `type: 'ugc'` plus `SwaprOutputMetadata`. This keeps the existing UGC picker useful without introducing a third clip type into the main UGC-then-Demo creation flow.
+Generated Swapr outputs should be stored as normal `VideoClip` records with `type: 'ugc'` plus `SwaprOutputMetadata`. This keeps the existing UGC picker useful without introducing a third clip type into the main UGC-then-Demo Stitchr flow.
 
 ### Production Data
 
@@ -365,14 +365,14 @@ In production:
 
 ## 9. Media Processing Policy
 
-Swapr should continue Clipr's TikTok-first media rules:
+Swapr should continue ClipStitchr's TikTok-first media rules:
 
 - Source UGC clips must already be normalized to 9:16 before they are selectable.
 - Source photos must be normalized to 1080 x 1920 portrait references on upload. If AI expansion is deselected, use local crop-to-fill. If AI expansion is selected, use the image outpainting flow.
 - If the model requires a shorter reference clip, create a temporary trimmed reference clip from the selected UGC using Media Bunny.
 - Do not modify the original UGC video blob when making a Swapr reference clip.
 - Generated Swapr output must be normalized to 9:16 before it is saved as a reusable UGC clip. Use crop-to-fill normalization for Swapr outputs so square or landscape model results do not become letterboxed videos.
-- Generate a poster image for the output using the same generated-poster strategy as other Clipr videos.
+- Generate a poster image for the output using the same generated-poster strategy as other ClipStitchr videos.
 - Store output duration, dimensions, MIME type, and aspect ratio.
 - If the AI model returns audio, preserve it unless the output must be transcoded and browser support prevents audio preservation.
 - If the AI model returns no audio, save the clip as silent and make that clear in metadata.
@@ -412,7 +412,7 @@ Large files should be trimmed or compressed before submission. Replicate's input
 
 ### Privacy and Provider Disclosure
 
-The selected model's provider policies must be disclosed before public launch. The Replicate Kling v3 model page currently states that data from that model is sent from Replicate to Kuaishou, so Swapr should not treat uploaded photos or videos as staying only inside Clipr infrastructure once an AI generation is submitted.
+The selected model's provider policies must be disclosed before public launch. The Replicate Kling v3 model page currently states that data from that model is sent from Replicate to Kuaishou, so Swapr should not treat uploaded photos or videos as staying only inside ClipStitchr infrastructure once an AI generation is submitted.
 
 ### Consent and Misuse Controls
 
@@ -430,7 +430,7 @@ Because Swapr changes a person's appearance in video, it needs explicit product 
 
 ### Swapr Studio Layout
 
-The Swapr screen should be a work-focused creation interface, not a marketing page.
+The Swapr screen should be a work-focused generation interface, not a marketing page.
 
 Primary areas:
 
@@ -439,7 +439,7 @@ Primary areas:
 - Preview column: selected photo, selected reference video, and generated output when ready.
 - Controls: prompt, scene mode, quality mode, orientation/motion mode if supported.
 - Job status: queued, processing, complete, failed, canceled.
-- Output actions: save as UGC, download, use in Create flow.
+- Output actions: save as UGC, download, use in Stitchr flow.
 
 ### Empty States
 
@@ -479,7 +479,7 @@ Use careful language:
 - [ ] Poll job status from the client.
 - [ ] Persist successful output to IndexedDB.
 - [ ] Generate output poster image.
-- [ ] Save output as a UGC-style clip for reuse in `/dashboard/create`.
+- [ ] Save output as a UGC-style clip for reuse in `/dashboard/stitchr`.
 
 ### Phase 2 - Backend Persistence
 
@@ -519,7 +519,7 @@ Use careful language:
 ## 14. Key Constraints
 
 1. **Server-side secret handling:** Replicate calls must go through a server route.
-2. **External dependency:** Swapr is not part of the fully offline Clipr MVP.
+2. **External dependency:** Swapr is not part of the fully offline ClipStitchr MVP.
 3. **UGC-only video source:** only UGC clips can drive Swapr motion; Demo clips are excluded.
 4. **TikTok-first output:** final saved output should be normalized to 9:16.
 5. **Temporary AI outputs:** Replicate API outputs must be copied into app storage quickly.
@@ -536,9 +536,9 @@ Use careful language:
 - [ ] Demo videos are not selectable in Swapr.
 - [ ] User can submit a Swapr job through a server-side Replicate integration.
 - [ ] User can see job progress and completion/failure state.
-- [ ] Successful output is persisted in Clipr storage, not just linked from Replicate.
+- [ ] Successful output is persisted in ClipStitchr storage, not just linked from Replicate.
 - [ ] Successful output has a generated poster image.
-- [ ] Successful output appears as a UGC-style clip and can be used in the existing UGC-then-Demo creation flow.
+- [ ] Successful output appears as a UGC-style clip and can be used in the existing UGC-then-Demo Stitchr flow.
 - [ ] The app records enough provenance to identify the source photo, source UGC clip, model, prompt, and generation time.
 
 ---

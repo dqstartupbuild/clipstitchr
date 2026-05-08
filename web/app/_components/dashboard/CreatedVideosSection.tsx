@@ -2,7 +2,7 @@
 
 import { CreatedVideoCard } from "@/app/_components/dashboard/CreatedVideoCard";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
-import type { CreatedVideo } from "@/lib/clipr/types/CreatedVideo";
+import type { CreatedVideo } from "@/lib/clipstitchr/types/CreatedVideo";
 
 type CreatedVideosSectionProps = {
   createdVideos: CreatedVideo[];
@@ -13,14 +13,14 @@ type CreatedVideosSectionProps = {
 
 export function CreatedVideosSection({
   createdVideos,
-  emptyDescription = "Create a video after you have at least one UGC clip and one demo video.",
+  emptyDescription = "Stitch a video after you have at least one UGC clip and one demo video.",
   emptyTitle = "No created videos yet",
   onDelete,
 }: CreatedVideosSectionProps) {
   return (
     <section id="created-videos">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-text-primary">Created Videos</h2>
+        <h2 className="text-xl font-bold text-text-primary"></h2>
         <span className="text-sm font-semibold text-text-tertiary">
           {createdVideos.length}
         </span>

@@ -7,7 +7,7 @@ export function LandingHero() {
   return (
     <section className="relative min-h-[82svh] overflow-hidden border-b border-border">
       <Image
-        src="/mockups/clipr-product-mockup.png"
+        src="/mockups/clipstitchr-product-mockup.png"
         alt=""
         fill
         className="object-cover object-center opacity-25"
@@ -19,7 +19,7 @@ export function LandingHero() {
       <div className="relative mx-auto flex min-h-[82svh] w-full max-w-6xl items-center px-6 py-28">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold text-accent-dark">
-            Create better videos, faster
+            Stitch better videos, faster
           </p>
           <h1 className="mt-5 max-w-2xl text-5xl font-bold leading-[1.05] text-text-primary md:text-6xl">
             Stitch. Swap. Share.
@@ -29,7 +29,7 @@ export function LandingHero() {
             </span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-text-secondary">
-            Combine UGC reaction clips with product demos to create high-converting
+            Combine UGC reaction clips with product demos to stitch high-converting
             marketing videos in minutes.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">

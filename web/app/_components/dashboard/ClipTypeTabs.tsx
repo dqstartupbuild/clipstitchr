@@ -1,6 +1,6 @@
 "use client";
 
-import type { ClipType } from "@/lib/clipr/types/ClipType";
+import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
 
 type ClipTypeTabsProps = {
   value: ClipType;

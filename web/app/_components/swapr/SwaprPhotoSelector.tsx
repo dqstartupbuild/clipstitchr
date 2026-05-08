@@ -4,9 +4,9 @@ import Link from "next/link";
 import { PhotoAssetCard } from "@/app/_components/swapr/PhotoAssetCard";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { Panel } from "@/app/_components/ui/Panel";
-import { clipSelectorPageSize } from "@/lib/clipr/constants/clipSelectorPageSize";
-import { usePagination } from "@/lib/clipr/hooks/usePagination";
-import type { PhotoAsset } from "@/lib/clipr/types/PhotoAsset";
+import { clipSelectorPageSize } from "@/lib/clipstitchr/constants/clipSelectorPageSize";
+import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
+import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 
 type SwaprPhotoSelectorProps = {
   photos: PhotoAsset[];

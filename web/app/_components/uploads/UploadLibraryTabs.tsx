@@ -1,6 +1,6 @@
 "use client";
 
-import type { UploadLibraryTab } from "@/lib/clipr/types/UploadLibraryTab";
+import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab";
 
 type UploadLibraryTabsProps = {
   value: UploadLibraryTab;

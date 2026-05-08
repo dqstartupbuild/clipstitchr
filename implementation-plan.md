@@ -1,4 +1,4 @@
-# Clipr MVP Implementation Plan
+# ClipStitchr MVP Implementation Plan
 
 > Status: planning-only document. No MVP application code should be changed until this plan has been reviewed.
 
@@ -7,7 +7,7 @@
 ### Product Scope
 
 - `project-scope.md`
-  - MVP routes are `/`, `/dashboard`, `/dashboard/create`, `/dashboard/uploads`, `/dashboard/swapr`, and `/dashboard/created`.
+  - MVP routes are `/`, `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, `/dashboard/swapr`, and `/dashboard/created`.
   - Uploads are UGC clips and Demo videos.
   - Every uploaded clip must be normalized to TikTok 9:16 before it is usable.
   - Preview and export must use the same sequence: UGC plays first, Demo starts immediately after UGC ends.
@@ -68,7 +68,7 @@
     - Purple primary brand color family.
     - Dark navy text.
     - Compact SaaS dashboard composition.
-    - Sidebar dashboard, upload button, stat cards, recent uploads, created videos, and create-video CTA.
+    - Sidebar dashboard, upload button, stat cards, recent uploads, created videos, and Stitchr CTA.
     - Landing hero with a product preview image/card, compact feature blocks, and bottom conversion band.
     - Blog/legal pages retained visually.
   - Post-MVP mockup elements to avoid as implemented features:
@@ -89,7 +89,7 @@
 2. Keep heavy browser-only features out of the server bundle.
    - Media Bunny, IndexedDB, and file APIs are browser-only.
    - Route pages should remain thin server components where possible.
-   - Dashboard/create interactive surfaces should be client components.
+   - Dashboard/Stitchr interactive surfaces should be client components.
 
 3. Follow atomic splitting.
    - Every component, hook, utility, type, and constant gets its own focused file.
@@ -144,7 +144,7 @@ These are copies from root `assets/`; the originals remain unchanged.
 - Copy from `assets/brand/text.png`.
 - Used where the wordmark/text asset is needed.
 
-### `web/public/mockups/clipr-product-mockup.png`
+### `web/public/mockups/clipstitchr-product-mockup.png`
 
 - Copy from `assets/mockup/mockup.png`.
 - Used as a design-faithful landing/product preview asset if needed.
@@ -180,7 +180,7 @@ web/app/(content)/terms/page.tsx
 
 #### `web/app/page.tsx`
 
-- Replace boilerplate landing page with Clipr landing page.
+- Replace boilerplate landing page with ClipStitchr landing page.
 - Keep it as a server component.
 - Compose atomic landing components.
 - Keep page content indexable and metadata-driven.
@@ -193,11 +193,11 @@ web/app/(content)/terms/page.tsx
 - Exports page metadata with canonical `/dashboard`.
 - Renders the client dashboard workspace shell.
 
-#### `web/app/dashboard/create/page.tsx`
+#### `web/app/dashboard/stitchr/page.tsx`
 
-- Server route entry for video creation.
-- Exports page metadata with canonical `/dashboard/create`.
-- Renders the client creation studio shell.
+- Server route entry for video stitching.
+- Exports page metadata with canonical `/dashboard/stitchr`.
+- Renders the client Stitchr studio shell.
 
 ## 6. Metadata / SEO Plan
 
@@ -206,7 +206,7 @@ web/app/(content)/terms/page.tsx
 Modify:
 
 - `defaultTitle`
-  - Use Clipr product title from mockup/product scope.
+  - Use ClipStitchr product title from mockup/product scope.
 - `defaultDescription`
   - Mention browser-based UGC + demo stitching and TikTok 9:16 output.
 - `keywords`
@@ -217,7 +217,7 @@ Modify:
   - Change to `Go to Dashboard`.
 - `staticPages`
   - Keep `/`, `/blog`, `/privacy`, `/terms`.
-  - Add `/dashboard`, `/dashboard/create`, `/dashboard/uploads`, `/dashboard/swapr`, and `/dashboard/created` so sitemap includes the MVP app routes.
+  - Add `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, `/dashboard/swapr`, and `/dashboard/created` so sitemap includes the MVP app routes.
 
 Do not remove:
 
@@ -229,7 +229,7 @@ Do not remove:
 
 ### `web/lib/llms.ts`
 
-Modify site context so LLM discovery describes Clipr as the browser-first UGC/demo stitching application, while still mentioning the blog and RSS if retained.
+Modify site context so LLM discovery describes ClipStitchr as the browser-first UGC/demo stitching application, while still mentioning the blog and RSS if retained.
 
 ### `web/app/layout.tsx`
 
@@ -288,7 +288,7 @@ Modify:
 
 Create:
 
-- One component for compact Clipr brand mark.
+- One component for compact ClipStitchr brand mark.
 - Uses `next/image` with `web/public/brand/icon.png`.
 - Supports a small label from `site.name`.
 
@@ -354,7 +354,7 @@ Create:
 
 Create:
 
-- Workflow section that explains upload, normalize, preview, create, download.
+- Workflow section that explains upload, normalize, preview, stitch, download.
 - Uses concise scan-friendly cards.
 
 ### `web/app/_components/landing/LandingBottomBand.tsx`
@@ -372,7 +372,7 @@ Create:
 
 - Client component entry for `/dashboard`.
 - Owns dashboard page-level loading and interactions through hooks.
-- Composes dashboard layout, stats, recent upload sections, recent created video sections, and create-video callout.
+- Composes dashboard layout, stats, recent upload sections, recent created video sections, and Stitchr callout.
 
 ### `web/app/_components/dashboard/DashboardShell.tsx`
 
@@ -387,15 +387,15 @@ Create:
 Create:
 
 - Sidebar inspired by mockup.
-- Links: Dashboard, Uploads, Created Videos, Create Video.
+- Links: Dashboard, Uploads, Created Videos, Stitch Video.
 - Uses `next/link` and lucide icons.
 
 ### `web/app/_components/dashboard/DashboardHeader.tsx`
 
 Create:
 
-- Dashboard top row with welcome copy and Create Video action.
-- Header actions include Upload Videos and Create Video across dashboard screens.
+- Dashboard top row with welcome copy and Stitch Video action.
+- Header actions include Upload Videos and Stitch Video across dashboard screens.
 
 ### `web/app/_components/dashboard/DashboardStats.tsx`
 
@@ -464,67 +464,67 @@ Create:
 
 - Empty state for no clips or no created videos.
 
-### `web/app/_components/dashboard/CreateVideoCallout.tsx`
+### `web/app/_components/dashboard/StitchrCallout.tsx`
 
 Create:
 
-- Purple callout linking to `/dashboard/create`.
+- Purple callout linking to `/dashboard/stitchr`.
 
-## 11. Create Video Route Component Plan
+## 11. Stitch Video Route Component Plan
 
-### `web/app/dashboard/create/CreateVideoPageClient.tsx`
+### `web/app/dashboard/stitchr/StitchrPageClient.tsx`
 
 Create:
 
-- Client component entry for `/dashboard/create`.
+- Client component entry for `/dashboard/stitchr`.
 - Loads normalized clips and created videos from IndexedDB.
-- Owns selected UGC clip, selected Demo clip, preview state, stitch progress, and create/download result through hooks.
+- Owns selected UGC clip, selected Demo clip, preview state, stitch progress, and stitch/download result through hooks.
 
-### `web/app/_components/create/CreateVideoShell.tsx`
+### `web/app/_components/stitchr/StitchrShell.tsx`
 
 Create:
 
-- Wraps creation studio layout.
+- Wraps Stitchr studio layout.
 - Reuses dashboard sidebar style, with main studio content.
 
-### `web/app/_components/create/CreateVideoHeader.tsx`
+### `web/app/_components/stitchr/StitchrHeader.tsx`
 
 Create:
 
-- Header with Back to Dashboard link and Create Video action.
+- Header with Back to Dashboard link and Stitch Video action.
 
-### `web/app/_components/create/ClipPickerPanel.tsx`
+### `web/app/_components/stitchr/ClipPickerPanel.tsx`
 
 Create:
 
 - Composes UGC and Demo selectors.
 
-### `web/app/_components/create/UgcClipSelector.tsx`
+### `web/app/_components/stitchr/UgcClipSelector.tsx`
 
 Create:
 
 - Lists normalized UGC clips for selection.
 
-### `web/app/_components/create/DemoClipSelector.tsx`
+### `web/app/_components/stitchr/DemoClipSelector.tsx`
 
 Create:
 
 - Lists normalized Demo clips for selection.
 
-### `web/app/_components/create/SelectableClipRow.tsx`
+### `web/app/_components/stitchr/SelectableClipRow.tsx`
 
 Create:
 
 - One selectable row/card for either UGC or Demo clip.
 
-### `web/app/_components/create/SequencePreviewPanel.tsx`
+### `web/app/_components/stitchr/SequencePreviewPanel.tsx`
 
 Create:
 
 - Preview panel for UGC-then-Demo sequence.
 - Uses normalized clip blobs.
 
-### `web/app/_components/create/SequenceVideoPlayer.tsx`
+### `web/app/_components/stitchr/SequenceVideoPlayer.tsx`
 
 Create:
 
@@ -533,19 +533,19 @@ Create:
 - On UGC `ended`, immediately switches to Demo.
 - Exposes restart behavior.
 
-### `web/app/_components/create/CreateProgressPanel.tsx`
+### `web/app/_components/stitchr/StitchrProgressPanel.tsx`
 
 Create:
 
 - Shows stitching status/progress.
 
-### `web/app/_components/create/DownloadCreatedVideoPanel.tsx`
+### `web/app/_components/stitchr/DownloadCreatedVideoPanel.tsx`
 
 Create:
 
-- Shows final created video and download button after creation completes.
+- Shows final created video and download button after stitching completes.
 
-### `web/app/_components/create/CreateVideoEmptyState.tsx`
+### `web/app/_components/stitchr/StitchrEmptyState.tsx`
 
 Create:
 
@@ -596,45 +596,45 @@ Create:
 
 ## 13. Types Plan
 
-### `web/lib/clipr/types/ClipType.ts`
+### `web/lib/clipstitchr/types/ClipType.ts`
 
 Create:
 
 - Exports `type ClipType = "ugc" | "demo";`
 
-### `web/lib/clipr/types/VideoClip.ts`
+### `web/lib/clipstitchr/types/VideoClip.ts`
 
 Create:
 
 - Exports `VideoClip` interface matching MVP data model.
 - Includes normalized blob, optional poster blob, poster capture version, dimensions, aspect ratio, duration, and timestamps.
 
-### `web/lib/clipr/types/CreatedVideo.ts`
+### `web/lib/clipstitchr/types/CreatedVideo.ts`
 
 Create:
 
 - Exports `CreatedVideo` interface matching MVP data model.
 - Includes the stitched blob plus optional poster blob and poster capture version.
 
-### `web/lib/clipr/types/UploadQueueItem.ts`
+### `web/lib/clipstitchr/types/UploadQueueItem.ts`
 
 Create:
 
 - Tracks upload filename, clip type, status, progress, and error.
 
-### `web/lib/clipr/types/ProcessingStatus.ts`
+### `web/lib/clipstitchr/types/ProcessingStatus.ts`
 
 Create:
 
 - Shared union for `idle`, `reading`, `normalizing`, `stitching`, `complete`, and `error`.
 
-### `web/lib/clipr/types/ClipMetadata.ts`
+### `web/lib/clipstitchr/types/ClipMetadata.ts`
 
 Create:
 
 - Metadata extracted from Media Bunny before storage.
 
-### `web/lib/clipr/types/OutputCodecs.ts`
+### `web/lib/clipstitchr/types/OutputCodecs.ts`
 
 Create:
 
@@ -642,43 +642,43 @@ Create:
 
 ## 14. Constants Plan
 
-### `web/lib/clipr/constants/databaseName.ts`
+### `web/lib/clipstitchr/constants/databaseName.ts`
 
 Create:
 
-- Exports `CLIPR_DATABASE_NAME = "clipr-mvp"`.
+- Exports `CLIPSTITCHR_DATABASE_NAME = "clipstitchr-mvp"`.
 
-### `web/lib/clipr/constants/databaseVersion.ts`
+### `web/lib/clipstitchr/constants/databaseVersion.ts`
 
 Create:
 
 - Exports current IndexedDB version.
 
-### `web/lib/clipr/constants/objectStoreNames.ts`
+### `web/lib/clipstitchr/constants/objectStoreNames.ts`
 
 Create:
 
 - Exports `videoClips` and `createdVideos` store names.
 
-### `web/lib/clipr/constants/tiktokOutputSize.ts`
+### `web/lib/clipstitchr/constants/tiktokOutputSize.ts`
 
 Create:
 
 - Exports `TIKTOK_OUTPUT_WIDTH = 1080` and `TIKTOK_OUTPUT_HEIGHT = 1920`.
 
-### `web/lib/clipr/constants/acceptedVideoTypes.ts`
+### `web/lib/clipstitchr/constants/acceptedVideoTypes.ts`
 
 Create:
 
 - Accepted upload MIME hints for file input.
 
-### `web/lib/clipr/constants/mediaBunnyCodecPreferences.ts`
+### `web/lib/clipstitchr/constants/mediaBunnyCodecPreferences.ts`
 
 Create:
 
 - Preferred video/audio codec order for MP4 output.
 
-### `web/lib/clipr/constants/videoPosterCaptureVersion.ts`
+### `web/lib/clipstitchr/constants/videoPosterCaptureVersion.ts`
 
 Create:
 
@@ -686,80 +686,80 @@ Create:
 
 ## 15. IndexedDB Storage Plan
 
-### `web/lib/clipr/storage/openCliprDatabase.ts`
+### `web/lib/clipstitchr/storage/openClipStitchrDatabase.ts`
 
 Create:
 
 - Opens IndexedDB.
 - Wires `onupgradeneeded`.
 
-### `web/lib/clipr/storage/upgradeCliprDatabase.ts`
+### `web/lib/clipstitchr/storage/upgradeClipStitchrDatabase.ts`
 
 Create:
 
 - Creates object stores and indexes.
 
-### `web/lib/clipr/storage/getObjectStore.ts`
+### `web/lib/clipstitchr/storage/getObjectStore.ts`
 
 Create:
 
 - Utility to open a transaction and return one object store.
 
-### `web/lib/clipr/storage/requestToPromise.ts`
+### `web/lib/clipstitchr/storage/requestToPromise.ts`
 
 Create:
 
 - Converts `IDBRequest` to a typed `Promise`.
 
-### `web/lib/clipr/storage/saveVideoClip.ts`
+### `web/lib/clipstitchr/storage/saveVideoClip.ts`
 
 Create:
 
 - Saves one normalized `VideoClip`.
 
-### `web/lib/clipr/storage/getVideoClips.ts`
+### `web/lib/clipstitchr/storage/getVideoClips.ts`
 
 Create:
 
 - Reads all normalized clips.
 
-### `web/lib/clipr/storage/getVideoClip.ts`
+### `web/lib/clipstitchr/storage/getVideoClip.ts`
 
 Create:
 
 - Reads one normalized clip by ID for poster backfill.
 
-### `web/lib/clipr/storage/deleteVideoClip.ts`
+### `web/lib/clipstitchr/storage/deleteVideoClip.ts`
 
 Create:
 
 - Deletes one normalized clip.
 
-### `web/lib/clipr/storage/saveCreatedVideo.ts`
+### `web/lib/clipstitchr/storage/saveCreatedVideo.ts`
 
 Create:
 
 - Saves one created stitched video.
 
-### `web/lib/clipr/storage/getCreatedVideos.ts`
+### `web/lib/clipstitchr/storage/getCreatedVideos.ts`
 
 Create:
 
 - Reads all created videos.
 
-### `web/lib/clipr/storage/getCreatedVideo.ts`
+### `web/lib/clipstitchr/storage/getCreatedVideo.ts`
 
 Create:
 
 - Reads one created video by ID for poster backfill.
 
-### `web/lib/clipr/storage/deleteCreatedVideo.ts`
+### `web/lib/clipstitchr/storage/deleteCreatedVideo.ts`
 
 Create:
 
 - Deletes one created video.
 
-### `web/lib/clipr/storage/clearCliprDatabase.ts`
+### `web/lib/clipstitchr/storage/clearClipStitchrDatabase.ts`
 
 Create:
 
@@ -768,46 +768,46 @@ Create:
 
 ## 16. Media Bunny Processing Plan
 
-### `web/lib/clipr/media/createMediaInput.ts`
+### `web/lib/clipstitchr/media/createMediaInput.ts`
 
 Create:
 
 - Creates `Input` from `BlobSource`.
 - Uses `ALL_FORMATS`.
 
-### `web/lib/clipr/media/createMp4Output.ts`
+### `web/lib/clipstitchr/media/createMp4Output.ts`
 
 Create:
 
 - Creates `Output` with `Mp4OutputFormat` and `BufferTarget`.
 
-### `web/lib/clipr/media/registerAacEncoderIfNeeded.ts`
+### `web/lib/clipstitchr/media/registerAacEncoderIfNeeded.ts`
 
 Create:
 
 - Uses `canEncodeAudio("aac")`.
 - Registers `@mediabunny/aac-encoder` when native AAC encoding is not available.
 
-### `web/lib/clipr/media/getSupportedOutputCodecs.ts`
+### `web/lib/clipstitchr/media/getSupportedOutputCodecs.ts`
 
 Create:
 
 - Uses `Mp4OutputFormat`, `getFirstEncodableVideoCodec`, and `getFirstEncodableAudioCodec`.
 - Returns chosen codecs and any support warnings.
 
-### `web/lib/clipr/media/getClipMetadata.ts`
+### `web/lib/clipstitchr/media/getClipMetadata.ts`
 
 Create:
 
 - Reads duration, primary tracks, dimensions, rotation, and decodability from `Input`.
 
-### `web/lib/clipr/media/createVideoBlobFromBuffer.ts`
+### `web/lib/clipstitchr/media/createVideoBlobFromBuffer.ts`
 
 Create:
 
 - Converts `ArrayBuffer` from `BufferTarget` into a `Blob`.
 
-### `web/lib/clipr/media/normalizeUploadedVideo.ts`
+### `web/lib/clipstitchr/media/normalizeUploadedVideo.ts`
 
 Create:
 
@@ -817,19 +817,19 @@ Create:
 - Emits progress callbacks.
 - Returns normalized blob and metadata.
 
-### `web/lib/clipr/media/createRetimedVideoSample.ts`
+### `web/lib/clipstitchr/media/createRetimedVideoSample.ts`
 
 Create:
 
 - Clones or mutates a `VideoSample` timestamp for stitched output.
 
-### `web/lib/clipr/media/createRetimedAudioSample.ts`
+### `web/lib/clipstitchr/media/createRetimedAudioSample.ts`
 
 Create:
 
 - Clones or mutates an `AudioSample` timestamp for stitched output.
 
-### `web/lib/clipr/media/copyVideoSamplesToSource.ts`
+### `web/lib/clipstitchr/media/copyVideoSamplesToSource.ts`
 
 Create:
 
@@ -838,7 +838,7 @@ Create:
 - Adds samples to `VideoSampleSource`.
 - Closes samples.
 
-### `web/lib/clipr/media/copyAudioSamplesToSource.ts`
+### `web/lib/clipstitchr/media/copyAudioSamplesToSource.ts`
 
 Create:
 
@@ -847,7 +847,7 @@ Create:
 - Adds samples to `AudioSampleSource`.
 - Closes samples.
 
-### `web/lib/clipr/media/stitchNormalizedVideos.ts`
+### `web/lib/clipstitchr/media/stitchNormalizedVideos.ts`
 
 Create:
 
@@ -858,39 +858,39 @@ Create:
 - Finalizes output and returns created video blob.
 - Emits progress callbacks.
 
-### `web/lib/clipr/media/getVideoMimeType.ts`
+### `web/lib/clipstitchr/media/getVideoMimeType.ts`
 
 Create:
 
 - Calls `output.getMimeType()` when available.
 - Provides fallback `video/mp4`.
 
-### `web/lib/clipr/media/createVideoPosterBlob.ts`
+### `web/lib/clipstitchr/media/createVideoPosterBlob.ts`
 
 Create:
 
 - Generates a JPEG poster blob from a video blob in the browser.
 - Seeks through multiple candidate frames and uses the first visibly non-black frame.
 
-### `web/lib/clipr/media/createVideoPosterCandidateTimes.ts`
+### `web/lib/clipstitchr/media/createVideoPosterCandidateTimes.ts`
 
 Create:
 
 - Returns fixed and duration-relative candidate seek times for poster capture.
 
-### `web/lib/clipr/media/getCanvasVisiblePixelRatio.ts`
+### `web/lib/clipstitchr/media/getCanvasVisiblePixelRatio.ts`
 
 Create:
 
 - Samples canvas pixels to detect whether a candidate poster frame is visibly non-black.
 
-### `web/lib/clipr/media/seekVideoToTime.ts`
+### `web/lib/clipstitchr/media/seekVideoToTime.ts`
 
 Create:
 
 - Seeks an `HTMLVideoElement` and resolves when frame data is ready.
 
-### `web/lib/clipr/media/encodeCanvasAsPosterBlob.ts`
+### `web/lib/clipstitchr/media/encodeCanvasAsPosterBlob.ts`
 
 Create:
 
@@ -898,27 +898,27 @@ Create:
 
 ## 17. Hook Plan
 
-### `web/lib/clipr/hooks/useObjectUrl.ts`
+### `web/lib/clipstitchr/hooks/useObjectUrl.ts`
 
 Create:
 
 - Creates and revokes object URLs for video blob previews.
 
-### `web/lib/clipr/hooks/useClipLibrary.ts`
+### `web/lib/clipstitchr/hooks/useClipLibrary.ts`
 
 Create:
 
 - Loads clips and created videos from IndexedDB.
 - Exposes refresh/delete helpers.
 
-### `web/lib/clipr/hooks/useClipLibraryPosterBackfill.ts`
+### `web/lib/clipstitchr/hooks/useClipLibraryPosterBackfill.ts`
 
 Create:
 
 - Generates missing or stale poster blobs for existing clips and created videos.
 - Saves regenerated posters back to IndexedDB.
 
-### `web/lib/clipr/hooks/useUploadProcessor.ts`
+### `web/lib/clipstitchr/hooks/useUploadProcessor.ts`
 
 Create:
 
@@ -928,7 +928,7 @@ Create:
 - Generates and stores a poster blob after normalization.
 - Updates upload queue state.
 
-### `web/lib/clipr/hooks/useCreateVideo.ts`
+### `web/lib/clipstitchr/hooks/useStitchr.ts`
 
 Create:
 
@@ -937,7 +937,7 @@ Create:
 - Generates and stores a poster blob after export.
 - Tracks stitch status/progress/error.
 
-### `web/lib/clipr/hooks/useSequenceVideoPlayer.ts`
+### `web/lib/clipstitchr/hooks/useSequenceVideoPlayer.ts`
 
 Create:
 
@@ -945,37 +945,37 @@ Create:
 
 ## 18. Utility Plan
 
-### `web/lib/clipr/utils/createId.ts`
+### `web/lib/clipstitchr/utils/createId.ts`
 
 Create:
 
 - Uses `crypto.randomUUID()` with fallback if needed.
 
-### `web/lib/clipr/utils/formatDuration.ts`
+### `web/lib/clipstitchr/utils/formatDuration.ts`
 
 Create:
 
 - Formats seconds as `00:32` style duration.
 
-### `web/lib/clipr/utils/formatBytes.ts`
+### `web/lib/clipstitchr/utils/formatBytes.ts`
 
 Create:
 
 - Formats file/blob sizes for upload queue.
 
-### `web/lib/clipr/utils/formatDate.ts`
+### `web/lib/clipstitchr/utils/formatDate.ts`
 
 Create:
 
 - Formats created/uploaded dates for cards.
 
-### `web/lib/clipr/utils/getDownloadFileName.ts`
+### `web/lib/clipstitchr/utils/getDownloadFileName.ts`
 
 Create:
 
-- Builds names like `clipr-ugc-demo-2026-05-07.mp4`.
+- Builds names like `clipstitchr-ugc-demo-2026-05-07.mp4`.
 
-### `web/lib/clipr/utils/filterClipsByType.ts`
+### `web/lib/clipstitchr/utils/filterClipsByType.ts`
 
 Create:
 
@@ -987,7 +987,7 @@ Create:
 
 Modify:
 
-- Restyle to match mockup's light Clipr blog page.
+- Restyle to match mockup's light ClipStitchr blog page.
 - Keep content collections query helpers.
 - Keep route metadata.
 
@@ -1026,7 +1026,7 @@ Create only if time allows:
 Modify:
 
 - Mention normalized video blobs, created video blobs, generated poster blobs, and poster capture versions.
-- Keep database name `clipr-mvp`.
+- Keep database name `clipstitchr-mvp`.
 
 ## 21. Intended Structure Tree
 
@@ -1064,12 +1064,12 @@ Modify:
     │   │   ├── PageShell.tsx
     │   │   ├── PrimaryButtonLink.tsx
     │   │   ├── SecondaryButtonLink.tsx
-    │   │   ├── create
+    │   │   ├── stitchr
     │   │   │   ├── ClipPickerPanel.tsx
-    │   │   │   ├── CreateProgressPanel.tsx
-    │   │   │   ├── CreateVideoEmptyState.tsx
-    │   │   │   ├── CreateVideoHeader.tsx
-    │   │   │   ├── CreateVideoShell.tsx
+    │   │   │   ├── StitchrProgressPanel.tsx
+    │   │   │   ├── StitchrEmptyState.tsx
+    │   │   │   ├── StitchrHeader.tsx
+    │   │   │   ├── StitchrShell.tsx
     │   │   │   ├── DemoClipSelector.tsx
     │   │   │   ├── DownloadCreatedVideoPanel.tsx
     │   │   │   ├── SelectableClipRow.tsx
@@ -1078,7 +1078,7 @@ Modify:
     │   │   │   └── UgcClipSelector.tsx
     │   │   ├── dashboard
     │   │   │   ├── ClipTypeTabs.tsx
-    │   │   │   ├── CreateVideoCallout.tsx
+    │   │   │   ├── StitchrCallout.tsx
     │   │   │   ├── CreatedVideoCard.tsx
     │   │   │   ├── CreatedVideosSection.tsx
     │   │   │   ├── DashboardEmptyState.tsx
@@ -1107,8 +1107,8 @@ Modify:
     │   │       └── VideoPreview.tsx
     │   ├── dashboard
     │   │   ├── DashboardPageClient.tsx
-    │   │   ├── create
-    │   │   │   ├── CreateVideoPageClient.tsx
+    │   │   ├── stitchr
+    │   │   │   ├── StitchrPageClient.tsx
     │   │   │   └── page.tsx
     │   │   └── page.tsx
     │   ├── feed.xml
@@ -1128,7 +1128,7 @@ Modify:
     │   └── blog
     │       └── getting-started.mdx
     ├── lib
-    │   ├── clipr
+    │   ├── clipstitchr
     │   │   ├── constants
     │   │   │   ├── acceptedVideoTypes.ts
     │   │   │   ├── databaseName.ts
@@ -1140,7 +1140,7 @@ Modify:
     │   │   ├── hooks
     │   │   │   ├── useClipLibrary.ts
     │   │   │   ├── useClipLibraryPosterBackfill.ts
-    │   │   │   ├── useCreateVideo.ts
+    │   │   │   ├── useStitchr.ts
     │   │   │   ├── useObjectUrl.ts
     │   │   │   ├── useSequenceVideoPlayer.ts
     │   │   │   └── useUploadProcessor.ts
@@ -1164,7 +1164,7 @@ Modify:
     │   │   │   ├── seekVideoToTime.ts
     │   │   │   └── stitchNormalizedVideos.ts
     │   │   ├── storage
-    │   │   │   ├── clearCliprDatabase.ts
+    │   │   │   ├── clearClipStitchrDatabase.ts
     │   │   │   ├── deleteCreatedVideo.ts
     │   │   │   ├── deleteVideoClip.ts
     │   │   │   ├── getCreatedVideo.ts
@@ -1172,11 +1172,11 @@ Modify:
     │   │   │   ├── getObjectStore.ts
     │   │   │   ├── getVideoClip.ts
     │   │   │   ├── getVideoClips.ts
-    │   │   │   ├── openCliprDatabase.ts
+    │   │   │   ├── openClipStitchrDatabase.ts
     │   │   │   ├── requestToPromise.ts
     │   │   │   ├── saveCreatedVideo.ts
     │   │   │   ├── saveVideoClip.ts
-    │   │   │   └── upgradeCliprDatabase.ts
+    │   │   │   └── upgradeClipStitchrDatabase.ts
     │   │   ├── types
     │   │   │   ├── ClipMetadata.ts
     │   │   │   ├── ClipType.ts
@@ -1211,7 +1211,7 @@ Modify:
         │   ├── logo.png
         │   └── text.png
         ├── mockups
-        │   └── clipr-product-mockup.png
+        │   └── clipstitchr-product-mockup.png
         └── og
             ├── .gitkeep
             └── default.png
@@ -1224,12 +1224,12 @@ Modify:
 3. Update site metadata and global design tokens.
 4. Refactor shared header/footer while preserving SEO/layout behavior.
 5. Implement landing page components.
-6. Implement Clipr types/constants/utils.
+6. Implement ClipStitchr types/constants/utils.
 7. Implement IndexedDB storage helpers.
 8. Implement Media Bunny normalization and stitching helpers.
 9. Implement hooks that wire storage and media helpers into React state.
 10. Implement dashboard route and components.
-11. Implement create-video route and components.
+11. Implement Stitchr route and components.
 12. Restyle blog/privacy/terms to match the mockup without removing content/SEO systems.
 13. Update maintenance docs for normalized video and poster IndexedDB records.
 14. Run verification:
@@ -1245,8 +1245,8 @@ Modify:
     - Uploaded clips normalize to 9:16.
     - IndexedDB persists normalized clips.
     - Uploaded and created video cards show non-black generated posters before playback.
-    - Create page previews UGC then Demo.
-    - Create Video produces one downloadable 9:16 video.
+    - Stitchr page previews UGC then Demo.
+    - Stitch Video produces one downloadable 9:16 video.
     - Blog/legal/discovery routes still work.
 
 ## 23. Known Risks / Decisions To Validate During Implementation
