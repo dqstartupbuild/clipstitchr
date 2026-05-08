@@ -13,6 +13,8 @@
     "test": "npm run content:build && vitest run --coverage"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1045.0",
+    "@aws-sdk/s3-request-presigner": "^3.1045.0",
     "@clerk/nextjs": "^7.3.2",
     "@content-collections/core": "^0.15.0",
     "@content-collections/mdx": "^0.2.2",
