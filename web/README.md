@@ -2,7 +2,7 @@
 
 ClipStitchr lets users upload UGC reaction clips and product demo videos, then automatically stitches them together to produce polished marketing videos.
 
-Built with [Next.js](https://nextjs.org), [Tailwind CSS](https://tailwindcss.com), [Content Collections](https://www.content-collections.dev), and [Media Bunny](https://mediabunny.dev).
+Built with [Next.js](https://nextjs.org), [Clerk](https://clerk.com), [Tailwind CSS](https://tailwindcss.com), [Content Collections](https://www.content-collections.dev), and [Media Bunny](https://mediabunny.dev).
 
 ## Quick Start
 
@@ -11,6 +11,13 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+Clerk is required for the dashboard and private API routes:
+
+```bash
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key
+CLERK_SECRET_KEY=your_secret_key
+```
 
 ## Commands
 
@@ -41,7 +48,7 @@ The MVP is browser-local:
 ```
 ├── app/
 │   ├── page.tsx                 # Landing page
-│   ├── dashboard/               # Dashboard, Stitchr, Uploads, Swapr, and Stitches routes
+│   ├── dashboard/               # Authenticated Dashboard, Stitchr, Uploads, Swapr, and Stitches routes
 │   ├── uploads/                 # Upload library route
 │   ├── stitches/                # Stitches library route
 │   ├── _components/             # Atomic UI, dashboard, Stitchr, and landing components
@@ -82,6 +89,7 @@ The MVP is browser-local:
 ├── scripts/
 │   ├── build-content-collections.mjs
 │   └── watch-content-collections.mjs
+├── proxy.ts                     # Clerk middleware and dashboard route protection
 └── public/
     └── og/                      # OG images (add default.png)
 ```
@@ -93,10 +101,14 @@ All site-wide values live in **`lib/site.ts`**:
 - Site name, URL, and description
 - Publisher name (for JSON-LD)
 - CTA URL and label
-- Static pages for the sitemap
+- Static public pages for the sitemap
 - Keywords
 
-Update `NEXT_PUBLIC_SITE_URL` in `.env.local` before deploying to production.
+Update `NEXT_PUBLIC_SITE_URL` in `.env.local` before deploying to production. Dashboard routes are authenticated and intentionally excluded from `/sitemap.xml` and `/llms.txt`.
+
+## Authentication
+
+Clerk is mounted in `app/layout.tsx`, initialized by `proxy.ts`, and used by the shared site header for sign-in, sign-up, and the profile menu. `/dashboard` and nested dashboard pages are protected by Clerk middleware. App API routes under `/api` call `auth()` server-side and return `401` JSON responses when no signed-in user is present.
 
 ## Writing Blog Posts
 
@@ -148,6 +160,7 @@ Do not import components inside MDX files. All components are registered globall
 Everything is pre-configured:
 
 - **Sitemap** — Auto-generated at `/sitemap.xml` from static pages + blog posts
+- **Private dashboard routes** — Excluded from sitemap and LLM discovery files
 - **Robots.txt** — At `/robots.txt`
 - **RSS** — At `/feed.xml`
 - **LLMs.txt** — At `/llms.txt`
@@ -170,7 +183,7 @@ Includes tests for:
 
 ## Security
 
-Content Security Policy and security headers are configured in `next.config.ts`.
+Content Security Policy and security headers are configured in `next.config.ts`. The CSP allows HTTPS scripts and Cloudflare challenge frames so Clerk components can load correctly.
 
 ## Deployment
 

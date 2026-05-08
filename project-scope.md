@@ -60,7 +60,7 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique 9:16
 | ------------------ | ------------------------------ | ------------------------- |
 | **Scaffolding**    | `npx create-starship-app`      | Same                      |
 | **Framework**      | Next.js (from starship boilerplate) | Same                 |
-| **Auth**           | Clerk                          | None — open dashboard     |
+| **Auth**           | Clerk                          | Clerk-protected dashboard |
 | **Backend / DB**   | Convex                         | None — local state only   |
 | **Object Storage** | Cloudflare R2                  | IndexedDB (blob storage)  |
 | **Video Engine**   | Media Bunny with optional server-side processing later | Media Bunny (browser) |
@@ -114,8 +114,8 @@ Text overlays are planned for later, but they are not required for the MVP.
 |---|---------|-----|------|
 | 1 | Landing page with a **"Dashboard"** button | ✅ | ✅ |
 | 2 | Dashboard shows workspace status, recent uploads, recent stitches, and Stitchr entry points | ✅ | ✅ |
-| 3 | No login required — dashboard is directly accessible | ✅ | — |
-| 4 | Clerk-authenticated access to dashboard | — | ✅ |
+| 3 | No login required — dashboard is directly accessible | — | — |
+| 4 | Clerk-authenticated access to dashboard | ✅ | ✅ |
 | 5 | Uploaded UGC clips and demo videos share a tabbed uploads library page | ✅ | ✅ |
 | 6 | Uploaded Swapr photos appear in the uploads library Photos tab; AI expansion is optional and off by default | ✅ | ✅ |
 | 7 | Stitches have a dedicated library page | ✅ | ✅ |
@@ -127,11 +127,11 @@ Text overlays are planned for later, but they are not required for the MVP.
 
 ```
 /                → Landing page (marketing + "Go to Dashboard" CTA)
-/dashboard       → Main workspace
-/dashboard/stitchr → Stitchr video stitching interface
-/dashboard/swapr → AI motion-transfer studio using saved photos and UGC clips
-/dashboard/uploads → Upload library with UGC, Demo, and Photos tabs; unified upload controls open from header action
-/dashboard/stitches → Stitches library
+/dashboard       → Authenticated main workspace
+/dashboard/stitchr → Authenticated Stitchr video stitching interface
+/dashboard/swapr → Authenticated AI motion-transfer studio using saved photos and UGC clips
+/dashboard/uploads → Authenticated upload library with UGC, Demo, and Photos tabs; unified upload controls open from header action
+/dashboard/stitches → Authenticated stitches library
 ```
 
 ---
@@ -344,11 +344,10 @@ interface Stitch {
 - [ ] Video stitching (UGC immediately followed by Demo → single 9:16 output)
 - [ ] Download finished videos
 - [ ] All data stored locally (IndexedDB)
-- [ ] No authentication required
+- [x] Integrate Clerk authentication for dashboard and API routes
 
 ### Phase 2 — Backend Integration
 
-- [ ] Integrate Clerk authentication
 - [ ] Set up Convex backend (video metadata, user data)
 - [ ] Migrate file storage to Cloudflare R2
 - [ ] User accounts with personal video libraries
@@ -378,7 +377,6 @@ interface Stitch {
 
 ## 10. Non-Goals (MVP)
 
-- ❌ User accounts / authentication
 - ❌ Cloud storage
 - ❌ Server-side video rendering
 - ❌ Mobile-native app

@@ -217,7 +217,7 @@ Modify:
   - Change to `Go to Dashboard`.
 - `staticPages`
   - Keep `/`, `/blog`, `/privacy`, `/terms`.
-  - Add `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, `/dashboard/swapr`, and `/dashboard/stitches` so sitemap includes the MVP app routes.
+  - Keep authenticated dashboard routes out of the public sitemap.
 
 Do not remove:
 
@@ -1240,7 +1240,7 @@ Modify:
 15. Start dev server with `npm run dev`.
 16. Verify in browser:
     - Landing page visual parity with mockup.
-    - Dashboard opens without auth.
+    - Dashboard redirects unauthenticated visitors through Clerk auth.
     - Upload UGC and Demo clips.
     - Uploaded clips normalize to 9:16.
     - IndexedDB persists normalized clips.

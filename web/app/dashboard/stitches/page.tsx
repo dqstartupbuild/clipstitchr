@@ -8,6 +8,7 @@ export const metadata: Metadata = createPageMetadata({
   description:
     "Browse ClipStitchr stitches saved in IndexedDB, preview stitched 9:16 videos, download finished MP4 files, or remove old outputs.",
   canonical: "/dashboard/stitches",
+  noIndex: true,
 });
 
 export default function StitchesPage() {

@@ -1,3 +1,4 @@
+import { UserButton } from "@clerk/nextjs";
 import {
   Home,
   Play,
@@ -18,9 +19,12 @@ const links = [
 
 export function DashboardSidebar() {
   return (
-    <aside className="border-b border-border bg-white px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
-      <div className="flex items-center lg:block">
+    <aside className="border-b border-border bg-white px-4 py-4 lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:border-b-0 lg:border-r">
+      <div className="flex items-center justify-between lg:block">
         <BrandMark />
+        <div className="lg:hidden">
+          <UserButton />
+        </div>
       </div>
       <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:mt-8 lg:flex-col lg:overflow-visible lg:pb-0">
         {links.map((item) => {
@@ -38,6 +42,10 @@ export function DashboardSidebar() {
           );
         })}
       </nav>
+      <div className="mt-auto hidden items-center gap-3 border-t border-border pt-4 text-sm font-semibold text-text-secondary lg:flex">
+        <UserButton />
+        Account
+      </div>
     </aside>
   );
 }

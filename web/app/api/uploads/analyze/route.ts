@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import type { Prediction } from "replicate";
+import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createUploadAnalysisPrompt } from "@/lib/clipstitchr/server/createUploadAnalysisPrompt";
+import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { getUploadAnalysisFormFile } from "@/lib/clipstitchr/server/getUploadAnalysisFormFile";
 import { getUploadAnalysisFormString } from "@/lib/clipstitchr/server/getUploadAnalysisFormString";
 import { getUploadAnalysisKind } from "@/lib/clipstitchr/server/getUploadAnalysisKind";
@@ -15,6 +17,12 @@ const UPLOAD_ANALYSIS_SYSTEM_PROMPT =
   "You create concise, searchable metadata for uploaded marketing media.";
 
 export async function POST(request: Request) {
+  const userId = await getAuthenticatedUserId();
+
+  if (!userId) {
+    return createAuthenticationRequiredResponse();
+  }
+
   try {
     const formData = await request.formData();
     const file = getUploadAnalysisFormFile(formData, "file");

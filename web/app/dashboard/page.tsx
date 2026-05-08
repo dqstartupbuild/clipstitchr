@@ -8,6 +8,7 @@ export const metadata: Metadata = createPageMetadata({
   description:
     "Open the ClipStitchr local dashboard to upload UGC and demo videos, normalize clips to TikTok 9:16, and manage browser-stored exports.",
   canonical: "/dashboard",
+  noIndex: true,
 });
 
 export default function DashboardPage() {

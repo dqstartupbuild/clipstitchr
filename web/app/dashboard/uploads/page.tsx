@@ -8,6 +8,7 @@ export const metadata: Metadata = createPageMetadata({
   description:
     "Browse and add normalized ClipStitchr uploads in one browser library with tabs for UGC clips, product demo videos, and Swapr photos.",
   canonical: "/dashboard/uploads",
+  noIndex: true,
 });
 
 export default function UploadsPage() {

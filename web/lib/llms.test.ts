@@ -8,5 +8,6 @@ describe("createLlmsTxt", () => {
     expect(text).toContain("## Facts Block");
     expect(text).toContain("## Core Reading Path");
     expect(text).toContain("## Site Context");
+    expect(text).not.toContain("- /dashboard");
   });
 });

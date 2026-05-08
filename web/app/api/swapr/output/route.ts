@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
+import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
+  const userId = await getAuthenticatedUserId();
+
+  if (!userId) {
+    return createAuthenticationRequiredResponse();
+  }
+
   try {
     const outputUrl = request.nextUrl.searchParams.get("url");
     const response = await fetchReplicateOutput(outputUrl ?? "");

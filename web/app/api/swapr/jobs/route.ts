@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createSwaprPredictionJson } from "@/lib/clipstitchr/server/createSwaprPredictionJson";
+import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { getSwaprCharacterOrientation } from "@/lib/clipstitchr/server/getSwaprCharacterOrientation";
 import { getSwaprFormBoolean } from "@/lib/clipstitchr/server/getSwaprFormBoolean";
 import { getSwaprFormFile } from "@/lib/clipstitchr/server/getSwaprFormFile";
@@ -12,6 +14,12 @@ export const runtime = "nodejs";
 const SWAPR_MODEL_ID = "kwaivgi/kling-v3-motion-control";
 
 export async function POST(request: Request) {
+  const userId = await getAuthenticatedUserId();
+
+  if (!userId) {
+    return createAuthenticationRequiredResponse();
+  }
+
   try {
     const formData = await request.formData();
     const image = getSwaprFormFile(formData, "image");

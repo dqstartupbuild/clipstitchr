@@ -8,6 +8,7 @@ export const metadata: Metadata = createPageMetadata({
   description:
     "Use Stitchr to preview one normalized UGC clip followed by one demo video, then export a TikTok-ready MP4.",
   canonical: "/dashboard/stitchr",
+  noIndex: true,
 });
 
 export default function StitchrPage() {

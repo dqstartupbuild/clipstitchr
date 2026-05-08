@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import type { Prediction } from "replicate";
+import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
+import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { getReplicateOutputUrl } from "@/lib/clipstitchr/server/getReplicateOutputUrl";
 import { getSwaprFormFile } from "@/lib/clipstitchr/server/getSwaprFormFile";
 import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString";
@@ -23,6 +25,12 @@ const SWAPR_OUTPAINT_PROMPT =
   ].join(" ");
 
 export async function POST(request: Request) {
+  const userId = await getAuthenticatedUserId();
+
+  if (!userId) {
+    return createAuthenticationRequiredResponse();
+  }
+
   try {
     const formData = await request.formData();
     const image = getSwaprFormFile(formData, "image");

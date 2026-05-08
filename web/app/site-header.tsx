@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { BrandMark } from "@/app/_components/BrandMark";
-import { site } from "@/lib/site";
+import { HeaderAuthActions } from "@/app/_components/HeaderAuthActions";
 
 /**
  * Shared site header used across the landing page and content pages.
@@ -73,22 +72,11 @@ export function SiteHeader({
             </Link>
           </>
         )}
-        <Link
-          href={site.ctaUrl}
-          className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
-        >
-          {site.ctaLabel}
-          <ArrowRight aria-hidden className="h-4 w-4" />
-        </Link>
+        <HeaderAuthActions />
       </div>
 
       <div className="sm:hidden">
-        <Link
-          href={site.ctaUrl}
-          className="inline-flex h-9 items-center rounded-lg bg-accent px-3 text-xs font-semibold text-white"
-        >
-          Dashboard
-        </Link>
+        <HeaderAuthActions variant="mobile" />
       </div>
     </nav>
   );

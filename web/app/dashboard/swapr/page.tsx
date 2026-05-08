@@ -8,6 +8,7 @@ export const metadata: Metadata = createPageMetadata({
   description:
     "Use Swapr to generate AI UGC by pairing a saved person photo with motion from an uploaded ClipStitchr UGC video.",
   canonical: "/dashboard/swapr",
+  noIndex: true,
 });
 
 export default function SwaprPage() {
