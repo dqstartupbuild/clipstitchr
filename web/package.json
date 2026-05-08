@@ -13,6 +13,7 @@
     "test": "npm run content:build && vitest run --coverage"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.3.2",
     "@content-collections/core": "^0.15.0",
     "@content-collections/mdx": "^0.2.2",
     "@mediabunny/aac-encoder": "^1.44.0",
