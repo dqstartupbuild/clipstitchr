@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { ConvexClientProvider } from "@/app/ConvexClientProvider";
 import { createPageMetadata } from "@/lib/metadata";
 import {
   createOrganizationJsonLd,
@@ -56,8 +57,10 @@ export default function RootLayout({
               __html: JSON.stringify(createOrganizationJsonLd()),
             }}
           />
-          {children}
-          <Analytics />
+          <ConvexClientProvider>
+            {children}
+            <Analytics />
+          </ConvexClientProvider>
         </ClerkProvider>
       </body>
     </html>
