@@ -28,6 +28,7 @@ export async function uploadBlobToR2({
       kind,
       recordId,
       contentType,
+      sizeBytes: blob.size,
     }),
   });
   const uploadUrl = await readR2JsonResponse<UploadUrlResponse>(

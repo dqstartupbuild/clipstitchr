@@ -60,3 +60,17 @@ Pull requests should include a short summary, testing performed, linked issue or
 ## Security & Configuration Tips
 
 Do not commit uploaded media, generated videos, secrets, or local environment files. Browser video processing depends on Media Bunny and browser codec support; document any codec polyfills, worker/WASM assets, or response-header changes with the Media Bunny setup.
+
+## Abuse Protection & Rate Limit Requirements
+
+Any future feature that adds or changes a user-triggered backend operation must account for abuse and rate limiting before implementation is considered complete. This includes Next.js API routes, Convex queries/mutations/actions, signed R2 URL flows, Replicate or other paid external API calls, file/object download or proxy routes, generation jobs, polling endpoints, destructive operations, and any workflow that can create storage, compute, bandwidth, or third-party API cost.
+
+Required workflow:
+
+- Identify the abuse surface and cost before editing code.
+- Add or update server-side rate limits before expensive work happens. For R2, gate signed URL creation. For Replicate or other external APIs, gate before the provider call. For Convex writes, gate the mutation/action itself.
+- Enforce per-user limits for fairness and global limits for shared provider or spend protection when a shared resource is involved.
+- Preserve authorization and ownership checks separately from rate limits; rate limits do not replace access control.
+- Return a clear `429` response with retry timing for HTTP routes where a rate limit is exceeded.
+- Update `docs/backend/rate-limits.md` whenever limits, enforcement points, environment variables, or verification steps change.
+- If a backend operation is intentionally not rate-limited, document the reason in `docs/backend/rate-limits.md`.

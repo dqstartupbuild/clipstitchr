@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import type { Prediction } from "replicate";
+import { api } from "@/convex/_generated/api";
 import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
+import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
+import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { getReplicateOutputUrl } from "@/lib/clipstitchr/server/getReplicateOutputUrl";
+import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
+import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { getSwaprFormFile } from "@/lib/clipstitchr/server/getSwaprFormFile";
 import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString";
 
@@ -32,6 +37,18 @@ export async function POST(request: Request) {
   }
 
   try {
+    const convexToken = await getAuthenticatedConvexToken();
+
+    if (!convexToken) {
+      throw new Error("Unable to create a Convex auth token.");
+    }
+
+    const convex = createAuthenticatedConvexHttpClient(convexToken);
+
+    await convex.mutation(api.rateLimits.consumeSwaprPhotoExpand, {
+      secret: getRateLimitApiSecret(),
+    });
+
     const formData = await request.formData();
     const image = getSwaprFormFile(formData, "image");
     const mask = getSwaprFormFile(formData, "mask");
@@ -74,6 +91,12 @@ export async function POST(request: Request) {
 
     return new NextResponse(outputResponse.body, { headers });
   } catch (error) {
+    const rateLimitResponse = createRateLimitExceededResponse(error);
+
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     return NextResponse.json(
       {
         message:

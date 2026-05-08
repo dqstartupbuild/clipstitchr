@@ -14,6 +14,7 @@ type R2UploadUrlRequest = {
   kind: R2ObjectKind;
   recordId: string;
   contentType: string;
+  sizeBytes: number;
 };
 
 export async function readR2UploadUrlRequest(
@@ -33,9 +34,18 @@ export async function readR2UploadUrlRequest(
     throw new Error("Missing R2 content type.");
   }
 
+  if (
+    typeof body.sizeBytes !== "number" ||
+    !Number.isFinite(body.sizeBytes) ||
+    body.sizeBytes <= 0
+  ) {
+    throw new Error("Missing R2 upload size.");
+  }
+
   return {
     kind: body.kind,
     recordId: body.recordId,
     contentType: body.contentType,
+    sizeBytes: Math.ceil(body.sizeBytes),
   };
 }

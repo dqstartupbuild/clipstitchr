@@ -18,6 +18,7 @@ Clerk is required for the dashboard and private API routes:
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key
 CLERK_SECRET_KEY=your_secret_key
 NEXT_PUBLIC_CONVEX_URL=your_convex_deployment_url
+RATE_LIMIT_API_SECRET=your_shared_rate_limit_secret
 R2_ACCOUNT_ID=your_cloudflare_account_id
 R2_BUCKET_NAME=your_bucket_name
 R2_ACCESS_KEY_ID=your_r2_access_key_id

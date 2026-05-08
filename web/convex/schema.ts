@@ -3,6 +3,8 @@ import { v } from "convex/values";
 import { assetTagsValidator } from "./validators/assetTags";
 import { clipTypeValidator } from "./validators/clipType";
 import { r2ObjectValidator } from "./validators/r2Object";
+import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
+import { replicatePredictionStatusValidator } from "./validators/replicatePredictionStatus";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
 import { textOverlayValidator } from "./validators/textOverlay";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
@@ -87,4 +89,17 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
+  replicateJobs: defineTable({
+    ownerId: v.string(),
+    predictionId: v.string(),
+    purpose: replicateJobPurposeValidator,
+    modelId: v.string(),
+    status: replicatePredictionStatusValidator,
+    outputUrl: v.optional(v.string()),
+    error: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_prediction", ["ownerId", "predictionId"]),
 });

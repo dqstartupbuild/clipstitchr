@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
 import { clipTypeValidator } from "./validators/clipType";
 import { r2ObjectValidator } from "./validators/r2Object";
@@ -62,6 +63,12 @@ export const save = mutation({
   args: saveArgs,
   handler: async (ctx, args) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexRecordSave", {
+      key: ownerId,
+      throws: true,
+    });
+
     const existingClip = await ctx.db
       .query("videoClips")
       .withIndex("by_owner_id", (q) =>
@@ -92,6 +99,12 @@ export const updateMetadata = mutation({
   },
   handler: async (ctx, { id, name, tags, defaultTrimRange, updatedAt }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
     const clip = await ctx.db
       .query("videoClips")
       .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
@@ -119,6 +132,12 @@ export const updatePoster = mutation({
   },
   handler: async (ctx, { id, posterObject, posterVersion, updatedAt }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexPosterUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
     const clip = await ctx.db
       .query("videoClips")
       .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
@@ -142,6 +161,12 @@ export const remove = mutation({
   },
   handler: async (ctx, { id }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexRecordDelete", {
+      key: ownerId,
+      throws: true,
+    });
+
     const clip = await ctx.db
       .query("videoClips")
       .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))

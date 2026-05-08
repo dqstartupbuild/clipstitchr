@@ -195,6 +195,13 @@ Set these in `web/.env.local` for local development and in the hosting provider 
 - Defaults to `900` seconds when omitted.
 - Must be short enough to limit leaked URL usefulness and long enough for large browser uploads.
 
+`RATE_LIMIT_API_SECRET`
+
+- Required after rate limiting is enabled.
+- Must be set to the same high-entropy value in Next.js and in the Convex deployment.
+- Used by server-only Next.js API routes when they call Convex rate-limit consume mutations.
+- Must not be exposed to the browser.
+
 ### Convex Deployment Environment
 
 Set this in Convex dashboard deployment settings for both development and production deployments:
@@ -206,12 +213,17 @@ Set this in Convex dashboard deployment settings for both development and produc
 - Production values usually look like `https://clerk.your-domain.com`.
 - Used by `web/convex/auth.config.ts` so Convex can validate Clerk JWTs.
 
+`RATE_LIMIT_API_SECRET`
+
+- Same value as the Next.js `RATE_LIMIT_API_SECRET`.
+- Used by Convex consume mutations to reject direct browser calls to server-only rate limit gates.
+
 ## Setup Commands
 
 From `web/`:
 
 ```bash
-npm install convex @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
+npm install convex @aws-sdk/client-s3 @aws-sdk/s3-request-presigner @convex-dev/rate-limiter
 npx convex dev
 npm run typecheck
 npm run build

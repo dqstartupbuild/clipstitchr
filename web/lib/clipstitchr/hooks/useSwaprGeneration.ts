@@ -85,7 +85,8 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
         while (
           prediction.status !== "succeeded" &&
           prediction.status !== "failed" &&
-          prediction.status !== "canceled"
+          prediction.status !== "canceled" &&
+          prediction.status !== "aborted"
         ) {
           await waitForSwaprPollInterval();
 
@@ -115,7 +116,7 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
         setProgress(0.72);
 
         const outputResponse = await fetch(
-          `/api/swapr/output?url=${encodeURIComponent(outputUrl)}`,
+          `/api/swapr/output?id=${encodeURIComponent(prediction.id)}&url=${encodeURIComponent(outputUrl)}`,
         );
 
         if (!outputResponse.ok) {

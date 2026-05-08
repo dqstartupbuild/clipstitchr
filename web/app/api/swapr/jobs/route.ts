@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
+import { api } from "@/convex/_generated/api";
 import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
+import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
+import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createSwaprPredictionJson } from "@/lib/clipstitchr/server/createSwaprPredictionJson";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
+import { getReplicatePredictionStatus } from "@/lib/clipstitchr/server/getReplicatePredictionStatus";
+import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
+import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { getSwaprCharacterOrientation } from "@/lib/clipstitchr/server/getSwaprCharacterOrientation";
 import { getSwaprFormBoolean } from "@/lib/clipstitchr/server/getSwaprFormBoolean";
 import { getSwaprFormFile } from "@/lib/clipstitchr/server/getSwaprFormFile";
@@ -21,6 +27,19 @@ export async function POST(request: Request) {
   }
 
   try {
+    const convexToken = await getAuthenticatedConvexToken();
+
+    if (!convexToken) {
+      throw new Error("Unable to create a Convex auth token.");
+    }
+
+    const convex = createAuthenticatedConvexHttpClient(convexToken);
+    const secret = getRateLimitApiSecret();
+
+    await convex.mutation(api.rateLimits.consumeSwaprJobCreate, {
+      secret,
+    });
+
     const formData = await request.formData();
     const image = getSwaprFormFile(formData, "image");
     const video = getSwaprFormFile(formData, "video");
@@ -46,9 +65,25 @@ export async function POST(request: Request) {
         character_orientation: characterOrientation,
       },
     });
+    const now = new Date().toISOString();
+
+    await convex.mutation(api.replicateJobs.recordSwaprJob, {
+      secret,
+      predictionId: prediction.id,
+      modelId: SWAPR_MODEL_ID,
+      status: getReplicatePredictionStatus(prediction.status),
+      createdAt: now,
+      updatedAt: now,
+    });
 
     return NextResponse.json(createSwaprPredictionJson(prediction));
   } catch (error) {
+    const rateLimitResponse = createRateLimitExceededResponse(error);
+
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     return NextResponse.json(
       {
         message:
