@@ -7,6 +7,7 @@ import {
   site,
 } from "@/lib/site";
 import "./globals.css";
+import { Analytics } from '@vercel/analytics/next';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -55,6 +56,7 @@ export default function RootLayout({
         />
         {children}
       </body>
+      <Analytics />
     </html>
   );
 }
