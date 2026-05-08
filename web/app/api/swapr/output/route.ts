@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
-import { getRequestReplicateToken } from "@/lib/clipstitchr/server/getRequestReplicateToken";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   try {
     const outputUrl = request.nextUrl.searchParams.get("url");
-    const response = await fetchReplicateOutput(
-      outputUrl ?? "",
-      getRequestReplicateToken(request),
-    );
+    const response = await fetchReplicateOutput(outputUrl ?? "");
     const responseHeaders = new Headers();
     const contentType = response.headers.get("content-type");
     const contentLength = response.headers.get("content-length");

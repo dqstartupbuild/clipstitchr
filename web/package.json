@@ -5,7 +5,7 @@
   "scripts": {
     "content:build": "node ./scripts/build-content-collections.mjs",
     "content:watch": "node ./scripts/watch-content-collections.mjs",
-    "dev": "node ./scripts/watch-content-collections.mjs & next dev --webpack",
+    "dev": "node ./scripts/watch-content-collections.mjs & next dev",
     "build": "npm run content:build && next build",
     "start": "next start",
     "lint": "npm run content:build && eslint .",

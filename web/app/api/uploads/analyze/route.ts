@@ -7,7 +7,6 @@ import { getUploadAnalysisFormString } from "@/lib/clipstitchr/server/getUploadA
 import { getUploadAnalysisKind } from "@/lib/clipstitchr/server/getUploadAnalysisKind";
 import { getUploadAnalysisModelId } from "@/lib/clipstitchr/server/getUploadAnalysisModelId";
 import { getUploadAnalysisOutputText } from "@/lib/clipstitchr/server/getUploadAnalysisOutputText";
-import { getRequestReplicateToken } from "@/lib/clipstitchr/server/getRequestReplicateToken";
 import { parseUploadAssetAnalysis } from "@/lib/clipstitchr/server/parseUploadAssetAnalysis";
 
 export const runtime = "nodejs";
@@ -23,7 +22,7 @@ export async function POST(request: Request) {
     const mediaKind = getUploadAnalysisKind(
       getUploadAnalysisFormString(formData, "mediaKind"),
     );
-    const replicate = createReplicateClient(getRequestReplicateToken(request));
+    const replicate = createReplicateClient();
     const prediction = await replicate.predictions.create({
       model: getUploadAnalysisModelId(),
       input: {

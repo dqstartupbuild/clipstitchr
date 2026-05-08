@@ -1,6 +1,5 @@
 "use client";
 
-import { createReplicateApiRequestHeaders } from "@/lib/clipstitchr/client/createReplicateApiRequestHeaders";
 import type { UploadAssetAnalysis } from "@/lib/clipstitchr/types/UploadAssetAnalysis";
 import type { UploadAssetAnalysisKind } from "@/lib/clipstitchr/types/UploadAssetAnalysisKind";
 import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
@@ -25,7 +24,6 @@ export async function analyzeUploadAsset({
 
   const response = await fetch("/api/uploads/analyze", {
     method: "POST",
-    headers: createReplicateApiRequestHeaders(),
     body: formData,
   });
   const body = (await response.json()) as Partial<UploadAssetAnalysis> & {

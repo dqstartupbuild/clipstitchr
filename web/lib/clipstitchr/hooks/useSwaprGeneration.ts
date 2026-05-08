@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { createReplicateApiRequestHeaders } from "@/lib/clipstitchr/client/createReplicateApiRequestHeaders";
 import { createSwaprGenerationPhotoBlob } from "@/lib/clipstitchr/client/createSwaprGenerationPhotoBlob";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
@@ -68,10 +67,8 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
         formData.set("characterOrientation", characterOrientation);
         formData.set("keepOriginalSound", String(keepOriginalSound));
 
-        const replicateHeaders = createReplicateApiRequestHeaders();
         const createResponse = await fetch("/api/swapr/jobs", {
           method: "POST",
-          headers: replicateHeaders,
           body: formData,
         });
         let prediction = await readSwaprPredictionResponse(createResponse);
@@ -89,9 +86,7 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
         ) {
           await waitForSwaprPollInterval();
 
-          const pollResponse = await fetch(`/api/swapr/jobs/${prediction.id}`, {
-            headers: replicateHeaders,
-          });
+          const pollResponse = await fetch(`/api/swapr/jobs/${prediction.id}`);
           prediction = await readSwaprPredictionResponse(pollResponse);
           setStatus(
             prediction.status === "processing" ? "processing" : "queued",
@@ -118,7 +113,6 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
 
         const outputResponse = await fetch(
           `/api/swapr/output?url=${encodeURIComponent(outputUrl)}`,
-          { headers: replicateHeaders },
         );
 
         if (!outputResponse.ok) {

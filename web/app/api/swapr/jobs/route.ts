@@ -6,7 +6,6 @@ import { getSwaprFormBoolean } from "@/lib/clipstitchr/server/getSwaprFormBoolea
 import { getSwaprFormFile } from "@/lib/clipstitchr/server/getSwaprFormFile";
 import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString";
 import { getSwaprMode } from "@/lib/clipstitchr/server/getSwaprMode";
-import { getRequestReplicateToken } from "@/lib/clipstitchr/server/getRequestReplicateToken";
 
 export const runtime = "nodejs";
 
@@ -27,7 +26,7 @@ export async function POST(request: Request) {
       "keepOriginalSound",
     );
 
-    const replicate = createReplicateClient(getRequestReplicateToken(request));
+    const replicate = createReplicateClient();
     const prediction = await replicate.predictions.create({
       model: SWAPR_MODEL_ID,
       input: {

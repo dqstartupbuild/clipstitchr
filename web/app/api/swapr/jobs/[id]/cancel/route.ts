@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createSwaprPredictionJson } from "@/lib/clipstitchr/server/createSwaprPredictionJson";
-import { getRequestReplicateToken } from "@/lib/clipstitchr/server/getRequestReplicateToken";
 
 export const runtime = "nodejs";
 
@@ -10,12 +9,12 @@ type SwaprCancelRouteContext = {
 };
 
 export async function POST(
-  request: Request,
+  _request: Request,
   { params }: SwaprCancelRouteContext,
 ) {
   try {
     const { id } = await params;
-    const replicate = createReplicateClient(getRequestReplicateToken(request));
+    const replicate = createReplicateClient();
     const prediction = await replicate.predictions.cancel(id);
 
     return NextResponse.json(createSwaprPredictionJson(prediction));
