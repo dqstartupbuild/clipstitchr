@@ -1,6 +1,6 @@
 import {
-  CREATED_VIDEOS_STORE_NAME,
   PHOTO_ASSETS_STORE_NAME,
+  STITCHES_STORE_NAME,
   VIDEO_CLIPS_STORE_NAME,
 } from "@/lib/clipstitchr/constants/objectStoreNames";
 
@@ -13,8 +13,8 @@ export function upgradeClipStitchrDatabase(database: IDBDatabase) {
     store.createIndex("createdAt", "createdAt", { unique: false });
   }
 
-  if (!database.objectStoreNames.contains(CREATED_VIDEOS_STORE_NAME)) {
-    const store = database.createObjectStore(CREATED_VIDEOS_STORE_NAME, {
+  if (!database.objectStoreNames.contains(STITCHES_STORE_NAME)) {
+    const store = database.createObjectStore(STITCHES_STORE_NAME, {
       keyPath: "id",
     });
     store.createIndex("createdAt", "createdAt", { unique: false });

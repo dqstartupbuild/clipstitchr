@@ -113,12 +113,12 @@ Text overlays are planned for later, but they are not required for the MVP.
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
 | 1 | Landing page with a **"Dashboard"** button | ✅ | ✅ |
-| 2 | Dashboard shows workspace status, recent uploads, recent created videos, and Stitchr entry points | ✅ | ✅ |
+| 2 | Dashboard shows workspace status, recent uploads, recent stitches, and Stitchr entry points | ✅ | ✅ |
 | 3 | No login required — dashboard is directly accessible | ✅ | — |
 | 4 | Clerk-authenticated access to dashboard | — | ✅ |
 | 5 | Uploaded UGC clips and demo videos share a tabbed uploads library page | ✅ | ✅ |
 | 6 | Uploaded Swapr photos appear in the uploads library Photos tab; AI expansion is optional and off by default | ✅ | ✅ |
-| 7 | Created videos have a dedicated library page | ✅ | ✅ |
+| 7 | Stitches have a dedicated library page | ✅ | ✅ |
 | 8 | A unified upload control supports UGC, Demo, and Photo uploads from the dashboard header action | ✅ | ✅ |
 
 ---
@@ -131,7 +131,7 @@ Text overlays are planned for later, but they are not required for the MVP.
 /dashboard/stitchr → Stitchr video stitching interface
 /dashboard/swapr → AI motion-transfer studio using saved photos and UGC clips
 /dashboard/uploads → Upload library with UGC, Demo, and Photos tabs; unified upload controls open from header action
-/dashboard/created → Created video library
+/dashboard/stitches → Stitches library
 ```
 
 ---
@@ -205,8 +205,8 @@ Text overlays are planned for later, but they are not required for the MVP.
 - Preview, Stitch Video, and Download must all use the same sequence: the normalized UGC clip starts first, and the normalized Demo clip starts immediately after the UGC clip ends.
 - Trimming is non-destructive metadata. Uploads store a default trim range. When a clip is selected in Stitchr, the default trim range is copied into that Stitchr session and can be changed independently.
 - Preview, Stitch Video, and Download must use the copied Stitchr trim ranges when present.
-- The final created video must be a single 9:16 file using the same normalized assets shown in preview.
-- Clip and created-video cards should use the HTML video `poster` attribute for the static preview state. Generate poster images in the browser by seeking through early candidate frames, choosing the first visibly non-black frame, encoding it as JPEG, and storing it beside the video blob.
+- The final stitch must be a single 9:16 file using the same normalized assets shown in preview.
+- Clip and stitch cards should use the HTML video `poster` attribute for the static preview state. Generate poster images in the browser by seeking through early candidate frames, choosing the first visibly non-black frame, encoding it as JPEG, and storing it beside the video blob.
 - Poster generation is infrastructure for video previews. User-authored thumbnail generation, thumbnail selection, and thumbnail editing remain out of scope for the MVP.
 
 ### Media Bunny API Map (MVP)
@@ -248,7 +248,7 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
 #### Stitched Export / Download
 
 - Do not use `Conversion` for stitching because it is a single-input conversion abstraction, not a multi-input composition API.
-- Create a fresh `Output` with `Mp4OutputFormat` and `BufferTarget` for each created video.
+- Create a fresh `Output` with `Mp4OutputFormat` and `BufferTarget` for each stitch.
 - Add one `VideoSampleSource` and, when at least one selected clip has audio, one `AudioSampleSource`.
 - Add all output tracks before calling `output.start()`.
 - Read normalized clips with `Input` + `BlobSource`, then use `VideoSampleSink` and `AudioSampleSink` to stream decoded samples.
@@ -261,7 +261,7 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
 - Close every `VideoSample` and `AudioSample` after it has been added.
 - Close media sources when their streams are complete, then call `output.finalize()`.
 - Convert the final `BufferTarget.buffer` into the downloadable video `Blob`, using `output.getMimeType()` for the blob type when available.
-- Generate and store a poster `Blob` for each created stitched video after export succeeds.
+- Generate and store a poster `Blob` for each stitch after export succeeds.
 - Dispose each stitched-export `Input` after its samples have been processed.
 - Keep encoded-packet passthrough with `EncodedPacketSink`, `EncodedVideoPacketSource`, and `EncodedAudioPacketSource` as a later optimization only; MVP should re-encode from samples because it is more robust across separate input files.
 
@@ -309,7 +309,7 @@ interface VideoClip {
   createdAt: string; // ISO timestamp
 }
 
-interface CreatedVideo {
+interface Stitch {
   id: string;
   name: string;
   ugcClipId: string;
@@ -339,7 +339,7 @@ interface CreatedVideo {
 - [ ] Media Bunny upload normalization to TikTok 9:16
 - [ ] Video library (UGC vs Demo categorization)
 - [ ] Video preview player for normalized uploads
-- [ ] Generated poster images for normalized uploads and created videos
+- [ ] Generated poster images for normalized uploads and stitches
 - [ ] UGC + Demo sequence preview
 - [ ] Video stitching (UGC immediately followed by Demo → single 9:16 output)
 - [ ] Download finished videos
@@ -394,7 +394,7 @@ interface CreatedVideo {
 1. **Browser-first:** All video processing must happen client-side in the MVP.
 2. **No external services:** MVP should work fully offline after initial page load.
 3. **Free tooling only:** No paid video processing APIs or licensed codecs.
-4. **TikTok-first output:** All uploaded clips and created videos must be normalized to 9:16 before preview, stitching, or download.
+4. **TikTok-first output:** All uploaded clips and stitches must be normalized to 9:16 before preview, stitching, or download.
 5. **Fast iteration:** The starship boilerplate gives us Next.js + good defaults — build on top of it, don't fight it.
 
 ---
@@ -403,7 +403,7 @@ interface CreatedVideo {
 
 - [ ] User can upload 5 UGC clips and 1 demo video.
 - [ ] Each uploaded video is normalized to TikTok 9:16 using Media Bunny before it appears in the usable library.
-- [ ] Each uploaded and created video has a non-black generated poster image in its default/static preview state.
+- [ ] Each uploaded video and stitch has a non-black generated poster image in its default/static preview state.
 - [ ] User can select any UGC + the demo and preview the exact UGC-then-Demo sequence.
 - [ ] User can create a stitched 9:16 video where the Demo starts immediately after the UGC clip ends.
 - [ ] All 5 resulting 9:16 videos can be downloaded.

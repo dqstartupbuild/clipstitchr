@@ -1,7 +1,7 @@
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
-export type CreatedVideo = {
+export type Stitch = {
   id: string;
   name: string;
   ugcClipId: string;

@@ -30,7 +30,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 The MVP is browser-local:
 
 - Uploaded UGC and Demo videos are normalized to TikTok 9:16 before they are saved.
-- Normalized clips and created stitched videos are stored as `Blob` values in IndexedDB.
+- Normalized clips and stitches are stored as `Blob` values in IndexedDB.
 - Each saved video also stores a generated JPEG `posterBlob` plus `posterVersion`.
 - Posters are generated in the browser by seeking through candidate frames and choosing a visibly non-black frame for the video element's `poster` attribute.
 - Older records without posters, or with stale poster versions, are backfilled when the library loads.
@@ -41,9 +41,9 @@ The MVP is browser-local:
 ```
 ├── app/
 │   ├── page.tsx                 # Landing page
-│   ├── dashboard/               # Dashboard, Stitchr, Uploads, Swapr, and Created routes
+│   ├── dashboard/               # Dashboard, Stitchr, Uploads, Swapr, and Stitches routes
 │   ├── uploads/                 # Upload library route
-│   ├── created/                 # Created video library route
+│   ├── stitches/                # Stitches library route
 │   ├── _components/             # Atomic UI, dashboard, Stitchr, and landing components
 │   ├── layout.tsx               # Root layout (fonts, JSON-LD)
 │   ├── globals.css              # Design system tokens + utilities

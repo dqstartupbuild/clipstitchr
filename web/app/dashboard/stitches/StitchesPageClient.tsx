@@ -1,19 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CreatedVideosSection } from "@/app/_components/dashboard/CreatedVideosSection";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { LibraryPageHeader } from "@/app/_components/dashboard/LibraryPageHeader";
+import { StitchesSection } from "@/app/_components/dashboard/StitchesSection";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
-import { filterCreatedVideosByName } from "@/lib/clipstitchr/utils/filterCreatedVideosByName";
+import { filterStitchesByName } from "@/lib/clipstitchr/utils/filterStitchesByName";
 
-export function CreatedVideosPageClient() {
+export function StitchesPageClient() {
   const library = useClipLibrary();
   const [searchQuery, setSearchQuery] = useState("");
-  const createdVideos = useMemo(
-    () => filterCreatedVideosByName(library.createdVideos, searchQuery),
-    [library.createdVideos, searchQuery],
+  const stitches = useMemo(
+    () => filterStitchesByName(library.stitches, searchQuery),
+    [library.stitches, searchQuery],
   );
   const hasSearchQuery = searchQuery.trim().length > 0;
 
@@ -32,22 +32,22 @@ export function CreatedVideosPageClient() {
         ) : null}
         <div className="flex justify-end">
           <SearchInput
-            label="Search created videos"
+            label="Search stitches"
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search created videos"
+            placeholder="Search stitches"
             className="w-full sm:max-w-sm"
           />
         </div>
-        <CreatedVideosSection
-          createdVideos={createdVideos}
-          emptyTitle={hasSearchQuery ? "No matching videos" : undefined}
+        <StitchesSection
+          stitches={stitches}
+          emptyTitle={hasSearchQuery ? "No matching stitches" : undefined}
           emptyDescription={
             hasSearchQuery
-              ? "No created videos match that name."
+              ? "No stitches match that name."
               : undefined
           }
-          onDelete={library.removeCreatedVideo}
+          onDelete={library.removeStitch}
         />
       </div>
     </DashboardShell>

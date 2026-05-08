@@ -10,7 +10,7 @@ import { BrandMark } from "@/app/_components/BrandMark";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/dashboard/created", label: "Stitches", icon: Play },
+  { href: "/dashboard/stitches", label: "Stitches", icon: Play },
   { href: "/dashboard/uploads", label: "Uploads", icon: UploadCloud },
   { href: "/dashboard/stitchr", label: "Stitchr", icon: Scissors },
   { href: "/dashboard/swapr", label: "Swapr", icon: Shuffle },

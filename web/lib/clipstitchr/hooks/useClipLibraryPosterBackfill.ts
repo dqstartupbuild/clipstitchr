@@ -4,25 +4,25 @@ import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useRef } from "react";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
-import { getCreatedVideo } from "@/lib/clipstitchr/storage/getCreatedVideo";
+import { getStitch } from "@/lib/clipstitchr/storage/getStitch";
 import { getVideoClip } from "@/lib/clipstitchr/storage/getVideoClip";
-import { saveCreatedVideo } from "@/lib/clipstitchr/storage/saveCreatedVideo";
+import { saveStitch } from "@/lib/clipstitchr/storage/saveStitch";
 import { saveVideoClip } from "@/lib/clipstitchr/storage/saveVideoClip";
-import type { CreatedVideo } from "@/lib/clipstitchr/types/CreatedVideo";
+import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 
 type UseClipLibraryPosterBackfillOptions = {
   clips: VideoClip[];
-  createdVideos: CreatedVideo[];
+  stitches: Stitch[];
   setClips: Dispatch<SetStateAction<VideoClip[]>>;
-  setCreatedVideos: Dispatch<SetStateAction<CreatedVideo[]>>;
+  setStitches: Dispatch<SetStateAction<Stitch[]>>;
 };
 
 export function useClipLibraryPosterBackfill({
   clips,
-  createdVideos,
+  stitches,
   setClips,
-  setCreatedVideos,
+  setStitches,
 }: UseClipLibraryPosterBackfillOptions) {
   const posterBackfillIds = useRef(new Set<string>());
 
@@ -86,15 +86,15 @@ export function useClipLibraryPosterBackfill({
   }, [clips, setClips]);
 
   useEffect(() => {
-    for (const createdVideo of createdVideos) {
+    for (const stitch of stitches) {
       if (
-        createdVideo.posterBlob &&
-        createdVideo.posterVersion === VIDEO_POSTER_CAPTURE_VERSION
+        stitch.posterBlob &&
+        stitch.posterVersion === VIDEO_POSTER_CAPTURE_VERSION
       ) {
         continue;
       }
 
-      const posterBackfillId = `created:${createdVideo.id}`;
+      const posterBackfillId = `stitch:${stitch.id}`;
 
       if (posterBackfillIds.current.has(posterBackfillId)) {
         continue;
@@ -102,36 +102,36 @@ export function useClipLibraryPosterBackfill({
 
       posterBackfillIds.current.add(posterBackfillId);
 
-      void createVideoPosterBlob(createdVideo.blob)
+      void createVideoPosterBlob(stitch.blob)
         .then(async (posterBlob) => {
-          const currentCreatedVideo = await getCreatedVideo(createdVideo.id);
+          const currentStitch = await getStitch(stitch.id);
 
           if (
-            !currentCreatedVideo ||
-            (currentCreatedVideo.posterBlob &&
-              currentCreatedVideo.posterVersion ===
+            !currentStitch ||
+            (currentStitch.posterBlob &&
+              currentStitch.posterVersion ===
                 VIDEO_POSTER_CAPTURE_VERSION)
           ) {
             return;
           }
 
-          const updatedCreatedVideo = {
-            ...currentCreatedVideo,
+          const updatedStitch = {
+            ...currentStitch,
             posterBlob,
             posterVersion: VIDEO_POSTER_CAPTURE_VERSION,
           };
 
-          await saveCreatedVideo(updatedCreatedVideo);
+          await saveStitch(updatedStitch);
 
-          setCreatedVideos((currentCreatedVideos) =>
-            currentCreatedVideos.map((currentCreatedVideoItem) =>
-              currentCreatedVideoItem.id === updatedCreatedVideo.id
+          setStitches((currentStitches) =>
+            currentStitches.map((currentStitch) =>
+              currentStitch.id === updatedStitch.id
                 ? {
-                    ...currentCreatedVideoItem,
+                    ...currentStitch,
                     posterBlob,
                     posterVersion: VIDEO_POSTER_CAPTURE_VERSION,
                   }
-                : currentCreatedVideoItem,
+                : currentStitch,
             ),
           );
         })
@@ -140,5 +140,5 @@ export function useClipLibraryPosterBackfill({
           posterBackfillIds.current.delete(posterBackfillId);
         });
     }
-  }, [createdVideos, setCreatedVideos]);
+  }, [stitches, setStitches]);
 }

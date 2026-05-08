@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { SwaprControlsPanel } from "@/app/_components/swapr/SwaprControlsPanel";
+import { SwaprEmptyState } from "@/app/_components/swapr/SwaprEmptyState";
 import { SwaprOutputPanel } from "@/app/_components/swapr/SwaprOutputPanel";
 import { SwaprPhotoSelector } from "@/app/_components/swapr/SwaprPhotoSelector";
 import { SwaprUgcSelector } from "@/app/_components/swapr/SwaprUgcSelector";
@@ -33,6 +34,9 @@ export function SwaprPageClient() {
     () => filterClipsByType(library.clips, "ugc"),
     [library.clips],
   );
+  const hasPhotos = photoLibrary.photos.length > 0;
+  const hasUgcClips = ugcClips.length > 0;
+  const hasSwaprInputs = hasPhotos && hasUgcClips;
   const selectedPhoto = useMemo(
     () => photoLibrary.photos.find((photo) => photo.id === selectedPhotoId),
     [photoLibrary.photos, selectedPhotoId],
@@ -61,60 +65,67 @@ export function SwaprPageClient() {
           </div>
         ) : null}
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-          <div className="flex min-w-0 flex-col gap-6">
-            <SwaprPhotoSelector
-              photos={photoLibrary.photos}
-              selectedPhotoId={selectedPhotoId}
-              onSelect={selectPhoto}
-            />
-            <SwaprUgcSelector
-              clips={ugcClips}
-              selectedClipId={selectedClipId}
-              onSelect={selectClip}
-            />
-          </div>
+        {hasSwaprInputs ? (
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+            <div className="flex min-w-0 flex-col gap-6">
+              <SwaprPhotoSelector
+                photos={photoLibrary.photos}
+                selectedPhotoId={selectedPhotoId}
+                onSelect={selectPhoto}
+              />
+              <SwaprUgcSelector
+                clips={ugcClips}
+                selectedClipId={selectedClipId}
+                onSelect={selectClip}
+              />
+            </div>
 
-          <div className="flex min-w-0 flex-col gap-6">
-            <SwaprControlsPanel
-              prompt={prompt}
-              mode={mode}
-              characterOrientation={characterOrientation}
-              keepOriginalSound={keepOriginalSound}
-              hasConsent={hasConsent}
-              selectedClip={selectedClip}
-              isGenerating={generator.isGenerating}
-              isReady={isReady}
-              referenceVideoMaxSizeBytes={SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES}
-              onPromptChange={setPrompt}
-              onModeChange={setMode}
-              onCharacterOrientationChange={setCharacterOrientation}
-              onKeepOriginalSoundChange={setKeepOriginalSound}
-              onConsentChange={setHasConsent}
-              onGenerate={() => {
-                if (!selectedPhoto || !selectedClip) {
-                  return;
-                }
+            <div className="flex min-w-0 flex-col gap-6">
+              <SwaprControlsPanel
+                prompt={prompt}
+                mode={mode}
+                characterOrientation={characterOrientation}
+                keepOriginalSound={keepOriginalSound}
+                hasConsent={hasConsent}
+                selectedClip={selectedClip}
+                isGenerating={generator.isGenerating}
+                isReady={isReady}
+                referenceVideoMaxSizeBytes={SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES}
+                onPromptChange={setPrompt}
+                onModeChange={setMode}
+                onCharacterOrientationChange={setCharacterOrientation}
+                onKeepOriginalSoundChange={setKeepOriginalSound}
+                onConsentChange={setHasConsent}
+                onGenerate={() => {
+                  if (!selectedPhoto || !selectedClip) {
+                    return;
+                  }
 
-                void generator.generate({
-                  photo: selectedPhoto,
-                  clip: selectedClip,
-                  prompt,
-                  mode,
-                  characterOrientation,
-                  keepOriginalSound,
-                });
-              }}
-            />
-            <SwaprOutputPanel
-              status={generator.status}
-              progress={generator.progress}
-              error={generator.error}
-              predictionId={generator.predictionId}
-              generatedClip={generator.generatedClip}
-            />
+                  void generator.generate({
+                    photo: selectedPhoto,
+                    clip: selectedClip,
+                    prompt,
+                    mode,
+                    characterOrientation,
+                    keepOriginalSound,
+                  });
+                }}
+              />
+              <SwaprOutputPanel
+                status={generator.status}
+                progress={generator.progress}
+                error={generator.error}
+                predictionId={generator.predictionId}
+                generatedClip={generator.generatedClip}
+              />
+            </div>
           </div>
-        </div>
+        ) : (
+          <SwaprEmptyState
+            hasPhotos={hasPhotos}
+            hasUgcClips={hasUgcClips}
+          />
+        )}
       </div>
     </DashboardShell>
   );

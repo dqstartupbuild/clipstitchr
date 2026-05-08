@@ -4,13 +4,13 @@ import { DashboardStatCard } from "@/app/_components/dashboard/DashboardStatCard
 type DashboardStatsProps = {
   ugcCount: number;
   demoCount: number;
-  createdCount: number;
+  stitchesCount: number;
 };
 
 export function DashboardStats({
   ugcCount,
   demoCount,
-  createdCount,
+  stitchesCount,
 }: DashboardStatsProps) {
   return (
     <section className="grid gap-4 md:grid-cols-3">
@@ -27,7 +27,7 @@ export function DashboardStats({
       <DashboardStatCard
         icon={<FileVideo aria-hidden className="h-5 w-5" />}
         label="Stitches"
-        value={createdCount}
+        value={stitchesCount}
       />
     </section>
   );

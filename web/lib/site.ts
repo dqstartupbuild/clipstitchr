@@ -77,7 +77,7 @@ export const site = {
       priority: 0.68,
     },
     {
-      pathname: "/dashboard/created",
+      pathname: "/dashboard/stitches",
       changeFrequency: "weekly" as const,
       priority: 0.68,
     },

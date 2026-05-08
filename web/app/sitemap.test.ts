@@ -11,7 +11,7 @@ describe("sitemap", () => {
     expect(urls).toContain("http://localhost:3000/dashboard/stitchr");
     expect(urls).toContain("http://localhost:3000/dashboard/uploads");
     expect(urls).toContain("http://localhost:3000/dashboard/swapr");
-    expect(urls).toContain("http://localhost:3000/dashboard/created");
+    expect(urls).toContain("http://localhost:3000/dashboard/stitches");
     expect(urls).toContain("http://localhost:3000/blog");
     expect(urls).toContain(
       "http://localhost:3000/blog/getting-started",

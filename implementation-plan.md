@@ -7,7 +7,7 @@
 ### Product Scope
 
 - `project-scope.md`
-  - MVP routes are `/`, `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, `/dashboard/swapr`, and `/dashboard/created`.
+  - MVP routes are `/`, `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, `/dashboard/swapr`, and `/dashboard/stitches`.
   - Uploads are UGC clips and Demo videos.
   - Every uploaded clip must be normalized to TikTok 9:16 before it is usable.
   - Preview and export must use the same sequence: UGC plays first, Demo starts immediately after UGC ends.
@@ -34,7 +34,7 @@
 - Relevant implementation decisions from those docs:
   - Use `Input` + `BlobSource` to read uploaded browser `File`/`Blob` objects.
   - Use `Conversion` for one-input upload normalization.
-  - Use `Output` + `Mp4OutputFormat` + `BufferTarget` for normalized files and created videos.
+  - Use `Output` + `Mp4OutputFormat` + `BufferTarget` for normalized files and stitches.
   - Use `VideoSampleSink` / `AudioSampleSink` to read normalized clips for multi-input stitching.
   - Use `VideoSampleSource` / `AudioSampleSource` to write stitched output.
   - Re-timestamp samples with `sample.setTimestamp(...)`.
@@ -68,7 +68,7 @@
     - Purple primary brand color family.
     - Dark navy text.
     - Compact SaaS dashboard composition.
-    - Sidebar dashboard, upload button, stat cards, recent uploads, created videos, and Stitchr CTA.
+    - Sidebar dashboard, upload button, stat cards, recent uploads, stitches, and Stitchr CTA.
     - Landing hero with a product preview image/card, compact feature blocks, and bottom conversion band.
     - Blog/legal pages retained visually.
   - Post-MVP mockup elements to avoid as implemented features:
@@ -103,7 +103,7 @@
 
 5. Media Bunny-first video pipeline.
    - Normalize on upload and store normalized blobs.
-   - Generate and store poster blobs for uploaded clips and created videos.
+   - Generate and store poster blobs for uploaded clips and stitches.
    - Preview from normalized blobs.
    - Stitch from normalized blobs.
    - Download final stitched blob.
@@ -217,7 +217,7 @@ Modify:
   - Change to `Go to Dashboard`.
 - `staticPages`
   - Keep `/`, `/blog`, `/privacy`, `/terms`.
-  - Add `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, `/dashboard/swapr`, and `/dashboard/created` so sitemap includes the MVP app routes.
+  - Add `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, `/dashboard/swapr`, and `/dashboard/stitches` so sitemap includes the MVP app routes.
 
 Do not remove:
 
@@ -372,7 +372,7 @@ Create:
 
 - Client component entry for `/dashboard`.
 - Owns dashboard page-level loading and interactions through hooks.
-- Composes dashboard layout, stats, recent upload sections, recent created video sections, and Stitchr callout.
+- Composes dashboard layout, stats, recent upload sections, recent stitch sections, and Stitchr callout.
 
 ### `web/app/_components/dashboard/DashboardShell.tsx`
 
@@ -446,23 +446,23 @@ Create:
 - Displays normalized video preview, filename, type, duration, and delete/rename controls.
 - Uses actual video blob object URL.
 
-### `web/app/_components/dashboard/CreatedVideosSection.tsx`
+### `web/app/_components/dashboard/StitchesSection.tsx`
 
 Create:
 
-- Section shell for created videos.
+- Section shell for stitches.
 
-### `web/app/_components/dashboard/CreatedVideoCard.tsx`
+### `web/app/_components/dashboard/StitchCard.tsx`
 
 Create:
 
-- Displays created video preview, duration, date, and download/delete actions.
+- Displays stitch preview, duration, date, and download/delete actions.
 
 ### `web/app/_components/dashboard/DashboardEmptyState.tsx`
 
 Create:
 
-- Empty state for no clips or no created videos.
+- Empty state for no clips or no stitches.
 
 ### `web/app/_components/dashboard/StitchrCallout.tsx`
 
@@ -477,7 +477,7 @@ Create:
 Create:
 
 - Client component entry for `/dashboard/stitchr`.
-- Loads normalized clips and created videos from IndexedDB.
+- Loads normalized clips and stitches from IndexedDB.
 - Owns selected UGC clip, selected Demo clip, preview state, stitch progress, and stitch/download result through hooks.
 
 ### `web/app/_components/stitchr/StitchrShell.tsx`
@@ -539,11 +539,11 @@ Create:
 
 - Shows stitching status/progress.
 
-### `web/app/_components/stitchr/DownloadCreatedVideoPanel.tsx`
+### `web/app/_components/stitchr/DownloadStitchPanel.tsx`
 
 Create:
 
-- Shows final created video and download button after stitching completes.
+- Shows final stitch and download button after stitching completes.
 
 ### `web/app/_components/stitchr/StitchrEmptyState.tsx`
 
@@ -609,11 +609,11 @@ Create:
 - Exports `VideoClip` interface matching MVP data model.
 - Includes normalized blob, optional poster blob, poster capture version, dimensions, aspect ratio, duration, and timestamps.
 
-### `web/lib/clipstitchr/types/CreatedVideo.ts`
+### `web/lib/clipstitchr/types/Stitch.ts`
 
 Create:
 
-- Exports `CreatedVideo` interface matching MVP data model.
+- Exports `Stitch` interface matching MVP data model.
 - Includes the stitched blob plus optional poster blob and poster capture version.
 
 ### `web/lib/clipstitchr/types/UploadQueueItem.ts`
@@ -658,7 +658,7 @@ Create:
 
 Create:
 
-- Exports `videoClips` and `createdVideos` store names.
+- Exports `videoClips` and stitches store names.
 
 ### `web/lib/clipstitchr/constants/tiktokOutputSize.ts`
 
@@ -735,29 +735,29 @@ Create:
 
 - Deletes one normalized clip.
 
-### `web/lib/clipstitchr/storage/saveCreatedVideo.ts`
+### `web/lib/clipstitchr/storage/saveStitch.ts`
 
 Create:
 
-- Saves one created stitched video.
+- Saves one stitch.
 
-### `web/lib/clipstitchr/storage/getCreatedVideos.ts`
-
-Create:
-
-- Reads all created videos.
-
-### `web/lib/clipstitchr/storage/getCreatedVideo.ts`
+### `web/lib/clipstitchr/storage/getStitches.ts`
 
 Create:
 
-- Reads one created video by ID for poster backfill.
+- Reads all stitches.
 
-### `web/lib/clipstitchr/storage/deleteCreatedVideo.ts`
+### `web/lib/clipstitchr/storage/getStitch.ts`
 
 Create:
 
-- Deletes one created video.
+- Reads one stitch by ID for poster backfill.
+
+### `web/lib/clipstitchr/storage/deleteStitch.ts`
+
+Create:
+
+- Deletes one stitch.
 
 ### `web/lib/clipstitchr/storage/clearClipStitchrDatabase.ts`
 
@@ -855,7 +855,7 @@ Create:
 - Adds output tracks before `output.start()`.
 - Processes UGC samples at offset `0`.
 - Processes Demo samples at offset `ugcDuration`.
-- Finalizes output and returns created video blob.
+- Finalizes output and returns stitch blob.
 - Emits progress callbacks.
 
 ### `web/lib/clipstitchr/media/getVideoMimeType.ts`
@@ -908,14 +908,14 @@ Create:
 
 Create:
 
-- Loads clips and created videos from IndexedDB.
+- Loads clips and stitches from IndexedDB.
 - Exposes refresh/delete helpers.
 
 ### `web/lib/clipstitchr/hooks/useClipLibraryPosterBackfill.ts`
 
 Create:
 
-- Generates missing or stale poster blobs for existing clips and created videos.
+- Generates missing or stale poster blobs for existing clips and stitches.
 - Saves regenerated posters back to IndexedDB.
 
 ### `web/lib/clipstitchr/hooks/useUploadProcessor.ts`
@@ -933,7 +933,7 @@ Create:
 Create:
 
 - Calls `stitchNormalizedVideos`.
-- Saves `CreatedVideo`.
+- Saves `Stitch`.
 - Generates and stores a poster blob after export.
 - Tracks stitch status/progress/error.
 
@@ -1025,7 +1025,7 @@ Create only if time allows:
 
 Modify:
 
-- Mention normalized video blobs, created video blobs, generated poster blobs, and poster capture versions.
+- Mention normalized video blobs, stitch blobs, generated poster blobs, and poster capture versions.
 - Keep database name `clipstitchr-mvp`.
 
 ## 21. Intended Structure Tree
@@ -1071,7 +1071,7 @@ Modify:
     │   │   │   ├── StitchrHeader.tsx
     │   │   │   ├── StitchrShell.tsx
     │   │   │   ├── DemoClipSelector.tsx
-    │   │   │   ├── DownloadCreatedVideoPanel.tsx
+    │   │   │   ├── DownloadStitchPanel.tsx
     │   │   │   ├── SelectableClipRow.tsx
     │   │   │   ├── SequencePreviewPanel.tsx
     │   │   │   ├── SequenceVideoPlayer.tsx
@@ -1079,8 +1079,8 @@ Modify:
     │   │   ├── dashboard
     │   │   │   ├── ClipTypeTabs.tsx
     │   │   │   ├── StitchrCallout.tsx
-    │   │   │   ├── CreatedVideoCard.tsx
-    │   │   │   ├── CreatedVideosSection.tsx
+    │   │   │   ├── StitchCard.tsx
+    │   │   │   ├── StitchesSection.tsx
     │   │   │   ├── DashboardEmptyState.tsx
     │   │   │   ├── DashboardHeader.tsx
     │   │   │   ├── DashboardShell.tsx
@@ -1165,22 +1165,22 @@ Modify:
     │   │   │   └── stitchNormalizedVideos.ts
     │   │   ├── storage
     │   │   │   ├── clearClipStitchrDatabase.ts
-    │   │   │   ├── deleteCreatedVideo.ts
+    │   │   │   ├── deleteStitch.ts
     │   │   │   ├── deleteVideoClip.ts
-    │   │   │   ├── getCreatedVideo.ts
-    │   │   │   ├── getCreatedVideos.ts
+    │   │   │   ├── getStitch.ts
+    │   │   │   ├── getStitches.ts
     │   │   │   ├── getObjectStore.ts
     │   │   │   ├── getVideoClip.ts
     │   │   │   ├── getVideoClips.ts
     │   │   │   ├── openClipStitchrDatabase.ts
     │   │   │   ├── requestToPromise.ts
-    │   │   │   ├── saveCreatedVideo.ts
+    │   │   │   ├── saveStitch.ts
     │   │   │   ├── saveVideoClip.ts
     │   │   │   └── upgradeClipStitchrDatabase.ts
     │   │   ├── types
     │   │   │   ├── ClipMetadata.ts
     │   │   │   ├── ClipType.ts
-    │   │   │   ├── CreatedVideo.ts
+    │   │   │   ├── Stitch.ts
     │   │   │   ├── OutputCodecs.ts
     │   │   │   ├── ProcessingStatus.ts
     │   │   │   ├── UploadQueueItem.ts
@@ -1244,7 +1244,7 @@ Modify:
     - Upload UGC and Demo clips.
     - Uploaded clips normalize to 9:16.
     - IndexedDB persists normalized clips.
-    - Uploaded and created video cards show non-black generated posters before playback.
+    - Uploaded video and stitch cards show non-black generated posters before playback.
     - Stitchr page previews UGC then Demo.
     - Stitch Video produces one downloadable 9:16 video.
     - Blog/legal/discovery routes still work.

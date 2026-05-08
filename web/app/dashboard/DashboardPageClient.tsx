@@ -5,11 +5,11 @@ import { StitchrCallout } from "@/app/_components/dashboard/StitchrCallout";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
-import { RecentCreatedVideosSection } from "@/app/_components/dashboard/RecentCreatedVideosSection";
+import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitchesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
-import { getRecentCreatedVideos } from "@/lib/clipstitchr/utils/getRecentCreatedVideos";
+import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
 import { getRecentVideoClips } from "@/lib/clipstitchr/utils/getRecentVideoClips";
 
 const RECENT_DASHBOARD_ITEM_LIMIT = 4;
@@ -28,13 +28,13 @@ export function DashboardPageClient() {
     () => getRecentVideoClips(library.clips, RECENT_DASHBOARD_ITEM_LIMIT),
     [library.clips],
   );
-  const recentCreatedVideos = useMemo(
+  const recentStitches = useMemo(
     () =>
-      getRecentCreatedVideos(
-        library.createdVideos,
+      getRecentStitches(
+        library.stitches,
         RECENT_DASHBOARD_ITEM_LIMIT,
       ),
-    [library.createdVideos],
+    [library.stitches],
   );
 
   return (
@@ -49,11 +49,11 @@ export function DashboardPageClient() {
         <DashboardStats
           ugcCount={ugcClips.length}
           demoCount={demoClips.length}
-          createdCount={library.createdVideos.length}
+          stitchesCount={library.stitches.length}
         />
-        <RecentCreatedVideosSection
-          createdVideos={recentCreatedVideos}
-          onDelete={library.removeCreatedVideo}
+        <RecentStitchesSection
+          stitches={recentStitches}
+          onDelete={library.removeStitch}
         />
         <RecentUploadsSection
           clips={recentUploads}

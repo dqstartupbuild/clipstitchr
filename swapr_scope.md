@@ -142,7 +142,7 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
 /dashboard/swapr                 -> Swapr studio: choose photo, choose UGC video, configure, generate
 /dashboard/uploads?tab=photos    -> Photo upload and photo library management; photos are not selected here
 /dashboard/uploads?tab=ugc       -> Existing UGC library; UGC clips can feed Swapr
-/dashboard/created               -> Existing created-video library; may include Swapr outputs or link to them
+/dashboard/stitches               -> Existing stitches library; may include Swapr outputs or link to them
 ```
 
 Photos are uploaded, deleted, and downloaded from the Photos tab in `/dashboard/uploads`. The same dashboard upload action should open one unified upload controller with UGC, Demo, and Photo options. Photos are only selectable from `/dashboard/swapr`, matching the way UGC videos are uploaded in the library but selected inside the Swapr studio. Photo AI expansion must be an explicit opt-in upload option, deselected by default.

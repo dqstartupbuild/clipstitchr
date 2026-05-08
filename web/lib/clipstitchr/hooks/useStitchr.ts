@@ -9,8 +9,8 @@ import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoP
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { stitchNormalizedVideos } from "@/lib/clipstitchr/media/stitchNormalizedVideos";
 import { stitchNormalizedVideosWithTextOverlay } from "@/lib/clipstitchr/media/stitchNormalizedVideosWithTextOverlay";
-import { saveCreatedVideo } from "@/lib/clipstitchr/storage/saveCreatedVideo";
-import type { CreatedVideo } from "@/lib/clipstitchr/types/CreatedVideo";
+import { saveStitch } from "@/lib/clipstitchr/storage/saveStitch";
+import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -20,14 +20,14 @@ import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName";
 
 type UseStitchrOptions = {
-  onCreated?: (createdVideo: CreatedVideo) => void | Promise<void>;
+  onCreated?: (stitch: Stitch) => void | Promise<void>;
 };
 
 export function useStitchr({ onCreated }: UseStitchrOptions) {
   const [status, setStatus] = useState<ProcessingStatus>("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [createdVideo, setCreatedVideo] = useState<CreatedVideo | null>(null);
+  const [stitch, setStitch] = useState<Stitch | null>(null);
 
   const stitchVideo = useCallback(
     async (
@@ -40,7 +40,7 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
       setStatus("stitching");
       setProgress(0);
       setError(null);
-      setCreatedVideo(null);
+      setStitch(null);
 
       try {
         const clampedUgcTrimRange = clampVideoTrimRange(
@@ -72,7 +72,7 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
         }
 
         const now = new Date().toISOString();
-        const nextCreatedVideo: CreatedVideo = {
+        const nextStitch: Stitch = {
           id: createId(),
           name: getDownloadFileName(ugcClip.name, demoClip.name),
           ugcClipId: ugcClip.id,
@@ -93,14 +93,14 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
           createdAt: now,
         };
 
-        await saveCreatedVideo(nextCreatedVideo);
-        await onCreated?.(nextCreatedVideo);
+        await saveStitch(nextStitch);
+        await onCreated?.(nextStitch);
 
-        setCreatedVideo(nextCreatedVideo);
+        setStitch(nextStitch);
         setProgress(1);
         setStatus("complete");
 
-        return nextCreatedVideo;
+        return nextStitch;
       } catch (nextError) {
         setStatus("error");
         setError(
@@ -118,7 +118,7 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
     status,
     progress,
     error,
-    createdVideo,
+    stitch,
     stitchVideo,
   };
 }

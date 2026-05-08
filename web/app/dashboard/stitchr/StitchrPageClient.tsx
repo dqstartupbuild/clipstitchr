@@ -6,7 +6,7 @@ import { StitchrProgressPanel } from "@/app/_components/stitchr/StitchrProgressP
 import { StitchrEmptyState } from "@/app/_components/stitchr/StitchrEmptyState";
 import { StitchrHeader } from "@/app/_components/stitchr/StitchrHeader";
 import { StitchrShell } from "@/app/_components/stitchr/StitchrShell";
-import { DownloadCreatedVideoPanel } from "@/app/_components/stitchr/DownloadCreatedVideoPanel";
+import { DownloadStitchPanel } from "@/app/_components/stitchr/DownloadStitchPanel";
 import { SequencePreviewPanel } from "@/app/_components/stitchr/SequencePreviewPanel";
 import { VideoTrimDialog } from "@/app/_components/trim/VideoTrimDialog";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
@@ -229,8 +229,8 @@ export function StitchrPageClient() {
                 progress={stitchrState.progress}
                 error={stitchrState.error}
               />
-              <DownloadCreatedVideoPanel
-                createdVideo={stitchrState.createdVideo}
+              <DownloadStitchPanel
+                stitch={stitchrState.stitch}
               />
             </div>
             <SequencePreviewPanel

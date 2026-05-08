@@ -5,22 +5,22 @@ import { IconButton } from "@/app/_components/ui/IconButton";
 import { Panel } from "@/app/_components/ui/Panel";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
-import type { CreatedVideo } from "@/lib/clipstitchr/types/CreatedVideo";
+import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 
-type CreatedVideoCardProps = {
-  createdVideo: CreatedVideo;
+type StitchCardProps = {
+  stitch: Stitch;
   onDelete: (id: string) => void | Promise<void>;
 };
 
-export function CreatedVideoCard({
-  createdVideo,
+export function StitchCard({
+  stitch,
   onDelete,
-}: CreatedVideoCardProps) {
-  const url = useObjectUrl(createdVideo.blob);
-  const posterUrl = useObjectUrl(createdVideo.posterBlob);
+}: StitchCardProps) {
+  const url = useObjectUrl(stitch.blob);
+  const posterUrl = useObjectUrl(stitch.posterBlob);
 
   return (
     <Panel className="w-full max-w-[390px] justify-self-center overflow-hidden">
@@ -28,34 +28,34 @@ export function CreatedVideoCard({
         <VideoPreview
           src={url}
           posterSrc={posterUrl}
-          label={createdVideo.name}
+          label={stitch.name}
         />
       </div>
       <div className="p-4">
         <h3 className="truncate text-sm font-bold text-text-primary">
-          {createdVideo.name}
+          {stitch.name}
         </h3>
         <p className="mt-1 text-xs text-text-tertiary">
-          {formatDuration(createdVideo.duration)} . {formatBytes(createdVideo.size)}
+          {formatDuration(stitch.duration)} . {formatBytes(stitch.size)}
         </p>
         <p className="mt-2 text-xs text-text-secondary">
-          {formatDate(createdVideo.createdAt)}
+          {formatDate(stitch.createdAt)}
         </p>
         <div className="mt-4 flex gap-2">
           <a
             href={url ?? undefined}
-            download={createdVideo.name}
-            aria-label="Download created video"
-            title="Download created video"
+            download={stitch.name}
+            aria-label="Download stitch"
+            title="Download stitch"
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-white text-text-secondary transition-colors hover:border-accent hover:text-accent"
           >
             <Download aria-hidden className="h-4 w-4" />
           </a>
           <IconButton
-            label="Delete created video"
+            label="Delete stitch"
             variant="danger"
             icon={<Trash2 aria-hidden className="h-4 w-4" />}
-            onClick={() => void onDelete(createdVideo.id)}
+            onClick={() => void onDelete(stitch.id)}
           />
         </div>
       </div>

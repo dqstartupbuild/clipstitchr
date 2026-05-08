@@ -43,7 +43,7 @@ export default function PrivacyPage() {
             <h2>Browser-Local Video Storage</h2>
             <p>
               ClipStitchr processes uploaded videos in your browser for the MVP.
-              Normalized clips and created videos are saved in your browser
+              Normalized clips and stitches are saved in your browser
               IndexedDB under the <strong>clipstitchr-mvp</strong> database. We do
               not upload those video files to a ClipStitchr server as part of the MVP.
             </p>

@@ -2,19 +2,19 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useClipLibraryPosterBackfill } from "@/lib/clipstitchr/hooks/useClipLibraryPosterBackfill";
-import { deleteCreatedVideo } from "@/lib/clipstitchr/storage/deleteCreatedVideo";
+import { deleteStitch } from "@/lib/clipstitchr/storage/deleteStitch";
 import { deleteVideoClip } from "@/lib/clipstitchr/storage/deleteVideoClip";
-import { getCreatedVideos } from "@/lib/clipstitchr/storage/getCreatedVideos";
+import { getStitches } from "@/lib/clipstitchr/storage/getStitches";
 import { getVideoClips } from "@/lib/clipstitchr/storage/getVideoClips";
 import { saveVideoClip } from "@/lib/clipstitchr/storage/saveVideoClip";
-import type { CreatedVideo } from "@/lib/clipstitchr/types/CreatedVideo";
+import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 
 export function useClipLibrary() {
   const [clips, setClips] = useState<VideoClip[]>([]);
-  const [createdVideos, setCreatedVideos] = useState<CreatedVideo[]>([]);
+  const [stitches, setStitches] = useState<Stitch[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,12 +23,12 @@ export function useClipLibrary() {
     setError(null);
 
     try {
-      const [nextClips, nextCreatedVideos] = await Promise.all([
+      const [nextClips, nextStitches] = await Promise.all([
         getVideoClips(),
-        getCreatedVideos(),
+        getStitches(),
       ]);
       setClips(nextClips);
-      setCreatedVideos(nextCreatedVideos);
+      setStitches(nextStitches);
     } catch (nextError) {
       setError(
         nextError instanceof Error
@@ -72,9 +72,9 @@ export function useClipLibrary() {
     [refresh],
   );
 
-  const removeCreatedVideo = useCallback(
+  const removeStitch = useCallback(
     async (id: string) => {
-      await deleteCreatedVideo(id);
+      await deleteStitch(id);
       await refresh();
     },
     [refresh],
@@ -86,20 +86,20 @@ export function useClipLibrary() {
 
   useClipLibraryPosterBackfill({
     clips,
-    createdVideos,
+    stitches,
     setClips,
-    setCreatedVideos,
+    setStitches,
   });
 
   return {
     clips,
-    createdVideos,
+    stitches,
     isLoading,
     error,
     refresh,
     removeClip,
     renameClip,
     updateClipTrimRange,
-    removeCreatedVideo,
+    removeStitch,
   };
 }
