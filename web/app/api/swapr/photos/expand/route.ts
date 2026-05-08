@@ -3,6 +3,7 @@ import type { Prediction } from "replicate";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
 import { getReplicateOutputUrl } from "@/lib/clipstitchr/server/getReplicateOutputUrl";
+import { getRequestReplicateToken } from "@/lib/clipstitchr/server/getRequestReplicateToken";
 import { getSwaprFormFile } from "@/lib/clipstitchr/server/getSwaprFormFile";
 import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString";
 
@@ -29,7 +30,8 @@ export async function POST(request: Request) {
     const mask = getSwaprFormFile(formData, "mask");
     const prompt =
       getSwaprFormString(formData, "prompt").trim() || SWAPR_OUTPAINT_PROMPT;
-    const replicate = createReplicateClient();
+    const replicateToken = getRequestReplicateToken(request);
+    const replicate = createReplicateClient(replicateToken);
     const prediction = await replicate.predictions.create({
       model: SWAPR_OUTPAINT_MODEL_ID,
       input: {
@@ -58,7 +60,7 @@ export async function POST(request: Request) {
     const outputUrl = getReplicateOutputUrl(
       (completedPrediction as Prediction).output,
     );
-    const outputResponse = await fetchReplicateOutput(outputUrl);
+    const outputResponse = await fetchReplicateOutput(outputUrl, replicateToken);
     const headers = new Headers();
     const contentType = outputResponse.headers.get("content-type");
 

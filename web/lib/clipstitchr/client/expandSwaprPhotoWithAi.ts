@@ -1,3 +1,5 @@
+import { createReplicateApiRequestHeaders } from "@/lib/clipstitchr/client/createReplicateApiRequestHeaders";
+
 export async function expandSwaprPhotoWithAi(imageBlob: Blob, maskBlob: Blob) {
   const formData = new FormData();
   formData.set("image", new File([imageBlob], "swapr-photo-source.png"));
@@ -5,6 +7,7 @@ export async function expandSwaprPhotoWithAi(imageBlob: Blob, maskBlob: Blob) {
 
   const response = await fetch("/api/swapr/photos/expand", {
     method: "POST",
+    headers: createReplicateApiRequestHeaders(),
     body: formData,
   });
 

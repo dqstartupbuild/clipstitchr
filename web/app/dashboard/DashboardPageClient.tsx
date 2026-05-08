@@ -7,6 +7,7 @@ import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
 import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitchesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
+import { ReplicateApiTokenPanel } from "@/app/_components/dashboard/ReplicateApiTokenPanel";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
@@ -46,6 +47,7 @@ export function DashboardPageClient() {
             {library.error}
           </div>
         ) : null}
+        <ReplicateApiTokenPanel />
         <DashboardStats
           ugcCount={ugcClips.length}
           demoCount={demoClips.length}
