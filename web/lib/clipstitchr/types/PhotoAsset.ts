@@ -3,6 +3,7 @@ import type { SwaprPhotoPreparation } from "@/lib/clipstitchr/types/SwaprPhotoPr
 export type PhotoAsset = {
   id: string;
   name: string;
+  tags?: string[];
   originalName: string;
   blob: Blob;
   originalBlob?: Blob;

@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, Scissors } from "lucide-react";
+import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -45,6 +46,12 @@ export function SelectableClipRow({
             {formatDuration(getVideoTrimRangeDuration(trimRange))} selected .{" "}
             {formatDuration(clip.duration)} total
           </p>
+          <AssetTagList
+            tags={clip.tags}
+            className="mt-2"
+            maxVisible={3}
+            requiredTag={clip.clipType}
+          />
         </div>
         <div className="flex items-center gap-2">
           <Badge tone={clip.clipType === "ugc" ? "purple" : "green"}>

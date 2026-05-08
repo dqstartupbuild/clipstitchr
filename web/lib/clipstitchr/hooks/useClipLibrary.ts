@@ -7,10 +7,12 @@ import { deleteVideoClip } from "@/lib/clipstitchr/storage/deleteVideoClip";
 import { getStitches } from "@/lib/clipstitchr/storage/getStitches";
 import { getVideoClips } from "@/lib/clipstitchr/storage/getVideoClips";
 import { saveVideoClip } from "@/lib/clipstitchr/storage/saveVideoClip";
+import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
 export function useClipLibrary() {
   const [clips, setClips] = useState<VideoClip[]>([]);
@@ -60,6 +62,19 @@ export function useClipLibrary() {
     [refresh],
   );
 
+  const updateClipMetadata = useCallback(
+    async (clip: VideoClip, metadata: AssetMetadataUpdate) => {
+      await saveVideoClip({
+        ...clip,
+        name: metadata.name,
+        tags: normalizeAssetTagsWithRequiredTag(metadata.tags, clip.clipType),
+        updatedAt: new Date().toISOString(),
+      });
+      await refresh();
+    },
+    [refresh],
+  );
+
   const updateClipTrimRange = useCallback(
     async (clip: VideoClip, defaultTrimRange: VideoTrimRange) => {
       await saveVideoClip({
@@ -99,6 +114,7 @@ export function useClipLibrary() {
     refresh,
     removeClip,
     renameClip,
+    updateClipMetadata,
     updateClipTrimRange,
     removeStitch,
   };

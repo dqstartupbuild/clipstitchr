@@ -13,9 +13,9 @@ import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
 import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
 import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab";
-import { filterClipsByName } from "@/lib/clipstitchr/utils/filterClipsByName";
+import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
-import { filterPhotosByName } from "@/lib/clipstitchr/utils/filterPhotosByName";
+import { filterPhotosBySearchQuery } from "@/lib/clipstitchr/utils/filterPhotosBySearchQuery";
 import { getInitialUploadLibraryTab } from "@/lib/clipstitchr/utils/getInitialUploadLibraryTab";
 import { getUploadAssetTypeFromLibraryTab } from "@/lib/clipstitchr/utils/getUploadAssetTypeFromLibraryTab";
 import { getUploadLibraryTabFromAssetType } from "@/lib/clipstitchr/utils/getUploadLibraryTabFromAssetType";
@@ -53,7 +53,7 @@ export function UploadsPageClient() {
   const selectedClipType: ClipType = selectedTab === "demo" ? "demo" : "ugc";
   const selectedContent = uploadLibraryContent[selectedClipType];
   const searchFilteredClips = useMemo(
-    () => filterClipsByName(library.clips, searchQuery),
+    () => filterClipsBySearchQuery(library.clips, searchQuery),
     [library.clips, searchQuery],
   );
   const clips = useMemo(
@@ -61,7 +61,7 @@ export function UploadsPageClient() {
     [searchFilteredClips, selectedClipType],
   );
   const photos = useMemo(
-    () => filterPhotosByName(photoLibrary.photos, searchQuery),
+    () => filterPhotosBySearchQuery(photoLibrary.photos, searchQuery),
     [photoLibrary.photos, searchQuery],
   );
   const hasSearchQuery = searchQuery.trim().length > 0;
@@ -120,10 +120,11 @@ export function UploadsPageClient() {
             emptyTitle={hasSearchQuery ? "No matching photos" : undefined}
             emptyDescription={
               hasSearchQuery
-                ? "No saved photos match that name."
+                ? "No saved photos match that title or tag."
                 : "Upload person photos here so they can be selected in Swapr."
             }
             onDelete={photoLibrary.removePhoto}
+            onUpdateMetadata={photoLibrary.updatePhotoMetadata}
           />
         ) : (
           <VideoLibrarySection
@@ -134,11 +135,11 @@ export function UploadsPageClient() {
             emptyTitle={hasSearchQuery ? "No matching videos" : undefined}
             emptyDescription={
               hasSearchQuery
-                ? "No saved videos in this tab match that name."
+                ? "No saved videos in this tab match that title or tag."
                 : selectedContent.emptyDescription
             }
             onDelete={library.removeClip}
-            onRename={library.renameClip}
+            onUpdateMetadata={library.updateClipMetadata}
             onUpdateTrim={library.updateClipTrimRange}
           />
         )}

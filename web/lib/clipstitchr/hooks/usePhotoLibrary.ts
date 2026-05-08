@@ -6,6 +6,7 @@ import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
+import { analyzeUploadAsset } from "@/lib/clipstitchr/client/analyzeUploadAsset";
 import { expandSwaprPhotoWithAi } from "@/lib/clipstitchr/client/expandSwaprPhotoWithAi";
 import { createImageThumbnailBlob } from "@/lib/clipstitchr/media/createImageThumbnailBlob";
 import { createSwaprOutpaintInputs } from "@/lib/clipstitchr/media/createSwaprOutpaintInputs";
@@ -14,10 +15,14 @@ import { getImageDimensions } from "@/lib/clipstitchr/media/getImageDimensions";
 import { deletePhotoAsset } from "@/lib/clipstitchr/storage/deletePhotoAsset";
 import { getPhotoAssets } from "@/lib/clipstitchr/storage/getPhotoAssets";
 import { savePhotoAsset } from "@/lib/clipstitchr/storage/savePhotoAsset";
+import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 import type { SwaprPhotoPreparation } from "@/lib/clipstitchr/types/SwaprPhotoPreparation";
+import type { UploadAssetAnalysis } from "@/lib/clipstitchr/types/UploadAssetAnalysis";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getImageNeedsSwaprOutpaint } from "@/lib/clipstitchr/utils/getImageNeedsSwaprOutpaint";
+import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
+import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
 type SavePhotoFilesOptions = {
   shouldExpandWithAi?: boolean;
@@ -88,10 +93,29 @@ export function usePhotoLibrary() {
 
           const thumbnailBlob = await createImageThumbnailBlob(normalizedBlob);
           const now = new Date().toISOString();
+          const fallbackName = getUploadFallbackName(file.name);
+          let analysis: UploadAssetAnalysis = {
+            name: fallbackName,
+            tags: [],
+          };
+
+          try {
+            analysis = await analyzeUploadAsset({
+              blob: thumbnailBlob,
+              mediaKind: "photo",
+              originalName: file.name,
+            });
+          } catch {
+            analysis = {
+              name: fallbackName,
+              tags: [],
+            };
+          }
 
           await savePhotoAsset({
             id: createId(),
-            name: file.name.replace(/\.[^/.]+$/, ""),
+            name: analysis.name,
+            tags: normalizeAssetTagsWithRequiredTag(analysis.tags, "photo"),
             originalName: file.name,
             blob: normalizedBlob,
             originalBlob: file,
@@ -124,6 +148,19 @@ export function usePhotoLibrary() {
     [refresh],
   );
 
+  const updatePhotoMetadata = useCallback(
+    async (photo: PhotoAsset, metadata: AssetMetadataUpdate) => {
+      await savePhotoAsset({
+        ...photo,
+        name: metadata.name,
+        tags: normalizeAssetTagsWithRequiredTag(metadata.tags, "photo"),
+        updatedAt: new Date().toISOString(),
+      });
+      await refresh();
+    },
+    [refresh],
+  );
+
   const removePhoto = useCallback(
     async (id: string) => {
       await deletePhotoAsset(id);
@@ -143,6 +180,7 @@ export function usePhotoLibrary() {
     error,
     refresh,
     saveFiles,
+    updatePhotoMetadata,
     removePhoto,
   };
 }

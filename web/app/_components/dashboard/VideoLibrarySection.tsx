@@ -5,6 +5,7 @@ import { VideoClipCard } from "@/app/_components/dashboard/VideoClipCard";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
+import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
@@ -15,7 +16,10 @@ type VideoLibrarySectionProps = {
   emptyDescription: string;
   emptyTitle?: string;
   onDelete: (id: string) => void | Promise<void>;
-  onRename: (clip: VideoClip, name: string) => void | Promise<void>;
+  onUpdateMetadata: (
+    clip: VideoClip,
+    metadata: AssetMetadataUpdate,
+  ) => void | Promise<void>;
   onUpdateTrim: (
     clip: VideoClip,
     trimRange: VideoTrimRange,
@@ -29,7 +33,7 @@ export function VideoLibrarySection({
   emptyDescription,
   emptyTitle = "No videos yet",
   onDelete,
-  onRename,
+  onUpdateMetadata,
   onUpdateTrim,
 }: VideoLibrarySectionProps) {
   const pagination = usePagination(clips, {
@@ -52,7 +56,7 @@ export function VideoLibrarySection({
                 key={clip.id}
                 clip={clip}
                 onDelete={onDelete}
-                onRename={onRename}
+                onUpdateMetadata={onUpdateMetadata}
                 onUpdateTrim={onUpdateTrim}
               />
             ))}

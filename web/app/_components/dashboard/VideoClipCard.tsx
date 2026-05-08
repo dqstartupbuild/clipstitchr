@@ -3,12 +3,15 @@
 import { Download, Edit3, Scissors, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { VideoTrimDialog } from "@/app/_components/trim/VideoTrimDialog";
+import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
+import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { IconLink } from "@/app/_components/ui/IconLink";
 import { Panel } from "@/app/_components/ui/Panel";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
@@ -21,7 +24,10 @@ import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimR
 type VideoClipCardProps = {
   clip: VideoClip;
   onDelete: (id: string) => void | Promise<void>;
-  onRename: (clip: VideoClip, name: string) => void | Promise<void>;
+  onUpdateMetadata: (
+    clip: VideoClip,
+    metadata: AssetMetadataUpdate,
+  ) => void | Promise<void>;
   onUpdateTrim: (
     clip: VideoClip,
     trimRange: VideoTrimRange,
@@ -31,12 +37,13 @@ type VideoClipCardProps = {
 export function VideoClipCard({
   clip,
   onDelete,
-  onRename,
+  onUpdateMetadata,
   onUpdateTrim,
 }: VideoClipCardProps) {
   const url = useObjectUrl(clip.blob);
   const posterUrl = useObjectUrl(clip.posterBlob);
   const [isTrimOpen, setIsTrimOpen] = useState(false);
+  const [isMetadataOpen, setIsMetadataOpen] = useState(false);
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
   const selectedDuration = getVideoTrimRangeDuration(defaultTrimRange);
 
@@ -54,6 +61,11 @@ export function VideoClipCard({
                 {formatDuration(selectedDuration)} selected .{" "}
                 {formatDuration(clip.duration)} total . {formatBytes(clip.size)}
               </p>
+              <AssetTagList
+                tags={clip.tags}
+                className="mt-3"
+                requiredTag={clip.clipType}
+              />
             </div>
             <Badge tone={clip.clipType === "ugc" ? "purple" : "green"}>
               {clip.clipType.toUpperCase()}
@@ -72,15 +84,9 @@ export function VideoClipCard({
               />
             ) : null}
             <IconButton
-              label="Rename clip"
+              label="Edit clip details"
               icon={<Edit3 aria-hidden className="h-4 w-4" />}
-              onClick={() => {
-                const nextName = window.prompt("Rename clip", clip.name);
-
-                if (nextName?.trim()) {
-                  void onRename(clip, nextName.trim());
-                }
-              }}
+              onClick={() => setIsMetadataOpen(true)}
             />
             <IconButton
               label="Edit default trim"
@@ -105,6 +111,19 @@ export function VideoClipCard({
           onSave={async (trimRange) => {
             await onUpdateTrim(clip, trimRange);
             setIsTrimOpen(false);
+          }}
+        />
+      ) : null}
+      {isMetadataOpen ? (
+        <AssetMetadataEditDialog
+          title={clip.name}
+          initialName={clip.name}
+          initialTags={clip.tags}
+          requiredTag={clip.clipType}
+          onClose={() => setIsMetadataOpen(false)}
+          onSave={async (metadata) => {
+            await onUpdateMetadata(clip, metadata);
+            setIsMetadataOpen(false);
           }}
         />
       ) : null}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
+import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
@@ -43,6 +44,7 @@ export function SwaprUgcClipCard({
         <p className="mt-1 text-xs text-text-tertiary">
           {formatDuration(clip.duration)} . {formatBytes(clip.size)}
         </p>
+        <AssetTagList tags={clip.tags} className="mt-3" requiredTag="ugc" />
         <Button
           type="button"
           className="mt-4 w-full"

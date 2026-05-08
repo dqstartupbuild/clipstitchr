@@ -5,6 +5,7 @@ import { PhotoAssetCard } from "@/app/_components/swapr/PhotoAssetCard";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
+import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 
 type PhotoLibrarySectionProps = {
@@ -13,6 +14,10 @@ type PhotoLibrarySectionProps = {
   emptyDescription: string;
   emptyTitle?: string;
   onDelete: (id: string) => void | Promise<void>;
+  onUpdateMetadata: (
+    photo: PhotoAsset,
+    metadata: AssetMetadataUpdate,
+  ) => void | Promise<void>;
 };
 
 export function PhotoLibrarySection({
@@ -21,6 +26,7 @@ export function PhotoLibrarySection({
   emptyDescription,
   emptyTitle = "No photos yet",
   onDelete,
+  onUpdateMetadata,
 }: PhotoLibrarySectionProps) {
   const pagination = usePagination(photos, {
     pageSize: uploadLibraryPageSize,
@@ -44,6 +50,7 @@ export function PhotoLibrarySection({
                 key={photo.id}
                 photo={photo}
                 onDelete={onDelete}
+                onUpdateMetadata={onUpdateMetadata}
               />
             ))}
           </div>

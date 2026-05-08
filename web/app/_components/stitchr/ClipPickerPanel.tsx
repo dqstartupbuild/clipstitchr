@@ -8,7 +8,7 @@ import { Panel } from "@/app/_components/ui/Panel";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
-import { filterClipsByName } from "@/lib/clipstitchr/utils/filterClipsByName";
+import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 
 type ClipPickerPanelProps = {
   ugcClips: VideoClip[];
@@ -43,11 +43,11 @@ export function ClipPickerPanel({
 }: ClipPickerPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const filteredUgcClips = useMemo(
-    () => filterClipsByName(ugcClips, searchQuery),
+    () => filterClipsBySearchQuery(ugcClips, searchQuery),
     [searchQuery, ugcClips],
   );
   const filteredDemoClips = useMemo(
-    () => filterClipsByName(demoClips, searchQuery),
+    () => filterClipsBySearchQuery(demoClips, searchQuery),
     [demoClips, searchQuery],
   );
 

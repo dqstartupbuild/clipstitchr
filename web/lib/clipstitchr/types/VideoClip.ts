@@ -5,6 +5,7 @@ import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 export type VideoClip = {
   id: string;
   name: string;
+  tags?: string[];
   originalName: string;
   clipType: ClipType;
   blob: Blob;

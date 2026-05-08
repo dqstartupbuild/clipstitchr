@@ -1,9 +1,13 @@
 "use client";
 
-import { Check, Download, Trash2 } from "lucide-react";
+import { Check, Download, Edit3, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
+import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { IconLink } from "@/app/_components/ui/IconLink";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
@@ -14,6 +18,10 @@ type PhotoAssetCardProps = {
   isSelected?: boolean;
   onSelect?: (photo: PhotoAsset) => void;
   onDelete?: (id: string) => void | Promise<void>;
+  onUpdateMetadata?: (
+    photo: PhotoAsset,
+    metadata: AssetMetadataUpdate,
+  ) => void | Promise<void>;
   showDownload?: boolean;
 };
 
@@ -22,10 +30,12 @@ export function PhotoAssetCard({
   isSelected,
   onSelect,
   onDelete,
+  onUpdateMetadata,
   showDownload = true,
 }: PhotoAssetCardProps) {
   const imageUrl = useObjectUrl(photo.thumbnailBlob ?? photo.blob);
   const downloadUrl = useObjectUrl(photo.blob);
+  const [isMetadataOpen, setIsMetadataOpen] = useState(false);
   const preview = (
     <div className="aspect-[9/16]">
       {imageUrl ? (
@@ -69,6 +79,7 @@ export function PhotoAssetCard({
           <p className="mt-1 text-xs text-text-tertiary">
             {photo.width} x {photo.height} . {formatBytes(photo.size)}
           </p>
+          <AssetTagList tags={photo.tags} className="mt-3" requiredTag="photo" />
         </div>
         <div className="flex shrink-0 gap-1">
           {isSelected ? (
@@ -87,6 +98,13 @@ export function PhotoAssetCard({
               icon={<Download aria-hidden className="h-4 w-4" />}
             />
           ) : null}
+          {onUpdateMetadata ? (
+            <IconButton
+              label="Edit photo details"
+              icon={<Edit3 aria-hidden className="h-4 w-4" />}
+              onClick={() => setIsMetadataOpen(true)}
+            />
+          ) : null}
           {onDelete ? (
             <IconButton
               label="Delete photo"
@@ -97,6 +115,19 @@ export function PhotoAssetCard({
           ) : null}
         </div>
       </div>
+      {isMetadataOpen ? (
+        <AssetMetadataEditDialog
+          title={photo.name}
+          initialName={photo.name}
+          initialTags={photo.tags}
+          requiredTag="photo"
+          onClose={() => setIsMetadataOpen(false)}
+          onSave={async (metadata) => {
+            await onUpdateMetadata?.(photo, metadata);
+            setIsMetadataOpen(false);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

@@ -58,7 +58,7 @@ export function DashboardPageClient() {
         <RecentUploadsSection
           clips={recentUploads}
           onDelete={library.removeClip}
-          onRename={library.renameClip}
+          onUpdateMetadata={library.updateClipMetadata}
           onUpdateTrim={library.updateClipTrimRange}
         />
         <StitchrCallout />

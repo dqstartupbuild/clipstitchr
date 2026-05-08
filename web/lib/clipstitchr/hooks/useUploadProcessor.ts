@@ -2,13 +2,17 @@
 
 import { useCallback, useState } from "react";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
+import { analyzeUploadAsset } from "@/lib/clipstitchr/client/analyzeUploadAsset";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
 import { saveVideoClip } from "@/lib/clipstitchr/storage/saveVideoClip";
 import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
 import type { UploadQueueItem } from "@/lib/clipstitchr/types/UploadQueueItem";
+import type { UploadAssetAnalysis } from "@/lib/clipstitchr/types/UploadAssetAnalysis";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
+import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
 type UseUploadProcessorOptions = {
   initialClipType?: ClipType;
@@ -75,10 +79,40 @@ export function useUploadProcessor({
               posterBlob = undefined;
             }
 
+            const fallbackName = getUploadFallbackName(file.name);
+            let analysis: UploadAssetAnalysis = {
+              name: fallbackName,
+              tags: [],
+            };
+
+            if (posterBlob) {
+              updateQueueItem(item.id, {
+                status: "analyzing",
+                progress: 0.97,
+              });
+
+              try {
+                analysis = await analyzeUploadAsset({
+                  blob: posterBlob,
+                  mediaKind: "video",
+                  originalName: file.name,
+                });
+              } catch {
+                analysis = {
+                  name: fallbackName,
+                  tags: [],
+                };
+              }
+            }
+
             const now = new Date().toISOString();
             const clip: VideoClip = {
               id: createId(),
-              name: file.name.replace(/\.[^/.]+$/, ""),
+              name: analysis.name,
+              tags: normalizeAssetTagsWithRequiredTag(
+                analysis.tags,
+                item.clipType,
+              ),
               originalName: file.name,
               clipType: item.clipType,
               blob: normalized.blob,
