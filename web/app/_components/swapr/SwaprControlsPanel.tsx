@@ -58,7 +58,7 @@ export function SwaprControlsPanel({
   return (
     <Panel className="p-5">
       <div>
-        <p className="text-sm font-semibold text-accent-dark">Swapr setup</p>
+        <p className="text-sm font-semibold text-accent-dark">Setup</p>
         <h2 className="mt-2 text-xl font-bold text-text-primary">
           Generate the swap
         </h2>

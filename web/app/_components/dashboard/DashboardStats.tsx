@@ -26,7 +26,7 @@ export function DashboardStats({
       />
       <DashboardStatCard
         icon={<FileVideo aria-hidden className="h-5 w-5" />}
-        label="Created Videos"
+        label="Stitches"
         value={createdCount}
       />
     </section>

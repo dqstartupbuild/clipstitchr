@@ -22,7 +22,7 @@ export function CreatedVideosPageClient() {
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <LibraryPageHeader
           eyebrow="Exports"
-          title="Created Videos"
+          title="Stitches"
           description="Browse stitched UGC-first videos saved in this browser."
         />
         {library.error ? (

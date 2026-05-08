@@ -18,7 +18,7 @@ export function RecentCreatedVideosSection({
     <section id="recent-created-videos">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold text-text-primary">
-          Recent Created Videos
+          Recent Stitches
         </h2>
         <SecondaryButtonLink
           href="/dashboard/created"
