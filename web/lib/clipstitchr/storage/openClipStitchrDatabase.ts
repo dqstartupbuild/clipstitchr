@@ -9,8 +9,16 @@ export function openClipStitchrDatabase() {
       return;
     }
 
-    const request = indexedDB.open(CLIPSTITCHR_DATABASE_NAME, CLIPSTITCHR_DATABASE_VERSION);
-    request.onupgradeneeded = () => upgradeClipStitchrDatabase(request.result);
+    const request = indexedDB.open(
+      CLIPSTITCHR_DATABASE_NAME,
+      CLIPSTITCHR_DATABASE_VERSION,
+    );
+    request.onupgradeneeded = (event) =>
+      upgradeClipStitchrDatabase(
+        request.result,
+        request.transaction,
+        event.oldVersion,
+      );
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });

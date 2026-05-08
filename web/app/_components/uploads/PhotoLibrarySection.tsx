@@ -7,15 +7,17 @@ import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibrary
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
+import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 
 type PhotoLibrarySectionProps = {
   id: string;
-  photos: PhotoAsset[];
+  photos: PhotoAssetMetadata[];
   emptyDescription: string;
   emptyTitle?: string;
+  onLoadPhoto: (id: string) => Promise<PhotoAsset | null>;
   onDelete: (id: string) => void | Promise<void>;
   onUpdateMetadata: (
-    photo: PhotoAsset,
+    photo: PhotoAssetMetadata,
     metadata: AssetMetadataUpdate,
   ) => void | Promise<void>;
 };
@@ -25,6 +27,7 @@ export function PhotoLibrarySection({
   photos,
   emptyDescription,
   emptyTitle = "No photos yet",
+  onLoadPhoto,
   onDelete,
   onUpdateMetadata,
 }: PhotoLibrarySectionProps) {
@@ -49,6 +52,7 @@ export function PhotoLibrarySection({
               <PhotoAssetCard
                 key={photo.id}
                 photo={photo}
+                onLoadPhoto={onLoadPhoto}
                 onDelete={onDelete}
                 onUpdateMetadata={onUpdateMetadata}
               />

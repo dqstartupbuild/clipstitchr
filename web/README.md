@@ -37,7 +37,9 @@ CLERK_SECRET_KEY=your_secret_key
 The MVP is browser-local:
 
 - Uploaded UGC and Demo videos are normalized to TikTok 9:16 before they are saved.
-- Normalized clips and stitches are stored as `Blob` values in IndexedDB.
+- Normalized clip/photo metadata is stored separately from full media blobs in IndexedDB.
+- Library views read metadata and poster/thumbnail blobs first; full media blobs are loaded on demand for preview, export, generation, and download.
+- Stitches are stored as `Blob` values in IndexedDB with their export metadata.
 - Each saved video also stores a generated JPEG `posterBlob` plus `posterVersion`.
 - Posters are generated in the browser by seeking through candidate frames and choosing a visibly non-black frame for the video element's `poster` attribute.
 - Older records without posters, or with stale poster versions, are backfilled when the library loads.

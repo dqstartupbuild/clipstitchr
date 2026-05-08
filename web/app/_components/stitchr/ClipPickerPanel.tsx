@@ -6,21 +6,21 @@ import { DemoClipSelector } from "@/app/_components/stitchr/DemoClipSelector";
 import { UgcClipSelector } from "@/app/_components/stitchr/UgcClipSelector";
 import { Panel } from "@/app/_components/ui/Panel";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
-import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 
 type ClipPickerPanelProps = {
-  ugcClips: VideoClip[];
-  demoClips: VideoClip[];
+  ugcClips: VideoClipMetadata[];
+  demoClips: VideoClipMetadata[];
   selectedUgcId: string | null;
   selectedDemoId: string | null;
   selectedUgcTrimRange: VideoTrimRange | null;
   selectedDemoTrimRange: VideoTrimRange | null;
   onSelectUgc: (id: string) => void;
   onSelectDemo: (id: string) => void;
-  onEditUgcTrim: (clip: VideoClip) => void;
-  onEditDemoTrim: (clip: VideoClip) => void;
+  onEditUgcTrim: (clip: VideoClipMetadata) => void;
+  onEditDemoTrim: (clip: VideoClipMetadata) => void;
   canStitch: boolean;
   isStitching: boolean;
   onStitch: () => void;

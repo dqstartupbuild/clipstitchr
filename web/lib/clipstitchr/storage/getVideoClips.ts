@@ -1,11 +1,23 @@
-import { VIDEO_CLIPS_STORE_NAME } from "@/lib/clipstitchr/constants/objectStoreNames";
-import { getObjectStore } from "@/lib/clipstitchr/storage/getObjectStore";
-import { requestToPromise } from "@/lib/clipstitchr/storage/requestToPromise";
-import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import { indexedDbLibraryReadPageSize } from "@/lib/clipstitchr/constants/indexedDbLibraryReadPageSize";
+import { getVideoClipMetadataPage } from "@/lib/clipstitchr/storage/getVideoClipMetadataPage";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
 export async function getVideoClips() {
-  const { store } = await getObjectStore(VIDEO_CLIPS_STORE_NAME, "readonly");
-  const clips = await requestToPromise<VideoClip[]>(store.getAll());
+  const clips: VideoClipMetadata[] = [];
+  let offset = 0;
 
-  return clips.sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+  while (true) {
+    const page = await getVideoClipMetadataPage({
+      offset,
+      limit: indexedDbLibraryReadPageSize,
+    });
+
+    clips.push(...page);
+
+    if (page.length < indexedDbLibraryReadPageSize) {
+      return clips;
+    }
+
+    offset += page.length;
+  }
 }

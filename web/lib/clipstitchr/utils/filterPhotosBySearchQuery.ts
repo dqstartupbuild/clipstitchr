@@ -1,8 +1,8 @@
-import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
+import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import { getAssetSearchText } from "@/lib/clipstitchr/utils/getAssetSearchText";
 
 export function filterPhotosBySearchQuery(
-  photos: PhotoAsset[],
+  photos: PhotoAssetMetadata[],
   searchQuery: string,
 ) {
   const normalizedSearchQuery = searchQuery.trim().toLowerCase();

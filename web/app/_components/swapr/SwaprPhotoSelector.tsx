@@ -6,12 +6,12 @@ import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { Panel } from "@/app/_components/ui/Panel";
 import { clipSelectorPageSize } from "@/lib/clipstitchr/constants/clipSelectorPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
-import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
+import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 
 type SwaprPhotoSelectorProps = {
-  photos: PhotoAsset[];
+  photos: PhotoAssetMetadata[];
   selectedPhotoId?: string;
-  onSelect: (photo: PhotoAsset) => void;
+  onSelect: (photo: PhotoAssetMetadata) => void;
 };
 
 export function SwaprPhotoSelector({

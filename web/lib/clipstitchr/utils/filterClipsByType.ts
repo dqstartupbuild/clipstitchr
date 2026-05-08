@@ -1,6 +1,9 @@
 import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
-import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
-export function filterClipsByType(clips: VideoClip[], clipType: ClipType) {
+export function filterClipsByType(
+  clips: VideoClipMetadata[],
+  clipType: ClipType,
+) {
   return clips.filter((clip) => clip.clipType === clipType);
 }

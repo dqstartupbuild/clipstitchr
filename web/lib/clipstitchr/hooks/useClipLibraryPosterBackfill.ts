@@ -4,18 +4,21 @@ import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useRef } from "react";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
+import { createVideoClipMetadataFromClip } from "@/lib/clipstitchr/storage/createVideoClipMetadataFromClip";
 import { getStitch } from "@/lib/clipstitchr/storage/getStitch";
 import { getVideoClip } from "@/lib/clipstitchr/storage/getVideoClip";
 import { saveStitch } from "@/lib/clipstitchr/storage/saveStitch";
-import { saveVideoClip } from "@/lib/clipstitchr/storage/saveVideoClip";
+import { saveVideoClipMetadata } from "@/lib/clipstitchr/storage/saveVideoClipMetadata";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
 type UseClipLibraryPosterBackfillOptions = {
-  clips: VideoClip[];
+  clips: VideoClipMetadata[];
   stitches: Stitch[];
-  setClips: Dispatch<SetStateAction<VideoClip[]>>;
+  setClips: Dispatch<SetStateAction<VideoClipMetadata[]>>;
   setStitches: Dispatch<SetStateAction<Stitch[]>>;
+  loadClip: (id: string) => Promise<VideoClip | null>;
 };
 
 export function useClipLibraryPosterBackfill({
@@ -23,6 +26,7 @@ export function useClipLibraryPosterBackfill({
   stitches,
   setClips,
   setStitches,
+  loadClip,
 }: UseClipLibraryPosterBackfillOptions) {
   const posterBackfillIds = useRef(new Set<string>());
 
@@ -43,8 +47,19 @@ export function useClipLibraryPosterBackfill({
 
       posterBackfillIds.current.add(posterBackfillId);
 
-      void createVideoPosterBlob(clip.blob)
+      void loadClip(clip.id)
+        .then(async (loadedClip) => {
+          if (!loadedClip) {
+            return undefined;
+          }
+
+          return createVideoPosterBlob(loadedClip.blob);
+        })
         .then(async (posterBlob) => {
+          if (!posterBlob) {
+            return;
+          }
+
           const currentClip = await getVideoClip(clip.id);
 
           if (
@@ -63,7 +78,9 @@ export function useClipLibraryPosterBackfill({
             updatedAt,
           };
 
-          await saveVideoClip(updatedClip);
+          await saveVideoClipMetadata(
+            createVideoClipMetadataFromClip(updatedClip),
+          );
 
           setClips((currentClips) =>
             currentClips.map((currentClipItem) =>
@@ -83,7 +100,7 @@ export function useClipLibraryPosterBackfill({
           posterBackfillIds.current.delete(posterBackfillId);
         });
     }
-  }, [clips, setClips]);
+  }, [clips, loadClip, setClips]);
 
   useEffect(() => {
     for (const stitch of stitches) {

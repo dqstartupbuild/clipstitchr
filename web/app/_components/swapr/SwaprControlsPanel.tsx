@@ -5,7 +5,7 @@ import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
 import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
-import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getSwaprReferenceDurationLimit } from "@/lib/clipstitchr/utils/getSwaprReferenceDurationLimit";
@@ -17,7 +17,7 @@ type SwaprControlsPanelProps = {
   keepOriginalSound: boolean;
   hasConsent: boolean;
   isGenerating: boolean;
-  selectedClip?: VideoClip;
+  selectedClip?: VideoClipMetadata;
   isReady: boolean;
   referenceVideoMaxSizeBytes: number;
   onPromptChange: (prompt: string) => void;

@@ -4,16 +4,16 @@ import { SelectableClipRow } from "@/app/_components/stitchr/SelectableClipRow";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { clipSelectorPageSize } from "@/lib/clipstitchr/constants/clipSelectorPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
-import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 
 type DemoClipSelectorProps = {
-  clips: VideoClip[];
+  clips: VideoClipMetadata[];
   selectedId: string | null;
   selectedTrimRange: VideoTrimRange | null;
   onSelect: (id: string) => void;
-  onEditTrim: (clip: VideoClip) => void;
+  onEditTrim: (clip: VideoClipMetadata) => void;
 };
 
 export function DemoClipSelector({

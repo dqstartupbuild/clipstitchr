@@ -1,11 +1,23 @@
-import { PHOTO_ASSETS_STORE_NAME } from "@/lib/clipstitchr/constants/objectStoreNames";
-import { getObjectStore } from "@/lib/clipstitchr/storage/getObjectStore";
-import { requestToPromise } from "@/lib/clipstitchr/storage/requestToPromise";
-import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
+import { indexedDbLibraryReadPageSize } from "@/lib/clipstitchr/constants/indexedDbLibraryReadPageSize";
+import { getPhotoAssetMetadataPage } from "@/lib/clipstitchr/storage/getPhotoAssetMetadataPage";
+import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 
 export async function getPhotoAssets() {
-  const { store } = await getObjectStore(PHOTO_ASSETS_STORE_NAME, "readonly");
-  const photos = await requestToPromise<PhotoAsset[]>(store.getAll());
+  const photos: PhotoAssetMetadata[] = [];
+  let offset = 0;
 
-  return photos.sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+  while (true) {
+    const page = await getPhotoAssetMetadataPage({
+      offset,
+      limit: indexedDbLibraryReadPageSize,
+    });
+
+    photos.push(...page);
+
+    if (page.length < indexedDbLibraryReadPageSize) {
+      return photos;
+    }
+
+    offset += page.length;
+  }
 }

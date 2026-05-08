@@ -1,8 +1,8 @@
-import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { getAssetSearchText } from "@/lib/clipstitchr/utils/getAssetSearchText";
 
 export function filterClipsBySearchQuery(
-  clips: VideoClip[],
+  clips: VideoClipMetadata[],
   searchQuery: string,
 ) {
   const normalizedSearchQuery = searchQuery.trim().toLowerCase();

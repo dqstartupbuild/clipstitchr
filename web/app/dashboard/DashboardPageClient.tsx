@@ -57,6 +57,7 @@ export function DashboardPageClient() {
         />
         <RecentUploadsSection
           clips={recentUploads}
+          onLoadClip={library.loadClip}
           onDelete={library.removeClip}
           onUpdateMetadata={library.updateClipMetadata}
           onUpdateTrim={library.updateClipTrimRange}

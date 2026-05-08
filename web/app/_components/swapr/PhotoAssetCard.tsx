@@ -5,21 +5,23 @@ import { useState } from "react";
 import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
 import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { IconLink } from "@/app/_components/ui/IconLink";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
+import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
+import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
-import { getBlobFileExtension } from "@/lib/clipstitchr/utils/getBlobFileExtension";
+import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
 
 type PhotoAssetCardProps = {
-  photo: PhotoAsset;
+  photo: PhotoAssetMetadata;
   isSelected?: boolean;
-  onSelect?: (photo: PhotoAsset) => void;
+  onSelect?: (photo: PhotoAssetMetadata) => void;
+  onLoadPhoto?: (id: string) => Promise<PhotoAsset | null>;
   onDelete?: (id: string) => void | Promise<void>;
   onUpdateMetadata?: (
-    photo: PhotoAsset,
+    photo: PhotoAssetMetadata,
     metadata: AssetMetadataUpdate,
   ) => void | Promise<void>;
   showDownload?: boolean;
@@ -29,13 +31,39 @@ export function PhotoAssetCard({
   photo,
   isSelected,
   onSelect,
+  onLoadPhoto,
   onDelete,
   onUpdateMetadata,
   showDownload = true,
 }: PhotoAssetCardProps) {
-  const imageUrl = useObjectUrl(photo.thumbnailBlob ?? photo.blob);
-  const downloadUrl = useObjectUrl(photo.blob);
+  const imageUrl = useObjectUrl(photo.thumbnailBlob);
   const [isMetadataOpen, setIsMetadataOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const handleDownload = async () => {
+    if (!onLoadPhoto) {
+      return;
+    }
+
+    setIsDownloading(true);
+
+    try {
+      const loadedPhoto = await onLoadPhoto(photo.id);
+
+      if (!loadedPhoto) {
+        return;
+      }
+
+      downloadBlob(
+        loadedPhoto.blob,
+        getAssetDownloadFileName(
+          photo.name,
+          getMimeTypeFileExtension(loadedPhoto.blob.type || photo.mimeType, "jpg"),
+        ),
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+  };
   const preview = (
     <div className="aspect-[9/16]">
       {imageUrl ? (
@@ -87,15 +115,12 @@ export function PhotoAssetCard({
               <Check aria-hidden className="h-4 w-4" />
             </span>
           ) : null}
-          {showDownload && downloadUrl ? (
-            <IconLink
+          {showDownload && onLoadPhoto ? (
+            <IconButton
               label="Download photo"
-              href={downloadUrl}
-              download={getAssetDownloadFileName(
-                photo.name,
-                getBlobFileExtension(photo.blob, "jpg"),
-              )}
               icon={<Download aria-hidden className="h-4 w-4" />}
+              disabled={isDownloading}
+              onClick={() => void handleDownload()}
             />
           ) : null}
           {onUpdateMetadata ? (

@@ -12,10 +12,10 @@ import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipstitchr/constant
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useSwaprGeneration } from "@/lib/clipstitchr/hooks/useSwaprGeneration";
-import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
+import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
 import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
-import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 
 export function SwaprPageClient() {
@@ -29,6 +29,7 @@ export function SwaprPageClient() {
     useState<SwaprCharacterOrientation>("video");
   const [keepOriginalSound, setKeepOriginalSound] = useState(true);
   const [hasConsent, setHasConsent] = useState(false);
+  const [assetLoadError, setAssetLoadError] = useState<string | null>(null);
   const generator = useSwaprGeneration(library.refresh);
   const ugcClips = useMemo(
     () => filterClipsByType(library.clips, "ugc"),
@@ -47,8 +48,34 @@ export function SwaprPageClient() {
   );
   const isReady = Boolean(selectedPhoto && selectedClip && hasConsent);
 
-  const selectPhoto = (photo: PhotoAsset) => setSelectedPhotoId(photo.id);
-  const selectClip = (clip: VideoClip) => setSelectedClipId(clip.id);
+  const selectPhoto = (photo: PhotoAssetMetadata) => setSelectedPhotoId(photo.id);
+  const selectClip = (clip: VideoClipMetadata) => setSelectedClipId(clip.id);
+  const handleGenerate = async () => {
+    if (!selectedPhoto || !selectedClip) {
+      return;
+    }
+
+    setAssetLoadError(null);
+
+    const [photo, clip] = await Promise.all([
+      photoLibrary.loadPhoto(selectedPhoto.id),
+      library.loadClip(selectedClip.id),
+    ]);
+
+    if (!photo || !clip) {
+      setAssetLoadError("Unable to load the selected Swapr assets.");
+      return;
+    }
+
+    await generator.generate({
+      photo,
+      clip,
+      prompt,
+      mode,
+      characterOrientation,
+      keepOriginalSound,
+    });
+  };
 
   return (
     <DashboardShell>
@@ -59,9 +86,9 @@ export function SwaprPageClient() {
           description="Upload a person photo, choose a saved UGC clip, and generate a new UGC video where the photo subject follows the source motion."
         />
 
-        {library.error || photoLibrary.error ? (
+        {library.error || photoLibrary.error || assetLoadError ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {library.error ?? photoLibrary.error}
+            {library.error ?? photoLibrary.error ?? assetLoadError}
           </div>
         ) : null}
 
@@ -96,20 +123,7 @@ export function SwaprPageClient() {
                 onCharacterOrientationChange={setCharacterOrientation}
                 onKeepOriginalSoundChange={setKeepOriginalSound}
                 onConsentChange={setHasConsent}
-                onGenerate={() => {
-                  if (!selectedPhoto || !selectedClip) {
-                    return;
-                  }
-
-                  void generator.generate({
-                    photo: selectedPhoto,
-                    clip: selectedClip,
-                    prompt,
-                    mode,
-                    characterOrientation,
-                    keepOriginalSound,
-                  });
-                }}
+                onGenerate={() => void handleGenerate()}
               />
               <SwaprOutputPanel
                 status={generator.status}

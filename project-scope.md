@@ -292,13 +292,15 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
 ## 8. Data Model (MVP — Local)
 
 ```typescript
-// Stored in IndexedDB
+// Logical local records. IndexedDB stores metadata separately from large blobs
+// so library pages can load names, posters, thumbnails, and counts before full
+// media blobs are requested for preview, export, generation, or download.
 
 interface VideoClip {
   id: string;
   name: string;
   type: 'ugc' | 'demo';
-  blob: Blob; // normalized 9:16 clip used for preview and stitching
+  blob: Blob; // normalized 9:16 clip stored in videoClipBlobs
   posterBlob?: Blob; // generated JPEG poster used by the video poster attribute
   posterVersion?: number; // capture algorithm version for backfilling stale posters
   width: number; // target 1080

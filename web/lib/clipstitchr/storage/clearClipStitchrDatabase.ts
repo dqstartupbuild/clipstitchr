@@ -1,18 +1,40 @@
 import {
+  PHOTO_ASSET_BLOBS_STORE_NAME,
+  PHOTO_ASSET_METADATA_STORE_NAME,
   PHOTO_ASSETS_STORE_NAME,
   STITCHES_STORE_NAME,
+  VIDEO_CLIP_BLOBS_STORE_NAME,
+  VIDEO_CLIP_METADATA_STORE_NAME,
   VIDEO_CLIPS_STORE_NAME,
 } from "@/lib/clipstitchr/constants/objectStoreNames";
-import { getObjectStore } from "@/lib/clipstitchr/storage/getObjectStore";
-import { requestToPromise } from "@/lib/clipstitchr/storage/requestToPromise";
+import { openClipStitchrDatabase } from "@/lib/clipstitchr/storage/openClipStitchrDatabase";
+import { transactionToPromise } from "@/lib/clipstitchr/storage/transactionToPromise";
 
 export async function clearClipStitchrDatabase() {
-  const clips = await getObjectStore(VIDEO_CLIPS_STORE_NAME, "readwrite");
-  await requestToPromise(clips.store.clear());
+  const database = await openClipStitchrDatabase();
+  const storeNames = [
+    VIDEO_CLIP_METADATA_STORE_NAME,
+    VIDEO_CLIP_BLOBS_STORE_NAME,
+    STITCHES_STORE_NAME,
+    PHOTO_ASSET_METADATA_STORE_NAME,
+    PHOTO_ASSET_BLOBS_STORE_NAME,
+    VIDEO_CLIPS_STORE_NAME,
+    PHOTO_ASSETS_STORE_NAME,
+  ].filter((storeName) => database.objectStoreNames.contains(storeName));
 
-  const stitches = await getObjectStore(STITCHES_STORE_NAME, "readwrite");
-  await requestToPromise(stitches.store.clear());
+  if (!storeNames.length) {
+    database.close();
+    return;
+  }
 
-  const photoAssets = await getObjectStore(PHOTO_ASSETS_STORE_NAME, "readwrite");
-  await requestToPromise(photoAssets.store.clear());
+  const transaction = database.transaction(storeNames, "readwrite");
+  const done = transactionToPromise(transaction).finally(() =>
+    database.close(),
+  );
+
+  for (const storeName of storeNames) {
+    transaction.objectStore(storeName).clear();
+  }
+
+  await done;
 }

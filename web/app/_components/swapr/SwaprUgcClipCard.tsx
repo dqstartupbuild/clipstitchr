@@ -6,14 +6,14 @@ import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
-import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 
 type SwaprUgcClipCardProps = {
-  clip: VideoClip;
+  clip: VideoClipMetadata;
   isSelected: boolean;
-  onSelect: (clip: VideoClip) => void;
+  onSelect: (clip: VideoClipMetadata) => void;
 };
 
 export function SwaprUgcClipCard({
@@ -21,7 +21,6 @@ export function SwaprUgcClipCard({
   isSelected,
   onSelect,
 }: SwaprUgcClipCardProps) {
-  const videoUrl = useObjectUrl(clip.blob);
   const posterUrl = useObjectUrl(clip.posterBlob);
 
   return (
@@ -32,7 +31,7 @@ export function SwaprUgcClipCard({
       ].join(" ")}
     >
       <VideoPreview
-        src={videoUrl}
+        src={null}
         posterSrc={posterUrl}
         label={clip.name}
         controls={false}

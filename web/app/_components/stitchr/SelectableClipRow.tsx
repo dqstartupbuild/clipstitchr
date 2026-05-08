@@ -4,17 +4,17 @@ import { CheckCircle2, Scissors } from "lucide-react";
 import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type SelectableClipRowProps = {
-  clip: VideoClip;
+  clip: VideoClipMetadata;
   trimRange: VideoTrimRange;
   isSelected: boolean;
   onSelect: (id: string) => void;
-  onEditTrim?: (clip: VideoClip) => void;
+  onEditTrim?: (clip: VideoClipMetadata) => void;
 };
 
 export function SelectableClipRow({

@@ -1,10 +1,16 @@
-import { VIDEO_CLIPS_STORE_NAME } from "@/lib/clipstitchr/constants/objectStoreNames";
-import { getObjectStore } from "@/lib/clipstitchr/storage/getObjectStore";
-import { requestToPromise } from "@/lib/clipstitchr/storage/requestToPromise";
-import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import { createHydratedVideoClip } from "@/lib/clipstitchr/storage/createHydratedVideoClip";
+import { getVideoClipBlob } from "@/lib/clipstitchr/storage/getVideoClipBlob";
+import { getVideoClipMetadata } from "@/lib/clipstitchr/storage/getVideoClipMetadata";
 
 export async function getVideoClip(id: string) {
-  const { store } = await getObjectStore(VIDEO_CLIPS_STORE_NAME, "readonly");
+  const [metadata, blobRecord] = await Promise.all([
+    getVideoClipMetadata(id),
+    getVideoClipBlob(id),
+  ]);
 
-  return requestToPromise<VideoClip | undefined>(store.get(id));
+  if (!metadata || !blobRecord) {
+    return undefined;
+  }
+
+  return createHydratedVideoClip(metadata, blobRecord);
 }

@@ -7,21 +7,23 @@ import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibrary
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 type VideoLibrarySectionProps = {
   id: string;
   title: string;
-  clips: VideoClip[];
+  clips: VideoClipMetadata[];
   emptyDescription: string;
   emptyTitle?: string;
+  onLoadClip: (id: string) => Promise<VideoClip | null>;
   onDelete: (id: string) => void | Promise<void>;
   onUpdateMetadata: (
-    clip: VideoClip,
+    clip: VideoClipMetadata,
     metadata: AssetMetadataUpdate,
   ) => void | Promise<void>;
   onUpdateTrim: (
-    clip: VideoClip,
+    clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void | Promise<void>;
 };
@@ -32,6 +34,7 @@ export function VideoLibrarySection({
   clips,
   emptyDescription,
   emptyTitle = "No videos yet",
+  onLoadClip,
   onDelete,
   onUpdateMetadata,
   onUpdateTrim,
@@ -55,6 +58,7 @@ export function VideoLibrarySection({
               <VideoClipCard
                 key={clip.id}
                 clip={clip}
+                onLoadClip={onLoadClip}
                 onDelete={onDelete}
                 onUpdateMetadata={onUpdateMetadata}
                 onUpdateTrim={onUpdateTrim}

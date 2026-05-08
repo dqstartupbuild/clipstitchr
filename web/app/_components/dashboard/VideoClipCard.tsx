@@ -7,50 +7,95 @@ import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadata
 import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { IconLink } from "@/app/_components/ui/IconLink";
 import { Panel } from "@/app/_components/ui/Panel";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
-import { getBlobFileExtension } from "@/lib/clipstitchr/utils/getBlobFileExtension";
+import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type VideoClipCardProps = {
-  clip: VideoClip;
+  clip: VideoClipMetadata;
+  onLoadClip: (id: string) => Promise<VideoClip | null>;
   onDelete: (id: string) => void | Promise<void>;
   onUpdateMetadata: (
-    clip: VideoClip,
+    clip: VideoClipMetadata,
     metadata: AssetMetadataUpdate,
   ) => void | Promise<void>;
   onUpdateTrim: (
-    clip: VideoClip,
+    clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void | Promise<void>;
 };
 
 export function VideoClipCard({
   clip,
+  onLoadClip,
   onDelete,
   onUpdateMetadata,
   onUpdateTrim,
 }: VideoClipCardProps) {
-  const url = useObjectUrl(clip.blob);
+  const [loadedClip, setLoadedClip] = useState<VideoClip | null>(null);
+  const [isClipLoading, setIsClipLoading] = useState(false);
+  const url = useObjectUrl(loadedClip?.blob);
   const posterUrl = useObjectUrl(clip.posterBlob);
   const [isTrimOpen, setIsTrimOpen] = useState(false);
   const [isMetadataOpen, setIsMetadataOpen] = useState(false);
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
   const selectedDuration = getVideoTrimRangeDuration(defaultTrimRange);
+  const loadFullClip = async () => {
+    if (loadedClip) {
+      return loadedClip;
+    }
+
+    setIsClipLoading(true);
+
+    try {
+      const nextClip = await onLoadClip(clip.id);
+
+      setLoadedClip(nextClip);
+      return nextClip;
+    } finally {
+      setIsClipLoading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    const nextClip = await loadFullClip();
+
+    if (!nextClip) {
+      return;
+    }
+
+    downloadBlob(
+      nextClip.blob,
+      getAssetDownloadFileName(
+        clip.name,
+        getMimeTypeFileExtension(nextClip.blob.type || clip.mimeType, "mp4"),
+      ),
+    );
+  };
 
   return (
     <>
       <Panel className="overflow-hidden">
-        <VideoPreview src={url} posterSrc={posterUrl} label={clip.name} />
+        <VideoPreview
+          src={url}
+          posterSrc={posterUrl}
+          label={clip.name}
+          isLoading={isClipLoading}
+          onLoadPreview={() => {
+            void loadFullClip();
+          }}
+        />
         <div className="p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -72,17 +117,12 @@ export function VideoClipCard({
             </Badge>
           </div>
           <div className="mt-4 flex gap-2">
-            {url ? (
-              <IconLink
-                label="Download clip"
-                href={url}
-                download={getAssetDownloadFileName(
-                  clip.name,
-                  getBlobFileExtension(clip.blob, "mp4"),
-                )}
-                icon={<Download aria-hidden className="h-4 w-4" />}
-              />
-            ) : null}
+            <IconButton
+              label="Download clip"
+              icon={<Download aria-hidden className="h-4 w-4" />}
+              disabled={isClipLoading}
+              onClick={() => void handleDownload()}
+            />
             <IconButton
               label="Edit clip details"
               icon={<Edit3 aria-hidden className="h-4 w-4" />}
@@ -91,7 +131,14 @@ export function VideoClipCard({
             <IconButton
               label="Edit default trim"
               icon={<Scissors aria-hidden className="h-4 w-4" />}
-              onClick={() => setIsTrimOpen(true)}
+              disabled={isClipLoading}
+              onClick={() => {
+                void loadFullClip().then((nextClip) => {
+                  if (nextClip) {
+                    setIsTrimOpen(true);
+                  }
+                });
+              }}
             />
             <IconButton
               label="Delete clip"
@@ -102,9 +149,9 @@ export function VideoClipCard({
           </div>
         </div>
       </Panel>
-      {isTrimOpen ? (
+      {isTrimOpen && loadedClip ? (
         <VideoTrimDialog
-          clip={clip}
+          clip={loadedClip}
           initialTrimRange={defaultTrimRange}
           title="Default trim"
           onClose={() => setIsTrimOpen(false)}

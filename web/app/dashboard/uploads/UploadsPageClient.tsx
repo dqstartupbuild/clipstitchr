@@ -123,6 +123,7 @@ export function UploadsPageClient() {
                 ? "No saved photos match that title or tag."
                 : "Upload person photos here so they can be selected in Swapr."
             }
+            onLoadPhoto={photoLibrary.loadPhoto}
             onDelete={photoLibrary.removePhoto}
             onUpdateMetadata={photoLibrary.updatePhotoMetadata}
           />
@@ -138,6 +139,7 @@ export function UploadsPageClient() {
                 ? "No saved videos in this tab match that title or tag."
                 : selectedContent.emptyDescription
             }
+            onLoadClip={library.loadClip}
             onDelete={library.removeClip}
             onUpdateMetadata={library.updateClipMetadata}
             onUpdateTrim={library.updateClipTrimRange}
