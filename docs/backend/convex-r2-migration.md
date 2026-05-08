@@ -230,7 +230,7 @@ npm run build
 ## Migration Cutover Checklist
 
 - [x] Convex provider is mounted under Clerk provider.
-- [ ] Convex schema and auth config are deployed.
+- [x] Convex schema and auth config are deployed.
 - [x] R2 signed URL routes reject unauthenticated users.
 - [x] R2 signed URL routes reject keys outside `users/{clerkUserId}/`.
 - [x] Upload normalization saves normalized video and poster to R2 before Convex metadata.
