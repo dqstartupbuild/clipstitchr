@@ -6,17 +6,20 @@ import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { Panel } from "@/app/_components/ui/Panel";
 import { clipSelectorPageSize } from "@/lib/clipstitchr/constants/clipSelectorPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
 type SwaprUgcSelectorProps = {
   clips: VideoClipMetadata[];
   selectedClipId?: string;
+  onLoadClip: (id: string) => Promise<VideoClip | null>;
   onSelect: (clip: VideoClipMetadata) => void;
 };
 
 export function SwaprUgcSelector({
   clips,
   selectedClipId,
+  onLoadClip,
   onSelect,
 }: SwaprUgcSelectorProps) {
   const pagination = usePagination(clips, {
@@ -43,6 +46,7 @@ export function SwaprUgcSelector({
                 key={clip.id}
                 clip={clip}
                 isSelected={clip.id === selectedClipId}
+                onLoadClip={onLoadClip}
                 onSelect={onSelect}
               />
             ))}

@@ -119,6 +119,7 @@ export function SwaprPageClient() {
               <SwaprUgcSelector
                 clips={ugcClips}
                 selectedClipId={selectedClipId}
+                onLoadClip={library.loadClip}
                 onSelect={selectClip}
               />
             </div>

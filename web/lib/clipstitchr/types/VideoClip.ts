@@ -7,6 +7,12 @@ export type VideoClip = {
   id: string;
   name: string;
   tags?: string[];
+  videoDescription?: string;
+  mainPersonDescription?: string;
+  outfitDescription?: string;
+  locationDescription?: string;
+  poseDescription?: string;
+  productDescription?: string;
   originalName: string;
   clipType: ClipType;
   videoObject: R2ObjectReference;

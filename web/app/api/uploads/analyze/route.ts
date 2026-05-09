@@ -55,7 +55,8 @@ export async function POST(request: Request) {
         prompt: createUploadAnalysisPrompt({ mediaKind, originalName }),
         system_prompt: UPLOAD_ANALYSIS_SYSTEM_PROMPT,
         temperature: 0.2,
-        max_completion_tokens: 400,
+        max_completion_tokens:
+          mediaKind === "demo-video" || mediaKind === "ugc-video" ? 700 : 400,
       },
     });
     const completedPrediction = await replicate.wait(prediction, {

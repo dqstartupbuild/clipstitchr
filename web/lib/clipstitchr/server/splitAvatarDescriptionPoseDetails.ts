@@ -1,7 +1,7 @@
 const poseKeywordPattern =
   /\b(?:action|activity|arms? (?:at|by|crossed|relaxed)|body position|crossed arms|crouching|facing|gesture|gesturing|hands? (?:at|clasped|holding|near|on|raised)|head tilted|holding|kneeling|leaning|looking (?:at|off|toward)|pose|posing|posture|running|shoulders? angled|sitting|stance|standing|tilted|turned|walking)\b/i;
 const poseStartPattern =
-  /^(?:(?:and|with)\s+)?(?:a\s+)?(?:relaxed\s+)?(?:action|activity|arms?\b|body position|crossed arms|crouching|facing|gesture|gesturing|hands?\b|head tilted|holding|kneeling|leaning|looking\b|pose|posing|posture|running|shoulders?\b|sitting|stance|standing|tilted|turned|walking)\b/i;
+  /^(?:(?:and|with)\s+)?(?:a\s+)?(?:relaxed\s+)?(?:action|activity|arms?\b|body position|crossed arms|crouching|facing|gesture|gesturing|hands?\b|head tilted|holding|kneeling|leaning|looking\b|pose|posing|posture|running|shoulders?(?!-)\b|sitting|stance|standing|tilted|turned|walking)\b/i;
 
 function cleanDescriptionClause(clause: string) {
   return clause.trim().replace(/\s+/g, " ");
@@ -13,7 +13,7 @@ function cleanPoseClause(clause: string) {
 
 function removeTerminalPosePhrase(clause: string) {
   const terminalPoseMatch = clause.match(
-    /^(.+?)\s+(?:and|with)\s+((?:a\s+)?(?:action|activity|arms?\b|body position|crossed arms|crouching|facing|gesture|gesturing|hands?\b|head tilted|holding|kneeling|leaning|looking\b|pose|posing|posture|running|shoulders?\b|sitting|stance|standing|tilted|turned|walking)\b.+)$/i,
+    /^(.+?)\s+(?:and|with)\s+((?:a\s+)?(?:action|activity|arms?\b|body position|crossed arms|crouching|facing|gesture|gesturing|hands?\b|head tilted|holding|kneeling|leaning|looking\b|pose|posing|posture|running|shoulders?(?!-)\b|sitting|stance|standing|tilted|turned|walking)\b.+)$/i,
   );
 
   if (!terminalPoseMatch) {

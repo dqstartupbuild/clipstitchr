@@ -12,6 +12,12 @@ const saveArgs = {
   id: v.string(),
   name: v.string(),
   tags: assetTagsValidator,
+  videoDescription: v.optional(v.string()),
+  mainPersonDescription: v.optional(v.string()),
+  outfitDescription: v.optional(v.string()),
+  locationDescription: v.optional(v.string()),
+  poseDescription: v.optional(v.string()),
+  productDescription: v.optional(v.string()),
   originalName: v.string(),
   clipType: clipTypeValidator,
   videoObject: r2ObjectValidator,
@@ -94,10 +100,31 @@ export const updateMetadata = mutation({
     id: v.string(),
     name: v.optional(v.string()),
     tags: v.optional(assetTagsValidator),
+    videoDescription: v.optional(v.string()),
+    mainPersonDescription: v.optional(v.string()),
+    outfitDescription: v.optional(v.string()),
+    locationDescription: v.optional(v.string()),
+    poseDescription: v.optional(v.string()),
+    productDescription: v.optional(v.string()),
     defaultTrimRange: v.optional(videoTrimRangeValidator),
     updatedAt: v.string(),
   },
-  handler: async (ctx, { id, name, tags, defaultTrimRange, updatedAt }) => {
+  handler: async (
+    ctx,
+    {
+      id,
+      name,
+      tags,
+      videoDescription,
+      mainPersonDescription,
+      outfitDescription,
+      locationDescription,
+      poseDescription,
+      productDescription,
+      defaultTrimRange,
+      updatedAt,
+    },
+  ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
@@ -117,6 +144,12 @@ export const updateMetadata = mutation({
     await ctx.db.patch(clip._id, {
       ...(name === undefined ? {} : { name }),
       ...(tags === undefined ? {} : { tags }),
+      ...(videoDescription === undefined ? {} : { videoDescription }),
+      ...(mainPersonDescription === undefined ? {} : { mainPersonDescription }),
+      ...(outfitDescription === undefined ? {} : { outfitDescription }),
+      ...(locationDescription === undefined ? {} : { locationDescription }),
+      ...(poseDescription === undefined ? {} : { poseDescription }),
+      ...(productDescription === undefined ? {} : { productDescription }),
       ...(defaultTrimRange === undefined ? {} : { defaultTrimRange }),
       updatedAt,
     });

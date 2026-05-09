@@ -20,9 +20,12 @@ export function parseUploadAssetAnalysis(
   try {
     const parsed = JSON.parse(jsonText) as {
       avatarDescription?: unknown;
+      mainPersonDescription?: unknown;
       outfitDescription?: unknown;
       locationDescription?: unknown;
       poseDescription?: unknown;
+      productDescription?: unknown;
+      videoDescription?: unknown;
       name?: unknown;
       tags?: unknown;
     };
@@ -32,6 +35,13 @@ export function parseUploadAssetAnalysis(
         : undefined;
     const avatarDescriptionParts = splitAvatarDescriptionPoseDetails(
       rawAvatarDescription ?? "",
+    );
+    const rawMainPersonDescription =
+      typeof parsed.mainPersonDescription === "string"
+        ? parsed.mainPersonDescription.trim().slice(0, 1200)
+        : undefined;
+    const mainPersonDescriptionParts = splitAvatarDescriptionPoseDetails(
+      rawMainPersonDescription ?? "",
     );
     const outfitDescription =
       typeof parsed.outfitDescription === "string"
@@ -46,7 +56,17 @@ export function parseUploadAssetAnalysis(
         ? parsed.poseDescription.trim().slice(0, 800)
         : undefined;
     const poseDescription =
-      parsedPoseDescription || avatarDescriptionParts.poseDescription;
+      parsedPoseDescription ||
+      mainPersonDescriptionParts.poseDescription ||
+      avatarDescriptionParts.poseDescription;
+    const productDescription =
+      typeof parsed.productDescription === "string"
+        ? parsed.productDescription.trim().slice(0, 1200)
+        : undefined;
+    const videoDescription =
+      typeof parsed.videoDescription === "string"
+        ? parsed.videoDescription.trim().slice(0, 1600)
+        : undefined;
     const name =
       typeof parsed.name === "string" && parsed.name.trim()
         ? parsed.name.trim().slice(0, 80)
@@ -61,9 +81,17 @@ export function parseUploadAssetAnalysis(
       ...(avatarDescriptionParts.avatarDescription
         ? { avatarDescription: avatarDescriptionParts.avatarDescription }
         : {}),
+      ...(mainPersonDescriptionParts.avatarDescription
+        ? {
+            mainPersonDescription:
+              mainPersonDescriptionParts.avatarDescription,
+          }
+        : {}),
       ...(outfitDescription ? { outfitDescription } : {}),
       ...(locationDescription ? { locationDescription } : {}),
       ...(poseDescription ? { poseDescription } : {}),
+      ...(productDescription ? { productDescription } : {}),
+      ...(videoDescription ? { videoDescription } : {}),
       name,
       tags,
     };

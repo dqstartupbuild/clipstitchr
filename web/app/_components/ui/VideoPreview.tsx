@@ -1,9 +1,13 @@
+"use client";
+
 import { Play } from "lucide-react";
+import { useState } from "react";
 
 type VideoPreviewProps = {
   src: string | null;
   posterSrc?: string | null;
   label: string;
+  autoPlay?: boolean;
   controls?: boolean;
   muted?: boolean;
   isLoading?: boolean;
@@ -14,20 +18,35 @@ export function VideoPreview({
   src,
   posterSrc,
   label,
+  autoPlay = false,
   controls = true,
   muted = true,
   isLoading = false,
   onLoadPreview,
 }: VideoPreviewProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(autoPlay);
+  const shouldShowVideoControls = controls && (!isPlaying || isHovered);
+
   return (
-    <div className="aspect-[9/16] overflow-hidden rounded-lg bg-slate-950">
+    <div
+      className="aspect-[9/16] overflow-hidden rounded-lg bg-slate-950"
+      onBlur={() => setIsHovered(false)}
+      onFocus={() => setIsHovered(true)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {src ? (
         <video
           key={`${src}:${posterSrc ?? "no-poster"}`}
           aria-label={label}
+          autoPlay={autoPlay}
           className="h-full w-full object-contain"
-          controls={controls}
+          controls={shouldShowVideoControls}
+          loop
           muted={muted}
+          onPause={() => setIsPlaying(false)}
+          onPlay={() => setIsPlaying(true)}
           playsInline
           poster={posterSrc ?? undefined}
           preload="metadata"

@@ -14,13 +14,19 @@ type AssetMetadataEditDialogProps = {
   descriptionLabel?: string;
   initialDescription?: string;
   initialLocationDescription?: string;
+  initialMainPersonDescription?: string;
   title: string;
   initialName: string;
   initialOutfitDescription?: string;
   initialPoseDescription?: string;
+  initialProductDescription?: string;
   initialTags?: string[];
+  initialVideoDescription?: string;
   requiredTag?: string;
+  showMainPersonDescriptionFields?: boolean;
   showPhotoDescriptionFields?: boolean;
+  showProductDescriptionField?: boolean;
+  showVideoDescriptionFields?: boolean;
   onClose: () => void;
   onSave: (metadata: AssetMetadataUpdate) => void | Promise<void>;
 };
@@ -30,13 +36,19 @@ export function AssetMetadataEditDialog({
   descriptionLabel,
   initialDescription = "",
   initialLocationDescription = "",
+  initialMainPersonDescription = "",
   title,
   initialName,
   initialOutfitDescription = "",
   initialPoseDescription = "",
+  initialProductDescription = "",
   initialTags = [],
+  initialVideoDescription = "",
   requiredTag,
+  showMainPersonDescriptionFields = false,
   showPhotoDescriptionFields = false,
+  showProductDescriptionField = false,
+  showVideoDescriptionFields = false,
   onClose,
   onSave,
 }: AssetMetadataEditDialogProps) {
@@ -49,8 +61,17 @@ export function AssetMetadataEditDialog({
   const [locationDescription, setLocationDescription] = useState(
     initialLocationDescription,
   );
+  const [mainPersonDescription, setMainPersonDescription] = useState(
+    initialMainPersonDescription,
+  );
   const [poseDescription, setPoseDescription] = useState(
     initialPoseDescription,
+  );
+  const [productDescription, setProductDescription] = useState(
+    initialProductDescription,
+  );
+  const [videoDescription, setVideoDescription] = useState(
+    initialVideoDescription,
   );
   const [tags, setTags] = useState(() =>
     requiredTag
@@ -85,6 +106,22 @@ export function AssetMetadataEditDialog({
               locationDescription: locationDescription.trim(),
               outfitDescription: outfitDescription.trim(),
               poseDescription: poseDescription.trim(),
+            }
+          : {}),
+        ...(showVideoDescriptionFields
+          ? {
+              locationDescription: locationDescription.trim(),
+              poseDescription: poseDescription.trim(),
+              videoDescription: videoDescription.trim(),
+              ...(showMainPersonDescriptionFields
+                ? {
+                    mainPersonDescription: mainPersonDescription.trim(),
+                    outfitDescription: outfitDescription.trim(),
+                  }
+                : {}),
+              ...(showProductDescriptionField
+                ? { productDescription: productDescription.trim() }
+                : {}),
             }
           : {}),
         name: trimmedName,
@@ -188,6 +225,99 @@ export function AssetMetadataEditDialog({
                   value={poseDescription}
                   rows={4}
                   placeholder="Body position, gesture, action, or how the person is posing"
+                  className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-6 text-text-primary outline-none transition-colors focus:border-accent"
+                  onChange={(event) =>
+                    setPoseDescription(event.currentTarget.value)
+                  }
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-semibold text-text-primary">
+                  Location description
+                </span>
+                <textarea
+                  value={locationDescription}
+                  rows={4}
+                  className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-6 text-text-primary outline-none transition-colors focus:border-accent"
+                  onChange={(event) =>
+                    setLocationDescription(event.currentTarget.value)
+                  }
+                />
+              </label>
+            </>
+          ) : null}
+          {showVideoDescriptionFields ? (
+            <>
+              <label className="block">
+                <span className="text-sm font-semibold text-text-primary">
+                  {showProductDescriptionField
+                    ? "Demo description"
+                    : "Video description"}
+                </span>
+                <textarea
+                  value={videoDescription}
+                  rows={4}
+                  className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-6 text-text-primary outline-none transition-colors focus:border-accent"
+                  onChange={(event) =>
+                    setVideoDescription(event.currentTarget.value)
+                  }
+                />
+              </label>
+              {showProductDescriptionField ? (
+                <label className="block">
+                  <span className="text-sm font-semibold text-text-primary">
+                    Product description
+                  </span>
+                  <textarea
+                    value={productDescription}
+                    rows={4}
+                    className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-6 text-text-primary outline-none transition-colors focus:border-accent"
+                    onChange={(event) =>
+                      setProductDescription(event.currentTarget.value)
+                    }
+                  />
+                </label>
+              ) : null}
+              {showMainPersonDescriptionFields ? (
+                <>
+                  <label className="block">
+                    <span className="text-sm font-semibold text-text-primary">
+                      Main person description
+                    </span>
+                    <textarea
+                      value={mainPersonDescription}
+                      rows={4}
+                      className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-6 text-text-primary outline-none transition-colors focus:border-accent"
+                      onChange={(event) =>
+                        setMainPersonDescription(event.currentTarget.value)
+                      }
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-sm font-semibold text-text-primary">
+                      Outfit description
+                    </span>
+                    <textarea
+                      value={outfitDescription}
+                      rows={4}
+                      className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-6 text-text-primary outline-none transition-colors focus:border-accent"
+                      onChange={(event) =>
+                        setOutfitDescription(event.currentTarget.value)
+                      }
+                    />
+                  </label>
+                </>
+              ) : null}
+              <label className="block">
+                <span className="text-sm font-semibold text-text-primary">
+                  {showProductDescriptionField
+                    ? "Demo action description"
+                    : "Pose or action description"}
+                </span>
+                <textarea
+                  value={poseDescription}
+                  rows={4}
+                  placeholder="Body position, gesture, action, or what is happening"
                   className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-6 text-text-primary outline-none transition-colors focus:border-accent"
                   onChange={(event) =>
                     setPoseDescription(event.currentTarget.value)

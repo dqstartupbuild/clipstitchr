@@ -124,6 +124,24 @@ export function useClipLibraryState(): ClipLibraryValue {
         ...clip,
         name: metadata.name,
         tags: normalizeAssetTagsWithRequiredTag(metadata.tags, clip.clipType),
+        ...(metadata.videoDescription === undefined
+          ? {}
+          : { videoDescription: metadata.videoDescription }),
+        ...(metadata.mainPersonDescription === undefined
+          ? {}
+          : { mainPersonDescription: metadata.mainPersonDescription }),
+        ...(metadata.outfitDescription === undefined
+          ? {}
+          : { outfitDescription: metadata.outfitDescription }),
+        ...(metadata.locationDescription === undefined
+          ? {}
+          : { locationDescription: metadata.locationDescription }),
+        ...(metadata.poseDescription === undefined
+          ? {}
+          : { poseDescription: metadata.poseDescription }),
+        ...(metadata.productDescription === undefined
+          ? {}
+          : { productDescription: metadata.productDescription }),
         updatedAt: new Date().toISOString(),
       };
 
@@ -131,6 +149,12 @@ export function useClipLibraryState(): ClipLibraryValue {
         id: clip.id,
         name: updatedClip.name,
         tags: updatedClip.tags ?? [],
+        videoDescription: updatedClip.videoDescription,
+        mainPersonDescription: updatedClip.mainPersonDescription,
+        outfitDescription: updatedClip.outfitDescription,
+        locationDescription: updatedClip.locationDescription,
+        poseDescription: updatedClip.poseDescription,
+        productDescription: updatedClip.productDescription,
         updatedAt: updatedClip.updatedAt,
       });
       clipCacheRef.current.delete(clip.id);

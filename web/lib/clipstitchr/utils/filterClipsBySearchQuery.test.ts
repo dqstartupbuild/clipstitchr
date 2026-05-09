@@ -13,12 +13,14 @@ const clips = [
     id: "demo-1",
     name: "Product Demo Walkthrough",
     clipType: "demo",
+    productDescription: "White calendar UI with a blue booking button.",
     tags: ["features"],
   },
   {
     id: "ugc-2",
     name: "Night Reaction",
     clipType: "ugc",
+    videoDescription: "Creator reacts to a sticky serum texture on camera.",
     tags: ["testimonial"],
   },
 ] as VideoClip[];
@@ -36,6 +38,18 @@ describe("filterClipsBySearchQuery", () => {
     expect(filterClipsBySearchQuery(clips, "ugc")).toEqual([
       clips[0],
       clips[2],
+    ]);
+  });
+
+  it("matches video descriptions", () => {
+    expect(filterClipsBySearchQuery(clips, "sticky serum")).toEqual([
+      clips[2],
+    ]);
+  });
+
+  it("matches product descriptions", () => {
+    expect(filterClipsBySearchQuery(clips, "blue booking")).toEqual([
+      clips[1],
     ]);
   });
 

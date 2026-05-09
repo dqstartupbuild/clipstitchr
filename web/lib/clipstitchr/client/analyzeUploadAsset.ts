@@ -39,6 +39,10 @@ export async function analyzeUploadAsset({
       typeof body.avatarDescription === "string"
         ? body.avatarDescription.trim()
         : undefined,
+    mainPersonDescription:
+      typeof body.mainPersonDescription === "string"
+        ? body.mainPersonDescription.trim()
+        : undefined,
     outfitDescription:
       typeof body.outfitDescription === "string"
         ? body.outfitDescription.trim()
@@ -50,6 +54,14 @@ export async function analyzeUploadAsset({
     poseDescription:
       typeof body.poseDescription === "string"
         ? body.poseDescription.trim()
+        : undefined,
+    productDescription:
+      typeof body.productDescription === "string"
+        ? body.productDescription.trim()
+        : undefined,
+    videoDescription:
+      typeof body.videoDescription === "string"
+        ? body.videoDescription.trim()
         : undefined,
     name:
       typeof body.name === "string" && body.name.trim()

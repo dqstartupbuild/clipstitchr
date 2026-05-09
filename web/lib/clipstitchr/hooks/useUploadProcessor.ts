@@ -118,7 +118,8 @@ export function useUploadProcessor({
               try {
                 analysis = await analyzeUploadAsset({
                   blob: posterBlob,
-                  mediaKind: "video",
+                  mediaKind:
+                    item.clipType === "ugc" ? "ugc-video" : "demo-video",
                   originalName: file.name,
                 });
               } catch {
@@ -154,6 +155,12 @@ export function useUploadProcessor({
                 analysis.tags,
                 item.clipType,
               ),
+              videoDescription: analysis.videoDescription,
+              mainPersonDescription: analysis.mainPersonDescription,
+              outfitDescription: analysis.outfitDescription,
+              locationDescription: analysis.locationDescription,
+              poseDescription: analysis.poseDescription,
+              productDescription: analysis.productDescription,
               originalName: file.name,
               clipType: item.clipType,
               videoObject,
@@ -184,6 +191,12 @@ export function useUploadProcessor({
               id: clip.id,
               name: clip.name,
               tags: clip.tags ?? [],
+              videoDescription: clip.videoDescription,
+              mainPersonDescription: clip.mainPersonDescription,
+              outfitDescription: clip.outfitDescription,
+              locationDescription: clip.locationDescription,
+              poseDescription: clip.poseDescription,
+              productDescription: clip.productDescription,
               originalName: clip.originalName,
               clipType: clip.clipType,
               videoObject: clip.videoObject,
