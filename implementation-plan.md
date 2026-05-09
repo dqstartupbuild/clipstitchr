@@ -7,8 +7,9 @@
 ### Product Scope
 
 - `project-scope.md`
-  - MVP routes are `/`, `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, `/dashboard/swapr`, and `/dashboard/stitches`.
-  - Uploads are UGC clips and Demo videos.
+  - MVP routes are `/`, `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, and `/dashboard/swapr`; `/dashboard/stitches` redirects to the Stitches tab inside `/dashboard/uploads`.
+  - The authenticated Content Library at `/dashboard/uploads` has All, UGC, Demo, Photos, Swaps, and Stitches tabs.
+  - Uploads are UGC clips, Demo videos, and Swapr reference photos.
   - Every uploaded clip must be normalized to TikTok 9:16 before it is usable.
   - Preview and export must use the same sequence: UGC plays first, Demo starts immediately after UGC ends.
   - Output is a single downloadable 9:16 video.
@@ -199,6 +200,23 @@ web/app/(content)/terms/page.tsx
 - Exports page metadata with canonical `/dashboard/stitchr`.
 - Renders the client Stitchr studio shell.
 
+#### `web/app/dashboard/swapr/page.tsx`
+
+- Server route entry for Swapr AI motion transfer.
+- Exports page metadata with canonical `/dashboard/swapr`.
+- Renders the client Swapr studio shell.
+
+#### `web/app/dashboard/uploads/page.tsx`
+
+- Server route entry for the authenticated Content Library.
+- Exports page metadata with canonical `/dashboard/uploads`.
+- Renders the tabbed library client with All, UGC, Demo, Photos, Swaps, and Stitches tabs.
+
+#### `web/app/dashboard/stitches/page.tsx`
+
+- Compatibility route only.
+- Redirects to `/dashboard/uploads?tab=stitches` instead of rendering a dedicated stitches screen.
+
 ## 6. Metadata / SEO Plan
 
 ### `web/lib/site.ts`
@@ -387,7 +405,7 @@ Create:
 Create:
 
 - Sidebar inspired by mockup.
-- Links: Dashboard, Uploads, Created Videos, Stitch Video.
+- Links: Dashboard, Library, Stitchr, Swapr.
 - Uses `next/link` and lucide icons.
 
 ### `web/app/_components/dashboard/DashboardHeader.tsx`
@@ -436,7 +454,7 @@ Create:
 
 Create:
 
-- Section shell for Recent Uploads.
+- Section shell for video groups in the Content Library and dashboard recents.
 - Receives clips and title.
 
 ### `web/app/_components/dashboard/VideoClipCard.tsx`
@@ -450,7 +468,7 @@ Create:
 
 Create:
 
-- Section shell for stitches.
+- Section shell for stitches in the Content Library and dashboard recents.
 
 ### `web/app/_components/dashboard/StitchCard.tsx`
 

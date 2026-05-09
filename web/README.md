@@ -46,6 +46,7 @@ The app processes media in the browser and stores durable data in Convex and Clo
 - Convex stores clip, photo, stitch, tag, trim, and R2 object metadata.
 - Cloudflare R2 stores normalized videos, stitched videos, photos, posters, and thumbnails.
 - Library views read Convex metadata first; preview media is hydrated from R2 as needed.
+- The Content Library route at `/dashboard/uploads` includes All, UGC, Demo, Photos, Swaps, and Stitches tabs.
 - Each saved video also stores a generated JPEG poster object plus `posterVersion`.
 - Posters are generated in the browser by seeking through candidate frames and choosing a visibly non-black frame for the video element's `poster` attribute.
 - User-authored thumbnail generation and thumbnail editing are not part of the MVP.
@@ -55,9 +56,11 @@ The app processes media in the browser and stores durable data in Convex and Clo
 ```
 ├── app/
 │   ├── page.tsx                 # Landing page
-│   ├── dashboard/               # Authenticated Dashboard, Stitchr, Uploads, Swapr, and Stitches routes
-│   ├── uploads/                 # Upload library route
-│   ├── stitches/                # Stitches library route
+│   ├── dashboard/               # Authenticated workspace routes
+│   │   ├── uploads/             # Content Library route with All, UGC, Demo, Photos, Swaps, and Stitches tabs
+│   │   ├── stitchr/             # Stitchr video stitching route
+│   │   ├── swapr/               # Swapr AI motion-transfer route
+│   │   └── stitches/            # Compatibility redirect to uploads?tab=stitches
 │   ├── _components/             # Atomic UI, dashboard, Stitchr, and landing components
 │   ├── layout.tsx               # Root layout (fonts, JSON-LD)
 │   ├── globals.css              # Design system tokens + utilities

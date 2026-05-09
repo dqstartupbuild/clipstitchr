@@ -13,7 +13,7 @@ export function SwaprEmptyState({
     return (
       <DashboardEmptyState
         title="No photos or UGC clips yet"
-        description="Upload person photos and UGC clips from the uploads page before using Swapr."
+        description="Upload person photos and UGC clips from the library before using Swapr."
       />
     );
   }
@@ -22,7 +22,7 @@ export function SwaprEmptyState({
     return (
       <DashboardEmptyState
         title="No photos yet"
-        description="Upload person photos from the uploads page so they can be selected in Swapr."
+        description="Upload person photos from the library so they can be selected in Swapr."
       />
     );
   }

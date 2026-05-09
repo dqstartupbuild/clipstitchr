@@ -15,7 +15,7 @@ export function getSwaprGenerationMessage(status: SwaprGenerationStatus) {
     case "saving":
       return "Saving the output as a UGC clip.";
     case "succeeded":
-      return "Swapr output saved to your UGC library.";
+      return "Swapr output saved to your Swaps tab.";
     case "failed":
       return "Swapr generation failed.";
     case "idle":

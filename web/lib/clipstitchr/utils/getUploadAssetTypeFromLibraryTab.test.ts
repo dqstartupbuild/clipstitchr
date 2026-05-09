@@ -10,4 +10,10 @@ describe("getUploadAssetTypeFromLibraryTab", () => {
     expect(getUploadAssetTypeFromLibraryTab("ugc")).toBe("ugc");
     expect(getUploadAssetTypeFromLibraryTab("demo")).toBe("demo");
   });
+
+  it("uses ugc as the upload default for non-upload tabs", () => {
+    expect(getUploadAssetTypeFromLibraryTab("all")).toBe("ugc");
+    expect(getUploadAssetTypeFromLibraryTab("swaps")).toBe("ugc");
+    expect(getUploadAssetTypeFromLibraryTab("stitches")).toBe("ugc");
+  });
 });

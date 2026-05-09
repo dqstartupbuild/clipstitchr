@@ -4,9 +4,9 @@ import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = createPageMetadata({
-  title: `Uploads | ${site.name}`,
+  title: `Content Library | ${site.name}`,
   description:
-    "Browse and add normalized ClipStitchr uploads in one browser library with tabs for UGC clips, product demo videos, and Swapr photos.",
+    "Browse and add ClipStitchr content in one library with tabs for UGC clips, demo videos, photos, Swapr outputs, and stitches.",
   canonical: "/dashboard/uploads",
   noIndex: true,
 });

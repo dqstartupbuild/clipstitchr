@@ -116,10 +116,12 @@ Text overlays are planned for later, but they are not required for the MVP.
 | 2 | Dashboard shows workspace status, recent uploads, recent stitches, and Stitchr entry points | ✅ | ✅ |
 | 3 | No login required — dashboard is directly accessible | — | — |
 | 4 | Clerk-authenticated access to dashboard | ✅ | ✅ |
-| 5 | Uploaded UGC clips and demo videos share a tabbed uploads library page | ✅ | ✅ |
-| 6 | Uploaded Swapr photos appear in the uploads library Photos tab; AI expansion is optional and off by default | ✅ | ✅ |
-| 7 | Stitches have a dedicated library page | ✅ | ✅ |
-| 8 | A unified upload control supports UGC, Demo, and Photo uploads from the dashboard header action | ✅ | ✅ |
+| 5 | Uploaded UGC clips and demo videos share the tabbed Content Library page | ✅ | ✅ |
+| 6 | Uploaded Swapr photos appear in the Content Library Photos tab; AI expansion is optional and off by default | ✅ | ✅ |
+| 7 | Swapr-generated outputs appear in the Content Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
+| 8 | Stitches appear in the Content Library Stitches tab; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
+| 9 | The Content Library includes an All tab so users can view every saved content type at once | ✅ | ✅ |
+| 10 | A unified upload control supports UGC, Demo, and Photo uploads from the dashboard header action | ✅ | ✅ |
 
 ---
 
@@ -130,8 +132,8 @@ Text overlays are planned for later, but they are not required for the MVP.
 /dashboard       → Authenticated main workspace
 /dashboard/stitchr → Authenticated Stitchr video stitching interface
 /dashboard/swapr → Authenticated AI motion-transfer studio using saved photos and UGC clips
-/dashboard/uploads → Authenticated upload library with UGC, Demo, and Photos tabs; unified upload controls open from header action
-/dashboard/stitches → Authenticated stitches library
+/dashboard/uploads → Authenticated Content Library with All, UGC, Demo, Photos, Swaps, and Stitches tabs; unified upload controls open from header action
+/dashboard/stitches → Compatibility redirect to `/dashboard/uploads?tab=stitches`
 ```
 
 ---

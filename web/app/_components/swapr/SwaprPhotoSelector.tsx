@@ -32,7 +32,7 @@ export function SwaprPhotoSelector({
             Pick the person
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Select a saved photo from the uploads library. Photos are uploaded
+            Select a saved photo from the content library. Photos are uploaded
             and managed from the Photos tab.
           </p>
         </div>

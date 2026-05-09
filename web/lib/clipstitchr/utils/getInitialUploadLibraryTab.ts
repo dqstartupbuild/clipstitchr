@@ -2,8 +2,19 @@ import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab"
 
 export function getInitialUploadLibraryTab(): UploadLibraryTab {
   if (typeof window === "undefined") {
-    return "ugc";
+    return "all";
   }
 
-  return window.location.search.includes("tab=photos") ? "photos" : "ugc";
+  const tab = new URLSearchParams(window.location.search).get("tab");
+
+  switch (tab) {
+    case "ugc":
+    case "demo":
+    case "photos":
+    case "swaps":
+    case "stitches":
+      return tab;
+    default:
+      return "all";
+  }
 }

@@ -21,7 +21,7 @@ export function RecentStitchesSection({
           Recent Stitches
         </h2>
         <SecondaryButtonLink
-          href="/dashboard/stitches"
+          href="/dashboard/uploads?tab=stitches"
           className="h-9 px-3 text-xs"
         >
           See all

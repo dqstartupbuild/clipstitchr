@@ -32,7 +32,9 @@ export function RecentUploadsSection({
   return (
     <section id="recent-uploads">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-bold text-text-primary">Recent Uploads</h2>
+        <h2 className="text-xl font-bold text-text-primary">
+          Recent Library Videos
+        </h2>
         <SecondaryButtonLink
           href="/dashboard/uploads"
           className="h-9 px-3 text-xs"

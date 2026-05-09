@@ -1,1 +1,7 @@
-export type UploadLibraryTab = "ugc" | "demo" | "photos";
+export type UploadLibraryTab =
+  | "all"
+  | "ugc"
+  | "demo"
+  | "photos"
+  | "swaps"
+  | "stitches";

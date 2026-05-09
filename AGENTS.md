@@ -9,7 +9,7 @@ ClipStitchr is a browser-local Next.js MVP app under `web/`. The repository root
 - `docs/media-bunny/media-bunny-llms.md` contains the full Media Bunny guide content. Read this first for Media Bunny workflows, recommended patterns, and conceptual guidance.
 - `docs/media-bunny/media-bunny-api.md` contains the Media Bunny TypeScript API declarations. Use this as the source of truth for exact class names, option shapes, method signatures, and return types.
 
-The app uses the planned Next.js shape from `project-scope.md`: app routes such as `/`, `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, and `/dashboard/stitches`; browser-first storage for MVP using IndexedDB; video processing via Media Bunny; upload normalization to TikTok 9:16; automatic generated poster images for video preview default states; and UGC-then-Demo stitching for preview, Stitchr, and download.
+The app uses the planned Next.js shape from `project-scope.md`: app routes such as `/`, `/dashboard`, `/dashboard/stitchr`, `/dashboard/swapr`, and `/dashboard/uploads`; `/dashboard/uploads` is the authenticated content library with All, UGC, Demo, Photos, Swaps, and Stitches tabs, while `/dashboard/stitches` redirects to the Stitches tab for compatibility. Durable metadata and media are backed by Convex and Cloudflare R2, browser video processing uses Media Bunny, uploads normalize to TikTok 9:16, poster images are generated for video preview default states, and Stitchr uses UGC-then-Demo sequencing for preview, stitching, and download.
 
 ## Media Bunny Implementation Guidance
 

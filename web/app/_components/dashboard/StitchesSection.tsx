@@ -8,6 +8,8 @@ type StitchesSectionProps = {
   stitches: Stitch[];
   emptyDescription?: string;
   emptyTitle?: string;
+  id?: string;
+  title?: string;
   onDelete: (id: string) => void | Promise<void>;
 };
 
@@ -15,12 +17,14 @@ export function StitchesSection({
   stitches,
   emptyDescription = "Stitch a video after you have at least one UGC clip and one demo video.",
   emptyTitle = "No stitches yet",
+  id = "stitches",
+  title = "Stitches",
   onDelete,
 }: StitchesSectionProps) {
   return (
-    <section id="stitches">
+    <section id={id}>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-text-primary"></h2>
+        <h2 className="text-xl font-bold text-text-primary">{title}</h2>
         <span className="text-sm font-semibold text-text-tertiary">
           {stitches.length}
         </span>

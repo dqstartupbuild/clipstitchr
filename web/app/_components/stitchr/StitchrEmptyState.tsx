@@ -15,7 +15,7 @@ export function StitchrEmptyState() {
         normalized and saved to your ClipStitchr library.
       </p>
       <SecondaryButtonLink href={UPLOAD_CONTROLS_HREF} className="mt-5">
-        Go to Uploads
+        Go to Library
       </SecondaryButtonLink>
     </Panel>
   );
