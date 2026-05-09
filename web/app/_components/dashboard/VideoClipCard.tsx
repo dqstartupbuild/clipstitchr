@@ -20,6 +20,7 @@ import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
+import { getVideoClipBadgeLabel } from "@/lib/clipstitchr/utils/getVideoClipBadgeLabel";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type VideoClipCardProps = {
@@ -112,9 +113,7 @@ export function VideoClipCard({
                 requiredTag={clip.clipType}
               />
             </div>
-            <Badge tone={clip.clipType === "ugc" ? "purple" : "green"}>
-              {clip.clipType.toUpperCase()}
-            </Badge>
+            <Badge>{getVideoClipBadgeLabel(clip)}</Badge>
           </div>
           <div className="mt-4 flex gap-2">
             <IconButton

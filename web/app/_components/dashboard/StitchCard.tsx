@@ -1,6 +1,7 @@
 "use client";
 
 import { Download, Trash2 } from "lucide-react";
+import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { Panel } from "@/app/_components/ui/Panel";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
@@ -32,15 +33,20 @@ export function StitchCard({
         />
       </div>
       <div className="p-4">
-        <h3 className="truncate text-sm font-bold text-text-primary">
-          {stitch.name}
-        </h3>
-        <p className="mt-1 text-xs text-text-tertiary">
-          {formatDuration(stitch.duration)} . {formatBytes(stitch.size)}
-        </p>
-        <p className="mt-2 text-xs text-text-secondary">
-          {formatDate(stitch.createdAt)}
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="truncate text-sm font-bold text-text-primary">
+              {stitch.name}
+            </h3>
+            <p className="mt-1 text-xs text-text-tertiary">
+              {formatDuration(stitch.duration)} . {formatBytes(stitch.size)}
+            </p>
+            <p className="mt-2 text-xs text-text-secondary">
+              {formatDate(stitch.createdAt)}
+            </p>
+          </div>
+          <Badge>STITCH</Badge>
+        </div>
         <div className="mt-4 flex gap-2">
           <a
             href={url ?? undefined}

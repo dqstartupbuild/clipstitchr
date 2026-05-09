@@ -7,6 +7,7 @@ import { IconButton } from "@/app/_components/ui/IconButton";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getVideoClipBadgeLabel } from "@/lib/clipstitchr/utils/getVideoClipBadgeLabel";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type SelectableClipRowProps = {
@@ -54,9 +55,7 @@ export function SelectableClipRow({
           />
         </div>
         <div className="flex items-center gap-2">
-          <Badge tone={clip.clipType === "ugc" ? "purple" : "green"}>
-            {clip.clipType.toUpperCase()}
-          </Badge>
+          <Badge>{getVideoClipBadgeLabel(clip)}</Badge>
           {isSelected ? (
             <CheckCircle2 aria-hidden className="h-5 w-5 text-accent" />
           ) : null}
