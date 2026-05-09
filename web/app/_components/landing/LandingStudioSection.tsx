@@ -7,6 +7,7 @@ const studios = [
     title: "Turn real clips and demos into ads.",
     description:
       "Choose one UGC clip and one product demo. Trim the dead space, preview the ad, add simple text, and create a finished vertical video.",
+    caption: "We call these 'Stitches'.",
     icon: Scissors,
   },
   {
@@ -14,6 +15,7 @@ const studios = [
     title: "Create new UGC clips when you need more.",
     description:
       "Pick or upload an avatar photo and a UGC clip to make a new UGC clip, then use it in Stitchr like any other UGC clip.",
+    caption: "We call these 'Swaps'.",
     icon: Shuffle,
   },
 ];
@@ -48,6 +50,9 @@ export function LandingStudioSection() {
                 </h3>
                 <p className="mt-3 leading-7 text-text-secondary">
                   {studio.description}
+                </p>
+                <p className="mt-4 text-sm font-semibold text-text-tertiary">
+                  {studio.caption}
                 </p>
               </Panel>
             );

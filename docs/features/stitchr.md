@@ -54,7 +54,7 @@ social proof first, product proof immediately after.
 - Use clear clip categories: UGC, Demo, Swaps, and Stitches.
 - Preserve source clips; trims are editable metadata.
 - Make outputs easy to recognize later with names, posters, and metadata.
-- Keep AI-generated clips as optional source material that can flow into
+- Keep AI-generated clips as new UGC clips that can flow into
   Stitchr.
 
 ## Non-Goals

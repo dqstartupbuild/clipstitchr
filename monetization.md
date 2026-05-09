@@ -36,8 +36,8 @@ The core paid value is:
 AI credits are part of the cost model because they create provider spend, but
 they should not be the headline value metric. Plans should lead with content
 library scale, ad-output workflow speed, and production volume. AI features
-should be positioned as optional source-material helpers when the user needs
-more clips or better-framed photos.
+should be positioned as additonal tools when the user needs
+more clips or avatar photos.
 
 | Plan | Price | Positioning | Shared AI Credits | Retained Storage Cap |
 | --- | ---: | --- | ---: | ---: |

@@ -25,7 +25,7 @@ const features = [
   {
     title: "Organize your library",
     description:
-      "Keep UGC, demos, optional AI clips, and finished stitches in one place.",
+      "Keep UGC, demos, AI clips, and finished stitches in one place.",
     icon: FolderSearch,
   },
   {
@@ -37,11 +37,11 @@ const features = [
   {
     title: "Fill content gaps",
     description:
-      "Use optional AI tools when you need more source photos or UGC-style clips.",
+      "Use AI tools when you need more avatar photos or UGC clips.",
     icon: Shuffle,
   },
   {
-    title: "Add simple finishing text",
+    title: "Add simple text hooks",
     description:
       "Place one clear text overlay, choose its style, and control when it appears.",
     icon: Type,
@@ -63,11 +63,11 @@ export function LandingFeatureGrid() {
             What it solves
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Stop collecting clips you never publish.
+            Stop collecting clips you never use.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
             ClipStitchr handles the repetitive work between having raw footage
-            and shipping another finished ad variant.
+            and shipping marketing content.
           </p>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">

@@ -54,7 +54,7 @@ const contentByAssetType: Record<
   photo: {
     title: "Add avatar photos",
     description:
-      "Use avatar photos as optional source material when you need more UGC-style clips.",
+      "Use avatar photos as the face of your brand when you need more UGC clips.",
     dropTitle: "Drop photos here",
     dropDescription: "Use JPG or PNG photos.",
     acceptedTypes: ACCEPTED_PHOTO_TYPES,
