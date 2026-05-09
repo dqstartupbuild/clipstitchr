@@ -147,6 +147,12 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 150,
     shards: 10,
   },
+  avatarCascadeDelete: {
+    kind: "token bucket",
+    rate: 100,
+    period: HOUR,
+    capacity: 20,
+  },
   convexRecordSave: {
     kind: "token bucket",
     rate: 3000,

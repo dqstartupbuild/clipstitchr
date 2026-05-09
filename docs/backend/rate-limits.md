@@ -72,6 +72,7 @@ Existing Convex auth variables still apply:
 | Swapr job cancellation | `POST /api/swapr/jobs/{id}/cancel` | 100/hour/user, burst 20 |
 | Swapr output proxy | `GET /api/swapr/output` | 1,000/hour/user, burst 200 |
 | Avatar photo generation | `POST /api/avatars/photos/generate` | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour |
+| Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `stitches.save` | 3,000/hour/user, burst 500 |
 | Convex metadata updates | `avatars.update`, `updateMetadata` mutations | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
@@ -140,6 +141,14 @@ Client save flows that write multiple R2 objects for one logical asset request
 all signed URLs before any `PUT` starts. That keeps a rate-limit rejection on
 one object from leaving a partially uploaded photo, video, Swapr output, or
 stitch object group in R2.
+
+Avatar deletion is a confirmed destructive cascade. `DELETE /api/avatars/{id}`
+is gated once by the avatar cascade delete limit, then deletes the avatar's R2
+photo objects directly after owner-scope checks and before deleting Convex
+photo records with `avatars.removeWithPhotos`. The related photo records are
+not individually charged to `convexRecordDelete`, and the R2 cleanup is not
+charged to `r2DeleteObjects`, so a confirmed avatar delete is not stranded by
+per-photo or per-object delete limits.
 
 ## Verification
 

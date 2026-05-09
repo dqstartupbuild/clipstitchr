@@ -22,6 +22,7 @@ import { createSwaprOutpaintInputs } from "@/lib/clipstitchr/media/createSwaprOu
 import { createSwaprPortraitPhotoBlob } from "@/lib/clipstitchr/media/createSwaprPortraitPhotoBlob";
 import { getImageDimensions } from "@/lib/clipstitchr/media/getImageDimensions";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 import type { AvatarGenerationVariant } from "@/lib/clipstitchr/types/AvatarGenerationVariant";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
@@ -46,6 +47,11 @@ type SavePhotoFilesOptions = {
 type GeneratedPhotoSaveItem = {
   blob: Blob;
   variant: AvatarGenerationVariant;
+};
+
+type AvatarDeleteResponse = {
+  error?: string;
+  message?: string;
 };
 
 export function usePhotoLibraryState(): PhotoLibraryValue {
@@ -366,6 +372,79 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     [refresh, updatePhotoMetadataMutation],
   );
 
+  const renameAvatar = useCallback(
+    async (avatar: Avatar, name: string) => {
+      const trimmedName = name.trim();
+
+      if (!trimmedName) {
+        setError("Avatar name is required.");
+        throw new Error("Avatar name is required.");
+      }
+
+      setIsSaving(true);
+      setError(null);
+
+      try {
+        await updateAvatarMutation({
+          id: avatar.id,
+          name: trimmedName,
+          description: avatar.description,
+          updatedAt: new Date().toISOString(),
+        });
+        await refresh();
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to rename this avatar.",
+        );
+        throw nextError;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [refresh, updateAvatarMutation],
+  );
+
+  const removeAvatar = useCallback(
+    async (id: string) => {
+      setIsSaving(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/avatars/${encodeURIComponent(id)}`, {
+          method: "DELETE",
+        });
+        const body = (await response.json().catch(() => ({}))) as
+          AvatarDeleteResponse;
+
+        if (!response.ok) {
+          throw new Error(
+            body.error ?? body.message ?? "Unable to delete this avatar.",
+          );
+        }
+
+        for (const photo of photos) {
+          if (photo.avatarId === id) {
+            photoCacheRef.current.delete(photo.id);
+          }
+        }
+
+        await refresh();
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to delete this avatar.",
+        );
+        throw nextError;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [photos, refresh],
+  );
+
   const saveGeneratedPhotos = useCallback(
     async (
       generatedPhotos: GeneratedPhotoSaveItem[],
@@ -596,6 +675,8 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     saveFiles,
     saveGeneratedPhotos,
     updatePhotoMetadata,
+    renameAvatar,
+    removeAvatar,
     removePhoto,
   };
 }

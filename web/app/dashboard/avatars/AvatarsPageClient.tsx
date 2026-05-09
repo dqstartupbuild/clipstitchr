@@ -5,6 +5,7 @@ import { AvatarFilterSelect } from "@/app/_components/avatars/AvatarFilterSelect
 import { AvatarGenerationPanel } from "@/app/_components/avatars/AvatarGenerationPanel";
 import { AvatarLibrarySection } from "@/app/_components/avatars/AvatarLibrarySection";
 import { AvatarPhotoUploadControls } from "@/app/_components/avatars/AvatarPhotoUploadControls";
+import { SelectedAvatarActions } from "@/app/_components/avatars/SelectedAvatarActions";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { LibraryPageHeader } from "@/app/_components/dashboard/LibraryPageHeader";
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
@@ -13,6 +14,7 @@ import { ACCEPTED_PHOTO_TYPES } from "@/lib/clipstitchr/constants/acceptedPhotoT
 import { useAvatarPhotoGeneration } from "@/lib/clipstitchr/hooks/useAvatarPhotoGeneration";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
+import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightingOption";
 import type { AvatarPhotoGenerationCount } from "@/lib/clipstitchr/types/AvatarPhotoGenerationCount";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
@@ -51,12 +53,28 @@ export function AvatarsPageClient() {
     () => photoLibrary.photos.find((photo) => photo.id === selectedPhotoId),
     [photoLibrary.photos, selectedPhotoId],
   );
-  const selectedAvatar = useMemo(
+  const selectedPhotoAvatar = useMemo(
     () =>
       selectedPhoto?.avatarId
         ? photoLibrary.avatars.find((avatar) => avatar.id === selectedPhoto.avatarId)
         : undefined,
     [photoLibrary.avatars, selectedPhoto],
+  );
+  const selectedFilterAvatar = useMemo(
+    () =>
+      avatarFilterId === "all"
+        ? undefined
+        : photoLibrary.avatars.find((avatar) => avatar.id === avatarFilterId),
+    [avatarFilterId, photoLibrary.avatars],
+  );
+  const selectedFilterAvatarPhotoCount = useMemo(
+    () =>
+      selectedFilterAvatar
+        ? photoLibrary.photos.filter(
+            (photo) => photo.avatarId === selectedFilterAvatar.id,
+          ).length
+        : 0,
+    [photoLibrary.photos, selectedFilterAvatar],
   );
   const generator = useAvatarPhotoGeneration({
     loadPhoto: photoLibrary.loadPhoto,
@@ -113,6 +131,23 @@ export function AvatarsPageClient() {
     photoLibrary,
     uploadAvatarId,
   ]);
+  const deleteAvatar = useCallback(
+    async (avatar: Avatar) => {
+      await photoLibrary.removeAvatar(avatar.id);
+      setAvatarFilterId("all");
+      setUploadAvatarId((currentAvatarId) =>
+        currentAvatarId === avatar.id ? "" : currentAvatarId,
+      );
+      setSelectedPhotoId((currentPhotoId) => {
+        const selectedPhotoBelongsToAvatar = photoLibrary.photos.some(
+          (photo) => photo.id === currentPhotoId && photo.avatarId === avatar.id,
+        );
+
+        return selectedPhotoBelongsToAvatar ? undefined : currentPhotoId;
+      });
+    },
+    [photoLibrary],
+  );
 
   return (
     <DashboardShell>
@@ -157,13 +192,23 @@ export function AvatarsPageClient() {
             onUploaded={photoLibrary.refresh}
           />
         ) : null}
-        <div className="grid gap-4 sm:grid-cols-[240px_minmax(0,1fr)] sm:items-end">
-          <AvatarFilterSelect
-            avatars={photoLibrary.avatars}
-            label="Avatar"
-            value={avatarFilterId}
-            onChange={setAvatarFilterId}
-          />
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-end">
+          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+            <AvatarFilterSelect
+              avatars={photoLibrary.avatars}
+              label="Avatar"
+              value={avatarFilterId}
+              onChange={setAvatarFilterId}
+            />
+            <SelectedAvatarActions
+              key={selectedFilterAvatar?.id ?? "all"}
+              avatar={selectedFilterAvatar}
+              isSaving={photoLibrary.isSaving}
+              photoCount={selectedFilterAvatarPhotoCount}
+              onDelete={deleteAvatar}
+              onRename={photoLibrary.renameAvatar}
+            />
+          </div>
           <SearchInput
             label="Search avatars"
             value={searchQuery}
@@ -178,14 +223,14 @@ export function AvatarsPageClient() {
           isGenerating={generator.isGenerating || photoLibrary.isSaving}
           lighting={lighting}
           location={location}
-          selectedAvatar={selectedAvatar}
+          selectedAvatar={selectedPhotoAvatar}
           selectedPhoto={selectedPhoto}
           style={style}
           onCountChange={setCount}
           onGenerate={() => {
-            if (selectedAvatar && selectedPhoto) {
+            if (selectedPhotoAvatar && selectedPhoto) {
               void generator.generate({
-                avatar: selectedAvatar,
+                avatar: selectedPhotoAvatar,
                 count,
                 context,
                 lighting,

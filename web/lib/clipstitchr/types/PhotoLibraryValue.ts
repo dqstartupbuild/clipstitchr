@@ -34,5 +34,7 @@ export type PhotoLibraryValue = {
     photo: PhotoAssetMetadata,
     metadata: AssetMetadataUpdate,
   ) => Promise<void>;
+  renameAvatar: (avatar: Avatar, name: string) => Promise<void>;
+  removeAvatar: (id: string) => Promise<void>;
   removePhoto: (id: string) => Promise<void>;
 };

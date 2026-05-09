@@ -269,3 +269,19 @@ export const consumeAvatarPhotoGenerate = mutation({
     });
   },
 });
+
+export const consumeAvatarCascadeDelete = mutation({
+  args: {
+    secret: v.string(),
+  },
+  handler: async (ctx, { secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "avatarCascadeDelete", {
+      key: ownerId,
+      throws: true,
+    });
+  },
+});

@@ -38,7 +38,7 @@ const uploadDestinations = [
   },
   {
     assetType: "photo",
-    description: "Avatar source photos for Swapr and AI photo generation.",
+    description: "Avatar photos for Swapr and AI photo generation.",
     href: `/dashboard/avatars?${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
     icon: ImagePlus,
     label: "Avatar photo",
