@@ -118,6 +118,29 @@ export const consumeUploadAnalysis = mutation({
   },
 });
 
+export const consumeUploadVideoAnalysis = mutation({
+  args: {
+    secret: v.string(),
+  },
+  handler: async (ctx, { secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "replicateUploadVideoAnalysis", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateUploadVideoAnalysisMonthly", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateUploadVideoAnalysisGlobal", {
+      throws: true,
+    });
+  },
+});
+
 export const consumeSwaprPhotoExpand = mutation({
   args: {
     secret: v.string(),

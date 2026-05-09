@@ -53,7 +53,7 @@ export function parseUploadAssetAnalysis(
         : undefined;
     const parsedPoseDescription =
       typeof parsed.poseDescription === "string"
-        ? parsed.poseDescription.trim().slice(0, 800)
+        ? parsed.poseDescription.trim().slice(0, 3000)
         : undefined;
     const poseDescription =
       parsedPoseDescription ||
@@ -65,7 +65,7 @@ export function parseUploadAssetAnalysis(
         : undefined;
     const videoDescription =
       typeof parsed.videoDescription === "string"
-        ? parsed.videoDescription.trim().slice(0, 1600)
+        ? parsed.videoDescription.trim().slice(0, 5000)
         : undefined;
     const name =
       typeof parsed.name === "string" && parsed.name.trim()

@@ -109,25 +109,24 @@ export function useUploadProcessor({
               tags: [],
             };
 
-            if (posterBlob) {
-              updateQueueItem(item.id, {
-                status: "analyzing",
-                progress: 0.97,
-              });
+            updateQueueItem(item.id, {
+              status: "analyzing",
+              progress: 0.97,
+            });
 
-              try {
-                analysis = await analyzeUploadAsset({
-                  blob: posterBlob,
-                  mediaKind:
-                    item.clipType === "ugc" ? "ugc-video" : "demo-video",
-                  originalName: file.name,
-                });
-              } catch {
-                analysis = {
-                  name: fallbackName,
-                  tags: [],
-                };
-              }
+            try {
+              analysis = await analyzeUploadAsset({
+                blob: normalized.blob,
+                fallbackBlob: posterBlob,
+                mediaKind:
+                  item.clipType === "ugc" ? "ugc-video" : "demo-video",
+                originalName: file.name,
+              });
+            } catch {
+              analysis = {
+                name: fallbackName,
+                tags: [],
+              };
             }
 
             const now = new Date().toISOString();

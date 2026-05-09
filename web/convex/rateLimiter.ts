@@ -54,6 +54,25 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 1000,
     shards: 10,
   },
+  replicateUploadVideoAnalysis: {
+    kind: "token bucket",
+    rate: 60,
+    period: HOUR,
+    capacity: 20,
+  },
+  replicateUploadVideoAnalysisMonthly: {
+    kind: "token bucket",
+    rate: 1500,
+    period: MONTH,
+    capacity: 1500,
+  },
+  replicateUploadVideoAnalysisGlobal: {
+    kind: "token bucket",
+    rate: 1000,
+    period: HOUR,
+    capacity: 200,
+    shards: 5,
+  },
   replicateSwaprPhotoExpand: {
     kind: "token bucket",
     rate: 10,

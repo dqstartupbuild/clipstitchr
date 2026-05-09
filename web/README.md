@@ -31,6 +31,8 @@ R2_ACCESS_KEY_ID=your_r2_access_key_id
 R2_SECRET_ACCESS_KEY=your_r2_secret_access_key
 REPLICATE_API_TOKEN=your_replicate_token
 AVATAR_PHOTO_MODEL_ID=openai/gpt-image-2
+REPLICATE_UPLOAD_ANALYSIS_MODEL_ID=openai/gpt-4.1-mini
+REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID=google/gemini-3-flash
 ```
 
 ## Commands

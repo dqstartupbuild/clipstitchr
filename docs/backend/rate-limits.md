@@ -57,6 +57,13 @@ Existing Convex auth variables still apply:
 - `NEXT_PUBLIC_CONVEX_URL` in Next.js.
 - `CLERK_JWT_ISSUER_DOMAIN` in the Convex deployment.
 
+Optional Replicate model overrides:
+
+- `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID` defaults to `openai/gpt-4.1-mini` for
+  avatar/photo image analysis and video poster fallback analysis.
+- `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` defaults to
+  `google/gemini-3-flash` for full-video UGC/demo action analysis.
+
 ## Enforcement Map
 
 | Surface | Enforcement Point | Limit |
@@ -65,7 +72,8 @@ Existing Convex auth variables still apply:
 | R2 upload bytes | `POST /api/r2/upload-url` | 10 GB/day/user; 500 GB/30 days/user |
 | R2 download signed URL | `POST /api/r2/download-url` | 5,000/hour/user, burst 1,000 |
 | R2 deletes | `POST /api/r2/delete-objects` | 2,000 objects/hour/user, burst 500 |
-| Upload metadata analysis | `POST /api/uploads/analyze` | 300/hour/user, burst 100; 10,000/30 days/user; global 6,000/hour. Covers photo analysis, richer demo product analysis, and richer UGC video scene/person analysis. |
+| Upload image metadata analysis | `POST /api/uploads/analyze` for avatar/photo images and video fallback posters | 300/hour/user, burst 100; 10,000/30 days/user; global 6,000/hour |
+| Upload video action analysis | `POST /api/uploads/analyze` for UGC/demo videos | 60/hour/user, burst 20; 1,500/30 days/user; global 1,000/hour. Gemini full-video analysis runs first for videos up to 100 MB; OpenAI poster analysis is the fallback when Gemini fails or the video exceeds the analysis size cap. |
 | Swapr photo expansion | `POST /api/swapr/photos/expand` | 10/hour/user, burst 5; 20/day/user; 375/30 days/user; global 300/hour |
 | Swapr video job create | `POST /api/swapr/jobs` | 2/hour/user, burst 2; 5/day/user; 500 estimated output seconds/30 days/user; global 300/hour |
 | Swapr job polling | `GET /api/swapr/jobs/{id}` | 600/minute/user, burst 150 |
@@ -87,7 +95,7 @@ request, R2 upload, or Convex save starts:
 | --- | --- | --- |
 | Photo upload without AI expansion | 100 files at once | Each photo creates 3 R2 objects and 1 metadata analysis request, fitting under the R2 upload, analysis, and Convex-save burst limits. |
 | Photo upload with AI expansion | 1 file at once | Each source image may trigger paid outpainting before it is saved, so the UI keeps this workflow explicitly one-at-a-time. |
-| Video upload | 100 files at once | Each video usually creates 1 normalized video object, 1 poster object, and 1 metadata analysis request, fitting under the R2 upload, analysis, and Convex-save burst limits. |
+| Video upload | 20 files at once | Each video usually creates 1 normalized video object, 1 poster object, and 1 Gemini video analysis request, fitting under the R2 upload, video-analysis, and Convex-save burst limits. |
 
 These caps reduce partial batches and orphaned R2 objects. They do not replace
 server-side rate limits: prior usage in the same window can still cause a `429`
@@ -108,6 +116,14 @@ Generation speed profiles may run those one-image predictions concurrently:
 Creator runs 1 at a time, Pro runs up to 2, and Studio runs up to 4. This
 concurrency does not loosen the image-count rate limit; the full requested count
 is consumed before any Replicate prediction is created.
+
+Upload video analysis is rate-limited separately from avatar/photo image
+analysis because it can upload the normalized video to Replicate and ask Gemini
+for a chronological action breakdown. The route consumes the video-analysis
+limit before creating the Gemini prediction. If Gemini fails, or if the
+normalized video is larger than 100 MB, the route falls back to the existing
+OpenAI image-analysis path using the generated poster image when one is
+available.
 
 Swapr video generation is rate-limited both by job count and by estimated output
 seconds. The route uses the source orientation limit as the estimate: image-led

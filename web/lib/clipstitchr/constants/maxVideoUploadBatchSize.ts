@@ -1,1 +1,1 @@
-export const MAX_VIDEO_UPLOAD_BATCH_SIZE = 100;
+export const MAX_VIDEO_UPLOAD_BATCH_SIZE = 20;
