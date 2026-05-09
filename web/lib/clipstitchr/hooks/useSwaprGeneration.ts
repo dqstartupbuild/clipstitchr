@@ -8,6 +8,7 @@ import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
+import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpeedTier";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
 import type { SwaprGenerationStatus } from "@/lib/clipstitchr/types/SwaprGenerationStatus";
@@ -26,6 +27,7 @@ type GenerateSwaprVideoOptions = {
   prompt: string;
   mode: SwaprMode;
   characterOrientation: SwaprCharacterOrientation;
+  generationSpeedTier?: GenerationSpeedTier;
   keepOriginalSound: boolean;
 };
 
@@ -44,6 +46,7 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
       prompt,
       mode,
       characterOrientation,
+      generationSpeedTier,
       keepOriginalSound,
     }: GenerateSwaprVideoOptions) => {
       setStatus("uploading");
@@ -68,6 +71,9 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
         formData.set("prompt", prompt);
         formData.set("mode", mode);
         formData.set("characterOrientation", characterOrientation);
+        if (generationSpeedTier) {
+          formData.set("generationSpeedTier", generationSpeedTier);
+        }
         formData.set("keepOriginalSound", String(keepOriginalSound));
 
         const createResponse = await fetch("/api/swapr/jobs", {
@@ -75,6 +81,9 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
           body: formData,
         });
         let prediction = await readSwaprPredictionResponse(createResponse);
+        const effectiveMode = prediction.mode ?? mode;
+        const effectiveCharacterOrientation =
+          prediction.characterOrientation ?? characterOrientation;
 
         setPredictionId(prediction.id);
         setStatus(
@@ -194,8 +203,8 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
             referenceUgcClipId: clip.id,
             replicatePredictionId: prediction.id,
             modelId: SWAPR_MODEL_ID,
-            mode,
-            characterOrientation,
+            mode: effectiveMode,
+            characterOrientation: effectiveCharacterOrientation,
             prompt: prompt.trim() || undefined,
             keepOriginalSound,
           },

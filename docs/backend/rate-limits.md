@@ -103,12 +103,22 @@ calling Replicate. The GPT Image 2 model accepts up to 10 outputs in one
 prediction, but ClipStitchr runs one prediction per generated avatar photo so
 each output can receive a unique prompt variant and avoid grid/contact-sheet
 results. Each prediction is recorded as an `avatar-photo` Replicate job.
+Generation speed profiles may run those one-image predictions concurrently:
+Creator runs 1 at a time, Pro runs up to 2, and Studio runs up to 4. This
+concurrency does not loosen the image-count rate limit; the full requested count
+is consumed before any Replicate prediction is created.
 
 Swapr video generation is rate-limited both by job count and by estimated output
 seconds. The route uses the source orientation limit as the estimate: image-led
 jobs consume 10 seconds from the monthly budget and video-led jobs consume 30
 seconds. This is a spend-control approximation until provider-side final
 duration is stored in the job ledger.
+
+Swapr speed profiles can override requested provider settings when a
+`generationSpeedTier` is supplied. Creator maps to `Quality 1080p` with Match
+Photo orientation; Pro and Studio map to `Fast 720p` with Match Photo
+orientation. Match Photo keeps the faster 3-10 second source path and aligns
+with ClipStitchr's normalized 9:16 output workflow.
 
 Provider outputs must be finalized by a durable server-side path before they are
 treated as saved user assets. See `docs/backend/durable-workflows.md` for the

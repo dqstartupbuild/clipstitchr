@@ -20,6 +20,9 @@ import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString"
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import type { GeneratedAvatarPhoto } from "@/lib/clipstitchr/types/GeneratedAvatarPhoto";
+import { getGenerationSpeedTier } from "@/lib/clipstitchr/utils/getGenerationSpeedTier";
+import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
+import { mapWithConcurrency } from "@/lib/clipstitchr/utils/mapWithConcurrency";
 
 export const runtime = "nodejs";
 
@@ -49,6 +52,10 @@ export async function POST(request: Request) {
     );
     const location = getSwaprFormString(formData, "location").trim();
     const style = getAvatarStyleOption(getSwaprFormString(formData, "style"));
+    const generationSpeedTier = getGenerationSpeedTier(
+      getSwaprFormString(formData, "generationSpeedTier"),
+    );
+    const speedProfile = getGenerationSpeedTierProfile(generationSpeedTier);
 
     if (!avatarDescription) {
       throw new Error("Add an avatar description before generating photos.");
@@ -64,8 +71,9 @@ export async function POST(request: Request) {
 
     const modelId = getAvatarPhotoGenerationModelId();
     const replicate = createReplicateClient();
-    const images: GeneratedAvatarPhoto[] = [];
-    const prompts: string[] = [];
+    const imageBytes = await image.arrayBuffer();
+    const imageName = image.name || "avatar-reference.jpg";
+    const imageType = image.type || "image/jpeg";
     const variants = createAvatarGenerationVariants({
       count,
       lighting,
@@ -73,85 +81,98 @@ export async function POST(request: Request) {
       style,
     });
 
-    for (const variant of variants) {
-      const prompt = createAvatarPhotoGenerationPrompt({
-        avatarDescription,
-        variant,
-      });
+    const generatedImages = await mapWithConcurrency(
+      variants,
+      speedProfile.avatarImageConcurrency,
+      async (variant) => {
+        const prompt = createAvatarPhotoGenerationPrompt({
+          avatarDescription,
+          variant,
+        });
 
-      prompts.push(prompt);
+        const prediction = await replicate.predictions.create({
+          model: modelId,
+          input: {
+            prompt,
+            input_images: [
+              new File([imageBytes], imageName, {
+                type: imageType,
+              }),
+            ],
+            aspect_ratio: "2:3",
+            number_of_images: 1,
+            output_format: "jpeg",
+            quality: speedProfile.avatarImageQuality,
+            background: "opaque",
+            moderation: "auto",
+          },
+        });
+        const createdAt = new Date().toISOString();
 
-      const prediction = await replicate.predictions.create({
-        model: modelId,
-        input: {
-          prompt,
-          input_images: [image],
-          aspect_ratio: "2:3",
-          number_of_images: 1,
-          output_format: "jpeg",
-          quality: "auto",
-          background: "opaque",
-          moderation: "auto",
-        },
-      });
-      const createdAt = new Date().toISOString();
+        await convex.mutation(api.replicateJobs.recordAvatarPhotoJob, {
+          secret: rateLimitSecret,
+          predictionId: prediction.id,
+          modelId,
+          status: getReplicatePredictionStatus(prediction.status),
+          createdAt,
+          updatedAt: createdAt,
+        });
 
-      await convex.mutation(api.replicateJobs.recordAvatarPhotoJob, {
-        secret: rateLimitSecret,
-        predictionId: prediction.id,
-        modelId,
-        status: getReplicatePredictionStatus(prediction.status),
-        createdAt,
-        updatedAt: createdAt,
-      });
-
-      const completedPrediction = await replicate.wait(prediction, {
-        interval: 2000,
-      });
-      const completedStatus = getReplicatePredictionStatus(
-        completedPrediction.status,
-      );
-      const predictionError =
-        typeof completedPrediction.error === "string"
-          ? completedPrediction.error
-          : completedPrediction.error
-            ? JSON.stringify(completedPrediction.error)
-            : undefined;
-      const outputUrl = getReplicateOutputUrls(
-        (completedPrediction as Prediction).output,
-      )[0];
-
-      await convex.mutation(api.replicateJobs.updateAvatarPhotoJobStatus, {
-        secret: rateLimitSecret,
-        predictionId: prediction.id,
-        status: completedStatus,
-        outputUrl,
-        error: predictionError,
-        updatedAt: new Date().toISOString(),
-      });
-
-      if (completedPrediction.status !== "succeeded") {
-        throw new Error(
-          predictionError ?? "Replicate did not complete avatar photo generation.",
+        const completedPrediction = await replicate.wait(prediction, {
+          interval: 2000,
+        });
+        const completedStatus = getReplicatePredictionStatus(
+          completedPrediction.status,
         );
-      }
+        const predictionError =
+          typeof completedPrediction.error === "string"
+            ? completedPrediction.error
+            : completedPrediction.error
+              ? JSON.stringify(completedPrediction.error)
+              : undefined;
+        const outputUrl = getReplicateOutputUrls(
+          (completedPrediction as Prediction).output,
+        )[0];
 
-      if (!outputUrl) {
-        throw new Error("Replicate did not return a generated avatar photo.");
-      }
+        await convex.mutation(api.replicateJobs.updateAvatarPhotoJobStatus, {
+          secret: rateLimitSecret,
+          predictionId: prediction.id,
+          status: completedStatus,
+          outputUrl,
+          error: predictionError,
+          updatedAt: new Date().toISOString(),
+        });
 
-      const imageData = await createReplicateImageDataUrl(outputUrl);
+        if (completedPrediction.status !== "succeeded") {
+          throw new Error(
+            predictionError ??
+              "Replicate did not complete avatar photo generation.",
+          );
+        }
 
-      images.push({
-        ...imageData,
-        variant,
-      });
-    }
+        if (!outputUrl) {
+          throw new Error("Replicate did not return a generated avatar photo.");
+        }
+
+        const imageData = await createReplicateImageDataUrl(outputUrl);
+
+        return {
+          image: {
+            ...imageData,
+            variant,
+          } satisfies GeneratedAvatarPhoto,
+          prompt,
+        };
+      },
+    );
 
     return NextResponse.json({
-      images,
+      generationSpeedLabel: speedProfile.publicSpeedLabel,
+      generationSpeedTier,
+      images: generatedImages.map((generatedImage) => generatedImage.image),
       modelId,
-      prompts,
+      prompts: generatedImages.map((generatedImage) => generatedImage.prompt),
+      quality: speedProfile.avatarImageQuality,
     });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

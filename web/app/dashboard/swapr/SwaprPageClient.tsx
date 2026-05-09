@@ -25,9 +25,9 @@ export function SwaprPageClient() {
   const [photoAvatarFilterId, setPhotoAvatarFilterId] = useState("all");
   const [selectedClipId, setSelectedClipId] = useState<string | undefined>();
   const [prompt, setPrompt] = useState("");
-  const [mode, setMode] = useState<SwaprMode>("pro");
+  const [mode, setMode] = useState<SwaprMode>("std");
   const [characterOrientation, setCharacterOrientation] =
-    useState<SwaprCharacterOrientation>("video");
+    useState<SwaprCharacterOrientation>("image");
   const [keepOriginalSound, setKeepOriginalSound] = useState(true);
   const [hasConsent, setHasConsent] = useState(false);
   const [assetLoadError, setAssetLoadError] = useState<string | null>(null);

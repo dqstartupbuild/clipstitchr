@@ -110,6 +110,51 @@ The per-feature caps protect single surfaces, but the shared credit cap is the
 real cost control. A Pro user should not be able to spend 250 credits on avatar
 photos and another 250 credits on Swapr in the same billing period.
 
+## Generation Speed Positioning
+
+Paid plans should be positioned by speed, monthly capacity, and concurrency, not
+by telling users that lower tiers create visibly worse outputs. All plans should
+produce the same deliverable format: normalized 9:16 media, the same creator
+workflow, and commercially usable UGC-style output.
+
+Public positioning:
+
+| Plan | Public Speed Label | Product Promise |
+| --- | --- | --- |
+| Creator | Slow | Same creation workflow with lower monthly volume and slower generation. |
+| Pro | Fast | Faster generation defaults and enough credits for regular solo production. |
+| Studio | Faster | Fastest defaults, highest limits, and future priority/concurrency room. |
+
+Current implementation hooks:
+
+| Plan Tier | Avatar Image Generation | Swapr Default | Notes |
+| --- | --- | --- | --- |
+| Creator | 1 image job at a time, `quality: "auto"` | `Quality 1080p`, Match Photo | Slowest path. Good for occasional use. |
+| Pro | 2 image jobs at a time, `quality: "medium"` | `Fast 720p`, Match Photo | Faster wall-clock time without changing the user-facing workflow. |
+| Studio | 4 image jobs at a time, `quality: "medium"` | `Fast 720p`, Match Photo | Fastest current avatar batch behavior; future queue priority belongs here. |
+
+The UI should avoid labels like "Final" for model modes. Use labels such as
+`Quality`, `Fast`, and `Faster` where a mode needs a name. This keeps plan
+copy focused on speed and capacity instead of implying that lower plans are
+throwaway drafts.
+
+`number_of_images` remains `1` for avatar photo generation. A future experiment
+can test packing multiple labeled variant prompts into one model prompt, but
+that should be measured for quality drift before replacing the current
+one-output-per-variant approach.
+
+Swapr speed tiers use Match Photo orientation because ClipStitchr normalizes
+both image and video outputs to 9:16. Important caveat: the provider's
+`character_orientation` parameter is not just an aspect-ratio setting; it also
+changes the reference behavior and currently maps to different accepted source
+durations in the app. Match Photo keeps the faster 3-10 second path. A slower
+long-motion setting can be exposed later if users need 30-second reference
+motion.
+
+Until paid plans are implemented, the app can use the Studio/faster defaults as
+the global capability ceiling. When entitlements are added, each plan should map
+to the same speed-profile layer instead of duplicating settings across routes.
+
 ## Unit Economics
 
 The plan economics below assume every user spends their full shared credit

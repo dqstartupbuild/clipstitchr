@@ -89,14 +89,14 @@ export function SwaprControlsPanel({
               variant={mode === "pro" ? "primary" : "secondary"}
               onClick={() => onModeChange("pro")}
             >
-              Pro 1080p
+              Quality 1080p
             </Button>
             <Button
               type="button"
               variant={mode === "std" ? "primary" : "secondary"}
               onClick={() => onModeChange("std")}
             >
-              Std 720p
+              Fast 720p
             </Button>
           </div>
         </div>

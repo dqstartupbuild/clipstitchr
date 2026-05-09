@@ -3,8 +3,10 @@ import type { SwaprPredictionResponse } from "@/lib/clipstitchr/types/SwaprPredi
 
 export function createSwaprPredictionJson(
   prediction: Prediction,
+  overrides: Partial<SwaprPredictionResponse> = {},
 ): SwaprPredictionResponse {
   return {
+    ...overrides,
     id: prediction.id,
     status: prediction.status,
     output: prediction.output,

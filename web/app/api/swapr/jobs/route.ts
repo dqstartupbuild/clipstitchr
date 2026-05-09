@@ -14,6 +14,8 @@ import { getSwaprFormBoolean } from "@/lib/clipstitchr/server/getSwaprFormBoolea
 import { getSwaprFormFile } from "@/lib/clipstitchr/server/getSwaprFormFile";
 import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString";
 import { getSwaprMode } from "@/lib/clipstitchr/server/getSwaprMode";
+import { getGenerationSpeedTier } from "@/lib/clipstitchr/utils/getGenerationSpeedTier";
+import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
 import { getSwaprReferenceDurationLimit } from "@/lib/clipstitchr/utils/getSwaprReferenceDurationLimit";
 
 export const runtime = "nodejs";
@@ -40,10 +42,19 @@ export async function POST(request: Request) {
     const image = getSwaprFormFile(formData, "image");
     const video = getSwaprFormFile(formData, "video");
     const prompt = getSwaprFormString(formData, "prompt").trim();
-    const mode = getSwaprMode(getSwaprFormString(formData, "mode"));
-    const characterOrientation = getSwaprCharacterOrientation(
+    const requestedMode = getSwaprMode(getSwaprFormString(formData, "mode"));
+    const requestedCharacterOrientation = getSwaprCharacterOrientation(
       getSwaprFormString(formData, "characterOrientation"),
     );
+    const generationSpeedTier = formData.has("generationSpeedTier")
+      ? getGenerationSpeedTier(getSwaprFormString(formData, "generationSpeedTier"))
+      : undefined;
+    const speedProfile = generationSpeedTier
+      ? getGenerationSpeedTierProfile(generationSpeedTier)
+      : undefined;
+    const mode = speedProfile?.swaprMode ?? requestedMode;
+    const characterOrientation =
+      speedProfile?.swaprCharacterOrientation ?? requestedCharacterOrientation;
     const keepOriginalSound = getSwaprFormBoolean(
       formData,
       "keepOriginalSound",
@@ -77,7 +88,13 @@ export async function POST(request: Request) {
       updatedAt: now,
     });
 
-    return NextResponse.json(createSwaprPredictionJson(prediction));
+    return NextResponse.json(
+      createSwaprPredictionJson(prediction, {
+        characterOrientation,
+        generationSpeedTier,
+        mode,
+      }),
+    );
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);
 

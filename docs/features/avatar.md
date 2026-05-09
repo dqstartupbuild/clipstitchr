@@ -92,6 +92,14 @@ For each requested output image, ClipStitchr creates a unique variant:
 
 Replicate `openai/gpt-image-2` supports `number_of_images` up to 10, but it accepts a single prompt per prediction. To provide unique per-image prompts and avoid grid/contact-sheet outputs, ClipStitchr runs one prediction per requested output image with `number_of_images: 1`.
 
+Avatar generation speed is controlled by the shared generation speed profile:
+
+- Creator runs 1 image prediction at a time.
+- Pro runs up to 2 image predictions at a time.
+- Studio runs up to 4 image predictions at a time.
+
+All tiers still use one generated image per prediction. A future experiment can test combining multiple labeled variant prompts into one prompt, but that should not replace the current approach until output quality and prompt adherence are measured.
+
 Each variant prompt must clearly request exactly one standalone image:
 
 - one finished photo only
