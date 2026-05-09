@@ -38,7 +38,7 @@ const videoLibraryContent: Record<
     title: "UGC Clips",
     emptyTitle: "No UGC clips yet",
     emptyDescription:
-      "Upload source clips from the dashboard and classify them as UGC.",
+      "Upload hooks, reactions, b-roll, or creator clips to pair with demos.",
     sectionId: "ugc-clips",
     searchEmptyTitle: "No matching UGC clips",
     searchEmptyDescription:
@@ -48,7 +48,7 @@ const videoLibraryContent: Record<
     title: "Demo Videos",
     emptyTitle: "No demo videos yet",
     emptyDescription:
-      "Upload product walkthroughs from the dashboard and classify them as Demo.",
+      "Upload product walkthroughs or screen recordings to use after UGC clips.",
     sectionId: "demo-videos",
     searchEmptyTitle: "No matching demo videos",
     searchEmptyDescription:
@@ -58,7 +58,7 @@ const videoLibraryContent: Record<
     title: "Swaps",
     emptyTitle: "No swaps yet",
     emptyDescription:
-      "Generate a Swapr video to save it here as a reusable UGC output.",
+      "Create new UGC clips when your UGC library needs more material.",
     sectionId: "swaps",
     searchEmptyTitle: "No matching swaps",
     searchEmptyDescription:
@@ -125,7 +125,7 @@ export function UploadsPageClient() {
         <LibraryPageHeader
           eyebrow="Library"
           title="Content Library"
-          description="Browse saved UGC clips, demo videos, Swapr outputs, and stitches in one place."
+          description="Keep UGC clips, product demos, optional source clips, and finished stitches ready for the next ad."
         />
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">

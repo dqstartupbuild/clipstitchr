@@ -36,27 +36,27 @@ const contentByAssetType: Record<
   }
 > = {
   ugc: {
-    title: "Add UGC clips to the library",
+    title: "Add UGC clips",
     description:
-      "Selected UGC files are normalized to 1080 x 1920 before they are saved.",
-    dropTitle: "Drop UGC videos here",
-    dropDescription: "Use the segmented control above before selecting files.",
+      "Use these as hooks, reactions, b-roll, or social proof before the product demo.",
+    dropTitle: "Drop UGC clips here",
+    dropDescription: "Drag in videos, or choose files below.",
     acceptedTypes: ACCEPTED_VIDEO_TYPES,
   },
   demo: {
-    title: "Add product demos to the library",
+    title: "Add product demos",
     description:
-      "Selected demo files are normalized to 1080 x 1920 before they are saved.",
+      "Use these as the solution/CTA that comes after the UGC clip.",
     dropTitle: "Drop demo videos here",
-    dropDescription: "Use the segmented control above before selecting files.",
+    dropDescription: "Drag in videos, or choose files below.",
     acceptedTypes: ACCEPTED_VIDEO_TYPES,
   },
   photo: {
     title: "Add avatar photos",
     description:
-      "Photos are attached to the selected avatar and saved as 1080 x 1920 portrait references for Swapr.",
+      "Use avatar photos as optional source material when you need more UGC-style clips.",
     dropTitle: "Drop photos here",
-    dropDescription: "Use JPG or PNG source photos.",
+    dropDescription: "Use JPG or PNG photos.",
     acceptedTypes: ACCEPTED_PHOTO_TYPES,
   },
 };
@@ -215,8 +215,8 @@ export function UploadPanel({
             }}
           />
           <span className="text-sm leading-6 text-text-secondary">
-            AI-expand the background instead of cropping. When off, photos are
-            auto-cropped to 9:16.
+            Fill the background instead of cropping tightly. Best for photos
+            that need more room.
           </span>
         </label>
       ) : (

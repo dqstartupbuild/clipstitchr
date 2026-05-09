@@ -29,6 +29,6 @@ export function createLlmsTxt() {
     "- RSS feed for content syndication",
     "",
     "## Site Context",
-    `${site.name} is a browser-first authenticated application for uploading UGC clips and product demo videos, normalizing them to TikTok-ready 9:16, stitching UGC before demo, and downloading the result. The public site also keeps a blog and RSS feed.`,
+    `${site.name} helps marketers turn UGC clips and product demos into finished vertical ad variants without opening a traditional video editor. The public site also keeps a blog and RSS feed.`,
   ].join("\n");
 }

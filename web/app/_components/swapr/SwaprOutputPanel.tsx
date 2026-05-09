@@ -34,11 +34,11 @@ export function SwaprOutputPanel({
       <div>
         <p className="text-sm font-semibold text-accent-dark">Output</p>
         <h2 className="mt-2 text-xl font-bold text-text-primary">
-          Generated UGC
+          Completed Swap
         </h2>
         <p className="mt-2 text-sm leading-6 text-text-secondary">
-          Successful generations are normalized, saved, and made available in
-          Stitchr.
+          Finished clips are saved to your library so you can stitch them into
+          ads.
         </p>
       </div>
 
@@ -56,7 +56,7 @@ export function SwaprOutputPanel({
         </div>
         {predictionId ? (
           <p className="mt-3 break-all text-xs text-text-tertiary">
-            Prediction: {predictionId}
+            Job ID: {predictionId}
           </p>
         ) : null}
       </div>
@@ -102,7 +102,7 @@ export function SwaprOutputPanel({
         </div>
       ) : (
         <div className="mt-5 flex aspect-[9/16] items-center justify-center rounded-lg border border-dashed border-border bg-slate-50 px-6 text-center text-sm text-text-secondary">
-          Generated Swapr videos appear here after processing.
+          Your new UGC clip will appear here after it finishes.
         </div>
       )}
     </Panel>

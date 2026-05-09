@@ -3,21 +3,21 @@ import type { SwaprGenerationStatus } from "@/lib/clipstitchr/types/SwaprGenerat
 export function getSwaprGenerationMessage(status: SwaprGenerationStatus) {
   switch (status) {
     case "uploading":
-      return "Uploading selected media to Replicate.";
+      return "Preparing your selected photo and clip.";
     case "queued":
-      return "Swapr job is queued.";
+      return "Waiting to start your source clip.";
     case "processing":
-      return "Replicate is generating the motion-transfer video.";
+      return "Swapping the face...";
     case "downloading":
-      return "Downloading the generated output.";
+      return "Getting the finished clip.";
     case "normalizing":
-      return "Normalizing the output for ClipStitchr.";
+      return "Preparing the clip for your library.";
     case "saving":
-      return "Saving the output as a UGC clip.";
+      return "Saving the clip to your library.";
     case "succeeded":
-      return "Swapr output saved to your Swaps tab.";
+      return "New clip saved to your library.";
     case "failed":
-      return "Swapr generation failed.";
+      return "Swap failed. Please try again.";
     case "idle":
     default:
       return "Choose a photo and UGC clip to start.";

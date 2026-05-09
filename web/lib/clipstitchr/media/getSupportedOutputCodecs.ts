@@ -44,11 +44,15 @@ export async function getSupportedOutputCodecs(
   const warnings: string[] = [];
 
   if (!videoCodec) {
-    warnings.push("This browser cannot encode an MP4 video track for ClipStitchr.");
+    warnings.push(
+      "This browser cannot create ClipStitchr videos. Try a modern desktop browser.",
+    );
   }
 
   if (includeAudio && !audioCodec) {
-    warnings.push("This browser cannot encode an MP4 audio track for ClipStitchr.");
+    warnings.push(
+      "This browser cannot keep audio in ClipStitchr videos. Try a modern desktop browser.",
+    );
   }
 
   return { videoCodec, audioCodec, warnings };

@@ -26,13 +26,13 @@ export function SwaprUgcSelector({
   return (
     <Panel className="p-5">
       <div>
-        <p className="text-sm font-semibold text-accent-dark">Source video</p>
+        <p className="text-sm font-semibold text-accent-dark">Source clip</p>
         <h2 className="mt-2 text-xl font-bold text-text-primary">
           Choose UGC motion
         </h2>
         <p className="mt-2 text-sm leading-6 text-text-secondary">
-          Swapr only uses UGC clips as motion references. Demo videos stay out
-          of this flow.
+          Pick the UGC clip with the movement, framing, or energy you want to
+          reuse.
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export function SwaprUgcSelector({
             No UGC clips yet
           </h3>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Upload a video and classify it as UGC before using Swapr.
+            Upload a UGC clip before using Swapr.
           </p>
           <Link
             href="/dashboard/uploads#upload-panel"

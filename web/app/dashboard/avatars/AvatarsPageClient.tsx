@@ -61,9 +61,9 @@ export function AvatarsPageClient() {
     <DashboardShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <LibraryPageHeader
-          eyebrow="Avatar Library"
+          eyebrow="Source photos"
           title="Avatars"
-          description="Upload person photos, manage avatar descriptions, and generate new scenario photos for Swapr."
+          description="Save person photos to use in Swapr when you need more UGC clips."
         />
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -98,7 +98,7 @@ export function AvatarsPageClient() {
           emptyDescription={
             hasSearchQuery
               ? "No avatars match that name, tag, or description."
-              : "Upload an avatar photo to make it available in Swapr."
+              : "Upload photos of a person to make them available as avatars."
           }
           onLoadPhoto={photoLibrary.loadPhoto}
           onDelete={photoLibrary.removePhoto}

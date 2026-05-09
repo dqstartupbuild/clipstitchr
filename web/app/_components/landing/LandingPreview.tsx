@@ -7,15 +7,15 @@ export function LandingPreview() {
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
         <div>
           <p className="text-sm font-semibold text-accent-dark">
-            One creative workspace
+            One reusable ad library
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Keep every clip, photo, and finished video easy to find.
+            Stop hunting through folders every time you need a post.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Save UGC clips, product demos, and person photos in one place.
-            Rename them, tag them, search across them, trim videos, preview
-            everything, and keep finished stitches ready for reuse.
+            Keep UGC clips, product demos, optional source photos, and finished
+            stitches in one place. Search, trim, preview, and reuse them instead
+            of rebuilding every ad from scratch.
           </p>
         </div>
         <Panel className="overflow-hidden p-2">

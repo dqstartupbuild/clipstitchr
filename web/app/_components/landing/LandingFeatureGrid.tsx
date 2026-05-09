@@ -11,33 +11,33 @@ import { Panel } from "@/app/_components/ui/Panel";
 
 const features = [
   {
-    title: "Upload clips and photos",
+    title: "Upload clips once",
     description:
-      "Bring in creator clips, product demos, and person photos from the same upload flow.",
+      "Bring in UGC clips and product demos so they are ready whenever you need another ad.",
     icon: UploadCloud,
   },
   {
-    title: "Make everything vertical",
+    title: "Make clips ad-ready",
     description:
-      "Turn raw videos and photos into a clean portrait format for short-form channels.",
+      "Prepare your videos for vertical ads so UGC and demos work together cleanly.",
     icon: Ratio,
   },
   {
     title: "Organize your library",
     description:
-      "Search, tag, rename, delete, preview, and keep UGC, demos, photos, and stitches sorted.",
+      "Keep UGC, demos, optional AI clips, and finished stitches in one place.",
     icon: FolderSearch,
   },
   {
-    title: "Stitch creator clips to demos",
+    title: "Stitch UGC to demos",
     description:
-      "Pair a creator clip with a product demo and preview the same order you will export.",
+      "Pair an attention clip with product proof and preview the ad before you create it.",
     icon: Scissors,
   },
   {
-    title: "Create new UGC-style clips",
+    title: "Fill content gaps",
     description:
-      "Use a saved person photo and a UGC clip to make a new motion-led video for your library.",
+      "Use optional AI tools when you need more source photos or UGC-style clips.",
     icon: Shuffle,
   },
   {
@@ -47,9 +47,9 @@ const features = [
     icon: Type,
   },
   {
-    title: "Download ready videos",
+    title: "Download finished ads",
     description:
-      "Export finished vertical videos and reuse generated clips in your next stitch.",
+      "Save finished vertical ad variants and reuse the same library for the next batch.",
     icon: Download,
   },
 ];
@@ -60,14 +60,14 @@ export function LandingFeatureGrid() {
       <div className="mx-auto max-w-6xl">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
-            What it can do
+            What it solves
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Everything you need to turn creative assets into short-form ads.
+            Stop collecting clips you never publish.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            ClipStitchr is built for the practical work between collecting
-            creator assets and publishing a finished video.
+            ClipStitchr handles the repetitive work between having raw footage
+            and shipping another finished ad variant.
           </p>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">

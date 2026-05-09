@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `Avatars | ${site.name}`,
   description:
-    "Manage ClipStitchr avatar photos, upload person references, and generate new scenario photos for Swapr.",
+    "Upload photos of people to use as avatars in Swapr for custom UGC clips.",
   canonical: "/dashboard/avatars",
   noIndex: true,
 });

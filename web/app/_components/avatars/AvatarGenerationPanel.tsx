@@ -1,6 +1,5 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { avatarLightingOptions } from "@/lib/clipstitchr/constants/avatarLightingOptions";
@@ -49,16 +48,16 @@ export function AvatarGenerationPanel({
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div>
           <p className="text-sm font-semibold text-accent-dark">
-            Generate scenarios
+            Create source photos
           </p>
           <h2 className="mt-2 text-xl font-bold text-text-primary">
-            Create more photos of the selected avatar
+            Make more photos of the selected avatar
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
             {selectedAvatar
               ? selectedAvatar.description ||
-                "Upload or assign a photo that can populate this avatar description before generating."
-              : "Select an avatar below to generate new scenario photos."}
+                "Add one clear description for this avatar before generating."
+              : "Select an avatar and photo to create more source photos."}
           </p>
         </div>
         <div className="flex flex-col gap-4">
@@ -137,12 +136,11 @@ export function AvatarGenerationPanel({
           </label>
           <Button
             type="button"
-            icon={<Sparkles aria-hidden className="h-4 w-4" />}
             isLoading={isGenerating}
             disabled={!selectedAvatar || !selectedPhoto || !hasDescription}
             onClick={onGenerate}
           >
-            Generate Photos
+            Create Photos
           </Button>
         </div>
       </div>

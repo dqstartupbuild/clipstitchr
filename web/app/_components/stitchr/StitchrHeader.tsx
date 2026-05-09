@@ -6,8 +6,8 @@ export function StitchrHeader() {
   return (
     <DashboardPageHeader
       eyebrow="Studio"
-      title="Stitch Video"
-      description="Select one normalized UGC clip and one normalized demo video."
+      title="Create an ad variant"
+      description="Pick a UGC clip and a product demo. Stitchr puts them together in that order."
     />
   );
 }

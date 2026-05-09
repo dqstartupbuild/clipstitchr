@@ -7,10 +7,11 @@ export function StitchrCallout() {
       <div className="flex gap-4">
         <div>
           <h2 className="text-lg font-bold text-text-primary">
-            Ready to stitch a new video?
+            Let's make another ad! 
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Select a UGC clip and a demo video to get started.
+            Pick a UGC clip, pair it with a demo, and create a finished
+            ad.
           </p>
         </div>
       </div>
@@ -18,7 +19,7 @@ export function StitchrCallout() {
         href="/dashboard/stitchr"
         icon={<ArrowRight aria-hidden className="h-4 w-4" />}
       >
-        Stitch Video
+        Create Stitch
       </PrimaryButtonLink>
     </section>
   );

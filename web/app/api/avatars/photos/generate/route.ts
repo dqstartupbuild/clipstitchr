@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     const speedProfile = getGenerationSpeedTierProfile(generationSpeedTier);
 
     if (!avatarDescription) {
-      throw new Error("Add an avatar description before generating photos.");
+      throw new Error("Add an avatar description before creating photos.");
     }
 
     const convex = createAuthenticatedConvexHttpClient(convexToken);
@@ -146,7 +146,7 @@ export async function POST(request: Request) {
         if (completedPrediction.status !== "succeeded") {
           throw new Error(
             predictionError ??
-              "Replicate did not complete avatar photo generation.",
+            "Replicate did not complete avatar photo generation.",
           );
         }
 

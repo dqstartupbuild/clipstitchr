@@ -49,7 +49,7 @@ export function SequencePreviewPanel({
       <div className="mb-4">
         <p className="text-sm font-semibold text-accent-dark">Preview</p>
         <h2 className="mt-2 text-xl font-bold text-text-primary">
-          UGC then Demo
+          Ad sequence
         </h2>
       </div>
       {ugcClip && demoClip && ugcTrimRange && demoTrimRange ? (
@@ -75,7 +75,7 @@ export function SequencePreviewPanel({
         </>
       ) : (
         <div className="rounded-lg border border-dashed border-border bg-slate-50 p-8 text-center text-sm text-text-secondary">
-          Select both clips to preview the sequence.
+          Select a UGC clip and product demo to preview the ad.
         </div>
       )}
     </Panel>

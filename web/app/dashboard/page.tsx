@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `Dashboard | ${site.name}`,
   description:
-    "Open the ClipStitchr local dashboard to upload UGC and demo videos, normalize clips to TikTok 9:16, and manage browser-stored exports.",
+    "Open the ClipStitchr dashboard to manage UGC clips, product demos, and finished ad variants.",
   canonical: "/dashboard",
   noIndex: true,
 });

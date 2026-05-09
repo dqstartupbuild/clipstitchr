@@ -33,7 +33,7 @@ export function RecentUploadsSection({
     <section id="recent-uploads">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold text-text-primary">
-          Recent Library Videos
+          Recent Uploads
         </h2>
         <SecondaryButtonLink
           href="/dashboard/uploads"
@@ -58,7 +58,7 @@ export function RecentUploadsSection({
       ) : (
         <DashboardEmptyState
           title="No uploads yet"
-          description="Upload UGC clips or demo videos to see recent files here."
+          description="Upload UGC clips or product demos to start building your ad library."
         />
       )}
     </section>

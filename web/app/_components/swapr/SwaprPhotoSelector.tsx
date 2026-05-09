@@ -43,8 +43,7 @@ export function SwaprPhotoSelector({
             Pick the person
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Select a saved avatar photo. Avatars are uploaded and managed from
-            the Avatars page.
+            Choose the avatar photo you want to swap.
           </p>
         </div>
       </div>
@@ -90,16 +89,16 @@ export function SwaprPhotoSelector({
       ) : (
         <div className="mt-5 rounded-lg border border-border bg-surface-elevated p-5">
           <h3 className="text-sm font-bold text-text-primary">
-            No avatars yet
+            No avatar photos yet
           </h3>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Upload an avatar photo before using Swapr.
+            Upload an avatar photo before creating a Swapr clip.
           </p>
           <Link
             href="/dashboard/avatars#upload-panel"
             className="btn-secondary mt-4"
           >
-            Upload Avatars
+            Upload Photos
           </Link>
         </div>
       )}

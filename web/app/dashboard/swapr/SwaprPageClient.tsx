@@ -91,9 +91,9 @@ export function SwaprPageClient() {
     <DashboardShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <DashboardPageHeader
-          eyebrow="AI Studio"
-          title="Swapr"
-          description="Upload a person photo, choose a saved UGC clip, and generate a new UGC video where the photo subject follows the source motion."
+          eyebrow="UGC swapping"
+          title="Create UGC clips"
+          description="Create a new UGC clip from an avatar photo and an existing UGC clip."
         />
 
         {library.error || photoLibrary.error || assetLoadError ? (

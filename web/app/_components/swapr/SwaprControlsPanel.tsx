@@ -60,16 +60,16 @@ export function SwaprControlsPanel({
       <div>
         <p className="text-sm font-semibold text-accent-dark">Setup</p>
         <h2 className="mt-2 text-xl font-bold text-text-primary">
-          Generate the swap
+          Create new UGC clip
         </h2>
         <p className="mt-2 text-sm leading-6 text-text-secondary">
-          The photo supplies the person. The UGC clip supplies the motion.
+          The avatar supplies the face. The UGC clip supplies the motion.
         </p>
       </div>
 
       <label className="mt-5 block">
         <span className="text-sm font-semibold text-text-primary">
-          Prompt guidance
+          Scene notes
         </span>
         <textarea
           value={prompt}
@@ -134,7 +134,7 @@ export function SwaprControlsPanel({
           }
         />
         <span className="text-sm leading-6 text-text-secondary">
-          Keep original UGC sound when the model supports it.
+          Keep the original audio when available.
         </span>
       </label>
 
@@ -147,13 +147,13 @@ export function SwaprControlsPanel({
         />
         <span className="text-sm leading-6 text-text-secondary">
           I have rights and consent to use the selected photo and UGC clip for
-          AI generation.
+          this generated clip.
         </span>
       </label>
 
       {selectedClip && !isDurationValid ? (
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-          This mode supports 3s to {durationLimit}s reference videos. Selected:
+          This setting works with clips from 3s to {durationLimit}s. Selected:
           {" "}
           {formatDuration(selectedClip.duration)}.
         </div>
@@ -161,7 +161,7 @@ export function SwaprControlsPanel({
 
       {selectedClip && !isSizeValid ? (
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-          Replicate accepts reference videos up to{" "}
+          Choose a smaller UGC clip. Limit:{" "}
           {formatBytes(referenceVideoMaxSizeBytes)}. Selected:{" "}
           {formatBytes(selectedClip.size)}.
         </div>
@@ -175,7 +175,7 @@ export function SwaprControlsPanel({
         disabled={!isReady || !isDurationValid || !isSizeValid}
         onClick={onGenerate}
       >
-        Generate Swapr Video
+        Create Swap
       </Button>
     </Panel>
   );

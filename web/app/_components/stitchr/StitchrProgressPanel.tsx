@@ -21,9 +21,9 @@ export function StitchrProgressPanel({
     <Panel className="p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-accent-dark">Processing</p>
+          <p className="text-sm font-semibold text-accent-dark">Stitching</p>
           <h2 className="mt-2 text-lg font-bold text-text-primary">
-            {status === "complete" ? "Video ready" : "Stitching MP4"}
+            {status === "complete" ? "Ad ready" : "Creating your ad"}
           </h2>
         </div>
         <span className="text-sm font-semibold text-text-secondary">

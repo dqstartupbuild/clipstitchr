@@ -1,6 +1,6 @@
 # ClipStitchr
 
-ClipStitchr helps marketers turn saved UGC clips and product demo videos into
+ClipStitchr helps marketers turn UGC clips and product demo videos into
 finished 9:16 ad variants without opening a traditional video editor.
 
 The primary workflow is Stitchr: upload clips once, keep them organized in a

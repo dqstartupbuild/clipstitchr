@@ -4,16 +4,16 @@ import { Panel } from "@/app/_components/ui/Panel";
 const studios = [
   {
     eyebrow: "Stitchr",
-    title: "Turn creator clips + demos into one ad.",
+    title: "Turn real clips and demos into ads.",
     description:
-      "Choose one creator clip and one product demo. Trim each clip, preview them in order, add simple text, and export a single vertical video.",
+      "Choose one UGC clip and one product demo. Trim the dead space, preview the ad, add simple text, and create a finished vertical video.",
     icon: Scissors,
   },
   {
     eyebrow: "Swapr",
-    title: "Make a new UGC-style clip from a photo.",
+    title: "Create source clips when you need more.",
     description:
-      "Pick a saved person photo and a saved creator clip. Generate a new clip that follows the source motion, then download it or use it in Stitchr.",
+      "Pick or upload an avatar photo and a UGC clip to make a new UGC clip, then use it in Stitchr like any other UGC clip.",
     icon: Shuffle,
   },
 ];
@@ -24,10 +24,11 @@ export function LandingStudioSection() {
       <div className="mx-auto max-w-6xl">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
-            Two ways to create
+            Stitch first, generate when needed
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Build from existing clips or generate fresh UGC-style content.
+            The main workflow turns your existing clips into ads. AI helps fill
+            the library.
           </h2>
         </div>
         <div className="mt-8 grid gap-4 lg:grid-cols-2">

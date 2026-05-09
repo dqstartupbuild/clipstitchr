@@ -3,9 +3,9 @@ import { Panel } from "@/app/_components/ui/Panel";
 const steps = [
   "Upload",
   "Organize",
-  "Generate",
-  "Stitch",
-  "Finish",
+  "Pick UGC",
+  "Pick Demo",
+  "Create",
   "Download",
 ];
 
@@ -18,11 +18,11 @@ export function LandingWorkflow() {
             How it works
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Start with what you have. Leave with a finished vertical video.
+            Start with the clips you have. Leave with an ad you can use.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Add your assets, choose the clips that belong together, make quick
-            adjustments, and export a video that is ready to post.
+            Build a reusable library, choose the UGC and demo that belong
+            together, make quick trims, and create another finished ad variant.
           </p>
         </div>
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">

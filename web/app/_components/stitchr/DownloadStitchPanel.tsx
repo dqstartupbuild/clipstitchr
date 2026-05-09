@@ -26,7 +26,7 @@ export function DownloadStitchPanel({
     <Panel className="p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-accent-dark">Download</p>
+          <p className="text-sm font-semibold text-accent-dark">Finished ad</p>
           <h2 className="mt-2 text-lg font-bold text-text-primary">
             {stitch.name}
           </h2>

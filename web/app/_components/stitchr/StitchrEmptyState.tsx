@@ -11,8 +11,8 @@ export function StitchrEmptyState() {
         Upload at least one UGC clip and one demo video.
       </h2>
       <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-text-secondary">
-        The Stitchr studio only works with clips that have already been
-        normalized and saved to your ClipStitchr library.
+        Add both clip types to your library, then come back to create your
+        first ad variant.
       </p>
       <SecondaryButtonLink href={UPLOAD_CONTROLS_HREF} className="mt-5">
         Go to Library

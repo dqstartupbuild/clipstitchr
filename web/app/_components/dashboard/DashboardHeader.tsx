@@ -5,7 +5,7 @@ export function DashboardHeader() {
     <DashboardPageHeader
       eyebrow="Workspace"
       title="Welcome to ClipStitchr! 👋"
-      description="Here's what's happening with your videos."
+      description="Track the clips, demos, and stitches ready to turn into ads."
     />
   );
 }

@@ -2,7 +2,7 @@
 
 Stitchr is the primary ClipStitchr workflow.
 
-Its job is to turn saved UGC clips and product demo videos into finished
+Its job is to turn UGC clips and product demo videos into finished
 short-form ad variants with as little editing friction as possible.
 
 ## Problem
