@@ -23,7 +23,8 @@ library, not editing from scratch.
 
 ## Core Promise
 
-Select one UGC clip and one product demo. Create a finished vertical ad.
+Select up to 20 UGC clips and one product demo. Preview each pairing, apply one
+shared text overlay when needed, and create finished vertical ad variants.
 
 ## Intended Sequence
 
@@ -32,6 +33,9 @@ Every Stitchr output follows the same basic ad structure:
 1. UGC clip first.
 2. Product demo second.
 3. Single normalized 9:16 output.
+
+When multiple UGC clips are selected, Stitchr creates one output per selected
+UGC clip while reusing the same selected product demo and overlay settings.
 
 This sequence supports a common direct-response creative pattern: attention or
 social proof first, product proof immediately after.
@@ -42,11 +46,12 @@ social proof first, product proof immediately after.
 2. Normalize every video to 9:16 before it enters the library.
 3. Save generated posters so clips are recognizable at a glance.
 4. Store non-destructive default trims on each clip.
-5. Select UGC and demo clips inside Stitchr.
+5. Select up to 20 UGC clips and one demo clip inside Stitchr.
 6. Copy clip default trims into the Stitchr session.
-7. Preview the exact UGC-then-demo sequence.
-8. Create the stitched output.
-9. Save and download the finished ad variant.
+7. Tap or swipe through each exact UGC-then-demo preview.
+8. Optionally configure one shared text overlay for every output.
+9. Create one stitched output per selected UGC clip.
+10. Save and download the finished ad variants.
 
 ## Product Principles
 
@@ -54,6 +59,8 @@ social proof first, product proof immediately after.
 - Use clear clip categories: UGC, Demo, Swaps, and Stitches.
 - Preserve source clips; trims are editable metadata.
 - Make outputs easy to recognize later with names, posters, and metadata.
+- Keep batch creation predictable: one selected demo, up to 20 selected UGC
+  clips, and one shared overlay for the batch.
 - Keep AI-generated clips as new UGC clips that can flow into
   Stitchr.
 

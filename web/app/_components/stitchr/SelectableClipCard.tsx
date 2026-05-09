@@ -13,6 +13,7 @@ type SelectableClipCardProps = {
   clip: VideoClipMetadata;
   trimRange: VideoTrimRange;
   isSelected: boolean;
+  isSelectionDisabled?: boolean;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onSelect: (id: string) => void;
   onEditTrim?: (clip: VideoClipMetadata) => void;
@@ -22,6 +23,7 @@ export function SelectableClipCard({
   clip,
   trimRange,
   isSelected,
+  isSelectionDisabled = false,
   onLoadClip,
   onSelect,
   onEditTrim,
@@ -30,6 +32,7 @@ export function SelectableClipCard({
     <VideoClipPreviewCard
       clip={clip}
       isSelected={isSelected}
+      isSelectionDisabled={isSelectionDisabled}
       onLoadClip={onLoadClip}
       onSelect={() => onSelect(clip.id)}
       footer={() => (

@@ -14,9 +14,9 @@ import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsByS
 type ClipPickerPanelProps = {
   ugcClips: VideoClipMetadata[];
   demoClips: VideoClipMetadata[];
-  selectedUgcId: string | null;
+  selectedUgcIds: string[];
   selectedDemoId: string | null;
-  selectedUgcTrimRange: VideoTrimRange | null;
+  selectedUgcTrimRangesByClipId: Record<string, VideoTrimRange>;
   selectedDemoTrimRange: VideoTrimRange | null;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onSelectUgc: (id: string) => void;
@@ -31,9 +31,9 @@ type ClipPickerPanelProps = {
 export function ClipPickerPanel({
   ugcClips,
   demoClips,
-  selectedUgcId,
+  selectedUgcIds,
   selectedDemoId,
-  selectedUgcTrimRange,
+  selectedUgcTrimRangesByClipId,
   selectedDemoTrimRange,
   onLoadClip,
   onSelectUgc,
@@ -58,6 +58,7 @@ export function ClipPickerPanel({
     <Panel className="p-5">
       <ClipPickerActionBar
         canStitch={canStitch}
+        selectedUgcCount={selectedUgcIds.length}
         isStitching={isStitching}
         onStitch={onStitch}
       />
@@ -72,8 +73,8 @@ export function ClipPickerPanel({
         <UgcClipSelector
           key={`ugc-${searchQuery}`}
           clips={filteredUgcClips}
-          selectedId={selectedUgcId}
-          selectedTrimRange={selectedUgcTrimRange}
+          selectedIds={selectedUgcIds}
+          selectedTrimRangesByClipId={selectedUgcTrimRangesByClipId}
           onLoadClip={onLoadClip}
           onSelect={onSelectUgc}
           onEditTrim={onEditUgcTrim}

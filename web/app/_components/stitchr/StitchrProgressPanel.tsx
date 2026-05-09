@@ -6,25 +6,44 @@ type StitchrProgressPanelProps = {
   status: ProcessingStatus;
   progress: number;
   error: string | null;
+  completedCount: number;
+  totalCount: number;
 };
 
 export function StitchrProgressPanel({
   status,
   progress,
   error,
+  completedCount,
+  totalCount,
 }: StitchrProgressPanelProps) {
   if (status === "idle") {
     return null;
   }
+
+  const isBatch = totalCount > 1;
+  const title =
+    status === "complete"
+      ? isBatch
+        ? "Ads ready"
+        : "Ad ready"
+      : status === "reading"
+        ? "Preparing videos"
+        : isBatch
+          ? "Creating ads"
+          : "Creating your ad";
 
   return (
     <Panel className="p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-accent-dark">Stitching</p>
-          <h2 className="mt-2 text-lg font-bold text-text-primary">
-            {status === "complete" ? "Ad ready" : "Creating your ad"}
-          </h2>
+          <h2 className="mt-2 text-lg font-bold text-text-primary">{title}</h2>
+          {isBatch ? (
+            <p className="mt-1 text-xs font-semibold text-text-tertiary">
+              {completedCount} of {totalCount}
+            </p>
+          ) : null}
         </div>
         <span className="text-sm font-semibold text-text-secondary">
           {Math.round(progress * 100)}%

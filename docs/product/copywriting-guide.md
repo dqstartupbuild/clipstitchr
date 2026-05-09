@@ -48,7 +48,7 @@ Good headline directions:
 - Turn your UGC pile into finished ads.
 - Make ad variants without opening a video editor.
 - Stop collecting clips you never publish.
-- Upload UGC and demos once. Stitch ads whenever you need them.
+- Upload UGC and demos once. Stitch batches of ads whenever you need them.
 - A content library that actually turns into ads.
 
 Avoid headline directions:
@@ -64,8 +64,8 @@ Avoid headline directions:
 Default short description:
 
 ClipStitchr turns UGC clips and product demos into finished 9:16 ad videos. It
-keeps your clips organized, handles the UGC-then-demo stitch, and helps you make
-more ad variants without traditional editing work.
+keeps your clips organized, handles UGC-then-demo stitching in batches, and
+helps you make more ad variants without traditional editing work.
 
 ## Feature Copy
 
@@ -75,7 +75,7 @@ Write feature copy around user outcomes:
 | --- | --- |
 | Upload normalization | Every clip becomes ready for vertical ad output. |
 | Content Library | Keep UGC, demos, swaps, and stitches in one searchable place. |
-| Stitchr | Pair a UGC clip with a product demo and create a finished ad. |
+| Stitchr | Pair up to 20 UGC clips with one product demo and create finished ads. |
 | Trim ranges | Cut dead space without damaging the original clip. |
 | Posters | Recognize clips quickly without opening every file. |
 | AI avatar photos | Create more source material when you need it. |
@@ -140,6 +140,8 @@ more finished creative so they can test faster.
 - Say "finished ad" or "ad variant" when the output is the value.
 - Say "UGC clip" and "product demo" instead of generic "asset" when space
   allows.
+- For batch Stitchr flows, say "selected UGC clips" and "selected demo" so the
+  one-demo-to-many-UGC relationship stays clear.
 - Keep buttons action-oriented: `Upload Clips`, `Create Stitch`, `Save Trim`.
 - Avoid making users feel judged for having messy files or inconsistent posting.
 - Avoid over-explaining AI in primary workflows.

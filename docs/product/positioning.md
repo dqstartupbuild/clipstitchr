@@ -36,9 +36,10 @@ ClipStitchr turns the messy middle of ad creation into a repeatable workflow:
 1. Upload UGC clips and product demos.
 2. Normalize everything to vertical 9:16 once.
 3. Keep the clips organized in a reusable content library.
-4. Select a UGC clip and a demo.
-5. Click once to create the finished ad.
-6. Reuse the same library to make more variants.
+4. Select up to 20 UGC clips and one demo.
+5. Tap or swipe through each UGC-then-demo preview.
+6. Click once to create the finished ad variants.
+7. Reuse the same library to make more variants.
 
 The user should feel like they are operating a content machine, not performing
 video editing chores.
@@ -83,7 +84,7 @@ Secondary users:
 
 Primary feature:
 
-- Stitchr: combine UGC and product demos into finished 9:16 ad videos.
+- Stitchr: combine up to 20 UGC clips with one product demo into finished 9:16 ad videos.
 
 Core supporting features:
 
@@ -91,6 +92,7 @@ Core supporting features:
 - organize reusable content in the library
 - trim clips without destructive editing
 - preview the UGC-then-demo sequence
+- apply one shared text overlay across a Stitchr batch
 - export or save finished stitches
 - keep posters and metadata so clips are easy to recognize
 
@@ -112,7 +114,7 @@ You already have clips. ClipStitchr turns them into ads.
 
 - Turn your UGC pile into finished ads.
 - Make more ad variants without opening a video editor.
-- Upload UGC and demos once. Stitch new ads whenever you need them.
+- Upload UGC and demos once. Stitch batches of new ads whenever you need them.
 - Stop collecting clips you never publish.
 - Build a reusable content library, then turn it into vertical ads.
 - One content library. Many ad variations.
@@ -121,8 +123,8 @@ You already have clips. ClipStitchr turns them into ads.
 
 ClipStitchr helps marketers who collect UGC, b-roll, reaction clips, and product
 demos but struggle to turn those assets into finished ads. Upload your clips,
-organize them once, and create vertical UGC-then-demo videos without opening a
-traditional editor.
+organize them once, select up to 20 UGC clips with one demo, and create vertical
+UGC-then-demo videos without opening a traditional editor.
 
 ## What To Avoid
 

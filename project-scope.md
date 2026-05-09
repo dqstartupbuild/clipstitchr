@@ -18,10 +18,10 @@ too much: find files, import clips, trim dead space, sequence the ad, add
 metadata, export, save the output, and remember what was already used.
 
 ClipStitchr turns that pile of raw marketing footage into a reusable content
-library and a one-click ad-creation workflow. Given **5 UGC clips** and **1
-product demo**, a user can produce **5 unique 9:16 ad variants** - each pairing
-a different UGC clip first with the same product demo second - in minutes,
-without leaving the app.
+library and a batch ad-creation workflow. Given up to **20 UGC clips** and **1
+product demo**, a user can produce matching unique 9:16 ad variants - each
+pairing a different UGC clip first with the same product demo second - in
+minutes, without leaving the app.
 
 The primary product is **Stitchr**. AI features like Swapr and Avatar Photo Generator are secondary helpers for
 creating or extending source material when a user does not have enough usable
@@ -64,19 +64,19 @@ See `docs/product/positioning.md`, `docs/product/copywriting-guide.md`, and
                │
                ▼
 ┌──────────────────────────────────┐
-│     Select UGC + Demo Clip       │
-│   Preview: UGC, then Demo        │
+│  Select up to 20 UGC + 1 Demo    │
+│ Tap/swipe previews: UGC → Demo   │
 └──────────────┬───────────────────┘
                │
                ▼
 ┌──────────────────────────────────┐
-│     Click "Stitch Video"         │
-│ Stitch: UGC immediately → Demo   │
+│          Click "Stitch"          │
+│ Create one UGC → Demo ad per UGC │
 └──────────────┬───────────────────┘
                │
                ▼
 ┌──────────────────────────────────┐
-│ Download single TikTok 9:16 file │
+│ Download finished TikTok 9:16 ads│
 └──────────────────────────────────┘
 ```
 
@@ -120,26 +120,29 @@ cleanup.
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
-| 1 | User **selects** one UGC clip and one Demo clip | ✅ | ✅ |
-| 2 | Preview selection as UGC clip followed immediately by Demo clip | ✅ | ✅ |
+| 1 | User **selects** up to 20 UGC clips and one Demo clip | ✅ | ✅ |
+| 2 | Preview each selected UGC clip followed immediately by the selected Demo clip | ✅ | ✅ |
 | 3 | Copy upload default trims into each new Stitchr selection | ✅ | ✅ |
 | 4 | Override copied trim ranges while stitching without changing upload defaults | ✅ | ✅ |
-| 5 | Click **"Stitch Video"** to stitch them with the same UGC-then-Demo sequence | ✅ | ✅ |
+| 5 | Tap/swipe through selected UGC previews before stitching | ✅ | ✅ |
 | 6 | Processing happens in-browser (no server-side rendering for MVP) | ✅ | ✅ |
-| 7 | Output a single combined TikTok 9:16 video file | ✅ | ✅ |
+| 7 | Click **"Stitch"** to create one UGC-then-Demo output per selected UGC clip | ✅ | ✅ |
 | 8 | Progress indicator during normalization and stitching | ✅ | ✅ |
-| 9 | Download finished video | ✅ | ✅ |
+| 9 | Download each finished TikTok 9:16 video file | ✅ | ✅ |
 
-### 4.3 Text Overlays (Post-MVP)
+### 4.3 Text Overlays
 
-Text overlays are planned for later, but they are not required for the MVP.
+Stitchr supports one text overlay for the current export session. In batch
+stitching, the same overlay is applied to every selected UGC + Demo output.
+Multiple independent text layers remain future scope.
 
 | # | Feature | MVP | Future |
 |---|---------|-----|--------|
-| 1 | Add text on top of the stitched video | — | ✅ |
-| 2 | Timeline control — set start time & end time for text appearance | — | ✅ |
-| 3 | Basic text styling (font size, color, position) | — | ✅ |
-| 4 | Multiple text layers | — | ✅ |
+| 1 | Add one text overlay on top of the stitched video | ✅ | ✅ |
+| 2 | Timeline control — set start time & end time for text appearance | ✅ | ✅ |
+| 3 | Basic text styling (font size, color, position) | ✅ | ✅ |
+| 4 | Apply one shared overlay across all outputs in a Stitchr batch | ✅ | ✅ |
+| 5 | Multiple text layers | — | ✅ |
 
 ### 4.4 Dashboard & Navigation
 
@@ -257,10 +260,11 @@ main product promise.
 - Every uploaded UGC and Demo video must be normalized before it is saved to the library.
 - Normalized clips must use a TikTok-ready 9:16 canvas. The MVP target is `1080x1920` when browser encoding support allows it.
 - Do not stretch source footage. For non-9:16 uploads, preserve the source aspect ratio inside the 9:16 output; crop/fill presets can be added later.
-- Preview, Stitch Video, and Download must all use the same sequence: the normalized UGC clip starts first, and the normalized Demo clip starts immediately after the UGC clip ends.
-- Trimming is non-destructive metadata. Uploads store a default trim range. When a clip is selected in Stitchr, the default trim range is copied into that Stitchr session and can be changed independently.
-- Preview, Stitch Video, and Download must use the copied Stitchr trim ranges when present.
-- The final stitch must be a single 9:16 file using the same normalized assets shown in preview.
+- Preview, Stitch, and Download must all use the same sequence: each normalized UGC clip starts first, and the selected normalized Demo clip starts immediately after that UGC clip ends.
+- Trimming is non-destructive metadata. Uploads store a default trim range. When clips are selected in Stitchr, the default trim range for each selected UGC and the selected Demo is copied into that Stitchr session and can be changed independently.
+- Preview, Stitch, and Download must use the copied Stitchr trim ranges when present.
+- The preview should let the user tap or swipe through each selected UGC + Demo sequence before export.
+- Each final stitch must be a single 9:16 file using the same normalized assets shown in preview. A batch creates one final stitch per selected UGC clip.
 - Clip and stitch cards should use the HTML video `poster` attribute for the static preview state. Generate poster images in the browser by seeking through early candidate frames, choosing the first visibly non-black frame, encoding it as JPEG, and storing it beside the video blob.
 - Poster generation is infrastructure for video previews. User-authored thumbnail generation, thumbnail selection, and thumbnail editing remain out of scope for the MVP.
 
@@ -297,13 +301,14 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
 
 - Preview should use the normalized clip blobs, not the original uploads.
 - Static preview state should use the generated poster blob through the video element's `poster` attribute.
-- The preview player should use the same sequence as export: play UGC first, then start Demo immediately on the UGC `ended` event.
+- The preview player should use the same sequence as export: play the active UGC first, then start Demo immediately on the UGC `ended` event.
+- When multiple UGC clips are selected, preview navigation should move between selected UGC clips while keeping the same selected Demo.
 - The preview does not need to render a temporary stitched file for MVP; it only needs to prove the exact ordering and normalized 9:16 playback.
 
 #### Stitched Export / Download
 
 - Do not use `Conversion` for stitching because it is a single-input conversion abstraction, not a multi-input composition API.
-- Create a fresh `Output` with `Mp4OutputFormat` and `BufferTarget` for each stitch.
+- Create a fresh `Output` with `Mp4OutputFormat` and `BufferTarget` for each stitch. A multi-UGC Stitchr batch runs this one-output-per-UGC flow sequentially.
 - Add one `VideoSampleSource` and, when at least one selected clip has audio, one `AudioSampleSource`.
 - Add all output tracks before calling `output.start()`.
 - Read normalized clips with `Input` + `BlobSource`, then use `VideoSampleSink` and `AudioSampleSink` to stream decoded samples.
@@ -320,9 +325,10 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
 - Dispose each stitched-export `Input` after its samples have been processed.
 - Keep encoded-packet passthrough with `EncodedPacketSink`, `EncodedVideoPacketSource`, and `EncodedAudioPacketSource` as a later optimization only; MVP should re-encode from samples because it is more robust across separate input files.
 
-#### Future Text Overlays
+#### Text Overlay Export
 
-- Text overlays should be implemented after MVP with a canvas-based `process` function.
+- Text overlays are rendered in-browser during Stitchr export.
+- A Stitchr batch uses one shared text overlay configuration for every output.
 - For one-file conversion flows, use `ConversionVideoOptions.process`.
 - For custom export flows, use `VideoSampleSource` transform processing or draw onto a canvas before creating/adding a `VideoSample`.
 
@@ -397,8 +403,9 @@ interface Stitch {
 - [ ] Video library (UGC vs Demo categorization)
 - [ ] Video preview player for normalized uploads
 - [ ] Generated poster images for normalized uploads and stitches
-- [ ] UGC + Demo sequence preview
-- [ ] Video stitching (UGC immediately followed by Demo → single 9:16 output)
+- [ ] UGC + Demo sequence preview with tap/swipe navigation across selected UGC clips
+- [ ] Video stitching (each selected UGC immediately followed by the selected Demo → one 9:16 output per UGC)
+- [ ] Shared text overlay applied across a Stitchr batch
 - [ ] Download finished videos
 - [x] Convex metadata and Cloudflare R2 object storage
 - [x] Integrate Clerk authentication for dashboard and API routes
@@ -413,9 +420,9 @@ interface Stitch {
 ### Phase 3 — Production Polish
 
 - [ ] Server-side video processing option (for speed / mobile)
-- [ ] Batch video creation (auto-generate all UGC × Demo combos)
+- [ ] Matrix batch video creation (auto-generate all UGC × Demo combos)
 - [ ] Video templates & presets
-- [ ] Text overlay editor with timeline controls
+- [x] Single text overlay editor with timeline controls
 - [ ] Advanced text styling (fonts, animations, shadows)
 - [ ] Export quality settings
 - [ ] Usage analytics
@@ -438,7 +445,7 @@ interface Stitch {
 - ❌ Server-side video rendering
 - ❌ Mobile-native app
 - ❌ Collaborative editing
-- ❌ Text overlays — planned after MVP
+- ❌ Multiple text overlay layers — single shared overlay is supported
 - ❌ User-authored thumbnail generation / thumbnail editing
 - ❌ Destructive video cutting — trims are editable metadata only
 - ❌ AI-first content platform positioning — AI supports source creation, while Stitchr remains the primary workflow
@@ -460,8 +467,9 @@ interface Stitch {
 - [ ] User can upload 5 UGC clips and 1 demo video.
 - [ ] Each uploaded video is normalized to TikTok 9:16 using Media Bunny before it appears in the usable library.
 - [ ] Each uploaded video and stitch has a non-black generated poster image in its default/static preview state.
-- [ ] User can select any UGC + the demo and preview the exact UGC-then-Demo sequence.
-- [ ] User can create a stitched 9:16 video where the Demo starts immediately after the UGC clip ends.
-- [ ] All 5 resulting 9:16 videos can be downloaded.
+- [ ] User can select up to 20 UGC clips + the demo and tap/swipe through exact UGC-then-Demo previews.
+- [ ] User can create stitched 9:16 videos where the Demo starts immediately after each UGC clip ends.
+- [ ] A single text overlay can be applied consistently across all selected UGC + Demo outputs.
+- [ ] All resulting 9:16 videos can be downloaded.
 - [ ] User can create multiple finished ad variants from the same library without opening a traditional editor.
 - [ ] Everything works on `localhost` with no external dependencies.

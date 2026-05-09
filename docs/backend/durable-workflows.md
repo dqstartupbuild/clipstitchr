@@ -131,7 +131,7 @@ device cannot resume the work.
 | Swapr generation | Replicate prediction is recorded and pollable, but download, normalization, R2 upload, and clip save are client-side. Refresh can orphan successful videos. | Finalize provider output server-side, or store a durable post-processing job if normalization remains browser-side. |
 | Photo upload | Browser prepares photo, uploads objects, and saves Convex metadata. Refresh can stop before completion. | Upload original source to a durable job first, then finalize from a recoverable source. |
 | Video upload normalization | Browser Media Bunny normalization and R2 upload run from a page-local queue. Refresh stops work. | Persist source first and process in a backend worker, or persist a local resumable queue. |
-| Stitchr composition | Inputs are durable saved clips, but the stitch job itself is browser-local. Refresh stops work. | Create a stitch job with source clip IDs, trim ranges, and overlay config, then process in a backend worker or resumable browser queue. |
+| Stitchr composition | Inputs are durable saved clips, but each stitch job is browser-local. Refresh stops work, including multi-UGC batches that have not finished saving every output. | Create a stitch job with selected UGC clip IDs, demo clip ID, trim ranges, and shared overlay config, then process in a backend worker or resumable browser queue. |
 
 ## Recovery Requirements
 
@@ -163,11 +163,11 @@ For Swapr, each job needs:
 
 For Stitchr, each job needs:
 
-- UGC clip ID
+- selected UGC clip IDs
 - Demo clip ID
 - copied trim ranges
-- text overlay settings
-- final stitch ID after finalization
+- shared text overlay settings
+- final stitch IDs after finalization
 
 For upload normalization, each job needs:
 

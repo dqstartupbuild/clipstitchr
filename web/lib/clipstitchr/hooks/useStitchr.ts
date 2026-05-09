@@ -14,15 +14,18 @@ import { stitchNormalizedVideos } from "@/lib/clipstitchr/media/stitchNormalized
 import { stitchNormalizedVideosWithTextOverlay } from "@/lib/clipstitchr/media/stitchNormalizedVideosWithTextOverlay";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
+import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName";
+import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type UseStitchrOptions = {
-  onCreated?: (stitch: Stitch) => void | Promise<void>;
+  onCreated?: () => void | Promise<void>;
 };
 
 export function useStitchr({ onCreated }: UseStitchrOptions) {
@@ -31,6 +34,204 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [stitch, setStitch] = useState<Stitch | null>(null);
+  const [stitches, setStitches] = useState<Stitch[]>([]);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const createStitch = useCallback(
+    async (
+      ugcClip: VideoClip,
+      demoClip: VideoClip,
+      ugcTrimRange: VideoTrimRange,
+      demoTrimRange: VideoTrimRange,
+      textOverlay: TextOverlay | null = null,
+      onPairProgress?: (progress: number) => void,
+    ) => {
+      const clampedUgcTrimRange = clampVideoTrimRange(
+        ugcTrimRange,
+        ugcClip.duration,
+      );
+      const clampedDemoTrimRange = clampVideoTrimRange(
+        demoTrimRange,
+        demoClip.duration,
+      );
+      const stitched = textOverlay
+        ? await stitchNormalizedVideosWithTextOverlay(ugcClip, demoClip, {
+            ugcTrimRange: clampedUgcTrimRange,
+            demoTrimRange: clampedDemoTrimRange,
+            textOverlay,
+            onProgress: onPairProgress,
+          })
+        : await stitchNormalizedVideos(ugcClip, demoClip, {
+            ugcTrimRange: clampedUgcTrimRange,
+            demoTrimRange: clampedDemoTrimRange,
+            onProgress: onPairProgress,
+          });
+      let posterBlob: Blob | undefined;
+
+      try {
+        posterBlob = await createVideoPosterBlob(stitched.blob);
+      } catch {
+        posterBlob = undefined;
+      }
+
+      const now = new Date().toISOString();
+      const stitchId = createId();
+      const [stitchObject, posterObject] = await uploadBlobsToR2([
+        {
+          blob: stitched.blob,
+          kind: "stitch-video",
+          recordId: stitchId,
+        },
+        ...(posterBlob
+          ? [
+              {
+                blob: posterBlob,
+                kind: "stitch-poster" as const,
+                recordId: stitchId,
+              },
+            ]
+          : []),
+      ]);
+      const nextStitch: Stitch = {
+        id: stitchId,
+        name: getDownloadFileName(ugcClip.name, demoClip.name),
+        ugcClipId: ugcClip.id,
+        demoClipId: demoClip.id,
+        ugcClipName: ugcClip.name,
+        demoClipName: demoClip.name,
+        ugcTrimRange: clampedUgcTrimRange,
+        demoTrimRange: clampedDemoTrimRange,
+        stitchObject,
+        blob: stitched.blob,
+        posterObject,
+        posterBlob,
+        posterVersion: posterBlob ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
+        mimeType: stitched.mimeType,
+        size: stitched.blob.size,
+        width: TIKTOK_OUTPUT_WIDTH,
+        height: TIKTOK_OUTPUT_HEIGHT,
+        duration: stitched.duration,
+        textOverlay: textOverlay ?? undefined,
+        createdAt: now,
+      };
+
+      await saveStitch({
+        id: nextStitch.id,
+        name: nextStitch.name,
+        ugcClipId: nextStitch.ugcClipId,
+        demoClipId: nextStitch.demoClipId,
+        ugcClipName: nextStitch.ugcClipName,
+        demoClipName: nextStitch.demoClipName,
+        ugcTrimRange: nextStitch.ugcTrimRange,
+        demoTrimRange: nextStitch.demoTrimRange,
+        stitchObject: nextStitch.stitchObject,
+        posterObject: nextStitch.posterObject,
+        posterVersion: nextStitch.posterVersion,
+        mimeType: nextStitch.mimeType,
+        size: nextStitch.size,
+        width: nextStitch.width,
+        height: nextStitch.height,
+        duration: nextStitch.duration,
+        textOverlay: nextStitch.textOverlay,
+        createdAt: nextStitch.createdAt,
+      });
+      onPairProgress?.(1);
+
+      return nextStitch;
+    },
+    [saveStitch],
+  );
+
+  const stitchVideos = useCallback(
+    async (
+      ugcSelections: StitchrUgcSelection[],
+      demoClip: VideoClip,
+      demoTrimRange: VideoTrimRange,
+      textOverlay: TextOverlay | null = null,
+    ) => {
+      setStatus("reading");
+      setProgress(0);
+      setError(null);
+      setStitch(null);
+      setStitches([]);
+      setCompletedCount(0);
+      setTotalCount(ugcSelections.length);
+
+      if (!ugcSelections.length) {
+        setStatus("error");
+        setError("Select at least one UGC clip before stitching.");
+        return [];
+      }
+
+      const nextStitches: Stitch[] = [];
+
+      try {
+        const clampedDemoTrimRange = clampVideoTrimRange(
+          demoTrimRange,
+          demoClip.duration,
+        );
+        const demoDuration = getVideoTrimRangeDuration(clampedDemoTrimRange);
+
+        for (let index = 0; index < ugcSelections.length; index += 1) {
+          const ugcSelection = ugcSelections[index];
+
+          setStatus("reading");
+
+          const ugcClip = await ugcSelection.loadClip();
+
+          if (!ugcClip) {
+            throw new Error(`Unable to load ${ugcSelection.clip.name}.`);
+          }
+
+          const clampedUgcTrimRange = clampVideoTrimRange(
+            ugcSelection.trimRange,
+            ugcClip.duration,
+          );
+          const ugcDuration = getVideoTrimRangeDuration(clampedUgcTrimRange);
+          const pairTextOverlay =
+            textOverlay && textOverlay.text.trim().length > 0
+              ? clampTextOverlay(textOverlay, ugcDuration + demoDuration)
+              : null;
+
+          setStatus("stitching");
+
+          const nextStitch = await createStitch(
+            ugcClip,
+            demoClip,
+            clampedUgcTrimRange,
+            clampedDemoTrimRange,
+            pairTextOverlay,
+            (pairProgress) => {
+              setProgress((index + pairProgress) / ugcSelections.length);
+            },
+          );
+
+          nextStitches.push(nextStitch);
+          setStitch(nextStitch);
+          setStitches([...nextStitches]);
+          setCompletedCount(nextStitches.length);
+          setProgress(nextStitches.length / ugcSelections.length);
+        }
+
+        await onCreated?.();
+
+        setProgress(1);
+        setStatus("complete");
+
+        return nextStitches;
+      } catch (nextError) {
+        setStatus("error");
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to stitch the videos.",
+        );
+        return nextStitches;
+      }
+    },
+    [createStitch, onCreated],
+  );
 
   const stitchVideo = useCallback(
     async (
@@ -40,119 +241,22 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
       demoTrimRange: VideoTrimRange,
       textOverlay: TextOverlay | null = null,
     ) => {
-      setStatus("stitching");
-      setProgress(0);
-      setError(null);
-      setStitch(null);
-
-      try {
-        const clampedUgcTrimRange = clampVideoTrimRange(
-          ugcTrimRange,
-          ugcClip.duration,
-        );
-        const clampedDemoTrimRange = clampVideoTrimRange(
-          demoTrimRange,
-          demoClip.duration,
-        );
-        const stitched = textOverlay
-          ? await stitchNormalizedVideosWithTextOverlay(ugcClip, demoClip, {
-              ugcTrimRange: clampedUgcTrimRange,
-              demoTrimRange: clampedDemoTrimRange,
-              textOverlay,
-              onProgress: setProgress,
-            })
-          : await stitchNormalizedVideos(ugcClip, demoClip, {
-              ugcTrimRange: clampedUgcTrimRange,
-              demoTrimRange: clampedDemoTrimRange,
-              onProgress: setProgress,
-            });
-        let posterBlob: Blob | undefined;
-
-        try {
-          posterBlob = await createVideoPosterBlob(stitched.blob);
-        } catch {
-          posterBlob = undefined;
-        }
-
-        const now = new Date().toISOString();
-        const stitchId = createId();
-        const [stitchObject, posterObject] = await uploadBlobsToR2([
+      const [nextStitch] = await stitchVideos(
+        [
           {
-            blob: stitched.blob,
-            kind: "stitch-video",
-            recordId: stitchId,
+            clip: ugcClip,
+            trimRange: ugcTrimRange,
+            loadClip: async () => ugcClip,
           },
-          ...(posterBlob
-            ? [
-                {
-                  blob: posterBlob,
-                  kind: "stitch-poster" as const,
-                  recordId: stitchId,
-                },
-              ]
-            : []),
-        ]);
-        const nextStitch: Stitch = {
-          id: stitchId,
-          name: getDownloadFileName(ugcClip.name, demoClip.name),
-          ugcClipId: ugcClip.id,
-          demoClipId: demoClip.id,
-          ugcClipName: ugcClip.name,
-          demoClipName: demoClip.name,
-          ugcTrimRange: clampedUgcTrimRange,
-          demoTrimRange: clampedDemoTrimRange,
-          stitchObject,
-          blob: stitched.blob,
-          posterObject,
-          posterBlob,
-          posterVersion: posterBlob ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
-          mimeType: stitched.mimeType,
-          size: stitched.blob.size,
-          width: TIKTOK_OUTPUT_WIDTH,
-          height: TIKTOK_OUTPUT_HEIGHT,
-          duration: stitched.duration,
-          textOverlay: textOverlay ?? undefined,
-          createdAt: now,
-        };
+        ],
+        demoClip,
+        demoTrimRange,
+        textOverlay,
+      );
 
-        await saveStitch({
-          id: nextStitch.id,
-          name: nextStitch.name,
-          ugcClipId: nextStitch.ugcClipId,
-          demoClipId: nextStitch.demoClipId,
-          ugcClipName: nextStitch.ugcClipName,
-          demoClipName: nextStitch.demoClipName,
-          ugcTrimRange: nextStitch.ugcTrimRange,
-          demoTrimRange: nextStitch.demoTrimRange,
-          stitchObject: nextStitch.stitchObject,
-          posterObject: nextStitch.posterObject,
-          posterVersion: nextStitch.posterVersion,
-          mimeType: nextStitch.mimeType,
-          size: nextStitch.size,
-          width: nextStitch.width,
-          height: nextStitch.height,
-          duration: nextStitch.duration,
-          textOverlay: nextStitch.textOverlay,
-          createdAt: nextStitch.createdAt,
-        });
-        await onCreated?.(nextStitch);
-
-        setStitch(nextStitch);
-        setProgress(1);
-        setStatus("complete");
-
-        return nextStitch;
-      } catch (nextError) {
-        setStatus("error");
-        setError(
-          nextError instanceof Error
-            ? nextError.message
-            : "Unable to stitch the video.",
-        );
-        return null;
-      }
+      return nextStitch ?? null;
     },
-    [onCreated, saveStitch],
+    [stitchVideos],
   );
 
   return {
@@ -160,6 +264,10 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
     progress,
     error,
     stitch,
+    stitches,
+    completedCount,
+    totalCount,
     stitchVideo,
+    stitchVideos,
   };
 }

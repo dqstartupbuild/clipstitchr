@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 type SelectionCheckboxButtonProps = {
   isSelected: boolean;
   label: string;
+  disabled?: boolean;
   onClick: () => void;
   className?: string;
 };
@@ -10,6 +11,7 @@ type SelectionCheckboxButtonProps = {
 export function SelectionCheckboxButton({
   isSelected,
   label,
+  disabled = false,
   onClick,
   className = "",
 }: SelectionCheckboxButtonProps) {
@@ -24,10 +26,12 @@ export function SelectionCheckboxButton({
         isSelected
           ? "border-white/90 bg-accent text-white"
           : "border-white bg-white/90 text-transparent hover:bg-white hover:text-text-tertiary",
+        disabled ? "cursor-not-allowed opacity-60" : "",
         className,
       ]
         .filter(Boolean)
         .join(" ")}
+      disabled={disabled}
       onClick={onClick}
     >
       <Check aria-hidden className="h-3.5 w-3.5" />

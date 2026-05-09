@@ -86,6 +86,7 @@ export function TextOverlayBox({
       ) : null}
       <div
         ref={overlayRef}
+        data-swipe-ignore="true"
         className="group absolute z-10 cursor-move touch-none select-none border border-transparent text-center leading-[1.08] outline outline-2 outline-transparent transition-colors [overflow-wrap:anywhere] hover:border-white/80 hover:outline-accent/80 focus-visible:border-white/80 focus-visible:outline-accent/80"
         style={style}
         tabIndex={0}

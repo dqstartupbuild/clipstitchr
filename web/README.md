@@ -4,9 +4,9 @@ ClipStitchr helps marketers turn UGC clips and product demo videos into
 finished 9:16 ad variants without opening a traditional video editor.
 
 The primary workflow is Stitchr: upload clips once, keep them organized in a
-content library, then pair UGC with product demos to create finished ads. AI
-features such as avatar photo generation, photo expansion, and Swapr are
-secondary helpers for creating or extending source material.
+content library, then pair up to 20 UGC clips with one product demo to create
+finished ads. AI features such as avatar photo generation, photo expansion, and
+Swapr are secondary helpers for creating or extending source material.
 
 Built with [Next.js](https://nextjs.org), [Clerk](https://clerk.com), [Tailwind CSS](https://tailwindcss.com), [Content Collections](https://www.content-collections.dev), and [Media Bunny](https://mediabunny.dev).
 
@@ -53,6 +53,8 @@ REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID=google/gemini-3-flash
 The app processes media in the browser and stores durable data in Convex and Cloudflare R2:
 
 - Uploaded UGC and Demo videos are normalized to TikTok 9:16 before they are saved.
+- Stitchr can select up to 20 UGC videos with one selected Demo video, preview
+  each UGC-then-Demo sequence, and export one finished stitch per selected UGC.
 - Convex stores clip, photo, stitch, tag, trim, and R2 object metadata.
 - Cloudflare R2 stores normalized videos, stitched videos, photos, posters, and thumbnails.
 - Library views read Convex metadata first; preview media is hydrated from R2 as needed.

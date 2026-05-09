@@ -96,6 +96,7 @@ request, R2 upload, or Convex save starts:
 | Photo upload without AI expansion | 100 files at once | Each photo creates 3 R2 objects and 1 metadata analysis request, fitting under the R2 upload, analysis, and Convex-save burst limits. |
 | Photo upload with AI expansion | 1 file at once | Each source image may trigger paid outpainting before it is saved, so the UI keeps this workflow explicitly one-at-a-time. |
 | Video upload | 20 files at once | Each video usually creates 1 normalized video object, 1 poster object, and 1 Gemini video analysis request, fitting under the R2 upload, video-analysis, and Convex-save burst limits. |
+| Stitchr UGC batch | 20 selected UGC videos at once | Each selected UGC creates one stitched output with the selected demo, usually 1 stitch video object, 1 stitch poster object, and 1 Convex stitch save. The batch fits under the R2 upload and Convex-save burst limits while keeping browser encoding sequential. |
 
 These caps reduce partial batches and orphaned R2 objects. They do not replace
 server-side rate limits: prior usage in the same window can still cause a `429`

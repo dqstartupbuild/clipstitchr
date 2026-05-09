@@ -5,15 +5,20 @@ import { Button } from "@/app/_components/ui/Button";
 
 type ClipPickerActionBarProps = {
   canStitch: boolean;
+  selectedUgcCount: number;
   isStitching: boolean;
   onStitch: () => void;
 };
 
 export function ClipPickerActionBar({
   canStitch,
+  selectedUgcCount,
   isStitching,
   onStitch,
 }: ClipPickerActionBarProps) {
+  const buttonLabel =
+    selectedUgcCount > 1 ? `Stitch ${selectedUgcCount} ads` : "Stitch";
+
   return (
     <div className="mb-5 flex flex-col gap-4 border-b border-border pb-5 md:flex-row md:items-center md:justify-between">
       <div>
@@ -29,7 +34,7 @@ export function ClipPickerActionBar({
         icon={<Scissors aria-hidden className="h-4 w-4" />}
         onClick={onStitch}
       >
-        Stitch
+        {buttonLabel}
       </Button>
     </div>
   );

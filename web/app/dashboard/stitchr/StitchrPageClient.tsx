@@ -6,12 +6,14 @@ import { StitchrProgressPanel } from "@/app/_components/stitchr/StitchrProgressP
 import { StitchrEmptyState } from "@/app/_components/stitchr/StitchrEmptyState";
 import { StitchrHeader } from "@/app/_components/stitchr/StitchrHeader";
 import { StitchrShell } from "@/app/_components/stitchr/StitchrShell";
-import { DownloadStitchPanel } from "@/app/_components/stitchr/DownloadStitchPanel";
+import { DownloadStitchesPanel } from "@/app/_components/stitchr/DownloadStitchesPanel";
 import { SequencePreviewPanel } from "@/app/_components/stitchr/SequencePreviewPanel";
 import { VideoTrimDialog } from "@/app/_components/trim/VideoTrimDialog";
+import { maxStitchrUgcSelectionCount } from "@/lib/clipstitchr/constants/maxStitchrUgcSelectionCount";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useLoadedVideoClip } from "@/lib/clipstitchr/hooks/useLoadedVideoClip";
 import { useStitchr } from "@/lib/clipstitchr/hooks/useStitchr";
+import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -21,6 +23,7 @@ import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchrUgcSelection";
 
 type TrimEditorState = {
   clipType: "ugc" | "demo";
@@ -48,34 +51,74 @@ export function StitchrPageClient() {
     () => filterClipsByType(library.clips, "demo"),
     [library.clips],
   );
-  const [selectedUgcId, setSelectedUgcId] = useState<
-    string | null | undefined
+  const [selectedUgcIds, setSelectedUgcIds] = useState<string[] | undefined>();
+  const [activePreviewUgcId, setActivePreviewUgcId] = useState<
+    string | undefined
   >();
   const [selectedDemoId, setSelectedDemoId] = useState<
     string | null | undefined
   >();
-  const activeUgcId =
-    selectedUgcId === undefined ? (ugcClips[0]?.id ?? null) : selectedUgcId;
+  const activeSelectedUgcIds = useMemo(() => {
+    const validUgcIds = new Set(ugcClips.map((clip) => clip.id));
+    const nextSelectedIds =
+      selectedUgcIds === undefined
+        ? ugcClips[0]
+          ? [ugcClips[0].id]
+          : []
+        : selectedUgcIds;
+
+    return nextSelectedIds
+      .filter((id) => validUgcIds.has(id))
+      .slice(0, maxStitchrUgcSelectionCount);
+  }, [selectedUgcIds, ugcClips]);
   const activeDemoId =
     selectedDemoId === undefined ? (demoClips[0]?.id ?? null) : selectedDemoId;
-  const selectedUgcMetadata =
-    ugcClips.find((clip) => clip.id === activeUgcId) ?? null;
+  const activeUgcId =
+    activePreviewUgcId && activeSelectedUgcIds.includes(activePreviewUgcId)
+      ? activePreviewUgcId
+      : (activeSelectedUgcIds[0] ?? null);
+  const selectedUgcMetadata = useMemo(
+    () =>
+      activeSelectedUgcIds
+        .map((id) => ugcClips.find((clip) => clip.id === id))
+        .filter((clip): clip is VideoClipMetadata => Boolean(clip)),
+    [activeSelectedUgcIds, ugcClips],
+  );
+  const activeUgcMetadata =
+    selectedUgcMetadata.find((clip) => clip.id === activeUgcId) ??
+    selectedUgcMetadata[0] ??
+    null;
   const selectedDemoMetadata =
     demoClips.find((clip) => clip.id === activeDemoId) ?? null;
   const { clip: selectedUgcClip } = useLoadedVideoClip({
-    clipId: selectedUgcMetadata?.id ?? null,
+    clipId: activeUgcMetadata?.id ?? null,
     loadClip,
   });
   const { clip: selectedDemoClip } = useLoadedVideoClip({
     clipId: selectedDemoMetadata?.id ?? null,
     loadClip,
   });
-  const selectedUgcTrimRange = selectedUgcMetadata
-    ? clampVideoTrimRange(
-        ugcTrimRangesByClipId[selectedUgcMetadata.id] ??
-          getDefaultVideoTrimRange(selectedUgcMetadata),
-        selectedUgcMetadata.duration,
-      )
+  const selectedUgcTrimRangesByClipId = useMemo(
+    () =>
+      selectedUgcMetadata.reduce<Record<string, VideoTrimRange>>(
+        (trimRanges, clip) => ({
+          ...trimRanges,
+          [clip.id]: clampVideoTrimRange(
+            ugcTrimRangesByClipId[clip.id] ?? getDefaultVideoTrimRange(clip),
+            clip.duration,
+          ),
+        }),
+        {},
+      ),
+    [selectedUgcMetadata, ugcTrimRangesByClipId],
+  );
+  const selectedUgcTrimRange = activeUgcMetadata
+    ? (selectedUgcTrimRangesByClipId[activeUgcMetadata.id] ??
+      clampVideoTrimRange(
+        ugcTrimRangesByClipId[activeUgcMetadata.id] ??
+          getDefaultVideoTrimRange(activeUgcMetadata),
+        activeUgcMetadata.duration,
+      ))
     : null;
   const selectedDemoTrimRange = selectedDemoMetadata
     ? clampVideoTrimRange(
@@ -91,7 +134,7 @@ export function StitchrPageClient() {
     ? getVideoTrimRangeDuration(selectedDemoTrimRange)
     : 0;
   const canStitch = Boolean(
-    selectedUgcClip &&
+    selectedUgcMetadata.length &&
       selectedDemoClip &&
       selectedUgcTrimRange &&
       selectedDemoTrimRange,
@@ -104,16 +147,30 @@ export function StitchrPageClient() {
   const handleSelectUgc = useCallback(
     (id: string) => {
       const clip = ugcClips.find((ugcClip) => ugcClip.id === id);
+      const isCurrentlySelected = activeSelectedUgcIds.includes(id);
 
-      setSelectedUgcId((currentId) => {
-        const currentActiveId =
-          currentId === undefined ? (ugcClips[0]?.id ?? null) : currentId;
+      setSelectedUgcIds((currentIds) => {
+        const currentSelectedIds =
+          currentIds === undefined
+            ? ugcClips[0]
+              ? [ugcClips[0].id]
+              : []
+            : currentIds;
 
-        return currentActiveId === id ? null : id;
+        return toggleStitchrUgcSelection(currentSelectedIds, id);
       });
 
       if (!clip) {
         return;
+      }
+
+      if (
+        !isCurrentlySelected &&
+        activeSelectedUgcIds.length < maxStitchrUgcSelectionCount
+      ) {
+        setActivePreviewUgcId(id);
+      } else if (isCurrentlySelected && activeUgcId === id) {
+        setActivePreviewUgcId(undefined);
       }
 
       setUgcTrimRangesByClipId((trimRanges) =>
@@ -122,10 +179,10 @@ export function StitchrPageClient() {
           : {
               ...trimRanges,
               [id]: getDefaultVideoTrimRange(clip),
-            },
+          },
       );
     },
-    [ugcClips],
+    [activeSelectedUgcIds, activeUgcId, ugcClips],
   );
 
   const handleSelectDemo = useCallback(
@@ -217,26 +274,34 @@ export function StitchrPageClient() {
   };
 
   const handleStitch = () => {
-    if (
-      selectedUgcClip &&
-      selectedDemoClip &&
-      selectedUgcTrimRange &&
-      selectedDemoTrimRange
-    ) {
+    if (selectedDemoClip && selectedDemoTrimRange && selectedUgcMetadata.length) {
       const exportTextOverlay =
-        clampedTextOverlay && clampedTextOverlay.text.trim().length > 0
-          ? clampedTextOverlay
-          : null;
+        textOverlay && textOverlay.text.trim().length > 0 ? textOverlay : null;
+      const ugcSelections: StitchrUgcSelection[] = selectedUgcMetadata.map(
+        (clip) => ({
+          clip,
+          trimRange:
+            selectedUgcTrimRangesByClipId[clip.id] ??
+            getDefaultVideoTrimRange(clip),
+          loadClip: () => loadClip(clip.id),
+        }),
+      );
 
-      void stitchrState.stitchVideo(
-        selectedUgcClip,
+      void stitchrState.stitchVideos(
+        ugcSelections,
         selectedDemoClip,
-        selectedUgcTrimRange,
         selectedDemoTrimRange,
         exportTextOverlay,
       );
     }
   };
+
+  const handleActiveUgcChange = useCallback((id: string) => {
+    setActivePreviewUgcId(id);
+  }, []);
+
+  const isStitching =
+    stitchrState.status === "reading" || stitchrState.status === "stitching";
 
   return (
     <StitchrShell>
@@ -253,9 +318,9 @@ export function StitchrPageClient() {
               <ClipPickerPanel
                 ugcClips={ugcClips}
                 demoClips={demoClips}
-                selectedUgcId={selectedUgcMetadata?.id ?? null}
+                selectedUgcIds={activeSelectedUgcIds}
                 selectedDemoId={selectedDemoMetadata?.id ?? null}
-                selectedUgcTrimRange={selectedUgcTrimRange}
+                selectedUgcTrimRangesByClipId={selectedUgcTrimRangesByClipId}
                 selectedDemoTrimRange={selectedDemoTrimRange}
                 onLoadClip={loadClip}
                 onSelectUgc={handleSelectUgc}
@@ -263,24 +328,27 @@ export function StitchrPageClient() {
                 onEditUgcTrim={handleEditUgcTrim}
                 onEditDemoTrim={handleEditDemoTrim}
                 canStitch={canStitch}
-                isStitching={stitchrState.status === "stitching"}
+                isStitching={isStitching}
                 onStitch={handleStitch}
               />
               <StitchrProgressPanel
                 status={stitchrState.status}
                 progress={stitchrState.progress}
                 error={stitchrState.error}
+                completedCount={stitchrState.completedCount}
+                totalCount={stitchrState.totalCount}
               />
-              <DownloadStitchPanel
-                stitch={stitchrState.stitch}
-              />
+              <DownloadStitchesPanel stitches={stitchrState.stitches} />
             </div>
             <SequencePreviewPanel
+              previewUgcClips={selectedUgcMetadata}
+              activeUgcId={activeUgcMetadata?.id ?? null}
               ugcClip={selectedUgcClip}
               demoClip={selectedDemoClip}
               ugcTrimRange={selectedUgcTrimRange}
               demoTrimRange={selectedDemoTrimRange}
               textOverlay={clampedTextOverlay}
+              onActiveUgcChange={handleActiveUgcChange}
               onTextOverlayChange={setTextOverlay}
             />
           </div>

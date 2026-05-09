@@ -20,6 +20,7 @@ type VideoClipPreviewCardActions = {
 type VideoClipPreviewCardProps = {
   clip: VideoClipMetadata;
   isSelected?: boolean;
+  isSelectionDisabled?: boolean;
   actions?: (actions: VideoClipPreviewCardActions) => ReactNode;
   footer?: (actions: VideoClipPreviewCardActions) => ReactNode;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
@@ -29,6 +30,7 @@ type VideoClipPreviewCardProps = {
 export function VideoClipPreviewCard({
   clip,
   isSelected = false,
+  isSelectionDisabled = false,
   actions,
   footer,
   onLoadClip,
@@ -104,6 +106,7 @@ export function VideoClipPreviewCard({
             <SelectionCheckboxButton
               isSelected={isSelected}
               label={`${isSelected ? "Deselect" : "Select"} ${clip.name}`}
+              disabled={isSelectionDisabled && !isSelected}
               className="absolute right-2 top-2 z-10"
               onClick={onSelect}
             />

@@ -12,9 +12,10 @@
   - Avatar photo upload, avatar descriptions, and avatar scenario photo generation live on `/dashboard/avatars`.
   - Uploads are UGC clips, Demo videos, and Swapr avatar reference photos.
   - Every uploaded clip must be normalized to TikTok 9:16 before it is usable.
-  - Preview and export must use the same sequence: UGC plays first, Demo starts immediately after UGC ends.
-  - Output is a single downloadable 9:16 video.
-  - Text overlays are post-MVP.
+  - Preview and export must use the same sequence: each selected UGC plays first, Demo starts immediately after that UGC ends.
+  - Stitchr supports selecting up to 20 UGC clips with one selected Demo video.
+  - Output is one downloadable 9:16 video per selected UGC clip.
+  - One shared text overlay can be applied across a Stitchr batch.
   - User-authored thumbnail generation and thumbnail editing are out of scope.
   - Automatic poster-image capture is preview infrastructure and is in scope.
 
@@ -74,7 +75,7 @@
     - Landing hero with a product preview image/card, compact feature blocks, and bottom conversion band.
     - Blog/legal pages retained visually.
   - Post-MVP mockup elements to avoid as implemented features:
-    - Text overlay editor.
+    - Single text overlay editor.
     - Thumbnail editor.
     - User-authored/generated custom thumbnails.
 - `assets/brand/icon.png`, `assets/brand/logo.png`, `assets/brand/text.png`
@@ -99,7 +100,7 @@
 
 4. Match the mockup, but keep MVP scope honest.
    - Recreate the visual language: purple accents, compact panels, dashboard layout, rounded-but-not-overlarge cards, and product-like page density.
-   - Do not implement text overlays or user-authored thumbnails as MVP functionality.
+   - Do not implement multiple text overlay layers or user-authored thumbnails as MVP functionality.
    - Use automatic poster images for video preview default/static states.
    - Replace mockup thumbnail-oriented cards with real normalized video previews.
 
@@ -364,7 +365,7 @@ Create:
 
 - Visual product preview panel based on mockup dashboard/editor frame.
 - Uses static mockup-derived layout, not actual interactive editor.
-- Avoids showing text overlays as implemented MVP functionality.
+- Avoids presenting text overlays as the primary product promise.
 
 ### `web/app/_components/landing/LandingFeatureGrid.tsx`
 
@@ -373,7 +374,7 @@ Create:
 - Three compact feature items:
   - Upload UGC + demo clips.
   - Normalize to 9:16.
-  - Stitch UGC then Demo and download.
+  - Stitch selected UGC clips with one Demo and download.
 
 ### `web/app/_components/landing/LandingWorkflow.tsx`
 
@@ -502,8 +503,8 @@ Create:
 Create:
 
 - Client component entry for `/dashboard/stitchr`.
-- Loads normalized clips and stitches from IndexedDB.
-- Owns selected UGC clip, selected Demo clip, preview state, stitch progress, and stitch/download result through hooks.
+- Loads normalized clips and stitches from Convex/R2-backed library state.
+- Owns selected UGC clips, selected Demo clip, active preview state, shared text overlay, stitch progress, and stitch/download results through hooks.
 
 ### `web/app/_components/stitchr/StitchrShell.tsx`
 
@@ -523,12 +524,14 @@ Create:
 Create:
 
 - Composes UGC and Demo selectors.
+- Passes multi-UGC selection state and the 20-UGC cap to the selector.
 
 ### `web/app/_components/stitchr/UgcClipSelector.tsx`
 
 Create:
 
 - Lists normalized UGC clips for selection.
+- Allows selecting up to 20 UGC clips for one Stitchr batch.
 
 ### `web/app/_components/stitchr/DemoClipSelector.tsx`
 
@@ -536,11 +539,11 @@ Create:
 
 - Lists normalized Demo clips for selection.
 
-### `web/app/_components/stitchr/SelectableClipRow.tsx`
+### `web/app/_components/stitchr/SelectableClipCard.tsx`
 
 Create:
 
-- One selectable row/card for either UGC or Demo clip.
+- One selectable card for either UGC or Demo clip.
 
 ### `web/app/_components/stitchr/SequencePreviewPanel.tsx`
 
@@ -548,6 +551,7 @@ Create:
 
 - Preview panel for UGC-then-Demo sequence.
 - Uses normalized clip blobs.
+- Shows navigation for selected UGC previews and supports touch swipe between them.
 
 ### `web/app/_components/stitchr/SequenceVideoPlayer.tsx`
 
@@ -564,11 +568,11 @@ Create:
 
 - Shows stitching status/progress.
 
-### `web/app/_components/stitchr/DownloadStitchPanel.tsx`
+### `web/app/_components/stitchr/DownloadStitchesPanel.tsx`
 
-Create:
+Replace with `DownloadStitchesPanel` and `DownloadStitchCard`:
 
-- Shows final stitch and download button after stitching completes.
+- Shows every finished stitch in a batch with individual download buttons.
 
 ### `web/app/_components/stitchr/StitchrEmptyState.tsx`
 
@@ -958,9 +962,10 @@ Create:
 Create:
 
 - Calls `stitchNormalizedVideos`.
-- Saves `Stitch`.
+- Calls `stitchNormalizedVideos` or the text-overlay export path once per selected UGC clip.
+- Saves each `Stitch`.
 - Generates and stores a poster blob after export.
-- Tracks stitch status/progress/error.
+- Tracks batch status/progress/error plus completed and total counts.
 
 ### `web/lib/clipstitchr/hooks/useSequenceVideoPlayer.ts`
 
@@ -1096,8 +1101,10 @@ Modify:
     │   │   │   ├── StitchrHeader.tsx
     │   │   │   ├── StitchrShell.tsx
     │   │   │   ├── DemoClipSelector.tsx
-    │   │   │   ├── DownloadStitchPanel.tsx
-    │   │   │   ├── SelectableClipRow.tsx
+    │   │   │   ├── DownloadStitchCard.tsx
+    │   │   │   ├── DownloadStitchesPanel.tsx
+    │   │   │   ├── SelectableClipCard.tsx
+    │   │   │   ├── SequencePreviewNavigator.tsx
     │   │   │   ├── SequencePreviewPanel.tsx
     │   │   │   ├── SequenceVideoPlayer.tsx
     │   │   │   └── UgcClipSelector.tsx
@@ -1268,10 +1275,10 @@ Modify:
     - Dashboard redirects unauthenticated visitors through Clerk auth.
     - Upload UGC and Demo clips.
     - Uploaded clips normalize to 9:16.
-    - IndexedDB persists normalized clips.
+    - Convex/R2 persist normalized clips.
     - Uploaded video and stitch cards show non-black generated posters before playback.
-    - Stitchr page previews UGC then Demo.
-    - Stitch Video produces one downloadable 9:16 video.
+    - Stitchr page previews each selected UGC then Demo, with tap/swipe navigation.
+    - Stitchr can select up to 20 UGC clips with one Demo and produce one downloadable 9:16 video per UGC.
     - Blog/legal/discovery routes still work.
 
 ## 23. Known Risks / Decisions To Validate During Implementation
