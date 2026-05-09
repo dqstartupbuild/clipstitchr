@@ -48,10 +48,16 @@ export function StitchrPageClient() {
     () => filterClipsByType(library.clips, "demo"),
     [library.clips],
   );
-  const [selectedUgcId, setSelectedUgcId] = useState<string | null>(null);
-  const [selectedDemoId, setSelectedDemoId] = useState<string | null>(null);
-  const activeUgcId = selectedUgcId ?? ugcClips[0]?.id ?? null;
-  const activeDemoId = selectedDemoId ?? demoClips[0]?.id ?? null;
+  const [selectedUgcId, setSelectedUgcId] = useState<
+    string | null | undefined
+  >();
+  const [selectedDemoId, setSelectedDemoId] = useState<
+    string | null | undefined
+  >();
+  const activeUgcId =
+    selectedUgcId === undefined ? (ugcClips[0]?.id ?? null) : selectedUgcId;
+  const activeDemoId =
+    selectedDemoId === undefined ? (demoClips[0]?.id ?? null) : selectedDemoId;
   const selectedUgcMetadata =
     ugcClips.find((clip) => clip.id === activeUgcId) ?? null;
   const selectedDemoMetadata =
@@ -99,7 +105,12 @@ export function StitchrPageClient() {
     (id: string) => {
       const clip = ugcClips.find((ugcClip) => ugcClip.id === id);
 
-      setSelectedUgcId(id);
+      setSelectedUgcId((currentId) => {
+        const currentActiveId =
+          currentId === undefined ? (ugcClips[0]?.id ?? null) : currentId;
+
+        return currentActiveId === id ? null : id;
+      });
 
       if (!clip) {
         return;
@@ -121,7 +132,12 @@ export function StitchrPageClient() {
     (id: string) => {
       const clip = demoClips.find((demoClip) => demoClip.id === id);
 
-      setSelectedDemoId(id);
+      setSelectedDemoId((currentId) => {
+        const currentActiveId =
+          currentId === undefined ? (demoClips[0]?.id ?? null) : currentId;
+
+        return currentActiveId === id ? null : id;
+      });
 
       if (!clip) {
         return;
@@ -241,6 +257,7 @@ export function StitchrPageClient() {
                 selectedDemoId={selectedDemoMetadata?.id ?? null}
                 selectedUgcTrimRange={selectedUgcTrimRange}
                 selectedDemoTrimRange={selectedDemoTrimRange}
+                onLoadClip={loadClip}
                 onSelectUgc={handleSelectUgc}
                 onSelectDemo={handleSelectDemo}
                 onEditUgcTrim={handleEditUgcTrim}

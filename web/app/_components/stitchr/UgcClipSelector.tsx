@@ -1,9 +1,10 @@
 "use client";
 
-import { SelectableClipRow } from "@/app/_components/stitchr/SelectableClipRow";
+import { SelectableClipCard } from "@/app/_components/stitchr/SelectableClipCard";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { clipSelectorPageSize } from "@/lib/clipstitchr/constants/clipSelectorPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
@@ -12,6 +13,7 @@ type UgcClipSelectorProps = {
   clips: VideoClipMetadata[];
   selectedId: string | null;
   selectedTrimRange: VideoTrimRange | null;
+  onLoadClip: (id: string) => Promise<VideoClip | null>;
   onSelect: (id: string) => void;
   onEditTrim: (clip: VideoClipMetadata) => void;
 };
@@ -20,6 +22,7 @@ export function UgcClipSelector({
   clips,
   selectedId,
   selectedTrimRange,
+  onLoadClip,
   onSelect,
   onEditTrim,
 }: UgcClipSelectorProps) {
@@ -30,10 +33,10 @@ export function UgcClipSelector({
   return (
     <div>
       <h2 className="text-base font-bold text-text-primary">UGC Clip</h2>
-      <div className="mt-3 space-y-2">
+      <div className="mt-3 grid gap-4 sm:grid-cols-2">
         {pagination.pageItems.length ? (
           pagination.pageItems.map((clip) => (
-            <SelectableClipRow
+            <SelectableClipCard
               key={clip.id}
               clip={clip}
               trimRange={
@@ -42,6 +45,7 @@ export function UgcClipSelector({
                   : getDefaultVideoTrimRange(clip)
               }
               isSelected={clip.id === selectedId}
+              onLoadClip={onLoadClip}
               onSelect={onSelect}
               onEditTrim={onEditTrim}
             />

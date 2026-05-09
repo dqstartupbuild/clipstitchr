@@ -1,10 +1,11 @@
 "use client";
 
-import { Check, Download, Edit3, Trash2 } from "lucide-react";
+import { Download, Edit3, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { PhotoAssetDetailsDialog } from "@/app/_components/swapr/PhotoAssetDetailsDialog";
 import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
@@ -105,21 +106,12 @@ export function PhotoAssetCard({
           {preview}
         </button>
         {onSelect ? (
-          <button
-            type="button"
-            role="checkbox"
-            aria-checked={Boolean(isSelected)}
-            aria-label={`${isSelected ? "Deselect" : "Select"} ${photo.name}`}
-            className={[
-              "absolute right-2 top-2 z-10 inline-flex h-6 w-6 items-center justify-center rounded-md border-[4px] shadow-[0_4px_12px_rgba(15,23,42,0.32)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-              isSelected
-                ? "border-white/90 bg-accent text-white"
-                : "border-white bg-white/90 text-transparent hover:bg-white hover:text-text-tertiary",
-            ].join(" ")}
+          <SelectionCheckboxButton
+            isSelected={Boolean(isSelected)}
+            label={`${isSelected ? "Deselect" : "Select"} ${photo.name}`}
+            className="absolute right-2 top-2 z-10"
             onClick={() => onSelect(photo)}
-          >
-            <Check aria-hidden className="h-3.5 w-3.5" />
-          </button>
+          />
         ) : null}
       </div>
       <div className="mt-3 flex items-start justify-between gap-2">

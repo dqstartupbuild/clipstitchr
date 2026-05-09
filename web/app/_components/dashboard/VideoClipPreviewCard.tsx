@@ -4,6 +4,7 @@ import { Play } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { VideoClipDetailsDialog } from "@/app/_components/dashboard/VideoClipDetailsDialog";
+import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -22,6 +23,7 @@ type VideoClipPreviewCardProps = {
   actions?: (actions: VideoClipPreviewCardActions) => ReactNode;
   footer?: (actions: VideoClipPreviewCardActions) => ReactNode;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
+  onSelect?: () => void;
 };
 
 export function VideoClipPreviewCard({
@@ -30,6 +32,7 @@ export function VideoClipPreviewCard({
   actions,
   footer,
   onLoadClip,
+  onSelect,
 }: VideoClipPreviewCardProps) {
   const [loadedClip, setLoadedClip] = useState<VideoClip | null>(null);
   const [isClipLoading, setIsClipLoading] = useState(false);
@@ -97,6 +100,14 @@ export function VideoClipPreviewCard({
           <span className="pointer-events-none absolute left-2 top-2 max-w-[75%] truncate rounded-md border border-purple-200 bg-white/95 px-2 py-1 text-[11px] font-bold leading-none text-accent-dark shadow-sm shadow-slate-900/10">
             {getVideoClipBadgeLabel(clip)}
           </span>
+          {onSelect ? (
+            <SelectionCheckboxButton
+              isSelected={isSelected}
+              label={`${isSelected ? "Deselect" : "Select"} ${clip.name}`}
+              className="absolute right-2 top-2 z-10"
+              onClick={onSelect}
+            />
+          ) : null}
         </div>
         <div className="mt-3 flex items-start justify-between gap-2">
           <button

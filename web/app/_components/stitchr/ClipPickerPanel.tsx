@@ -6,6 +6,7 @@ import { DemoClipSelector } from "@/app/_components/stitchr/DemoClipSelector";
 import { UgcClipSelector } from "@/app/_components/stitchr/UgcClipSelector";
 import { Panel } from "@/app/_components/ui/Panel";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
@@ -17,6 +18,7 @@ type ClipPickerPanelProps = {
   selectedDemoId: string | null;
   selectedUgcTrimRange: VideoTrimRange | null;
   selectedDemoTrimRange: VideoTrimRange | null;
+  onLoadClip: (id: string) => Promise<VideoClip | null>;
   onSelectUgc: (id: string) => void;
   onSelectDemo: (id: string) => void;
   onEditUgcTrim: (clip: VideoClipMetadata) => void;
@@ -33,6 +35,7 @@ export function ClipPickerPanel({
   selectedDemoId,
   selectedUgcTrimRange,
   selectedDemoTrimRange,
+  onLoadClip,
   onSelectUgc,
   onSelectDemo,
   onEditUgcTrim,
@@ -71,6 +74,7 @@ export function ClipPickerPanel({
           clips={filteredUgcClips}
           selectedId={selectedUgcId}
           selectedTrimRange={selectedUgcTrimRange}
+          onLoadClip={onLoadClip}
           onSelect={onSelectUgc}
           onEditTrim={onEditUgcTrim}
         />
@@ -79,6 +83,7 @@ export function ClipPickerPanel({
           clips={filteredDemoClips}
           selectedId={selectedDemoId}
           selectedTrimRange={selectedDemoTrimRange}
+          onLoadClip={onLoadClip}
           onSelect={onSelectDemo}
           onEditTrim={onEditDemoTrim}
         />

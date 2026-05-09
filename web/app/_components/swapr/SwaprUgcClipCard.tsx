@@ -1,8 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
 import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPreviewCard";
-import { Button } from "@/app/_components/ui/Button";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
@@ -24,19 +22,7 @@ export function SwaprUgcClipCard({
       clip={clip}
       isSelected={isSelected}
       onLoadClip={onLoadClip}
-      footer={() => (
-        <Button
-          type="button"
-          className="w-full"
-          variant={isSelected ? "secondary" : "primary"}
-          icon={
-            isSelected ? <Check aria-hidden className="h-4 w-4" /> : undefined
-          }
-          onClick={() => onSelect(clip)}
-        >
-          {isSelected ? "Selected" : "Select Motion"}
-        </Button>
-      )}
+      onSelect={() => onSelect(clip)}
     />
   );
 }

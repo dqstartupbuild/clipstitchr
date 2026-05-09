@@ -62,7 +62,10 @@ export function SwaprPageClient() {
     setSelectedPhotoId((currentPhotoId) =>
       currentPhotoId === photo.id ? undefined : photo.id,
     );
-  const selectClip = (clip: VideoClipMetadata) => setSelectedClipId(clip.id);
+  const selectClip = (clip: VideoClipMetadata) =>
+    setSelectedClipId((currentClipId) =>
+      currentClipId === clip.id ? undefined : clip.id,
+    );
   const handleGenerate = async () => {
     if (!selectedPhoto || !selectedClip) {
       return;
