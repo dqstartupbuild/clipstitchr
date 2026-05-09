@@ -19,7 +19,7 @@ export type PhotoLibraryValue = {
       avatarName?: string;
       shouldExpandWithAi?: boolean;
     },
-  ) => Promise<void>;
+  ) => Promise<boolean>;
   saveGeneratedPhotos: (
     photos: {
       blob: Blob;

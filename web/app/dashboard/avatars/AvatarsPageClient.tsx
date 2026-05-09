@@ -1,28 +1,36 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AvatarFilterSelect } from "@/app/_components/avatars/AvatarFilterSelect";
 import { AvatarGenerationPanel } from "@/app/_components/avatars/AvatarGenerationPanel";
 import { AvatarLibrarySection } from "@/app/_components/avatars/AvatarLibrarySection";
-import { AvatarUploadAssignment } from "@/app/_components/avatars/AvatarUploadAssignment";
+import { AvatarPhotoUploadControls } from "@/app/_components/avatars/AvatarPhotoUploadControls";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { LibraryPageHeader } from "@/app/_components/dashboard/LibraryPageHeader";
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
+import { ACCEPTED_PHOTO_TYPES } from "@/lib/clipstitchr/constants/acceptedPhotoTypes";
 import { useAvatarPhotoGeneration } from "@/lib/clipstitchr/hooks/useAvatarPhotoGeneration";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
+import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
 import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightingOption";
 import type { AvatarPhotoGenerationCount } from "@/lib/clipstitchr/types/AvatarPhotoGenerationCount";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
+import { dispatchHideUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchHideUploadControlsEvent";
 import { filterPhotosBySearchQuery } from "@/lib/clipstitchr/utils/filterPhotosBySearchQuery";
 
 export function AvatarsPageClient() {
   const photoLibrary = usePhotoLibrary();
+  const showUploadControls = useShowUploadControls();
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | undefined>();
   const [avatarFilterId, setAvatarFilterId] = useState("all");
-  const [uploadAvatarId, setUploadAvatarId] = useState("new");
+  const [uploadAvatarId, setUploadAvatarId] = useState("");
   const [newAvatarName, setNewAvatarName] = useState("");
+  const [pendingPhotoFiles, setPendingPhotoFiles] = useState<File[]>([]);
+  const [pendingPhotoShouldExpandWithAi, setPendingPhotoShouldExpandWithAi] =
+    useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [context, setContext] = useState("");
   const [count, setCount] = useState<AvatarPhotoGenerationCount>(3);
   const [lighting, setLighting] =
     useState<AvatarLightingOption>("any");
@@ -56,6 +64,55 @@ export function AvatarsPageClient() {
   });
   const hasSearchQuery = searchQuery.trim().length > 0;
   const error = photoLibrary.error ?? generator.error;
+  const hasPhotoUploadAssignment =
+    uploadAvatarId === "new"
+      ? newAvatarName.trim().length > 0
+      : uploadAvatarId.trim().length > 0;
+  const canSavePendingPhotoUpload =
+    pendingPhotoFiles.length > 0 &&
+    hasPhotoUploadAssignment &&
+    !photoLibrary.isSaving;
+  const handlePhotoFilesSelected = useCallback(
+    (
+      files: FileList | File[],
+      options?: { shouldExpandWithAi?: boolean },
+    ) => {
+      const acceptedFiles = Array.from(files).filter((file) =>
+        ACCEPTED_PHOTO_TYPES.includes(file.type),
+      );
+
+      setPendingPhotoFiles(acceptedFiles);
+      setPendingPhotoShouldExpandWithAi(Boolean(options?.shouldExpandWithAi));
+    },
+    [],
+  );
+  const savePendingPhotoUpload = useCallback(async () => {
+    if (!canSavePendingPhotoUpload) {
+      return;
+    }
+
+    const didSave = await photoLibrary.saveFiles(pendingPhotoFiles, {
+      avatarId: uploadAvatarId === "new" ? undefined : uploadAvatarId,
+      avatarName: uploadAvatarId === "new" ? newAvatarName : undefined,
+      shouldExpandWithAi: pendingPhotoShouldExpandWithAi,
+    });
+
+    if (didSave) {
+      setPendingPhotoFiles([]);
+
+      if (uploadAvatarId === "new") {
+        setUploadAvatarId("");
+        setNewAvatarName("");
+      }
+    }
+  }, [
+    canSavePendingPhotoUpload,
+    newAvatarName,
+    pendingPhotoFiles,
+    pendingPhotoShouldExpandWithAi,
+    photoLibrary,
+    uploadAvatarId,
+  ]);
 
   return (
     <DashboardShell>
@@ -75,6 +132,31 @@ export function AvatarsPageClient() {
             Saved {generator.generatedCount} generated avatar photos.
           </div>
         ) : null}
+        {showUploadControls ? (
+          <UploadPanel
+            allowedAssetTypes={["photo"]}
+            initialAssetType="photo"
+            isPhotoUploading={photoLibrary.isSaving}
+            onDismiss={dispatchHideUploadControlsEvent}
+            photoControls={
+              <AvatarPhotoUploadControls
+                avatars={photoLibrary.avatars}
+                canSave={canSavePendingPhotoUpload}
+                isSaving={photoLibrary.isSaving}
+                newAvatarName={newAvatarName}
+                pendingFileCount={pendingPhotoFiles.length}
+                selectedAvatarId={uploadAvatarId}
+                shouldExpandWithAi={pendingPhotoShouldExpandWithAi}
+                onNewAvatarNameChange={setNewAvatarName}
+                onSave={() => void savePendingPhotoUpload()}
+                onSelectedAvatarIdChange={setUploadAvatarId}
+              />
+            }
+            onPhotoExpandPreferenceChange={setPendingPhotoShouldExpandWithAi}
+            onPhotoUploaded={handlePhotoFilesSelected}
+            onUploaded={photoLibrary.refresh}
+          />
+        ) : null}
         <div className="grid gap-4 sm:grid-cols-[240px_minmax(0,1fr)] sm:items-end">
           <AvatarFilterSelect
             avatars={photoLibrary.avatars}
@@ -90,23 +172,9 @@ export function AvatarsPageClient() {
             className="w-full"
           />
         </div>
-        <AvatarLibrarySection
-          avatars={photoLibrary.avatars}
-          photos={photos}
-          selectedPhotoId={selectedPhotoId}
-          emptyTitle={hasSearchQuery ? "No matching avatars" : undefined}
-          emptyDescription={
-            hasSearchQuery
-              ? "No avatars match that name, tag, or description."
-              : "Upload photos of a person to make them available as avatars."
-          }
-          onLoadPhoto={photoLibrary.loadPhoto}
-          onDelete={photoLibrary.removePhoto}
-          onSelect={(photo) => setSelectedPhotoId(photo.id)}
-          onUpdateMetadata={photoLibrary.updatePhotoMetadata}
-        />
         <AvatarGenerationPanel
           count={count}
+          context={context}
           isGenerating={generator.isGenerating || photoLibrary.isSaving}
           lighting={lighting}
           location={location}
@@ -119,6 +187,7 @@ export function AvatarsPageClient() {
               void generator.generate({
                 avatar: selectedAvatar,
                 count,
+                context,
                 lighting,
                 location,
                 referencePhoto: selectedPhoto,
@@ -126,29 +195,29 @@ export function AvatarsPageClient() {
               });
             }
           }}
+          onContextChange={setContext}
           onLightingChange={setLighting}
           onLocationChange={setLocation}
           onStyleChange={setStyle}
         />
-        <AvatarUploadAssignment
+        <AvatarLibrarySection
           avatars={photoLibrary.avatars}
-          newAvatarName={newAvatarName}
-          selectedAvatarId={uploadAvatarId}
-          onNewAvatarNameChange={setNewAvatarName}
-          onSelectedAvatarIdChange={setUploadAvatarId}
-        />
-        <UploadPanel
-          allowedAssetTypes={["photo"]}
-          initialAssetType="photo"
-          isPhotoUploading={photoLibrary.isSaving}
-          onPhotoUploaded={(files, options) =>
-            photoLibrary.saveFiles(files, {
-              ...options,
-              avatarId: uploadAvatarId === "new" ? undefined : uploadAvatarId,
-              avatarName: uploadAvatarId === "new" ? newAvatarName : undefined,
-            })
+          photos={photos}
+          selectedPhotoId={selectedPhotoId}
+          emptyTitle={hasSearchQuery ? "No matching avatars" : undefined}
+          emptyDescription={
+            hasSearchQuery
+              ? "No avatars match that name, tag, or description."
+              : "Upload photos of a person to make them available as avatars."
           }
-          onUploaded={photoLibrary.refresh}
+          onLoadPhoto={photoLibrary.loadPhoto}
+          onDelete={photoLibrary.removePhoto}
+          onSelect={(photo) =>
+            setSelectedPhotoId((currentPhotoId) =>
+              currentPhotoId === photo.id ? undefined : photo.id,
+            )
+          }
+          onUpdateMetadata={photoLibrary.updatePhotoMetadata}
         />
       </div>
     </DashboardShell>

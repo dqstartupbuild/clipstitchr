@@ -70,7 +70,7 @@
     - Purple primary brand color family.
     - Dark navy text.
     - Compact SaaS dashboard composition.
-    - Sidebar dashboard, upload button, stat cards, recent uploads, stitches, and Stitchr CTA.
+  - Sidebar dashboard, upload selector, stat cards, recent uploads, stitches, and Stitchr CTA.
     - Landing hero with a product preview image/card, compact feature blocks, and bottom conversion band.
     - Blog/legal pages retained visually.
   - Post-MVP mockup elements to avoid as implemented features:
@@ -217,7 +217,7 @@ web/app/(content)/terms/page.tsx
 
 - Server route entry for avatar photo management.
 - Exports page metadata with canonical `/dashboard/avatars`.
-- Renders avatar upload, search, person description editing, and Replicate-backed scenario photo generation.
+- Renders hidden-until-requested avatar upload, staged avatar assignment/save controls, search, person description editing, and Replicate-backed scenario photo generation.
 
 #### `web/app/dashboard/stitches/page.tsx`
 
@@ -449,7 +449,7 @@ Create:
 
 Create:
 
-- Segmented control for UGC/Demo upload classification.
+- Segmented control for UGC/Demo upload classification where multiple upload types are allowed.
 
 ### `web/app/_components/dashboard/UploadQueueList.tsx`
 

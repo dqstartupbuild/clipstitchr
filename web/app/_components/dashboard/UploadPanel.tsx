@@ -1,9 +1,11 @@
 "use client";
 
-import { ImagePlus, UploadCloud } from "lucide-react";
+import { ImagePlus, UploadCloud, X } from "lucide-react";
+import type { ReactNode } from "react";
 import { useRef, useState } from "react";
 import { UploadAssetTabs } from "@/app/_components/dashboard/UploadAssetTabs";
 import { Button } from "@/app/_components/ui/Button";
+import { IconButton } from "@/app/_components/ui/IconButton";
 import { Panel } from "@/app/_components/ui/Panel";
 import { UploadQueueList } from "@/app/_components/dashboard/UploadQueueList";
 import { ACCEPTED_PHOTO_TYPES } from "@/lib/clipstitchr/constants/acceptedPhotoTypes";
@@ -19,10 +21,13 @@ type UploadPanelProps = {
   onPhotoUploaded: (
     files: FileList | File[],
     options?: { shouldExpandWithAi?: boolean },
-  ) => void | Promise<void>;
+  ) => void | Promise<boolean | void>;
   isPhotoUploading: boolean;
   initialAssetType?: UploadAssetType;
   onAssetTypeChange?: (assetType: UploadAssetType) => void;
+  onDismiss?: () => void;
+  onPhotoExpandPreferenceChange?: (shouldExpandWithAi: boolean) => void;
+  photoControls?: ReactNode;
 };
 
 const contentByAssetType: Record<
@@ -68,6 +73,9 @@ export function UploadPanel({
   isPhotoUploading,
   initialAssetType = "ugc",
   onAssetTypeChange,
+  onDismiss,
+  onPhotoExpandPreferenceChange,
+  photoControls,
 }: UploadPanelProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -115,6 +123,11 @@ export function UploadPanel({
       return;
     }
 
+    if (selectedFileCount === 0) {
+      setUploadError(isPhoto ? "Choose JPG or PNG photos." : "Choose videos.");
+      return;
+    }
+
     setUploadError(null);
 
     if (isPhoto) {
@@ -139,14 +152,28 @@ export function UploadPanel({
             {content.description}
           </p>
         </div>
-        {shouldShowAssetTabs ? (
-          <UploadAssetTabs
-            assetTypes={allowedAssetTypes}
-            value={assetType}
-            onChange={handleAssetTypeChange}
-          />
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          {shouldShowAssetTabs ? (
+            <UploadAssetTabs
+              assetTypes={allowedAssetTypes}
+              value={assetType}
+              onChange={handleAssetTypeChange}
+            />
+          ) : null}
+          {onDismiss ? (
+            <IconButton
+              type="button"
+              label="Dismiss upload controls"
+              icon={<X aria-hidden className="h-4 w-4" />}
+              onClick={onDismiss}
+            />
+          ) : null}
+        </div>
       </div>
+
+      {isPhoto && photoControls ? (
+        <div className="mt-5">{photoControls}</div>
+      ) : null}
 
       <div
         onDragOver={(event) => {
@@ -210,8 +237,11 @@ export function UploadPanel({
             checked={shouldExpandPhotosWithAi}
             className="mt-1 h-4 w-4 accent-accent"
             onChange={(event) => {
+              const nextShouldExpandWithAi = event.currentTarget.checked;
+
               setUploadError(null);
-              setShouldExpandPhotosWithAi(event.currentTarget.checked);
+              setShouldExpandPhotosWithAi(nextShouldExpandWithAi);
+              onPhotoExpandPreferenceChange?.(nextShouldExpandWithAi);
             }}
           />
           <span className="text-sm leading-6 text-text-secondary">

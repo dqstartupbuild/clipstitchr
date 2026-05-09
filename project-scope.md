@@ -156,7 +156,7 @@ Text overlays are planned for later, but they are not required for the MVP.
 | 9 | Swapr-generated outputs appear in the Content Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
 | 10 | Stitches appear in the Content Library Stitches tab; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
 | 11 | The Content Library includes an All tab so users can view every saved video output type at once | ✅ | ✅ |
-| 12 | A unified upload control supports UGC and Demo uploads from the dashboard header action, while avatar photo upload lives on `/dashboard/avatars` | ✅ | ✅ |
+| 12 | The dashboard header upload action opens an upload selector for UGC, Demo, or Photo, then routes to the relevant page/tab with controls revealed | ✅ | ✅ |
 
 ### 4.5 AI-Assisted Content Supply (Secondary)
 
@@ -180,8 +180,8 @@ main product promise.
 /dashboard       → Authenticated main workspace
 /dashboard/stitchr → Authenticated Stitchr video stitching interface
 /dashboard/swapr → Authenticated AI motion-transfer studio using saved photos and UGC clips
-/dashboard/avatars → Authenticated avatar photo library with upload, descriptions, and AI scenario photo generation
-/dashboard/uploads → Authenticated Content Library with All, UGC, Demo, Swaps, and Stitches tabs; unified video upload controls open from header action
+/dashboard/avatars → Authenticated avatar photo library with hidden-until-requested photo upload controls, avatar assignment, descriptions, and AI scenario photo generation
+/dashboard/uploads → Authenticated Content Library with All, UGC, Demo, Swaps, and Stitches tabs; UGC/Demo upload controls open from the header upload selector
 /dashboard/stitches → Compatibility redirect to `/dashboard/uploads?tab=stitches`
 ```
 

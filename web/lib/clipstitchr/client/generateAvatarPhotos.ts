@@ -11,6 +11,7 @@ import { createBlobFromDataUrl } from "@/lib/clipstitchr/utils/createBlobFromDat
 type GenerateAvatarPhotosOptions = {
   avatar: PhotoAsset;
   avatarDescription: string;
+  context: string;
   count: AvatarPhotoGenerationCount;
   generationSpeedTier?: GenerationSpeedTier;
   lighting: AvatarLightingOption;
@@ -28,6 +29,7 @@ type GenerateAvatarPhotosResponse = {
 export async function generateAvatarPhotos({
   avatar,
   avatarDescription,
+  context,
   count,
   generationSpeedTier,
   lighting,
@@ -43,6 +45,7 @@ export async function generateAvatarPhotos({
     }),
   );
   formData.set("avatarDescription", avatarDescription);
+  formData.set("context", context);
   formData.set("count", String(count));
   if (generationSpeedTier) {
     formData.set("generationSpeedTier", generationSpeedTier);

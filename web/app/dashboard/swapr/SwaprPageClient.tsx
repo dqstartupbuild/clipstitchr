@@ -58,7 +58,10 @@ export function SwaprPageClient() {
   );
   const isReady = Boolean(selectedPhoto && selectedClip && hasConsent);
 
-  const selectPhoto = (photo: PhotoAssetMetadata) => setSelectedPhotoId(photo.id);
+  const selectPhoto = (photo: PhotoAssetMetadata) =>
+    setSelectedPhotoId((currentPhotoId) =>
+      currentPhotoId === photo.id ? undefined : photo.id,
+    );
   const selectClip = (clip: VideoClipMetadata) => setSelectedClipId(clip.id);
   const handleGenerate = async () => {
     if (!selectedPhoto || !selectedClip) {

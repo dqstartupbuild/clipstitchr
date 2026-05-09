@@ -70,7 +70,7 @@ export function SwaprUgcSelector({
             Upload a UGC clip before using Swapr.
           </p>
           <Link
-            href="/dashboard/uploads#upload-panel"
+            href="/dashboard/uploads?tab=ugc&upload=open#upload-panel"
             className="btn-secondary mt-4"
           >
             Upload UGC

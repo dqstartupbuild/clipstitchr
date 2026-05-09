@@ -26,6 +26,7 @@ type UseAvatarPhotoGenerationOptions = {
 
 type GenerateAvatarPhotosFromSelectionOptions = {
   avatar: Avatar;
+  context: string;
   count: AvatarPhotoGenerationCount;
   lighting: AvatarLightingOption;
   location: string;
@@ -44,6 +45,7 @@ export function useAvatarPhotoGeneration({
   const generate = useCallback(
     async ({
       avatar,
+      context,
       count,
       lighting,
       location,
@@ -71,6 +73,7 @@ export function useAvatarPhotoGeneration({
         const result = await generateAvatarPhotos({
           avatar: loadedAvatar,
           avatarDescription,
+          context,
           count,
           lighting,
           location,

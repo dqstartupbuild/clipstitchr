@@ -47,6 +47,7 @@ export async function POST(request: Request) {
     const count = getAvatarPhotoGenerationCount(
       getSwaprFormString(formData, "count"),
     );
+    const context = getSwaprFormString(formData, "context").trim();
     const lighting = getAvatarLightingOption(
       getSwaprFormString(formData, "lighting"),
     );
@@ -75,6 +76,7 @@ export async function POST(request: Request) {
     const imageName = image.name || "avatar-reference.jpg";
     const imageType = image.type || "image/jpeg";
     const variants = createAvatarGenerationVariants({
+      context,
       count,
       lighting,
       location,

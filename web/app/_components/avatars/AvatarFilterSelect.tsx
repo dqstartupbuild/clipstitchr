@@ -1,5 +1,6 @@
 "use client";
 
+import { SelectInput } from "@/app/_components/ui/SelectInput";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 
 type AvatarFilterSelectProps = {
@@ -15,21 +16,20 @@ export function AvatarFilterSelect({
   value,
   onChange,
 }: AvatarFilterSelectProps) {
+  const options = [
+    { label: "All", value: "all" },
+    ...avatars.map((avatar) => ({
+      label: avatar.name,
+      value: avatar.id,
+    })),
+  ];
+
   return (
-    <label className="block">
-      <span className="text-sm font-semibold text-text-primary">{label}</span>
-      <select
-        value={value}
-        className="mt-2 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-primary outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
-        onChange={(event) => onChange(event.currentTarget.value)}
-      >
-        <option value="all">All</option>
-        {avatars.map((avatar) => (
-          <option key={avatar.id} value={avatar.id}>
-            {avatar.name}
-          </option>
-        ))}
-      </select>
-    </label>
+    <SelectInput
+      label={label}
+      options={options}
+      value={value}
+      onChange={(event) => onChange(event.currentTarget.value)}
+    />
   );
 }

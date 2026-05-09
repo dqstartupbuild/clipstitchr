@@ -95,7 +95,7 @@ export function SwaprPhotoSelector({
             Upload an avatar photo before creating a Swapr clip.
           </p>
           <Link
-            href="/dashboard/avatars#upload-panel"
+            href="/dashboard/avatars?upload=open#upload-panel"
             className="btn-secondary mt-4"
           >
             Upload Photos

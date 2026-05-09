@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { LibraryPageHeader } from "@/app/_components/dashboard/LibraryPageHeader";
 import { StitchesSection } from "@/app/_components/dashboard/StitchesSection";
@@ -8,6 +8,7 @@ import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
 import { VideoLibrarySection } from "@/app/_components/dashboard/VideoLibrarySection";
 import { UploadLibraryTabs } from "@/app/_components/uploads/UploadLibraryTabs";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
+import { SHOW_UPLOAD_CONTROLS_EVENT_NAME } from "@/lib/clipstitchr/constants/showUploadControlsEventName";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
@@ -17,6 +18,7 @@ import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { filterNonSwaprClips } from "@/lib/clipstitchr/utils/filterNonSwaprClips";
 import { filterStitchesByName } from "@/lib/clipstitchr/utils/filterStitchesByName";
 import { filterSwaprClips } from "@/lib/clipstitchr/utils/filterSwaprClips";
+import { dispatchHideUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchHideUploadControlsEvent";
 import { getInitialUploadLibraryTab } from "@/lib/clipstitchr/utils/getInitialUploadLibraryTab";
 import { getUploadAssetTypeFromLibraryTab } from "@/lib/clipstitchr/utils/getUploadAssetTypeFromLibraryTab";
 import { getUploadLibraryTabFromAssetType } from "@/lib/clipstitchr/utils/getUploadLibraryTabFromAssetType";
@@ -109,7 +111,7 @@ export function UploadsPageClient() {
           ? { clips: swapClips, content: videoLibraryContent.swaps }
           : null;
 
-  const handleTabChange = (nextTab: UploadLibraryTab) => {
+  const handleTabChange = useCallback((nextTab: UploadLibraryTab) => {
     setSelectedTab(nextTab);
 
     if (typeof window !== "undefined") {
@@ -117,7 +119,46 @@ export function UploadsPageClient() {
       url.searchParams.set("tab", nextTab);
       window.history.replaceState(null, "", url.toString());
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const syncUploadTabFromUrl = () => {
+      setSelectedTab(getInitialUploadLibraryTab());
+    };
+
+    syncUploadTabFromUrl();
+    window.addEventListener("popstate", syncUploadTabFromUrl);
+
+    return () => {
+      window.removeEventListener("popstate", syncUploadTabFromUrl);
+    };
+  }, []);
+
+  useEffect(() => {
+    const syncUploadTabFromEvent = (event: Event) => {
+      if (!(event instanceof CustomEvent)) {
+        return;
+      }
+
+      const assetType = (event.detail as { assetType?: unknown }).assetType;
+
+      if (assetType === "ugc" || assetType === "demo") {
+        handleTabChange(assetType);
+      }
+    };
+
+    window.addEventListener(
+      SHOW_UPLOAD_CONTROLS_EVENT_NAME,
+      syncUploadTabFromEvent,
+    );
+
+    return () => {
+      window.removeEventListener(
+        SHOW_UPLOAD_CONTROLS_EVENT_NAME,
+        syncUploadTabFromEvent,
+      );
+    };
+  }, [handleTabChange]);
 
   return (
     <DashboardShell>
@@ -138,6 +179,7 @@ export function UploadsPageClient() {
             key={selectedTab}
             initialAssetType={getUploadAssetTypeFromLibraryTab(selectedTab)}
             isPhotoUploading={photoLibrary.isSaving}
+            onDismiss={dispatchHideUploadControlsEvent}
             onAssetTypeChange={(assetType) =>
               handleTabChange(getUploadLibraryTabFromAssetType(assetType))
             }

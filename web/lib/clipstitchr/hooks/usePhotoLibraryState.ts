@@ -135,7 +135,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
 
       if (!selectedFiles.length) {
         setError("Choose a JPG or PNG photo.");
-        return;
+        return false;
       }
 
       const uploadBatchLimit = getUploadBatchLimit({
@@ -151,12 +151,12 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
             shouldExpandWithAi,
           }),
         );
-        return;
+        return false;
       }
 
       if (!uploadAvatarId && !trimmedAvatarName) {
         setError("Create or select an avatar before uploading photos.");
-        return;
+        return false;
       }
 
       setIsSaving(true);
@@ -312,12 +312,14 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
         }
 
         await refresh();
+        return true;
       } catch (nextError) {
         setError(
           nextError instanceof Error
             ? nextError.message
             : "Unable to save this photo.",
         );
+        return false;
       } finally {
         setIsSaving(false);
       }

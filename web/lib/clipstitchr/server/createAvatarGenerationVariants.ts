@@ -25,11 +25,13 @@ function getRandomItem<T>(items: readonly T[]) {
 }
 
 export function createAvatarGenerationVariants({
+  context,
   count,
   lighting,
   location,
   style,
 }: {
+  context: string;
   count: AvatarPhotoGenerationCount;
   lighting: AvatarLightingOption;
   location: string;
@@ -37,9 +39,11 @@ export function createAvatarGenerationVariants({
 }): AvatarGenerationVariant[] {
   const outfits = getShuffledItems(avatarGenerationOutfits);
   const locations = getShuffledItems(avatarGenerationLocations);
+  const trimmedContext = context.trim();
   const trimmedLocation = location.trim();
 
   return Array.from({ length: count }, (_, index) => ({
+    ...(trimmedContext ? { contextDescription: trimmedContext } : {}),
     outfitDescription: outfits[index % outfits.length],
     locationDescription: trimmedLocation || locations[index % locations.length],
     lighting:

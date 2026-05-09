@@ -2,6 +2,7 @@
 
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
+import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { avatarLightingOptions } from "@/lib/clipstitchr/constants/avatarLightingOptions";
 import { avatarStyleOptions } from "@/lib/clipstitchr/constants/avatarStyleOptions";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
@@ -11,6 +12,7 @@ import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOptio
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 
 type AvatarGenerationPanelProps = {
+  context: string;
   count: AvatarPhotoGenerationCount;
   isGenerating: boolean;
   lighting: AvatarLightingOption;
@@ -19,6 +21,7 @@ type AvatarGenerationPanelProps = {
   selectedPhoto?: PhotoAssetMetadata;
   style: AvatarStyleOption;
   onCountChange: (count: AvatarPhotoGenerationCount) => void;
+  onContextChange: (context: string) => void;
   onGenerate: () => void;
   onLightingChange: (lighting: AvatarLightingOption) => void;
   onLocationChange: (location: string) => void;
@@ -28,6 +31,7 @@ type AvatarGenerationPanelProps = {
 const counts: AvatarPhotoGenerationCount[] = [3, 5, 10];
 
 export function AvatarGenerationPanel({
+  context,
   count,
   isGenerating,
   lighting,
@@ -36,113 +40,114 @@ export function AvatarGenerationPanel({
   selectedPhoto,
   style,
   onCountChange,
+  onContextChange,
   onGenerate,
   onLightingChange,
   onLocationChange,
   onStyleChange,
 }: AvatarGenerationPanelProps) {
   const hasDescription = Boolean(selectedAvatar?.description?.trim());
+  const shouldShowControls = Boolean(selectedAvatar && selectedPhoto);
 
   return (
-    <Panel className="p-5">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div>
-          <p className="text-sm font-semibold text-accent-dark">
+    <Panel className="p-3">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-end">
+        <div className="min-w-0 xl:flex-1">
+          <p className="text-xs font-semibold uppercase tracking-wide text-accent-dark">
             Create source photos
           </p>
-          <h2 className="mt-2 text-xl font-bold text-text-primary">
-            Make more photos of the selected avatar
+          <h2 className="mt-1 text-base font-bold text-text-primary">
+            New photos from selected avatar
           </h2>
-          <p className="mt-2 text-sm leading-6 text-text-secondary">
+          <p className="mt-1 line-clamp-2 max-w-3xl text-sm leading-6 text-text-secondary">
             {selectedAvatar
               ? selectedAvatar.description ||
                 "Add one clear description for this avatar before generating."
-              : "Select an avatar and photo to create more source photos."}
+              : "Select an avatar photo to enable generation."}
           </p>
         </div>
-        <div className="flex flex-col gap-4">
-          <div>
-            <span className="text-sm font-semibold text-text-primary">
-              Quantity
-            </span>
-            <div className="mt-2 inline-flex rounded-lg border border-border bg-slate-100 p-1">
-              {counts.map((nextCount) => (
-                <button
-                  key={nextCount}
-                  type="button"
-                  onClick={() => onCountChange(nextCount)}
-                  className={[
-                    "h-8 rounded-md px-3 text-sm font-semibold transition-colors",
-                    count === nextCount
-                      ? "bg-white text-accent shadow-sm"
-                      : "text-text-secondary hover:text-text-primary",
-                  ].join(" ")}
-                >
-                  {nextCount}
-                </button>
-              ))}
-            </div>
-          </div>
-          <label className="block">
-            <span className="text-sm font-semibold text-text-primary">
-              Location or scenario
-            </span>
-            <input
-              type="text"
-              value={location}
-              placeholder="Any"
-              className="mt-2 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm text-text-primary outline-none transition-colors focus:border-accent"
-              onChange={(event) => onLocationChange(event.currentTarget.value)}
-            />
-          </label>
-          <label className="block">
-            <span className="text-sm font-semibold text-text-primary">
-              Style
-            </span>
-            <select
+        {shouldShowControls ? (
+          <div className="grid gap-2 md:grid-cols-2 xl:w-[760px] xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.35fr)_132px_132px_108px_132px] xl:items-end">
+            <label className="md:col-span-2 xl:col-span-1">
+              <span className="text-sm font-semibold text-text-primary">
+                Location or scenario
+              </span>
+              <input
+                type="text"
+                value={location}
+                placeholder="Any"
+                className="mt-1 h-9 w-full rounded-lg border border-border bg-white px-3 text-sm text-text-primary shadow-sm shadow-slate-200/50 outline-none transition-colors hover:border-accent/70 focus:border-accent focus:ring-2 focus:ring-accent/15"
+                onChange={(event) =>
+                  onLocationChange(event.currentTarget.value)
+                }
+              />
+            </label>
+            <label className="md:col-span-2 xl:col-span-1">
+              <span className="text-sm font-semibold text-text-primary">
+                Context
+              </span>
+              <input
+                type="text"
+                value={context}
+                placeholder="Describe what they are doing or how they are posing"
+                className="mt-1 h-9 w-full rounded-lg border border-border bg-white px-3 text-sm text-text-primary shadow-sm shadow-slate-200/50 outline-none transition-colors hover:border-accent/70 focus:border-accent focus:ring-2 focus:ring-accent/15"
+                onChange={(event) => onContextChange(event.currentTarget.value)}
+              />
+            </label>
+            <SelectInput
+              label="Style"
+              options={avatarStyleOptions}
               value={style}
-              className="mt-2 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-primary outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
+              className="h-9"
               onChange={(event) =>
                 onStyleChange(event.currentTarget.value as AvatarStyleOption)
               }
-            >
-              {avatarStyleOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block">
-            <span className="text-sm font-semibold text-text-primary">
-              Lighting
-            </span>
-            <select
+            />
+            <SelectInput
+              label="Lighting"
+              options={avatarLightingOptions}
               value={lighting}
-              className="mt-2 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-primary outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
+              className="h-9"
               onChange={(event) =>
-                onLightingChange(event.currentTarget.value as AvatarLightingOption)
+                onLightingChange(
+                  event.currentTarget.value as AvatarLightingOption,
+                )
               }
+            />
+            <div>
+              <span className="text-sm font-semibold text-text-primary">
+                Quantity
+              </span>
+              <div className="mt-1 inline-flex rounded-lg border border-border bg-slate-100 p-1">
+                {counts.map((nextCount) => (
+                  <button
+                    key={nextCount}
+                    type="button"
+                    onClick={() => onCountChange(nextCount)}
+                    className={[
+                      "h-7 rounded-md px-2.5 text-sm font-semibold transition-colors",
+                      count === nextCount
+                        ? "bg-white text-accent shadow-sm"
+                        : "text-text-secondary hover:text-text-primary",
+                    ].join(" ")}
+                  >
+                    {nextCount}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              className="w-full self-end"
+              isLoading={isGenerating}
+              disabled={!selectedAvatar || !selectedPhoto || !hasDescription}
+              onClick={onGenerate}
             >
-              {avatarLightingOptions.map((option) => (
-                <option
-                  key={option.value}
-                  value={option.value}
-                >
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <Button
-            type="button"
-            isLoading={isGenerating}
-            disabled={!selectedAvatar || !selectedPhoto || !hasDescription}
-            onClick={onGenerate}
-          >
-            Create Photos
-          </Button>
-        </div>
+              Create Photos
+            </Button>
+          </div>
+        ) : null}
       </div>
     </Panel>
   );

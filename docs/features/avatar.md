@@ -56,11 +56,16 @@ Outfit and location descriptions are per-photo metadata. They can help users und
 
 ## Upload Flow
 
-When uploading avatar photos, the user must create or select the avatar the images belong to.
+Avatar photo upload controls are hidden on the Avatars page until the user opens
+them from the dashboard upload selector or a direct upload link.
+
+When uploading avatar photos, the user stages photo files first, then creates or
+selects the avatar the images belong to before saving. Staging files without an
+avatar assignment must show an idle/ready state instead of failing the upload.
 
 If the user creates a new avatar:
 
-- They provide the avatar name before upload.
+- They provide the avatar name before saving the staged upload.
 - Upload analysis produces a clean avatar description and per-photo outfit/location descriptions.
 - The first uploaded photo can populate the avatar description if the avatar does not already have one.
 
@@ -84,8 +89,12 @@ The avatar photo generation UI supports:
 - style dropdown
 - lighting dropdown
 - optional location/scenario input
+- optional context input for what the avatar should be doing or how they should pose
 
 Generation uses the selected source photo as the reference image, but the prompt should receive only the avatar identity description as identity text. It must not receive outfit or location information from the source photo.
+
+The optional context input is generation-only prompt guidance. It should appear
+in the generation controls, not in the empty state copy.
 
 For each requested output image, ClipStitchr creates a unique variant:
 

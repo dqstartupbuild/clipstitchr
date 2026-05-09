@@ -2,8 +2,8 @@
 
 import { Check, Download, Edit3, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { PhotoAssetDetailsDialog } from "@/app/_components/swapr/PhotoAssetDetailsDialog";
 import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
-import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
@@ -39,6 +39,7 @@ export function PhotoAssetCard({
   showDownload = true,
 }: PhotoAssetCardProps) {
   const imageUrl = useObjectUrl(photo.thumbnailBlob);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isMetadataOpen, setIsMetadataOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const handleDownload = async () => {
@@ -67,11 +68,11 @@ export function PhotoAssetCard({
     }
   };
   const preview = (
-    <div className="aspect-[9/16]">
+    <div className="relative aspect-square">
       {imageUrl ? (
         <div
           aria-hidden
-          className="h-full w-full bg-contain bg-center bg-no-repeat"
+          className="h-full w-full bg-cover bg-top bg-no-repeat"
           style={{ backgroundImage: `url(${imageUrl})` }}
         />
       ) : (
@@ -79,6 +80,11 @@ export function PhotoAssetCard({
           Photo
         </div>
       )}
+      {avatarName ? (
+        <span className="absolute left-2 top-2 max-w-[75%] truncate rounded-md bg-white/95 px-2 py-1 text-[11px] font-bold leading-none text-accent-dark shadow-sm shadow-slate-900/10">
+          {avatarName}
+        </span>
+      ) : null}
     </div>
   );
 
@@ -89,49 +95,47 @@ export function PhotoAssetCard({
         isSelected ? "border-accent ring-2 ring-accent/15" : "border-border",
       ].join(" ")}
     >
-      {onSelect ? (
+      <div className="relative overflow-hidden rounded-md bg-slate-100">
         <button
           type="button"
-          aria-label={`Select ${photo.name}`}
-          className="block w-full overflow-hidden rounded-md bg-slate-100 text-left"
-          onClick={() => onSelect(photo)}
+          aria-label={`Open details for ${photo.name}`}
+          className="block w-full text-left"
+          onClick={() => setIsDetailsOpen(true)}
         >
           {preview}
         </button>
-      ) : (
-        <div className="overflow-hidden rounded-md bg-slate-100">{preview}</div>
-      )}
+        {onSelect ? (
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={Boolean(isSelected)}
+            aria-label={`${isSelected ? "Deselect" : "Select"} ${photo.name}`}
+            className={[
+              "absolute right-2 top-2 z-10 inline-flex h-6 w-6 items-center justify-center rounded-md border-[4px] shadow-[0_4px_12px_rgba(15,23,42,0.32)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+              isSelected
+                ? "border-white/90 bg-accent text-white"
+                : "border-white bg-white/90 text-transparent hover:bg-white hover:text-text-tertiary",
+            ].join(" ")}
+            onClick={() => onSelect(photo)}
+          >
+            <Check aria-hidden className="h-3.5 w-3.5" />
+          </button>
+        ) : null}
+      </div>
       <div className="mt-3 flex items-start justify-between gap-2">
-        <div className="min-w-0">
+        <button
+          type="button"
+          className="min-w-0 flex-1 rounded-md text-left outline-none transition-colors hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          onClick={() => setIsDetailsOpen(true)}
+        >
           <p className="truncate text-sm font-bold text-text-primary">
             {photo.name}
           </p>
           <p className="mt-1 text-xs text-text-tertiary">
             {photo.width} x {photo.height} . {formatBytes(photo.size)}
           </p>
-          {avatarName ? (
-            <p className="mt-2 text-xs font-semibold text-accent-dark">
-              {avatarName}
-            </p>
-          ) : null}
-          <AssetTagList tags={photo.tags} className="mt-3" requiredTag="photo" />
-          {photo.outfitDescription ? (
-            <p className="mt-3 line-clamp-3 text-xs leading-5 text-text-secondary">
-              Outfit: {photo.outfitDescription}
-            </p>
-          ) : null}
-          {photo.locationDescription ? (
-            <p className="mt-2 line-clamp-3 text-xs leading-5 text-text-secondary">
-              Location: {photo.locationDescription}
-            </p>
-          ) : null}
-        </div>
+        </button>
         <div className="flex shrink-0 gap-1">
-          {isSelected ? (
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-white">
-              <Check aria-hidden className="h-4 w-4" />
-            </span>
-          ) : null}
           {showDownload && onLoadPhoto ? (
             <IconButton
               label="Download photo"
@@ -157,6 +161,14 @@ export function PhotoAssetCard({
           ) : null}
         </div>
       </div>
+      {isDetailsOpen ? (
+        <PhotoAssetDetailsDialog
+          avatarName={avatarName}
+          imageUrl={imageUrl}
+          photo={photo}
+          onClose={() => setIsDetailsOpen(false)}
+        />
+      ) : null}
       {isMetadataOpen ? (
         <AssetMetadataEditDialog
           initialLocationDescription={photo.locationDescription}
