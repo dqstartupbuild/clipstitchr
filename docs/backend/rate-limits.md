@@ -65,7 +65,7 @@ Existing Convex auth variables still apply:
 | R2 upload bytes | `POST /api/r2/upload-url` | 2 GB/day/user |
 | R2 download signed URL | `POST /api/r2/download-url` | 120/hour/user, burst 30 |
 | R2 deletes | `POST /api/r2/delete-objects` | 100 objects/hour/user, burst 25 |
-| Upload metadata analysis | `POST /api/uploads/analyze` | 30/hour/user, burst 5; global 600/hour |
+| Upload metadata analysis | `POST /api/uploads/analyze` | 100/hour/user, burst 30 |
 | Swapr photo expansion | `POST /api/swapr/photos/expand` | 5/hour/user, burst 2; global 60/hour |
 | Swapr video job create | `POST /api/swapr/jobs` | 3/hour/user, burst 2; 10/day/user; global 30/hour |
 | Swapr job polling | `GET /api/swapr/jobs/{id}` | 120/minute/user, burst 30 |

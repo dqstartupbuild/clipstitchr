@@ -30,9 +30,9 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
   },
   replicateUploadAnalysis: {
     kind: "token bucket",
-    rate: 30,
+    rate: 100,
     period: HOUR,
-    capacity: 5,
+    capacity: 30,
   },
   replicateUploadAnalysisGlobal: {
     kind: "token bucket",
