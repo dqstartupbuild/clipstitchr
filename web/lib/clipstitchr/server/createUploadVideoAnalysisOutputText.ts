@@ -1,5 +1,6 @@
 import { MAX_UPLOAD_VIDEO_ANALYSIS_SIZE_BYTES } from "@/lib/clipstitchr/constants/maxUploadVideoAnalysisSizeBytes";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
+import { createReplicateInputFile } from "@/lib/clipstitchr/server/createReplicateInputFile";
 import { createUploadImageAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadImageAnalysisOutputText";
 import { createUploadVideoAnalysisPrompt } from "@/lib/clipstitchr/server/createUploadVideoAnalysisPrompt";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
@@ -25,12 +26,18 @@ export async function createUploadVideoAnalysisOutputText({
   originalName: string;
   replicate: ReplicateClient;
 }) {
+  const videoFile = createReplicateInputFile({
+    fallbackFileName: "upload-analysis.mp4",
+    file,
+    mimeType: "video/mp4",
+  });
+
   if (file.size <= MAX_UPLOAD_VIDEO_ANALYSIS_SIZE_BYTES) {
     try {
       const prediction = await replicate.predictions.create({
         model: getUploadVideoAnalysisModelId(),
         input: {
-          videos: [file],
+          videos: [videoFile],
           prompt: createUploadVideoAnalysisPrompt({ mediaKind, originalName }),
           system_instruction: UPLOAD_VIDEO_ANALYSIS_SYSTEM_INSTRUCTION,
           temperature: 0.2,

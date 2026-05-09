@@ -1,4 +1,5 @@
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
+import { createReplicateInputFile } from "@/lib/clipstitchr/server/createReplicateInputFile";
 import { createUploadAnalysisPrompt } from "@/lib/clipstitchr/server/createUploadAnalysisPrompt";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { getUploadAnalysisModelId } from "@/lib/clipstitchr/server/getUploadAnalysisModelId";
@@ -20,10 +21,15 @@ export async function createUploadImageAnalysisOutputText({
   originalName: string;
   replicate: ReplicateClient;
 }) {
+  const imageFile = createReplicateInputFile({
+    fallbackFileName: "upload-analysis.jpg",
+    file,
+    mimeType: "image/jpeg",
+  });
   const prediction = await replicate.predictions.create({
     model: getUploadAnalysisModelId(),
     input: {
-      image_input: [file],
+      image_input: [imageFile],
       prompt: createUploadAnalysisPrompt({ mediaKind, originalName }),
       system_prompt: UPLOAD_ANALYSIS_SYSTEM_PROMPT,
       temperature: 0.2,
