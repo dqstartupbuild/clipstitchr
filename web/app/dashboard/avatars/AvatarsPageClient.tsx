@@ -128,8 +128,8 @@ export function AvatarsPageClient() {
           </div>
         ) : null}
         {generator.generatedCount ? (
-          <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-semibold text-green-700">
-            Saved {generator.generatedCount} generated avatar photos.
+          <div className="rounded-lg border border-accent/25 bg-surface-muted p-4 text-sm font-semibold text-accent-dark">
+            Saved {generator.generatedCount} generated photos.
           </div>
         ) : null}
         {showUploadControls ? (

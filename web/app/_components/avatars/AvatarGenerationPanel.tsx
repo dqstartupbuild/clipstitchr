@@ -54,7 +54,7 @@ export function AvatarGenerationPanel({
       <div className="flex flex-col gap-3 xl:flex-row xl:items-end">
         <div className="min-w-0 xl:flex-1">
           <p className="text-xs font-semibold uppercase tracking-wide text-accent-dark">
-            Create source photos
+            Create avatar photos
           </p>
           <h2 className="mt-1 text-base font-bold text-text-primary">
             New photos from selected avatar
@@ -144,7 +144,7 @@ export function AvatarGenerationPanel({
               disabled={!selectedAvatar || !selectedPhoto || !hasDescription}
               onClick={onGenerate}
             >
-              Create Photos
+              {isGenerating ? "Working..." : "Create Photos"}
             </Button>
           </div>
         ) : null}

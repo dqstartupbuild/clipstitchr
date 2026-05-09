@@ -15,7 +15,7 @@
   --text-secondary: #64748b;
   --text-tertiary: #94a3b8;
   --text-inverse: #ffffff;
-  --success: #059669;
+  --success: var(--accent);
   --warning: #d97706;
 }
 
