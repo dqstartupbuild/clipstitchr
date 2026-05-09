@@ -52,6 +52,11 @@ export const consumeR2Upload = mutation({
       count: uploadBytes,
       throws: true,
     });
+    await rateLimiter.limit(ctx, "r2UploadBytesMonthly", {
+      key: ownerId,
+      count: uploadBytes,
+      throws: true,
+    });
   },
 });
 
@@ -103,6 +108,10 @@ export const consumeUploadAnalysis = mutation({
       key: ownerId,
       throws: true,
     });
+    await rateLimiter.limit(ctx, "replicateUploadAnalysisMonthly", {
+      key: ownerId,
+      throws: true,
+    });
     await rateLimiter.limit(ctx, "replicateUploadAnalysisGlobal", {
       throws: true,
     });
@@ -122,6 +131,14 @@ export const consumeSwaprPhotoExpand = mutation({
       key: ownerId,
       throws: true,
     });
+    await rateLimiter.limit(ctx, "replicateSwaprPhotoExpandDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateSwaprPhotoExpandMonthly", {
+      key: ownerId,
+      throws: true,
+    });
     await rateLimiter.limit(ctx, "replicateSwaprPhotoExpandGlobal", {
       throws: true,
     });
@@ -130,12 +147,17 @@ export const consumeSwaprPhotoExpand = mutation({
 
 export const consumeSwaprJobCreate = mutation({
   args: {
+    estimatedSeconds: v.number(),
     secret: v.string(),
   },
-  handler: async (ctx, { secret }) => {
+  handler: async (ctx, { estimatedSeconds, secret }) => {
     assertRateLimitApiSecret(secret);
 
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const generatedSeconds = getPositiveCount(
+      estimatedSeconds,
+      "Estimated generated seconds",
+    );
 
     await rateLimiter.limit(ctx, "replicateSwaprJobCreate", {
       key: ownerId,
@@ -143,6 +165,11 @@ export const consumeSwaprJobCreate = mutation({
     });
     await rateLimiter.limit(ctx, "replicateSwaprJobCreateDaily", {
       key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateSwaprGeneratedSecondsMonthly", {
+      key: ownerId,
+      count: generatedSeconds,
       throws: true,
     });
     await rateLimiter.limit(ctx, "replicateSwaprJobCreateGlobal", {
@@ -227,6 +254,11 @@ export const consumeAvatarPhotoGenerate = mutation({
       throws: true,
     });
     await rateLimiter.limit(ctx, "replicateAvatarPhotoGenerateDaily", {
+      key: ownerId,
+      count: imageCount,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateAvatarPhotoGenerateMonthly", {
       key: ownerId,
       count: imageCount,
       throws: true,

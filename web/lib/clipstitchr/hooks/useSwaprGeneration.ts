@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { createSwaprGenerationPhotoBlob } from "@/lib/clipstitchr/client/createSwaprGenerationPhotoBlob";
-import { uploadBlobToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobToR2";
+import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
@@ -149,18 +149,22 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
 
         const now = new Date().toISOString();
         const clipId = createId();
-        const videoObject = await uploadBlobToR2({
-          blob: normalized.blob,
-          kind: "video-clip-video",
-          recordId: clipId,
-        });
-        const posterObject = posterBlob
-          ? await uploadBlobToR2({
-              blob: posterBlob,
-              kind: "video-clip-poster",
-              recordId: clipId,
-            })
-          : undefined;
+        const [videoObject, posterObject] = await uploadBlobsToR2([
+          {
+            blob: normalized.blob,
+            kind: "video-clip-video",
+            recordId: clipId,
+          },
+          ...(posterBlob
+            ? [
+                {
+                  blob: posterBlob,
+                  kind: "video-clip-poster" as const,
+                  recordId: clipId,
+                },
+              ]
+            : []),
+        ]);
         const nextClip: VideoClip = {
           id: clipId,
           name: `Swapr - ${photo.name} in ${clip.name}`,

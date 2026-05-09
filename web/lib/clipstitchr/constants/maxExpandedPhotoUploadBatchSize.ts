@@ -1,0 +1,1 @@
+export const MAX_EXPANDED_PHOTO_UPLOAD_BATCH_SIZE = 1;

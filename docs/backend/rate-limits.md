@@ -61,21 +61,36 @@ Existing Convex auth variables still apply:
 
 | Surface | Enforcement Point | Limit |
 | --- | --- | --- |
-| R2 upload signed URL | `POST /api/r2/upload-url` | 100-/hour/user, burst 30 |
-| R2 upload bytes | `POST /api/r2/upload-url` | 2 GB/day/user |
-| R2 download signed URL | `POST /api/r2/download-url` | 120/hour/user, burst 30 |
-| R2 deletes | `POST /api/r2/delete-objects` | 100 objects/hour/user, burst 25 |
-| Upload metadata analysis | `POST /api/uploads/analyze` | 100/hour/user, burst 30 |
-| Swapr photo expansion | `POST /api/swapr/photos/expand` | 5/hour/user, burst 2; global 60/hour |
-| Swapr video job create | `POST /api/swapr/jobs` | 3/hour/user, burst 2; 10/day/user; global 30/hour |
-| Swapr job polling | `GET /api/swapr/jobs/{id}` | 120/minute/user, burst 30 |
-| Swapr job cancellation | `POST /api/swapr/jobs/{id}/cancel` | 30/hour/user, burst 5 |
-| Swapr output proxy | `GET /api/swapr/output` | 30/hour/user, burst 10 |
-| Avatar photo generation | `POST /api/avatars/photos/generate` | 20 generated images/hour/user, burst 10; 30 generated images/day/user; global 200 generated images/hour |
-| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `stitches.save` | 30/hour/user, burst 10 |
-| Convex metadata updates | `avatars.update`, `updateMetadata` mutations | 120/hour/user, burst 30 |
-| Convex poster updates | `updatePoster` mutations | 60/hour/user, burst 15 |
-| Convex record deletes | `remove` mutations | 100/hour/user, burst 20 |
+| R2 upload signed URL | `POST /api/r2/upload-url` | 2,000/hour/user, burst 500 |
+| R2 upload bytes | `POST /api/r2/upload-url` | 10 GB/day/user; 100 GB/30 days/user |
+| R2 download signed URL | `POST /api/r2/download-url` | 5,000/hour/user, burst 1,000 |
+| R2 deletes | `POST /api/r2/delete-objects` | 2,000 objects/hour/user, burst 500 |
+| Upload metadata analysis | `POST /api/uploads/analyze` | 300/hour/user, burst 100; 2,000/30 days/user; global 6,000/hour |
+| Swapr photo expansion | `POST /api/swapr/photos/expand` | 10/hour/user, burst 5; 20/day/user; 75/30 days/user; global 300/hour |
+| Swapr video job create | `POST /api/swapr/jobs` | 2/hour/user, burst 2; 5/day/user; 100 estimated output seconds/30 days/user; global 300/hour |
+| Swapr job polling | `GET /api/swapr/jobs/{id}` | 600/minute/user, burst 150 |
+| Swapr job cancellation | `POST /api/swapr/jobs/{id}/cancel` | 100/hour/user, burst 20 |
+| Swapr output proxy | `GET /api/swapr/output` | 1,000/hour/user, burst 200 |
+| Avatar photo generation | `POST /api/avatars/photos/generate` | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 100 generated images/30 days/user; global 1,000 generated images/hour |
+| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `stitches.save` | 3,000/hour/user, burst 500 |
+| Convex metadata updates | `avatars.update`, `updateMetadata` mutations | 5,000/hour/user, burst 1,000 |
+| Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
+| Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
+
+## Client Batch Caps
+
+Client upload controls enforce batch sizes before any processing, signed URL
+request, R2 upload, or Convex save starts:
+
+| Surface | Client Cap | Reason |
+| --- | --- | --- |
+| Photo upload without AI expansion | 100 files at once | Each photo creates 3 R2 objects and 1 metadata analysis request, fitting under the R2 upload, analysis, and Convex-save burst limits. |
+| Photo upload with AI expansion | 1 file at once | Each source image may trigger paid outpainting before it is saved, so the UI keeps this workflow explicitly one-at-a-time. |
+| Video upload | 100 files at once | Each video usually creates 1 normalized video object, 1 poster object, and 1 metadata analysis request, fitting under the R2 upload, analysis, and Convex-save burst limits. |
+
+These caps reduce partial batches and orphaned R2 objects. They do not replace
+server-side rate limits: prior usage in the same window can still cause a `429`
+before expensive work is started.
 
 ## Replicate Ownership
 
@@ -88,6 +103,12 @@ calling Replicate. The GPT Image 2 model accepts up to 10 outputs in one
 prediction, but ClipStitchr runs one prediction per generated avatar photo so
 each output can receive a unique prompt variant and avoid grid/contact-sheet
 results. Each prediction is recorded as an `avatar-photo` Replicate job.
+
+Swapr video generation is rate-limited both by job count and by estimated output
+seconds. The route uses the source orientation limit as the estimate: image-led
+jobs consume 10 seconds from the monthly budget and video-led jobs consume 30
+seconds. This is a spend-control approximation until provider-side final
+duration is stored in the job ledger.
 
 Provider outputs must be finalized by a durable server-side path before they are
 treated as saved user assets. See `docs/backend/durable-workflows.md` for the
@@ -104,6 +125,11 @@ signed URL. This is useful quota accounting, but it is not a complete object-siz
 enforcement mechanism because the browser uploads directly to R2 after the URL is
 issued. Keep signed URL lifetimes short and add orphan cleanup for objects that
 were uploaded but never saved to Convex.
+
+Client save flows that write multiple R2 objects for one logical asset request
+all signed URLs before any `PUT` starts. That keeps a rate-limit rejection on
+one object from leaving a partially uploaded photo, video, Swapr output, or
+stitch object group in R2.
 
 ## Verification
 

@@ -10,6 +10,8 @@ import { ACCEPTED_PHOTO_TYPES } from "@/lib/clipstitchr/constants/acceptedPhotoT
 import { ACCEPTED_VIDEO_TYPES } from "@/lib/clipstitchr/constants/acceptedVideoTypes";
 import { useUploadProcessor } from "@/lib/clipstitchr/hooks/useUploadProcessor";
 import type { UploadAssetType } from "@/lib/clipstitchr/types/UploadAssetType";
+import { getUploadBatchLimit } from "@/lib/clipstitchr/utils/getUploadBatchLimit";
+import { getUploadBatchLimitMessage } from "@/lib/clipstitchr/utils/getUploadBatchLimitMessage";
 
 type UploadPanelProps = {
   allowedAssetTypes?: UploadAssetType[];
@@ -69,6 +71,7 @@ export function UploadPanel({
 }: UploadPanelProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [shouldExpandPhotosWithAi, setShouldExpandPhotosWithAi] =
     useState(false);
   const assetType = initialAssetType;
@@ -82,8 +85,19 @@ export function UploadPanel({
   const content = contentByAssetType[assetType];
   const isPhoto = assetType === "photo";
   const isProcessing = isPhoto ? isPhotoUploading : uploadProcessor.isProcessing;
+  const uploadBatchLimit = getUploadBatchLimit({
+    assetType,
+    shouldExpandWithAi: shouldExpandPhotosWithAi,
+  });
+  const uploadBatchLimitMessage = getUploadBatchLimitMessage({
+    assetType,
+    limit: uploadBatchLimit,
+    shouldExpandWithAi: shouldExpandPhotosWithAi,
+  });
+  const currentUploadError = uploadError ?? (isPhoto ? null : uploadProcessor.error);
 
   const handleAssetTypeChange = (nextAssetType: UploadAssetType) => {
+    setUploadError(null);
     onAssetTypeChange?.(nextAssetType);
 
     if (nextAssetType !== "photo") {
@@ -92,6 +106,17 @@ export function UploadPanel({
   };
 
   const handleFiles = (files: FileList | File[]) => {
+    const selectedFileCount = Array.from(files).filter((file) =>
+      content.acceptedTypes.includes(file.type),
+    ).length;
+
+    if (selectedFileCount > uploadBatchLimit) {
+      setUploadError(uploadBatchLimitMessage);
+      return;
+    }
+
+    setUploadError(null);
+
     if (isPhoto) {
       void onPhotoUploaded(files, {
         shouldExpandWithAi: shouldExpandPhotosWithAi,
@@ -152,6 +177,9 @@ export function UploadPanel({
         <p className="mt-2 max-w-md text-sm leading-6 text-text-secondary">
           {content.dropDescription}
         </p>
+        <p className="mt-1 text-xs font-semibold text-text-tertiary">
+          {uploadBatchLimitMessage}
+        </p>
         <Button
           type="button"
           className="mt-5"
@@ -163,7 +191,7 @@ export function UploadPanel({
         <input
           ref={inputRef}
           type="file"
-          multiple
+          multiple={uploadBatchLimit > 1}
           accept={content.acceptedTypes.join(",")}
           className="sr-only"
           onChange={(event) => {
@@ -181,9 +209,10 @@ export function UploadPanel({
             type="checkbox"
             checked={shouldExpandPhotosWithAi}
             className="mt-1 h-4 w-4 accent-accent"
-            onChange={(event) =>
-              setShouldExpandPhotosWithAi(event.currentTarget.checked)
-            }
+            onChange={(event) => {
+              setUploadError(null);
+              setShouldExpandPhotosWithAi(event.currentTarget.checked);
+            }}
           />
           <span className="text-sm leading-6 text-text-secondary">
             AI-expand the background instead of cropping. When off, photos are
@@ -193,6 +222,11 @@ export function UploadPanel({
       ) : (
         <UploadQueueList queue={uploadProcessor.queue} />
       )}
+      {currentUploadError ? (
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {currentUploadError}
+        </div>
+      ) : null}
     </Panel>
   );
 }

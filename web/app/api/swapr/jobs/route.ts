@@ -14,6 +14,7 @@ import { getSwaprFormBoolean } from "@/lib/clipstitchr/server/getSwaprFormBoolea
 import { getSwaprFormFile } from "@/lib/clipstitchr/server/getSwaprFormFile";
 import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString";
 import { getSwaprMode } from "@/lib/clipstitchr/server/getSwaprMode";
+import { getSwaprReferenceDurationLimit } from "@/lib/clipstitchr/utils/getSwaprReferenceDurationLimit";
 
 export const runtime = "nodejs";
 
@@ -35,11 +36,6 @@ export async function POST(request: Request) {
 
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const secret = getRateLimitApiSecret();
-
-    await convex.mutation(api.rateLimits.consumeSwaprJobCreate, {
-      secret,
-    });
-
     const formData = await request.formData();
     const image = getSwaprFormFile(formData, "image");
     const video = getSwaprFormFile(formData, "video");
@@ -52,6 +48,11 @@ export async function POST(request: Request) {
       formData,
       "keepOriginalSound",
     );
+
+    await convex.mutation(api.rateLimits.consumeSwaprJobCreate, {
+      estimatedSeconds: getSwaprReferenceDurationLimit(characterOrientation),
+      secret,
+    });
 
     const replicate = createReplicateClient();
     const prediction = await replicate.predictions.create({

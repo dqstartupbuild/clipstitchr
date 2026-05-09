@@ -5,7 +5,7 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { analyzeUploadAsset } from "@/lib/clipstitchr/client/analyzeUploadAsset";
-import { uploadBlobToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobToR2";
+import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
 import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
@@ -14,6 +14,8 @@ import type { UploadAssetAnalysis } from "@/lib/clipstitchr/types/UploadAssetAna
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
+import { getUploadBatchLimit } from "@/lib/clipstitchr/utils/getUploadBatchLimit";
+import { getUploadBatchLimitMessage } from "@/lib/clipstitchr/utils/getUploadBatchLimitMessage";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
 type UseUploadProcessorOptions = {
@@ -29,6 +31,7 @@ export function useUploadProcessor({
   const [clipType, setClipType] = useState<ClipType>(initialClipType);
   const [queue, setQueue] = useState<UploadQueueItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const updateQueueItem = useCallback(
     (id: string, update: Partial<UploadQueueItem>) => {
@@ -48,6 +51,24 @@ export function useUploadProcessor({
       if (selectedFiles.length === 0) {
         return;
       }
+
+      const uploadBatchLimit = getUploadBatchLimit({
+        assetType: clipType,
+        shouldExpandWithAi: false,
+      });
+
+      if (selectedFiles.length > uploadBatchLimit) {
+        setError(
+          getUploadBatchLimitMessage({
+            assetType: clipType,
+            limit: uploadBatchLimit,
+            shouldExpandWithAi: false,
+          }),
+        );
+        return;
+      }
+
+      setError(null);
 
       const queueItems = selectedFiles.map<UploadQueueItem>((file) => ({
         id: createId(),
@@ -110,18 +131,22 @@ export function useUploadProcessor({
 
             const now = new Date().toISOString();
             const clipId = createId();
-            const videoObject = await uploadBlobToR2({
-              blob: normalized.blob,
-              kind: "video-clip-video",
-              recordId: clipId,
-            });
-            const posterObject = posterBlob
-              ? await uploadBlobToR2({
-                  blob: posterBlob,
-                  kind: "video-clip-poster",
-                  recordId: clipId,
-                })
-              : undefined;
+            const [videoObject, posterObject] = await uploadBlobsToR2([
+              {
+                blob: normalized.blob,
+                kind: "video-clip-video",
+                recordId: clipId,
+              },
+              ...(posterBlob
+                ? [
+                    {
+                      blob: posterBlob,
+                      kind: "video-clip-poster" as const,
+                      recordId: clipId,
+                    },
+                  ]
+                : []),
+            ]);
             const clip: VideoClip = {
               id: clipId,
               name: analysis.name,
@@ -209,6 +234,7 @@ export function useUploadProcessor({
     setClipType,
     queue,
     isProcessing,
+    error,
     processFiles,
     clearQueue,
   };

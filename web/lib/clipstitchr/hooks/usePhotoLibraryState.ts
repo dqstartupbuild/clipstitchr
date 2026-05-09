@@ -16,7 +16,7 @@ import { analyzeUploadAsset } from "@/lib/clipstitchr/client/analyzeUploadAsset"
 import { expandSwaprPhotoWithAi } from "@/lib/clipstitchr/client/expandSwaprPhotoWithAi";
 import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
 import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
-import { uploadBlobToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobToR2";
+import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { createImageThumbnailBlob } from "@/lib/clipstitchr/media/createImageThumbnailBlob";
 import { createSwaprOutpaintInputs } from "@/lib/clipstitchr/media/createSwaprOutpaintInputs";
 import { createSwaprPortraitPhotoBlob } from "@/lib/clipstitchr/media/createSwaprPortraitPhotoBlob";
@@ -33,6 +33,8 @@ import { getAvatarGenerationTags } from "@/lib/clipstitchr/utils/getAvatarGenera
 import { getGeneratedAvatarPhotoName } from "@/lib/clipstitchr/utils/getGeneratedAvatarPhotoName";
 import { getImageNeedsSwaprOutpaint } from "@/lib/clipstitchr/utils/getImageNeedsSwaprOutpaint";
 import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
+import { getUploadBatchLimit } from "@/lib/clipstitchr/utils/getUploadBatchLimit";
+import { getUploadBatchLimitMessage } from "@/lib/clipstitchr/utils/getUploadBatchLimitMessage";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
 type SavePhotoFilesOptions = {
@@ -136,6 +138,22 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
         return;
       }
 
+      const uploadBatchLimit = getUploadBatchLimit({
+        assetType: "photo",
+        shouldExpandWithAi,
+      });
+
+      if (selectedFiles.length > uploadBatchLimit) {
+        setError(
+          getUploadBatchLimitMessage({
+            assetType: "photo",
+            limit: uploadBatchLimit,
+            shouldExpandWithAi,
+          }),
+        );
+        return;
+      }
+
       if (!uploadAvatarId && !trimmedAvatarName) {
         setError("Create or select an avatar before uploading photos.");
         return;
@@ -221,22 +239,22 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
 
           const photoId = createId();
           const [photoObject, originalObject, thumbnailObject] =
-            await Promise.all([
-              uploadBlobToR2({
+            await uploadBlobsToR2([
+              {
                 blob: normalizedBlob,
                 kind: "photo",
                 recordId: photoId,
-              }),
-              uploadBlobToR2({
+              },
+              {
                 blob: file,
                 kind: "photo-original",
                 recordId: photoId,
-              }),
-              uploadBlobToR2({
+              },
+              {
                 blob: thumbnailBlob,
                 kind: "photo-thumbnail",
                 recordId: photoId,
-              }),
+              },
             ]);
           const photo: PhotoAsset = {
             id: photoId,
@@ -376,22 +394,22 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
             originalDimensions.height,
           );
           const [photoObject, originalObject, thumbnailObject] =
-            await Promise.all([
-              uploadBlobToR2({
+            await uploadBlobsToR2([
+              {
                 blob: normalizedBlob,
                 kind: "photo",
                 recordId: photoId,
-              }),
-              uploadBlobToR2({
+              },
+              {
                 blob,
                 kind: "photo-original",
                 recordId: photoId,
-              }),
-              uploadBlobToR2({
+              },
+              {
                 blob: thumbnailBlob,
                 kind: "photo-thumbnail",
                 recordId: photoId,
-              }),
+              },
             ]);
           const photo: PhotoAsset = {
             id: photoId,

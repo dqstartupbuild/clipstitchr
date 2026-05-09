@@ -8,7 +8,7 @@ import {
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
-import { uploadBlobToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobToR2";
+import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { stitchNormalizedVideos } from "@/lib/clipstitchr/media/stitchNormalizedVideos";
 import { stitchNormalizedVideosWithTextOverlay } from "@/lib/clipstitchr/media/stitchNormalizedVideosWithTextOverlay";
@@ -76,18 +76,22 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
 
         const now = new Date().toISOString();
         const stitchId = createId();
-        const stitchObject = await uploadBlobToR2({
-          blob: stitched.blob,
-          kind: "stitch-video",
-          recordId: stitchId,
-        });
-        const posterObject = posterBlob
-          ? await uploadBlobToR2({
-              blob: posterBlob,
-              kind: "stitch-poster",
-              recordId: stitchId,
-            })
-          : undefined;
+        const [stitchObject, posterObject] = await uploadBlobsToR2([
+          {
+            blob: stitched.blob,
+            kind: "stitch-video",
+            recordId: stitchId,
+          },
+          ...(posterBlob
+            ? [
+                {
+                  blob: posterBlob,
+                  kind: "stitch-poster" as const,
+                  recordId: stitchId,
+                },
+              ]
+            : []),
+        ]);
         const nextStitch: Stitch = {
           id: stitchId,
           name: getDownloadFileName(ugcClip.name, demoClip.name),
