@@ -62,16 +62,16 @@ Existing Convex auth variables still apply:
 | Surface | Enforcement Point | Limit |
 | --- | --- | --- |
 | R2 upload signed URL | `POST /api/r2/upload-url` | 2,000/hour/user, burst 500 |
-| R2 upload bytes | `POST /api/r2/upload-url` | 10 GB/day/user; 100 GB/30 days/user |
+| R2 upload bytes | `POST /api/r2/upload-url` | 10 GB/day/user; 500 GB/30 days/user |
 | R2 download signed URL | `POST /api/r2/download-url` | 5,000/hour/user, burst 1,000 |
 | R2 deletes | `POST /api/r2/delete-objects` | 2,000 objects/hour/user, burst 500 |
-| Upload metadata analysis | `POST /api/uploads/analyze` | 300/hour/user, burst 100; 2,000/30 days/user; global 6,000/hour |
-| Swapr photo expansion | `POST /api/swapr/photos/expand` | 10/hour/user, burst 5; 20/day/user; 75/30 days/user; global 300/hour |
-| Swapr video job create | `POST /api/swapr/jobs` | 2/hour/user, burst 2; 5/day/user; 100 estimated output seconds/30 days/user; global 300/hour |
+| Upload metadata analysis | `POST /api/uploads/analyze` | 300/hour/user, burst 100; 10,000/30 days/user; global 6,000/hour |
+| Swapr photo expansion | `POST /api/swapr/photos/expand` | 10/hour/user, burst 5; 20/day/user; 375/30 days/user; global 300/hour |
+| Swapr video job create | `POST /api/swapr/jobs` | 2/hour/user, burst 2; 5/day/user; 500 estimated output seconds/30 days/user; global 300/hour |
 | Swapr job polling | `GET /api/swapr/jobs/{id}` | 600/minute/user, burst 150 |
 | Swapr job cancellation | `POST /api/swapr/jobs/{id}/cancel` | 100/hour/user, burst 20 |
 | Swapr output proxy | `GET /api/swapr/output` | 1,000/hour/user, burst 200 |
-| Avatar photo generation | `POST /api/avatars/photos/generate` | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 100 generated images/30 days/user; global 1,000 generated images/hour |
+| Avatar photo generation | `POST /api/avatars/photos/generate` | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `stitches.save` | 3,000/hour/user, burst 500 |
 | Convex metadata updates | `avatars.update`, `updateMetadata` mutations | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |

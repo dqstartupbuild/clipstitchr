@@ -19,9 +19,9 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
   },
   r2UploadBytesMonthly: {
     kind: "token bucket",
-    rate: 100 * GIGABYTE,
+    rate: 500 * GIGABYTE,
     period: MONTH,
-    capacity: 100 * GIGABYTE,
+    capacity: 500 * GIGABYTE,
   },
   r2DownloadUrl: {
     kind: "token bucket",
@@ -43,9 +43,9 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
   },
   replicateUploadAnalysisMonthly: {
     kind: "token bucket",
-    rate: 2000,
+    rate: 10000,
     period: MONTH,
-    capacity: 2000,
+    capacity: 10000,
   },
   replicateUploadAnalysisGlobal: {
     kind: "token bucket",
@@ -68,9 +68,9 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
   },
   replicateSwaprPhotoExpandMonthly: {
     kind: "token bucket",
-    rate: 75,
+    rate: 375,
     period: MONTH,
-    capacity: 75,
+    capacity: 375,
   },
   replicateSwaprPhotoExpandGlobal: {
     kind: "token bucket",
@@ -93,9 +93,9 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
   },
   replicateSwaprGeneratedSecondsMonthly: {
     kind: "token bucket",
-    rate: 100,
+    rate: 500,
     period: MONTH,
-    capacity: 100,
+    capacity: 500,
   },
   replicateSwaprJobCreateGlobal: {
     kind: "token bucket",
@@ -136,9 +136,9 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
   },
   replicateAvatarPhotoGenerateMonthly: {
     kind: "token bucket",
-    rate: 100,
+    rate: 500,
     period: MONTH,
-    capacity: 100,
+    capacity: 500,
   },
   replicateAvatarPhotoGenerateGlobal: {
     kind: "token bucket",

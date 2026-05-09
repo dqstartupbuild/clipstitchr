@@ -11,29 +11,31 @@ Target plan:
 
 - Price: $99/month.
 - Variable-cost target: keep provider, storage, bandwidth, and retry cost below
-  1/8 of revenue.
+  5/8 of revenue.
 - Maximum variable-cost budget at 8x revenue-to-cost: $12.38/user/month.
-- Operating target before production cost data: $8-$10/user/month.
+- Expanded maximum variable-cost budget at 5x the original target:
+  $61.88/user/month.
+- Operating target before production cost data: $40-$50/user/month.
 
 Recommended budget split:
 
 | Cost Bucket | Monthly Target |
 | --- | ---: |
-| AI/provider calls | $8.50 |
-| R2 storage, operations, and bandwidth | $1.00 |
-| Convex usage and backend overhead | $0.75 |
-| Failed jobs, retries, and abuse slack | $1.00 |
-| Total target | $11.25 |
+| AI/provider calls | $42.50 |
+| R2 storage, operations, and bandwidth | $5.00 |
+| Convex usage and backend overhead | $3.75 |
+| Failed jobs, retries, and abuse slack | $5.00 |
+| Total target | $56.25 |
 
-Keep the total under $12.38 for the 8x target. If actual provider pricing makes
-Swapr or image generation more expensive than the placeholder assumptions below,
-reduce credits, increase per-operation credit cost, or add paid overages.
+Keep the total under $61.88 for the expanded target. If actual provider pricing
+makes Swapr or image generation more expensive than the placeholder assumptions
+below, reduce credits, increase per-operation credit cost, or add paid overages.
 
 ## Credit Model
 
-Default paid allowance: 100 AI credits/month.
+Default paid allowance: 500 AI credits/month.
 
-At an $8.50 AI budget, one credit should represent roughly $0.085 of provider
+At a $42.50 AI budget, one credit should represent roughly $0.085 of provider
 cost. Any operation whose real cost is higher than $0.085 should consume more
 than one credit.
 
@@ -42,31 +44,31 @@ than one credit.
 | Upload metadata analysis | 0.05 credits | Cheap enrichment. Cap separately to prevent bulk abuse. |
 | Avatar generated photo | 1 credit/image | Backed by GPT Image 2 through Replicate. |
 | AI photo outpaint/expand | 1 credit/image | Backed by FLUX.1 Fill pro through Replicate. |
-| Swapr standard video | 1 credit/output second | Monthly cap currently maps to 100 estimated seconds. |
+| Swapr standard video | 1 credit/output second | Monthly cap currently maps to 500 estimated seconds. |
 | Swapr pro video, if exposed | 1.5-2 credits/output second | Use only if a higher-cost mode is added to the UI. |
 | R2 upload/download/delete | 0 credits | Rate-limit for abuse and storage budget instead. |
 | Convex metadata writes | 0 credits | Rate-limit for backend churn instead. |
 
 Credit examples:
 
-- 100 avatar generated photos consumes 100 credits.
-- 75 AI-expanded photos consumes 75 credits.
-- 100 seconds of Swapr output consumes 100 credits.
-- 50 seconds of Swapr output plus 25 avatar photos and 500 metadata analyses
-  consumes 100 credits.
+- 500 avatar generated photos consumes 500 credits.
+- 375 AI-expanded photos consumes 375 credits.
+- 500 seconds of Swapr output consumes 500 credits.
+- 250 seconds of Swapr output plus 125 avatar photos and 2,500 metadata
+  analyses consumes 500 credits.
 
 ## Current Rate-Limit Mapping
 
-The implemented rate limits approximate the 100-credit plan until a real credit
+The implemented rate limits approximate the 500-credit plan until a real credit
 ledger exists:
 
 | Surface | Monthly Budget |
 | --- | ---: |
-| Upload metadata analysis | 2,000 analyses/30 days |
-| Avatar generated photos | 100 images/30 days |
-| AI photo outpaint/expand | 75 images/30 days |
-| Swapr video generation | 100 estimated output seconds/30 days |
-| R2 uploads | 100 GB/30 days |
+| Upload metadata analysis | 10,000 analyses/30 days |
+| Avatar generated photos | 500 images/30 days |
+| AI photo outpaint/expand | 375 images/30 days |
+| Swapr video generation | 500 estimated output seconds/30 days |
+| R2 uploads | 500 GB/30 days |
 
 Hourly and daily limits are still required. Monthly limits protect spend, while
 short-window limits protect queues, provider concurrency, and accidental bursts.
@@ -116,6 +118,6 @@ stable:
 - R2 egress and signed URL volume.
 - Gross margin by user cohort.
 
-Tighten limits immediately if any cohort trends above $12.38 variable
+Tighten limits immediately if any cohort trends above $61.88 variable
 cost/month. Raise limits only after invoice data confirms the operation stays
 inside the credit value.
