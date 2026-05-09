@@ -11,7 +11,7 @@ const studios = [
   },
   {
     eyebrow: "Swapr",
-    title: "Create source clips when you need more.",
+    title: "Create new UGC clips when you need more.",
     description:
       "Pick or upload an avatar photo and a UGC clip to make a new UGC clip, then use it in Stitchr like any other UGC clip.",
     icon: Shuffle,

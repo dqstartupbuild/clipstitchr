@@ -5,9 +5,9 @@ export function getSwaprGenerationMessage(status: SwaprGenerationStatus) {
     case "uploading":
       return "Preparing your selected photo and clip.";
     case "queued":
-      return "Waiting to start your source clip.";
+      return "Waiting for swap to begin.";
     case "processing":
-      return "Swapping the face...";
+      return "Swapping...";
     case "downloading":
       return "Getting the finished clip.";
     case "normalizing":

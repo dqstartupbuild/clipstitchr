@@ -125,7 +125,7 @@ export function UploadsPageClient() {
         <LibraryPageHeader
           eyebrow="Library"
           title="Content Library"
-          description="Keep UGC clips, product demos, optional source clips, and finished stitches ready for the next ad."
+          description="Keep UGC clips, product demos, swaps, and stitches ready for the next ad."
         />
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">

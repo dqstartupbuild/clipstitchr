@@ -31,8 +31,7 @@ export function SwaprUgcSelector({
           Choose UGC motion
         </h2>
         <p className="mt-2 text-sm leading-6 text-text-secondary">
-          Pick the UGC clip with the movement, framing, or energy you want to
-          reuse.
+          Pick the UGC clip with the movement or reaction you want to reuse.
         </p>
       </div>
 
