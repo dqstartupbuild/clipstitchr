@@ -1,6 +1,12 @@
 # ClipStitchr
 
-ClipStitchr lets users upload UGC reaction clips and product demo videos, then automatically stitches them together to produce polished marketing videos.
+ClipStitchr helps marketers turn saved UGC clips and product demo videos into
+finished 9:16 ad variants without opening a traditional video editor.
+
+The primary workflow is Stitchr: upload clips once, keep them organized in a
+content library, then pair UGC with product demos to create finished ads. AI
+features such as avatar photo generation, photo expansion, and Swapr are
+secondary helpers for creating or extending source material.
 
 Built with [Next.js](https://nextjs.org), [Clerk](https://clerk.com), [Tailwind CSS](https://tailwindcss.com), [Content Collections](https://www.content-collections.dev), and [Media Bunny](https://mediabunny.dev).
 
@@ -53,6 +59,17 @@ The app processes media in the browser and stores durable data in Convex and Clo
 - Each saved video also stores a generated JPEG poster object plus `posterVersion`.
 - Posters are generated in the browser by seeking through candidate frames and choosing a visibly non-black frame for the video element's `poster` attribute.
 - User-authored thumbnail generation and thumbnail editing are not part of the MVP.
+
+## Product Docs
+
+- `../docs/product/positioning.md` defines the customer pain, product promise,
+  audience, feature hierarchy, and AI positioning.
+- `../docs/product/copywriting-guide.md` defines reusable marketing and UI copy
+  guidance.
+- `../docs/features/stitchr.md` defines the primary Stitchr workflow and
+  product principles.
+- `../monetization.md` defines hypothetical pricing, margin, rate-limit, and
+  plan-positioning assumptions.
 
 ## Project Structure
 

@@ -18,18 +18,45 @@ The current highest monthly rate limits should be treated as the Studio hard
 ceiling. Lower plans should use the same enforcement machinery with smaller
 monthly credit, storage, and feature caps.
 
+## Product Positioning Context
+
+ClipStitchr should be priced as an ad-production workflow tool, not as an
+AI-credit vending machine. The primary customer pain is that marketers collect
+UGC clips, b-roll, reaction clips, and product demos but do not turn them into
+finished ads because editing, organizing, exporting, and file management are
+too much friction.
+
+The core paid value is:
+
+- a reusable content library for UGC and product demos
+- faster creation of finished 9:16 ad variants
+- less dependence on a traditional video editor for repetitive ad assembly
+- better organization of raw clips, generated clips, and finished stitches
+
+AI credits are part of the cost model because they create provider spend, but
+they should not be the headline value metric. Plans should lead with content
+library scale, ad-output workflow speed, and production volume. AI features
+should be positioned as optional source-material helpers when the user needs
+more clips or better-framed photos.
+
 | Plan | Price | Positioning | Shared AI Credits | Retained Storage Cap |
 | --- | ---: | --- | ---: | ---: |
-| Creator | $20/month | Entry plan for occasional content creation. | 50 | 25 GB |
-| Pro | $99/month | Main plan for solo operators and small brands. | 250 | 250 GB |
-| Studio | $249/month | Agency and high-volume production plan. | 500 | 500 GB |
+| Creator | $20/month | Entry plan for a small content library and occasional ad variants. | 50 | 25 GB |
+| Pro | $99/month | Main plan for solo operators turning UGC and demos into regular ad tests. | 250 | 250 GB |
+| Studio | $249/month | High-volume plan for larger libraries, teams, agencies, and frequent variants. | 500 | 500 GB |
 
 Positioning:
 
-- Creator: for testing the workflow and creating occasional AI UGC.
-- Pro: the highlighted default plan for serious solo content production.
+- Creator: for validating the workflow, organizing a small clip library, and
+  creating occasional ad variants.
+- Pro: the highlighted default plan for serious solo content production from
+  real UGC and product demos.
 - Studio: for agencies, teams, and higher-volume accounts that need more
-  monthly generation room.
+  monthly production room, larger libraries, and faster workflows.
+
+Marketing copy should avoid leading with AI limits. AI credits can appear in
+plan details, but the plan story should be about how much content chaos the
+user can turn into finished ads.
 
 ## Margin Targets
 

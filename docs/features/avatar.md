@@ -6,6 +6,10 @@ Avatars are reusable person identities for Swapr. An avatar is not a single phot
 
 Avatar photos are individual image assets for that avatar. Each photo can have its own outfit, location, and upload context, but those details must not be mixed into the avatar identity description.
 
+Avatar and Swapr features are secondary to the main Stitchr workflow. They exist
+to create or improve source material that can become UGC-style inputs for
+finished ad variants.
+
 ## Data Model
 
 ### Avatar

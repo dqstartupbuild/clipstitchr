@@ -8,9 +8,37 @@
 
 ## 1. Vision
 
-**ClipStitchr** is a web application that lets users upload UGC (User-Generated Content) reaction clips and product demo videos, normalize them to TikTok-ready 9:16 format, then seamlessly stitch them together to produce polished marketing videos — all from the browser.
+**ClipStitchr** helps overwhelmed marketers turn the clips they already have
+into finished short-form ad videos without opening a traditional video editor.
 
-Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique 9:16 videos** — each pairing a different UGC clip (first) with the same product demo (second) — in minutes, without leaving the app.
+The core pain is not just video processing. Many founders, small business
+owners, and lean marketers record product demos, buy UGC b-roll, collect
+reaction clips, and still publish very little because the editing workflow is
+too much: find files, import clips, trim dead space, sequence the ad, add
+metadata, export, save the output, and remember what was already used.
+
+ClipStitchr turns that pile of raw marketing footage into a reusable content
+library and a one-click ad-creation workflow. Given **5 UGC clips** and **1
+product demo**, a user can produce **5 unique 9:16 ad variants** - each pairing
+a different UGC clip first with the same product demo second - in minutes,
+without leaving the app.
+
+The primary product is **Stitchr**. AI features like Swapr and Avatar Photo Generator are secondary helpers for
+creating or extending source material when a user does not have enough usable
+clips.
+
+### Product Thesis
+
+ClipStitchr is not a general video editor, AI playground, or social scheduler.
+It is a practical ad-production workflow for people who dislike the repetitive
+work of turning scattered UGC and product demos into finished short-form ads.
+
+The product should make users feel that every uploaded clip has a job, every
+demo can become multiple ad variations, and the content library is no longer a
+dead-end folder on their computer.
+
+See `docs/product/positioning.md`, `docs/product/copywriting-guide.md`, and
+`docs/features/stitchr.md` for reusable product, marketing, and copy guidance.
 
 ---
 
@@ -51,6 +79,11 @@ Given **5 UGC clips** and **1 product demo**, a user can produce **5 unique 9:16
 │ Download single TikTok 9:16 file │
 └──────────────────────────────────┘
 ```
+
+The workflow should optimize for reducing editing friction, not exposing every
+possible editing control. Users should be able to upload, organize, stitch, and
+export without thinking in terms of timelines, bins, codecs, or file-system
+cleanup.
 
 ---
 
@@ -124,6 +157,19 @@ Text overlays are planned for later, but they are not required for the MVP.
 | 10 | Stitches appear in the Content Library Stitches tab; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
 | 11 | The Content Library includes an All tab so users can view every saved video output type at once | ✅ | ✅ |
 | 12 | A unified upload control supports UGC and Demo uploads from the dashboard header action, while avatar photo upload lives on `/dashboard/avatars` | ✅ | ✅ |
+
+### 4.5 AI-Assisted Content Supply (Secondary)
+
+AI features help users create more source material when their real content
+library is thin. They should support the Stitchr workflow, not replace it as the
+main product promise.
+
+| # | Feature | MVP | Prod |
+|---|---------|-----|------|
+| 1 | AI photo expansion improves framing for saved avatar photos | ✅ | ✅ |
+| 2 | Avatar photo generation creates additional reusable source photos | ✅ | ✅ |
+| 3 | Swapr generates UGC-style video clips that can be saved back into the UGC library | ✅ | ✅ |
+| 4 | AI features use rate limits, credit budgeting, and speed profiles because they create external provider cost | ✅ | ✅ |
 
 ---
 
@@ -375,7 +421,7 @@ interface Stitch {
 - [ ] Usage analytics
 - [ ] Billing / subscription (if applicable)
 
-### Phase 4 — AI-Powered Editing
+### Phase 4 — Secondary AI-Assisted Content Supply and Editing
 
 - [ ] Video trimming & cutting tools
 - [ ] Swapr — upload saved avatar photos, create scenario photos, choose existing UGC clips, and generate AI motion-transfer UGC outputs through Replicate
@@ -395,6 +441,7 @@ interface Stitch {
 - ❌ Text overlays — planned after MVP
 - ❌ User-authored thumbnail generation / thumbnail editing
 - ❌ Destructive video cutting — trims are editable metadata only
+- ❌ AI-first content platform positioning — AI supports source creation, while Stitchr remains the primary workflow
 
 ---
 
@@ -416,4 +463,5 @@ interface Stitch {
 - [ ] User can select any UGC + the demo and preview the exact UGC-then-Demo sequence.
 - [ ] User can create a stitched 9:16 video where the Demo starts immediately after the UGC clip ends.
 - [ ] All 5 resulting 9:16 videos can be downloaded.
+- [ ] User can create multiple finished ad variants from the same library without opening a traditional editor.
 - [ ] Everything works on `localhost` with no external dependencies.
