@@ -7,7 +7,7 @@ export function StitchrCallout() {
       <div className="flex gap-4">
         <div>
           <h2 className="text-lg font-bold text-text-primary">
-            Let's make another ad! 
+            Let&apos;s make another ad!
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
             Pick a UGC clip, pair it with a demo, and create a finished

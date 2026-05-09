@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { VideoSequenceSegment } from "@/lib/clipstitchr/types/VideoSequenceSegment";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clamp } from "@/lib/clipstitchr/utils/clamp";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
@@ -10,25 +11,53 @@ type UseSequenceVideoPlayerOptions = {
   demoTrimRange: VideoTrimRange;
 };
 
+const SEQUENCE_TRANSITION_EPSILON_SECONDS = 0.03;
+
 export function useSequenceVideoPlayer({
   ugcTrimRange,
   demoTrimRange,
 }: UseSequenceVideoPlayerOptions) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [activeSegment, setActiveSegment] = useState<"ugc" | "demo">("ugc");
-  const [currentTime, setCurrentTime] = useState(0);
+  const ugcVideoRef = useRef<HTMLVideoElement | null>(null);
+  const demoVideoRef = useRef<HTMLVideoElement | null>(null);
+  const activeSegmentRef = useRef<VideoSequenceSegment>("ugc");
+  const currentTimeRef = useRef(0);
+  const isPlayingRef = useRef(false);
+  const [activeSegment, setActiveSegmentState] =
+    useState<VideoSequenceSegment>("ugc");
+  const [currentTime, setCurrentTimeState] = useState(0);
+  const [isPlaying, setIsPlayingState] = useState(false);
   const ugcDuration = getVideoTrimRangeDuration(ugcTrimRange);
   const demoDuration = getVideoTrimRangeDuration(demoTrimRange);
+  const totalDuration = ugcDuration + demoDuration;
+
+  const setActiveSegment = useCallback((segment: VideoSequenceSegment) => {
+    activeSegmentRef.current = segment;
+    setActiveSegmentState(segment);
+  }, []);
+
+  const setCurrentTime = useCallback((time: number) => {
+    currentTimeRef.current = time;
+    setCurrentTimeState(time);
+  }, []);
+
+  const setIsPlaying = useCallback((playing: boolean) => {
+    isPlayingRef.current = playing;
+    setIsPlayingState(playing);
+  }, []);
+
+  const getSegmentVideo = useCallback((segment: VideoSequenceSegment) => {
+    return segment === "ugc" ? ugcVideoRef.current : demoVideoRef.current;
+  }, []);
 
   const getActiveTrimRange = useCallback(
-    (segment: "ugc" | "demo") =>
+    (segment: VideoSequenceSegment) =>
       segment === "ugc" ? ugcTrimRange : demoTrimRange,
     [demoTrimRange, ugcTrimRange],
   );
 
   const updateCurrentTime = useCallback(
-    (segment: "ugc" | "demo" = activeSegment) => {
-      const video = videoRef.current;
+    (segment: VideoSequenceSegment = activeSegmentRef.current) => {
+      const video = getSegmentVideo(segment);
       const trimRange = getActiveTrimRange(segment);
       const segmentDuration = segment === "ugc" ? ugcDuration : demoDuration;
       const rawSegmentTime =
@@ -36,41 +65,37 @@ export function useSequenceVideoPlayer({
       const segmentTime = clamp(rawSegmentTime, 0, segmentDuration);
 
       setCurrentTime(
-        segment === "ugc" ? segmentTime : ugcDuration + segmentTime,
+        clamp(
+          segment === "ugc" ? segmentTime : ugcDuration + segmentTime,
+          0,
+          totalDuration,
+        ),
       );
     },
-    [activeSegment, demoDuration, getActiveTrimRange, ugcDuration],
+    [
+      demoDuration,
+      getActiveTrimRange,
+      getSegmentVideo,
+      setCurrentTime,
+      totalDuration,
+      ugcDuration,
+    ],
   );
 
-  const handleEnded = useCallback(() => {
-    if (activeSegment === "ugc") {
-      setCurrentTime(ugcDuration);
-      setActiveSegment("demo");
-      window.requestAnimationFrame(() => {
-        if (!videoRef.current) {
-          return;
-        }
+  const pauseSegment = useCallback(
+    (segment: VideoSequenceSegment) => {
+      getSegmentVideo(segment)?.pause();
+    },
+    [getSegmentVideo],
+  );
 
-        videoRef.current.currentTime = demoTrimRange.start;
-        void videoRef.current.play();
-      });
-      return;
-    }
-
-    setCurrentTime(0);
-    setActiveSegment("ugc");
-    window.requestAnimationFrame(() => {
-      if (videoRef.current) {
-        videoRef.current.currentTime = ugcTrimRange.start;
-      }
-    });
-  }, [activeSegment, demoTrimRange.start, ugcDuration, ugcTrimRange.start]);
-
-  const handleLoadedMetadata = useCallback(() => {
-    const video = videoRef.current;
-    const trimRange = getActiveTrimRange(activeSegment);
+  const playActiveSegment = useCallback(() => {
+    const segment = activeSegmentRef.current;
+    const video = getSegmentVideo(segment);
+    const trimRange = getActiveTrimRange(segment);
 
     if (!video) {
+      setIsPlaying(false);
       return;
     }
 
@@ -81,73 +106,310 @@ export function useSequenceVideoPlayer({
       video.currentTime = trimRange.start;
     }
 
-    updateCurrentTime();
-  }, [activeSegment, getActiveTrimRange, updateCurrentTime]);
+    setIsPlaying(true);
+    void video.play().catch(() => {
+      setIsPlaying(false);
+    });
+  }, [getActiveTrimRange, getSegmentVideo, setIsPlaying]);
 
-  const handleSeeking = useCallback(() => {
-    const video = videoRef.current;
-    const trimRange = getActiveTrimRange(activeSegment);
+  const completeSequence = useCallback(() => {
+    pauseSegment("ugc");
+    pauseSegment("demo");
+    setActiveSegment("demo");
+    setCurrentTime(totalDuration);
+    setIsPlaying(false);
 
-    if (!video) {
+    const demoVideo = demoVideoRef.current;
+
+    if (demoVideo) {
+      demoVideo.currentTime = demoTrimRange.end;
+    }
+  }, [
+    demoTrimRange.end,
+    pauseSegment,
+    setActiveSegment,
+    setCurrentTime,
+    setIsPlaying,
+    totalDuration,
+  ]);
+
+  const transitionToDemo = useCallback(() => {
+    const ugcVideo = ugcVideoRef.current;
+    const demoVideo = demoVideoRef.current;
+    const shouldKeepPlaying = isPlayingRef.current;
+
+    if (ugcVideo) {
+      ugcVideo.pause();
+      ugcVideo.currentTime = ugcTrimRange.end;
+    }
+
+    setActiveSegment("demo");
+    setCurrentTime(ugcDuration);
+
+    if (!demoVideo || demoDuration <= 0) {
+      completeSequence();
       return;
     }
 
-    if (video.currentTime < trimRange.start) {
-      video.currentTime = trimRange.start;
+    demoVideo.currentTime = demoTrimRange.start;
+
+    if (shouldKeepPlaying) {
+      setIsPlaying(true);
+      void demoVideo.play().catch(() => {
+        setIsPlaying(false);
+      });
     }
+  }, [
+    completeSequence,
+    demoDuration,
+    demoTrimRange.start,
+    setActiveSegment,
+    setCurrentTime,
+    setIsPlaying,
+    ugcDuration,
+    ugcTrimRange.end,
+  ]);
 
-    if (video.currentTime > trimRange.end) {
-      video.currentTime = Math.max(trimRange.start, trimRange.end - 0.01);
-    }
+  const handlePlaybackFrame = useCallback(() => {
+    const segment = activeSegmentRef.current;
+    const video = getSegmentVideo(segment);
+    const trimRange = getActiveTrimRange(segment);
 
-    updateCurrentTime();
-  }, [activeSegment, getActiveTrimRange, updateCurrentTime]);
+    updateCurrentTime(segment);
 
-  const handleTimeUpdate = useCallback(() => {
-    const video = videoRef.current;
-    const trimRange = getActiveTrimRange(activeSegment);
-
-    updateCurrentTime();
-
-    if (!video || video.currentTime < trimRange.end) {
+    if (
+      !video ||
+      video.currentTime <
+        trimRange.end - SEQUENCE_TRANSITION_EPSILON_SECONDS
+    ) {
       return;
     }
 
-    handleEnded();
-  }, [activeSegment, getActiveTrimRange, handleEnded, updateCurrentTime]);
+    if (segment === "ugc") {
+      transitionToDemo();
+      return;
+    }
 
-  const restart = useCallback(() => {
-    setActiveSegment("ugc");
-    setCurrentTime(0);
-    window.requestAnimationFrame(() => {
-      if (!videoRef.current) {
+    completeSequence();
+  }, [
+    completeSequence,
+    getActiveTrimRange,
+    getSegmentVideo,
+    transitionToDemo,
+    updateCurrentTime,
+  ]);
+
+  useEffect(() => {
+    if (!isPlaying) {
+      return;
+    }
+
+    let animationFrame = 0;
+
+    const updateFrame = () => {
+      handlePlaybackFrame();
+
+      if (isPlayingRef.current) {
+        animationFrame = window.requestAnimationFrame(updateFrame);
+      }
+    };
+
+    animationFrame = window.requestAnimationFrame(updateFrame);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, [handlePlaybackFrame, isPlaying]);
+
+  const handleLoadedMetadata = useCallback(
+    (segment: VideoSequenceSegment) => {
+      const video = getSegmentVideo(segment);
+      const trimRange = getActiveTrimRange(segment);
+
+      if (!video) {
         return;
       }
 
-      videoRef.current.currentTime = ugcTrimRange.start;
-      void videoRef.current.play();
-    });
-  }, [ugcTrimRange.start]);
+      if (
+        video.currentTime < trimRange.start ||
+        video.currentTime >= trimRange.end
+      ) {
+        video.currentTime = trimRange.start;
+      }
+
+      if (segment === activeSegmentRef.current) {
+        updateCurrentTime(segment);
+      }
+    },
+    [getActiveTrimRange, getSegmentVideo, updateCurrentTime],
+  );
+
+  const handleTimeUpdate = useCallback(
+    (segment: VideoSequenceSegment) => {
+      const video = getSegmentVideo(segment);
+      const trimRange = getActiveTrimRange(segment);
+
+      if (segment !== activeSegmentRef.current) {
+        return;
+      }
+
+      updateCurrentTime(segment);
+
+      if (!video || video.currentTime < trimRange.end) {
+        return;
+      }
+
+      if (segment === "ugc") {
+        transitionToDemo();
+        return;
+      }
+
+      completeSequence();
+    },
+    [
+      completeSequence,
+      getActiveTrimRange,
+      getSegmentVideo,
+      transitionToDemo,
+      updateCurrentTime,
+    ],
+  );
+
+  const handleEnded = useCallback(
+    (segment: VideoSequenceSegment) => {
+      if (segment !== activeSegmentRef.current) {
+        return;
+      }
+
+      if (segment === "ugc") {
+        transitionToDemo();
+        return;
+      }
+
+      completeSequence();
+    },
+    [completeSequence, transitionToDemo],
+  );
+
+  const pause = useCallback(() => {
+    pauseSegment("ugc");
+    pauseSegment("demo");
+    updateCurrentTime();
+    setIsPlaying(false);
+  }, [pauseSegment, setIsPlaying, updateCurrentTime]);
+
+  const seekTo = useCallback(
+    (sequenceTime: number) => {
+      const nextTime = clamp(sequenceTime, 0, totalDuration);
+      const nextSegment =
+        nextTime < ugcDuration || demoDuration <= 0 ? "ugc" : "demo";
+      const nextTrimRange = getActiveTrimRange(nextSegment);
+      const nextSegmentTime =
+        nextSegment === "ugc" ? nextTime : nextTime - ugcDuration;
+      const nextVideoTime = clamp(
+        nextTrimRange.start + nextSegmentTime,
+        nextTrimRange.start,
+        nextTrimRange.end,
+      );
+      const nextVideo = getSegmentVideo(nextSegment);
+      const otherSegment = nextSegment === "ugc" ? "demo" : "ugc";
+      const shouldKeepPlaying = isPlayingRef.current;
+
+      pauseSegment(otherSegment);
+      setActiveSegment(nextSegment);
+      setCurrentTime(nextTime);
+
+      if (nextVideo) {
+        nextVideo.currentTime = nextVideoTime;
+      }
+
+      if (nextTime >= totalDuration) {
+        completeSequence();
+        return;
+      }
+
+      if (shouldKeepPlaying) {
+        playActiveSegment();
+      }
+    },
+    [
+      completeSequence,
+      demoDuration,
+      getActiveTrimRange,
+      getSegmentVideo,
+      pauseSegment,
+      playActiveSegment,
+      setActiveSegment,
+      setCurrentTime,
+      totalDuration,
+      ugcDuration,
+    ],
+  );
+
+  const play = useCallback(() => {
+    if (currentTimeRef.current >= totalDuration) {
+      seekTo(0);
+    }
+
+    playActiveSegment();
+  }, [playActiveSegment, seekTo, totalDuration]);
+
+  const togglePlayback = useCallback(() => {
+    if (isPlayingRef.current) {
+      pause();
+      return;
+    }
+
+    play();
+  }, [pause, play]);
+
+  const restart = useCallback(() => {
+    pauseSegment("demo");
+    setActiveSegment("ugc");
+    setCurrentTime(0);
+
+    if (ugcVideoRef.current) {
+      ugcVideoRef.current.currentTime = ugcTrimRange.start;
+    }
+
+    if (demoVideoRef.current) {
+      demoVideoRef.current.currentTime = demoTrimRange.start;
+    }
+
+    playActiveSegment();
+  }, [
+    demoTrimRange.start,
+    pauseSegment,
+    playActiveSegment,
+    setActiveSegment,
+    setCurrentTime,
+    ugcTrimRange.start,
+  ]);
 
   return useMemo(
     () => ({
-      videoRef,
+      ugcVideoRef,
+      demoVideoRef,
       activeSegment,
       currentTime,
+      isPlaying,
       handleEnded,
       handleLoadedMetadata,
-      handleSeeking,
       handleTimeUpdate,
       restart,
+      seekTo,
+      togglePlayback,
     }),
     [
       activeSegment,
       currentTime,
       handleEnded,
       handleLoadedMetadata,
-      handleSeeking,
       handleTimeUpdate,
+      isPlaying,
       restart,
+      seekTo,
+      togglePlayback,
     ],
   );
 }
