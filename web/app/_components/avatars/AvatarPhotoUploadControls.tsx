@@ -47,11 +47,6 @@ export function AvatarPhotoUploadControls({
         <p className="text-xs font-semibold text-text-tertiary">
           {hasPendingFiles ? pendingFileLabel : "Ready for photos"}
         </p>
-        {hasPendingFiles ? (
-          <p className="mt-1 text-xs font-semibold text-text-tertiary">
-            Fill {shouldExpandWithAi ? "on" : "off"}
-          </p>
-        ) : null}
         <Button
           type="button"
           className="mt-2 w-full"
