@@ -12,6 +12,7 @@ import { useUploadProcessor } from "@/lib/clipstitchr/hooks/useUploadProcessor";
 import type { UploadAssetType } from "@/lib/clipstitchr/types/UploadAssetType";
 
 type UploadPanelProps = {
+  allowedAssetTypes?: UploadAssetType[];
   onUploaded: () => void | Promise<void>;
   onPhotoUploaded: (
     files: FileList | File[],
@@ -49,9 +50,9 @@ const contentByAssetType: Record<
     acceptedTypes: ACCEPTED_VIDEO_TYPES,
   },
   photo: {
-    title: "Add photos to the library",
+    title: "Add avatar photos",
     description:
-      "Photos are saved as 1080 x 1920 portrait references for Swapr.",
+      "Photos are attached to the selected avatar and saved as 1080 x 1920 portrait references for Swapr.",
     dropTitle: "Drop photos here",
     dropDescription: "Use JPG or PNG source photos.",
     acceptedTypes: ACCEPTED_PHOTO_TYPES,
@@ -59,6 +60,7 @@ const contentByAssetType: Record<
 };
 
 export function UploadPanel({
+  allowedAssetTypes,
   onUploaded,
   onPhotoUploaded,
   isPhotoUploading,
@@ -70,6 +72,8 @@ export function UploadPanel({
   const [shouldExpandPhotosWithAi, setShouldExpandPhotosWithAi] =
     useState(false);
   const assetType = initialAssetType;
+  const shouldShowAssetTabs =
+    !allowedAssetTypes || allowedAssetTypes.length > 1;
   const uploadProcessor = useUploadProcessor({
     initialClipType: initialAssetType === "demo" ? "demo" : "ugc",
     onClipSaved: onUploaded,
@@ -110,10 +114,13 @@ export function UploadPanel({
             {content.description}
           </p>
         </div>
-        <UploadAssetTabs
-          value={assetType}
-          onChange={handleAssetTypeChange}
-        />
+        {shouldShowAssetTabs ? (
+          <UploadAssetTabs
+            assetTypes={allowedAssetTypes}
+            value={assetType}
+            onChange={handleAssetTypeChange}
+          />
+        ) : null}
       </div>
 
       <div

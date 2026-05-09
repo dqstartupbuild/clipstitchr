@@ -13,8 +13,12 @@ const preparationValidator = v.union(
 
 const saveArgs = {
   id: v.string(),
+  avatarId: v.optional(v.string()),
   name: v.string(),
   tags: assetTagsValidator,
+  avatarDescription: v.optional(v.string()),
+  outfitDescription: v.optional(v.string()),
+  locationDescription: v.optional(v.string()),
   originalName: v.string(),
   photoObject: r2ObjectValidator,
   originalObject: v.optional(r2ObjectValidator),
@@ -95,9 +99,23 @@ export const updateMetadata = mutation({
     id: v.string(),
     name: v.string(),
     tags: assetTagsValidator,
+    avatarDescription: v.optional(v.string()),
+    outfitDescription: v.optional(v.string()),
+    locationDescription: v.optional(v.string()),
     updatedAt: v.string(),
   },
-  handler: async (ctx, { id, name, tags, updatedAt }) => {
+  handler: async (
+    ctx,
+    {
+      id,
+      name,
+      tags,
+      avatarDescription,
+      outfitDescription,
+      locationDescription,
+      updatedAt,
+    },
+  ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
@@ -117,6 +135,9 @@ export const updateMetadata = mutation({
     await ctx.db.patch(photo._id, {
       name,
       tags,
+      ...(avatarDescription === undefined ? {} : { avatarDescription }),
+      ...(outfitDescription === undefined ? {} : { outfitDescription }),
+      ...(locationDescription === undefined ? {} : { locationDescription }),
       updatedAt,
     });
   },

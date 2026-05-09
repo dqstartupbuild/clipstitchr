@@ -91,6 +91,25 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     period: HOUR,
     capacity: 10,
   },
+  replicateAvatarPhotoGenerate: {
+    kind: "token bucket",
+    rate: 20,
+    period: HOUR,
+    capacity: 10,
+  },
+  replicateAvatarPhotoGenerateDaily: {
+    kind: "token bucket",
+    rate: 30,
+    period: DAY,
+    capacity: 30,
+  },
+  replicateAvatarPhotoGenerateGlobal: {
+    kind: "token bucket",
+    rate: 200,
+    period: HOUR,
+    capacity: 40,
+    shards: 10,
+  },
   convexRecordSave: {
     kind: "token bucket",
     rate: 30,

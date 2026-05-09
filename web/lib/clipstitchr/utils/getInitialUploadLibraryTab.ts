@@ -10,7 +10,6 @@ export function getInitialUploadLibraryTab(): UploadLibraryTab {
   switch (tab) {
     case "ugc":
     case "demo":
-    case "photos":
     case "swaps":
     case "stitches":
       return tab;

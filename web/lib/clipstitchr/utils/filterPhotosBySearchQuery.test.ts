@@ -4,7 +4,12 @@ import { filterPhotosBySearchQuery } from "@/lib/clipstitchr/utils/filterPhotosB
 
 const photos = [
   { id: "photo-1", name: "Studio Portrait", tags: ["indoor", "headshot"] },
-  { id: "photo-2", name: "Outdoor Reference", tags: ["sunlight"] },
+  {
+    id: "photo-2",
+    name: "Outdoor Reference",
+    avatarDescription: "Short dark hair and angular brows",
+    tags: ["sunlight"],
+  },
   { id: "photo-3", name: "Desk Photo", tags: ["workspace"] },
 ] as PhotoAsset[];
 
@@ -15,6 +20,12 @@ describe("filterPhotosBySearchQuery", () => {
 
   it("matches photo tags", () => {
     expect(filterPhotosBySearchQuery(photos, "workspace")).toEqual([photos[2]]);
+  });
+
+  it("matches avatar descriptions", () => {
+    expect(filterPhotosBySearchQuery(photos, "angular brows")).toEqual([
+      photos[1],
+    ]);
   });
 
   it("matches the photo type tag", () => {

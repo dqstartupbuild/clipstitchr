@@ -209,3 +209,31 @@ export const consumeSwaprOutputDownload = mutation({
     });
   },
 });
+
+export const consumeAvatarPhotoGenerate = mutation({
+  args: {
+    count: v.number(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { count, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const imageCount = getPositiveCount(count, "Image count");
+
+    await rateLimiter.limit(ctx, "replicateAvatarPhotoGenerate", {
+      key: ownerId,
+      count: imageCount,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateAvatarPhotoGenerateDaily", {
+      key: ownerId,
+      count: imageCount,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateAvatarPhotoGenerateGlobal", {
+      count: imageCount,
+      throws: true,
+    });
+  },
+});

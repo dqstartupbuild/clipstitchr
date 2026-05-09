@@ -117,11 +117,13 @@ Text overlays are planned for later, but they are not required for the MVP.
 | 3 | No login required — dashboard is directly accessible | — | — |
 | 4 | Clerk-authenticated access to dashboard | ✅ | ✅ |
 | 5 | Uploaded UGC clips and demo videos share the tabbed Content Library page | ✅ | ✅ |
-| 6 | Uploaded Swapr photos appear in the Content Library Photos tab; AI expansion is optional and off by default | ✅ | ✅ |
-| 7 | Swapr-generated outputs appear in the Content Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
-| 8 | Stitches appear in the Content Library Stitches tab; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
-| 9 | The Content Library includes an All tab so users can view every saved content type at once | ✅ | ✅ |
-| 10 | A unified upload control supports UGC, Demo, and Photo uploads from the dashboard header action | ✅ | ✅ |
+| 6 | Uploaded Swapr avatar photos appear in the Avatars page; AI expansion is optional and off by default | ✅ | ✅ |
+| 7 | Avatar photos store a detailed non-sensitive visual description of the person for scenario generation | ✅ | ✅ |
+| 8 | Users can generate 3, 5, or 10 new avatar scenario photos from a selected avatar through Replicate OpenAI image generation | ✅ | ✅ |
+| 9 | Swapr-generated outputs appear in the Content Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
+| 10 | Stitches appear in the Content Library Stitches tab; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
+| 11 | The Content Library includes an All tab so users can view every saved video output type at once | ✅ | ✅ |
+| 12 | A unified upload control supports UGC and Demo uploads from the dashboard header action, while avatar photo upload lives on `/dashboard/avatars` | ✅ | ✅ |
 
 ---
 
@@ -132,7 +134,8 @@ Text overlays are planned for later, but they are not required for the MVP.
 /dashboard       → Authenticated main workspace
 /dashboard/stitchr → Authenticated Stitchr video stitching interface
 /dashboard/swapr → Authenticated AI motion-transfer studio using saved photos and UGC clips
-/dashboard/uploads → Authenticated Content Library with All, UGC, Demo, Photos, Swaps, and Stitches tabs; unified upload controls open from header action
+/dashboard/avatars → Authenticated avatar photo library with upload, descriptions, and AI scenario photo generation
+/dashboard/uploads → Authenticated Content Library with All, UGC, Demo, Swaps, and Stitches tabs; unified video upload controls open from header action
 /dashboard/stitches → Compatibility redirect to `/dashboard/uploads?tab=stitches`
 ```
 
@@ -375,7 +378,7 @@ interface Stitch {
 ### Phase 4 — AI-Powered Editing
 
 - [ ] Video trimming & cutting tools
-- [ ] Swapr — upload saved photos, choose existing UGC clips, and generate AI motion-transfer UGC outputs through Replicate
+- [ ] Swapr — upload saved avatar photos, create scenario photos, choose existing UGC clips, and generate AI motion-transfer UGC outputs through Replicate
 - [ ] AI video analysis to detect optimal trim/cut points (e.g., scene changes, pauses, energy peaks)
 - [ ] AI-suggested highlights — automatically surface the best moments from UGC clips
 - [ ] Smart auto-edit — one-click to trim dead air, awkward pauses, or low-energy segments

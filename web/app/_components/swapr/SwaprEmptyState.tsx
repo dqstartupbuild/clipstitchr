@@ -12,8 +12,8 @@ export function SwaprEmptyState({
   if (!hasPhotos && !hasUgcClips) {
     return (
       <DashboardEmptyState
-        title="No photos or UGC clips yet"
-        description="Upload person photos and UGC clips from the library before using Swapr."
+        title="No avatars or UGC clips yet"
+        description="Upload avatar photos from the Avatars page and UGC clips from the library before using Swapr."
       />
     );
   }
@@ -21,8 +21,8 @@ export function SwaprEmptyState({
   if (!hasPhotos) {
     return (
       <DashboardEmptyState
-        title="No photos yet"
-        description="Upload person photos from the library so they can be selected in Swapr."
+        title="No avatars yet"
+        description="Upload avatar photos from the Avatars page so they can be selected in Swapr."
       />
     );
   }

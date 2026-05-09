@@ -140,14 +140,14 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
 
 ```
 /dashboard/swapr                 -> Swapr studio: choose photo, choose UGC video, configure, generate
-/dashboard/uploads?tab=photos    -> Photo upload and photo library management; photos are not selected here
+/dashboard/avatars               -> Avatar photo upload, avatar descriptions, and generated avatar scenario photos
 /dashboard/uploads?tab=ugc       -> Existing UGC library; UGC clips can feed Swapr
 /dashboard/uploads?tab=swaps     -> Generated Swapr outputs; outputs are saved as reusable UGC-style clips
 /dashboard/uploads?tab=stitches  -> Existing stitches library inside the unified Content Library
 /dashboard/stitches              -> Compatibility redirect to `/dashboard/uploads?tab=stitches`
 ```
 
-Photos are uploaded, deleted, and downloaded from the Photos tab in `/dashboard/uploads`. Successful Swapr outputs are saved to the Swaps tab and remain selectable in Stitchr as UGC-style clips. The same dashboard upload action should open one unified upload controller with UGC, Demo, and Photo options. Photos are only selectable from `/dashboard/swapr`, matching the way UGC videos are uploaded in the library but selected inside the Swapr studio. Photo AI expansion must be an explicit opt-in upload option, deselected by default.
+Avatar photos are uploaded, deleted, downloaded, described, and expanded into new scenario photos from `/dashboard/avatars`. Successful Swapr outputs are saved to the Swaps tab and remain selectable in Stitchr as UGC-style clips. The dashboard upload action for `/dashboard/uploads` handles UGC and Demo videos; avatar photo upload lives on the Avatars page. Avatar photos are only selected for Swapr from `/dashboard/swapr`, matching the way UGC videos are uploaded in the library but selected inside the Swapr studio. Photo AI expansion must be an explicit opt-in upload option, deselected by default.
 
 ---
 
@@ -436,7 +436,7 @@ The Swapr screen should be a work-focused generation interface, not a marketing 
 
 Primary areas:
 
-- Photo selector: grid/list of saved photos, with upload handled from `/dashboard/uploads?tab=photos`.
+- Photo selector: grid/list of saved avatar photos, with upload and scenario generation handled from `/dashboard/avatars`.
 - UGC selector: filtered list of UGC clips only.
 - Preview column: selected photo, selected reference video, and generated output when ready.
 - Controls: prompt, scene mode, quality mode, orientation/motion mode if supported.
@@ -445,7 +445,7 @@ Primary areas:
 
 ### Empty States
 
-- No photos: invite the user to upload a person/reference photo.
+- No avatars: invite the user to upload a person/reference avatar photo.
 - No UGC clips: link to the UGC upload tab.
 - No selection: show side-by-side placeholders for photo and UGC video.
 - Failed job: show the model error and allow retry with the same inputs.

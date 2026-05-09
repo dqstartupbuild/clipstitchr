@@ -22,6 +22,7 @@ export function SwaprPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | undefined>();
+  const [photoAvatarFilterId, setPhotoAvatarFilterId] = useState("all");
   const [selectedClipId, setSelectedClipId] = useState<string | undefined>();
   const [prompt, setPrompt] = useState("");
   const [mode, setMode] = useState<SwaprMode>("pro");
@@ -38,6 +39,15 @@ export function SwaprPageClient() {
   const hasPhotos = photoLibrary.photos.length > 0;
   const hasUgcClips = ugcClips.length > 0;
   const hasSwaprInputs = hasPhotos && hasUgcClips;
+  const visiblePhotos = useMemo(
+    () =>
+      photoLibrary.photos.filter(
+        (photo) =>
+          photoAvatarFilterId === "all" ||
+          photo.avatarId === photoAvatarFilterId,
+      ),
+    [photoAvatarFilterId, photoLibrary.photos],
+  );
   const selectedPhoto = useMemo(
     () => photoLibrary.photos.find((photo) => photo.id === selectedPhotoId),
     [photoLibrary.photos, selectedPhotoId],
@@ -96,8 +106,11 @@ export function SwaprPageClient() {
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
             <div className="flex min-w-0 flex-col gap-6">
               <SwaprPhotoSelector
-                photos={photoLibrary.photos}
+                avatars={photoLibrary.avatars}
+                avatarFilterId={photoAvatarFilterId}
+                photos={visiblePhotos}
                 selectedPhotoId={selectedPhotoId}
+                onAvatarFilterChange={setPhotoAvatarFilterId}
                 onSelect={selectPhoto}
               />
               <SwaprUgcSelector

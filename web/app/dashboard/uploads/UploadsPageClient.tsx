@@ -6,7 +6,6 @@ import { LibraryPageHeader } from "@/app/_components/dashboard/LibraryPageHeader
 import { StitchesSection } from "@/app/_components/dashboard/StitchesSection";
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
 import { VideoLibrarySection } from "@/app/_components/dashboard/VideoLibrarySection";
-import { PhotoLibrarySection } from "@/app/_components/uploads/PhotoLibrarySection";
 import { UploadLibraryTabs } from "@/app/_components/uploads/UploadLibraryTabs";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
@@ -16,7 +15,6 @@ import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab"
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { filterNonSwaprClips } from "@/lib/clipstitchr/utils/filterNonSwaprClips";
-import { filterPhotosBySearchQuery } from "@/lib/clipstitchr/utils/filterPhotosBySearchQuery";
 import { filterStitchesByName } from "@/lib/clipstitchr/utils/filterStitchesByName";
 import { filterSwaprClips } from "@/lib/clipstitchr/utils/filterSwaprClips";
 import { getInitialUploadLibraryTab } from "@/lib/clipstitchr/utils/getInitialUploadLibraryTab";
@@ -96,16 +94,12 @@ export function UploadsPageClient() {
     () => filterSwaprClips(searchFilteredClips),
     [searchFilteredClips],
   );
-  const photos = useMemo(
-    () => filterPhotosBySearchQuery(photoLibrary.photos, searchQuery),
-    [photoLibrary.photos, searchQuery],
-  );
   const stitches = useMemo(
     () => filterStitchesByName(library.stitches, searchQuery),
     [library.stitches, searchQuery],
   );
   const hasSearchQuery = searchQuery.trim().length > 0;
-  const error = library.error ?? photoLibrary.error;
+  const error = library.error;
   const selectedVideoSection =
     selectedTab === "ugc"
       ? { clips: ugcClips, content: videoLibraryContent.ugc }
@@ -131,7 +125,7 @@ export function UploadsPageClient() {
         <LibraryPageHeader
           eyebrow="Library"
           title="Content Library"
-          description="Browse saved UGC clips, demo videos, photos, Swapr outputs, and stitches in one place."
+          description="Browse saved UGC clips, demo videos, Swapr outputs, and stitches in one place."
         />
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -140,6 +134,7 @@ export function UploadsPageClient() {
         ) : null}
         {showUploadControls ? (
           <UploadPanel
+            allowedAssetTypes={["ugc", "demo"]}
             key={selectedTab}
             initialAssetType={getUploadAssetTypeFromLibraryTab(selectedTab)}
             isPhotoUploading={photoLibrary.isSaving}
@@ -202,20 +197,6 @@ export function UploadsPageClient() {
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
             />
-            <PhotoLibrarySection
-              key={`all-photos-${searchQuery}`}
-              id="photos"
-              photos={photos}
-              emptyTitle={hasSearchQuery ? "No matching photos" : undefined}
-              emptyDescription={
-                hasSearchQuery
-                  ? "No saved photos match that title or tag."
-                  : "Upload person photos here so they can be selected in Swapr."
-              }
-              onLoadPhoto={photoLibrary.loadPhoto}
-              onDelete={photoLibrary.removePhoto}
-              onUpdateMetadata={photoLibrary.updatePhotoMetadata}
-            />
             <VideoLibrarySection
               key={`all-swaps-${searchQuery}`}
               id={videoLibraryContent.swaps.sectionId}
@@ -248,22 +229,6 @@ export function UploadsPageClient() {
               onDelete={library.removeStitch}
             />
           </div>
-        ) : null}
-        {selectedTab === "photos" ? (
-          <PhotoLibrarySection
-            key={`photos-${searchQuery}`}
-            id="photos"
-            photos={photos}
-            emptyTitle={hasSearchQuery ? "No matching photos" : undefined}
-            emptyDescription={
-              hasSearchQuery
-                ? "No saved photos match that title or tag."
-                : "Upload person photos here so they can be selected in Swapr."
-            }
-            onLoadPhoto={photoLibrary.loadPhoto}
-            onDelete={photoLibrary.removePhoto}
-            onUpdateMetadata={photoLibrary.updatePhotoMetadata}
-          />
         ) : null}
         {selectedVideoSection ? (
           <VideoLibrarySection

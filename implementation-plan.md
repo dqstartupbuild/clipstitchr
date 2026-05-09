@@ -7,9 +7,10 @@
 ### Product Scope
 
 - `project-scope.md`
-  - MVP routes are `/`, `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, and `/dashboard/swapr`; `/dashboard/stitches` redirects to the Stitches tab inside `/dashboard/uploads`.
-  - The authenticated Content Library at `/dashboard/uploads` has All, UGC, Demo, Photos, Swaps, and Stitches tabs.
-  - Uploads are UGC clips, Demo videos, and Swapr reference photos.
+  - MVP routes are `/`, `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, `/dashboard/avatars`, and `/dashboard/swapr`; `/dashboard/stitches` redirects to the Stitches tab inside `/dashboard/uploads`.
+  - The authenticated Content Library at `/dashboard/uploads` has All, UGC, Demo, Swaps, and Stitches tabs.
+  - Avatar photo upload, avatar descriptions, and avatar scenario photo generation live on `/dashboard/avatars`.
+  - Uploads are UGC clips, Demo videos, and Swapr avatar reference photos.
   - Every uploaded clip must be normalized to TikTok 9:16 before it is usable.
   - Preview and export must use the same sequence: UGC plays first, Demo starts immediately after UGC ends.
   - Output is a single downloadable 9:16 video.
@@ -210,7 +211,13 @@ web/app/(content)/terms/page.tsx
 
 - Server route entry for the authenticated Content Library.
 - Exports page metadata with canonical `/dashboard/uploads`.
-- Renders the tabbed library client with All, UGC, Demo, Photos, Swaps, and Stitches tabs.
+- Renders the tabbed library client with All, UGC, Demo, Swaps, and Stitches tabs.
+
+#### `web/app/dashboard/avatars/page.tsx`
+
+- Server route entry for avatar photo management.
+- Exports page metadata with canonical `/dashboard/avatars`.
+- Renders avatar upload, search, person description editing, and Replicate-backed scenario photo generation.
 
 #### `web/app/dashboard/stitches/page.tsx`
 
@@ -405,7 +412,7 @@ Create:
 Create:
 
 - Sidebar inspired by mockup.
-- Links: Dashboard, Library, Stitchr, Swapr.
+- Links: Dashboard, Library, Avatars, Stitchr, Swapr.
 - Uses `next/link` and lucide icons.
 
 ### `web/app/_components/dashboard/DashboardHeader.tsx`

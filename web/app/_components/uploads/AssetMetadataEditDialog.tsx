@@ -10,24 +10,43 @@ import { normalizeAssetTags } from "@/lib/clipstitchr/utils/normalizeAssetTags";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
 type AssetMetadataEditDialogProps = {
+  descriptionHelp?: string;
+  descriptionLabel?: string;
+  initialDescription?: string;
+  initialLocationDescription?: string;
   title: string;
   initialName: string;
+  initialOutfitDescription?: string;
   initialTags?: string[];
   requiredTag?: string;
+  showPhotoDescriptionFields?: boolean;
   onClose: () => void;
   onSave: (metadata: AssetMetadataUpdate) => void | Promise<void>;
 };
 
 export function AssetMetadataEditDialog({
+  descriptionHelp,
+  descriptionLabel,
+  initialDescription = "",
+  initialLocationDescription = "",
   title,
   initialName,
+  initialOutfitDescription = "",
   initialTags = [],
   requiredTag,
+  showPhotoDescriptionFields = false,
   onClose,
   onSave,
 }: AssetMetadataEditDialogProps) {
   const isMountedRef = useRef(false);
   const [name, setName] = useState(initialName);
+  const [description, setDescription] = useState(initialDescription);
+  const [outfitDescription, setOutfitDescription] = useState(
+    initialOutfitDescription,
+  );
+  const [locationDescription, setLocationDescription] = useState(
+    initialLocationDescription,
+  );
   const [tags, setTags] = useState(() =>
     requiredTag
       ? normalizeAssetTagsWithRequiredTag(initialTags, requiredTag)
@@ -53,6 +72,15 @@ export function AssetMetadataEditDialog({
 
     try {
       await onSave({
+        ...(descriptionLabel
+          ? { avatarDescription: description.trim() }
+          : {}),
+        ...(showPhotoDescriptionFields
+          ? {
+              locationDescription: locationDescription.trim(),
+              outfitDescription: outfitDescription.trim(),
+            }
+          : {}),
         name: trimmedName,
         tags: requiredTag
           ? normalizeAssetTagsWithRequiredTag(tags, requiredTag)
@@ -111,6 +139,56 @@ export function AssetMetadataEditDialog({
             requiredTag={requiredTag}
             onChange={setTags}
           />
+          {descriptionLabel ? (
+            <label className="block">
+              <span className="text-sm font-semibold text-text-primary">
+                {descriptionLabel}
+              </span>
+              <textarea
+                value={description}
+                rows={5}
+                className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-6 text-text-primary outline-none transition-colors focus:border-accent"
+                onChange={(event) =>
+                  setDescription(event.currentTarget.value)
+                }
+              />
+              {descriptionHelp ? (
+                <span className="mt-2 block text-xs leading-5 text-text-tertiary">
+                  {descriptionHelp}
+                </span>
+              ) : null}
+            </label>
+          ) : null}
+          {showPhotoDescriptionFields ? (
+            <>
+              <label className="block">
+                <span className="text-sm font-semibold text-text-primary">
+                  Outfit description
+                </span>
+                <textarea
+                  value={outfitDescription}
+                  rows={4}
+                  className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-6 text-text-primary outline-none transition-colors focus:border-accent"
+                  onChange={(event) =>
+                    setOutfitDescription(event.currentTarget.value)
+                  }
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-semibold text-text-primary">
+                  Location description
+                </span>
+                <textarea
+                  value={locationDescription}
+                  rows={4}
+                  className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-6 text-text-primary outline-none transition-colors focus:border-accent"
+                  onChange={(event) =>
+                    setLocationDescription(event.currentTarget.value)
+                  }
+                />
+              </label>
+            </>
+          ) : null}
         </div>
         <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border p-5">
           <Button type="button" variant="secondary" onClick={onClose}>

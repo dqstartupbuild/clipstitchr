@@ -35,6 +35,18 @@ export async function analyzeUploadAsset({
   }
 
   return {
+    avatarDescription:
+      typeof body.avatarDescription === "string"
+        ? body.avatarDescription.trim()
+        : undefined,
+    outfitDescription:
+      typeof body.outfitDescription === "string"
+        ? body.outfitDescription.trim()
+        : undefined,
+    locationDescription:
+      typeof body.locationDescription === "string"
+        ? body.locationDescription.trim()
+        : undefined,
     name:
       typeof body.name === "string" && body.name.trim()
         ? body.name.trim()

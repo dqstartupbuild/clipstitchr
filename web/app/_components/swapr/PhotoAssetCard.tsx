@@ -16,6 +16,7 @@ import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFil
 
 type PhotoAssetCardProps = {
   photo: PhotoAssetMetadata;
+  avatarName?: string;
   isSelected?: boolean;
   onSelect?: (photo: PhotoAssetMetadata) => void;
   onLoadPhoto?: (id: string) => Promise<PhotoAsset | null>;
@@ -29,6 +30,7 @@ type PhotoAssetCardProps = {
 
 export function PhotoAssetCard({
   photo,
+  avatarName,
   isSelected,
   onSelect,
   onLoadPhoto,
@@ -107,7 +109,22 @@ export function PhotoAssetCard({
           <p className="mt-1 text-xs text-text-tertiary">
             {photo.width} x {photo.height} . {formatBytes(photo.size)}
           </p>
+          {avatarName ? (
+            <p className="mt-2 text-xs font-semibold text-accent-dark">
+              {avatarName}
+            </p>
+          ) : null}
           <AssetTagList tags={photo.tags} className="mt-3" requiredTag="photo" />
+          {photo.outfitDescription ? (
+            <p className="mt-3 line-clamp-3 text-xs leading-5 text-text-secondary">
+              Outfit: {photo.outfitDescription}
+            </p>
+          ) : null}
+          {photo.locationDescription ? (
+            <p className="mt-2 line-clamp-3 text-xs leading-5 text-text-secondary">
+              Location: {photo.locationDescription}
+            </p>
+          ) : null}
         </div>
         <div className="flex shrink-0 gap-1">
           {isSelected ? (
@@ -142,10 +159,13 @@ export function PhotoAssetCard({
       </div>
       {isMetadataOpen ? (
         <AssetMetadataEditDialog
+          initialLocationDescription={photo.locationDescription}
           title={photo.name}
           initialName={photo.name}
+          initialOutfitDescription={photo.outfitDescription}
           initialTags={photo.tags}
           requiredTag="photo"
+          showPhotoDescriptionFields
           onClose={() => setIsMetadataOpen(false)}
           onSave={async (metadata) => {
             await onUpdateMetadata?.(photo, metadata);

@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useConvex, useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { createAvatarFromConvexDocument } from "@/lib/clipstitchr/backend/createAvatarFromConvexDocument";
 import { createPhotoAssetFromConvexDocument } from "@/lib/clipstitchr/backend/createPhotoAssetFromConvexDocument";
 import { createPhotoAssetMetadataFromConvexDocument } from "@/lib/clipstitchr/backend/createPhotoAssetMetadataFromConvexDocument";
 import { getDefinedR2Objects } from "@/lib/clipstitchr/backend/getDefinedR2Objects";
@@ -21,18 +22,28 @@ import { createSwaprOutpaintInputs } from "@/lib/clipstitchr/media/createSwaprOu
 import { createSwaprPortraitPhotoBlob } from "@/lib/clipstitchr/media/createSwaprPortraitPhotoBlob";
 import { getImageDimensions } from "@/lib/clipstitchr/media/getImageDimensions";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { AvatarGenerationVariant } from "@/lib/clipstitchr/types/AvatarGenerationVariant";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import type { PhotoLibraryValue } from "@/lib/clipstitchr/types/PhotoLibraryValue";
 import type { SwaprPhotoPreparation } from "@/lib/clipstitchr/types/SwaprPhotoPreparation";
 import type { UploadAssetAnalysis } from "@/lib/clipstitchr/types/UploadAssetAnalysis";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { getAvatarGenerationTags } from "@/lib/clipstitchr/utils/getAvatarGenerationTags";
+import { getGeneratedAvatarPhotoName } from "@/lib/clipstitchr/utils/getGeneratedAvatarPhotoName";
 import { getImageNeedsSwaprOutpaint } from "@/lib/clipstitchr/utils/getImageNeedsSwaprOutpaint";
 import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
 type SavePhotoFilesOptions = {
+  avatarId?: string;
+  avatarName?: string;
   shouldExpandWithAi?: boolean;
+};
+
+type GeneratedPhotoSaveItem = {
+  blob: Blob;
+  variant: AvatarGenerationVariant;
 };
 
 export function usePhotoLibraryState(): PhotoLibraryValue {
@@ -42,6 +53,12 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     api.photoAssets.list,
     isAuthenticated ? {} : "skip",
   );
+  const avatarDocuments = useQuery(
+    api.avatars.list,
+    isAuthenticated ? {} : "skip",
+  );
+  const saveAvatar = useMutation(api.avatars.save);
+  const updateAvatarMutation = useMutation(api.avatars.update);
   const savePhotoAsset = useMutation(api.photoAssets.save);
   const updatePhotoMetadataMutation = useMutation(api.photoAssets.updateMetadata);
   const removePhotoMutation = useMutation(api.photoAssets.remove);
@@ -51,6 +68,10 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
   const [error, setError] = useState<string | null>(null);
   const [refreshNonce, setRefreshNonce] = useState(0);
   const photoCacheRef = useRef(new Map<string, PhotoAsset>());
+  const avatars = useMemo(
+    () => avatarDocuments?.map(createAvatarFromConvexDocument) ?? [],
+    [avatarDocuments],
+  );
 
   const refresh = useCallback(async () => {
     setRefreshNonce((currentNonce) => currentNonce + 1);
@@ -94,14 +115,29 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
   const saveFiles = useCallback(
     async (
       files: FileList | File[],
-      { shouldExpandWithAi = false }: SavePhotoFilesOptions = {},
+      {
+        avatarId,
+        avatarName,
+        shouldExpandWithAi = false,
+      }: SavePhotoFilesOptions = {},
     ) => {
       const selectedFiles = Array.from(files).filter((file) =>
         ACCEPTED_PHOTO_TYPES.includes(file.type),
       );
+      const trimmedAvatarName = avatarName?.trim() ?? "";
+      let uploadAvatarId = avatarId?.trim() || undefined;
+      const selectedAvatar = uploadAvatarId
+        ? avatars.find((avatar) => avatar.id === uploadAvatarId)
+        : undefined;
+      let didFillExistingAvatarDescription = false;
 
       if (!selectedFiles.length) {
         setError("Choose a JPG or PNG photo.");
+        return;
+      }
+
+      if (!uploadAvatarId && !trimmedAvatarName) {
+        setError("Create or select an avatar before uploading photos.");
         return;
       }
 
@@ -152,6 +188,37 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
             };
           }
 
+          if (!uploadAvatarId && trimmedAvatarName) {
+            uploadAvatarId = createId();
+
+            await saveAvatar({
+              id: uploadAvatarId,
+              name: trimmedAvatarName,
+              description: analysis.avatarDescription,
+              createdAt: now,
+              updatedAt: now,
+            });
+          } else if (
+            uploadAvatarId &&
+            selectedAvatar &&
+            !didFillExistingAvatarDescription &&
+            !selectedAvatar.description?.trim() &&
+            analysis.avatarDescription
+          ) {
+            didFillExistingAvatarDescription = true;
+
+            await updateAvatarMutation({
+              id: selectedAvatar.id,
+              name: selectedAvatar.name,
+              description: analysis.avatarDescription,
+              updatedAt: now,
+            });
+          }
+
+          if (!uploadAvatarId) {
+            throw new Error("Create or select an avatar before uploading photos.");
+          }
+
           const photoId = createId();
           const [photoObject, originalObject, thumbnailObject] =
             await Promise.all([
@@ -173,8 +240,11 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
             ]);
           const photo: PhotoAsset = {
             id: photoId,
+            avatarId: uploadAvatarId,
             name: analysis.name,
             tags: normalizeAssetTagsWithRequiredTag(analysis.tags, "photo"),
+            outfitDescription: analysis.outfitDescription,
+            locationDescription: analysis.locationDescription,
             originalName: file.name,
             photoObject,
             blob: normalizedBlob,
@@ -197,8 +267,12 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
 
           await savePhotoAsset({
             id: photo.id,
+            avatarId: photo.avatarId,
             name: photo.name,
             tags: photo.tags ?? [],
+            avatarDescription: photo.avatarDescription,
+            outfitDescription: photo.outfitDescription,
+            locationDescription: photo.locationDescription,
             originalName: photo.originalName,
             photoObject: photo.photoObject,
             originalObject: photo.originalObject,
@@ -230,7 +304,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
         setIsSaving(false);
       }
     },
-    [refresh, savePhotoAsset],
+    [avatars, refresh, saveAvatar, savePhotoAsset, updateAvatarMutation],
   );
 
   const updatePhotoMetadata = useCallback(
@@ -239,6 +313,15 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
         ...photo,
         name: metadata.name,
         tags: normalizeAssetTagsWithRequiredTag(metadata.tags, "photo"),
+        ...(metadata.avatarDescription === undefined
+          ? {}
+          : { avatarDescription: metadata.avatarDescription }),
+        ...(metadata.outfitDescription === undefined
+          ? {}
+          : { outfitDescription: metadata.outfitDescription }),
+        ...(metadata.locationDescription === undefined
+          ? {}
+          : { locationDescription: metadata.locationDescription }),
         updatedAt: new Date().toISOString(),
       };
 
@@ -246,12 +329,145 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
         id: photo.id,
         name: updatedPhoto.name,
         tags: updatedPhoto.tags ?? [],
+        avatarDescription: updatedPhoto.avatarDescription,
+        outfitDescription: updatedPhoto.outfitDescription,
+        locationDescription: updatedPhoto.locationDescription,
         updatedAt: updatedPhoto.updatedAt,
       });
       photoCacheRef.current.delete(photo.id);
       await refresh();
     },
     [refresh, updatePhotoMetadataMutation],
+  );
+
+  const saveGeneratedPhotos = useCallback(
+    async (
+      generatedPhotos: GeneratedPhotoSaveItem[],
+      {
+        avatarId,
+        sourceAvatarName,
+      }: {
+        avatarId: string;
+        sourceAvatarName: string;
+      },
+    ) => {
+      if (!generatedPhotos.length) {
+        return;
+      }
+
+      setIsSaving(true);
+      setError(null);
+
+      try {
+        let index = 0;
+
+        for (const generatedPhoto of generatedPhotos) {
+          index += 1;
+
+          const { blob, variant } = generatedPhoto;
+          const originalDimensions = await getImageDimensions(blob);
+          const normalizedBlob = await createSwaprPortraitPhotoBlob(blob);
+          const thumbnailBlob = await createImageThumbnailBlob(normalizedBlob);
+          const now = new Date().toISOString();
+          const photoId = createId();
+          const originalName = `${sourceAvatarName}-generated-${index}.jpg`;
+          const needsCrop = getImageNeedsSwaprOutpaint(
+            originalDimensions.width,
+            originalDimensions.height,
+          );
+          const [photoObject, originalObject, thumbnailObject] =
+            await Promise.all([
+              uploadBlobToR2({
+                blob: normalizedBlob,
+                kind: "photo",
+                recordId: photoId,
+              }),
+              uploadBlobToR2({
+                blob,
+                kind: "photo-original",
+                recordId: photoId,
+              }),
+              uploadBlobToR2({
+                blob: thumbnailBlob,
+                kind: "photo-thumbnail",
+                recordId: photoId,
+              }),
+            ]);
+          const photo: PhotoAsset = {
+            id: photoId,
+            name: getGeneratedAvatarPhotoName({
+              index,
+              location: variant.locationDescription,
+              sourceName: sourceAvatarName,
+            }),
+            tags: getAvatarGenerationTags({
+              lighting: variant.lighting,
+              location: variant.locationDescription,
+              style: variant.style,
+            }),
+            avatarId,
+            outfitDescription: variant.outfitDescription,
+            locationDescription: variant.locationDescription,
+            originalName,
+            photoObject,
+            blob: normalizedBlob,
+            originalObject,
+            originalBlob: blob,
+            thumbnailObject,
+            thumbnailBlob,
+            mimeType: normalizedBlob.type || "image/jpeg",
+            originalMimeType: blob.type || "image/jpeg",
+            size: normalizedBlob.size,
+            originalSize: blob.size,
+            width: TIKTOK_OUTPUT_WIDTH,
+            height: TIKTOK_OUTPUT_HEIGHT,
+            originalWidth: originalDimensions.width,
+            originalHeight: originalDimensions.height,
+            preparation: needsCrop ? "auto-crop" : "original-portrait",
+            createdAt: now,
+            updatedAt: now,
+          };
+
+          await savePhotoAsset({
+            id: photo.id,
+            avatarId: photo.avatarId,
+            name: photo.name,
+            tags: photo.tags ?? [],
+            avatarDescription: photo.avatarDescription,
+            outfitDescription: photo.outfitDescription,
+            locationDescription: photo.locationDescription,
+            originalName: photo.originalName,
+            photoObject: photo.photoObject,
+            originalObject: photo.originalObject,
+            thumbnailObject: photo.thumbnailObject,
+            mimeType: photo.mimeType,
+            originalMimeType: photo.originalMimeType,
+            size: photo.size,
+            originalSize: photo.originalSize,
+            width: photo.width,
+            height: photo.height,
+            originalWidth: photo.originalWidth,
+            originalHeight: photo.originalHeight,
+            preparation: photo.preparation,
+            createdAt: photo.createdAt,
+            updatedAt: photo.updatedAt,
+          });
+          photoCacheRef.current.set(photo.id, photo);
+        }
+
+        await refresh();
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to save generated avatar photos.",
+        );
+        throw nextError;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [refresh, savePhotoAsset],
   );
 
   const removePhoto = useCallback(
@@ -338,16 +554,19 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
   }, [isAuthenticated, isAuthLoading, photoDocuments, refreshNonce]);
 
   return {
+    avatars,
     photos,
     isLoading:
       isAuthLoading ||
       (isAuthenticated && photoDocuments === undefined) ||
+      (isAuthenticated && avatarDocuments === undefined) ||
       isHydrating,
     isSaving,
     error,
     refresh,
     loadPhoto,
     saveFiles,
+    saveGeneratedPhotos,
     updatePhotoMetadata,
     removePhoto,
   };

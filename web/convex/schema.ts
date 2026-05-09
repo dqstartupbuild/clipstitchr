@@ -39,8 +39,12 @@ export default defineSchema({
   photoAssets: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    avatarId: v.optional(v.string()),
     name: v.string(),
     tags: assetTagsValidator,
+    avatarDescription: v.optional(v.string()),
+    outfitDescription: v.optional(v.string()),
+    locationDescription: v.optional(v.string()),
     originalName: v.string(),
     photoObject: r2ObjectValidator,
     originalObject: v.optional(r2ObjectValidator),
@@ -61,6 +65,16 @@ export default defineSchema({
       ),
     ),
     consentAcknowledgedAt: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"]),
+  avatars: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    name: v.string(),
+    description: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
   })

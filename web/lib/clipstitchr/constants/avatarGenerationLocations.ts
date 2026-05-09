@@ -1,0 +1,17 @@
+export const avatarGenerationLocations = [
+  "taking a quick selfie in the driver's seat of a parked car on a city street",
+  "riding a bike along a tree-lined neighborhood path",
+  "sitting by an airplane window during daytime travel",
+  "laughing with a small group of friends at an outdoor cafe",
+  "smiling in a lush garden with flowers and greenery behind them",
+  "walking through a busy airport terminal with travel bags nearby",
+  "standing on a sunny beach boardwalk with the ocean in the distance",
+  "taking a mirror selfie in a clean hotel room",
+  "waiting on a subway platform during a daily commute",
+  "relaxing at a coffee shop table with warm indoor ambience",
+  "hiking on a scenic overlook with mountains behind them",
+  "shopping at a weekend street market with colorful stalls nearby",
+  "sitting in a rideshare at night with city lights through the window",
+  "standing outside a concert venue with friends in the background",
+  "posing casually in a modern apartment kitchen",
+] as const;

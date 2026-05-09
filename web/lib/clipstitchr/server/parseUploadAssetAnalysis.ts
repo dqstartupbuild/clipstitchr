@@ -18,9 +18,24 @@ export function parseUploadAssetAnalysis(
 
   try {
     const parsed = JSON.parse(jsonText) as {
+      avatarDescription?: unknown;
+      outfitDescription?: unknown;
+      locationDescription?: unknown;
       name?: unknown;
       tags?: unknown;
     };
+    const avatarDescription =
+      typeof parsed.avatarDescription === "string"
+        ? parsed.avatarDescription.trim().slice(0, 1200)
+        : undefined;
+    const outfitDescription =
+      typeof parsed.outfitDescription === "string"
+        ? parsed.outfitDescription.trim().slice(0, 800)
+        : undefined;
+    const locationDescription =
+      typeof parsed.locationDescription === "string"
+        ? parsed.locationDescription.trim().slice(0, 800)
+        : undefined;
     const name =
       typeof parsed.name === "string" && parsed.name.trim()
         ? parsed.name.trim().slice(0, 80)
@@ -32,6 +47,9 @@ export function parseUploadAssetAnalysis(
       : [];
 
     return {
+      ...(avatarDescription ? { avatarDescription } : {}),
+      ...(outfitDescription ? { outfitDescription } : {}),
+      ...(locationDescription ? { locationDescription } : {}),
       name,
       tags,
     };

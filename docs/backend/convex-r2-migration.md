@@ -36,8 +36,15 @@ Every create/update/delete workflow must write to:
 
 - User owner ID.
 - Stable app-level `id`.
-- Name, tags, original filename, MIME types, sizes, normalized/original dimensions, preparation mode, consent timestamp, timestamps.
+- Optional `avatarId`, name, tags, original filename, per-photo outfit/location descriptions, MIME types, sizes, normalized/original dimensions, preparation mode, consent timestamp, timestamps.
 - R2 references for the normalized photo, optional original photo, and optional thumbnail.
+
+`avatars`
+
+- User owner ID.
+- Stable app-level `id`.
+- Name, identity description, created timestamp, updated timestamp.
+- Avatar descriptions store stable non-sensitive person traits only. Clothing and location context stay on `photoAssets`.
 
 `stitches`
 

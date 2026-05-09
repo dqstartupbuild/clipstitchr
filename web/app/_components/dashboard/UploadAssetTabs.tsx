@@ -3,6 +3,7 @@
 import type { UploadAssetType } from "@/lib/clipstitchr/types/UploadAssetType";
 
 type UploadAssetTabsProps = {
+  assetTypes?: UploadAssetType[];
   value: UploadAssetType;
   onChange: (assetType: UploadAssetType) => void;
 };
@@ -13,10 +14,18 @@ const tabs: { label: string; value: UploadAssetType }[] = [
   { label: "Photo", value: "photo" },
 ];
 
-export function UploadAssetTabs({ value, onChange }: UploadAssetTabsProps) {
+export function UploadAssetTabs({
+  assetTypes,
+  value,
+  onChange,
+}: UploadAssetTabsProps) {
+  const visibleTabs = assetTypes
+    ? tabs.filter((tab) => assetTypes.includes(tab.value))
+    : tabs;
+
   return (
     <div className="inline-flex rounded-lg border border-border bg-slate-100 p-1">
-      {tabs.map((tab) => (
+      {visibleTabs.map((tab) => (
         <button
           key={tab.value}
           type="button"

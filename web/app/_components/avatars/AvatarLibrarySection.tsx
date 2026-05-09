@@ -6,41 +6,47 @@ import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 
-type PhotoLibrarySectionProps = {
-  id: string;
-  photos: PhotoAssetMetadata[];
+type AvatarLibrarySectionProps = {
   emptyDescription: string;
   emptyTitle?: string;
-  onLoadPhoto: (id: string) => Promise<PhotoAsset | null>;
+  avatars: Avatar[];
+  photos: PhotoAssetMetadata[];
+  selectedPhotoId?: string;
   onDelete: (id: string) => void | Promise<void>;
+  onLoadPhoto: (id: string) => Promise<PhotoAsset | null>;
+  onSelect: (photo: PhotoAssetMetadata) => void;
   onUpdateMetadata: (
     photo: PhotoAssetMetadata,
     metadata: AssetMetadataUpdate,
   ) => void | Promise<void>;
 };
 
-export function PhotoLibrarySection({
-  id,
-  photos,
+export function AvatarLibrarySection({
   emptyDescription,
-  emptyTitle = "No photos yet",
-  onLoadPhoto,
+  emptyTitle = "No avatars yet",
+  avatars,
+  photos,
+  selectedPhotoId,
   onDelete,
+  onLoadPhoto,
+  onSelect,
   onUpdateMetadata,
-}: PhotoLibrarySectionProps) {
+}: AvatarLibrarySectionProps) {
   const pagination = usePagination(photos, {
     pageSize: uploadLibraryPageSize,
   });
+  const avatarNamesById = new Map(
+    avatars.map((avatar) => [avatar.id, avatar.name]),
+  );
 
   return (
-    <section id={id}>
+    <section id="avatars">
       <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h2 className="text-xl font-bold text-text-primary">Photos</h2>
-        </div>
+        <h2 className="text-xl font-bold text-text-primary">Avatars</h2>
         <span className="text-sm font-semibold text-text-tertiary">
           {photos.length}
         </span>
@@ -51,9 +57,14 @@ export function PhotoLibrarySection({
             {pagination.pageItems.map((photo) => (
               <PhotoAssetCard
                 key={photo.id}
+                avatarName={
+                  photo.avatarId ? avatarNamesById.get(photo.avatarId) : undefined
+                }
                 photo={photo}
-                onLoadPhoto={onLoadPhoto}
+                isSelected={photo.id === selectedPhotoId}
                 onDelete={onDelete}
+                onLoadPhoto={onLoadPhoto}
+                onSelect={onSelect}
                 onUpdateMetadata={onUpdateMetadata}
               />
             ))}

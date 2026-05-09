@@ -4,6 +4,7 @@ import {
   Library,
   Scissors,
   Shuffle,
+  UserRound,
 } from "lucide-react";
 import Link from "next/link";
 import { BrandMark } from "@/app/_components/BrandMark";
@@ -11,6 +12,7 @@ import { BrandMark } from "@/app/_components/BrandMark";
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/dashboard/uploads", label: "Library", icon: Library },
+  { href: "/dashboard/avatars", label: "Avatars", icon: UserRound },
   { href: "/dashboard/stitchr", label: "Stitchr", icon: Scissors },
   { href: "/dashboard/swapr", label: "Swapr", icon: Shuffle },
 ];
