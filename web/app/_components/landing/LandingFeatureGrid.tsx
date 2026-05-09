@@ -6,6 +6,7 @@ import {
   Shuffle,
   Type,
   UploadCloud,
+  UserRound,
 } from "lucide-react";
 import { Panel } from "@/app/_components/ui/Panel";
 
@@ -31,13 +32,19 @@ const features = [
   {
     title: "Stitch UGC to demos",
     description:
-      "Pair an attention clip with product proof and preview the ad before you create it.",
+      "Choose a UGC clip and product demo, and create a finished ad in seconds.",
     icon: Scissors,
   },
   {
-    title: "Fill content gaps",
+    title: "Save avatar photos",
     description:
-      "Use AI tools when you need more avatar photos or UGC clips.",
+      "Create an avatar and add/generate different photos of them as needed.",
+    icon: UserRound,
+  },
+  {
+    title: "Create new UGC clips",
+    description:
+      "Use Swapr to turn an avatar photo and UGC clip into more source footage.",
     icon: Shuffle,
   },
   {
