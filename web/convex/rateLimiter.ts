@@ -6,9 +6,9 @@ const GIGABYTE = 1024 * 1024 * 1024;
 export const rateLimiter = new RateLimiter(components.rateLimiter, {
   r2UploadUrl: {
     kind: "token bucket",
-    rate: 20,
+    rate: 100,
     period: HOUR,
-    capacity: 5,
+    capacity: 30,
   },
   r2UploadBytes: {
     kind: "token bucket",

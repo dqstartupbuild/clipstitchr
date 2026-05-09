@@ -61,7 +61,7 @@ Existing Convex auth variables still apply:
 
 | Surface | Enforcement Point | Limit |
 | --- | --- | --- |
-| R2 upload signed URL | `POST /api/r2/upload-url` | 20/hour/user, burst 5 |
+| R2 upload signed URL | `POST /api/r2/upload-url` | 100-/hour/user, burst 30 |
 | R2 upload bytes | `POST /api/r2/upload-url` | 2 GB/day/user |
 | R2 download signed URL | `POST /api/r2/download-url` | 120/hour/user, burst 30 |
 | R2 deletes | `POST /api/r2/delete-objects` | 100 objects/hour/user, burst 25 |
