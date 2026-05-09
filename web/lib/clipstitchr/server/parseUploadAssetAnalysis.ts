@@ -1,4 +1,5 @@
 import type { UploadAssetAnalysis } from "@/lib/clipstitchr/types/UploadAssetAnalysis";
+import { splitAvatarDescriptionPoseDetails } from "@/lib/clipstitchr/server/splitAvatarDescriptionPoseDetails";
 import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
 import { normalizeAssetTags } from "@/lib/clipstitchr/utils/normalizeAssetTags";
 
@@ -21,13 +22,17 @@ export function parseUploadAssetAnalysis(
       avatarDescription?: unknown;
       outfitDescription?: unknown;
       locationDescription?: unknown;
+      poseDescription?: unknown;
       name?: unknown;
       tags?: unknown;
     };
-    const avatarDescription =
+    const rawAvatarDescription =
       typeof parsed.avatarDescription === "string"
         ? parsed.avatarDescription.trim().slice(0, 1200)
         : undefined;
+    const avatarDescriptionParts = splitAvatarDescriptionPoseDetails(
+      rawAvatarDescription ?? "",
+    );
     const outfitDescription =
       typeof parsed.outfitDescription === "string"
         ? parsed.outfitDescription.trim().slice(0, 800)
@@ -36,6 +41,12 @@ export function parseUploadAssetAnalysis(
       typeof parsed.locationDescription === "string"
         ? parsed.locationDescription.trim().slice(0, 800)
         : undefined;
+    const parsedPoseDescription =
+      typeof parsed.poseDescription === "string"
+        ? parsed.poseDescription.trim().slice(0, 800)
+        : undefined;
+    const poseDescription =
+      parsedPoseDescription || avatarDescriptionParts.poseDescription;
     const name =
       typeof parsed.name === "string" && parsed.name.trim()
         ? parsed.name.trim().slice(0, 80)
@@ -47,9 +58,12 @@ export function parseUploadAssetAnalysis(
       : [];
 
     return {
-      ...(avatarDescription ? { avatarDescription } : {}),
+      ...(avatarDescriptionParts.avatarDescription
+        ? { avatarDescription: avatarDescriptionParts.avatarDescription }
+        : {}),
       ...(outfitDescription ? { outfitDescription } : {}),
       ...(locationDescription ? { locationDescription } : {}),
+      ...(poseDescription ? { poseDescription } : {}),
       name,
       tags,
     };

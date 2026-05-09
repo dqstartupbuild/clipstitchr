@@ -175,6 +175,7 @@ export function PhotoAssetCard({
           title={photo.name}
           initialName={photo.name}
           initialOutfitDescription={photo.outfitDescription}
+          initialPoseDescription={photo.poseDescription}
           initialTags={photo.tags}
           requiredTag="photo"
           showPhotoDescriptionFields

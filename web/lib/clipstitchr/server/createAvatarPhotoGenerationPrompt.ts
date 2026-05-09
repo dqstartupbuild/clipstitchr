@@ -22,9 +22,7 @@ export function createAvatarPhotoGenerationPrompt({
     `Avatar description: ${avatarDescription}`,
     `Outfit for this new photo: ${variant.outfitDescription}.`,
     `Location or situation for this new photo: ${variant.locationDescription}.`,
-    ...(variant.contextDescription
-      ? [`Pose or action context: ${variant.contextDescription}.`]
-      : []),
+    `Pose or action for this new photo: ${variant.poseDescription}.`,
     `Style: ${styleLine}.`,
     `Lighting: ${lightingLine}.`,
     "Do not copy the source photo outfit, background, location, or pose unless it naturally matches the requested new photo.",

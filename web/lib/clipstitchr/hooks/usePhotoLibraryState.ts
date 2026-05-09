@@ -263,6 +263,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
             tags: normalizeAssetTagsWithRequiredTag(analysis.tags, "photo"),
             outfitDescription: analysis.outfitDescription,
             locationDescription: analysis.locationDescription,
+            poseDescription: analysis.poseDescription,
             originalName: file.name,
             photoObject,
             blob: normalizedBlob,
@@ -291,6 +292,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
             avatarDescription: photo.avatarDescription,
             outfitDescription: photo.outfitDescription,
             locationDescription: photo.locationDescription,
+            poseDescription: photo.poseDescription,
             originalName: photo.originalName,
             photoObject: photo.photoObject,
             originalObject: photo.originalObject,
@@ -342,6 +344,9 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
         ...(metadata.locationDescription === undefined
           ? {}
           : { locationDescription: metadata.locationDescription }),
+        ...(metadata.poseDescription === undefined
+          ? {}
+          : { poseDescription: metadata.poseDescription }),
         updatedAt: new Date().toISOString(),
       };
 
@@ -352,6 +357,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
         avatarDescription: updatedPhoto.avatarDescription,
         outfitDescription: updatedPhoto.outfitDescription,
         locationDescription: updatedPhoto.locationDescription,
+        poseDescription: updatedPhoto.poseDescription,
         updatedAt: updatedPhoto.updatedAt,
       });
       photoCacheRef.current.delete(photo.id);
@@ -428,6 +434,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
             avatarId,
             outfitDescription: variant.outfitDescription,
             locationDescription: variant.locationDescription,
+            poseDescription: variant.poseDescription,
             originalName,
             photoObject,
             blob: normalizedBlob,
@@ -456,6 +463,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
             avatarDescription: photo.avatarDescription,
             outfitDescription: photo.outfitDescription,
             locationDescription: photo.locationDescription,
+            poseDescription: photo.poseDescription,
             originalName: photo.originalName,
             photoObject: photo.photoObject,
             originalObject: photo.originalObject,

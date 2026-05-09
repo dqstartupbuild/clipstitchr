@@ -60,7 +60,7 @@ export function AvatarPhotoUploadControls({
           disabled={!canSave}
           onClick={onSave}
         >
-          Save Photos
+          {isSaving ? "Saving..." : "Save Photos"}
         </Button>
       </div>
     </div>

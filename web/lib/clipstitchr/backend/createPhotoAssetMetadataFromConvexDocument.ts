@@ -13,6 +13,7 @@ export function createPhotoAssetMetadataFromConvexDocument(
     avatarDescription: photo.avatarDescription,
     outfitDescription: photo.outfitDescription,
     locationDescription: photo.locationDescription,
+    poseDescription: photo.poseDescription,
     originalName: photo.originalName,
     photoObject: photo.photoObject,
     originalObject: photo.originalObject,

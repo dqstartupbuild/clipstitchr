@@ -17,6 +17,7 @@ type AssetMetadataEditDialogProps = {
   title: string;
   initialName: string;
   initialOutfitDescription?: string;
+  initialPoseDescription?: string;
   initialTags?: string[];
   requiredTag?: string;
   showPhotoDescriptionFields?: boolean;
@@ -32,6 +33,7 @@ export function AssetMetadataEditDialog({
   title,
   initialName,
   initialOutfitDescription = "",
+  initialPoseDescription = "",
   initialTags = [],
   requiredTag,
   showPhotoDescriptionFields = false,
@@ -46,6 +48,9 @@ export function AssetMetadataEditDialog({
   );
   const [locationDescription, setLocationDescription] = useState(
     initialLocationDescription,
+  );
+  const [poseDescription, setPoseDescription] = useState(
+    initialPoseDescription,
   );
   const [tags, setTags] = useState(() =>
     requiredTag
@@ -79,6 +84,7 @@ export function AssetMetadataEditDialog({
           ? {
               locationDescription: locationDescription.trim(),
               outfitDescription: outfitDescription.trim(),
+              poseDescription: poseDescription.trim(),
             }
           : {}),
         name: trimmedName,
@@ -171,6 +177,20 @@ export function AssetMetadataEditDialog({
                   className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-6 text-text-primary outline-none transition-colors focus:border-accent"
                   onChange={(event) =>
                     setOutfitDescription(event.currentTarget.value)
+                  }
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-semibold text-text-primary">
+                  Pose description
+                </span>
+                <textarea
+                  value={poseDescription}
+                  rows={4}
+                  placeholder="Body position, gesture, action, or how the person is posing"
+                  className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-6 text-text-primary outline-none transition-colors focus:border-accent"
+                  onChange={(event) =>
+                    setPoseDescription(event.currentTarget.value)
                   }
                 />
               </label>

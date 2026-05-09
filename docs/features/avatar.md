@@ -4,7 +4,7 @@
 
 Avatars are reusable person identities for Swapr. An avatar is not a single photo. It is the named person profile that one or more avatar photos belong to.
 
-Avatar photos are individual image assets for that avatar. Each photo can have its own outfit, location, and upload context, but those details must not be mixed into the avatar identity description.
+Avatar photos are individual image assets for that avatar. Each photo can have its own outfit, location, pose, and upload context, but those details must not be mixed into the avatar identity description.
 
 Avatar and Swapr features are secondary to the main Stitchr workflow. They exist
 to create or improve source material that can become UGC-style inputs for
@@ -31,13 +31,14 @@ The avatar description should describe only stable, non-sensitive visual traits 
 - eyes
 - nose
 - lips
-- build and posture when useful
+- build
 - distinctive non-sensitive visual features
 
 The avatar description must not include:
 
 - clothing or outfit details
 - location or background details
+- pose, posture, gesture, body position, or activity details
 - private identity
 - race, ethnicity, nationality, religion, gender identity, health, disability, or other sensitive guesses
 
@@ -50,9 +51,10 @@ Each photo stores image-level fields:
 - `tags`
 - `outfitDescription`
 - `locationDescription`
+- `poseDescription`
 - image object references, thumbnail object references, dimensions, sizes, and preparation metadata
 
-Outfit and location descriptions are per-photo metadata. They can help users understand and search images, but they should not be injected into generation prompts as identity context.
+Outfit, location, and pose descriptions are per-photo metadata. They can help users understand and search images, but they should not be injected into generation prompts as identity context.
 
 ## Upload Flow
 
@@ -66,13 +68,13 @@ avatar assignment must show an idle/ready state instead of failing the upload.
 If the user creates a new avatar:
 
 - They provide the avatar name before saving the staged upload.
-- Upload analysis produces a clean avatar description and per-photo outfit/location descriptions.
+- Upload analysis produces a clean avatar description and per-photo outfit/location/pose descriptions.
 - The first uploaded photo can populate the avatar description if the avatar does not already have one.
 
 If the user selects an existing avatar:
 
 - New photos are attached to that avatar.
-- Upload analysis stores outfit/location on each photo.
+- Upload analysis stores outfit/location/pose on each photo.
 - Existing avatar descriptions should not be overwritten unless a future explicit edit flow is added.
 
 ## Browsing and Selection
@@ -91,7 +93,7 @@ The avatar photo generation UI supports:
 - optional location/scenario input
 - optional context input for what the avatar should be doing or how they should pose
 
-Generation uses the selected source photo as the reference image, but the prompt should receive only the avatar identity description as identity text. It must not receive outfit or location information from the source photo.
+Generation uses the selected source photo as the reference image, but the prompt should receive only the avatar identity description as identity text. It must not receive outfit, location, or pose information from the source photo as identity context.
 
 The optional context input is generation-only prompt guidance. It should appear
 in the generation controls, not in the empty state copy.
@@ -100,6 +102,7 @@ For each requested output image, ClipStitchr creates a unique variant:
 
 - unique outfit description generated at request time
 - location/scenario generated at request time unless the user entered one
+- pose/action generated at request time unless the user entered context
 - lighting generated at request time when the user selected `Any`
 - selected style from the UI
 

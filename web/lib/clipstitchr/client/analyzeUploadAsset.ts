@@ -47,6 +47,10 @@ export async function analyzeUploadAsset({
       typeof body.locationDescription === "string"
         ? body.locationDescription.trim()
         : undefined,
+    poseDescription:
+      typeof body.poseDescription === "string"
+        ? body.poseDescription.trim()
+        : undefined,
     name:
       typeof body.name === "string" && body.name.trim()
         ? body.name.trim()

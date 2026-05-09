@@ -45,6 +45,7 @@ export default defineSchema({
     avatarDescription: v.optional(v.string()),
     outfitDescription: v.optional(v.string()),
     locationDescription: v.optional(v.string()),
+    poseDescription: v.optional(v.string()),
     originalName: v.string(),
     photoObject: r2ObjectValidator,
     originalObject: v.optional(r2ObjectValidator),

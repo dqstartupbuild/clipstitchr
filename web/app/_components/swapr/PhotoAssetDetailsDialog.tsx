@@ -87,14 +87,6 @@ export function PhotoAssetDetailsDialog({
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
-                File
-              </p>
-              <p className="mt-1 text-sm text-text-secondary">
-                {photo.width} x {photo.height} . {formatBytes(photo.size)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
                 Tags
               </p>
               <AssetTagList
@@ -104,6 +96,16 @@ export function PhotoAssetDetailsDialog({
                 requiredTag="photo"
               />
             </div>
+            {photo.poseDescription ? (
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
+                  Pose
+                </p>
+                <p className="mt-1 text-sm leading-6 text-text-secondary">
+                  {photo.poseDescription}
+                </p>
+              </div>
+            ) : null}
             {photo.outfitDescription ? (
               <div>
                 <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
@@ -124,6 +126,14 @@ export function PhotoAssetDetailsDialog({
                 </p>
               </div>
             ) : null}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
+                File
+              </p>
+              <p className="mt-1 text-sm text-text-secondary">
+                {photo.width} x {photo.height} . {formatBytes(photo.size)}
+              </p>
+            </div>
           </div>
         </div>
       </div>

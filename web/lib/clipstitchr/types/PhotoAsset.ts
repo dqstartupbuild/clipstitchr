@@ -9,6 +9,7 @@ export type PhotoAsset = {
   avatarDescription?: string;
   outfitDescription?: string;
   locationDescription?: string;
+  poseDescription?: string;
   originalName: string;
   photoObject: R2ObjectReference;
   blob: Blob;

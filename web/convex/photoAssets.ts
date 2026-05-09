@@ -19,6 +19,7 @@ const saveArgs = {
   avatarDescription: v.optional(v.string()),
   outfitDescription: v.optional(v.string()),
   locationDescription: v.optional(v.string()),
+  poseDescription: v.optional(v.string()),
   originalName: v.string(),
   photoObject: r2ObjectValidator,
   originalObject: v.optional(r2ObjectValidator),
@@ -102,6 +103,7 @@ export const updateMetadata = mutation({
     avatarDescription: v.optional(v.string()),
     outfitDescription: v.optional(v.string()),
     locationDescription: v.optional(v.string()),
+    poseDescription: v.optional(v.string()),
     updatedAt: v.string(),
   },
   handler: async (
@@ -113,6 +115,7 @@ export const updateMetadata = mutation({
       avatarDescription,
       outfitDescription,
       locationDescription,
+      poseDescription,
       updatedAt,
     },
   ) => {
@@ -138,6 +141,7 @@ export const updateMetadata = mutation({
       ...(avatarDescription === undefined ? {} : { avatarDescription }),
       ...(outfitDescription === undefined ? {} : { outfitDescription }),
       ...(locationDescription === undefined ? {} : { locationDescription }),
+      ...(poseDescription === undefined ? {} : { poseDescription }),
       updatedAt,
     });
   },

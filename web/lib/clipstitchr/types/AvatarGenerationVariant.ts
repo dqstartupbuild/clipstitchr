@@ -7,9 +7,9 @@ export type AvatarGenerationResolvedLighting = Exclude<
 >;
 
 export type AvatarGenerationVariant = {
-  contextDescription?: string;
   outfitDescription: string;
   locationDescription: string;
+  poseDescription: string;
   lighting: AvatarGenerationResolvedLighting;
   style: AvatarStyleOption;
 };

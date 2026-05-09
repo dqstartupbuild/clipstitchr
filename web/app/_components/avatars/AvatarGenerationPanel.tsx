@@ -47,6 +47,10 @@ export function AvatarGenerationPanel({
   onStyleChange,
 }: AvatarGenerationPanelProps) {
   const hasDescription = Boolean(selectedAvatar?.description?.trim());
+  const descriptionText = selectedAvatar
+    ? selectedAvatar.description ||
+      "Add one clear description for this avatar before generating."
+    : "Select an avatar photo to enable generation.";
   const shouldShowControls = Boolean(selectedAvatar && selectedPhoto);
 
   return (
@@ -59,12 +63,19 @@ export function AvatarGenerationPanel({
           <h2 className="mt-1 text-base font-bold text-text-primary">
             New photos from selected avatar
           </h2>
-          <p className="mt-1 line-clamp-2 max-w-3xl text-sm leading-6 text-text-secondary">
-            {selectedAvatar
-              ? selectedAvatar.description ||
-                "Add one clear description for this avatar before generating."
-              : "Select an avatar photo to enable generation."}
-          </p>
+          <div className="group relative mt-1 max-w-3xl">
+            <p
+              className="line-clamp-2 text-sm leading-6 text-text-secondary outline-none focus-visible:rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              tabIndex={hasDescription ? 0 : undefined}
+            >
+              {descriptionText}
+            </p>
+            {hasDescription ? (
+              <div className="pointer-events-none absolute left-0 top-full z-30 mt-2 hidden w-full max-w-xl rounded-lg border border-accent/20 bg-white p-3 text-sm leading-6 text-text-secondary shadow-xl shadow-slate-900/15 group-hover:block group-focus-within:block">
+                {selectedAvatar?.description}
+              </div>
+            ) : null}
+          </div>
         </div>
         {shouldShowControls ? (
           <div className="grid gap-2 md:grid-cols-2 xl:w-[760px] xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.35fr)_132px_132px_108px_132px] xl:items-end">

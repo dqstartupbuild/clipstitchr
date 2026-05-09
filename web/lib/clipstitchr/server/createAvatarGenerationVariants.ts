@@ -1,5 +1,6 @@
 import { avatarGenerationLocations } from "@/lib/clipstitchr/constants/avatarGenerationLocations";
 import { avatarGenerationOutfits } from "@/lib/clipstitchr/constants/avatarGenerationOutfits";
+import { avatarGenerationPoses } from "@/lib/clipstitchr/constants/avatarGenerationPoses";
 import type {
   AvatarGenerationResolvedLighting,
   AvatarGenerationVariant,
@@ -39,13 +40,14 @@ export function createAvatarGenerationVariants({
 }): AvatarGenerationVariant[] {
   const outfits = getShuffledItems(avatarGenerationOutfits);
   const locations = getShuffledItems(avatarGenerationLocations);
+  const poses = getShuffledItems(avatarGenerationPoses);
   const trimmedContext = context.trim();
   const trimmedLocation = location.trim();
 
   return Array.from({ length: count }, (_, index) => ({
-    ...(trimmedContext ? { contextDescription: trimmedContext } : {}),
     outfitDescription: outfits[index % outfits.length],
     locationDescription: trimmedLocation || locations[index % locations.length],
+    poseDescription: trimmedContext || poses[index % poses.length],
     lighting:
       lighting === "any" ? getRandomItem(randomLightingOptions) : lighting,
     style,
