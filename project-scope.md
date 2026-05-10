@@ -174,6 +174,23 @@ main product promise.
 | 3 | Swapr generates UGC-style video clips that can be saved back into the UGC library | ✅ | ✅ |
 | 4 | AI features use rate limits, credit budgeting, and speed profiles because they create external provider cost | ✅ | ✅ |
 
+### 4.6 Carousel Generation
+
+Swipr creates TikTok-ready static carousel image sets. The MVP uses browser-local
+canvas rendering: one selected or generated background image is reused across
+every image, and each image has its own text overlay using the same styling,
+color, drag, and resize model as Stitchr text overlays.
+
+| # | Feature | MVP | Prod |
+|---|---------|-----|------|
+| 1 | User selects a product context from saved demos or enters a custom product | ✅ | ✅ |
+| 2 | User chooses 3-8 carousel images | ✅ | ✅ |
+| 3 | User uploads one background image or generates one local starter background | ✅ | ✅ |
+| 4 | One background image is reused across every rendered carousel image | ✅ | ✅ |
+| 5 | User adds and positions text independently on each image | ✅ | ✅ |
+| 6 | Browser renders 9:16 PNG images and downloads them as one ZIP file | ✅ | ✅ |
+| 7 | Pinterest, stock-library, or AI background provider integration | — | ✅ |
+
 ---
 
 ## 5. Pages / Routes (MVP)
@@ -182,6 +199,7 @@ main product promise.
 /                → Landing page (marketing + "Go to Dashboard" CTA)
 /dashboard       → Authenticated main workspace
 /dashboard/stitchr → Authenticated Stitchr video stitching interface
+/dashboard/swipr → Authenticated TikTok carousel image generator
 /dashboard/swapr → Authenticated AI motion-transfer studio using saved photos and UGC clips
 /dashboard/avatars → Authenticated avatar photo library with hidden-until-requested photo upload controls, avatar assignment, descriptions, and AI scenario photo generation
 /dashboard/uploads → Authenticated Content Library with All, UGC, Demo, Swaps, and Stitches tabs; UGC/Demo upload controls open from the header upload selector

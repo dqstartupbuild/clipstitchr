@@ -86,6 +86,15 @@ Optional Replicate model overrides:
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
 
+## Local-Only Workflows
+
+Swipr carousel export is intentionally not rate-limited in the MVP because it
+does not call a server route, signed URL flow, Convex mutation, or paid provider.
+The browser renders 9:16 PNG images with Canvas and creates a local ZIP download.
+If Swipr later adds Pinterest, a stock-media provider, or AI background
+generation, the provider call must be server-side and rate-limited before any
+external request or signed asset flow starts.
+
 ## Client Batch Caps
 
 Client upload controls enforce batch sizes before any processing, signed URL
