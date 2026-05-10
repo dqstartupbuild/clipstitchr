@@ -5,6 +5,7 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { analyzeUploadAsset } from "@/lib/clipstitchr/client/analyzeUploadAsset";
+import { createR2DownloadUrl } from "@/lib/clipstitchr/client/r2/createR2DownloadUrl";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
@@ -108,27 +109,6 @@ export function useUploadProcessor({
               name: fallbackName,
               tags: [],
             };
-
-            updateQueueItem(item.id, {
-              status: "analyzing",
-              progress: 0.97,
-            });
-
-            try {
-              analysis = await analyzeUploadAsset({
-                blob: normalized.blob,
-                fallbackBlob: posterBlob,
-                mediaKind:
-                  item.clipType === "ugc" ? "ugc-video" : "demo-video",
-                originalName: file.name,
-              });
-            } catch {
-              analysis = {
-                name: fallbackName,
-                tags: [],
-              };
-            }
-
             const now = new Date().toISOString();
             const clipId = createId();
             const [videoObject, posterObject] = await uploadBlobsToR2([
@@ -147,6 +127,35 @@ export function useUploadProcessor({
                   ]
                 : []),
             ]);
+            let videoAnalysisUrl: string | undefined;
+
+            updateQueueItem(item.id, {
+              status: "analyzing",
+              progress: 0.97,
+            });
+
+            try {
+              videoAnalysisUrl = (await createR2DownloadUrl(videoObject)).url;
+            } catch {
+              videoAnalysisUrl = undefined;
+            }
+
+            try {
+              analysis = await analyzeUploadAsset({
+                fallbackBlob: posterBlob,
+                mediaKind:
+                  item.clipType === "ugc" ? "ugc-video" : "demo-video",
+                originalName: file.name,
+                sourceSizeBytes: normalized.blob.size,
+                sourceUrl: videoAnalysisUrl,
+              });
+            } catch {
+              analysis = {
+                name: fallbackName,
+                tags: [],
+              };
+            }
+
             const clip: VideoClip = {
               id: clipId,
               name: analysis.name,

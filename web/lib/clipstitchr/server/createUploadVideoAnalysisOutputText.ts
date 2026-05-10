@@ -19,25 +19,34 @@ export async function createUploadVideoAnalysisOutputText({
   mediaKind,
   originalName,
   replicate,
+  sourceSizeBytes,
+  sourceUrl,
 }: {
   fallbackImageFile?: File;
-  file: File;
+  file?: File;
   mediaKind: UploadAssetAnalysisKind;
   originalName: string;
   replicate: ReplicateClient;
+  sourceSizeBytes?: number;
+  sourceUrl?: string;
 }) {
-  const videoFile = createReplicateInputFile({
-    fallbackFileName: "upload-analysis.mp4",
-    file,
-    mimeType: "video/mp4",
-  });
+  const videoInput =
+    sourceUrl ||
+    (file
+      ? createReplicateInputFile({
+          fallbackFileName: "upload-analysis.mp4",
+          file,
+          mimeType: "video/mp4",
+        })
+      : undefined);
+  const videoSizeBytes = sourceSizeBytes ?? file?.size ?? 0;
 
-  if (file.size <= MAX_UPLOAD_VIDEO_ANALYSIS_SIZE_BYTES) {
+  if (videoInput && videoSizeBytes <= MAX_UPLOAD_VIDEO_ANALYSIS_SIZE_BYTES) {
     try {
       const prediction = await replicate.predictions.create({
         model: getUploadVideoAnalysisModelId(),
         input: {
-          videos: [videoFile],
+          videos: [videoInput],
           prompt: createUploadVideoAnalysisPrompt({ mediaKind, originalName }),
           system_instruction: UPLOAD_VIDEO_ANALYSIS_SYSTEM_INSTRUCTION,
           temperature: 0.2,
@@ -56,7 +65,16 @@ export async function createUploadVideoAnalysisOutputText({
         throw error;
       }
     }
-  } else if (!fallbackImageFile) {
+  } else if (videoSizeBytes > MAX_UPLOAD_VIDEO_ANALYSIS_SIZE_BYTES) {
+    if (fallbackImageFile) {
+      return await createUploadImageAnalysisOutputText({
+        file: fallbackImageFile,
+        mediaKind,
+        originalName,
+        replicate,
+      });
+    }
+
     throw new Error(
       `Video analysis supports videos up to ${formatBytes(MAX_UPLOAD_VIDEO_ANALYSIS_SIZE_BYTES)}.`,
     );

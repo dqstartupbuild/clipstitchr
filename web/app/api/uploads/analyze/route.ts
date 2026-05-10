@@ -8,6 +8,7 @@ import { createUploadImageAnalysisOutputText } from "@/lib/clipstitchr/server/cr
 import { createUploadVideoAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadVideoAnalysisOutputText";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { getOptionalUploadAnalysisFormFile } from "@/lib/clipstitchr/server/getOptionalUploadAnalysisFormFile";
+import { getOptionalUploadAnalysisFormNumber } from "@/lib/clipstitchr/server/getOptionalUploadAnalysisFormNumber";
 import { getUploadAnalysisFormFile } from "@/lib/clipstitchr/server/getUploadAnalysisFormFile";
 import { getUploadAnalysisFormString } from "@/lib/clipstitchr/server/getUploadAnalysisFormString";
 import { getUploadAnalysisIsVideoKind } from "@/lib/clipstitchr/server/getUploadAnalysisIsVideoKind";
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
     }
 
     const formData = await request.formData();
-    const file = getUploadAnalysisFormFile(formData, "file");
+    const file = getOptionalUploadAnalysisFormFile(formData, "file");
     const fallbackImageFile = getOptionalUploadAnalysisFormFile(
       formData,
       "fallbackImage",
@@ -42,6 +43,11 @@ export async function POST(request: Request) {
     const mediaKind = getUploadAnalysisKind(
       getUploadAnalysisFormString(formData, "mediaKind"),
     );
+    const sourceSizeBytes = getOptionalUploadAnalysisFormNumber(
+      formData,
+      "sourceSizeBytes",
+    );
+    const sourceUrl = getUploadAnalysisFormString(formData, "sourceUrl");
     const isVideoAnalysis = getUploadAnalysisIsVideoKind(mediaKind);
     const convex = createAuthenticatedConvexHttpClient(convexToken);
 
@@ -62,9 +68,11 @@ export async function POST(request: Request) {
           mediaKind,
           originalName,
           replicate,
+          sourceSizeBytes,
+          sourceUrl,
         })
       : await createUploadImageAnalysisOutputText({
-          file,
+          file: getUploadAnalysisFormFile(formData, "file"),
           mediaKind,
           originalName,
           replicate,

@@ -119,12 +119,14 @@ concurrency does not loosen the image-count rate limit; the full requested count
 is consumed before any Replicate prediction is created.
 
 Upload video analysis is rate-limited separately from avatar/photo image
-analysis because it can upload the normalized video to Replicate and ask Gemini
-for a chronological action breakdown. The route consumes the video-analysis
-limit before creating the Gemini prediction. If Gemini fails, or if the
-normalized video is larger than 100 MB, the route falls back to the existing
-OpenAI image-analysis path using the generated poster image when one is
-available.
+analysis because it can send the normalized video to Gemini for a chronological
+action breakdown. The client uploads the normalized video to R2 first, requests
+a short-lived R2 download URL, and sends that URL to the analysis route so
+Gemini receives a media URL with the stored object content type instead of a
+Replicate Files URL. The route consumes the video-analysis limit before creating
+the Gemini prediction. If Gemini fails, or if the normalized video is larger
+than 100 MB, the route falls back to the existing OpenAI image-analysis path
+using the generated poster image when one is available.
 
 Swapr video generation is rate-limited both by job count and by estimated output
 seconds. The route uses the source orientation limit as the estimate: image-led

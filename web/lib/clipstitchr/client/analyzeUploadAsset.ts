@@ -7,10 +7,12 @@ import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallback
 import { normalizeAssetTags } from "@/lib/clipstitchr/utils/normalizeAssetTags";
 
 type AnalyzeUploadAssetOptions = {
-  blob: Blob;
+  blob?: Blob;
   fallbackBlob?: Blob;
   mediaKind: UploadAssetAnalysisKind;
   originalName: string;
+  sourceSizeBytes?: number;
+  sourceUrl?: string;
 };
 
 export async function analyzeUploadAsset({
@@ -18,14 +20,19 @@ export async function analyzeUploadAsset({
   fallbackBlob,
   mediaKind,
   originalName,
+  sourceSizeBytes,
+  sourceUrl,
 }: AnalyzeUploadAssetOptions): Promise<UploadAssetAnalysis> {
   const formData = new FormData();
-  const fileExtension = getBlobFileExtension(
-    blob,
-    mediaKind === "photo" ? "jpg" : "mp4",
-  );
 
-  formData.set("file", blob, `${mediaKind}-source.${fileExtension}`);
+  if (blob) {
+    const fileExtension = getBlobFileExtension(
+      blob,
+      mediaKind === "photo" ? "jpg" : "mp4",
+    );
+
+    formData.set("file", blob, `${mediaKind}-source.${fileExtension}`);
+  }
 
   if (fallbackBlob) {
     formData.set("fallbackImage", fallbackBlob, `${mediaKind}-fallback.jpg`);
@@ -33,6 +40,14 @@ export async function analyzeUploadAsset({
 
   formData.set("mediaKind", mediaKind);
   formData.set("originalName", originalName);
+
+  if (sourceUrl) {
+    formData.set("sourceUrl", sourceUrl);
+  }
+
+  if (sourceSizeBytes !== undefined) {
+    formData.set("sourceSizeBytes", String(sourceSizeBytes));
+  }
 
   const response = await fetch("/api/uploads/analyze", {
     method: "POST",
