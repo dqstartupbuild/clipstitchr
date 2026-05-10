@@ -93,6 +93,12 @@ The avatar photo generation UI supports:
 - optional location/scenario input
 - optional context input for what the avatar should be doing or how they should pose
 
+The Content Library UGC cards also support creating a new avatar from a UGC clip.
+This flow uses the clip poster as the reference image and pre-fills the person
+description from the clip metadata. Users can choose whether generation should
+preserve the source person or create a similar but different person. Successful
+outputs are saved as avatar photos under a newly created avatar.
+
 Generation uses the selected source photo as the reference image, but the prompt should receive only the avatar identity description as identity text. It must not receive outfit, location, or pose information from the source photo as identity context.
 
 The optional context input is generation-only prompt guidance. It should appear

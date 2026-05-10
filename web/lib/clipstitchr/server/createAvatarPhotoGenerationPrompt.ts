@@ -1,24 +1,37 @@
 import { getAvatarLightingPrompt } from "@/lib/clipstitchr/utils/getAvatarLightingPrompt";
 import type { AvatarGenerationVariant } from "@/lib/clipstitchr/types/AvatarGenerationVariant";
+import type { AvatarIdentityMode } from "@/lib/clipstitchr/types/AvatarIdentityMode";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
 import { getAvatarStylePrompt } from "@/lib/clipstitchr/utils/getAvatarStylePrompt";
 
 type CreateAvatarPhotoGenerationPromptOptions = {
   avatarDescription: string;
+  identityMode?: AvatarIdentityMode;
   variant: AvatarGenerationVariant;
 };
 
 export function createAvatarPhotoGenerationPrompt({
   avatarDescription,
+  identityMode = "same",
   variant,
 }: CreateAvatarPhotoGenerationPromptOptions) {
   const styleLine = getAvatarStylePrompt(variant.style as AvatarStyleOption);
   const lightingLine = getAvatarLightingPrompt(variant.lighting);
+  const identityLines =
+    identityMode === "similar"
+      ? [
+          "Create exactly one standalone realistic portrait photo of a new fictional person inspired by the reference image.",
+          "The new person should share broad non-sensitive visual traits with the reference, but must have a noticeably different facial identity.",
+          "Do not clone, preserve, or duplicate the exact face from the reference image.",
+        ]
+      : [
+          "Create exactly one standalone realistic portrait photo of the same person from the reference image.",
+          "Preserve the person's facial identity, face shape, hair, skin tone, and other stable non-sensitive visual traits from the reference.",
+        ];
 
   return [
-    "Create exactly one standalone realistic portrait photo of the same person from the reference image.",
+    ...identityLines,
     "The image should feel like a casual real-world photo the avatar could have taken themselves.",
-    "Preserve the person's facial identity, face shape, hair, skin tone, and other stable non-sensitive visual traits from the reference.",
     `Avatar description: ${avatarDescription}`,
     `Outfit for this new photo: ${variant.outfitDescription}.`,
     `Location or situation for this new photo: ${variant.locationDescription}.`,

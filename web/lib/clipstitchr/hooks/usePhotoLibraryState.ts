@@ -24,6 +24,7 @@ import { getImageDimensions } from "@/lib/clipstitchr/media/getImageDimensions";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 import type { AvatarGenerationVariant } from "@/lib/clipstitchr/types/AvatarGenerationVariant";
+import type { CreateAvatarOptions } from "@/lib/clipstitchr/types/CreateAvatarOptions";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import type { PhotoLibraryValue } from "@/lib/clipstitchr/types/PhotoLibraryValue";
@@ -84,6 +85,46 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
   const refresh = useCallback(async () => {
     setRefreshNonce((currentNonce) => currentNonce + 1);
   }, []);
+
+  const createAvatar = useCallback(
+    async ({ description, name }: CreateAvatarOptions) => {
+      const trimmedName = name.trim();
+      const trimmedDescription = description?.trim();
+
+      if (!trimmedName) {
+        setError("Avatar name is required.");
+        throw new Error("Avatar name is required.");
+      }
+
+      setIsSaving(true);
+      setError(null);
+
+      try {
+        const now = new Date().toISOString();
+        const avatar: Avatar = {
+          id: createId(),
+          name: trimmedName,
+          description: trimmedDescription || undefined,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        await saveAvatar(avatar);
+        await refresh();
+        return avatar;
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to create this avatar.",
+        );
+        throw nextError;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [refresh, saveAvatar],
+  );
 
   const loadPhoto = useCallback(async (id: string) => {
     const cachedPhoto = photoCacheRef.current.get(id);
@@ -671,6 +712,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     isSaving,
     error,
     refresh,
+    createAvatar,
     loadPhoto,
     saveFiles,
     saveGeneratedPhotos,

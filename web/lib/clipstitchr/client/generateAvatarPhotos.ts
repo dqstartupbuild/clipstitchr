@@ -1,19 +1,21 @@
 "use client";
 
 import type { AvatarPhotoGenerationCount } from "@/lib/clipstitchr/types/AvatarPhotoGenerationCount";
+import type { AvatarIdentityMode } from "@/lib/clipstitchr/types/AvatarIdentityMode";
 import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightingOption";
+import type { AvatarPhotoGenerationReference } from "@/lib/clipstitchr/types/AvatarPhotoGenerationReference";
 import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpeedTier";
 import type { GeneratedAvatarPhoto } from "@/lib/clipstitchr/types/GeneratedAvatarPhoto";
-import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
 import { createBlobFromDataUrl } from "@/lib/clipstitchr/utils/createBlobFromDataUrl";
 
 type GenerateAvatarPhotosOptions = {
-  avatar: PhotoAsset;
+  avatar: AvatarPhotoGenerationReference;
   avatarDescription: string;
   context: string;
   count: AvatarPhotoGenerationCount;
   generationSpeedTier?: GenerationSpeedTier;
+  identityMode?: AvatarIdentityMode;
   lighting: AvatarLightingOption;
   location: string;
   style: AvatarStyleOption;
@@ -32,6 +34,7 @@ export async function generateAvatarPhotos({
   context,
   count,
   generationSpeedTier,
+  identityMode = "same",
   lighting,
   location,
   style,
@@ -47,6 +50,7 @@ export async function generateAvatarPhotos({
   formData.set("avatarDescription", avatarDescription);
   formData.set("context", context);
   formData.set("count", String(count));
+  formData.set("identityMode", identityMode);
   if (generationSpeedTier) {
     formData.set("generationSpeedTier", generationSpeedTier);
   }

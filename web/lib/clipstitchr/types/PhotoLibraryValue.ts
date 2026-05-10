@@ -1,6 +1,7 @@
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 import type { AvatarGenerationVariant } from "@/lib/clipstitchr/types/AvatarGenerationVariant";
+import type { CreateAvatarOptions } from "@/lib/clipstitchr/types/CreateAvatarOptions";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 
@@ -11,6 +12,7 @@ export type PhotoLibraryValue = {
   isSaving: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  createAvatar: (options: CreateAvatarOptions) => Promise<Avatar>;
   loadPhoto: (id: string) => Promise<PhotoAsset | null>;
   saveFiles: (
     files: FileList | File[],

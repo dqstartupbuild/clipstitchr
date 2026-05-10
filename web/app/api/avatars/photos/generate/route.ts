@@ -9,6 +9,7 @@ import { createAvatarPhotoGenerationPrompt } from "@/lib/clipstitchr/server/crea
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createReplicateImageDataUrl } from "@/lib/clipstitchr/server/createReplicateImageDataUrl";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
+import { getAvatarIdentityMode } from "@/lib/clipstitchr/server/getAvatarIdentityMode";
 import { getAvatarLightingOption } from "@/lib/clipstitchr/server/getAvatarLightingOption";
 import { getAvatarPhotoGenerationCount } from "@/lib/clipstitchr/server/getAvatarPhotoGenerationCount";
 import { getAvatarPhotoGenerationModelId } from "@/lib/clipstitchr/server/getAvatarPhotoGenerationModelId";
@@ -48,6 +49,9 @@ export async function POST(request: Request) {
       getSwaprFormString(formData, "count"),
     );
     const context = getSwaprFormString(formData, "context").trim();
+    const identityMode = getAvatarIdentityMode(
+      getSwaprFormString(formData, "identityMode"),
+    );
     const lighting = getAvatarLightingOption(
       getSwaprFormString(formData, "lighting"),
     );
@@ -89,6 +93,7 @@ export async function POST(request: Request) {
       async (variant) => {
         const prompt = createAvatarPhotoGenerationPrompt({
           avatarDescription,
+          identityMode,
           variant,
         });
 

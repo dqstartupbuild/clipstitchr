@@ -79,7 +79,7 @@ Optional Replicate model overrides:
 | Swapr job polling | `GET /api/swapr/jobs/{id}` | 600/minute/user, burst 150 |
 | Swapr job cancellation | `POST /api/swapr/jobs/{id}/cancel` | 100/hour/user, burst 20 |
 | Swapr output proxy | `GET /api/swapr/output` | 1,000/hour/user, burst 200 |
-| Avatar photo generation | `POST /api/avatars/photos/generate` | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour |
+| Avatar photo generation | `POST /api/avatars/photos/generate` from the Avatars page or UGC clip avatar action | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `stitches.save` | 3,000/hour/user, burst 500 |
 | Convex metadata updates | `avatars.update`, `updateMetadata` mutations | 5,000/hour/user, burst 1,000 |
@@ -109,7 +109,8 @@ output proxy routes must prove the prediction belongs to the authenticated user
 before calling Replicate or fetching an output URL.
 
 Avatar photo generation is rate-limited by requested output image count before
-calling Replicate. The GPT Image 2 model accepts up to 10 outputs in one
+calling Replicate, including generation started from a UGC clip poster in the
+Content Library. The GPT Image 2 model accepts up to 10 outputs in one
 prediction, but ClipStitchr runs one prediction per generated avatar photo so
 each output can receive a unique prompt variant and avoid grid/contact-sheet
 results. Each prediction is recorded as an `avatar-photo` Replicate job.

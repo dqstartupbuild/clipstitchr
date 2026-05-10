@@ -1,11 +1,19 @@
 "use client";
 
-import { Download, Edit3, SlidersHorizontal, Trash2 } from "lucide-react";
+import {
+  Download,
+  Edit3,
+  SlidersHorizontal,
+  Trash2,
+  UserRound,
+} from "lucide-react";
 import { useState } from "react";
+import { CreateAvatarFromClipDialog } from "@/app/_components/dashboard/CreateAvatarFromClipDialog";
 import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPreviewCard";
 import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -17,6 +25,8 @@ import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTri
 
 type VideoClipCardProps = {
   clip: VideoClipMetadata;
+  avatarCreatorError?: string | null;
+  isCreatingAvatarFromClip?: boolean;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onDelete: (id: string) => void | Promise<void>;
   onUpdateMetadata: (
@@ -27,15 +37,23 @@ type VideoClipCardProps = {
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void | Promise<void>;
+  onCreateAvatarFromClip?: (
+    clip: VideoClipMetadata,
+    options: CreateAvatarFromUgcClipOptions,
+  ) => Promise<boolean>;
 };
 
 export function VideoClipCard({
   clip,
+  avatarCreatorError = null,
+  isCreatingAvatarFromClip = false,
   onLoadClip,
   onDelete,
   onUpdateMetadata,
   onUpdateTrim,
+  onCreateAvatarFromClip,
 }: VideoClipCardProps) {
+  const [isAvatarCreatorOpen, setIsAvatarCreatorOpen] = useState(false);
   const [isMetadataOpen, setIsMetadataOpen] = useState(false);
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
   const displayDuration = getVideoTrimDisplayDuration(
@@ -91,6 +109,14 @@ export function VideoClipCard({
               disabled={isLoading}
               onClick={() => openDetails({ showTrimEditor: true })}
             />
+            {clip.clipType === "ugc" && onCreateAvatarFromClip ? (
+              <IconButton
+                label="Create avatar from UGC"
+                icon={<UserRound aria-hidden className="h-4 w-4" />}
+                disabled={isLoading || isCreatingAvatarFromClip}
+                onClick={() => setIsAvatarCreatorOpen(true)}
+              />
+            ) : null}
             <IconButton
               label="Delete clip"
               variant="danger"
@@ -120,6 +146,15 @@ export function VideoClipCard({
             await onUpdateMetadata(clip, metadata);
             setIsMetadataOpen(false);
           }}
+        />
+      ) : null}
+      {isAvatarCreatorOpen && onCreateAvatarFromClip ? (
+        <CreateAvatarFromClipDialog
+          clip={clip}
+          error={avatarCreatorError}
+          isGenerating={isCreatingAvatarFromClip}
+          onClose={() => setIsAvatarCreatorOpen(false)}
+          onCreate={(options) => onCreateAvatarFromClip(clip, options)}
         />
       ) : null}
     </>

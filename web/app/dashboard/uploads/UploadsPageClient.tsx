@@ -10,9 +10,12 @@ import { UploadLibraryTabs } from "@/app/_components/uploads/UploadLibraryTabs";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { SHOW_UPLOAD_CONTROLS_EVENT_NAME } from "@/lib/clipstitchr/constants/showUploadControlsEventName";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
+import { useCreateAvatarFromUgcClip } from "@/lib/clipstitchr/hooks/useCreateAvatarFromUgcClip";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
+import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { filterNonSwaprClips } from "@/lib/clipstitchr/utils/filterNonSwaprClips";
@@ -72,6 +75,11 @@ export function UploadsPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
   const showUploadControls = useShowUploadControls();
+  const avatarCreator = useCreateAvatarFromUgcClip({
+    createAvatar: photoLibrary.createAvatar,
+    loadClip: library.loadClip,
+    saveGeneratedPhotos: photoLibrary.saveGeneratedPhotos,
+  });
   const [selectedTab, setSelectedTab] = useState<UploadLibraryTab>(
     getInitialUploadLibraryTab,
   );
@@ -120,6 +128,13 @@ export function UploadsPageClient() {
       window.history.replaceState(null, "", url.toString());
     }
   }, []);
+  const handleCreateAvatarFromClip = useCallback(
+    async (
+      clip: VideoClipMetadata,
+      options: CreateAvatarFromUgcClipOptions,
+    ) => Boolean(await avatarCreator.generate(clip, options)),
+    [avatarCreator],
+  );
 
   useEffect(() => {
     const syncUploadTabFromUrl = () => {
@@ -173,6 +188,12 @@ export function UploadsPageClient() {
             {error}
           </div>
         ) : null}
+        {avatarCreator.createdAvatar && avatarCreator.generatedCount ? (
+          <div className="rounded-lg border border-accent/25 bg-surface-muted p-4 text-sm font-semibold text-accent-dark">
+            Saved {avatarCreator.generatedCount} generated photos for{" "}
+            {avatarCreator.createdAvatar.name}.
+          </div>
+        ) : null}
         {showUploadControls ? (
           <UploadPanel
             allowedAssetTypes={["ugc", "demo"]}
@@ -204,6 +225,7 @@ export function UploadsPageClient() {
               id={videoLibraryContent.ugc.sectionId}
               title={videoLibraryContent.ugc.title}
               clips={ugcClips}
+              avatarCreatorError={avatarCreator.error}
               emptyTitle={
                 hasSearchQuery
                   ? videoLibraryContent.ugc.searchEmptyTitle
@@ -215,9 +237,11 @@ export function UploadsPageClient() {
                   : videoLibraryContent.ugc.emptyDescription
               }
               onLoadClip={library.loadClip}
+              isCreatingAvatarFromClip={avatarCreator.isGenerating}
               onDelete={library.removeClip}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
+              onCreateAvatarFromClip={handleCreateAvatarFromClip}
             />
             <VideoLibrarySection
               key={`all-demo-${searchQuery}`}
@@ -278,6 +302,9 @@ export function UploadsPageClient() {
             id={selectedVideoSection.content.sectionId}
             title={selectedVideoSection.content.title}
             clips={selectedVideoSection.clips}
+            avatarCreatorError={
+              selectedTab === "ugc" ? avatarCreator.error : null
+            }
             emptyTitle={
               hasSearchQuery
                 ? selectedVideoSection.content.searchEmptyTitle
@@ -289,9 +316,15 @@ export function UploadsPageClient() {
                 : selectedVideoSection.content.emptyDescription
             }
             onLoadClip={library.loadClip}
+            isCreatingAvatarFromClip={
+              selectedTab === "ugc" && avatarCreator.isGenerating
+            }
             onDelete={library.removeClip}
             onUpdateMetadata={library.updateClipMetadata}
             onUpdateTrim={library.updateClipTrimRange}
+            onCreateAvatarFromClip={
+              selectedTab === "ugc" ? handleCreateAvatarFromClip : undefined
+            }
           />
         ) : null}
         {selectedTab === "stitches" ? (
