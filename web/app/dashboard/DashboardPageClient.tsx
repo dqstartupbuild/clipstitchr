@@ -5,10 +5,13 @@ import { StitchrCallout } from "@/app/_components/dashboard/StitchrCallout";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
+import { RecentAvatarsSection } from "@/app/_components/dashboard/RecentAvatarsSection";
 import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitchesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
+import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
+import { getRecentAvatarPhotos } from "@/lib/clipstitchr/utils/getRecentAvatarPhotos";
 import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
 import { getRecentVideoClips } from "@/lib/clipstitchr/utils/getRecentVideoClips";
 
@@ -16,6 +19,7 @@ const RECENT_DASHBOARD_ITEM_LIMIT = 4;
 
 export function DashboardPageClient() {
   const library = useClipLibrary();
+  const photoLibrary = usePhotoLibrary();
   const ugcClips = useMemo(
     () => filterClipsByType(library.clips, "ugc"),
     [library.clips],
@@ -36,14 +40,23 @@ export function DashboardPageClient() {
       ),
     [library.stitches],
   );
+  const recentAvatarPhotos = useMemo(
+    () =>
+      getRecentAvatarPhotos(
+        photoLibrary.photos,
+        RECENT_DASHBOARD_ITEM_LIMIT,
+      ),
+    [photoLibrary.photos],
+  );
+  const error = library.error ?? photoLibrary.error;
 
   return (
     <DashboardShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <DashboardHeader />
-        {library.error ? (
+        {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {library.error}
+            {error}
           </div>
         ) : null}
         <DashboardStats
@@ -54,6 +67,13 @@ export function DashboardPageClient() {
         <RecentStitchesSection
           stitches={recentStitches}
           onDelete={library.removeStitch}
+        />
+        <RecentAvatarsSection
+          avatars={photoLibrary.avatars}
+          photos={recentAvatarPhotos}
+          onLoadPhoto={photoLibrary.loadPhoto}
+          onDelete={photoLibrary.removePhoto}
+          onUpdateMetadata={photoLibrary.updatePhotoMetadata}
         />
         <RecentUploadsSection
           clips={recentUploads}

@@ -2,18 +2,18 @@ import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyS
 
 type SwaprEmptyStateProps = {
   hasPhotos: boolean;
-  hasUgcClips: boolean;
+  hasSourceClips: boolean;
 };
 
 export function SwaprEmptyState({
   hasPhotos,
-  hasUgcClips,
+  hasSourceClips,
 }: SwaprEmptyStateProps) {
-  if (!hasPhotos && !hasUgcClips) {
+  if (!hasPhotos && !hasSourceClips) {
     return (
       <DashboardEmptyState
-        title="No avatars or UGC clips yet"
-        description="Create an avatar and add a UGC clip before creating swaps."
+        title="No avatars or source videos yet"
+        description="Create an avatar and add a saved video before creating swaps."
       />
     );
   }
@@ -29,8 +29,8 @@ export function SwaprEmptyState({
 
   return (
     <DashboardEmptyState
-      title="No UGC clips yet"
-      description="Upload a UGC clip before creating swaps."
+      title="No source videos yet"
+      description="Upload a UGC clip or demo video before creating swaps."
     />
   );
 }

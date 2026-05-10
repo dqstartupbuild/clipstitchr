@@ -25,7 +25,7 @@ export function SwiprTextOverlayPanel({
 }: SwiprTextOverlayPanelProps) {
   if (!activeSlide) {
     return (
-      <Panel className="p-5">
+      <Panel className="p-4">
         <p className="text-sm font-semibold text-text-secondary">
           Select an image to edit text.
         </p>
@@ -39,11 +39,11 @@ export function SwiprTextOverlayPanel({
   };
 
   return (
-    <Panel className="p-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <Panel className="p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-accent-dark">Text</p>
-          <h2 className="mt-1 text-lg font-bold text-text-primary">
+          <h2 className="mt-0.5 text-base font-bold text-text-primary">
             Image {activeSlideIndex + 1}
           </h2>
         </div>
@@ -55,7 +55,7 @@ export function SwiprTextOverlayPanel({
           onClick={() => handleChange({ ...textOverlay, text: "" })}
         />
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         <input
           value={textOverlay.text}
           maxLength={96}

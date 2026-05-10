@@ -123,4 +123,11 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_prediction", ["ownerId", "predictionId"]),
+  workspaceSettings: defineTable({
+    ownerId: v.string(),
+    productDetails: v.string(),
+    audienceDetails: v.string(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  }).index("by_owner", ["ownerId"]),
 });

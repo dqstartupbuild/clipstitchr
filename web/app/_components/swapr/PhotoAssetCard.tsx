@@ -1,10 +1,11 @@
 "use client";
 
-import { Download, Edit3, Trash2 } from "lucide-react";
+import { Download, Edit3, Shuffle, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { PhotoAssetDetailsDialog } from "@/app/_components/swapr/PhotoAssetDetailsDialog";
 import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { IconButtonLink } from "@/app/_components/ui/IconButtonLink";
 import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
@@ -14,6 +15,7 @@ import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
+import { getUseInSwaprPhotoHref } from "@/lib/clipstitchr/utils/getUseInSwaprPhotoHref";
 
 type PhotoAssetCardProps = {
   photo: PhotoAssetMetadata;
@@ -27,6 +29,7 @@ type PhotoAssetCardProps = {
     metadata: AssetMetadataUpdate,
   ) => void | Promise<void>;
   showDownload?: boolean;
+  showUseInSwapr?: boolean;
 };
 
 export function PhotoAssetCard({
@@ -38,6 +41,7 @@ export function PhotoAssetCard({
   onDelete,
   onUpdateMetadata,
   showDownload = true,
+  showUseInSwapr = true,
 }: PhotoAssetCardProps) {
   const imageUrl = useObjectUrl(photo.thumbnailBlob);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -127,7 +131,14 @@ export function PhotoAssetCard({
             {photo.width} x {photo.height} . {formatBytes(photo.size)}
           </p>
         </button>
-        <div className="flex shrink-0 gap-1">
+        <div className="flex shrink-0 flex-wrap justify-end gap-1">
+          {showUseInSwapr ? (
+            <IconButtonLink
+              label="Use in Swapr"
+              href={getUseInSwaprPhotoHref(photo)}
+              icon={<Shuffle aria-hidden className="h-4 w-4" />}
+            />
+          ) : null}
           {showDownload && onLoadPhoto ? (
             <IconButton
               label="Download photo"

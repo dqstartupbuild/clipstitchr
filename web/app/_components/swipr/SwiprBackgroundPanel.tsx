@@ -24,19 +24,19 @@ export function SwiprBackgroundPanel({
   onUploadBackground,
 }: SwiprBackgroundPanelProps) {
   return (
-    <Panel className="p-5">
-      <div className="mb-5 flex items-center gap-3">
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-muted text-accent">
+    <Panel className="p-4">
+      <div className="mb-4 flex items-center gap-3">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-surface-muted text-accent">
           <ImagePlus aria-hidden className="h-5 w-5" />
         </span>
         <div>
           <p className="text-sm font-semibold text-accent-dark">Background</p>
-          <h2 className="mt-1 text-lg font-bold text-text-primary">
+          <h2 className="mt-0.5 text-base font-bold text-text-primary">
             Single image
           </h2>
         </div>
       </div>
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4">
         <div>
           <p className="text-sm font-semibold text-text-primary">
             Starter library
@@ -51,7 +51,7 @@ export function SwiprBackgroundPanel({
                   type="button"
                   aria-pressed={isSelected}
                   className={[
-                    "flex min-h-11 items-center gap-2 rounded-lg border px-3 text-left text-sm font-semibold transition-colors",
+                    "flex min-h-9 items-center gap-2 rounded-lg border px-2 text-left text-xs font-semibold transition-colors",
                     isSelected
                       ? "border-accent bg-surface-muted text-accent"
                       : "border-border bg-white text-text-secondary hover:border-accent hover:text-accent",

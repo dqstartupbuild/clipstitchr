@@ -27,16 +27,16 @@ export function SwiprPreviewPanel({
   const backgroundUrl = useObjectUrl(background?.blob);
 
   return (
-    <Panel className="p-5">
-      <div className="mb-4">
+    <Panel className="p-4">
+      <div className="mb-3">
         <p className="text-sm font-semibold text-accent-dark">Preview</p>
-        <h2 className="mt-2 text-xl font-bold text-text-primary">
+        <h2 className="mt-1 text-lg font-bold text-text-primary">
           Image {activeSlideIndex + 1}
         </h2>
       </div>
       <div
         ref={stageRef}
-        className="relative mx-auto aspect-[9/16] max-h-[74vh] overflow-hidden rounded-lg bg-slate-950"
+        className="relative mx-auto aspect-[9/16] max-h-[calc(100vh-11rem)] overflow-hidden rounded-lg bg-slate-950"
         style={{ containerType: "size" }}
       >
         {backgroundUrl ? (

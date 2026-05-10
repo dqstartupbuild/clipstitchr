@@ -82,7 +82,7 @@ Optional Replicate model overrides:
 | Avatar photo generation | `POST /api/avatars/photos/generate` from the Avatars page or UGC clip avatar action | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `stitches.save` | 3,000/hour/user, burst 500 |
-| Convex metadata updates | `avatars.update`, `updateMetadata` mutations | 5,000/hour/user, burst 1,000 |
+| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `workspaceSettings.save` | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
 
@@ -94,6 +94,10 @@ The browser renders 9:16 PNG images with Canvas and creates a local ZIP download
 If Swipr later adds Pinterest, a stock-media provider, or AI background
 generation, the provider call must be server-side and rate-limited before any
 external request or signed asset flow starts.
+
+Workspace settings are rate-limited through the shared Convex metadata update
+limit. The settings page only stores product and audience text in Convex; it
+does not call R2, Replicate, or another paid provider.
 
 ## Client Batch Caps
 

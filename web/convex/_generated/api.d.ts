@@ -25,6 +25,7 @@ import type * as validators_swaprMetadata from "../validators/swaprMetadata.js";
 import type * as validators_textOverlay from "../validators/textOverlay.js";
 import type * as validators_videoTrimRange from "../validators/videoTrimRange.js";
 import type * as videoClips from "../videoClips.js";
+import type * as workspaceSettings from "../workspaceSettings.js";
 
 import type {
   ApiFromModules,
@@ -50,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   "validators/textOverlay": typeof validators_textOverlay;
   "validators/videoTrimRange": typeof validators_videoTrimRange;
   videoClips: typeof videoClips;
+  workspaceSettings: typeof workspaceSettings;
 }>;
 
 /**

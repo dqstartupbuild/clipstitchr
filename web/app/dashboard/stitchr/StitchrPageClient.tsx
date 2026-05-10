@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ClipPickerPanel } from "@/app/_components/stitchr/ClipPickerPanel";
 import { StitchrProgressPanel } from "@/app/_components/stitchr/StitchrProgressPanel";
 import { StitchrEmptyState } from "@/app/_components/stitchr/StitchrEmptyState";
@@ -20,6 +20,7 @@ import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
+import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchrUgcSelection";
 
@@ -42,13 +43,19 @@ export function StitchrPageClient() {
     () => filterClipsByType(library.clips, "demo"),
     [library.clips],
   );
-  const [selectedUgcIds, setSelectedUgcIds] = useState<string[] | undefined>();
+  const [selectedUgcIds, setSelectedUgcIds] = useState<string[] | undefined>(
+    () => {
+      const initialUgcId = getSearchParamValue("ugcId");
+
+      return initialUgcId ? [initialUgcId] : undefined;
+    },
+  );
   const [activePreviewUgcId, setActivePreviewUgcId] = useState<
     string | undefined
-  >();
+  >(() => getSearchParamValue("ugcId"));
   const [selectedDemoId, setSelectedDemoId] = useState<
     string | null | undefined
-  >();
+  >(() => getSearchParamValue("demoId"));
   const activeSelectedUgcIds = useMemo(() => {
     const validUgcIds = new Set(ugcClips.map((clip) => clip.id));
     const nextSelectedIds =
@@ -134,6 +141,33 @@ export function StitchrPageClient() {
   const clampedTextOverlay = textOverlay
     ? clampTextOverlay(textOverlay, totalDuration)
     : null;
+
+  useEffect(() => {
+    const syncSelectionFromUrl = () => {
+      const initialUgcId = getSearchParamValue("ugcId");
+      const initialDemoId = getSearchParamValue("demoId");
+
+      if (!initialUgcId && !initialDemoId) {
+        return;
+      }
+
+      if (initialUgcId) {
+        setSelectedUgcIds([initialUgcId]);
+        setActivePreviewUgcId(initialUgcId);
+      }
+
+      if (initialDemoId) {
+        setSelectedDemoId(initialDemoId);
+      }
+    };
+
+    syncSelectionFromUrl();
+    window.addEventListener("popstate", syncSelectionFromUrl);
+
+    return () => {
+      window.removeEventListener("popstate", syncSelectionFromUrl);
+    };
+  }, []);
 
   const handleSelectUgc = useCallback(
     (id: string) => {

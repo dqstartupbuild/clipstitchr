@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { SwaprControlsPanel } from "@/app/_components/swapr/SwaprControlsPanel";
 import { SwaprEmptyState } from "@/app/_components/swapr/SwaprEmptyState";
 import { SwaprOutputPanel } from "@/app/_components/swapr/SwaprOutputPanel";
 import { SwaprPhotoSelector } from "@/app/_components/swapr/SwaprPhotoSelector";
-import { SwaprUgcSelector } from "@/app/_components/swapr/SwaprUgcSelector";
+import { SwaprSourceClipSelector } from "@/app/_components/swapr/SwaprSourceClipSelector";
 import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipstitchr/constants/swaprReferenceVideoMaxSizeBytes";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
@@ -16,14 +16,19 @@ import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetad
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
 import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
-import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
+import { filterNonSwaprClips } from "@/lib/clipstitchr/utils/filterNonSwaprClips";
+import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
 
 export function SwaprPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
-  const [selectedPhotoId, setSelectedPhotoId] = useState<string | undefined>();
+  const [selectedPhotoId, setSelectedPhotoId] = useState<string | undefined>(
+    () => getSearchParamValue("photoId"),
+  );
   const [photoAvatarFilterId, setPhotoAvatarFilterId] = useState("all");
-  const [selectedClipId, setSelectedClipId] = useState<string | undefined>();
+  const [selectedClipId, setSelectedClipId] = useState<string | undefined>(
+    () => getSearchParamValue("clipId"),
+  );
   const [prompt, setPrompt] = useState("");
   const [mode, setMode] = useState<SwaprMode>("std");
   const [characterOrientation, setCharacterOrientation] =
@@ -32,13 +37,13 @@ export function SwaprPageClient() {
   const [hasConsent, setHasConsent] = useState(false);
   const [assetLoadError, setAssetLoadError] = useState<string | null>(null);
   const generator = useSwaprGeneration(library.refresh);
-  const ugcClips = useMemo(
-    () => filterClipsByType(library.clips, "ugc"),
+  const sourceClips = useMemo(
+    () => filterNonSwaprClips(library.clips),
     [library.clips],
   );
   const hasPhotos = photoLibrary.photos.length > 0;
-  const hasUgcClips = ugcClips.length > 0;
-  const hasSwaprInputs = hasPhotos && hasUgcClips;
+  const hasSourceClips = sourceClips.length > 0;
+  const hasSwaprInputs = hasPhotos && hasSourceClips;
   const visiblePhotos = useMemo(
     () =>
       photoLibrary.photos.filter(
@@ -53,10 +58,36 @@ export function SwaprPageClient() {
     [photoLibrary.photos, selectedPhotoId],
   );
   const selectedClip = useMemo(
-    () => ugcClips.find((clip) => clip.id === selectedClipId),
-    [ugcClips, selectedClipId],
+    () => sourceClips.find((clip) => clip.id === selectedClipId),
+    [sourceClips, selectedClipId],
   );
   const isReady = Boolean(selectedPhoto && selectedClip && hasConsent);
+
+  useEffect(() => {
+    const syncSelectionFromUrl = () => {
+      const initialPhotoId = getSearchParamValue("photoId");
+      const initialClipId = getSearchParamValue("clipId");
+
+      if (!initialPhotoId && !initialClipId) {
+        return;
+      }
+
+      if (initialPhotoId) {
+        setSelectedPhotoId(initialPhotoId);
+      }
+
+      if (initialClipId) {
+        setSelectedClipId(initialClipId);
+      }
+    };
+
+    syncSelectionFromUrl();
+    window.addEventListener("popstate", syncSelectionFromUrl);
+
+    return () => {
+      window.removeEventListener("popstate", syncSelectionFromUrl);
+    };
+  }, []);
 
   const selectPhoto = (photo: PhotoAssetMetadata) =>
     setSelectedPhotoId((currentPhotoId) =>
@@ -119,8 +150,8 @@ export function SwaprPageClient() {
                 onAvatarFilterChange={setPhotoAvatarFilterId}
                 onSelect={selectPhoto}
               />
-              <SwaprUgcSelector
-                clips={ugcClips}
+              <SwaprSourceClipSelector
+                clips={sourceClips}
                 selectedClipId={selectedClipId}
                 onLoadClip={library.loadClip}
                 onSelect={selectClip}
@@ -157,7 +188,7 @@ export function SwaprPageClient() {
         ) : (
           <SwaprEmptyState
             hasPhotos={hasPhotos}
-            hasUgcClips={hasUgcClips}
+            hasSourceClips={hasSourceClips}
           />
         )}
       </div>

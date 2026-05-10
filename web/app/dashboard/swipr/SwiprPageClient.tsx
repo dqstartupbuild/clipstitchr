@@ -15,6 +15,7 @@ import { SWIPR_MIN_SLIDE_COUNT } from "@/lib/clipstitchr/constants/swiprSlideCou
 import { SWIPR_STATIC_DURATION } from "@/lib/clipstitchr/constants/swiprStaticDuration";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
+import { useWorkspaceSettings } from "@/lib/clipstitchr/hooks/useWorkspaceSettings";
 import { createSwiprBackgroundBlob } from "@/lib/clipstitchr/media/createSwiprBackgroundBlob";
 import type { SwiprBackground } from "@/lib/clipstitchr/types/SwiprBackground";
 import type { SwiprBackgroundPresetId } from "@/lib/clipstitchr/types/SwiprBackgroundPresetId";
@@ -27,6 +28,7 @@ import { resizeSwiprSlides } from "@/lib/clipstitchr/utils/resizeSwiprSlides";
 
 export function SwiprPageClient() {
   const library = useClipLibrary();
+  const workspaceSettings = useWorkspaceSettings();
   const exporter = useSwiprExport();
   const demoClips = useMemo(
     () => filterClipsByType(library.clips, "demo"),
@@ -59,11 +61,29 @@ export function SwiprPageClient() {
     () => demoClips.find((clip) => clip.id === selectedProductId),
     [demoClips, selectedProductId],
   );
+  const workspaceProductContext =
+    workspaceSettings.settings?.productDetails.trim() ?? "";
+  const workspaceAudienceContext =
+    workspaceSettings.settings?.audienceDetails.trim() ?? "";
+  const workspaceSwiprContext = [
+    workspaceProductContext,
+    workspaceAudienceContext
+      ? `Audience: ${workspaceAudienceContext}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
   const productContext =
     selectedProductId === SWIPR_CUSTOM_PRODUCT_ID
-      ? customProductContext.trim()
+      ? customProductContext.trim() || workspaceSwiprContext
       : (selectedDemo?.name ?? "");
   const effectiveProductContext = productContext || "Product";
+  const exportProductName =
+    selectedProductId === SWIPR_CUSTOM_PRODUCT_ID
+      ? customProductContext.trim() ||
+        workspaceProductContext.slice(0, 80) ||
+        "Product"
+      : (selectedDemo?.name ?? "Product");
   const activeSlideIndex = Math.max(
     0,
     slides.findIndex((slide) => slide.id === activeSlideId),
@@ -150,27 +170,27 @@ export function SwiprPageClient() {
     void exporter.exportCarousel({
       background,
       slides,
-      productName: effectiveProductContext,
+      productName: exportProductName,
     });
   };
 
   return (
     <DashboardShell>
-      <div className="mx-auto flex max-w-7xl flex-col gap-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <DashboardPageHeader
           eyebrow="Carousel generator"
           title="Create TikTok carousels"
           description="Build 3-8 vertical images from one reusable background and per-image text overlays."
         />
 
-        {library.error || backgroundError ? (
+        {library.error || workspaceSettings.error || backgroundError ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {library.error ?? backgroundError}
+            {library.error ?? workspaceSettings.error ?? backgroundError}
           </div>
         ) : null}
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-          <div className="flex min-w-0 flex-col gap-6">
+        <div className="grid gap-5 xl:grid-cols-[390px_minmax(0,1fr)] xl:items-start">
+          <div className="order-2 flex min-w-0 flex-col gap-4 xl:order-1">
             <SwiprProductPanel
               productOptions={productOptions}
               selectedProductId={selectedProductId}
@@ -196,15 +216,6 @@ export function SwiprPageClient() {
               activeSlideId={activeSlide?.id ?? null}
               onSelectSlide={setActiveSlideId}
             />
-          </div>
-
-          <div className="flex min-w-0 flex-col gap-6">
-            <SwiprPreviewPanel
-              background={background}
-              activeSlide={activeSlide}
-              activeSlideIndex={activeSlideIndex}
-              onTextOverlayChange={handleTextOverlayChange}
-            />
             <SwiprTextOverlayPanel
               activeSlide={activeSlide}
               activeSlideIndex={activeSlideIndex}
@@ -216,6 +227,14 @@ export function SwiprPageClient() {
               error={exporter.error}
               isDisabled={!background || isGeneratingBackground}
               onExport={handleExport}
+            />
+          </div>
+          <div className="order-1 min-w-0 xl:sticky xl:top-5 xl:order-2">
+            <SwiprPreviewPanel
+              background={background}
+              activeSlide={activeSlide}
+              activeSlideIndex={activeSlideIndex}
+              onTextOverlayChange={handleTextOverlayChange}
             />
           </div>
         </div>

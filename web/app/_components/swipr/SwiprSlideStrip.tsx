@@ -12,7 +12,7 @@ export function SwiprSlideStrip({
   onSelectSlide,
 }: SwiprSlideStripProps) {
   return (
-    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="flex gap-2 overflow-x-auto pb-1">
       {slides.map((slide, index) => {
         const isActive = slide.id === activeSlideId;
         const text = slide.textOverlay.text.trim() || "No text";
@@ -23,7 +23,7 @@ export function SwiprSlideStrip({
             type="button"
             aria-pressed={isActive}
             className={[
-              "min-h-20 rounded-lg border bg-white p-3 text-left transition-colors",
+              "min-h-14 w-32 shrink-0 rounded-lg border bg-white p-2.5 text-left transition-colors",
               isActive
                 ? "border-accent shadow-sm shadow-indigo-100"
                 : "border-border hover:border-accent",
@@ -33,7 +33,7 @@ export function SwiprSlideStrip({
             <p className="text-xs font-bold uppercase text-accent">
               Image {index + 1}
             </p>
-            <p className="mt-2 line-clamp-2 text-sm font-semibold text-text-primary">
+            <p className="mt-1 line-clamp-1 text-sm font-semibold text-text-primary">
               {text}
             </p>
           </button>

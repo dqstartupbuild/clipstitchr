@@ -4,19 +4,19 @@ import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPrevi
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
-type SwaprUgcClipCardProps = {
+type SwaprSourceClipCardProps = {
   clip: VideoClipMetadata;
   isSelected: boolean;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onSelect: (clip: VideoClipMetadata) => void;
 };
 
-export function SwaprUgcClipCard({
+export function SwaprSourceClipCard({
   clip,
   isSelected,
   onLoadClip,
   onSelect,
-}: SwaprUgcClipCardProps) {
+}: SwaprSourceClipCardProps) {
   return (
     <VideoClipPreviewCard
       clip={clip}

@@ -63,7 +63,7 @@ export function SwaprControlsPanel({
           Create new UGC clip
         </h2>
         <p className="mt-2 text-sm leading-6 text-text-secondary">
-          The avatar supplies the face. The UGC clip supplies the motion.
+          The avatar supplies the face. The selected video supplies the motion.
         </p>
       </div>
 
@@ -146,7 +146,7 @@ export function SwaprControlsPanel({
           onChange={(event) => onConsentChange(event.currentTarget.checked)}
         />
         <span className="text-sm leading-6 text-text-secondary">
-          I have rights and consent to use the selected photo and UGC clip for
+          I have rights and consent to use the selected photo and source video for
           this generated clip.
         </span>
       </label>
@@ -161,7 +161,7 @@ export function SwaprControlsPanel({
 
       {selectedClip && !isSizeValid ? (
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-          Choose a smaller UGC clip. Limit:{" "}
+          Choose a smaller source video. Limit:{" "}
           {formatBytes(referenceVideoMaxSizeBytes)}. Selected:{" "}
           {formatBytes(selectedClip.size)}.
         </div>

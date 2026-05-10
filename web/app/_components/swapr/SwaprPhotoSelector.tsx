@@ -69,6 +69,7 @@ export function SwaprPhotoSelector({
                 isSelected={photo.id === selectedPhotoId}
                 onSelect={onSelect}
                 showDownload={false}
+                showUseInSwapr={false}
               />
             ))}
           </div>

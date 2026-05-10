@@ -4,6 +4,7 @@ import {
   Images,
   Library,
   Scissors,
+  Settings,
   Shuffle,
   UserRound,
 } from "lucide-react";
@@ -17,6 +18,7 @@ const links = [
   { href: "/dashboard/stitchr", label: "Stitchr", icon: Scissors },
   { href: "/dashboard/swipr", label: "Swipr", icon: Images },
   { href: "/dashboard/swapr", label: "Swapr", icon: Shuffle },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 export function DashboardSidebar() {

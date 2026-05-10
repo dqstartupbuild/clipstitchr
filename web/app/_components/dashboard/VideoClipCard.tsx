@@ -3,7 +3,9 @@
 import {
   Download,
   Edit3,
+  Scissors,
   SlidersHorizontal,
+  Shuffle,
   Trash2,
   UserRound,
 } from "lucide-react";
@@ -12,6 +14,7 @@ import { CreateAvatarFromClipDialog } from "@/app/_components/dashboard/CreateAv
 import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPreviewCard";
 import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { IconButtonLink } from "@/app/_components/ui/IconButtonLink";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -21,6 +24,8 @@ import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
+import { getUseInStitchrHref } from "@/lib/clipstitchr/utils/getUseInStitchrHref";
+import { getUseInSwaprClipHref } from "@/lib/clipstitchr/utils/getUseInSwaprClipHref";
 import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
 
 type VideoClipCardProps = {
@@ -92,6 +97,18 @@ export function VideoClipCard({
         }}
         actions={({ isLoading, loadFullClip, openDetails }) => (
           <>
+            <IconButtonLink
+              label="Use in Stitchr"
+              href={getUseInStitchrHref(clip)}
+              icon={<Scissors aria-hidden className="h-4 w-4" />}
+            />
+            {clip.clipType === "demo" ? (
+              <IconButtonLink
+                label="Use in Swapr"
+                href={getUseInSwaprClipHref(clip)}
+                icon={<Shuffle aria-hidden className="h-4 w-4" />}
+              />
+            ) : null}
             <IconButton
               label="Download clip"
               icon={<Download aria-hidden className="h-4 w-4" />}

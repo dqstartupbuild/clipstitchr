@@ -152,7 +152,9 @@ export function VideoClipPreviewCard({
             </p>
           </button>
           {actions ? (
-            <div className="flex shrink-0 gap-1">{actions(actionContext)}</div>
+            <div className="flex shrink-0 flex-wrap justify-end gap-1">
+              {actions(actionContext)}
+            </div>
           ) : null}
         </div>
         {footerContent ? <div className="mt-4">{footerContent}</div> : null}

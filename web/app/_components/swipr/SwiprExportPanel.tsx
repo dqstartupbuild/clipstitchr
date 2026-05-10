@@ -23,14 +23,14 @@ export function SwiprExportPanel({
   const isRendering = status === "rendering";
 
   return (
-    <Panel className="p-5">
-      <div className="mb-4">
+    <Panel className="p-4">
+      <div className="mb-3">
         <p className="text-sm font-semibold text-accent-dark">Export</p>
-        <h2 className="mt-1 text-lg font-bold text-text-primary">
+        <h2 className="mt-0.5 text-base font-bold text-text-primary">
           Download ZIP
         </h2>
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         <ProgressBar value={progress} />
         <p className="text-sm font-semibold text-text-secondary">
           {error ?? getSwiprExportMessage(status)}

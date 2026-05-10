@@ -29,17 +29,19 @@ export function SwiprProductPanel({
   onSlideCountChange,
 }: SwiprProductPanelProps) {
   return (
-    <Panel className="p-5">
-      <div className="mb-5 flex items-center gap-3">
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-muted text-accent">
+    <Panel className="p-4">
+      <div className="mb-4 flex items-center gap-3">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-surface-muted text-accent">
           <Boxes aria-hidden className="h-5 w-5" />
         </span>
         <div>
           <p className="text-sm font-semibold text-accent-dark">Product</p>
-          <h2 className="mt-1 text-lg font-bold text-text-primary">Context</h2>
+          <h2 className="mt-0.5 text-base font-bold text-text-primary">
+            Context
+          </h2>
         </div>
       </div>
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4">
         <SelectInput
           label="Product"
           value={selectedProductId}
