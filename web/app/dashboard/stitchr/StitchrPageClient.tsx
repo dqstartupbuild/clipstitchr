@@ -8,14 +8,12 @@ import { StitchrHeader } from "@/app/_components/stitchr/StitchrHeader";
 import { StitchrShell } from "@/app/_components/stitchr/StitchrShell";
 import { DownloadStitchesPanel } from "@/app/_components/stitchr/DownloadStitchesPanel";
 import { SequencePreviewPanel } from "@/app/_components/stitchr/SequencePreviewPanel";
-import { VideoTrimDialog } from "@/app/_components/trim/VideoTrimDialog";
 import { maxStitchrUgcSelectionCount } from "@/lib/clipstitchr/constants/maxStitchrUgcSelectionCount";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useLoadedVideoClip } from "@/lib/clipstitchr/hooks/useLoadedVideoClip";
 import { useStitchr } from "@/lib/clipstitchr/hooks/useStitchr";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
-import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
@@ -24,12 +22,6 @@ import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchrUgcSelection";
-
-type TrimEditorState = {
-  clipType: "ugc" | "demo";
-  clip: VideoClip;
-  trimRange: VideoTrimRange;
-};
 
 export function StitchrPageClient() {
   const library = useClipLibrary();
@@ -41,7 +33,6 @@ export function StitchrPageClient() {
   const [demoTrimRangesByClipId, setDemoTrimRangesByClipId] = useState<
     Record<string, VideoTrimRange>
   >({});
-  const [trimEditor, setTrimEditor] = useState<TrimEditorState | null>(null);
   const loadClip = library.loadClip;
   const ugcClips = useMemo(
     () => filterClipsByType(library.clips, "ugc"),
@@ -212,66 +203,25 @@ export function StitchrPageClient() {
     [demoClips],
   );
 
-  const handleEditUgcTrim = useCallback(
-    (clip: VideoClipMetadata) => {
-      void loadClip(clip.id).then((loadedClip) => {
-        if (!loadedClip) {
-          return;
-        }
-
-        setTrimEditor({
-          clipType: "ugc",
-          clip: loadedClip,
-          trimRange:
-            ugcTrimRangesByClipId[clip.id] ?? getDefaultVideoTrimRange(clip),
-        });
-      });
-    },
-    [loadClip, ugcTrimRangesByClipId],
-  );
-
-  const handleEditDemoTrim = useCallback(
-    (clip: VideoClipMetadata) => {
-      void loadClip(clip.id).then((loadedClip) => {
-        if (!loadedClip) {
-          return;
-        }
-
-        setTrimEditor({
-          clipType: "demo",
-          clip: loadedClip,
-          trimRange:
-            demoTrimRangesByClipId[clip.id] ?? getDefaultVideoTrimRange(clip),
-        });
-      });
-    },
-    [demoTrimRangesByClipId, loadClip],
-  );
-
-  const handleSaveTrim = async (trimRange: VideoTrimRange) => {
-    if (!trimEditor) {
-      return;
-    }
-
-    const clampedTrimRange = clampVideoTrimRange(
-      trimRange,
-      trimEditor.clip.duration,
-    );
-
-    if (trimEditor.clipType === "ugc") {
+  const handleUpdateUgcTrim = useCallback(
+    (clip: VideoClipMetadata, trimRange: VideoTrimRange) => {
       setUgcTrimRangesByClipId((trimRanges) => ({
         ...trimRanges,
-        [trimEditor.clip.id]: clampedTrimRange,
+        [clip.id]: clampVideoTrimRange(trimRange, clip.duration),
       }));
-    } else {
+    },
+    [],
+  );
+
+  const handleUpdateDemoTrim = useCallback(
+    (clip: VideoClipMetadata, trimRange: VideoTrimRange) => {
       setDemoTrimRangesByClipId((trimRanges) => ({
         ...trimRanges,
-        [trimEditor.clip.id]: clampedTrimRange,
+        [clip.id]: clampVideoTrimRange(trimRange, clip.duration),
       }));
-    }
-
-    setTrimEditor(null);
-  };
+    },
+    [],
+  );
 
   const handleStitch = () => {
     if (selectedDemoClip && selectedDemoTrimRange && selectedUgcMetadata.length) {
@@ -325,8 +275,8 @@ export function StitchrPageClient() {
                 onLoadClip={loadClip}
                 onSelectUgc={handleSelectUgc}
                 onSelectDemo={handleSelectDemo}
-                onEditUgcTrim={handleEditUgcTrim}
-                onEditDemoTrim={handleEditDemoTrim}
+                onUpdateUgcTrim={handleUpdateUgcTrim}
+                onUpdateDemoTrim={handleUpdateDemoTrim}
                 canStitch={canStitch}
                 isStitching={isStitching}
                 onStitch={handleStitch}
@@ -356,15 +306,6 @@ export function StitchrPageClient() {
           <StitchrEmptyState />
         )}
       </div>
-      {trimEditor ? (
-        <VideoTrimDialog
-          clip={trimEditor.clip}
-          initialTrimRange={trimEditor.trimRange}
-          title="Stitch trim"
-          onClose={() => setTrimEditor(null)}
-          onSave={handleSaveTrim}
-        />
-      ) : null}
     </StitchrShell>
   );
 }

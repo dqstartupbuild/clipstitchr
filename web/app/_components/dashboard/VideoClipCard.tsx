@@ -1,9 +1,8 @@
 "use client";
 
-import { Download, Edit3, Scissors, Trash2 } from "lucide-react";
+import { Download, Edit3, SlidersHorizontal, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPreviewCard";
-import { VideoTrimDialog } from "@/app/_components/trim/VideoTrimDialog";
 import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
@@ -14,6 +13,7 @@ import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
+import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
 
 type VideoClipCardProps = {
   clip: VideoClipMetadata;
@@ -36,10 +36,12 @@ export function VideoClipCard({
   onUpdateMetadata,
   onUpdateTrim,
 }: VideoClipCardProps) {
-  const [trimClip, setTrimClip] = useState<VideoClip | null>(null);
-  const [isTrimOpen, setIsTrimOpen] = useState(false);
   const [isMetadataOpen, setIsMetadataOpen] = useState(false);
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
+  const displayDuration = getVideoTrimDisplayDuration(
+    clip.duration,
+    defaultTrimRange,
+  );
   const handleDownload = async (
     loadFullClip: () => Promise<VideoClip | null>,
   ) => {
@@ -62,8 +64,15 @@ export function VideoClipCard({
     <>
       <VideoClipPreviewCard
         clip={clip}
+        displayDuration={displayDuration}
         onLoadClip={onLoadClip}
-        actions={({ isLoading, loadFullClip }) => (
+        trimEditor={{
+          initialTrimRange: defaultTrimRange,
+          saveLabel: "Save trim",
+          title: "Default trim",
+          onSave: (trimRange) => onUpdateTrim(clip, trimRange),
+        }}
+        actions={({ isLoading, loadFullClip, openDetails }) => (
           <>
             <IconButton
               label="Download clip"
@@ -78,16 +87,9 @@ export function VideoClipCard({
             />
             <IconButton
               label="Edit default trim"
-              icon={<Scissors aria-hidden className="h-4 w-4" />}
+              icon={<SlidersHorizontal aria-hidden className="h-4 w-4" />}
               disabled={isLoading}
-              onClick={() => {
-                void loadFullClip().then((nextClip) => {
-                  if (nextClip) {
-                    setTrimClip(nextClip);
-                    setIsTrimOpen(true);
-                  }
-                });
-              }}
+              onClick={() => openDetails({ showTrimEditor: true })}
             />
             <IconButton
               label="Delete clip"
@@ -98,18 +100,6 @@ export function VideoClipCard({
           </>
         )}
       />
-      {isTrimOpen && trimClip ? (
-        <VideoTrimDialog
-          clip={trimClip}
-          initialTrimRange={defaultTrimRange}
-          title="Default trim"
-          onClose={() => setIsTrimOpen(false)}
-          onSave={async (trimRange) => {
-            await onUpdateTrim(clip, trimRange);
-            setIsTrimOpen(false);
-          }}
-        />
-      ) : null}
       {isMetadataOpen ? (
         <AssetMetadataEditDialog
           title={clip.name}

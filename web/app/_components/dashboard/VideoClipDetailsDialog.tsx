@@ -1,20 +1,34 @@
 "use client";
 
-import { X } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
+import { useState } from "react";
+import { VideoTrimEditor } from "@/app/_components/trim/VideoTrimEditor";
 import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
+import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getVideoClipBadgeLabel } from "@/lib/clipstitchr/utils/getVideoClipBadgeLabel";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
+
+type VideoClipDetailsTrimEditor = {
+  initialTrimRange: VideoTrimRange;
+  saveLabel: string;
+  title: string;
+  onSave: (trimRange: VideoTrimRange) => void | Promise<void>;
+};
 
 type VideoClipDetailsDialogProps = {
   clip: VideoClipMetadata;
+  initialTrimEditorOpen?: boolean;
   isLoading: boolean;
   posterUrl: string | null;
+  trimEditor?: VideoClipDetailsTrimEditor;
   videoUrl: string | null;
   onClose: () => void;
   onLoadPreview: () => void;
@@ -22,14 +36,29 @@ type VideoClipDetailsDialogProps = {
 
 export function VideoClipDetailsDialog({
   clip,
+  initialTrimEditorOpen = false,
   isLoading,
   posterUrl,
+  trimEditor,
   videoUrl,
   onClose,
   onLoadPreview,
 }: VideoClipDetailsDialogProps) {
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
-  const selectedDuration = getVideoTrimRangeDuration(defaultTrimRange);
+  const initialTrimRange = trimEditor?.initialTrimRange ?? defaultTrimRange;
+  const [activeTrimRange, setActiveTrimRange] = useState(() =>
+    clampVideoTrimRange(initialTrimRange, clip.duration),
+  );
+  const [savedTrimRange, setSavedTrimRange] = useState(() =>
+    clampVideoTrimRange(initialTrimRange, clip.duration),
+  );
+  const [isTrimEditorOpen, setIsTrimEditorOpen] = useState(
+    Boolean(trimEditor && initialTrimEditorOpen),
+  );
+  const displayDuration = getVideoTrimDisplayDuration(
+    clip.duration,
+    activeTrimRange,
+  );
   const detailItems = [
     { label: "Description", value: clip.videoDescription },
     { label: "Product", value: clip.productDescription },
@@ -47,6 +76,24 @@ export function VideoClipDetailsDialog({
         ]
       : [],
   );
+
+  const handleCancelTrim = () => {
+    setActiveTrimRange(savedTrimRange);
+    setIsTrimEditorOpen(false);
+  };
+
+  const handleSaveTrim = async (trimRange: VideoTrimRange) => {
+    if (!trimEditor) {
+      return;
+    }
+
+    const clampedTrimRange = clampVideoTrimRange(trimRange, clip.duration);
+
+    await trimEditor.onSave(clampedTrimRange);
+    setActiveTrimRange(clampedTrimRange);
+    setSavedTrimRange(clampedTrimRange);
+    setIsTrimEditorOpen(false);
+  };
 
   return (
     <div
@@ -86,17 +133,49 @@ export function VideoClipDetailsDialog({
             label={clip.name}
             autoPlay
             isLoading={isLoading}
+            trimRange={activeTrimRange}
             onLoadPreview={onLoadPreview}
           />
           <div className="flex flex-col gap-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center rounded-md border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-semibold text-accent-dark">
-                {getVideoClipBadgeLabel(clip)}
-              </span>
-              <span className="text-xs font-semibold text-text-tertiary">
-                {clip.hasAudio ? "Audio" : "No audio"}
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center rounded-md border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-semibold text-accent-dark">
+                  {getVideoClipBadgeLabel(clip)}
+                </span>
+                <span className="text-xs font-semibold text-text-tertiary">
+                  {clip.hasAudio ? "Audio" : "No audio"}
+                </span>
+              </div>
+              {trimEditor ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  icon={<SlidersHorizontal aria-hidden className="h-4 w-4" />}
+                  onClick={() => {
+                    if (isTrimEditorOpen) {
+                      handleCancelTrim();
+                      return;
+                    }
+
+                    setIsTrimEditorOpen(true);
+                  }}
+                >
+                  Trim
+                </Button>
+              ) : null}
             </div>
+            {trimEditor && isTrimEditorOpen ? (
+              <VideoTrimEditor
+                duration={clip.duration}
+                title={trimEditor.title}
+                saveLabel={trimEditor.saveLabel}
+                value={activeTrimRange}
+                onCancel={handleCancelTrim}
+                onChange={setActiveTrimRange}
+                onSave={handleSaveTrim}
+              />
+            ) : null}
             <div>
               <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
                 Title
@@ -132,8 +211,7 @@ export function VideoClipDetailsDialog({
               </p>
               <p className="mt-1 text-sm text-text-secondary">
                 {clip.width} x {clip.height} .{" "}
-                {formatDuration(selectedDuration)} selected .{" "}
-                {formatDuration(clip.duration)} total . {formatBytes(clip.size)}
+                {formatDuration(displayDuration)} total . {formatBytes(clip.size)}
               </p>
               <p className="mt-1 truncate text-xs text-text-tertiary">
                 {clip.originalName}

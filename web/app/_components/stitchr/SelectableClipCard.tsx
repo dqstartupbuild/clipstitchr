@@ -1,13 +1,12 @@
 "use client";
 
-import { Scissors } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPreviewCard";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
-import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
 
 type SelectableClipCardProps = {
   clip: VideoClipMetadata;
@@ -16,7 +15,10 @@ type SelectableClipCardProps = {
   isSelectionDisabled?: boolean;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onSelect: (id: string) => void;
-  onEditTrim?: (clip: VideoClipMetadata) => void;
+  onUpdateTrim?: (
+    clip: VideoClipMetadata,
+    trimRange: VideoTrimRange,
+  ) => void | Promise<void>;
 };
 
 export function SelectableClipCard({
@@ -26,30 +28,40 @@ export function SelectableClipCard({
   isSelectionDisabled = false,
   onLoadClip,
   onSelect,
-  onEditTrim,
+  onUpdateTrim,
 }: SelectableClipCardProps) {
+  const displayDuration = getVideoTrimDisplayDuration(clip.duration, trimRange);
+
   return (
     <VideoClipPreviewCard
       clip={clip}
+      displayDuration={displayDuration}
       isSelected={isSelected}
       isSelectionDisabled={isSelectionDisabled}
       onLoadClip={onLoadClip}
       onSelect={() => onSelect(clip.id)}
-      footer={() => (
-        <div className="flex min-h-9 items-center justify-between gap-3 border-t border-border pt-3">
-          <p className="min-w-0 text-xs font-semibold text-text-tertiary">
-            {formatDuration(getVideoTrimRangeDuration(trimRange))} trim
-          </p>
-          {isSelected && onEditTrim ? (
+      trimEditor={
+        isSelected && onUpdateTrim
+          ? {
+              initialTrimRange: trimRange,
+              saveLabel: "Apply trim",
+              title: "Stitch trim",
+              onSave: (nextTrimRange) => onUpdateTrim(clip, nextTrimRange),
+            }
+          : undefined
+      }
+      footer={({ openDetails }) =>
+        isSelected && onUpdateTrim ? (
+          <div className="flex min-h-9 items-center justify-end border-t border-border pt-3">
             <IconButton
               type="button"
               label="Edit selected trim"
-              icon={<Scissors aria-hidden className="h-4 w-4" />}
-              onClick={() => onEditTrim(clip)}
+              icon={<SlidersHorizontal aria-hidden className="h-4 w-4" />}
+              onClick={() => openDetails({ showTrimEditor: true })}
             />
-          ) : null}
-        </div>
-      )}
+          </div>
+        ) : null
+      }
     />
   );
 }

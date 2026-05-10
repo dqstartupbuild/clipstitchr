@@ -16,7 +16,7 @@ type UgcClipSelectorProps = {
   selectedTrimRangesByClipId: Record<string, VideoTrimRange>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onSelect: (id: string) => void;
-  onEditTrim: (clip: VideoClipMetadata) => void;
+  onUpdateTrim: (clip: VideoClipMetadata, trimRange: VideoTrimRange) => void;
 };
 
 export function UgcClipSelector({
@@ -25,7 +25,7 @@ export function UgcClipSelector({
   selectedTrimRangesByClipId,
   onLoadClip,
   onSelect,
-  onEditTrim,
+  onUpdateTrim,
 }: UgcClipSelectorProps) {
   const pagination = usePagination(clips, {
     pageSize: clipSelectorPageSize,
@@ -61,7 +61,7 @@ export function UgcClipSelector({
                 }
                 onLoadClip={onLoadClip}
                 onSelect={onSelect}
-                onEditTrim={onEditTrim}
+                onUpdateTrim={onUpdateTrim}
               />
             );
           })

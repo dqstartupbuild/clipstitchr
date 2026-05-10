@@ -1,7 +1,8 @@
 "use client";
 
 import { Play } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 type VideoPreviewProps = {
   src: string | null;
@@ -11,6 +12,7 @@ type VideoPreviewProps = {
   controls?: boolean;
   muted?: boolean;
   isLoading?: boolean;
+  trimRange?: VideoTrimRange | null;
   onLoadPreview?: () => void;
 };
 
@@ -22,11 +24,52 @@ export function VideoPreview({
   controls = true,
   muted = true,
   isLoading = false,
+  trimRange = null,
   onLoadPreview,
 }: VideoPreviewProps) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(autoPlay);
+  const trimStart = trimRange?.start;
   const shouldShowVideoControls = controls && (!isPlaying || isHovered);
+
+  useEffect(() => {
+    if (!videoRef.current || trimStart === undefined) {
+      return;
+    }
+
+    videoRef.current.currentTime = trimStart;
+  }, [src, trimStart]);
+
+  const keepPlaybackInsideTrim = () => {
+    const video = videoRef.current;
+
+    if (!video || !trimRange || video.currentTime < trimRange.end) {
+      return;
+    }
+
+    video.currentTime = trimRange.start;
+  };
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current && trimRange) {
+      videoRef.current.currentTime = trimRange.start;
+    }
+  };
+
+  const handlePlay = () => {
+    const video = videoRef.current;
+
+    if (
+      video &&
+      trimRange &&
+      (video.currentTime < trimRange.start || video.currentTime >= trimRange.end)
+    ) {
+      video.currentTime = trimRange.start;
+    }
+
+    setIsPlaying(true);
+  };
 
   return (
     <div
@@ -38,15 +81,19 @@ export function VideoPreview({
     >
       {src ? (
         <video
+          ref={videoRef}
           key={`${src}:${posterSrc ?? "no-poster"}`}
           aria-label={label}
           autoPlay={autoPlay}
           className="h-full w-full object-contain"
           controls={shouldShowVideoControls}
-          loop
+          loop={!trimRange}
           muted={muted}
+          onEnded={keepPlaybackInsideTrim}
+          onLoadedMetadata={handleLoadedMetadata}
           onPause={() => setIsPlaying(false)}
-          onPlay={() => setIsPlaying(true)}
+          onPlay={handlePlay}
+          onTimeUpdate={keepPlaybackInsideTrim}
           playsInline
           poster={posterSrc ?? undefined}
           preload="metadata"

@@ -21,8 +21,14 @@ type ClipPickerPanelProps = {
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onSelectUgc: (id: string) => void;
   onSelectDemo: (id: string) => void;
-  onEditUgcTrim: (clip: VideoClipMetadata) => void;
-  onEditDemoTrim: (clip: VideoClipMetadata) => void;
+  onUpdateUgcTrim: (
+    clip: VideoClipMetadata,
+    trimRange: VideoTrimRange,
+  ) => void;
+  onUpdateDemoTrim: (
+    clip: VideoClipMetadata,
+    trimRange: VideoTrimRange,
+  ) => void;
   canStitch: boolean;
   isStitching: boolean;
   onStitch: () => void;
@@ -38,8 +44,8 @@ export function ClipPickerPanel({
   onLoadClip,
   onSelectUgc,
   onSelectDemo,
-  onEditUgcTrim,
-  onEditDemoTrim,
+  onUpdateUgcTrim,
+  onUpdateDemoTrim,
   canStitch,
   isStitching,
   onStitch,
@@ -77,7 +83,7 @@ export function ClipPickerPanel({
           selectedTrimRangesByClipId={selectedUgcTrimRangesByClipId}
           onLoadClip={onLoadClip}
           onSelect={onSelectUgc}
-          onEditTrim={onEditUgcTrim}
+          onUpdateTrim={onUpdateUgcTrim}
         />
         <DemoClipSelector
           key={`demo-${searchQuery}`}
@@ -86,7 +92,7 @@ export function ClipPickerPanel({
           selectedTrimRange={selectedDemoTrimRange}
           onLoadClip={onLoadClip}
           onSelect={onSelectDemo}
-          onEditTrim={onEditDemoTrim}
+          onUpdateTrim={onUpdateDemoTrim}
         />
       </div>
     </Panel>

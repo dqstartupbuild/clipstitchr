@@ -8,39 +8,63 @@ import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxB
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getVideoClipBadgeLabel } from "@/lib/clipstitchr/utils/getVideoClipBadgeLabel";
+import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
+
+type OpenVideoClipDetailsOptions = {
+  showTrimEditor?: boolean;
+};
 
 type VideoClipPreviewCardActions = {
   isLoading: boolean;
   loadFullClip: () => Promise<VideoClip | null>;
+  openDetails: (options?: OpenVideoClipDetailsOptions) => void;
+};
+
+type VideoClipPreviewCardTrimEditor = {
+  initialTrimRange: VideoTrimRange;
+  saveLabel: string;
+  title: string;
+  onSave: (trimRange: VideoTrimRange) => void | Promise<void>;
 };
 
 type VideoClipPreviewCardProps = {
   clip: VideoClipMetadata;
+  displayDuration?: number;
   isSelected?: boolean;
   isSelectionDisabled?: boolean;
   actions?: (actions: VideoClipPreviewCardActions) => ReactNode;
   footer?: (actions: VideoClipPreviewCardActions) => ReactNode;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onSelect?: () => void;
+  trimEditor?: VideoClipPreviewCardTrimEditor;
 };
 
 export function VideoClipPreviewCard({
   clip,
+  displayDuration,
   isSelected = false,
   isSelectionDisabled = false,
   actions,
   footer,
   onLoadClip,
   onSelect,
+  trimEditor,
 }: VideoClipPreviewCardProps) {
   const [loadedClip, setLoadedClip] = useState<VideoClip | null>(null);
   const [isClipLoading, setIsClipLoading] = useState(false);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [detailsMode, setDetailsMode] = useState<"details" | "trim" | null>(
+    null,
+  );
   const videoUrl = useObjectUrl(loadedClip?.blob);
   const posterUrl = useObjectUrl(clip.posterBlob);
+  const visibleDuration =
+    displayDuration ??
+    getVideoTrimDisplayDuration(clip.duration, getDefaultVideoTrimRange(clip));
   const loadFullClip = async () => {
     if (loadedClip) {
       return loadedClip;
@@ -57,14 +81,16 @@ export function VideoClipPreviewCard({
       setIsClipLoading(false);
     }
   };
-  const openDetails = () => {
-    setIsDetailsOpen(true);
+  const openDetails = (options?: OpenVideoClipDetailsOptions) => {
+    setDetailsMode(options?.showTrimEditor ? "trim" : "details");
     void loadFullClip();
   };
   const actionContext = {
     isLoading: isClipLoading,
     loadFullClip,
+    openDetails,
   };
+  const footerContent = footer?.(actionContext);
 
   return (
     <>
@@ -79,7 +105,7 @@ export function VideoClipPreviewCard({
             type="button"
             aria-label={`Open details for ${clip.name}`}
             className="group relative block aspect-square w-full text-left"
-            onClick={openDetails}
+            onClick={() => openDetails()}
           >
             {posterUrl ? (
               <span
@@ -116,28 +142,30 @@ export function VideoClipPreviewCard({
           <button
             type="button"
             className="min-w-0 flex-1 rounded-md text-left outline-none transition-colors hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            onClick={openDetails}
+            onClick={() => openDetails()}
           >
             <h3 className="truncate text-sm font-bold text-text-primary">
               {clip.name}
             </h3>
             <p className="mt-1 text-xs text-text-tertiary">
-              {formatDuration(clip.duration)} . {formatBytes(clip.size)}
+              {formatDuration(visibleDuration)} . {formatBytes(clip.size)}
             </p>
           </button>
           {actions ? (
             <div className="flex shrink-0 gap-1">{actions(actionContext)}</div>
           ) : null}
         </div>
-        {footer ? <div className="mt-4">{footer(actionContext)}</div> : null}
+        {footerContent ? <div className="mt-4">{footerContent}</div> : null}
       </div>
-      {isDetailsOpen ? (
+      {detailsMode ? (
         <VideoClipDetailsDialog
           clip={clip}
+          initialTrimEditorOpen={detailsMode === "trim"}
           isLoading={isClipLoading}
           posterUrl={posterUrl}
+          trimEditor={trimEditor}
           videoUrl={videoUrl}
-          onClose={() => setIsDetailsOpen(false)}
+          onClose={() => setDetailsMode(null)}
           onLoadPreview={() => {
             void loadFullClip();
           }}

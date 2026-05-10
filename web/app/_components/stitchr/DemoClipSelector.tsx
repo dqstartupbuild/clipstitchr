@@ -15,7 +15,7 @@ type DemoClipSelectorProps = {
   selectedTrimRange: VideoTrimRange | null;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onSelect: (id: string) => void;
-  onEditTrim: (clip: VideoClipMetadata) => void;
+  onUpdateTrim: (clip: VideoClipMetadata, trimRange: VideoTrimRange) => void;
 };
 
 export function DemoClipSelector({
@@ -24,7 +24,7 @@ export function DemoClipSelector({
   selectedTrimRange,
   onLoadClip,
   onSelect,
-  onEditTrim,
+  onUpdateTrim,
 }: DemoClipSelectorProps) {
   const pagination = usePagination(clips, {
     pageSize: clipSelectorPageSize,
@@ -47,7 +47,7 @@ export function DemoClipSelector({
               isSelected={clip.id === selectedId}
               onLoadClip={onLoadClip}
               onSelect={onSelect}
-              onEditTrim={onEditTrim}
+              onUpdateTrim={onUpdateTrim}
             />
           ))
         ) : (
