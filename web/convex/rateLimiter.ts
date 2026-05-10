@@ -166,6 +166,31 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 150,
     shards: 10,
   },
+  replicateSwiprBackgroundGenerate: {
+    kind: "token bucket",
+    rate: 20,
+    period: HOUR,
+    capacity: 5,
+  },
+  replicateSwiprBackgroundGenerateDaily: {
+    kind: "token bucket",
+    rate: 50,
+    period: DAY,
+    capacity: 50,
+  },
+  replicateSwiprBackgroundGenerateMonthly: {
+    kind: "token bucket",
+    rate: 500,
+    period: MONTH,
+    capacity: 500,
+  },
+  replicateSwiprBackgroundGenerateGlobal: {
+    kind: "token bucket",
+    rate: 1000,
+    period: HOUR,
+    capacity: 100,
+    shards: 10,
+  },
   avatarCascadeDelete: {
     kind: "token bucket",
     rate: 100,

@@ -293,6 +293,33 @@ export const consumeAvatarPhotoGenerate = mutation({
   },
 });
 
+export const consumeSwiprBackgroundGenerate = mutation({
+  args: {
+    secret: v.string(),
+  },
+  handler: async (ctx, { secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "replicateSwiprBackgroundGenerate", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateSwiprBackgroundGenerateDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateSwiprBackgroundGenerateMonthly", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateSwiprBackgroundGenerateGlobal", {
+      throws: true,
+    });
+  },
+});
+
 export const consumeAvatarCascadeDelete = mutation({
   args: {
     secret: v.string(),

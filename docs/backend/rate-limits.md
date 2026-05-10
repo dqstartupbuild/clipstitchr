@@ -63,6 +63,8 @@ Optional Replicate model overrides:
   avatar/photo image analysis and video poster fallback analysis.
 - `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` defaults to
   `google/gemini-3-flash` for full-video UGC/demo action analysis.
+- `SWIPR_BACKGROUND_MODEL_ID` defaults to `openai/gpt-image-2` for Swipr AI
+  background generation.
 
 ## Enforcement Map
 
@@ -80,6 +82,7 @@ Optional Replicate model overrides:
 | Swapr job cancellation | `POST /api/swapr/jobs/{id}/cancel` | 100/hour/user, burst 20 |
 | Swapr output proxy | `GET /api/swapr/output` | 1,000/hour/user, burst 200 |
 | Avatar photo generation | `POST /api/avatars/photos/generate` from the Avatars page or UGC clip avatar action | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour |
+| Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 5; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `stitches.save` | 3,000/hour/user, burst 500 |
 | Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `workspaceSettings.save` | 5,000/hour/user, burst 1,000 |
@@ -91,8 +94,12 @@ Optional Replicate model overrides:
 Swipr carousel export is intentionally not rate-limited in the MVP because it
 does not call a server route, signed URL flow, Convex mutation, or paid provider.
 The browser renders 9:16 PNG images with Canvas and creates a local ZIP download.
-If Swipr later adds Pinterest, a stock-media provider, or AI background
-generation, the provider call must be server-side and rate-limited before any
+Swipr AI background generation is separate from export: it calls Replicate GPT
+Image 2 through `POST /api/swipr/backgrounds/generate`, consumes the dedicated
+Swipr AI background limits before creating the prediction, and streams the
+generated image back to the browser without saving it to R2. If Swipr later adds
+Pinterest, a stock-media provider, or saved generated background objects, those
+provider and storage flows must be server-side and rate-limited before any
 external request or signed asset flow starts.
 
 Workspace settings are rate-limited through the shared Convex metadata update

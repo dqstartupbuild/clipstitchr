@@ -177,19 +177,20 @@ main product promise.
 ### 4.6 Carousel Generation
 
 Swipr creates TikTok-ready static carousel image sets. The MVP uses browser-local
-canvas rendering: one selected or generated background image is reused across
-every image, and each image has its own text overlay using the same styling,
-color, drag, and resize model as Stitchr text overlays.
+canvas rendering for final export: one selected, local starter, or Image 2.0 AI
+generated background image is reused across every image, and each image has its
+own text overlay using the same styling, color, drag, and resize model as
+Stitchr text overlays.
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
 | 1 | User selects a product context from saved demos or enters a custom product | ✅ | ✅ |
 | 2 | User chooses 3-8 carousel images | ✅ | ✅ |
-| 3 | User uploads one background image or generates one local starter background | ✅ | ✅ |
+| 3 | User uploads one background image, generates one local starter background, or creates one rate-limited Image 2.0 AI background | ✅ | ✅ |
 | 4 | One background image is reused across every rendered carousel image | ✅ | ✅ |
 | 5 | User adds and positions text independently on each image | ✅ | ✅ |
 | 6 | Browser renders 9:16 PNG images and downloads them as one ZIP file | ✅ | ✅ |
-| 7 | Pinterest, stock-library, or AI background provider integration | — | ✅ |
+| 7 | Pinterest or stock-library provider integration | — | ✅ |
 
 ---
 

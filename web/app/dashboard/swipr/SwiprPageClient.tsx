@@ -13,6 +13,7 @@ import { SWIPR_BACKGROUND_PRESETS } from "@/lib/clipstitchr/constants/swiprBackg
 import { SWIPR_CUSTOM_PRODUCT_ID } from "@/lib/clipstitchr/constants/swiprCustomProductId";
 import { SWIPR_MIN_SLIDE_COUNT } from "@/lib/clipstitchr/constants/swiprSlideCountBounds";
 import { SWIPR_STATIC_DURATION } from "@/lib/clipstitchr/constants/swiprStaticDuration";
+import { generateSwiprBackgroundWithAi } from "@/lib/clipstitchr/client/generateSwiprBackgroundWithAi";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
 import { useWorkspaceSettings } from "@/lib/clipstitchr/hooks/useWorkspaceSettings";
@@ -57,6 +58,8 @@ export function SwiprPageClient() {
   const [background, setBackground] = useState<SwiprBackground | null>(null);
   const [backgroundError, setBackgroundError] = useState<string | null>(null);
   const [isGeneratingBackground, setIsGeneratingBackground] = useState(false);
+  const [isGeneratingAiBackground, setIsGeneratingAiBackground] =
+    useState(false);
   const selectedDemo = useMemo(
     () => demoClips.find((clip) => clip.id === selectedProductId),
     [demoClips, selectedProductId],
@@ -89,6 +92,8 @@ export function SwiprPageClient() {
     slides.findIndex((slide) => slide.id === activeSlideId),
   );
   const activeSlide = slides[activeSlideIndex] ?? null;
+  const isCreatingBackground =
+    isGeneratingBackground || isGeneratingAiBackground;
 
   const generateBackground = useCallback(async (presetId = selectedPresetId) => {
     const preset =
@@ -117,6 +122,32 @@ export function SwiprPageClient() {
       );
     } finally {
       setIsGeneratingBackground(false);
+    }
+  }, [effectiveProductContext, selectedPresetId]);
+
+  const generateAiBackground = useCallback(async () => {
+    setIsGeneratingAiBackground(true);
+    setBackgroundError(null);
+
+    try {
+      const blob = await generateSwiprBackgroundWithAi({
+        productContext: effectiveProductContext,
+        presetId: selectedPresetId,
+      });
+
+      setBackground({
+        name: "Image 2.0 background",
+        blob,
+        source: "ai",
+      });
+    } catch (error) {
+      setBackgroundError(
+        error instanceof Error
+          ? error.message
+          : "Unable to generate this background.",
+      );
+    } finally {
+      setIsGeneratingAiBackground(false);
     }
   }, [effectiveProductContext, selectedPresetId]);
 
@@ -204,10 +235,12 @@ export function SwiprPageClient() {
               background={background}
               selectedPresetId={selectedPresetId}
               isGenerating={isGeneratingBackground}
+              isGeneratingAi={isGeneratingAiBackground}
               onPresetChange={(presetId) => {
                 setSelectedPresetId(presetId);
                 void generateBackground(presetId);
               }}
+              onGenerateAiBackground={() => void generateAiBackground()}
               onGenerateBackground={() => void generateBackground()}
               onUploadBackground={handleUploadBackground}
             />
@@ -225,7 +258,7 @@ export function SwiprPageClient() {
               status={exporter.status}
               progress={exporter.progress}
               error={exporter.error}
-              isDisabled={!background || isGeneratingBackground}
+              isDisabled={!background || isCreatingBackground}
               onExport={handleExport}
             />
           </div>

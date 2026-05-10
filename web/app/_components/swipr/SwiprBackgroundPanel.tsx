@@ -10,7 +10,9 @@ type SwiprBackgroundPanelProps = {
   background: SwiprBackground | null;
   selectedPresetId: SwiprBackgroundPresetId;
   isGenerating: boolean;
+  isGeneratingAi: boolean;
   onPresetChange: (presetId: SwiprBackgroundPresetId) => void;
+  onGenerateAiBackground: () => void;
   onGenerateBackground: () => void;
   onUploadBackground: (file: File) => void;
 };
@@ -19,10 +21,14 @@ export function SwiprBackgroundPanel({
   background,
   selectedPresetId,
   isGenerating,
+  isGeneratingAi,
   onPresetChange,
+  onGenerateAiBackground,
   onGenerateBackground,
   onUploadBackground,
 }: SwiprBackgroundPanelProps) {
+  const isBusy = isGenerating || isGeneratingAi;
+
   return (
     <Panel className="p-4">
       <div className="mb-4 flex items-center gap-3">
@@ -56,6 +62,7 @@ export function SwiprBackgroundPanel({
                       ? "border-accent bg-surface-muted text-accent"
                       : "border-border bg-white text-text-secondary hover:border-accent hover:text-accent",
                   ].join(" ")}
+                  disabled={isBusy}
                   onClick={() => onPresetChange(preset.id)}
                 >
                   <span
@@ -72,20 +79,36 @@ export function SwiprBackgroundPanel({
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
-            variant="secondary"
             icon={<Sparkles aria-hidden className="h-4 w-4" />}
+            isLoading={isGeneratingAi}
+            disabled={isGenerating}
+            onClick={onGenerateAiBackground}
+          >
+            AI background
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            icon={<ImagePlus aria-hidden className="h-4 w-4" />}
             isLoading={isGenerating}
+            disabled={isGeneratingAi}
             onClick={onGenerateBackground}
           >
-            Generate background
+            Starter
           </Button>
-          <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-semibold text-text-primary transition-colors hover:border-accent">
+          <label
+            className={[
+              "inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-semibold text-text-primary transition-colors hover:border-accent",
+              isBusy ? "cursor-not-allowed opacity-60" : "cursor-pointer",
+            ].join(" ")}
+          >
             <Upload aria-hidden className="h-4 w-4" />
             Upload image
             <input
               type="file"
               accept={ACCEPTED_PHOTO_TYPES.join(",")}
               className="sr-only"
+              disabled={isBusy}
               onChange={(event) => {
                 const file = event.target.files?.[0];
 
