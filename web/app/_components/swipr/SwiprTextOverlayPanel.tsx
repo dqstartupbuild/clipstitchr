@@ -1,10 +1,11 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { Trash2, WandSparkles } from "lucide-react";
 import { TextOverlayBackgroundColorPicker } from "@/app/_components/stitchr/TextOverlayBackgroundColorPicker";
 import { TextOverlayColorPicker } from "@/app/_components/stitchr/TextOverlayColorPicker";
 import { TextOverlayStrokeColorPicker } from "@/app/_components/stitchr/TextOverlayStrokeColorPicker";
 import { TextOverlayStylePicker } from "@/app/_components/stitchr/TextOverlayStylePicker";
+import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { SWIPR_STATIC_DURATION } from "@/lib/clipstitchr/constants/swiprStaticDuration";
 import type { SwiprSlide } from "@/lib/clipstitchr/types/SwiprSlide";
@@ -14,13 +15,19 @@ import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 type SwiprTextOverlayPanelProps = {
   activeSlide: SwiprSlide | null;
   activeSlideIndex: number;
+  generationError?: string | null;
+  isGeneratingText?: boolean;
   onChange: (textOverlay: TextOverlay) => void;
+  onGenerateAllText?: () => void;
 };
 
 export function SwiprTextOverlayPanel({
   activeSlide,
   activeSlideIndex,
+  generationError,
+  isGeneratingText = false,
   onChange,
+  onGenerateAllText,
 }: SwiprTextOverlayPanelProps) {
   if (!activeSlide) {
     return (
@@ -54,6 +61,25 @@ export function SwiprTextOverlayPanel({
           onClick={() => handleChange({ ...textOverlay, text: "" })}
         />
       </div>
+      {onGenerateAllText ? (
+        <div className="mb-4 grid gap-3 border-b border-border pb-4">
+          <Button
+            type="button"
+            variant="secondary"
+            icon={<WandSparkles aria-hidden className="h-4 w-4" />}
+            isLoading={isGeneratingText}
+            disabled={isGeneratingText}
+            onClick={onGenerateAllText}
+          >
+            Generate All Text
+          </Button>
+          {generationError ? (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {generationError}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       <div className="flex flex-col gap-3">
         <input
           value={textOverlay.text}

@@ -10,6 +10,12 @@ describe("getVideoClipBadgeLabel", () => {
     expect(getVideoClipBadgeLabel({ clipType: "demo" })).toBe("DEMO");
   });
 
+  it("labels Clipr clips", () => {
+    expect(getVideoClipBadgeLabel({ clipType: "ugc", tags: ["clipr"] })).toBe(
+      "CLIPR",
+    );
+  });
+
   it("labels Swapr outputs as swaps", () => {
     expect(
       getVideoClipBadgeLabel({

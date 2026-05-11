@@ -23,7 +23,7 @@ product demo**, a user can produce matching unique 9:16 ad variants - each
 pairing a different UGC clip first with the same product demo second - in
 minutes, without leaving the app.
 
-The primary product is **Stitchr**. AI features like Swapr and Avatar Photo Generator are secondary helpers for
+The primary product is **Stitchr**. AI features like Clipr, Swapr, and Avatar Photo Generator are secondary helpers for
 creating or extending source material when a user does not have enough usable
 clips.
 
@@ -156,10 +156,11 @@ Multiple independent text layers remain future scope.
 | 6 | Uploaded Swapr avatar photos appear in the Avatars page; AI expansion is optional and off by default | ✅ | ✅ |
 | 7 | Avatar photos store a detailed non-sensitive visual description of the person for scenario generation | ✅ | ✅ |
 | 8 | Users can generate 3, 5, or 10 new avatar scenario photos from a selected avatar through Replicate OpenAI image generation | ✅ | ✅ |
-| 9 | Swapr-generated outputs appear in the Content Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
-| 10 | Stitches appear in the Content Library Stitches tab; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
-| 11 | The Content Library includes an All tab so users can view every saved video output type at once | ✅ | ✅ |
-| 12 | The dashboard header upload action opens an upload selector for UGC, Demo, or Photo, then routes to the relevant page/tab with controls revealed | ✅ | ✅ |
+| 9 | Clipr-generated engagement clips appear in the Content Library Clips tab and remain reusable as UGC-style clips | ✅ | ✅ |
+| 10 | Swapr-generated outputs appear in the Content Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
+| 11 | Stitches appear in the Content Library Stitches tab; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
+| 12 | The Content Library includes an All tab so users can view every saved video output type at once | ✅ | ✅ |
+| 13 | The dashboard header upload action opens an upload selector for UGC, Demo, or Photo, then routes to the relevant page/tab with controls revealed | ✅ | ✅ |
 
 ### 4.5 AI-Assisted Content Supply (Secondary)
 
@@ -171,8 +172,9 @@ main product promise.
 |---|---------|-----|------|
 | 1 | AI photo expansion improves framing for saved avatar photos | ✅ | ✅ |
 | 2 | Avatar photo generation creates additional reusable source photos | ✅ | ✅ |
-| 3 | Swapr generates UGC-style video clips that can be saved back into the UGC library | ✅ | ✅ |
-| 4 | AI features use rate limits, credit budgeting, and speed profiles because they create external provider cost | ✅ | ✅ |
+| 3 | Clipr creates no-CTA talking engagement clips from a saved product and avatar photo, then saves them as UGC-compatible clips | ✅ | ✅ |
+| 4 | Swapr generates UGC-style video clips that can be saved back into the UGC library | ✅ | ✅ |
+| 5 | AI features use rate limits, credit budgeting, and speed profiles because they create external provider cost | ✅ | ✅ |
 
 ### 4.6 Carousel Generation
 
@@ -197,7 +199,8 @@ hidden inferred problem and audience pain-point metadata for generation prompts.
 | 6 | Browser renders 9:16 PNG images and downloads them as one ZIP file | ✅ | ✅ |
 | 7 | Saved Swipes appear in the Content Library Swipes tab and download from saved editable state | ✅ | ✅ |
 | 8 | Uploaded/generated backgrounds save to shared R2-backed Background Library with hidden GPT-4.1-mini search metadata | ✅ | ✅ |
-| 9 | Pinterest or stock-library provider integration | — | ✅ |
+| 9 | Swipr can auto-generate slide text from the hidden hook template resources and the selected Settings product | ✅ | ✅ |
+| 10 | Pinterest or stock-library provider integration | — | ✅ |
 
 ---
 
@@ -207,10 +210,11 @@ hidden inferred problem and audience pain-point metadata for generation prompts.
 /                → Landing page (marketing + "Go to Dashboard" CTA)
 /dashboard       → Authenticated main workspace
 /dashboard/stitchr → Authenticated Stitchr video stitching interface
+/dashboard/clipr → Authenticated no-CTA talking engagement clip generator
 /dashboard/swipr → Authenticated TikTok carousel image generator
 /dashboard/swapr → Authenticated AI motion-transfer studio using saved photos with UGC clips or finished stitches
 /dashboard/avatars → Authenticated avatar photo library with hidden-until-requested photo upload controls, avatar assignment, descriptions, and AI scenario photo generation
-/dashboard/uploads → Authenticated Content Library with All, UGC, Demo, Swaps, Swipes, and Stitches tabs; UGC/Demo upload controls open from the header upload selector
+/dashboard/uploads → Authenticated Content Library with All, UGC, Demo, Clips, Swaps, Swipes, and Stitches tabs; UGC/Demo upload controls open from the header upload selector
 /dashboard/stitches → Compatibility redirect to `/dashboard/uploads?tab=stitches`
 ```
 
@@ -457,6 +461,7 @@ interface Stitch {
 ### Phase 4 — Secondary AI-Assisted Content Supply and Editing
 
 - [ ] Video trimming & cutting tools
+- [ ] Clipr — generate no-CTA talking engagement clips from saved products and avatar photos, then save them as UGC-compatible Clips
 - [ ] Swapr — upload saved avatar photos, create scenario photos, choose existing UGC clips or finished stitches, and generate AI motion-transfer UGC outputs through Replicate
 - [ ] AI video analysis to detect optimal trim/cut points (e.g., scene changes, pauses, energy peaks)
 - [ ] AI-suggested highlights — automatically surface the best moments from UGC clips

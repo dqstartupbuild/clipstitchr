@@ -5,8 +5,9 @@ finished 9:16 ad variants without opening a traditional video editor.
 
 The primary workflow is Stitchr: upload clips once, keep them organized in a
 content library, then pair up to 20 UGC clips with one product demo to create
-finished ads. AI features such as avatar photo generation, photo expansion, and
-Swapr are secondary helpers for creating or extending source material.
+finished ads. AI features such as Clipr, avatar photo generation, photo
+expansion, and Swapr are secondary helpers for creating or extending source
+material.
 
 Built with [Next.js](https://nextjs.org), [Clerk](https://clerk.com), [Tailwind CSS](https://tailwindcss.com), [Content Collections](https://www.content-collections.dev), and [Media Bunny](https://mediabunny.dev).
 
@@ -33,6 +34,9 @@ REPLICATE_API_TOKEN=your_replicate_token
 AVATAR_PHOTO_MODEL_ID=openai/gpt-image-2
 REPLICATE_UPLOAD_ANALYSIS_MODEL_ID=openai/gpt-4.1-mini
 REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID=google/gemini-3-flash
+CLIPR_SCRIPT_MODEL_ID=openai/gpt-4.1
+CLIPR_TTS_MODEL_ID=elevenlabs/v3
+CLIPR_AVATAR_MODEL_ID=kwaivgi/kling-avatar-v2
 ```
 
 ## Commands
@@ -55,10 +59,12 @@ The app processes media in the browser and stores durable data in Convex and Clo
 - Uploaded UGC and Demo videos are normalized to TikTok 9:16 before they are saved.
 - Stitchr can select up to 20 UGC videos with one selected Demo video, preview
   each UGC-then-Demo sequence, and export one finished stitch per selected UGC.
+- Clipr can generate no-CTA talking engagement clips from saved products and
+  avatar photos, then save them as UGC-compatible Clips.
 - Convex stores clip, photo, stitch, tag, trim, and R2 object metadata.
 - Cloudflare R2 stores normalized videos, stitched videos, photos, posters, and thumbnails.
 - Library views read Convex metadata first; preview media is hydrated from R2 as needed.
-- The Content Library route at `/dashboard/uploads` includes All, UGC, Demo, Swaps, and Stitches tabs.
+- The Content Library route at `/dashboard/uploads` includes All, UGC, Demo, Clips, Swaps, Swipes, and Stitches tabs.
 - The Avatars route at `/dashboard/avatars` owns avatar photo upload, avatar descriptions, and generated avatar scenario photos.
 - Each saved video also stores a generated JPEG poster object plus `posterVersion`.
 - Posters are generated in the browser by seeking through candidate frames and choosing a visibly non-black frame for the video element's `poster` attribute.
@@ -72,6 +78,8 @@ The app processes media in the browser and stores durable data in Convex and Clo
   guidance.
 - `../docs/features/stitchr.md` defines the primary Stitchr workflow and
   product principles.
+- `../docs/features/clipr.md` defines the no-CTA Clipr generation workflow and
+  internal hook resources.
 - `../monetization.md` defines hypothetical pricing, margin, rate-limit, and
   plan-positioning assumptions.
 
@@ -81,9 +89,10 @@ The app processes media in the browser and stores durable data in Convex and Clo
 ├── app/
 │   ├── page.tsx                 # Landing page
 │   ├── dashboard/               # Authenticated workspace routes
-│   │   ├── uploads/             # Content Library route with All, UGC, Demo, Swaps, and Stitches tabs
+│   │   ├── uploads/             # Content Library route with All, UGC, Demo, Clips, Swaps, Swipes, and Stitches tabs
 │   │   ├── avatars/             # Avatar photo upload, library, and generation route
 │   │   ├── stitchr/             # Stitchr video stitching route
+│   │   ├── clipr/               # Clipr engagement clip generation route
 │   │   ├── swapr/               # Swapr AI motion-transfer route
 │   │   └── stitches/            # Compatibility redirect to uploads?tab=stitches
 │   ├── _components/             # Atomic UI, dashboard, Stitchr, and landing components

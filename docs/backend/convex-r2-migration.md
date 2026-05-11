@@ -151,7 +151,7 @@ Replace `useClipLibraryState` and `usePhotoLibraryState` internals:
 - Use Convex `useMutation` for metadata saves/removes.
 - Hydrate poster/thumbnail blobs from R2 after query data arrives.
 - Keep existing in-memory `Map` caches for full video/photo blobs.
-- Use R2 upload helpers during upload, Swapr generation, and stitch generation before saving Convex records.
+- Use R2 upload helpers during upload, Clipr generation, Swapr generation, and stitch generation before saving Convex records.
 
 Remove `useClipLibraryPosterBackfill`. No IndexedDB backfill logic remains.
 

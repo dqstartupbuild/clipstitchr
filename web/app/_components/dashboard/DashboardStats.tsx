@@ -4,16 +4,18 @@ import { DashboardStatCard } from "@/app/_components/dashboard/DashboardStatCard
 type DashboardStatsProps = {
   ugcCount: number;
   demoCount: number;
+  cliprCount: number;
   stitchesCount: number;
 };
 
 export function DashboardStats({
   ugcCount,
   demoCount,
+  cliprCount,
   stitchesCount,
 }: DashboardStatsProps) {
   return (
-    <section className="grid gap-4 md:grid-cols-3">
+    <section className="grid gap-4 md:grid-cols-4">
       <DashboardStatCard
         icon={<Film aria-hidden className="h-5 w-5" />}
         label="UGC Clips"
@@ -23,6 +25,11 @@ export function DashboardStats({
         icon={<Clapperboard aria-hidden className="h-5 w-5" />}
         label="Demo Videos"
         value={demoCount}
+      />
+      <DashboardStatCard
+        icon={<Clapperboard aria-hidden className="h-5 w-5" />}
+        label="Clipr Clips"
+        value={cliprCount}
       />
       <DashboardStatCard
         icon={<FileVideo aria-hidden className="h-5 w-5" />}

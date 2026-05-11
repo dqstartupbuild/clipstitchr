@@ -32,6 +32,25 @@ async function getOwnedSwaprJob(
   return job;
 }
 
+async function getOwnedCliprVideoJob(
+  ctx: MutationCtx,
+  ownerId: string,
+  predictionId: string,
+) {
+  const job = await ctx.db
+    .query("replicateJobs")
+    .withIndex("by_owner_prediction", (q) =>
+      q.eq("ownerId", ownerId).eq("predictionId", predictionId),
+    )
+    .unique();
+
+  if (!job || job.purpose !== "clipr-video") {
+    throw new Error("Clipr job not found.");
+  }
+
+  return job;
+}
+
 export const consumeR2Upload = mutation({
   args: {
     secret: v.string(),
@@ -361,6 +380,85 @@ export const consumeProductEnrichment = mutation({
       throws: true,
     });
     await rateLimiter.limit(ctx, "replicateProductEnrichmentGlobal", {
+      throws: true,
+    });
+  },
+});
+
+export const consumeHookGeneration = mutation({
+  args: {
+    secret: v.string(),
+  },
+  handler: async (ctx, { secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "replicateHookGenerate", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateHookGenerateMonthly", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateHookGenerateGlobal", {
+      throws: true,
+    });
+  },
+});
+
+export const consumeCliprSegmentGenerate = mutation({
+  args: {
+    estimatedSeconds: v.number(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { estimatedSeconds, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const generatedSeconds = getPositiveCount(
+      estimatedSeconds,
+      "Estimated generated seconds",
+    );
+
+    await rateLimiter.limit(ctx, "replicateCliprSegmentGenerate", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateCliprSegmentGenerateDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateCliprGeneratedSecondsMonthly", {
+      key: ownerId,
+      count: generatedSeconds,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateCliprSegmentGenerateGlobal", {
+      throws: true,
+    });
+  },
+});
+
+export const consumeCliprOutputDownload = mutation({
+  args: {
+    secret: v.string(),
+    predictionId: v.string(),
+    outputUrl: v.string(),
+  },
+  handler: async (ctx, { secret, predictionId, outputUrl }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const job = await getOwnedCliprVideoJob(ctx, ownerId, predictionId);
+
+    if (!job.outputUrl || job.outputUrl !== outputUrl) {
+      throw new Error("Clipr output not found.");
+    }
+
+    await rateLimiter.limit(ctx, "replicateCliprOutputDownload", {
+      key: ownerId,
       throws: true,
     });
   },

@@ -10,7 +10,9 @@ import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitche
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
+import { filterCliprClips } from "@/lib/clipstitchr/utils/filterCliprClips";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
+import { filterNonGeneratedClips } from "@/lib/clipstitchr/utils/filterNonGeneratedClips";
 import { getRecentAvatarPhotos } from "@/lib/clipstitchr/utils/getRecentAvatarPhotos";
 import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
 import { getRecentVideoClips } from "@/lib/clipstitchr/utils/getRecentVideoClips";
@@ -21,7 +23,11 @@ export function DashboardPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
   const ugcClips = useMemo(
-    () => filterClipsByType(library.clips, "ugc"),
+    () => filterClipsByType(filterNonGeneratedClips(library.clips), "ugc"),
+    [library.clips],
+  );
+  const cliprClips = useMemo(
+    () => filterCliprClips(library.clips),
     [library.clips],
   );
   const demoClips = useMemo(
@@ -62,6 +68,7 @@ export function DashboardPageClient() {
         <DashboardStats
           ugcCount={ugcClips.length}
           demoCount={demoClips.length}
+          cliprCount={cliprClips.length}
           stitchesCount={library.stitches.length}
         />
         <RecentStitchesSection

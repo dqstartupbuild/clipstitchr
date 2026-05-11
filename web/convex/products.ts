@@ -26,6 +26,20 @@ export const list = query({
   },
 });
 
+export const get = query({
+  args: {
+    id: v.string(),
+  },
+  handler: async (ctx, { id }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    return await ctx.db
+      .query("products")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+  },
+});
+
 export const create = mutation({
   args: {
     id: v.string(),

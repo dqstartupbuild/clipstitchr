@@ -1,5 +1,6 @@
 import { UserButton } from "@clerk/nextjs";
 import {
+  Clapperboard,
   Home,
   Images,
   Library,
@@ -16,6 +17,7 @@ const links = [
   { href: "/dashboard/uploads", label: "Library", icon: Library },
   { href: "/dashboard/avatars", label: "Avatars", icon: UserRound },
   { href: "/dashboard/stitchr", label: "Stitchr", icon: Scissors },
+  { href: "/dashboard/clipr", label: "Clipr", icon: Clapperboard },
   { href: "/dashboard/swipr", label: "Swipr", icon: Images },
   { href: "/dashboard/swapr", label: "Swapr", icon: Shuffle },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },

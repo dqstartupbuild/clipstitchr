@@ -16,6 +16,9 @@ or remove images, and download the latest saved version at any time.
    - An uploaded background image.
    - An AI-generated background image.
 5. The user edits text independently on each carousel image.
+   - The user may also generate all slide text from the selected Settings
+     product. Swipr randomly selects a hidden hook style/template and fills the
+     slide overlays.
 6. The user saves the editable Swipe.
 7. The saved Swipe appears in the Content Library under the Swipes tab.
 8. From the library, the user can open the Swipe detail view, swipe through its
@@ -42,6 +45,22 @@ The saved record includes:
 Each slide stores only the editable data needed to render it again. The final
 PNG is rendered in the browser on demand when the user downloads the Swipe.
 
+## Hook-Generated Slide Text
+
+Swipr can auto-generate carousel text from the same internal hook resources used
+by Clipr and Stitchr. The hook style and template are never shown to the user.
+Every generation randomly selects from the internal resource files and uses the
+selected Settings product as context.
+
+The generated text:
+
+- Creates exactly one text line per current slide.
+- Keeps each line short enough for the existing text overlay.
+- Avoids CTAs, fake proof, invented numbers, and technical generation language.
+- Replaces the text in the existing editable slide overlays.
+- Still requires the user to save the Swipe before the generated text becomes
+  the saved library version.
+
 ## Download Behavior
 
 The download action renders the currently saved version of the Swipe. It uses:
@@ -57,8 +76,8 @@ should become the version available from the library.
 
 ## Library Behavior
 
-The Content Library includes a Swipes tab alongside All, UGC, Demo, Swaps, and
-Stitches.
+The Content Library includes a Swipes tab alongside All, UGC, Demo, Clips,
+Swaps, and Stitches.
 
 The Swipes tab shows saved Swipe cards with:
 
@@ -145,6 +164,7 @@ Swipr persistence adds new cost surfaces:
 - GPT-4.1 mini background analysis.
 - Convex record saves for shared backgrounds.
 - Convex record saves, updates, and deletes for user-owned Swipes.
+- GPT-4.1 hook text generation for slide overlays.
 
 Required protections:
 
@@ -154,6 +174,7 @@ Required protections:
 - AI background generation remains rate-limited before calling Replicate.
 - Convex saves and updates consume existing record-save or metadata-update
   limits before writes.
+- Hook text generation is rate-limited before calling Replicate.
 - Shared backgrounds are not user-deletable.
 - User-owned Swipes must be owner-scoped for list, get, save, update, and
   delete operations.

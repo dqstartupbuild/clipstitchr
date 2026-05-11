@@ -41,6 +41,8 @@ ClipStitchr turns the messy middle of ad creation into a repeatable workflow:
 6. Click once to create the finished ad variants.
 7. Reuse the same library to make more variants.
 8. Use Swipr when the next post should be a carousel instead of a video.
+9. Use Clipr when the library needs a no-CTA engagement clip that can post on
+   its own or feed Stitchr.
 
 The user should feel like they are operating a content machine, not performing
 video editing chores.
@@ -91,6 +93,7 @@ Core supporting features:
 
 - upload and normalize UGC and demo assets
 - organize reusable content in the library
+- create no-CTA engagement clips with Clipr
 - create, save, edit, and download Swipr carousels
 - trim clips without destructive editing
 - preview the UGC-then-demo sequence
@@ -101,6 +104,7 @@ Core supporting features:
 Secondary AI features:
 
 - generate avatar photos
+- generate Clipr engagement clips from saved products and avatar photos
 - expand photos for better framing
 - generate Swapr videos from saved photos and clips
 - generate carousel visuals for Swipr
@@ -132,6 +136,10 @@ UGC-then-demo videos without opening a traditional editor.
 Swipr extends the same library into saved carousel posts. It should be
 positioned as a useful secondary workflow for image-based posts, not as the
 primary reason to choose ClipStitchr.
+
+Clipr extends the library with no-CTA talking engagement clips. It should be
+positioned as a way to create useful source clips, not as a social media
+automation promise.
 
 ## What To Avoid
 

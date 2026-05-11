@@ -40,8 +40,10 @@ Use this order for most marketing pages:
 3. Workflow: upload, organize, stitch, export.
 4. Secondary output: use Swipr for carousel posts when slides fit the channel
    better than video.
-5. Scale: make more variants from the same library.
-6. AI: optional help when users need more source content.
+5. Secondary source: use Clipr for no-CTA engagement clips that can stand alone
+   or feed Stitchr.
+6. Scale: make more variants from the same library.
+7. AI: optional help when users need more source content.
 
 ## Primary Headline Patterns
 
@@ -76,8 +78,9 @@ Write feature copy around user outcomes:
 | Feature | User-facing angle |
 | --- | --- |
 | Upload normalization | Every clip becomes ready for vertical ad output. |
-| Content Library | Keep UGC, demos, swaps, and stitches in one searchable place. |
+| Content Library | Keep UGC, demos, Clipr clips, swaps, and stitches in one searchable place. |
 | Stitchr | Pair up to 20 UGC clips with one product demo and create finished ads. |
+| Clipr | Create no-CTA talking engagement clips from a saved product and avatar photo. |
 | Swipr | Create carousel posts, save the draft, and come back to revise or download it later. |
 | Trim ranges | Cut dead space without damaging the original clip. |
 | Posters | Recognize clips quickly without opening every file. |
@@ -94,6 +97,7 @@ Use:
 - "Create more source material when your library is thin."
 - "Use AI to fill gaps in your content library."
 - "Generate optional UGC-style inputs, then stitch them into ads."
+- "Create a no-CTA engagement clip, then use it on its own or in Stitchr."
 
 Avoid:
 
@@ -148,6 +152,10 @@ more finished creative so they can test faster.
 - For Swipr flows, say "carousel posts," "slides," "looks," and "ready to
   publish" before naming implementation details.
 - Describe Swipr as a way to create, save, edit, and download carousels.
+- For Clipr flows, say "engagement clips," "avatar photo," "voice," and
+  "saved Clips" before naming models or providers.
+- Describe Clipr clips as no-CTA clips that can stand alone or work like UGC in
+  Stitchr.
 - Avoid naming internal storage or setup choices in marketing copy.
 - Keep buttons action-oriented: `Upload Clips`, `Create Stitch`, `Save Trim`.
 - Avoid making users feel judged for having messy files or inconsistent posting.
@@ -167,6 +175,8 @@ more finished creative so they can test faster.
 - test creative
 - carousel posts
 - slides
+- engagement clips
+- Clips tab
 
 ## Words To Use Carefully
 

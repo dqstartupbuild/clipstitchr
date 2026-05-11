@@ -1,8 +1,9 @@
 "use client";
 
-import { Trash2, Type } from "lucide-react";
+import { Trash2, Type, WandSparkles } from "lucide-react";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { TextOverlayBackgroundColorPicker } from "@/app/_components/stitchr/TextOverlayBackgroundColorPicker";
 import { TextOverlayColorPicker } from "@/app/_components/stitchr/TextOverlayColorPicker";
 import { TextOverlayStrokeColorPicker } from "@/app/_components/stitchr/TextOverlayStrokeColorPicker";
@@ -17,7 +18,13 @@ type TextOverlayEditorProps = {
   totalDuration: number;
   ugcDuration: number;
   currentTime: number;
+  generationError?: string | null;
+  isGeneratingText?: boolean;
+  productOptions?: { label: string; value: string }[];
+  selectedProductId?: string;
   onChange: (textOverlay: TextOverlay | null) => void;
+  onGenerateText?: () => Promise<string | null>;
+  onProductChange?: (productId: string) => void;
 };
 
 export function TextOverlayEditor({
@@ -25,15 +32,66 @@ export function TextOverlayEditor({
   totalDuration,
   ugcDuration,
   currentTime,
+  generationError,
+  isGeneratingText = false,
+  productOptions = [],
+  selectedProductId = "",
   onChange,
+  onGenerateText,
+  onProductChange,
 }: TextOverlayEditorProps) {
   const handleAdd = () => {
     onChange(createDefaultTextOverlay(totalDuration, currentTime));
   };
+  const handleGenerateText = async () => {
+    if (!onGenerateText) {
+      return;
+    }
+
+    const generatedText = await onGenerateText();
+
+    if (!generatedText) {
+      return;
+    }
+
+    onChange({
+      ...(textOverlay ?? createDefaultTextOverlay(totalDuration, currentTime)),
+      text: generatedText,
+    });
+  };
+  const generatorControls = onGenerateText ? (
+    <div className="mb-4 grid gap-3 border-b border-border pb-4">
+      <div className="grid gap-3">
+        <SelectInput
+          label="Product"
+          value={selectedProductId}
+          options={productOptions}
+          disabled={!productOptions.length || isGeneratingText}
+          onChange={(event) => onProductChange?.(event.target.value)}
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          icon={<WandSparkles aria-hidden className="h-4 w-4" />}
+          disabled={!selectedProductId || isGeneratingText}
+          isLoading={isGeneratingText}
+          onClick={() => void handleGenerateText()}
+        >
+          Generate Text
+        </Button>
+      </div>
+      {generationError ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {generationError}
+        </div>
+      ) : null}
+    </div>
+  ) : null;
 
   if (!textOverlay) {
     return (
       <div className="mt-4 border-t border-border pt-4">
+        {generatorControls}
         <Button
           type="button"
           variant="secondary"
@@ -48,6 +106,7 @@ export function TextOverlayEditor({
 
   return (
     <div className="mt-4 border-t border-border pt-4">
+      {generatorControls}
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-accent-dark">Text</p>
