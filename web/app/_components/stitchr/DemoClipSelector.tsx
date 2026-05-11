@@ -32,23 +32,34 @@ export function DemoClipSelector({
 
   return (
     <div>
-      <h2 className="text-base font-bold text-text-primary">Demo Video</h2>
-      <div className="mt-3 grid gap-4 sm:grid-cols-2">
+      <div className="flex items-start gap-3">
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">
+          B
+        </span>
+        <div>
+          <p className="text-sm font-semibold text-accent-dark">Product demo</p>
+          <h2 className="mt-0.5 text-base font-bold text-text-primary">
+            Pick the proof
+          </h2>
+        </div>
+      </div>
+      <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
         {pagination.pageItems.length ? (
           pagination.pageItems.map((clip) => (
-            <SelectableClipCard
-              key={clip.id}
-              clip={clip}
-              trimRange={
-                clip.id === selectedId && selectedTrimRange
-                  ? selectedTrimRange
-                  : getDefaultVideoTrimRange(clip)
-              }
-              isSelected={clip.id === selectedId}
-              onLoadClip={onLoadClip}
-              onSelect={onSelect}
-              onUpdateTrim={onUpdateTrim}
-            />
+            <div key={clip.id} className="w-44 shrink-0">
+              <SelectableClipCard
+                clip={clip}
+                trimRange={
+                  clip.id === selectedId && selectedTrimRange
+                    ? selectedTrimRange
+                    : getDefaultVideoTrimRange(clip)
+                }
+                isSelected={clip.id === selectedId}
+                onLoadClip={onLoadClip}
+                onSelect={onSelect}
+                onUpdateTrim={onUpdateTrim}
+              />
+            </div>
           ))
         ) : (
           <p className="rounded-lg border border-dashed border-border bg-slate-50 p-4 text-sm font-semibold text-text-tertiary">

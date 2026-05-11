@@ -1,8 +1,9 @@
 "use client";
 
-import { Download, Trash2 } from "lucide-react";
+import { Download, Shuffle, Trash2 } from "lucide-react";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { IconButtonLink } from "@/app/_components/ui/IconButtonLink";
 import { Panel } from "@/app/_components/ui/Panel";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
@@ -10,6 +11,7 @@ import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getUseInSwaprStitchHref } from "@/lib/clipstitchr/utils/getUseInSwaprStitchHref";
 
 type StitchCardProps = {
   stitch: Stitch;
@@ -48,6 +50,11 @@ export function StitchCard({
           <Badge>STITCH</Badge>
         </div>
         <div className="mt-4 flex gap-2">
+          <IconButtonLink
+            label="Use in Swapr"
+            href={getUseInSwaprStitchHref(stitch)}
+            icon={<Shuffle aria-hidden className="h-4 w-4" />}
+          />
           <a
             href={url ?? undefined}
             download={stitch.name}

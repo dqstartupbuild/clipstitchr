@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { SwaprSourceClipCard } from "@/app/_components/swapr/SwaprSourceClipCard";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
-import { Panel } from "@/app/_components/ui/Panel";
 import { clipSelectorPageSize } from "@/lib/clipstitchr/constants/clipSelectorPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -27,28 +26,34 @@ export function SwaprSourceClipSelector({
   });
 
   return (
-    <Panel className="p-5">
-      <div>
-        <p className="text-sm font-semibold text-accent-dark">Source clip</p>
-        <h2 className="mt-2 text-xl font-bold text-text-primary">
-          Choose source motion
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-text-secondary">
-          Pick the saved video with the movement or reaction you want to reuse.
-        </p>
+    <section className="min-w-0">
+      <div className="flex items-start gap-3">
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">
+          B
+        </span>
+        <div>
+          <p className="text-sm font-semibold text-accent-dark">UGC clip</p>
+          <h2 className="mt-0.5 text-base font-bold text-text-primary">
+            Pick the motion
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-text-secondary">
+            Pick the video you want to swap.
+          </p>
+        </div>
       </div>
 
       {clips.length ? (
         <>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
             {pagination.pageItems.map((clip) => (
-              <SwaprSourceClipCard
-                key={clip.id}
-                clip={clip}
-                isSelected={clip.id === selectedClipId}
-                onLoadClip={onLoadClip}
-                onSelect={onSelect}
-              />
+              <div key={clip.id} className="w-40 shrink-0">
+                <SwaprSourceClipCard
+                  clip={clip}
+                  isSelected={clip.id === selectedClipId}
+                  onLoadClip={onLoadClip}
+                  onSelect={onSelect}
+                />
+              </div>
             ))}
           </div>
           {pagination.totalPages > 1 ? (
@@ -66,12 +71,12 @@ export function SwaprSourceClipSelector({
           ) : null}
         </>
       ) : (
-        <div className="mt-5 rounded-lg border border-border bg-surface-elevated p-5">
+        <div className="mt-3 rounded-lg border border-border bg-surface-elevated p-4">
           <h3 className="text-sm font-bold text-text-primary">
             No source videos yet
           </h3>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Upload a UGC clip or demo video before using Swapr.
+            Upload a UGC clip or create a stitch before using Swapr.
           </p>
           <Link
             href="/dashboard/uploads?tab=ugc&upload=open#upload-panel"
@@ -81,6 +86,6 @@ export function SwaprSourceClipSelector({
           </Link>
         </div>
       )}
-    </Panel>
+    </section>
   );
 }

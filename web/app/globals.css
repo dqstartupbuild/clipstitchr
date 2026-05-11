@@ -85,6 +85,8 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
   min-height: 2.5rem;
   padding: 0.625rem 1rem;
   border-radius: 0.5rem;
@@ -93,6 +95,7 @@ textarea {
   font-size: 0.875rem;
   font-weight: 700;
   text-decoration: none;
+  overflow-wrap: anywhere;
   transition: background 160ms ease;
 }
 
@@ -105,6 +108,8 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
   min-height: 2.5rem;
   padding: 0.625rem 1rem;
   border: 1px solid var(--border);
@@ -114,6 +119,7 @@ textarea {
   font-size: 0.875rem;
   font-weight: 700;
   text-decoration: none;
+  overflow-wrap: anywhere;
   transition: border-color 160ms ease;
 }
 

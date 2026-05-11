@@ -96,7 +96,7 @@ export function VideoClipPreviewCard({
     <>
       <div
         className={[
-          "rounded-lg border bg-white p-2 transition-colors",
+          "mx-auto h-full w-full max-w-[280px] min-w-0 overflow-hidden rounded-lg border bg-white p-2 transition-colors",
           isSelected ? "border-accent ring-2 ring-accent/15" : "border-border",
         ].join(" ")}
       >

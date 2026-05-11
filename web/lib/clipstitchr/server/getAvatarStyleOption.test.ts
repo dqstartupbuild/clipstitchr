@@ -3,6 +3,7 @@ import { getAvatarStyleOption } from "@/lib/clipstitchr/server/getAvatarStyleOpt
 
 describe("getAvatarStyleOption", () => {
   it("accepts supported style options", () => {
+    expect(getAvatarStyleOption("ugc")).toBe("ugc");
     expect(getAvatarStyleOption("selfie")).toBe("selfie");
     expect(getAvatarStyleOption("photo")).toBe("photo");
     expect(getAvatarStyleOption("candid")).toBe("candid");
@@ -11,8 +12,8 @@ describe("getAvatarStyleOption", () => {
     expect(getAvatarStyleOption("cinematic")).toBe("cinematic");
   });
 
-  it("falls back to selfie style", () => {
-    expect(getAvatarStyleOption("")).toBe("selfie");
-    expect(getAvatarStyleOption("custom")).toBe("selfie");
+  it("falls back to UGC style", () => {
+    expect(getAvatarStyleOption("")).toBe("ugc");
+    expect(getAvatarStyleOption("custom")).toBe("ugc");
   });
 });

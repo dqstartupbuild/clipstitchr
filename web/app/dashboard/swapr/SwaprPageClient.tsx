@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { AvatarFilterSelect } from "@/app/_components/avatars/AvatarFilterSelect";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { SwaprControlsPanel } from "@/app/_components/swapr/SwaprControlsPanel";
@@ -8,6 +9,7 @@ import { SwaprEmptyState } from "@/app/_components/swapr/SwaprEmptyState";
 import { SwaprOutputPanel } from "@/app/_components/swapr/SwaprOutputPanel";
 import { SwaprPhotoSelector } from "@/app/_components/swapr/SwaprPhotoSelector";
 import { SwaprSourceClipSelector } from "@/app/_components/swapr/SwaprSourceClipSelector";
+import { Panel } from "@/app/_components/ui/Panel";
 import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipstitchr/constants/swaprReferenceVideoMaxSizeBytes";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
@@ -15,8 +17,10 @@ import { useSwaprGeneration } from "@/lib/clipstitchr/hooks/useSwaprGeneration";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
 import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
-import { filterNonSwaprClips } from "@/lib/clipstitchr/utils/filterNonSwaprClips";
+import { createVideoClipMetadataFromStitch } from "@/lib/clipstitchr/utils/createVideoClipMetadataFromStitch";
+import { filterSwaprSourceClips } from "@/lib/clipstitchr/utils/filterSwaprSourceClips";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
 
 export function SwaprPageClient() {
@@ -27,19 +31,27 @@ export function SwaprPageClient() {
   );
   const [photoAvatarFilterId, setPhotoAvatarFilterId] = useState("all");
   const [selectedClipId, setSelectedClipId] = useState<string | undefined>(
-    () => getSearchParamValue("clipId"),
+    () => getSearchParamValue("clipId") ?? getSearchParamValue("stitchId"),
   );
   const [prompt, setPrompt] = useState("");
   const [mode, setMode] = useState<SwaprMode>("std");
   const [characterOrientation, setCharacterOrientation] =
     useState<SwaprCharacterOrientation>("image");
-  const [keepOriginalSound, setKeepOriginalSound] = useState(true);
+  const [keepOriginalSound, setKeepOriginalSound] = useState(false);
   const [hasConsent, setHasConsent] = useState(false);
   const [assetLoadError, setAssetLoadError] = useState<string | null>(null);
   const generator = useSwaprGeneration(library.refresh);
-  const sourceClips = useMemo(
-    () => filterNonSwaprClips(library.clips),
+  const sourceUgcClips = useMemo(
+    () => filterSwaprSourceClips(library.clips),
     [library.clips],
+  );
+  const sourceStitchClips = useMemo(
+    () => library.stitches.map(createVideoClipMetadataFromStitch),
+    [library.stitches],
+  );
+  const sourceClips = useMemo(
+    () => [...sourceUgcClips, ...sourceStitchClips],
+    [sourceStitchClips, sourceUgcClips],
   );
   const hasPhotos = photoLibrary.photos.length > 0;
   const hasSourceClips = sourceClips.length > 0;
@@ -66,7 +78,8 @@ export function SwaprPageClient() {
   useEffect(() => {
     const syncSelectionFromUrl = () => {
       const initialPhotoId = getSearchParamValue("photoId");
-      const initialClipId = getSearchParamValue("clipId");
+      const initialClipId =
+        getSearchParamValue("clipId") ?? getSearchParamValue("stitchId");
 
       if (!initialPhotoId && !initialClipId) {
         return;
@@ -97,6 +110,24 @@ export function SwaprPageClient() {
     setSelectedClipId((currentClipId) =>
       currentClipId === clip.id ? undefined : clip.id,
     );
+  const loadSourceClip = async (id: string): Promise<VideoClip | null> => {
+    const clip = await library.loadClip(id);
+
+    if (clip) {
+      return clip;
+    }
+
+    const stitch = library.stitches.find((item) => item.id === id);
+
+    if (!stitch) {
+      return null;
+    }
+
+    return {
+      ...createVideoClipMetadataFromStitch(stitch),
+      blob: stitch.blob,
+    };
+  };
   const handleGenerate = async () => {
     if (!selectedPhoto || !selectedClip) {
       return;
@@ -106,7 +137,7 @@ export function SwaprPageClient() {
 
     const [photo, clip] = await Promise.all([
       photoLibrary.loadPhoto(selectedPhoto.id),
-      library.loadClip(selectedClip.id),
+      loadSourceClip(selectedClip.id),
     ]);
 
     if (!photo || !clip) {
@@ -140,47 +171,64 @@ export function SwaprPageClient() {
         ) : null}
 
         {hasSwaprInputs ? (
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-            <div className="flex min-w-0 flex-col gap-6">
-              <SwaprPhotoSelector
-                avatars={photoLibrary.avatars}
-                avatarFilterId={photoAvatarFilterId}
-                photos={visiblePhotos}
-                selectedPhotoId={selectedPhotoId}
-                onAvatarFilterChange={setPhotoAvatarFilterId}
-                onSelect={selectPhoto}
-              />
-              <SwaprSourceClipSelector
-                clips={sourceClips}
-                selectedClipId={selectedClipId}
-                onLoadClip={library.loadClip}
-                onSelect={selectClip}
-              />
-            </div>
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
+            <Panel className="min-w-0 p-4">
+              <div className="grid gap-4">
+                <div className="grid gap-3 border-b border-border pb-4 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-end">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-accent-dark">
+                      Swapr
+                    </p>
+                    <h2 className="mt-0.5 text-base font-bold text-text-primary">
+                      Choose two inputs
+                    </h2>
+                  </div>
+                  <AvatarFilterSelect
+                    avatars={photoLibrary.avatars}
+                    label="Avatar"
+                    value={photoAvatarFilterId}
+                    onChange={setPhotoAvatarFilterId}
+                  />
+                </div>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <SwaprPhotoSelector
+                    avatars={photoLibrary.avatars}
+                    photos={visiblePhotos}
+                    selectedPhotoId={selectedPhotoId}
+                    onSelect={selectPhoto}
+                  />
+                  <SwaprSourceClipSelector
+                    clips={sourceClips}
+                    selectedClipId={selectedClipId}
+                    onLoadClip={loadSourceClip}
+                    onSelect={selectClip}
+                  />
+                </div>
+                <SwaprControlsPanel
+                  prompt={prompt}
+                  mode={mode}
+                  characterOrientation={characterOrientation}
+                  keepOriginalSound={keepOriginalSound}
+                  hasConsent={hasConsent}
+                  selectedClip={selectedClip}
+                  isGenerating={generator.isGenerating}
+                  isReady={isReady}
+                  referenceVideoMaxSizeBytes={SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES}
+                  onPromptChange={setPrompt}
+                  onModeChange={setMode}
+                  onCharacterOrientationChange={setCharacterOrientation}
+                  onKeepOriginalSoundChange={setKeepOriginalSound}
+                  onConsentChange={setHasConsent}
+                  onGenerate={() => void handleGenerate()}
+                />
+              </div>
+            </Panel>
 
-            <div className="flex min-w-0 flex-col gap-6">
-              <SwaprControlsPanel
-                prompt={prompt}
-                mode={mode}
-                characterOrientation={characterOrientation}
-                keepOriginalSound={keepOriginalSound}
-                hasConsent={hasConsent}
-                selectedClip={selectedClip}
-                isGenerating={generator.isGenerating}
-                isReady={isReady}
-                referenceVideoMaxSizeBytes={SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES}
-                onPromptChange={setPrompt}
-                onModeChange={setMode}
-                onCharacterOrientationChange={setCharacterOrientation}
-                onKeepOriginalSoundChange={setKeepOriginalSound}
-                onConsentChange={setHasConsent}
-                onGenerate={() => void handleGenerate()}
-              />
+            <div className="min-w-0 w-full max-w-[340px] justify-self-center xl:sticky xl:top-5 xl:justify-self-end">
               <SwaprOutputPanel
                 status={generator.status}
                 progress={generator.progress}
                 error={generator.error}
-                predictionId={generator.predictionId}
                 generatedClip={generator.generatedClip}
               />
             </div>

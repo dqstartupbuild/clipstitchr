@@ -15,7 +15,6 @@ type SwaprOutputPanelProps = {
   status: SwaprGenerationStatus;
   progress: number;
   error?: string | null;
-  predictionId?: string | null;
   generatedClip?: VideoClip | null;
 };
 
@@ -23,42 +22,29 @@ export function SwaprOutputPanel({
   status,
   progress,
   error,
-  predictionId,
   generatedClip,
 }: SwaprOutputPanelProps) {
   const videoUrl = useObjectUrl(generatedClip?.blob);
   const posterUrl = useObjectUrl(generatedClip?.posterBlob);
 
   return (
-    <Panel className="p-5">
+    <Panel className="mx-auto w-full max-w-[340px] p-4 xl:mx-0">
       <div>
-        <p className="text-sm font-semibold text-accent-dark">Output</p>
-        <h2 className="mt-2 text-xl font-bold text-text-primary">
-          Completed Swap
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-text-secondary">
-          Finished clips are saved to your library so you can stitch them into
-          ads.
-        </p>
+        <p className="text-sm font-semibold text-accent-dark">Results</p>
       </div>
 
-      <div className="mt-5 rounded-lg border border-border bg-surface-elevated p-4">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-text-primary">
+      <div className="mt-3 rounded-lg border border-border bg-surface-elevated p-3">
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <p className="min-w-0 truncate text-sm font-semibold text-text-primary">
             {getSwaprGenerationMessage(status)}
           </p>
-          <span className="text-xs font-semibold uppercase text-text-tertiary">
+          <span className="shrink-0 text-xs font-semibold uppercase text-text-tertiary">
             {status}
           </span>
         </div>
         <div className="mt-3">
           <ProgressBar value={progress} />
         </div>
-        {predictionId ? (
-          <p className="mt-3 break-all text-xs text-text-tertiary">
-            Job ID: {predictionId}
-          </p>
-        ) : null}
       </div>
 
       {error ? (
@@ -68,13 +54,15 @@ export function SwaprOutputPanel({
       ) : null}
 
       {generatedClip ? (
-        <div className="mt-5">
-          <VideoPreview
-            src={videoUrl}
-            posterSrc={posterUrl}
-            label={generatedClip.name}
-          />
-          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-4">
+          <div className="mx-auto max-w-[260px]">
+            <VideoPreview
+              src={videoUrl}
+              posterSrc={posterUrl}
+              label={generatedClip.name}
+            />
+          </div>
+          <div className="mt-4 grid min-w-0 gap-3">
             <div className="min-w-0">
               <h3 className="truncate text-sm font-bold text-text-primary">
                 {generatedClip.name}
@@ -83,17 +71,20 @@ export function SwaprOutputPanel({
                 {formatDuration(generatedClip.duration)} saved as UGC
               </p>
             </div>
-            <div className="flex shrink-0 gap-2">
+            <div className="grid min-w-0 grid-cols-2 gap-2">
               {videoUrl ? (
                 <a
                   href={videoUrl}
                   download={`${generatedClip.name}.mp4`}
-                  className="btn-secondary"
+                  className="btn-secondary min-w-0 px-2 text-xs"
                 >
                   Download
                 </a>
               ) : null}
-              <Link href="/dashboard/stitchr" className="btn-primary">
+              <Link
+                href="/dashboard/stitchr"
+                className="btn-primary min-w-0 px-2 text-xs"
+              >
                 <ExternalLink aria-hidden className="h-4 w-4" />
                 Use in Stitchr
               </Link>
@@ -101,8 +92,8 @@ export function SwaprOutputPanel({
           </div>
         </div>
       ) : (
-        <div className="mt-5 flex aspect-[9/16] items-center justify-center rounded-lg border border-dashed border-border bg-slate-50 px-6 text-center text-sm text-text-secondary">
-          Your new UGC clip will appear here after it finishes.
+        <div className="mx-auto mt-4 flex aspect-[9/16] w-full max-w-[260px] items-center justify-center rounded-lg border border-dashed border-border bg-slate-50 px-6 text-center text-sm text-text-secondary">
+          Your swap will appear here.
         </div>
       )}
     </Panel>

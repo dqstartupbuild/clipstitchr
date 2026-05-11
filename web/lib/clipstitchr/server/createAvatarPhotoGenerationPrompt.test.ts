@@ -6,7 +6,7 @@ const variant = {
   locationDescription: "a city sidewalk",
   poseDescription: "walking toward the camera",
   lighting: "natural" as const,
-  style: "selfie" as const,
+  style: "ugc" as const,
 };
 
 describe("createAvatarPhotoGenerationPrompt", () => {
@@ -30,5 +30,16 @@ describe("createAvatarPhotoGenerationPrompt", () => {
     expect(prompt).toContain("new fictional person");
     expect(prompt).toContain("noticeably different facial identity");
     expect(prompt).toContain("Do not clone, preserve, or duplicate");
+  });
+
+  it("requests authentic UGC source photo styling", () => {
+    const prompt = createAvatarPhotoGenerationPrompt({
+      avatarDescription: "short dark hair and oval face",
+      variant,
+    });
+
+    expect(prompt).toContain("creator-style UGC source photo");
+    expect(prompt).toContain("raw source material for a UGC ad");
+    expect(prompt).toContain("not a studio portrait");
   });
 });

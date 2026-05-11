@@ -3,4 +3,5 @@ export type UploadLibraryTab =
   | "ugc"
   | "demo"
   | "swaps"
+  | "swipes"
   | "stitches";

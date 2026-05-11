@@ -11,6 +11,7 @@ import { LibraryPageHeader } from "@/app/_components/dashboard/LibraryPageHeader
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { ACCEPTED_PHOTO_TYPES } from "@/lib/clipstitchr/constants/acceptedPhotoTypes";
+import { DEFAULT_AVATAR_STYLE_OPTION } from "@/lib/clipstitchr/constants/defaultAvatarStyleOption";
 import { useAvatarPhotoGeneration } from "@/lib/clipstitchr/hooks/useAvatarPhotoGeneration";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
@@ -37,7 +38,9 @@ export function AvatarsPageClient() {
   const [lighting, setLighting] =
     useState<AvatarLightingOption>("any");
   const [location, setLocation] = useState("");
-  const [style, setStyle] = useState<AvatarStyleOption>("selfie");
+  const [style, setStyle] = useState<AvatarStyleOption>(
+    DEFAULT_AVATAR_STYLE_OPTION,
+  );
   const visiblePhotos = useMemo(
     () =>
       photoLibrary.photos.filter(
@@ -181,7 +184,6 @@ export function AvatarsPageClient() {
                 newAvatarName={newAvatarName}
                 pendingFileCount={pendingPhotoFiles.length}
                 selectedAvatarId={uploadAvatarId}
-                shouldExpandWithAi={pendingPhotoShouldExpandWithAi}
                 onNewAvatarNameChange={setNewAvatarName}
                 onSave={() => void savePendingPhotoUpload()}
                 onSelectedAvatarIdChange={setUploadAvatarId}

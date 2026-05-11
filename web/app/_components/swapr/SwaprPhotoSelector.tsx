@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { AvatarFilterSelect } from "@/app/_components/avatars/AvatarFilterSelect";
 import { PhotoAssetCard } from "@/app/_components/swapr/PhotoAssetCard";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
-import { Panel } from "@/app/_components/ui/Panel";
 import { clipSelectorPageSize } from "@/lib/clipstitchr/constants/clipSelectorPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
@@ -12,19 +10,15 @@ import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetad
 
 type SwaprPhotoSelectorProps = {
   avatars: Avatar[];
-  avatarFilterId: string;
   photos: PhotoAssetMetadata[];
   selectedPhotoId?: string;
-  onAvatarFilterChange: (avatarId: string) => void;
   onSelect: (photo: PhotoAssetMetadata) => void;
 };
 
 export function SwaprPhotoSelector({
   avatars,
-  avatarFilterId,
   photos,
   selectedPhotoId,
-  onAvatarFilterChange,
   onSelect,
 }: SwaprPhotoSelectorProps) {
   const pagination = usePagination(photos, {
@@ -35,42 +29,37 @@ export function SwaprPhotoSelector({
   );
 
   return (
-    <Panel className="p-5">
-      <div className="flex items-start justify-between gap-4">
+    <section className="min-w-0">
+      <div className="flex items-start gap-3">
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">
+          A
+        </span>
         <div>
-          <p className="text-sm font-semibold text-accent-dark">Your photo</p>
-          <h2 className="mt-2 text-xl font-bold text-text-primary">
-            Pick the person
+          <p className="text-sm font-semibold text-accent-dark">Avatar photo</p>
+          <h2 className="mt-0.5 text-base font-bold text-text-primary">
+            Pick the face
           </h2>
-          <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Choose the avatar photo you want to swap.
+          <p className="mt-1 text-sm leading-6 text-text-secondary">
+            Choose the avatar photo you want to use.
           </p>
         </div>
       </div>
-      <div className="mt-5 max-w-xs">
-        <AvatarFilterSelect
-          avatars={avatars}
-          label="Avatar"
-          value={avatarFilterId}
-          onChange={onAvatarFilterChange}
-        />
-      </div>
-
       {photos.length ? (
         <>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
             {pagination.pageItems.map((photo) => (
-              <PhotoAssetCard
-                key={photo.id}
-                avatarName={
-                  photo.avatarId ? avatarNamesById.get(photo.avatarId) : undefined
-                }
-                photo={photo}
-                isSelected={photo.id === selectedPhotoId}
-                onSelect={onSelect}
-                showDownload={false}
-                showUseInSwapr={false}
-              />
+              <div key={photo.id} className="w-36 shrink-0">
+                <PhotoAssetCard
+                  avatarName={
+                    photo.avatarId ? avatarNamesById.get(photo.avatarId) : undefined
+                  }
+                  photo={photo}
+                  isSelected={photo.id === selectedPhotoId}
+                  onSelect={onSelect}
+                  showDownload={false}
+                  showUseInSwapr={false}
+                />
+              </div>
             ))}
           </div>
           {pagination.totalPages > 1 ? (
@@ -88,7 +77,7 @@ export function SwaprPhotoSelector({
           ) : null}
         </>
       ) : (
-        <div className="mt-5 rounded-lg border border-border bg-surface-elevated p-5">
+        <div className="mt-3 rounded-lg border border-border bg-surface-elevated p-4">
           <h3 className="text-sm font-bold text-text-primary">
             No avatar photos yet
           </h3>
@@ -103,6 +92,6 @@ export function SwaprPhotoSelector({
           </Link>
         </div>
       )}
-    </Panel>
+    </section>
   );
 }

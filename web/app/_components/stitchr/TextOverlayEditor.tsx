@@ -33,7 +33,7 @@ export function TextOverlayEditor({
 
   if (!textOverlay) {
     return (
-      <div className="mt-5 border-t border-border pt-5">
+      <div className="mt-4 border-t border-border pt-4">
         <Button
           type="button"
           variant="secondary"
@@ -47,8 +47,8 @@ export function TextOverlayEditor({
   }
 
   return (
-    <div className="mt-5 border-t border-border pt-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <div className="mt-4 border-t border-border pt-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-accent-dark">Text</p>
           <h3 className="mt-1 text-base font-bold text-text-primary">
@@ -63,7 +63,7 @@ export function TextOverlayEditor({
           onClick={() => onChange(null)}
         />
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         <input
           value={textOverlay.text}
           maxLength={96}
@@ -78,24 +78,26 @@ export function TextOverlayEditor({
             onChange(clampTextOverlay(nextOverlay, totalDuration))
           }
         />
-        <TextOverlayColorPicker
-          textOverlay={textOverlay}
-          onChange={(nextOverlay) =>
-            onChange(clampTextOverlay(nextOverlay, totalDuration))
-          }
-        />
-        <TextOverlayBackgroundColorPicker
-          textOverlay={textOverlay}
-          onChange={(nextOverlay) =>
-            onChange(clampTextOverlay(nextOverlay, totalDuration))
-          }
-        />
-        <TextOverlayStrokeColorPicker
-          textOverlay={textOverlay}
-          onChange={(nextOverlay) =>
-            onChange(clampTextOverlay(nextOverlay, totalDuration))
-          }
-        />
+        <div className="grid gap-3 lg:grid-cols-3">
+          <TextOverlayColorPicker
+            textOverlay={textOverlay}
+            onChange={(nextOverlay) =>
+              onChange(clampTextOverlay(nextOverlay, totalDuration))
+            }
+          />
+          <TextOverlayBackgroundColorPicker
+            textOverlay={textOverlay}
+            onChange={(nextOverlay) =>
+              onChange(clampTextOverlay(nextOverlay, totalDuration))
+            }
+          />
+          <TextOverlayStrokeColorPicker
+            textOverlay={textOverlay}
+            onChange={(nextOverlay) =>
+              onChange(clampTextOverlay(nextOverlay, totalDuration))
+            }
+          />
+        </div>
         <TextOverlayTimeline
           textOverlay={textOverlay}
           totalDuration={totalDuration}

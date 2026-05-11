@@ -8,6 +8,7 @@ import { IconButton } from "@/app/_components/ui/IconButton";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { avatarLightingOptions } from "@/lib/clipstitchr/constants/avatarLightingOptions";
 import { avatarStyleOptions } from "@/lib/clipstitchr/constants/avatarStyleOptions";
+import { DEFAULT_AVATAR_STYLE_OPTION } from "@/lib/clipstitchr/constants/defaultAvatarStyleOption";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { AvatarIdentityMode } from "@/lib/clipstitchr/types/AvatarIdentityMode";
 import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightingOption";
@@ -45,7 +46,9 @@ export function CreateAvatarFromClipDialog({
   const [lighting, setLighting] =
     useState<AvatarLightingOption>("any");
   const [location, setLocation] = useState("");
-  const [style, setStyle] = useState<AvatarStyleOption>("selfie");
+  const [style, setStyle] = useState<AvatarStyleOption>(
+    DEFAULT_AVATAR_STYLE_OPTION,
+  );
   const canCreate =
     avatarDescription.trim().length > 0 && avatarName.trim().length > 0;
 

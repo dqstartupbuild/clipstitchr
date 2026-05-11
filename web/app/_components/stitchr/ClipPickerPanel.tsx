@@ -61,21 +61,22 @@ export function ClipPickerPanel({
   );
 
   return (
-    <Panel className="p-5">
-      <ClipPickerActionBar
-        canStitch={canStitch}
-        selectedUgcCount={selectedUgcIds.length}
-        isStitching={isStitching}
-        onStitch={onStitch}
-      />
-      <SearchInput
-        label="Search clip picker videos"
-        value={searchQuery}
-        onChange={setSearchQuery}
-        placeholder="Search UGC and demo videos"
-        className="mb-5"
-      />
-      <div className="grid gap-6 xl:grid-cols-2">
+    <Panel className="p-4">
+      <div className="mb-4 grid gap-3 border-b border-border pb-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
+        <ClipPickerActionBar
+          canStitch={canStitch}
+          selectedUgcCount={selectedUgcIds.length}
+          isStitching={isStitching}
+          onStitch={onStitch}
+        />
+        <SearchInput
+          label="Search clip picker videos"
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search UGC and demo videos"
+        />
+      </div>
+      <div className="grid gap-4 xl:grid-cols-2">
         <UgcClipSelector
           key={`ugc-${searchQuery}`}
           clips={filteredUgcClips}

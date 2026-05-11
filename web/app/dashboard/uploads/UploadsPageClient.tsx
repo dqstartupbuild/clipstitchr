@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { LibraryPageHeader } from "@/app/_components/dashboard/LibraryPageHeader";
 import { StitchesSection } from "@/app/_components/dashboard/StitchesSection";
+import { SwiprSwipesSection } from "@/app/_components/dashboard/SwiprSwipesSection";
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
 import { VideoLibrarySection } from "@/app/_components/dashboard/VideoLibrarySection";
 import { UploadLibraryTabs } from "@/app/_components/uploads/UploadLibraryTabs";
@@ -13,6 +14,7 @@ import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useCreateAvatarFromUgcClip } from "@/lib/clipstitchr/hooks/useCreateAvatarFromUgcClip";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
+import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -20,6 +22,7 @@ import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsByS
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { filterNonSwaprClips } from "@/lib/clipstitchr/utils/filterNonSwaprClips";
 import { filterStitchesByName } from "@/lib/clipstitchr/utils/filterStitchesByName";
+import { filterSwipesBySearchQuery } from "@/lib/clipstitchr/utils/filterSwipesBySearchQuery";
 import { filterSwaprClips } from "@/lib/clipstitchr/utils/filterSwaprClips";
 import { dispatchHideUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchHideUploadControlsEvent";
 import { getInitialUploadLibraryTab } from "@/lib/clipstitchr/utils/getInitialUploadLibraryTab";
@@ -74,6 +77,7 @@ const videoLibraryContent: Record<
 export function UploadsPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
+  const swiprLibrary = useSwiprLibrary();
   const showUploadControls = useShowUploadControls();
   const avatarCreator = useCreateAvatarFromUgcClip({
     createAvatar: photoLibrary.createAvatar,
@@ -108,8 +112,12 @@ export function UploadsPageClient() {
     () => filterStitchesByName(library.stitches, searchQuery),
     [library.stitches, searchQuery],
   );
+  const swipes = useMemo(
+    () => filterSwipesBySearchQuery(swiprLibrary.swipes, searchQuery),
+    [searchQuery, swiprLibrary.swipes],
+  );
   const hasSearchQuery = searchQuery.trim().length > 0;
-  const error = library.error;
+  const error = library.error ?? swiprLibrary.error;
   const selectedVideoSection =
     selectedTab === "ugc"
       ? { clips: ugcClips, content: videoLibraryContent.ugc }
@@ -181,7 +189,7 @@ export function UploadsPageClient() {
         <LibraryPageHeader
           eyebrow="Library"
           title="Content Library"
-          description="Keep UGC clips, product demos, swaps, and stitches ready for the next ad."
+          description="Keep UGC clips, product demos, swaps, Swipes, and stitches ready for the next ad."
         />
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -294,6 +302,18 @@ export function UploadsPageClient() {
               }
               onDelete={library.removeStitch}
             />
+            <SwiprSwipesSection
+              key={`all-swipes-${searchQuery}`}
+              backgrounds={swiprLibrary.backgrounds}
+              swipes={swipes}
+              emptyTitle={hasSearchQuery ? "No matching Swipes" : undefined}
+              emptyDescription={
+                hasSearchQuery
+                  ? "No saved Swipes match that search."
+                  : undefined
+              }
+              onDelete={swiprLibrary.removeSwipe}
+            />
           </div>
         ) : null}
         {selectedVideoSection ? (
@@ -338,6 +358,20 @@ export function UploadsPageClient() {
                 : undefined
             }
             onDelete={library.removeStitch}
+          />
+        ) : null}
+        {selectedTab === "swipes" ? (
+          <SwiprSwipesSection
+            key={`swipes-${searchQuery}`}
+            backgrounds={swiprLibrary.backgrounds}
+            swipes={swipes}
+            emptyTitle={hasSearchQuery ? "No matching Swipes" : undefined}
+            emptyDescription={
+              hasSearchQuery
+                ? "No saved Swipes match that search."
+                : undefined
+            }
+            onDelete={swiprLibrary.removeSwipe}
           />
         ) : null}
       </div>

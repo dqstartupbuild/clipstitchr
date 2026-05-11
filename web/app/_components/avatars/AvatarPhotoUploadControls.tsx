@@ -12,7 +12,6 @@ type AvatarPhotoUploadControlsProps = {
   newAvatarName: string;
   pendingFileCount: number;
   selectedAvatarId: string;
-  shouldExpandWithAi: boolean;
   onNewAvatarNameChange: (name: string) => void;
   onSave: () => void;
   onSelectedAvatarIdChange: (id: string) => void;
@@ -25,7 +24,6 @@ export function AvatarPhotoUploadControls({
   newAvatarName,
   pendingFileCount,
   selectedAvatarId,
-  shouldExpandWithAi,
   onNewAvatarNameChange,
   onSave,
   onSelectedAvatarIdChange,

@@ -23,7 +23,7 @@ export function SwiprSlideStrip({
             type="button"
             aria-pressed={isActive}
             className={[
-              "min-h-14 w-32 shrink-0 rounded-lg border bg-white p-2.5 text-left transition-colors",
+              "min-h-12 w-28 shrink-0 rounded-lg border bg-white p-2 text-left transition-colors",
               isActive
                 ? "border-accent shadow-sm shadow-indigo-100"
                 : "border-border hover:border-accent",

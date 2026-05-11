@@ -83,12 +83,18 @@ The Avatars dashboard page must provide an avatar selector dropdown for browsing
 
 The Swapr photo selector must also provide an avatar selector dropdown, with `All avatars` as the default, so users can narrow the selectable images to one avatar.
 
+## Swapr Source Videos
+
+Swapr can use saved UGC clips and finished stitches as source motion. Product
+demo videos are not valid Swapr source videos and must not appear in the Swapr
+source selector or receive a `Use in Swapr` action.
+
 ## Generation Flow
 
 The avatar photo generation UI supports:
 
 - output count: `3`, `5`, or `10`
-- style dropdown
+- style dropdown with `UGC` as the default style
 - lighting dropdown
 - optional location/scenario input
 - optional context input for what the avatar should be doing or how they should pose

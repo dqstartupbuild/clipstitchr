@@ -5,6 +5,9 @@ import { clipTypeValidator } from "./validators/clipType";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
 import { replicatePredictionStatusValidator } from "./validators/replicatePredictionStatus";
+import { swiprBackgroundSourceValidator } from "./validators/swiprBackgroundSource";
+import { swiprProductSourceTypeValidator } from "./validators/swiprProductSourceType";
+import { swiprSlideValidator } from "./validators/swiprSlide";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
 import { textOverlayValidator } from "./validators/textOverlay";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
@@ -123,6 +126,38 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
+  swiprBackgrounds: defineTable({
+    id: v.string(),
+    uploadedByOwnerId: v.string(),
+    name: v.string(),
+    tags: assetTagsValidator,
+    description: v.optional(v.string()),
+    details: v.optional(v.string()),
+    source: swiprBackgroundSourceValidator,
+    imageObject: r2ObjectValidator,
+    mimeType: v.string(),
+    size: v.number(),
+    width: v.number(),
+    height: v.number(),
+    createdAt: v.string(),
+  })
+    .index("by_created", ["createdAt"])
+    .index("by_background_id", ["id"]),
+  swipes: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    name: v.string(),
+    productSourceType: swiprProductSourceTypeValidator,
+    productSourceId: v.string(),
+    productContext: v.string(),
+    productName: v.string(),
+    backgroundId: v.string(),
+    slides: v.array(swiprSlideValidator),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_updated", ["ownerId", "updatedAt"])
+    .index("by_owner_id", ["ownerId", "id"]),
   replicateJobs: defineTable({
     ownerId: v.string(),
     predictionId: v.string(),
@@ -136,11 +171,4 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_prediction", ["ownerId", "predictionId"]),
-  workspaceSettings: defineTable({
-    ownerId: v.string(),
-    productDetails: v.string(),
-    audienceDetails: v.string(),
-    createdAt: v.string(),
-    updatedAt: v.string(),
-  }).index("by_owner", ["ownerId"]),
 });

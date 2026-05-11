@@ -4,6 +4,7 @@ export const avatarStyleOptions: {
   label: string;
   value: AvatarStyleOption;
 }[] = [
+  { label: "UGC", value: "ugc" },
   { label: "Selfie Style", value: "selfie" },
   { label: "Photo Style", value: "photo" },
   { label: "Candid Style", value: "candid" },

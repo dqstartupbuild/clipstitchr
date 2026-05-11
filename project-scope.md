@@ -177,23 +177,27 @@ main product promise.
 ### 4.6 Carousel Generation
 
 Swipr creates TikTok-ready static carousel image sets. The MVP uses browser-local
-canvas rendering for final export: one selected, local starter, or Image 2.0 AI
-generated background image is reused across every image, and each image has its
-own text overlay using the same styling, color, drag, and resize model as
-Stitchr text overlays. Saved Settings products provide the preferred Swipr AI
-background context: users can save multiple named products with product and
-audience details, and server-side GPT-4.1 enrichment stores hidden inferred
-problem and audience pain-point metadata for generation prompts.
+canvas rendering for final export: one selected shared Background Library image
+is reused across every image, and each image has its own text overlay using the
+same styling, color, drag, and resize model as Stitchr text overlays. Saved
+Swipes persist the editable carousel state, not rendered PNG images, so users can
+reopen a Swipe, swap or upload/generate a different background, change text, and
+download the latest saved version later. Saved Settings products provide the
+preferred Swipr AI background context: users can save multiple named products
+with product and audience details, and server-side GPT-4.1 enrichment stores
+hidden inferred problem and audience pain-point metadata for generation prompts.
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
-| 1 | User selects a saved Settings product, selects a saved demo, or enters a custom product context | ✅ | ✅ |
+| 1 | User selects a saved Settings product for the Swipr product context | ✅ | ✅ |
 | 2 | User chooses 3-8 carousel images | ✅ | ✅ |
-| 3 | User uploads one background image, generates one local starter background, or creates one rate-limited Image 2.0 AI background | ✅ | ✅ |
+| 3 | User selects a shared saved background, uploads one background image, or creates one rate-limited Image 2.0 AI background | ✅ | ✅ |
 | 4 | One background image is reused across every rendered carousel image | ✅ | ✅ |
 | 5 | User adds and positions text independently on each image | ✅ | ✅ |
 | 6 | Browser renders 9:16 PNG images and downloads them as one ZIP file | ✅ | ✅ |
-| 7 | Pinterest or stock-library provider integration | — | ✅ |
+| 7 | Saved Swipes appear in the Content Library Swipes tab and download from saved editable state | ✅ | ✅ |
+| 8 | Uploaded/generated backgrounds save to shared R2-backed Background Library with hidden GPT-4.1-mini search metadata | ✅ | ✅ |
+| 9 | Pinterest or stock-library provider integration | — | ✅ |
 
 ---
 
@@ -204,9 +208,9 @@ problem and audience pain-point metadata for generation prompts.
 /dashboard       → Authenticated main workspace
 /dashboard/stitchr → Authenticated Stitchr video stitching interface
 /dashboard/swipr → Authenticated TikTok carousel image generator
-/dashboard/swapr → Authenticated AI motion-transfer studio using saved photos and UGC clips
+/dashboard/swapr → Authenticated AI motion-transfer studio using saved photos with UGC clips or finished stitches
 /dashboard/avatars → Authenticated avatar photo library with hidden-until-requested photo upload controls, avatar assignment, descriptions, and AI scenario photo generation
-/dashboard/uploads → Authenticated Content Library with All, UGC, Demo, Swaps, and Stitches tabs; UGC/Demo upload controls open from the header upload selector
+/dashboard/uploads → Authenticated Content Library with All, UGC, Demo, Swaps, Swipes, and Stitches tabs; UGC/Demo upload controls open from the header upload selector
 /dashboard/stitches → Compatibility redirect to `/dashboard/uploads?tab=stitches`
 ```
 
@@ -453,7 +457,7 @@ interface Stitch {
 ### Phase 4 — Secondary AI-Assisted Content Supply and Editing
 
 - [ ] Video trimming & cutting tools
-- [ ] Swapr — upload saved avatar photos, create scenario photos, choose existing UGC clips, and generate AI motion-transfer UGC outputs through Replicate
+- [ ] Swapr — upload saved avatar photos, create scenario photos, choose existing UGC clips or finished stitches, and generate AI motion-transfer UGC outputs through Replicate
 - [ ] AI video analysis to detect optimal trim/cut points (e.g., scene changes, pauses, energy peaks)
 - [ ] AI-suggested highlights — automatically surface the best moments from UGC clips
 - [ ] Smart auto-edit — one-click to trim dead air, awkward pauses, or low-energy segments

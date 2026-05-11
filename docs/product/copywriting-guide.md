@@ -38,8 +38,10 @@ Use this order for most marketing pages:
 1. Pain: clips pile up, editing blocks output.
 2. Promise: turn existing clips into finished ads quickly.
 3. Workflow: upload, organize, stitch, export.
-4. Scale: make more variants from the same library.
-5. AI: optional help when users need more source content.
+4. Secondary output: use Swipr for carousel posts when slides fit the channel
+   better than video.
+5. Scale: make more variants from the same library.
+6. AI: optional help when users need more source content.
 
 ## Primary Headline Patterns
 
@@ -76,6 +78,7 @@ Write feature copy around user outcomes:
 | Upload normalization | Every clip becomes ready for vertical ad output. |
 | Content Library | Keep UGC, demos, swaps, and stitches in one searchable place. |
 | Stitchr | Pair up to 20 UGC clips with one product demo and create finished ads. |
+| Swipr | Create carousel posts, save the draft, and come back to revise or download it later. |
 | Trim ranges | Cut dead space without damaging the original clip. |
 | Posters | Recognize clips quickly without opening every file. |
 | AI avatar photos | Create more source material when you need it. |
@@ -142,6 +145,10 @@ more finished creative so they can test faster.
   allows.
 - For batch Stitchr flows, say "selected UGC clips" and "selected demo" so the
   one-demo-to-many-UGC relationship stays clear.
+- For Swipr flows, say "carousel posts," "slides," "looks," and "ready to
+  publish" before naming implementation details.
+- Describe Swipr as a way to create, save, edit, and download carousels.
+- Avoid naming internal storage or setup choices in marketing copy.
 - Keep buttons action-oriented: `Upload Clips`, `Create Stitch`, `Save Trim`.
 - Avoid making users feel judged for having messy files or inconsistent posting.
 - Avoid over-explaining AI in primary workflows.
@@ -158,6 +165,8 @@ more finished creative so they can test faster.
 - reuse
 - export
 - test creative
+- carousel posts
+- slides
 
 ## Words To Use Carefully
 

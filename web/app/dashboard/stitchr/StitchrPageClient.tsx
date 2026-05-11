@@ -297,8 +297,8 @@ export function StitchrPageClient() {
           </div>
         ) : null}
         {ugcClips.length && demoClips.length ? (
-          <div className="grid gap-6 xl:grid-cols-[1fr_390px]">
-            <div className="flex flex-col gap-6">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
+            <div className="flex min-w-0 flex-col gap-5">
               <ClipPickerPanel
                 ugcClips={ugcClips}
                 demoClips={demoClips}
@@ -324,17 +324,19 @@ export function StitchrPageClient() {
               />
               <DownloadStitchesPanel stitches={stitchrState.stitches} />
             </div>
-            <SequencePreviewPanel
-              previewUgcClips={selectedUgcMetadata}
-              activeUgcId={activeUgcMetadata?.id ?? null}
-              ugcClip={selectedUgcClip}
-              demoClip={selectedDemoClip}
-              ugcTrimRange={selectedUgcTrimRange}
-              demoTrimRange={selectedDemoTrimRange}
-              textOverlay={clampedTextOverlay}
-              onActiveUgcChange={handleActiveUgcChange}
-              onTextOverlayChange={setTextOverlay}
-            />
+            <div className="min-w-0 w-full max-w-[340px] justify-self-center xl:sticky xl:top-5 xl:justify-self-end">
+              <SequencePreviewPanel
+                previewUgcClips={selectedUgcMetadata}
+                activeUgcId={activeUgcMetadata?.id ?? null}
+                ugcClip={selectedUgcClip}
+                demoClip={selectedDemoClip}
+                ugcTrimRange={selectedUgcTrimRange}
+                demoTrimRange={selectedDemoTrimRange}
+                textOverlay={clampedTextOverlay}
+                onActiveUgcChange={handleActiveUgcChange}
+                onTextOverlayChange={setTextOverlay}
+              />
+            </div>
           </div>
         ) : (
           <StitchrEmptyState />

@@ -1,6 +1,7 @@
 import {
   Download,
   FolderSearch,
+  Images,
   Ratio,
   Scissors,
   Shuffle,
@@ -28,6 +29,12 @@ const features = [
     description:
       "Keep UGC, demos, AI clips, and finished stitches in one place.",
     icon: FolderSearch,
+  },
+  {
+    title: "Save carousel drafts",
+    description:
+      "Use Swipr to create slides, come back to revise them, and download the version you are ready to publish.",
+    icon: Images,
   },
   {
     title: "Stitch UGC to demos",

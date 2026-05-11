@@ -1,4 +1,4 @@
-import { Scissors, Shuffle } from "lucide-react";
+import { Images, Scissors, Shuffle } from "lucide-react";
 import { Panel } from "@/app/_components/ui/Panel";
 
 const studios = [
@@ -18,6 +18,14 @@ const studios = [
     caption: "We call these 'Swaps'.",
     icon: Shuffle,
   },
+  {
+    eyebrow: "Swipr",
+    title: "Make carousel posts when video is not the move.",
+    description:
+      "Start with a product idea, choose a look, edit the slides, and save the carousel so you can come back to it before downloading.",
+    caption: "We call these 'Swipes'.",
+    icon: Images,
+  },
 ];
 
 export function LandingStudioSection() {
@@ -33,7 +41,7 @@ export function LandingStudioSection() {
             the library.
           </h2>
         </div>
-        <div className="mt-8 grid gap-4 lg:grid-cols-2">
+        <div className="mt-8 grid gap-4 lg:grid-cols-3">
           {studios.map((studio) => {
             const Icon = studio.icon;
 

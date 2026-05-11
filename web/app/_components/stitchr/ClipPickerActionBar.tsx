@@ -20,10 +20,10 @@ export function ClipPickerActionBar({
     selectedUgcCount > 1 ? `Stitch ${selectedUgcCount} ads` : "Stitch";
 
   return (
-    <div className="mb-5 flex flex-col gap-4 border-b border-border pb-5 md:flex-row md:items-center md:justify-between">
+    <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
       <div>
         <p className="text-sm font-semibold text-accent-dark">Stitchr</p>
-        <h2 className="mt-2 text-lg font-bold text-text-primary">
+        <h2 className="mt-0.5 text-base font-bold text-text-primary">
           Stitch selected clips
         </h2>
       </div>

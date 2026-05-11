@@ -23,6 +23,7 @@ import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
+import { getClipCanUseInSwapr } from "@/lib/clipstitchr/utils/getClipCanUseInSwapr";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
 import { getUseInStitchrHref } from "@/lib/clipstitchr/utils/getUseInStitchrHref";
 import { getUseInSwaprClipHref } from "@/lib/clipstitchr/utils/getUseInSwaprClipHref";
@@ -102,7 +103,7 @@ export function VideoClipCard({
               href={getUseInStitchrHref(clip)}
               icon={<Scissors aria-hidden className="h-4 w-4" />}
             />
-            {clip.clipType === "demo" ? (
+            {getClipCanUseInSwapr(clip) ? (
               <IconButtonLink
                 label="Use in Swapr"
                 href={getUseInSwaprClipHref(clip)}

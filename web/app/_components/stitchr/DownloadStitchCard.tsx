@@ -15,7 +15,7 @@ export function DownloadStitchCard({ stitch }: DownloadStitchCardProps) {
   const posterUrl = useObjectUrl(stitch.posterBlob);
 
   return (
-    <div className="grid gap-3 rounded-lg border border-border bg-white p-3 sm:grid-cols-[72px_1fr_auto] sm:items-center">
+    <div className="grid min-w-0 gap-3 overflow-hidden rounded-lg border border-border bg-white p-3 sm:grid-cols-[72px_minmax(0,1fr)_auto] sm:items-center">
       <div
         aria-label={stitch.name}
         role="img"

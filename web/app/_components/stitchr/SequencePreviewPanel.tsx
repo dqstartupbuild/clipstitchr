@@ -91,10 +91,10 @@ export function SequencePreviewPanel({
   });
 
   return (
-    <Panel className="p-5">
-      <div className="mb-4">
+    <Panel className="mx-auto w-full max-w-[340px] p-3 xl:mx-0">
+      <div className="mb-3">
         <p className="text-sm font-semibold text-accent-dark">Preview</p>
-        <h2 className="mt-2 text-xl font-bold text-text-primary">
+        <h2 className="mt-0.5 text-base font-bold text-text-primary">
           Ad sequence
         </h2>
       </div>

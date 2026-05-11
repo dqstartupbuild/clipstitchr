@@ -6,7 +6,6 @@ import { TextOverlayColorPicker } from "@/app/_components/stitchr/TextOverlayCol
 import { TextOverlayStrokeColorPicker } from "@/app/_components/stitchr/TextOverlayStrokeColorPicker";
 import { TextOverlayStylePicker } from "@/app/_components/stitchr/TextOverlayStylePicker";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { Panel } from "@/app/_components/ui/Panel";
 import { SWIPR_STATIC_DURATION } from "@/lib/clipstitchr/constants/swiprStaticDuration";
 import type { SwiprSlide } from "@/lib/clipstitchr/types/SwiprSlide";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -25,11 +24,11 @@ export function SwiprTextOverlayPanel({
 }: SwiprTextOverlayPanelProps) {
   if (!activeSlide) {
     return (
-      <Panel className="p-4">
+      <section className="border-t border-border pt-4 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
         <p className="text-sm font-semibold text-text-secondary">
           Select an image to edit text.
         </p>
-      </Panel>
+      </section>
     );
   }
 
@@ -39,7 +38,7 @@ export function SwiprTextOverlayPanel({
   };
 
   return (
-    <Panel className="p-4">
+    <section className="border-t border-border pt-4 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-accent-dark">Text</p>
@@ -69,19 +68,21 @@ export function SwiprTextOverlayPanel({
           textOverlay={textOverlay}
           onChange={handleChange}
         />
-        <TextOverlayColorPicker
-          textOverlay={textOverlay}
-          onChange={handleChange}
-        />
-        <TextOverlayBackgroundColorPicker
-          textOverlay={textOverlay}
-          onChange={handleChange}
-        />
-        <TextOverlayStrokeColorPicker
-          textOverlay={textOverlay}
-          onChange={handleChange}
-        />
+        <div className="grid gap-3 lg:grid-cols-3">
+          <TextOverlayColorPicker
+            textOverlay={textOverlay}
+            onChange={handleChange}
+          />
+          <TextOverlayBackgroundColorPicker
+            textOverlay={textOverlay}
+            onChange={handleChange}
+          />
+          <TextOverlayStrokeColorPicker
+            textOverlay={textOverlay}
+            onChange={handleChange}
+          />
+        </div>
       </div>
-    </Panel>
+    </section>
   );
 }

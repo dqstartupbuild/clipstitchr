@@ -53,7 +53,6 @@ export function SequenceVideoPlayer({
     ugcTrimRange,
     demoTrimRange,
   });
-  const activeName = activeSegment === "ugc" ? ugcClip.name : demoClip.name;
   const progressValue = Math.min(currentTime, totalDuration);
 
   useEffect(() => {
@@ -64,7 +63,7 @@ export function SequenceVideoPlayer({
     <div>
       <div
         ref={stageRef}
-        className="relative aspect-[9/16] overflow-hidden rounded-lg bg-slate-950"
+        className="relative mx-auto aspect-[9/16] w-full max-w-[292px] overflow-hidden rounded-lg bg-slate-950"
         style={{ containerType: "size" }}
       >
         {ugcUrl && demoUrl ? (
@@ -114,13 +113,7 @@ export function SequenceVideoPlayer({
           />
         ) : null}
       </div>
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-text-primary">{activeName}</p>
-          <p className="mt-1 text-xs text-text-tertiary">
-            Playing {activeSegment.toUpperCase()}
-          </p>
-        </div>
+      <div className="mt-3 flex justify-end">
         <div className="flex items-center gap-2">
           <IconButton
             type="button"
@@ -142,7 +135,7 @@ export function SequenceVideoPlayer({
           />
         </div>
       </div>
-      <div className="mt-4 flex items-center gap-3">
+      <div className="mt-3 flex items-center gap-3">
         <input
           type="range"
           aria-label="Preview time"

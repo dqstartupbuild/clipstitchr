@@ -76,7 +76,10 @@ Optional Replicate model overrides:
 | R2 upload bytes | `POST /api/r2/upload-url` | 10 GB/day/user; 500 GB/30 days/user |
 | R2 download signed URL | `POST /api/r2/download-url` | 5,000/hour/user, burst 1,000 |
 | R2 deletes | `POST /api/r2/delete-objects` | 2,000 objects/hour/user, burst 500 |
+| Shared Swipr background R2 upload signed URL | `POST /api/swipr/backgrounds/upload-url` | Uses the R2 upload signed URL and byte limits before creating a shared-background PUT URL |
+| Shared Swipr background R2 download signed URL | `POST /api/swipr/backgrounds/download-url` | Uses the R2 download signed URL limit after validating the shared background exists |
 | Upload image metadata analysis | `POST /api/uploads/analyze` for avatar/photo images and video fallback posters | 300/hour/user, burst 100; 10,000/30 days/user; global 6,000/hour |
+| Swipr background metadata analysis | `POST /api/swipr/backgrounds/analyze` | Uses the upload image metadata analysis limits before calling GPT-4.1 mini through Replicate |
 | Upload video action analysis | `POST /api/uploads/analyze` for UGC/demo videos | 60/hour/user, burst 20; 1,500/30 days/user; global 1,000/hour. Gemini full-video analysis runs first for videos up to 100 MB; OpenAI poster analysis is the fallback when Gemini fails or the video exceeds the analysis size cap. |
 | Swapr photo expansion | `POST /api/swapr/photos/expand` | 10/hour/user, burst 5; 20/day/user; 375/30 days/user; global 300/hour |
 | Swapr video job create | `POST /api/swapr/jobs` | 2/hour/user, burst 2; 5/day/user; 500 estimated output seconds/30 days/user; global 300/hour |
@@ -87,24 +90,33 @@ Optional Replicate model overrides:
 | Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 5; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
 | Product enrichment | `POST /api/settings/products` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
-| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save` | 3,000/hour/user, burst 500 |
-| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `workspaceSettings.save` | 5,000/hour/user, burst 1,000 |
+| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `swiprBackgrounds.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
+| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
 
 ## Local-Only Workflows
 
-Swipr carousel export is intentionally not rate-limited in the MVP because it
-does not call a server route, signed URL flow, Convex mutation, or paid provider.
-The browser renders 9:16 PNG images with Canvas and creates a local ZIP download.
+Swipr carousel export is intentionally not rate-limited in the MVP because the
+browser renders saved editable Swipe state into 9:16 PNG images with Canvas and
+creates a local ZIP download. Saved Swipes store only Convex metadata, slide
+text overlay state, and a shared background reference; rendered carousel images
+are not persisted.
+
 Swipr AI background generation is separate from export: it calls Replicate GPT
 Image 2 through `POST /api/swipr/backgrounds/generate`, consumes the dedicated
 Swipr AI background limits before creating the prediction, requests low-quality
 generation by default for speed, and streams the generated image back to the
-browser without saving it to R2. If Swipr later adds Pinterest, a stock-media
-provider, or saved generated background objects, those provider and storage flows
-must be server-side and rate-limited before any external request or signed asset
-flow starts.
+browser. The client then analyzes the generated image through
+`POST /api/swipr/backgrounds/analyze`, uploads it through
+`POST /api/swipr/backgrounds/upload-url`, and saves the shared background
+metadata through `swiprBackgrounds.save`.
+
+Uploaded Swipr backgrounds use the same analysis, shared R2 upload, and
+`swiprBackgrounds.save` path. Shared backgrounds live under a shared R2 key
+prefix and are downloadable by authenticated users through the Swipr background
+download route after Convex validation. They are intentionally not user-deletable
+through the shared background model.
 
 Settings product saves call Replicate GPT-4.1 through `POST /api/settings/products`
 to infer hidden product strategy metadata before saving the product to Convex.
