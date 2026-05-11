@@ -191,6 +191,25 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 100,
     shards: 10,
   },
+  replicateProductEnrichment: {
+    kind: "token bucket",
+    rate: 100,
+    period: HOUR,
+    capacity: 20,
+  },
+  replicateProductEnrichmentMonthly: {
+    kind: "token bucket",
+    rate: 2000,
+    period: MONTH,
+    capacity: 2000,
+  },
+  replicateProductEnrichmentGlobal: {
+    kind: "token bucket",
+    rate: 5000,
+    period: HOUR,
+    capacity: 500,
+    shards: 10,
+  },
   avatarCascadeDelete: {
     kind: "token bucket",
     rate: 100,

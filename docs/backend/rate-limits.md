@@ -65,6 +65,8 @@ Optional Replicate model overrides:
   `google/gemini-3-flash` for full-video UGC/demo action analysis.
 - `SWIPR_BACKGROUND_MODEL_ID` defaults to `openai/gpt-image-2` for Swipr AI
   background generation.
+- `PRODUCT_ENRICHMENT_MODEL_ID` defaults to `openai/gpt-4.1` for hidden product
+  strategy enrichment when saving products in Settings.
 
 ## Enforcement Map
 
@@ -83,8 +85,9 @@ Optional Replicate model overrides:
 | Swapr output proxy | `GET /api/swapr/output` | 1,000/hour/user, burst 200 |
 | Avatar photo generation | `POST /api/avatars/photos/generate` from the Avatars page or UGC clip avatar action | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour |
 | Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 5; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
+| Product enrichment | `POST /api/settings/products` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
-| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `stitches.save` | 3,000/hour/user, burst 500 |
+| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save` | 3,000/hour/user, burst 500 |
 | Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `workspaceSettings.save` | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
@@ -96,15 +99,18 @@ does not call a server route, signed URL flow, Convex mutation, or paid provider
 The browser renders 9:16 PNG images with Canvas and creates a local ZIP download.
 Swipr AI background generation is separate from export: it calls Replicate GPT
 Image 2 through `POST /api/swipr/backgrounds/generate`, consumes the dedicated
-Swipr AI background limits before creating the prediction, and streams the
-generated image back to the browser without saving it to R2. If Swipr later adds
-Pinterest, a stock-media provider, or saved generated background objects, those
-provider and storage flows must be server-side and rate-limited before any
-external request or signed asset flow starts.
+Swipr AI background limits before creating the prediction, requests low-quality
+generation by default for speed, and streams the generated image back to the
+browser without saving it to R2. If Swipr later adds Pinterest, a stock-media
+provider, or saved generated background objects, those provider and storage flows
+must be server-side and rate-limited before any external request or signed asset
+flow starts.
 
-Workspace settings are rate-limited through the shared Convex metadata update
-limit. The settings page only stores product and audience text in Convex; it
-does not call R2, Replicate, or another paid provider.
+Settings product saves call Replicate GPT-4.1 through `POST /api/settings/products`
+to infer hidden product strategy metadata before saving the product to Convex.
+The route consumes the product enrichment limit before creating the prediction,
+then `products.create` consumes the shared Convex record-save limit before the
+database write.
 
 ## Client Batch Caps
 

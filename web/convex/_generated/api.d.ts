@@ -12,6 +12,7 @@ import type * as auth_assertRateLimitApiSecret from "../auth/assertRateLimitApiS
 import type * as auth_getAuthenticatedOwnerId from "../auth/getAuthenticatedOwnerId.js";
 import type * as avatars from "../avatars.js";
 import type * as photoAssets from "../photoAssets.js";
+import type * as products from "../products.js";
 import type * as rateLimiter from "../rateLimiter.js";
 import type * as rateLimits from "../rateLimits.js";
 import type * as replicateJobs from "../replicateJobs.js";
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   "auth/getAuthenticatedOwnerId": typeof auth_getAuthenticatedOwnerId;
   avatars: typeof avatars;
   photoAssets: typeof photoAssets;
+  products: typeof products;
   rateLimiter: typeof rateLimiter;
   rateLimits: typeof rateLimits;
   replicateJobs: typeof replicateJobs;

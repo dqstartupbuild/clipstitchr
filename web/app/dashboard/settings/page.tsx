@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `Settings | ${site.name}`,
   description:
-    "Manage ClipStitchr workspace settings, product context, audience context, support, and subscription controls.",
+    "Manage ClipStitchr product profiles, support, subscription controls, and workspace settings.",
   canonical: "/dashboard/settings",
   noIndex: true,
 });

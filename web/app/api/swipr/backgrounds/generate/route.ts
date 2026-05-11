@@ -61,7 +61,7 @@ export async function POST(request: Request) {
         aspect_ratio: "2:3",
         number_of_images: 1,
         output_format: "jpeg",
-        quality: "medium",
+        quality: "low",
         background: "opaque",
         moderation: "auto",
       },

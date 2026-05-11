@@ -87,6 +87,19 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
+  products: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    name: v.string(),
+    productDetails: v.string(),
+    audienceDetails: v.string(),
+    inferredProblem: v.optional(v.string()),
+    inferredPainPoints: v.array(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"]),
   stitches: defineTable({
     ownerId: v.string(),
     id: v.string(),

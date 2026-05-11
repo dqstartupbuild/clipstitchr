@@ -164,7 +164,7 @@ export function CreateAvatarFromClipDialog({
                 {(
                   [
                     ["similar", "Similar but different"],
-                    ["same", "Source person"],
+                    ["same", "Same person"],
                   ] as const
                 ).map(([mode, label]) => (
                   <button

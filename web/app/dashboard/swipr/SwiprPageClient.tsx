@@ -15,8 +15,8 @@ import { SWIPR_MIN_SLIDE_COUNT } from "@/lib/clipstitchr/constants/swiprSlideCou
 import { SWIPR_STATIC_DURATION } from "@/lib/clipstitchr/constants/swiprStaticDuration";
 import { generateSwiprBackgroundWithAi } from "@/lib/clipstitchr/client/generateSwiprBackgroundWithAi";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
+import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
-import { useWorkspaceSettings } from "@/lib/clipstitchr/hooks/useWorkspaceSettings";
 import { createSwiprBackgroundBlob } from "@/lib/clipstitchr/media/createSwiprBackgroundBlob";
 import type { SwiprBackground } from "@/lib/clipstitchr/types/SwiprBackground";
 import type { SwiprBackgroundPresetId } from "@/lib/clipstitchr/types/SwiprBackgroundPresetId";
@@ -25,11 +25,14 @@ import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { createSwiprSlides } from "@/lib/clipstitchr/utils/createSwiprSlides";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { getClampedSwiprSlideCount } from "@/lib/clipstitchr/utils/getClampedSwiprSlideCount";
+import { getProductSwiprContext } from "@/lib/clipstitchr/utils/getProductSwiprContext";
+import { getSwiprSavedProductIdFromOptionValue } from "@/lib/clipstitchr/utils/getSwiprSavedProductIdFromOptionValue";
+import { getSwiprSavedProductOptionValue } from "@/lib/clipstitchr/utils/getSwiprSavedProductOptionValue";
 import { resizeSwiprSlides } from "@/lib/clipstitchr/utils/resizeSwiprSlides";
 
 export function SwiprPageClient() {
   const library = useClipLibrary();
-  const workspaceSettings = useWorkspaceSettings();
+  const products = useProducts();
   const exporter = useSwiprExport();
   const demoClips = useMemo(
     () => filterClipsByType(library.clips, "demo"),
@@ -38,13 +41,15 @@ export function SwiprPageClient() {
   const productOptions = useMemo(
     () => [
       { value: SWIPR_CUSTOM_PRODUCT_ID, label: "Custom product" },
+      ...products.products.map((product) => ({
+        value: getSwiprSavedProductOptionValue(product.id),
+        label: product.name,
+      })),
       ...demoClips.map((clip) => ({ value: clip.id, label: clip.name })),
     ],
-    [demoClips],
+    [demoClips, products.products],
   );
-  const [selectedProductId, setSelectedProductId] = useState(
-    SWIPR_CUSTOM_PRODUCT_ID,
-  );
+  const [selectedProductId, setSelectedProductId] = useState<string>();
   const [customProductContext, setCustomProductContext] = useState("");
   const [slideCount, setSlideCount] = useState(SWIPR_MIN_SLIDE_COUNT);
   const [slides, setSlides] = useState(() =>
@@ -60,32 +65,32 @@ export function SwiprPageClient() {
   const [isGeneratingBackground, setIsGeneratingBackground] = useState(false);
   const [isGeneratingAiBackground, setIsGeneratingAiBackground] =
     useState(false);
+  const defaultSavedProductId = products.products[0]
+    ? getSwiprSavedProductOptionValue(products.products[0].id)
+    : SWIPR_CUSTOM_PRODUCT_ID;
+  const activeProductId = selectedProductId ?? defaultSavedProductId;
+  const selectedSavedProductId =
+    getSwiprSavedProductIdFromOptionValue(activeProductId);
+  const selectedSavedProduct = selectedSavedProductId
+    ? products.products.find((product) => product.id === selectedSavedProductId)
+    : undefined;
   const selectedDemo = useMemo(
-    () => demoClips.find((clip) => clip.id === selectedProductId),
-    [demoClips, selectedProductId],
+    () => demoClips.find((clip) => clip.id === activeProductId),
+    [activeProductId, demoClips],
   );
-  const workspaceProductContext =
-    workspaceSettings.settings?.productDetails.trim() ?? "";
-  const workspaceAudienceContext =
-    workspaceSettings.settings?.audienceDetails.trim() ?? "";
-  const workspaceSwiprContext = [
-    workspaceProductContext,
-    workspaceAudienceContext
-      ? `Audience: ${workspaceAudienceContext}`
-      : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
   const productContext =
-    selectedProductId === SWIPR_CUSTOM_PRODUCT_ID
-      ? customProductContext.trim() || workspaceSwiprContext
+    activeProductId === SWIPR_CUSTOM_PRODUCT_ID
+      ? customProductContext.trim()
+      : selectedSavedProduct
+        ? getProductSwiprContext(selectedSavedProduct)
       : (selectedDemo?.name ?? "");
   const effectiveProductContext = productContext || "Product";
   const exportProductName =
-    selectedProductId === SWIPR_CUSTOM_PRODUCT_ID
+    activeProductId === SWIPR_CUSTOM_PRODUCT_ID
       ? customProductContext.trim() ||
-        workspaceProductContext.slice(0, 80) ||
         "Product"
+      : selectedSavedProduct
+        ? selectedSavedProduct.name
       : (selectedDemo?.name ?? "Product");
   const activeSlideIndex = Math.max(
     0,
@@ -214,9 +219,9 @@ export function SwiprPageClient() {
           description="Build 3-8 vertical images from one reusable background and per-image text overlays."
         />
 
-        {library.error || workspaceSettings.error || backgroundError ? (
+        {library.error || products.error || backgroundError ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {library.error ?? workspaceSettings.error ?? backgroundError}
+            {library.error ?? products.error ?? backgroundError}
           </div>
         ) : null}
 
@@ -224,7 +229,7 @@ export function SwiprPageClient() {
           <div className="order-2 flex min-w-0 flex-col gap-4 xl:order-1">
             <SwiprProductPanel
               productOptions={productOptions}
-              selectedProductId={selectedProductId}
+              selectedProductId={activeProductId}
               customProductContext={customProductContext}
               slideCount={slideCount}
               onProductChange={setSelectedProductId}

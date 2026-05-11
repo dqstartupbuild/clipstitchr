@@ -180,11 +180,14 @@ Swipr creates TikTok-ready static carousel image sets. The MVP uses browser-loca
 canvas rendering for final export: one selected, local starter, or Image 2.0 AI
 generated background image is reused across every image, and each image has its
 own text overlay using the same styling, color, drag, and resize model as
-Stitchr text overlays.
+Stitchr text overlays. Saved Settings products provide the preferred Swipr AI
+background context: users can save multiple named products with product and
+audience details, and server-side GPT-4.1 enrichment stores hidden inferred
+problem and audience pain-point metadata for generation prompts.
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
-| 1 | User selects a product context from saved demos or enters a custom product | ✅ | ✅ |
+| 1 | User selects a saved Settings product, selects a saved demo, or enters a custom product context | ✅ | ✅ |
 | 2 | User chooses 3-8 carousel images | ✅ | ✅ |
 | 3 | User uploads one background image, generates one local starter background, or creates one rate-limited Image 2.0 AI background | ✅ | ✅ |
 | 4 | One background image is reused across every rendered carousel image | ✅ | ✅ |

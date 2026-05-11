@@ -68,19 +68,19 @@ export function DashboardPageClient() {
           stitches={recentStitches}
           onDelete={library.removeStitch}
         />
-        <RecentAvatarsSection
-          avatars={photoLibrary.avatars}
-          photos={recentAvatarPhotos}
-          onLoadPhoto={photoLibrary.loadPhoto}
-          onDelete={photoLibrary.removePhoto}
-          onUpdateMetadata={photoLibrary.updatePhotoMetadata}
-        />
         <RecentUploadsSection
           clips={recentUploads}
           onLoadClip={library.loadClip}
           onDelete={library.removeClip}
           onUpdateMetadata={library.updateClipMetadata}
           onUpdateTrim={library.updateClipTrimRange}
+        />
+        <RecentAvatarsSection
+          avatars={photoLibrary.avatars}
+          photos={recentAvatarPhotos}
+          onLoadPhoto={photoLibrary.loadPhoto}
+          onDelete={photoLibrary.removePhoto}
+          onUpdateMetadata={photoLibrary.updatePhotoMetadata}
         />
         <StitchrCallout />
       </div>
