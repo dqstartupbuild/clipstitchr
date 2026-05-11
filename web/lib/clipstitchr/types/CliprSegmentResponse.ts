@@ -1,4 +1,5 @@
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
+import type { SwaprPredictionStatus } from "@/lib/clipstitchr/types/SwaprPredictionStatus";
 
 export type CliprSegmentResponse = {
   audioPredictionId: string;
@@ -16,6 +17,7 @@ export type CliprSegmentResponse = {
   templateId: string;
   title: string;
   videoPredictionId: string;
-  videoUrl: string;
+  videoStatus: SwaprPredictionStatus;
+  videoUrl?: string;
   voice: string;
 };

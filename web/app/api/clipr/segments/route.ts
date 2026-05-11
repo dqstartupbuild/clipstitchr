@@ -191,35 +191,21 @@ export async function POST(request: Request) {
       updatedAt: videoCreatedAt,
     });
 
-    const completedVideoPrediction = await replicate.wait(videoPrediction, {
-      interval: 2000,
-    });
-    const videoStatus = getReplicatePredictionStatus(
-      completedVideoPrediction.status,
-    );
+    const videoStatus = getReplicatePredictionStatus(videoPrediction.status);
     const videoOutputUrl =
-      completedVideoPrediction.status === "succeeded"
-        ? getReplicateOutputUrl((completedVideoPrediction as Prediction).output)
+      videoPrediction.status === "succeeded"
+        ? getReplicateOutputUrl((videoPrediction as Prediction).output)
         : undefined;
 
-    await convex.mutation(api.replicateJobs.updateCliprVideoJobStatus, {
-      secret,
-      predictionId: videoPrediction.id,
-      status: videoStatus,
-      outputUrl: videoOutputUrl,
-      error: getPredictionError(completedVideoPrediction as Prediction),
-      updatedAt: new Date().toISOString(),
-    });
-
-    if (completedVideoPrediction.status !== "succeeded") {
-      throw new Error(
-        getPredictionError(completedVideoPrediction as Prediction) ??
-          "Replicate did not complete Clipr video generation.",
-      );
-    }
-
-    if (!videoOutputUrl) {
-      throw new Error("Replicate completed but did not return Clipr video.");
+    if (videoOutputUrl) {
+      await convex.mutation(api.replicateJobs.updateCliprVideoJobStatus, {
+        secret,
+        predictionId: videoPrediction.id,
+        status: videoStatus,
+        outputUrl: videoOutputUrl,
+        error: getPredictionError(videoPrediction as Prediction),
+        updatedAt: new Date().toISOString(),
+      });
     }
 
     return NextResponse.json({
@@ -238,6 +224,7 @@ export async function POST(request: Request) {
       templateId: template.templateId,
       title: generatedScript.title,
       videoPredictionId: videoPrediction.id,
+      videoStatus,
       videoUrl: videoOutputUrl,
       voice,
     });

@@ -18,12 +18,16 @@ import {
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprGenerationStatus } from "@/lib/clipstitchr/types/CliprGenerationStatus";
 import type { CliprSegmentResponse } from "@/lib/clipstitchr/types/CliprSegmentResponse";
+import type { CliprSegmentStatusResponse } from "@/lib/clipstitchr/types/CliprSegmentStatusResponse";
 import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { SwaprPredictionStatus } from "@/lib/clipstitchr/types/SwaprPredictionStatus";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 import { readCliprSegmentResponse } from "@/lib/clipstitchr/utils/readCliprSegmentResponse";
+import { readCliprSegmentStatusResponse } from "@/lib/clipstitchr/utils/readCliprSegmentStatusResponse";
+import { waitForCliprPollInterval } from "@/lib/clipstitchr/utils/waitForCliprPollInterval";
 
 const CLIPR_FOLLOW_UP_GAP_SECONDS = 4;
 const CLIPR_MAX_SEGMENT_COUNT = 3;
@@ -65,6 +69,23 @@ async function downloadCliprOutput({
   return await response.blob();
 }
 
+function isTerminalPredictionStatus(status: SwaprPredictionStatus) {
+  return (
+    status === "succeeded" ||
+    status === "failed" ||
+    status === "canceled" ||
+    status === "aborted"
+  );
+}
+
+function getPredictionErrorMessage(error: unknown) {
+  return typeof error === "string"
+    ? error
+    : error
+      ? JSON.stringify(error)
+      : "Replicate did not complete this Clipr segment.";
+}
+
 export function useCliprGeneration(onClipSaved?: () => void | Promise<void>) {
   const saveVideoClip = useMutation(api.videoClips.save);
   const [status, setStatus] = useState<CliprGenerationStatus>("idle");
@@ -103,13 +124,39 @@ export function useCliprGeneration(onClipSaved?: () => void | Promise<void>) {
         body: formData,
       });
       const response = await readCliprSegmentResponse(segmentResponse);
+      let segmentStatus: CliprSegmentStatusResponse = {
+        videoPredictionId: response.videoPredictionId,
+        status: response.videoStatus,
+        videoUrl: response.videoUrl,
+      };
 
       setSegments((currentSegments) => [...currentSegments, response]);
+      setStatus("avatar");
+      setProgress((currentProgress) => Math.max(currentProgress, 0.18));
+
+      while (!isTerminalPredictionStatus(segmentStatus.status)) {
+        await waitForCliprPollInterval();
+
+        const pollResponse = await fetch(
+          `/api/clipr/segments/${response.videoPredictionId}`,
+        );
+        segmentStatus = await readCliprSegmentStatusResponse(pollResponse);
+        setProgress((currentProgress) => Math.min(0.65, currentProgress + 0.015));
+      }
+
+      if (segmentStatus.status !== "succeeded") {
+        throw new Error(getPredictionErrorMessage(segmentStatus.error));
+      }
+
+      if (!segmentStatus.videoUrl) {
+        throw new Error("Replicate completed but did not return Clipr video.");
+      }
+
       setStatus("downloading");
 
       const rawOutputBlob = await downloadCliprOutput({
         predictionId: response.videoPredictionId,
-        url: response.videoUrl,
+        url: segmentStatus.videoUrl,
       });
       const outputFile = new File(
         [rawOutputBlob],
