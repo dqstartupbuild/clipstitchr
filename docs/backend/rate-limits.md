@@ -175,7 +175,9 @@ Clipr audio and video predictions are recorded in Convex after creation. Clipr
 polling verifies the authenticated user owns the `clipr-video` job before
 calling Replicate. The Clipr output proxy requires both the video prediction ID
 and the output URL, and the URL must match the latest stored output URL for that
-authenticated user's `clipr-video` job.
+authenticated user's `clipr-video` job. Output URLs are limited to known
+provider file hosts, including Replicate delivery URLs and the Fal media CDN used
+by Kling Avatar V2 outputs.
 
 Avatar photo generation is rate-limited by requested output image count before
 calling Replicate, including generation started from a UGC clip poster in the
