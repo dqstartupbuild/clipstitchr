@@ -165,6 +165,13 @@ means first-frame image-to-video and tends to animate the selected photo itself.
 Clipr uses `reference_images` instead so the model can compose a new relevant
 location while preserving the selected person's appearance.
 
+Seedance can reject a prediction with provider error `E005` when its moderation
+flags the input prompt, reference image, generated audio reference, or attempted
+output as sensitive. Clipr keeps the ElevenLabs audio reference in the default
+pipeline, but the script and scene prompts are constrained to brand-safe,
+ordinary settings and avoid face-copy, photo-animation, protected-identity,
+medical, political, sexual, violent, age-sensitive, or shocking content.
+
 The ElevenLabs request uses:
 
 - `prompt`: generated script text.
