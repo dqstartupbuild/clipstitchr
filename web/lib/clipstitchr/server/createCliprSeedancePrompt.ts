@@ -9,8 +9,6 @@ export function createCliprSeedancePrompt({
 }: CreateCliprSeedancePromptOptions) {
   return [
     "Create a vertical short-form social video.",
-    "Use [Image1] only as an authorized creator reference for general appearance, styling, and continuity.",
-    "Do not use [Image1] as the first frame. Do not recreate the uploaded photo, pose, crop, background, or still-image composition.",
     "Create an original scene with the creator in a new natural location that fits the scene direction.",
     `Scene direction: ${avatarPrompt}`,
     "Use [Audio1] only as the spoken voice and timing reference for the creator's dialogue.",
