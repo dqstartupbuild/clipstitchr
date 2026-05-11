@@ -7,6 +7,7 @@ import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
+import { CLIPR_SEEDANCE_MAX_DURATION_SECONDS } from "@/lib/clipstitchr/constants/cliprSeedanceSettings";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
@@ -25,12 +26,13 @@ import type { SwaprPredictionStatus } from "@/lib/clipstitchr/types/SwaprPredict
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
+import { getCliprSeedanceSegmentDurationSeconds } from "@/lib/clipstitchr/utils/getCliprSeedanceSegmentDurationSeconds";
 import { readCliprSegmentResponse } from "@/lib/clipstitchr/utils/readCliprSegmentResponse";
 import { readCliprSegmentStatusResponse } from "@/lib/clipstitchr/utils/readCliprSegmentStatusResponse";
 import { waitForCliprPollInterval } from "@/lib/clipstitchr/utils/waitForCliprPollInterval";
 
 const CLIPR_FOLLOW_UP_GAP_SECONDS = 4;
-const CLIPR_MAX_SEGMENT_COUNT = 3;
+const CLIPR_SEGMENT_RECOVERY_COUNT = 1;
 
 type GenerateCliprVideoOptions = {
   durationSeconds: CliprDurationSeconds;
@@ -202,14 +204,19 @@ export function useCliprGeneration(onClipSaved?: () => void | Promise<void>) {
         const generatedSegments: CliprGeneratedSegment[] = [];
         let totalDuration = 0;
         let previousScripts = "";
+        const maxSegmentCount =
+          Math.ceil(durationSeconds / CLIPR_SEEDANCE_MAX_DURATION_SECONDS) +
+          CLIPR_SEGMENT_RECOVERY_COUNT;
 
         while (
-          generatedSegments.length < CLIPR_MAX_SEGMENT_COUNT &&
+          generatedSegments.length < maxSegmentCount &&
           (generatedSegments.length === 0 ||
             totalDuration < durationSeconds - CLIPR_FOLLOW_UP_GAP_SECONDS)
         ) {
           const segmentIndex = generatedSegments.length + 1;
-          const remainingSeconds = Math.max(8, durationSeconds - totalDuration);
+          const remainingSeconds = getCliprSeedanceSegmentDurationSeconds(
+            durationSeconds - totalDuration,
+          );
           const segment = await createSegment({
             durationSeconds,
             photo,

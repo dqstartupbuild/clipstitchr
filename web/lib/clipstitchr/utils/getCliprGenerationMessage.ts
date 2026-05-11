@@ -7,7 +7,7 @@ export function getCliprGenerationMessage(status: CliprGenerationStatus) {
     case "generating":
       return "Starting generation";
     case "avatar":
-      return "Generating the avatar video";
+      return "Generating the scene video";
     case "downloading":
       return "Downloading the video";
     case "normalizing":

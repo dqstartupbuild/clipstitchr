@@ -103,7 +103,7 @@ per successful output after real Replicate and OpenAI invoices are available.
 | Upload metadata analysis | 0.05 credits | Cheap enrichment. Cap separately to prevent bulk abuse. |
 | Avatar generated photo | 1 credit/image | Backed by GPT Image 2 through Replicate. |
 | AI photo outpaint/expand | 1 credit/image | Backed by FLUX.1 Fill pro through Replicate. |
-| Clipr video generation | 1 credit/output second | Includes script, voice, and avatar video provider calls. |
+| Clipr video generation | 1 credit/output second | Includes script, voice, and scene video provider calls. |
 | Swapr standard video | 1 credit/output second | Studio monthly cap currently maps to 500 estimated seconds. |
 | Swapr pro video, if exposed | 1.5-2 credits/output second | Use only if a higher-cost mode is added to the UI. |
 | R2 upload/download/delete | 0 credits | Rate-limit for abuse and storage budget instead. |
@@ -327,6 +327,7 @@ Prices change frequently. Verify these before launch and during billing reviews:
   - https://replicate.com/openai/gpt-image-2
   - https://replicate.com/black-forest-labs/flux-fill-pro
   - https://replicate.com/kwaivgi/kling-v3-motion-control
+  - https://replicate.com/bytedance/seedance-2.0
 - Cloudflare R2 pricing: https://developers.cloudflare.com/r2/pricing/
   - Standard storage: $0.015/GB-month.
   - Standard Class A operations: $4.50/million.

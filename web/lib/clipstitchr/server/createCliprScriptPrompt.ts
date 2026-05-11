@@ -26,11 +26,12 @@ export function createCliprScriptPrompt({
     8,
     Math.min(durationSeconds, remainingSeconds ?? durationSeconds),
   );
+  const spokenWordLimit = Math.max(18, Math.floor(targetSeconds * 2));
 
   return [
     "Write a short-form audience engagement video script for Clipr.",
     "Return compact valid JSON only with this exact shape:",
-    '{"hook":"filled hook under 18 words","script":"spoken script","avatarPrompt":"avatar delivery prompt","title":"short saved clip title"}',
+    '{"hook":"filled hook under 18 words","script":"spoken script","avatarPrompt":"scene, location, camera, delivery, and sound prompt","title":"short saved clip title"}',
     "Rules:",
     "- This is not an ad script. The goal is to earn attention from a relevant audience, not to pitch the product.",
     "- Treat product details as private strategy context for choosing the audience, problem, tension, and point of view.",
@@ -44,7 +45,11 @@ export function createCliprScriptPrompt({
     "- Make the clip useful on its own and usable as a UGC-style Stitchr input.",
     "- Keep claims grounded in the product details. Do not invent numbers, studies, pricing, guarantees, or customer proof.",
     "- Write natural spoken language for one avatar talking to camera.",
+    "- Keep the spoken script concise enough for a generated voice reference.",
+    `- Keep the spoken script under ${spokenWordLimit} words.`,
     "- Do not include scene labels, timestamps, markdown, quotation marks around lines, or bracketed acting notes in the script.",
+    "- The avatarPrompt must describe a specific relevant location, lighting, camera behavior, body language, and one optional natural sound effect.",
+    "- The avatarPrompt must not ask to animate, preserve, copy, or start from the selected avatar photo.",
     "- The script should fit the target duration when read aloud.",
     `Target duration: ${targetSeconds} seconds.`,
     `Whole requested clip duration: ${durationSeconds} seconds.`,

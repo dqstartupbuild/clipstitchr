@@ -15,7 +15,7 @@ strategy system:
 1. Choose a hook style.
 2. Fill a reusable template with product and audience context.
 3. Expand the hook into a short engagement script.
-4. Turn that script into a talking avatar video.
+4. Turn that script into a character-consistent scene video.
 5. Save the output back into the content library.
 
 Clipr should create engagement content for the user's business, not promotional
@@ -84,13 +84,16 @@ genre pattern:
 5. The user chooses a voice from a modal-style dropdown.
 6. The user can mark a voice as the default for future Clipr generations.
 7. The user confirms they have rights and consent for the avatar photo.
-8. Clipr generates the script, voice audio, talking video, and final saved clip.
+8. Clipr generates the script, voice audio, scene video, and final saved clip.
 9. The saved output appears in the Content Library under the Clips tab.
 10. The same saved Clipr output can be selected in Stitchr anywhere UGC clips are
     accepted.
 
 The MVP does not expose 90-second generation because Clipr output is capped at
-60 seconds.
+60 seconds. Seedance itself is capped at 15 seconds per prediction, so Clipr
+creates a 30-second clip from two 15-second scene segments and a 60-second clip
+from four 15-second scene segments, with one recovery segment allowed when
+provider output is materially short.
 
 ## Generation Pipeline
 
@@ -110,10 +113,13 @@ The generation flow is:
    product settings as private audience context and writes a no-CTA engagement
    script that is useful to the audience rather than promotional.
 3. The script is sent to `elevenlabs/v3` through Replicate with the selected
-   voice.
-4. The generated audio is sent to `kwaivgi/kling-avatar-v2` through Replicate
-   with the selected avatar photo and an animation prompt.
-5. The server returns after creating the Kling prediction so the browser can
+   voice. The script target is kept below the Seedance segment duration so the
+   generated voice reference can fit inside the model's 15-second reference
+   audio limit.
+4. The generated audio is sent to `bytedance/seedance-2.0` through Replicate as
+   `reference_audios: [Audio1]`, and the selected avatar photo is sent as
+   `reference_images: [Image1]`.
+5. The server returns after creating the Seedance prediction so the browser can
    poll for completion without holding a long Vercel function open.
 6. The generated video is downloaded through an authenticated output proxy.
 7. The browser normalizes the video to TikTok 9:16 with Media Bunny.
@@ -135,20 +141,29 @@ Default model IDs:
 
 - Hook and script generation: `openai/gpt-4.1`
 - Text to speech: `elevenlabs/v3`
-- Talking avatar video: `kwaivgi/kling-avatar-v2`
+- Scene video generation: `bytedance/seedance-2.0`
 
 Environment overrides should be supported:
 
 - `CLIPR_SCRIPT_MODEL_ID`
 - `CLIPR_TTS_MODEL_ID`
-- `CLIPR_AVATAR_MODEL_ID`
+- `CLIPR_VIDEO_MODEL_ID`
 
-The Kling Avatar V2 request uses:
+The Seedance 2.0 request uses:
 
-- `image`: selected avatar photo.
-- `audio`: ElevenLabs output audio URL.
-- `prompt`: concise avatar delivery guidance.
-- `mode`: `std` for MVP speed and cost control.
+- `prompt`: scene prompt that references `[Image1]` and `[Audio1]`.
+- `reference_images`: selected avatar photo for character consistency only.
+- `reference_audios`: ElevenLabs output audio URL for voice timing and lip sync.
+- `duration`: 15 seconds max per segment.
+- `resolution`: `720p`.
+- `aspect_ratio`: `9:16`.
+- `generate_audio`: `true` so speech, room tone, and subtle relevant sound
+  effects are synchronized with the generated video.
+
+Clipr must not pass the avatar photo as Seedance's `image` input. That input
+means first-frame image-to-video and tends to animate the selected photo itself.
+Clipr uses `reference_images` instead so the model can compose a new relevant
+location while preserving the selected person's appearance.
 
 The ElevenLabs request uses:
 
@@ -218,7 +233,7 @@ Clipr adds cost surfaces:
 
 - GPT-4.1 script generation.
 - ElevenLabs voice generation.
-- Kling Avatar V2 video generation.
+- Seedance 2.0 video generation.
 - Replicate output proxying.
 - R2 upload URLs and bytes for saved final outputs.
 - Convex saves for generated clips.
@@ -226,7 +241,7 @@ Clipr adds cost surfaces:
 Required enforcement:
 
 - Rate-limit Clipr segment generation before the GPT-4.1 script call.
-- Count estimated generated seconds before the Kling Avatar call.
+- Count estimated generated seconds before the Seedance call.
 - Record Clipr Replicate jobs in Convex for ownership checks.
 - Rate-limit Clipr segment polling and verify the prediction belongs to the
   authenticated user before polling Replicate.
@@ -240,6 +255,8 @@ Required enforcement:
 - Clipr generates engagement clips only.
 - No CTA is generated for Clipr clips.
 - Durations are 30 seconds or 60 seconds.
+- Seedance generations are segmented into 15-second predictions before browser
+  normalization and stitching.
 - A 30-second clip is the default.
 - The MVP uses one selected avatar photo per generation.
 - Hook style and template selection is always random and hidden.
