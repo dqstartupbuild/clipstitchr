@@ -100,7 +100,7 @@ per successful output after real Replicate and OpenAI invoices are available.
 | Operation | Suggested Credit Cost | Notes |
 | --- | ---: | --- |
 | Upload metadata analysis | 0.05 credits | Cheap enrichment. Cap separately to prevent bulk abuse. |
-| Avatar generated photo | 1 credit/image | Backed by GPT Image 2 through Replicate. |
+| Avatar generated photo | 1 credit/image | Backed by the selected `AVATAR_PHOTO_MODEL_ID` through Replicate. |
 | AI photo outpaint/expand | 1 credit/image | Backed by FLUX.1 Fill pro through Replicate. |
 | Swapr standard video | 1 credit/output second | Studio monthly cap currently maps to 500 estimated seconds. |
 | Swapr pro video, if exposed | 1.5-2 credits/output second | Use only if a higher-cost mode is added to the UI. |
@@ -321,6 +321,9 @@ Prices change frequently. Verify these before launch and during billing reviews:
     input/output; model pages contain cost estimates.
 - Replicate model pages:
   - https://replicate.com/openai/gpt-image-2
+  - https://replicate.com/prunaai/z-image-turbo-img2img
+  - https://replicate.com/prunaai/p-image
+  - https://replicate.com/prunaai/wan-2.2-image
   - https://replicate.com/black-forest-labs/flux-fill-pro
   - https://replicate.com/kwaivgi/kling-v3-motion-control
 - Cloudflare R2 pricing: https://developers.cloudflare.com/r2/pricing/

@@ -32,7 +32,7 @@ export function UgcClipSelector({
   });
 
   return (
-    <div>
+    <section className="min-w-0">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">
@@ -49,52 +49,54 @@ export function UgcClipSelector({
           {selectedIds.length}/{maxStitchrUgcSelectionCount}
         </p>
       </div>
-      <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
-        {pagination.pageItems.length ? (
-          pagination.pageItems.map((clip) => {
-            const isSelected = selectedIds.includes(clip.id);
+      {clips.length ? (
+        <>
+          <div className="mt-3 flex max-w-full gap-3 overflow-x-auto pb-1">
+            {pagination.pageItems.map((clip) => {
+              const isSelected = selectedIds.includes(clip.id);
 
-            return (
-              <div key={clip.id} className="w-44 shrink-0">
-                <SelectableClipCard
-                  clip={clip}
-                  trimRange={
-                    isSelected
-                      ? (selectedTrimRangesByClipId[clip.id] ??
-                        getDefaultVideoTrimRange(clip))
-                      : getDefaultVideoTrimRange(clip)
-                  }
-                  isSelected={isSelected}
-                  isSelectionDisabled={
-                    selectedIds.length >= maxStitchrUgcSelectionCount &&
-                    !isSelected
-                  }
-                  onLoadClip={onLoadClip}
-                  onSelect={onSelect}
-                  onUpdateTrim={onUpdateTrim}
-                />
-              </div>
-            );
-          })
-        ) : (
-          <p className="rounded-lg border border-dashed border-border bg-slate-50 p-4 text-sm font-semibold text-text-tertiary">
-            No UGC clips match this search.
-          </p>
-        )}
-      </div>
-      {pagination.totalPages > 1 ? (
-        <PaginationControls
-          canGoNext={pagination.canGoNext}
-          canGoPrevious={pagination.canGoPrevious}
-          currentPage={pagination.currentPage}
-          totalItems={pagination.totalItems}
-          totalPages={pagination.totalPages}
-          visibleEnd={pagination.visibleEnd}
-          visibleStart={pagination.visibleStart}
-          onNext={pagination.goToNextPage}
-          onPrevious={pagination.goToPreviousPage}
-        />
-      ) : null}
-    </div>
+              return (
+                <div key={clip.id} className="w-44 shrink-0">
+                  <SelectableClipCard
+                    clip={clip}
+                    trimRange={
+                      isSelected
+                        ? (selectedTrimRangesByClipId[clip.id] ??
+                          getDefaultVideoTrimRange(clip))
+                        : getDefaultVideoTrimRange(clip)
+                    }
+                    isSelected={isSelected}
+                    isSelectionDisabled={
+                      selectedIds.length >= maxStitchrUgcSelectionCount &&
+                      !isSelected
+                    }
+                    onLoadClip={onLoadClip}
+                    onSelect={onSelect}
+                    onUpdateTrim={onUpdateTrim}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          {pagination.totalPages > 1 ? (
+            <PaginationControls
+              canGoNext={pagination.canGoNext}
+              canGoPrevious={pagination.canGoPrevious}
+              currentPage={pagination.currentPage}
+              totalItems={pagination.totalItems}
+              totalPages={pagination.totalPages}
+              visibleEnd={pagination.visibleEnd}
+              visibleStart={pagination.visibleStart}
+              onNext={pagination.goToNextPage}
+              onPrevious={pagination.goToPreviousPage}
+            />
+          ) : null}
+        </>
+      ) : (
+        <p className="mt-3 rounded-lg border border-dashed border-border bg-slate-50 p-4 text-sm font-semibold text-text-tertiary">
+          No UGC clips match this search.
+        </p>
+      )}
+    </section>
   );
 }

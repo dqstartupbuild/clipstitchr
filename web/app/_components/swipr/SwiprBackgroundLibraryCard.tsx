@@ -19,6 +19,7 @@ export function SwiprBackgroundLibraryCard({
   return (
     <button
       type="button"
+      aria-label={`Select ${background.name} background`}
       aria-pressed={isSelected}
       className={[
         "w-24 shrink-0 overflow-hidden rounded-lg border bg-white text-left transition-colors",
@@ -35,11 +36,6 @@ export function SwiprBackgroundLibraryCard({
           backgroundUrl ? { backgroundImage: `url(${backgroundUrl})` } : {}
         }
       />
-      <span className="block min-w-0 p-1.5">
-        <span className="block truncate text-xs font-bold text-text-primary">
-          {background.name}
-        </span>
-      </span>
     </button>
   );
 }

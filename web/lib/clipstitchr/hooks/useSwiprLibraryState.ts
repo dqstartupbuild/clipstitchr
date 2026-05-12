@@ -51,6 +51,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
   const saveBackground = useCallback(
     async ({
       blob,
+      generationDetails,
       originalName,
       source,
     }: SaveSwiprBackgroundOptions) => {
@@ -71,13 +72,21 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
           recordId: id,
         });
         const createdAt = new Date().toISOString();
+        const details = [
+          analysis.details,
+          generationDetails
+            ? `Generation metadata: ${generationDetails}`
+            : undefined,
+        ]
+          .filter(Boolean)
+          .join("\n\n");
 
         await saveBackgroundMutation({
           id,
           name: analysis.name,
           tags: analysis.tags,
           description: analysis.description,
-          details: analysis.details,
+          details: details || undefined,
           source,
           imageObject,
           mimeType: imageObject.contentType,
@@ -92,7 +101,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
           name: analysis.name,
           tags: analysis.tags,
           description: analysis.description,
-          details: analysis.details,
+          details: details || undefined,
           source,
           imageObject,
           blob,

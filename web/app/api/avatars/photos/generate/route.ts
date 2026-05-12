@@ -5,6 +5,7 @@ import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/c
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { createAvatarGenerationVariants } from "@/lib/clipstitchr/server/createAvatarGenerationVariants";
+import { createAvatarPhotoGenerationInput } from "@/lib/clipstitchr/server/createAvatarPhotoGenerationInput";
 import { createAvatarPhotoGenerationPrompt } from "@/lib/clipstitchr/server/createAvatarPhotoGenerationPrompt";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createReplicateImageDataUrl } from "@/lib/clipstitchr/server/createReplicateImageDataUrl";
@@ -16,6 +17,7 @@ import { getAvatarPhotoGenerationModelId } from "@/lib/clipstitchr/server/getAva
 import { getAvatarStyleOption } from "@/lib/clipstitchr/server/getAvatarStyleOption";
 import { getReplicateOutputUrls } from "@/lib/clipstitchr/server/getReplicateOutputUrls";
 import { getReplicatePredictionStatus } from "@/lib/clipstitchr/server/getReplicatePredictionStatus";
+import { getReplicatePredictionModelReference } from "@/lib/clipstitchr/server/getReplicatePredictionModelReference";
 import { getSwaprFormFile } from "@/lib/clipstitchr/server/getSwaprFormFile";
 import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
@@ -94,25 +96,21 @@ export async function POST(request: Request) {
         const prompt = createAvatarPhotoGenerationPrompt({
           avatarDescription,
           identityMode,
+          modelId,
           variant,
+        });
+        const referenceImage = new File([imageBytes], imageName, {
+          type: imageType,
         });
 
         const prediction = await replicate.predictions.create({
-          model: modelId,
-          input: {
+          ...getReplicatePredictionModelReference(modelId),
+          input: createAvatarPhotoGenerationInput({
+            image: referenceImage,
+            modelId,
             prompt,
-            input_images: [
-              new File([imageBytes], imageName, {
-                type: imageType,
-              }),
-            ],
-            aspect_ratio: "2:3",
-            number_of_images: 1,
-            output_format: "jpeg",
             quality: speedProfile.avatarImageQuality,
-            background: "opaque",
-            moderation: "auto",
-          },
+          }),
         });
         const createdAt = new Date().toISOString();
 

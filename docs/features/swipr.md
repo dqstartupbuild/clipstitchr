@@ -96,6 +96,33 @@ Local starter backgrounds are not part of the current saved background model.
 When a user generates or uploads a background for reuse, it becomes a shared
 background asset.
 
+## AI Background Generation
+
+`SWIPR_BACKGROUND_MODEL_ID` defaults to `openai/gpt-image-2`. It also supports
+`prunaai/p-image` and `prunaai/wan-2.2-image`.
+
+The generation route chooses the prompt framing and Replicate input schema from
+the selected model:
+
+- `openai/gpt-image-2` requests a 2:3 portrait image with GPT Image 2-specific
+  inputs because the app crops the result to 9:16.
+- `prunaai/p-image` requests direct 9:16 output with P-Image's text-to-image
+  schema and uses a simplified photography-backdrop prompt.
+- `prunaai/wan-2.2-image` requests direct 9:16 output with Wan 2.2 Image's
+  text-to-image schema and uses a simplified photography-backdrop prompt.
+
+The Pruna prompt path intentionally avoids downstream usage words such as app,
+carousel, screen, mockup, text overlay, and social media because those models
+can latch onto those terms and render UI-like layouts. The product context is
+also sanitized before it is added to Pruna prompts.
+
+Each AI background request also receives a product-aware variation brief. The
+route classifies the product context into broad categories such as food,
+fitness, beauty, home, software, or generic, then chooses a scene, lighting
+setup, camera angle, surface, palette, composition, and background preset from
+that category. The variation metadata is saved into hidden background details so
+generated outputs can be inspected later without adding visible UI labels.
+
 ## Background Storage
 
 Background binary data is stored in Cloudflare R2. Convex stores searchable

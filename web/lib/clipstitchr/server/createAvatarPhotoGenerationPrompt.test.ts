@@ -42,4 +42,17 @@ describe("createAvatarPhotoGenerationPrompt", () => {
     expect(prompt).toContain("raw source material for a UGC ad");
     expect(prompt).toContain("not a studio portrait");
   });
+
+  it("uses image-to-image wording for Pruna z-image-turbo", () => {
+    const prompt = createAvatarPhotoGenerationPrompt({
+      avatarDescription: "short dark hair and oval face",
+      modelId:
+        "prunaai/z-image-turbo-img2img:5c958e90e0f904240629ee35c69196e3bd790b5528c0696705ebdb1656871dd8",
+      variant,
+    });
+
+    expect(prompt).toContain("same person from the input image");
+    expect(prompt).toContain("Use the input image as the image-to-image source");
+    expect(prompt).toContain("Transform the wardrobe, location, pose, and lighting");
+  });
 });

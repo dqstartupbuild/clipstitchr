@@ -1,8 +1,13 @@
+"use client";
+
 import { ImagePlus, Images, Upload } from "lucide-react";
 import { Button } from "@/app/_components/ui/Button";
+import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { SwiprBackgroundLibraryCard } from "@/app/_components/swipr/SwiprBackgroundLibraryCard";
 import { ACCEPTED_PHOTO_TYPES } from "@/lib/clipstitchr/constants/acceptedPhotoTypes";
+import { clipSelectorPageSize } from "@/lib/clipstitchr/constants/clipSelectorPageSize";
+import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { SwiprBackground } from "@/lib/clipstitchr/types/SwiprBackground";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 
@@ -31,10 +36,13 @@ export function SwiprBackgroundPanel({
   onGenerateAiBackground,
   onUploadBackground,
 }: SwiprBackgroundPanelProps) {
+  const pagination = usePagination(backgrounds, {
+    pageSize: clipSelectorPageSize,
+  });
   const isBusy = isSaving || isGeneratingAi;
 
   return (
-    <section className="border-t border-border pt-4">
+    <section className="min-w-0 border-t border-border pt-4">
       <div className="mb-3 flex items-center gap-3">
         <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-muted text-accent">
           <ImagePlus aria-hidden className="h-5 w-5" />
@@ -46,7 +54,7 @@ export function SwiprBackgroundPanel({
           </h2>
         </div>
       </div>
-      <div className="grid gap-3">
+      <div className="grid min-w-0 gap-3">
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
           <SearchInput
             label="Search backgrounds"
@@ -91,26 +99,38 @@ export function SwiprBackgroundPanel({
             </label>
           </div>
         </div>
-        <div>
+        <div className="min-w-0">
           {backgrounds.length ? (
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {backgrounds.map((backgroundAsset) => (
-                <SwiprBackgroundLibraryCard
-                  key={backgroundAsset.id}
-                  background={backgroundAsset}
-                  isSelected={backgroundAsset.id === background?.id}
-                  onSelect={onSelectBackground}
+            <>
+              <div className="flex max-w-full gap-2 overflow-x-auto pb-1">
+                {pagination.pageItems.map((backgroundAsset) => (
+                  <SwiprBackgroundLibraryCard
+                    key={backgroundAsset.id}
+                    background={backgroundAsset}
+                    isSelected={backgroundAsset.id === background?.id}
+                    onSelect={onSelectBackground}
+                  />
+                ))}
+              </div>
+              {pagination.totalPages > 1 ? (
+                <PaginationControls
+                  canGoNext={pagination.canGoNext}
+                  canGoPrevious={pagination.canGoPrevious}
+                  currentPage={pagination.currentPage}
+                  totalItems={pagination.totalItems}
+                  totalPages={pagination.totalPages}
+                  visibleEnd={pagination.visibleEnd}
+                  visibleStart={pagination.visibleStart}
+                  onNext={pagination.goToNextPage}
+                  onPrevious={pagination.goToPreviousPage}
                 />
-              ))}
-            </div>
+              ) : null}
+            </>
           ) : (
             <div className="rounded-lg border border-border bg-surface-elevated px-3 py-3 text-sm font-semibold text-text-secondary">
               No backgrounds yet
             </div>
-            )}
-        </div>
-        <div className="rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm font-semibold text-text-secondary">
-          {background ? background.name : "No background selected"}
+          )}
         </div>
       </div>
     </section>

@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
 import type { Prediction } from "replicate";
 import { api } from "@/convex/_generated/api";
+import { SWIPR_BACKGROUND_GENERATION_METADATA_HEADER_NAME } from "@/lib/clipstitchr/constants/swiprBackgroundGenerationMetadataHeaderName";
 import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
+import { createSwiprBackgroundGenerationMetadataText } from "@/lib/clipstitchr/server/createSwiprBackgroundGenerationMetadataText";
+import { createSwiprBackgroundGenerationInput } from "@/lib/clipstitchr/server/createSwiprBackgroundGenerationInput";
 import { createSwiprBackgroundGenerationPrompt } from "@/lib/clipstitchr/server/createSwiprBackgroundGenerationPrompt";
+import { createSwiprBackgroundVariation } from "@/lib/clipstitchr/server/createSwiprBackgroundVariation";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { getReplicateOutputUrl } from "@/lib/clipstitchr/server/getReplicateOutputUrl";
+import { getReplicatePredictionModelReference } from "@/lib/clipstitchr/server/getReplicatePredictionModelReference";
 import { getSwiprBackgroundGenerationModelId } from "@/lib/clipstitchr/server/getSwiprBackgroundGenerationModelId";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
@@ -38,9 +43,10 @@ export async function POST(request: Request) {
     const body = (await request.json()) as SwiprBackgroundGenerationRequest;
     const productContext =
       typeof body.productContext === "string" ? body.productContext : "";
-    const presetId = getSwiprBackgroundPresetId(
-      typeof body.presetId === "string" ? body.presetId : "",
-    );
+    const preferredPresetId =
+      typeof body.presetId === "string"
+        ? getSwiprBackgroundPresetId(body.presetId)
+        : undefined;
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const rateLimitSecret = getRateLimitApiSecret();
 
@@ -49,22 +55,23 @@ export async function POST(request: Request) {
     });
 
     const modelId = getSwiprBackgroundGenerationModelId();
-    const prompt = createSwiprBackgroundGenerationPrompt({
+    const variation = createSwiprBackgroundVariation({
+      preferredPresetId,
       productContext,
-      presetId,
+    });
+    const prompt = createSwiprBackgroundGenerationPrompt({
+      modelId,
+      productContext,
+      presetId: variation.presetId,
+      variation,
     });
     const replicate = createReplicateClient();
     const prediction = await replicate.predictions.create({
-      model: modelId,
-      input: {
+      ...getReplicatePredictionModelReference(modelId),
+      input: createSwiprBackgroundGenerationInput({
+        modelId,
         prompt,
-        aspect_ratio: "2:3",
-        number_of_images: 1,
-        output_format: "jpeg",
-        quality: "low",
-        background: "opaque",
-        moderation: "auto",
-      },
+      }),
     });
     const completedPrediction = await replicate.wait(prediction, {
       interval: 2000,
@@ -84,8 +91,14 @@ export async function POST(request: Request) {
     const outputResponse = await fetchReplicateOutput(outputUrl);
     const headers = new Headers();
     const contentType = outputResponse.headers.get("content-type");
+    const generationMetadata =
+      createSwiprBackgroundGenerationMetadataText(variation);
 
     headers.set("content-type", contentType ?? "image/jpeg");
+    headers.set(
+      SWIPR_BACKGROUND_GENERATION_METADATA_HEADER_NAME,
+      encodeURIComponent(generationMetadata),
+    );
 
     return new NextResponse(outputResponse.body, { headers });
   } catch (error) {
