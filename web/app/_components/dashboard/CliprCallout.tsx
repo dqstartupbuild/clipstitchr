@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { CirclePlay } from "lucide-react";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 
 export function CliprCallout() {
@@ -15,7 +15,7 @@ export function CliprCallout() {
       </div>
       <SecondaryButtonLink
         href="/dashboard/clipr"
-        icon={<Sparkles aria-hidden className="h-4 w-4" />}
+        icon={<CirclePlay aria-hidden className="h-4 w-4" />}
       >
         Create Clip
       </SecondaryButtonLink>

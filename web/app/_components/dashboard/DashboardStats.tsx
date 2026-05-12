@@ -1,4 +1,4 @@
-import { Clapperboard, FileVideo, Film, Sparkles } from "lucide-react";
+import { CirclePlay, Clapperboard, FileVideo, Film } from "lucide-react";
 import { DashboardStatCard } from "@/app/_components/dashboard/DashboardStatCard";
 
 type DashboardStatsProps = {
@@ -27,7 +27,7 @@ export function DashboardStats({
         value={demoCount}
       />
       <DashboardStatCard
-        icon={<Sparkles aria-hidden className="h-5 w-5" />}
+        icon={<CirclePlay aria-hidden className="h-5 w-5" />}
         label="Clips"
         value={clipsCount}
       />

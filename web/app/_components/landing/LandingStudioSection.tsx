@@ -1,4 +1,4 @@
-import { Images, Scissors, Shuffle, Sparkles } from "lucide-react";
+import { CirclePlay, Images, Scissors, Shuffle } from "lucide-react";
 import { Panel } from "@/app/_components/ui/Panel";
 
 const studios = [
@@ -16,7 +16,7 @@ const studios = [
     description:
       "Choose a product and avatar, generate a short engagement clip, and save it as source footage for Stitchr.",
     caption: "We call these 'Clips'.",
-    icon: Sparkles,
+    icon: CirclePlay,
   },
   {
     eyebrow: "Swapr",
