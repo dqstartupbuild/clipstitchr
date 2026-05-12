@@ -2,8 +2,6 @@ import type { SwaprGenerationStatus } from "@/lib/clipstitchr/types/SwaprGenerat
 
 export function getSwaprGenerationMessage(status: SwaprGenerationStatus) {
   switch (status) {
-    case "splitting":
-      return "Splitting the source clip into swap-ready parts.";
     case "uploading":
       return "Preparing your selected photo and clip.";
     case "queued":
@@ -14,8 +12,6 @@ export function getSwaprGenerationMessage(status: SwaprGenerationStatus) {
       return "Getting the finished clip.";
     case "normalizing":
       return "Preparing the clip for your library.";
-    case "stitching":
-      return "Combining the generated parts.";
     case "saving":
       return "Saving the clip to your library.";
     case "succeeded":
