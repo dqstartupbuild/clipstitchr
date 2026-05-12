@@ -66,7 +66,7 @@ the UI to disappear and come back later.
 Examples:
 
 - Avatar photo generation
-- Clipr script, voice, and scene video generation
+- Clipr script, voice, and avatar video generation
 - Swapr video generation
 
 Provider jobs should be finalized by a server-side path, not by the client.
@@ -129,7 +129,7 @@ device cannot resume the work.
 | Workflow | Current behavior | Durable target |
 | --- | --- | --- |
 | Avatar photo generation | Replicate predictions are recorded, but final R2 save is client-side. Refresh can orphan successful outputs. | Store generation metadata on the job and finalize via Replicate webhook or recovery finalizer. |
-| Clipr generation | Script, voice, and scene video predictions are started server-side, but output download, Media Bunny normalization/stitching, R2 upload, and clip save are client-side. Refresh can orphan successful generated videos. | Store Clipr product/photo/voice/duration metadata on a durable job and finalize provider outputs plus media post-processing through a webhook or recoverable browser queue. |
+| Clipr generation | Script, voice, and avatar video predictions are started server-side, but output download, Media Bunny normalization/stitching, R2 upload, and clip save are client-side. Refresh can orphan successful generated videos. | Store Clipr product/photo/voice/duration metadata on a durable job and finalize provider outputs plus media post-processing through a webhook or recoverable browser queue. |
 | Swapr generation | Replicate prediction is recorded and pollable, but download, normalization, R2 upload, and clip save are client-side. Refresh can orphan successful videos. | Finalize provider output server-side, or store a durable post-processing job if normalization remains browser-side. |
 | Photo upload | Browser prepares photo, uploads objects, and saves Convex metadata. Refresh can stop before completion. | Upload original source to a durable job first, then finalize from a recoverable source. |
 | Video upload normalization | Browser Media Bunny normalization and R2 upload run from a page-local queue. Refresh stops work. | Persist source first and process in a backend worker, or persist a local resumable queue. |

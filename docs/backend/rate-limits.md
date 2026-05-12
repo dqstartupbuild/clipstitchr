@@ -70,8 +70,8 @@ Optional Replicate model overrides:
 - `CLIPR_SCRIPT_MODEL_ID` defaults to `openai/gpt-4.1` for hidden hook filling,
   Clipr scripts, Swipr slide text, and Stitchr overlay text.
 - `CLIPR_TTS_MODEL_ID` defaults to `elevenlabs/v3` for Clipr voice generation.
-- `CLIPR_VIDEO_MODEL_ID` defaults to `bytedance/seedance-2.0` for Clipr
-  character-consistent scene video generation.
+- `CLIPR_AVATAR_MODEL_ID` defaults to `kwaivgi/kling-avatar-v2` for Clipr
+  talking avatar video generation.
 
 ## Enforcement Map
 
@@ -95,7 +95,7 @@ Optional Replicate model overrides:
 | Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 5; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
 | Product enrichment | `POST /api/settings/products` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
 | Hook text generation | `POST /api/hooks/generate` for Swipr slide text and Stitchr overlay text | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
-| Clipr segment generation | `POST /api/clipr/segments` | 6 Seedance segments/hour/user, burst 3; 12 segments/day/user; 1,800 estimated generated seconds/30 days/user; global 200 segments/hour |
+| Clipr segment generation | `POST /api/clipr/segments` | 6 segments/hour/user, burst 3; 12 segments/day/user; 1,800 estimated generated seconds/30 days/user; global 200 segments/hour |
 | Clipr segment polling | `GET /api/clipr/segments/{id}` | 180/minute/user, burst 45 |
 | Clipr output proxy | `GET /api/clipr/output` | 500/hour/user, burst 100 |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
@@ -139,15 +139,15 @@ selecting a hidden hook style/template and creating the prediction. Generated
 text is not persisted until the user saves the Swipe or creates Stitches.
 
 Clipr generation calls Replicate three times per segment: GPT-4.1 for the
-script, ElevenLabs v3 for speech audio, and Seedance 2.0 for the
-character-consistent scene video. `POST /api/clipr/segments` consumes the Clipr
-segment and estimated generated-seconds limits before any provider call, then
-returns after creating the Seedance prediction. The browser polls
-`GET /api/clipr/segments/{id}` until the recorded Seedance prediction is
-complete. The browser downloads each finished video through
-`GET /api/clipr/output`, normalizes it to 9:16 with Media Bunny, stitches
-follow-up segments when needed, uploads the final output through the existing R2
-upload URL path, and saves the final Clipr clip through `videoClips.save`.
+script, ElevenLabs v3 for speech audio, and Kling Avatar V2 for the talking
+video. `POST /api/clipr/segments` consumes the Clipr segment and estimated
+generated-seconds limits before any provider call, then returns after creating
+the Kling prediction. The browser polls `GET /api/clipr/segments/{id}` until the
+recorded Kling prediction is complete. The browser downloads each finished video
+through `GET /api/clipr/output`, normalizes it to 9:16 with Media Bunny,
+stitches follow-up segments when needed, uploads the final output through the
+existing R2 upload URL path, and saves the final Clipr clip through
+`videoClips.save`.
 
 ## Client Batch Caps
 
@@ -176,8 +176,8 @@ polling verifies the authenticated user owns the `clipr-video` job before
 calling Replicate. The Clipr output proxy requires both the video prediction ID
 and the output URL, and the URL must match the latest stored output URL for that
 authenticated user's `clipr-video` job. Output URLs are limited to known
-provider file hosts, including Replicate delivery URLs and the Fal media CDN
-used by some video-provider outputs.
+provider file hosts, including Replicate delivery URLs and the Fal media CDN used
+by Kling Avatar V2 outputs.
 
 Avatar photo generation is rate-limited by requested output image count before
 calling Replicate, including generation started from a UGC clip poster in the

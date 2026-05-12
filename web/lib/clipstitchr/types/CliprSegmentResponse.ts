@@ -7,13 +7,12 @@ export type CliprSegmentResponse = {
   durationSeconds: CliprDurationSeconds;
   hook: string;
   modelIds: {
+    avatar: string;
     script: string;
     textToSpeech: string;
-    video: string;
   };
   script: string;
   segmentIndex: number;
-  segmentDurationSeconds: number;
   styleKey: string;
   templateId: string;
   title: string;
