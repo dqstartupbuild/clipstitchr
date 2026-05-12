@@ -21,7 +21,7 @@ export function LandingHero() {
             Ad variants without the editing
           </p>
           <h1 className="mt-5 max-w-2xl text-5xl font-bold leading-[1.05] text-text-primary md:text-6xl">
-            Turn your UGC clips into
+            Turn your UGC into
             <br className="hidden md:block" />
             <span className="mt-2 block text-accent md:mt-0 md:inline">
               finished ads.
