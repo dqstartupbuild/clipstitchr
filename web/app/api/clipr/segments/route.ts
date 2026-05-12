@@ -6,12 +6,11 @@ import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/c
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { createCliprScriptPrompt } from "@/lib/clipstitchr/server/createCliprScriptPrompt";
-import { createCliprSeedancePrompt } from "@/lib/clipstitchr/server/createCliprSeedancePrompt";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
+import { getCliprAvatarModelId } from "@/lib/clipstitchr/server/getCliprAvatarModelId";
 import { getCliprScriptModelId } from "@/lib/clipstitchr/server/getCliprScriptModelId";
 import { getCliprTextToSpeechModelId } from "@/lib/clipstitchr/server/getCliprTextToSpeechModelId";
-import { getCliprVideoModelId } from "@/lib/clipstitchr/server/getCliprVideoModelId";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { getReplicateOutputUrl } from "@/lib/clipstitchr/server/getReplicateOutputUrl";
 import { getReplicatePredictionStatus } from "@/lib/clipstitchr/server/getReplicatePredictionStatus";
@@ -20,13 +19,7 @@ import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString"
 import { parseCliprGeneratedScript } from "@/lib/clipstitchr/server/parseCliprGeneratedScript";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
-import {
-  CLIPR_SEEDANCE_ASPECT_RATIO,
-  CLIPR_SEEDANCE_RESOLUTION,
-} from "@/lib/clipstitchr/constants/cliprSeedanceSettings";
 import { getCliprDurationSeconds } from "@/lib/clipstitchr/utils/getCliprDurationSeconds";
-import { getCliprSeedanceSegmentDurationSeconds } from "@/lib/clipstitchr/utils/getCliprSeedanceSegmentDurationSeconds";
-import { getCliprSeedanceSpeechTargetSeconds } from "@/lib/clipstitchr/utils/getCliprSeedanceSpeechTargetSeconds";
 import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 import { selectRandomCliprHookResource } from "@/lib/clipstitchr/utils/selectRandomCliprHookResource";
 
@@ -84,16 +77,12 @@ export async function POST(request: Request) {
       throw new Error("Saved product not found.");
     }
 
-    const remainingSegmentSeconds = Number.isFinite(remainingSeconds)
+    const estimatedSeconds = Number.isFinite(remainingSeconds)
       ? Math.min(durationSeconds, Math.max(1, remainingSeconds))
       : durationSeconds;
-    const segmentDurationSeconds =
-      getCliprSeedanceSegmentDurationSeconds(remainingSegmentSeconds);
-    const speechTargetSeconds =
-      getCliprSeedanceSpeechTargetSeconds(segmentDurationSeconds);
 
     await convex.mutation(api.rateLimits.consumeCliprSegmentGenerate, {
-      estimatedSeconds: segmentDurationSeconds,
+      estimatedSeconds,
       secret,
     });
 
@@ -108,7 +97,9 @@ export async function POST(request: Request) {
           durationSeconds,
           previousScripts,
           product,
-          remainingSeconds: speechTargetSeconds,
+          remainingSeconds: Number.isFinite(remainingSeconds)
+            ? remainingSeconds
+            : undefined,
           segmentIndex,
           style,
           template,
@@ -179,20 +170,14 @@ export async function POST(request: Request) {
       throw new Error("Replicate completed but did not return Clipr audio.");
     }
 
-    const videoModelId = getCliprVideoModelId();
+    const avatarModelId = getCliprAvatarModelId();
     const videoPrediction = await replicate.predictions.create({
-      model: videoModelId,
+      model: avatarModelId,
       input: {
-        prompt: createCliprSeedancePrompt({
-          avatarPrompt: generatedScript.avatarPrompt,
-          script: generatedScript.script,
-        }),
-        reference_images: [image],
-        reference_audios: [audioOutputUrl],
-        duration: segmentDurationSeconds,
-        resolution: CLIPR_SEEDANCE_RESOLUTION,
-        aspect_ratio: CLIPR_SEEDANCE_ASPECT_RATIO,
-        generate_audio: true,
+        image,
+        audio: audioOutputUrl,
+        prompt: generatedScript.avatarPrompt,
+        mode: "std",
       },
     });
     const videoCreatedAt = new Date().toISOString();
@@ -200,7 +185,7 @@ export async function POST(request: Request) {
     await convex.mutation(api.replicateJobs.recordCliprVideoJob, {
       secret,
       predictionId: videoPrediction.id,
-      modelId: videoModelId,
+      modelId: avatarModelId,
       status: getReplicatePredictionStatus(videoPrediction.status),
       createdAt: videoCreatedAt,
       updatedAt: videoCreatedAt,
@@ -229,13 +214,12 @@ export async function POST(request: Request) {
       durationSeconds,
       hook: generatedScript.hook,
       modelIds: {
+        avatar: avatarModelId,
         script: scriptModelId,
         textToSpeech: textToSpeechModelId,
-        video: videoModelId,
       },
       script: generatedScript.script,
       segmentIndex,
-      segmentDurationSeconds,
       styleKey: style.styleKey,
       templateId: template.templateId,
       title: generatedScript.title,

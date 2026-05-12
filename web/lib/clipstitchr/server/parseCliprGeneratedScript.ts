@@ -18,7 +18,7 @@ export function parseCliprGeneratedScript(
   const script = normalizeString(parsed.script, 5000);
   const avatarPrompt =
     normalizeString(parsed.avatarPrompt, 500) ||
-    "A friendly creator speaks directly to camera in a bright, relevant everyday location with natural expression and soft room tone.";
+    "A friendly creator speaks directly to camera with natural expression.";
   const title = normalizeString(parsed.title, 120) || "Clipr engagement clip";
 
   if (!hook || !script) {

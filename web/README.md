@@ -36,7 +36,7 @@ REPLICATE_UPLOAD_ANALYSIS_MODEL_ID=openai/gpt-4.1-mini
 REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID=google/gemini-3-flash
 CLIPR_SCRIPT_MODEL_ID=openai/gpt-4.1
 CLIPR_TTS_MODEL_ID=elevenlabs/v3
-CLIPR_VIDEO_MODEL_ID=bytedance/seedance-2.0
+CLIPR_AVATAR_MODEL_ID=kwaivgi/kling-avatar-v2
 ```
 
 ## Commands
