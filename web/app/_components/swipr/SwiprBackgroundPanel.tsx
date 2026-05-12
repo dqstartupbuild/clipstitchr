@@ -2,6 +2,7 @@
 
 import { ImagePlus, Images, Upload } from "lucide-react";
 import { useEffect } from "react";
+import { Database, ImagePlus, Images, Upload } from "lucide-react";
 import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
@@ -19,10 +20,12 @@ type SwiprBackgroundPanelProps = {
   isSaving: boolean;
   isGeneratingAi: boolean;
   isAiDisabled: boolean;
+  isSeedingDevBackgrounds?: boolean;
   onBackgroundSearchChange: (query: string) => void;
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onSelectBackground: (background: SwiprBackgroundAsset) => void;
   onGenerateAiBackground: () => void;
+  onSeedBackgroundLibrary?: () => void;
   onUploadBackground: (file: File) => void;
 };
 
@@ -33,16 +36,18 @@ export function SwiprBackgroundPanel({
   isSaving,
   isGeneratingAi,
   isAiDisabled,
+  isSeedingDevBackgrounds = false,
   onBackgroundSearchChange,
   onLoadBackgroundBlob,
   onSelectBackground,
   onGenerateAiBackground,
+  onSeedBackgroundLibrary,
   onUploadBackground,
 }: SwiprBackgroundPanelProps) {
   const pagination = usePagination(backgrounds, {
     pageSize: clipSelectorPageSize,
   });
-  const isBusy = isSaving || isGeneratingAi;
+  const isBusy = isSaving || isGeneratingAi || isSeedingDevBackgrounds;
 
   useEffect(() => {
     let isCancelled = false;
@@ -101,11 +106,23 @@ export function SwiprBackgroundPanel({
               size="sm"
               icon={<Images aria-hidden className="h-4 w-4" />}
               isLoading={isGeneratingAi}
-              disabled={isSaving || isAiDisabled}
+              disabled={isSaving || isSeedingDevBackgrounds || isAiDisabled}
               onClick={onGenerateAiBackground}
             >
               Generate
             </Button>
+            {onSeedBackgroundLibrary ? (
+              <Button
+                type="button"
+                size="sm"
+                icon={<Database aria-hidden className="h-4 w-4" />}
+                isLoading={isSeedingDevBackgrounds}
+                disabled={isSaving || isGeneratingAi}
+                onClick={onSeedBackgroundLibrary}
+              >
+                Seed 5
+              </Button>
+            ) : null}
             <label
               className={[
                 "inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-semibold text-text-primary transition-colors hover:border-accent",
