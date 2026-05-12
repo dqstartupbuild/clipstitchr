@@ -95,7 +95,7 @@ Optional Replicate model overrides:
 | Swipr background metadata analysis | `POST /api/swipr/backgrounds/analyze` | Uses the upload image metadata analysis limits before calling GPT-4.1 mini through Replicate |
 | Upload video action analysis | `POST /api/uploads/analyze` for UGC/demo videos | 60/hour/user, burst 20; 1,500/30 days/user; global 1,000/hour. Gemini full-video analysis runs first for videos up to 100 MB; OpenAI poster analysis is the fallback when Gemini fails or the video exceeds the analysis size cap. |
 | Swapr photo expansion | `POST /api/swapr/photos/expand` | 10/hour/user, burst 5; 20/day/user; 375/30 days/user; global 300/hour |
-| Swapr video job create | `POST /api/swapr/jobs` | 2/hour/user, burst 2; 5/day/user; 500 estimated output seconds/30 days/user; global 300/hour |
+| Swapr video provider segment create | `POST /api/swapr/jobs` | 12 provider segments/hour/user, burst 6; 30 provider segments/day/user; 500 estimated output seconds/30 days/user; global 300/hour |
 | Swapr job polling | `GET /api/swapr/jobs/{id}` | 600/minute/user, burst 150 |
 | Swapr job cancellation | `POST /api/swapr/jobs/{id}/cancel` | 100/hour/user, burst 20 |
 | Swapr output proxy | `GET /api/swapr/output` | 1,000/hour/user, burst 200 |
@@ -219,17 +219,22 @@ the Gemini prediction. If Gemini fails, or if the normalized video is larger
 than 100 MB, the route falls back to the existing OpenAI image-analysis path
 using the generated poster image when one is available.
 
-Swapr video generation is rate-limited both by job count and by estimated output
-seconds. The route uses the source orientation limit as the estimate: image-led
-jobs consume 10 seconds from the monthly budget and video-led jobs consume 30
-seconds. This is a spend-control approximation until provider-side final
-duration is stored in the job ledger.
+Swapr video generation is rate-limited by provider segment count and by
+estimated output seconds. Source clips longer than 10 seconds are split in the
+browser into contiguous <=10 second Media Bunny segments. Each segment calls
+`POST /api/swapr/jobs`, consumes one provider segment from the hourly and daily
+Swapr buckets, and consumes its estimated segment duration from the monthly
+seconds budget before Replicate is called. Single-segment requests without a
+client-provided estimate fall back to the selected orientation limit: image-led
+jobs consume 10 seconds and video-led jobs consume 30 seconds. The monthly
+seconds bucket remains the primary spend-control approximation until
+provider-side final duration is stored in the job ledger.
 
 Swapr speed profiles can override requested provider settings when a
 `generationSpeedTier` is supplied. Creator maps to `Quality 1080p` with Match
 Photo orientation; Pro and Studio map to `Fast 720p` with Match Photo
-orientation. Match Photo keeps the faster 3-10 second source path and aligns
-with ClipStitchr's normalized 9:16 output workflow.
+orientation. Match Photo keeps each provider segment on the faster <=10 second
+path; longer source clips are handled by the browser segment-and-join workflow.
 
 Provider outputs must be finalized by a durable server-side path before they are
 treated as saved user assets. See `docs/backend/durable-workflows.md` for the

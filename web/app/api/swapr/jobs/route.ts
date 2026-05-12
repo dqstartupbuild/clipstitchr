@@ -7,6 +7,7 @@ import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateC
 import { createSwaprPredictionJson } from "@/lib/clipstitchr/server/createSwaprPredictionJson";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { getReplicatePredictionStatus } from "@/lib/clipstitchr/server/getReplicatePredictionStatus";
+import { getOptionalUploadAnalysisFormNumber } from "@/lib/clipstitchr/server/getOptionalUploadAnalysisFormNumber";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { getSwaprCharacterOrientation } from "@/lib/clipstitchr/server/getSwaprCharacterOrientation";
@@ -59,9 +60,21 @@ export async function POST(request: Request) {
       formData,
       "keepOriginalSound",
     );
+    const requestedEstimatedSeconds = getOptionalUploadAnalysisFormNumber(
+      formData,
+      "estimatedSeconds",
+    );
+    const estimatedSeconds = Math.max(
+      1,
+      Math.min(
+        getSwaprReferenceDurationLimit(characterOrientation),
+        requestedEstimatedSeconds ??
+          getSwaprReferenceDurationLimit(characterOrientation),
+      ),
+    );
 
     await convex.mutation(api.rateLimits.consumeSwaprJobCreate, {
-      estimatedSeconds: getSwaprReferenceDurationLimit(characterOrientation),
+      estimatedSeconds,
       secret,
     });
 

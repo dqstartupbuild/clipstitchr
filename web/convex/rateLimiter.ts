@@ -100,15 +100,15 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
   },
   replicateSwaprJobCreate: {
     kind: "token bucket",
-    rate: 2,
+    rate: 12,
     period: HOUR,
-    capacity: 2,
+    capacity: 6,
   },
   replicateSwaprJobCreateDaily: {
     kind: "token bucket",
-    rate: 5,
+    rate: 30,
     period: DAY,
-    capacity: 5,
+    capacity: 30,
   },
   replicateSwaprGeneratedSecondsMonthly: {
     kind: "token bucket",
