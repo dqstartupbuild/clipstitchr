@@ -148,10 +148,6 @@ complete. The browser downloads each finished video through
 `GET /api/clipr/output`, normalizes it to 9:16 with Media Bunny, stitches
 follow-up segments when needed, uploads the final output through the existing R2
 upload URL path, and saves the final Clipr clip through `videoClips.save`.
-If Seedance returns `E005` for a prediction that used `reference_audios`, the
-poll route may create one fallback Seedance prediction without the audio
-reference. That fallback consumes the Clipr segment and estimated-seconds limits
-again before the retry prediction is created.
 
 ## Client Batch Caps
 
