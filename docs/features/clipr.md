@@ -321,6 +321,8 @@ type HookTemplate = {
   styleKey: string;
   template: string;
   requiredVariables: string[];
+  allowedPurposes: Array<"clipr" | "swipr" | "stitchr">;
+  source: "clipstitchr" | "app_hook_library" | "education_viral_patterns";
   emotionalTrigger: string;
   bestFor: string[];
   riskLevel: "safe" | "medium" | "aggressive";
@@ -335,10 +337,33 @@ Implementation details:
   unless a template-specific override is added later.
 - The template picker should randomly choose from active templates in the
   product's eligible pool.
+- Purpose filtering happens before model prompting. Clipr must only receive
+  non-promotional engagement templates, while Swipr and Stitchr may also receive
+  direct product/ad hook templates.
 - The picker can filter out aggressive templates for product contexts where a
   direct or sensitive angle would be a bad fit.
 - The random choice should happen server-side so the client does not ship the
   whole private resource library unnecessarily.
+
+## Hook Asset Integration
+
+The runtime hook engine now has three hidden template sources:
+
+- `clipstitchr`: original non-promotional starter templates used by Clipr,
+  Swipr, and Stitchr.
+- `education_viral_patterns`: reusable education-style patterns distilled from
+  `assets/hooks/46,606 VIRAL HOOKS - by socialgrowthengineers.com -
+  Education.csv`. These are rewritten as placeholder templates rather than
+  shown or copied as raw third-party examples.
+- `app_hook_library`: product/ad hook templates generated from
+  `assets/hooks/hook-library.json`. Bracket placeholders such as `[outcome]`
+  are normalized to the app's `{{outcome}}` placeholder format, and direct
+  phrases such as "this app" are normalized around `{{product_name}}`.
+
+The UI must not expose the source names, template IDs, risk labels, or
+placeholder mechanics. The app-promo library is available only to Swipr and
+Stitchr auto-text because Clipr outputs must remain non-promotional engagement
+clips.
 
 ## Style Generation Rules
 
@@ -713,7 +738,7 @@ Rules:
 
 - The user selects a saved product profile.
 - Hidden hook style/template selection is random within the product's eligible
-  pool.
+  pool and may include app-promo hook-library templates.
 - GPT-4.1 fills the hook and generates slide text.
 - The first slide receives the hook.
 - The remaining slides receive editable supporting points that answer or satisfy
@@ -744,7 +769,7 @@ Rules:
 - The user selects a saved product profile or the currently selected demo's
   product metadata can be used as context when available.
 - Hidden hook style/template selection is random within the product's eligible
-  pool.
+  pool and may include app-promo hook-library templates.
 - GPT-4.1 fills one short overlay hook.
 - The generated overlay is editable.
 - The existing one-overlay-per-batch rule remains unchanged.
@@ -788,6 +813,8 @@ before provider calls.
 New enforcement surfaces to document and implement:
 
 - Clipr hook/script generation.
+- Swipr and Stitchr auto-text through the same Clipr hook/script generation
+  route. The expanded local template libraries do not add a new backend surface.
 - Clipr full-script avatar video and voice generation.
 - Clipr avatar still generation.
 - Clipr full job creation.

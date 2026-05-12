@@ -168,6 +168,11 @@ planning, Clipr consumes the avatar-video limit before creating the avatar
 still, so a rate-limit rejection does not leave an image generated without the
 video call that follows.
 
+The expanded hook libraries are local prompt resources, not new backend
+operations. Swipr and Stitchr auto-text continue to use `POST /api/clipr/text`
+and the existing Clipr hook/script generation rate limit before the provider
+call.
+
 ## Client Batch Caps
 
 Client upload controls enforce batch sizes before any processing, signed URL

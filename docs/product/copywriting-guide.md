@@ -153,6 +153,8 @@ more finished creative so they can test faster.
   "Use in Stitchr."
 - Do not mention hidden hook styles, template IDs, risk labels, provider names,
   or placeholder mechanics in user-facing Clipr copy.
+- Do not mention internal hook source names such as app hook library or
+  education viral patterns in user-facing copy.
 - Clipr copy must not include platform, sales, or app CTAs such as "comment,"
   "follow," "buy," "book," "download it," or "sign up."
 - Describe Swipr as a way to create, save, edit, and download carousels.

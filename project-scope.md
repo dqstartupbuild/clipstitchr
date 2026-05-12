@@ -176,6 +176,10 @@ main product promise.
 | 4 | AI features use rate limits, credit budgeting, and speed profiles because they create external provider cost | ✅ | ✅ |
 | 5 | Clipr generates non-promotional short engagement Clips from saved product and avatar context | ✅ | ✅ |
 
+Clipr uses hidden non-promotional hook templates only. Broader internal hook
+assets can support Swipr and Stitchr auto-text, but direct product/ad hook
+patterns must not leak into Clipr outputs.
+
 ### 4.6 Carousel Generation
 
 Swipr creates TikTok-ready static carousel image sets. The MVP uses browser-local
@@ -188,6 +192,9 @@ download the latest saved version later. Saved Settings products provide the
 preferred Swipr AI background context: users can save multiple named products
 with product and audience details, and server-side GPT-4.1 enrichment stores
 hidden inferred problem and audience pain-point metadata for generation prompts.
+Swipr text generation can draw from the hidden app-promo hook library and
+education-pattern templates, then applies editable generated text across the
+selected slides.
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
@@ -199,7 +206,8 @@ hidden inferred problem and audience pain-point metadata for generation prompts.
 | 6 | Browser renders 9:16 PNG images and downloads them as one ZIP file | ✅ | ✅ |
 | 7 | Saved Swipes appear in the Content Library Swipes tab and download from saved editable state | ✅ | ✅ |
 | 8 | Uploaded/generated backgrounds save to shared R2-backed Background Library with hidden GPT-4.1-mini search metadata | ✅ | ✅ |
-| 9 | Pinterest or stock-library provider integration | — | ✅ |
+| 9 | Auto-generated Swipr slide text uses purpose-filtered hidden hook libraries | ✅ | ✅ |
+| 10 | Pinterest or stock-library provider integration | — | ✅ |
 
 ---
 

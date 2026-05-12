@@ -134,7 +134,9 @@ UGC-then-demo videos without opening a traditional editor.
 
 Clipr and Swipr extend the same library into reusable engagement clips and saved
 carousel posts. They should be positioned as useful secondary workflows, not as
-the primary reason to choose ClipStitchr.
+the primary reason to choose ClipStitchr. Internal hook libraries can help
+generate editable Swipr and Stitchr text, but those mechanics should stay out of
+positioning copy.
 
 ## What To Avoid
 

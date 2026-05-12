@@ -1,15 +1,29 @@
 import { cliprHookStyles } from "@/lib/clipstitchr/resources/clipr/cliprHookStyles";
+import { rawAppHookTemplates } from "@/lib/clipstitchr/resources/clipr/rawAppHookTemplates";
 import { rawCliprHookTemplates } from "@/lib/clipstitchr/resources/clipr/rawCliprHookTemplates";
+import { rawEducationHookTemplates } from "@/lib/clipstitchr/resources/clipr/rawEducationHookTemplates";
 import type { CliprHookTemplate } from "@/lib/clipstitchr/types/CliprHookTemplate";
+import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import { getCliprTemplateRequiredVariables } from "@/lib/clipstitchr/utils/getCliprTemplateRequiredVariables";
 
+const defaultAllowedPurposes: CliprTextPurpose[] = [
+  "clipr",
+  "stitchr",
+  "swipr",
+];
+
 export const cliprHookTemplates: CliprHookTemplate[] =
-  rawCliprHookTemplates.map((template) => {
+  [
+    ...rawCliprHookTemplates,
+    ...rawEducationHookTemplates,
+    ...rawAppHookTemplates,
+  ].map((template) => {
     const style = cliprHookStyles.find(
       (item) => item.styleKey === template.styleKey,
     );
 
     return {
+      allowedPurposes: template.allowedPurposes ?? defaultAllowedPurposes,
       id: template.templateId,
       styleKey: template.styleKey,
       template: template.template,
@@ -17,6 +31,7 @@ export const cliprHookTemplates: CliprHookTemplate[] =
       emotionalTrigger: style?.emotionalTrigger ?? "curiosity",
       bestFor: style?.bestFor ?? [],
       riskLevel: style?.riskLevel ?? "safe",
+      source: template.source ?? "clipstitchr",
       active: true,
     };
   });

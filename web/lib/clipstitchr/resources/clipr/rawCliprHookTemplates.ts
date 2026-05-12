@@ -1,8 +1,6 @@
-export const rawCliprHookTemplates: {
-  styleKey: string;
-  template: string;
-  templateId: string;
-}[] = [
+import type { RawCliprHookTemplate } from "@/lib/clipstitchr/types/RawCliprHookTemplate";
+
+export const rawCliprHookTemplates: RawCliprHookTemplate[] = [
   { styleKey: "mystery_gap", templateId: "MG-001", template: "The thing nobody tells you about {{topic}}" },
   { styleKey: "mystery_gap", templateId: "MG-002", template: "I finally figured out why {{audience}} struggle with {{problem}}" },
   { styleKey: "mystery_gap", templateId: "MG-003", template: "This one small part of {{task}} matters more than you think" },
