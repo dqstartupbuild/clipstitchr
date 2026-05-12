@@ -13,7 +13,6 @@ import { SWIPR_MIN_SLIDE_COUNT } from "@/lib/clipstitchr/constants/swiprSlideCou
 import { SWIPR_STATIC_DURATION } from "@/lib/clipstitchr/constants/swiprStaticDuration";
 import { generateSwiprBackgroundWithAi } from "@/lib/clipstitchr/client/generateSwiprBackgroundWithAi";
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
-import { seedSwiprBackgroundLibrary } from "@/lib/clipstitchr/client/seedSwiprBackgroundLibrary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
@@ -32,9 +31,6 @@ import { getSwiprSavedProductOptionValue } from "@/lib/clipstitchr/utils/getSwip
 import { getSwiprSwipeName } from "@/lib/clipstitchr/utils/getSwiprSwipeName";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { resizeSwiprSlides } from "@/lib/clipstitchr/utils/resizeSwiprSlides";
-
-const SWIPR_DEV_SEED_BATCH_SIZE = 5;
-const isDevelopment = process.env.NODE_ENV === "development";
 
 export function SwiprPageClient() {
   const products = useProducts();
@@ -61,7 +57,6 @@ export function SwiprPageClient() {
   const [backgroundError, setBackgroundError] = useState<string | null>(null);
   const [isGeneratingAiBackground, setIsGeneratingAiBackground] =
     useState(false);
-  const [isSeedingDevBackgrounds, setIsSeedingDevBackgrounds] = useState(false);
   const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
   const [editingSwipeId, setEditingSwipeId] = useState<string | null>(() => {
     if (typeof window === "undefined") {
@@ -111,9 +106,7 @@ export function SwiprPageClient() {
     [backgroundSearchQuery, swiprLibrary.backgrounds],
   );
   const isCreatingBackground =
-    swiprLibrary.isSavingBackground ||
-    isGeneratingAiBackground ||
-    isSeedingDevBackgrounds;
+    swiprLibrary.isSavingBackground || isGeneratingAiBackground;
   const isSavedExportReady = Boolean(savedSwipeSnapshot && savedSwipeBackground);
 
   const generateAiBackground = useCallback(async () => {
@@ -188,32 +181,6 @@ export function SwiprPageClient() {
             : "Unable to save this background.",
         );
       });
-  };
-
-  const handleSeedBackgroundLibrary = () => {
-    setIsSeedingDevBackgrounds(true);
-    setBackgroundError(null);
-    setAutoTextMessage(null);
-
-    void seedSwiprBackgroundLibrary({
-      count: SWIPR_DEV_SEED_BATCH_SIZE,
-    })
-      .then(async (result) => {
-        await swiprLibrary.refresh();
-        setAutoTextMessage(
-          result.saved
-            ? `Seeded ${result.saved} backgrounds. ${result.remaining} remaining.`
-            : `Seed catalog already complete. ${result.skipped} backgrounds found.`,
-        );
-      })
-      .catch((error) => {
-        setBackgroundError(
-          error instanceof Error
-            ? error.message
-            : "Unable to seed Swipr backgrounds.",
-        );
-      })
-      .finally(() => setIsSeedingDevBackgrounds(false));
   };
 
   const handleSelectBackground = (backgroundAsset: SwiprBackgroundAsset) => {
@@ -409,13 +376,9 @@ export function SwiprPageClient() {
                   isSaving={swiprLibrary.isSavingBackground}
                   isGeneratingAi={isGeneratingAiBackground}
                   isAiDisabled={!selectedSavedProduct}
-                  isSeedingDevBackgrounds={isSeedingDevBackgrounds}
                   onBackgroundSearchChange={setBackgroundSearchQuery}
                   onSelectBackground={handleSelectBackground}
                   onGenerateAiBackground={() => void generateAiBackground()}
-                  onSeedBackgroundLibrary={
-                    isDevelopment ? handleSeedBackgroundLibrary : undefined
-                  }
                   onUploadBackground={handleUploadBackground}
                 />
                 <SwiprSlideStrip

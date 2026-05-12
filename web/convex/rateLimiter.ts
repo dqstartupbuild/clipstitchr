@@ -191,19 +191,6 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 100,
     shards: 10,
   },
-  replicateSwiprSeedBackgroundGenerateDev: {
-    kind: "token bucket",
-    rate: 1000,
-    period: DAY,
-    capacity: 1000,
-  },
-  replicateSwiprSeedBackgroundGenerateDevGlobal: {
-    kind: "token bucket",
-    rate: 1000,
-    period: HOUR,
-    capacity: 100,
-    shards: 10,
-  },
   cliprJobCreate: {
     kind: "token bucket",
     rate: 3,
