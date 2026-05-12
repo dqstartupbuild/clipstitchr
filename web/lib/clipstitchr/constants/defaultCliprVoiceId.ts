@@ -1,0 +1,1 @@
+export const defaultCliprVoiceId = "Rachel";

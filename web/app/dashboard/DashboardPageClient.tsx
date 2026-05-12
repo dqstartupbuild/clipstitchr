@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { CliprCallout } from "@/app/_components/dashboard/CliprCallout";
 import { StitchrCallout } from "@/app/_components/dashboard/StitchrCallout";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
@@ -11,6 +12,8 @@ import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsS
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
+import { filterCliprClips } from "@/lib/clipstitchr/utils/filterCliprClips";
+import { filterPlainUgcClips } from "@/lib/clipstitchr/utils/filterPlainUgcClips";
 import { getRecentAvatarPhotos } from "@/lib/clipstitchr/utils/getRecentAvatarPhotos";
 import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
 import { getRecentVideoClips } from "@/lib/clipstitchr/utils/getRecentVideoClips";
@@ -21,7 +24,11 @@ export function DashboardPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
   const ugcClips = useMemo(
-    () => filterClipsByType(library.clips, "ugc"),
+    () => filterPlainUgcClips(library.clips),
+    [library.clips],
+  );
+  const cliprClips = useMemo(
+    () => filterCliprClips(library.clips),
     [library.clips],
   );
   const demoClips = useMemo(
@@ -62,6 +69,7 @@ export function DashboardPageClient() {
         <DashboardStats
           ugcCount={ugcClips.length}
           demoCount={demoClips.length}
+          clipsCount={cliprClips.length}
           stitchesCount={library.stitches.length}
         />
         <RecentStitchesSection
@@ -82,6 +90,7 @@ export function DashboardPageClient() {
           onDelete={photoLibrary.removePhoto}
           onUpdateMetadata={photoLibrary.updatePhotoMetadata}
         />
+        <CliprCallout />
         <StitchrCallout />
       </div>
     </DashboardShell>

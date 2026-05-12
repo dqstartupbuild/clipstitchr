@@ -12,6 +12,7 @@ import { Panel } from "@/app/_components/ui/Panel";
 import { SWIPR_MIN_SLIDE_COUNT } from "@/lib/clipstitchr/constants/swiprSlideCountBounds";
 import { SWIPR_STATIC_DURATION } from "@/lib/clipstitchr/constants/swiprStaticDuration";
 import { generateSwiprBackgroundWithAi } from "@/lib/clipstitchr/client/generateSwiprBackgroundWithAi";
+import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
@@ -58,6 +59,7 @@ export function SwiprPageClient() {
   const [backgroundError, setBackgroundError] = useState<string | null>(null);
   const [isGeneratingAiBackground, setIsGeneratingAiBackground] =
     useState(false);
+  const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
   const [editingSwipeId, setEditingSwipeId] = useState<string | null>(() => {
     if (typeof window === "undefined") {
       return null;
@@ -69,6 +71,7 @@ export function SwiprPageClient() {
   const [savedSwipeSnapshot, setSavedSwipeSnapshot] =
     useState<SwiprSwipe | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [autoTextMessage, setAutoTextMessage] = useState<string | null>(null);
   const defaultSavedProductId = products.products[0]
     ? getSwiprSavedProductOptionValue(products.products[0].id)
     : "";
@@ -208,6 +211,40 @@ export function SwiprPageClient() {
     );
   };
 
+  const handleGenerateAutoText = () => {
+    if (!selectedSavedProductId) {
+      setAutoTextMessage("Choose a saved Settings product before generating text.");
+      return;
+    }
+
+    setIsGeneratingAutoText(true);
+    setAutoTextMessage(null);
+
+    void generateCliprText({
+      productId: selectedSavedProductId,
+      purpose: "swipr",
+      slideCount,
+    })
+      .then((text) => {
+        setSlides((currentSlides) =>
+          currentSlides.map((slide, index) => ({
+            ...slide,
+            textOverlay: {
+              ...slide.textOverlay,
+              text: text.slides[index] ?? slide.textOverlay.text,
+            },
+          })),
+        );
+        setAutoTextMessage("Text generated.");
+      })
+      .catch((error) => {
+        setAutoTextMessage(
+          error instanceof Error ? error.message : "Unable to generate text.",
+        );
+      })
+      .finally(() => setIsGeneratingAutoText(false));
+  };
+
   const handleSave = () => {
     if (!selectedBackgroundAsset) {
       setSaveMessage("Choose a saved background before saving.");
@@ -316,6 +353,11 @@ export function SwiprPageClient() {
             {products.error ?? swiprLibrary.error ?? backgroundError}
           </div>
         ) : null}
+        {autoTextMessage ? (
+          <div className="rounded-lg border border-accent/25 bg-surface-muted p-4 text-sm font-semibold text-accent-dark">
+            {autoTextMessage}
+          </div>
+        ) : null}
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
           <Panel className="order-2 min-w-0 p-4 xl:order-1">
@@ -325,7 +367,9 @@ export function SwiprPageClient() {
                   productOptions={productOptions}
                   selectedProductId={activeProductId}
                   slideCount={slideCount}
+                  isGeneratingText={isGeneratingAutoText}
                   onProductChange={setSelectedProductId}
+                  onGenerateText={handleGenerateAutoText}
                   onSlideCountChange={handleSlideCountChange}
                 />
                 <SwiprBackgroundPanel

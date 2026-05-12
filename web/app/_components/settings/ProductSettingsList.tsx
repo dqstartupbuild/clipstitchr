@@ -1,11 +1,28 @@
 import { Panel } from "@/app/_components/ui/Panel";
+import { ProductSettingsCard } from "@/app/_components/settings/ProductSettingsCard";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
 
 type ProductSettingsListProps = {
   products: ProductProfile[];
+  deletingProductId: string | null;
+  isActionDisabled: boolean;
+  savingProductId: string | null;
+  onDelete: (id: string) => Promise<void>;
+  onUpdate: (
+    id: string,
+    input: ProductProfileCreateInput,
+  ) => Promise<unknown>;
 };
 
-export function ProductSettingsList({ products }: ProductSettingsListProps) {
+export function ProductSettingsList({
+  products,
+  deletingProductId,
+  isActionDisabled,
+  savingProductId,
+  onDelete,
+  onUpdate,
+}: ProductSettingsListProps) {
   return (
     <Panel className="p-4">
       <div className="flex items-center justify-between gap-3">
@@ -24,17 +41,15 @@ export function ProductSettingsList({ products }: ProductSettingsListProps) {
       {products.length ? (
         <div className="mt-4 flex flex-col gap-2">
           {products.map((product) => (
-            <div
+            <ProductSettingsCard
               key={product.id}
-              className="rounded-lg border border-border bg-surface-elevated p-3"
-            >
-              <p className="truncate text-sm font-bold text-text-primary">
-                {product.name}
-              </p>
-              <p className="mt-1 line-clamp-2 text-xs leading-5 text-text-secondary">
-                {product.productDetails || product.audienceDetails || "Saved"}
-              </p>
-            </div>
+              product={product}
+              isDisabled={isActionDisabled}
+              isDeleting={deletingProductId === product.id}
+              isSaving={savingProductId === product.id}
+              onDelete={onDelete}
+              onUpdate={onUpdate}
+            />
           ))}
         </div>
       ) : (

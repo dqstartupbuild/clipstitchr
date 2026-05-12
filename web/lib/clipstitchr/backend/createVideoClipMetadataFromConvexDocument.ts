@@ -32,6 +32,7 @@ export function createVideoClipMetadataFromConvexDocument(
     defaultTrimRange: clip.defaultTrimRange,
     hasAudio: clip.hasAudio,
     swaprMetadata: clip.swaprMetadata,
+    cliprMetadata: clip.cliprMetadata,
     createdAt: clip.createdAt,
     updatedAt: clip.updatedAt,
   };

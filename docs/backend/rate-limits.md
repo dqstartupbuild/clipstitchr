@@ -67,6 +67,14 @@ Optional Replicate model overrides:
   background generation.
 - `PRODUCT_ENRICHMENT_MODEL_ID` defaults to `openai/gpt-4.1` for hidden product
   strategy enrichment when saving products in Settings.
+- `CLIPR_HOOK_MODEL_ID` defaults to `openai/gpt-4.1` for Clipr hook, script,
+  Swipr auto-text, and Stitchr auto-text generation.
+- `CLIPR_AVATAR_STILL_MODEL_ID` defaults to `openai/gpt-image-2` for
+  scene-specific UGC avatar stills before image-to-video.
+- `CLIPR_SCENE_MODEL_ID` defaults to `prunaai/p-video` for Clipr image-to-video
+  and text-to-video scene generation.
+- `CLIPR_TTS_MODEL_ID` is reserved for the ElevenLabs adapter when voice
+  generation is wired.
 
 ## Enforcement Map
 
@@ -88,12 +96,20 @@ Optional Replicate model overrides:
 | Swapr output proxy | `GET /api/swapr/output` | 1,000/hour/user, burst 200 |
 | Avatar photo generation | `POST /api/avatars/photos/generate` from the Avatars page or UGC clip avatar action | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour |
 | Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 5; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
-| Product enrichment | `POST /api/settings/products` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
+| Product enrichment | `POST /api/settings/products`, `PATCH /api/settings/products/{id}` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
+| Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; global provider bucket 500/hour |
+| Clipr hook/script generation | `POST /api/clipr/jobs` and `POST /api/clipr/text` | 30/hour/user, burst 10; global provider bucket 500/hour |
+| Clipr avatar still generation | `POST /api/clipr/jobs` before each avatar scene image-to-video call | 20 images/hour/user, burst 6; global provider bucket counted once per still |
+| Clipr scene generation | `POST /api/clipr/jobs` before each scene provider call | 40 estimated scene seconds/hour/user, burst 12; global provider bucket counted by estimated seconds |
+| Clipr voice generation | Reserved Clipr voice adapter | 60 estimated voice seconds/hour/user, burst 20; global provider bucket counted by estimated seconds |
+| Clipr job polling | Reserved Clipr polling route and Convex job refreshes | 600/minute/user, burst 150 |
+| Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `swiprBackgrounds.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
-| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
+| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `products.update`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
+| Convex Clipr job writes | `cliprJobs.createQueued`, `cliprJobs.applyScriptPlan`, `cliprJobs.recordSceneOutput`, `cliprJobs.finalizeWithClip` | 3,000/hour/user, burst 500 |
 
 ## Local-Only Workflows
 
@@ -118,11 +134,19 @@ prefix and are downloadable by authenticated users through the Swipr background
 download route after Convex validation. They are intentionally not user-deletable
 through the shared background model.
 
-Settings product saves call Replicate GPT-4.1 through `POST /api/settings/products`
-to infer hidden product strategy metadata before saving the product to Convex.
-The route consumes the product enrichment limit before creating the prediction,
-then `products.create` consumes the shared Convex record-save limit before the
-database write.
+Settings product creates and edits call Replicate GPT-4.1 through
+`POST /api/settings/products` and `PATCH /api/settings/products/{id}` to infer
+hidden product strategy metadata before saving the product to Convex. The route
+consumes the product enrichment limit before creating the prediction, then
+`products.create` consumes the shared Convex record-save limit or
+`products.update` consumes the shared Convex metadata-update limit before the
+database write. `products.remove` consumes the shared Convex record-delete limit.
+
+Clipr browser final stitching is intentionally not separately rate-limited in
+the MVP because Media Bunny runs locally from already durable scene objects.
+The expensive surfaces are gated before work starts: job creation, hook/script
+generation, scene-specific avatar still generation, scene video generation, R2
+object creation, and Convex final save.
 
 ## Client Batch Caps
 

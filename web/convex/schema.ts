@@ -1,6 +1,11 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { assetTagsValidator } from "./validators/assetTags";
+import { cliprDurationSecondsValidator } from "./validators/cliprDurationSeconds";
+import { cliprJobStageValidator } from "./validators/cliprJobStage";
+import { cliprJobStatusValidator } from "./validators/cliprJobStatus";
+import { cliprMetadataValidator } from "./validators/cliprMetadata";
+import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { clipTypeValidator } from "./validators/clipType";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
@@ -40,6 +45,7 @@ export default defineSchema({
     defaultTrimRange: v.optional(videoTrimRangeValidator),
     hasAudio: v.boolean(),
     swaprMetadata: v.optional(swaprMetadataValidator),
+    cliprMetadata: v.optional(cliprMetadataValidator),
     createdAt: v.string(),
     updatedAt: v.string(),
   })
@@ -98,6 +104,11 @@ export default defineSchema({
     audienceDetails: v.string(),
     inferredProblem: v.optional(v.string()),
     inferredPainPoints: v.array(v.string()),
+    eligibleCliprHookStyleKeys: v.optional(v.array(v.string())),
+    eligibleCliprHookTemplateIds: v.optional(v.array(v.string())),
+    cliprPlaceholderFillers: v.optional(
+      v.record(v.string(), v.array(v.string())),
+    ),
     createdAt: v.string(),
     updatedAt: v.string(),
   })
@@ -171,4 +182,42 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_prediction", ["ownerId", "predictionId"]),
+  cliprJobs: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    productId: v.string(),
+    productName: v.string(),
+    productDetails: v.string(),
+    audienceDetails: v.string(),
+    productInferredProblem: v.optional(v.string()),
+    productInferredPainPoints: v.array(v.string()),
+    avatarId: v.string(),
+    avatarName: v.string(),
+    avatarPhotoId: v.string(),
+    voiceId: v.string(),
+    targetDurationSeconds: cliprDurationSecondsValidator,
+    hookStyleKey: v.optional(v.string()),
+    hookTemplateId: v.optional(v.string()),
+    filledHook: v.optional(v.string()),
+    variablesUsed: v.optional(v.record(v.string(), v.string())),
+    script: v.optional(v.string()),
+    scenePlan: v.array(cliprScenePlanValidator),
+    providerModels: v.array(v.string()),
+    status: cliprJobStatusValidator,
+    stage: cliprJobStageValidator,
+    progress: v.number(),
+    finalClipId: v.optional(v.string()),
+    error: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    completedAt: v.optional(v.string()),
+    finalizedAt: v.optional(v.string()),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"]),
+  cliprUserPreferences: defineTable({
+    ownerId: v.string(),
+    defaultVoiceId: v.string(),
+    updatedAt: v.string(),
+  }).index("by_owner", ["ownerId"]),
 });

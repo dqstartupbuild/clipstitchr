@@ -1,36 +1,119 @@
 import type { ProductEnrichment } from "@/lib/clipstitchr/types/ProductEnrichment";
+import { cliprHookStyles } from "@/lib/clipstitchr/resources/clipr/cliprHookStyles";
+import { cliprHookTemplates } from "@/lib/clipstitchr/resources/clipr/cliprHookTemplates";
 
 function getJsonText(outputText: string) {
   const trimmedText = outputText.trim();
   const codeFenceMatch = trimmedText.match(/```(?:json)?\s*([\s\S]*?)```/i);
 
-  return codeFenceMatch?.[1]?.trim() ?? trimmedText;
+  if (codeFenceMatch?.[1]) {
+    return codeFenceMatch[1].trim();
+  }
+
+  return trimmedText.match(/\{[\s\S]*\}/)?.[0] ?? trimmedText;
 }
 
 function normalizeString(value: unknown, maxLength: number) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
 
+function normalizeStringArray(
+  value: unknown,
+  allowedValues: Set<string> | null,
+  limit: number,
+  maxLength: number,
+) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      value
+        .map((entry) => normalizeString(entry, maxLength))
+        .filter((entry) => entry && (!allowedValues || allowedValues.has(entry))),
+    ),
+  ).slice(0, limit);
+}
+
+function normalizePlaceholderFillers(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+
+  const allowedKeys = new Set(
+    cliprHookTemplates.flatMap((template) => template.requiredVariables),
+  );
+
+  return Object.fromEntries(
+    Object.entries(value)
+      .map(([key, entries]) => [
+        normalizeString(key, 40),
+        normalizeStringArray(entries, null, 16, 120),
+      ] as const)
+      .filter(([key, entries]) => key && allowedKeys.has(key) && entries.length),
+  );
+}
+
+function getEmptyProductEnrichment(): ProductEnrichment {
+  return {
+    cliprPlaceholderFillers: {},
+    eligibleCliprHookStyleKeys: [],
+    eligibleCliprHookTemplateIds: [],
+    inferredProblem: undefined,
+    inferredPainPoints: [],
+  };
+}
+
 export function parseProductEnrichmentOutputText(
   outputText: string,
 ): ProductEnrichment {
-  const parsed = JSON.parse(getJsonText(outputText)) as {
+  let parsed: {
+    cliprPlaceholderFillers?: unknown;
+    eligibleCliprHookStyleKeys?: unknown;
+    eligibleCliprHookTemplateIds?: unknown;
     inferredPainPoints?: unknown;
     inferredProblem?: unknown;
     problemSolved?: unknown;
   };
+
+  try {
+    parsed = JSON.parse(getJsonText(outputText)) as typeof parsed;
+  } catch {
+    return getEmptyProductEnrichment();
+  }
+
+  const styleKeys = new Set(cliprHookStyles.map((style) => style.styleKey));
+  const templateIds = new Set(
+    cliprHookTemplates.map((template) => template.id),
+  );
   const inferredProblem =
     normalizeString(parsed.inferredProblem, 300) ||
     normalizeString(parsed.problemSolved, 300) ||
     undefined;
-  const inferredPainPoints = Array.isArray(parsed.inferredPainPoints)
-    ? parsed.inferredPainPoints
-        .map((painPoint) => normalizeString(painPoint, 160))
-        .filter(Boolean)
-        .slice(0, 8)
-    : [];
+  const inferredPainPoints = normalizeStringArray(
+    parsed.inferredPainPoints,
+    null,
+    10,
+    160,
+  );
 
   return {
+    cliprPlaceholderFillers: normalizePlaceholderFillers(
+      parsed.cliprPlaceholderFillers,
+    ),
+    eligibleCliprHookStyleKeys: normalizeStringArray(
+      parsed.eligibleCliprHookStyleKeys,
+      styleKeys,
+      styleKeys.size,
+      80,
+    ),
+    eligibleCliprHookTemplateIds: normalizeStringArray(
+      parsed.eligibleCliprHookTemplateIds,
+      templateIds,
+      templateIds.size,
+      80,
+    ),
     inferredProblem,
     inferredPainPoints,
   };

@@ -30,7 +30,8 @@ export function LandingHero() {
           <p className="mt-6 max-w-2xl text-lg leading-8 text-text-secondary">
             Upload creator clips and product demos once. Pick a UGC hook, pair
             it with a demo, and create vertical ad variants without opening a
-            timeline editor.
+            timeline editor. Generate extra Clips when the library needs fresh
+            source material.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <PrimaryButtonLink

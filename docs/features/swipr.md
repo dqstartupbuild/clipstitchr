@@ -16,9 +16,12 @@ or remove images, and download the latest saved version at any time.
    - An uploaded background image.
    - An AI-generated background image.
 5. The user edits text independently on each carousel image.
-6. The user saves the editable Swipe.
-7. The saved Swipe appears in the Content Library under the Swipes tab.
-8. From the library, the user can open the Swipe detail view, swipe through its
+6. The user can generate editable slide text from the shared hidden Clipr
+   hook-template engine. The first slide uses the generated hook, and the
+   remaining slides pay it off with supporting points.
+7. The user saves the editable Swipe.
+8. The saved Swipe appears in the Content Library under the Swipes tab.
+9. From the library, the user can open the Swipe detail view, swipe through its
    images, download the current saved version, or continue editing it in Swipr.
 
 ## Saved Swipe Model
@@ -166,5 +169,7 @@ Required protections:
 - The carousel contains 3-8 images.
 - Rendered PNG images are not stored.
 - Background analysis metadata is hidden from users.
+- Hook style names, template IDs, risk labels, and placeholder mechanics are
+  hidden from users when Swipr auto-text is generated.
 - Backgrounds are shared globally and cannot be deleted by users.
 - Pinterest or stock background provider integration remains future scope.
