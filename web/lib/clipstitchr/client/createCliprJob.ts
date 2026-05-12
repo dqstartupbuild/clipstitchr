@@ -4,6 +4,7 @@ import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDuration
 type CreateCliprJobOptions = {
   avatarId: string;
   durationSeconds: CliprDurationSeconds;
+  jobId: string;
   makeDefaultVoice: boolean;
   productId: string;
   voiceId: string;

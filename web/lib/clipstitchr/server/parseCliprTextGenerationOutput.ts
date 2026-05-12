@@ -3,6 +3,7 @@ import type { CliprHookTemplate } from "@/lib/clipstitchr/types/CliprHookTemplat
 import type { CliprScenePlan } from "@/lib/clipstitchr/types/CliprScenePlan";
 import type { CliprTextGeneration } from "@/lib/clipstitchr/types/CliprTextGeneration";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { getCliprTextHasForbiddenCta } from "@/lib/clipstitchr/utils/getCliprTextHasForbiddenCta";
 import { sanitizeCliprGeneratedText } from "@/lib/clipstitchr/utils/sanitizeCliprGeneratedText";
 import { getCliprJsonText } from "@/lib/clipstitchr/server/getCliprJsonText";
 
@@ -18,6 +19,16 @@ function normalizeString(value: unknown, fallback: string) {
     typeof value === "string" ? value : "",
     fallback,
   );
+}
+
+function normalizeScriptString(value: unknown, fallback: string) {
+  const text = typeof value === "string" ? value.trim().replace(/\s+/g, " ") : "";
+
+  if (!text || getCliprTextHasForbiddenCta(text)) {
+    return fallback;
+  }
+
+  return text.slice(0, 4000);
 }
 
 function normalizeSlides(value: unknown, filledHook: string, slideCount: number) {
@@ -45,16 +56,8 @@ function normalizeVariables(value: unknown) {
   );
 }
 
-function normalizeSceneType(value: unknown) {
-  if (typeof value !== "string") {
-    return "avatar";
-  }
-
-  const normalizedValue = value.trim().toLowerCase().replaceAll("-", "_");
-
-  return normalizedValue === "b_roll" || normalizedValue === "broll"
-    ? "b_roll"
-    : "avatar";
+function normalizeSceneType(): "avatar" {
+  return "avatar";
 }
 
 function normalizeScenePlan(
@@ -62,25 +65,25 @@ function normalizeScenePlan(
   durationSeconds: CliprDurationSeconds,
 ): CliprScenePlan[] {
   const rawScenes = Array.isArray(value) ? value : [];
-  const sceneCount = durationSeconds === 60 ? 7 : 4;
 
   return rawScenes
-    .slice(0, sceneCount)
+    .slice(0, 1)
     .map((scene: ParsedCliprScene, index) => ({
       id: createId(),
       index,
-      sceneType: normalizeSceneType(scene.sceneType),
-      scriptText: normalizeString(scene.scriptText, "Explain the idea simply."),
+      sceneType: normalizeSceneType(),
+      scriptText: normalizeScriptString(
+        scene.scriptText,
+        "Explain the idea simply.",
+      ),
       visualPrompt: normalizeString(
         scene.visualPrompt,
         "Vertical short-form video, natural light, clear subject, steady camera.",
       ),
       estimatedDurationSeconds:
         typeof scene.estimatedDurationSeconds === "number"
-          ? Math.min(15, Math.max(4, scene.estimatedDurationSeconds))
-          : durationSeconds === 60
-            ? 8
-            : 7,
+          ? Math.min(durationSeconds, Math.max(4, scene.estimatedDurationSeconds))
+          : durationSeconds,
     }));
 }
 
@@ -113,11 +116,39 @@ export function parseCliprTextGenerationOutput({
     parsed.filledHook,
     selectedTemplate.template.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, "$1"),
   );
-  const script = normalizeString(
+  const script = normalizeScriptString(
     parsed.script,
-    `${filledHook}. Give the viewer a useful explanation without pitching a product.`,
+    "",
   );
   const scenePlan = normalizeScenePlan(parsed.scenePlan, durationSeconds);
+  const fallbackScript = scenePlan
+    .map((scene) => scene.scriptText)
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+  const finalScript =
+    script ||
+    fallbackScript ||
+    `${filledHook}. Give the viewer a useful explanation without pitching a product.`;
+  const finalScenePlan = scenePlan.length
+    ? scenePlan.map((scene, index) => ({
+        ...scene,
+        index,
+        sceneType: "avatar" as const,
+        scriptText: finalScript,
+        estimatedDurationSeconds: durationSeconds,
+      }))
+    : [
+        {
+          id: createId(),
+          index: 0,
+          sceneType: "avatar" as const,
+          scriptText: finalScript,
+          visualPrompt:
+            "Vertical short-form talking scene with a clear, natural delivery.",
+          estimatedDurationSeconds: durationSeconds,
+        },
+      ];
 
   return {
     filledHook,
@@ -125,20 +156,8 @@ export function parseCliprTextGenerationOutput({
     hookTemplateId: selectedTemplate.id,
     overlayText: normalizeString(parsed.overlayText, filledHook),
     providerModel,
-    scenePlan: scenePlan.length
-      ? scenePlan
-      : [
-          {
-            id: createId(),
-            index: 0,
-            sceneType: "avatar",
-            scriptText: script,
-            visualPrompt:
-              "Vertical short-form talking scene with a clear, natural delivery.",
-            estimatedDurationSeconds: Math.min(15, durationSeconds),
-          },
-        ],
-    script,
+    scenePlan: finalScenePlan,
+    script: finalScript,
     slides: normalizeSlides(parsed.slides, filledHook, slideCount),
     variablesUsed: normalizeVariables(parsed.variablesUsed),
   };

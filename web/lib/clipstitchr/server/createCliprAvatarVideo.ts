@@ -1,44 +1,33 @@
 import type { Prediction } from "replicate";
+import { createCliprAvatarVideoInput } from "@/lib/clipstitchr/server/createCliprAvatarVideoInput";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
-import { createCliprScenePrompt } from "@/lib/clipstitchr/server/createCliprScenePrompt";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
-import { getCliprSceneModelId } from "@/lib/clipstitchr/server/getCliprSceneModelId";
+import { getCliprAvatarVideoModelId } from "@/lib/clipstitchr/server/getCliprAvatarVideoModelId";
 import { getReplicateOutputUrl } from "@/lib/clipstitchr/server/getReplicateOutputUrl";
-import type { CliprScenePlan } from "@/lib/clipstitchr/types/CliprScenePlan";
 
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
-type CreateCliprSceneVideoOptions = {
-  imageUrl?: string;
+type CreateCliprAvatarVideoOptions = {
+  imageUrl: string;
   replicate: ReplicateClient;
-  scene: CliprScenePlan;
+  script: string;
+  voiceId: string;
 };
 
-export async function createCliprSceneVideo({
+export async function createCliprAvatarVideo({
   imageUrl,
   replicate,
-  scene,
-}: CreateCliprSceneVideoOptions) {
-  const modelId = getCliprSceneModelId();
-  const duration = Math.min(
-    15,
-    Math.max(4, Math.round(scene.estimatedDurationSeconds)),
-  );
+  script,
+  voiceId,
+}: CreateCliprAvatarVideoOptions) {
+  const modelId = getCliprAvatarVideoModelId();
   const prediction = await replicate.predictions.create({
     model: modelId,
-    input: {
-      prompt: createCliprScenePrompt(scene),
-      duration,
-      resolution: "720p",
-      fps: 24,
-      draft: false,
-      aspect_ratio: "9:16",
-      prompt_upsampling: true,
-      save_audio: false,
-      ...(imageUrl && scene.sceneType === "avatar"
-        ? { image: imageUrl }
-        : {}),
-    },
+    input: createCliprAvatarVideoInput({
+      imageUrl,
+      script,
+      voiceId,
+    }),
   });
   const completedPrediction = await replicate.wait(prediction, {
     interval: 5000,
@@ -48,7 +37,7 @@ export async function createCliprSceneVideo({
     throw new Error(
       typeof completedPrediction.error === "string"
         ? completedPrediction.error
-        : "Replicate did not complete Clipr scene generation.",
+        : "Replicate did not complete Clipr avatar video generation.",
     );
   }
 

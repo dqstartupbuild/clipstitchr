@@ -52,21 +52,14 @@ hook, and the remaining slides should pay it off with simple supporting points.
 - Generated videos can be up to 60 seconds.
 - The user selects an avatar to use as the character reference. They should not
   have to select a specific image; the system should automatically use that
-  avatar's most recent photo for character consistency.
+  avatar's first uploaded photo for stable, repeatable character consistency.
 - The user selects a voice through a modal-style dropdown.
 - The voice selector includes `Make default`.
 - Saved default voice should be reused on later Clipr jobs.
-- Clipr should generate multiple short scene clips from a script, then stitch
-  them together.
-- Scenes should be generated one at a time using a few script lines per scene.
-- Some scenes should show the selected avatar.
-- Some scenes should be b-roll.
-- Generated scenes must get as close as possible to the target length of 30 or
-  60 seconds. Track each generated scene duration, generate follow-up scenes
-  when the total is short, and trim the stitched final output with Media Bunny
-  when the total runs over the selected target.
-- Media Bunny should be used to stitch generated scenes into the final 9:16
-  output.
+- Clipr should generate one full-script avatar video from the selected avatar
+  and voice.
+- The generated avatar video should get as close as possible to the target
+  length of 30 or 60 seconds.
 - Final Clipr outputs should be saved in the content library and organized into a "Clips" tab.
 
 ## Documentation Coverage
@@ -76,7 +69,8 @@ Clipr affects these docs:
 - `docs/features/clipr.md`
   - Overwrite it with the full Clipr feature scope.
   - Include the hook/template engine, generation pipeline, voice selection,
-    scene stitching, library behavior, data model, rate limits, and MVP limits.
+    full-script avatar generation, library behavior, data model, rate limits,
+    and MVP limits.
 - `project-scope.md`
   - Add Clipr to feature requirements, routes, Content Library tabs, AI-assisted
     content supply, data model, phases, and success criteria.
@@ -108,7 +102,7 @@ Clipr affects these docs:
 - `docs/backend/durable-workflows.md`
   - Add Clipr as a multi-provider durable job workflow.
   - Require provider outputs to be copied to R2 before provider retention expires.
-  - Require recoverable final stitching from saved scene outputs.
+  - Require recoverable final Clip saving from saved avatar output.
 
 ## Internal Resource Files
 
@@ -539,8 +533,8 @@ Rules:
 
 1. User opens `/dashboard/clipr`.
 2. User selects a saved product profile from Settings.
-3. User selects an avatar. The system resolves that avatar's most recent photo
-   as the hidden reference image.
+3. User selects an avatar. The system resolves that avatar's first uploaded
+   photo as the hidden reference image.
 4. User chooses duration: `30 seconds` or `60 seconds`; default is `30 seconds`.
 5. User selects a voice through a modal-style dropdown.
 6. User can check `Make default` in the voice selector.
@@ -550,26 +544,19 @@ Rules:
    rules.
 8. GPT-4.1 fills hook placeholders and selects the strongest hook.
 9. GPT-4.1 generates a Clipr script from the selected hook.
-10. GPT-4.1 splits the script into short scene beats.
-11. ElevenLabs v3 generates voice audio for each scene or script segment.
-12. Scene generation runs one scene at a time:
-    - avatar scenes first generate a scene-specific UGC-style still from the
-      selected avatar reference photo, avatar description, script beat, and
-      visual direction
-    - the generated still is sent to P-Video as image-to-video input
-    - b-roll scenes use P-Video text-to-video from product/audience context and
-      a visual prompt
-13. Generated avatar stills and generated scene videos are copied into R2.
-14. If total scene duration is below the selected target, GPT-4.1 generates
-    follow-up scene beats and the provider scene loop continues.
-15. Media Bunny stitches all generated scene clips into one final 9:16 video.
-16. If total scene duration is above the selected target, Media Bunny trims the
-    stitched final output to the selected duration.
-17. Clipr generates a poster image for the final output.
-18. Final video and poster are uploaded to R2.
-19. Convex saves the final output as a UGC-compatible video clip with Clipr
+10. GPT-4.1 returns one avatar scene plan for the full script.
+11. Clipr generates one UGC-style avatar still from the selected avatar
+    reference photo, avatar description, full script, and visual direction.
+12. The generated still, selected voice, and full script are sent to
+    `prunaai/p-video-avatar` to create one talking avatar video.
+13. One generated avatar still and the full-script avatar video are copied into
+    R2.
+14. The browser normalizes the full avatar video.
+15. Clipr generates a poster image for the final output.
+16. Final video and poster are uploaded to R2.
+17. Convex saves the final output as a UGC-compatible video clip with Clipr
     provenance metadata.
-20. The output appears in the Content Library `Clips` tab and can be used in
+18. The output appears in the Content Library `Clips` tab and can be used in
     Stitchr.
 
 ## AI Provider Notes
@@ -580,18 +567,18 @@ model input keys from memory.
 Planned model roles:
 
 - Hook selection and script generation: `openai/gpt-4.1`.
-- Text to speech: `elevenlabs/v3`.
-- Avatar scene still generation: `openai/gpt-image-2`, using the selected
-  avatar reference photo to create a UGC-style still that fits the scene.
-- Scene video generation: `prunaai/p-video`, using image-to-video for avatar
-  scenes and text-to-video for b-roll scenes.
+- Avatar still generation: use the same model, prompt builder, and input
+  parameters as avatar photo generation, with one generated source still for the
+  full-script avatar video.
+- Avatar video and voice generation: `prunaai/p-video-avatar`, using the
+  generated still, selected voice, voice prompt, and full script.
 
 Add environment overrides instead of hard-coding provider choices:
 
 - `CLIPR_HOOK_MODEL_ID`
-- `CLIPR_AVATAR_STILL_MODEL_ID`
-- `CLIPR_TTS_MODEL_ID`
-- `CLIPR_SCENE_MODEL_ID`
+- `AVATAR_PHOTO_MODEL_ID` for avatar photo generation and Clipr avatar stills
+- `CLIPR_AVATAR_VIDEO_MODEL_ID`
+- `CLIPR_TTS_MODEL_ID` is legacy/reserved.
 
 ## Script Rules
 
@@ -599,9 +586,7 @@ Clipr scripts should:
 
 - start from one generated hook
 - stay in the selected duration target
-- be split into multiple scene beats
-- use a few lines per scene
-- mix avatar scenes and b-roll scenes
+- be written as one natural spoken avatar monologue
 - give the viewer a useful payoff
 - avoid direct product selling by default
 - avoid CTAs
@@ -619,21 +604,20 @@ Clipr scripts should not:
 - claim that an expert, study, institution, or dataset exists unless it was
   provided in the product settings
 
-## Scene Model
+## Avatar Scene Model
 
-Each generated scene should be represented as structured data:
+The generated full-script avatar plan should be represented as structured data:
 
 ```ts
 type CliprScenePlan = {
   id: string;
   index: number;
-  sceneType: "avatar" | "b_roll";
+  sceneType: "avatar";
   scriptText: string;
   visualPrompt: string;
   photoScript?: string;
   estimatedDurationSeconds: number;
   voiceAudioObject?: R2ObjectReference;
-  generatedVideoObject?: R2ObjectReference;
   providerPredictionId?: string;
 };
 ```
@@ -648,9 +632,9 @@ The final job should preserve:
 - filled hook
 - variables used
 - full script
-- scene plan
+- single avatar scene plan
 - provider prediction IDs
-- intermediate scene object references
+- intermediate avatar image and avatar video object references
 - final clip ID after save
 
 ## Library And Data Model
@@ -802,16 +786,14 @@ before provider calls.
 New enforcement surfaces to document and implement:
 
 - Clipr hook/script generation.
-- Clipr voice generation.
-- Clipr scene-specific avatar still generation.
-- Clipr avatar scene generation.
-- Clipr b-roll scene generation.
+- Clipr full-script avatar video and voice generation.
+- Clipr avatar still generation.
 - Clipr full job creation.
 - Clipr job polling.
 - Clipr job cancellation.
 - Clipr provider output proxying, if any proxy route is added.
-- R2 signed uploads/downloads for generated audio, scene videos, final videos,
-  and posters.
+- R2 signed uploads/downloads for generated avatar videos, final videos, and
+  posters.
 - Convex job writes and final clip saves.
 
 Required limits:
@@ -819,7 +801,7 @@ Required limits:
 - per-user job create limits
 - per-user generated seconds limits
 - per-user voice generation limits
-- per-user scene generation limits
+- per-user avatar video generation limits
 - global provider spend limits
 - polling limits
 - R2 upload/download limits reused from existing routes
@@ -847,7 +829,7 @@ The durable job should track:
 - scene plan
 - provider stage
 - provider prediction IDs or request IDs
-- intermediate audio/video R2 objects
+- intermediate avatar image/video R2 objects
 - final video/poster R2 objects
 - final saved clip ID
 - status
@@ -857,10 +839,11 @@ The durable job should track:
 
 Provider outputs should be copied into R2 as soon as they are available.
 
-Media Bunny final stitching can remain browser-based for MVP if the scene
-outputs are already durable in R2 and the UI can resume final stitching from
-those saved scene objects. The durable target should eventually move final
-stitching to a worker if browser reliability becomes a problem.
+For the simplified MVP path, the browser only downloads the generated avatar
+video, normalizes it to the app's 9:16 clip format, creates a poster, uploads
+the final objects, and saves the Clip metadata. If chunked avatar generation is
+added later for provider duration caps, those chunk outputs should be copied to
+R2 before any Media Bunny merge step starts.
 
 ## Implementation Touchpoints
 
@@ -890,7 +873,7 @@ Likely code changes after docs/resources are approved:
 - `web/app/api/clipr/*`
   - add job create/poll/cancel and any provider helper routes
 - `web/lib/clipstitchr/media/*`
-  - add or reuse Media Bunny scene-stitching helpers
+  - reuse upload normalization and poster helpers for the generated avatar video
 - `web/app/dashboard/clipr/*`
   - add Clipr page client and controls
 - `web/app/_components/clipr/*`
@@ -916,10 +899,12 @@ After implementation:
    selected voice.
 5. Test `Make default` persists the selected voice.
 6. Test 60s duration.
-7. Test generated scene outputs save to R2 before final stitching.
-8. Test a short job triggers follow-up scene generation if needed.
-9. Test an over-target job trims to the selected duration.
-10. Test final Media Bunny stitch creates a single 9:16 video.
+7. Test generated avatar image and avatar video outputs save to R2 before final
+   Clip save.
+8. Test the full generated script is passed to `prunaai/p-video-avatar`.
+9. Test the generated avatar video normalizes to a single 9:16 Clip.
+10. Test progress updates through script, image, avatar video, normalization,
+    poster, and save steps.
 11. Test final output appears in the `Clips` tab.
 12. Test Clipr output is selectable in Stitchr.
 13. Test UGC tab does not mix uploaded UGC with Clipr outputs.
@@ -941,8 +926,9 @@ These are the assumptions this scope makes:
 - Exact recreation should use saved job metadata, not a new random selection.
 - Clipr outputs should save as UGC-compatible video clips with Clipr provenance
   instead of adding a third `clipType`.
-- MVP final stitching can use Media Bunny from durable scene outputs, with a
-  later worker path if reliability needs it.
+- The simplified MVP saves one full-script avatar video directly as the final
+  Clipr Clip. If provider output is capped below the requested script length,
+  chunked avatar generation and a durable merge step should be added next.
 - Exact provider model schemas will be verified immediately before
   implementation.
 

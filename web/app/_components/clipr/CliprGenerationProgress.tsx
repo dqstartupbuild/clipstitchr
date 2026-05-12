@@ -3,6 +3,7 @@ import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus"
 
 type CliprGenerationProgressProps = {
   error: string | null;
+  message: string;
   progress: number;
   status: ProcessingStatus;
 };
@@ -10,11 +11,13 @@ type CliprGenerationProgressProps = {
 function getStatusLabel(status: ProcessingStatus) {
   switch (status) {
     case "reading":
-      return "Generating scenes";
+      return "Generating avatar video";
     case "normalizing":
-      return "Preparing scenes";
+      return "Preparing clip";
+    case "saving":
+      return "Saving clip";
     case "stitching":
-      return "Stitching final clip";
+      return "Preparing final clip";
     case "complete":
       return "Clip saved";
     case "error":
@@ -26,6 +29,7 @@ function getStatusLabel(status: ProcessingStatus) {
 
 export function CliprGenerationProgress({
   error,
+  message,
   progress,
   status,
 }: CliprGenerationProgressProps) {
@@ -40,6 +44,9 @@ export function CliprGenerationProgress({
         </span>
       </div>
       <ProgressBar value={progress} />
+      <p className="mt-2 text-sm font-semibold text-text-secondary">
+        {message}
+      </p>
       {error ? (
         <p className="mt-3 text-sm font-semibold text-red-600">{error}</p>
       ) : null}

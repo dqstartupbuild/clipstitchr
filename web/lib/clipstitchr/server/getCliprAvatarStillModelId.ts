@@ -1,3 +1,5 @@
+import { getAvatarPhotoGenerationModelId } from "@/lib/clipstitchr/server/getAvatarPhotoGenerationModelId";
+
 export function getCliprAvatarStillModelId() {
-  return process.env.CLIPR_AVATAR_STILL_MODEL_ID ?? "openai/gpt-image-2";
+  return getAvatarPhotoGenerationModelId();
 }

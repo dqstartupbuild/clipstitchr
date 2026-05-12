@@ -16,18 +16,24 @@ const candidates: CliprHookTemplate[] = [
 ];
 
 describe("parseCliprTextGenerationOutput", () => {
-  it("normalizes b-roll scene type aliases", () => {
+  it("keeps the full avatar script instead of truncating it like hook copy", () => {
+    const script = [
+      "The thing nobody tells you about training is that progress is easier to keep when the next step is obvious.",
+      "Pick one movement, repeat it on a schedule, and make the smallest useful increase when it feels controlled.",
+      "That gives you enough structure to improve without turning every session into a complicated program.",
+    ].join(" ");
     const generation = parseCliprTextGenerationOutput({
       candidates,
       durationSeconds: 30,
       outputText: JSON.stringify({
         templateId: "MG-001",
         filledHook: "The thing nobody tells you about training",
+        script,
         scenePlan: [
           {
-            sceneType: "b-roll",
-            scriptText: "Show the idea with b-roll.",
-            visualPrompt: "Checklist on a desk.",
+            sceneType: "avatar",
+            scriptText: "Short summary that should not replace the script.",
+            visualPrompt: "Creator speaking to camera.",
             estimatedDurationSeconds: 8,
           },
         ],
@@ -36,6 +42,13 @@ describe("parseCliprTextGenerationOutput", () => {
       slideCount: 4,
     });
 
-    expect(generation.scenePlan[0]?.sceneType).toBe("b_roll");
+    expect(generation.script).toBe(script);
+    expect(generation.scenePlan).toMatchObject([
+      {
+        sceneType: "avatar",
+        scriptText: script,
+        estimatedDurationSeconds: 30,
+      },
+    ]);
   });
 });

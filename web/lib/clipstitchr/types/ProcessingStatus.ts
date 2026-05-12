@@ -3,6 +3,7 @@ export type ProcessingStatus =
   | "reading"
   | "analyzing"
   | "normalizing"
+  | "saving"
   | "stitching"
   | "complete"
   | "error";

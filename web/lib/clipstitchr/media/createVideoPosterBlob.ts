@@ -4,6 +4,7 @@ import { getCanvasVisiblePixelRatio } from "@/lib/clipstitchr/media/getCanvasVis
 import { seekVideoToTime } from "@/lib/clipstitchr/media/seekVideoToTime";
 
 const MIN_VISIBLE_PIXEL_RATIO = 0.03;
+const VIDEO_METADATA_TIMEOUT_MS = 7000;
 
 export async function createVideoPosterBlob(videoBlob: Blob): Promise<Blob> {
   const videoUrl = URL.createObjectURL(videoBlob);
@@ -15,9 +16,24 @@ export async function createVideoPosterBlob(videoBlob: Blob): Promise<Blob> {
     video.preload = "metadata";
 
     const metadataLoaded = new Promise<void>((resolve, reject) => {
-      video.onloadedmetadata = () => resolve();
-      video.onerror = () =>
+      const timeoutId = window.setTimeout(() => {
+        cleanup();
+        reject(new Error("Timed out loading video metadata for poster capture."));
+      }, VIDEO_METADATA_TIMEOUT_MS);
+      const cleanup = () => {
+        window.clearTimeout(timeoutId);
+        video.onloadedmetadata = null;
+        video.onerror = null;
+      };
+
+      video.onloadedmetadata = () => {
+        cleanup();
+        resolve();
+      };
+      video.onerror = () => {
+        cleanup();
         reject(new Error("Unable to load video metadata for poster capture."));
+      };
     });
 
     video.src = videoUrl;

@@ -50,14 +50,11 @@ background details.
 | Upload video action analysis | `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` | `google/gemini-3-flash` | Used for full-video UGC/demo action analysis before falling back to poster analysis when needed. |
 | Product enrichment | `PRODUCT_ENRICHMENT_MODEL_ID` | `openai/gpt-4.1` | Generates hidden product strategy metadata when saving Settings products. |
 | Clipr hook, script, Swipr auto-text, and Stitchr auto-text | `CLIPR_HOOK_MODEL_ID` | `openai/gpt-4.1` | Text generation returns structured JSON or short-form copy. |
-| Clipr avatar still image | `CLIPR_AVATAR_STILL_MODEL_ID` | `openai/gpt-image-2` | Uses the GPT Image 2-style reference-image workflow today. |
-| Clipr scene video | `CLIPR_SCENE_MODEL_ID` | `prunaai/p-video` | Used for Clipr image-to-video and text-to-video scene generation. |
-| Clipr text-to-speech | `CLIPR_TTS_MODEL_ID` | `elevenlabs/v3` | Reserved for the voice adapter. |
+| Clipr avatar still image | `AVATAR_PHOTO_MODEL_ID` | `openai/gpt-image-2` | Uses the same avatar photo generation model, prompt builder, and input parameters as avatar photo generation, but creates one source still for the full-script avatar video. |
+| Clipr avatar video and voice | `CLIPR_AVATAR_VIDEO_MODEL_ID` | `prunaai/p-video-avatar` | Generates the full-script talking avatar video with the selected voice. |
+| Clipr text-to-speech | `CLIPR_TTS_MODEL_ID` | `elevenlabs/v3` | Legacy/reserved; active Clipr voice generation is handled by `prunaai/p-video-avatar`. |
 | Swapr motion-transfer video | hard-coded in `app/api/swapr/jobs/route.ts` | `kwaivgi/kling-v3-motion-control` | Used for Swapr job creation and mirrored in the client optimistic job state. |
 | Swapr photo expansion | hard-coded in `app/api/swapr/photos/expand/route.ts` | `black-forest-labs/flux-fill-pro` | Used for optional 9:16 source-photo outpainting. |
-
-`CLIPR_AVATAR_VIDEO_MODEL_ID` has a server getter with default
-`prunaai/p-video-avatar`, but no active call site currently uses it.
 
 ## Adding Another Model
 

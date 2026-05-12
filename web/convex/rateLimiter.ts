@@ -230,9 +230,9 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
   },
   cliprVoiceGenerate: {
     kind: "token bucket",
-    rate: 60,
+    rate: 600,
     period: HOUR,
-    capacity: 20,
+    capacity: 180,
   },
   cliprAvatarStillGenerate: {
     kind: "token bucket",
@@ -240,17 +240,11 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     period: HOUR,
     capacity: 6,
   },
-  cliprSceneGenerate: {
-    kind: "token bucket",
-    rate: 40,
-    period: HOUR,
-    capacity: 12,
-  },
   cliprProviderSpendGlobal: {
     kind: "token bucket",
-    rate: 500,
+    rate: 10000,
     period: HOUR,
-    capacity: 80,
+    capacity: 2000,
     shards: 10,
   },
   cliprJobPoll: {

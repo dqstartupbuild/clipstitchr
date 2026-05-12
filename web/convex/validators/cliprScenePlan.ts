@@ -4,7 +4,7 @@ import { r2ObjectValidator } from "./r2Object";
 export const cliprScenePlanValidator = v.object({
   id: v.string(),
   index: v.number(),
-  sceneType: v.union(v.literal("avatar"), v.literal("b_roll")),
+  sceneType: v.literal("avatar"),
   scriptText: v.string(),
   visualPrompt: v.string(),
   photoScript: v.optional(v.string()),

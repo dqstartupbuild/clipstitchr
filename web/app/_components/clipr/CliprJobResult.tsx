@@ -34,10 +34,10 @@ export function CliprJobResult({ finalClipId, job }: CliprJobResultProps) {
             className="rounded-lg border border-border bg-surface-muted p-3"
           >
             <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
-              Scene {scene.index + 1}
+              Avatar video
             </p>
             <p className="mt-1 text-sm font-semibold text-text-primary">
-              {scene.sceneType === "avatar" ? "Avatar" : "B-roll"}
+              Full-script avatar
             </p>
             <p className="mt-2 text-sm leading-6 text-text-secondary">
               {scene.scriptText}

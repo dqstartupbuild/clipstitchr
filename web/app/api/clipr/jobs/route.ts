@@ -4,16 +4,17 @@ import { createProductProfileFromConvexDocument } from "@/lib/clipstitchr/backen
 import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
+import { createCliprAvatarVideo } from "@/lib/clipstitchr/server/createCliprAvatarVideo";
 import { createCliprSceneAvatarImage } from "@/lib/clipstitchr/server/createCliprSceneAvatarImage";
-import { createCliprSceneVideo } from "@/lib/clipstitchr/server/createCliprSceneVideo";
 import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
+import { getCliprAvatarSourceScene } from "@/lib/clipstitchr/server/getCliprAvatarSourceScene";
 import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
+import { saveCliprAvatarVideoObject } from "@/lib/clipstitchr/server/saveCliprAvatarVideoObject";
 import { saveCliprSceneImageObject } from "@/lib/clipstitchr/server/saveCliprSceneImageObject";
-import { saveCliprSceneVideoObject } from "@/lib/clipstitchr/server/saveCliprSceneVideoObject";
 import { getCliprDurationSeconds } from "@/lib/clipstitchr/utils/getCliprDurationSeconds";
 import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 import { createId } from "@/lib/clipstitchr/utils/createId";
@@ -23,6 +24,7 @@ export const runtime = "nodejs";
 type CliprJobCreateRequest = {
   avatarId?: unknown;
   durationSeconds?: unknown;
+  jobId?: unknown;
   makeDefaultVoice?: unknown;
   productId?: unknown;
   voiceId?: unknown;
@@ -53,7 +55,9 @@ export async function POST(request: Request) {
     typeof body.avatarId === "string" ? body.avatarId.trim() : "";
   const durationSeconds = getCliprDurationSeconds(body.durationSeconds);
   const voiceId = getCliprVoiceId(body.voiceId);
-  const jobId = createId();
+  const requestedJobId =
+    typeof body.jobId === "string" ? body.jobId.trim() : "";
+  const jobId = requestedJobId ? requestedJobId.slice(0, 128) : createId();
 
   try {
     if (!productId) {
@@ -74,7 +78,7 @@ export async function POST(request: Request) {
       await Promise.all([
         convex.query(api.products.get, { id: productId }),
         convex.query(api.avatars.get, { id: avatarId }),
-        convex.query(api.photoAssets.getMostRecentForAvatar, { avatarId }),
+        convex.query(api.photoAssets.getFirstForAvatar, { avatarId }),
       ]);
 
     if (!productDocument) {
@@ -141,72 +145,64 @@ export async function POST(request: Request) {
     const referenceImageUrl = (
       await getR2DownloadSignedUrl(avatarPhotoDocument.photoObject.key)
     ).url;
+    const avatarSourceScene = getCliprAvatarSourceScene(
+      textGeneration.scenePlan,
+      textGeneration.script,
+    );
 
-    for (let index = 0; index < textGeneration.scenePlan.length; index += 1) {
-      const scene = textGeneration.scenePlan[index];
-      let generatedImageObject;
-      let providerImagePredictionId;
-      let sceneImageUrl;
+    await convex.mutation(api.rateLimits.consumeCliprVoiceGeneration, {
+      estimatedSeconds: durationSeconds,
+      secret,
+    });
 
-      await convex.mutation(api.rateLimits.consumeCliprSceneGeneration, {
-        estimatedSeconds: scene.estimatedDurationSeconds,
-        secret,
-      });
+    await convex.mutation(api.rateLimits.consumeCliprAvatarStillGeneration, {
+      secret,
+    });
 
-      if (scene.sceneType === "avatar") {
-        await convex.mutation(api.rateLimits.consumeCliprAvatarStillGeneration, {
-          secret,
-        });
+    const generatedAvatarImage = await createCliprSceneAvatarImage({
+      avatarDescription: avatarDocument.description,
+      referenceImageUrl,
+      replicate,
+      scene: avatarSourceScene,
+    });
+    const avatarImageObject = await saveCliprSceneImageObject({
+      body: generatedAvatarImage.body,
+      contentType: generatedAvatarImage.contentType,
+      jobId,
+      sceneId: "avatar-source",
+      userId,
+    });
 
-        const generatedSceneImage = await createCliprSceneAvatarImage({
-          avatarDescription: avatarDocument.description,
-          referenceImageUrl,
-          replicate,
-          scene,
-        });
-
-        generatedImageObject = await saveCliprSceneImageObject({
-          body: generatedSceneImage.body,
-          contentType: generatedSceneImage.contentType,
-          jobId,
-          sceneId: scene.id,
-          userId,
-        });
-        providerImagePredictionId = generatedSceneImage.predictionId;
-        sceneImageUrl = generatedSceneImage.outputUrl;
-      }
-
-      const generatedScene = await createCliprSceneVideo({
-        imageUrl: sceneImageUrl,
-        replicate,
-        scene,
-      });
-      const generatedVideoObject = await saveCliprSceneVideoObject({
-        body: generatedScene.body,
-        contentType: generatedScene.contentType,
-        jobId,
-        sceneId: scene.id,
-        userId,
-      });
-
-      await convex.mutation(api.cliprJobs.recordSceneOutput, {
-        secret,
-        id: jobId,
-        sceneId: scene.id,
-        generatedImageObject,
-        generatedVideoObject,
-        providerImagePredictionId,
-        providerPredictionId: generatedScene.predictionId,
-        providerModel: generatedScene.modelId,
-        progress:
-          0.25 + ((index + 1) / textGeneration.scenePlan.length) * 0.6,
-        updatedAt: new Date().toISOString(),
-      });
-    }
-
-    const job = await convex.mutation(api.cliprJobs.markReadyToStitch, {
+    await convex.mutation(api.cliprJobs.recordAvatarImageOutput, {
       secret,
       id: jobId,
+      avatarImageObject,
+      avatarImageProviderPredictionId: generatedAvatarImage.predictionId,
+      providerModels: [generatedAvatarImage.modelId],
+      progress: 0.45,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const generatedAvatarVideo = await createCliprAvatarVideo({
+      imageUrl: generatedAvatarImage.outputUrl,
+      replicate,
+      script: textGeneration.script,
+      voiceId,
+    });
+    const avatarVideoObject = await saveCliprAvatarVideoObject({
+      body: generatedAvatarVideo.body,
+      contentType: generatedAvatarVideo.contentType,
+      jobId,
+      userId,
+    });
+
+    const job = await convex.mutation(api.cliprJobs.recordAvatarVideoOutput, {
+      secret,
+      id: jobId,
+      avatarVideoObject,
+      avatarVideoProviderPredictionId: generatedAvatarVideo.predictionId,
+      providerModels: [generatedAvatarVideo.modelId],
+      progress: 0.68,
       updatedAt: new Date().toISOString(),
     });
 
