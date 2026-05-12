@@ -20,8 +20,7 @@ import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab"
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
-import { filterCliprClips } from "@/lib/clipstitchr/utils/filterCliprClips";
-import { filterNonGeneratedClips } from "@/lib/clipstitchr/utils/filterNonGeneratedClips";
+import { filterNonSwaprClips } from "@/lib/clipstitchr/utils/filterNonSwaprClips";
 import { filterStitchesByName } from "@/lib/clipstitchr/utils/filterStitchesByName";
 import { filterSwipesBySearchQuery } from "@/lib/clipstitchr/utils/filterSwipesBySearchQuery";
 import { filterSwaprClips } from "@/lib/clipstitchr/utils/filterSwaprClips";
@@ -30,7 +29,7 @@ import { getInitialUploadLibraryTab } from "@/lib/clipstitchr/utils/getInitialUp
 import { getUploadAssetTypeFromLibraryTab } from "@/lib/clipstitchr/utils/getUploadAssetTypeFromLibraryTab";
 import { getUploadLibraryTabFromAssetType } from "@/lib/clipstitchr/utils/getUploadLibraryTabFromAssetType";
 
-type VideoLibraryTab = "ugc" | "demo" | "clips" | "swaps";
+type VideoLibraryTab = "ugc" | "demo" | "swaps";
 
 const videoLibraryContent: Record<
   VideoLibraryTab,
@@ -63,16 +62,6 @@ const videoLibraryContent: Record<
     searchEmptyDescription:
       "No saved demo videos match that title or tag.",
   },
-  clips: {
-    title: "Clips",
-    emptyTitle: "No Clipr clips yet",
-    emptyDescription:
-      "Create engagement clips in Clipr, then use them on their own or in Stitchr.",
-    sectionId: "clips",
-    searchEmptyTitle: "No matching Clipr clips",
-    searchEmptyDescription:
-      "No saved Clipr clips match that title or tag.",
-  },
   swaps: {
     title: "Swaps",
     emptyTitle: "No swaps yet",
@@ -103,21 +92,17 @@ export function UploadsPageClient() {
     () => filterClipsBySearchQuery(library.clips, searchQuery),
     [library.clips, searchQuery],
   );
-  const nonGeneratedClips = useMemo(
-    () => filterNonGeneratedClips(searchFilteredClips),
+  const nonSwaprClips = useMemo(
+    () => filterNonSwaprClips(searchFilteredClips),
     [searchFilteredClips],
   );
   const ugcClips = useMemo(
-    () => filterClipsByType(nonGeneratedClips, "ugc"),
-    [nonGeneratedClips],
+    () => filterClipsByType(nonSwaprClips, "ugc"),
+    [nonSwaprClips],
   );
   const demoClips = useMemo(
-    () => filterClipsByType(nonGeneratedClips, "demo"),
-    [nonGeneratedClips],
-  );
-  const cliprClips = useMemo(
-    () => filterCliprClips(searchFilteredClips),
-    [searchFilteredClips],
+    () => filterClipsByType(nonSwaprClips, "demo"),
+    [nonSwaprClips],
   );
   const swapClips = useMemo(
     () => filterSwaprClips(searchFilteredClips),
@@ -138,11 +123,9 @@ export function UploadsPageClient() {
       ? { clips: ugcClips, content: videoLibraryContent.ugc }
       : selectedTab === "demo"
         ? { clips: demoClips, content: videoLibraryContent.demo }
-        : selectedTab === "clips"
-          ? { clips: cliprClips, content: videoLibraryContent.clips }
-          : selectedTab === "swaps"
-            ? { clips: swapClips, content: videoLibraryContent.swaps }
-            : null;
+        : selectedTab === "swaps"
+          ? { clips: swapClips, content: videoLibraryContent.swaps }
+          : null;
 
   const handleTabChange = useCallback((nextTab: UploadLibraryTab) => {
     setSelectedTab(nextTab);
@@ -206,7 +189,7 @@ export function UploadsPageClient() {
         <LibraryPageHeader
           eyebrow="Library"
           title="Content Library"
-          description="Keep UGC clips, product demos, Clipr clips, swaps, Swipes, and stitches ready for the next ad."
+          description="Keep UGC clips, product demos, swaps, Swipes, and stitches ready for the next ad."
         />
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -282,26 +265,6 @@ export function UploadsPageClient() {
                 hasSearchQuery
                   ? videoLibraryContent.demo.searchEmptyDescription
                   : videoLibraryContent.demo.emptyDescription
-              }
-              onLoadClip={library.loadClip}
-              onDelete={library.removeClip}
-              onUpdateMetadata={library.updateClipMetadata}
-              onUpdateTrim={library.updateClipTrimRange}
-            />
-            <VideoLibrarySection
-              key={`all-clips-${searchQuery}`}
-              id={videoLibraryContent.clips.sectionId}
-              title={videoLibraryContent.clips.title}
-              clips={cliprClips}
-              emptyTitle={
-                hasSearchQuery
-                  ? videoLibraryContent.clips.searchEmptyTitle
-                  : videoLibraryContent.clips.emptyTitle
-              }
-              emptyDescription={
-                hasSearchQuery
-                  ? videoLibraryContent.clips.searchEmptyDescription
-                  : videoLibraryContent.clips.emptyDescription
               }
               onLoadClip={library.loadClip}
               onDelete={library.removeClip}

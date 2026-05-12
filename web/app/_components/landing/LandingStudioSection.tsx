@@ -1,4 +1,4 @@
-import { Clapperboard, Images, Scissors, Shuffle } from "lucide-react";
+import { Images, Scissors, Shuffle } from "lucide-react";
 import { Panel } from "@/app/_components/ui/Panel";
 
 const studios = [
@@ -9,14 +9,6 @@ const studios = [
       "Choose one UGC clip and one product demo. Trim the dead space, preview the ad, add simple text, and create a finished vertical video.",
     caption: "We call these 'Stitches'.",
     icon: Scissors,
-  },
-  {
-    eyebrow: "Clipr",
-    title: "Create engagement clips without adding a sales pitch.",
-    description:
-      "Choose a saved product and avatar photo to create a talking clip that can post on its own or work as a UGC-style input for Stitchr.",
-    caption: "We call these 'Clips'.",
-    icon: Clapperboard,
   },
   {
     eyebrow: "Swapr",
@@ -49,7 +41,7 @@ export function LandingStudioSection() {
             the library.
           </h2>
         </div>
-        <div className="mt-8 grid gap-4 lg:grid-cols-4">
+        <div className="mt-8 grid gap-4 lg:grid-cols-3">
           {studios.map((studio) => {
             const Icon = studio.icon;
 

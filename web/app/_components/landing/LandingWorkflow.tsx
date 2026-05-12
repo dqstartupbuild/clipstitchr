@@ -9,13 +9,6 @@ const workflows = [
     steps: ["Upload", "Organize", "Pick UGC", "Pick Demo", "Create", "Download"],
   },
   {
-    eyebrow: "Clipr",
-    title: "Create a talking engagement clip when the library needs a spark.",
-    description:
-      "Choose a saved product and avatar photo, pick a length and voice, then save the no-CTA clip for posting or stitching.",
-    steps: ["Pick Product", "Pick Avatar", "Pick Voice", "Create", "Save"],
-  },
-  {
     eyebrow: "Swapr",
     title: "Make another UGC clip when your library needs one.",
     description:
@@ -43,8 +36,8 @@ export function LandingWorkflow() {
             Three ways to turn your library into something ready to post.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Stitchr is the main workflow. Clipr, Swapr, and Swipr help when you
-            need more source clips or a carousel instead of another video.
+            Stitchr is the main workflow. Swapr and Swipr help when you need
+            more source clips or a carousel instead of another video.
           </p>
         </div>
         <div className="mt-10 grid gap-10">
@@ -66,9 +59,7 @@ export function LandingWorkflow() {
                   "mt-5 grid gap-3 sm:grid-cols-2",
                   workflow.steps.length === 6
                     ? "lg:grid-cols-6"
-                    : workflow.steps.length === 5
-                      ? "lg:grid-cols-5"
-                      : "lg:grid-cols-4",
+                    : "lg:grid-cols-4",
                 ].join(" ")}
               >
                 {workflow.steps.map((step, index) => (

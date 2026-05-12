@@ -20,13 +20,7 @@ type SequencePreviewPanelProps = {
   ugcTrimRange: VideoTrimRange | null;
   demoTrimRange: VideoTrimRange | null;
   textOverlay: TextOverlay | null;
-  textGenerationError?: string | null;
-  isGeneratingText?: boolean;
-  productOptions?: { label: string; value: string }[];
-  selectedProductId?: string;
   onActiveUgcChange: (id: string) => void;
-  onGenerateText?: () => Promise<string | null>;
-  onProductChange?: (productId: string) => void;
   onTextOverlayChange: (textOverlay: TextOverlay | null) => void;
 };
 
@@ -38,13 +32,7 @@ export function SequencePreviewPanel({
   ugcTrimRange,
   demoTrimRange,
   textOverlay,
-  textGenerationError,
-  isGeneratingText,
-  productOptions,
-  selectedProductId,
   onActiveUgcChange,
-  onGenerateText,
-  onProductChange,
   onTextOverlayChange,
 }: SequencePreviewPanelProps) {
   const [playbackTime, setPlaybackTime] = useState(0);
@@ -138,12 +126,6 @@ export function SequencePreviewPanel({
             totalDuration={totalDuration}
             ugcDuration={ugcDuration}
             currentTime={playbackTime}
-            generationError={textGenerationError}
-            isGeneratingText={isGeneratingText}
-            productOptions={productOptions}
-            selectedProductId={selectedProductId}
-            onGenerateText={onGenerateText}
-            onProductChange={onProductChange}
             onChange={onTextOverlayChange}
           />
         </>

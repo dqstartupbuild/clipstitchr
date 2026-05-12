@@ -11,7 +11,6 @@ import { SwiprTextOverlayPanel } from "@/app/_components/swipr/SwiprTextOverlayP
 import { Panel } from "@/app/_components/ui/Panel";
 import { SWIPR_MIN_SLIDE_COUNT } from "@/lib/clipstitchr/constants/swiprSlideCountBounds";
 import { SWIPR_STATIC_DURATION } from "@/lib/clipstitchr/constants/swiprStaticDuration";
-import { generateHookText } from "@/lib/clipstitchr/client/generateHookText";
 import { generateSwiprBackgroundWithAi } from "@/lib/clipstitchr/client/generateSwiprBackgroundWithAi";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
@@ -57,10 +56,6 @@ export function SwiprPageClient() {
   const [background, setBackground] = useState<SwiprBackground | null>(null);
   const [backgroundSearchQuery, setBackgroundSearchQuery] = useState("");
   const [backgroundError, setBackgroundError] = useState<string | null>(null);
-  const [textGenerationError, setTextGenerationError] = useState<string | null>(
-    null,
-  );
-  const [isGeneratingText, setIsGeneratingText] = useState(false);
   const [isGeneratingAiBackground, setIsGeneratingAiBackground] =
     useState(false);
   const [editingSwipeId, setEditingSwipeId] = useState<string | null>(() => {
@@ -212,48 +207,6 @@ export function SwiprPageClient() {
       ),
     );
   };
-  const handleGenerateAllText = async () => {
-    if (!selectedSavedProductId) {
-      setTextGenerationError(
-        "Choose a saved Settings product before generating text.",
-      );
-      return;
-    }
-
-    setIsGeneratingText(true);
-    setTextGenerationError(null);
-
-    try {
-      const result = await generateHookText({
-        productId: selectedSavedProductId,
-        purpose: "swipr-slides",
-        slideCount: slides.length,
-      });
-
-      if (result.purpose !== "swipr-slides") {
-        return;
-      }
-
-      setSlides((currentSlides) =>
-        currentSlides.map((slide, index) => ({
-          ...slide,
-          textOverlay: clampTextOverlay(
-            {
-              ...slide.textOverlay,
-              text: result.slides[index] ?? slide.textOverlay.text,
-            },
-            SWIPR_STATIC_DURATION,
-          ),
-        })),
-      );
-    } catch (error) {
-      setTextGenerationError(
-        error instanceof Error ? error.message : "Unable to generate text.",
-      );
-    } finally {
-      setIsGeneratingText(false);
-    }
-  };
 
   const handleSave = () => {
     if (!selectedBackgroundAsset) {
@@ -396,10 +349,7 @@ export function SwiprPageClient() {
               <SwiprTextOverlayPanel
                 activeSlide={activeSlide}
                 activeSlideIndex={activeSlideIndex}
-                generationError={textGenerationError}
-                isGeneratingText={isGeneratingText}
                 onChange={handleTextOverlayChange}
-                onGenerateAllText={() => void handleGenerateAllText()}
               />
             </div>
           </Panel>

@@ -30,8 +30,7 @@ export function LandingHero() {
           <p className="mt-6 max-w-2xl text-lg leading-8 text-text-secondary">
             Upload creator clips and product demos once. Pick a UGC hook, pair
             it with a demo, and create vertical ad variants without opening a
-            timeline editor. Use Clipr when you need a fresh engagement clip
-            that can stand alone or feed the next Stitchr batch.
+            timeline editor.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <PrimaryButtonLink

@@ -1,5 +1,4 @@
 import {
-  Clapperboard,
   Download,
   FolderSearch,
   Images,
@@ -28,14 +27,8 @@ const features = [
   {
     title: "Organize your library",
     description:
-      "Keep UGC, demos, Clipr clips, swaps, and finished stitches in one place.",
+      "Keep UGC, demos, AI clips, and finished stitches in one place.",
     icon: FolderSearch,
-  },
-  {
-    title: "Generate engagement clips",
-    description:
-      "Use Clipr to create no-CTA talking clips from a saved product and avatar photo.",
-    icon: Clapperboard,
   },
   {
     title: "Save carousel drafts",

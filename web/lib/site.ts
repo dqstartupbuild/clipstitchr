@@ -35,7 +35,7 @@ export const site = {
   publisherName: "ClipStitchr",
   defaultTitle: "ClipStitchr | Turn UGC Clips Into Finished Ads",
   defaultDescription:
-    "ClipStitchr helps marketers turn UGC clips, product demos, and generated engagement clips into finished vertical ad variants without opening a traditional video editor.",
+    "ClipStitchr helps marketers turn UGC clips and product demos into finished vertical ad variants without opening a traditional video editor.",
   keywords: [
     "UGC ad creator",
     "TikTok ad maker",
