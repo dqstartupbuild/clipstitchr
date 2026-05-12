@@ -1,6 +1,5 @@
 "use client";
 
-import { ImagePlus, Images, Upload } from "lucide-react";
 import { useEffect } from "react";
 import { Database, ImagePlus, Images, Upload } from "lucide-react";
 import { Button } from "@/app/_components/ui/Button";
