@@ -107,23 +107,20 @@ The generation flow is:
 1. Server selects one random internal hook style and one random matching hook
    template.
 2. GPT-4.1 through Replicate fills the hook placeholders from the selected
-   product settings as private audience context and writes a no-CTA engagement
-   script that is useful to the audience rather than promotional.
+   product settings and writes a no-CTA engagement script.
 3. The script is sent to `elevenlabs/v3` through Replicate with the selected
    voice.
 4. The generated audio is sent to `kwaivgi/kling-avatar-v2` through Replicate
    with the selected avatar photo and an animation prompt.
-5. The server returns after creating the Kling prediction so the browser can
-   poll for completion without holding a long Vercel function open.
-6. The generated video is downloaded through an authenticated output proxy.
-7. The browser normalizes the video to TikTok 9:16 with Media Bunny.
-8. If the normalized output is materially shorter than the requested duration,
+5. The generated video is downloaded through an authenticated output proxy.
+6. The browser normalizes the video to TikTok 9:16 with Media Bunny.
+7. If the normalized output is materially shorter than the requested duration,
    Clipr requests a follow-up segment and repeats the same audio/video path.
-9. When multiple segments are needed, Media Bunny stitches the normalized
+8. When multiple segments are needed, Media Bunny stitches the normalized
    segments into one final vertical video.
-10. The browser generates a poster image.
-11. The final video and poster are uploaded to R2.
-12. Convex saves the generated clip as a UGC-compatible video clip with a
+9. The browser generates a poster image.
+10. The final video and poster are uploaded to R2.
+11. Convex saves the generated clip as a UGC-compatible video clip with a
     system `clipr` tag.
 
 The final output should have audio, a generated poster, a default trim range
@@ -228,8 +225,6 @@ Required enforcement:
 - Rate-limit Clipr segment generation before the GPT-4.1 script call.
 - Count estimated generated seconds before the Kling Avatar call.
 - Record Clipr Replicate jobs in Convex for ownership checks.
-- Rate-limit Clipr segment polling and verify the prediction belongs to the
-  authenticated user before polling Replicate.
 - Rate-limit Clipr output proxy requests and verify the output URL belongs to
   the authenticated user's recorded Clipr video job.
 - Use existing R2 signed upload limits before saving final videos and posters.

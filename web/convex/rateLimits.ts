@@ -441,24 +441,6 @@ export const consumeCliprSegmentGenerate = mutation({
   },
 });
 
-export const consumeCliprSegmentPoll = mutation({
-  args: {
-    secret: v.string(),
-    predictionId: v.string(),
-  },
-  handler: async (ctx, { secret, predictionId }) => {
-    assertRateLimitApiSecret(secret);
-
-    const ownerId = await getAuthenticatedOwnerId(ctx);
-
-    await getOwnedCliprVideoJob(ctx, ownerId, predictionId);
-    await rateLimiter.limit(ctx, "replicateCliprSegmentPoll", {
-      key: ownerId,
-      throws: true,
-    });
-  },
-});
-
 export const consumeCliprOutputDownload = mutation({
   args: {
     secret: v.string(),
