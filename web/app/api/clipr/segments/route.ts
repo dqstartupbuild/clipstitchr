@@ -20,6 +20,7 @@ import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString"
 import { parseCliprGeneratedScript } from "@/lib/clipstitchr/server/parseCliprGeneratedScript";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
+import { sanitizeCliprSeedanceText } from "@/lib/clipstitchr/server/sanitizeCliprSeedanceText";
 import {
   CLIPR_SEEDANCE_ASPECT_RATIO,
   CLIPR_SEEDANCE_RESOLUTION,
@@ -124,11 +125,15 @@ export async function POST(request: Request) {
       replicate,
     });
     const generatedScript = parseCliprGeneratedScript(scriptOutputText);
+    const seedanceScript = sanitizeCliprSeedanceText(generatedScript.script);
+    const seedanceAvatarPrompt = sanitizeCliprSeedanceText(
+      generatedScript.avatarPrompt,
+    );
     const textToSpeechModelId = getCliprTextToSpeechModelId();
     const audioPrediction = await replicate.predictions.create({
       model: textToSpeechModelId,
       input: {
-        prompt: generatedScript.script,
+        prompt: seedanceScript,
         voice,
         stability: 0.5,
         similarity_boost: 0.75,
@@ -184,8 +189,8 @@ export async function POST(request: Request) {
       model: videoModelId,
       input: {
         prompt: createCliprSeedancePrompt({
-          avatarPrompt: generatedScript.avatarPrompt,
-          script: generatedScript.script,
+          avatarPrompt: seedanceAvatarPrompt,
+          script: seedanceScript,
         }),
         reference_images: [image],
         reference_audios: [audioOutputUrl],
@@ -225,7 +230,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       audioPredictionId: audioPrediction.id,
-      avatarPrompt: generatedScript.avatarPrompt,
+      avatarPrompt: seedanceAvatarPrompt,
       durationSeconds,
       hook: generatedScript.hook,
       modelIds: {
@@ -233,7 +238,7 @@ export async function POST(request: Request) {
         textToSpeech: textToSpeechModelId,
         video: videoModelId,
       },
-      script: generatedScript.script,
+      script: seedanceScript,
       segmentIndex,
       segmentDurationSeconds,
       styleKey: style.styleKey,
