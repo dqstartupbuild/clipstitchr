@@ -482,33 +482,6 @@ export const consumeSwiprBackgroundGenerate = mutation({
   },
 });
 
-export const consumeSwiprSeedBackgroundGenerateDev = mutation({
-  args: {
-    count: v.number(),
-    secret: v.string(),
-  },
-  handler: async (ctx, { count, secret }) => {
-    assertRateLimitApiSecret(secret);
-
-    const ownerId = await getAuthenticatedOwnerId(ctx);
-    const imageCount = getPositiveCount(count, "Image count");
-
-    await rateLimiter.limit(ctx, "replicateSwiprSeedBackgroundGenerateDev", {
-      key: ownerId,
-      count: imageCount,
-      throws: true,
-    });
-    await rateLimiter.limit(
-      ctx,
-      "replicateSwiprSeedBackgroundGenerateDevGlobal",
-      {
-        count: imageCount,
-        throws: true,
-      },
-    );
-  },
-});
-
 export const consumeProductEnrichment = mutation({
   args: {
     secret: v.string(),

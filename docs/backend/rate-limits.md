@@ -100,7 +100,6 @@ Optional Replicate model overrides:
 | Swapr output proxy | `GET /api/swapr/output` | 1,000/hour/user, burst 200 |
 | Avatar photo generation | `POST /api/avatars/photos/generate` from the Avatars page or UGC clip avatar action | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour |
 | Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 5; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
-| Swipr seeded background import | `POST /api/dev/swipr/backgrounds/seed` in development; future admin-only seed runner in production | Development route is unavailable outside `NODE_ENV=development`, imports at most 5 images/request, skips already-saved seed IDs, consumes the development seed-generation bucket before provider work, consumes R2 upload limits before storage work, and saves through `swiprBackgrounds.save`; production runner must be admin-only, batch-capped, checkpointed, and counted against shared provider, R2 upload, and Convex record-save protection before persistence |
 | Product enrichment | `POST /api/settings/products`, `PATCH /api/settings/products/{id}` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
 | Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; global provider bucket 500/hour |
 | Clipr hook/script generation | `POST /api/clipr/jobs` and `POST /api/clipr/text` | 30/hour/user, burst 10; global provider bucket 500/hour |
@@ -139,15 +138,6 @@ Uploaded Swipr backgrounds use the same analysis, shared R2 upload, and
 prefix and are downloadable by authenticated users through the Swipr background
 download route after Convex validation. They are intentionally not user-deletable
 through the shared background model.
-
-Seeded Swipr backgrounds are planned through the deterministic seed catalog in
-`createSwiprBackgroundSeedPlans`. The seed metadata replaces the background
-analysis call for those images, so the development seed route and future import
-runner save the prefilled name, tags, description, and details directly after
-generation/upload. The development route is batch-capped at five images and is
-unavailable outside `NODE_ENV=development`; the production runner must be
-admin-only, checkpointed, and batch-limited before creating provider predictions
-or R2 objects.
 
 Settings product creates and edits call Replicate GPT-4.1 through
 `POST /api/settings/products` and `PATCH /api/settings/products/{id}` to infer
