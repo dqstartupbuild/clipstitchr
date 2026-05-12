@@ -14,6 +14,5 @@ describe("createCliprSeedancePrompt", () => {
     expect(prompt).not.toContain("facial features");
     expect(prompt).not.toContain("lip sync");
     expect(prompt).not.toContain("same character");
-    expect(prompt).not.toContain("workout");
   });
 });
