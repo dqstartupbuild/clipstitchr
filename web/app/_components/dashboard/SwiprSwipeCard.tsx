@@ -1,7 +1,7 @@
 "use client";
 
 import { Download, Edit3, Eye, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SwiprSwipeDetailsDialog } from "@/app/_components/dashboard/SwiprSwipeDetailsDialog";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
@@ -16,23 +16,94 @@ import { getSwiprBackgroundFromAsset } from "@/lib/clipstitchr/utils/getSwiprBac
 type SwiprSwipeCardProps = {
   background: SwiprBackgroundAsset;
   swipe: SwiprSwipe;
+  onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onDelete: (id: string) => void | Promise<void>;
 };
 
 export function SwiprSwipeCard({
   background,
   swipe,
+  onLoadBackgroundBlob,
   onDelete,
 }: SwiprSwipeCardProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const backgroundUrl = useObjectUrl(background.blob);
+  const [loadedBackground, setLoadedBackground] = useState<{
+    blob: Blob;
+    id: string;
+  } | null>(null);
+  const [backgroundError, setBackgroundError] = useState<{
+    id: string;
+    message: string;
+  } | null>(null);
+  const backgroundBlob =
+    background.blob ??
+    (loadedBackground?.id === background.id ? loadedBackground.blob : undefined);
+  const backgroundErrorMessage =
+    backgroundError?.id === background.id ? backgroundError.message : null;
+  const backgroundUrl = useObjectUrl(backgroundBlob);
   const exporter = useSwiprExport();
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    if (background.blob) {
+      return () => {
+        isCancelled = true;
+      };
+    }
+
+    void onLoadBackgroundBlob(background.id)
+      .then((blob) => {
+        if (!isCancelled) {
+          setLoadedBackground({
+            id: background.id,
+            blob,
+          });
+        }
+      })
+      .catch((error) => {
+        if (!isCancelled) {
+          setBackgroundError({
+            id: background.id,
+            message:
+              error instanceof Error
+                ? error.message
+                : "Unable to load this Swipe background.",
+          });
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [background.blob, background.id, onLoadBackgroundBlob]);
+
   const downloadSwipe = () => {
-    void exporter.exportCarousel({
-      background: getSwiprBackgroundFromAsset(background),
-      slides: swipe.slides,
-      productName: swipe.productName,
-    });
+    void Promise.resolve()
+      .then(async () => {
+        const blob =
+          backgroundBlob ?? (await onLoadBackgroundBlob(background.id));
+
+        setLoadedBackground({
+          id: background.id,
+          blob,
+        });
+
+        await exporter.exportCarousel({
+          background: getSwiprBackgroundFromAsset({ ...background, blob }),
+          slides: swipe.slides,
+          productName: swipe.productName,
+        });
+      })
+      .catch((error) => {
+        setBackgroundError({
+          id: background.id,
+          message:
+            error instanceof Error
+              ? error.message
+              : "Unable to load this Swipe background.",
+        });
+      });
   };
 
   return (
@@ -73,9 +144,9 @@ export function SwiprSwipeCard({
             </div>
             <Badge>SWIPE</Badge>
           </div>
-          {exporter.error ? (
+          {backgroundErrorMessage || exporter.error ? (
             <p className="mt-3 text-xs font-semibold text-red-600">
-              {exporter.error}
+              {backgroundErrorMessage ?? exporter.error}
             </p>
           ) : null}
           <div className="mt-3 flex gap-2">
@@ -109,7 +180,10 @@ export function SwiprSwipeCard({
       </Panel>
       {isDetailsOpen ? (
         <SwiprSwipeDetailsDialog
-          background={background}
+          background={{
+            ...background,
+            ...(backgroundBlob ? { blob: backgroundBlob } : {}),
+          }}
           swipe={swipe}
           isDownloading={exporter.status === "rendering"}
           onClose={() => setIsDetailsOpen(false)}

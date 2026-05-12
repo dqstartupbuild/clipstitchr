@@ -345,6 +345,7 @@ export function UploadsPageClient() {
                   ? "No saved Swipes match that search."
                   : undefined
               }
+              onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
               onDelete={swiprLibrary.removeSwipe}
             />
           </div>
@@ -404,6 +405,7 @@ export function UploadsPageClient() {
                 ? "No saved Swipes match that search."
                 : undefined
             }
+            onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
             onDelete={swiprLibrary.removeSwipe}
           />
         ) : null}

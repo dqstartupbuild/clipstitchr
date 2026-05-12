@@ -12,6 +12,7 @@ type SwiprSwipesSectionProps = {
   id?: string;
   swipes: SwiprSwipe[];
   title?: string;
+  onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onDelete: (id: string) => void | Promise<void>;
 };
 
@@ -22,6 +23,7 @@ export function SwiprSwipesSection({
   id = "swipes",
   swipes,
   title = "Swipes",
+  onLoadBackgroundBlob,
   onDelete,
 }: SwiprSwipesSectionProps) {
   const backgroundsById = new Map(
@@ -53,6 +55,7 @@ export function SwiprSwipesSection({
                 key={swipe.id}
                 background={background}
                 swipe={swipe}
+                onLoadBackgroundBlob={onLoadBackgroundBlob}
                 onDelete={onDelete}
               />
             );

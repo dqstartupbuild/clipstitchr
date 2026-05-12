@@ -19,6 +19,7 @@ type SwiprBackgroundPanelProps = {
   isGeneratingAi: boolean;
   isAiDisabled: boolean;
   onBackgroundSearchChange: (query: string) => void;
+  onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onSelectBackground: (background: SwiprBackgroundAsset) => void;
   onGenerateAiBackground: () => void;
   onUploadBackground: (file: File) => void;
@@ -32,6 +33,7 @@ export function SwiprBackgroundPanel({
   isGeneratingAi,
   isAiDisabled,
   onBackgroundSearchChange,
+  onLoadBackgroundBlob,
   onSelectBackground,
   onGenerateAiBackground,
   onUploadBackground,
@@ -108,6 +110,7 @@ export function SwiprBackgroundPanel({
                     key={backgroundAsset.id}
                     background={backgroundAsset}
                     isSelected={backgroundAsset.id === background?.id}
+                    onLoadBackgroundBlob={onLoadBackgroundBlob}
                     onSelect={onSelectBackground}
                   />
                 ))}
