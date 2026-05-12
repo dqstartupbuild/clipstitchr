@@ -7,10 +7,48 @@ const PRODUCT_TEXT_MAX_LENGTH = 2000;
 const PRODUCT_NAME_MAX_LENGTH = 120;
 const INFERRED_PROBLEM_MAX_LENGTH = 300;
 const INFERRED_PAIN_POINT_MAX_LENGTH = 160;
-const INFERRED_PAIN_POINT_LIMIT = 8;
+const INFERRED_PAIN_POINT_LIMIT = 10;
+const CLIPR_HOOK_STYLE_LIMIT = 25;
+const CLIPR_HOOK_TEMPLATE_LIMIT = 200;
+const CLIPR_FILLER_KEY_MAX_LENGTH = 40;
+const CLIPR_FILLER_VALUE_MAX_LENGTH = 120;
+const CLIPR_FILLER_VALUE_LIMIT = 16;
 
 function normalizeText(value: string, maxLength: number) {
   return value.trim().slice(0, maxLength);
+}
+
+function normalizeTextArray(
+  values: string[] | undefined,
+  limit: number,
+  maxLength: number,
+) {
+  return Array.from(
+    new Set((values ?? []).map((value) => normalizeText(value, maxLength))),
+  )
+    .filter(Boolean)
+    .slice(0, limit);
+}
+
+function normalizeFillers(fillers: Record<string, string[]> | undefined) {
+  if (!fillers) {
+    return undefined;
+  }
+
+  const normalizedFillers = Object.fromEntries(
+    Object.entries(fillers)
+      .map(([key, values]) => [
+        normalizeText(key, CLIPR_FILLER_KEY_MAX_LENGTH),
+        normalizeTextArray(
+          values,
+          CLIPR_FILLER_VALUE_LIMIT,
+          CLIPR_FILLER_VALUE_MAX_LENGTH,
+        ),
+      ])
+      .filter(([key, values]) => key && values.length),
+  );
+
+  return Object.keys(normalizedFillers).length ? normalizedFillers : undefined;
 }
 
 export const list = query({
@@ -34,6 +72,11 @@ export const create = mutation({
     audienceDetails: v.string(),
     inferredProblem: v.optional(v.string()),
     inferredPainPoints: v.array(v.string()),
+    eligibleCliprHookStyleKeys: v.optional(v.array(v.string())),
+    eligibleCliprHookTemplateIds: v.optional(v.array(v.string())),
+    cliprPlaceholderFillers: v.optional(
+      v.record(v.string(), v.array(v.string())),
+    ),
     createdAt: v.string(),
     updatedAt: v.string(),
   },
@@ -46,6 +89,9 @@ export const create = mutation({
       audienceDetails,
       inferredProblem,
       inferredPainPoints,
+      eligibleCliprHookStyleKeys,
+      eligibleCliprHookTemplateIds,
+      cliprPlaceholderFillers,
       createdAt,
       updatedAt,
     },
@@ -77,8 +123,139 @@ export const create = mutation({
         )
         .filter(Boolean)
         .slice(0, INFERRED_PAIN_POINT_LIMIT),
+      eligibleCliprHookStyleKeys: normalizeTextArray(
+        eligibleCliprHookStyleKeys,
+        CLIPR_HOOK_STYLE_LIMIT,
+        80,
+      ),
+      eligibleCliprHookTemplateIds: normalizeTextArray(
+        eligibleCliprHookTemplateIds,
+        CLIPR_HOOK_TEMPLATE_LIMIT,
+        80,
+      ),
+      cliprPlaceholderFillers: normalizeFillers(cliprPlaceholderFillers),
       createdAt,
       updatedAt,
     });
+  },
+});
+
+export const update = mutation({
+  args: {
+    id: v.string(),
+    name: v.string(),
+    productDetails: v.string(),
+    audienceDetails: v.string(),
+    inferredProblem: v.optional(v.string()),
+    inferredPainPoints: v.array(v.string()),
+    eligibleCliprHookStyleKeys: v.optional(v.array(v.string())),
+    eligibleCliprHookTemplateIds: v.optional(v.array(v.string())),
+    cliprPlaceholderFillers: v.optional(
+      v.record(v.string(), v.array(v.string())),
+    ),
+    updatedAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    {
+      id,
+      name,
+      productDetails,
+      audienceDetails,
+      inferredProblem,
+      inferredPainPoints,
+      eligibleCliprHookStyleKeys,
+      eligibleCliprHookTemplateIds,
+      cliprPlaceholderFillers,
+      updatedAt,
+    },
+  ) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const normalizedName = normalizeText(name, PRODUCT_NAME_MAX_LENGTH);
+
+    if (!normalizedName) {
+      throw new Error("Product name is required.");
+    }
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const product = await ctx.db
+      .query("products")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!product) {
+      throw new Error("Product not found.");
+    }
+
+    await ctx.db.patch(product._id, {
+      name: normalizedName,
+      productDetails: normalizeText(productDetails, PRODUCT_TEXT_MAX_LENGTH),
+      audienceDetails: normalizeText(audienceDetails, PRODUCT_TEXT_MAX_LENGTH),
+      inferredProblem: inferredProblem
+        ? normalizeText(inferredProblem, INFERRED_PROBLEM_MAX_LENGTH)
+        : undefined,
+      inferredPainPoints: inferredPainPoints
+        .map((painPoint) =>
+          normalizeText(painPoint, INFERRED_PAIN_POINT_MAX_LENGTH),
+        )
+        .filter(Boolean)
+        .slice(0, INFERRED_PAIN_POINT_LIMIT),
+      eligibleCliprHookStyleKeys: normalizeTextArray(
+        eligibleCliprHookStyleKeys,
+        CLIPR_HOOK_STYLE_LIMIT,
+        80,
+      ),
+      eligibleCliprHookTemplateIds: normalizeTextArray(
+        eligibleCliprHookTemplateIds,
+        CLIPR_HOOK_TEMPLATE_LIMIT,
+        80,
+      ),
+      cliprPlaceholderFillers: normalizeFillers(cliprPlaceholderFillers),
+      updatedAt,
+    });
+  },
+});
+
+export const get = query({
+  args: {
+    id: v.string(),
+  },
+  handler: async (ctx, { id }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    return await ctx.db
+      .query("products")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+  },
+});
+
+export const remove = mutation({
+  args: {
+    id: v.string(),
+  },
+  handler: async (ctx, { id }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexRecordDelete", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const product = await ctx.db
+      .query("products")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!product) {
+      return null;
+    }
+
+    await ctx.db.delete(product._id);
+    return product;
   },
 });

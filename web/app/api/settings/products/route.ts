@@ -8,36 +8,10 @@ import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateC
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
-import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
+import { readProductProfileInput } from "@/lib/clipstitchr/server/readProductProfileInput";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 
 export const runtime = "nodejs";
-
-type ProductCreateRequestBody = {
-  audienceDetails?: unknown;
-  name?: unknown;
-  productDetails?: unknown;
-};
-
-function readProductCreateInput(
-  body: ProductCreateRequestBody,
-): ProductProfileCreateInput {
-  const input = {
-    name: typeof body.name === "string" ? body.name.trim() : "",
-    productDetails:
-      typeof body.productDetails === "string" ? body.productDetails.trim() : "",
-    audienceDetails:
-      typeof body.audienceDetails === "string"
-        ? body.audienceDetails.trim()
-        : "",
-  };
-
-  if (!input.name) {
-    throw new Error("Product name is required.");
-  }
-
-  return input;
-}
 
 export async function POST(request: Request) {
   const userId = await getAuthenticatedUserId();
@@ -55,9 +29,7 @@ export async function POST(request: Request) {
 
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const rateLimitSecret = getRateLimitApiSecret();
-    const input = readProductCreateInput(
-      (await request.json()) as ProductCreateRequestBody,
-    );
+    const input = readProductProfileInput(await request.json());
 
     await convex.mutation(api.rateLimits.consumeProductEnrichment, {
       secret: rateLimitSecret,

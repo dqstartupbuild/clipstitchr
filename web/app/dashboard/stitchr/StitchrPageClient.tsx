@@ -8,9 +8,12 @@ import { StitchrHeader } from "@/app/_components/stitchr/StitchrHeader";
 import { StitchrShell } from "@/app/_components/stitchr/StitchrShell";
 import { DownloadStitchesPanel } from "@/app/_components/stitchr/DownloadStitchesPanel";
 import { SequencePreviewPanel } from "@/app/_components/stitchr/SequencePreviewPanel";
+import { StitchrAutoTextPanel } from "@/app/_components/stitchr/StitchrAutoTextPanel";
 import { maxStitchrUgcSelectionCount } from "@/lib/clipstitchr/constants/maxStitchrUgcSelectionCount";
+import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useLoadedVideoClip } from "@/lib/clipstitchr/hooks/useLoadedVideoClip";
+import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useStitchr } from "@/lib/clipstitchr/hooks/useStitchr";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -18,6 +21,7 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { createDefaultTextOverlay } from "@/lib/clipstitchr/utils/createDefaultTextOverlay";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
@@ -26,8 +30,12 @@ import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchr
 
 export function StitchrPageClient() {
   const library = useClipLibrary();
+  const products = useProducts();
   const stitchrState = useStitchr({ onCreated: library.refresh });
   const [textOverlay, setTextOverlay] = useState<TextOverlay | null>(null);
+  const [selectedAutoTextProductId, setSelectedAutoTextProductId] = useState("");
+  const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
+  const [autoTextMessage, setAutoTextMessage] = useState<string | null>(null);
   const [ugcTrimRangesByClipId, setUgcTrimRangesByClipId] = useState<
     Record<string, VideoTrimRange>
   >({});
@@ -141,6 +149,8 @@ export function StitchrPageClient() {
   const clampedTextOverlay = textOverlay
     ? clampTextOverlay(textOverlay, totalDuration)
     : null;
+  const activeAutoTextProductId =
+    selectedAutoTextProductId || products.products[0]?.id || "";
 
   useEffect(() => {
     const syncSelectionFromUrl = () => {
@@ -280,6 +290,48 @@ export function StitchrPageClient() {
     }
   };
 
+  const handleGenerateAutoText = useCallback(() => {
+    if (!activeAutoTextProductId) {
+      setAutoTextMessage("Choose a saved Settings product before generating text.");
+      return;
+    }
+
+    if (!totalDuration) {
+      setAutoTextMessage("Select clips before generating text.");
+      return;
+    }
+
+    setIsGeneratingAutoText(true);
+    setAutoTextMessage(null);
+
+    void generateCliprText({
+      durationSeconds: totalDuration > 30 ? 60 : 30,
+      productId: activeAutoTextProductId,
+      purpose: "stitchr",
+    })
+      .then((text) => {
+        const baseOverlay =
+          textOverlay ?? createDefaultTextOverlay(totalDuration, 0);
+
+        setTextOverlay(
+          clampTextOverlay(
+            {
+              ...baseOverlay,
+              text: text.overlayText || text.hook,
+            },
+            totalDuration,
+          ),
+        );
+        setAutoTextMessage("Text generated.");
+      })
+      .catch((error) => {
+        setAutoTextMessage(
+          error instanceof Error ? error.message : "Unable to generate text.",
+        );
+      })
+      .finally(() => setIsGeneratingAutoText(false));
+  }, [activeAutoTextProductId, textOverlay, totalDuration]);
+
   const handleActiveUgcChange = useCallback((id: string) => {
     setActivePreviewUgcId(id);
   }, []);
@@ -314,6 +366,14 @@ export function StitchrPageClient() {
                 canStitch={canStitch}
                 isStitching={isStitching}
                 onStitch={handleStitch}
+              />
+              <StitchrAutoTextPanel
+                products={products.products}
+                selectedProductId={activeAutoTextProductId}
+                isGenerating={isGeneratingAutoText}
+                message={autoTextMessage}
+                onProductChange={setSelectedAutoTextProductId}
+                onGenerate={handleGenerateAutoText}
               />
               <StitchrProgressPanel
                 status={stitchrState.status}

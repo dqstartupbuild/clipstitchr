@@ -3,6 +3,7 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
+import { cliprMetadataValidator } from "./validators/cliprMetadata";
 import { clipTypeValidator } from "./validators/clipType";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
@@ -34,6 +35,7 @@ const saveArgs = {
   defaultTrimRange: v.optional(videoTrimRangeValidator),
   hasAudio: v.boolean(),
   swaprMetadata: v.optional(swaprMetadataValidator),
+  cliprMetadata: v.optional(cliprMetadataValidator),
   createdAt: v.string(),
   updatedAt: v.string(),
 };

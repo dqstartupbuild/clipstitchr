@@ -32,11 +32,16 @@ export function ProductSettingsForm({
             return;
           }
 
-          await onCreate({
-            name,
-            productDetails,
-            audienceDetails,
-          });
+          try {
+            await onCreate({
+              name,
+              productDetails,
+              audienceDetails,
+            });
+          } catch {
+            return;
+          }
+
           setName("");
           setProductDetails("");
           setAudienceDetails("");

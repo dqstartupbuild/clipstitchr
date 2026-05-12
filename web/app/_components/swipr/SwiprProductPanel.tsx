@@ -1,6 +1,7 @@
-import { Boxes } from "lucide-react";
+import { Boxes, Wand2 } from "lucide-react";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { SwiprSlideCountControl } from "@/app/_components/swipr/SwiprSlideCountControl";
+import { Button } from "@/app/_components/ui/Button";
 
 type SwiprProductOption = {
   value: string;
@@ -11,7 +12,9 @@ type SwiprProductPanelProps = {
   productOptions: SwiprProductOption[];
   selectedProductId: string;
   slideCount: number;
+  isGeneratingText: boolean;
   onProductChange: (productId: string) => void;
+  onGenerateText: () => void;
   onSlideCountChange: (count: number) => void;
 };
 
@@ -19,7 +22,9 @@ export function SwiprProductPanel({
   productOptions,
   selectedProductId,
   slideCount,
+  isGeneratingText,
   onProductChange,
+  onGenerateText,
   onSlideCountChange,
 }: SwiprProductPanelProps) {
   const hasProducts = productOptions.length > 0;
@@ -55,6 +60,18 @@ export function SwiprProductPanel({
           onChange={onSlideCountChange}
         />
       </div>
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        className="mt-3"
+        icon={<Wand2 aria-hidden className="h-4 w-4" />}
+        disabled={!hasProducts}
+        isLoading={isGeneratingText}
+        onClick={onGenerateText}
+      >
+        Generate text
+      </Button>
     </section>
   );
 }

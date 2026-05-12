@@ -3,6 +3,9 @@ export type ProductProfile = {
   name: string;
   productDetails: string;
   audienceDetails: string;
+  cliprPlaceholderFillers?: Record<string, string[]>;
+  eligibleCliprHookStyleKeys?: string[];
+  eligibleCliprHookTemplateIds?: string[];
   inferredProblem?: string;
   inferredPainPoints: string[];
   createdAt: string;

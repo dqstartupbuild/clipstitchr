@@ -23,7 +23,7 @@ export async function createProductEnrichment({
       prompt: createProductEnrichmentPrompt(product),
       system_prompt: PRODUCT_ENRICHMENT_SYSTEM_PROMPT,
       temperature: 0.2,
-      max_completion_tokens: 500,
+      max_completion_tokens: 12000,
     },
   });
   const outputText = await getCompletedReplicatePredictionOutputText({

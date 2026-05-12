@@ -7,6 +7,7 @@ export function getUploadLibraryTabFromSearchParams(
 
   switch (tab) {
     case "ugc":
+    case "clips":
     case "demo":
     case "swaps":
     case "swipes":

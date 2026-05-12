@@ -224,6 +224,145 @@ export const consumeSwaprJobCreate = mutation({
   },
 });
 
+export const consumeCliprJobCreate = mutation({
+  args: {
+    estimatedSeconds: v.number(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { estimatedSeconds, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const generatedSeconds = getPositiveCount(
+      estimatedSeconds,
+      "Estimated generated seconds",
+    );
+
+    await rateLimiter.limit(ctx, "cliprJobCreate", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprJobCreateDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprGeneratedSecondsMonthly", {
+      key: ownerId,
+      count: generatedSeconds,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      throws: true,
+    });
+  },
+});
+
+export const consumeCliprHookScript = mutation({
+  args: {
+    secret: v.string(),
+  },
+  handler: async (ctx, { secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "cliprHookScriptGenerate", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      throws: true,
+    });
+  },
+});
+
+export const consumeCliprVoiceGeneration = mutation({
+  args: {
+    estimatedSeconds: v.number(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { estimatedSeconds, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const generatedSeconds = getPositiveCount(
+      estimatedSeconds,
+      "Estimated voice seconds",
+    );
+
+    await rateLimiter.limit(ctx, "cliprVoiceGenerate", {
+      key: ownerId,
+      count: generatedSeconds,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      count: generatedSeconds,
+      throws: true,
+    });
+  },
+});
+
+export const consumeCliprSceneGeneration = mutation({
+  args: {
+    estimatedSeconds: v.number(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { estimatedSeconds, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const generatedSeconds = getPositiveCount(
+      estimatedSeconds,
+      "Estimated scene seconds",
+    );
+
+    await rateLimiter.limit(ctx, "cliprSceneGenerate", {
+      key: ownerId,
+      count: generatedSeconds,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      count: generatedSeconds,
+      throws: true,
+    });
+  },
+});
+
+export const consumeCliprAvatarStillGeneration = mutation({
+  args: {
+    secret: v.string(),
+  },
+  handler: async (ctx, { secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "cliprAvatarStillGenerate", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      throws: true,
+    });
+  },
+});
+
+export const consumeCliprJobPoll = mutation({
+  args: {
+    secret: v.string(),
+  },
+  handler: async (ctx, { secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "cliprJobPoll", {
+      key: ownerId,
+      throws: true,
+    });
+  },
+});
+
 export const consumeSwaprJobPoll = mutation({
   args: {
     secret: v.string(),

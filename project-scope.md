@@ -23,7 +23,7 @@ product demo**, a user can produce matching unique 9:16 ad variants - each
 pairing a different UGC clip first with the same product demo second - in
 minutes, without leaving the app.
 
-The primary product is **Stitchr**. AI features like Swapr and Avatar Photo Generator are secondary helpers for
+The primary product is **Stitchr**. AI features like Clipr, Swapr, and Avatar Photo Generator are secondary helpers for
 creating or extending source material when a user does not have enough usable
 clips.
 
@@ -157,9 +157,10 @@ Multiple independent text layers remain future scope.
 | 7 | Avatar photos store a detailed non-sensitive visual description of the person for scenario generation | ✅ | ✅ |
 | 8 | Users can generate 3, 5, or 10 new avatar scenario photos from a selected avatar through Replicate OpenAI image generation | ✅ | ✅ |
 | 9 | Swapr-generated outputs appear in the Content Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
-| 10 | Stitches appear in the Content Library Stitches tab; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
-| 11 | The Content Library includes an All tab so users can view every saved video output type at once | ✅ | ✅ |
-| 12 | The dashboard header upload action opens an upload selector for UGC, Demo, or Photo, then routes to the relevant page/tab with controls revealed | ✅ | ✅ |
+| 10 | Clipr-generated outputs appear in the Content Library Clips tab and remain reusable as UGC-style clips | ✅ | ✅ |
+| 11 | Stitches appear in the Content Library Stitches tab; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
+| 12 | The Content Library includes an All tab so users can view every saved video output type at once | ✅ | ✅ |
+| 13 | The dashboard header upload action opens an upload selector for UGC, Demo, or Photo, then routes to the relevant page/tab with controls revealed | ✅ | ✅ |
 
 ### 4.5 AI-Assisted Content Supply (Secondary)
 
@@ -173,6 +174,7 @@ main product promise.
 | 2 | Avatar photo generation creates additional reusable source photos | ✅ | ✅ |
 | 3 | Swapr generates UGC-style video clips that can be saved back into the UGC library | ✅ | ✅ |
 | 4 | AI features use rate limits, credit budgeting, and speed profiles because they create external provider cost | ✅ | ✅ |
+| 5 | Clipr generates non-promotional short engagement Clips from saved product and avatar context | ✅ | ✅ |
 
 ### 4.6 Carousel Generation
 
@@ -207,10 +209,11 @@ hidden inferred problem and audience pain-point metadata for generation prompts.
 /                → Landing page (marketing + "Go to Dashboard" CTA)
 /dashboard       → Authenticated main workspace
 /dashboard/stitchr → Authenticated Stitchr video stitching interface
+/dashboard/clipr → Authenticated Clipr engagement clip generator
 /dashboard/swipr → Authenticated TikTok carousel image generator
 /dashboard/swapr → Authenticated AI motion-transfer studio using saved photos with UGC clips or finished stitches
 /dashboard/avatars → Authenticated avatar photo library with hidden-until-requested photo upload controls, avatar assignment, descriptions, and AI scenario photo generation
-/dashboard/uploads → Authenticated Content Library with All, UGC, Demo, Swaps, Swipes, and Stitches tabs; UGC/Demo upload controls open from the header upload selector
+/dashboard/uploads → Authenticated Content Library with All, UGC, Clips, Demo, Swaps, Swipes, and Stitches tabs; UGC/Demo upload controls open from the header upload selector
 /dashboard/stitches → Compatibility redirect to `/dashboard/uploads?tab=stitches`
 ```
 

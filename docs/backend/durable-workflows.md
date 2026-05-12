@@ -67,6 +67,7 @@ Examples:
 
 - Avatar photo generation
 - Swapr video generation
+- Clipr engagement clip generation
 
 Provider jobs should be finalized by a server-side path, not by the client.
 
@@ -132,6 +133,7 @@ device cannot resume the work.
 | Photo upload | Browser prepares photo, uploads objects, and saves Convex metadata. Refresh can stop before completion. | Upload original source to a durable job first, then finalize from a recoverable source. |
 | Video upload normalization | Browser Media Bunny normalization and R2 upload run from a page-local queue. Refresh stops work. | Persist source first and process in a backend worker, or persist a local resumable queue. |
 | Stitchr composition | Inputs are durable saved clips, but each stitch job is browser-local. Refresh stops work, including multi-UGC batches that have not finished saving every output. | Create a stitch job with selected UGC clip IDs, demo clip ID, trim ranges, and shared overlay config, then process in a backend worker or resumable browser queue. |
+| Clipr generation | Hook/script and scene generation are durable, scene outputs copy to R2, and browser Media Bunny stitching finalizes from durable scene objects. | Move final stitching to a worker when browser reliability or route timeout limits require it. |
 
 ## Recovery Requirements
 
@@ -159,6 +161,18 @@ For Swapr, each job needs:
 - model ID
 - prediction ID
 - output URL
+- final video clip ID after finalization
+
+For Clipr, each job needs:
+
+- saved product ID and product snapshot
+- selected avatar ID and resolved most recent avatar photo ID
+- selected voice ID and duration target
+- hidden hook style/template IDs and filled variables
+- generated hook, script, and scene plan
+- provider prediction IDs or request IDs for each scene
+- intermediate scene R2 object references
+- final video/poster R2 object references
 - final video clip ID after finalization
 
 For Stitchr, each job needs:

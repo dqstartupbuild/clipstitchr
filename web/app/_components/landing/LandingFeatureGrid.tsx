@@ -5,6 +5,7 @@ import {
   Ratio,
   Scissors,
   Shuffle,
+  Sparkles,
   Type,
   UploadCloud,
   UserRound,
@@ -27,8 +28,14 @@ const features = [
   {
     title: "Organize your library",
     description:
-      "Keep UGC, demos, AI clips, and finished stitches in one place.",
+      "Keep UGC, demos, Clips, Swaps, Swipes, and finished stitches in one place.",
     icon: FolderSearch,
+  },
+  {
+    title: "Generate reusable Clips",
+    description:
+      "Use Clipr to create short engagement clips when your library needs fresh source footage.",
+    icon: Sparkles,
   },
   {
     title: "Save carousel drafts",
@@ -51,7 +58,7 @@ const features = [
   {
     title: "Create new UGC clips",
     description:
-      "Use Swapr to turn an avatar photo and UGC clip into more source footage.",
+      "Use Swapr to turn an avatar photo and an existing clip into more source footage.",
     icon: Shuffle,
   },
   {

@@ -50,8 +50,10 @@ social proof first, product proof immediately after.
 6. Copy clip default trims into the Stitchr session.
 7. Tap or swipe through each exact UGC-then-demo preview.
 8. Optionally configure one shared text overlay for every output.
-9. Create one stitched output per selected UGC clip.
-10. Save and download the finished ad variants.
+9. Optionally generate the shared overlay from the hidden Clipr hook-template
+   engine using saved product context. The generated overlay stays editable.
+10. Create one stitched output per selected UGC clip.
+11. Save and download the finished ad variants.
 
 ## Product Principles
 
@@ -61,8 +63,9 @@ social proof first, product proof immediately after.
 - Make outputs easy to recognize later with names, posters, and metadata.
 - Keep batch creation predictable: one selected demo, up to 20 selected UGC
   clips, and one shared overlay for the batch.
-- Keep AI-generated clips as new UGC clips that can flow into
+- Keep AI-generated Clips and Swaps as UGC-compatible clips that can flow into
   Stitchr.
+- Keep generated overlay text editable and hide hook style/template mechanics.
 
 ## Non-Goals
 

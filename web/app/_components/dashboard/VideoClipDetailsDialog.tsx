@@ -60,6 +60,8 @@ export function VideoClipDetailsDialog({
     activeTrimRange,
   );
   const detailItems = [
+    { label: "Clipr hook", value: clip.cliprMetadata?.filledHook },
+    { label: "Clipr product", value: clip.cliprMetadata?.productName },
     { label: "Description", value: clip.videoDescription },
     { label: "Product", value: clip.productDescription },
     { label: "Main person", value: clip.mainPersonDescription },

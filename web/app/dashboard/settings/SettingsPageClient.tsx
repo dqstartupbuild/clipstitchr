@@ -26,10 +26,19 @@ export function SettingsPageClient() {
           </div>
         ) : null}
         <ProductSettingsForm
-          isSaving={products.isSaving}
+          isSaving={products.isCreating}
           onCreate={products.createProduct}
         />
-        <ProductSettingsList products={products.products} />
+        <ProductSettingsList
+          products={products.products}
+          deletingProductId={products.deletingProductId}
+          isActionDisabled={
+            products.isSaving || products.deletingProductId !== null
+          }
+          savingProductId={products.savingProductId}
+          onDelete={products.deleteProduct}
+          onUpdate={products.updateProduct}
+        />
         <div className="grid gap-4 md:grid-cols-2">
           <SettingsSupportPanel />
           <SettingsSubscriptionPanel />

@@ -1,7 +1,7 @@
 # Clipr Scope
 
-> Status: approval draft
-> Goal: define the requested Clipr feature, related docs/resources, implementation touchpoints, and review plan before any product code is changed.
+> Status: implementation scope
+> Goal: define the Clipr feature, internal hook resources, implementation touchpoints, rate limits, durable workflow, and review plan.
 
 ## Summary
 
@@ -69,9 +69,9 @@ hook, and the remaining slides should pay it off with simple supporting points.
   output.
 - Final Clipr outputs should be saved in the content library and organized into a "Clips" tab.
 
-## Required Docs Updates After Approval
+## Documentation Coverage
 
-Update these docs before implementation:
+Clipr affects these docs:
 
 - `docs/features/clipr.md`
   - Overwrite it with the full Clipr feature scope.
@@ -110,7 +110,7 @@ Update these docs before implementation:
   - Require provider outputs to be copied to R2 before provider retention expires.
   - Require recoverable final stitching from saved scene outputs.
 
-## Required Resource Files After Approval
+## Internal Resource Files
 
 Create a root `resources/` folder if it does not exist.
 
@@ -553,24 +553,23 @@ Rules:
 10. GPT-4.1 splits the script into short scene beats.
 11. ElevenLabs v3 generates voice audio for each scene or script segment.
 12. Scene generation runs one scene at a time:
-    - avatar scenes use the selected avatar and resolved reference photo, script
-      lines, voice audio, and a photo/video prompt
-    - b-roll scenes use product/audience context and a visual prompt
-13. Bytedance Seedance 2.0 is used for scene generation where it fits the
-    provider schema, especially reference-image or b-roll generation.
-14. Kling avatar generation receives the selected avatar reference, voice audio,
-    scene script, and other required inputs for avatar/talking scenes.
-15. Generated scene outputs are copied into R2.
-16. If total scene duration is below the selected target, GPT-4.1 generates
+    - avatar scenes first generate a scene-specific UGC-style still from the
+      selected avatar reference photo, avatar description, script beat, and
+      visual direction
+    - the generated still is sent to P-Video as image-to-video input
+    - b-roll scenes use P-Video text-to-video from product/audience context and
+      a visual prompt
+13. Generated avatar stills and generated scene videos are copied into R2.
+14. If total scene duration is below the selected target, GPT-4.1 generates
     follow-up scene beats and the provider scene loop continues.
-17. Media Bunny stitches all generated scene clips into one final 9:16 video.
-18. If total scene duration is above the selected target, Media Bunny trims the
+15. Media Bunny stitches all generated scene clips into one final 9:16 video.
+16. If total scene duration is above the selected target, Media Bunny trims the
     stitched final output to the selected duration.
-19. Clipr generates a poster image for the final output.
-20. Final video and poster are uploaded to R2.
-21. Convex saves the final output as a UGC-compatible video clip with Clipr
+17. Clipr generates a poster image for the final output.
+18. Final video and poster are uploaded to R2.
+19. Convex saves the final output as a UGC-compatible video clip with Clipr
     provenance metadata.
-22. The output appears in the Content Library `Clips` tab and can be used in
+20. The output appears in the Content Library `Clips` tab and can be used in
     Stitchr.
 
 ## AI Provider Notes
@@ -582,17 +581,17 @@ Planned model roles:
 
 - Hook selection and script generation: `openai/gpt-4.1`.
 - Text to speech: `elevenlabs/v3`.
-- Avatar/reference-image scene generation: `bytedance/seedance-2.0` where the
-  model supports the needed reference-image flow.
-- Avatar/talking final video generation: Kling avatar model, exact model ID and
-  schema to verify before implementation.
+- Avatar scene still generation: `openai/gpt-image-2`, using the selected
+  avatar reference photo to create a UGC-style still that fits the scene.
+- Scene video generation: `prunaai/p-video`, using image-to-video for avatar
+  scenes and text-to-video for b-roll scenes.
 
 Add environment overrides instead of hard-coding provider choices:
 
 - `CLIPR_HOOK_MODEL_ID`
+- `CLIPR_AVATAR_STILL_MODEL_ID`
 - `CLIPR_TTS_MODEL_ID`
 - `CLIPR_SCENE_MODEL_ID`
-- `CLIPR_AVATAR_VIDEO_MODEL_ID`
 
 ## Script Rules
 
@@ -804,6 +803,7 @@ New enforcement surfaces to document and implement:
 
 - Clipr hook/script generation.
 - Clipr voice generation.
+- Clipr scene-specific avatar still generation.
 - Clipr avatar scene generation.
 - Clipr b-roll scene generation.
 - Clipr full job creation.

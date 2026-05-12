@@ -1,4 +1,5 @@
 import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
+import type { CliprMetadata } from "@/lib/clipstitchr/types/CliprMetadata";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SwaprOutputMetadata } from "@/lib/clipstitchr/types/SwaprOutputMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -31,6 +32,7 @@ export type VideoClip = {
   defaultTrimRange?: VideoTrimRange;
   hasAudio: boolean;
   swaprMetadata?: SwaprOutputMetadata;
+  cliprMetadata?: CliprMetadata;
   createdAt: string;
   updatedAt: string;
 };

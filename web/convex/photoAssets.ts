@@ -65,6 +65,22 @@ export const get = query({
   },
 });
 
+export const getMostRecentForAvatar = query({
+  args: {
+    avatarId: v.string(),
+  },
+  handler: async (ctx, { avatarId }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const photos = await ctx.db
+      .query("photoAssets")
+      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .order("desc")
+      .collect();
+
+    return photos.find((photo) => photo.avatarId === avatarId) ?? null;
+  },
+});
+
 export const save = mutation({
   args: saveArgs,
   handler: async (ctx, args) => {
