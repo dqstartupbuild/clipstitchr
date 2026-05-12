@@ -73,12 +73,13 @@ Optional Replicate model overrides:
   strategy enrichment when saving products in Settings.
 - `CLIPR_HOOK_MODEL_ID` defaults to `openai/gpt-4.1` for Clipr hook, script,
   Swipr auto-text, and Stitchr auto-text generation.
-- `CLIPR_AVATAR_STILL_MODEL_ID` defaults to `openai/gpt-image-2` for
-  scene-specific UGC avatar stills before image-to-video.
-- `CLIPR_SCENE_MODEL_ID` defaults to `prunaai/p-video` for Clipr image-to-video
-  and text-to-video scene generation.
-- `CLIPR_TTS_MODEL_ID` is reserved for the ElevenLabs adapter when voice
-  generation is wired.
+- Clipr avatar still generation uses `AVATAR_PHOTO_MODEL_ID`, the same model
+  configuration and provider input path as avatar photo generation, but creates
+  one source still before full-script avatar video generation.
+- `CLIPR_AVATAR_VIDEO_MODEL_ID` defaults to `prunaai/p-video-avatar` for Clipr
+  full-script avatar video and voice generation.
+- `CLIPR_TTS_MODEL_ID` is legacy/reserved; Clipr voice selection is handled by
+  `prunaai/p-video-avatar`.
 
 ## Enforcement Map
 
@@ -102,11 +103,10 @@ Optional Replicate model overrides:
 | Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 5; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
 | Swipr seeded background import | `POST /api/dev/swipr/backgrounds/seed` in development; future admin-only seed runner in production | Development route is unavailable outside `NODE_ENV=development`, imports at most 5 images/request, skips already-saved seed IDs, consumes the development seed-generation bucket before provider work, consumes R2 upload limits before storage work, and saves through `swiprBackgrounds.save`; production runner must be admin-only, batch-capped, checkpointed, and counted against shared provider, R2 upload, and Convex record-save protection before persistence |
 | Product enrichment | `POST /api/settings/products`, `PATCH /api/settings/products/{id}` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
-| Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; global provider bucket 500/hour |
-| Clipr hook/script generation | `POST /api/clipr/jobs` and `POST /api/clipr/text` | 30/hour/user, burst 10; global provider bucket 500/hour |
-| Clipr avatar still generation | `POST /api/clipr/jobs` before each avatar scene image-to-video call | 20 images/hour/user, burst 6; global provider bucket counted once per still |
-| Clipr scene generation | `POST /api/clipr/jobs` before each scene provider call | 40 estimated scene seconds/hour/user, burst 12; global provider bucket counted by estimated seconds |
-| Clipr voice generation | Reserved Clipr voice adapter | 60 estimated voice seconds/hour/user, burst 20; global provider bucket counted by estimated seconds |
+| Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; shared global provider bucket 10,000 units/hour, burst 2,000 |
+| Clipr hook/script generation | `POST /api/clipr/jobs` and `POST /api/clipr/text` | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000 |
+| Clipr avatar still generation | `POST /api/clipr/jobs` before the full-script avatar video call | 20 images/hour/user, burst 6; global provider bucket counted once per still |
+| Clipr avatar video and voice generation | `POST /api/clipr/jobs` before calling `prunaai/p-video-avatar` | 600 estimated avatar seconds/hour/user, burst 180; global provider bucket counted by estimated seconds |
 | Clipr job polling | Reserved Clipr polling route and Convex job refreshes | 600/minute/user, burst 150 |
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
@@ -114,7 +114,7 @@ Optional Replicate model overrides:
 | Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `products.update`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
-| Convex Clipr job writes | `cliprJobs.createQueued`, `cliprJobs.applyScriptPlan`, `cliprJobs.recordSceneOutput`, `cliprJobs.finalizeWithClip` | 3,000/hour/user, burst 500 |
+| Convex Clipr job writes | `cliprJobs.createQueued`, `cliprJobs.applyScriptPlan`, `cliprJobs.recordAvatarImageOutput`, `cliprJobs.recordAvatarVideoOutput`, `cliprJobs.markBrowserSaving`, `cliprJobs.finalizeWithClip` | 3,000/hour/user, burst 500 |
 
 ## Local-Only Workflows
 
@@ -157,11 +157,16 @@ consumes the product enrichment limit before creating the prediction, then
 `products.update` consumes the shared Convex metadata-update limit before the
 database write. `products.remove` consumes the shared Convex record-delete limit.
 
-Clipr browser final stitching is intentionally not separately rate-limited in
-the MVP because Media Bunny runs locally from already durable scene objects.
-The expensive surfaces are gated before work starts: job creation, hook/script
-generation, scene-specific avatar still generation, scene video generation, R2
-object creation, and Convex final save.
+Clipr browser final preparation is intentionally not separately rate-limited in
+the MVP because the current simplified Clipr flow normalizes one generated
+avatar video and saves it as a Clip rather than stitching multiple generated
+scenes. The expensive surfaces are gated before work starts: job creation,
+hook/script generation, avatar still generation, full-script avatar video
+generation, R2 object creation, and Convex final save. Clipr saves the
+normalized full avatar video directly as the final Clipr clip. After script
+planning, Clipr consumes the avatar-video limit before creating the avatar
+still, so a rate-limit rejection does not leave an image generated without the
+video call that follows.
 
 ## Client Batch Caps
 

@@ -9,7 +9,11 @@ import { r2ObjectValidator } from "./validators/r2Object";
 
 const clientJobFields = (job: {
   avatarId: string;
+  avatarImageObject?: { contentType: string; key: string; size: number };
+  avatarImageProviderPredictionId?: string;
   avatarPhotoId: string;
+  avatarVideoObject?: { contentType: string; key: string; size: number };
+  avatarVideoProviderPredictionId?: string;
   completedAt?: string;
   createdAt: string;
   error?: string;
@@ -28,7 +32,7 @@ const clientJobFields = (job: {
     photoScript?: string;
     providerImagePredictionId?: string;
     providerPredictionId?: string;
-    sceneType: "avatar" | "b_roll";
+    sceneType: "avatar";
     scriptText: string;
     visualPrompt: string;
     voiceAudioObject?: { contentType: string; key: string; size: number };
@@ -45,6 +49,10 @@ const clientJobFields = (job: {
   productName: job.productName,
   avatarId: job.avatarId,
   avatarPhotoId: job.avatarPhotoId,
+  avatarImageObject: job.avatarImageObject,
+  avatarVideoObject: job.avatarVideoObject,
+  avatarImageProviderPredictionId: job.avatarImageProviderPredictionId,
+  avatarVideoProviderPredictionId: job.avatarVideoProviderPredictionId,
   voiceId: job.voiceId,
   targetDurationSeconds: job.targetDurationSeconds,
   filledHook: job.filledHook,
@@ -121,9 +129,9 @@ export const createQueued = mutation({
       ...job,
       scenePlan: [],
       providerModels: [],
-      status: "queued",
-      stage: "queued",
-      progress: 0,
+      status: "scripting",
+      stage: "hook-script",
+      progress: 0.08,
       updatedAt: job.createdAt,
     });
   },
@@ -182,24 +190,21 @@ export const applyScriptPlan = mutation({
       script,
       scenePlan,
       providerModels: Array.from(new Set([...job.providerModels, providerModel])),
-      status: "generating-scenes",
-      stage: "scene-generation",
+      status: "generating-avatar-image",
+      stage: "avatar-image",
       progress: 0.25,
       updatedAt,
     });
   },
 });
 
-export const recordSceneOutput = mutation({
+export const recordAvatarImageOutput = mutation({
   args: {
     secret: v.string(),
     id: v.string(),
-    sceneId: v.string(),
-    generatedImageObject: v.optional(r2ObjectValidator),
-    generatedVideoObject: r2ObjectValidator,
-    providerImagePredictionId: v.optional(v.string()),
-    providerPredictionId: v.string(),
-    providerModel: v.string(),
+    avatarImageObject: r2ObjectValidator,
+    avatarImageProviderPredictionId: v.string(),
+    providerModels: v.array(v.string()),
     progress: v.number(),
     updatedAt: v.string(),
   },
@@ -208,12 +213,9 @@ export const recordSceneOutput = mutation({
     {
       secret,
       id,
-      sceneId,
-      generatedImageObject,
-      generatedVideoObject,
-      providerImagePredictionId,
-      providerPredictionId,
-      providerModel,
+      avatarImageObject,
+      avatarImageProviderPredictionId,
+      providerModels,
       progress,
       updatedAt,
     },
@@ -236,37 +238,41 @@ export const recordSceneOutput = mutation({
     });
 
     await ctx.db.patch(job._id, {
-      scenePlan: job.scenePlan.map((scene) =>
-        scene.id === sceneId
-          ? {
-              ...scene,
-              ...(generatedImageObject === undefined
-                ? {}
-                : { generatedImageObject }),
-              generatedVideoObject,
-              ...(providerImagePredictionId === undefined
-                ? {}
-                : { providerImagePredictionId }),
-              providerPredictionId,
-            }
-          : scene,
+      avatarImageObject,
+      avatarImageProviderPredictionId,
+      providerModels: Array.from(
+        new Set([...job.providerModels, ...providerModels]),
       ),
-      providerModels: Array.from(new Set([...job.providerModels, providerModel])),
-      status: "generating-scenes",
-      stage: "scene-generation",
+      status: "generating-avatar-video",
+      stage: "avatar-video",
       progress,
       updatedAt,
     });
   },
 });
 
-export const markReadyToStitch = mutation({
+export const recordAvatarVideoOutput = mutation({
   args: {
     secret: v.string(),
     id: v.string(),
+    avatarVideoObject: r2ObjectValidator,
+    avatarVideoProviderPredictionId: v.string(),
+    providerModels: v.array(v.string()),
+    progress: v.number(),
     updatedAt: v.string(),
   },
-  handler: async (ctx, { secret, id, updatedAt }) => {
+  handler: async (
+    ctx,
+    {
+      secret,
+      id,
+      avatarVideoObject,
+      avatarVideoProviderPredictionId,
+      providerModels,
+      progress,
+      updatedAt,
+    },
+  ) => {
     assertRateLimitApiSecret(secret);
 
     const ownerId = await getAuthenticatedOwnerId(ctx);
@@ -279,24 +285,33 @@ export const markReadyToStitch = mutation({
       throw new Error("Clipr job not found.");
     }
 
-    await ctx.db.patch(job._id, {
-      status: "ready-to-stitch",
-      stage: "browser-stitching",
-      progress: 0.88,
-      updatedAt,
+    await rateLimiter.limit(ctx, "convexCliprJobWrite", {
+      key: ownerId,
+      throws: true,
     });
+
+    const patch = {
+      avatarVideoObject,
+      avatarVideoProviderPredictionId,
+      providerModels: Array.from(
+        new Set([...job.providerModels, ...providerModels]),
+      ),
+      status: "ready-to-save" as const,
+      stage: "browser-save" as const,
+      progress,
+      updatedAt,
+    };
+
+    await ctx.db.patch(job._id, patch);
 
     return clientJobFields({
       ...job,
-      status: "ready-to-stitch",
-      stage: "browser-stitching",
-      progress: 0.88,
-      updatedAt,
+      ...patch,
     });
   },
 });
 
-export const markBrowserStitching = mutation({
+export const markBrowserSaving = mutation({
   args: {
     id: v.string(),
     updatedAt: v.string(),
@@ -313,9 +328,9 @@ export const markBrowserStitching = mutation({
     }
 
     await ctx.db.patch(job._id, {
-      status: "stitching",
-      stage: "browser-stitching",
-      progress: Math.max(job.progress, 0.9),
+      status: "saving",
+      stage: "browser-save",
+      progress: Math.max(job.progress, 0.72),
       updatedAt,
     });
   },

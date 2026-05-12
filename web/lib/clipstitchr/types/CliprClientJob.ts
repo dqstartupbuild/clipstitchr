@@ -2,6 +2,7 @@ import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDuration
 import type { CliprJobStage } from "@/lib/clipstitchr/types/CliprJobStage";
 import type { CliprJobStatus } from "@/lib/clipstitchr/types/CliprJobStatus";
 import type { CliprScenePlan } from "@/lib/clipstitchr/types/CliprScenePlan";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 
 export type CliprClientJob = {
   id: string;
@@ -9,6 +10,10 @@ export type CliprClientJob = {
   productName: string;
   avatarId: string;
   avatarPhotoId: string;
+  avatarImageObject?: R2ObjectReference;
+  avatarVideoObject?: R2ObjectReference;
+  avatarImageProviderPredictionId?: string;
+  avatarVideoProviderPredictionId?: string;
   voiceId: string;
   targetDurationSeconds: CliprDurationSeconds;
   filledHook?: string;

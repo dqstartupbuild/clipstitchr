@@ -1,1 +1,1 @@
-export type CliprSceneType = "avatar" | "b_roll";
+export type CliprSceneType = "avatar";

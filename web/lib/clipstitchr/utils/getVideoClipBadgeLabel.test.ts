@@ -38,7 +38,7 @@ describe("getVideoClipBadgeLabel", () => {
           productName: "Product",
           avatarId: "avatar-1",
           avatarPhotoId: "photo-1",
-          voiceId: "Rachel",
+          voiceId: "Zephyr (Female)",
           targetDurationSeconds: 30,
           hookStyleKey: "mystery_gap",
           hookTemplateId: "MG-001",

@@ -1,5 +1,6 @@
 const VIDEO_READY_STATE_HAVE_CURRENT_DATA = 2;
 const VIDEO_SEEK_TIME_EPSILON = 0.001;
+const VIDEO_SEEK_TIMEOUT_MS = 7000;
 
 export async function seekVideoToTime(
   video: HTMLVideoElement,
@@ -13,7 +14,12 @@ export async function seekVideoToTime(
   }
 
   await new Promise<void>((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      cleanup();
+      reject(new Error("Timed out seeking video for poster capture."));
+    }, VIDEO_SEEK_TIMEOUT_MS);
     const cleanup = () => {
+      window.clearTimeout(timeoutId);
       video.removeEventListener("loadeddata", handleReady);
       video.removeEventListener("seeked", handleReady);
       video.removeEventListener("error", handleError);

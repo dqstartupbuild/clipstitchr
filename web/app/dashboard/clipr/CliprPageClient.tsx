@@ -53,8 +53,7 @@ export function CliprPageClient() {
     Boolean(activeProductId) &&
     Boolean(activeAvatarId) &&
     selectedAvatarPhotoCount > 0 &&
-    generator.status !== "reading" &&
-    generator.status !== "stitching";
+    !generator.isGenerating;
   const error = products.error ?? photoLibrary.error ?? library.error;
 
   return (
@@ -104,10 +103,7 @@ export function CliprPageClient() {
               <Button
                 type="button"
                 icon={<Wand2 aria-hidden className="h-4 w-4" />}
-                isLoading={
-                  generator.status === "reading" ||
-                  generator.status === "stitching"
-                }
+                isLoading={generator.isGenerating}
                 disabled={!canGenerate}
                 onClick={() =>
                   void generator.generate({
@@ -127,6 +123,7 @@ export function CliprPageClient() {
           <div className="flex flex-col gap-5 xl:sticky xl:top-5">
             <CliprGenerationProgress
               error={generator.error}
+              message={generator.message}
               progress={generator.progress}
               status={generator.status}
             />

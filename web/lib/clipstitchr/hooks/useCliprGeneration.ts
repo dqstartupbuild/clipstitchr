@@ -1,24 +1,19 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import {
-  TIKTOK_OUTPUT_HEIGHT,
-  TIKTOK_OUTPUT_WIDTH,
-} from "@/lib/clipstitchr/constants/tiktokOutputSize";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createCliprJob } from "@/lib/clipstitchr/client/createCliprJob";
 import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
-import { stitchNormalizedVideoSequence } from "@/lib/clipstitchr/media/stitchNormalizedVideoSequence";
 import type { CliprClientJob } from "@/lib/clipstitchr/types/CliprClientJob";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
-import type { VideoSequenceClip } from "@/lib/clipstitchr/types/VideoSequenceClip";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getCliprFinalClipName } from "@/lib/clipstitchr/utils/getCliprFinalClipName";
 
@@ -34,62 +29,101 @@ type UseCliprGenerationOptions = {
   onCreated?: () => void | Promise<void>;
 };
 
+function getActiveJobProgress(job: CliprClientJob | null | undefined) {
+  if (!job) {
+    return null;
+  }
+
+  switch (job.stage) {
+    case "hook-script":
+      return {
+        message: "Writing the full avatar script",
+        progress: Math.max(0.08, Math.min(job.progress, 0.18)),
+      };
+    case "avatar-image":
+      return {
+        message: "Generating avatar source image",
+        progress: Math.max(0.25, Math.min(job.progress, 0.38)),
+      };
+    case "avatar-video":
+      return {
+        message: "Generating full avatar video",
+        progress: Math.max(0.45, Math.min(job.progress, 0.62)),
+      };
+    case "browser-save":
+      return {
+        message: "Avatar video generated",
+        progress: Math.max(0.68, Math.min(job.progress, 0.7)),
+      };
+    default:
+      return {
+        message: "Starting Clipr generation",
+        progress: Math.max(0.05, Math.min(job.progress, 0.1)),
+      };
+  }
+}
+
 export function useCliprGeneration({ onCreated }: UseCliprGenerationOptions) {
-  const markBrowserStitching = useMutation(api.cliprJobs.markBrowserStitching);
+  const markBrowserSaving = useMutation(api.cliprJobs.markBrowserSaving);
   const finalizeWithClip = useMutation(api.cliprJobs.finalizeWithClip);
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+  const activeJob = useQuery(
+    api.cliprJobs.get,
+    activeJobId ? { id: activeJobId } : "skip",
+  ) as CliprClientJob | null | undefined;
   const [status, setStatus] = useState<ProcessingStatus>("idle");
   const [progress, setProgress] = useState(0);
+  const [message, setMessage] = useState("Ready");
   const [error, setError] = useState<string | null>(null);
   const [job, setJob] = useState<CliprClientJob | null>(null);
   const [finalClipId, setFinalClipId] = useState<string | null>(null);
+  const activeJobProgress =
+    status === "reading" ? getActiveJobProgress(activeJob) : null;
 
-  const createSceneClip = useCallback(
+  const createGeneratedClip = useCallback(
     async (
-      scene: CliprClientJob["scenePlan"][number],
-      sceneIndex: number,
-      sceneCount: number,
-    ): Promise<VideoSequenceClip> => {
-      if (!scene.generatedVideoObject) {
-        throw new Error("A Clipr scene is missing its generated video.");
-      }
-
-      const sceneBlob = await downloadBlobFromR2(scene.generatedVideoObject);
-      const sceneFile = new File([sceneBlob], `${scene.id}.mp4`, {
-        type: sceneBlob.type || scene.generatedVideoObject.contentType,
+      object: R2ObjectReference,
+      {
+        fit,
+        id,
+        name,
+        onProgress,
+        tags,
+      }: {
+        fit: "contain" | "cover";
+        id: string;
+        name: string;
+        onProgress?: (progress: number) => void;
+        tags: string[];
+      },
+    ): Promise<VideoClip> => {
+      const sourceBlob = await downloadBlobFromR2(object);
+      const sourceFile = new File([sourceBlob], `${id}.mp4`, {
+        type: sourceBlob.type || object.contentType,
       });
-      const normalizedScene = await normalizeUploadedVideo(
-        sceneFile,
-        (sceneProgress) =>
-          setProgress(0.88 + ((sceneIndex + sceneProgress) / sceneCount) * 0.06),
-        { fit: "cover" },
-      );
-      const clip: VideoClip = {
-        id: scene.id,
-        name: `Clipr scene ${scene.index + 1}`,
-        tags: ["clipr-scene"],
-        originalName: sceneFile.name,
-        clipType: "ugc",
-        videoObject: scene.generatedVideoObject,
-        blob: normalizedScene.blob,
-        mimeType: normalizedScene.mimeType,
-        sourceMimeType: sceneBlob.type || scene.generatedVideoObject.contentType,
-        size: normalizedScene.blob.size,
-        originalSize: sceneBlob.size,
-        width: normalizedScene.metadata.width,
-        height: normalizedScene.metadata.height,
-        aspectRatio: normalizedScene.metadata.aspectRatio,
-        duration: normalizedScene.metadata.duration,
-        hasAudio: normalizedScene.metadata.hasAudio,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      const normalizedClip = await normalizeUploadedVideo(sourceFile, onProgress, {
+        fit,
+      });
 
       return {
-        clip,
-        trimRange: {
-          start: 0,
-          end: normalizedScene.metadata.duration,
-        },
+        id,
+        name,
+        tags,
+        originalName: sourceFile.name,
+        clipType: "ugc",
+        videoObject: object,
+        blob: normalizedClip.blob,
+        mimeType: normalizedClip.mimeType,
+        sourceMimeType: sourceBlob.type || object.contentType,
+        size: normalizedClip.blob.size,
+        originalSize: sourceBlob.size,
+        width: normalizedClip.metadata.width,
+        height: normalizedClip.metadata.height,
+        aspectRatio: normalizedClip.metadata.aspectRatio,
+        duration: normalizedClip.metadata.duration,
+        hasAudio: normalizedClip.metadata.hasAudio,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
     },
     [],
@@ -98,56 +132,70 @@ export function useCliprGeneration({ onCreated }: UseCliprGenerationOptions) {
   const generate = useCallback(
     async (options: GenerateCliprOptions) => {
       setStatus("reading");
-      setProgress(0);
+      setProgress(0.05);
+      setMessage("Starting Clipr generation");
       setError(null);
       setFinalClipId(null);
+      const requestedJobId = createId();
+
+      setActiveJobId(requestedJobId);
 
       try {
-        const nextJob = await createCliprJob(options);
+        const nextJob = await createCliprJob({
+          ...options,
+          jobId: requestedJobId,
+        });
 
         setJob(nextJob);
-        setProgress(0.88);
+        setProgress(0.7);
+        setMessage("Avatar video generated");
 
         if (!nextJob.scenePlan.length) {
-          throw new Error("Clipr did not return any generated scenes.");
+          throw new Error("Clipr did not return the avatar script plan.");
         }
 
-        await markBrowserStitching({
+        if (!nextJob.avatarVideoObject) {
+          throw new Error("Clipr did not return the generated avatar video.");
+        }
+
+        await markBrowserSaving({
           id: nextJob.id,
           updatedAt: new Date().toISOString(),
         });
 
-        const sceneClips: VideoSequenceClip[] = [];
+        setStatus("normalizing");
+        setMessage("Downloading avatar video");
+        setProgress(0.72);
 
-        for (let index = 0; index < nextJob.scenePlan.length; index += 1) {
-          sceneClips.push(
-            await createSceneClip(
-              nextJob.scenePlan[index],
-              index,
-              nextJob.scenePlan.length,
-            ),
-          );
-        }
-
-        setStatus("stitching");
-
-        const stitched = await stitchNormalizedVideoSequence(sceneClips, {
-          targetDuration: nextJob.targetDurationSeconds,
-          onProgress: (stitchProgress) =>
-            setProgress(0.94 + stitchProgress * 0.04),
-        });
         const clipId = createId();
+        const clipName = getCliprFinalClipName(
+          nextJob.productName,
+          nextJob.createdAt,
+        );
+        const avatarClip = await createGeneratedClip(nextJob.avatarVideoObject, {
+          fit: "cover",
+          id: clipId,
+          name: clipName,
+          tags: ["ugc", "clipr"],
+          onProgress: (avatarProgress) =>
+            setProgress(0.72 + avatarProgress * 0.2),
+        });
         let posterBlob: Blob | undefined;
 
+        setMessage("Generating poster");
         try {
-          posterBlob = await createVideoPosterBlob(stitched.blob);
+          posterBlob = await createVideoPosterBlob(avatarClip.blob);
         } catch {
           posterBlob = undefined;
         }
 
+        setStatus("saving");
+        setMessage("Saving Clip to library");
+        setProgress(0.94);
+
         const [videoObject, posterObject] = await uploadBlobsToR2([
           {
-            blob: stitched.blob,
+            blob: avatarClip.blob,
             kind: "video-clip-video",
             recordId: clipId,
           },
@@ -165,33 +213,38 @@ export function useCliprGeneration({ onCreated }: UseCliprGenerationOptions) {
         const savedClipId = await finalizeWithClip({
           id: nextJob.id,
           clipId,
-          name: getCliprFinalClipName(nextJob.productName, nextJob.createdAt),
+          name: clipName,
           videoObject,
           posterObject,
           posterVersion: posterBlob
             ? VIDEO_POSTER_CAPTURE_VERSION
             : undefined,
-          mimeType: stitched.mimeType,
-          sourceMimeType: stitched.mimeType,
-          size: stitched.blob.size,
-          originalSize: stitched.blob.size,
-          width: TIKTOK_OUTPUT_WIDTH,
-          height: TIKTOK_OUTPUT_HEIGHT,
-          aspectRatio: TIKTOK_OUTPUT_WIDTH / TIKTOK_OUTPUT_HEIGHT,
-          duration: stitched.duration,
-          hasAudio: stitched.hasAudio,
+          mimeType: avatarClip.mimeType,
+          sourceMimeType: avatarClip.sourceMimeType,
+          size: avatarClip.blob.size,
+          originalSize: avatarClip.originalSize,
+          width: avatarClip.width,
+          height: avatarClip.height,
+          aspectRatio: avatarClip.aspectRatio,
+          duration: avatarClip.duration,
+          hasAudio: avatarClip.hasAudio,
           updatedAt: now,
         });
 
         await onCreated?.();
 
         setFinalClipId(savedClipId);
+        setActiveJobId(null);
         setProgress(1);
+        setMessage("Clip saved");
         setStatus("complete");
 
         return savedClipId;
       } catch (nextError) {
+        setActiveJobId(null);
         setStatus("error");
+        setProgress(1);
+        setMessage("Generation stopped");
         setError(
           nextError instanceof Error
             ? nextError.message
@@ -200,15 +253,23 @@ export function useCliprGeneration({ onCreated }: UseCliprGenerationOptions) {
         return null;
       }
     },
-    [createSceneClip, finalizeWithClip, markBrowserStitching, onCreated],
+    [
+      createGeneratedClip,
+      finalizeWithClip,
+      markBrowserSaving,
+      onCreated,
+    ],
   );
 
   return {
     error,
     finalClipId,
     generate,
-    job,
-    progress,
+    isGenerating:
+      status !== "idle" && status !== "complete" && status !== "error",
+    job: activeJob ?? job,
+    message: activeJobProgress?.message ?? message,
+    progress: activeJobProgress?.progress ?? progress,
     status,
   };
 }
