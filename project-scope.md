@@ -155,7 +155,7 @@ Multiple independent text layers remain future scope.
 | 5 | Uploaded UGC clips and demo videos share the tabbed Content Library page | ✅ | ✅ |
 | 6 | Uploaded Swapr avatar photos appear in the Avatars page; AI expansion is optional and off by default | ✅ | ✅ |
 | 7 | Avatar photos store a detailed non-sensitive visual description of the person for scenario generation | ✅ | ✅ |
-| 8 | Users can generate 3, 5, or 10 new avatar scenario photos from a selected avatar through Replicate OpenAI image generation | ✅ | ✅ |
+| 8 | Users can generate 3, 5, or 10 new avatar scenario photos from a selected Replicate image model | ✅ | ✅ |
 | 9 | Swapr-generated outputs appear in the Content Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
 | 10 | Clipr-generated outputs appear in the Content Library Clips tab and remain reusable as UGC-style clips | ✅ | ✅ |
 | 11 | Stitches appear in the Content Library Stitches tab; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
@@ -193,7 +193,7 @@ hidden inferred problem and audience pain-point metadata for generation prompts.
 |---|---------|-----|------|
 | 1 | User selects a saved Settings product for the Swipr product context | ✅ | ✅ |
 | 2 | User chooses 3-8 carousel images | ✅ | ✅ |
-| 3 | User selects a shared saved background, uploads one background image, or creates one rate-limited Image 2.0 AI background | ✅ | ✅ |
+| 3 | User selects a shared saved background, uploads one background image, or creates one rate-limited AI background | ✅ | ✅ |
 | 4 | One background image is reused across every rendered carousel image | ✅ | ✅ |
 | 5 | User adds and positions text independently on each image | ✅ | ✅ |
 | 6 | Browser renders 9:16 PNG images and downloads them as one ZIP file | ✅ | ✅ |

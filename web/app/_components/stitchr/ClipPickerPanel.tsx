@@ -76,7 +76,7 @@ export function ClipPickerPanel({
           placeholder="Search UGC and demo videos"
         />
       </div>
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         <UgcClipSelector
           key={`ugc-${searchQuery}`}
           clips={filteredUgcClips}

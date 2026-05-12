@@ -1,8 +1,9 @@
+import { SWIPR_BACKGROUND_GENERATION_METADATA_HEADER_NAME } from "@/lib/clipstitchr/constants/swiprBackgroundGenerationMetadataHeaderName";
 import type { SwiprBackgroundPresetId } from "@/lib/clipstitchr/types/SwiprBackgroundPresetId";
 
 type GenerateSwiprBackgroundWithAiOptions = {
   productContext: string;
-  presetId: SwiprBackgroundPresetId;
+  presetId?: SwiprBackgroundPresetId;
 };
 
 export async function generateSwiprBackgroundWithAi({
@@ -16,7 +17,7 @@ export async function generateSwiprBackgroundWithAi({
     },
     body: JSON.stringify({
       productContext,
-      presetId,
+      ...(presetId ? { presetId } : {}),
     }),
   });
 
@@ -28,5 +29,14 @@ export async function generateSwiprBackgroundWithAi({
     throw new Error(body?.message ?? "Unable to generate this background.");
   }
 
-  return response.blob();
+  const generationDetailsHeader = response.headers.get(
+    SWIPR_BACKGROUND_GENERATION_METADATA_HEADER_NAME,
+  );
+
+  return {
+    blob: await response.blob(),
+    generationDetails: generationDetailsHeader
+      ? decodeURIComponent(generationDetailsHeader)
+      : undefined,
+  };
 }

@@ -118,7 +118,15 @@ For each requested output image, ClipStitchr creates a unique variant:
 - lighting generated at request time when the user selected `Any`
 - selected style from the UI
 
-Replicate `openai/gpt-image-2` supports `number_of_images` up to 10, but it accepts a single prompt per prediction. To provide unique per-image prompts and avoid grid/contact-sheet outputs, ClipStitchr runs one prediction per requested output image with `number_of_images: 1`.
+`AVATAR_PHOTO_MODEL_ID` defaults to `openai/gpt-image-2` and can also target
+`prunaai/z-image-turbo-img2img:5c958e90e0f904240629ee35c69196e3bd790b5528c0696705ebdb1656871dd8`.
+Replicate `openai/gpt-image-2` supports `number_of_images` up to 10, but it
+accepts a single prompt per prediction. To provide unique per-image prompts and
+avoid grid/contact-sheet outputs, ClipStitchr runs one prediction per requested
+output image with `number_of_images: 1`. The Pruna z-image-turbo img2img
+workflow also runs one prediction per requested output, but sends the reference
+photo as `image` with image-to-image settings instead of GPT Image 2
+`input_images`.
 
 Avatar generation speed is controlled by the shared generation speed profile:
 

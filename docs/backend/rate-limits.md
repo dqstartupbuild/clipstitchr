@@ -59,12 +59,16 @@ Existing Convex auth variables still apply:
 
 Optional Replicate model overrides:
 
+- `AVATAR_PHOTO_MODEL_ID` defaults to `openai/gpt-image-2` for avatar photo
+  generation. Supported workflows include `openai/gpt-image-2` and
+  `prunaai/z-image-turbo-img2img:5c958e90e0f904240629ee35c69196e3bd790b5528c0696705ebdb1656871dd8`.
 - `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID` defaults to `openai/gpt-4.1-mini` for
   avatar/photo image analysis and video poster fallback analysis.
 - `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` defaults to
   `google/gemini-3-flash` for full-video UGC/demo action analysis.
 - `SWIPR_BACKGROUND_MODEL_ID` defaults to `openai/gpt-image-2` for Swipr AI
-  background generation.
+  background generation. Supported workflows include `openai/gpt-image-2`,
+  `prunaai/p-image`, and `prunaai/wan-2.2-image`.
 - `PRODUCT_ENRICHMENT_MODEL_ID` defaults to `openai/gpt-4.1` for hidden product
   strategy enrichment when saving products in Settings.
 - `CLIPR_HOOK_MODEL_ID` defaults to `openai/gpt-4.1` for Clipr hook, script,
@@ -119,11 +123,12 @@ creates a local ZIP download. Saved Swipes store only Convex metadata, slide
 text overlay state, and a shared background reference; rendered carousel images
 are not persisted.
 
-Swipr AI background generation is separate from export: it calls Replicate GPT
-Image 2 through `POST /api/swipr/backgrounds/generate`, consumes the dedicated
-Swipr AI background limits before creating the prediction, requests low-quality
-generation by default for speed, and streams the generated image back to the
-browser. The client then analyzes the generated image through
+Swipr AI background generation is separate from export: it calls the selected
+Replicate image model through `POST /api/swipr/backgrounds/generate`, consumes
+the dedicated Swipr AI background limits before creating the prediction, and
+streams the generated image back to the browser. `openai/gpt-image-2` requests
+low-quality 2:3 generation by default for speed; the Pruna background models
+request direct 9:16 output. The client then analyzes the generated image through
 `POST /api/swipr/backgrounds/analyze`, uploads it through
 `POST /api/swipr/backgrounds/upload-url`, and saves the shared background
 metadata through `swiprBackgrounds.save`.
@@ -172,10 +177,12 @@ before calling Replicate or fetching an output URL.
 
 Avatar photo generation is rate-limited by requested output image count before
 calling Replicate, including generation started from a UGC clip poster in the
-Content Library. The GPT Image 2 model accepts up to 10 outputs in one
+Content Library. `openai/gpt-image-2` accepts up to 10 outputs in one
 prediction, but ClipStitchr runs one prediction per generated avatar photo so
 each output can receive a unique prompt variant and avoid grid/contact-sheet
-results. Each prediction is recorded as an `avatar-photo` Replicate job.
+results. The Pruna z-image-turbo img2img workflow is also one prediction per
+generated image because it accepts one image-to-image prompt and source image.
+Each prediction is recorded as an `avatar-photo` Replicate job.
 Generation speed profiles may run those one-image predictions concurrently:
 Creator runs 1 at a time, Pro runs up to 2, and Studio runs up to 4. This
 concurrency does not loosen the image-count rate limit; the full requested count

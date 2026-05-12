@@ -18,7 +18,6 @@ import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import type { SwiprBackground } from "@/lib/clipstitchr/types/SwiprBackground";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
-import type { SwiprBackgroundPresetId } from "@/lib/clipstitchr/types/SwiprBackgroundPresetId";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
@@ -53,7 +52,6 @@ export function SwiprPageClient() {
   const [activeSlideId, setActiveSlideId] = useState<string | null>(
     slides[0]?.id ?? null,
   );
-  const selectedPresetId: SwiprBackgroundPresetId = "studio";
   const [background, setBackground] = useState<SwiprBackground | null>(null);
   const [backgroundSearchQuery, setBackgroundSearchQuery] = useState("");
   const [backgroundError, setBackgroundError] = useState<string | null>(null);
@@ -121,13 +119,13 @@ export function SwiprPageClient() {
     setBackgroundError(null);
 
     try {
-      const blob = await generateSwiprBackgroundWithAi({
+      const generatedBackground = await generateSwiprBackgroundWithAi({
         productContext: effectiveProductContext,
-        presetId: selectedPresetId,
       });
       const savedBackground = await swiprLibrary.saveBackground({
-        blob,
-        originalName: "Image 2.0 background",
+        blob: generatedBackground.blob,
+        generationDetails: generatedBackground.generationDetails,
+        originalName: "AI background",
         source: "ai",
       });
 
@@ -143,7 +141,6 @@ export function SwiprPageClient() {
     }
   }, [
     effectiveProductContext,
-    selectedPresetId,
     selectedSavedProduct,
     swiprLibrary,
   ]);

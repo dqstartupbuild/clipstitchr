@@ -124,14 +124,6 @@ export function SwiprSwipeDetailsDialog({
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
-                Background
-              </p>
-              <p className="mt-1 text-sm font-semibold text-text-primary">
-                {background.name}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
                 Updated
               </p>
               <p className="mt-1 text-sm text-text-secondary">
