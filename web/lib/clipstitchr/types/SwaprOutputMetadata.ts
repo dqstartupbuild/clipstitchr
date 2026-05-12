@@ -6,9 +6,15 @@ export type SwaprOutputMetadata = {
   sourcePhotoId: string;
   referenceUgcClipId: string;
   replicatePredictionId: string;
+  replicatePredictionIds?: string[];
   modelId: string;
   mode: SwaprMode;
   characterOrientation: SwaprCharacterOrientation;
   prompt?: string;
   keepOriginalSound: boolean;
+  sourceSegmentIndex?: number;
+  sourceSegmentCount?: number;
+  sourceSegmentStartSeconds?: number;
+  sourceSegmentEndSeconds?: number;
+  segmentClipIds?: string[];
 };

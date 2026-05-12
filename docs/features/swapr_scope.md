@@ -123,6 +123,7 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
 | 7 | Save successful output as a reusable UGC-style clip | Yes | Yes |
 | 8 | Generate a poster image for the generated output | Yes | Yes |
 | 9 | Normalize generated output to TikTok 9:16 if the model output is not already correct | Yes | Yes |
+| 10 | For source clips longer than 10 seconds, split the source into <=10s parts, generate each part separately, save each generated part as an individual Swap, then join the generated parts into one full-length Swap | Yes | Yes |
 
 ### 4.4 Output Reuse
 
@@ -215,6 +216,30 @@ Known constraints to plan around:
 - Some APIs require a minimum reference video duration.
 - Higher quality modes may output 1080p but cost more and take longer.
 - Standard modes may output 720p and require Media Bunny normalization before saving to ClipStitchr.
+
+### Long Source Clip Handling
+
+Swapr accepts source clips longer than the provider's 10-second image-oriented
+motion-control limit. The browser uses Media Bunny before provider submission to
+split the selected normalized source clip into contiguous parts no longer than
+10 seconds each. Segment boundaries are spread evenly across the selected clip
+duration so short tail segments are avoided.
+
+Each segment is sent to Replicate as its own Swapr provider job with the same
+photo, prompt, quality mode, orientation mode, and audio preference. Successful
+segment outputs are downloaded through the existing owned-output proxy,
+normalized back to TikTok 9:16, postered, uploaded to R2, and saved as
+individual Swapr clips in the Content Library.
+
+After every segment succeeds, the browser uses Media Bunny to concatenate the
+normalized generated segment outputs in source order. The joined output is
+postered, uploaded to R2, and saved as an additional full-length Swapr clip.
+The final clip stores the segment clip IDs and provider prediction IDs in its
+Swapr metadata.
+
+If a later segment fails, already-saved generated segment clips remain in the
+library because they are durable user outputs. The full-length joined clip is
+saved only after all segment jobs complete successfully.
 
 ### Scene / Location Swapping
 
