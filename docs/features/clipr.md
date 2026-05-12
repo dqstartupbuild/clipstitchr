@@ -176,10 +176,6 @@ If the default Seedance prediction fails with `E005` after using
 Seedance prediction with the same script, same avatar reference image, and
 Seedance-native audio instead of the ElevenLabs audio reference. The final saved
 clip path remains unchanged.
-Fitness, workout, health, dieting, body-goal, and visible-results language is
-sanitized before the Seedance request because provider moderation can treat that
-as sensitive in image/video generation, even when the product context itself is
-ordinary.
 
 The ElevenLabs request uses:
 

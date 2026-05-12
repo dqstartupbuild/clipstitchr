@@ -126,16 +126,11 @@ export async function GET(
       });
     }
 
-    const error =
-      status === "failed" && getCliprSeedanceErrorIsSensitive(prediction.error)
-        ? "Seedance flagged the avatar reference image or scene text as sensitive after Clipr retried without the ElevenLabs audio reference. Try a different avatar photo or a less fitness/body-focused product angle."
-        : prediction.error;
-
     return NextResponse.json({
       videoPredictionId: prediction.id,
       status,
       videoUrl: outputUrl ?? undefined,
-      error,
+      error: prediction.error,
       logs: prediction.logs,
       urls: {
         get: prediction.urls.get,
