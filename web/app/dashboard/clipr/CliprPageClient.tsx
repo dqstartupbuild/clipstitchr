@@ -1,8 +1,8 @@
 "use client";
 
 import { CirclePlay } from "lucide-react";
-import { useMemo, useState } from "react";
-import { useConvexAuth, useQuery } from "convex/react";
+import { useCallback, useMemo, useState } from "react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { CliprAvatarPanel } from "@/app/_components/clipr/CliprAvatarPanel";
 import { CliprDurationControl } from "@/app/_components/clipr/CliprDurationControl";
@@ -31,6 +31,7 @@ export function CliprPageClient() {
     api.cliprPreferences.get,
     isAuthenticated ? {} : "skip",
   );
+  const saveDefaultVoice = useMutation(api.cliprPreferences.setDefaultVoice);
   const generator = useCliprGeneration({ onCreated: library.refresh });
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedAvatarId, setSelectedAvatarId] = useState("");
@@ -38,11 +39,16 @@ export function CliprPageClient() {
     defaultCliprDurationSeconds,
   );
   const [voiceId, setVoiceId] = useState("");
-  const [makeDefaultVoice, setMakeDefaultVoice] = useState(false);
+  const [optimisticDefaultVoiceId, setOptimisticDefaultVoiceId] = useState("");
+  const [isSavingDefaultVoice, setIsSavingDefaultVoice] = useState(false);
+  const [preferenceError, setPreferenceError] = useState<string | null>(null);
   const activeProductId = selectedProductId || products.products[0]?.id || "";
   const activeAvatarId =
     selectedAvatarId || photoLibrary.avatars[0]?.id || "";
-  const activeVoiceId = voiceId || preference?.defaultVoiceId || defaultCliprVoiceId;
+  const defaultVoiceId =
+    optimisticDefaultVoiceId || preference?.defaultVoiceId || defaultCliprVoiceId;
+  const activeVoiceId = voiceId || defaultVoiceId;
+  const canSaveDefaultVoice = activeVoiceId !== defaultVoiceId;
   const selectedAvatarPhotoCount = useMemo(
     () =>
       photoLibrary.photos.filter((photo) => photo.avatarId === activeAvatarId)
@@ -54,7 +60,28 @@ export function CliprPageClient() {
     Boolean(activeAvatarId) &&
     selectedAvatarPhotoCount > 0 &&
     !generator.isGenerating;
-  const error = products.error ?? photoLibrary.error ?? library.error;
+  const saveSelectedVoiceAsDefault = useCallback(async () => {
+    setIsSavingDefaultVoice(true);
+    setPreferenceError(null);
+
+    try {
+      await saveDefaultVoice({
+        defaultVoiceId: activeVoiceId,
+        updatedAt: new Date().toISOString(),
+      });
+      setOptimisticDefaultVoiceId(activeVoiceId);
+    } catch (nextError) {
+      setPreferenceError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to save the default Clipr voice.",
+      );
+    } finally {
+      setIsSavingDefaultVoice(false);
+    }
+  }, [activeVoiceId, saveDefaultVoice]);
+  const error =
+    products.error ?? photoLibrary.error ?? library.error ?? preferenceError;
 
   return (
     <DashboardShell>
@@ -90,9 +117,10 @@ export function CliprPageClient() {
                 onChange={setDurationSeconds}
               />
               <CliprVoiceSelect
-                makeDefault={makeDefaultVoice}
+                canSaveDefault={canSaveDefaultVoice}
+                isSavingDefault={isSavingDefaultVoice}
                 value={activeVoiceId}
-                onMakeDefaultChange={setMakeDefaultVoice}
+                onSaveDefault={() => void saveSelectedVoiceAsDefault()}
                 onVoiceChange={setVoiceId}
               />
             </div>
@@ -109,7 +137,6 @@ export function CliprPageClient() {
                   void generator.generate({
                     avatarId: activeAvatarId,
                     durationSeconds,
-                    makeDefaultVoice,
                     productId: activeProductId,
                     voiceId: activeVoiceId,
                   })

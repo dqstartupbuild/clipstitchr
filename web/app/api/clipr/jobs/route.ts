@@ -25,7 +25,6 @@ type CliprJobCreateRequest = {
   avatarId?: unknown;
   durationSeconds?: unknown;
   jobId?: unknown;
-  makeDefaultVoice?: unknown;
   productId?: unknown;
   voiceId?: unknown;
 };
@@ -112,13 +111,6 @@ export async function POST(request: Request) {
       targetDurationSeconds: durationSeconds,
       createdAt: now,
     });
-
-    if (body.makeDefaultVoice === true) {
-      await convex.mutation(api.cliprPreferences.setDefaultVoice, {
-        defaultVoiceId: voiceId,
-        updatedAt: now,
-      });
-    }
 
     const replicate = createReplicateClient();
     const textGeneration = await createCliprTextGeneration({
