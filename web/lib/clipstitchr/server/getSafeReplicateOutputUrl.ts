@@ -1,6 +1,5 @@
 const ALLOWED_REPLICATE_OUTPUT_HOSTS = new Set([
   "api.replicate.com",
-  "fal.media",
   "replicate.delivery",
 ]);
 
@@ -17,7 +16,6 @@ export function getSafeReplicateOutputUrl(rawUrl: string | null) {
 
   if (
     !ALLOWED_REPLICATE_OUTPUT_HOSTS.has(url.hostname) &&
-    !url.hostname.endsWith(".fal.media") &&
     !url.hostname.endsWith(".replicate.delivery")
   ) {
     throw new Error("Unsupported Replicate output host.");
