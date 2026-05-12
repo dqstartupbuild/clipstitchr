@@ -54,7 +54,8 @@ hook, and the remaining slides should pay it off with simple supporting points.
   have to select a specific image; the system should automatically use that
   avatar's first uploaded photo for stable, repeatable character consistency.
 - The user selects a voice through a modal-style dropdown.
-- The voice selector includes `Make default`.
+- The voice selector shows `Make default` only when the selected voice differs
+  from the saved default voice.
 - Saved default voice should be reused on later Clipr jobs.
 - Clipr should generate one full-script avatar video from the selected avatar
   and voice.
@@ -537,7 +538,8 @@ Rules:
    photo as the hidden reference image.
 4. User chooses duration: `30 seconds` or `60 seconds`; default is `30 seconds`.
 5. User selects a voice through a modal-style dropdown.
-6. User can check `Make default` in the voice selector.
+6. User can press `Make default` in the voice selector when the selected voice
+   differs from the saved default voice.
 7. Server randomly selects a hidden hook style and 3-5 hidden templates from
    the product's eligible pool using product settings, inferred problem,
    inferred pain points, audience details, placeholder fillers, and safety

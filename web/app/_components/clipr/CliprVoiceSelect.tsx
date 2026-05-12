@@ -1,18 +1,21 @@
 import { Mic2 } from "lucide-react";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
+import { Button } from "@/app/_components/ui/Button";
 import { cliprVoices } from "@/lib/clipstitchr/constants/cliprVoices";
 
 type CliprVoiceSelectProps = {
-  makeDefault: boolean;
+  canSaveDefault: boolean;
+  isSavingDefault: boolean;
   value: string;
-  onMakeDefaultChange: (makeDefault: boolean) => void;
+  onSaveDefault: () => void;
   onVoiceChange: (voiceId: string) => void;
 };
 
 export function CliprVoiceSelect({
-  makeDefault,
+  canSaveDefault,
+  isSavingDefault,
   value,
-  onMakeDefaultChange,
+  onSaveDefault,
   onVoiceChange,
 }: CliprVoiceSelectProps) {
   return (
@@ -38,14 +41,16 @@ export function CliprVoiceSelect({
           }))}
           onChange={(event) => onVoiceChange(event.target.value)}
         />
-        <label className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-primary">
-          <input
-            type="checkbox"
-            checked={makeDefault}
-            onChange={(event) => onMakeDefaultChange(event.target.checked)}
-          />
-          Make default
-        </label>
+        {canSaveDefault ? (
+          <Button
+            type="button"
+            variant="secondary"
+            isLoading={isSavingDefault}
+            onClick={onSaveDefault}
+          >
+            Make default
+          </Button>
+        ) : null}
       </div>
     </section>
   );

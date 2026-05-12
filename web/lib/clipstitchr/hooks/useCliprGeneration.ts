@@ -20,7 +20,6 @@ import { getCliprFinalClipName } from "@/lib/clipstitchr/utils/getCliprFinalClip
 type GenerateCliprOptions = {
   avatarId: string;
   durationSeconds: CliprDurationSeconds;
-  makeDefaultVoice: boolean;
   productId: string;
   voiceId: string;
 };
