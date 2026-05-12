@@ -7,10 +7,10 @@
 ### Product Scope
 
 - `project-scope.md`
-  - MVP routes are `/`, `/dashboard`, `/dashboard/stitchr`, `/dashboard/clipr`, `/dashboard/swipr`, `/dashboard/uploads`, `/dashboard/avatars`, and `/dashboard/swapr`; `/dashboard/stitches` redirects to the Stitches tab inside `/dashboard/uploads`.
-  - The authenticated Content Library at `/dashboard/uploads` has All, UGC, Demo, Clips, Swaps, Swipes, and Stitches tabs.
+  - MVP routes are `/`, `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, `/dashboard/avatars`, and `/dashboard/swapr`; `/dashboard/stitches` redirects to the Stitches tab inside `/dashboard/uploads`.
+  - The authenticated Content Library at `/dashboard/uploads` has All, UGC, Demo, Swaps, and Stitches tabs.
   - Avatar photo upload, avatar descriptions, and avatar scenario photo generation live on `/dashboard/avatars`.
-  - Uploads are UGC clips, Demo videos, and Swapr avatar reference photos; Clipr outputs are generated Clips saved as UGC-compatible source videos.
+  - Uploads are UGC clips, Demo videos, and Swapr avatar reference photos.
   - Every uploaded clip must be normalized to TikTok 9:16 before it is usable.
   - Preview and export must use the same sequence: each selected UGC plays first, Demo starts immediately after that UGC ends.
   - Stitchr supports selecting up to 20 UGC clips with one selected Demo video.
@@ -212,7 +212,7 @@ web/app/(content)/terms/page.tsx
 
 - Server route entry for the authenticated Content Library.
 - Exports page metadata with canonical `/dashboard/uploads`.
-- Renders the tabbed library client with All, UGC, Demo, Clips, Swaps, Swipes, and Stitches tabs.
+- Renders the tabbed library client with All, UGC, Demo, Swaps, and Stitches tabs.
 
 #### `web/app/dashboard/avatars/page.tsx`
 
@@ -413,7 +413,7 @@ Create:
 Create:
 
 - Sidebar inspired by mockup.
-- Links: Dashboard, Library, Avatars, Stitchr, Clipr, Swipr, Swapr.
+- Links: Dashboard, Library, Avatars, Stitchr, Swapr.
 - Uses `next/link` and lucide icons.
 
 ### `web/app/_components/dashboard/DashboardHeader.tsx`

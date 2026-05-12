@@ -50,9 +50,6 @@ social proof first, product proof immediately after.
 6. Copy clip default trims into the Stitchr session.
 7. Tap or swipe through each exact UGC-then-demo preview.
 8. Optionally configure one shared text overlay for every output.
-   - The user can generate the overlay from a selected Settings product.
-   - Stitchr randomly selects a hidden hook style/template and fills the single
-     overlay text.
 9. Create one stitched output per selected UGC clip.
 10. Save and download the finished ad variants.
 
@@ -66,22 +63,6 @@ social proof first, product proof immediately after.
   clips, and one shared overlay for the batch.
 - Keep AI-generated clips as new UGC clips that can flow into
   Stitchr.
-- Keep hook/template selection hidden when generating overlay text.
-
-## Generated Overlay Text
-
-Stitchr can auto-generate the single batch overlay from the same internal hook
-resources used by Clipr and Swipr. The user chooses a saved Settings product;
-the app randomly selects a hidden hook style/template and returns one short
-overlay line.
-
-Generated Stitchr overlay text:
-
-- Uses the selected product settings as context.
-- Fits the existing one-overlay workflow.
-- Applies to every output in the current Stitchr batch.
-- Avoids CTAs, fake proof, invented numbers, and technical generation language.
-- Remains editable before the user creates the final stitches.
 
 ## Non-Goals
 

@@ -9,10 +9,8 @@ import { StitchrShell } from "@/app/_components/stitchr/StitchrShell";
 import { DownloadStitchesPanel } from "@/app/_components/stitchr/DownloadStitchesPanel";
 import { SequencePreviewPanel } from "@/app/_components/stitchr/SequencePreviewPanel";
 import { maxStitchrUgcSelectionCount } from "@/lib/clipstitchr/constants/maxStitchrUgcSelectionCount";
-import { generateHookText } from "@/lib/clipstitchr/client/generateHookText";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useLoadedVideoClip } from "@/lib/clipstitchr/hooks/useLoadedVideoClip";
-import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useStitchr } from "@/lib/clipstitchr/hooks/useStitchr";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -28,14 +26,8 @@ import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchr
 
 export function StitchrPageClient() {
   const library = useClipLibrary();
-  const products = useProducts();
   const stitchrState = useStitchr({ onCreated: library.refresh });
   const [textOverlay, setTextOverlay] = useState<TextOverlay | null>(null);
-  const [selectedProductId, setSelectedProductId] = useState<string>();
-  const [isGeneratingText, setIsGeneratingText] = useState(false);
-  const [textGenerationError, setTextGenerationError] = useState<string | null>(
-    null,
-  );
   const [ugcTrimRangesByClipId, setUgcTrimRangesByClipId] = useState<
     Record<string, VideoTrimRange>
   >({});
@@ -51,15 +43,6 @@ export function StitchrPageClient() {
     () => filterClipsByType(library.clips, "demo"),
     [library.clips],
   );
-  const productOptions = useMemo(
-    () =>
-      products.products.map((product) => ({
-        value: product.id,
-        label: product.name,
-      })),
-    [products.products],
-  );
-  const activeProductId = selectedProductId ?? products.products[0]?.id ?? "";
   const [selectedUgcIds, setSelectedUgcIds] = useState<string[] | undefined>(
     () => {
       const initialUgcId = getSearchParamValue("ugcId");
@@ -300,31 +283,6 @@ export function StitchrPageClient() {
   const handleActiveUgcChange = useCallback((id: string) => {
     setActivePreviewUgcId(id);
   }, []);
-  const handleGenerateText = useCallback(async () => {
-    if (!activeProductId) {
-      setTextGenerationError("Choose a saved product before generating text.");
-      return null;
-    }
-
-    setIsGeneratingText(true);
-    setTextGenerationError(null);
-
-    try {
-      const result = await generateHookText({
-        productId: activeProductId,
-        purpose: "stitchr-overlay",
-      });
-
-      return result.purpose === "stitchr-overlay" ? result.text : null;
-    } catch (error) {
-      setTextGenerationError(
-        error instanceof Error ? error.message : "Unable to generate text.",
-      );
-      return null;
-    } finally {
-      setIsGeneratingText(false);
-    }
-  }, [activeProductId]);
 
   const isStitching =
     stitchrState.status === "reading" || stitchrState.status === "stitching";
@@ -333,9 +291,9 @@ export function StitchrPageClient() {
     <StitchrShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <StitchrHeader />
-        {library.error || products.error ? (
+        {library.error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {library.error ?? products.error}
+            {library.error}
           </div>
         ) : null}
         {ugcClips.length && demoClips.length ? (
@@ -375,13 +333,7 @@ export function StitchrPageClient() {
                 ugcTrimRange={selectedUgcTrimRange}
                 demoTrimRange={selectedDemoTrimRange}
                 textOverlay={clampedTextOverlay}
-                textGenerationError={textGenerationError}
-                isGeneratingText={isGeneratingText}
-                productOptions={productOptions}
-                selectedProductId={activeProductId}
                 onActiveUgcChange={handleActiveUgcChange}
-                onGenerateText={handleGenerateText}
-                onProductChange={setSelectedProductId}
                 onTextOverlayChange={setTextOverlay}
               />
             </div>

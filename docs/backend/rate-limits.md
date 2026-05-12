@@ -67,11 +67,6 @@ Optional Replicate model overrides:
   background generation.
 - `PRODUCT_ENRICHMENT_MODEL_ID` defaults to `openai/gpt-4.1` for hidden product
   strategy enrichment when saving products in Settings.
-- `CLIPR_SCRIPT_MODEL_ID` defaults to `openai/gpt-4.1` for hidden hook filling,
-  Clipr scripts, Swipr slide text, and Stitchr overlay text.
-- `CLIPR_TTS_MODEL_ID` defaults to `elevenlabs/v3` for Clipr voice generation.
-- `CLIPR_AVATAR_MODEL_ID` defaults to `kwaivgi/kling-avatar-v2` for Clipr
-  talking avatar video generation.
 
 ## Enforcement Map
 
@@ -94,9 +89,6 @@ Optional Replicate model overrides:
 | Avatar photo generation | `POST /api/avatars/photos/generate` from the Avatars page or UGC clip avatar action | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour |
 | Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 5; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
 | Product enrichment | `POST /api/settings/products` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
-| Hook text generation | `POST /api/hooks/generate` for Swipr slide text and Stitchr overlay text | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
-| Clipr segment generation | `POST /api/clipr/segments` | 6 segments/hour/user, burst 3; 12 segments/day/user; 1,800 estimated generated seconds/30 days/user; global 200 segments/hour |
-| Clipr output proxy | `GET /api/clipr/output` | 500/hour/user, burst 100 |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `swiprBackgrounds.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
 | Convex metadata updates | `avatars.update`, `updateMetadata` mutations, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
@@ -132,20 +124,6 @@ The route consumes the product enrichment limit before creating the prediction,
 then `products.create` consumes the shared Convex record-save limit before the
 database write.
 
-Swipr and Stitchr hook text generation call Replicate GPT-4.1 through
-`POST /api/hooks/generate`. The route consumes the hook generation limit before
-selecting a hidden hook style/template and creating the prediction. Generated
-text is not persisted until the user saves the Swipe or creates Stitches.
-
-Clipr generation calls Replicate three times per segment: GPT-4.1 for the
-script, ElevenLabs v3 for speech audio, and Kling Avatar V2 for the talking
-video. `POST /api/clipr/segments` consumes the Clipr segment and estimated
-generated-seconds limits before any provider call. The browser downloads each
-finished video through `GET /api/clipr/output`, normalizes it to 9:16 with Media
-Bunny, stitches follow-up segments when needed, uploads the final output through
-the existing R2 upload URL path, and saves the final Clipr clip through
-`videoClips.save`.
-
 ## Client Batch Caps
 
 Client upload controls enforce batch sizes before any processing, signed URL
@@ -167,11 +145,6 @@ before expensive work is started.
 Swapr video predictions are recorded in Convex after creation. Poll, cancel, and
 output proxy routes must prove the prediction belongs to the authenticated user
 before calling Replicate or fetching an output URL.
-
-Clipr audio and video predictions are recorded in Convex after creation. The
-Clipr output proxy requires both the video prediction ID and the output URL, and
-the URL must match the latest stored output URL for that authenticated user's
-`clipr-video` job.
 
 Avatar photo generation is rate-limited by requested output image count before
 calling Replicate, including generation started from a UGC clip poster in the

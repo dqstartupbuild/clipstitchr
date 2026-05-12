@@ -79,12 +79,11 @@ independently, they can exceed the intended allowance:
 | Upload metadata analysis | 10,000 analyses | 500 credits |
 | Avatar generated photos | 500 images | 500 credits |
 | AI photo outpaint/expand | 375 images | 375 credits |
-| Clipr video generation | 1,800 estimated seconds | 1,800 credits |
 | Swapr video generation | 500 estimated seconds | 500 credits |
-| Total possible without a shared ledger |  | 3,675 credits |
+| Total possible without a shared ledger |  | 1,875 credits |
 
-At the working value of $0.085/provider-cost per credit, 3,675 credits is
-$312.38/user/month in possible AI spend before R2, Convex, Vercel, payment fees,
+At the working value of $0.085/provider-cost per credit, 1,875 credits is
+$159.38/user/month in possible AI spend before R2, Convex, Vercel, payment fees,
 retries, and support. That is not covered by any of the three plans.
 
 Conclusion: paid usage must deduct from one shared monthly AI credit balance.
@@ -103,7 +102,6 @@ per successful output after real Replicate and OpenAI invoices are available.
 | Upload metadata analysis | 0.05 credits | Cheap enrichment. Cap separately to prevent bulk abuse. |
 | Avatar generated photo | 1 credit/image | Backed by GPT Image 2 through Replicate. |
 | AI photo outpaint/expand | 1 credit/image | Backed by FLUX.1 Fill pro through Replicate. |
-| Clipr video generation | 1 credit/output second | Includes script, voice, and avatar video provider calls. |
 | Swapr standard video | 1 credit/output second | Studio monthly cap currently maps to 500 estimated seconds. |
 | Swapr pro video, if exposed | 1.5-2 credits/output second | Use only if a higher-cost mode is added to the UI. |
 | R2 upload/download/delete | 0 credits | Rate-limit for abuse and storage budget instead. |
@@ -113,9 +111,9 @@ Example usage:
 
 | Plan | Example Monthly Usage |
 | --- | --- |
-| Creator | 50 generated photos, or 50 Clipr/Swapr seconds, or 25 generated photos plus 25 video seconds. |
-| Pro | 250 generated photos, or 250 Clipr/Swapr seconds, or 125 generated photos plus 125 video seconds. |
-| Studio | 500 generated photos, or 500 Clipr/Swapr seconds, or 250 generated photos plus 250 video seconds. |
+| Creator | 50 generated photos, or 50 Swapr seconds, or 25 generated photos plus 25 Swapr seconds. |
+| Pro | 250 generated photos, or 250 Swapr seconds, or 125 generated photos plus 125 Swapr seconds. |
+| Studio | 500 generated photos, or 500 Swapr seconds, or 250 generated photos plus 250 Swapr seconds. |
 
 Metadata analysis is intentionally low-cost. For example, 1,000 upload analyses
 consume 50 credits.
@@ -131,7 +129,6 @@ are product limits, not just marketing claims.
 | Upload metadata analyses | 1,000/month | 5,000/month | 10,000/month |
 | Avatar generated photos | 50/month | 250/month | 500/month |
 | AI photo outpaint/expand | 35/month | 185/month | 375/month |
-| Clipr video generation | 180 estimated sec/month | 900 estimated sec/month | 1,800 estimated sec/month |
 | Swapr video generation | 50 estimated sec/month | 250 estimated sec/month | 500 estimated sec/month |
 | R2 uploads | 25 GB/month | 250 GB/month | 500 GB/month |
 | Retained storage | 25 GB | 250 GB | 500 GB |
@@ -289,7 +286,6 @@ entitlements through the shared credit and quota ledger.
 | Upload metadata analysis | 10,000 analyses/30 days |
 | Avatar generated photos | 500 images/30 days |
 | AI photo outpaint/expand | 375 images/30 days |
-| Clipr video generation | 1,800 estimated output seconds/30 days |
 | Swapr video generation | 500 estimated output seconds/30 days |
 | R2 uploads | 500 GB/30 days |
 
