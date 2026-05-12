@@ -1,6 +1,7 @@
 "use client";
 
 import { ImagePlus, Images, Upload } from "lucide-react";
+import { useEffect } from "react";
 import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
@@ -42,6 +43,36 @@ export function SwiprBackgroundPanel({
     pageSize: clipSelectorPageSize,
   });
   const isBusy = isSaving || isGeneratingAi;
+
+  useEffect(() => {
+    let isCancelled = false;
+    const preloadBackgrounds = [
+      ...pagination.pageItems,
+      ...backgrounds.slice(
+        pagination.endIndex,
+        pagination.endIndex + clipSelectorPageSize,
+      ),
+    ];
+
+    void Promise.resolve().then(async () => {
+      for (const backgroundAsset of preloadBackgrounds) {
+        if (isCancelled || backgroundAsset.blob) {
+          continue;
+        }
+
+        await onLoadBackgroundBlob(backgroundAsset.id).catch(() => undefined);
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    backgrounds,
+    onLoadBackgroundBlob,
+    pagination.endIndex,
+    pagination.pageItems,
+  ]);
 
   return (
     <section className="min-w-0 border-t border-border pt-4">
@@ -110,7 +141,6 @@ export function SwiprBackgroundPanel({
                     key={backgroundAsset.id}
                     background={backgroundAsset}
                     isSelected={backgroundAsset.id === background?.id}
-                    onLoadBackgroundBlob={onLoadBackgroundBlob}
                     onSelect={onSelectBackground}
                   />
                 ))}
