@@ -4,22 +4,10 @@ type CliprSegmentErrorResponse = {
   message?: string;
 };
 
-async function readCliprSegmentBody(response: Response) {
-  try {
-    return (await response.json()) as
-      | CliprSegmentResponse
-      | CliprSegmentErrorResponse;
-  } catch {
-    return {
-      message: response.ok
-        ? undefined
-        : "Clipr generation ended before returning a usable response.",
-    };
-  }
-}
-
 export async function readCliprSegmentResponse(response: Response) {
-  const body = await readCliprSegmentBody(response);
+  const body = (await response.json()) as
+    | CliprSegmentResponse
+    | CliprSegmentErrorResponse;
 
   if (!response.ok) {
     throw new Error(

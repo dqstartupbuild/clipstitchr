@@ -254,12 +254,6 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 40,
     shards: 5,
   },
-  replicateCliprSegmentPoll: {
-    kind: "token bucket",
-    rate: 180,
-    period: MINUTE,
-    capacity: 45,
-  },
   replicateCliprOutputDownload: {
     kind: "token bucket",
     rate: 500,
