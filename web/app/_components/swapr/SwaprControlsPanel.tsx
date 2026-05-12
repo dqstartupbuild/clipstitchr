@@ -2,13 +2,12 @@
 
 import { Shuffle } from "lucide-react";
 import { Button } from "@/app/_components/ui/Button";
-import { SWAPR_REFERENCE_SEGMENT_MAX_DURATION_SECONDS } from "@/lib/clipstitchr/constants/swaprReferenceSegmentMaxDurationSeconds";
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
 import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
-import { createSwaprReferenceSegments } from "@/lib/clipstitchr/utils/createSwaprReferenceSegments";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getSwaprReferenceDurationLimit } from "@/lib/clipstitchr/utils/getSwaprReferenceDurationLimit";
 
 type SwaprControlsPanelProps = {
   prompt: string;
@@ -47,13 +46,10 @@ export function SwaprControlsPanel({
   onConsentChange,
   onGenerate,
 }: SwaprControlsPanelProps) {
-  const referenceSegments = selectedClip
-    ? createSwaprReferenceSegments(selectedClip.duration)
-    : [];
+  const durationLimit = getSwaprReferenceDurationLimit(characterOrientation);
   const isDurationValid = selectedClip
-    ? selectedClip.duration >= 3
+    ? selectedClip.duration >= 3 && selectedClip.duration <= durationLimit
     : true;
-  const willSplitSourceClip = referenceSegments.length > 1;
   const isSizeValid = selectedClip
     ? selectedClip.size <= referenceVideoMaxSizeBytes
     : true;
@@ -176,17 +172,9 @@ export function SwaprControlsPanel({
 
       {selectedClip && !isDurationValid ? (
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-          Choose a source video at least 3s long. Selected:{" "}
+          This setting works with clips from 3s to {durationLimit}s. Selected:
+          {" "}
           {formatDuration(selectedClip.duration)}.
-        </div>
-      ) : null}
-
-      {selectedClip && isDurationValid && willSplitSourceClip ? (
-        <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
-          This {formatDuration(selectedClip.duration)} source will be split into{" "}
-          {referenceSegments.length} parts of up to{" "}
-          {SWAPR_REFERENCE_SEGMENT_MAX_DURATION_SECONDS}s. Each part saves as a
-          Swap, then the full clip saves after the parts are joined.
         </div>
       ) : null}
 
