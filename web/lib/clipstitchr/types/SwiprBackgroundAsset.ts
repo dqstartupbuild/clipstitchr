@@ -9,7 +9,7 @@ export type SwiprBackgroundAsset = {
   details?: string;
   source: SwiprBackgroundSource;
   imageObject: R2ObjectReference;
-  blob: Blob;
+  blob?: Blob;
   mimeType: string;
   size: number;
   width: number;

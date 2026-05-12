@@ -3,7 +3,7 @@ import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgrou
 
 export function createSwiprBackgroundAssetFromConvexDocument(
   background: Doc<"swiprBackgrounds">,
-  blob: Blob,
+  blob?: Blob,
 ): SwiprBackgroundAsset {
   return {
     id: background.id,
@@ -13,7 +13,7 @@ export function createSwiprBackgroundAssetFromConvexDocument(
     details: background.details,
     source: background.source,
     imageObject: background.imageObject,
-    blob,
+    ...(blob ? { blob } : {}),
     mimeType: background.mimeType,
     size: background.size,
     width: background.width,

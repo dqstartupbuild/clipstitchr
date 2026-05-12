@@ -111,7 +111,9 @@ export function SwiprPageClient() {
 
   const generateAiBackground = useCallback(async () => {
     if (!selectedSavedProduct) {
-      setBackgroundError("Choose a saved Settings product before generating a background.");
+      setBackgroundError(
+        "Choose a saved Settings product before generating a background.",
+      );
       return;
     }
 
@@ -129,7 +131,12 @@ export function SwiprPageClient() {
         source: "ai",
       });
 
-      setBackground(getSwiprBackgroundFromAsset(savedBackground));
+      setBackground(
+        getSwiprBackgroundFromAsset({
+          ...savedBackground,
+          blob: generatedBackground.blob,
+        }),
+      );
     } catch (error) {
       setBackgroundError(
         error instanceof Error
@@ -139,11 +146,7 @@ export function SwiprPageClient() {
     } finally {
       setIsGeneratingAiBackground(false);
     }
-  }, [
-    effectiveProductContext,
-    selectedSavedProduct,
-    swiprLibrary,
-  ]);
+  }, [effectiveProductContext, selectedSavedProduct, swiprLibrary]);
 
   const handleSlideCountChange = (count: number) => {
     const nextCount = getClampedSwiprSlideCount(count);
@@ -172,7 +175,9 @@ export function SwiprPageClient() {
           source: "upload",
         });
 
-        setBackground(getSwiprBackgroundFromAsset(savedBackground));
+        setBackground(
+          getSwiprBackgroundFromAsset({ ...savedBackground, blob: file }),
+        );
       })
       .catch((error) => {
         setBackgroundError(
@@ -184,8 +189,23 @@ export function SwiprPageClient() {
   };
 
   const handleSelectBackground = (backgroundAsset: SwiprBackgroundAsset) => {
-    setBackground(getSwiprBackgroundFromAsset(backgroundAsset));
     setBackgroundError(null);
+
+    void Promise.resolve()
+      .then(async () => {
+        const blob =
+          backgroundAsset.blob ??
+          (await swiprLibrary.loadBackgroundBlob(backgroundAsset.id));
+
+        setBackground(getSwiprBackgroundFromAsset({ ...backgroundAsset, blob }));
+      })
+      .catch((error) => {
+        setBackgroundError(
+          error instanceof Error
+            ? error.message
+            : "Unable to load this background.",
+        );
+      });
   };
 
   const handleTextOverlayChange = (textOverlay: TextOverlay) => {
@@ -210,7 +230,9 @@ export function SwiprPageClient() {
 
   const handleGenerateAutoText = () => {
     if (!selectedSavedProductId) {
-      setAutoTextMessage("Choose a saved Settings product before generating text.");
+      setAutoTextMessage(
+        "Choose a saved Settings product before generating text.",
+      );
       return;
     }
 
@@ -292,11 +314,30 @@ export function SwiprPageClient() {
       return;
     }
 
-    void exporter.exportCarousel({
-      background: getSwiprBackgroundFromAsset(savedSwipeBackground),
-      slides: savedSwipeSnapshot.slides,
-      productName: savedSwipeSnapshot.productName,
-    });
+    setBackgroundError(null);
+
+    void Promise.resolve()
+      .then(async () => {
+        const blob =
+          savedSwipeBackground.blob ??
+          (await swiprLibrary.loadBackgroundBlob(savedSwipeBackground.id));
+
+        await exporter.exportCarousel({
+          background: getSwiprBackgroundFromAsset({
+            ...savedSwipeBackground,
+            blob,
+          }),
+          slides: savedSwipeSnapshot.slides,
+          productName: savedSwipeSnapshot.productName,
+        });
+      })
+      .catch((error) => {
+        setBackgroundError(
+          error instanceof Error
+            ? error.message
+            : "Unable to load this background.",
+        );
+      });
   };
 
   useEffect(() => {
@@ -317,23 +358,49 @@ export function SwiprPageClient() {
       return;
     }
 
-    void Promise.resolve().then(() => {
-      setSelectedProductId(
-        getSwiprSavedProductOptionValue(savedSwipe.productSourceId),
-      );
-      setSlideCount(savedSwipe.slides.length);
-      setSlides(savedSwipe.slides);
-      setActiveSlideId(savedSwipe.slides[0]?.id ?? null);
-      setBackground(getSwiprBackgroundFromAsset(savedBackground));
-      setSavedSwipeSnapshot(savedSwipe);
-      setLoadedSwipeId(savedSwipe.id);
-      setSaveMessage("Loaded saved Swipe.");
-    });
+    let isCancelled = false;
+
+    void Promise.resolve()
+      .then(async () => {
+        const blob =
+          savedBackground.blob ??
+          (await swiprLibrary.loadBackgroundBlob(savedBackground.id));
+
+        if (isCancelled) {
+          return;
+        }
+
+        setSelectedProductId(
+          getSwiprSavedProductOptionValue(savedSwipe.productSourceId),
+        );
+        setSlideCount(savedSwipe.slides.length);
+        setSlides(savedSwipe.slides);
+        setActiveSlideId(savedSwipe.slides[0]?.id ?? null);
+        setBackground(getSwiprBackgroundFromAsset({ ...savedBackground, blob }));
+        setSavedSwipeSnapshot(savedSwipe);
+        setLoadedSwipeId(savedSwipe.id);
+        setSaveMessage("Loaded saved Swipe.");
+      })
+      .catch((error) => {
+        if (!isCancelled) {
+          setBackgroundError(
+            error instanceof Error
+              ? error.message
+              : "Unable to load this background.",
+          );
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
   }, [
     editingSwipeId,
     loadedSwipeId,
     swiprLibrary.backgrounds,
+    swiprLibrary.loadBackgroundBlob,
     swiprLibrary.swipes,
+    swiprLibrary,
   ]);
 
   return (
@@ -377,6 +444,7 @@ export function SwiprPageClient() {
                   isGeneratingAi={isGeneratingAiBackground}
                   isAiDisabled={!selectedSavedProduct}
                   onBackgroundSearchChange={setBackgroundSearchQuery}
+                  onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
                   onSelectBackground={handleSelectBackground}
                   onGenerateAiBackground={() => void generateAiBackground()}
                   onUploadBackground={handleUploadBackground}

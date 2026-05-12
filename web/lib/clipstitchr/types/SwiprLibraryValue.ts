@@ -28,6 +28,7 @@ export type SwiprLibraryValue = {
   saveBackground: (
     options: SaveSwiprBackgroundOptions,
   ) => Promise<SwiprBackgroundAsset>;
+  loadBackgroundBlob: (id: string) => Promise<Blob>;
   saveSwipe: (input: SaveSwiprSwipeInput) => Promise<SwiprSwipe>;
   removeSwipe: (id: string) => Promise<void>;
 };

@@ -33,12 +33,13 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
   const [backgrounds, setBackgrounds] = useState<
     SwiprLibraryValue["backgrounds"]
   >([]);
-  const [isHydrating, setIsHydrating] = useState(false);
   const [isSavingBackground, setIsSavingBackground] = useState(false);
   const [isSavingSwipe, setIsSavingSwipe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshNonce, setRefreshNonce] = useState(0);
   const backgroundBlobCacheRef = useRef(new Map<string, Blob>());
+  const backgroundDownloadPromisesRef = useRef(new Map<string, Promise<Blob>>());
+  const backgroundDownloadQueueRef = useRef(Promise.resolve());
   const swipes = useMemo(
     () => swipeDocuments?.map(createSwiprSwipeFromConvexDocument) ?? [],
     [swipeDocuments],
@@ -46,6 +47,46 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
 
   const refresh = useCallback(async () => {
     setRefreshNonce((currentNonce) => currentNonce + 1);
+  }, []);
+
+  const loadBackgroundBlob = useCallback(async (id: string) => {
+    const cachedBlob = backgroundBlobCacheRef.current.get(id);
+
+    if (cachedBlob) {
+      return cachedBlob;
+    }
+
+    const pendingDownload = backgroundDownloadPromisesRef.current.get(id);
+
+    if (pendingDownload) {
+      return pendingDownload;
+    }
+
+    const download = backgroundDownloadQueueRef.current.then(
+      () => downloadSwiprBackgroundBlobFromR2(id),
+      () => downloadSwiprBackgroundBlobFromR2(id),
+    );
+
+    backgroundDownloadQueueRef.current = download.then(
+      () => undefined,
+      () => undefined,
+    );
+    backgroundDownloadPromisesRef.current.set(id, download);
+
+    try {
+      const blob = await download;
+
+      backgroundBlobCacheRef.current.set(id, blob);
+      setBackgrounds((currentBackgrounds) =>
+        currentBackgrounds.map((background) =>
+          background.id === id ? { ...background, blob } : background,
+        ),
+      );
+
+      return blob;
+    } finally {
+      backgroundDownloadPromisesRef.current.delete(id);
+    }
   }, []);
 
   const saveBackground = useCallback(
@@ -189,6 +230,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
       if (!isAuthLoading && !isAuthenticated) {
         void Promise.resolve().then(() => {
           backgroundBlobCacheRef.current.clear();
+          backgroundDownloadPromisesRef.current.clear();
           setBackgrounds([]);
         });
       }
@@ -198,43 +240,20 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
 
     let isCancelled = false;
 
-    void Promise.resolve().then(async () => {
-      setIsHydrating(true);
-      setError(null);
-
-      try {
-        const nextBackgrounds = await Promise.all(
-          backgroundDocuments.map(async (background) => {
-            const cachedBlob = backgroundBlobCacheRef.current.get(background.id);
-            const blob =
-              cachedBlob ??
-              (await downloadSwiprBackgroundBlobFromR2(background.id));
-
-            backgroundBlobCacheRef.current.set(background.id, blob);
-
-            return createSwiprBackgroundAssetFromConvexDocument(
-              background,
-              blob,
-            );
-          }),
-        );
-
-        if (!isCancelled) {
-          setBackgrounds(nextBackgrounds);
-        }
-      } catch (nextError) {
-        if (!isCancelled) {
-          setError(
-            nextError instanceof Error
-              ? nextError.message
-              : "Unable to load the Swipr library.",
-          );
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsHydrating(false);
-        }
+    void Promise.resolve().then(() => {
+      if (isCancelled) {
+        return;
       }
+
+      setError(null);
+      setBackgrounds(
+        backgroundDocuments.map((background) =>
+          createSwiprBackgroundAssetFromConvexDocument(
+            background,
+            backgroundBlobCacheRef.current.get(background.id),
+          ),
+        ),
+      );
     });
 
     return () => {
@@ -253,12 +272,12 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
     isLoading:
       isAuthLoading ||
       (isAuthenticated &&
-        (backgroundDocuments === undefined || swipeDocuments === undefined)) ||
-      isHydrating,
+        (backgroundDocuments === undefined || swipeDocuments === undefined)),
     isSavingBackground,
     isSavingSwipe,
     error,
     refresh,
+    loadBackgroundBlob,
     saveBackground,
     saveSwipe,
     removeSwipe,
