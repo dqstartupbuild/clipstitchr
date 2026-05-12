@@ -131,7 +131,6 @@ export function useCliprGeneration(onClipSaved?: () => void | Promise<void>) {
         status: response.videoStatus,
         videoUrl: response.videoUrl,
       };
-      let currentVideoPredictionId = response.videoPredictionId;
 
       setSegments((currentSegments) => [...currentSegments, response]);
       setStatus("avatar");
@@ -141,10 +140,9 @@ export function useCliprGeneration(onClipSaved?: () => void | Promise<void>) {
         await waitForCliprPollInterval();
 
         const pollResponse = await fetch(
-          `/api/clipr/segments/${currentVideoPredictionId}`,
+          `/api/clipr/segments/${response.videoPredictionId}`,
         );
         segmentStatus = await readCliprSegmentStatusResponse(pollResponse);
-        currentVideoPredictionId = segmentStatus.videoPredictionId;
         setProgress((currentProgress) => Math.min(0.65, currentProgress + 0.015));
       }
 
@@ -159,7 +157,7 @@ export function useCliprGeneration(onClipSaved?: () => void | Promise<void>) {
       setStatus("downloading");
 
       const rawOutputBlob = await downloadCliprOutput({
-        predictionId: currentVideoPredictionId,
+        predictionId: response.videoPredictionId,
         url: segmentStatus.videoUrl,
       });
       const outputFile = new File(

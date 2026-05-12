@@ -5,7 +5,6 @@ export type CliprSegmentStatusResponse = {
   status: SwaprPredictionStatus;
   videoUrl?: string;
   error?: unknown;
-  fallbackReason?: string;
   logs?: string;
   urls?: {
     get?: string;
