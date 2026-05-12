@@ -1,9 +1,10 @@
 export function createCliprAvatarVideoPrompt() {
   return [
-    "Animate the provided photo as a talking avatar reading the voice script.",
-    "Use the photo as the full visual reference.",
-    "Do not change the person, outfit, background, lighting, camera angle, framing, or scene.",
-    "Do not add new background details, props, cuts, b-roll, captions, subtitles, logos, app screens, readable UI, or graphic overlays.",
-    "Keep the camera locked and only add subtle natural mouth, face, head, shoulder, and small hand motion for lip sync.",
+    "Animate the provided photo as one continuous, realistic talking-head video of the person reading the voice script.",
+    "Use the photo as the complete visual reference for the person, outfit, background, lighting, camera angle, framing, and scene.",
+    "Preserve the photographed environment exactly as the video setting.",
+    "Keep a clean real-world camera frame with the person as the sole subject.",
+    "Keep the camera locked in the original framing.",
+    "Add subtle natural lip sync with small mouth, face, head, shoulder, and hand motion.",
   ].join("\n");
 }

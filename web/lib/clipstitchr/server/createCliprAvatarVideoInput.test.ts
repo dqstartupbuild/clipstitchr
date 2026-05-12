@@ -26,8 +26,8 @@ describe("createCliprAvatarVideoInput", () => {
       voiceId: "Puck (Male)",
     });
 
-    expect(input.video_prompt).toContain("Use the photo as the full visual reference");
-    expect(input.video_prompt).toContain("Do not change the person");
+    expect(input.video_prompt).toContain("one continuous, realistic talking-head video");
+    expect(input.video_prompt).toContain("complete visual reference");
     expect(input.video_prompt).not.toContain("Visual direction");
   });
 
