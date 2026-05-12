@@ -61,7 +61,7 @@ Optional Replicate model overrides:
 
 - `AVATAR_PHOTO_MODEL_ID` defaults to `openai/gpt-image-2` for avatar photo
   generation. Supported workflows include `openai/gpt-image-2` and
-  `prunaai/z-image-turbo-img2img:5c958e90e0f904240629ee35c69196e3bd790b5528c0696705ebdb1656871dd8`.
+  `minimax/image-01`.
 - `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID` defaults to `openai/gpt-4.1-mini` for
   avatar/photo image analysis and video poster fallback analysis.
 - `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` defaults to
@@ -180,8 +180,9 @@ calling Replicate, including generation started from a UGC clip poster in the
 Content Library. `openai/gpt-image-2` accepts up to 10 outputs in one
 prediction, but ClipStitchr runs one prediction per generated avatar photo so
 each output can receive a unique prompt variant and avoid grid/contact-sheet
-results. The Pruna z-image-turbo img2img workflow is also one prediction per
-generated image because it accepts one image-to-image prompt and source image.
+results. The MiniMax Image-01 workflow is also one prediction per generated
+image because ClipStitchr gives each output a unique prompt variant and one
+source `subject_reference` image.
 Each prediction is recorded as an `avatar-photo` Replicate job.
 Generation speed profiles may run those one-image predictions concurrently:
 Creator runs 1 at a time, Pro runs up to 2, and Studio runs up to 4. This

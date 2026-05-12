@@ -78,6 +78,7 @@ export function useAvatarPhotoGeneration({
           lighting,
           location,
           style,
+          wardrobeStyle: avatar.wardrobeStyle,
         });
 
         await saveGeneratedPhotos(result.generatedPhotos, {

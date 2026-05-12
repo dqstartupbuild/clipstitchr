@@ -26,23 +26,20 @@ describe("createAvatarPhotoGenerationInput", () => {
     });
   });
 
-  it("creates Pruna z-image-turbo img2img inputs for versioned avatar models", () => {
+  it("creates MiniMax Image-01 inputs with a subject reference", () => {
     expect(
       createAvatarPhotoGenerationInput({
         image,
-        modelId:
-          "prunaai/z-image-turbo-img2img:5c958e90e0f904240629ee35c69196e3bd790b5528c0696705ebdb1656871dd8",
-        prompt: "Transform the avatar photo.",
+        modelId: "minimax/image-01",
+        prompt: "Create an avatar photo.",
         quality: "high",
       }),
     ).toEqual({
-      prompt: "Transform the avatar photo.",
-      image,
-      strength: 0.6,
-      num_inference_steps: 8,
-      guidance_scale: 0,
-      output_format: "jpg",
-      output_quality: 90,
+      prompt: "Create an avatar photo.",
+      aspect_ratio: "3:4",
+      number_of_images: 1,
+      prompt_optimizer: false,
+      subject_reference: image,
     });
   });
 });

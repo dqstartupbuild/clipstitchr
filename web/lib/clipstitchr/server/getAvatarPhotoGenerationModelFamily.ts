@@ -1,9 +1,8 @@
-const PRUNA_Z_IMAGE_TURBO_IMG2IMG_MODEL_ID =
-  "prunaai/z-image-turbo-img2img";
+const MINIMAX_IMAGE_01_MODEL_ID = "minimax/image-01";
 
 export type AvatarPhotoGenerationModelFamily =
   | "openai-gpt-image"
-  | "pruna-z-image-turbo-img2img";
+  | "minimax-image-01";
 
 export function getAvatarPhotoGenerationModelFamily(
   modelId: string,
@@ -11,10 +10,10 @@ export function getAvatarPhotoGenerationModelFamily(
   const trimmedModelId = modelId.trim();
 
   if (
-    trimmedModelId === PRUNA_Z_IMAGE_TURBO_IMG2IMG_MODEL_ID ||
-    trimmedModelId.startsWith(`${PRUNA_Z_IMAGE_TURBO_IMG2IMG_MODEL_ID}:`)
+    trimmedModelId === MINIMAX_IMAGE_01_MODEL_ID ||
+    trimmedModelId.startsWith(`${MINIMAX_IMAGE_01_MODEL_ID}:`)
   ) {
-    return "pruna-z-image-turbo-img2img";
+    return "minimax-image-01";
   }
 
   return "openai-gpt-image";

@@ -3,7 +3,10 @@
 import { Check, Edit3, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { SelectInput } from "@/app/_components/ui/SelectInput";
+import { avatarWardrobeStyleOptions } from "@/lib/clipstitchr/constants/avatarWardrobeStyleOptions";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
+import type { AvatarWardrobeStyle } from "@/lib/clipstitchr/types/AvatarWardrobeStyle";
 
 type SelectedAvatarActionsProps = {
   avatar?: Avatar;
@@ -11,6 +14,10 @@ type SelectedAvatarActionsProps = {
   photoCount: number;
   onDelete: (avatar: Avatar) => Promise<void>;
   onRename: (avatar: Avatar, name: string) => Promise<void>;
+  onWardrobeStyleChange: (
+    avatar: Avatar,
+    wardrobeStyle: AvatarWardrobeStyle,
+  ) => Promise<void>;
 };
 
 export function SelectedAvatarActions({
@@ -19,10 +26,12 @@ export function SelectedAvatarActions({
   photoCount,
   onDelete,
   onRename,
+  onWardrobeStyleChange,
 }: SelectedAvatarActionsProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRenameSaving, setIsRenameSaving] = useState(false);
+  const [isWardrobeSaving, setIsWardrobeSaving] = useState(false);
   const [name, setName] = useState("");
 
   if (!avatar) {
@@ -34,9 +43,11 @@ export function SelectedAvatarActions({
     trimmedName.length > 0 &&
     trimmedName !== avatar.name &&
     !isSaving &&
-    !isRenameSaving;
+    !isRenameSaving &&
+    !isWardrobeSaving;
   const photoLabel = photoCount === 1 ? "1 photo" : `${photoCount} photos`;
-  const isDisabled = isSaving || isDeleting || isRenameSaving;
+  const isDisabled =
+    isSaving || isDeleting || isRenameSaving || isWardrobeSaving;
 
   const handleDelete = async () => {
     const didConfirm = window.confirm(
@@ -111,7 +122,32 @@ export function SelectedAvatarActions({
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-end gap-1">
+      <SelectInput
+        label="Outfits"
+        value={avatar.wardrobeStyle}
+        options={avatarWardrobeStyleOptions}
+        wrapperClassName="w-32"
+        className="h-10"
+        disabled={isDisabled}
+        onChange={async (event) => {
+          const wardrobeStyle = event.currentTarget.value as AvatarWardrobeStyle;
+
+          if (wardrobeStyle === avatar.wardrobeStyle) {
+            return;
+          }
+
+          setIsWardrobeSaving(true);
+
+          try {
+            await onWardrobeStyleChange(avatar, wardrobeStyle);
+          } catch {
+            // The parent hook surfaces the error.
+          } finally {
+            setIsWardrobeSaving(false);
+          }
+        }}
+      />
       <IconButton
         type="button"
         label={`Rename ${avatar.name}`}

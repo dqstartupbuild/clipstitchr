@@ -1,5 +1,4 @@
 import { getAvatarPhotoGenerationModelFamily } from "@/lib/clipstitchr/server/getAvatarPhotoGenerationModelFamily";
-import { getAvatarPhotoPrunaOutputQuality } from "@/lib/clipstitchr/server/getAvatarPhotoPrunaOutputQuality";
 import type { AvatarImageGenerationQuality } from "@/lib/clipstitchr/types/AvatarImageGenerationQuality";
 
 type CreateAvatarPhotoGenerationInputOptions = {
@@ -17,16 +16,14 @@ export function createAvatarPhotoGenerationInput({
 }: CreateAvatarPhotoGenerationInputOptions) {
   if (
     getAvatarPhotoGenerationModelFamily(modelId) ===
-    "pruna-z-image-turbo-img2img"
+    "minimax-image-01"
   ) {
     return {
       prompt,
-      image,
-      strength: 0.6,
-      num_inference_steps: 8,
-      guidance_scale: 0,
-      output_format: "jpg",
-      output_quality: getAvatarPhotoPrunaOutputQuality(quality),
+      aspect_ratio: "3:4",
+      number_of_images: 1,
+      prompt_optimizer: false,
+      subject_reference: image,
     };
   }
 

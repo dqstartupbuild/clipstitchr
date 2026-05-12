@@ -81,7 +81,7 @@ export function AvatarGenerationPanel({
           <div className="grid gap-2 md:grid-cols-2 xl:w-[760px] xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.35fr)_132px_132px_108px_132px] xl:items-end">
             <label className="md:col-span-2 xl:col-span-1">
               <span className="text-sm font-semibold text-text-primary">
-                Location or scenario
+                Background
               </span>
               <input
                 type="text"
@@ -95,12 +95,12 @@ export function AvatarGenerationPanel({
             </label>
             <label className="md:col-span-2 xl:col-span-1">
               <span className="text-sm font-semibold text-text-primary">
-                Context
+                Pose or action
               </span>
               <input
                 type="text"
                 value={context}
-                placeholder="Describe what they are doing or how they are posing"
+                placeholder="Any"
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-white px-3 text-sm text-text-primary shadow-sm shadow-slate-200/50 outline-none transition-colors hover:border-accent/70 focus:border-accent focus:ring-2 focus:ring-accent/15"
                 onChange={(event) => onContextChange(event.currentTarget.value)}
               />

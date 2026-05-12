@@ -87,7 +87,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
   }, []);
 
   const createAvatar = useCallback(
-    async ({ description, name }: CreateAvatarOptions) => {
+    async ({ description, name, wardrobeStyle = "any" }: CreateAvatarOptions) => {
       const trimmedName = name.trim();
       const trimmedDescription = description?.trim();
 
@@ -105,6 +105,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
           id: createId(),
           name: trimmedName,
           description: trimmedDescription || undefined,
+          wardrobeStyle,
           createdAt: now,
           updatedAt: now,
         };
@@ -260,6 +261,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
               id: uploadAvatarId,
               name: trimmedAvatarName,
               description: analysis.avatarDescription,
+              wardrobeStyle: "any",
               createdAt: now,
               updatedAt: now,
             });
@@ -276,6 +278,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
               id: selectedAvatar.id,
               name: selectedAvatar.name,
               description: analysis.avatarDescription,
+              wardrobeStyle: selectedAvatar.wardrobeStyle,
               updatedAt: now,
             });
           }
@@ -430,6 +433,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
           id: avatar.id,
           name: trimmedName,
           description: avatar.description,
+          wardrobeStyle: avatar.wardrobeStyle,
           updatedAt: new Date().toISOString(),
         });
         await refresh();
@@ -438,6 +442,34 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
           nextError instanceof Error
             ? nextError.message
             : "Unable to rename this avatar.",
+        );
+        throw nextError;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [refresh, updateAvatarMutation],
+  );
+
+  const updateAvatarWardrobeStyle = useCallback(
+    async (avatar: Avatar, wardrobeStyle: Avatar["wardrobeStyle"]) => {
+      setIsSaving(true);
+      setError(null);
+
+      try {
+        await updateAvatarMutation({
+          id: avatar.id,
+          name: avatar.name,
+          description: avatar.description,
+          wardrobeStyle,
+          updatedAt: new Date().toISOString(),
+        });
+        await refresh();
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to update this avatar's outfit presets.",
         );
         throw nextError;
       } finally {
@@ -718,6 +750,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     saveGeneratedPhotos,
     updatePhotoMetadata,
     renameAvatar,
+    updateAvatarWardrobeStyle,
     removeAvatar,
     removePhoto,
   };

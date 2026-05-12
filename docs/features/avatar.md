@@ -19,6 +19,7 @@ Each avatar stores identity-level fields:
 - `id`
 - `name`
 - `description`
+- `wardrobeStyle`
 - `createdAt`
 - `updatedAt`
 
@@ -41,6 +42,10 @@ The avatar description must not include:
 - pose, posture, gesture, body position, or activity details
 - private identity
 - race, ethnicity, nationality, religion, gender identity, health, disability, or other sensitive guesses
+
+`wardrobeStyle` is a user-selected outfit preset filter, not an inferred
+identity field. Supported values are `any`, `male`, and `female`. It controls
+which outfit presets are eligible during generated avatar photo creation.
 
 ### Avatar Photo
 
@@ -113,20 +118,29 @@ in the generation controls, not in the empty state copy.
 For each requested output image, ClipStitchr creates a unique variant:
 
 - unique outfit description generated at request time
-- location/scenario generated at request time unless the user entered one
+- background/location generated at request time unless the user entered one
 - pose/action generated at request time unless the user entered context
 - lighting generated at request time when the user selected `Any`
 - selected style from the UI
 
+Generated background/location presets should describe the setting only. They
+must not embed body actions such as taking selfies, walking, sitting, or riding
+bikes. Generated pose/action presets are selected from categories compatible
+with the chosen background/location, and the final prompt marks pose/action as
+the primary body instruction when it conflicts with the background.
+
+Outfit presets are filtered by the avatar's user-selected `wardrobeStyle`.
+Shared outfits remain eligible for both `male` and `female`; female-coded
+outfits such as skirt-based presets are only eligible for `female` or `any`.
+
 `AVATAR_PHOTO_MODEL_ID` defaults to `openai/gpt-image-2` and can also target
-`prunaai/z-image-turbo-img2img:5c958e90e0f904240629ee35c69196e3bd790b5528c0696705ebdb1656871dd8`.
+`minimax/image-01`.
 Replicate `openai/gpt-image-2` supports `number_of_images` up to 10, but it
 accepts a single prompt per prediction. To provide unique per-image prompts and
 avoid grid/contact-sheet outputs, ClipStitchr runs one prediction per requested
-output image with `number_of_images: 1`. The Pruna z-image-turbo img2img
-workflow also runs one prediction per requested output, but sends the reference
-photo as `image` with image-to-image settings instead of GPT Image 2
-`input_images`.
+output image with `number_of_images: 1`. The MiniMax Image-01 workflow also runs
+one prediction per requested output, but sends the reference photo as
+`subject_reference` so the model can use its character reference support.
 
 Avatar generation speed is controlled by the shared generation speed profile:
 
