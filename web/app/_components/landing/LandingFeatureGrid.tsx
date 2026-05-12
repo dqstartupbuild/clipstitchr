@@ -1,11 +1,11 @@
 import {
   Download,
   FolderSearch,
+  CirclePlay,
   Images,
   Ratio,
   Scissors,
   Shuffle,
-  Sparkles,
   Type,
   UploadCloud,
   UserRound,
@@ -35,7 +35,7 @@ const features = [
     title: "Generate reusable Clips",
     description:
       "Use Clipr to create short engagement clips when your library needs fresh source footage.",
-    icon: Sparkles,
+    icon: CirclePlay,
   },
   {
     title: "Save carousel drafts",

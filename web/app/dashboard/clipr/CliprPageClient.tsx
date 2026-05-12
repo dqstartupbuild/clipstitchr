@@ -1,6 +1,6 @@
 "use client";
 
-import { Wand2 } from "lucide-react";
+import { CirclePlay } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -102,7 +102,7 @@ export function CliprPageClient() {
               </p>
               <Button
                 type="button"
-                icon={<Wand2 aria-hidden className="h-4 w-4" />}
+                icon={<CirclePlay aria-hidden className="h-4 w-4" />}
                 isLoading={generator.isGenerating}
                 disabled={!canGenerate}
                 onClick={() =>

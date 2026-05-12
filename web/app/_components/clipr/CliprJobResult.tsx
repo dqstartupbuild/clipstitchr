@@ -1,4 +1,4 @@
-import { Scissors } from "lucide-react";
+import { CirclePlay } from "lucide-react";
 import Link from "next/link";
 import type { CliprClientJob } from "@/lib/clipstitchr/types/CliprClientJob";
 
@@ -50,7 +50,7 @@ export function CliprJobResult({ finalClipId, job }: CliprJobResultProps) {
           href="/dashboard/uploads?tab=clips"
           className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
         >
-          <Scissors aria-hidden className="h-4 w-4" />
+          <CirclePlay aria-hidden className="h-4 w-4" />
           View Clip
         </Link>
       ) : null}
