@@ -1,6 +1,9 @@
-import { avatarGenerationLocations } from "@/lib/clipstitchr/constants/avatarGenerationLocations";
-import { avatarGenerationOutfits } from "@/lib/clipstitchr/constants/avatarGenerationOutfits";
-import { avatarGenerationPoses } from "@/lib/clipstitchr/constants/avatarGenerationPoses";
+import {
+  avatarGenerationLocationOptions,
+  getAvatarGenerationLocationCategories,
+} from "@/lib/clipstitchr/constants/avatarGenerationLocations";
+import { getAvatarGenerationOutfits } from "@/lib/clipstitchr/constants/avatarGenerationOutfits";
+import { getAvatarGenerationPosesForLocationCategories } from "@/lib/clipstitchr/constants/avatarGenerationPoses";
 import type {
   AvatarGenerationResolvedLighting,
   AvatarGenerationVariant,
@@ -8,6 +11,7 @@ import type {
 import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightingOption";
 import type { AvatarPhotoGenerationCount } from "@/lib/clipstitchr/types/AvatarPhotoGenerationCount";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
+import type { AvatarWardrobeStyle } from "@/lib/clipstitchr/types/AvatarWardrobeStyle";
 
 const randomLightingOptions: AvatarGenerationResolvedLighting[] = [
   "natural",
@@ -31,25 +35,38 @@ export function createAvatarGenerationVariants({
   lighting,
   location,
   style,
+  wardrobeStyle = "any",
 }: {
   context: string;
   count: AvatarPhotoGenerationCount;
   lighting: AvatarLightingOption;
   location: string;
   style: AvatarStyleOption;
+  wardrobeStyle?: AvatarWardrobeStyle;
 }): AvatarGenerationVariant[] {
-  const outfits = getShuffledItems(avatarGenerationOutfits);
-  const locations = getShuffledItems(avatarGenerationLocations);
-  const poses = getShuffledItems(avatarGenerationPoses);
+  const outfits = getShuffledItems(getAvatarGenerationOutfits(wardrobeStyle));
+  const locations = getShuffledItems(avatarGenerationLocationOptions);
   const trimmedContext = context.trim();
   const trimmedLocation = location.trim();
 
-  return Array.from({ length: count }, (_, index) => ({
-    outfitDescription: outfits[index % outfits.length],
-    locationDescription: trimmedLocation || locations[index % locations.length],
-    poseDescription: trimmedContext || poses[index % poses.length],
-    lighting:
-      lighting === "any" ? getRandomItem(randomLightingOptions) : lighting,
-    style,
-  }));
+  return Array.from({ length: count }, (_, index) => {
+    const locationOption = trimmedLocation
+      ? {
+          categories: getAvatarGenerationLocationCategories(trimmedLocation),
+          description: trimmedLocation,
+        }
+      : locations[index % locations.length];
+    const poses = getShuffledItems(
+      getAvatarGenerationPosesForLocationCategories(locationOption.categories),
+    );
+
+    return {
+      outfitDescription: outfits[index % outfits.length],
+      locationDescription: locationOption.description,
+      poseDescription: trimmedContext || poses[index % poses.length],
+      lighting:
+        lighting === "any" ? getRandomItem(randomLightingOptions) : lighting,
+      style,
+    };
+  });
 }

@@ -43,16 +43,30 @@ describe("createAvatarPhotoGenerationPrompt", () => {
     expect(prompt).toContain("not a studio portrait");
   });
 
-  it("uses image-to-image wording for Pruna z-image-turbo", () => {
+  it("makes the pose action primary over the background location", () => {
     const prompt = createAvatarPhotoGenerationPrompt({
       avatarDescription: "short dark hair and oval face",
-      modelId:
-        "prunaai/z-image-turbo-img2img:5c958e90e0f904240629ee35c69196e3bd790b5528c0696705ebdb1656871dd8",
       variant,
     });
 
-    expect(prompt).toContain("same person from the input image");
-    expect(prompt).toContain("Use the input image as the image-to-image source");
-    expect(prompt).toContain("Transform the wardrobe, location, pose, and lighting");
+    expect(prompt).toContain("Background/location for this new photo");
+    expect(prompt).toContain("Primary body pose/action");
+    expect(prompt).toContain("Do not let it override the primary body pose/action");
+  });
+
+  it("uses character reference wording for MiniMax Image-01", () => {
+    const prompt = createAvatarPhotoGenerationPrompt({
+      avatarDescription: "short dark hair and oval face",
+      modelId: "minimax/image-01",
+      variant,
+    });
+
+    expect(prompt).toContain("same person from the subject reference image");
+    expect(prompt).toContain(
+      "Use the subject reference image as the character reference",
+    );
+    expect(prompt).toContain(
+      "Preserve the subject reference person's facial identity",
+    );
   });
 });

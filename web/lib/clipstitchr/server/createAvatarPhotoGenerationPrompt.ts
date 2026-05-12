@@ -20,8 +20,8 @@ export function createAvatarPhotoGenerationPrompt({
 }: CreateAvatarPhotoGenerationPromptOptions) {
   const modelFamily = getAvatarPhotoGenerationModelFamily(modelId);
   const referenceLabel =
-    modelFamily === "pruna-z-image-turbo-img2img"
-      ? "input image"
+    modelFamily === "minimax-image-01"
+      ? "subject reference image"
       : "reference image";
   const styleLine = getAvatarStylePrompt(variant.style as AvatarStyleOption);
   const lightingLine = getAvatarLightingPrompt(variant.lighting);
@@ -30,10 +30,10 @@ export function createAvatarPhotoGenerationPrompt({
       ? "The image should be a creator-style UGC source photo: raw source material for a UGC ad, believable, not a studio portrait, and not overly posed."
       : "The image should feel like a casual real-world photo, not a synthetic studio render.";
   const modelWorkflowLines =
-    modelFamily === "pruna-z-image-turbo-img2img"
+    modelFamily === "minimax-image-01"
       ? [
-          "Use the input image as the image-to-image source.",
-          "Transform the wardrobe, location, pose, and lighting according to the requested new photo instead of only retouching the original scene.",
+          "Use the subject reference image as the character reference for the generated person.",
+          "Preserve the subject reference person's facial identity while generating a new wardrobe, location, pose, and lighting.",
         ]
       : [];
   const identityLines =
@@ -54,8 +54,10 @@ export function createAvatarPhotoGenerationPrompt({
     realWorldPhotoLine,
     `Avatar description: ${avatarDescription}`,
     `Outfit for this new photo: ${variant.outfitDescription}.`,
-    `Location or situation for this new photo: ${variant.locationDescription}.`,
-    `Pose or action for this new photo: ${variant.poseDescription}.`,
+    `Background/location for this new photo: ${variant.locationDescription}.`,
+    `Primary body pose/action for this new photo: ${variant.poseDescription}.`,
+    "Use the background/location as setting context only. Do not let it override the primary body pose/action.",
+    "If the background and pose/action seem to conflict, follow the primary body pose/action and keep the background as a plausible setting.",
     `Style: ${styleLine}.`,
     `Lighting: ${lightingLine}.`,
     "Do not copy the source photo outfit, background, location, or pose unless it naturally matches the requested new photo.",

@@ -8,6 +8,7 @@ export function createAvatarFromConvexDocument(
     id: avatar.id,
     name: avatar.name,
     description: avatar.description,
+    wardrobeStyle: avatar.wardrobeStyle ?? "any",
     createdAt: avatar.createdAt,
     updatedAt: avatar.updatedAt,
   };

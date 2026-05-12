@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { assetTagsValidator } from "./validators/assetTags";
+import { avatarWardrobeStyleValidator } from "./validators/avatarWardrobeStyle";
 import { cliprDurationSecondsValidator } from "./validators/cliprDurationSeconds";
 import { cliprJobStageValidator } from "./validators/cliprJobStage";
 import { cliprJobStatusValidator } from "./validators/cliprJobStatus";
@@ -91,6 +92,7 @@ export default defineSchema({
     id: v.string(),
     name: v.string(),
     description: v.optional(v.string()),
+    wardrobeStyle: v.optional(avatarWardrobeStyleValidator),
     createdAt: v.string(),
     updatedAt: v.string(),
   })

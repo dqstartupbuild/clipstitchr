@@ -14,6 +14,7 @@ import { getAvatarIdentityMode } from "@/lib/clipstitchr/server/getAvatarIdentit
 import { getAvatarLightingOption } from "@/lib/clipstitchr/server/getAvatarLightingOption";
 import { getAvatarPhotoGenerationCount } from "@/lib/clipstitchr/server/getAvatarPhotoGenerationCount";
 import { getAvatarPhotoGenerationModelId } from "@/lib/clipstitchr/server/getAvatarPhotoGenerationModelId";
+import { getAvatarWardrobeStyle } from "@/lib/clipstitchr/server/getAvatarWardrobeStyle";
 import { getAvatarStyleOption } from "@/lib/clipstitchr/server/getAvatarStyleOption";
 import { getReplicateOutputUrls } from "@/lib/clipstitchr/server/getReplicateOutputUrls";
 import { getReplicatePredictionStatus } from "@/lib/clipstitchr/server/getReplicatePredictionStatus";
@@ -59,6 +60,9 @@ export async function POST(request: Request) {
     );
     const location = getSwaprFormString(formData, "location").trim();
     const style = getAvatarStyleOption(getSwaprFormString(formData, "style"));
+    const wardrobeStyle = getAvatarWardrobeStyle(
+      getSwaprFormString(formData, "wardrobeStyle"),
+    );
     const generationSpeedTier = getGenerationSpeedTier(
       getSwaprFormString(formData, "generationSpeedTier"),
     );
@@ -87,6 +91,7 @@ export async function POST(request: Request) {
       lighting,
       location,
       style,
+      wardrobeStyle,
     });
 
     const generatedImages = await mapWithConcurrency(

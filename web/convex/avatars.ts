@@ -3,6 +3,7 @@ import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
+import { avatarWardrobeStyleValidator } from "./validators/avatarWardrobeStyle";
 
 export const list = query({
   args: {},
@@ -36,6 +37,7 @@ export const save = mutation({
     id: v.string(),
     name: v.string(),
     description: v.optional(v.string()),
+    wardrobeStyle: v.optional(avatarWardrobeStyleValidator),
     createdAt: v.string(),
     updatedAt: v.string(),
   },
@@ -72,9 +74,10 @@ export const update = mutation({
     id: v.string(),
     name: v.string(),
     description: v.optional(v.string()),
+    wardrobeStyle: v.optional(avatarWardrobeStyleValidator),
     updatedAt: v.string(),
   },
-  handler: async (ctx, { id, name, description, updatedAt }) => {
+  handler: async (ctx, { id, name, description, wardrobeStyle, updatedAt }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
@@ -94,6 +97,7 @@ export const update = mutation({
     await ctx.db.patch(avatar._id, {
       name,
       ...(description === undefined ? {} : { description }),
+      ...(wardrobeStyle === undefined ? {} : { wardrobeStyle }),
       updatedAt,
     });
   },

@@ -22,6 +22,7 @@ import type * as stitches from "../stitches.js";
 import type * as swipes from "../swipes.js";
 import type * as swiprBackgrounds from "../swiprBackgrounds.js";
 import type * as validators_assetTags from "../validators/assetTags.js";
+import type * as validators_avatarWardrobeStyle from "../validators/avatarWardrobeStyle.js";
 import type * as validators_clipType from "../validators/clipType.js";
 import type * as validators_cliprDurationSeconds from "../validators/cliprDurationSeconds.js";
 import type * as validators_cliprJobStage from "../validators/cliprJobStage.js";
@@ -60,6 +61,7 @@ declare const fullApi: ApiFromModules<{
   swipes: typeof swipes;
   swiprBackgrounds: typeof swiprBackgrounds;
   "validators/assetTags": typeof validators_assetTags;
+  "validators/avatarWardrobeStyle": typeof validators_avatarWardrobeStyle;
   "validators/clipType": typeof validators_clipType;
   "validators/cliprDurationSeconds": typeof validators_cliprDurationSeconds;
   "validators/cliprJobStage": typeof validators_cliprJobStage;

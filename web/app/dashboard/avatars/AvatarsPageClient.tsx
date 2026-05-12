@@ -209,6 +209,7 @@ export function AvatarsPageClient() {
               photoCount={selectedFilterAvatarPhotoCount}
               onDelete={deleteAvatar}
               onRename={photoLibrary.renameAvatar}
+              onWardrobeStyleChange={photoLibrary.updateAvatarWardrobeStyle}
             />
           </div>
           <SearchInput

@@ -7,6 +7,7 @@ import type { AvatarPhotoGenerationReference } from "@/lib/clipstitchr/types/Ava
 import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpeedTier";
 import type { GeneratedAvatarPhoto } from "@/lib/clipstitchr/types/GeneratedAvatarPhoto";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
+import type { AvatarWardrobeStyle } from "@/lib/clipstitchr/types/AvatarWardrobeStyle";
 import { createBlobFromDataUrl } from "@/lib/clipstitchr/utils/createBlobFromDataUrl";
 
 type GenerateAvatarPhotosOptions = {
@@ -19,6 +20,7 @@ type GenerateAvatarPhotosOptions = {
   lighting: AvatarLightingOption;
   location: string;
   style: AvatarStyleOption;
+  wardrobeStyle?: AvatarWardrobeStyle;
 };
 
 type GenerateAvatarPhotosResponse = {
@@ -38,6 +40,7 @@ export async function generateAvatarPhotos({
   lighting,
   location,
   style,
+  wardrobeStyle = "any",
 }: GenerateAvatarPhotosOptions) {
   const formData = new FormData();
 
@@ -57,6 +60,7 @@ export async function generateAvatarPhotos({
   formData.set("lighting", lighting);
   formData.set("location", location);
   formData.set("style", style);
+  formData.set("wardrobeStyle", wardrobeStyle);
 
   const response = await fetch("/api/avatars/photos/generate", {
     method: "POST",

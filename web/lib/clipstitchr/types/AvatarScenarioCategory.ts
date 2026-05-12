@@ -1,0 +1,17 @@
+export type AvatarScenarioCategory =
+  | "arts"
+  | "beauty"
+  | "diy"
+  | "event"
+  | "fitness"
+  | "food"
+  | "home"
+  | "music"
+  | "outdoor"
+  | "shopping"
+  | "sports"
+  | "transit"
+  | "travel"
+  | "water"
+  | "winter"
+  | "work";
