@@ -1,1 +1,1 @@
-export type SwiprBackgroundSource = "ai" | "upload";
+export type SwiprBackgroundSource = "ai" | "seed" | "upload";
