@@ -4,14 +4,16 @@ import type { CliprHookTemplate } from "@/lib/clipstitchr/types/CliprHookTemplat
 
 const candidates: CliprHookTemplate[] = [
   {
+    active: true,
+    allowedPurposes: ["clipr", "stitchr", "swipr"],
+    bestFor: [],
+    emotionalTrigger: "curiosity",
     id: "MG-001",
+    requiredVariables: ["topic"],
+    riskLevel: "safe",
+    source: "clipstitchr",
     styleKey: "mystery_gap",
     template: "The thing nobody tells you about {{topic}}",
-    requiredVariables: ["topic"],
-    emotionalTrigger: "curiosity",
-    bestFor: [],
-    riskLevel: "safe",
-    active: true,
   },
 ];
 

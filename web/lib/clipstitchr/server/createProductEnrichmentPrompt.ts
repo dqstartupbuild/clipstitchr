@@ -4,6 +4,10 @@ import { cliprHookTemplates } from "@/lib/clipstitchr/resources/clipr/cliprHookT
 const MIN_FILLERS_PER_KEY = 6;
 const MAX_FILLERS_PER_KEY = 16;
 
+const productEnrichmentHookTemplates = cliprHookTemplates.filter(
+  (template) => template.source === "clipstitchr",
+);
+
 function getHookStylePromptText() {
   return cliprHookStyles
     .map(
@@ -14,7 +18,7 @@ function getHookStylePromptText() {
 }
 
 function getHookTemplatePromptText() {
-  return cliprHookTemplates
+  return productEnrichmentHookTemplates
     .map((template) => `${template.id} (${template.styleKey}): ${template.template}`)
     .join("\n");
 }
@@ -22,7 +26,9 @@ function getHookTemplatePromptText() {
 function getPlaceholderKeyPromptText() {
   return Array.from(
     new Set(
-      cliprHookTemplates.flatMap((template) => template.requiredVariables),
+      productEnrichmentHookTemplates.flatMap(
+        (template) => template.requiredVariables,
+      ),
     ),
   )
     .sort()

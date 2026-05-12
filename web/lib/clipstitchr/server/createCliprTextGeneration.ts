@@ -30,7 +30,7 @@ export async function createCliprTextGeneration({
 }) {
   const providerModel = getCliprHookModelId();
   const candidates = selectCliprHookCandidates(
-    getCliprEligibleHookTemplates(product),
+    getCliprEligibleHookTemplates(product, purpose),
   );
   const prediction = await replicate.predictions.create({
     model: providerModel,

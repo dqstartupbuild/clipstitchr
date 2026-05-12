@@ -11,7 +11,12 @@ describe("createProductEnrichmentPrompt", () => {
       audienceDetails: "Founders and solo marketers.",
     });
     const lastStyle = cliprHookStyles.at(-1);
-    const lastTemplate = cliprHookTemplates.at(-1);
+    const starterTemplate = cliprHookTemplates.find(
+      (template) => template.source === "clipstitchr",
+    );
+    const appTemplate = cliprHookTemplates.find(
+      (template) => template.source === "app_hook_library",
+    );
 
     expect(prompt).toContain("Write in plain speech");
     expect(prompt).toContain("Choose every relevant Clipr hook style");
@@ -19,6 +24,7 @@ describe("createProductEnrichmentPrompt", () => {
     expect(prompt).toContain("audience,");
     expect(prompt).toContain("wrong_goal");
     expect(prompt).toContain(lastStyle?.styleKey);
-    expect(prompt).toContain(lastTemplate?.id);
+    expect(prompt).toContain(starterTemplate?.id);
+    expect(prompt).not.toContain(appTemplate?.id);
   });
 });

@@ -51,7 +51,9 @@ social proof first, product proof immediately after.
 7. Tap or swipe through each exact UGC-then-demo preview.
 8. Optionally configure one shared text overlay for every output.
 9. Optionally generate the shared overlay from the hidden Clipr hook-template
-   engine using saved product context. The generated overlay stays editable.
+   engine using saved product context. Stitchr auto-text can draw from
+   product/ad hook-library templates, but source names and template IDs stay
+   hidden. The generated overlay stays editable.
 10. Create one stitched output per selected UGC clip.
 11. Save and download the finished ad variants.
 
