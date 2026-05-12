@@ -171,6 +171,11 @@ output as sensitive. Clipr keeps the ElevenLabs audio reference in the default
 pipeline, but the script and scene prompts are constrained to brand-safe,
 ordinary settings and avoid face-copy, photo-animation, protected-identity,
 medical, political, sexual, violent, age-sensitive, or shocking content.
+If the default Seedance prediction fails with `E005` after using
+`reference_audios`, Clipr records the failed job and creates one fallback
+Seedance prediction with the same script, same avatar reference image, and
+Seedance-native audio instead of the ElevenLabs audio reference. The final saved
+clip path remains unchanged.
 
 The ElevenLabs request uses:
 
