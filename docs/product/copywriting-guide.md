@@ -65,7 +65,7 @@ Avoid headline directions:
 
 Default short description:
 
-ClipStitchr turns UGC clips and product demos into finished 9:16 ad videos. It
+ClipStitchr turns UGC and product demos into finished 9:16 ad videos. It
 keeps your clips organized, handles UGC-then-demo stitching in batches, and
 helps you make more ad variants without traditional editing work.
 
@@ -77,7 +77,7 @@ Write feature copy around user outcomes:
 | --- | --- |
 | Upload normalization | Every clip becomes ready for vertical ad output. |
 | Content Library | Keep UGC, demos, swaps, and stitches in one searchable place. |
-| Stitchr | Pair up to 20 UGC clips with one product demo and create finished ads. |
+| Stitchr | Pair up to 20 UGC with one product demo and create finished ads. |
 | Swipr | Create carousel posts, save the draft, and come back to revise or download it later. |
 | Clipr | Generate reusable engagement Clips when the library needs fresh source footage. |
 | Trim ranges | Cut dead space without damaging the original clip. |
@@ -143,9 +143,8 @@ more finished creative so they can test faster.
 ## UI Copy Rules
 
 - Say "finished ad" or "ad variant" when the output is the value.
-- Say "UGC clip" and "product demo" instead of generic "asset" when space
-  allows.
-- For batch Stitchr flows, say "selected UGC clips" and "selected demo" so the
+- Say "UGC" and "product demo" instead of generic "asset" when space allows.
+- For batch Stitchr flows, say "selected UGC" and "selected demo" so the
   one-demo-to-many-UGC relationship stays clear.
 - For Swipr flows, say "carousel posts," "slides," "looks," and "ready to
   publish" before naming implementation details.

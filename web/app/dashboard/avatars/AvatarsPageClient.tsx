@@ -158,7 +158,7 @@ export function AvatarsPageClient() {
         <LibraryPageHeader
           eyebrow="Source photos"
           title="Avatars"
-          description="Save person photos to use in Swapr when you need more UGC clips."
+          description="Save avatar photos to use in Swapr when you need more UGC."
         />
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">

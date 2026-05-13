@@ -13,7 +13,7 @@ export function LandingPreview() {
             Stop hunting through folders every time you need a post.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Keep UGC clips, product demos, avatar photos, and finished ads in one place. Search, trim, preview, and reuse them instead of rebuilding every ad from scratch.
+            Keep UGC, product demos, avatar photos, and finished ads in one place. Search, trim, preview, and reuse them instead of rebuilding every ad from scratch.
           </p>
         </div>
         <Panel className="overflow-hidden p-2">

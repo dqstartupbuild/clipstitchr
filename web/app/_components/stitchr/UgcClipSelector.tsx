@@ -39,7 +39,7 @@ export function UgcClipSelector({
             A
           </span>
           <div>
-            <p className="text-sm font-semibold text-accent-dark">UGC clips</p>
+            <p className="text-sm font-semibold text-accent-dark">UGC</p>
             <h2 className="mt-0.5 text-base font-bold text-text-primary">
               Pick hooks
             </h2>
@@ -94,7 +94,7 @@ export function UgcClipSelector({
         </>
       ) : (
         <p className="mt-3 rounded-lg border border-dashed border-border bg-slate-50 p-4 text-sm font-semibold text-text-tertiary">
-          No UGC clips match this search.
+          No UGC matches this search.
         </p>
       )}
     </section>

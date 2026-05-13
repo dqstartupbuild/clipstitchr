@@ -40,7 +40,7 @@ export default function TermsPage() {
           <section>
             <h2>Description of Service</h2>
             <p>
-              {site.name} provides an MVP for uploading UGC clips
+              {site.name} provides an MVP for uploading UGC
               and product demo videos, normalizing them to TikTok-ready 9:16,
               previewing UGC-then-demo sequences, and creating downloadable
               MP4 files. Media processing runs in the browser, while saved
@@ -79,7 +79,7 @@ export default function TermsPage() {
             <p>
               You are responsible for the videos you upload, process, stitch,
               and download. You must have the rights and permissions needed to
-              use any UGC clips, product demos, audio, trademarks, or other
+              use any UGC, product demos, audio, trademarks, or other
               content included in those files.
             </p>
           </section>

@@ -1,7 +1,8 @@
+"use client";
+
 import {
-  Show,
-  SignInButton,
-  SignUpButton,
+  useClerk,
+  useUser,
   UserButton,
 } from "@clerk/nextjs";
 import { ArrowRight } from "lucide-react";
@@ -15,6 +16,8 @@ type HeaderAuthActionsProps = {
 export function HeaderAuthActions({
   variant = "desktop",
 }: HeaderAuthActionsProps) {
+  const clerk = useClerk();
+  const { isLoaded, isSignedIn } = useUser();
   const isMobile = variant === "mobile";
   const secondaryButtonClassName = isMobile
     ? "inline-flex h-9 items-center rounded-lg px-2 text-xs font-semibold text-text-secondary"
@@ -23,27 +26,51 @@ export function HeaderAuthActions({
     ? "inline-flex h-9 items-center rounded-lg bg-accent px-3 text-xs font-semibold text-white"
     : "inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-dark";
 
+  if (!isLoaded) {
+    return (
+      <div
+        aria-hidden
+        className={isMobile ? "h-9 w-28" : "h-10 w-40"}
+      />
+    );
+  }
+
+  const handleSignIn = () => {
+    void clerk.redirectToSignIn();
+  };
+
+  const handleSignUp = () => {
+    void clerk.redirectToSignUp();
+  };
+
   return (
     <div className="inline-flex items-center gap-2">
-      <Show when="signed-out">
-        <SignInButton>
-          <button type="button" className={secondaryButtonClassName}>
+      {isSignedIn ? (
+        <>
+          <Link href={site.ctaUrl} className={primaryButtonClassName}>
+            {isMobile ? "Dashboard" : site.ctaLabel}
+            {!isMobile && <ArrowRight aria-hidden className="h-4 w-4" />}
+          </Link>
+          <UserButton />
+        </>
+      ) : (
+        <>
+          <button
+            type="button"
+            className={secondaryButtonClassName}
+            onClick={handleSignIn}
+          >
             Sign in
           </button>
-        </SignInButton>
-        <SignUpButton>
-          <button type="button" className={primaryButtonClassName}>
+          <button
+            type="button"
+            className={primaryButtonClassName}
+            onClick={handleSignUp}
+          >
             Sign up
           </button>
-        </SignUpButton>
-      </Show>
-      <Show when="signed-in">
-        <Link href={site.ctaUrl} className={primaryButtonClassName}>
-          {isMobile ? "Dashboard" : site.ctaLabel}
-          {!isMobile && <ArrowRight aria-hidden className="h-4 w-4" />}
-        </Link>
-        <UserButton />
-      </Show>
+        </>
+      )}
     </div>
   );
 }

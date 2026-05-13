@@ -6,7 +6,7 @@ const studios = [
     eyebrow: "Stitchr",
     title: "Turn real clips and demos into ads.",
     description:
-      "Choose one UGC clip and one product demo. Trim the dead space, preview the ad, add simple text, and create a finished vertical video.",
+      "Choose UGC and one product demo. Trim the dead space, preview the ad, add simple text, and create a finished vertical video.",
     caption: "We call these 'Stitches'.",
     icon: Scissors,
   },
@@ -20,9 +20,9 @@ const studios = [
   },
   {
     eyebrow: "Swapr",
-    title: "Create new UGC clips when you need more.",
+    title: "Create new UGC when you need more.",
     description:
-      "Pick or upload an avatar photo and a UGC clip to make a new UGC clip, then use it in Stitchr like any other UGC clip.",
+      "Pick or upload an avatar photo and saved UGC to make new UGC, then use it in Stitchr like the rest of your library.",
     caption: "We call these 'Swaps'.",
     icon: Shuffle,
   },

@@ -40,7 +40,7 @@ export function RecentStitchesSection({
       ) : (
         <DashboardEmptyState
           title="No stitches yet"
-          description="Create your first stitch after you have at least one UGC clip and one product demo."
+          description="Create your first stitch after you have at least one UGC and one product demo."
         />
       )}
     </section>

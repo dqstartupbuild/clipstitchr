@@ -10,7 +10,7 @@ export function StitchrCallout() {
             Let&apos;s make another ad!
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Pick a UGC clip, pair it with a demo, and create a finished
+            Pick UGC, pair it with a demo, and create a finished
             ad.
           </p>
         </div>

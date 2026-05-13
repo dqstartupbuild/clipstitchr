@@ -60,7 +60,7 @@ export function SwaprControlsPanel({
         <div className="min-w-0">
           <p className="text-sm font-semibold text-accent-dark">Setup</p>
           <h2 className="mt-0.5 text-base font-bold text-text-primary">
-            Create new UGC clip
+            Create new UGC
           </h2>
           <p className="mt-1 text-sm leading-6 text-text-secondary">
             The avatar supplies the face. The selected video supplies the motion.

@@ -44,14 +44,14 @@ const videoLibraryContent: Record<
   }
 > = {
   ugc: {
-    title: "UGC Clips",
-    emptyTitle: "No UGC clips yet",
+    title: "UGC",
+    emptyTitle: "No UGC yet",
     emptyDescription:
-      "Upload hooks, reactions, b-roll, or creator clips to pair with demos.",
+      "Upload hooks, reactions, b-roll, or creator footage to pair with demos.",
     sectionId: "ugc-clips",
-    searchEmptyTitle: "No matching UGC clips",
+    searchEmptyTitle: "No matching UGC",
     searchEmptyDescription:
-      "No saved UGC clips match that title or tag.",
+      "No saved UGC matches that title or tag.",
   },
   clips: {
     title: "Clips",
@@ -67,7 +67,7 @@ const videoLibraryContent: Record<
     title: "Demo Videos",
     emptyTitle: "No demo videos yet",
     emptyDescription:
-      "Upload product walkthroughs or screen recordings to use after UGC clips.",
+      "Upload product walkthroughs or screen recordings to use after UGC.",
     sectionId: "demo-videos",
     searchEmptyTitle: "No matching demo videos",
     searchEmptyDescription:
@@ -77,7 +77,7 @@ const videoLibraryContent: Record<
     title: "Swaps",
     emptyTitle: "No swaps yet",
     emptyDescription:
-      "Create new UGC clips when your UGC library needs more material.",
+      "Create new UGC when your library needs more material.",
     sectionId: "swaps",
     searchEmptyTitle: "No matching swaps",
     searchEmptyDescription:
@@ -202,7 +202,7 @@ export function UploadsPageClient() {
         <LibraryPageHeader
           eyebrow="Library"
           title="Content Library"
-          description="Keep UGC clips, product demos, Clips, swaps, Swipes, and stitches ready for the next ad."
+          description="Keep UGC, product demos, Clips, swaps, Swipes, and stitches ready for the next ad."
         />
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">

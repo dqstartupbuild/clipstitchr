@@ -4,7 +4,7 @@ ClipStitchr is for people who know they need to publish more short-form ad
 content, but hate the operational grind of making it.
 
 The core product is not an AI playground. The core product is Stitchr: a simple
-way to turn a messy pile of UGC clips, b-roll, reaction clips, and product demos
+way to turn a messy pile of UGC, b-roll, reaction clips, and product demos
 into finished 9:16 ads without opening a timeline editor.
 
 ## The Customer Pain
@@ -33,10 +33,10 @@ business gets less distribution than it should.
 
 ClipStitchr turns the messy middle of ad creation into a repeatable workflow:
 
-1. Upload UGC clips and product demos.
+1. Upload UGC and product demos.
 2. Normalize everything to vertical 9:16 once.
 3. Keep the clips organized in a reusable content library.
-4. Select up to 20 UGC clips and one demo.
+4. Select up to 20 UGC and one demo.
 5. Tap or swipe through each UGC-then-demo preview.
 6. Click once to create the finished ad variants.
 7. Reuse the same library to make more variants.
@@ -86,7 +86,7 @@ Secondary users:
 
 Primary feature:
 
-- Stitchr: combine up to 20 UGC clips with one product demo into finished 9:16 ad videos.
+- Stitchr: combine up to 20 UGC with one product demo into finished 9:16 ad videos.
 
 Core supporting features:
 
@@ -129,7 +129,7 @@ You already have clips. ClipStitchr turns them into ads.
 
 ClipStitchr helps marketers who collect UGC, b-roll, reaction clips, and product
 demos but struggle to turn those assets into finished ads. Upload your clips,
-organize them once, select up to 20 UGC clips with one demo, and create vertical
+organize them once, select up to 20 UGC with one demo, and create vertical
 UGC-then-demo videos without opening a traditional editor.
 
 Clipr and Swipr extend the same library into reusable engagement clips and saved

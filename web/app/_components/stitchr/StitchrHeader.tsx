@@ -7,7 +7,7 @@ export function StitchrHeader() {
     <DashboardPageHeader
       eyebrow="Studio"
       title="Create an ad variant"
-      description="Pick a UGC clip and a product demo. Stitchr puts them together in that order."
+      description="Pick UGC and a product demo. Stitchr puts them together in that order."
     />
   );
 }
