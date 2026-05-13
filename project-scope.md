@@ -175,10 +175,18 @@ main product promise.
 | 3 | Swapr generates UGC-style video clips that can be saved back into the UGC library | ✅ | ✅ |
 | 4 | AI features use rate limits, credit budgeting, and speed profiles because they create external provider cost | ✅ | ✅ |
 | 5 | Clipr generates non-promotional short engagement Clips from saved product and avatar context | ✅ | ✅ |
+| 6 | Clipr can optionally generate a separate 60 second background music asset for export-time mixing | ✅ | ✅ |
 
 Clipr uses hidden non-promotional hook templates only. Broader internal hook
 assets can support Swipr and Stitchr auto-text, but direct product/ad hook
 patterns must not leak into Clipr outputs.
+
+Clipr music is optional and off by default. When enabled, the app generates a
+60 second instrumental track, stores it in R2 separately from the clean Clipr
+video, and keeps editable metadata for enabled/disabled state and volume.
+Media Bunny mixes the music into a fresh downloadable file only during
+export/download, so users can later remove music, regenerate it, or change
+volume without altering the saved video.
 
 ### 4.6 Carousel Generation
 
@@ -298,6 +306,9 @@ selected slides.
 - Normalized clips must use a TikTok-ready 9:16 canvas. The MVP target is `1080x1920` when browser encoding support allows it.
 - Do not stretch source footage. For non-9:16 uploads, preserve the source aspect ratio inside the 9:16 output; crop/fill presets can be added later.
 - Preview, Stitch, and Download must all use the same sequence: each normalized UGC clip starts first, and the selected normalized Demo clip starts immediately after that UGC clip ends.
+- Clipr music export must not mutate the saved video. Export/download reads the
+  clean saved Clipr video and optional R2 music object, then creates a temporary
+  mixed MP4 in the browser with Media Bunny.
 - Trimming is non-destructive metadata. Uploads store a default trim range. When clips are selected in Stitchr, the default trim range for each selected UGC and the selected Demo is copied into that Stitchr session and can be changed independently.
 - Preview, Stitch, and Download must use the copied Stitchr trim ranges when present.
 - The preview should let the user tap or swipe through each selected UGC + Demo sequence before export.

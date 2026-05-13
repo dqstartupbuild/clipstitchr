@@ -79,7 +79,8 @@ Replace these operations:
 - `getVideoClip(id)` -> Convex `videoClips.get` query or cached list record, then R2 video and poster hydration.
 - `saveVideoClip(clip)` -> upload video/poster to R2, then Convex `videoClips.save` mutation.
 - `saveVideoClipMetadata(clip)` -> Convex `videoClips.updateMetadata` mutation.
-- `deleteVideoClip(id)` -> Convex lookup for object keys, R2 delete, then Convex `videoClips.remove` mutation.
+- `deleteVideoClip(id)` -> Convex lookup for object keys, including optional
+  Clipr music objects, R2 delete, then Convex `videoClips.remove` mutation.
 - `getPhotoAssets()` -> Convex `photoAssets.list` query, then R2 thumbnail hydration.
 - `getPhotoAsset(id)` -> Convex lookup, then R2 photo/original/thumbnail hydration.
 - `savePhotoAsset(photo)` -> upload photo/original/thumbnail to R2, then Convex `photoAssets.save` mutation.

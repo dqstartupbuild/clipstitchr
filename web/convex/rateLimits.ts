@@ -321,6 +321,37 @@ export const consumeCliprAvatarStillGeneration = mutation({
   },
 });
 
+export const consumeCliprMusicGeneration = mutation({
+  args: {
+    generatedSeconds: v.number(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { generatedSeconds, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const musicSeconds = getPositiveCount(
+      generatedSeconds,
+      "Generated music seconds",
+    );
+
+    await rateLimiter.limit(ctx, "cliprMusicGenerate", {
+      key: ownerId,
+      count: musicSeconds,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprMusicGenerateDaily", {
+      key: ownerId,
+      count: musicSeconds,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      count: musicSeconds,
+      throws: true,
+    });
+  },
+});
+
 export const consumeCliprJobPoll = mutation({
   args: {
     secret: v.string(),

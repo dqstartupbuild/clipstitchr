@@ -1,0 +1,39 @@
+import { Music2 } from "lucide-react";
+
+type CliprMusicControlProps = {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+};
+
+export function CliprMusicControl({
+  checked,
+  onChange,
+}: CliprMusicControlProps) {
+  return (
+    <section className="lg:col-span-2">
+      <div className="mb-3 flex items-center gap-3">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-muted text-accent">
+          <Music2 aria-hidden className="h-5 w-5" />
+        </span>
+        <div>
+          <p className="text-sm font-semibold text-accent-dark">Music</p>
+          <h2 className="mt-0.5 text-base font-bold text-text-primary">
+            Export track
+          </h2>
+        </div>
+      </div>
+      <label className="flex items-start gap-3 rounded-lg border border-border bg-surface-elevated p-3">
+        <input
+          type="checkbox"
+          checked={checked}
+          className="mt-1 h-4 w-4 accent-accent"
+          onChange={(event) => onChange(event.currentTarget.checked)}
+        />
+        <span className="text-sm leading-6 text-text-secondary">
+          Generate background music for this Clip. Music stays editable and is
+          mixed only when you export.
+        </span>
+      </label>
+    </section>
+  );
+}

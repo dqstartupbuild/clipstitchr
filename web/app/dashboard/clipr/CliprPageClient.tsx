@@ -8,6 +8,7 @@ import { CliprAvatarPanel } from "@/app/_components/clipr/CliprAvatarPanel";
 import { CliprDurationControl } from "@/app/_components/clipr/CliprDurationControl";
 import { CliprGenerationProgress } from "@/app/_components/clipr/CliprGenerationProgress";
 import { CliprJobResult } from "@/app/_components/clipr/CliprJobResult";
+import { CliprMusicControl } from "@/app/_components/clipr/CliprMusicControl";
 import { CliprProductPanel } from "@/app/_components/clipr/CliprProductPanel";
 import { CliprVoiceSelect } from "@/app/_components/clipr/CliprVoiceSelect";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
@@ -39,6 +40,7 @@ export function CliprPageClient() {
     defaultCliprDurationSeconds,
   );
   const [voiceId, setVoiceId] = useState("");
+  const [addMusic, setAddMusic] = useState(false);
   const [optimisticDefaultVoiceId, setOptimisticDefaultVoiceId] = useState("");
   const [isSavingDefaultVoice, setIsSavingDefaultVoice] = useState(false);
   const [preferenceError, setPreferenceError] = useState<string | null>(null);
@@ -123,6 +125,7 @@ export function CliprPageClient() {
                 onSaveDefault={() => void saveSelectedVoiceAsDefault()}
                 onVoiceChange={setVoiceId}
               />
+              <CliprMusicControl checked={addMusic} onChange={setAddMusic} />
             </div>
             <div className="mt-5 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm leading-6 text-text-secondary">
@@ -135,6 +138,7 @@ export function CliprPageClient() {
                 disabled={!canGenerate}
                 onClick={() =>
                   void generator.generate({
+                    addMusic,
                     avatarId: activeAvatarId,
                     durationSeconds,
                     productId: activeProductId,

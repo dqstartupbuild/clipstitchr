@@ -55,11 +55,28 @@ export function VideoClipPreviewCard({
   onSelect,
   trimEditor,
 }: VideoClipPreviewCardProps) {
-  const [loadedClip, setLoadedClip] = useState<VideoClip | null>(null);
+  const [loadedClipState, setLoadedClipState] = useState<{
+    cacheKey: string;
+    clip: VideoClip;
+  } | null>(null);
   const [isClipLoading, setIsClipLoading] = useState(false);
   const [detailsMode, setDetailsMode] = useState<"details" | "trim" | null>(
     null,
   );
+  const musicObjectKey = clip.cliprMetadata?.music?.audioObject.key;
+  const musicEnabled = clip.cliprMetadata?.music?.enabled;
+  const musicUpdatedAt = clip.cliprMetadata?.music?.updatedAt;
+  const musicVolume = clip.cliprMetadata?.music?.volume;
+  const clipCacheKey = [
+    clip.id,
+    clip.updatedAt,
+    musicEnabled,
+    musicObjectKey,
+    musicUpdatedAt,
+    musicVolume,
+  ].join(":");
+  const loadedClip =
+    loadedClipState?.cacheKey === clipCacheKey ? loadedClipState.clip : null;
   const videoUrl = useObjectUrl(loadedClip?.blob);
   const posterUrl = useObjectUrl(clip.posterBlob);
   const visibleDuration =
@@ -75,7 +92,9 @@ export function VideoClipPreviewCard({
     try {
       const nextClip = await onLoadClip(clip.id);
 
-      setLoadedClip(nextClip);
+      setLoadedClipState(
+        nextClip ? { cacheKey: clipCacheKey, clip: nextClip } : null,
+      );
       return nextClip;
     } finally {
       setIsClipLoading(false);

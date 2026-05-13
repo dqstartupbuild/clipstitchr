@@ -18,6 +18,7 @@ import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getCliprFinalClipName } from "@/lib/clipstitchr/utils/getCliprFinalClipName";
 
 type GenerateCliprOptions = {
+  addMusic: boolean;
   avatarId: string;
   durationSeconds: CliprDurationSeconds;
   productId: string;
@@ -46,7 +47,9 @@ function getActiveJobProgress(job: CliprClientJob | null | undefined) {
       };
     case "avatar-video":
       return {
-        message: "Generating full avatar video",
+        message: job.music
+          ? "Generating full avatar video and music"
+          : "Generating full avatar video",
         progress: Math.max(0.45, Math.min(job.progress, 0.62)),
       };
     case "browser-save":

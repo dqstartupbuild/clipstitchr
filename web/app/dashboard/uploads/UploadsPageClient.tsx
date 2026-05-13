@@ -260,6 +260,8 @@ export function UploadsPageClient() {
               onLoadClip={library.loadClip}
               isCreatingAvatarFromClip={avatarCreator.isGenerating}
               onDelete={library.removeClip}
+              onGenerateCliprMusic={library.generateCliprMusic}
+              onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
               onCreateAvatarFromClip={handleCreateAvatarFromClip}
@@ -281,6 +283,8 @@ export function UploadsPageClient() {
               }
               onLoadClip={library.loadClip}
               onDelete={library.removeClip}
+              onGenerateCliprMusic={library.generateCliprMusic}
+              onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
             />
@@ -301,6 +305,8 @@ export function UploadsPageClient() {
               }
               onLoadClip={library.loadClip}
               onDelete={library.removeClip}
+              onGenerateCliprMusic={library.generateCliprMusic}
+              onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
             />
@@ -321,6 +327,8 @@ export function UploadsPageClient() {
               }
               onLoadClip={library.loadClip}
               onDelete={library.removeClip}
+              onGenerateCliprMusic={library.generateCliprMusic}
+              onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
             />
@@ -374,6 +382,8 @@ export function UploadsPageClient() {
               selectedTab === "ugc" && avatarCreator.isGenerating
             }
             onDelete={library.removeClip}
+            onGenerateCliprMusic={library.generateCliprMusic}
+            onUpdateCliprMusic={library.updateCliprMusic}
             onUpdateMetadata={library.updateClipMetadata}
             onUpdateTrim={library.updateClipTrimRange}
             onCreateAvatarFromClip={

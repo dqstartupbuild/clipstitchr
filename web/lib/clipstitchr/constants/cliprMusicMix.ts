@@ -1,0 +1,5 @@
+export const CLIPR_MUSIC_AD_GAIN = 1;
+
+export const CLIPR_MUSIC_STANDALONE_GAIN = 0.35;
+
+export const CLIPR_MUSIC_UNDERLAY_GAIN = 0.18;

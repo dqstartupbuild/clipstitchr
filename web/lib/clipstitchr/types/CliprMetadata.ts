@@ -1,4 +1,5 @@
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
+import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 
 export type CliprMetadata = {
   jobId: string;
@@ -15,6 +16,7 @@ export type CliprMetadata = {
   script: string;
   sceneCount: number;
   finalDurationSeconds: number;
+  music?: CliprMusicMetadata;
   providerModels: string[];
   createdAt: string;
 };

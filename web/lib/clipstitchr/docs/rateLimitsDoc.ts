@@ -9,7 +9,7 @@ export const rateLimitsDoc = {
     "See how often you can run common actions before ClipStitchr asks you to wait.",
   category: "limits",
   order: 100,
-  updated: "2026-05-12",
+  updated: "2026-05-13",
   sections: [
     {
       title: "Why limits exist",
@@ -28,6 +28,7 @@ export const rateLimitsDoc = {
       title: "Local browser work",
       body: [
         "Some work happens in your browser and does not need a separate limit. For example, Swipr can render your saved carousel into image slides locally.",
+        "Clipr music export also renders locally when you download a Clip with music enabled. Generating or regenerating the music still uses the limits below.",
         "Saving, uploading, downloading, or generating content still uses the limits below because those actions use shared app resources.",
       ],
     },
@@ -120,6 +121,11 @@ export const rateLimitsDoc = {
         {
           action: "Clipr avatar video and voice",
           limit: "600 estimated avatar seconds per hour",
+        },
+        {
+          action: "Clipr music",
+          limit: "600 generated music seconds per hour and 1,200 per day",
+          note: "Each generated music track is 60 seconds.",
         },
       ],
     },

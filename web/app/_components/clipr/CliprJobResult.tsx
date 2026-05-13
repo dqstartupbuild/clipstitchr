@@ -27,6 +27,11 @@ export function CliprJobResult({ finalClipId, job }: CliprJobResultProps) {
           {job.script}
         </p>
       ) : null}
+      {job.music ? (
+        <p className="mt-3 rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text-secondary">
+          Music generated for export.
+        </p>
+      ) : null}
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {job.scenePlan.map((scene) => (
           <div
