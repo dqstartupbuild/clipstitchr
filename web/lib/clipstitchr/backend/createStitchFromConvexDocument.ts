@@ -31,6 +31,7 @@ export function createStitchFromConvexDocument({
     width: stitch.width,
     height: stitch.height,
     duration: stitch.duration,
+    music: stitch.music,
     textOverlay: stitch.textOverlay,
     createdAt: stitch.createdAt,
   };

@@ -3,6 +3,7 @@
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
+import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 
 type StitchesSectionProps = {
   stitches: Stitch[];
@@ -11,6 +12,11 @@ type StitchesSectionProps = {
   id?: string;
   title?: string;
   onDelete: (id: string) => void | Promise<void>;
+  onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
+  onUpdateMusic: (
+    stitch: Stitch,
+    music: StitchMusicMetadata | null,
+  ) => void | Promise<void>;
 };
 
 export function StitchesSection({
@@ -20,6 +26,8 @@ export function StitchesSection({
   id = "stitches",
   title = "Stitches",
   onDelete,
+  onGenerateMusic,
+  onUpdateMusic,
 }: StitchesSectionProps) {
   return (
     <section id={id}>
@@ -36,6 +44,8 @@ export function StitchesSection({
               key={stitch.id}
               stitch={stitch}
               onDelete={onDelete}
+              onGenerateMusic={onGenerateMusic}
+              onUpdateMusic={onUpdateMusic}
             />
           ))}
         </div>

@@ -9,6 +9,7 @@ import { cliprMetadataValidator } from "./validators/cliprMetadata";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { clipTypeValidator } from "./validators/clipType";
+import { longrClipSegmentValidator } from "./validators/longrClipSegment";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
 import { replicatePredictionStatusValidator } from "./validators/replicatePredictionStatus";
@@ -16,6 +17,7 @@ import { swiprBackgroundSourceValidator } from "./validators/swiprBackgroundSour
 import { swiprProductSourceTypeValidator } from "./validators/swiprProductSourceType";
 import { swiprSlideValidator } from "./validators/swiprSlide";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
+import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
 import { textOverlayValidator } from "./validators/textOverlay";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
@@ -135,7 +137,25 @@ export default defineSchema({
     width: v.number(),
     height: v.number(),
     duration: v.number(),
+    music: v.optional(stitchMusicMetadataValidator),
     textOverlay: v.optional(textOverlayValidator),
+    createdAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"]),
+  longrVideos: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    name: v.string(),
+    clipSegments: v.array(longrClipSegmentValidator),
+    longrObject: r2ObjectValidator,
+    posterObject: v.optional(r2ObjectValidator),
+    posterVersion: v.optional(v.number()),
+    mimeType: v.string(),
+    size: v.number(),
+    width: v.number(),
+    height: v.number(),
+    duration: v.number(),
     createdAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])

@@ -3,6 +3,7 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
 import { r2ObjectValidator } from "./validators/r2Object";
+import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
 import { textOverlayValidator } from "./validators/textOverlay";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
@@ -23,6 +24,7 @@ const saveArgs = {
   width: v.number(),
   height: v.number(),
   duration: v.number(),
+  music: v.optional(stitchMusicMetadataValidator),
   textOverlay: v.optional(textOverlayValidator),
   createdAt: v.string(),
 };
@@ -110,6 +112,34 @@ export const updatePoster = mutation({
     await ctx.db.patch(stitch._id, {
       posterObject,
       posterVersion,
+    });
+  },
+});
+
+export const updateMusic = mutation({
+  args: {
+    id: v.string(),
+    music: v.union(stitchMusicMetadataValidator, v.null()),
+  },
+  handler: async (ctx, { id, music }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    await ctx.db.patch(stitch._id, {
+      music: music ?? undefined,
     });
   },
 });

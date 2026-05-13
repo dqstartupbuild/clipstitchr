@@ -13,6 +13,7 @@ import type * as auth_getAuthenticatedOwnerId from "../auth/getAuthenticatedOwne
 import type * as avatars from "../avatars.js";
 import type * as cliprJobs from "../cliprJobs.js";
 import type * as cliprPreferences from "../cliprPreferences.js";
+import type * as longrVideos from "../longrVideos.js";
 import type * as photoAssets from "../photoAssets.js";
 import type * as products from "../products.js";
 import type * as rateLimiter from "../rateLimiter.js";
@@ -30,9 +31,11 @@ import type * as validators_cliprJobStatus from "../validators/cliprJobStatus.js
 import type * as validators_cliprMetadata from "../validators/cliprMetadata.js";
 import type * as validators_cliprMusicMetadata from "../validators/cliprMusicMetadata.js";
 import type * as validators_cliprScenePlan from "../validators/cliprScenePlan.js";
+import type * as validators_longrClipSegment from "../validators/longrClipSegment.js";
 import type * as validators_r2Object from "../validators/r2Object.js";
 import type * as validators_replicateJobPurpose from "../validators/replicateJobPurpose.js";
 import type * as validators_replicatePredictionStatus from "../validators/replicatePredictionStatus.js";
+import type * as validators_stitchMusicMetadata from "../validators/stitchMusicMetadata.js";
 import type * as validators_swaprMetadata from "../validators/swaprMetadata.js";
 import type * as validators_swiprBackgroundSource from "../validators/swiprBackgroundSource.js";
 import type * as validators_swiprProductSourceType from "../validators/swiprProductSourceType.js";
@@ -53,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   avatars: typeof avatars;
   cliprJobs: typeof cliprJobs;
   cliprPreferences: typeof cliprPreferences;
+  longrVideos: typeof longrVideos;
   photoAssets: typeof photoAssets;
   products: typeof products;
   rateLimiter: typeof rateLimiter;
@@ -70,9 +74,11 @@ declare const fullApi: ApiFromModules<{
   "validators/cliprMetadata": typeof validators_cliprMetadata;
   "validators/cliprMusicMetadata": typeof validators_cliprMusicMetadata;
   "validators/cliprScenePlan": typeof validators_cliprScenePlan;
+  "validators/longrClipSegment": typeof validators_longrClipSegment;
   "validators/r2Object": typeof validators_r2Object;
   "validators/replicateJobPurpose": typeof validators_replicateJobPurpose;
   "validators/replicatePredictionStatus": typeof validators_replicatePredictionStatus;
+  "validators/stitchMusicMetadata": typeof validators_stitchMusicMetadata;
   "validators/swaprMetadata": typeof validators_swaprMetadata;
   "validators/swiprBackgroundSource": typeof validators_swiprBackgroundSource;
   "validators/swiprProductSourceType": typeof validators_swiprProductSourceType;

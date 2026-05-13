@@ -32,6 +32,7 @@ export function StitchrPageClient() {
   const library = useClipLibrary();
   const products = useProducts();
   const stitchrState = useStitchr({ onCreated: library.refresh });
+  const [addMusic, setAddMusic] = useState(false);
   const [textOverlay, setTextOverlay] = useState<TextOverlay | null>(null);
   const [selectedAutoTextProductId, setSelectedAutoTextProductId] = useState("");
   const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
@@ -286,6 +287,7 @@ export function StitchrPageClient() {
         selectedDemoClip,
         selectedDemoTrimRange,
         exportTextOverlay,
+        { addMusic },
       );
     }
   };
@@ -352,6 +354,7 @@ export function StitchrPageClient() {
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
             <div className="flex min-w-0 flex-col gap-5">
               <ClipPickerPanel
+                addMusic={addMusic}
                 ugcClips={ugcClips}
                 demoClips={demoClips}
                 selectedUgcIds={activeSelectedUgcIds}
@@ -365,6 +368,7 @@ export function StitchrPageClient() {
                 onUpdateDemoTrim={handleUpdateDemoTrim}
                 canStitch={canStitch}
                 isStitching={isStitching}
+                onAddMusicChange={setAddMusic}
                 onStitch={handleStitch}
               />
               <StitchrAutoTextPanel

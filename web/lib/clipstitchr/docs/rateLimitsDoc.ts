@@ -28,7 +28,8 @@ export const rateLimitsDoc = {
       title: "Local browser work",
       body: [
         "Some work happens in your browser and does not need a separate limit. For example, Swipr can render your saved carousel into image slides locally.",
-        "Clipr music export also renders locally when you download a Clip with music enabled. Generating or regenerating the music still uses the limits below.",
+        "Clipr and Stitchr music export also renders locally when you download a video with music enabled. Generating or regenerating the music still uses the limits below.",
+        "Longr rendering happens locally in your browser, but saving the finished Longr video still uses upload and library-save limits.",
         "Saving, uploading, downloading, or generating content still uses the limits below because those actions use shared app resources.",
       ],
     },
@@ -68,6 +69,11 @@ export const rateLimitsDoc = {
           action: "Stitchr UGC selection",
           limit: "20 UGC per batch",
           note: "Each selected UGC creates one finished stitch with the selected demo.",
+        },
+        {
+          action: "Longr selected duration",
+          limit: "5 minutes",
+          note: "Applies to the combined selected clips before building.",
         },
       ],
     },
@@ -123,7 +129,7 @@ export const rateLimitsDoc = {
           limit: "600 estimated avatar seconds per hour",
         },
         {
-          action: "Clipr music",
+          action: "Clipr or Stitchr music",
           limit: "600 generated music seconds per hour and 1,200 per day",
           note: "Each generated music track is 60 seconds.",
         },

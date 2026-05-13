@@ -11,6 +11,7 @@ export function getUploadLibraryTabFromSearchParams(
     case "demo":
     case "swaps":
     case "swipes":
+    case "longr":
     case "stitches":
       return tab;
     default:

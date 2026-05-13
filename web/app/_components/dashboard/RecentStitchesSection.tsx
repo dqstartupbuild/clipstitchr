@@ -4,15 +4,23 @@ import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyS
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
+import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 
 type RecentStitchesSectionProps = {
   stitches: Stitch[];
   onDelete: (id: string) => void | Promise<void>;
+  onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
+  onUpdateMusic: (
+    stitch: Stitch,
+    music: StitchMusicMetadata | null,
+  ) => void | Promise<void>;
 };
 
 export function RecentStitchesSection({
   stitches,
   onDelete,
+  onGenerateMusic,
+  onUpdateMusic,
 }: RecentStitchesSectionProps) {
   return (
     <section id="recent-stitches">
@@ -34,6 +42,8 @@ export function RecentStitchesSection({
               key={stitch.id}
               stitch={stitch}
               onDelete={onDelete}
+              onGenerateMusic={onGenerateMusic}
+              onUpdateMusic={onUpdateMusic}
             />
           ))}
         </div>

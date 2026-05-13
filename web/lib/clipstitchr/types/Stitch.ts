@@ -1,4 +1,5 @@
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
+import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
@@ -21,6 +22,7 @@ export type Stitch = {
   width: number;
   height: number;
   duration: number;
+  music?: StitchMusicMetadata;
   textOverlay?: TextOverlay;
   createdAt: string;
 };

@@ -35,6 +35,28 @@ describe("createR2ObjectKey", () => {
       }),
     ).toBe("users/user_123/clipr-music/job_456/music.mp3");
   });
+
+  it("creates user-scoped keys for stitch music", () => {
+    expect(
+      createR2ObjectKey({
+        userId: "user_123",
+        kind: "stitch-music-audio",
+        recordId: "stitch_456",
+        contentType: "audio/mpeg",
+      }),
+    ).toBe("users/user_123/stitch-music/stitch_456/music.mp3");
+  });
+
+  it("creates user-scoped keys for Longr videos", () => {
+    expect(
+      createR2ObjectKey({
+        userId: "user_123",
+        kind: "longr-video",
+        recordId: "longr_456",
+        contentType: "video/mp4",
+      }),
+    ).toBe("users/user_123/longr/longr_456/video.mp4");
+  });
 });
 
 describe("assertR2ObjectKeyBelongsToUser", () => {

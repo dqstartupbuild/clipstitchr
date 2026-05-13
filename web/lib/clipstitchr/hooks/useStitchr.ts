@@ -9,6 +9,7 @@ import {
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
+import { generateStitchMusic as requestStitchMusicGeneration } from "@/lib/clipstitchr/client/generateStitchMusic";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { stitchNormalizedVideos } from "@/lib/clipstitchr/media/stitchNormalizedVideos";
 import { stitchNormalizedVideosWithTextOverlay } from "@/lib/clipstitchr/media/stitchNormalizedVideosWithTextOverlay";
@@ -28,8 +29,13 @@ type UseStitchrOptions = {
   onCreated?: () => void | Promise<void>;
 };
 
+type StitchrBuildOptions = {
+  addMusic?: boolean;
+};
+
 export function useStitchr({ onCreated }: UseStitchrOptions) {
   const saveStitch = useMutation(api.stitches.save);
+  const updateStitchMusic = useMutation(api.stitches.updateMusic);
   const [status, setStatus] = useState<ProcessingStatus>("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +51,7 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
       ugcTrimRange: VideoTrimRange,
       demoTrimRange: VideoTrimRange,
       textOverlay: TextOverlay | null = null,
+      options: StitchrBuildOptions = {},
       onPairProgress?: (progress: number) => void,
     ) => {
       const clampedUgcTrimRange = clampVideoTrimRange(
@@ -136,11 +143,24 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
         textOverlay: nextStitch.textOverlay,
         createdAt: nextStitch.createdAt,
       });
+
+      if (options.addMusic) {
+        const music = await requestStitchMusicGeneration({
+          stitchId: nextStitch.id,
+        });
+
+        await updateStitchMusic({
+          id: nextStitch.id,
+          music,
+        });
+        nextStitch.music = music;
+      }
+
       onPairProgress?.(1);
 
       return nextStitch;
     },
-    [saveStitch],
+    [saveStitch, updateStitchMusic],
   );
 
   const stitchVideos = useCallback(
@@ -149,6 +169,7 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
       demoClip: VideoClip,
       demoTrimRange: VideoTrimRange,
       textOverlay: TextOverlay | null = null,
+      options: StitchrBuildOptions = {},
     ) => {
       setStatus("reading");
       setProgress(0);
@@ -202,6 +223,7 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
             clampedUgcTrimRange,
             clampedDemoTrimRange,
             pairTextOverlay,
+            options,
             (pairProgress) => {
               setProgress((index + pairProgress) / ugcSelections.length);
             },
@@ -240,6 +262,7 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
       ugcTrimRange: VideoTrimRange,
       demoTrimRange: VideoTrimRange,
       textOverlay: TextOverlay | null = null,
+      options: StitchrBuildOptions = {},
     ) => {
       const [nextStitch] = await stitchVideos(
         [
@@ -252,6 +275,7 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
         demoClip,
         demoTrimRange,
         textOverlay,
+        options,
       );
 
       return nextStitch ?? null;
