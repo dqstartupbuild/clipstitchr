@@ -2,11 +2,14 @@
 
 import { SlidersHorizontal, X } from "lucide-react";
 import { useState } from "react";
+import { CliprMusicControls } from "@/app/_components/dashboard/CliprMusicControls";
+import { VideoClipMusicPreview } from "@/app/_components/dashboard/VideoClipMusicPreview";
 import { VideoTrimEditor } from "@/app/_components/trim/VideoTrimEditor";
 import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { VideoPreview } from "@/app/_components/ui/VideoPreview";
+import { useVideoClipDetailsMusic } from "@/lib/clipstitchr/hooks/useVideoClipDetailsMusic";
+import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
@@ -25,8 +28,9 @@ type VideoClipDetailsTrimEditor = {
 
 type VideoClipDetailsDialogProps = {
   clip: VideoClipMetadata;
-  initialTrimEditorOpen?: boolean;
+  initialControlsEditorOpen?: boolean;
   isLoading: boolean;
+  musicEditor?: VideoClipDetailsMusicEditor;
   posterUrl: string | null;
   trimEditor?: VideoClipDetailsTrimEditor;
   videoUrl: string | null;
@@ -36,8 +40,9 @@ type VideoClipDetailsDialogProps = {
 
 export function VideoClipDetailsDialog({
   clip,
-  initialTrimEditorOpen = false,
+  initialControlsEditorOpen = false,
   isLoading,
+  musicEditor,
   posterUrl,
   trimEditor,
   videoUrl,
@@ -52,24 +57,23 @@ export function VideoClipDetailsDialog({
   const [savedTrimRange, setSavedTrimRange] = useState(() =>
     clampVideoTrimRange(initialTrimRange, clip.duration),
   );
-  const [isTrimEditorOpen, setIsTrimEditorOpen] = useState(
-    Boolean(trimEditor && initialTrimEditorOpen),
+  const [isControlsEditorOpen, setIsControlsEditorOpen] = useState(
+    Boolean((trimEditor || musicEditor) && initialControlsEditorOpen),
   );
+  const musicState = useVideoClipDetailsMusic({ clip, musicEditor });
   const displayDuration = getVideoTrimDisplayDuration(
     clip.duration,
     activeTrimRange,
   );
+  const musicDetail = musicState.music
+    ? musicState.musicEnabled
+      ? `Enabled at ${Math.round(musicState.musicVolume * 100)}%`
+      : "Attached but disabled"
+    : undefined;
   const detailItems = [
     { label: "Clipr hook", value: clip.cliprMetadata?.filledHook },
     { label: "Clipr product", value: clip.cliprMetadata?.productName },
-    {
-      label: "Clipr music",
-      value: clip.cliprMetadata?.music
-        ? clip.cliprMetadata.music.enabled
-          ? `Enabled at ${Math.round(clip.cliprMetadata.music.volume * 100)}%`
-          : "Attached but disabled"
-        : undefined,
-    },
+    { label: "Clipr music", value: musicDetail },
     { label: "Description", value: clip.videoDescription },
     { label: "Product", value: clip.productDescription },
     { label: "Main person", value: clip.mainPersonDescription },
@@ -89,7 +93,6 @@ export function VideoClipDetailsDialog({
 
   const handleCancelTrim = () => {
     setActiveTrimRange(savedTrimRange);
-    setIsTrimEditorOpen(false);
   };
 
   const handleSaveTrim = async (trimRange: VideoTrimRange) => {
@@ -102,8 +105,9 @@ export function VideoClipDetailsDialog({
     await trimEditor.onSave(clampedTrimRange);
     setActiveTrimRange(clampedTrimRange);
     setSavedTrimRange(clampedTrimRange);
-    setIsTrimEditorOpen(false);
   };
+  const controlsLabel =
+    trimEditor && musicEditor ? "Trim & music" : trimEditor ? "Trim" : "Music";
 
   return (
     <div
@@ -137,12 +141,16 @@ export function VideoClipDetailsDialog({
           />
         </div>
         <div className="grid gap-5 p-5 md:grid-cols-[280px_minmax(0,1fr)]">
-          <VideoPreview
+          <VideoClipMusicPreview
             src={videoUrl}
             posterSrc={posterUrl}
             label={clip.name}
             autoPlay
+            hasSourceAudio={clip.hasAudio}
             isLoading={isLoading}
+            musicBlob={musicState.musicBlob}
+            musicEnabled={musicState.musicEnabled}
+            musicVolume={musicState.musicVolume}
             trimRange={activeTrimRange}
             onLoadPreview={onLoadPreview}
           />
@@ -156,35 +164,54 @@ export function VideoClipDetailsDialog({
                   {clip.hasAudio ? "Audio" : "No audio"}
                 </span>
               </div>
-              {trimEditor ? (
+              {trimEditor || musicEditor ? (
                 <Button
                   type="button"
                   variant="secondary"
                   size="sm"
                   icon={<SlidersHorizontal aria-hidden className="h-4 w-4" />}
                   onClick={() => {
-                    if (isTrimEditorOpen) {
+                    if (isControlsEditorOpen) {
                       handleCancelTrim();
-                      return;
                     }
 
-                    setIsTrimEditorOpen(true);
+                    setIsControlsEditorOpen((isOpen) => !isOpen);
                   }}
                 >
-                  Trim
+                  {controlsLabel}
                 </Button>
               ) : null}
             </div>
-            {trimEditor && isTrimEditorOpen ? (
-              <VideoTrimEditor
-                duration={clip.duration}
-                title={trimEditor.title}
-                saveLabel={trimEditor.saveLabel}
-                value={activeTrimRange}
-                onCancel={handleCancelTrim}
-                onChange={setActiveTrimRange}
-                onSave={handleSaveTrim}
-              />
+            {isControlsEditorOpen ? (
+              <div className="flex flex-col gap-3">
+                {trimEditor ? (
+                  <VideoTrimEditor
+                    duration={clip.duration}
+                    title={trimEditor.title}
+                    saveLabel={trimEditor.saveLabel}
+                    value={activeTrimRange}
+                    onCancel={handleCancelTrim}
+                    onChange={setActiveTrimRange}
+                    onSave={handleSaveTrim}
+                  />
+                ) : null}
+                {musicEditor ? (
+                  <CliprMusicControls
+                    enabled={musicState.musicEnabled}
+                    error={musicState.error}
+                    isGenerating={musicState.isGenerating}
+                    isLoadingPreview={musicState.isMusicLoading}
+                    isSaving={musicState.isSaving}
+                    music={musicState.music}
+                    volume={musicState.musicVolume}
+                    onEnabledChange={musicState.setMusicEnabled}
+                    onGenerate={() => void musicState.generateMusic()}
+                    onRemove={() => void musicState.removeMusic()}
+                    onSave={() => void musicState.saveMusic()}
+                    onVolumeChange={musicState.setMusicVolume}
+                  />
+                ) : null}
+              </div>
             ) : null}
             <div>
               <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">

@@ -26,13 +26,13 @@ export const longrDoc = {
         "Select multiple UGC and Demo clips.",
         "Use the running duration meter to stay under 5 minutes.",
         "Drag timeline cards to reorder the sequence.",
-        "Build one saved Longr output.",
+        "Build one saved Long.",
       ],
     },
     {
       title: "Saved outputs",
       body: [
-        "Finished Longr videos appear in the Content Library under Longr. Source clips stay unchanged, so you can reuse the same UGC and demos in Stitchr, Longr, or another workflow.",
+        "Finished outputs are called Longs and appear in the Content Library under Longs. Source clips stay unchanged, so you can reuse the same UGC and demos in Stitchr, Longr, or another workflow.",
       ],
     },
   ],

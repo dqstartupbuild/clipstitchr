@@ -15,11 +15,11 @@ type LongrVideosSectionProps = {
 
 export function LongrVideosSection({
   emptyDescription = "Build a long-form video from Longr to save it here.",
-  emptyTitle = "No Longr videos yet",
+  emptyTitle = "No Longs yet",
   id = "longr",
   longrVideos,
   onDelete,
-  title = "Longr",
+  title = "Longs",
 }: LongrVideosSectionProps) {
   return (
     <section id={id}>

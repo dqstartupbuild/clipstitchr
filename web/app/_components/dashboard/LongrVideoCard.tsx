@@ -3,8 +3,8 @@
 import { Download, Trash2 } from "lucide-react";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { LongVideoPreview } from "@/app/_components/dashboard/LongVideoPreview";
 import { Panel } from "@/app/_components/ui/Panel";
-import { VideoPreview } from "@/app/_components/ui/VideoPreview";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
@@ -26,13 +26,12 @@ export function LongrVideoCard({
 
   return (
     <Panel className="w-full max-w-[390px] justify-self-center overflow-hidden">
-      <div className="mx-auto max-w-[390px]">
-        <VideoPreview
-          src={url}
-          posterSrc={posterUrl}
-          label={longrVideo.name}
-        />
-      </div>
+      <LongVideoPreview
+        src={url}
+        posterSrc={posterUrl}
+        label={longrVideo.name}
+        duration={longrVideo.duration}
+      />
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -46,16 +45,16 @@ export function LongrVideoCard({
               {formatDate(longrVideo.createdAt)}
             </p>
           </div>
-          <Badge>LONGR</Badge>
+          <Badge>LONG</Badge>
         </div>
         <div className="mt-4 flex gap-2">
           <IconButton
-            label="Download Longr"
+            label="Download Long"
             icon={<Download aria-hidden className="h-4 w-4" />}
             onClick={() => downloadBlob(longrVideo.blob, longrVideo.name)}
           />
           <IconButton
-            label="Delete Longr"
+            label="Delete Long"
             variant="danger"
             icon={<Trash2 aria-hidden className="h-4 w-4" />}
             onClick={() => void onDelete(longrVideo.id)}

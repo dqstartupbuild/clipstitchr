@@ -57,7 +57,7 @@ export function SelectableClipCard({
               type="button"
               label="Edit selected trim"
               icon={<SlidersHorizontal aria-hidden className="h-4 w-4" />}
-              onClick={() => openDetails({ showTrimEditor: true })}
+              onClick={() => openDetails({ showControlsEditor: true })}
             />
           </div>
         ) : null

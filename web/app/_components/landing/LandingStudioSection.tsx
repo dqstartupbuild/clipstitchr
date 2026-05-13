@@ -1,4 +1,4 @@
-import { CirclePlay, Images, Scissors, Shuffle } from "lucide-react";
+import { CirclePlay, Film, Images, Scissors, Shuffle } from "lucide-react";
 import { Panel } from "@/app/_components/ui/Panel";
 
 const studios = [
@@ -17,6 +17,14 @@ const studios = [
       "Choose a product and avatar, generate a short engagement clip, and save it as source footage for Stitchr.",
     caption: "We call these 'Clips'.",
     icon: CirclePlay,
+  },
+  {
+    eyebrow: "Longr",
+    title: "Build one longer video from many clips.",
+    description:
+      "Select saved UGC and demos, drag them into order, preview the full sequence, and build one continuous vertical output.",
+    caption: "We call these 'Longs'.",
+    icon: Film,
   },
   {
     eyebrow: "Swapr",
@@ -49,7 +57,7 @@ export function LandingStudioSection() {
             the library.
           </h2>
         </div>
-        <div className="mt-8 grid gap-4 lg:grid-cols-4">
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           {studios.map((studio) => {
             const Icon = studio.icon;
 

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { LongrSequenceVideoPlayer } from "@/app/_components/longr/LongrSequenceVideoPlayer";
 import { Panel } from "@/app/_components/ui/Panel";
-import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 
 type LongrPreviewPanelProps = {
   clips: VideoClipMetadata[];
@@ -15,67 +16,94 @@ export function LongrPreviewPanel({
   clips,
   onLoadClip,
 }: LongrPreviewPanelProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [activeClip, setActiveClip] = useState<VideoClip | null>(null);
-  const boundedActiveIndex = clips.length
-    ? Math.min(activeIndex, clips.length - 1)
-    : 0;
-  const selectedClip = clips[boundedActiveIndex] ?? null;
-  const previewClip = activeClip?.id === selectedClip?.id ? activeClip : null;
-  const videoUrl = useObjectUrl(previewClip?.blob);
-  const posterUrl = useObjectUrl(selectedClip?.posterBlob);
+  const [loadedClipMap, setLoadedClipMap] = useState(
+    () => new Map<string, VideoClip>(),
+  );
+  const selectedClipIds = clips.map((clip) => clip.id).join(":");
+  const loadedClips = useMemo(
+    () =>
+      clips.flatMap((clip) => {
+        const loadedClip = loadedClipMap.get(clip.id);
+        return loadedClip ? [loadedClip] : [];
+      }),
+    [clips, loadedClipMap],
+  );
+  const trimRanges = useMemo(
+    () => clips.map((clip) => getDefaultVideoTrimRange(clip)),
+    [clips],
+  );
+  const isLoadingSequence =
+    clips.length > 0 && loadedClips.length !== clips.length;
 
   useEffect(() => {
     let isCancelled = false;
 
-    if (!selectedClip) {
-      return;
+    if (!clips.length) {
+      void Promise.resolve().then(() => {
+        if (!isCancelled) {
+          setLoadedClipMap(new Map());
+        }
+      });
+
+      return () => {
+        isCancelled = true;
+      };
     }
 
-    void onLoadClip(selectedClip.id).then((clip) => {
+    void Promise.all(
+      clips.map(async (clip) => ({
+        clip: await onLoadClip(clip.id),
+        id: clip.id,
+      })),
+    ).then((entries) => {
       if (!isCancelled) {
-        setActiveClip(clip);
+        setLoadedClipMap(
+          new Map(
+            entries.flatMap((entry) =>
+              entry.clip ? [[entry.id, entry.clip] as const] : [],
+            ),
+          ),
+        );
       }
     });
 
     return () => {
       isCancelled = true;
     };
-  }, [onLoadClip, selectedClip]);
+  }, [clips, onLoadClip, selectedClipIds]);
 
   return (
     <Panel className="overflow-hidden">
       <div className="border-b border-border p-4">
         <p className="text-sm font-semibold text-accent-dark">Preview</p>
         <h2 className="mt-0.5 text-base font-bold text-text-primary">
-          {selectedClip ? selectedClip.name : "No clips selected"}
+          {clips.length ? `${clips.length} clips selected` : "No clips selected"}
         </h2>
       </div>
-      <div className="mx-auto max-w-[340px] bg-slate-950">
-        {selectedClip ? (
-          <video
-            key={selectedClip.id}
-            className="aspect-[9/16] w-full bg-slate-950 object-contain"
-            src={videoUrl ?? undefined}
-            poster={posterUrl ?? undefined}
-            controls
-            playsInline
-            onEnded={() =>
-              setActiveIndex((currentIndex) =>
-                clips.length ? (currentIndex + 1) % clips.length : 0,
-              )
-            }
-          />
+      {clips.length ? (
+        isLoadingSequence ? (
+          <div className="p-4">
+            <div className="mx-auto flex aspect-[9/16] w-full max-w-[340px] items-center justify-center rounded-lg bg-slate-950 px-8 text-center text-sm font-semibold text-white/70">
+              Loading preview
+            </div>
+          </div>
         ) : (
-          <div className="flex aspect-[9/16] items-center justify-center px-8 text-center text-sm font-semibold text-white/70">
+          <LongrSequenceVideoPlayer
+            clips={loadedClips}
+            trimRanges={trimRanges}
+          />
+        )
+      ) : (
+        <div className="p-4">
+          <div className="mx-auto flex aspect-[9/16] w-full max-w-[340px] items-center justify-center rounded-lg bg-slate-950 px-8 text-center text-sm font-semibold text-white/70">
             Select UGC or demo clips to preview the sequence.
           </div>
-        )}
-      </div>
+        </div>
+      )}
       {clips.length ? (
         <div className="border-t border-border p-4">
           <p className="text-sm font-semibold text-text-secondary">
-            {boundedActiveIndex + 1} of {clips.length}
+            {clips.length} clips in play order
           </p>
         </div>
       ) : null}

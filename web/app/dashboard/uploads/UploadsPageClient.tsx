@@ -208,7 +208,7 @@ export function UploadsPageClient() {
         <LibraryPageHeader
           eyebrow="Library"
           title="Content Library"
-          description="Keep UGC, product demos, Clips, swaps, Swipes, stitches, and Longr videos ready for the next export."
+          description="Keep UGC, product demos, Clips, swaps, Swipes, stitches, and Longs ready for the next export."
         />
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -354,10 +354,10 @@ export function UploadsPageClient() {
             <LongrVideosSection
               key={`all-longr-${searchQuery}`}
               longrVideos={longrVideos}
-              emptyTitle={hasSearchQuery ? "No matching Longr videos" : undefined}
+              emptyTitle={hasSearchQuery ? "No matching Longs" : undefined}
               emptyDescription={
                 hasSearchQuery
-                  ? "No Longr videos match that name."
+                  ? "No Longs match that name."
                   : undefined
               }
               onDelete={library.removeLongrVideo}
@@ -429,10 +429,10 @@ export function UploadsPageClient() {
           <LongrVideosSection
             key={`longr-${searchQuery}`}
             longrVideos={longrVideos}
-            emptyTitle={hasSearchQuery ? "No matching Longr videos" : undefined}
+            emptyTitle={hasSearchQuery ? "No matching Longs" : undefined}
             emptyDescription={
               hasSearchQuery
-                ? "No Longr videos match that name."
+                ? "No Longs match that name."
                 : undefined
             }
             onDelete={library.removeLongrVideo}
