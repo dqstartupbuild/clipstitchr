@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { LibraryPageHeader } from "@/app/_components/dashboard/LibraryPageHeader";
+import { LongrVideosSection } from "@/app/_components/dashboard/LongrVideosSection";
 import { StitchesSection } from "@/app/_components/dashboard/StitchesSection";
 import { SwiprSwipesSection } from "@/app/_components/dashboard/SwiprSwipesSection";
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
@@ -21,6 +22,7 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { filterCliprClips } from "@/lib/clipstitchr/utils/filterCliprClips";
+import { filterLongrVideosByName } from "@/lib/clipstitchr/utils/filterLongrVideosByName";
 import { filterStitchesByName } from "@/lib/clipstitchr/utils/filterStitchesByName";
 import { filterSwipesBySearchQuery } from "@/lib/clipstitchr/utils/filterSwipesBySearchQuery";
 import { filterSwaprClips } from "@/lib/clipstitchr/utils/filterSwaprClips";
@@ -123,6 +125,10 @@ export function UploadsPageClient() {
     () => filterStitchesByName(library.stitches, searchQuery),
     [library.stitches, searchQuery],
   );
+  const longrVideos = useMemo(
+    () => filterLongrVideosByName(library.longrVideos, searchQuery),
+    [library.longrVideos, searchQuery],
+  );
   const swipes = useMemo(
     () => filterSwipesBySearchQuery(swiprLibrary.swipes, searchQuery),
     [searchQuery, swiprLibrary.swipes],
@@ -202,7 +208,7 @@ export function UploadsPageClient() {
         <LibraryPageHeader
           eyebrow="Library"
           title="Content Library"
-          description="Keep UGC, product demos, Clips, swaps, Swipes, and stitches ready for the next ad."
+          description="Keep UGC, product demos, Clips, swaps, Swipes, stitches, and Longr videos ready for the next export."
         />
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -342,6 +348,19 @@ export function UploadsPageClient() {
                   : undefined
               }
               onDelete={library.removeStitch}
+              onGenerateMusic={library.generateStitchMusic}
+              onUpdateMusic={library.updateStitchMusic}
+            />
+            <LongrVideosSection
+              key={`all-longr-${searchQuery}`}
+              longrVideos={longrVideos}
+              emptyTitle={hasSearchQuery ? "No matching Longr videos" : undefined}
+              emptyDescription={
+                hasSearchQuery
+                  ? "No Longr videos match that name."
+                  : undefined
+              }
+              onDelete={library.removeLongrVideo}
             />
             <SwiprSwipesSection
               key={`all-swipes-${searchQuery}`}
@@ -402,6 +421,21 @@ export function UploadsPageClient() {
                 : undefined
             }
             onDelete={library.removeStitch}
+            onGenerateMusic={library.generateStitchMusic}
+            onUpdateMusic={library.updateStitchMusic}
+          />
+        ) : null}
+        {selectedTab === "longr" ? (
+          <LongrVideosSection
+            key={`longr-${searchQuery}`}
+            longrVideos={longrVideos}
+            emptyTitle={hasSearchQuery ? "No matching Longr videos" : undefined}
+            emptyDescription={
+              hasSearchQuery
+                ? "No Longr videos match that name."
+                : undefined
+            }
+            onDelete={library.removeLongrVideo}
           />
         ) : null}
         {selectedTab === "swipes" ? (

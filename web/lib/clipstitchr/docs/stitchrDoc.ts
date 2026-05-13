@@ -9,7 +9,7 @@ export const stitchrDoc = {
     "Choose UGC, pick one demo, preview each ad, and export finished variants.",
   category: "feature",
   order: 10,
-  updated: "2026-05-12",
+  updated: "2026-05-13",
   sections: [
     {
       title: "What Stitchr does",
@@ -29,6 +29,13 @@ export const stitchrDoc = {
         "Select one demo clip for the batch.",
         "Preview each ad before export.",
         "Create one finished stitch for each selected UGC.",
+      ],
+    },
+    {
+      title: "Music",
+      body: [
+        "You can add generated music when creating stitches or later from a saved stitch card. Music is stored separately from the clean stitched video.",
+        "When you download a stitch with music enabled, ClipStitchr renders a fresh export with the current music settings. You can remove music, generate new music, or change volume later.",
       ],
     },
     {

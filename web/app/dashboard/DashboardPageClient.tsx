@@ -75,6 +75,8 @@ export function DashboardPageClient() {
         <RecentStitchesSection
           stitches={recentStitches}
           onDelete={library.removeStitch}
+          onGenerateMusic={library.generateStitchMusic}
+          onUpdateMusic={library.updateStitchMusic}
         />
         <RecentUploadsSection
           clips={recentUploads}

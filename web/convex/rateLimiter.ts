@@ -252,6 +252,18 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     period: DAY,
     capacity: 1200,
   },
+  stitchMusicGenerate: {
+    kind: "token bucket",
+    rate: 600,
+    period: HOUR,
+    capacity: 180,
+  },
+  stitchMusicGenerateDaily: {
+    kind: "token bucket",
+    rate: 1200,
+    period: DAY,
+    capacity: 1200,
+  },
   cliprProviderSpendGlobal: {
     kind: "token bucket",
     rate: 10000,

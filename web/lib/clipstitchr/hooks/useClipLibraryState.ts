@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useConvex, useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { createLongrVideoFromConvexDocument } from "@/lib/clipstitchr/backend/createLongrVideoFromConvexDocument";
 import { createStitchFromConvexDocument } from "@/lib/clipstitchr/backend/createStitchFromConvexDocument";
 import { createVideoClipFromConvexDocument } from "@/lib/clipstitchr/backend/createVideoClipFromConvexDocument";
 import { createVideoClipMetadataFromConvexDocument } from "@/lib/clipstitchr/backend/createVideoClipMetadataFromConvexDocument";
@@ -10,10 +11,13 @@ import { getDefinedR2Objects } from "@/lib/clipstitchr/backend/getDefinedR2Objec
 import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
 import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
 import { generateCliprMusic as requestCliprMusicGeneration } from "@/lib/clipstitchr/client/generateCliprMusic";
+import { generateStitchMusic as requestStitchMusicGeneration } from "@/lib/clipstitchr/client/generateStitchMusic";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { ClipLibraryValue } from "@/lib/clipstitchr/types/ClipLibraryValue";
+import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
+import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -31,11 +35,18 @@ export function useClipLibraryState(): ClipLibraryValue {
     api.stitches.list,
     isAuthenticated ? {} : "skip",
   );
+  const longrVideoDocuments = useQuery(
+    api.longrVideos.list,
+    isAuthenticated ? {} : "skip",
+  );
   const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
   const updateCliprMusicMutation = useMutation(api.videoClips.updateCliprMusic);
+  const updateStitchMusicMutation = useMutation(api.stitches.updateMusic);
   const removeClipMutation = useMutation(api.videoClips.remove);
+  const removeLongrVideoMutation = useMutation(api.longrVideos.remove);
   const removeStitchMutation = useMutation(api.stitches.remove);
   const [clips, setClips] = useState<VideoClipMetadata[]>([]);
+  const [longrVideos, setLongrVideos] = useState<LongrVideo[]>([]);
   const [stitches, setStitches] = useState<Stitch[]>([]);
   const [isHydrating, setIsHydrating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -231,6 +242,47 @@ export function useClipLibraryState(): ClipLibraryValue {
     [updateCliprMusic],
   );
 
+  const updateStitchMusic = useCallback(
+    async (stitch: Stitch, music: StitchMusicMetadata | null) => {
+      const previousMusicObject = stitch.music?.audioObject;
+      const nextUpdatedAt = new Date().toISOString();
+
+      await updateStitchMusicMutation({
+        id: stitch.id,
+        music:
+          music === null
+            ? null
+            : {
+                ...music,
+                updatedAt: nextUpdatedAt,
+              },
+      });
+
+      if (
+        previousMusicObject &&
+        (!music || previousMusicObject.key !== music.audioObject.key)
+      ) {
+        await deleteObjectsFromR2([previousMusicObject]).catch(() => null);
+      }
+
+      await refresh();
+    },
+    [refresh, updateStitchMusicMutation],
+  );
+
+  const generateStitchMusic = useCallback(
+    async (stitch: Stitch) => {
+      const music = await requestStitchMusicGeneration({
+        stitchId: stitch.id,
+      });
+
+      await updateStitchMusic(stitch, music);
+
+      return music;
+    },
+    [updateStitchMusic],
+  );
+
   const removeStitch = useCallback(
     async (id: string) => {
       const stitchDocument =
@@ -242,6 +294,7 @@ export function useClipLibraryState(): ClipLibraryValue {
           getDefinedR2Objects([
             stitchDocument.stitchObject,
             stitchDocument.posterObject,
+            stitchDocument.music?.audioObject,
           ]),
         );
       }
@@ -252,16 +305,39 @@ export function useClipLibraryState(): ClipLibraryValue {
     [convex, refresh, removeStitchMutation, stitchDocuments],
   );
 
+  const removeLongrVideo = useCallback(
+    async (id: string) => {
+      const longrVideoDocument =
+        longrVideoDocuments?.find((longrVideo) => longrVideo.id === id) ??
+        (await convex.query(api.longrVideos.get, { id }));
+
+      if (longrVideoDocument) {
+        await deleteObjectsFromR2(
+          getDefinedR2Objects([
+            longrVideoDocument.longrObject,
+            longrVideoDocument.posterObject,
+          ]),
+        );
+      }
+
+      await removeLongrVideoMutation({ id });
+      await refresh();
+    },
+    [convex, longrVideoDocuments, refresh, removeLongrVideoMutation],
+  );
+
   useEffect(() => {
     if (
       isAuthLoading ||
       !isAuthenticated ||
       !clipDocuments ||
-      !stitchDocuments
+      !stitchDocuments ||
+      !longrVideoDocuments
     ) {
       if (!isAuthLoading && !isAuthenticated) {
         void Promise.resolve().then(() => {
           setClips([]);
+          setLongrVideos([]);
           setStitches([]);
         });
       }
@@ -280,7 +356,7 @@ export function useClipLibraryState(): ClipLibraryValue {
       setError(null);
 
       try {
-        const [nextClips, nextStitches] = await Promise.all([
+        const [nextClips, nextStitches, nextLongrVideos] = await Promise.all([
           Promise.all(
             clipDocuments.map(async (clip) => {
               const posterBlob = clip.posterObject
@@ -313,10 +389,29 @@ export function useClipLibraryState(): ClipLibraryValue {
               });
             }),
           ),
+          Promise.all(
+            longrVideoDocuments.map(async (longrVideo) => {
+              const [blob, posterBlob] = await Promise.all([
+                downloadBlobFromR2(longrVideo.longrObject),
+                longrVideo.posterObject
+                  ? downloadBlobFromR2(longrVideo.posterObject).catch(
+                      () => undefined,
+                    )
+                  : Promise.resolve(undefined),
+              ]);
+
+              return createLongrVideoFromConvexDocument({
+                longrVideo,
+                blob,
+                posterBlob,
+              });
+            }),
+          ),
         ]);
 
         if (!isCancelled) {
           setClips(nextClips);
+          setLongrVideos(nextLongrVideos);
           setStitches(nextStitches);
         }
       } catch (nextError) {
@@ -341,17 +436,21 @@ export function useClipLibraryState(): ClipLibraryValue {
     clipDocuments,
     isAuthenticated,
     isAuthLoading,
+    longrVideoDocuments,
     refreshNonce,
     stitchDocuments,
   ]);
 
   return {
     clips,
+    longrVideos,
     stitches,
     isLoading:
       isAuthLoading ||
       (isAuthenticated &&
-        (clipDocuments === undefined || stitchDocuments === undefined)) ||
+        (clipDocuments === undefined ||
+          stitchDocuments === undefined ||
+          longrVideoDocuments === undefined)) ||
       isHydrating,
     error,
     refresh,
@@ -362,6 +461,9 @@ export function useClipLibraryState(): ClipLibraryValue {
     generateCliprMusic,
     updateCliprMusic,
     updateClipTrimRange,
+    generateStitchMusic,
+    updateStitchMusic,
+    removeLongrVideo,
     removeStitch,
   };
 }

@@ -129,6 +129,7 @@ cleanup.
 | 7 | Click **"Stitch"** to create one UGC-then-Demo output per selected UGC clip | ✅ | ✅ |
 | 8 | Progress indicator during normalization and stitching | ✅ | ✅ |
 | 9 | Download each finished TikTok 9:16 video file | ✅ | ✅ |
+| 10 | Optionally generate separate 60 second background music for saved stitches and mix it only at download/export time | ✅ | ✅ |
 
 ### 4.3 Text Overlays
 
@@ -188,7 +189,33 @@ Media Bunny mixes the music into a fresh downloadable file only during
 export/download, so users can later remove music, regenerate it, or change
 volume without altering the saved video.
 
-### 4.6 Carousel Generation
+Stitchr music follows the same non-destructive model for saved stitches. The
+Stitchr build controls can request music, and saved stitch cards can later
+generate, remove, regenerate, enable/disable, or adjust volume. The clean
+stitched MP4 stays unchanged in R2; Media Bunny creates the final music-mixed
+download on demand in the browser.
+
+### 4.6 Longr Long-Form Builder
+
+Longr is a standalone dashboard tool at `/dashboard/longr`. It is not a Stitchr
+mode toggle.
+
+| # | Feature | MVP | Prod |
+|---|---------|-----|------|
+| 1 | User selects multiple saved UGC clips and/or Demo videos | ✅ | ✅ |
+| 2 | Selection order becomes play order | ✅ | ✅ |
+| 3 | Compact horizontal timeline strip supports drag reordering | ✅ | ✅ |
+| 4 | One Build action creates a single combined 9:16 MP4 | ✅ | ✅ |
+| 5 | Combined selected duration is capped at 5 minutes | ✅ | ✅ |
+| 6 | Running duration total shows remaining time | ✅ | ✅ |
+| 7 | Saved Longr outputs appear in the Content Library Longr tab | ✅ | ✅ |
+
+Longr uses the same browser-local Media Bunny output pattern as Stitchr, but it
+accepts an arbitrary ordered sequence instead of a UGC-to-Demo pairing. It uses
+the current default trim range for each source clip and saves one R2-backed
+output with ordered segment metadata in Convex.
+
+### 4.7 Carousel Generation
 
 Swipr creates TikTok-ready static carousel image sets. The MVP uses browser-local
 canvas rendering for final export: one selected shared Background Library image

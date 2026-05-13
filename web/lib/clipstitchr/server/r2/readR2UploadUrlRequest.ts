@@ -6,6 +6,8 @@ const R2_OBJECT_KINDS = new Set<R2ObjectKind>([
   "photo",
   "photo-original",
   "photo-thumbnail",
+  "longr-video",
+  "longr-poster",
   "stitch-video",
   "stitch-poster",
 ]);

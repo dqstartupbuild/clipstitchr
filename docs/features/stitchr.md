@@ -54,8 +54,14 @@ social proof first, product proof immediately after.
    engine using saved product context. Stitchr auto-text can draw from
    product/ad hook-library templates, but source names and template IDs stay
    hidden. The generated overlay stays editable.
-10. Create one stitched output per selected UGC clip.
-11. Save and download the finished ad variants.
+10. Optionally generate separate 60 second music for each stitch.
+11. Create one stitched output per selected UGC clip.
+12. Save and download the finished ad variants.
+
+Saved stitch music is stored separately from the clean stitch video. Users can
+remove music, regenerate it, enable or disable it, or change volume later from
+the saved stitch card. Media Bunny mixes the selected music only when the user
+downloads the stitch, so the saved MP4 remains reusable.
 
 ## Product Principles
 
@@ -68,6 +74,7 @@ social proof first, product proof immediately after.
 - Keep AI-generated Clips and Swaps as UGC-compatible clips that can flow into
   Stitchr.
 - Keep generated overlay text editable and hide hook style/template mechanics.
+- Keep generated music editable and separate from the saved stitch video.
 
 ## Non-Goals
 
