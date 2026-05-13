@@ -623,7 +623,6 @@ Add environment overrides instead of hard-coding provider choices:
 - `AVATAR_PHOTO_MODEL_ID` for avatar photo generation and Clipr avatar stills
 - `CLIPR_AVATAR_VIDEO_MODEL_ID`
 - `CLIPR_MUSIC_MODEL_ID`
-- `CLIPR_TTS_MODEL_ID` is legacy/reserved.
 
 ## Script Rules
 
