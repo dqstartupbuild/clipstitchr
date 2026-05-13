@@ -7,15 +7,20 @@ import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
 import { RecentAvatarsSection } from "@/app/_components/dashboard/RecentAvatarsSection";
+import { RecentLongsSection } from "@/app/_components/dashboard/RecentLongsSection";
 import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitchesSection";
+import { RecentSwipesSection } from "@/app/_components/dashboard/RecentSwipesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
+import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { filterCliprClips } from "@/lib/clipstitchr/utils/filterCliprClips";
 import { filterPlainUgcClips } from "@/lib/clipstitchr/utils/filterPlainUgcClips";
 import { getRecentAvatarPhotos } from "@/lib/clipstitchr/utils/getRecentAvatarPhotos";
+import { getRecentLongrVideos } from "@/lib/clipstitchr/utils/getRecentLongrVideos";
 import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
+import { getRecentSwiprSwipes } from "@/lib/clipstitchr/utils/getRecentSwiprSwipes";
 import { getRecentVideoClips } from "@/lib/clipstitchr/utils/getRecentVideoClips";
 
 const RECENT_DASHBOARD_ITEM_LIMIT = 4;
@@ -23,6 +28,7 @@ const RECENT_DASHBOARD_ITEM_LIMIT = 4;
 export function DashboardPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
+  const swiprLibrary = useSwiprLibrary();
   const ugcClips = useMemo(
     () => filterPlainUgcClips(library.clips),
     [library.clips],
@@ -44,18 +50,34 @@ export function DashboardPageClient() {
       getRecentStitches(
         library.stitches,
         RECENT_DASHBOARD_ITEM_LIMIT,
-      ),
+    ),
     [library.stitches],
   );
+  const recentLongs = useMemo(
+    () => getRecentLongrVideos(library.longrVideos, RECENT_DASHBOARD_ITEM_LIMIT),
+    [library.longrVideos],
+  );
+  const recentSwipes = useMemo(() => {
+    const backgroundIds = new Set(
+      swiprLibrary.backgrounds.map((background) => background.id),
+    );
+
+    return getRecentSwiprSwipes(
+      swiprLibrary.swipes.filter((swipe) =>
+        backgroundIds.has(swipe.backgroundId),
+      ),
+      RECENT_DASHBOARD_ITEM_LIMIT,
+    );
+  }, [swiprLibrary.backgrounds, swiprLibrary.swipes]);
   const recentAvatarPhotos = useMemo(
     () =>
       getRecentAvatarPhotos(
         photoLibrary.photos,
         RECENT_DASHBOARD_ITEM_LIMIT,
-      ),
+    ),
     [photoLibrary.photos],
   );
-  const error = library.error ?? photoLibrary.error;
+  const error = library.error ?? photoLibrary.error ?? swiprLibrary.error;
 
   return (
     <DashboardShell>
@@ -77,6 +99,16 @@ export function DashboardPageClient() {
           onDelete={library.removeStitch}
           onGenerateMusic={library.generateStitchMusic}
           onUpdateMusic={library.updateStitchMusic}
+        />
+        <RecentLongsSection
+          longrVideos={recentLongs}
+          onDelete={library.removeLongrVideo}
+        />
+        <RecentSwipesSection
+          backgrounds={swiprLibrary.backgrounds}
+          swipes={recentSwipes}
+          onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
+          onDelete={swiprLibrary.removeSwipe}
         />
         <RecentUploadsSection
           clips={recentUploads}
