@@ -16,7 +16,7 @@ const features = [
   {
     title: "Upload clips once",
     description:
-      "Bring in UGC clips and product demos so they are ready whenever you need another ad.",
+      "Bring in UGC and product demos so they are ready whenever you need another ad.",
     icon: UploadCloud,
   },
   {
@@ -46,7 +46,7 @@ const features = [
   {
     title: "Stitch UGC to demos",
     description:
-      "Choose a UGC clip and product demo, and create a finished ad in seconds.",
+      "Choose UGC and a product demo, and create a finished ad in seconds.",
     icon: Scissors,
   },
   {
@@ -56,7 +56,7 @@ const features = [
     icon: UserRound,
   },
   {
-    title: "Create new UGC clips",
+    title: "Create new UGC",
     description:
       "Use Swapr to turn an avatar photo and an existing clip into more source footage.",
     icon: Shuffle,

@@ -160,8 +160,8 @@ export function SwaprPageClient() {
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <DashboardPageHeader
           eyebrow="UGC swapping"
-          title="Create UGC clips"
-          description="Create a new UGC clip from an avatar photo and an existing UGC clip."
+          title="Create UGC"
+          description="Create new UGC from an avatar photo and existing UGC."
         />
 
         {library.error || photoLibrary.error || assetLoadError ? (

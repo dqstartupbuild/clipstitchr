@@ -15,7 +15,7 @@ type StitchesSectionProps = {
 
 export function StitchesSection({
   stitches,
-  emptyDescription = "Stitch a video after you have at least one UGC clip and one demo video.",
+  emptyDescription = "Stitch a video after you have at least one UGC and one demo video.",
   emptyTitle = "No stitches yet",
   id = "stitches",
   title = "Stitches",

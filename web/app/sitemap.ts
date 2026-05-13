@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { getCustomerDocs } from "@/lib/clipstitchr/docs/getCustomerDocs";
 import { getPublishedBlogPosts } from "@/lib/content/queries";
 import { createCanonicalUrl, site } from "@/lib/site";
 
@@ -17,5 +18,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.78,
   }));
 
-  return [...staticEntries, ...postEntries];
+  const docsEntries = getCustomerDocs().map((doc) => ({
+    url: createCanonicalUrl(`/docs/${doc.slug}`),
+    lastModified: new Date(doc.updated),
+    changeFrequency: "monthly" as const,
+    priority: doc.category === "start" ? 0.84 : 0.8,
+  }));
+
+  return [...staticEntries, ...docsEntries, ...postEntries];
 }

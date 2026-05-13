@@ -13,7 +13,7 @@ export function SwaprEmptyState({
     return (
       <DashboardEmptyState
         title="No avatars or source videos yet"
-        description="Create an avatar and add a UGC clip or stitch before creating swaps."
+        description="Create an avatar and add UGC or a stitch before creating swaps."
       />
     );
   }
@@ -30,7 +30,7 @@ export function SwaprEmptyState({
   return (
     <DashboardEmptyState
       title="No source videos yet"
-      description="Upload a UGC clip or create a stitch before creating swaps."
+      description="Upload UGC or create a stitch before creating swaps."
     />
   );
 }

@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `Swapr | ${site.name}`,
   description:
-    "Create UGC clips from avatar photos, UGC clips, and stitches using Swapr.",
+    "Create UGC from avatar photos, saved UGC, and stitches using Swapr.",
   canonical: "/dashboard/swapr",
   noIndex: true,
 });

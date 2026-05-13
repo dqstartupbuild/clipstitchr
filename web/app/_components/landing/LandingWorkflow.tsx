@@ -17,7 +17,7 @@ const workflows = [
   },
   {
     eyebrow: "Swapr",
-    title: "Make another UGC clip when your library needs one.",
+    title: "Make more UGC when your library needs it.",
     description:
       "Choose an avatar photo and a clip, create the swap, then save it with the rest of your UGC for the next ad batch.",
     steps: ["Pick Avatar", "Pick Clip", "Create", "Save"],

@@ -25,7 +25,7 @@ const uploadDestinations = [
     description: "Creator hooks, reactions, b-roll, and social proof.",
     href: `/dashboard/uploads?tab=ugc&${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
     icon: Video,
-    label: "UGC clip",
+    label: "UGC",
     page: "/dashboard/uploads",
   },
   {

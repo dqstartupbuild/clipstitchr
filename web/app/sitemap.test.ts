@@ -11,6 +11,14 @@ describe("sitemap", () => {
     expect(urls).toContain(
       "http://localhost:3000/blog/getting-started",
     );
+    expect(urls).toContain("http://localhost:3000/docs");
+    expect(urls).toContain("http://localhost:3000/docs/getting-started");
+    expect(urls).toContain("http://localhost:3000/docs/stitchr");
+    expect(urls).toContain("http://localhost:3000/docs/clipr");
+    expect(urls).toContain("http://localhost:3000/docs/swipr");
+    expect(urls).toContain("http://localhost:3000/docs/swapr");
+    expect(urls).toContain("http://localhost:3000/docs/avatars");
+    expect(urls).toContain("http://localhost:3000/docs/rate-limits");
     expect(urls).not.toContain("http://localhost:3000/dashboard");
     expect(urls).not.toContain("http://localhost:3000/dashboard/avatars");
     expect(urls).not.toContain("http://localhost:3000/dashboard/stitchr");
