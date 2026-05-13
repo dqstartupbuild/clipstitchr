@@ -2,10 +2,12 @@
 
 import { Download, Music2, Play, Shuffle, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { IconButton } from "@/app/_components/ui/IconButton";
-import { IconButtonLink } from "@/app/_components/ui/IconButtonLink";
 import { StitchDetailsDialog } from "@/app/_components/dashboard/StitchDetailsDialog";
 import { StitchMusicSettingsDialog } from "@/app/_components/dashboard/StitchMusicSettingsDialog";
+import {
+  MediaCardActionMenu,
+  type MediaCardActionMenuItem,
+} from "@/app/_components/ui/MediaCardActionMenu";
 import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExportBlob";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
@@ -91,6 +93,30 @@ export function StitchCard({
       setIsSavingMusic(false);
     }
   };
+  const actionItems: MediaCardActionMenuItem[] = [
+    {
+      label: "Use in Swapr",
+      href: getUseInSwaprStitchHref(stitch),
+      icon: <Shuffle aria-hidden className="h-4 w-4" />,
+    },
+    {
+      label: "Download stitch",
+      icon: <Download aria-hidden className="h-4 w-4" />,
+      disabled: !url || isDownloading,
+      onClick: () => void handleDownload(),
+    },
+    {
+      label: "Edit stitch music",
+      icon: <Music2 aria-hidden className="h-4 w-4" />,
+      onClick: () => setIsMusicOpen(true),
+    },
+    {
+      label: "Delete stitch",
+      variant: "danger",
+      icon: <Trash2 aria-hidden className="h-4 w-4" />,
+      onClick: () => void onDelete(stitch.id),
+    },
+  ];
 
   return (
     <>
@@ -140,30 +166,10 @@ export function StitchCard({
               {formatDate(stitch.createdAt)}
             </p>
           </button>
-          <div className="flex shrink-0 flex-wrap justify-end gap-1">
-            <IconButtonLink
-              label="Use in Swapr"
-              href={getUseInSwaprStitchHref(stitch)}
-              icon={<Shuffle aria-hidden className="h-4 w-4" />}
-            />
-            <IconButton
-              label="Download stitch"
-              icon={<Download aria-hidden className="h-4 w-4" />}
-              disabled={!url || isDownloading}
-              onClick={() => void handleDownload()}
-            />
-            <IconButton
-              label="Edit stitch music"
-              icon={<Music2 aria-hidden className="h-4 w-4" />}
-              onClick={() => setIsMusicOpen(true)}
-            />
-            <IconButton
-              label="Delete stitch"
-              variant="danger"
-              icon={<Trash2 aria-hidden className="h-4 w-4" />}
-              onClick={() => void onDelete(stitch.id)}
-            />
-          </div>
+          <MediaCardActionMenu
+            label={`Actions for ${stitch.name}`}
+            items={actionItems}
+          />
         </div>
         {downloadError ? (
           <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">

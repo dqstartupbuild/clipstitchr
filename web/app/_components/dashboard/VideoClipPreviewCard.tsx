@@ -5,6 +5,10 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { VideoClipDetailsDialog } from "@/app/_components/dashboard/VideoClipDetailsDialog";
 import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
+import {
+  MediaCardActionMenu,
+  type MediaCardActionMenuItem,
+} from "@/app/_components/ui/MediaCardActionMenu";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -38,7 +42,7 @@ type VideoClipPreviewCardProps = {
   displayDuration?: number;
   isSelected?: boolean;
   isSelectionDisabled?: boolean;
-  actions?: (actions: VideoClipPreviewCardActions) => ReactNode;
+  actions?: (actions: VideoClipPreviewCardActions) => MediaCardActionMenuItem[];
   footer?: (actions: VideoClipPreviewCardActions) => ReactNode;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onSelect?: () => void;
@@ -112,6 +116,7 @@ export function VideoClipPreviewCard({
     loadFullClip,
     openDetails,
   };
+  const actionItems = actions?.(actionContext) ?? [];
   const footerContent = footer?.(actionContext);
 
   return (
@@ -173,10 +178,11 @@ export function VideoClipPreviewCard({
               {formatDuration(visibleDuration)} . {formatBytes(clip.size)}
             </p>
           </button>
-          {actions ? (
-            <div className="flex shrink-0 flex-wrap justify-end gap-1">
-              {actions(actionContext)}
-            </div>
+          {actionItems.length ? (
+            <MediaCardActionMenu
+              label={`Actions for ${clip.name}`}
+              items={actionItems}
+            />
           ) : null}
         </div>
         {footerContent ? <div className="mt-4">{footerContent}</div> : null}
