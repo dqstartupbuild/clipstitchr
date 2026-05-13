@@ -129,7 +129,7 @@ cleanup.
 | 7 | Click **"Stitch"** to create one UGC-then-Demo output per selected UGC clip | ✅ | ✅ |
 | 8 | Progress indicator during normalization and stitching | ✅ | ✅ |
 | 9 | Download each finished TikTok 9:16 video file | ✅ | ✅ |
-| 10 | Optionally generate separate 60 second background music for saved stitches and mix it only at download/export time | ✅ | ✅ |
+| 10 | Select reusable shared-library music or generate separate 60 second background music for saved stitches and mix it only at download/export time | ✅ | ✅ |
 
 ### 4.3 Text Overlays
 
@@ -176,24 +176,27 @@ main product promise.
 | 3 | Swapr generates UGC-style video clips that can be saved back into the UGC library | ✅ | ✅ |
 | 4 | AI features use rate limits, credit budgeting, and speed profiles because they create external provider cost | ✅ | ✅ |
 | 5 | Clipr generates non-promotional short engagement Clips from saved product and avatar context | ✅ | ✅ |
-| 6 | Clipr can optionally generate a separate 60 second background music asset for export-time mixing | ✅ | ✅ |
+| 6 | Clipr can select reusable shared-library music or generate a separate 60 second background music asset for export-time mixing | ✅ | ✅ |
 
 Clipr uses hidden non-promotional hook templates only. Broader internal hook
 assets can support Swipr and Stitchr auto-text, but direct product/ad hook
 patterns must not leak into Clipr outputs.
 
-Clipr music is optional and off by default. When enabled, the app generates a
-60 second instrumental track, stores it in R2 separately from the clean Clipr
-video, and keeps editable metadata for enabled/disabled state and volume.
+Clipr music is optional and off by default. Users can select an existing shared
+music-library track or generate a 60 second instrumental track. Generated music
+is copied to the shared music library and to the user's personal object storage
+when attached to their output. The app stores music in R2 separately from the
+clean Clipr video and keeps editable metadata for enabled/disabled state and
+volume.
 Media Bunny mixes the music into a fresh downloadable file only during
 export/download, so users can later remove music, regenerate it, or change
 volume without altering the saved video.
 
 Stitchr music follows the same non-destructive model for saved stitches. The
-Stitchr build controls can request music, and saved stitch cards can later
-generate, remove, regenerate, enable/disable, or adjust volume. The clean
-stitched MP4 stays unchanged in R2; Media Bunny creates the final music-mixed
-download on demand in the browser.
+Stitchr build controls can select shared music or request new generated music,
+and saved stitch cards can later select, generate, remove, regenerate,
+enable/disable, or adjust volume. The clean stitched MP4 stays unchanged in R2;
+Media Bunny creates the final music-mixed download on demand in the browser.
 
 ### 4.6 Longr Long-Form Builder
 
@@ -209,11 +212,12 @@ mode toggle.
 | 5 | Combined selected duration is capped at 5 minutes | ✅ | ✅ |
 | 6 | Running duration total shows remaining time | ✅ | ✅ |
 | 7 | Saved Longr outputs appear in the Content Library Longs tab | ✅ | ✅ |
+| 8 | Shared music tracks can be added multiple times, duplicated, trimmed, moved, extended, removed, and mixed into the Longr output | ✅ | ✅ |
 
 Longr uses the same browser-local Media Bunny output pattern as Stitchr, but it
 accepts an arbitrary ordered sequence instead of a UGC-to-Demo pairing. It uses
 the current default trim range for each source clip and saves one R2-backed
-output with ordered segment metadata in Convex.
+output with ordered segment metadata and optional music clip metadata in Convex.
 
 ### 4.7 Carousel Generation
 

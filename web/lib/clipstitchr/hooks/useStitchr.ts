@@ -16,12 +16,14 @@ import { stitchNormalizedVideosWithTextOverlay } from "@/lib/clipstitchr/media/s
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
+import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
 import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
@@ -31,6 +33,7 @@ type UseStitchrOptions = {
 
 type StitchrBuildOptions = {
   addMusic?: boolean;
+  musicTrack?: SharedMusicTrack | null;
 };
 
 export function useStitchr({ onCreated }: UseStitchrOptions) {
@@ -144,10 +147,16 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
         createdAt: nextStitch.createdAt,
       });
 
-      if (options.addMusic) {
-        const music = await requestStitchMusicGeneration({
-          stitchId: nextStitch.id,
-        });
+      const selectedMusic = options.musicTrack
+        ? createStitchMusicMetadataFromSharedTrack(options.musicTrack)
+        : null;
+
+      if (selectedMusic || options.addMusic) {
+        const music =
+          selectedMusic ??
+          (await requestStitchMusicGeneration({
+            stitchId: nextStitch.id,
+          }));
 
         await updateStitchMusic({
           id: nextStitch.id,

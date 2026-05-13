@@ -208,6 +208,9 @@ export function VideoClipDetailsDialog({
                     onGenerate={() => void musicState.generateMusic()}
                     onRemove={() => void musicState.removeMusic()}
                     onSave={() => void musicState.saveMusic()}
+                    onSelectTrack={(track) =>
+                      void musicState.selectMusicTrack(track)
+                    }
                     onVolumeChange={musicState.setMusicVolume}
                   />
                 ) : null}

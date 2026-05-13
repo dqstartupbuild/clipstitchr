@@ -16,6 +16,7 @@ import { useLoadedVideoClip } from "@/lib/clipstitchr/hooks/useLoadedVideoClip";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useStitchr } from "@/lib/clipstitchr/hooks/useStitchr";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
+import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -33,6 +34,8 @@ export function StitchrPageClient() {
   const products = useProducts();
   const stitchrState = useStitchr({ onCreated: library.refresh });
   const [addMusic, setAddMusic] = useState(false);
+  const [selectedMusicTrack, setSelectedMusicTrack] =
+    useState<SharedMusicTrack | null>(null);
   const [textOverlay, setTextOverlay] = useState<TextOverlay | null>(null);
   const [selectedAutoTextProductId, setSelectedAutoTextProductId] = useState("");
   const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
@@ -287,7 +290,7 @@ export function StitchrPageClient() {
         selectedDemoClip,
         selectedDemoTrimRange,
         exportTextOverlay,
-        { addMusic },
+        { addMusic: addMusic && !selectedMusicTrack, musicTrack: selectedMusicTrack },
       );
     }
   };
@@ -355,6 +358,7 @@ export function StitchrPageClient() {
             <div className="flex min-w-0 flex-col gap-5">
               <ClipPickerPanel
                 addMusic={addMusic}
+                selectedMusicTrack={selectedMusicTrack}
                 ugcClips={ugcClips}
                 demoClips={demoClips}
                 selectedUgcIds={activeSelectedUgcIds}
@@ -368,7 +372,17 @@ export function StitchrPageClient() {
                 onUpdateDemoTrim={handleUpdateDemoTrim}
                 canStitch={canStitch}
                 isStitching={isStitching}
-                onAddMusicChange={setAddMusic}
+                onAddMusicChange={(checked) => {
+                  setAddMusic(checked);
+
+                  if (checked) {
+                    setSelectedMusicTrack(null);
+                  }
+                }}
+                onSelectMusicTrack={(track) => {
+                  setSelectedMusicTrack(track);
+                  setAddMusic(false);
+                }}
                 onStitch={handleStitch}
               />
               <StitchrAutoTextPanel

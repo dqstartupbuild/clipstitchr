@@ -16,6 +16,7 @@ export function createLongrVideoFromConvexDocument({
     id: longrVideo.id,
     name: longrVideo.name,
     clipSegments: longrVideo.clipSegments,
+    musicClips: longrVideo.musicClips,
     longrObject: longrVideo.longrObject,
     blob,
     posterObject: longrVideo.posterObject,

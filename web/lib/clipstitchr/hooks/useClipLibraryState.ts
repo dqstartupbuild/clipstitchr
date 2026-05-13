@@ -22,6 +22,7 @@ import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { getDeletableMusicAudioObject } from "@/lib/clipstitchr/utils/getDeletableMusicAudioObject";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
 export function useClipLibraryState(): ClipLibraryValue {
@@ -102,7 +103,11 @@ export function useClipLibraryState(): ClipLibraryValue {
           getDefinedR2Objects([
             clipDocument.videoObject,
             clipDocument.posterObject,
-            clipDocument.cliprMetadata?.music?.audioObject,
+            clipDocument.cliprMetadata?.music
+              ? getDeletableMusicAudioObject({
+                  audioObject: clipDocument.cliprMetadata.music.audioObject,
+                })
+              : undefined,
           ]),
         );
       }
@@ -216,6 +221,7 @@ export function useClipLibraryState(): ClipLibraryValue {
 
       if (
         previousMusicObject &&
+        previousMusicObject.key.startsWith("users/") &&
         (!music || previousMusicObject.key !== music.audioObject.key)
       ) {
         await deleteObjectsFromR2([previousMusicObject]).catch(() => null);
@@ -260,6 +266,7 @@ export function useClipLibraryState(): ClipLibraryValue {
 
       if (
         previousMusicObject &&
+        previousMusicObject.key.startsWith("users/") &&
         (!music || previousMusicObject.key !== music.audioObject.key)
       ) {
         await deleteObjectsFromR2([previousMusicObject]).catch(() => null);
@@ -294,7 +301,11 @@ export function useClipLibraryState(): ClipLibraryValue {
           getDefinedR2Objects([
             stitchDocument.stitchObject,
             stitchDocument.posterObject,
-            stitchDocument.music?.audioObject,
+            stitchDocument.music
+              ? getDeletableMusicAudioObject({
+                  audioObject: stitchDocument.music.audioObject,
+                })
+              : undefined,
           ]),
         );
       }

@@ -14,7 +14,7 @@ import { CreateAvatarFromClipDialog } from "@/app/_components/dashboard/CreateAv
 import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPreviewCard";
 import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
-import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
+import { downloadMusicBlob } from "@/lib/clipstitchr/client/r2/downloadMusicBlob";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
@@ -100,7 +100,7 @@ export function VideoClipCard({
         music?.enabled && music.audioObject
           ? (
               await renderCliprVideoWithMusic({
-                musicBlob: await downloadBlobFromR2(music.audioObject),
+                musicBlob: await downloadMusicBlob(music),
                 videoBlob: nextClip.blob,
                 volume: music.volume,
               })

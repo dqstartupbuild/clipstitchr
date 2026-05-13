@@ -10,6 +10,8 @@ import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { clipTypeValidator } from "./validators/clipType";
 import { longrClipSegmentValidator } from "./validators/longrClipSegment";
+import { longrMusicClipValidator } from "./validators/longrMusicClip";
+import { musicTrackSourceValidator } from "./validators/musicTrackSource";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
 import { replicatePredictionStatusValidator } from "./validators/replicatePredictionStatus";
@@ -148,6 +150,7 @@ export default defineSchema({
     id: v.string(),
     name: v.string(),
     clipSegments: v.array(longrClipSegmentValidator),
+    musicClips: v.optional(v.array(longrMusicClipValidator)),
     longrObject: r2ObjectValidator,
     posterObject: v.optional(r2ObjectValidator),
     posterVersion: v.optional(v.number()),
@@ -160,6 +163,25 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
+  sharedMusicTracks: defineTable({
+    id: v.string(),
+    uploadedByOwnerId: v.string(),
+    title: v.string(),
+    tags: assetTagsValidator,
+    style: v.optional(v.string()),
+    durationSeconds: v.number(),
+    audioObject: r2ObjectValidator,
+    ownerAudioObject: v.optional(r2ObjectValidator),
+    mimeType: v.string(),
+    size: v.number(),
+    prompt: v.optional(v.string()),
+    providerModel: v.optional(v.string()),
+    providerPredictionId: v.optional(v.string()),
+    source: musicTrackSourceValidator,
+    createdAt: v.string(),
+  })
+    .index("by_created", ["createdAt"])
+    .index("by_music_id", ["id"]),
   swiprBackgrounds: defineTable({
     id: v.string(),
     uploadedByOwnerId: v.string(),

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { assertR2ObjectKeyBelongsToUser } from "@/lib/clipstitchr/server/r2/assertR2ObjectKeyBelongsToUser";
 import { createR2ObjectKey } from "@/lib/clipstitchr/server/r2/createR2ObjectKey";
+import { createSharedMusicR2ObjectKey } from "@/lib/clipstitchr/server/r2/createSharedMusicR2ObjectKey";
 
 describe("createR2ObjectKey", () => {
   it("creates deterministic user-scoped keys for clip videos", () => {
@@ -36,6 +37,17 @@ describe("createR2ObjectKey", () => {
     ).toBe("users/user_123/clipr-music/job_456/music.mp3");
   });
 
+  it("creates user-scoped keys for personal library music", () => {
+    expect(
+      createR2ObjectKey({
+        userId: "user_123",
+        kind: "library-music-audio",
+        recordId: "track_456",
+        contentType: "audio/mpeg",
+      }),
+    ).toBe("users/user_123/library-music/track_456/music.mp3");
+  });
+
   it("creates user-scoped keys for stitch music", () => {
     expect(
       createR2ObjectKey({
@@ -56,6 +68,17 @@ describe("createR2ObjectKey", () => {
         contentType: "video/mp4",
       }),
     ).toBe("users/user_123/longr/longr_456/video.mp4");
+  });
+});
+
+describe("createSharedMusicR2ObjectKey", () => {
+  it("creates deterministic shared music keys", () => {
+    expect(
+      createSharedMusicR2ObjectKey({
+        recordId: "track_456",
+        contentType: "audio/mpeg",
+      }),
+    ).toBe("shared/music/track_456/audio.mp3");
   });
 });
 

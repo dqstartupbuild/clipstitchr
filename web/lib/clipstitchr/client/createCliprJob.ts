@@ -6,6 +6,7 @@ type CreateCliprJobOptions = {
   avatarId: string;
   durationSeconds: CliprDurationSeconds;
   jobId: string;
+  musicTrackId?: string;
   productId: string;
   voiceId: string;
 };

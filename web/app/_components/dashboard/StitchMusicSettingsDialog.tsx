@@ -2,10 +2,13 @@
 
 import { Music2, X } from "lucide-react";
 import { useState } from "react";
+import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
 
 type StitchMusicSettingsDialogProps = {
   error: string | null;
@@ -41,6 +44,18 @@ export function StitchMusicSettingsDialog({
       setMusic(nextMusic);
       setEnabled(nextMusic.enabled);
       setVolume(nextMusic.volume);
+    }
+  };
+  const handleSelectTrack = async (track: SharedMusicTrack) => {
+    const nextMusic = createStitchMusicMetadataFromSharedTrack(track);
+
+    try {
+      await onSave(nextMusic);
+      setMusic(nextMusic);
+      setEnabled(nextMusic.enabled);
+      setVolume(nextMusic.volume);
+    } catch {
+      return;
     }
   };
   const handleRemove = async () => {
@@ -174,6 +189,11 @@ export function StitchMusicSettingsDialog({
             >
               {music ? "Generate new music" : "Generate music"}
             </Button>
+            <MusicSelectorButton
+              source="stitchr"
+              selectedTrackId={music?.sharedTrackId}
+              onSelectTrack={handleSelectTrack}
+            />
           </div>
         </div>
       </div>

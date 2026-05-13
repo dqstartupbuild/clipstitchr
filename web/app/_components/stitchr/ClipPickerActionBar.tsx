@@ -1,23 +1,29 @@
 "use client";
 
 import { Scissors } from "lucide-react";
+import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
 import { Button } from "@/app/_components/ui/Button";
+import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 
 type ClipPickerActionBarProps = {
   addMusic: boolean;
   canStitch: boolean;
+  selectedMusicTrack: SharedMusicTrack | null;
   selectedUgcCount: number;
   isStitching: boolean;
   onAddMusicChange: (addMusic: boolean) => void;
+  onSelectMusicTrack: (track: SharedMusicTrack) => void | Promise<void>;
   onStitch: () => void;
 };
 
 export function ClipPickerActionBar({
   addMusic,
   canStitch,
+  selectedMusicTrack,
   selectedUgcCount,
   isStitching,
   onAddMusicChange,
+  onSelectMusicTrack,
   onStitch,
 }: ClipPickerActionBarProps) {
   const buttonLabel =
@@ -44,6 +50,12 @@ export function ClipPickerActionBar({
           />
           Music
         </label>
+        <MusicSelectorButton
+          disabled={isStitching}
+          source="stitchr"
+          selectedTrackId={selectedMusicTrack?.id}
+          onSelectTrack={onSelectMusicTrack}
+        />
         <Button
           type="button"
           disabled={!canStitch}

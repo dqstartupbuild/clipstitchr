@@ -9,6 +9,9 @@ export const stitchMusicMetadataValidator = v.object({
   prompt: v.string(),
   providerModel: v.string(),
   providerPredictionId: v.string(),
+  sharedTrackId: v.optional(v.string()),
+  tags: v.optional(v.array(v.string())),
+  title: v.optional(v.string()),
   updatedAt: v.string(),
   volume: v.number(),
 });

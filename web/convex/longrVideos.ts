@@ -3,6 +3,7 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
 import { longrClipSegmentValidator } from "./validators/longrClipSegment";
+import { longrMusicClipValidator } from "./validators/longrMusicClip";
 import { r2ObjectValidator } from "./validators/r2Object";
 
 const LONGR_MAX_DURATION_SECONDS = 300;
@@ -12,6 +13,7 @@ const saveArgs = {
   id: v.string(),
   name: v.string(),
   clipSegments: v.array(longrClipSegmentValidator),
+  musicClips: v.optional(v.array(longrMusicClipValidator)),
   longrObject: r2ObjectValidator,
   posterObject: v.optional(r2ObjectValidator),
   posterVersion: v.optional(v.number()),

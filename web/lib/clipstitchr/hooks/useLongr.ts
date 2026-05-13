@@ -9,10 +9,13 @@ import {
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
 import { longrMaxDurationSeconds } from "@/lib/clipstitchr/constants/longrMaxDurationSeconds";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
+import { downloadMusicTrackBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadMusicTrackBlobFromR2";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { stitchLongrSequence } from "@/lib/clipstitchr/media/stitchLongrSequence";
 import type { LongrBuildClipSelection } from "@/lib/clipstitchr/types/LongrBuildClipSelection";
+import type { LongrMusicClip } from "@/lib/clipstitchr/types/LongrMusicClip";
+import type { LongrSequenceMusicClip } from "@/lib/clipstitchr/types/LongrSequenceMusicClip";
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
 import { createId } from "@/lib/clipstitchr/utils/createId";
@@ -31,7 +34,10 @@ export function useLongr({ onCreated }: UseLongrOptions) {
   const [longrVideo, setLongrVideo] = useState<LongrVideo | null>(null);
 
   const buildLongrVideo = useCallback(
-    async (selections: LongrBuildClipSelection[]) => {
+    async (
+      selections: LongrBuildClipSelection[],
+      musicClips: LongrMusicClip[] = [],
+    ) => {
       setStatus("reading");
       setProgress(0);
       setError(null);
@@ -74,9 +80,17 @@ export function useLongr({ onCreated }: UseLongrOptions) {
           throw new Error("Longs cannot be longer than 5 minutes.");
         }
 
+        const loadedMusicClips: LongrSequenceMusicClip[] = await Promise.all(
+          musicClips.map(async (musicClip) => ({
+            ...musicClip,
+            blob: await downloadMusicTrackBlobFromR2(musicClip.trackId),
+          })),
+        );
+
         setStatus("stitching");
 
         const stitched = await stitchLongrSequence(loadedClips, {
+          musicClips: loadedMusicClips,
           onProgress: setProgress,
         });
         let posterBlob: Blob | undefined;
@@ -111,6 +125,7 @@ export function useLongr({ onCreated }: UseLongrOptions) {
           id: longrId,
           name: getLongrVideoName(),
           clipSegments,
+          musicClips,
           longrObject,
           blob: stitched.blob,
           posterObject,
@@ -128,6 +143,7 @@ export function useLongr({ onCreated }: UseLongrOptions) {
           id: nextLongrVideo.id,
           name: nextLongrVideo.name,
           clipSegments: nextLongrVideo.clipSegments,
+          musicClips: nextLongrVideo.musicClips,
           longrObject: nextLongrVideo.longrObject,
           posterObject: nextLongrVideo.posterObject,
           posterVersion: nextLongrVideo.posterVersion,
