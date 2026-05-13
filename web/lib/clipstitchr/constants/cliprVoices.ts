@@ -10,6 +10,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Zephyr",
     description: "Female, clear creator",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Zephyr.m4a",
     prompt: conversationalCreator,
   },
   {
@@ -17,6 +18,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Puck",
     description: "Male, upbeat coach",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Puck.m4a",
     prompt: "Upbeat creator delivery, friendly, crisp, no shouting or hard sell.",
   },
   {
@@ -24,6 +26,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Charon",
     description: "Male, steady guide",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Charon.m4a",
     prompt: "Steady explainer delivery, reassuring, plainspoken, no jargon.",
   },
   {
@@ -31,6 +34,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Kore",
     description: "Female, polished calm",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Kore.m4a",
     prompt: "Polished creator delivery, calm confidence, measured pacing.",
   },
   {
@@ -38,6 +42,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Fenrir",
     description: "Male, punchy",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Fenrir.m4a",
     prompt: "Punchy creator delivery, energetic but controlled, no theatrical hype.",
   },
   {
@@ -45,6 +50,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Leda",
     description: "Female, warm",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Leda.m4a",
     prompt: "Warm conversational delivery, easy pacing, clear sentence endings.",
   },
   {
@@ -52,6 +58,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Orus",
     description: "Male, direct",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Orus.m4a",
     prompt: "Direct creator delivery, grounded, concise, confident without pressure.",
   },
   {
@@ -59,6 +66,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Aoede",
     description: "Female, instructional",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Aoede.m4a",
     prompt: "Helpful instructor delivery, clear steps, friendly expert tone.",
   },
   {
@@ -66,6 +74,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Callirrhoe",
     description: "Female, decisive",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Callirrhoe.m4a",
     prompt: "Decisive creator delivery, plain language, no filler.",
   },
   {
@@ -73,6 +82,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Autonoe",
     description: "Female, casual",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Autonoe.m4a",
     prompt: conversationalCreator,
   },
   {
@@ -80,6 +90,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Enceladus",
     description: "Male, grounded",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Enceladus.m4a",
     prompt: "Grounded creator delivery, relaxed, clear, natural pauses.",
   },
   {
@@ -87,6 +98,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Iapetus",
     description: "Male, facilitator",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Iapetus.m4a",
     prompt: "Encouraging facilitator delivery, crisp endings, measured pacing.",
   },
   {
@@ -94,6 +106,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Umbriel",
     description: "Male, calm",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Umbriel.m4a",
     prompt: "Calm creator delivery, steady pace, low-pressure clarity.",
   },
   {
@@ -101,6 +114,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Algenib",
     description: "Male, premium",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Algenib.m4a",
     prompt: "Premium creator delivery, composed, confident, no hype.",
   },
   {
@@ -108,6 +122,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Despina",
     description: "Female, bright",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Despina.m4a",
     prompt: "Bright creator delivery, expressive, friendly, still natural.",
   },
   {
@@ -115,6 +130,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Erinome",
     description: "Female, soft",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Erinome.m4a",
     prompt: "Soft conversational delivery, thoughtful, clear, no whispering.",
   },
   {
@@ -122,6 +138,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Laomedeia",
     description: "Female, refined",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Laomedeia.m4a",
     prompt: "Refined creator delivery, articulate, measured, relaxed.",
   },
   {
@@ -129,6 +146,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Achernar",
     description: "Female, composed",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Achernar.m4a",
     prompt: "Composed creator delivery, direct, natural, concise.",
   },
   {
@@ -136,6 +154,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Algieba",
     description: "Male, confident",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Algieba.m4a",
     prompt: "Confident creator delivery, warm, natural, not announcer-like.",
   },
   {
@@ -143,6 +162,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Schedar",
     description: "Male, precise",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Schedar.m4a",
     prompt: "Precise explainer delivery, steady cadence, useful and calm.",
   },
   {
@@ -150,6 +170,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Gacrux",
     description: "Female, practical",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Gacrux.m4a",
     prompt: "Practical creator delivery, matter-of-fact, clear, conversational.",
   },
   {
@@ -157,6 +178,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Pulcherrima",
     description: "Female, expressive",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Pulcherrima.m4a",
     prompt: "Expressive creator delivery, friendly energy, no exaggerated emotion.",
   },
   {
@@ -164,6 +186,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Achird",
     description: "Male, casual",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Achird.m4a",
     prompt: "Casual creator delivery, natural pace, clear and relaxed.",
   },
   {
@@ -171,6 +194,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Zubenelgenubi",
     description: "Male, measured",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Zubenelgenubi.m4a",
     prompt: "Measured creator delivery, calm confidence, clear consonants.",
   },
   {
@@ -178,6 +202,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Vindemiatrix",
     description: "Female, grounded",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Vindemiatrix.m4a",
     prompt: "Grounded creator delivery, thoughtful, concise, no sales pressure.",
   },
   {
@@ -185,6 +210,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Sadachbia",
     description: "Male, helpful",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Sadachbia.m4a",
     prompt: "Helpful creator delivery, steady and direct, no filler.",
   },
   {
@@ -192,6 +218,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Sadaltager",
     description: "Male, energetic",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Sadaltager.m4a",
     prompt: "Energetic creator delivery, punchy but believable, no shouting.",
   },
   {
@@ -199,6 +226,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Sulafat",
     description: "Female, neutral",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Sulafat.m4a",
     prompt: "Neutral creator delivery, clear, natural, evenly paced.",
   },
   {
@@ -206,6 +234,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Alnilam",
     description: "Male, crisp",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Alnilam.m4a",
     prompt: "Crisp creator delivery, clear sentence rhythm, friendly confidence.",
   },
   {
@@ -213,6 +242,7 @@ export const cliprVoices: CliprVoice[] = [
     name: "Rasalgethi",
     description: "Male, warm",
     language: englishUs,
+    previewSrc: "/audio/clipr-voices/Rasalgethi.m4a",
     prompt: "Warm creator delivery, relaxed and conversational, no hard sell.",
   },
 ];

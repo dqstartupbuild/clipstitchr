@@ -1,6 +1,7 @@
 import { Mic2 } from "lucide-react";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { Button } from "@/app/_components/ui/Button";
+import { CliprVoicePreviewButton } from "@/app/_components/clipr/CliprVoicePreviewButton";
 import { cliprVoices } from "@/lib/clipstitchr/constants/cliprVoices";
 
 type CliprVoiceSelectProps = {
@@ -18,6 +19,9 @@ export function CliprVoiceSelect({
   onSaveDefault,
   onVoiceChange,
 }: CliprVoiceSelectProps) {
+  const selectedVoice =
+    cliprVoices.find((voice) => voice.id === value) ?? cliprVoices[0];
+
   return (
     <section>
       <div className="mb-3 flex items-center gap-3">
@@ -41,16 +45,23 @@ export function CliprVoiceSelect({
           }))}
           onChange={(event) => onVoiceChange(event.target.value)}
         />
-        {canSaveDefault ? (
-          <Button
-            type="button"
-            variant="secondary"
-            isLoading={isSavingDefault}
-            onClick={onSaveDefault}
-          >
-            Make default
-          </Button>
-        ) : null}
+        <div className="flex flex-wrap gap-2 sm:justify-end">
+          <CliprVoicePreviewButton
+            key={selectedVoice.id}
+            src={selectedVoice.previewSrc}
+            voiceName={selectedVoice.name}
+          />
+          {canSaveDefault ? (
+            <Button
+              type="button"
+              variant="secondary"
+              isLoading={isSavingDefault}
+              onClick={onSaveDefault}
+            >
+              Make default
+            </Button>
+          ) : null}
+        </div>
       </div>
     </section>
   );
