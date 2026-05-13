@@ -240,6 +240,18 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     period: HOUR,
     capacity: 6,
   },
+  cliprMusicGenerate: {
+    kind: "token bucket",
+    rate: 600,
+    period: HOUR,
+    capacity: 180,
+  },
+  cliprMusicGenerateDaily: {
+    kind: "token bucket",
+    rate: 1200,
+    period: DAY,
+    capacity: 1200,
+  },
   cliprProviderSpendGlobal: {
     kind: "token bucket",
     rate: 10000,

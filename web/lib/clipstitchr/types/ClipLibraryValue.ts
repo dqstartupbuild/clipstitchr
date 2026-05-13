@@ -1,4 +1,5 @@
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -16,6 +17,13 @@ export type ClipLibraryValue = {
   updateClipMetadata: (
     clip: VideoClipMetadata,
     metadata: AssetMetadataUpdate,
+  ) => Promise<void>;
+  generateCliprMusic: (
+    clip: VideoClipMetadata,
+  ) => Promise<CliprMusicMetadata | null>;
+  updateCliprMusic: (
+    clip: VideoClipMetadata,
+    music: CliprMusicMetadata | null,
   ) => Promise<void>;
   updateClipTrimRange: (
     clip: VideoClipMetadata,

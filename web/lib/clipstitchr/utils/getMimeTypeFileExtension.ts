@@ -16,5 +16,9 @@ export function getMimeTypeFileExtension(
     return "mov";
   }
 
+  if (subtype === "mpeg") {
+    return "mp3";
+  }
+
   return subtype;
 }

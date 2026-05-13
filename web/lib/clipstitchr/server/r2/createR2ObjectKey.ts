@@ -36,6 +36,11 @@ const objectKindConfig: Record<
     baseName: "thumbnail",
     fallbackExtension: "jpg",
   },
+  "clipr-music-audio": {
+    directory: "clipr-music",
+    baseName: "music",
+    fallbackExtension: "mp3",
+  },
   "clipr-avatar-video": {
     directory: "clipr-scenes",
     baseName: "avatar",

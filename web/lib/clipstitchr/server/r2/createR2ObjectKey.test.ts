@@ -24,6 +24,17 @@ describe("createR2ObjectKey", () => {
       }),
     ).toBe("users/user_123/photos/unsafe-photo-id/thumbnail.jpg");
   });
+
+  it("creates user-scoped keys for Clipr music", () => {
+    expect(
+      createR2ObjectKey({
+        userId: "user_123",
+        kind: "clipr-music-audio",
+        recordId: "job_456",
+        contentType: "audio/mpeg",
+      }),
+    ).toBe("users/user_123/clipr-music/job_456/music.mp3");
+  });
 });
 
 describe("assertR2ObjectKeyBelongsToUser", () => {

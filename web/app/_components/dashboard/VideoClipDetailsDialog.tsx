@@ -62,6 +62,14 @@ export function VideoClipDetailsDialog({
   const detailItems = [
     { label: "Clipr hook", value: clip.cliprMetadata?.filledHook },
     { label: "Clipr product", value: clip.cliprMetadata?.productName },
+    {
+      label: "Clipr music",
+      value: clip.cliprMetadata?.music
+        ? clip.cliprMetadata.music.enabled
+          ? `Enabled at ${Math.round(clip.cliprMetadata.music.volume * 100)}%`
+          : "Attached but disabled"
+        : undefined,
+    },
     { label: "Description", value: clip.videoDescription },
     { label: "Product", value: clip.productDescription },
     { label: "Main person", value: clip.mainPersonDescription },

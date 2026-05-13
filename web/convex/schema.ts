@@ -6,6 +6,7 @@ import { cliprDurationSecondsValidator } from "./validators/cliprDurationSeconds
 import { cliprJobStageValidator } from "./validators/cliprJobStage";
 import { cliprJobStatusValidator } from "./validators/cliprJobStatus";
 import { cliprMetadataValidator } from "./validators/cliprMetadata";
+import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { clipTypeValidator } from "./validators/clipType";
 import { r2ObjectValidator } from "./validators/r2Object";
@@ -202,6 +203,7 @@ export default defineSchema({
     avatarVideoObject: v.optional(r2ObjectValidator),
     avatarImageProviderPredictionId: v.optional(v.string()),
     avatarVideoProviderPredictionId: v.optional(v.string()),
+    music: v.optional(cliprMusicMetadataValidator),
     hookStyleKey: v.optional(v.string()),
     hookTemplateId: v.optional(v.string()),
     filledHook: v.optional(v.string()),

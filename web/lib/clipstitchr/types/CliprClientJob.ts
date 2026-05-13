@@ -1,6 +1,7 @@
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprJobStage } from "@/lib/clipstitchr/types/CliprJobStage";
 import type { CliprJobStatus } from "@/lib/clipstitchr/types/CliprJobStatus";
+import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { CliprScenePlan } from "@/lib/clipstitchr/types/CliprScenePlan";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 
@@ -14,6 +15,7 @@ export type CliprClientJob = {
   avatarVideoObject?: R2ObjectReference;
   avatarImageProviderPredictionId?: string;
   avatarVideoProviderPredictionId?: string;
+  music?: CliprMusicMetadata;
   voiceId: string;
   targetDurationSeconds: CliprDurationSeconds;
   filledHook?: string;

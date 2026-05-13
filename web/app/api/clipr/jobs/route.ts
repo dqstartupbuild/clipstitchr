@@ -5,6 +5,7 @@ import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/c
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { createCliprAvatarVideo } from "@/lib/clipstitchr/server/createCliprAvatarVideo";
+import { createCliprMusic } from "@/lib/clipstitchr/server/createCliprMusic";
 import { createCliprSceneAvatarImage } from "@/lib/clipstitchr/server/createCliprSceneAvatarImage";
 import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
@@ -14,7 +15,9 @@ import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2Downloa
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { saveCliprAvatarVideoObject } from "@/lib/clipstitchr/server/saveCliprAvatarVideoObject";
+import { saveCliprMusicObject } from "@/lib/clipstitchr/server/saveCliprMusicObject";
 import { saveCliprSceneImageObject } from "@/lib/clipstitchr/server/saveCliprSceneImageObject";
+import { cliprMusicGenerationDefaults } from "@/lib/clipstitchr/constants/cliprMusicGenerationDefaults";
 import { getCliprDurationSeconds } from "@/lib/clipstitchr/utils/getCliprDurationSeconds";
 import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 import { createId } from "@/lib/clipstitchr/utils/createId";
@@ -22,6 +25,7 @@ import { createId } from "@/lib/clipstitchr/utils/createId";
 export const runtime = "nodejs";
 
 type CliprJobCreateRequest = {
+  addMusic?: unknown;
   avatarId?: unknown;
   durationSeconds?: unknown;
   jobId?: unknown;
@@ -54,6 +58,7 @@ export async function POST(request: Request) {
     typeof body.avatarId === "string" ? body.avatarId.trim() : "";
   const durationSeconds = getCliprDurationSeconds(body.durationSeconds);
   const voiceId = getCliprVoiceId(body.voiceId);
+  const addMusic = body.addMusic === true;
   const requestedJobId =
     typeof body.jobId === "string" ? body.jobId.trim() : "";
   const jobId = requestedJobId ? requestedJobId.slice(0, 128) : createId();
@@ -147,6 +152,13 @@ export async function POST(request: Request) {
       secret,
     });
 
+    if (addMusic) {
+      await convex.mutation(api.rateLimits.consumeCliprMusicGeneration, {
+        generatedSeconds: cliprMusicGenerationDefaults.durationSeconds,
+        secret,
+      });
+    }
+
     await convex.mutation(api.rateLimits.consumeCliprAvatarStillGeneration, {
       secret,
     });
@@ -175,25 +187,71 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
     });
 
-    const generatedAvatarVideo = await createCliprAvatarVideo({
-      imageUrl: generatedAvatarImage.outputUrl,
-      replicate,
-      script: textGeneration.script,
-      voiceId,
-    });
-    const avatarVideoObject = await saveCliprAvatarVideoObject({
-      body: generatedAvatarVideo.body,
-      contentType: generatedAvatarVideo.contentType,
-      jobId,
-      userId,
-    });
+    const [generatedAvatarVideo, generatedMusic] = await Promise.all([
+      createCliprAvatarVideo({
+        imageUrl: generatedAvatarImage.outputUrl,
+        replicate,
+        script: textGeneration.script,
+        voiceId,
+      }),
+      addMusic
+        ? createCliprMusic({
+            audienceDetails: product.audienceDetails,
+            productName: product.name,
+            replicate,
+            script: textGeneration.script,
+          })
+        : Promise.resolve(null),
+    ]);
+
+    if (generatedMusic) {
+      await convex.mutation(api.rateLimits.consumeR2Upload, {
+        secret,
+        sizeBytes: generatedMusic.body.byteLength,
+      });
+    }
+
+    const [avatarVideoObject, musicObject] = await Promise.all([
+      saveCliprAvatarVideoObject({
+        body: generatedAvatarVideo.body,
+        contentType: generatedAvatarVideo.contentType,
+        jobId,
+        userId,
+      }),
+      generatedMusic
+        ? saveCliprMusicObject({
+            body: generatedMusic.body,
+            contentType: generatedMusic.contentType,
+            jobId,
+            userId,
+          })
+        : Promise.resolve(null),
+    ]);
+    const musicRecordedAt = new Date().toISOString();
 
     const job = await convex.mutation(api.cliprJobs.recordAvatarVideoOutput, {
       secret,
       id: jobId,
       avatarVideoObject,
       avatarVideoProviderPredictionId: generatedAvatarVideo.predictionId,
-      providerModels: [generatedAvatarVideo.modelId],
+      music:
+        generatedMusic && musicObject
+          ? {
+              audioObject: musicObject,
+              createdAt: musicRecordedAt,
+              durationSeconds: generatedMusic.durationSeconds,
+              enabled: true,
+              prompt: generatedMusic.prompt,
+              providerModel: generatedMusic.modelId,
+              providerPredictionId: generatedMusic.predictionId,
+              updatedAt: musicRecordedAt,
+              volume: 1,
+            }
+          : undefined,
+      providerModels: [
+        generatedAvatarVideo.modelId,
+        ...(generatedMusic ? [generatedMusic.modelId] : []),
+      ],
       progress: 0.68,
       updatedAt: new Date().toISOString(),
     });

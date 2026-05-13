@@ -9,7 +9,9 @@ import { createVideoClipMetadataFromConvexDocument } from "@/lib/clipstitchr/bac
 import { getDefinedR2Objects } from "@/lib/clipstitchr/backend/getDefinedR2Objects";
 import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
 import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
+import { generateCliprMusic as requestCliprMusicGeneration } from "@/lib/clipstitchr/client/generateCliprMusic";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { ClipLibraryValue } from "@/lib/clipstitchr/types/ClipLibraryValue";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -30,6 +32,7 @@ export function useClipLibraryState(): ClipLibraryValue {
     isAuthenticated ? {} : "skip",
   );
   const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
+  const updateCliprMusicMutation = useMutation(api.videoClips.updateCliprMusic);
   const removeClipMutation = useMutation(api.videoClips.remove);
   const removeStitchMutation = useMutation(api.stitches.remove);
   const [clips, setClips] = useState<VideoClipMetadata[]>([]);
@@ -88,6 +91,7 @@ export function useClipLibraryState(): ClipLibraryValue {
           getDefinedR2Objects([
             clipDocument.videoObject,
             clipDocument.posterObject,
+            clipDocument.cliprMetadata?.music?.audioObject,
           ]),
         );
       }
@@ -180,6 +184,51 @@ export function useClipLibraryState(): ClipLibraryValue {
       await refresh();
     },
     [refresh, updateClipMetadataMutation],
+  );
+
+  const updateCliprMusic = useCallback(
+    async (clip: VideoClipMetadata, music: CliprMusicMetadata | null) => {
+      const previousMusicObject = clip.cliprMetadata?.music?.audioObject;
+      const nextUpdatedAt = new Date().toISOString();
+
+      await updateCliprMusicMutation({
+        id: clip.id,
+        music:
+          music === null
+            ? null
+            : {
+                ...music,
+                updatedAt: nextUpdatedAt,
+              },
+        updatedAt: nextUpdatedAt,
+      });
+
+      if (
+        previousMusicObject &&
+        (!music || previousMusicObject.key !== music.audioObject.key)
+      ) {
+        await deleteObjectsFromR2([previousMusicObject]).catch(() => null);
+      }
+
+      clipCacheRef.current.delete(clip.id);
+      await refresh();
+    },
+    [refresh, updateCliprMusicMutation],
+  );
+
+  const generateCliprMusic = useCallback(
+    async (clip: VideoClipMetadata) => {
+      if (!clip.cliprMetadata) {
+        return null;
+      }
+
+      const music = await requestCliprMusicGeneration({ clipId: clip.id });
+
+      await updateCliprMusic(clip, music);
+
+      return music;
+    },
+    [updateCliprMusic],
   );
 
   const removeStitch = useCallback(
@@ -310,6 +359,8 @@ export function useClipLibraryState(): ClipLibraryValue {
     removeClip,
     renameClip,
     updateClipMetadata,
+    generateCliprMusic,
+    updateCliprMusic,
     updateClipTrimRange,
     removeStitch,
   };

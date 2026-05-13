@@ -4,6 +4,7 @@ export type R2ObjectKind =
   | "photo"
   | "photo-original"
   | "photo-thumbnail"
+  | "clipr-music-audio"
   | "clipr-avatar-video"
   | "clipr-scene-image"
   | "stitch-video"

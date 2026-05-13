@@ -133,7 +133,7 @@ device cannot resume the work.
 | Photo upload | Browser prepares photo, uploads objects, and saves Convex metadata. Refresh can stop before completion. | Upload original source to a durable job first, then finalize from a recoverable source. |
 | Video upload normalization | Browser Media Bunny normalization and R2 upload run from a page-local queue. Refresh stops work. | Persist source first and process in a backend worker, or persist a local resumable queue. |
 | Stitchr composition | Inputs are durable saved clips, but each stitch job is browser-local. Refresh stops work, including multi-UGC batches that have not finished saving every output. | Create a stitch job with selected UGC clip IDs, demo clip ID, trim ranges, and shared overlay config, then process in a backend worker or resumable browser queue. |
-| Clipr generation | Hook/script and scene generation are durable, scene outputs copy to R2, and browser Media Bunny stitching finalizes from durable scene objects. | Move final stitching to a worker when browser reliability or route timeout limits require it. |
+| Clipr generation | Hook/script and scene generation are durable, scene outputs copy to R2, optional music copies to R2 as a separate editable asset, and browser Media Bunny final preparation saves the clean Clip video. Export/download can render a temporary music mix from durable video and audio objects. | Move final video preparation and music export rendering to a worker when browser reliability or route timeout limits require it. |
 
 ## Recovery Requirements
 
@@ -172,6 +172,8 @@ For Clipr, each job needs:
 - generated hook, script, and scene plan
 - provider prediction IDs or request IDs for each scene
 - intermediate scene R2 object references
+- optional music prompt, provider prediction ID, R2 object reference, enabled
+  flag, and export volume
 - final video/poster R2 object references
 - final video clip ID after finalization
 

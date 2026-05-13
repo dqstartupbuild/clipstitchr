@@ -6,6 +6,7 @@ import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -24,6 +25,13 @@ type VideoLibrarySectionProps = {
   onUpdateMetadata: (
     clip: VideoClipMetadata,
     metadata: AssetMetadataUpdate,
+  ) => void | Promise<void>;
+  onGenerateCliprMusic?: (
+    clip: VideoClipMetadata,
+  ) => Promise<CliprMusicMetadata | null>;
+  onUpdateCliprMusic?: (
+    clip: VideoClipMetadata,
+    music: CliprMusicMetadata | null,
   ) => void | Promise<void>;
   onUpdateTrim: (
     clip: VideoClipMetadata,
@@ -45,6 +53,8 @@ export function VideoLibrarySection({
   isCreatingAvatarFromClip = false,
   onLoadClip,
   onDelete,
+  onGenerateCliprMusic,
+  onUpdateCliprMusic,
   onUpdateMetadata,
   onUpdateTrim,
   onCreateAvatarFromClip,
@@ -72,6 +82,8 @@ export function VideoLibrarySection({
                 isCreatingAvatarFromClip={isCreatingAvatarFromClip}
                 onLoadClip={onLoadClip}
                 onDelete={onDelete}
+                onGenerateCliprMusic={onGenerateCliprMusic}
+                onUpdateCliprMusic={onUpdateCliprMusic}
                 onUpdateMetadata={onUpdateMetadata}
                 onUpdateTrim={onUpdateTrim}
                 onCreateAvatarFromClip={onCreateAvatarFromClip}

@@ -61,6 +61,13 @@ hook, and the remaining slides should pay it off with simple supporting points.
   and voice.
 - The generated avatar video should get as close as possible to the target
   length of 30 or 60 seconds.
+- The user can opt into AI-generated background music. The checkbox is off by
+  default.
+- Clipr music uses `stability-ai/stable-audio-2.5`, generates one 60 second
+  instrumental audio file, and stores that file in R2 separately from the video.
+- Clipr does not bake music into the saved library video. The user can remove
+  music, regenerate music, or change music volume later. Media Bunny mixes the
+  saved clean video and selected music only when the user exports/downloads.
 - Final Clipr outputs should be saved in the content library and organized into a "Clips" tab.
 
 ## Documentation Coverage
@@ -563,28 +570,35 @@ Rules:
    photo as the hidden reference image.
 4. User chooses duration: `30 seconds` or `60 seconds`; default is `30 seconds`.
 5. User selects a voice through a modal-style dropdown.
-6. User can press `Make default` in the voice selector when the selected voice
+6. User can optionally enable generated background music. The control is
+   unchecked by default.
+7. User can press `Make default` in the voice selector when the selected voice
    differs from the saved default voice.
-7. Server randomly selects a hidden hook style and 3-5 hidden templates from
+8. Server randomly selects a hidden hook style and 3-5 hidden templates from
    the product's eligible pool using product settings, inferred problem,
    inferred pain points, audience details, placeholder fillers, and safety
    rules.
-8. GPT-4.1 fills hook placeholders and selects the strongest hook.
-9. GPT-4.1 generates a Clipr script from the selected hook.
-10. GPT-4.1 returns one avatar scene plan for the full script.
-11. Clipr generates one UGC-style avatar still from the selected avatar
+9. GPT-4.1 fills hook placeholders and selects the strongest hook.
+10. GPT-4.1 generates a Clipr script from the selected hook.
+11. GPT-4.1 returns one avatar scene plan for the full script.
+12. Clipr generates one UGC-style avatar still from the selected avatar
     reference photo, avatar description, full script, and visual direction.
-12. The generated still, selected voice, and full script are sent to
+13. The generated still, selected voice, and full script are sent to
     `prunaai/p-video-avatar` to create one talking avatar video.
-13. One generated avatar still and the full-script avatar video are copied into
-    R2.
-14. The browser normalizes the full avatar video.
-15. Clipr generates a poster image for the final output.
-16. Final video and poster are uploaded to R2.
-17. Convex saves the final output as a UGC-compatible video clip with Clipr
+14. If music is enabled, `stability-ai/stable-audio-2.5` generates one 60
+    second instrumental music bed concurrently with the avatar video generation.
+15. The generated avatar still, full-script avatar video, and optional music
+    file are copied into R2. Music is stored as its own R2 object.
+16. The browser normalizes the full avatar video without baking in music.
+17. Clipr generates a poster image for the final output.
+18. Final video and poster are uploaded to R2.
+19. Convex saves the final output as a UGC-compatible video clip with Clipr
     provenance metadata.
-18. The output appears in the Content Library `Clips` tab and can be used in
+20. The output appears in the Content Library `Clips` tab and can be used in
     Stitchr.
+21. If music metadata is attached and enabled, download/export renders a fresh
+    MP4 with Media Bunny using the clean video, the R2 music file, and the saved
+    music volume.
 
 ## AI Provider Notes
 
@@ -599,12 +613,16 @@ Planned model roles:
   full-script avatar video.
 - Avatar video and voice generation: `prunaai/p-video-avatar`, using the
   generated still, selected voice, voice prompt, and full script.
+- Optional background music: `stability-ai/stable-audio-2.5`, using an
+  instrumental-only prompt derived from the product context and Clipr script.
+  Inputs use `duration: 60`, `steps: 8`, and `cfg_scale: 1`.
 
 Add environment overrides instead of hard-coding provider choices:
 
 - `CLIPR_HOOK_MODEL_ID`
 - `AVATAR_PHOTO_MODEL_ID` for avatar photo generation and Clipr avatar stills
 - `CLIPR_AVATAR_VIDEO_MODEL_ID`
+- `CLIPR_MUSIC_MODEL_ID`
 - `CLIPR_TTS_MODEL_ID` is legacy/reserved.
 
 ## Script Rules
@@ -693,8 +711,21 @@ type CliprMetadata = {
   script: string;
   sceneCount: number;
   finalDurationSeconds: number;
+  music?: CliprMusicMetadata;
   providerModels: string[];
   createdAt: string;
+};
+
+type CliprMusicMetadata = {
+  audioObject: R2ObjectReference;
+  prompt: string;
+  providerModel: string;
+  providerPredictionId: string;
+  durationSeconds: number; // always 60 for the current provider config
+  enabled: boolean;
+  volume: number; // 0-1 multiplier over the app's ad/music mix ratio
+  createdAt: string;
+  updatedAt: string;
 };
 ```
 
@@ -705,8 +736,12 @@ Content Library behavior:
 - `UGC` should show uploaded/non-Clipr/non-Swapr UGC clips.
 - `Swaps` should continue to show Swapr outputs.
 - `All` should include UGC, Demo, Clips, Swaps, Swipes, and Stitches.
-- Clipr clips should have `Use in Stitchr`, preview, metadata edit, download,
-  and delete behavior consistent with other saved video clips.
+- Clipr clips should have `Use in Stitchr`, preview, metadata edit, music
+  settings, download/export, and delete behavior consistent with other saved
+  video clips.
+- Music settings should let the user disable/remove music, regenerate music, and
+  change the export volume. These changes update metadata and the R2 music
+  object, not the saved clean video.
 
 ## Routes And UI Touchpoints
 
@@ -714,6 +749,9 @@ Add:
 
 - `/dashboard/clipr`
   - Clipr generation studio.
+- `POST /api/clipr/music`
+  - Authenticated, rate-limited regeneration endpoint for existing Clipr music
+    assets.
 - `/dashboard/uploads?tab=clips`
   - Content Library Clips tab.
 
@@ -816,6 +854,7 @@ New enforcement surfaces to document and implement:
 - Swipr and Stitchr auto-text through the same Clipr hook/script generation
   route. The expanded local template libraries do not add a new backend surface.
 - Clipr full-script avatar video and voice generation.
+- Clipr music generation.
 - Clipr avatar still generation.
 - Clipr full job creation.
 - Clipr job polling.
@@ -831,6 +870,7 @@ Required limits:
 - per-user generated seconds limits
 - per-user voice generation limits
 - per-user avatar video generation limits
+- per-user 60 second music generation limits
 - global provider spend limits
 - polling limits
 - R2 upload/download limits reused from existing routes
@@ -859,6 +899,8 @@ The durable job should track:
 - provider stage
 - provider prediction IDs or request IDs
 - intermediate avatar image/video R2 objects
+- optional music R2 object, provider prediction ID, prompt, enabled flag, and
+  export volume
 - final video/poster R2 objects
 - final saved clip ID
 - status
@@ -870,9 +912,11 @@ Provider outputs should be copied into R2 as soon as they are available.
 
 For the simplified MVP path, the browser only downloads the generated avatar
 video, normalizes it to the app's 9:16 clip format, creates a poster, uploads
-the final objects, and saves the Clip metadata. If chunked avatar generation is
-added later for provider duration caps, those chunk outputs should be copied to
-R2 before any Media Bunny merge step starts.
+the final objects, and saves the Clip metadata. Optional generated music is
+copied to R2 before the final Clip is saved, but remains a separate editable
+asset. If chunked avatar generation is added later for provider duration caps,
+those chunk outputs should be copied to R2 before any Media Bunny merge step
+starts.
 
 ## Implementation Touchpoints
 
@@ -881,6 +925,7 @@ Likely code changes after docs/resources are approved:
 - `web/convex/schema.ts`
   - add `cliprJobs`
   - add `cliprMetadata` to `videoClips`
+  - add optional `cliprMetadata.music` for export-time music settings
   - add product-level eligible hook style/template IDs and placeholder fillers
   - add voice preference storage or user preference table
 - `web/convex/validators/*`
@@ -903,6 +948,7 @@ Likely code changes after docs/resources are approved:
   - add job create/poll/cancel and any provider helper routes
 - `web/lib/clipstitchr/media/*`
   - reuse upload normalization and poster helpers for the generated avatar video
+  - add export-time Clipr music mixing from clean video and separate R2 audio
 - `web/app/dashboard/clipr/*`
   - add Clipr page client and controls
 - `web/app/_components/clipr/*`
@@ -931,18 +977,25 @@ After implementation:
 7. Test generated avatar image and avatar video outputs save to R2 before final
    Clip save.
 8. Test the full generated script is passed to `prunaai/p-video-avatar`.
-9. Test the generated avatar video normalizes to a single 9:16 Clip.
-10. Test progress updates through script, image, avatar video, normalization,
+9. Test selected music creates a 60 second Stable Audio file in R2 while avatar
+   video generation is running.
+10. Test the generated avatar video normalizes to a single clean 9:16 Clip
+    without baked-in music.
+11. Test Clipr music can be disabled, removed, regenerated, and volume-adjusted
+    after the Clip is saved.
+12. Test download/export renders a new MP4 with the selected music mix and
+    leaves the saved clean video unchanged.
+13. Test progress updates through script, image, avatar video, normalization,
     poster, and save steps.
-11. Test final output appears in the `Clips` tab.
-12. Test Clipr output is selectable in Stitchr.
-13. Test UGC tab does not mix uploaded UGC with Clipr outputs.
-14. Test All tab includes Clipr outputs.
-15. Test Swipr auto-text puts the hook on the first slide and supporting text on
+14. Test final output appears in the `Clips` tab.
+15. Test Clipr output is selectable in Stitchr.
+16. Test UGC tab does not mix uploaded UGC with Clipr outputs.
+17. Test All tab includes Clipr outputs.
+18. Test Swipr auto-text puts the hook on the first slide and supporting text on
     the remaining slides.
-16. Test Stitchr auto-text fills the single editable overlay.
-17. Test paid-provider routes return `429` before provider calls when limited.
-18. Review user-facing copy for non-technical language and no unwanted CTAs.
+19. Test Stitchr auto-text fills the single editable overlay.
+20. Test paid-provider routes return `429` before provider calls when limited.
+21. Review user-facing copy for non-technical language and no unwanted CTAs.
 
 ## Approval Decisions
 
@@ -956,8 +1009,10 @@ These are the assumptions this scope makes:
 - Clipr outputs should save as UGC-compatible video clips with Clipr provenance
   instead of adding a third `clipType`.
 - The simplified MVP saves one full-script avatar video directly as the final
-  Clipr Clip. If provider output is capped below the requested script length,
-  chunked avatar generation and a durable merge step should be added next.
+  clean Clipr Clip. Optional music remains a separate R2-backed asset and is
+  mixed only during export/download. If provider output is capped below the
+  requested script length, chunked avatar generation and a durable merge step
+  should be added next.
 - Exact provider model schemas will be verified immediately before
   implementation.
 

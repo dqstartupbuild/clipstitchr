@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { cliprDurationSecondsValidator } from "./cliprDurationSeconds";
+import { cliprMusicMetadataValidator } from "./cliprMusicMetadata";
 
 export const cliprMetadataValidator = v.object({
   jobId: v.string(),
@@ -16,6 +17,7 @@ export const cliprMetadataValidator = v.object({
   script: v.string(),
   sceneCount: v.number(),
   finalDurationSeconds: v.number(),
+  music: v.optional(cliprMusicMetadataValidator),
   providerModels: v.array(v.string()),
   createdAt: v.string(),
 });

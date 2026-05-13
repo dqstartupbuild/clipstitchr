@@ -3,6 +3,7 @@
 import {
   Download,
   Edit3,
+  Music2,
   Scissors,
   SlidersHorizontal,
   Shuffle,
@@ -10,16 +11,20 @@ import {
   UserRound,
 } from "lucide-react";
 import { useState } from "react";
+import { CliprMusicSettingsDialog } from "@/app/_components/dashboard/CliprMusicSettingsDialog";
 import { CreateAvatarFromClipDialog } from "@/app/_components/dashboard/CreateAvatarFromClipDialog";
 import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPreviewCard";
 import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { IconButtonLink } from "@/app/_components/ui/IconButtonLink";
+import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { renderCliprVideoWithMusic } from "@/lib/clipstitchr/media/renderCliprVideoWithMusic";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
@@ -39,6 +44,13 @@ type VideoClipCardProps = {
     clip: VideoClipMetadata,
     metadata: AssetMetadataUpdate,
   ) => void | Promise<void>;
+  onGenerateCliprMusic?: (
+    clip: VideoClipMetadata,
+  ) => Promise<CliprMusicMetadata | null>;
+  onUpdateCliprMusic?: (
+    clip: VideoClipMetadata,
+    music: CliprMusicMetadata | null,
+  ) => void | Promise<void>;
   onUpdateTrim: (
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
@@ -55,12 +67,20 @@ export function VideoClipCard({
   isCreatingAvatarFromClip = false,
   onLoadClip,
   onDelete,
+  onGenerateCliprMusic,
+  onUpdateCliprMusic,
   onUpdateMetadata,
   onUpdateTrim,
   onCreateAvatarFromClip,
 }: VideoClipCardProps) {
   const [isAvatarCreatorOpen, setIsAvatarCreatorOpen] = useState(false);
+  const [isCliprMusicOpen, setIsCliprMusicOpen] = useState(false);
   const [isMetadataOpen, setIsMetadataOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
+  const [isSavingMusic, setIsSavingMusic] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [musicError, setMusicError] = useState<string | null>(null);
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
   const displayDuration = getVideoTrimDisplayDuration(
     clip.duration,
@@ -75,13 +95,80 @@ export function VideoClipCard({
       return;
     }
 
-    downloadBlob(
-      nextClip.blob,
-      getAssetDownloadFileName(
-        clip.name,
-        getMimeTypeFileExtension(nextClip.blob.type || clip.mimeType, "mp4"),
-      ),
-    );
+    setIsDownloading(true);
+    setDownloadError(null);
+
+    try {
+      const music = nextClip.cliprMetadata?.music;
+      const exportBlob =
+        music?.enabled && music.audioObject
+          ? (
+              await renderCliprVideoWithMusic({
+                musicBlob: await downloadBlobFromR2(music.audioObject),
+                videoBlob: nextClip.blob,
+                volume: music.volume,
+              })
+            ).blob
+          : nextClip.blob;
+
+      downloadBlob(
+        exportBlob,
+        getAssetDownloadFileName(
+          clip.name,
+          getMimeTypeFileExtension(exportBlob.type || clip.mimeType, "mp4"),
+        ),
+      );
+    } catch (nextError) {
+      setDownloadError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to export this Clip.",
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+  const handleGenerateCliprMusic = async () => {
+    if (!onGenerateCliprMusic) {
+      return null;
+    }
+
+    setIsGeneratingMusic(true);
+    setMusicError(null);
+
+    try {
+      return await onGenerateCliprMusic(clip);
+    } catch (nextError) {
+      setMusicError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to generate music for this Clip.",
+      );
+      return null;
+    } finally {
+      setIsGeneratingMusic(false);
+    }
+  };
+  const handleUpdateCliprMusic = async (music: CliprMusicMetadata | null) => {
+    if (!onUpdateCliprMusic) {
+      return;
+    }
+
+    setIsSavingMusic(true);
+    setMusicError(null);
+
+    try {
+      await onUpdateCliprMusic(clip, music);
+    } catch (nextError) {
+      setMusicError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to update music for this Clip.",
+      );
+      throw nextError;
+    } finally {
+      setIsSavingMusic(false);
+    }
   };
 
   return (
@@ -113,9 +200,16 @@ export function VideoClipCard({
             <IconButton
               label="Download clip"
               icon={<Download aria-hidden className="h-4 w-4" />}
-              disabled={isLoading}
+              disabled={isLoading || isDownloading}
               onClick={() => void handleDownload(loadFullClip)}
             />
+            {clip.cliprMetadata && onGenerateCliprMusic && onUpdateCliprMusic ? (
+              <IconButton
+                label="Edit Clipr music"
+                icon={<Music2 aria-hidden className="h-4 w-4" />}
+                onClick={() => setIsCliprMusicOpen(true)}
+              />
+            ) : null}
             <IconButton
               label="Edit clip details"
               icon={<Edit3 aria-hidden className="h-4 w-4" />}
@@ -143,6 +237,13 @@ export function VideoClipCard({
             />
           </>
         )}
+        footer={() =>
+          downloadError ? (
+            <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+              {downloadError}
+            </p>
+          ) : null
+        }
       />
       {isMetadataOpen ? (
         <AssetMetadataEditDialog
@@ -173,6 +274,18 @@ export function VideoClipCard({
           isGenerating={isCreatingAvatarFromClip}
           onClose={() => setIsAvatarCreatorOpen(false)}
           onCreate={(options) => onCreateAvatarFromClip(clip, options)}
+        />
+      ) : null}
+      {isCliprMusicOpen ? (
+        <CliprMusicSettingsDialog
+          clip={clip}
+          error={musicError}
+          isGenerating={isGeneratingMusic}
+          isSaving={isSavingMusic}
+          onClose={() => setIsCliprMusicOpen(false)}
+          onGenerate={handleGenerateCliprMusic}
+          onRemove={() => handleUpdateCliprMusic(null)}
+          onSave={handleUpdateCliprMusic}
         />
       ) : null}
     </>

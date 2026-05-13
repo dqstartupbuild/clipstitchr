@@ -78,6 +78,9 @@ Optional Replicate model overrides:
   one source still before full-script avatar video generation.
 - `CLIPR_AVATAR_VIDEO_MODEL_ID` defaults to `prunaai/p-video-avatar` for Clipr
   full-script avatar video and voice generation.
+- `CLIPR_MUSIC_MODEL_ID` defaults to `stability-ai/stable-audio-2.5` for
+  optional 60 second Clipr background music generation. Music files are copied
+  to R2 separately from the Clipr video and mixed only during export/download.
 - `CLIPR_TTS_MODEL_ID` is legacy/reserved; Clipr voice selection is handled by
   `prunaai/p-video-avatar`.
 
@@ -107,11 +110,12 @@ Optional Replicate model overrides:
 | Clipr hook/script generation | `POST /api/clipr/jobs` and `POST /api/clipr/text` | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000 |
 | Clipr avatar still generation | `POST /api/clipr/jobs` before the full-script avatar video call | 20 images/hour/user, burst 6; global provider bucket counted once per still |
 | Clipr avatar video and voice generation | `POST /api/clipr/jobs` before calling `prunaai/p-video-avatar` | 600 estimated avatar seconds/hour/user, burst 180; global provider bucket counted by estimated seconds |
+| Clipr music generation | `POST /api/clipr/jobs` when music is selected and `POST /api/clipr/music` when regenerating music for an existing Clip | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
 | Clipr job polling | Reserved Clipr polling route and Convex job refreshes | 600/minute/user, burst 150 |
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `swiprBackgrounds.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
-| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
+| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
 | Convex Clipr job writes | `cliprJobs.createQueued`, `cliprJobs.applyScriptPlan`, `cliprJobs.recordAvatarImageOutput`, `cliprJobs.recordAvatarVideoOutput`, `cliprJobs.markBrowserSaving`, `cliprJobs.finalizeWithClip` | 3,000/hour/user, burst 500 |
@@ -162,11 +166,15 @@ the MVP because the current simplified Clipr flow normalizes one generated
 avatar video and saves it as a Clip rather than stitching multiple generated
 scenes. The expensive surfaces are gated before work starts: job creation,
 hook/script generation, avatar still generation, full-script avatar video
-generation, R2 object creation, and Convex final save. Clipr saves the
-normalized full avatar video directly as the final Clipr clip. After script
-planning, Clipr consumes the avatar-video limit before creating the avatar
+generation, optional music generation, R2 object creation, and Convex final
+save. Clipr saves the normalized full avatar video directly as the final Clipr
+clip. Optional music stays as separate R2-backed metadata on the Clip and is
+mixed into a fresh downloadable file only when the user exports/downloads. That
+export-time Media Bunny render is browser-local and is not separately
+rate-limited. After script planning, Clipr consumes the avatar-video limit and,
+when selected, the 60 second music-generation limit before creating the avatar
 still, so a rate-limit rejection does not leave an image generated without the
-video call that follows.
+provider work that follows.
 
 The expanded hook libraries are local prompt resources, not new backend
 operations. Swipr and Stitchr auto-text continue to use `POST /api/clipr/text`

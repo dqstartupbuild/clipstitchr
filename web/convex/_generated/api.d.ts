@@ -28,6 +28,7 @@ import type * as validators_cliprDurationSeconds from "../validators/cliprDurati
 import type * as validators_cliprJobStage from "../validators/cliprJobStage.js";
 import type * as validators_cliprJobStatus from "../validators/cliprJobStatus.js";
 import type * as validators_cliprMetadata from "../validators/cliprMetadata.js";
+import type * as validators_cliprMusicMetadata from "../validators/cliprMusicMetadata.js";
 import type * as validators_cliprScenePlan from "../validators/cliprScenePlan.js";
 import type * as validators_r2Object from "../validators/r2Object.js";
 import type * as validators_replicateJobPurpose from "../validators/replicateJobPurpose.js";
@@ -67,6 +68,7 @@ declare const fullApi: ApiFromModules<{
   "validators/cliprJobStage": typeof validators_cliprJobStage;
   "validators/cliprJobStatus": typeof validators_cliprJobStatus;
   "validators/cliprMetadata": typeof validators_cliprMetadata;
+  "validators/cliprMusicMetadata": typeof validators_cliprMusicMetadata;
   "validators/cliprScenePlan": typeof validators_cliprScenePlan;
   "validators/r2Object": typeof validators_r2Object;
   "validators/replicateJobPurpose": typeof validators_replicateJobPurpose;

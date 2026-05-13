@@ -4,6 +4,7 @@ import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
 import { cliprMetadataValidator } from "./validators/cliprMetadata";
+import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { clipTypeValidator } from "./validators/clipType";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
@@ -185,6 +186,49 @@ export const updatePoster = mutation({
     await ctx.db.patch(clip._id, {
       posterObject,
       posterVersion,
+      updatedAt,
+    });
+  },
+});
+
+export const updateCliprMusic = mutation({
+  args: {
+    id: v.string(),
+    music: v.union(cliprMusicMetadataValidator, v.null()),
+    updatedAt: v.string(),
+  },
+  handler: async (ctx, { id, music, updatedAt }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const clip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!clip?.cliprMetadata) {
+      throw new Error("Clipr clip not found.");
+    }
+
+    const cliprMetadata = { ...clip.cliprMetadata };
+
+    delete cliprMetadata.music;
+
+    await ctx.db.patch(clip._id, {
+      cliprMetadata:
+        music === null
+          ? cliprMetadata
+          : {
+              ...cliprMetadata,
+              music,
+              providerModels: Array.from(
+                new Set([...cliprMetadata.providerModels, music.providerModel]),
+              ),
+            },
       updatedAt,
     });
   },

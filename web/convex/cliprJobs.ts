@@ -4,6 +4,7 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
 import { cliprDurationSecondsValidator } from "./validators/cliprDurationSeconds";
+import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { r2ObjectValidator } from "./validators/r2Object";
 
@@ -20,6 +21,17 @@ const clientJobFields = (job: {
   filledHook?: string;
   finalClipId?: string;
   id: string;
+  music?: {
+    audioObject: { contentType: string; key: string; size: number };
+    createdAt: string;
+    durationSeconds: number;
+    enabled: boolean;
+    prompt: string;
+    providerModel: string;
+    providerPredictionId: string;
+    updatedAt: string;
+    volume: number;
+  };
   productId: string;
   productName: string;
   progress: number;
@@ -53,6 +65,7 @@ const clientJobFields = (job: {
   avatarVideoObject: job.avatarVideoObject,
   avatarImageProviderPredictionId: job.avatarImageProviderPredictionId,
   avatarVideoProviderPredictionId: job.avatarVideoProviderPredictionId,
+  music: job.music,
   voiceId: job.voiceId,
   targetDurationSeconds: job.targetDurationSeconds,
   filledHook: job.filledHook,
@@ -257,6 +270,7 @@ export const recordAvatarVideoOutput = mutation({
     id: v.string(),
     avatarVideoObject: r2ObjectValidator,
     avatarVideoProviderPredictionId: v.string(),
+    music: v.optional(cliprMusicMetadataValidator),
     providerModels: v.array(v.string()),
     progress: v.number(),
     updatedAt: v.string(),
@@ -268,6 +282,7 @@ export const recordAvatarVideoOutput = mutation({
       id,
       avatarVideoObject,
       avatarVideoProviderPredictionId,
+      music,
       providerModels,
       progress,
       updatedAt,
@@ -293,6 +308,7 @@ export const recordAvatarVideoOutput = mutation({
     const patch = {
       avatarVideoObject,
       avatarVideoProviderPredictionId,
+      ...(music ? { music } : {}),
       providerModels: Array.from(
         new Set([...job.providerModels, ...providerModels]),
       ),
@@ -425,6 +441,7 @@ export const finalizeWithClip = mutation({
         script: job.script,
         sceneCount: job.scenePlan.length,
         finalDurationSeconds: args.duration,
+        music: job.music,
         providerModels: job.providerModels,
         createdAt: job.createdAt,
       },

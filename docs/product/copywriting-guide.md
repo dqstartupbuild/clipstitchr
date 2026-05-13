@@ -148,8 +148,8 @@ more finished creative so they can test faster.
   one-demo-to-many-UGC relationship stays clear.
 - For Swipr flows, say "carousel posts," "slides," "looks," and "ready to
   publish" before naming implementation details.
-- For Clipr flows, say "Clips," "engagement clips," "avatar," "voice," and
-  "Use in Stitchr."
+- For Clipr flows, say "Clips," "engagement clips," "avatar," "voice,"
+  "music," and "Use in Stitchr."
 - Do not mention hidden hook styles, template IDs, risk labels, provider names,
   or placeholder mechanics in user-facing Clipr copy.
 - Do not mention internal hook source names such as app hook library or

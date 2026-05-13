@@ -9,7 +9,7 @@ export const cliprDoc = {
     "Make short avatar-led Clips, save them to the library, and reuse them in Stitchr.",
   category: "feature",
   order: 20,
-  updated: "2026-05-12",
+  updated: "2026-05-13",
   sections: [
     {
       title: "What Clipr is for",
@@ -21,14 +21,22 @@ export const cliprDoc = {
     {
       title: "How Clipr works",
       body: [
-        "Clipr uses your saved product settings to understand the audience and topic. You choose the avatar, voice, and length.",
+        "Clipr uses your saved product settings to understand the audience and topic. You choose the avatar, voice, length, and whether to generate music.",
       ],
       bullets: [
         "Choose a saved product.",
         "Choose an avatar to appear in the clip.",
         "Choose a voice and a 30 or 60 second length.",
+        "Optionally generate background music. This is off by default.",
         "Generate the avatar video.",
         "Save the result into the Content Library as a Clip.",
+      ],
+    },
+    {
+      title: "Music",
+      body: [
+        "Clipr music is saved separately from the video. You can remove it, generate a new track, or change the music volume later.",
+        "When you download a Clip with music enabled, ClipStitchr renders a fresh export with the current music settings. The saved library video stays clean.",
       ],
     },
     {
