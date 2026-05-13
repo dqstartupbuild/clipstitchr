@@ -3,5 +3,6 @@ export type CliprVoice = {
   name: string;
   description: string;
   language: string;
+  previewSrc: string;
   prompt: string;
 };
