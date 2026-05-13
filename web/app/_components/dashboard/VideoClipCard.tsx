@@ -13,8 +13,7 @@ import { useState } from "react";
 import { CreateAvatarFromClipDialog } from "@/app/_components/dashboard/CreateAvatarFromClipDialog";
 import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPreviewCard";
 import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
-import { IconButton } from "@/app/_components/ui/IconButton";
-import { IconButtonLink } from "@/app/_components/ui/IconButtonLink";
+import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
@@ -192,57 +191,64 @@ export function VideoClipCard({
               }
             : undefined
         }
-        actions={({ isLoading, loadFullClip, openDetails }) => (
-          <>
-            <IconButtonLink
-              label="Use in Stitchr"
-              href={getUseInStitchrHref(clip)}
-              icon={<Scissors aria-hidden className="h-4 w-4" />}
-            />
-            {getClipCanUseInSwapr(clip) ? (
-              <IconButtonLink
-                label="Use in Swapr"
-                href={getUseInSwaprClipHref(clip)}
-                icon={<Shuffle aria-hidden className="h-4 w-4" />}
-              />
-            ) : null}
-            <IconButton
-              label="Download clip"
-              icon={<Download aria-hidden className="h-4 w-4" />}
-              disabled={isLoading || isDownloading}
-              onClick={() => void handleDownload(loadFullClip)}
-            />
-            <IconButton
-              label="Edit clip details"
-              icon={<Edit3 aria-hidden className="h-4 w-4" />}
-              onClick={() => setIsMetadataOpen(true)}
-            />
-            <IconButton
-              label={
+        actions={({ isLoading, loadFullClip, openDetails }) => {
+          const items: MediaCardActionMenuItem[] = [
+            {
+              label: "Use in Stitchr",
+              href: getUseInStitchrHref(clip),
+              icon: <Scissors aria-hidden className="h-4 w-4" />,
+            },
+          ];
+
+          if (getClipCanUseInSwapr(clip)) {
+            items.push({
+              label: "Use in Swapr",
+              href: getUseInSwaprClipHref(clip),
+              icon: <Shuffle aria-hidden className="h-4 w-4" />,
+            });
+          }
+
+          items.push(
+            {
+              label: "Download clip",
+              icon: <Download aria-hidden className="h-4 w-4" />,
+              disabled: isLoading || isDownloading,
+              onClick: () => void handleDownload(loadFullClip),
+            },
+            {
+              label: "Edit clip details",
+              icon: <Edit3 aria-hidden className="h-4 w-4" />,
+              onClick: () => setIsMetadataOpen(true),
+            },
+            {
+              label:
                 clip.cliprMetadata && onGenerateCliprMusic && onUpdateCliprMusic
                   ? "Edit trim and music"
-                  : "Edit default trim"
-              }
-              icon={<SlidersHorizontal aria-hidden className="h-4 w-4" />}
-              disabled={isLoading}
-              onClick={() => openDetails({ showControlsEditor: true })}
-            />
-            {clip.clipType === "ugc" && onCreateAvatarFromClip ? (
-              <IconButton
-                label="Create avatar from UGC"
-                icon={<UserRound aria-hidden className="h-4 w-4" />}
-                disabled={isLoading || isCreatingAvatarFromClip}
-                onClick={() => setIsAvatarCreatorOpen(true)}
-              />
-            ) : null}
-            <IconButton
-              label="Delete clip"
-              variant="danger"
-              icon={<Trash2 aria-hidden className="h-4 w-4" />}
-              onClick={() => void onDelete(clip.id)}
-            />
-          </>
-        )}
+                  : "Edit default trim",
+              icon: <SlidersHorizontal aria-hidden className="h-4 w-4" />,
+              disabled: isLoading,
+              onClick: () => openDetails({ showControlsEditor: true }),
+            },
+          );
+
+          if (clip.clipType === "ugc" && onCreateAvatarFromClip) {
+            items.push({
+              label: "Create avatar from UGC",
+              icon: <UserRound aria-hidden className="h-4 w-4" />,
+              disabled: isLoading || isCreatingAvatarFromClip,
+              onClick: () => setIsAvatarCreatorOpen(true),
+            });
+          }
+
+          items.push({
+            label: "Delete clip",
+            variant: "danger",
+            icon: <Trash2 aria-hidden className="h-4 w-4" />,
+            onClick: () => void onDelete(clip.id),
+          });
+
+          return items;
+        }}
         footer={() =>
           downloadError ? (
             <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">

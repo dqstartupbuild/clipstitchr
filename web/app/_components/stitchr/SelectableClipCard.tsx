@@ -2,7 +2,6 @@
 
 import { SlidersHorizontal } from "lucide-react";
 import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPreviewCard";
-import { IconButton } from "@/app/_components/ui/IconButton";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -50,17 +49,16 @@ export function SelectableClipCard({
             }
           : undefined
       }
-      footer={({ openDetails }) =>
-        isSelected && onUpdateTrim ? (
-          <div className="flex min-h-9 items-center justify-end border-t border-border pt-3">
-            <IconButton
-              type="button"
-              label="Edit selected trim"
-              icon={<SlidersHorizontal aria-hidden className="h-4 w-4" />}
-              onClick={() => openDetails({ showControlsEditor: true })}
-            />
-          </div>
-        ) : null
+      actions={({ openDetails }) =>
+        isSelected && onUpdateTrim
+          ? [
+              {
+                label: "Edit selected trim",
+                icon: <SlidersHorizontal aria-hidden className="h-4 w-4" />,
+                onClick: () => openDetails({ showControlsEditor: true }),
+              },
+            ]
+          : []
       }
     />
   );

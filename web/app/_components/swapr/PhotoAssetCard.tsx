@@ -4,8 +4,10 @@ import { Download, Edit3, Shuffle, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { PhotoAssetDetailsDialog } from "@/app/_components/swapr/PhotoAssetDetailsDialog";
 import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
-import { IconButton } from "@/app/_components/ui/IconButton";
-import { IconButtonLink } from "@/app/_components/ui/IconButtonLink";
+import {
+  MediaCardActionMenu,
+  type MediaCardActionMenuItem,
+} from "@/app/_components/ui/MediaCardActionMenu";
 import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
@@ -65,7 +67,10 @@ export function PhotoAssetCard({
         loadedPhoto.blob,
         getAssetDownloadFileName(
           photo.name,
-          getMimeTypeFileExtension(loadedPhoto.blob.type || photo.mimeType, "jpg"),
+          getMimeTypeFileExtension(
+            loadedPhoto.blob.type || photo.mimeType,
+            "jpg",
+          ),
         ),
       );
     } finally {
@@ -92,6 +97,41 @@ export function PhotoAssetCard({
       ) : null}
     </div>
   );
+  const actionItems: MediaCardActionMenuItem[] = [];
+
+  if (showUseInSwapr) {
+    actionItems.push({
+      label: "Use in Swapr",
+      href: getUseInSwaprPhotoHref(photo),
+      icon: <Shuffle aria-hidden className="h-4 w-4" />,
+    });
+  }
+
+  if (showDownload && onLoadPhoto) {
+    actionItems.push({
+      label: "Download photo",
+      icon: <Download aria-hidden className="h-4 w-4" />,
+      disabled: isDownloading,
+      onClick: () => void handleDownload(),
+    });
+  }
+
+  if (onUpdateMetadata) {
+    actionItems.push({
+      label: "Edit photo details",
+      icon: <Edit3 aria-hidden className="h-4 w-4" />,
+      onClick: () => setIsMetadataOpen(true),
+    });
+  }
+
+  if (onDelete) {
+    actionItems.push({
+      label: "Delete photo",
+      variant: "danger",
+      icon: <Trash2 aria-hidden className="h-4 w-4" />,
+      onClick: () => void onDelete(photo.id),
+    });
+  }
 
   return (
     <div
@@ -131,38 +171,10 @@ export function PhotoAssetCard({
             {photo.width} x {photo.height} . {formatBytes(photo.size)}
           </p>
         </button>
-        <div className="flex shrink-0 flex-wrap justify-end gap-1">
-          {showUseInSwapr ? (
-            <IconButtonLink
-              label="Use in Swapr"
-              href={getUseInSwaprPhotoHref(photo)}
-              icon={<Shuffle aria-hidden className="h-4 w-4" />}
-            />
-          ) : null}
-          {showDownload && onLoadPhoto ? (
-            <IconButton
-              label="Download photo"
-              icon={<Download aria-hidden className="h-4 w-4" />}
-              disabled={isDownloading}
-              onClick={() => void handleDownload()}
-            />
-          ) : null}
-          {onUpdateMetadata ? (
-            <IconButton
-              label="Edit photo details"
-              icon={<Edit3 aria-hidden className="h-4 w-4" />}
-              onClick={() => setIsMetadataOpen(true)}
-            />
-          ) : null}
-          {onDelete ? (
-            <IconButton
-              label="Delete photo"
-              variant="danger"
-              icon={<Trash2 aria-hidden className="h-4 w-4" />}
-              onClick={() => void onDelete(photo.id)}
-            />
-          ) : null}
-        </div>
+        <MediaCardActionMenu
+          label={`Actions for ${photo.name}`}
+          items={actionItems}
+        />
       </div>
       {isDetailsOpen ? (
         <PhotoAssetDetailsDialog

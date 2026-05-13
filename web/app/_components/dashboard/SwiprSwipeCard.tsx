@@ -4,7 +4,10 @@ import { Download, Edit3, Eye, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SwiprSwipeDetailsDialog } from "@/app/_components/dashboard/SwiprSwipeDetailsDialog";
 import { Badge } from "@/app/_components/ui/Badge";
-import { IconButton } from "@/app/_components/ui/IconButton";
+import {
+  MediaCardActionMenu,
+  type MediaCardActionMenuItem,
+} from "@/app/_components/ui/MediaCardActionMenu";
 import { Panel } from "@/app/_components/ui/Panel";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
@@ -105,6 +108,30 @@ export function SwiprSwipeCard({
         });
       });
   };
+  const actionItems: MediaCardActionMenuItem[] = [
+    {
+      label: "View Swipe details",
+      icon: <Eye aria-hidden className="h-4 w-4" />,
+      onClick: () => setIsDetailsOpen(true),
+    },
+    {
+      label: "Download Swipe",
+      icon: <Download aria-hidden className="h-4 w-4" />,
+      disabled: exporter.status === "rendering",
+      onClick: downloadSwipe,
+    },
+    {
+      label: "Edit Swipe",
+      href: `/dashboard/swipr?swipe=${encodeURIComponent(swipe.id)}`,
+      icon: <Edit3 aria-hidden className="h-4 w-4" />,
+    },
+    {
+      label: "Delete Swipe",
+      variant: "danger",
+      icon: <Trash2 aria-hidden className="h-4 w-4" />,
+      onClick: () => void onDelete(swipe.id),
+    },
+  ];
 
   return (
     <>
@@ -142,40 +169,19 @@ export function SwiprSwipeCard({
                 Updated {formatDate(swipe.updatedAt)}
               </p>
             </div>
-            <Badge>SWIPE</Badge>
+            <div className="flex shrink-0 items-center gap-2">
+              <Badge>SWIPE</Badge>
+              <MediaCardActionMenu
+                label={`Actions for ${swipe.name}`}
+                items={actionItems}
+              />
+            </div>
           </div>
           {backgroundErrorMessage || exporter.error ? (
             <p className="mt-3 text-xs font-semibold text-red-600">
               {backgroundErrorMessage ?? exporter.error}
             </p>
           ) : null}
-          <div className="mt-3 flex gap-2">
-            <IconButton
-              label="View Swipe details"
-              icon={<Eye aria-hidden className="h-4 w-4" />}
-              onClick={() => setIsDetailsOpen(true)}
-            />
-            <IconButton
-              label="Download Swipe"
-              icon={<Download aria-hidden className="h-4 w-4" />}
-              disabled={exporter.status === "rendering"}
-              onClick={downloadSwipe}
-            />
-            <a
-              href={`/dashboard/swipr?swipe=${encodeURIComponent(swipe.id)}`}
-              aria-label="Edit Swipe"
-              title="Edit Swipe"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-white text-text-secondary transition-colors hover:border-accent hover:text-accent"
-            >
-              <Edit3 aria-hidden className="h-4 w-4" />
-            </a>
-            <IconButton
-              label="Delete Swipe"
-              variant="danger"
-              icon={<Trash2 aria-hidden className="h-4 w-4" />}
-              onClick={() => void onDelete(swipe.id)}
-            />
-          </div>
         </div>
       </Panel>
       {isDetailsOpen ? (
