@@ -7,12 +7,14 @@ import { UgcClipSelector } from "@/app/_components/stitchr/UgcClipSelector";
 import { Panel } from "@/app/_components/ui/Panel";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 
 type ClipPickerPanelProps = {
   addMusic: boolean;
+  selectedMusicTrack: SharedMusicTrack | null;
   ugcClips: VideoClipMetadata[];
   demoClips: VideoClipMetadata[];
   selectedUgcIds: string[];
@@ -33,11 +35,13 @@ type ClipPickerPanelProps = {
   canStitch: boolean;
   isStitching: boolean;
   onAddMusicChange: (addMusic: boolean) => void;
+  onSelectMusicTrack: (track: SharedMusicTrack) => void | Promise<void>;
   onStitch: () => void;
 };
 
 export function ClipPickerPanel({
   addMusic,
+  selectedMusicTrack,
   ugcClips,
   demoClips,
   selectedUgcIds,
@@ -52,6 +56,7 @@ export function ClipPickerPanel({
   canStitch,
   isStitching,
   onAddMusicChange,
+  onSelectMusicTrack,
   onStitch,
 }: ClipPickerPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -70,9 +75,11 @@ export function ClipPickerPanel({
         <ClipPickerActionBar
           addMusic={addMusic}
           canStitch={canStitch}
+          selectedMusicTrack={selectedMusicTrack}
           selectedUgcCount={selectedUgcIds.length}
           isStitching={isStitching}
           onAddMusicChange={onAddMusicChange}
+          onSelectMusicTrack={onSelectMusicTrack}
           onStitch={onStitch}
         />
         <SearchInput

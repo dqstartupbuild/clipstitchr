@@ -8,6 +8,9 @@ export type StitchMusicMetadata = {
   prompt: string;
   providerModel: string;
   providerPredictionId: string;
+  sharedTrackId?: string;
+  tags?: string[];
+  title?: string;
   updatedAt: string;
   volume: number;
 };

@@ -22,6 +22,7 @@ import { useCliprGeneration } from "@/lib/clipstitchr/hooks/useCliprGeneration";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
+import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 
 export function CliprPageClient() {
   const { isAuthenticated } = useConvexAuth();
@@ -41,6 +42,8 @@ export function CliprPageClient() {
   );
   const [voiceId, setVoiceId] = useState("");
   const [addMusic, setAddMusic] = useState(false);
+  const [selectedMusicTrack, setSelectedMusicTrack] =
+    useState<SharedMusicTrack | null>(null);
   const [optimisticDefaultVoiceId, setOptimisticDefaultVoiceId] = useState("");
   const [isSavingDefaultVoice, setIsSavingDefaultVoice] = useState(false);
   const [preferenceError, setPreferenceError] = useState<string | null>(null);
@@ -125,7 +128,22 @@ export function CliprPageClient() {
                 onSaveDefault={() => void saveSelectedVoiceAsDefault()}
                 onVoiceChange={setVoiceId}
               />
-              <CliprMusicControl checked={addMusic} onChange={setAddMusic} />
+              <CliprMusicControl
+                checked={addMusic}
+                selectedTrack={selectedMusicTrack}
+                onChange={(checked) => {
+                  setAddMusic(checked);
+
+                  if (checked) {
+                    setSelectedMusicTrack(null);
+                  }
+                }}
+                onClearTrack={() => setSelectedMusicTrack(null)}
+                onSelectTrack={(track) => {
+                  setSelectedMusicTrack(track);
+                  setAddMusic(false);
+                }}
+              />
             </div>
             <div className="mt-5 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm leading-6 text-text-secondary">
@@ -138,9 +156,10 @@ export function CliprPageClient() {
                 disabled={!canGenerate}
                 onClick={() =>
                   void generator.generate({
-                    addMusic,
+                    addMusic: addMusic && !selectedMusicTrack,
                     avatarId: activeAvatarId,
                     durationSeconds,
+                    musicTrackId: selectedMusicTrack?.id,
                     productId: activeProductId,
                     voiceId: activeVoiceId,
                   })

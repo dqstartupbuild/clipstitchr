@@ -21,6 +21,7 @@ type GenerateCliprOptions = {
   addMusic: boolean;
   avatarId: string;
   durationSeconds: CliprDurationSeconds;
+  musicTrackId?: string;
   productId: string;
   voiceId: string;
 };

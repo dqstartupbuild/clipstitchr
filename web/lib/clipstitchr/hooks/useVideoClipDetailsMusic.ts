@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
+import { downloadMusicBlob } from "@/lib/clipstitchr/client/r2/downloadMusicBlob";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
+import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import { createCliprMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createCliprMusicMetadataFromSharedTrack";
 
 type UseVideoClipDetailsMusicOptions = {
   clip: VideoClipMetadata;
@@ -40,7 +42,7 @@ export function useVideoClipDetailsMusic({
   useEffect(() => {
     let isCancelled = false;
 
-    if (!musicObject || !musicObjectKey) {
+    if (!music || !musicObject || !musicObjectKey) {
       void Promise.resolve().then(() => {
         if (!isCancelled) {
           setMusicBlobState(null);
@@ -67,7 +69,7 @@ export function useVideoClipDetailsMusic({
       }
     });
 
-    void downloadBlobFromR2(musicObject)
+    void downloadMusicBlob(music)
       .then((blob) => {
         if (!isCancelled) {
           setMusicBlobState({ blob, key: musicObjectKey });
@@ -91,7 +93,7 @@ export function useVideoClipDetailsMusic({
     return () => {
       isCancelled = true;
     };
-  }, [musicBlobState?.key, musicObject, musicObjectKey]);
+  }, [music, musicBlobState?.key, musicObject, musicObjectKey]);
 
   const generateMusic = useCallback(async () => {
     if (!musicEditor) {
@@ -143,6 +145,28 @@ export function useVideoClipDetailsMusic({
     }
   }, [music, musicEditor, musicEnabled, musicVolume]);
 
+  const selectMusicTrack = useCallback(
+    async (track: SharedMusicTrack) => {
+      if (!musicEditor) {
+        return;
+      }
+
+      const nextMusic = createCliprMusicMetadataFromSharedTrack(track);
+
+      try {
+        await musicEditor.onSave(nextMusic);
+        setMusic(nextMusic);
+        setMusicEnabled(nextMusic.enabled);
+        setMusicVolume(nextMusic.volume);
+        setMusicBlobState(null);
+        setMusicLoadError(null);
+      } catch {
+        return;
+      }
+    },
+    [musicEditor],
+  );
+
   return {
     error: musicEditor?.error ?? musicLoadError,
     generateMusic,
@@ -155,6 +179,7 @@ export function useVideoClipDetailsMusic({
     musicVolume,
     removeMusic,
     saveMusic,
+    selectMusicTrack,
     setMusicEnabled,
     setMusicVolume,
   };

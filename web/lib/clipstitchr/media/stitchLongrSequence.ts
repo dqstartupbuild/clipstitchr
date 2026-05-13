@@ -1,4 +1,4 @@
-import { AudioSampleSource, VideoSampleSource } from "mediabunny";
+import { AudioBufferSource, VideoSampleSource } from "mediabunny";
 import {
   OUTPUT_AUDIO_NUMBER_OF_CHANNELS,
   OUTPUT_AUDIO_SAMPLE_RATE,
@@ -7,20 +7,21 @@ import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
-import { copyAudioSamplesToSource } from "@/lib/clipstitchr/media/copyAudioSamplesToSource";
 import { copyVideoSamplesToSource } from "@/lib/clipstitchr/media/copyVideoSamplesToSource";
+import { createLongrMixedAudioBuffer } from "@/lib/clipstitchr/media/createLongrMixedAudioBuffer";
 import { createMediaInput } from "@/lib/clipstitchr/media/createMediaInput";
 import { createMp4Output } from "@/lib/clipstitchr/media/createMp4Output";
 import { createVideoBlobFromBuffer } from "@/lib/clipstitchr/media/createVideoBlobFromBuffer";
-import { getInputAudioParameters } from "@/lib/clipstitchr/media/getInputAudioParameters";
 import { getSupportedOutputCodecs } from "@/lib/clipstitchr/media/getSupportedOutputCodecs";
 import { getVideoMimeType } from "@/lib/clipstitchr/media/getVideoMimeType";
 import { registerAacEncoderIfNeeded } from "@/lib/clipstitchr/media/registerAacEncoderIfNeeded";
 import type { LongrSequenceClip } from "@/lib/clipstitchr/types/LongrSequenceClip";
+import type { LongrSequenceMusicClip } from "@/lib/clipstitchr/types/LongrSequenceMusicClip";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type StitchLongrSequenceOptions = {
+  musicClips?: LongrSequenceMusicClip[];
   onProgress?: (progress: number) => void;
 };
 
@@ -32,7 +33,7 @@ type StitchLongrSequenceResult = {
 
 export async function stitchLongrSequence(
   sequence: LongrSequenceClip[],
-  { onProgress }: StitchLongrSequenceOptions = {},
+  { musicClips = [], onProgress }: StitchLongrSequenceOptions = {},
 ): Promise<StitchLongrSequenceResult> {
   if (!sequence.length) {
     throw new Error("Select at least one clip before building a Long.");
@@ -43,24 +44,10 @@ export async function stitchLongrSequence(
   try {
     await registerAacEncoderIfNeeded();
 
-    const audioParameters = await Promise.all(
-      inputs.map((input) => getInputAudioParameters(input)),
+    const audioTracks = await Promise.all(
+      inputs.map((input) => input.getPrimaryAudioTrack()),
     );
-    const includeAudio = audioParameters.some(Boolean);
-    const unsupportedAudioParameters = audioParameters.find(
-      (parameters) =>
-        parameters &&
-        (parameters.numberOfChannels !== OUTPUT_AUDIO_NUMBER_OF_CHANNELS ||
-          parameters.sampleRate !== OUTPUT_AUDIO_SAMPLE_RATE),
-    );
-
-    if (unsupportedAudioParameters) {
-      throw new Error(
-        `One selected clip has audio at ${unsupportedAudioParameters.numberOfChannels} channels and ` +
-          `${unsupportedAudioParameters.sampleRate} Hz. Re-upload it so ClipStitchr can normalize audio to ` +
-          `${OUTPUT_AUDIO_NUMBER_OF_CHANNELS} channels at ${OUTPUT_AUDIO_SAMPLE_RATE} Hz before building Longr.`,
-      );
-    }
+    const includeAudio = audioTracks.some(Boolean) || musicClips.length > 0;
 
     const codecs = await getSupportedOutputCodecs(includeAudio);
 
@@ -86,9 +73,13 @@ export async function stitchLongrSequence(
       },
     });
     const audioSource = includeAudio
-      ? new AudioSampleSource({
+      ? new AudioBufferSource({
           codec: codecs.audioCodec ?? "aac",
           bitrate: 160_000,
+          transform: {
+            numberOfChannels: OUTPUT_AUDIO_NUMBER_OF_CHANNELS,
+            sampleRate: OUTPUT_AUDIO_SAMPLE_RATE,
+          },
         })
       : null;
     const timelineOffsets = new Array<number>(sequence.length);
@@ -129,20 +120,17 @@ export async function stitchLongrSequence(
     }
 
     if (audioSource) {
-      for (let index = 0; index < sequence.length; index += 1) {
-        const input = inputs[index];
-        const trimRange = trimRanges[index];
-        const segmentAudio = await copyAudioSamplesToSource({
-          input,
-          source: audioSource,
-          timelineOffset: timelineOffsets[index] ?? 0,
-          trimRange,
-          onProgress: (progress) =>
-            onProgress?.(0.7 + ((index + progress) / sequence.length) * 0.25),
-        });
+      const outputDuration = Math.max(endTimestamp, timelineOffset);
+      const mixedAudioBuffer = await createLongrMixedAudioBuffer({
+        inputs,
+        musicClips,
+        outputDuration,
+        timelineOffsets,
+        trimRanges,
+      });
 
-        endTimestamp = Math.max(endTimestamp, segmentAudio.endTimestamp);
-      }
+      await audioSource.add(mixedAudioBuffer);
+      onProgress?.(0.95);
     }
 
     videoSource.close();

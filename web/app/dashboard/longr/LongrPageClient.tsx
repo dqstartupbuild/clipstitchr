@@ -5,6 +5,7 @@ import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHe
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { LongrBuildResult } from "@/app/_components/longr/LongrBuildResult";
 import { LongrClipPickerPanel } from "@/app/_components/longr/LongrClipPickerPanel";
+import { LongrMusicPanel } from "@/app/_components/longr/LongrMusicPanel";
 import { LongrPreviewPanel } from "@/app/_components/longr/LongrPreviewPanel";
 import { LongrProgressPanel } from "@/app/_components/longr/LongrProgressPanel";
 import { LongrTimelineStrip } from "@/app/_components/longr/LongrTimelineStrip";
@@ -12,7 +13,12 @@ import { longrMaxDurationSeconds } from "@/lib/clipstitchr/constants/longrMaxDur
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useLongr } from "@/lib/clipstitchr/hooks/useLongr";
 import type { LongrBuildClipSelection } from "@/lib/clipstitchr/types/LongrBuildClipSelection";
+import type { LongrMusicClip } from "@/lib/clipstitchr/types/LongrMusicClip";
+import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import { clampLongrMusicClip } from "@/lib/clipstitchr/utils/clampLongrMusicClip";
+import { createId } from "@/lib/clipstitchr/utils/createId";
+import { createLongrMusicClip } from "@/lib/clipstitchr/utils/createLongrMusicClip";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getLongrTotalDuration } from "@/lib/clipstitchr/utils/getLongrTotalDuration";
@@ -22,6 +28,7 @@ export function LongrPageClient() {
   const library = useClipLibrary();
   const longr = useLongr({ onCreated: library.refresh });
   const [selectedClipIds, setSelectedClipIds] = useState<string[]>([]);
+  const [musicClips, setMusicClips] = useState<LongrMusicClip[]>([]);
   const [selectionError, setSelectionError] = useState<string | null>(null);
   const ugcClips = useMemo(
     () => filterClipsByType(library.clips, "ugc"),
@@ -99,7 +106,60 @@ export function LongrPageClient() {
       loadClip: () => library.loadClip(clip.id),
     }));
 
-    void longr.buildLongrVideo(selections);
+    void longr.buildLongrVideo(selections, musicClips);
+  };
+  const handleAddMusicTrack = (track: SharedMusicTrack) => {
+    setMusicClips((currentClips) => [
+      ...currentClips,
+      createLongrMusicClip({
+        timelineDurationSeconds: selectedDuration,
+        track,
+      }),
+    ]);
+  };
+  const handleUpdateMusicClip = (
+    id: string,
+    patch: Partial<LongrMusicClip>,
+  ) => {
+    setMusicClips((currentClips) =>
+      currentClips.map((clip) =>
+        clip.id === id
+          ? clampLongrMusicClip({
+              clip: {
+                ...clip,
+                ...patch,
+              },
+              timelineDurationSeconds: selectedDuration,
+            })
+          : clip,
+      ),
+    );
+  };
+  const handleDuplicateMusicClip = (id: string) => {
+    setMusicClips((currentClips) => {
+      const clip = currentClips.find((currentClip) => currentClip.id === id);
+
+      if (!clip) {
+        return currentClips;
+      }
+
+      return [
+        ...currentClips,
+        clampLongrMusicClip({
+          clip: {
+            ...clip,
+            id: createId(),
+            timelineStartSeconds: clip.timelineStartSeconds + 1,
+          },
+          timelineDurationSeconds: selectedDuration,
+        }),
+      ];
+    });
+  };
+  const handleRemoveMusicClip = (id: string) => {
+    setMusicClips((currentClips) =>
+      currentClips.filter((clip) => clip.id !== id),
+    );
   };
 
   return (
@@ -135,6 +195,14 @@ export function LongrPageClient() {
               clips={selectedClips}
               onMoveClip={handleMoveClip}
               onRemoveClip={handleRemoveClip}
+            />
+            <LongrMusicPanel
+              isBuilding={isBuilding}
+              musicClips={musicClips}
+              onAddTrack={handleAddMusicTrack}
+              onDuplicate={handleDuplicateMusicClip}
+              onRemove={handleRemoveMusicClip}
+              onUpdate={handleUpdateMusicClip}
             />
             <LongrProgressPanel
               status={longr.status}

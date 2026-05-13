@@ -79,9 +79,10 @@ Optional Replicate model overrides:
 - `CLIPR_AVATAR_VIDEO_MODEL_ID` defaults to `prunaai/p-video-avatar` for Clipr
   full-script avatar video and voice generation.
 - `CLIPR_MUSIC_MODEL_ID` defaults to `stability-ai/stable-audio-2.5` for
-  optional 60 second Clipr and Stitchr background music generation. Music files
-  are copied to R2 separately from the clean video and mixed only during
-  export/download.
+  optional 60 second Clipr, Stitchr, Longr, and shared-library background music
+  generation. Generated music is copied to the shared music library and, when
+  attached to a user's output or generated from the picker, to the user's
+  personal R2 prefix.
 - `CLIPR_TTS_MODEL_ID` is legacy/reserved; Clipr voice selection is handled by
   `prunaai/p-video-avatar`.
 
@@ -95,6 +96,7 @@ Optional Replicate model overrides:
 | R2 deletes | `POST /api/r2/delete-objects` | 2,000 objects/hour/user, burst 500 |
 | Shared Swipr background R2 upload signed URL | `POST /api/swipr/backgrounds/upload-url` | Uses the R2 upload signed URL and byte limits before creating a shared-background PUT URL |
 | Shared Swipr background R2 download signed URL | `POST /api/swipr/backgrounds/download-url` | Uses the R2 download signed URL limit after validating the shared background exists |
+| Shared music R2 download signed URL | `POST /api/music/download-url` | Uses the R2 download signed URL limit after validating the shared music track exists |
 | Upload image metadata analysis | `POST /api/uploads/analyze` for avatar/photo images and video fallback posters | 300/hour/user, burst 100; 10,000/30 days/user; global 6,000/hour |
 | Swipr background metadata analysis | `POST /api/swipr/backgrounds/analyze` | Uses the upload image metadata analysis limits before calling GPT-4.1 mini through Replicate |
 | Upload video action analysis | `POST /api/uploads/analyze` for UGC/demo videos | 60/hour/user, burst 20; 1,500/30 days/user; global 1,000/hour. Gemini full-video analysis runs first for videos up to 100 MB; OpenAI poster analysis is the fallback when Gemini fails or the video exceeds the analysis size cap. |
@@ -113,10 +115,11 @@ Optional Replicate model overrides:
 | Clipr avatar video and voice generation | `POST /api/clipr/jobs` before calling `prunaai/p-video-avatar` | 600 estimated avatar seconds/hour/user, burst 180; global provider bucket counted by estimated seconds |
 | Clipr music generation | `POST /api/clipr/jobs` when music is selected and `POST /api/clipr/music` when regenerating music for an existing Clip | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
 | Stitchr music generation | `POST /api/stitches/music` when creating or regenerating music for a saved stitch | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
+| Shared music generation | `POST /api/music/generate` from the shared music picker | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
 | Clipr job polling | Reserved Clipr polling route and Convex job refreshes | 600/minute/user, burst 150 |
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
-| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `longrVideos.save`, `swiprBackgrounds.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
+| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `longrVideos.save`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
 | Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `stitches.updateMusic`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
@@ -130,10 +133,11 @@ creates a local ZIP download. Saved Swipes store only Convex metadata, slide
 text overlay state, and a shared background reference; rendered carousel images
 are not persisted.
 
-Longr rendering is browser-local and has no provider cost. The user-facing cap
-is 5 minutes of combined source-clip duration before build starts. Saving a
-Longr output still consumes the shared R2 upload limits and the shared Convex
-record-save limit.
+Longr rendering is browser-local and has no provider cost unless the user opens
+the shared music picker and generates a new music track through
+`POST /api/music/generate`. The user-facing cap is 5 minutes of combined
+source-clip duration before build starts. Saving a Longr output still consumes
+the shared R2 upload limits and the shared Convex record-save limit.
 
 Swipr AI background generation is separate from export: it calls the selected
 Replicate image model through `POST /api/swipr/backgrounds/generate`, consumes
@@ -168,6 +172,15 @@ consumes the product enrichment limit before creating the prediction, then
 `products.update` consumes the shared Convex metadata-update limit before the
 database write. `products.remove` consumes the shared Convex record-delete limit.
 
+The shared music picker searches `sharedMusicTracks`. Selecting an existing
+track only creates an R2 download signed URL after Convex validation and uses
+the normal R2 download limit. Generating a new picker track consumes the shared
+music generation limits before the Replicate call, then consumes R2 upload bytes
+for two copies of the generated audio: one under `shared/music/...` and one
+under the user's personal music prefix. `sharedMusicTracks.save` consumes the
+shared Convex record-save limit. Shared music objects are not user-deletable
+through the personal R2 delete route.
+
 Clipr browser final preparation is intentionally not separately rate-limited in
 the MVP because the current simplified Clipr flow normalizes one generated
 avatar video and saves it as a Clip rather than stitching multiple generated
@@ -175,16 +188,18 @@ scenes. The expensive surfaces are gated before work starts: job creation,
 hook/script generation, avatar still generation, full-script avatar video
 generation, optional music generation, R2 object creation, and Convex final
 save. Clipr saves the normalized full avatar video directly as the final Clipr
-clip. Optional music stays as separate R2-backed metadata on the Clip and is
-mixed into a fresh downloadable file only when the user exports/downloads. That
-export-time Media Bunny render is browser-local and is not separately
-rate-limited. Stitchr saved-output music uses the same export-time model:
-`POST /api/stitches/music` consumes the Stitchr music limits before Replicate,
-then R2 upload limits before storing the audio object, while download-time
-mixing stays browser-local. After script planning, Clipr consumes the
-avatar-video limit and, when selected, the 60 second music-generation limit
-before creating the avatar still, so a rate-limit rejection does not leave an
-image generated without the provider work that follows.
+clip. Optional generated music is stored as a personal audio object and as a
+shared library track; selecting an existing shared track skips the music
+provider call. Music is mixed into a fresh downloadable file only when the user
+exports/downloads. That export-time Media Bunny render is browser-local and is
+not separately rate-limited. Stitchr saved-output music uses the same
+export-time model: `POST /api/stitches/music` consumes the Stitchr music limits
+before Replicate, then R2 upload limits for both personal and shared copies,
+while download-time mixing stays browser-local. After script planning, Clipr
+consumes the avatar-video limit and, when generated music is requested, the 60
+second music-generation limit before creating the avatar still, so a rate-limit
+rejection does not leave an image generated without the provider work that
+follows.
 
 The expanded hook libraries are local prompt resources, not new backend
 operations. Swipr and Stitchr auto-text continue to use `POST /api/clipr/text`

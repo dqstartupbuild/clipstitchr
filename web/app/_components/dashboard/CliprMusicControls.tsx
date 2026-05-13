@@ -1,7 +1,9 @@
 "use client";
 
 import { Music2, Save } from "lucide-react";
+import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
 import { Button } from "@/app/_components/ui/Button";
+import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 
 type CliprMusicControlsProps = {
@@ -16,6 +18,7 @@ type CliprMusicControlsProps = {
   onGenerate: () => void;
   onRemove: () => void;
   onSave: () => void;
+  onSelectTrack: (track: SharedMusicTrack) => void | Promise<void>;
   onVolumeChange: (volume: number) => void;
 };
 
@@ -31,6 +34,7 @@ export function CliprMusicControls({
   onGenerate,
   onRemove,
   onSave,
+  onSelectTrack,
   onVolumeChange,
 }: CliprMusicControlsProps) {
   return (
@@ -123,6 +127,11 @@ export function CliprMusicControls({
         >
           {music ? "Generate new music" : "Generate music"}
         </Button>
+        <MusicSelectorButton
+          source="clipr"
+          selectedTrackId={music?.sharedTrackId}
+          onSelectTrack={onSelectTrack}
+        />
       </div>
     </div>
   );

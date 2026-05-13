@@ -10,7 +10,10 @@ import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticate
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { saveStitchMusicObject } from "@/lib/clipstitchr/server/saveStitchMusicObject";
+import { saveSharedMusicObject } from "@/lib/clipstitchr/server/saveSharedMusicObject";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { getGeneratedMusicTrackTags } from "@/lib/clipstitchr/utils/getGeneratedMusicTrackTags";
+import { getGeneratedMusicTrackTitle } from "@/lib/clipstitchr/utils/getGeneratedMusicTrackTitle";
 
 export const runtime = "nodejs";
 
@@ -60,16 +63,49 @@ export async function POST(request: Request) {
 
     await convex.mutation(api.rateLimits.consumeR2Upload, {
       secret,
-      sizeBytes: generatedMusic.body.byteLength,
+      sizeBytes: generatedMusic.body.byteLength * 2,
     });
 
-    const audioObject = await saveStitchMusicObject({
-      body: generatedMusic.body,
-      contentType: generatedMusic.contentType,
-      stitchId: `${stitch.id}-${createId()}`,
-      userId,
+    const trackId = createId();
+    const title = getGeneratedMusicTrackTitle({
+      source: "stitchr",
+      style: stitch.name,
     });
+    const tags = getGeneratedMusicTrackTags({
+      source: "stitchr",
+      style: stitch.name,
+    });
+    const [audioObject, sharedAudioObject] = await Promise.all([
+      saveStitchMusicObject({
+        body: generatedMusic.body,
+        contentType: generatedMusic.contentType,
+        stitchId: `${stitch.id}-${trackId}`,
+        userId,
+      }),
+      saveSharedMusicObject({
+        body: generatedMusic.body,
+        contentType: generatedMusic.contentType,
+        trackId,
+      }),
+    ]);
     const now = new Date().toISOString();
+
+    await convex.mutation(api.sharedMusicTracks.save, {
+      id: trackId,
+      title,
+      tags,
+      style: stitch.name,
+      durationSeconds: generatedMusic.durationSeconds,
+      audioObject: sharedAudioObject,
+      ownerAudioObject: audioObject,
+      mimeType: generatedMusic.contentType,
+      size: generatedMusic.body.byteLength,
+      prompt: generatedMusic.prompt,
+      providerModel: generatedMusic.modelId,
+      providerPredictionId: generatedMusic.predictionId,
+      source: "stitchr",
+      createdAt: now,
+    });
 
     return NextResponse.json({
       music: {
@@ -80,6 +116,9 @@ export async function POST(request: Request) {
         prompt: generatedMusic.prompt,
         providerModel: generatedMusic.modelId,
         providerPredictionId: generatedMusic.predictionId,
+        sharedTrackId: trackId,
+        tags,
+        title,
         updatedAt: now,
         volume: 1,
       },

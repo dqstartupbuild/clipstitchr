@@ -17,10 +17,14 @@ import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRa
 import { saveCliprAvatarVideoObject } from "@/lib/clipstitchr/server/saveCliprAvatarVideoObject";
 import { saveCliprMusicObject } from "@/lib/clipstitchr/server/saveCliprMusicObject";
 import { saveCliprSceneImageObject } from "@/lib/clipstitchr/server/saveCliprSceneImageObject";
+import { saveSharedMusicObject } from "@/lib/clipstitchr/server/saveSharedMusicObject";
 import { cliprMusicGenerationDefaults } from "@/lib/clipstitchr/constants/cliprMusicGenerationDefaults";
+import { createCliprMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createCliprMusicMetadataFromSharedTrack";
 import { getCliprDurationSeconds } from "@/lib/clipstitchr/utils/getCliprDurationSeconds";
 import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { getGeneratedMusicTrackTags } from "@/lib/clipstitchr/utils/getGeneratedMusicTrackTags";
+import { getGeneratedMusicTrackTitle } from "@/lib/clipstitchr/utils/getGeneratedMusicTrackTitle";
 
 export const runtime = "nodejs";
 
@@ -29,6 +33,7 @@ type CliprJobCreateRequest = {
   avatarId?: unknown;
   durationSeconds?: unknown;
   jobId?: unknown;
+  musicTrackId?: unknown;
   productId?: unknown;
   voiceId?: unknown;
 };
@@ -58,7 +63,9 @@ export async function POST(request: Request) {
     typeof body.avatarId === "string" ? body.avatarId.trim() : "";
   const durationSeconds = getCliprDurationSeconds(body.durationSeconds);
   const voiceId = getCliprVoiceId(body.voiceId);
-  const addMusic = body.addMusic === true;
+  const musicTrackId =
+    typeof body.musicTrackId === "string" ? body.musicTrackId.trim() : "";
+  const addMusic = body.addMusic === true && !musicTrackId;
   const requestedJobId =
     typeof body.jobId === "string" ? body.jobId.trim() : "";
   const jobId = requestedJobId ? requestedJobId.slice(0, 128) : createId();
@@ -84,6 +91,9 @@ export async function POST(request: Request) {
         convex.query(api.avatars.get, { id: avatarId }),
         convex.query(api.photoAssets.getFirstForAvatar, { avatarId }),
       ]);
+    const selectedMusicTrack = musicTrackId
+      ? await convex.query(api.sharedMusicTracks.get, { id: musicTrackId })
+      : null;
 
     if (!productDocument) {
       throw new Error("Saved product not found.");
@@ -95,6 +105,10 @@ export async function POST(request: Request) {
 
     if (!avatarPhotoDocument) {
       throw new Error("Upload at least one photo for this avatar.");
+    }
+
+    if (musicTrackId && !selectedMusicTrack) {
+      throw new Error("Selected music track was not found.");
     }
 
     const now = new Date().toISOString();
@@ -207,47 +221,96 @@ export async function POST(request: Request) {
     if (generatedMusic) {
       await convex.mutation(api.rateLimits.consumeR2Upload, {
         secret,
-        sizeBytes: generatedMusic.body.byteLength,
+        sizeBytes: generatedMusic.body.byteLength * 2,
       });
     }
 
-    const [avatarVideoObject, musicObject] = await Promise.all([
-      saveCliprAvatarVideoObject({
-        body: generatedAvatarVideo.body,
-        contentType: generatedAvatarVideo.contentType,
-        jobId,
-        userId,
-      }),
-      generatedMusic
-        ? saveCliprMusicObject({
-            body: generatedMusic.body,
-            contentType: generatedMusic.contentType,
-            jobId,
-            userId,
-          })
-        : Promise.resolve(null),
-    ]);
+    const generatedMusicTrackId = generatedMusic ? createId() : "";
+    const [avatarVideoObject, musicObject, sharedMusicObject] =
+      await Promise.all([
+        saveCliprAvatarVideoObject({
+          body: generatedAvatarVideo.body,
+          contentType: generatedAvatarVideo.contentType,
+          jobId,
+          userId,
+        }),
+        generatedMusic
+          ? saveCliprMusicObject({
+              body: generatedMusic.body,
+              contentType: generatedMusic.contentType,
+              jobId: `${jobId}-${generatedMusicTrackId}`,
+              userId,
+            })
+          : Promise.resolve(null),
+        generatedMusic
+          ? saveSharedMusicObject({
+              body: generatedMusic.body,
+              contentType: generatedMusic.contentType,
+              trackId: generatedMusicTrackId,
+            })
+          : Promise.resolve(null),
+      ]);
     const musicRecordedAt = new Date().toISOString();
+    const generatedMusicTitle = generatedMusic
+      ? getGeneratedMusicTrackTitle({
+          source: "clipr",
+          style: product.name,
+        })
+      : "";
+    const generatedMusicTags = generatedMusic
+      ? getGeneratedMusicTrackTags({
+          source: "clipr",
+          style: product.name,
+        })
+      : [];
+
+    if (generatedMusic && musicObject && sharedMusicObject) {
+      await convex.mutation(api.sharedMusicTracks.save, {
+        id: generatedMusicTrackId,
+        title: generatedMusicTitle,
+        tags: generatedMusicTags,
+        style: product.name,
+        durationSeconds: generatedMusic.durationSeconds,
+        audioObject: sharedMusicObject,
+        ownerAudioObject: musicObject,
+        mimeType: generatedMusic.contentType,
+        size: generatedMusic.body.byteLength,
+        prompt: generatedMusic.prompt,
+        providerModel: generatedMusic.modelId,
+        providerPredictionId: generatedMusic.predictionId,
+        source: "clipr",
+        createdAt: musicRecordedAt,
+      });
+    }
+
+    const selectedMusic = selectedMusicTrack
+      ? createCliprMusicMetadataFromSharedTrack(selectedMusicTrack)
+      : null;
+    const musicMetadata =
+      selectedMusic ??
+      (generatedMusic && musicObject
+        ? {
+            audioObject: musicObject,
+            createdAt: musicRecordedAt,
+            durationSeconds: generatedMusic.durationSeconds,
+            enabled: true,
+            prompt: generatedMusic.prompt,
+            providerModel: generatedMusic.modelId,
+            providerPredictionId: generatedMusic.predictionId,
+            sharedTrackId: generatedMusicTrackId,
+            tags: generatedMusicTags,
+            title: generatedMusicTitle,
+            updatedAt: musicRecordedAt,
+            volume: 1,
+          }
+        : undefined);
 
     const job = await convex.mutation(api.cliprJobs.recordAvatarVideoOutput, {
       secret,
       id: jobId,
       avatarVideoObject,
       avatarVideoProviderPredictionId: generatedAvatarVideo.predictionId,
-      music:
-        generatedMusic && musicObject
-          ? {
-              audioObject: musicObject,
-              createdAt: musicRecordedAt,
-              durationSeconds: generatedMusic.durationSeconds,
-              enabled: true,
-              prompt: generatedMusic.prompt,
-              providerModel: generatedMusic.modelId,
-              providerPredictionId: generatedMusic.predictionId,
-              updatedAt: musicRecordedAt,
-              volume: 1,
-            }
-          : undefined,
+      music: musicMetadata,
       providerModels: [
         generatedAvatarVideo.modelId,
         ...(generatedMusic ? [generatedMusic.modelId] : []),
