@@ -61,7 +61,7 @@ export function LongrPageClient() {
     );
 
     if (selectedDuration + clipDuration > longrMaxDurationSeconds) {
-      setSelectionError("Longr videos cannot be longer than 5 minutes.");
+      setSelectionError("Longs cannot be longer than 5 minutes.");
       return;
     }
 

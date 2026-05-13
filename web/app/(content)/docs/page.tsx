@@ -7,7 +7,7 @@ import { site } from "@/lib/site";
 export const metadata = createPageMetadata({
   title: `Docs | ${site.name}`,
   description:
-    "Simple ClipStitchr docs for getting started, making ad variants, creating source clips, and checking usage limits.",
+    "Simple ClipStitchr docs for getting started, making ad variants, building Longs, creating source clips, and checking usage limits.",
   canonical: "/docs",
 });
 
@@ -26,8 +26,8 @@ export default function DocsIndexPage() {
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
             Start with the basics, then jump into the feature that matches your
-            next post: a finished ad, a fresh Clip, a carousel, or more source
-            footage.
+            next post: a finished ad, a Long, a fresh Clip, a carousel, or more
+            source footage.
           </p>
         </div>
 

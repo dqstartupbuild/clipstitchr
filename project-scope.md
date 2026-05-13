@@ -208,7 +208,7 @@ mode toggle.
 | 4 | One Build action creates a single combined 9:16 MP4 | ✅ | ✅ |
 | 5 | Combined selected duration is capped at 5 minutes | ✅ | ✅ |
 | 6 | Running duration total shows remaining time | ✅ | ✅ |
-| 7 | Saved Longr outputs appear in the Content Library Longr tab | ✅ | ✅ |
+| 7 | Saved Longr outputs appear in the Content Library Longs tab | ✅ | ✅ |
 
 Longr uses the same browser-local Media Bunny output pattern as Stitchr, but it
 accepts an arbitrary ordered sequence instead of a UGC-to-Demo pairing. It uses

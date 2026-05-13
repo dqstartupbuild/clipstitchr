@@ -71,7 +71,7 @@ export function useLongr({ onCreated }: UseLongrOptions) {
         );
 
         if (estimatedDuration > longrMaxDurationSeconds) {
-          throw new Error("Longr videos cannot be longer than 5 minutes.");
+          throw new Error("Longs cannot be longer than 5 minutes.");
         }
 
         setStatus("stitching");
@@ -150,7 +150,7 @@ export function useLongr({ onCreated }: UseLongrOptions) {
         setError(
           nextError instanceof Error
             ? nextError.message
-            : "Unable to build the Longr video.",
+            : "Unable to build the Long.",
         );
         return null;
       }

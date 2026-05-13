@@ -29,7 +29,7 @@ export const rateLimitsDoc = {
       body: [
         "Some work happens in your browser and does not need a separate limit. For example, Swipr can render your saved carousel into image slides locally.",
         "Clipr and Stitchr music export also renders locally when you download a video with music enabled. Generating or regenerating the music still uses the limits below.",
-        "Longr rendering happens locally in your browser, but saving the finished Longr video still uses upload and library-save limits.",
+        "Longr rendering happens locally in your browser, but saving the finished Long still uses upload and library-save limits.",
         "Saving, uploading, downloading, or generating content still uses the limits below because those actions use shared app resources.",
       ],
     },

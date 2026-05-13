@@ -6,6 +6,7 @@ import { useState } from "react";
 import { VideoClipDetailsDialog } from "@/app/_components/dashboard/VideoClipDetailsDialog";
 import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -16,7 +17,7 @@ import { getVideoClipBadgeLabel } from "@/lib/clipstitchr/utils/getVideoClipBadg
 import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
 
 type OpenVideoClipDetailsOptions = {
-  showTrimEditor?: boolean;
+  showControlsEditor?: boolean;
 };
 
 type VideoClipPreviewCardActions = {
@@ -41,6 +42,7 @@ type VideoClipPreviewCardProps = {
   footer?: (actions: VideoClipPreviewCardActions) => ReactNode;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onSelect?: () => void;
+  cliprMusicEditor?: VideoClipDetailsMusicEditor;
   trimEditor?: VideoClipPreviewCardTrimEditor;
 };
 
@@ -53,6 +55,7 @@ export function VideoClipPreviewCard({
   footer,
   onLoadClip,
   onSelect,
+  cliprMusicEditor,
   trimEditor,
 }: VideoClipPreviewCardProps) {
   const [loadedClipState, setLoadedClipState] = useState<{
@@ -101,7 +104,7 @@ export function VideoClipPreviewCard({
     }
   };
   const openDetails = (options?: OpenVideoClipDetailsOptions) => {
-    setDetailsMode(options?.showTrimEditor ? "trim" : "details");
+    setDetailsMode(options?.showControlsEditor ? "trim" : "details");
     void loadFullClip();
   };
   const actionContext = {
@@ -181,8 +184,9 @@ export function VideoClipPreviewCard({
       {detailsMode ? (
         <VideoClipDetailsDialog
           clip={clip}
-          initialTrimEditorOpen={detailsMode === "trim"}
+          initialControlsEditorOpen={detailsMode === "trim"}
           isLoading={isClipLoading}
+          musicEditor={cliprMusicEditor}
           posterUrl={posterUrl}
           trimEditor={trimEditor}
           videoUrl={videoUrl}

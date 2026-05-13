@@ -32,7 +32,7 @@ export function LongrBuildResult({ longrVideo }: LongrBuildResultProps) {
           }
         />
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-accent-dark">Longr ready</p>
+          <p className="text-sm font-semibold text-accent-dark">Long ready</p>
           <h2 className="mt-1 truncate text-base font-bold text-text-primary">
             {longrVideo.name}
           </h2>

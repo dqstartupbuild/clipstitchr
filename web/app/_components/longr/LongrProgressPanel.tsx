@@ -19,12 +19,12 @@ export function LongrProgressPanel({
 
   const title =
     status === "complete"
-      ? "Longr ready"
+      ? "Long ready"
       : status === "reading"
         ? "Preparing clips"
         : status === "saving"
-          ? "Saving Longr"
-          : "Building Longr";
+          ? "Saving Long"
+          : "Building Long";
 
   return (
     <Panel className="p-5">

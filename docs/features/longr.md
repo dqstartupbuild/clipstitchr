@@ -25,7 +25,7 @@ clips, arrange the order, build once, and save one output.
 6. Watch the running duration meter.
 7. Build one combined 9:16 MP4.
 8. Save the output to R2 and Convex.
-9. Reuse or download the saved output from the Content Library Longr tab.
+9. Reuse or download the saved output from the Content Library Longs tab.
 
 ## Behavior
 
@@ -47,8 +47,8 @@ Each Longr output stores:
 - ordered clip segment metadata with source clip IDs, names, clip types, trim
   ranges, segment durations, and order
 
-Saved Longr outputs appear in the Content Library under the Longr tab and in
-the All tab.
+Saved Longr outputs are called Longs in the Content Library. They appear under
+the Longs tab and in the All tab.
 
 ## Media Bunny Implementation
 

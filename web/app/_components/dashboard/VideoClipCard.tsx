@@ -3,7 +3,6 @@
 import {
   Download,
   Edit3,
-  Music2,
   Scissors,
   SlidersHorizontal,
   Shuffle,
@@ -11,7 +10,6 @@ import {
   UserRound,
 } from "lucide-react";
 import { useState } from "react";
-import { CliprMusicSettingsDialog } from "@/app/_components/dashboard/CliprMusicSettingsDialog";
 import { CreateAvatarFromClipDialog } from "@/app/_components/dashboard/CreateAvatarFromClipDialog";
 import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPreviewCard";
 import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
@@ -74,7 +72,6 @@ export function VideoClipCard({
   onCreateAvatarFromClip,
 }: VideoClipCardProps) {
   const [isAvatarCreatorOpen, setIsAvatarCreatorOpen] = useState(false);
-  const [isCliprMusicOpen, setIsCliprMusicOpen] = useState(false);
   const [isMetadataOpen, setIsMetadataOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
@@ -183,6 +180,18 @@ export function VideoClipCard({
           title: "Default trim",
           onSave: (trimRange) => onUpdateTrim(clip, trimRange),
         }}
+        cliprMusicEditor={
+          clip.cliprMetadata && onGenerateCliprMusic && onUpdateCliprMusic
+            ? {
+                error: musicError,
+                isGenerating: isGeneratingMusic,
+                isSaving: isSavingMusic,
+                onGenerate: handleGenerateCliprMusic,
+                onRemove: () => handleUpdateCliprMusic(null),
+                onSave: handleUpdateCliprMusic,
+              }
+            : undefined
+        }
         actions={({ isLoading, loadFullClip, openDetails }) => (
           <>
             <IconButtonLink
@@ -203,23 +212,20 @@ export function VideoClipCard({
               disabled={isLoading || isDownloading}
               onClick={() => void handleDownload(loadFullClip)}
             />
-            {clip.cliprMetadata && onGenerateCliprMusic && onUpdateCliprMusic ? (
-              <IconButton
-                label="Edit Clipr music"
-                icon={<Music2 aria-hidden className="h-4 w-4" />}
-                onClick={() => setIsCliprMusicOpen(true)}
-              />
-            ) : null}
             <IconButton
               label="Edit clip details"
               icon={<Edit3 aria-hidden className="h-4 w-4" />}
               onClick={() => setIsMetadataOpen(true)}
             />
             <IconButton
-              label="Edit default trim"
+              label={
+                clip.cliprMetadata && onGenerateCliprMusic && onUpdateCliprMusic
+                  ? "Edit trim and music"
+                  : "Edit default trim"
+              }
               icon={<SlidersHorizontal aria-hidden className="h-4 w-4" />}
               disabled={isLoading}
-              onClick={() => openDetails({ showTrimEditor: true })}
+              onClick={() => openDetails({ showControlsEditor: true })}
             />
             {clip.clipType === "ugc" && onCreateAvatarFromClip ? (
               <IconButton
@@ -274,18 +280,6 @@ export function VideoClipCard({
           isGenerating={isCreatingAvatarFromClip}
           onClose={() => setIsAvatarCreatorOpen(false)}
           onCreate={(options) => onCreateAvatarFromClip(clip, options)}
-        />
-      ) : null}
-      {isCliprMusicOpen ? (
-        <CliprMusicSettingsDialog
-          clip={clip}
-          error={musicError}
-          isGenerating={isGeneratingMusic}
-          isSaving={isSavingMusic}
-          onClose={() => setIsCliprMusicOpen(false)}
-          onGenerate={handleGenerateCliprMusic}
-          onRemove={() => handleUpdateCliprMusic(null)}
-          onSave={handleUpdateCliprMusic}
         />
       ) : null}
     </>

@@ -35,7 +35,7 @@ export async function stitchLongrSequence(
   { onProgress }: StitchLongrSequenceOptions = {},
 ): Promise<StitchLongrSequenceResult> {
   if (!sequence.length) {
-    throw new Error("Select at least one clip before building a Longr video.");
+    throw new Error("Select at least one clip before building a Long.");
   }
 
   const inputs = sequence.map(({ clip }) => createMediaInput(clip.blob));
