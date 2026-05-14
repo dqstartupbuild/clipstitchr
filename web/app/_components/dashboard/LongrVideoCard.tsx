@@ -8,6 +8,7 @@ import {
   type MediaCardActionMenuItem,
 } from "@/app/_components/ui/MediaCardActionMenu";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import { createVideoBlobWithPosterMetadata } from "@/lib/clipstitchr/media/createVideoBlobWithPosterMetadata";
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
@@ -26,11 +27,37 @@ export function LongrVideoCard({
   const url = useObjectUrl(longrVideo.blob);
   const posterUrl = useObjectUrl(longrVideo.posterBlob);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    setDownloadError(null);
+
+    try {
+      downloadBlob(
+        await createVideoBlobWithPosterMetadata({
+          posterBlob: longrVideo.posterBlob,
+          title: longrVideo.name,
+          videoBlob: longrVideo.blob,
+        }),
+        longrVideo.name,
+      );
+    } catch (nextError) {
+      setDownloadError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to download this Long.",
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+  };
   const actionItems: MediaCardActionMenuItem[] = [
     {
       label: "Download Long",
       icon: <Download aria-hidden className="h-4 w-4" />,
-      onClick: () => downloadBlob(longrVideo.blob, longrVideo.name),
+      disabled: isDownloading,
+      onClick: () => void handleDownload(),
     },
     {
       label: "Delete Long",
@@ -94,6 +121,11 @@ export function LongrVideoCard({
             items={actionItems}
           />
         </div>
+        {downloadError ? (
+          <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+            {downloadError}
+          </p>
+        ) : null}
       </div>
       {isDetailsOpen ? (
         <LongrVideoDetailsDialog
