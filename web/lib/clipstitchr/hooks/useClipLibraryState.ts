@@ -18,6 +18,7 @@ import type { ClipLibraryValue } from "@/lib/clipstitchr/types/ClipLibraryValue"
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -43,6 +44,9 @@ export function useClipLibraryState(): ClipLibraryValue {
   const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
   const updateCliprMusicMutation = useMutation(api.videoClips.updateCliprMusic);
   const updateStitchMusicMutation = useMutation(api.stitches.updateMusic);
+  const updateStitchTextOverlayMutation = useMutation(
+    api.stitches.updateTextOverlay,
+  );
   const removeClipMutation = useMutation(api.videoClips.remove);
   const removeLongrVideoMutation = useMutation(api.longrVideos.remove);
   const removeStitchMutation = useMutation(api.stitches.remove);
@@ -283,6 +287,18 @@ export function useClipLibraryState(): ClipLibraryValue {
     [refresh, updateStitchMusicMutation],
   );
 
+  const updateStitchTextOverlay = useCallback(
+    async (stitch: Stitch, textOverlay: TextOverlay | null) => {
+      await updateStitchTextOverlayMutation({
+        id: stitch.id,
+        textOverlay,
+      });
+
+      await refresh();
+    },
+    [refresh, updateStitchTextOverlayMutation],
+  );
+
   const generateStitchMusic = useCallback(
     async (stitch: Stitch) => {
       const music = await requestStitchMusicGeneration({
@@ -373,35 +389,31 @@ export function useClipLibraryState(): ClipLibraryValue {
       setError(null);
 
       try {
-        const [nextClips, nextStitches, nextLongrVideos] = await Promise.all([
-          Promise.all(
-            clipDocuments.map(async (clip) => {
-              const posterBlob = clip.posterObject
-                ? await downloadBlobFromR2(clip.posterObject).catch(
-                    () => undefined,
-                  )
-                : undefined;
+        const nextClips = await Promise.all(
+          clipDocuments.map(async (clip) => {
+            const posterBlob = clip.posterObject
+              ? await downloadBlobFromR2(clip.posterObject).catch(
+                  () => undefined,
+                )
+              : undefined;
 
-              return createVideoClipMetadataFromConvexDocument(
-                clip,
-                posterBlob,
-              );
-            }),
-          ),
+            return createVideoClipMetadataFromConvexDocument(clip, posterBlob);
+          }),
+        );
+        const posterBlobsByClipId = new Map(
+          nextClips.map((clip) => [clip.id, clip.posterBlob]),
+        );
+        const [nextStitches, nextLongrVideos] = await Promise.all([
           Promise.all(
             stitchDocuments.map(async (stitch) => {
-              const [blob, posterBlob] = await Promise.all([
-                downloadBlobFromR2(stitch.stitchObject),
-                stitch.posterObject
-                  ? downloadBlobFromR2(stitch.posterObject).catch(
-                      () => undefined,
-                    )
-                  : Promise.resolve(undefined),
-              ]);
+              const posterBlob = stitch.posterObject
+                ? await downloadBlobFromR2(stitch.posterObject).catch(
+                    () => undefined,
+                  )
+                : posterBlobsByClipId.get(stitch.ugcClipId);
 
               return createStitchFromConvexDocument({
                 stitch,
-                blob,
                 posterBlob,
               });
             }),
@@ -480,6 +492,7 @@ export function useClipLibraryState(): ClipLibraryValue {
     updateClipTrimRange,
     generateStitchMusic,
     updateStitchMusic,
+    updateStitchTextOverlay,
     removeLongrVideo,
     removeStitch,
   };

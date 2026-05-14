@@ -4,6 +4,8 @@ import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyS
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 
 type StitchesSectionProps = {
   stitches: Stitch[];
@@ -13,9 +15,14 @@ type StitchesSectionProps = {
   title?: string;
   onDelete: (id: string) => void | Promise<void>;
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
+  onLoadClip: (id: string) => Promise<VideoClip | null>;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
+  ) => void | Promise<void>;
+  onUpdateTextOverlay: (
+    stitch: Stitch,
+    textOverlay: TextOverlay | null,
   ) => void | Promise<void>;
 };
 
@@ -27,7 +34,9 @@ export function StitchesSection({
   title = "Stitches",
   onDelete,
   onGenerateMusic,
+  onLoadClip,
   onUpdateMusic,
+  onUpdateTextOverlay,
 }: StitchesSectionProps) {
   return (
     <section id={id}>
@@ -45,7 +54,9 @@ export function StitchesSection({
               stitch={stitch}
               onDelete={onDelete}
               onGenerateMusic={onGenerateMusic}
+              onLoadClip={onLoadClip}
               onUpdateMusic={onUpdateMusic}
+              onUpdateTextOverlay={onUpdateTextOverlay}
             />
           ))}
         </div>

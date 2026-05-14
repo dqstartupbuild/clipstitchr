@@ -5,24 +5,35 @@ import { useState } from "react";
 import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExportBlob";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 
 type DownloadStitchCardProps = {
   stitch: Stitch;
+  onLoadClip: (id: string) => Promise<VideoClip | null>;
 };
 
-export function DownloadStitchCard({ stitch }: DownloadStitchCardProps) {
+export function DownloadStitchCard({
+  stitch,
+  onLoadClip,
+}: DownloadStitchCardProps) {
   const posterUrl = useObjectUrl(stitch.posterBlob);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const fileSizeLabel = stitch.size
+    ? formatBytes(stitch.size)
+    : "Ready to download";
   const handleDownload = async () => {
     setIsDownloading(true);
     setDownloadError(null);
 
     try {
-      downloadBlob(await createStitchExportBlob(stitch), stitch.name);
+      downloadBlob(
+        await createStitchExportBlob(stitch, { loadClip: onLoadClip }),
+        stitch.name,
+      );
     } catch (nextError) {
       setDownloadError(
         nextError instanceof Error
@@ -49,7 +60,7 @@ export function DownloadStitchCard({ stitch }: DownloadStitchCardProps) {
           {stitch.name}
         </h3>
         <p className="mt-1 text-xs text-text-tertiary">
-          {formatDuration(stitch.duration)} . {formatBytes(stitch.size)}
+          {formatDuration(stitch.duration)} . {fileSizeLabel}
         </p>
         {downloadError ? (
           <p className="mt-2 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">

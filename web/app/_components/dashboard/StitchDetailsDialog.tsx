@@ -29,11 +29,22 @@ export function StitchDetailsDialog({
       : "Attached but disabled"
     : undefined;
   const textOverlayText = stitch.textOverlay?.text.trim();
+  const fileSizeLabel = stitch.size
+    ? formatBytes(stitch.size)
+    : "Ready to download";
   const detailItems = [
     { label: "UGC clip", value: stitch.ugcClipName },
     { label: "Demo clip", value: stitch.demoClipName },
     { label: "UGC trim", value: getStitchTrimRangeLabel(stitch.ugcTrimRange) },
     { label: "Demo trim", value: getStitchTrimRangeLabel(stitch.demoTrimRange) },
+    {
+      label: "UGC audio",
+      value: stitch.includeUgcAudio === false ? "Muted" : "Included",
+    },
+    {
+      label: "Demo audio",
+      value: stitch.includeDemoAudio === false ? "Muted" : "Included",
+    },
     { label: "Music", value: musicLabel },
     { label: "Text overlay", value: textOverlayText },
   ].flatMap((item) =>
@@ -116,8 +127,7 @@ export function StitchDetailsDialog({
               </p>
               <p className="mt-1 text-sm text-text-secondary">
                 {stitch.width} x {stitch.height} .{" "}
-                {formatDuration(stitch.duration)} total .{" "}
-                {formatBytes(stitch.size)}
+                {formatDuration(stitch.duration)} total . {fileSizeLabel}
               </p>
               <p className="mt-1 text-xs text-text-tertiary">
                 Created {formatDate(stitch.createdAt)}

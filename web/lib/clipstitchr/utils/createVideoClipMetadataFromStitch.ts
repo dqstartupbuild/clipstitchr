@@ -4,6 +4,16 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 export function createVideoClipMetadataFromStitch(
   stitch: Stitch,
 ): VideoClipMetadata {
+  const mimeType = stitch.mimeType ?? "video/mp4";
+  const size = stitch.size ?? 0;
+  const videoObject = stitch.stitchObject ?? {
+    contentType: mimeType,
+    key: `stitches/${stitch.id}/render-on-export`,
+    size,
+  };
+  const hasSourceAudio =
+    stitch.includeUgcAudio !== false || stitch.includeDemoAudio !== false;
+
   return {
     id: stitch.id,
     name: stitch.name,
@@ -11,14 +21,14 @@ export function createVideoClipMetadataFromStitch(
     videoDescription: `Finished stitch using ${stitch.ugcClipName} and ${stitch.demoClipName}.`,
     originalName: `${stitch.name}.mp4`,
     clipType: "ugc",
-    videoObject: stitch.stitchObject,
+    videoObject,
     posterObject: stitch.posterObject,
     posterBlob: stitch.posterBlob,
     posterVersion: stitch.posterVersion,
-    mimeType: stitch.mimeType,
-    sourceMimeType: stitch.mimeType,
-    size: stitch.size,
-    originalSize: stitch.size,
+    mimeType,
+    sourceMimeType: mimeType,
+    size,
+    originalSize: size,
     width: stitch.width,
     height: stitch.height,
     aspectRatio: stitch.height > 0 ? stitch.width / stitch.height : 0,
@@ -27,7 +37,7 @@ export function createVideoClipMetadataFromStitch(
       start: 0,
       end: stitch.duration,
     },
-    hasAudio: true,
+    hasAudio: hasSourceAudio || Boolean(stitch.music?.enabled),
     createdAt: stitch.createdAt,
     updatedAt: stitch.createdAt,
   };

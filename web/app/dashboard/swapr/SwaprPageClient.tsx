@@ -10,6 +10,7 @@ import { SwaprOutputPanel } from "@/app/_components/swapr/SwaprOutputPanel";
 import { SwaprPhotoSelector } from "@/app/_components/swapr/SwaprPhotoSelector";
 import { SwaprSourceClipSelector } from "@/app/_components/swapr/SwaprSourceClipSelector";
 import { Panel } from "@/app/_components/ui/Panel";
+import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExportBlob";
 import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipstitchr/constants/swaprReferenceVideoMaxSizeBytes";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
@@ -122,10 +123,18 @@ export function SwaprPageClient() {
     if (!stitch) {
       return null;
     }
+    const blob = await createStitchExportBlob(stitch, {
+      loadClip: library.loadClip,
+    });
+    const metadata = createVideoClipMetadataFromStitch(stitch);
 
     return {
-      ...createVideoClipMetadataFromStitch(stitch),
-      blob: stitch.blob,
+      ...metadata,
+      blob,
+      mimeType: blob.type || metadata.mimeType,
+      originalSize: blob.size,
+      size: blob.size,
+      sourceMimeType: blob.type || metadata.sourceMimeType,
     };
   };
   const handleGenerate = async () => {

@@ -17,7 +17,9 @@ export function ClipPickerActionBar({
   onStitch,
 }: ClipPickerActionBarProps) {
   const buttonLabel =
-    selectedUgcCount > 1 ? `Stitch ${selectedUgcCount} ads` : "Stitch";
+    selectedUgcCount > 1
+      ? `Stitch ${selectedUgcCount} ads`
+      : "Stitch";
 
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">

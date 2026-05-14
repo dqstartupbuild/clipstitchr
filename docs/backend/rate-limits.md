@@ -120,7 +120,7 @@ Optional Replicate model overrides:
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `longrVideos.save`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
-| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `stitches.updateMusic`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
+| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `stitches.updateMusic`, `stitches.updateTextOverlay`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
 | Convex Clipr job writes | `cliprJobs.createQueued`, `cliprJobs.applyScriptPlan`, `cliprJobs.recordAvatarImageOutput`, `cliprJobs.recordAvatarVideoOutput`, `cliprJobs.markBrowserSaving`, `cliprJobs.finalizeWithClip` | 3,000/hour/user, burst 500 |
@@ -192,10 +192,13 @@ clip. Optional generated music is stored as a personal audio object and as a
 shared library track; selecting an existing shared track skips the music
 provider call. Music is mixed into a fresh downloadable file only when the user
 exports/downloads. That export-time Media Bunny render is browser-local and is
-not separately rate-limited. Stitchr saved-output music uses the same
-export-time model: `POST /api/stitches/music` consumes the Stitchr music limits
-before Replicate, then R2 upload limits for both personal and shared copies,
-while download-time mixing stays browser-local. After script planning, Clipr
+not separately rate-limited. Saved Stitchr outputs use the same export-time
+model: saving a stitch stores source clip references, trim ranges, text, source
+audio flags, and music metadata in Convex without uploading a rendered stitch
+video or poster to R2. Export-time stitching and music mixing are browser-local
+and are not separately rate-limited. `POST /api/stitches/music` consumes the
+Stitchr music limits before Replicate, then R2 upload limits for both personal
+and shared copies. After script planning, Clipr
 consumes the avatar-video limit and, when generated music is requested, the 60
 second music-generation limit before creating the avatar still, so a rate-limit
 rejection does not leave an image generated without the provider work that
@@ -216,7 +219,7 @@ request, R2 upload, or Convex save starts:
 | Photo upload without AI expansion | 100 files at once | Each photo creates 3 R2 objects and 1 metadata analysis request, fitting under the R2 upload, analysis, and Convex-save burst limits. |
 | Photo upload with AI expansion | 1 file at once | Each source image may trigger paid outpainting before it is saved, so the UI keeps this workflow explicitly one-at-a-time. |
 | Video upload | 20 files at once | Each video usually creates 1 normalized video object, 1 poster object, and 1 Gemini video analysis request, fitting under the R2 upload, video-analysis, and Convex-save burst limits. |
-| Stitchr UGC batch | 20 selected UGC videos at once | Each selected UGC creates one stitched output with the selected demo, usually 1 stitch video object, 1 stitch poster object, and 1 Convex stitch save. The batch fits under the R2 upload and Convex-save burst limits while keeping browser encoding sequential. |
+| Stitchr UGC batch | 20 selected UGC videos at once | Each selected UGC creates one editable stitch with the selected demo, copied trims, text, and audio settings. Creating the batch consumes Convex stitch saves but no rendered stitch-video or stitch-poster R2 uploads; export-time browser encoding runs only when the user downloads/exports. |
 | Longr selected duration | 5 minutes total | Longr creates one browser-rendered 9:16 video from the selected sequence. The cap limits browser encode time, output size, R2 upload bytes, and preview complexity. |
 
 These caps reduce partial batches and orphaned R2 objects. They do not replace
@@ -284,7 +287,8 @@ were uploaded but never saved to Convex.
 Client save flows that write multiple R2 objects for one logical asset request
 all signed URLs before any `PUT` starts. That keeps a rate-limit rejection on
 one object from leaving a partially uploaded photo, video, Swapr output, or
-stitch object group in R2.
+legacy rendered stitch object group in R2. Current Stitchr saves do not write
+rendered stitch videos or posters to R2.
 
 Avatar deletion is a confirmed destructive cascade. `DELETE /api/avatars/{id}`
 is gated once by the avatar cascade delete limit, then deletes the avatar's R2

@@ -1,9 +1,10 @@
 "use client";
 
-import { Download, Music2, Play, Shuffle, Trash2 } from "lucide-react";
+import { Download, Music2, Play, Shuffle, Trash2, Type } from "lucide-react";
 import { useState } from "react";
 import { StitchDetailsDialog } from "@/app/_components/dashboard/StitchDetailsDialog";
 import { StitchMusicSettingsDialog } from "@/app/_components/dashboard/StitchMusicSettingsDialog";
+import { StitchTextSettingsDialog } from "@/app/_components/dashboard/StitchTextSettingsDialog";
 import {
   MediaCardActionMenu,
   type MediaCardActionMenuItem,
@@ -12,6 +13,8 @@ import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExp
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
@@ -22,9 +25,14 @@ type StitchCardProps = {
   stitch: Stitch;
   onDelete: (id: string) => void | Promise<void>;
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
+  onLoadClip: (id: string) => Promise<VideoClip | null>;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
+  ) => void | Promise<void>;
+  onUpdateTextOverlay: (
+    stitch: Stitch,
+    textOverlay: TextOverlay | null,
   ) => void | Promise<void>;
 };
 
@@ -32,23 +40,34 @@ export function StitchCard({
   stitch,
   onDelete,
   onGenerateMusic,
+  onLoadClip,
   onUpdateMusic,
+  onUpdateTextOverlay,
 }: StitchCardProps) {
   const url = useObjectUrl(stitch.blob);
   const posterUrl = useObjectUrl(stitch.posterBlob);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isMusicOpen, setIsMusicOpen] = useState(false);
+  const [isTextOpen, setIsTextOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
   const [isSavingMusic, setIsSavingMusic] = useState(false);
+  const [isSavingText, setIsSavingText] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [musicError, setMusicError] = useState<string | null>(null);
+  const [textError, setTextError] = useState<string | null>(null);
+  const fileSizeLabel = stitch.size
+    ? formatBytes(stitch.size)
+    : "Ready to download";
   const handleDownload = async () => {
     setIsDownloading(true);
     setDownloadError(null);
 
     try {
-      downloadBlob(await createStitchExportBlob(stitch), stitch.name);
+      downloadBlob(
+        await createStitchExportBlob(stitch, { loadClip: onLoadClip }),
+        stitch.name,
+      );
     } catch (nextError) {
       setDownloadError(
         nextError instanceof Error
@@ -93,6 +112,23 @@ export function StitchCard({
       setIsSavingMusic(false);
     }
   };
+  const handleUpdateTextOverlay = async (textOverlay: TextOverlay | null) => {
+    setIsSavingText(true);
+    setTextError(null);
+
+    try {
+      await onUpdateTextOverlay(stitch, textOverlay);
+    } catch (nextError) {
+      setTextError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to update stitch text.",
+      );
+      throw nextError;
+    } finally {
+      setIsSavingText(false);
+    }
+  };
   const actionItems: MediaCardActionMenuItem[] = [
     {
       label: "Use in Swapr",
@@ -102,8 +138,13 @@ export function StitchCard({
     {
       label: "Download stitch",
       icon: <Download aria-hidden className="h-4 w-4" />,
-      disabled: !url || isDownloading,
+      disabled: isDownloading,
       onClick: () => void handleDownload(),
+    },
+    {
+      label: "Edit stitch text",
+      icon: <Type aria-hidden className="h-4 w-4" />,
+      onClick: () => setIsTextOpen(true),
     },
     {
       label: "Edit stitch music",
@@ -160,7 +201,7 @@ export function StitchCard({
               {stitch.name}
             </h3>
             <p className="mt-1 text-xs text-text-tertiary">
-              {formatDuration(stitch.duration)} . {formatBytes(stitch.size)}
+              {formatDuration(stitch.duration)} . {fileSizeLabel}
             </p>
             <p className="mt-2 text-xs text-text-secondary">
               {formatDate(stitch.createdAt)}
@@ -195,6 +236,15 @@ export function StitchCard({
           onGenerate={handleGenerateMusic}
           onRemove={() => handleUpdateMusic(null)}
           onSave={handleUpdateMusic}
+        />
+      ) : null}
+      {isTextOpen ? (
+        <StitchTextSettingsDialog
+          stitch={stitch}
+          error={textError}
+          isSaving={isSavingText}
+          onClose={() => setIsTextOpen(false)}
+          onSave={handleUpdateTextOverlay}
         />
       ) : null}
     </>

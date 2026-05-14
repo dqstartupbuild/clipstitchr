@@ -32,7 +32,7 @@ Every Stitchr output follows the same basic ad structure:
 
 1. UGC clip first.
 2. Product demo second.
-3. Single normalized 9:16 output.
+3. Single normalized 9:16 output at export time.
 
 When multiple UGC clips are selected, Stitchr creates one output per selected
 UGC clip while reusing the same selected product demo and overlay settings.
@@ -59,10 +59,10 @@ social proof first, product proof immediately after.
 11. Create one stitched output per selected UGC clip.
 12. Save and download the finished ad variants.
 
-Saved stitch music is stored separately from the clean stitch video. Users can
+Saved stitch music is stored separately from the stitch. Users can edit text,
 remove music, regenerate it, enable or disable it, or change volume later from
-the saved stitch card. Media Bunny mixes the selected music only when the user
-downloads the stitch, so the saved MP4 remains reusable.
+the saved stitch card. Media Bunny renders the UGC-then-demo video and mixes the
+selected music only when the user downloads the stitch.
 
 ## Product Principles
 
@@ -77,7 +77,7 @@ downloads the stitch, so the saved MP4 remains reusable.
 - Keep AI-generated Clips and Swaps as UGC-compatible clips that can flow into
   Stitchr.
 - Keep generated overlay text editable and hide hook style/template mechanics.
-- Keep generated music editable and separate from the saved stitch video.
+- Keep generated music editable and separate from the saved stitch.
 
 ## Non-Goals
 
