@@ -42,11 +42,12 @@ social proof first, product proof immediately after.
 
 ## Workflow
 
-1. Upload UGC and demo videos.
+1. Upload UGC and demo videos. Product demos must be linked to a saved product.
 2. Normalize every video to 9:16 before it enters the library.
 3. Save generated posters so clips are recognizable at a glance.
 4. Store non-destructive default trims on each clip.
-5. Select up to 20 UGC clips and one demo clip inside Stitchr.
+5. Select up to 20 UGC clips and one demo clip inside Stitchr, using the
+   product filter when the library contains demos for multiple products.
 6. Copy clip default trims into the Stitchr session.
 7. Tap or swipe through each exact UGC-then-demo preview.
 8. Optionally configure one shared text overlay for every output.
@@ -67,6 +68,8 @@ downloads the stitch, so the saved MP4 remains reusable.
 
 - Prioritize speed over full editor flexibility.
 - Use clear clip categories: UGC, Demo, Swaps, and Stitches.
+- Keep product demos linked to saved products so demo selection stays focused
+  as the library grows.
 - Preserve source clips; trims are editable metadata.
 - Make outputs easy to recognize later with names, posters, and metadata.
 - Keep batch creation predictable: one selected demo, up to 20 selected UGC

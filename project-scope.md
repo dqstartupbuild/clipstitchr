@@ -107,7 +107,7 @@ cleanup.
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
 | 1 | Upload UGC reaction clips (drag & drop or file picker) | ✅ | ✅ |
-| 2 | Upload product demo videos | ✅ | ✅ |
+| 2 | Upload product demo videos linked to a saved product | ✅ | ✅ |
 | 3 | Categorize uploads as **UGC** or **Demo** | ✅ | ✅ |
 | 4 | Normalize every uploaded video to TikTok 9:16 using Media Bunny | ✅ | ✅ |
 | 5 | Preview normalized clips in-browser with generated poster images | ✅ | ✅ |
@@ -120,7 +120,7 @@ cleanup.
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
-| 1 | User **selects** up to 20 UGC clips and one Demo clip | ✅ | ✅ |
+| 1 | User **selects** up to 20 UGC clips and one product-linked Demo clip | ✅ | ✅ |
 | 2 | Preview each selected UGC clip followed immediately by the selected Demo clip | ✅ | ✅ |
 | 3 | Copy upload default trims into each new Stitchr selection | ✅ | ✅ |
 | 4 | Override copied trim ranges while stitching without changing upload defaults | ✅ | ✅ |
@@ -162,6 +162,7 @@ Multiple independent text layers remain future scope.
 | 11 | Stitches appear in the Content Library Stitches tab; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
 | 12 | The Content Library includes an All tab so users can view every saved video output type at once | ✅ | ✅ |
 | 13 | The dashboard header upload action opens an upload selector for UGC, Demo, or Photo, then routes to the relevant page/tab with controls revealed | ✅ | ✅ |
+| 14 | Demo upload and picker surfaces can filter demos by linked product | ✅ | ✅ |
 
 ### 4.5 AI-Assisted Content Supply (Secondary)
 
