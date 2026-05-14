@@ -26,6 +26,10 @@ type UploadPanelProps = {
   initialAssetType?: UploadAssetType;
   onAssetTypeChange?: (assetType: UploadAssetType) => void;
   onDismiss?: () => void;
+  canUploadDemo?: boolean;
+  demoProductId?: string;
+  demoUploadBlockedMessage?: string;
+  demoControls?: ReactNode;
   onPhotoExpandPreferenceChange?: (shouldExpandWithAi: boolean) => void;
   photoControls?: ReactNode;
 };
@@ -74,6 +78,10 @@ export function UploadPanel({
   initialAssetType = "ugc",
   onAssetTypeChange,
   onDismiss,
+  canUploadDemo = true,
+  demoProductId,
+  demoUploadBlockedMessage = "Choose a product before uploading demo videos.",
+  demoControls,
   onPhotoExpandPreferenceChange,
   photoControls,
 }: UploadPanelProps) {
@@ -86,6 +94,7 @@ export function UploadPanel({
   const shouldShowAssetTabs =
     !allowedAssetTypes || allowedAssetTypes.length > 1;
   const uploadProcessor = useUploadProcessor({
+    demoProductId,
     initialClipType: initialAssetType === "demo" ? "demo" : "ugc",
     onClipSaved: onUploaded,
   });
@@ -125,6 +134,11 @@ export function UploadPanel({
 
     if (selectedFileCount === 0) {
       setUploadError(isPhoto ? "Choose JPG or PNG photos." : "Choose videos.");
+      return;
+    }
+
+    if (assetType === "demo" && !canUploadDemo) {
+      setUploadError(demoUploadBlockedMessage);
       return;
     }
 
@@ -174,6 +188,9 @@ export function UploadPanel({
       {isPhoto && photoControls ? (
         <div className="mt-5">{photoControls}</div>
       ) : null}
+      {assetType === "demo" && demoControls ? (
+        <div className="mt-5">{demoControls}</div>
+      ) : null}
 
       <div
         onDragOver={(event) => {
@@ -211,6 +228,7 @@ export function UploadPanel({
           type="button"
           className="mt-5"
           isLoading={isProcessing}
+          disabled={assetType === "demo" && !canUploadDemo}
           onClick={() => inputRef.current?.click()}
         >
           Choose Files

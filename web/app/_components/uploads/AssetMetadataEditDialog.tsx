@@ -5,7 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import { AssetTagEditor } from "@/app/_components/uploads/AssetTagEditor";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { SelectInput } from "@/app/_components/ui/SelectInput";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import { normalizeAssetTags } from "@/lib/clipstitchr/utils/normalizeAssetTags";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
@@ -20,8 +22,10 @@ type AssetMetadataEditDialogProps = {
   initialOutfitDescription?: string;
   initialPoseDescription?: string;
   initialProductDescription?: string;
+  initialProductId?: string;
   initialTags?: string[];
   initialVideoDescription?: string;
+  products?: ProductProfile[];
   requiredTag?: string;
   showMainPersonDescriptionFields?: boolean;
   showPhotoDescriptionFields?: boolean;
@@ -42,8 +46,10 @@ export function AssetMetadataEditDialog({
   initialOutfitDescription = "",
   initialPoseDescription = "",
   initialProductDescription = "",
+  initialProductId = "",
   initialTags = [],
   initialVideoDescription = "",
+  products = [],
   requiredTag,
   showMainPersonDescriptionFields = false,
   showPhotoDescriptionFields = false,
@@ -70,6 +76,11 @@ export function AssetMetadataEditDialog({
   const [productDescription, setProductDescription] = useState(
     initialProductDescription,
   );
+  const [productId, setProductId] = useState(() =>
+    products.some((product) => product.id === initialProductId)
+      ? initialProductId
+      : "",
+  );
   const [videoDescription, setVideoDescription] = useState(
     initialVideoDescription,
   );
@@ -80,6 +91,10 @@ export function AssetMetadataEditDialog({
   );
   const [isSaving, setIsSaving] = useState(false);
   const trimmedName = name.trim();
+  const shouldShowProductSelect =
+    showProductDescriptionField && products.length > 0;
+  const canSave =
+    trimmedName.length > 0 && (!shouldShowProductSelect || productId.length > 0);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -90,7 +105,7 @@ export function AssetMetadataEditDialog({
   }, []);
 
   const handleSave = async () => {
-    if (!trimmedName) {
+    if (!canSave) {
       return;
     }
 
@@ -120,7 +135,10 @@ export function AssetMetadataEditDialog({
                   }
                 : {}),
               ...(showProductDescriptionField
-                ? { productDescription: productDescription.trim() }
+                ? {
+                    productDescription: productDescription.trim(),
+                    ...(shouldShowProductSelect ? { productId } : {}),
+                  }
                 : {}),
             }
           : {}),
@@ -248,6 +266,22 @@ export function AssetMetadataEditDialog({
           ) : null}
           {showVideoDescriptionFields ? (
             <>
+              {shouldShowProductSelect ? (
+                <SelectInput
+                  label="Product"
+                  options={[
+                    { label: "Select product", value: "" },
+                    ...products.map((product) => ({
+                      label: product.name,
+                      value: product.id,
+                    })),
+                  ]}
+                  value={productId}
+                  onChange={(event) =>
+                    setProductId(event.currentTarget.value)
+                  }
+                />
+              ) : null}
               <label className="block">
                 <span className="text-sm font-semibold text-text-primary">
                   {showProductDescriptionField
@@ -348,7 +382,7 @@ export function AssetMetadataEditDialog({
             type="submit"
             icon={<Save aria-hidden className="h-4 w-4" />}
             isLoading={isSaving}
-            disabled={!trimmedName}
+            disabled={!canSave}
           >
             Save details
           </Button>

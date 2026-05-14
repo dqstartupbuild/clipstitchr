@@ -35,6 +35,7 @@ export default defineSchema({
     locationDescription: v.optional(v.string()),
     poseDescription: v.optional(v.string()),
     productDescription: v.optional(v.string()),
+    productId: v.optional(v.string()),
     originalName: v.string(),
     clipType: clipTypeValidator,
     videoObject: r2ObjectValidator,

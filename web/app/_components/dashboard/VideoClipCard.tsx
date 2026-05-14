@@ -18,6 +18,7 @@ import { downloadMusicBlob } from "@/lib/clipstitchr/client/r2/downloadMusicBlob
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
+import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -33,6 +34,8 @@ import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTri
 
 type VideoClipCardProps = {
   clip: VideoClipMetadata;
+  products?: ProductProfile[];
+  productName?: string;
   avatarCreatorError?: string | null;
   isCreatingAvatarFromClip?: boolean;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
@@ -60,6 +63,8 @@ type VideoClipCardProps = {
 
 export function VideoClipCard({
   clip,
+  products = [],
+  productName,
   avatarCreatorError = null,
   isCreatingAvatarFromClip = false,
   onLoadClip,
@@ -171,6 +176,7 @@ export function VideoClipCard({
     <>
       <VideoClipPreviewCard
         clip={clip}
+        productName={productName}
         displayDuration={displayDuration}
         onLoadClip={onLoadClip}
         trimEditor={{
@@ -266,8 +272,10 @@ export function VideoClipCard({
           initialOutfitDescription={clip.outfitDescription}
           initialPoseDescription={clip.poseDescription}
           initialProductDescription={clip.productDescription}
+          initialProductId={clip.productId}
           initialTags={clip.tags}
           initialVideoDescription={clip.videoDescription}
+          products={products}
           requiredTag={clip.clipType}
           showMainPersonDescriptionFields={clip.clipType === "ugc"}
           showProductDescriptionField={clip.clipType === "demo"}

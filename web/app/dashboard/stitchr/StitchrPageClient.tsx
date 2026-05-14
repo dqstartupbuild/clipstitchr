@@ -24,6 +24,7 @@ import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { createDefaultTextOverlay } from "@/lib/clipstitchr/utils/createDefaultTextOverlay";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
+import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
@@ -38,6 +39,7 @@ export function StitchrPageClient() {
     useState<SharedMusicTrack | null>(null);
   const [textOverlay, setTextOverlay] = useState<TextOverlay | null>(null);
   const [selectedAutoTextProductId, setSelectedAutoTextProductId] = useState("");
+  const [demoProductFilterId, setDemoProductFilterId] = useState("all");
   const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
   const [autoTextMessage, setAutoTextMessage] = useState<string | null>(null);
   const [ugcTrimRangesByClipId, setUgcTrimRangesByClipId] = useState<
@@ -54,6 +56,18 @@ export function StitchrPageClient() {
   const demoClips = useMemo(
     () => filterClipsByType(library.clips, "demo"),
     [library.clips],
+  );
+  const productIds = useMemo(
+    () => new Set(products.products.map((product) => product.id)),
+    [products.products],
+  );
+  const activeDemoProductFilterId =
+    demoProductFilterId === "all" || productIds.has(demoProductFilterId)
+      ? demoProductFilterId
+      : "all";
+  const visibleDemoClips = useMemo(
+    () => filterClipsByDemoProductId(demoClips, activeDemoProductFilterId),
+    [activeDemoProductFilterId, demoClips],
   );
   const [selectedUgcIds, setSelectedUgcIds] = useState<string[] | undefined>(
     () => {
@@ -82,7 +96,9 @@ export function StitchrPageClient() {
       .slice(0, maxStitchrUgcSelectionCount);
   }, [selectedUgcIds, ugcClips]);
   const activeDemoId =
-    selectedDemoId === undefined ? (demoClips[0]?.id ?? null) : selectedDemoId;
+    selectedDemoId === undefined
+      ? (visibleDemoClips[0]?.id ?? null)
+      : selectedDemoId;
   const activeUgcId =
     activePreviewUgcId && activeSelectedUgcIds.includes(activePreviewUgcId)
       ? activePreviewUgcId
@@ -99,7 +115,7 @@ export function StitchrPageClient() {
     selectedUgcMetadata[0] ??
     null;
   const selectedDemoMetadata =
-    demoClips.find((clip) => clip.id === activeDemoId) ?? null;
+    visibleDemoClips.find((clip) => clip.id === activeDemoId) ?? null;
   const { clip: selectedUgcClip } = useLoadedVideoClip({
     clipId: activeUgcMetadata?.id ?? null,
     loadClip,
@@ -226,11 +242,13 @@ export function StitchrPageClient() {
 
   const handleSelectDemo = useCallback(
     (id: string) => {
-      const clip = demoClips.find((demoClip) => demoClip.id === id);
+      const clip = visibleDemoClips.find((demoClip) => demoClip.id === id);
 
       setSelectedDemoId((currentId) => {
         const currentActiveId =
-          currentId === undefined ? (demoClips[0]?.id ?? null) : currentId;
+          currentId === undefined
+            ? (visibleDemoClips[0]?.id ?? null)
+            : currentId;
 
         return currentActiveId === id ? null : id;
       });
@@ -248,7 +266,7 @@ export function StitchrPageClient() {
             },
       );
     },
-    [demoClips],
+    [visibleDemoClips],
   );
 
   const handleUpdateUgcTrim = useCallback(
@@ -340,6 +358,10 @@ export function StitchrPageClient() {
   const handleActiveUgcChange = useCallback((id: string) => {
     setActivePreviewUgcId(id);
   }, []);
+  const handleDemoProductFilterChange = useCallback((productId: string) => {
+    setDemoProductFilterId(productId);
+    setSelectedDemoId(undefined);
+  }, []);
 
   const isStitching =
     stitchrState.status === "reading" || stitchrState.status === "stitching";
@@ -359,8 +381,10 @@ export function StitchrPageClient() {
               <ClipPickerPanel
                 addMusic={addMusic}
                 selectedMusicTrack={selectedMusicTrack}
+                products={products.products}
                 ugcClips={ugcClips}
-                demoClips={demoClips}
+                demoClips={visibleDemoClips}
+                demoProductFilterId={activeDemoProductFilterId}
                 selectedUgcIds={activeSelectedUgcIds}
                 selectedDemoId={selectedDemoMetadata?.id ?? null}
                 selectedUgcTrimRangesByClipId={selectedUgcTrimRangesByClipId}
@@ -368,6 +392,7 @@ export function StitchrPageClient() {
                 onLoadClip={loadClip}
                 onSelectUgc={handleSelectUgc}
                 onSelectDemo={handleSelectDemo}
+                onDemoProductFilterChange={handleDemoProductFilterChange}
                 onUpdateUgcTrim={handleUpdateUgcTrim}
                 onUpdateDemoTrim={handleUpdateDemoTrim}
                 canStitch={canStitch}

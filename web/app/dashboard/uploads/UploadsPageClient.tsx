@@ -8,18 +8,22 @@ import { StitchesSection } from "@/app/_components/dashboard/StitchesSection";
 import { SwiprSwipesSection } from "@/app/_components/dashboard/SwiprSwipesSection";
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
 import { VideoLibrarySection } from "@/app/_components/dashboard/VideoLibrarySection";
+import { ProductDemoUploadControls } from "@/app/_components/products/ProductDemoUploadControls";
+import { ProductFilterSelect } from "@/app/_components/products/ProductFilterSelect";
 import { UploadLibraryTabs } from "@/app/_components/uploads/UploadLibraryTabs";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { SHOW_UPLOAD_CONTROLS_EVENT_NAME } from "@/lib/clipstitchr/constants/showUploadControlsEventName";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useCreateAvatarFromUgcClip } from "@/lib/clipstitchr/hooks/useCreateAvatarFromUgcClip";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
+import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
+import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { filterCliprClips } from "@/lib/clipstitchr/utils/filterCliprClips";
 import { filterLongrVideosByName } from "@/lib/clipstitchr/utils/filterLongrVideosByName";
@@ -90,6 +94,7 @@ const videoLibraryContent: Record<
 export function UploadsPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
+  const products = useProducts();
   const swiprLibrary = useSwiprLibrary();
   const showUploadControls = useShowUploadControls();
   const avatarCreator = useCreateAvatarFromUgcClip({
@@ -101,6 +106,19 @@ export function UploadsPageClient() {
     getInitialUploadLibraryTab,
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const [demoProductFilterId, setDemoProductFilterId] = useState("all");
+  const [demoUploadProductId, setDemoUploadProductId] = useState("");
+  const productIds = useMemo(
+    () => new Set(products.products.map((product) => product.id)),
+    [products.products],
+  );
+  const activeDemoProductFilterId =
+    demoProductFilterId === "all" || productIds.has(demoProductFilterId)
+      ? demoProductFilterId
+      : "all";
+  const activeDemoUploadProductId = productIds.has(demoUploadProductId)
+    ? demoUploadProductId
+    : (products.products[0]?.id ?? "");
   const searchFilteredClips = useMemo(
     () => filterClipsBySearchQuery(library.clips, searchQuery),
     [library.clips, searchQuery],
@@ -113,9 +131,17 @@ export function UploadsPageClient() {
     () => filterCliprClips(searchFilteredClips),
     [searchFilteredClips],
   );
-  const demoClips = useMemo(
+  const allDemoClips = useMemo(
     () => filterClipsByType(searchFilteredClips, "demo"),
     [searchFilteredClips],
+  );
+  const demoClips = useMemo(
+    () =>
+      filterClipsByDemoProductId(
+        allDemoClips,
+        selectedTab === "demo" ? activeDemoProductFilterId : "all",
+      ),
+    [activeDemoProductFilterId, allDemoClips, selectedTab],
   );
   const swapClips = useMemo(
     () => filterSwaprClips(searchFilteredClips),
@@ -134,7 +160,14 @@ export function UploadsPageClient() {
     [searchQuery, swiprLibrary.swipes],
   );
   const hasSearchQuery = searchQuery.trim().length > 0;
-  const error = library.error ?? swiprLibrary.error;
+  const error = library.error ?? swiprLibrary.error ?? products.error;
+  const hasDemoProductFilter =
+    selectedTab === "demo" && activeDemoProductFilterId !== "all";
+  const canUploadDemo =
+    products.products.length > 0 && activeDemoUploadProductId.length > 0;
+  const demoUploadBlockedMessage = products.isLoading
+    ? "Products are loading."
+    : "Create a product in Settings before uploading demo videos.";
   const selectedVideoSection =
     selectedTab === "ugc"
       ? { clips: ugcClips, content: videoLibraryContent.ugc }
@@ -227,6 +260,17 @@ export function UploadsPageClient() {
             key={selectedTab}
             initialAssetType={getUploadAssetTypeFromLibraryTab(selectedTab)}
             isPhotoUploading={photoLibrary.isSaving}
+            canUploadDemo={canUploadDemo}
+            demoProductId={activeDemoUploadProductId}
+            demoUploadBlockedMessage={demoUploadBlockedMessage}
+            demoControls={
+              <ProductDemoUploadControls
+                products={products.products}
+                isLoading={products.isLoading}
+                selectedProductId={activeDemoUploadProductId}
+                onSelectedProductIdChange={setDemoUploadProductId}
+              />
+            }
             onDismiss={dispatchHideUploadControlsEvent}
             onAssetTypeChange={(assetType) =>
               handleTabChange(getUploadLibraryTabFromAssetType(assetType))
@@ -235,15 +279,32 @@ export function UploadsPageClient() {
             onUploaded={library.refresh}
           />
         ) : null}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <UploadLibraryTabs value={selectedTab} onChange={handleTabChange} />
-          <SearchInput
-            label="Search library"
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search library"
-            className="w-full sm:max-w-sm"
-          />
+          <div
+            className={[
+              "grid w-full gap-3",
+              selectedTab === "demo"
+                ? "sm:grid-cols-2 lg:max-w-xl"
+                : "lg:max-w-sm",
+            ].join(" ")}
+          >
+            {selectedTab === "demo" ? (
+              <ProductFilterSelect
+                products={products.products}
+                label="Product"
+                value={activeDemoProductFilterId}
+                onChange={setDemoProductFilterId}
+              />
+            ) : null}
+            <SearchInput
+              label="Search library"
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search library"
+              className="w-full"
+            />
+          </div>
         </div>
         {selectedTab === "all" ? (
           <div className="flex flex-col gap-8">
@@ -252,6 +313,7 @@ export function UploadsPageClient() {
               id={videoLibraryContent.ugc.sectionId}
               title={videoLibraryContent.ugc.title}
               clips={ugcClips}
+              products={products.products}
               avatarCreatorError={avatarCreator.error}
               emptyTitle={
                 hasSearchQuery
@@ -277,6 +339,7 @@ export function UploadsPageClient() {
               id={videoLibraryContent.clips.sectionId}
               title={videoLibraryContent.clips.title}
               clips={cliprClips}
+              products={products.products}
               emptyTitle={
                 hasSearchQuery
                   ? videoLibraryContent.clips.searchEmptyTitle
@@ -299,6 +362,7 @@ export function UploadsPageClient() {
               id={videoLibraryContent.demo.sectionId}
               title={videoLibraryContent.demo.title}
               clips={demoClips}
+              products={products.products}
               emptyTitle={
                 hasSearchQuery
                   ? videoLibraryContent.demo.searchEmptyTitle
@@ -321,6 +385,7 @@ export function UploadsPageClient() {
               id={videoLibraryContent.swaps.sectionId}
               title={videoLibraryContent.swaps.title}
               clips={swapClips}
+              products={products.products}
               emptyTitle={
                 hasSearchQuery
                   ? videoLibraryContent.swaps.searchEmptyTitle
@@ -383,17 +448,22 @@ export function UploadsPageClient() {
             id={selectedVideoSection.content.sectionId}
             title={selectedVideoSection.content.title}
             clips={selectedVideoSection.clips}
+            products={products.products}
             avatarCreatorError={
               selectedTab === "ugc" ? avatarCreator.error : null
             }
             emptyTitle={
               hasSearchQuery
                 ? selectedVideoSection.content.searchEmptyTitle
+                : hasDemoProductFilter
+                  ? "No demos for this product"
                 : selectedVideoSection.content.emptyTitle
             }
             emptyDescription={
               hasSearchQuery
                 ? selectedVideoSection.content.searchEmptyDescription
+                : hasDemoProductFilter
+                  ? "No saved demo videos are linked to that product."
                 : selectedVideoSection.content.emptyDescription
             }
             onLoadClip={library.loadClip}

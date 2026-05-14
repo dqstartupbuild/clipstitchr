@@ -13,6 +13,7 @@ import { RecentSwipesSection } from "@/app/_components/dashboard/RecentSwipesSec
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
+import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { filterCliprClips } from "@/lib/clipstitchr/utils/filterCliprClips";
@@ -28,6 +29,7 @@ const RECENT_DASHBOARD_ITEM_LIMIT = 4;
 export function DashboardPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
+  const products = useProducts();
   const swiprLibrary = useSwiprLibrary();
   const ugcClips = useMemo(
     () => filterPlainUgcClips(library.clips),
@@ -77,7 +79,8 @@ export function DashboardPageClient() {
     ),
     [photoLibrary.photos],
   );
-  const error = library.error ?? photoLibrary.error ?? swiprLibrary.error;
+  const error =
+    library.error ?? photoLibrary.error ?? swiprLibrary.error ?? products.error;
 
   return (
     <DashboardShell>
@@ -112,6 +115,7 @@ export function DashboardPageClient() {
         />
         <RecentUploadsSection
           clips={recentUploads}
+          products={products.products}
           onLoadClip={library.loadClip}
           onDelete={library.removeClip}
           onUpdateMetadata={library.updateClipMetadata}

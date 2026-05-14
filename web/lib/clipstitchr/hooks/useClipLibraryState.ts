@@ -162,6 +162,9 @@ export function useClipLibraryState(): ClipLibraryValue {
         ...(metadata.productDescription === undefined
           ? {}
           : { productDescription: metadata.productDescription }),
+        ...(metadata.productId === undefined
+          ? {}
+          : { productId: metadata.productId }),
         updatedAt: new Date().toISOString(),
       };
 
@@ -175,6 +178,9 @@ export function useClipLibraryState(): ClipLibraryValue {
         locationDescription: updatedClip.locationDescription,
         poseDescription: updatedClip.poseDescription,
         productDescription: updatedClip.productDescription,
+        ...(metadata.productId === undefined
+          ? {}
+          : { productId: updatedClip.productId }),
         updatedAt: updatedClip.updatedAt,
       });
       clipCacheRef.current.delete(clip.id);

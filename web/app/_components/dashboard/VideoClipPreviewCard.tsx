@@ -39,6 +39,7 @@ type VideoClipPreviewCardTrimEditor = {
 
 type VideoClipPreviewCardProps = {
   clip: VideoClipMetadata;
+  productName?: string;
   displayDuration?: number;
   isSelected?: boolean;
   isSelectionDisabled?: boolean;
@@ -52,6 +53,7 @@ type VideoClipPreviewCardProps = {
 
 export function VideoClipPreviewCard({
   clip,
+  productName,
   displayDuration,
   isSelected = false,
   isSelectionDisabled = false,
@@ -190,6 +192,7 @@ export function VideoClipPreviewCard({
       {detailsMode ? (
         <VideoClipDetailsDialog
           clip={clip}
+          productName={productName}
           initialControlsEditorOpen={detailsMode === "trim"}
           isLoading={isClipLoading}
           musicEditor={cliprMusicEditor}

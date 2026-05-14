@@ -12,6 +12,7 @@ import { LongrTimelineStrip } from "@/app/_components/longr/LongrTimelineStrip";
 import { longrMaxDurationSeconds } from "@/lib/clipstitchr/constants/longrMaxDurationSeconds";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useLongr } from "@/lib/clipstitchr/hooks/useLongr";
+import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import type { LongrBuildClipSelection } from "@/lib/clipstitchr/types/LongrBuildClipSelection";
 import type { LongrMusicClip } from "@/lib/clipstitchr/types/LongrMusicClip";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
@@ -19,6 +20,7 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 import { clampLongrMusicClip } from "@/lib/clipstitchr/utils/clampLongrMusicClip";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { createLongrMusicClip } from "@/lib/clipstitchr/utils/createLongrMusicClip";
+import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getLongrTotalDuration } from "@/lib/clipstitchr/utils/getLongrTotalDuration";
@@ -26,8 +28,10 @@ import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimR
 
 export function LongrPageClient() {
   const library = useClipLibrary();
+  const products = useProducts();
   const longr = useLongr({ onCreated: library.refresh });
   const [selectedClipIds, setSelectedClipIds] = useState<string[]>([]);
+  const [demoProductFilterId, setDemoProductFilterId] = useState("all");
   const [musicClips, setMusicClips] = useState<LongrMusicClip[]>([]);
   const [selectionError, setSelectionError] = useState<string | null>(null);
   const ugcClips = useMemo(
@@ -38,9 +42,25 @@ export function LongrPageClient() {
     () => filterClipsByType(library.clips, "demo"),
     [library.clips],
   );
+  const productIds = useMemo(
+    () => new Set(products.products.map((product) => product.id)),
+    [products.products],
+  );
+  const activeDemoProductFilterId =
+    demoProductFilterId === "all" || productIds.has(demoProductFilterId)
+      ? demoProductFilterId
+      : "all";
   const availableClips = useMemo(
     () => [...ugcClips, ...demoClips],
     [demoClips, ugcClips],
+  );
+  const visibleAvailableClips = useMemo(
+    () =>
+      filterClipsByDemoProductId(
+        availableClips,
+        activeDemoProductFilterId,
+      ),
+    [activeDemoProductFilterId, availableClips],
   );
   const selectedClips = useMemo(
     () =>
@@ -170,9 +190,9 @@ export function LongrPageClient() {
           title="Longr"
           description="Build one vertical long-form video from multiple UGC and demo clips in the order you choose."
         />
-        {library.error ? (
+        {library.error || products.error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {library.error}
+            {library.error ?? products.error}
           </div>
         ) : null}
         {selectionError ? (
@@ -183,12 +203,15 @@ export function LongrPageClient() {
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
           <div className="flex min-w-0 flex-col gap-5">
             <LongrClipPickerPanel
-              clips={availableClips}
+              clips={visibleAvailableClips}
               duration={selectedDuration}
+              products={products.products}
+              demoProductFilterId={activeDemoProductFilterId}
               isBuilding={isBuilding}
               selectedClipIds={selectedClipIds}
               onAddClip={handleAddClip}
               onBuild={handleBuild}
+              onDemoProductFilterChange={setDemoProductFilterId}
               onRemoveClip={handleRemoveClip}
             />
             <LongrTimelineStrip

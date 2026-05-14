@@ -20,6 +20,7 @@ const saveArgs = {
   locationDescription: v.optional(v.string()),
   poseDescription: v.optional(v.string()),
   productDescription: v.optional(v.string()),
+  productId: v.optional(v.string()),
   originalName: v.string(),
   clipType: clipTypeValidator,
   videoObject: r2ObjectValidator,
@@ -78,15 +79,43 @@ export const save = mutation({
       throws: true,
     });
 
+    let demoProductId: string | undefined;
+
+    if (args.clipType === "demo") {
+      const requestedProductId = args.productId?.trim();
+
+      if (!requestedProductId) {
+        throw new Error("Choose a product before saving a demo video.");
+      }
+
+      const product = await ctx.db
+        .query("products")
+        .withIndex("by_owner_id", (q) =>
+          q.eq("ownerId", ownerId).eq("id", requestedProductId),
+        )
+        .unique();
+
+      if (!product) {
+        throw new Error("Product not found.");
+      }
+
+      demoProductId = requestedProductId;
+    }
+
     const existingClip = await ctx.db
       .query("videoClips")
       .withIndex("by_owner_id", (q) =>
         q.eq("ownerId", ownerId).eq("id", args.id),
       )
       .unique();
+    const clipArgs = { ...args };
+
+    delete clipArgs.productId;
+
     const clip = {
       ownerId,
-      ...args,
+      ...clipArgs,
+      ...(demoProductId ? { productId: demoProductId } : {}),
     };
 
     if (existingClip) {
@@ -109,6 +138,7 @@ export const updateMetadata = mutation({
     locationDescription: v.optional(v.string()),
     poseDescription: v.optional(v.string()),
     productDescription: v.optional(v.string()),
+    productId: v.optional(v.string()),
     defaultTrimRange: v.optional(videoTrimRangeValidator),
     updatedAt: v.string(),
   },
@@ -124,6 +154,7 @@ export const updateMetadata = mutation({
       locationDescription,
       poseDescription,
       productDescription,
+      productId,
       defaultTrimRange,
       updatedAt,
     },
@@ -144,6 +175,33 @@ export const updateMetadata = mutation({
       throw new Error("Video clip not found.");
     }
 
+    let demoProductId: string | undefined;
+
+    if (productId !== undefined) {
+      if (clip.clipType !== "demo") {
+        throw new Error("Only demo videos can be linked to products.");
+      }
+
+      const requestedProductId = productId.trim();
+
+      if (!requestedProductId) {
+        throw new Error("Choose a product before saving a demo video.");
+      }
+
+      const product = await ctx.db
+        .query("products")
+        .withIndex("by_owner_id", (q) =>
+          q.eq("ownerId", ownerId).eq("id", requestedProductId),
+        )
+        .unique();
+
+      if (!product) {
+        throw new Error("Product not found.");
+      }
+
+      demoProductId = requestedProductId;
+    }
+
     await ctx.db.patch(clip._id, {
       ...(name === undefined ? {} : { name }),
       ...(tags === undefined ? {} : { tags }),
@@ -153,6 +211,7 @@ export const updateMetadata = mutation({
       ...(locationDescription === undefined ? {} : { locationDescription }),
       ...(poseDescription === undefined ? {} : { poseDescription }),
       ...(productDescription === undefined ? {} : { productDescription }),
+      ...(demoProductId === undefined ? {} : { productId: demoProductId }),
       ...(defaultTrimRange === undefined ? {} : { defaultTrimRange }),
       updatedAt,
     });

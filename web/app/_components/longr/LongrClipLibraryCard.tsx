@@ -11,6 +11,7 @@ import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimR
 
 type LongrClipLibraryCardProps = {
   clip: VideoClipMetadata;
+  productName?: string;
   disabled: boolean;
   isSelected: boolean;
   onAdd: (clip: VideoClipMetadata) => void;
@@ -19,6 +20,7 @@ type LongrClipLibraryCardProps = {
 
 export function LongrClipLibraryCard({
   clip,
+  productName,
   disabled,
   isSelected,
   onAdd,
@@ -43,7 +45,7 @@ export function LongrClipLibraryCard({
           <Badge>{clip.clipType.toUpperCase()}</Badge>
         </div>
         <p className="mt-1 text-xs font-semibold text-text-tertiary">
-          {formatDuration(duration)}
+          {[productName, formatDuration(duration)].filter(Boolean).join(" . ")}
         </p>
       </div>
       <IconButton

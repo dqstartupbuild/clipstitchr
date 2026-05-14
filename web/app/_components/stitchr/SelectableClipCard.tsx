@@ -9,6 +9,7 @@ import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTri
 
 type SelectableClipCardProps = {
   clip: VideoClipMetadata;
+  productName?: string;
   trimRange: VideoTrimRange;
   isSelected: boolean;
   isSelectionDisabled?: boolean;
@@ -22,6 +23,7 @@ type SelectableClipCardProps = {
 
 export function SelectableClipCard({
   clip,
+  productName,
   trimRange,
   isSelected,
   isSelectionDisabled = false,
@@ -34,6 +36,7 @@ export function SelectableClipCard({
   return (
     <VideoClipPreviewCard
       clip={clip}
+      productName={productName}
       displayDuration={displayDuration}
       isSelected={isSelected}
       isSelectionDisabled={isSelectionDisabled}

@@ -4,12 +4,14 @@ import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyS
 import { VideoClipCard } from "@/app/_components/dashboard/VideoClipCard";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 type RecentUploadsSectionProps = {
   clips: VideoClipMetadata[];
+  products?: ProductProfile[];
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onDelete: (id: string) => void | Promise<void>;
   onUpdateMetadata: (
@@ -24,6 +26,7 @@ type RecentUploadsSectionProps = {
 
 export function RecentUploadsSection({
   clips,
+  products = [],
   onLoadClip,
   onDelete,
   onUpdateMetadata,
@@ -48,6 +51,7 @@ export function RecentUploadsSection({
             <VideoClipCard
               key={clip.id}
               clip={clip}
+              products={products}
               onLoadClip={onLoadClip}
               onDelete={onDelete}
               onUpdateMetadata={onUpdateMetadata}
