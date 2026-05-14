@@ -21,10 +21,12 @@ import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/norma
 
 type UseUploadProcessorOptions = {
   initialClipType?: ClipType;
+  demoProductId?: string;
   onClipSaved?: (clip: VideoClip) => void | Promise<void>;
 };
 
 export function useUploadProcessor({
+  demoProductId,
   initialClipType = "ugc",
   onClipSaved,
 }: UseUploadProcessorOptions) {
@@ -53,6 +55,14 @@ export function useUploadProcessor({
         return;
       }
 
+      const activeDemoProductId =
+        clipType === "demo" ? demoProductId?.trim() : undefined;
+
+      if (clipType === "demo" && !activeDemoProductId) {
+        setError("Choose a product before uploading demo videos.");
+        return;
+      }
+
       const uploadBatchLimit = getUploadBatchLimit({
         assetType: clipType,
         shouldExpandWithAi: false,
@@ -76,6 +86,7 @@ export function useUploadProcessor({
         fileName: file.name,
         fileSize: file.size,
         clipType,
+        productId: activeDemoProductId,
         status: "idle",
         progress: 0,
       }));
@@ -169,6 +180,7 @@ export function useUploadProcessor({
               locationDescription: analysis.locationDescription,
               poseDescription: analysis.poseDescription,
               productDescription: analysis.productDescription,
+              productId: item.productId,
               originalName: file.name,
               clipType: item.clipType,
               videoObject,
@@ -205,6 +217,7 @@ export function useUploadProcessor({
               locationDescription: clip.locationDescription,
               poseDescription: clip.poseDescription,
               productDescription: clip.productDescription,
+              productId: clip.productId,
               originalName: clip.originalName,
               clipType: clip.clipType,
               videoObject: clip.videoObject,
@@ -245,7 +258,7 @@ export function useUploadProcessor({
         setIsProcessing(false);
       }
     },
-    [clipType, onClipSaved, saveVideoClip, updateQueueItem],
+    [clipType, demoProductId, onClipSaved, saveVideoClip, updateQueueItem],
   );
 
   const clearQueue = useCallback(() => setQueue([]), []);

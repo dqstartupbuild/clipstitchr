@@ -5,6 +5,7 @@ export type AssetMetadataUpdate = {
   locationDescription?: string;
   poseDescription?: string;
   productDescription?: string;
+  productId?: string;
   videoDescription?: string;
   name: string;
   tags: string[];

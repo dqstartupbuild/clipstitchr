@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { VideoClipCard } from "@/app/_components/dashboard/VideoClipCard";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
@@ -8,6 +9,7 @@ import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
+import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -16,6 +18,7 @@ type VideoLibrarySectionProps = {
   id: string;
   title: string;
   clips: VideoClipMetadata[];
+  products?: ProductProfile[];
   avatarCreatorError?: string | null;
   emptyDescription: string;
   emptyTitle?: string;
@@ -47,6 +50,7 @@ export function VideoLibrarySection({
   id,
   title,
   clips,
+  products = [],
   avatarCreatorError = null,
   emptyDescription,
   emptyTitle = "No videos yet",
@@ -59,6 +63,10 @@ export function VideoLibrarySection({
   onUpdateTrim,
   onCreateAvatarFromClip,
 }: VideoLibrarySectionProps) {
+  const productNamesById = useMemo(
+    () => new Map(products.map((product) => [product.id, product.name])),
+    [products],
+  );
   const pagination = usePagination(clips, {
     pageSize: uploadLibraryPageSize,
   });
@@ -78,6 +86,10 @@ export function VideoLibrarySection({
               <VideoClipCard
                 key={clip.id}
                 clip={clip}
+                products={products}
+                productName={
+                  clip.productId ? productNamesById.get(clip.productId) : undefined
+                }
                 avatarCreatorError={avatarCreatorError}
                 isCreatingAvatarFromClip={isCreatingAvatarFromClip}
                 onLoadClip={onLoadClip}

@@ -14,6 +14,7 @@ export type VideoClip = {
   locationDescription?: string;
   poseDescription?: string;
   productDescription?: string;
+  productId?: string;
   originalName: string;
   clipType: ClipType;
   videoObject: R2ObjectReference;

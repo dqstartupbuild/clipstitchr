@@ -3,10 +3,12 @@
 import { useMemo, useState } from "react";
 import { LongrClipLibraryCard } from "@/app/_components/longr/LongrClipLibraryCard";
 import { LongrDurationMeter } from "@/app/_components/longr/LongrDurationMeter";
+import { ProductFilterSelect } from "@/app/_components/products/ProductFilterSelect";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { longrMaxDurationSeconds } from "@/lib/clipstitchr/constants/longrMaxDurationSeconds";
+import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
@@ -15,26 +17,36 @@ import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimR
 type LongrClipPickerPanelProps = {
   clips: VideoClipMetadata[];
   duration: number;
+  products: ProductProfile[];
+  demoProductFilterId: string;
   isBuilding: boolean;
   selectedClipIds: string[];
   onAddClip: (clip: VideoClipMetadata) => void;
   onBuild: () => void;
+  onDemoProductFilterChange: (productId: string) => void;
   onRemoveClip: (clipId: string) => void;
 };
 
 export function LongrClipPickerPanel({
   clips,
   duration,
+  products,
+  demoProductFilterId,
   isBuilding,
   selectedClipIds,
   onAddClip,
   onBuild,
+  onDemoProductFilterChange,
   onRemoveClip,
 }: LongrClipPickerPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const filteredClips = useMemo(
     () => filterClipsBySearchQuery(clips, searchQuery),
     [clips, searchQuery],
+  );
+  const productNamesById = useMemo(
+    () => new Map(products.map((product) => [product.id, product.name])),
+    [products],
   );
 
   return (
@@ -58,12 +70,18 @@ export function LongrClipPickerPanel({
           Build
         </Button>
       </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_240px]">
+      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_160px]">
         <SearchInput
           label="Search Longr source clips"
           value={searchQuery}
           onChange={setSearchQuery}
           placeholder="Search UGC and demo videos"
+        />
+        <ProductFilterSelect
+          products={products}
+          label="Demo product"
+          value={demoProductFilterId}
+          onChange={onDemoProductFilterChange}
         />
         <LongrDurationMeter duration={duration} />
       </div>
@@ -78,6 +96,9 @@ export function LongrClipPickerPanel({
             <LongrClipLibraryCard
               key={clip.id}
               clip={clip}
+              productName={
+                clip.productId ? productNamesById.get(clip.productId) : undefined
+              }
               disabled={duration + clipDuration > longrMaxDurationSeconds}
               isSelected={isSelected}
               onAdd={onAddClip}

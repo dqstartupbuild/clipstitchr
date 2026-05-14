@@ -6,6 +6,7 @@ export type UploadQueueItem = {
   fileName: string;
   fileSize: number;
   clipType: ClipType;
+  productId?: string;
   status: ProcessingStatus;
   progress: number;
   error?: string;

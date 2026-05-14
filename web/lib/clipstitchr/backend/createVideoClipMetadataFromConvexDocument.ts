@@ -15,6 +15,7 @@ export function createVideoClipMetadataFromConvexDocument(
     locationDescription: clip.locationDescription,
     poseDescription: clip.poseDescription,
     productDescription: clip.productDescription,
+    productId: clip.productId,
     originalName: clip.originalName,
     clipType: clip.clipType,
     videoObject: clip.videoObject,

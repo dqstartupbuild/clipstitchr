@@ -28,6 +28,7 @@ type VideoClipDetailsTrimEditor = {
 
 type VideoClipDetailsDialogProps = {
   clip: VideoClipMetadata;
+  productName?: string;
   initialControlsEditorOpen?: boolean;
   isLoading: boolean;
   musicEditor?: VideoClipDetailsMusicEditor;
@@ -40,6 +41,7 @@ type VideoClipDetailsDialogProps = {
 
 export function VideoClipDetailsDialog({
   clip,
+  productName,
   initialControlsEditorOpen = false,
   isLoading,
   musicEditor,
@@ -73,9 +75,10 @@ export function VideoClipDetailsDialog({
   const detailItems = [
     { label: "Clipr hook", value: clip.cliprMetadata?.filledHook },
     { label: "Clipr product", value: clip.cliprMetadata?.productName },
+    { label: "Linked product", value: productName },
     { label: "Clipr music", value: musicDetail },
     { label: "Description", value: clip.videoDescription },
-    { label: "Product", value: clip.productDescription },
+    { label: "Product description", value: clip.productDescription },
     { label: "Main person", value: clip.mainPersonDescription },
     { label: "Action", value: clip.poseDescription },
     { label: "Outfit", value: clip.outfitDescription },

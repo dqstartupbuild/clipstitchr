@@ -1,9 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
 import { SelectableClipCard } from "@/app/_components/stitchr/SelectableClipCard";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { clipSelectorPageSize } from "@/lib/clipstitchr/constants/clipSelectorPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
+import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -11,6 +13,7 @@ import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVide
 
 type DemoClipSelectorProps = {
   clips: VideoClipMetadata[];
+  products: ProductProfile[];
   selectedId: string | null;
   selectedTrimRange: VideoTrimRange | null;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
@@ -20,12 +23,17 @@ type DemoClipSelectorProps = {
 
 export function DemoClipSelector({
   clips,
+  products,
   selectedId,
   selectedTrimRange,
   onLoadClip,
   onSelect,
   onUpdateTrim,
 }: DemoClipSelectorProps) {
+  const productNamesById = useMemo(
+    () => new Map(products.map((product) => [product.id, product.name])),
+    [products],
+  );
   const pagination = usePagination(clips, {
     pageSize: clipSelectorPageSize,
   });
@@ -50,6 +58,11 @@ export function DemoClipSelector({
               <div key={clip.id} className="w-44 shrink-0">
                 <SelectableClipCard
                   clip={clip}
+                  productName={
+                    clip.productId
+                      ? productNamesById.get(clip.productId)
+                      : undefined
+                  }
                   trimRange={
                     clip.id === selectedId && selectedTrimRange
                       ? selectedTrimRange
