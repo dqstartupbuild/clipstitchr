@@ -1,7 +1,7 @@
 "use client";
 
 import { Pause, Play, RotateCcw } from "lucide-react";
-import { useEffect } from "react";
+import { type KeyboardEvent, useMemo } from "react";
 import { TextOverlayPreviewBox } from "@/app/_components/stitchr/TextOverlayPreviewBox";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
@@ -28,27 +28,45 @@ export function LoadedStitchSequencePreview({
   const demoUrl = useObjectUrl(demoClip.blob);
   const ugcPosterUrl = useObjectUrl(ugcClip.posterBlob);
   const demoPosterUrl = useObjectUrl(demoClip.posterBlob);
-  const ugcTrimRange = clampVideoTrimRange(
-    stitch.ugcTrimRange ?? {
-      start: 0,
-      end: ugcClip.duration,
-    },
-    ugcClip.duration,
+  const ugcTrimStart = stitch.ugcTrimRange?.start;
+  const ugcTrimEnd = stitch.ugcTrimRange?.end;
+  const demoTrimStart = stitch.demoTrimRange?.start;
+  const demoTrimEnd = stitch.demoTrimRange?.end;
+  const ugcTrimRange = useMemo(
+    () =>
+      clampVideoTrimRange(
+        {
+          start: ugcTrimStart ?? 0,
+          end: ugcTrimEnd ?? ugcClip.duration,
+        },
+        ugcClip.duration,
+      ),
+    [ugcTrimEnd, ugcTrimStart, ugcClip.duration],
   );
-  const demoTrimRange = clampVideoTrimRange(
-    stitch.demoTrimRange ?? {
-      start: 0,
-      end: demoClip.duration,
-    },
-    demoClip.duration,
+  const demoTrimRange = useMemo(
+    () =>
+      clampVideoTrimRange(
+        {
+          start: demoTrimStart ?? 0,
+          end: demoTrimEnd ?? demoClip.duration,
+        },
+        demoClip.duration,
+      ),
+    [demoClip.duration, demoTrimEnd, demoTrimStart],
   );
-  const totalDuration =
-    getVideoTrimRangeDuration(ugcTrimRange) +
-    getVideoTrimRangeDuration(demoTrimRange);
-  const textOverlay =
-    stitch.textOverlay && stitch.textOverlay.text.trim().length > 0
-      ? clampTextOverlay(stitch.textOverlay, totalDuration)
-      : null;
+  const totalDuration = useMemo(
+    () =>
+      getVideoTrimRangeDuration(ugcTrimRange) +
+      getVideoTrimRangeDuration(demoTrimRange),
+    [demoTrimRange, ugcTrimRange],
+  );
+  const textOverlay = useMemo(
+    () =>
+      stitch.textOverlay && stitch.textOverlay.text.trim().length > 0
+        ? clampTextOverlay(stitch.textOverlay, totalDuration)
+        : null,
+    [stitch.textOverlay, totalDuration],
+  );
   const {
     activeSegment,
     currentTime,
@@ -69,20 +87,25 @@ export function LoadedStitchSequencePreview({
     Boolean(textOverlay) &&
     currentTime >= (textOverlay?.startTime ?? 0) &&
     currentTime <= (textOverlay?.endTime ?? 0);
-
-  useEffect(() => {
-    if (!ugcUrl || !demoUrl) {
+  const togglePlaybackFromKeyboard = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "Enter" && event.key !== " ") {
       return;
     }
 
-    restart();
-  }, [demoUrl, restart, ugcUrl]);
+    event.preventDefault();
+    togglePlayback();
+  };
 
   return (
     <div>
       <div
+        aria-label={isPlaying ? "Pause stitch preview" : "Play stitch preview"}
         className="relative aspect-[9/16] overflow-hidden rounded-lg bg-slate-950"
+        role="button"
         style={{ containerType: "size" }}
+        tabIndex={0}
+        onClick={togglePlayback}
+        onKeyDown={togglePlaybackFromKeyboard}
       >
         {ugcUrl && demoUrl ? (
           <>
@@ -99,7 +122,7 @@ export function LoadedStitchSequencePreview({
               onTimeUpdate={() => handleTimeUpdate("ugc")}
               playsInline
               poster={ugcPosterUrl ?? undefined}
-              preload="auto"
+              preload="metadata"
               src={ugcUrl}
             />
             <video
@@ -115,7 +138,7 @@ export function LoadedStitchSequencePreview({
               onTimeUpdate={() => handleTimeUpdate("demo")}
               playsInline
               poster={demoPosterUrl ?? undefined}
-              preload="auto"
+              preload="metadata"
               src={demoUrl}
             />
             {textOverlay && shouldShowTextOverlay ? (
