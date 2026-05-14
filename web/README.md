@@ -222,7 +222,7 @@ Includes tests for:
 
 ## Security
 
-Content Security Policy and security headers are configured in `next.config.ts`. The CSP allows HTTPS scripts and Cloudflare challenge frames so Clerk components can load correctly.
+Content Security Policy and security headers are configured in `next.config.ts`. The CSP allows HTTPS scripts, Cloudflare challenge frames, and Vercel Live feedback frames so Clerk components and preview feedback can load correctly.
 
 ## Deployment
 

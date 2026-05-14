@@ -11,7 +11,7 @@ const contentSecurityPolicy = [
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob:",
   "font-src 'self' data:",
-  "frame-src 'self' https://challenges.cloudflare.com",
+  "frame-src 'self' https://challenges.cloudflare.com https://vercel.live",
   "connect-src 'self' https: ws: wss:",
   "worker-src 'self' blob:",
 ].join("; ");
