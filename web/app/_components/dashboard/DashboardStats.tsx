@@ -1,4 +1,4 @@
-import { CirclePlay, Clapperboard, FileVideo, Film } from "lucide-react";
+import { CirclePlay, Clapperboard, Film, Scissors } from "lucide-react";
 import { DashboardStatCard } from "@/app/_components/dashboard/DashboardStatCard";
 
 type DashboardStatsProps = {
@@ -32,7 +32,7 @@ export function DashboardStats({
         value={clipsCount}
       />
       <DashboardStatCard
-        icon={<FileVideo aria-hidden className="h-5 w-5" />}
+        icon={<Scissors aria-hidden className="h-5 w-5" />}
         label="Stitches"
         value={stitchesCount}
       />
