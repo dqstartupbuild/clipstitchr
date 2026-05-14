@@ -3,29 +3,32 @@
 import { X } from "lucide-react";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { VideoPreview } from "@/app/_components/ui/VideoPreview";
+import { StitchSequencePreview } from "@/app/_components/dashboard/StitchSequencePreview";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
 
 type StitchDetailsDialogProps = {
+  demoClip: VideoClip | null;
   isLoadingPreview: boolean;
   posterUrl: string | null;
   previewError: string | null;
   stitch: Stitch;
-  videoUrl: string | null;
+  ugcClip: VideoClip | null;
   onClose: () => void;
   onLoadPreview: () => void;
 };
 
 export function StitchDetailsDialog({
+  demoClip,
   isLoadingPreview,
   posterUrl,
   previewError,
   stitch,
-  videoUrl,
+  ugcClip,
   onClose,
   onLoadPreview,
 }: StitchDetailsDialogProps) {
@@ -97,12 +100,12 @@ export function StitchDetailsDialog({
         </div>
         <div className="grid gap-5 p-5 md:grid-cols-[280px_minmax(0,1fr)]">
           <div className="grid gap-3">
-            <VideoPreview
-              src={videoUrl}
-              posterSrc={posterUrl}
-              label={stitch.name}
-              autoPlay
+            <StitchSequencePreview
+              demoClip={demoClip}
               isLoading={isLoadingPreview}
+              posterUrl={posterUrl}
+              stitch={stitch}
+              ugcClip={ugcClip}
               onLoadPreview={onLoadPreview}
             />
             {previewError ? (

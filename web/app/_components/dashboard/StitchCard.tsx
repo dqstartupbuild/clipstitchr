@@ -45,8 +45,9 @@ export function StitchCard({
   onUpdateTextOverlay,
 }: StitchCardProps) {
   const [previewState, setPreviewState] = useState<{
-    blob: Blob;
+    demoClip: VideoClip;
     cacheKey: string;
+    ugcClip: VideoClip;
   } | null>(null);
   const [previewErrorState, setPreviewErrorState] = useState<{
     cacheKey: string;
@@ -56,34 +57,13 @@ export function StitchCard({
     stitch.id,
     stitch.ugcClipId,
     stitch.demoClipId,
-    stitch.ugcTrimRange?.start,
-    stitch.ugcTrimRange?.end,
-    stitch.demoTrimRange?.start,
-    stitch.demoTrimRange?.end,
-    stitch.includeUgcAudio,
-    stitch.includeDemoAudio,
-    stitch.textOverlay?.text,
-    stitch.textOverlay?.startTime,
-    stitch.textOverlay?.endTime,
-    stitch.textOverlay?.x,
-    stitch.textOverlay?.y,
-    stitch.textOverlay?.width,
-    stitch.textOverlay?.fontSize,
-    stitch.textOverlay?.styleId,
-    stitch.textOverlay?.color,
-    stitch.textOverlay?.backgroundColor,
-    stitch.textOverlay?.strokeColor,
-    stitch.music?.audioObject.key,
-    stitch.music?.enabled,
-    stitch.music?.volume,
   ].join(":");
-  const previewBlob =
-    previewState?.cacheKey === previewCacheKey ? previewState.blob : null;
+  const previewSources =
+    previewState?.cacheKey === previewCacheKey ? previewState : null;
   const previewError =
     previewErrorState?.cacheKey === previewCacheKey
       ? previewErrorState.message
       : null;
-  const previewUrl = useObjectUrl(previewBlob ?? stitch.blob);
   const posterUrl = useObjectUrl(stitch.posterBlob);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isMusicOpen, setIsMusicOpen] = useState(false);
@@ -101,7 +81,7 @@ export function StitchCard({
     : "Ready to download";
 
   const loadPreview = async () => {
-    if (previewBlob || stitch.blob || isLoadingPreview) {
+    if (previewSources || isLoadingPreview) {
       return;
     }
 
@@ -109,12 +89,19 @@ export function StitchCard({
     setPreviewErrorState(null);
 
     try {
+      const [ugcClip, demoClip] = await Promise.all([
+        onLoadClip(stitch.ugcClipId),
+        onLoadClip(stitch.demoClipId),
+      ]);
+
+      if (!ugcClip || !demoClip) {
+        throw new Error("Unable to load the source videos for this stitch.");
+      }
+
       setPreviewState({
-        blob: await createStitchExportBlob(stitch, {
-          includePosterMetadata: false,
-          loadClip: onLoadClip,
-        }),
         cacheKey: previewCacheKey,
+        demoClip,
+        ugcClip,
       });
     } catch (nextError) {
       setPreviewErrorState({
@@ -296,11 +283,12 @@ export function StitchCard({
       </div>
       {isDetailsOpen ? (
         <StitchDetailsDialog
+          demoClip={previewSources?.demoClip ?? null}
           isLoadingPreview={isLoadingPreview}
           posterUrl={posterUrl}
           previewError={previewError}
           stitch={stitch}
-          videoUrl={previewUrl}
+          ugcClip={previewSources?.ugcClip ?? null}
           onClose={() => setIsDetailsOpen(false)}
           onLoadPreview={() => {
             void loadPreview();
