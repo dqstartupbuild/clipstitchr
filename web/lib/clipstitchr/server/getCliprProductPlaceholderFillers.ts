@@ -1,8 +1,44 @@
 import type { CliprPlaceholderFillers } from "@/lib/clipstitchr/types/CliprPlaceholderFillers";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 
+const fillerLabelPattern =
+  /^(audience|category|goal|outcome|pain point|problem solved|problem|product details|product|result|task|topic|workflow):\s*/i;
+const leadingHelperVerbPattern =
+  /^(helps|lets|allows|enables)\s+[a-z0-9&'-]+\s+(to\s+)?/i;
+const trailingPunctuationPattern = /[.!?]+$/;
+
+function normalizeFillerValue(value: string) {
+  const trimmedValue = value
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/^["']|["']$/g, "");
+
+  if (!trimmedValue || /{{|}}/.test(trimmedValue)) {
+    return "";
+  }
+
+  const unlabeledValue = trimmedValue.replace(fillerLabelPattern, "").trim();
+  const withoutHelperVerb = unlabeledValue.replace(
+    leadingHelperVerbPattern,
+    "",
+  );
+  const naturalValue =
+    withoutHelperVerb.split(/\s+/).length >= 2
+      ? withoutHelperVerb
+      : unlabeledValue;
+
+  return naturalValue
+    .replace(trailingPunctuationPattern, "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 12)
+    .join(" ");
+}
+
 function uniqueValues(values: string[]) {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+  return Array.from(
+    new Set(values.map(normalizeFillerValue).filter(Boolean)),
+  );
 }
 
 export function getCliprProductPlaceholderFillers(

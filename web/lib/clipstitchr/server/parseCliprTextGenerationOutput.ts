@@ -2,6 +2,8 @@ import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDuration
 import type { CliprHookTemplate } from "@/lib/clipstitchr/types/CliprHookTemplate";
 import type { CliprScenePlan } from "@/lib/clipstitchr/types/CliprScenePlan";
 import type { CliprTextGeneration } from "@/lib/clipstitchr/types/CliprTextGeneration";
+import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
+import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getCliprTextHasForbiddenCta } from "@/lib/clipstitchr/utils/getCliprTextHasForbiddenCta";
 import { sanitizeCliprGeneratedText } from "@/lib/clipstitchr/utils/sanitizeCliprGeneratedText";
@@ -21,6 +23,67 @@ function normalizeString(value: unknown, fallback: string) {
   );
 }
 
+function getGeneratedHookIsReadable(
+  hook: string,
+  template: CliprHookTemplate,
+) {
+  const words = hook.split(/\s+/).filter(Boolean);
+  const requiredVariableLabels = template.requiredVariables.map((variable) =>
+    variable.replace(/_/g, " "),
+  );
+
+  return (
+    words.length >= 3 &&
+    words.length <= 24 &&
+    !/{{|}}/.test(hook) &&
+    !/\b[a-z]+_[a-z_]+\b/.test(hook) &&
+    !/\b(product details|problem solved|pain point|placeholder)\s*:/i.test(
+      hook,
+    ) &&
+    !/\b(\w+)\s+\1\b/i.test(hook) &&
+    !/\b(a|an|the)\s+(a|an|the)\b/i.test(hook) &&
+    !/\b(about|for|from|in|of|on|to|with|without)\s+(about|for|from|in|of|on|to|with|without)\b/i.test(
+      hook,
+    ) &&
+    !requiredVariableLabels.some((label) =>
+      new RegExp(
+        `\\b(about|for|from|in|of|on|to|with|without)\\s+${escapeRegExp(
+          label,
+        )}\\b`,
+        "i",
+      ).test(hook),
+    )
+  );
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function getProductProblemPhrase(product: ProductProfile) {
+  const source =
+    product.inferredPainPoints[0] ??
+    product.inferredProblem ??
+    product.productDetails ??
+    "the messy part";
+
+  return sanitizeCliprGeneratedText(source, "the messy part")
+    .replace(/[.!?]+$/g, "")
+    .slice(0, 90);
+}
+
+function createFallbackHook(product: ProductProfile, purpose: CliprTextPurpose) {
+  if (purpose === "clipr") {
+    return "The small workflow mistake most people miss";
+  }
+
+  if (purpose === "swipr") {
+    return `What changes when ${product.name} handles the messy part`;
+  }
+
+  return `${product.name} makes the messy part easier to handle`;
+}
+
 function normalizeScriptString(value: unknown, fallback: string) {
   const text = typeof value === "string" ? value.trim().replace(/\s+/g, " ") : "";
 
@@ -31,17 +94,91 @@ function normalizeScriptString(value: unknown, fallback: string) {
   return text.slice(0, 4000);
 }
 
-function normalizeSlides(value: unknown, filledHook: string, slideCount: number) {
+function getSwiprFallbackSupportSlide(
+  product: ProductProfile,
+  slideIndex: number,
+) {
+  const problem = getProductProblemPhrase(product);
+  const fallbackSlides = [
+    `The real issue is ${problem}`,
+    `${product.name} keeps the next step clearer`,
+    "That means fewer loose ends before you publish",
+    "The payoff is a process you can repeat",
+    "Less guesswork, more finished creative",
+    "Keep the workflow simple enough to use again",
+  ];
+
+  return fallbackSlides[(slideIndex - 1) % fallbackSlides.length];
+}
+
+function createSwiprCtaSlide(product: ProductProfile) {
+  const problem = getProductProblemPhrase(product);
+
+  return `Use ${product.name} when ${problem} starts slowing you down`;
+}
+
+function getSwiprSlideIsCta(slide: string, product: ProductProfile) {
+  return (
+    slide.toLowerCase().includes(product.name.toLowerCase()) &&
+    /\b(use|make|start|turn|keep|bring|build|create|choose|get)\b/i.test(slide)
+  );
+}
+
+function normalizeSlides({
+  filledHook,
+  product,
+  purpose,
+  slideCount,
+  value,
+}: {
+  filledHook: string;
+  product: ProductProfile;
+  purpose: CliprTextPurpose;
+  slideCount: number;
+  value: unknown;
+}) {
   const rawSlides = Array.isArray(value) ? value : [];
   const slides = rawSlides
     .map((slide) => normalizeString(slide, ""))
     .filter(Boolean)
     .slice(0, slideCount);
 
-  return [
-    filledHook,
-    ...slides.filter((slide) => slide !== filledHook),
-  ].slice(0, slideCount);
+  if (purpose !== "swipr") {
+    return [
+      filledHook,
+      ...slides.filter((slide) => slide !== filledHook),
+    ].slice(0, slideCount);
+  }
+
+  const nextSlides = [filledHook];
+  const supportSlides = slides.filter((slide) => slide !== filledHook);
+  const generatedFinalSlide = supportSlides.at(-1) ?? "";
+  const generatedCtaSlide = getSwiprSlideIsCta(generatedFinalSlide, product)
+    ? generatedFinalSlide
+    : "";
+  const supportCandidates = generatedCtaSlide
+    ? supportSlides.slice(0, -1)
+    : supportSlides;
+
+  for (const slide of supportCandidates) {
+    if (nextSlides.length >= slideCount - 1) {
+      break;
+    }
+
+    if (!nextSlides.includes(slide)) {
+      nextSlides.push(slide);
+    }
+  }
+
+  while (nextSlides.length < Math.max(1, slideCount - 1)) {
+    nextSlides.push(getSwiprFallbackSupportSlide(product, nextSlides.length));
+  }
+
+  if (slideCount > 1) {
+    nextSlides.push(generatedCtaSlide || createSwiprCtaSlide(product));
+  }
+
+  return nextSlides.slice(0, slideCount);
 }
 
 function normalizeVariables(value: unknown) {
@@ -92,12 +229,16 @@ export function parseCliprTextGenerationOutput({
   durationSeconds,
   outputText,
   providerModel,
+  product,
+  purpose,
   slideCount,
 }: {
   candidates: CliprHookTemplate[];
   durationSeconds: CliprDurationSeconds;
   outputText: string;
   providerModel: string;
+  product: ProductProfile;
+  purpose: CliprTextPurpose;
   slideCount: number;
 }): CliprTextGeneration {
   const parsed = JSON.parse(getCliprJsonText(outputText)) as {
@@ -112,10 +253,13 @@ export function parseCliprTextGenerationOutput({
   const selectedTemplate =
     candidates.find((candidate) => candidate.id === parsed.templateId) ??
     candidates[0];
-  const filledHook = normalizeString(
-    parsed.filledHook,
-    selectedTemplate.template.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, "$1"),
-  );
+  const candidateFilledHook = normalizeString(parsed.filledHook, "");
+  const filledHook = getGeneratedHookIsReadable(
+    candidateFilledHook,
+    selectedTemplate,
+  )
+    ? candidateFilledHook
+    : createFallbackHook(product, purpose);
   const script = normalizeScriptString(
     parsed.script,
     "",
@@ -158,7 +302,13 @@ export function parseCliprTextGenerationOutput({
     providerModel,
     scenePlan: finalScenePlan,
     script: finalScript,
-    slides: normalizeSlides(parsed.slides, filledHook, slideCount),
+    slides: normalizeSlides({
+      filledHook,
+      product,
+      purpose,
+      slideCount,
+      value: parsed.slides,
+    }),
     variablesUsed: normalizeVariables(parsed.variablesUsed),
   };
 }
