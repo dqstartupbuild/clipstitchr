@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { CliprCallout } from "@/app/_components/dashboard/CliprCallout";
 import { StitchrCallout } from "@/app/_components/dashboard/StitchrCallout";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
@@ -130,7 +129,6 @@ export function DashboardPageClient() {
           onDelete={photoLibrary.removePhoto}
           onUpdateMetadata={photoLibrary.updatePhotoMetadata}
         />
-        <CliprCallout />
         <StitchrCallout />
       </div>
     </DashboardShell>
