@@ -124,6 +124,7 @@ export function SwaprPageClient() {
       return null;
     }
     const blob = await createStitchExportBlob(stitch, {
+      includePosterMetadata: false,
       loadClip: library.loadClip,
     });
     const metadata = createVideoClipMetadataFromStitch(stitch);

@@ -22,6 +22,7 @@ import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { createVideoBlobWithPosterMetadata } from "@/lib/clipstitchr/media/createVideoBlobWithPosterMetadata";
 import { renderCliprVideoWithMusic } from "@/lib/clipstitchr/media/renderCliprVideoWithMusic";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
@@ -101,7 +102,7 @@ export function VideoClipCard({
 
     try {
       const music = nextClip.cliprMetadata?.music;
-      const exportBlob =
+      const renderedBlob =
         music?.enabled && music.audioObject
           ? (
               await renderCliprVideoWithMusic({
@@ -111,6 +112,11 @@ export function VideoClipCard({
               })
             ).blob
           : nextClip.blob;
+      const exportBlob = await createVideoBlobWithPosterMetadata({
+        posterBlob: clip.posterBlob,
+        title: clip.name,
+        videoBlob: renderedBlob,
+      });
 
       downloadBlob(
         exportBlob,

@@ -110,7 +110,10 @@ export function StitchCard({
 
     try {
       setPreviewState({
-        blob: await createStitchExportBlob(stitch, { loadClip: onLoadClip }),
+        blob: await createStitchExportBlob(stitch, {
+          includePosterMetadata: false,
+          loadClip: onLoadClip,
+        }),
         cacheKey: previewCacheKey,
       });
     } catch (nextError) {
