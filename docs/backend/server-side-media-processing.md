@@ -111,6 +111,29 @@ cleanup. For responsive processing, create a job immediately and have a worker
 claim it from a queue or from Convex with an atomic lock. If cron is used to kick
 workers, it must still claim jobs idempotently.
 
+### Browser-close Durability Boundary
+
+Skipping multipart/resumable uploads leaves one intentional gap: a brand-new
+local file upload is not browser-close safe until the browser finishes uploading
+the raw file to R2 and the server creates the durable job record.
+
+Durability starts at different points by workflow:
+
+- New video/photo upload: durable after the raw source object exists in R2 and
+  the `upload-normalization` job exists in Convex.
+- Stitchr and Longr: durable immediately after the export job is created because
+  the selected source clips are already saved R2 objects.
+- Clipr and Swapr provider work: durable after the provider job and enough
+  finalization metadata are saved server-side. The browser must not be required
+  to download provider output, upload it to R2, or create the final library
+  record.
+- Export-time music mixing: durable only after it is represented as a server
+  media job. Browser-local download rendering remains non-resumable until moved.
+
+Until resumable uploads are added, the UI should treat the initial raw upload as
+the only "keep this tab open" step. Once the upload completes and the job appears
+in Convex, the user can close the browser and return later.
+
 ## Runtime Choice
 
 Use a long-running worker in a container or VM. Avoid putting video encoding in
@@ -497,52 +520,153 @@ To keep server processing close to the current browser speed:
 10. Benchmark Native Worker versus Server-hosted Browser Worker before committing
     to one runtime.
 
-## Recommended Implementation Phases
+## Option A Implementation Plan
+
+### Phase 0: Define Contracts And Feature Flags
+
+- Add a `server-media-processing` feature flag that can be enabled per workflow:
+  upload normalization, Stitchr, Longr, Clipr finalization, Swapr finalization,
+  and persisted music export.
+- Keep the existing browser rendering paths behind fallback flags until the
+  worker passes production benchmarks and output parity checks.
+- Define the worker API boundary as job IDs plus R2 object references, not raw
+  browser `Blob` values.
+- Define worker secrets separately from `RATE_LIMIT_API_SECRET`; the media worker
+  needs a server-only credential for Convex worker mutations and R2 access.
+- Document local development prerequisites: R2-compatible bucket, Convex dev
+  deployment, sample fixture clips, and a way to run the worker container.
+
+Exit criteria: every workflow has a named feature flag, a server-owned job
+contract, and a fallback decision.
 
 ### Phase 1: Prove Worker Runtime
 
 - Create a small worker prototype outside the Next.js request path.
+- Prefer `workers/media-worker/` or `services/media-worker/` so the worker is
+  clearly separate from the Next.js app runtime.
+- Package the worker as a container image that installs `mediabunny` and
+  `@mediabunny/aac-encoder`.
 - Download one R2 test video to local scratch.
 - Normalize it with `Conversion`, `FilePathSource`, and `FilePathTarget`.
 - Capture a poster.
 - Upload outputs back to R2.
 - Measure output correctness, duration, CPU, memory, and wall time.
 - Run the codec startup self-test in the target production environment.
+- Add a worker health check that fails when codec support or benchmark gates
+  fail.
 
 Exit criteria: one upload normalization job is faster than or close to browser
 normalization on a typical user machine, and it survives browser refresh.
 
 ### Phase 2: Add Durable Media Jobs
 
-- Add `mediaJobs` schema and mutations.
-- Add worker claim, progress, success, failure, and retry mutations.
-- Add job creation API routes with rate limits.
-- Add dashboard job subscriptions.
+- Add `mediaJobs` to the Convex schema with indexes for owner/status, status,
+  lock expiration, and job ID.
+- Add validators for job type, status, stage, source objects, output objects,
+  trim ranges, text overlays, and final record IDs.
+- Add user-facing mutations/routes for creating jobs:
+  `upload-normalization`, `stitchr-export`, `longr-export`,
+  `clipr-finalization`, `swapr-finalization`, and `clipr-music-export`.
+- Add worker-only mutations:
+  `claim`, `heartbeat`, `updateProgress`, `complete`, `fail`, `cancel`, and
+  `releaseExpiredLock`.
+- Add idempotency fields so retrying a completed job returns the existing final
+  record IDs instead of creating duplicate assets.
+- Add dashboard queries for active, failed, and recent completed jobs.
+- Add job status UI that survives route changes and reloads.
 
 Exit criteria: the browser can close after job creation and see the completed
 asset on reload.
 
-### Phase 3: Move Upload Normalization
+### Phase 3: Add Rate Limits And Queue Dispatch
+
+- Extend `docs/backend/rate-limits.md` with server media limits before enabling
+  worker dispatch.
+- Add per-user job creation limits, output seconds limits, concurrent running job
+  limits, raw upload byte limits, retry caps, and global worker-pool limits.
+- Consume limits before issuing raw R2 upload URLs or creating queued jobs.
+- Use Cloudflare Queues for dispatch when available. Queue messages should carry
+  only the job ID and type; the worker must re-read and claim the job from
+  Convex before work starts.
+- Use a pull consumer or explicit worker polling if queue push delivery makes
+  concurrency hard to control.
+- Add a scheduled recovery task that requeues jobs whose `lockedUntil` has
+  expired.
+
+Exit criteria: queued jobs cannot exceed configured cost/concurrency caps, and
+stale locks recover without manual database edits.
+
+### Phase 4: Move Upload Normalization
 
 - Upload originals to R2 first.
+- Do not add multipart/resumable uploads in this phase. Initial raw upload can
+  still be interrupted by browser close.
+- Create the `upload-normalization` job only after the raw object upload
+  succeeds.
 - Process normalization in the worker.
+- Generate posters in the worker after the normalized output is written.
 - Save final `videoClips` records from the worker.
+- Mark the job complete only after R2 output upload and Convex save both
+  succeed.
+- Add cleanup for abandoned raw upload objects after success, cancellation, or
+  expiration.
 - Keep browser fallback behind a feature flag until server output quality and
   speed are proven.
 
-### Phase 4: Move Stitchr And Longr
+Exit criteria: after the raw upload completes, the user can close the browser and
+later see the normalized clip in the library.
 
-- Move stitching and long-form composition to the worker.
+### Phase 5: Move Stitchr And Longr
+
+- Add job creation routes or Convex mutations for Stitchr and Longr.
+- Validate source clip ownership and clip availability before queueing.
+- Copy trim ranges and text overlay settings into the job record at creation
+  time so later metadata edits do not mutate an in-flight export.
+- Move stitching and long-form composition to the worker using `FilePathSource`
+  inputs and `FilePathTarget` outputs.
 - Keep one-output-per-UGC semantics for Stitchr.
 - Preserve UGC-then-Demo sequencing, trim ranges, shared text overlay, and poster
   generation.
+- Save final `stitches` or `longrVideos` records from the worker.
+- Keep the browser preview path; only final rendering moves to the worker.
 
-### Phase 5: Move Provider Finalization And Export Mixes
+Exit criteria: a user can start Stitchr or Longr, close the browser immediately
+after the job is accepted, and later see saved outputs in the library.
+
+### Phase 6: Move Provider Finalization And Export Mixes
 
 - Finalize Swapr, avatar, and Clipr provider outputs from webhooks or recovery
-  jobs.
+  jobs, not browser polling callbacks.
+- Store provider prediction IDs, model IDs, source asset IDs, output URLs, and
+  finalization metadata before starting provider work when possible.
+- Copy provider outputs to R2 promptly because provider-hosted outputs are not
+  permanent.
+- Create media post-processing jobs when provider output needs normalization,
+  poster capture, stitching, or music mixing.
+- Save final `videoClips` or `photoAssets` records from server finalizers and
+  workers.
 - Add optional server-side persisted music-mix exports where product behavior
   requires resumability.
+
+Exit criteria: Clipr and Swapr can finish without the browser downloading
+provider output, uploading to R2, or saving the final library record.
+
+### Phase 7: Observability, Rollout, And Cleanup
+
+- Add structured logs for job ID, owner ID hash, job type, stage, attempt,
+  runtime, input seconds, output bytes, real-time factor, memory, and disk use.
+- Add alerts for worker unhealthy, queue backlog, retry spikes, R2 failures,
+  Convex mutation failures, and benchmark regressions.
+- Add admin/recovery tooling for failed jobs that still have valid inputs.
+- Add cleanup schedules for raw inputs, scratch objects, expired failed jobs, and
+  orphaned partial outputs.
+- Roll out one workflow at a time: upload normalization first, then Stitchr,
+  Longr, Swapr, Clipr finalization, and persisted music exports.
+- Remove browser rendering fallbacks only after production metrics show stable
+  speed, correctness, and cost.
+
+Exit criteria: server processing is observable, recoverable, and cheaper/faster
+enough to make browser fallback unnecessary for the enabled workflow.
 
 ## Bottom Line
 
