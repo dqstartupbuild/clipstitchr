@@ -163,7 +163,7 @@ export function StitchrPageClient() {
     : 0;
   const canStitch = Boolean(
     selectedUgcMetadata.length &&
-      selectedDemoClip &&
+      selectedDemoMetadata &&
       selectedUgcTrimRange &&
       selectedDemoTrimRange,
   );
@@ -292,7 +292,11 @@ export function StitchrPageClient() {
   );
 
   const handleStitch = () => {
-    if (selectedDemoClip && selectedDemoTrimRange && selectedUgcMetadata.length) {
+    if (
+      selectedDemoMetadata &&
+      selectedDemoTrimRange &&
+      selectedUgcMetadata.length
+    ) {
       const exportTextOverlay =
         textOverlay && textOverlay.text.trim().length > 0 ? textOverlay : null;
       const ugcSelections: StitchrUgcSelection[] = selectedUgcMetadata.map(
@@ -301,13 +305,12 @@ export function StitchrPageClient() {
           trimRange:
             selectedUgcTrimRangesByClipId[clip.id] ??
             getDefaultVideoTrimRange(clip),
-          loadClip: () => loadClip(clip.id),
         }),
       );
 
       void stitchrState.stitchVideos(
         ugcSelections,
-        selectedDemoClip,
+        selectedDemoMetadata,
         selectedDemoTrimRange,
         exportTextOverlay,
         {
@@ -371,7 +374,9 @@ export function StitchrPageClient() {
   }, []);
 
   const isStitching =
-    stitchrState.status === "reading" || stitchrState.status === "stitching";
+    stitchrState.status === "reading" ||
+    stitchrState.status === "saving" ||
+    stitchrState.status === "stitching";
 
   return (
     <StitchrShell>
@@ -436,7 +441,10 @@ export function StitchrPageClient() {
                 completedCount={stitchrState.completedCount}
                 totalCount={stitchrState.totalCount}
               />
-              <DownloadStitchesPanel stitches={stitchrState.stitches} />
+              <DownloadStitchesPanel
+                stitches={stitchrState.stitches}
+                onLoadClip={loadClip}
+              />
             </div>
             <div className="min-w-0 w-full max-w-[340px] justify-self-center xl:sticky xl:top-5 xl:justify-self-end">
               <SequencePreviewPanel

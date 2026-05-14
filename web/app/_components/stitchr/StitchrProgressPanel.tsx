@@ -29,6 +29,10 @@ export function StitchrProgressPanel({
         : "Ad ready"
       : status === "reading"
         ? "Preparing videos"
+        : status === "saving"
+          ? isBatch
+            ? "Creating ads"
+            : "Creating your ad"
         : isBatch
           ? "Creating ads"
           : "Creating your ad";

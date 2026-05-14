@@ -3,6 +3,7 @@ import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetad
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -38,6 +39,10 @@ export type ClipLibraryValue = {
   updateStitchMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
+  ) => Promise<void>;
+  updateStitchTextOverlay: (
+    stitch: Stitch,
+    textOverlay: TextOverlay | null,
   ) => Promise<void>;
   removeLongrVideo: (id: string) => Promise<void>;
   removeStitch: (id: string) => Promise<void>;

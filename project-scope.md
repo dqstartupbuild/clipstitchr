@@ -126,15 +126,16 @@ cleanup.
 | 4 | Override copied trim ranges while stitching without changing upload defaults | ✅ | ✅ |
 | 5 | Tap/swipe through selected UGC previews before stitching | ✅ | ✅ |
 | 6 | Processing happens in-browser (no server-side rendering for MVP) | ✅ | ✅ |
-| 7 | Click **"Stitch"** to create one UGC-then-Demo output per selected UGC clip | ✅ | ✅ |
-| 8 | Progress indicator during normalization and stitching | ✅ | ✅ |
-| 9 | Download each finished TikTok 9:16 video file | ✅ | ✅ |
+| 7 | Click **"Stitch"** to create one editable UGC-then-Demo stitch per selected UGC clip | ✅ | ✅ |
+| 8 | Progress indicator during stitching and export | ✅ | ✅ |
+| 9 | Export/download each finished TikTok 9:16 video file on demand | ✅ | ✅ |
 | 10 | Select reusable shared-library music or generate separate 60 second background music for saved stitches and mix it only at download/export time | ✅ | ✅ |
 
 ### 4.3 Text Overlays
 
-Stitchr supports one text overlay for the current export session. In batch
-stitching, the same overlay is applied to every selected UGC + Demo output.
+Stitchr supports one text overlay for each saved stitch. In batch
+stitching, the same overlay is saved to every selected UGC + Demo output and
+can be edited later before export.
 Multiple independent text layers remain future scope.
 
 | # | Feature | MVP | Future |
@@ -196,8 +197,9 @@ volume without altering the saved video.
 Stitchr music follows the same non-destructive model for saved stitches. The
 Stitchr build controls can select shared music or request new generated music,
 and saved stitch cards can later select, generate, remove, regenerate,
-enable/disable, or adjust volume. The clean stitched MP4 stays unchanged in R2;
-Media Bunny creates the final music-mixed download on demand in the browser.
+enable/disable, or adjust volume. Saved stitches store source metadata, text,
+source audio flags, and music settings; Media Bunny creates the clean stitch and
+final music-mixed download on demand in the browser.
 
 ### 4.6 Longr Long-Form Builder
 
@@ -337,15 +339,15 @@ selected slides.
 - Every uploaded UGC and Demo video must be normalized before it is saved to the library.
 - Normalized clips must use a TikTok-ready 9:16 canvas. The MVP target is `1080x1920` when browser encoding support allows it.
 - Do not stretch source footage. For non-9:16 uploads, preserve the source aspect ratio inside the 9:16 output; crop/fill presets can be added later.
-- Preview, Stitch, and Download must all use the same sequence: each normalized UGC clip starts first, and the selected normalized Demo clip starts immediately after that UGC clip ends.
+- Preview, save, and export must all use the same sequence: each normalized UGC clip starts first, and the selected normalized Demo clip starts immediately after that UGC clip ends.
 - Clipr music export must not mutate the saved video. Export/download reads the
   clean saved Clipr video and optional R2 music object, then creates a temporary
   mixed MP4 in the browser with Media Bunny.
 - Trimming is non-destructive metadata. Uploads store a default trim range. When clips are selected in Stitchr, the default trim range for each selected UGC and the selected Demo is copied into that Stitchr session and can be changed independently.
-- Preview, Stitch, and Download must use the copied Stitchr trim ranges when present.
+- Preview, saved stitches, and exports must use the copied Stitchr trim ranges when present.
 - The preview should let the user tap or swipe through each selected UGC + Demo sequence before export.
-- Each final stitch must be a single 9:16 file using the same normalized assets shown in preview. A batch creates one final stitch per selected UGC clip.
-- Clip and stitch cards should use the HTML video `poster` attribute for the static preview state. Generate poster images in the browser by seeking through early candidate frames, choosing the first visibly non-black frame, encoding it as JPEG, and storing it beside the video blob.
+- Each exported stitch must be a single 9:16 file using the same normalized assets shown in preview. A batch saves one stitch per selected UGC clip.
+- Clip cards should use the HTML video `poster` attribute for the static preview state. Generate poster images in the browser by seeking through early candidate frames, choosing the first visibly non-black frame, encoding it as JPEG, and storing it beside the video blob. Saved stitch cards can reuse the selected UGC poster because Stitchr does not persist rendered stitch videos at save time.
 - Poster generation is infrastructure for video previews. User-authored thumbnail generation, thumbnail selection, and thumbnail editing remain out of scope for the MVP.
 
 ### Media Bunny API Map (MVP)
@@ -387,6 +389,7 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
 
 #### Stitched Export / Download
 
+- Saving a stitch stores the UGC clip id, Demo clip id, copied trim ranges, text overlay, source audio flags, and music metadata. It does not render or upload the final stitch video.
 - Do not use `Conversion` for stitching because it is a single-input conversion abstraction, not a multi-input composition API.
 - Create a fresh `Output` with `Mp4OutputFormat` and `BufferTarget` for each stitch. A multi-UGC Stitchr batch runs this one-output-per-UGC flow sequentially.
 - Add one `VideoSampleSource` and, when at least one selected clip has audio, one `AudioSampleSource`.
@@ -401,7 +404,7 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
 - Close every `VideoSample` and `AudioSample` after it has been added.
 - Close media sources when their streams are complete, then call `output.finalize()`.
 - Convert the final `BufferTarget.buffer` into the downloadable video `Blob`, using `output.getMimeType()` for the blob type when available.
-- Generate and store a poster `Blob` for each stitch after export succeeds.
+- Do not persist export-time stitch blobs or posters in the MVP; exports are browser-local downloads unless a later flow explicitly saves the rendered output as a separate clip.
 - Dispose each stitched-export `Input` after its samples have been processed.
 - Keep encoded-packet passthrough with `EncodedPacketSink`, `EncodedVideoPacketSource`, and `EncodedAudioPacketSource` as a later optimization only; MVP should re-encode from samples because it is more robust across separate input files.
 
@@ -459,13 +462,17 @@ interface Stitch {
   demoClipId: string;
   ugcTrimRange?: { start: number; end: number }; // copied Stitchr trim
   demoTrimRange?: { start: number; end: number }; // copied Stitchr trim
-  stitchObject: R2ObjectReference; // final 9:16 video in R2
-  posterObject?: R2ObjectReference; // generated JPEG poster in R2
+  stitchObject?: R2ObjectReference; // legacy/fallback rendered stitch in R2
+  posterObject?: R2ObjectReference; // legacy/fallback generated JPEG poster in R2
   posterVersion?: number; // capture algorithm version for backfilling stale posters
   width: number; // target 1080
   height: number; // target 1920
   aspectRatio: '9:16';
   duration: number; // ugc duration + demo duration
+  includeUgcAudio?: boolean;
+  includeDemoAudio?: boolean;
+  textOverlay?: TextOverlay;
+  music?: StitchMusicMetadata;
   createdAt: string;
 }
 ```

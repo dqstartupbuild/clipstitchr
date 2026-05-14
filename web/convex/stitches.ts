@@ -16,14 +16,16 @@ const saveArgs = {
   demoClipName: v.string(),
   ugcTrimRange: v.optional(videoTrimRangeValidator),
   demoTrimRange: v.optional(videoTrimRangeValidator),
-  stitchObject: r2ObjectValidator,
+  stitchObject: v.optional(r2ObjectValidator),
   posterObject: v.optional(r2ObjectValidator),
   posterVersion: v.optional(v.number()),
-  mimeType: v.string(),
-  size: v.number(),
+  mimeType: v.optional(v.string()),
+  size: v.optional(v.number()),
   width: v.number(),
   height: v.number(),
   duration: v.number(),
+  includeDemoAudio: v.optional(v.boolean()),
+  includeUgcAudio: v.optional(v.boolean()),
   music: v.optional(stitchMusicMetadataValidator),
   textOverlay: v.optional(textOverlayValidator),
   createdAt: v.string(),
@@ -140,6 +142,34 @@ export const updateMusic = mutation({
 
     await ctx.db.patch(stitch._id, {
       music: music ?? undefined,
+    });
+  },
+});
+
+export const updateTextOverlay = mutation({
+  args: {
+    id: v.string(),
+    textOverlay: v.union(textOverlayValidator, v.null()),
+  },
+  handler: async (ctx, { id, textOverlay }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    await ctx.db.patch(stitch._id, {
+      textOverlay: textOverlay ?? undefined,
     });
   },
 });

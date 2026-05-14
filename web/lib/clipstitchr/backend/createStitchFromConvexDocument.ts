@@ -3,7 +3,7 @@ import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 
 type CreateStitchFromConvexDocumentOptions = {
   stitch: Doc<"stitches">;
-  blob: Blob;
+  blob?: Blob;
   posterBlob?: Blob;
 };
 
@@ -31,6 +31,8 @@ export function createStitchFromConvexDocument({
     width: stitch.width,
     height: stitch.height,
     duration: stitch.duration,
+    includeDemoAudio: stitch.includeDemoAudio,
+    includeUgcAudio: stitch.includeUgcAudio,
     music: stitch.music,
     textOverlay: stitch.textOverlay,
     createdAt: stitch.createdAt,

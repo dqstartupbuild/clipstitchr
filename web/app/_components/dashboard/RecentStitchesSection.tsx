@@ -5,14 +5,21 @@ import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 
 type RecentStitchesSectionProps = {
   stitches: Stitch[];
   onDelete: (id: string) => void | Promise<void>;
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
+  onLoadClip: (id: string) => Promise<VideoClip | null>;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
+  ) => void | Promise<void>;
+  onUpdateTextOverlay: (
+    stitch: Stitch,
+    textOverlay: TextOverlay | null,
   ) => void | Promise<void>;
 };
 
@@ -20,7 +27,9 @@ export function RecentStitchesSection({
   stitches,
   onDelete,
   onGenerateMusic,
+  onLoadClip,
   onUpdateMusic,
+  onUpdateTextOverlay,
 }: RecentStitchesSectionProps) {
   return (
     <section id="recent-stitches">
@@ -43,7 +52,9 @@ export function RecentStitchesSection({
               stitch={stitch}
               onDelete={onDelete}
               onGenerateMusic={onGenerateMusic}
+              onLoadClip={onLoadClip}
               onUpdateMusic={onUpdateMusic}
+              onUpdateTextOverlay={onUpdateTextOverlay}
             />
           ))}
         </div>

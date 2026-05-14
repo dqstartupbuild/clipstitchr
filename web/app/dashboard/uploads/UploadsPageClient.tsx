@@ -414,7 +414,9 @@ export function UploadsPageClient() {
               }
               onDelete={library.removeStitch}
               onGenerateMusic={library.generateStitchMusic}
+              onLoadClip={library.loadClip}
               onUpdateMusic={library.updateStitchMusic}
+              onUpdateTextOverlay={library.updateStitchTextOverlay}
             />
             <LongrVideosSection
               key={`all-longr-${searchQuery}`}
@@ -492,7 +494,9 @@ export function UploadsPageClient() {
             }
             onDelete={library.removeStitch}
             onGenerateMusic={library.generateStitchMusic}
+            onLoadClip={library.loadClip}
             onUpdateMusic={library.updateStitchMusic}
+            onUpdateTextOverlay={library.updateStitchTextOverlay}
           />
         ) : null}
         {selectedTab === "longr" ? (

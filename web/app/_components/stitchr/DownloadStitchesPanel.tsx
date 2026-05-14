@@ -1,12 +1,15 @@
 import { DownloadStitchCard } from "@/app/_components/stitchr/DownloadStitchCard";
 import { Panel } from "@/app/_components/ui/Panel";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
+import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 
 type DownloadStitchesPanelProps = {
   stitches: Stitch[];
+  onLoadClip: (id: string) => Promise<VideoClip | null>;
 };
 
 export function DownloadStitchesPanel({
+  onLoadClip,
   stitches,
 }: DownloadStitchesPanelProps) {
   if (!stitches.length) {
@@ -25,7 +28,11 @@ export function DownloadStitchesPanel({
       </div>
       <div className="grid gap-3">
         {stitches.map((stitch) => (
-          <DownloadStitchCard key={stitch.id} stitch={stitch} />
+          <DownloadStitchCard
+            key={stitch.id}
+            stitch={stitch}
+            onLoadClip={onLoadClip}
+          />
         ))}
       </div>
     </Panel>

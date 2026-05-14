@@ -7,12 +7,7 @@ import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
-import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
-import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { generateStitchMusic as requestStitchMusicGeneration } from "@/lib/clipstitchr/client/generateStitchMusic";
-import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
-import { stitchNormalizedVideos } from "@/lib/clipstitchr/media/stitchNormalizedVideos";
-import { stitchNormalizedVideosWithTextOverlay } from "@/lib/clipstitchr/media/stitchNormalizedVideosWithTextOverlay";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
@@ -20,6 +15,7 @@ import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSou
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
@@ -50,8 +46,8 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
 
   const createStitch = useCallback(
     async (
-      ugcClip: VideoClip,
-      demoClip: VideoClip,
+      ugcClip: VideoClipMetadata,
+      demoClip: VideoClipMetadata,
       ugcTrimRange: VideoTrimRange,
       demoTrimRange: VideoTrimRange,
       textOverlay: TextOverlay | null = null,
@@ -66,48 +62,11 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
         demoTrimRange,
         demoClip.duration,
       );
-      const stitched = textOverlay
-        ? await stitchNormalizedVideosWithTextOverlay(ugcClip, demoClip, {
-            ugcTrimRange: clampedUgcTrimRange,
-            demoTrimRange: clampedDemoTrimRange,
-            includeDemoAudio: options.includeDemoAudio,
-            includeUgcAudio: options.includeUgcAudio,
-            textOverlay,
-            onProgress: onPairProgress,
-          })
-        : await stitchNormalizedVideos(ugcClip, demoClip, {
-            ugcTrimRange: clampedUgcTrimRange,
-            demoTrimRange: clampedDemoTrimRange,
-            includeDemoAudio: options.includeDemoAudio,
-            includeUgcAudio: options.includeUgcAudio,
-            onProgress: onPairProgress,
-          });
-      let posterBlob: Blob | undefined;
-
-      try {
-        posterBlob = await createVideoPosterBlob(stitched.blob);
-      } catch {
-        posterBlob = undefined;
-      }
-
+      const duration =
+        getVideoTrimRangeDuration(clampedUgcTrimRange) +
+        getVideoTrimRangeDuration(clampedDemoTrimRange);
       const now = new Date().toISOString();
       const stitchId = createId();
-      const [stitchObject, posterObject] = await uploadBlobsToR2([
-        {
-          blob: stitched.blob,
-          kind: "stitch-video",
-          recordId: stitchId,
-        },
-        ...(posterBlob
-          ? [
-              {
-                blob: posterBlob,
-                kind: "stitch-poster" as const,
-                recordId: stitchId,
-              },
-            ]
-          : []),
-      ]);
       const nextStitch: Stitch = {
         id: stitchId,
         name: getDownloadFileName(ugcClip.name, demoClip.name),
@@ -117,16 +76,12 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
         demoClipName: demoClip.name,
         ugcTrimRange: clampedUgcTrimRange,
         demoTrimRange: clampedDemoTrimRange,
-        stitchObject,
-        blob: stitched.blob,
-        posterObject,
-        posterBlob,
-        posterVersion: posterBlob ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
-        mimeType: stitched.mimeType,
-        size: stitched.blob.size,
+        posterBlob: ugcClip.posterBlob,
         width: TIKTOK_OUTPUT_WIDTH,
         height: TIKTOK_OUTPUT_HEIGHT,
-        duration: stitched.duration,
+        duration,
+        includeDemoAudio: options.includeDemoAudio ?? true,
+        includeUgcAudio: options.includeUgcAudio ?? true,
         textOverlay: textOverlay ?? undefined,
         createdAt: now,
       };
@@ -140,14 +95,11 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
         demoClipName: nextStitch.demoClipName,
         ugcTrimRange: nextStitch.ugcTrimRange,
         demoTrimRange: nextStitch.demoTrimRange,
-        stitchObject: nextStitch.stitchObject,
-        posterObject: nextStitch.posterObject,
-        posterVersion: nextStitch.posterVersion,
-        mimeType: nextStitch.mimeType,
-        size: nextStitch.size,
         width: nextStitch.width,
         height: nextStitch.height,
         duration: nextStitch.duration,
+        includeDemoAudio: nextStitch.includeDemoAudio,
+        includeUgcAudio: nextStitch.includeUgcAudio,
         textOverlay: nextStitch.textOverlay,
         createdAt: nextStitch.createdAt,
       });
@@ -180,12 +132,12 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
   const stitchVideos = useCallback(
     async (
       ugcSelections: StitchrUgcSelection[],
-      demoClip: VideoClip,
+      demoClip: VideoClipMetadata,
       demoTrimRange: VideoTrimRange,
       textOverlay: TextOverlay | null = null,
       options: StitchrBuildOptions = {},
     ) => {
-      setStatus("reading");
+      setStatus("saving");
       setProgress(0);
       setError(null);
       setStitch(null);
@@ -210,14 +162,7 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
 
         for (let index = 0; index < ugcSelections.length; index += 1) {
           const ugcSelection = ugcSelections[index];
-
-          setStatus("reading");
-
-          const ugcClip = await ugcSelection.loadClip();
-
-          if (!ugcClip) {
-            throw new Error(`Unable to load ${ugcSelection.clip.name}.`);
-          }
+          const ugcClip = ugcSelection.clip;
 
           const clampedUgcTrimRange = clampVideoTrimRange(
             ugcSelection.trimRange,
@@ -229,7 +174,7 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
               ? clampTextOverlay(textOverlay, ugcDuration + demoDuration)
               : null;
 
-          setStatus("stitching");
+          setStatus("saving");
 
           const nextStitch = await createStitch(
             ugcClip,
@@ -283,7 +228,6 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
           {
             clip: ugcClip,
             trimRange: ugcTrimRange,
-            loadClip: async () => ugcClip,
           },
         ],
         demoClip,

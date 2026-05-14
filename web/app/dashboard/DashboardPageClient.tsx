@@ -101,7 +101,9 @@ export function DashboardPageClient() {
           stitches={recentStitches}
           onDelete={library.removeStitch}
           onGenerateMusic={library.generateStitchMusic}
+          onLoadClip={library.loadClip}
           onUpdateMusic={library.updateStitchMusic}
+          onUpdateTextOverlay={library.updateStitchTextOverlay}
         />
         <RecentLongsSection
           longrVideos={recentLongs}
