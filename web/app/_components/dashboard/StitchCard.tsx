@@ -271,7 +271,7 @@ export function StitchCard({
           <button
             type="button"
             className="min-w-0 flex-1 rounded-md text-left outline-none transition-colors hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            onClick={() => openDetails()}
+            onClick={() => openDetails(true)}
           >
             <h3 className="truncate text-sm font-bold text-text-primary">
               {stitch.name}

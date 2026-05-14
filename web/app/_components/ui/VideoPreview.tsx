@@ -1,6 +1,6 @@
 "use client";
 
-import { Play } from "lucide-react";
+import { Loader2, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
@@ -40,6 +40,34 @@ export function VideoPreview({
 
     videoRef.current.currentTime = trimStart;
   }, [src, trimStart]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video || !src) {
+      setIsPlaying(false);
+      return;
+    }
+
+    if (!autoPlay) {
+      return;
+    }
+
+    const playVideo = async () => {
+      try {
+        if (trimStart !== undefined) {
+          video.currentTime = trimStart;
+        }
+
+        await video.play();
+        setIsPlaying(true);
+      } catch {
+        setIsPlaying(false);
+      }
+    };
+
+    void playVideo();
+  }, [autoPlay, src, trimStart]);
 
   const keepPlaybackInsideTrim = () => {
     const video = videoRef.current;
@@ -103,7 +131,9 @@ export function VideoPreview({
         onLoadPreview ? (
           <button
             type="button"
-            aria-label={`Preview ${label}`}
+            aria-label={
+              isLoading ? `Loading preview for ${label}` : `Preview ${label}`
+            }
             className="group relative h-full w-full bg-cover bg-center"
             style={{ backgroundImage: `url(${posterSrc})` }}
             disabled={isLoading}
@@ -112,7 +142,11 @@ export function VideoPreview({
             <span className="absolute inset-0 bg-slate-950/20 transition-colors group-hover:bg-slate-950/30" />
             <span className="absolute inset-0 flex items-center justify-center">
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-accent shadow-lg">
-                <Play aria-hidden className="ml-0.5 h-5 w-5 fill-current" />
+                {isLoading ? (
+                  <Loader2 aria-hidden className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Play aria-hidden className="ml-0.5 h-5 w-5 fill-current" />
+                )}
               </span>
             </span>
           </button>
