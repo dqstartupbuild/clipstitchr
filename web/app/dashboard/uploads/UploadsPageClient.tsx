@@ -283,7 +283,7 @@ export function UploadsPageClient() {
           <UploadLibraryTabs value={selectedTab} onChange={handleTabChange} />
           <div
             className={[
-              "grid w-full gap-3",
+              "grid w-full gap-3 sm:items-end",
               selectedTab === "demo"
                 ? "sm:grid-cols-2 lg:max-w-xl"
                 : "lg:max-w-sm",

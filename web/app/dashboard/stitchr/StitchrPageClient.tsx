@@ -35,6 +35,8 @@ export function StitchrPageClient() {
   const products = useProducts();
   const stitchrState = useStitchr({ onCreated: library.refresh });
   const [addMusic, setAddMusic] = useState(false);
+  const [includeDemoAudio, setIncludeDemoAudio] = useState(true);
+  const [includeUgcAudio, setIncludeUgcAudio] = useState(true);
   const [selectedMusicTrack, setSelectedMusicTrack] =
     useState<SharedMusicTrack | null>(null);
   const [textOverlay, setTextOverlay] = useState<TextOverlay | null>(null);
@@ -308,7 +310,12 @@ export function StitchrPageClient() {
         selectedDemoClip,
         selectedDemoTrimRange,
         exportTextOverlay,
-        { addMusic: addMusic && !selectedMusicTrack, musicTrack: selectedMusicTrack },
+        {
+          addMusic: addMusic && !selectedMusicTrack,
+          includeDemoAudio,
+          includeUgcAudio,
+          musicTrack: selectedMusicTrack,
+        },
       );
     }
   };
@@ -380,6 +387,8 @@ export function StitchrPageClient() {
             <div className="flex min-w-0 flex-col gap-5">
               <ClipPickerPanel
                 addMusic={addMusic}
+                includeDemoAudio={includeDemoAudio}
+                includeUgcAudio={includeUgcAudio}
                 selectedMusicTrack={selectedMusicTrack}
                 products={products.products}
                 ugcClips={ugcClips}
@@ -404,6 +413,8 @@ export function StitchrPageClient() {
                     setSelectedMusicTrack(null);
                   }
                 }}
+                onIncludeDemoAudioChange={setIncludeDemoAudio}
+                onIncludeUgcAudioChange={setIncludeUgcAudio}
                 onSelectMusicTrack={(track) => {
                   setSelectedMusicTrack(track);
                   setAddMusic(false);
@@ -435,6 +446,8 @@ export function StitchrPageClient() {
                 demoClip={selectedDemoClip}
                 ugcTrimRange={selectedUgcTrimRange}
                 demoTrimRange={selectedDemoTrimRange}
+                includeDemoAudio={includeDemoAudio}
+                includeUgcAudio={includeUgcAudio}
                 textOverlay={clampedTextOverlay}
                 onActiveUgcChange={handleActiveUgcChange}
                 onTextOverlayChange={setTextOverlay}
