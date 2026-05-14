@@ -25,7 +25,7 @@ type CreateAvatarFromClipDialogProps = {
   onCreate: (options: CreateAvatarFromUgcClipOptions) => Promise<boolean>;
 };
 
-const counts: AvatarPhotoGenerationCount[] = [3, 5, 10];
+const counts: AvatarPhotoGenerationCount[] = [1, 3, 5];
 
 export function CreateAvatarFromClipDialog({
   clip,

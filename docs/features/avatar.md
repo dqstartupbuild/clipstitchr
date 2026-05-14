@@ -98,7 +98,7 @@ source selector or receive a `Use in Swapr` action.
 
 The avatar photo generation UI supports:
 
-- output count: `3`, `5`, or `10`
+- output count: `1`, `3`, or `5`
 - style dropdown with `UGC` as the default style
 - lighting dropdown
 - optional location/scenario input

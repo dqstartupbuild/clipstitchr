@@ -156,7 +156,7 @@ Multiple independent text layers remain future scope.
 | 5 | Uploaded UGC clips and demo videos share the tabbed Content Library page | ✅ | ✅ |
 | 6 | Uploaded Swapr avatar photos appear in the Avatars page; AI expansion is optional and off by default | ✅ | ✅ |
 | 7 | Avatar photos store a detailed non-sensitive visual description of the person for scenario generation | ✅ | ✅ |
-| 8 | Users can generate 3, 5, or 10 new avatar scenario photos from a selected Replicate image model | ✅ | ✅ |
+| 8 | Users can generate 1, 3, or 5 new avatar scenario photos from a selected Replicate image model | ✅ | ✅ |
 | 9 | Swapr-generated outputs appear in the Content Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
 | 10 | Clipr-generated outputs appear in the Content Library Clips tab and remain reusable as UGC-style clips | ✅ | ✅ |
 | 11 | Stitches appear in the Content Library Stitches tab; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
