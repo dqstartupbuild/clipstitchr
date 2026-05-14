@@ -25,10 +25,11 @@ function getPurposeRules(purpose: CliprTextPurpose) {
 
   if (purpose === "swipr") {
     return [
-      "- For Swipr, the generated text may frame the selected product as the useful example or solution.",
+      "- For Swipr, use the product only as context for the audience, problem, and topic.",
       "- For Swipr, slides must contain exactly the requested slide count.",
       "- For Swipr, slides[0] must exactly match filledHook.",
-      "- For Swipr, slides after the hook must pay off the hook with a clear reason, mechanism, proof point, or next step.",
+      "- For Swipr, middle slides must pay off the hook with engaging content: insight, mistake, pattern, reframe, useful explanation, or relatable tension.",
+      "- For Swipr, middle slides must not mention the product name, product features, product benefits, or sound like a pitch.",
       "- For Swipr, the final slide must be a product CTA that mentions the product name. Use a soft CTA such as \"Use [product] when...\" or \"Make this easier with [product]\".",
       "- For Swipr, do not repeat the hook after slide 1 and do not make every slide another hook.",
       "- For Swipr, make every slide short enough for a vertical carousel image.",
@@ -56,6 +57,7 @@ export function createCliprTextGenerationPrompt({
     '{"templateId":"one candidate id","filledHook":"short hook","variablesUsed":{"placeholder":"value"},"overlayText":"short editable overlay","slides":["first slide hook","supporting point"],"script":"30 or 60 second spoken avatar script","scenePlan":[{"sceneType":"avatar","scriptText":"the same full spoken script","visualPrompt":"vertical avatar video prompt","estimatedDurationSeconds":30}]}',
     "Rules:",
     "- Except for the final Swipr CTA slide, do not ask viewers to try, download, save, comment, follow, buy, book, subscribe, or sign up.",
+    "- Except for the final Swipr CTA slide, do not write product-feature or product-benefit copy.",
     "- Do not invent fake stats, fake studies, fake quotes, or fake testimonials.",
     "- Keep the hook useful, specific, and under 18 words when possible.",
     "- If a candidate comes from a hook library, adapt the pattern to the product instead of copying it mechanically.",

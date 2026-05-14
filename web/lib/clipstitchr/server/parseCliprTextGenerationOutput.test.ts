@@ -97,6 +97,7 @@ describe("parseCliprTextGenerationOutput", () => {
         slides: [
           "The launch mistake nobody talks about",
           "Your files are spread across too many places",
+          "LaunchKit keeps the next step clearer",
           "Another hook that does not close the loop",
         ],
       }),
@@ -108,6 +109,9 @@ describe("parseCliprTextGenerationOutput", () => {
 
     expect(generation.slides).toHaveLength(4);
     expect(generation.slides[0]).toBe(generation.filledHook);
+    expect(generation.slides.slice(1, -1).join(" ")).not.toContain(
+      "LaunchKit",
+    );
     expect(generation.slides.at(-1)).toContain("LaunchKit");
     expect(generation.slides.at(-1)).toMatch(/\bUse\b/);
   });

@@ -101,11 +101,11 @@ function getSwiprFallbackSupportSlide(
   const problem = getProductProblemPhrase(product);
   const fallbackSlides = [
     `The real issue is ${problem}`,
-    `${product.name} keeps the next step clearer`,
-    "That means fewer loose ends before you publish",
-    "The payoff is a process you can repeat",
-    "Less guesswork, more finished creative",
-    "Keep the workflow simple enough to use again",
+    "Most people notice it after the workflow is already messy",
+    "That tiny bit of friction turns into another unfinished post",
+    "The better move is making the next step obvious",
+    "The payoff is fewer loose ends before you publish",
+    "Simple systems win because you can actually repeat them",
   ];
 
   return fallbackSlides[(slideIndex - 1) % fallbackSlides.length];
@@ -121,6 +121,18 @@ function getSwiprSlideIsCta(slide: string, product: ProductProfile) {
   return (
     slide.toLowerCase().includes(product.name.toLowerCase()) &&
     /\b(use|make|start|turn|keep|bring|build|create|choose|get)\b/i.test(slide)
+  );
+}
+
+function getSwiprSupportSlideIsEngagementOnly(
+  slide: string,
+  product: ProductProfile,
+) {
+  return (
+    !slide.toLowerCase().includes(product.name.toLowerCase()) &&
+    !/\b(feature|benefit|built for|made for|helps you|lets you|use it|use this|try it|download|sign up|buy)\b/i.test(
+      slide,
+    )
   );
 }
 
@@ -165,7 +177,10 @@ function normalizeSlides({
       break;
     }
 
-    if (!nextSlides.includes(slide)) {
+    if (
+      !nextSlides.includes(slide) &&
+      getSwiprSupportSlideIsEngagementOnly(slide, product)
+    ) {
       nextSlides.push(slide);
     }
   }
