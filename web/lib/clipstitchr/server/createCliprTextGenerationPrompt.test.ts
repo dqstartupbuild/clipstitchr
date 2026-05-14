@@ -54,4 +54,19 @@ describe("createCliprTextGenerationPrompt", () => {
       "For Stitchr, the generated text may frame the selected product",
     );
   });
+
+  it("defines Swipr as a hook payoff carousel with a final CTA", () => {
+    const prompt = createCliprTextGenerationPrompt({
+      candidates: [candidate],
+      durationSeconds: 30,
+      fillers: { topic: ["launches"] },
+      product,
+      purpose: "swipr",
+      slideCount: 4,
+    });
+
+    expect(prompt).toContain("slides[0] must exactly match filledHook");
+    expect(prompt).toContain("final slide must be a product CTA");
+    expect(prompt).toContain("pay off the hook");
+  });
 });

@@ -59,6 +59,8 @@ export async function createCliprTextGeneration({
     durationSeconds,
     outputText,
     providerModel,
+    product,
+    purpose,
     slideCount,
   });
 }
