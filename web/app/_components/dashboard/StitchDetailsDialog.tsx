@@ -11,17 +11,23 @@ import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
 
 type StitchDetailsDialogProps = {
+  isLoadingPreview: boolean;
   posterUrl: string | null;
+  previewError: string | null;
   stitch: Stitch;
   videoUrl: string | null;
   onClose: () => void;
+  onLoadPreview: () => void;
 };
 
 export function StitchDetailsDialog({
+  isLoadingPreview,
   posterUrl,
+  previewError,
   stitch,
   videoUrl,
   onClose,
+  onLoadPreview,
 }: StitchDetailsDialogProps) {
   const musicLabel = stitch.music
     ? stitch.music.enabled
@@ -90,12 +96,21 @@ export function StitchDetailsDialog({
           />
         </div>
         <div className="grid gap-5 p-5 md:grid-cols-[280px_minmax(0,1fr)]">
-          <VideoPreview
-            src={videoUrl}
-            posterSrc={posterUrl}
-            label={stitch.name}
-            autoPlay
-          />
+          <div className="grid gap-3">
+            <VideoPreview
+              src={videoUrl}
+              posterSrc={posterUrl}
+              label={stitch.name}
+              autoPlay
+              isLoading={isLoadingPreview}
+              onLoadPreview={onLoadPreview}
+            />
+            {previewError ? (
+              <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+                {previewError}
+              </p>
+            ) : null}
+          </div>
           <div className="flex flex-col gap-5">
             <div className="flex flex-wrap items-center gap-2">
               <Badge>STITCH</Badge>

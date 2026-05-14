@@ -20,7 +20,7 @@ export function MusicTrackListItem({
 }: MusicTrackListItemProps) {
   return (
     <li className="grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-3 py-2 last:border-b-0">
-      <MusicTrackPreviewButton trackId={track.id} trackTitle={track.title} />
+      <MusicTrackPreviewButton track={track} />
       <div className="min-w-0">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <p className="truncate text-sm font-bold text-text-primary">

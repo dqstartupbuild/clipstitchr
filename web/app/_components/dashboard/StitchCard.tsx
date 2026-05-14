@@ -44,11 +44,51 @@ export function StitchCard({
   onUpdateMusic,
   onUpdateTextOverlay,
 }: StitchCardProps) {
-  const url = useObjectUrl(stitch.blob);
+  const [previewState, setPreviewState] = useState<{
+    blob: Blob;
+    cacheKey: string;
+  } | null>(null);
+  const [previewErrorState, setPreviewErrorState] = useState<{
+    cacheKey: string;
+    message: string;
+  } | null>(null);
+  const previewCacheKey = [
+    stitch.id,
+    stitch.ugcClipId,
+    stitch.demoClipId,
+    stitch.ugcTrimRange?.start,
+    stitch.ugcTrimRange?.end,
+    stitch.demoTrimRange?.start,
+    stitch.demoTrimRange?.end,
+    stitch.includeUgcAudio,
+    stitch.includeDemoAudio,
+    stitch.textOverlay?.text,
+    stitch.textOverlay?.startTime,
+    stitch.textOverlay?.endTime,
+    stitch.textOverlay?.x,
+    stitch.textOverlay?.y,
+    stitch.textOverlay?.width,
+    stitch.textOverlay?.fontSize,
+    stitch.textOverlay?.styleId,
+    stitch.textOverlay?.color,
+    stitch.textOverlay?.backgroundColor,
+    stitch.textOverlay?.strokeColor,
+    stitch.music?.audioObject.key,
+    stitch.music?.enabled,
+    stitch.music?.volume,
+  ].join(":");
+  const previewBlob =
+    previewState?.cacheKey === previewCacheKey ? previewState.blob : null;
+  const previewError =
+    previewErrorState?.cacheKey === previewCacheKey
+      ? previewErrorState.message
+      : null;
+  const previewUrl = useObjectUrl(previewBlob ?? stitch.blob);
   const posterUrl = useObjectUrl(stitch.posterBlob);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isMusicOpen, setIsMusicOpen] = useState(false);
   const [isTextOpen, setIsTextOpen] = useState(false);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
   const [isSavingMusic, setIsSavingMusic] = useState(false);
@@ -59,6 +99,39 @@ export function StitchCard({
   const fileSizeLabel = stitch.size
     ? formatBytes(stitch.size)
     : "Ready to download";
+
+  const loadPreview = async () => {
+    if (previewBlob || stitch.blob || isLoadingPreview) {
+      return;
+    }
+
+    setIsLoadingPreview(true);
+    setPreviewErrorState(null);
+
+    try {
+      setPreviewState({
+        blob: await createStitchExportBlob(stitch, { loadClip: onLoadClip }),
+        cacheKey: previewCacheKey,
+      });
+    } catch (nextError) {
+      setPreviewErrorState({
+        cacheKey: previewCacheKey,
+        message:
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to preview this stitch.",
+      });
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  };
+  const openDetails = (shouldLoadPreview = false) => {
+    setIsDetailsOpen(true);
+
+    if (shouldLoadPreview) {
+      void loadPreview();
+    }
+  };
   const handleDownload = async () => {
     setIsDownloading(true);
     setDownloadError(null);
@@ -165,9 +238,9 @@ export function StitchCard({
         <div className="relative overflow-hidden rounded-md bg-slate-100">
           <button
             type="button"
-            aria-label={`Open details for ${stitch.name}`}
+            aria-label={`Preview ${stitch.name}`}
             className="group relative block aspect-square w-full text-left"
-            onClick={() => setIsDetailsOpen(true)}
+            onClick={() => openDetails(true)}
           >
             {posterUrl ? (
               <span
@@ -195,7 +268,7 @@ export function StitchCard({
           <button
             type="button"
             className="min-w-0 flex-1 rounded-md text-left outline-none transition-colors hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            onClick={() => setIsDetailsOpen(true)}
+            onClick={() => openDetails()}
           >
             <h3 className="truncate text-sm font-bold text-text-primary">
               {stitch.name}
@@ -220,10 +293,15 @@ export function StitchCard({
       </div>
       {isDetailsOpen ? (
         <StitchDetailsDialog
+          isLoadingPreview={isLoadingPreview}
           posterUrl={posterUrl}
+          previewError={previewError}
           stitch={stitch}
-          videoUrl={url}
+          videoUrl={previewUrl}
           onClose={() => setIsDetailsOpen(false)}
+          onLoadPreview={() => {
+            void loadPreview();
+          }}
         />
       ) : null}
       {isMusicOpen ? (
