@@ -70,7 +70,7 @@ export function LongrClipPickerPanel({
           Build
         </Button>
       </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_160px]">
+      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_160px] lg:items-end">
         <SearchInput
           label="Search Longr source clips"
           value={searchQuery}

@@ -16,6 +16,7 @@ import { stitchNormalizedVideosWithTextOverlay } from "@/lib/clipstitchr/media/s
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
+import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSourceAudioOptions";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -34,7 +35,7 @@ type UseStitchrOptions = {
 type StitchrBuildOptions = {
   addMusic?: boolean;
   musicTrack?: SharedMusicTrack | null;
-};
+} & StitchSourceAudioOptions;
 
 export function useStitchr({ onCreated }: UseStitchrOptions) {
   const saveStitch = useMutation(api.stitches.save);
@@ -69,12 +70,16 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
         ? await stitchNormalizedVideosWithTextOverlay(ugcClip, demoClip, {
             ugcTrimRange: clampedUgcTrimRange,
             demoTrimRange: clampedDemoTrimRange,
+            includeDemoAudio: options.includeDemoAudio,
+            includeUgcAudio: options.includeUgcAudio,
             textOverlay,
             onProgress: onPairProgress,
           })
         : await stitchNormalizedVideos(ugcClip, demoClip, {
             ugcTrimRange: clampedUgcTrimRange,
             demoTrimRange: clampedDemoTrimRange,
+            includeDemoAudio: options.includeDemoAudio,
+            includeUgcAudio: options.includeUgcAudio,
             onProgress: onPairProgress,
           });
       let posterBlob: Blob | undefined;

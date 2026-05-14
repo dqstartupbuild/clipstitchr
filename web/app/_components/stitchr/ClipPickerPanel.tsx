@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ClipAudioControls } from "@/app/_components/stitchr/ClipAudioControls";
 import { ClipPickerActionBar } from "@/app/_components/stitchr/ClipPickerActionBar";
 import { DemoClipSelector } from "@/app/_components/stitchr/DemoClipSelector";
 import { UgcClipSelector } from "@/app/_components/stitchr/UgcClipSelector";
@@ -17,6 +18,8 @@ import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsByS
 type ClipPickerPanelProps = {
   addMusic: boolean;
   selectedMusicTrack: SharedMusicTrack | null;
+  includeDemoAudio: boolean;
+  includeUgcAudio: boolean;
   products: ProductProfile[];
   ugcClips: VideoClipMetadata[];
   demoClips: VideoClipMetadata[];
@@ -40,6 +43,8 @@ type ClipPickerPanelProps = {
   canStitch: boolean;
   isStitching: boolean;
   onAddMusicChange: (addMusic: boolean) => void;
+  onIncludeDemoAudioChange: (includeDemoAudio: boolean) => void;
+  onIncludeUgcAudioChange: (includeUgcAudio: boolean) => void;
   onSelectMusicTrack: (track: SharedMusicTrack) => void | Promise<void>;
   onStitch: () => void;
 };
@@ -47,6 +52,8 @@ type ClipPickerPanelProps = {
 export function ClipPickerPanel({
   addMusic,
   selectedMusicTrack,
+  includeDemoAudio,
+  includeUgcAudio,
   products,
   ugcClips,
   demoClips,
@@ -64,6 +71,8 @@ export function ClipPickerPanel({
   canStitch,
   isStitching,
   onAddMusicChange,
+  onIncludeDemoAudioChange,
+  onIncludeUgcAudioChange,
   onSelectMusicTrack,
   onStitch,
 }: ClipPickerPanelProps) {
@@ -81,16 +90,12 @@ export function ClipPickerPanel({
     <Panel className="p-4">
       <div className="mb-4 grid gap-3 border-b border-border pb-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-end">
         <ClipPickerActionBar
-          addMusic={addMusic}
           canStitch={canStitch}
-          selectedMusicTrack={selectedMusicTrack}
           selectedUgcCount={selectedUgcIds.length}
           isStitching={isStitching}
-          onAddMusicChange={onAddMusicChange}
-          onSelectMusicTrack={onSelectMusicTrack}
           onStitch={onStitch}
         />
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 sm:items-end">
           <ProductFilterSelect
             products={products}
             label="Demo product"
@@ -126,6 +131,17 @@ export function ClipPickerPanel({
           onUpdateTrim={onUpdateDemoTrim}
         />
       </div>
+      <ClipAudioControls
+        addMusic={addMusic}
+        includeDemoAudio={includeDemoAudio}
+        includeUgcAudio={includeUgcAudio}
+        isStitching={isStitching}
+        selectedMusicTrack={selectedMusicTrack}
+        onAddMusicChange={onAddMusicChange}
+        onIncludeDemoAudioChange={onIncludeDemoAudioChange}
+        onIncludeUgcAudioChange={onIncludeUgcAudioChange}
+        onSelectMusicTrack={onSelectMusicTrack}
+      />
     </Panel>
   );
 }

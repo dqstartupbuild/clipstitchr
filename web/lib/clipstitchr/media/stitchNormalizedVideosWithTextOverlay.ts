@@ -17,6 +17,7 @@ import { getInputAudioParameters } from "@/lib/clipstitchr/media/getInputAudioPa
 import { getSupportedOutputCodecs } from "@/lib/clipstitchr/media/getSupportedOutputCodecs";
 import { getVideoMimeType } from "@/lib/clipstitchr/media/getVideoMimeType";
 import { registerAacEncoderIfNeeded } from "@/lib/clipstitchr/media/registerAacEncoderIfNeeded";
+import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSourceAudioOptions";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -34,7 +35,7 @@ type StitchNormalizedVideosWithTextOverlayOptions = {
   demoTrimRange: VideoTrimRange;
   textOverlay: TextOverlay;
   onProgress?: (progress: number) => void;
-};
+} & StitchSourceAudioOptions;
 
 export async function stitchNormalizedVideosWithTextOverlay(
   ugcClip: VideoClip,
@@ -42,6 +43,8 @@ export async function stitchNormalizedVideosWithTextOverlay(
   {
     ugcTrimRange,
     demoTrimRange,
+    includeDemoAudio = true,
+    includeUgcAudio = true,
     textOverlay,
     onProgress,
   }: StitchNormalizedVideosWithTextOverlayOptions,
@@ -50,11 +53,9 @@ export async function stitchNormalizedVideosWithTextOverlay(
   const demoInput = createMediaInput(demoClip.blob);
 
   try {
-    await registerAacEncoderIfNeeded();
-
     const [ugcAudioParameters, demoAudioParameters] = await Promise.all([
-      getInputAudioParameters(ugcInput),
-      getInputAudioParameters(demoInput),
+      includeUgcAudio ? getInputAudioParameters(ugcInput) : null,
+      includeDemoAudio ? getInputAudioParameters(demoInput) : null,
     ]);
     const clampedUgcTrimRange = clampVideoTrimRange(
       ugcTrimRange,
@@ -83,6 +84,10 @@ export async function stitchNormalizedVideosWithTextOverlay(
           `${unsupportedAudioParameters.sampleRate} Hz. Re-upload it so ClipStitchr can normalize audio to ` +
           `${OUTPUT_AUDIO_NUMBER_OF_CHANNELS} channels at ${OUTPUT_AUDIO_SAMPLE_RATE} Hz before stitching.`,
       );
+    }
+
+    if (includeAudio) {
+      await registerAacEncoderIfNeeded();
     }
 
     const codecs = await getSupportedOutputCodecs(includeAudio);
@@ -146,20 +151,24 @@ export async function stitchNormalizedVideosWithTextOverlay(
     let endTimestamp = Math.max(ugcVideo.endTimestamp, demoVideo.endTimestamp);
 
     if (audioSource) {
-      const ugcAudio = await copyAudioSamplesToSource({
-        input: ugcInput,
-        source: audioSource,
-        timelineOffset: 0,
-        trimRange: clampedUgcTrimRange,
-        onProgress: (progress) => onProgress?.(0.7 + progress * 0.15),
-      });
-      const demoAudio = await copyAudioSamplesToSource({
-        input: demoInput,
-        source: audioSource,
-        timelineOffset: demoTimelineOffset,
-        trimRange: clampedDemoTrimRange,
-        onProgress: (progress) => onProgress?.(0.85 + progress * 0.1),
-      });
+      const ugcAudio = includeUgcAudio
+        ? await copyAudioSamplesToSource({
+            input: ugcInput,
+            source: audioSource,
+            timelineOffset: 0,
+            trimRange: clampedUgcTrimRange,
+            onProgress: (progress) => onProgress?.(0.7 + progress * 0.15),
+          })
+        : { endTimestamp: 0 };
+      const demoAudio = includeDemoAudio
+        ? await copyAudioSamplesToSource({
+            input: demoInput,
+            source: audioSource,
+            timelineOffset: demoTimelineOffset,
+            trimRange: clampedDemoTrimRange,
+            onProgress: (progress) => onProgress?.(0.85 + progress * 0.1),
+          })
+        : { endTimestamp: demoTimelineOffset };
       endTimestamp = Math.max(
         endTimestamp,
         ugcAudio.endTimestamp,

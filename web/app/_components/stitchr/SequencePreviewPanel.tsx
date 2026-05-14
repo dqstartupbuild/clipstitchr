@@ -19,6 +19,8 @@ type SequencePreviewPanelProps = {
   demoClip: VideoClip | null;
   ugcTrimRange: VideoTrimRange | null;
   demoTrimRange: VideoTrimRange | null;
+  includeDemoAudio: boolean;
+  includeUgcAudio: boolean;
   textOverlay: TextOverlay | null;
   onActiveUgcChange: (id: string) => void;
   onTextOverlayChange: (textOverlay: TextOverlay | null) => void;
@@ -31,6 +33,8 @@ export function SequencePreviewPanel({
   demoClip,
   ugcTrimRange,
   demoTrimRange,
+  includeDemoAudio,
+  includeUgcAudio,
   textOverlay,
   onActiveUgcChange,
   onTextOverlayChange,
@@ -115,6 +119,8 @@ export function SequencePreviewPanel({
               demoClip={demoClip}
               ugcTrimRange={ugcTrimRange}
               demoTrimRange={demoTrimRange}
+              includeDemoAudio={includeDemoAudio}
+              includeUgcAudio={includeUgcAudio}
               textOverlay={textOverlay}
               totalDuration={totalDuration}
               onTextOverlayChange={handleOverlayChange}

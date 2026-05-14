@@ -16,6 +16,8 @@ type SequenceVideoPlayerProps = {
   demoClip: VideoClip;
   ugcTrimRange: VideoTrimRange;
   demoTrimRange: VideoTrimRange;
+  includeDemoAudio: boolean;
+  includeUgcAudio: boolean;
   textOverlay: TextOverlay | null;
   totalDuration: number;
   onTextOverlayChange: (textOverlay: TextOverlay) => void;
@@ -27,6 +29,8 @@ export function SequenceVideoPlayer({
   demoClip,
   ugcTrimRange,
   demoTrimRange,
+  includeDemoAudio,
+  includeUgcAudio,
   textOverlay,
   totalDuration,
   onTextOverlayChange,
@@ -76,6 +80,7 @@ export function SequenceVideoPlayer({
                 activeSegment === "ugc" ? "opacity-100" : "opacity-0",
               ].join(" ")}
               playsInline
+              muted={!includeUgcAudio}
               poster={ugcPosterUrl ?? undefined}
               preload="auto"
               src={ugcUrl}
@@ -91,6 +96,7 @@ export function SequenceVideoPlayer({
                 activeSegment === "demo" ? "opacity-100" : "opacity-0",
               ].join(" ")}
               playsInline
+              muted={!includeDemoAudio}
               poster={demoPosterUrl ?? undefined}
               preload="auto"
               src={demoUrl}
