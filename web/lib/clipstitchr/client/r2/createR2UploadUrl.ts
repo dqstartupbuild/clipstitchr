@@ -7,7 +7,7 @@ type CreateR2UploadUrlOptions = {
   recordId: string;
 };
 
-export type R2UploadUrl = {
+type R2UploadUrl = {
   contentType: string;
   key: string;
   size: number;

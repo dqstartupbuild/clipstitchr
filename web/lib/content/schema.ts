@@ -56,5 +56,3 @@ export const blogDocumentSchema = baseDocumentSchema.extend({
   excerpt: z.string().trim().min(1).optional(),
   featured: z.boolean().default(false),
 });
-
-export type BlogDocumentInput = z.infer<typeof blogDocumentSchema>;

@@ -1,6 +1,6 @@
 const MINIMAX_IMAGE_01_MODEL_ID = "minimax/image-01";
 
-export type AvatarPhotoGenerationModelFamily =
+type AvatarPhotoGenerationModelFamily =
   | "openai-gpt-image"
   | "minimax-image-01";
 

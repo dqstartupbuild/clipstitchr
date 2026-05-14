@@ -9,7 +9,7 @@ function sortByDateDescending(posts: Blog[]) {
   });
 }
 
-export function getAllBlogPosts() {
+function getAllBlogPosts() {
   return sortByDateDescending(allBlogs);
 }
 
@@ -19,10 +19,6 @@ export function getPublishedBlogPosts() {
 
 export function getFeaturedBlogPosts() {
   return getPublishedBlogPosts().filter((post) => post.featured);
-}
-
-export function getRecentBlogPosts(limit = 3) {
-  return getPublishedBlogPosts().slice(0, limit);
 }
 
 export function getBlogPostBySlug(slug: string) {

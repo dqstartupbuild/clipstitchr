@@ -2,7 +2,7 @@ type SeedSwiprBackgroundLibraryOptions = {
   count: number;
 };
 
-export type SeedSwiprBackgroundLibraryResult = {
+type SeedSwiprBackgroundLibraryResult = {
   total: number;
   requested: number;
   saved: number;

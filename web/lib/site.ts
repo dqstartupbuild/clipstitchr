@@ -86,10 +86,6 @@ export function createOgAssetPath(pathname = "/") {
   return normalized === "/" ? "/og/default.png" : `/og${normalized}.png`;
 }
 
-export function createOgImageUrl(pathname = "/") {
-  return createCanonicalUrl(createOgAssetPath(pathname));
-}
-
 export function createWebsiteJsonLd() {
   return {
     "@context": "https://schema.org",
