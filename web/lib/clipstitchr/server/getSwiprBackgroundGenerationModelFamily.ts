@@ -1,4 +1,4 @@
-export type SwiprBackgroundGenerationModelFamily =
+type SwiprBackgroundGenerationModelFamily =
   | "openai-gpt-image"
   | "pruna-p-image"
   | "pruna-wan-2.2-image";

@@ -756,7 +756,7 @@ export const avatarGenerationPoseActions = [
   "holding a folded theater program",
 ] as const;
 
-export const avatarGenerationPoseExpressions = [
+const avatarGenerationPoseExpressions = [
   "with a relaxed natural smile",
   "with a calm neutral expression and soft eye contact",
   "with a candid half-smile as if between takes",
@@ -884,10 +884,6 @@ function isUniversalPoseAction(action: string) {
   return /\b(adjusting their jacket|arms loosely crossed|brushing hair|candid side glance|checking their phone|gesturing|hands in jacket pockets|holding a phone|laughing|leaning|looking|raising one hand|sitting|standing|turning|walking)\b/i.test(
     action,
   );
-}
-
-export function getAvatarGenerationPoseActionCategories(action: string) {
-  return getActionCategories(action);
 }
 
 export function getAvatarGenerationPosesForLocationCategories(
