@@ -67,6 +67,7 @@ describe("createCliprTextGenerationPrompt", () => {
 
     expect(prompt).toContain("slides[0] must exactly match filledHook");
     expect(prompt).toContain("final slide must be a product CTA");
-    expect(prompt).toContain("pay off the hook");
+    expect(prompt).toContain("middle slides must pay off the hook");
+    expect(prompt).toContain("middle slides must not mention the product name");
   });
 });
