@@ -3,12 +3,13 @@ import { getAvatarPhotoGenerationCount } from "@/lib/clipstitchr/server/getAvata
 
 describe("getAvatarPhotoGenerationCount", () => {
   it("accepts supported generation counts", () => {
+    expect(getAvatarPhotoGenerationCount("1")).toBe(1);
     expect(getAvatarPhotoGenerationCount("3")).toBe(3);
     expect(getAvatarPhotoGenerationCount("5")).toBe(5);
-    expect(getAvatarPhotoGenerationCount("10")).toBe(10);
   });
 
   it("falls back to three images for unsupported values", () => {
+    expect(getAvatarPhotoGenerationCount("10")).toBe(3);
     expect(getAvatarPhotoGenerationCount("4")).toBe(3);
     expect(getAvatarPhotoGenerationCount("")).toBe(3);
   });
