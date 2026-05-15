@@ -70,8 +70,10 @@ export async function POST(request: Request) {
     const title = getGeneratedMusicTrackTitle({
       source: "stitchr",
       style: stitch.name,
+      trackId,
     });
     const tags = getGeneratedMusicTrackTags({
+      includeStyleTags: false,
       source: "stitchr",
       style: stitch.name,
     });

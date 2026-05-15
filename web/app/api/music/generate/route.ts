@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       }),
     ]);
     const createdAt = new Date().toISOString();
-    const title = getGeneratedMusicTrackTitle({ source, style });
+    const title = getGeneratedMusicTrackTitle({ source, style, trackId });
     const tags = getGeneratedMusicTrackTags({ source, style });
 
     await convex.mutation(api.sharedMusicTracks.save, {
