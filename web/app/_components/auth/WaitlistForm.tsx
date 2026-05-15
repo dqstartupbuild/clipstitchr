@@ -6,6 +6,7 @@ import { useMutation } from "convex/react";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/convex/_generated/api";
+import { trackWaitlistSignupConversion } from "@/lib/clipstitchr/analytics/trackWaitlistSignupConversion";
 
 export function WaitlistForm() {
   const submitWaitlistEntry = useMutation(api.waitlist.submit);
@@ -21,7 +22,12 @@ export function WaitlistForm() {
     setIsSubmitting(true);
 
     try {
-      await submitWaitlistEntry({ name, email });
+      const result = await submitWaitlistEntry({ name, email });
+
+      if (result.status === "created") {
+        trackWaitlistSignupConversion();
+      }
+
       setIsSubmitted(true);
       setName("");
       setEmail("");
