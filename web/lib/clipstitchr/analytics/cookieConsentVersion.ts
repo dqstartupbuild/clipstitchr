@@ -1,0 +1,1 @@
+export const cookieConsentVersion = "2026-05-15";

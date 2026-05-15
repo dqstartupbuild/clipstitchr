@@ -3,9 +3,53 @@
 ## Purpose
 
 ClipStitchr uses the TikTok Pixel to measure website visits, waitlist sign-up
-conversions, and future subscription purchases. The implementation is
-front-end only and does not create a new backend operation, provider call, or
-storage cost.
+conversions, and future subscription purchases after the visitor allows
+marketing cookies. The implementation is front-end only and does not create a
+new backend operation, provider call, Convex write, or storage cost.
+
+## Consent Model
+
+Cookie consent is managed in
+`web/app/_components/analytics/CookieConsentManager.tsx`.
+
+The first-run banner is intentionally compact and offers two choices:
+
+- Accept: enables analytics and marketing cookies.
+- Essentials only: keeps only required cookies.
+
+Granular category changes are available from the Privacy page's cookie
+preferences dialog. The dialog allows three categories:
+
+- Required: always on for authentication, security, basic app operation, and
+  saving the visitor's cookie preferences.
+- Analytics: optional first-party cookies for anonymous visitor/session IDs and
+  first/last-touch attribution.
+- Marketing: optional TikTok Pixel and TikTok advertising/conversion cookies.
+
+The visitor's choice is saved in the first-party
+`clipstitchr_cookie_consent` cookie. Consent is not saved to Convex.
+
+Optional tracking does not start until the visitor accepts all cookies or saves
+preferences with the relevant category enabled. Rejecting optional cookies
+deletes the app-owned attribution cookies and asks TikTok to disable/revoke
+tracking if it had previously been loaded.
+
+## First-Party Cookies
+
+When analytics or marketing cookies are allowed, ClipStitchr sets these
+first-party cookies:
+
+| Cookie | Category | Purpose | Expiration |
+| --- | --- | --- | --- |
+| `clipstitchr_cookie_consent` | Required | Saves cookie category choices and consent version | 365 days |
+| `clipstitchr_visitor_id` | Analytics or marketing | Anonymous returning-visitor measurement | 395 days |
+| `clipstitchr_session_id` | Analytics or marketing | Anonymous session grouping | 30 minutes |
+| `clipstitchr_first_touch` | Analytics or marketing | First landing page, referrer, UTM parameters, and click ID | 90 days |
+| `clipstitchr_last_touch` | Analytics or marketing | Latest landing page, referrer, UTM parameters, and click ID | 90 days |
+
+TikTok may set first-party advertising cookies such as `_ttp`, `ttclid`,
+`ttcsid`, or `ttcsid_<pixel id>` when marketing consent is allowed. TikTok may
+also set or read third-party advertising cookies through its own domains.
 
 ## Pixel Configuration
 
@@ -19,22 +63,25 @@ The default value is also defined in
 `web/lib/clipstitchr/analytics/tiktokPixelId.ts` so the current production
 pixel still loads if the environment variable is not set.
 
-The script is mounted globally from `web/app/layout.tsx` through
-`web/app/_components/analytics/TikTokPixelScript.tsx`. It uses Next.js
-`Script` with `strategy="afterInteractive"` and calls:
+The consent manager is mounted globally from `web/app/layout.tsx`. When
+marketing consent is allowed, it renders
+`web/app/_components/analytics/TikTokPixelScript.tsx`. The pixel script uses
+Next.js `Script` with `strategy="afterInteractive"` and calls:
 
 ```ts
+ttq.grantConsent();
+ttq.enableCookie();
 ttq.load(pixelId);
 ttq.page();
 ```
 
-This means page tracking is available across the app after the browser becomes
-interactive.
+This means TikTok page tracking is available across the app after the browser
+becomes interactive and after marketing consent is present.
 
 ## Waitlist Conversion
 
 The waitlist form tracks a TikTok conversion after Convex successfully creates a
-new waitlist row:
+new waitlist row and marketing consent is present:
 
 ```ts
 trackWaitlistSignupConversion();
@@ -88,8 +135,12 @@ Do not fire purchase events before payment is confirmed.
 - Do not send waitlist names, email addresses, Clerk user IDs, Convex document
   IDs, or other direct identifiers to TikTok.
 - Current waitlist conversion payloads include only event category metadata.
+- First-party attribution cookies are stored in the browser only; they are not
+  written to Convex.
 - Purchase payloads should include only plan metadata, currency, and purchase
   value unless a later privacy review explicitly approves additional fields.
+- Keep `web/app/(content)/privacy/page.tsx` aligned with the cookie categories
+  and vendor behavior.
 
 ## Verification
 
@@ -103,5 +154,6 @@ npm test
 ```
 
 In a browser, confirm that the TikTok script request is loaded from
-`https://analytics.tiktok.com/i18n/pixel/events.js` and that a new waitlist
-submission fires one `CompleteRegistration` event.
+`https://analytics.tiktok.com/i18n/pixel/events.js` only after marketing
+cookies are accepted, and that a new waitlist submission fires one
+`CompleteRegistration` event.

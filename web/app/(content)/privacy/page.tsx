@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
+import { CookiePreferencesButton } from "@/app/_components/privacy/CookiePreferencesButton";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = createPageMetadata({
   title: `Privacy Policy | ${site.name}`,
-  description: `Learn how ${site.name} handles uploads, cloud media storage, website data, and user privacy for the MVP application.`,
+  description: `Learn what ${site.name} collects, how uploads are handled, and the choices you have.`,
   canonical: "/privacy",
 });
 
 export default function PrivacyPage() {
-  const lastUpdated = "May 8, 2026";
+  const lastUpdated = "May 15, 2026";
 
   return (
     <article className="px-6 py-20 md:py-28">
@@ -32,10 +33,8 @@ export default function PrivacyPage() {
             <p>
               {site.name} (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;)
               operates the website located at{" "}
-              <strong>{site.url}</strong>. This Privacy Policy explains what
-              information the MVP stores, how uploaded media is processed, what
-              website data may be processed, and your choices regarding that
-              information.
+              <strong>{site.url}</strong>. This Privacy Policy explains what we
+              collect, how uploads are handled, and the choices you have.
             </p>
           </section>
 
@@ -79,8 +78,14 @@ export default function PrivacyPage() {
               <li>Referring URL</li>
             </ul>
             <p>
-              We use this data in aggregate to understand how visitors use
-              the site. We do not use this data to identify individuals.
+              If you allow optional cookies, we may also remember a random
+              visitor ID, your session, the page you landed on, where you came
+              from, campaign links, ad click IDs, and events such as waitlist
+              sign-ups or future purchases.
+            </p>
+            <p>
+              We use this to understand what is working and improve the site.
+              We do not use optional cookie data unless you allow it.
             </p>
           </section>
 
@@ -91,7 +96,8 @@ export default function PrivacyPage() {
               <li>Run video normalization and stitching workflows</li>
               <li>Improve our website content and user experience</li>
               <li>Respond to your inquiries or feedback</li>
-              <li>Analyze site traffic and usage patterns</li>
+              <li>Understand how people use the site</li>
+              <li>See which pages and ads are working</li>
             </ul>
           </section>
 
@@ -108,6 +114,11 @@ export default function PrivacyPage() {
                 by their own privacy policies.
               </li>
               <li>
+                <strong>Ad tools:</strong> If you allow marketing cookies, we
+                may share website events with TikTok so we can see whether our
+                ads are working.
+              </li>
+              <li>
                 <strong>Legal requirements:</strong> If required by law,
                 regulation, or valid legal process.
               </li>
@@ -119,9 +130,20 @@ export default function PrivacyPage() {
             <p>
               Clerk authentication uses essential cookies and storage to keep you
               signed in. Hosting or framework infrastructure may use essential
-              storage for basic functionality. We do not use advertising cookies
-              or cross-site tracking cookies.
+              storage for basic functionality.
             </p>
+            <p>
+              ClipStitchr also uses a required cookie to remember your cookie
+              choice. Required cookies cannot be turned off because they keep
+              sign-in, security, and the site itself working.
+            </p>
+            <p>
+              If you allow optional cookies, we use them to understand visits,
+              remember where visitors came from, and measure sign-ups or future
+              purchases. If you allow marketing cookies, we may load the TikTok
+              Pixel to help measure ads.
+            </p>
+            <CookiePreferencesButton />
           </section>
 
           <section>
