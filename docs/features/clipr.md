@@ -53,10 +53,10 @@ hook, and the remaining slides should pay it off with simple supporting points.
 - The user selects an avatar to use as the character reference. They should not
   have to select a specific image; the system should automatically use that
   avatar's first uploaded photo for stable, repeatable character consistency.
-- The user selects a voice through a modal-style dropdown.
-- The voice selector shows `Make default` only when the selected voice differs
-  from the saved default voice.
-- Saved default voice should be reused on later Clipr jobs.
+- Each avatar has a saved default voice.
+- The Clipr voice selector should preload the selected avatar's saved voice.
+- The user can still choose a different voice for a single Clipr job without
+  changing the avatar's saved voice.
 - Clipr should generate one full-script avatar video from the selected avatar
   and voice.
 - The generated avatar video should get as close as possible to the target
@@ -569,34 +569,33 @@ Rules:
 3. User selects an avatar. The system resolves that avatar's first uploaded
    photo as the hidden reference image.
 4. User chooses duration: `30 seconds` or `60 seconds`; default is `30 seconds`.
-5. User selects a voice through a modal-style dropdown.
+5. The voice selector preloads the avatar's saved voice. User can select a
+   different voice for this job only.
 6. User can optionally enable generated background music. The control is
    unchecked by default.
-7. User can press `Make default` in the voice selector when the selected voice
-   differs from the saved default voice.
-8. Server randomly selects a hidden hook style and 3-5 hidden templates from
+7. Server randomly selects a hidden hook style and 3-5 hidden templates from
    the product's eligible pool using product settings, inferred problem,
    inferred pain points, audience details, placeholder fillers, and safety
    rules.
-9. GPT-4.1 fills hook placeholders and selects the strongest hook.
-10. GPT-4.1 generates a Clipr script from the selected hook.
-11. GPT-4.1 returns one avatar scene plan for the full script.
-12. Clipr generates one UGC-style avatar still from the selected avatar
+8. GPT-4.1 fills hook placeholders and selects the strongest hook.
+9. GPT-4.1 generates a Clipr script from the selected hook.
+10. GPT-4.1 returns one avatar scene plan for the full script.
+11. Clipr generates one UGC-style avatar still from the selected avatar
     reference photo, avatar description, full script, and visual direction.
-13. The generated still, selected voice, and full script are sent to
+12. The generated still, selected voice, and full script are sent to
     `prunaai/p-video-avatar` to create one talking avatar video.
-14. If music is enabled, `stability-ai/stable-audio-2.5` generates one 60
+13. If music is enabled, `stability-ai/stable-audio-2.5` generates one 60
     second instrumental music bed concurrently with the avatar video generation.
-15. The generated avatar still, full-script avatar video, and optional music
+14. The generated avatar still, full-script avatar video, and optional music
     file are copied into R2. Music is stored as its own R2 object.
-16. The browser normalizes the full avatar video without baking in music.
-17. Clipr generates a poster image for the final output.
-18. Final video and poster are uploaded to R2.
-19. Convex saves the final output as a UGC-compatible video clip with Clipr
+15. The browser normalizes the full avatar video without baking in music.
+16. Clipr generates a poster image for the final output.
+17. Final video and poster are uploaded to R2.
+18. Convex saves the final output as a UGC-compatible video clip with Clipr
     provenance metadata.
-20. The output appears in the Content Library `Clips` tab and can be used in
+19. The output appears in the Content Library `Clips` tab and can be used in
     Stitchr.
-21. If music metadata is attached and enabled, download/export renders a fresh
+20. If music metadata is attached and enabled, download/export renders a fresh
     MP4 with Media Bunny using the clean video, the R2 music file, and the saved
     music volume.
 
@@ -838,7 +837,7 @@ Landing page touchpoints:
 - `web/app/_components/landing/LandingWorkflow.tsx`
   - Add a Clipr workflow.
 - Any new UI copy:
-  - buttons: `Generate Clip`, `Choose Voice`, `Make default`, `Use in Stitchr`
+  - buttons: `Generate Clip`, `Choose Voice`, `Use in Stitchr`
   - labels: `Duration`, `Voice`, `Avatar`, `Product`, `30 seconds`,
     `60 seconds`
 
@@ -926,7 +925,7 @@ Likely code changes after docs/resources are approved:
   - add `cliprMetadata` to `videoClips`
   - add optional `cliprMetadata.music` for export-time music settings
   - add product-level eligible hook style/template IDs and placeholder fillers
-  - add voice preference storage or user preference table
+  - add per-avatar Clipr voice preference storage
 - `web/convex/validators/*`
   - add Clipr metadata/job validators
   - add provider status validators if needed
@@ -971,7 +970,8 @@ After implementation:
 3. Run `npm test` from `web/`.
 4. Test Clipr with a saved product, selected avatar, default 30s duration, and a
    selected voice.
-5. Test `Make default` persists the selected voice.
+5. Test changing an avatar's saved voice updates the preloaded Clipr voice when
+   that avatar is selected.
 6. Test 60s duration.
 7. Test generated avatar image and avatar video outputs save to R2 before final
    Clip save.

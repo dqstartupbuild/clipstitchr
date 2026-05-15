@@ -1,9 +1,7 @@
 "use client";
 
 import { CirclePlay } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
-import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useMemo, useState } from "react";
 import { CliprAvatarPanel } from "@/app/_components/clipr/CliprAvatarPanel";
 import { CliprDurationControl } from "@/app/_components/clipr/CliprDurationControl";
 import { CliprGenerationProgress } from "@/app/_components/clipr/CliprGenerationProgress";
@@ -25,35 +23,34 @@ import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDuration
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 
 export function CliprPageClient() {
-  const { isAuthenticated } = useConvexAuth();
   const library = useClipLibrary();
   const products = useProducts();
   const photoLibrary = usePhotoLibrary();
-  const preference = useQuery(
-    api.cliprPreferences.get,
-    isAuthenticated ? {} : "skip",
-  );
-  const saveDefaultVoice = useMutation(api.cliprPreferences.setDefaultVoice);
   const generator = useCliprGeneration({ onCreated: library.refresh });
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedAvatarId, setSelectedAvatarId] = useState("");
   const [durationSeconds, setDurationSeconds] = useState<CliprDurationSeconds>(
     defaultCliprDurationSeconds,
   );
-  const [voiceId, setVoiceId] = useState("");
+  const [voiceOverride, setVoiceOverride] = useState<{
+    avatarId: string;
+    voiceId: string;
+  } | null>(null);
   const [addMusic, setAddMusic] = useState(false);
   const [selectedMusicTrack, setSelectedMusicTrack] =
     useState<SharedMusicTrack | null>(null);
-  const [optimisticDefaultVoiceId, setOptimisticDefaultVoiceId] = useState("");
-  const [isSavingDefaultVoice, setIsSavingDefaultVoice] = useState(false);
-  const [preferenceError, setPreferenceError] = useState<string | null>(null);
   const activeProductId = selectedProductId || products.products[0]?.id || "";
   const activeAvatarId =
     selectedAvatarId || photoLibrary.avatars[0]?.id || "";
-  const defaultVoiceId =
-    optimisticDefaultVoiceId || preference?.defaultVoiceId || defaultCliprVoiceId;
-  const activeVoiceId = voiceId || defaultVoiceId;
-  const canSaveDefaultVoice = activeVoiceId !== defaultVoiceId;
+  const activeAvatar = useMemo(
+    () => photoLibrary.avatars.find((avatar) => avatar.id === activeAvatarId),
+    [activeAvatarId, photoLibrary.avatars],
+  );
+  const avatarVoiceId = activeAvatar?.cliprVoiceId ?? defaultCliprVoiceId;
+  const activeVoiceId =
+    voiceOverride?.avatarId === activeAvatarId
+      ? voiceOverride.voiceId
+      : avatarVoiceId;
   const selectedAvatarPhotoCount = useMemo(
     () =>
       photoLibrary.photos.filter((photo) => photo.avatarId === activeAvatarId)
@@ -65,28 +62,8 @@ export function CliprPageClient() {
     Boolean(activeAvatarId) &&
     selectedAvatarPhotoCount > 0 &&
     !generator.isGenerating;
-  const saveSelectedVoiceAsDefault = useCallback(async () => {
-    setIsSavingDefaultVoice(true);
-    setPreferenceError(null);
 
-    try {
-      await saveDefaultVoice({
-        defaultVoiceId: activeVoiceId,
-        updatedAt: new Date().toISOString(),
-      });
-      setOptimisticDefaultVoiceId(activeVoiceId);
-    } catch (nextError) {
-      setPreferenceError(
-        nextError instanceof Error
-          ? nextError.message
-          : "Unable to save the default Clipr voice.",
-      );
-    } finally {
-      setIsSavingDefaultVoice(false);
-    }
-  }, [activeVoiceId, saveDefaultVoice]);
-  const error =
-    products.error ?? photoLibrary.error ?? library.error ?? preferenceError;
+  const error = products.error ?? photoLibrary.error ?? library.error;
 
   return (
     <DashboardShell>
@@ -115,18 +92,20 @@ export function CliprPageClient() {
                 avatars={photoLibrary.avatars}
                 photos={photoLibrary.photos}
                 selectedAvatarId={activeAvatarId}
-                onChange={setSelectedAvatarId}
+                onChange={(avatarId) => {
+                  setSelectedAvatarId(avatarId);
+                  setVoiceOverride(null);
+                }}
               />
               <CliprDurationControl
                 value={durationSeconds}
                 onChange={setDurationSeconds}
               />
               <CliprVoiceSelect
-                canSaveDefault={canSaveDefaultVoice}
-                isSavingDefault={isSavingDefaultVoice}
                 value={activeVoiceId}
-                onSaveDefault={() => void saveSelectedVoiceAsDefault()}
-                onVoiceChange={setVoiceId}
+                onVoiceChange={(voiceId) =>
+                  setVoiceOverride({ avatarId: activeAvatarId, voiceId })
+                }
               />
               <CliprMusicControl
                 checked={addMusic}

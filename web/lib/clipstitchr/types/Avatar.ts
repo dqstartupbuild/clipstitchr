@@ -5,6 +5,7 @@ export type Avatar = {
   name: string;
   description?: string;
   wardrobeStyle: AvatarWardrobeStyle;
+  cliprVoiceId: string;
   createdAt: string;
   updatedAt: string;
 };

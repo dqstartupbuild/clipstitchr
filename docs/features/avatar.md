@@ -20,6 +20,7 @@ Each avatar stores identity-level fields:
 - `name`
 - `description`
 - `wardrobeStyle`
+- `cliprVoiceId`
 - `createdAt`
 - `updatedAt`
 
@@ -46,6 +47,11 @@ The avatar description must not include:
 `wardrobeStyle` is a user-selected outfit preset filter, not an inferred
 identity field. Supported values are `any`, `male`, and `female`. It controls
 which outfit presets are eligible during generated avatar photo creation.
+
+`cliprVoiceId` is the avatar's default Clipr narration voice. Users can edit it
+from the same selected-avatar controls as avatar name, outfit preset, and
+delete. Clipr should preload this voice when the avatar is selected, while still
+allowing a one-off voice change for an individual Clipr job.
 
 ### Avatar Photo
 

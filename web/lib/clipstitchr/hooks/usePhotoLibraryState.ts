@@ -8,6 +8,7 @@ import { createPhotoAssetFromConvexDocument } from "@/lib/clipstitchr/backend/cr
 import { createPhotoAssetMetadataFromConvexDocument } from "@/lib/clipstitchr/backend/createPhotoAssetMetadataFromConvexDocument";
 import { getDefinedR2Objects } from "@/lib/clipstitchr/backend/getDefinedR2Objects";
 import { ACCEPTED_PHOTO_TYPES } from "@/lib/clipstitchr/constants/acceptedPhotoTypes";
+import { defaultCliprVoiceId } from "@/lib/clipstitchr/constants/defaultCliprVoiceId";
 import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
@@ -34,6 +35,7 @@ import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getAvatarGenerationTags } from "@/lib/clipstitchr/utils/getAvatarGenerationTags";
 import { getGeneratedAvatarPhotoName } from "@/lib/clipstitchr/utils/getGeneratedAvatarPhotoName";
 import { getImageNeedsSwaprOutpaint } from "@/lib/clipstitchr/utils/getImageNeedsSwaprOutpaint";
+import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
 import { getUploadBatchLimit } from "@/lib/clipstitchr/utils/getUploadBatchLimit";
 import { getUploadBatchLimitMessage } from "@/lib/clipstitchr/utils/getUploadBatchLimitMessage";
@@ -87,7 +89,12 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
   }, []);
 
   const createAvatar = useCallback(
-    async ({ description, name, wardrobeStyle = "any" }: CreateAvatarOptions) => {
+    async ({
+      cliprVoiceId = defaultCliprVoiceId,
+      description,
+      name,
+      wardrobeStyle = "any",
+    }: CreateAvatarOptions) => {
       const trimmedName = name.trim();
       const trimmedDescription = description?.trim();
 
@@ -106,6 +113,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
           name: trimmedName,
           description: trimmedDescription || undefined,
           wardrobeStyle,
+          cliprVoiceId: getCliprVoiceId(cliprVoiceId),
           createdAt: now,
           updatedAt: now,
         };
@@ -262,6 +270,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
               name: trimmedAvatarName,
               description: analysis.avatarDescription,
               wardrobeStyle: "any",
+              cliprVoiceId: defaultCliprVoiceId,
               createdAt: now,
               updatedAt: now,
             });
@@ -470,6 +479,34 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
           nextError instanceof Error
             ? nextError.message
             : "Unable to update this avatar's outfit presets.",
+        );
+        throw nextError;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [refresh, updateAvatarMutation],
+  );
+
+  const updateAvatarCliprVoice = useCallback(
+    async (avatar: Avatar, cliprVoiceId: Avatar["cliprVoiceId"]) => {
+      setIsSaving(true);
+      setError(null);
+
+      try {
+        await updateAvatarMutation({
+          id: avatar.id,
+          name: avatar.name,
+          description: avatar.description,
+          cliprVoiceId: getCliprVoiceId(cliprVoiceId),
+          updatedAt: new Date().toISOString(),
+        });
+        await refresh();
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to update this avatar's Clipr voice.",
         );
         throw nextError;
       } finally {
@@ -751,6 +788,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     updatePhotoMetadata,
     renameAvatar,
     updateAvatarWardrobeStyle,
+    updateAvatarCliprVoice,
     removeAvatar,
     removePhoto,
   };

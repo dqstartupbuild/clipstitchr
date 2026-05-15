@@ -210,6 +210,7 @@ export function AvatarsPageClient() {
               onDelete={deleteAvatar}
               onRename={photoLibrary.renameAvatar}
               onWardrobeStyleChange={photoLibrary.updateAvatarWardrobeStyle}
+              onVoiceChange={photoLibrary.updateAvatarCliprVoice}
             />
           </div>
           <SearchInput
