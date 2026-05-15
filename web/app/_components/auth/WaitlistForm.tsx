@@ -6,6 +6,7 @@ import { useMutation } from "convex/react";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/convex/_generated/api";
+import { trackTikTokButtonClick } from "@/lib/clipstitchr/analytics/trackTikTokButtonClick";
 import { trackWaitlistSignupConversion } from "@/lib/clipstitchr/analytics/trackWaitlistSignupConversion";
 
 export function WaitlistForm() {
@@ -20,12 +21,17 @@ export function WaitlistForm() {
     event.preventDefault();
     setErrorMessage("");
     setIsSubmitting(true);
+    trackTikTokButtonClick({
+      contentCategory: "Waitlist",
+      contentId: "waitlist_submit_button",
+      contentName: "Join waitlist",
+    });
 
     try {
       const result = await submitWaitlistEntry({ name, email });
 
       if (result.status === "created") {
-        trackWaitlistSignupConversion();
+        void trackWaitlistSignupConversion({ email });
       }
 
       setIsSubmitted(true);

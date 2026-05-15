@@ -51,6 +51,46 @@ TikTok may set first-party advertising cookies such as `_ttp`, `ttclid`,
 `ttcsid`, or `ttcsid_<pixel id>` when marketing consent is allowed. TikTok may
 also set or read third-party advertising cookies through its own domains.
 
+## Events
+
+TikTok events are routed through
+`web/lib/clipstitchr/analytics/trackTikTokEvent.ts`, which checks marketing
+cookie consent before sending anything to `window.ttq`.
+
+All event payloads use TikTok's `contents`, `value`, and `currency` shape from
+`web/lib/clipstitchr/analytics/createTikTokEventPayload.ts`.
+
+Current events:
+
+| Event | Trigger | Notes |
+| --- | --- | --- |
+| `ViewContent` | Initial page load and client route changes | Uses broad page names such as Homepage, Waitlist, Blog article, Docs article, or Dashboard. |
+| `ClickButton` | Marketing CTAs, auth header buttons, and waitlist submit clicks | Tracks button context, not user-entered form data. |
+| `Lead` | New waitlist row created in Convex | Fires only when `waitlist.submit` returns `{ status: "created" }`. |
+| `Purchase` | Future paid subscription confirmation | Helper exists, but should only be called after payment is confirmed. |
+
+`Search` support exists in
+`web/lib/clipstitchr/analytics/trackTikTokSearch.ts`, but it is not wired to
+dashboard asset searches. Dashboard searches can contain private project terms,
+so only wire that helper to public or intentionally marketing-safe search
+experiences.
+
+## Advanced Matching
+
+TikTok `identify` is implemented in
+`web/lib/clipstitchr/analytics/identifyTikTokUser.ts`.
+
+The helper hashes available identifiers with SHA-256 in the browser before
+calling `ttq.identify`. It may send:
+
+- Hashed email for successful waitlist sign-ups.
+- Hashed signed-in account email when marketing cookies are allowed.
+- Hashed signed-in Clerk user ID as `external_id` when marketing cookies are
+  allowed.
+
+Plain email addresses, names, phone numbers, Clerk user IDs, and Convex IDs are
+not sent to TikTok.
+
 ## Pixel Configuration
 
 The pixel ID is configured with:
@@ -65,14 +105,19 @@ pixel still loads if the environment variable is not set.
 
 The consent manager is mounted globally from `web/app/layout.tsx`. When
 marketing consent is allowed, it renders
-`web/app/_components/analytics/TikTokPixelScript.tsx`. The pixel script uses
-Next.js `Script` with `strategy="afterInteractive"` and calls:
+`web/app/_components/analytics/TikTokPixelScript.tsx`,
+`web/app/_components/analytics/TikTokViewContentTracker.tsx`, and
+`web/app/_components/analytics/TikTokIdentityReporter.tsx`.
+
+The pixel script uses Next.js `Script` with `strategy="afterInteractive"` and
+calls:
 
 ```ts
 ttq.grantConsent();
 ttq.enableCookie();
 ttq.load(pixelId);
 ttq.page();
+ttq.track("ViewContent", viewContentPayload);
 ```
 
 This means TikTok page tracking is available across the app after the browser
@@ -84,16 +129,29 @@ The waitlist form tracks a TikTok conversion after Convex successfully creates a
 new waitlist row and marketing consent is present:
 
 ```ts
-trackWaitlistSignupConversion();
+trackWaitlistSignupConversion({ email });
 ```
 
 The helper lives in
 `web/lib/clipstitchr/analytics/trackWaitlistSignupConversion.ts` and sends:
 
 ```ts
-ttq.track("CompleteRegistration", {
-  content_name: "ClipStitchr waitlist",
-  content_type: "waitlist",
+ttq.identify({
+  email: hashedEmail,
+});
+
+ttq.track("Lead", {
+  contents: [
+    {
+      brand: "ClipStitchr",
+      content_category: "Waitlist",
+      content_id: "waitlist_signup",
+      content_name: "ClipStitchr waitlist",
+      content_type: "product_group",
+    },
+  ],
+  currency: "USD",
+  value: 0,
 });
 ```
 
@@ -121,8 +179,15 @@ The helper sends:
 
 ```ts
 ttq.track("Purchase", {
-  content_name: planName,
-  content_type: "subscription",
+  contents: [
+    {
+      brand: "ClipStitchr",
+      content_category: "Subscription",
+      content_id: "subscription_purchase",
+      content_name: planName,
+      content_type: "product",
+    },
+  ],
   currency,
   value,
 });
@@ -132,9 +197,10 @@ Do not fire purchase events before payment is confirmed.
 
 ## Privacy Notes
 
-- Do not send waitlist names, email addresses, Clerk user IDs, Convex document
-  IDs, or other direct identifiers to TikTok.
-- Current waitlist conversion payloads include only event category metadata.
+- Do not send waitlist names, plain email addresses, plain Clerk user IDs,
+  Convex document IDs, or other direct identifiers to TikTok.
+- Only hashed identifiers may be sent through TikTok `identify`, and only after
+  marketing consent is present.
 - First-party attribution cookies are stored in the browser only; they are not
   written to Convex.
 - Purchase payloads should include only plan metadata, currency, and purchase
@@ -156,4 +222,4 @@ npm test
 In a browser, confirm that the TikTok script request is loaded from
 `https://analytics.tiktok.com/i18n/pixel/events.js` only after marketing
 cookies are accepted, and that a new waitlist submission fires one
-`CompleteRegistration` event.
+`Lead` event.

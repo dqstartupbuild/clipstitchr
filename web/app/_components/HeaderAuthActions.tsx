@@ -7,6 +7,7 @@ import {
 } from "@clerk/nextjs";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { trackTikTokButtonClick } from "@/lib/clipstitchr/analytics/trackTikTokButtonClick";
 import { site } from "@/lib/site";
 
 type HeaderAuthActionsProps = {
@@ -36,18 +37,40 @@ export function HeaderAuthActions({
   }
 
   const handleSignIn = () => {
+    trackTikTokButtonClick({
+      contentCategory: "Auth",
+      contentId: "header_sign_in",
+      contentName: "Header sign in",
+    });
     void clerk.redirectToSignIn();
   };
 
   const handleSignUp = () => {
+    trackTikTokButtonClick({
+      contentCategory: "Auth",
+      contentId: "header_sign_up",
+      contentName: "Header sign up",
+    });
     void clerk.redirectToSignUp();
+  };
+
+  const handleDashboardClick = () => {
+    trackTikTokButtonClick({
+      contentCategory: "App",
+      contentId: "header_dashboard",
+      contentName: "Header dashboard",
+    });
   };
 
   return (
     <div className="inline-flex items-center gap-2">
       {isSignedIn ? (
         <>
-          <Link href={site.ctaUrl} className={primaryButtonClassName}>
+          <Link
+            href={site.ctaUrl}
+            className={primaryButtonClassName}
+            onClick={handleDashboardClick}
+          >
             {isMobile ? "Dashboard" : site.ctaLabel}
             {!isMobile && <ArrowRight aria-hidden className="h-4 w-4" />}
           </Link>
