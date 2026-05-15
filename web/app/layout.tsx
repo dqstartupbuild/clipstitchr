@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { TikTokPixelScript } from "@/app/_components/analytics/TikTokPixelScript";
 import { ConvexClientProvider } from "@/app/ConvexClientProvider";
 import { createPageMetadata } from "@/lib/metadata";
 import {
@@ -50,6 +51,7 @@ export default function RootLayout({
           signInFallbackRedirectUrl="/dashboard"
           signUpFallbackRedirectUrl="/dashboard"
         >
+          <TikTokPixelScript />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
