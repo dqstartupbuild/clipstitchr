@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
-import { PrimaryButtonLink } from "@/app/_components/PrimaryButtonLink";
+import { TrackedButtonLink } from "@/app/_components/analytics/TrackedButtonLink";
+import { PRIMARY_BUTTON_CLASS_NAME } from "@/app/_components/ui/primaryButtonClassName";
 
 export function LandingBottomBand() {
   return (
@@ -14,12 +15,16 @@ export function LandingBottomBand() {
             ad variants whenever you need new creative to test.
           </p>
         </div>
-        <PrimaryButtonLink
+        <TrackedButtonLink
           href="/dashboard"
-          icon={<ArrowRight aria-hidden className="h-4 w-4" />}
+          className={PRIMARY_BUTTON_CLASS_NAME}
+          contentCategory="Landing page"
+          contentId="bottom_dashboard_button"
+          contentName="Bottom dashboard"
         >
           Open Dashboard
-        </PrimaryButtonLink>
+          <ArrowRight aria-hidden className="h-4 w-4" />
+        </TrackedButtonLink>
       </div>
     </section>
   );

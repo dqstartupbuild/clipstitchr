@@ -1,3 +1,4 @@
+import { createTikTokEventPayload } from "@/lib/clipstitchr/analytics/createTikTokEventPayload";
 import { trackTikTokEvent } from "@/lib/clipstitchr/analytics/trackTikTokEvent";
 
 type TrackSubscriptionPurchaseOptions = {
@@ -11,10 +12,15 @@ export function trackSubscriptionPurchase({
   value,
   planName,
 }: TrackSubscriptionPurchaseOptions) {
-  trackTikTokEvent("Purchase", {
-    content_name: planName,
-    content_type: "subscription",
-    currency,
-    value,
-  });
+  trackTikTokEvent(
+    "Purchase",
+    createTikTokEventPayload({
+      contentCategory: "Subscription",
+      contentId: "subscription_purchase",
+      contentName: planName ?? "ClipStitchr subscription",
+      contentType: "product",
+      currency,
+      value,
+    }),
+  );
 }

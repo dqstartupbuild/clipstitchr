@@ -1,6 +1,9 @@
 import Image from "next/image";
-import { PrimaryButtonLink } from "@/app/_components/PrimaryButtonLink";
-import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
+import { TrackedButtonLink } from "@/app/_components/analytics/TrackedButtonLink";
+import { PRIMARY_BUTTON_CLASS_NAME } from "@/app/_components/ui/primaryButtonClassName";
+
+const secondaryButtonClassName =
+  "inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold text-text-primary transition-colors hover:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
 export function LandingHero() {
   return (
@@ -34,16 +37,24 @@ export function LandingHero() {
             longer vertical video.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <PrimaryButtonLink
+            <TrackedButtonLink
               href="/dashboard"
+              className={PRIMARY_BUTTON_CLASS_NAME}
+              contentCategory="Landing page"
+              contentId="hero_dashboard_button"
+              contentName="Hero dashboard"
             >
               Go to Dashboard
-            </PrimaryButtonLink>
-            <SecondaryButtonLink
+            </TrackedButtonLink>
+            <TrackedButtonLink
               href="#features"
+              className={secondaryButtonClassName}
+              contentCategory="Landing page"
+              contentId="hero_workflow_button"
+              contentName="Hero workflow"
             >
               See workflow
-            </SecondaryButtonLink>
+            </TrackedButtonLink>
           </div>
         </div>
       </div>
