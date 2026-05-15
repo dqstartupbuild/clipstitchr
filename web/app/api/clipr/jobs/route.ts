@@ -255,10 +255,12 @@ export async function POST(request: Request) {
       ? getGeneratedMusicTrackTitle({
           source: "clipr",
           style: product.name,
+          trackId: generatedMusicTrackId,
         })
       : "";
     const generatedMusicTags = generatedMusic
       ? getGeneratedMusicTrackTags({
+          includeStyleTags: false,
           source: "clipr",
           style: product.name,
         })

@@ -78,8 +78,10 @@ export async function POST(request: Request) {
     const title = getGeneratedMusicTrackTitle({
       source: "clipr",
       style: product?.name ?? clip.cliprMetadata.productName,
+      trackId,
     });
     const tags = getGeneratedMusicTrackTags({
+      includeStyleTags: false,
       source: "clipr",
       style: product?.name ?? clip.cliprMetadata.productName,
     });
