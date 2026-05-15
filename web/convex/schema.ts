@@ -99,6 +99,7 @@ export default defineSchema({
     name: v.string(),
     description: v.optional(v.string()),
     wardrobeStyle: v.optional(avatarWardrobeStyleValidator),
+    cliprVoiceId: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
   })

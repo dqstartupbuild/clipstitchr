@@ -2,11 +2,14 @@
 
 import { Check, Edit3, Trash2, X } from "lucide-react";
 import { useState } from "react";
+import { CliprVoicePreviewButton } from "@/app/_components/clipr/CliprVoicePreviewButton";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { avatarWardrobeStyleOptions } from "@/lib/clipstitchr/constants/avatarWardrobeStyleOptions";
+import { cliprVoices } from "@/lib/clipstitchr/constants/cliprVoices";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 import type { AvatarWardrobeStyle } from "@/lib/clipstitchr/types/AvatarWardrobeStyle";
+import { getCliprVoice } from "@/lib/clipstitchr/utils/getCliprVoice";
 
 type SelectedAvatarActionsProps = {
   avatar?: Avatar;
@@ -18,6 +21,7 @@ type SelectedAvatarActionsProps = {
     avatar: Avatar,
     wardrobeStyle: AvatarWardrobeStyle,
   ) => Promise<void>;
+  onVoiceChange: (avatar: Avatar, cliprVoiceId: string) => Promise<void>;
 };
 
 export function SelectedAvatarActions({
@@ -27,11 +31,13 @@ export function SelectedAvatarActions({
   onDelete,
   onRename,
   onWardrobeStyleChange,
+  onVoiceChange,
 }: SelectedAvatarActionsProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRenameSaving, setIsRenameSaving] = useState(false);
   const [isWardrobeSaving, setIsWardrobeSaving] = useState(false);
+  const [isVoiceSaving, setIsVoiceSaving] = useState(false);
   const [name, setName] = useState("");
 
   if (!avatar) {
@@ -44,10 +50,16 @@ export function SelectedAvatarActions({
     trimmedName !== avatar.name &&
     !isSaving &&
     !isRenameSaving &&
-    !isWardrobeSaving;
+    !isWardrobeSaving &&
+    !isVoiceSaving;
   const photoLabel = photoCount === 1 ? "1 photo" : `${photoCount} photos`;
+  const voice = getCliprVoice(avatar.cliprVoiceId);
   const isDisabled =
-    isSaving || isDeleting || isRenameSaving || isWardrobeSaving;
+    isSaving ||
+    isDeleting ||
+    isRenameSaving ||
+    isWardrobeSaving ||
+    isVoiceSaving;
 
   const handleDelete = async () => {
     const didConfirm = window.confirm(
@@ -122,7 +134,7 @@ export function SelectedAvatarActions({
   }
 
   return (
-    <div className="flex items-end gap-1">
+    <div className="flex flex-wrap items-end gap-1">
       <SelectInput
         label="Outfits"
         value={avatar.wardrobeStyle}
@@ -147,6 +159,39 @@ export function SelectedAvatarActions({
             setIsWardrobeSaving(false);
           }
         }}
+      />
+      <SelectInput
+        label="Voice"
+        value={avatar.cliprVoiceId}
+        options={cliprVoices.map((cliprVoice) => ({
+          label: cliprVoice.name,
+          value: cliprVoice.id,
+        }))}
+        wrapperClassName="w-36"
+        className="h-10"
+        disabled={isDisabled}
+        onChange={async (event) => {
+          const cliprVoiceId = event.currentTarget.value;
+
+          if (cliprVoiceId === avatar.cliprVoiceId) {
+            return;
+          }
+
+          setIsVoiceSaving(true);
+
+          try {
+            await onVoiceChange(avatar, cliprVoiceId);
+          } catch {
+            // The parent hook surfaces the error.
+          } finally {
+            setIsVoiceSaving(false);
+          }
+        }}
+      />
+      <CliprVoicePreviewButton
+        key={voice.id}
+        src={voice.previewSrc}
+        voiceName={voice.name}
       />
       <IconButton
         type="button"

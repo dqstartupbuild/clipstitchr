@@ -38,6 +38,7 @@ export const save = mutation({
     name: v.string(),
     description: v.optional(v.string()),
     wardrobeStyle: v.optional(avatarWardrobeStyleValidator),
+    cliprVoiceId: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
   },
@@ -75,9 +76,13 @@ export const update = mutation({
     name: v.string(),
     description: v.optional(v.string()),
     wardrobeStyle: v.optional(avatarWardrobeStyleValidator),
+    cliprVoiceId: v.optional(v.string()),
     updatedAt: v.string(),
   },
-  handler: async (ctx, { id, name, description, wardrobeStyle, updatedAt }) => {
+  handler: async (
+    ctx,
+    { id, name, description, wardrobeStyle, cliprVoiceId, updatedAt },
+  ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
@@ -98,6 +103,7 @@ export const update = mutation({
       name,
       ...(description === undefined ? {} : { description }),
       ...(wardrobeStyle === undefined ? {} : { wardrobeStyle }),
+      ...(cliprVoiceId === undefined ? {} : { cliprVoiceId }),
       updatedAt,
     });
   },

@@ -1,22 +1,15 @@
 import { Mic2 } from "lucide-react";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
-import { Button } from "@/app/_components/ui/Button";
 import { CliprVoicePreviewButton } from "@/app/_components/clipr/CliprVoicePreviewButton";
 import { cliprVoices } from "@/lib/clipstitchr/constants/cliprVoices";
 
 type CliprVoiceSelectProps = {
-  canSaveDefault: boolean;
-  isSavingDefault: boolean;
   value: string;
-  onSaveDefault: () => void;
   onVoiceChange: (voiceId: string) => void;
 };
 
 export function CliprVoiceSelect({
-  canSaveDefault,
-  isSavingDefault,
   value,
-  onSaveDefault,
   onVoiceChange,
 }: CliprVoiceSelectProps) {
   const selectedVoice =
@@ -51,16 +44,6 @@ export function CliprVoiceSelect({
             src={selectedVoice.previewSrc}
             voiceName={selectedVoice.name}
           />
-          {canSaveDefault ? (
-            <Button
-              type="button"
-              variant="secondary"
-              isLoading={isSavingDefault}
-              onClick={onSaveDefault}
-            >
-              Make default
-            </Button>
-          ) : null}
         </div>
       </div>
     </section>
