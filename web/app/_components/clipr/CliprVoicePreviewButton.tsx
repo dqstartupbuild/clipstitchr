@@ -5,11 +5,15 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/app/_components/ui/Button";
 
 type CliprVoicePreviewButtonProps = {
+  disabled?: boolean;
+  isCompact?: boolean;
   src: string;
   voiceName: string;
 };
 
 export function CliprVoicePreviewButton({
+  disabled = false,
+  isCompact = false,
   src,
   voiceName,
 }: CliprVoicePreviewButtonProps) {
@@ -65,6 +69,8 @@ export function CliprVoicePreviewButton({
     <Button
       type="button"
       variant="secondary"
+      className={isCompact ? "h-10 w-10 !px-0" : ""}
+      disabled={disabled}
       icon={
         isPlaying ? (
           <Pause aria-hidden className="h-4 w-4" />
@@ -73,9 +79,10 @@ export function CliprVoicePreviewButton({
         )
       }
       aria-label={`${label} ${voiceName} voice`}
+      title={`${label} ${voiceName} voice`}
       onClick={handleClick}
     >
-      {label}
+      {isCompact ? null : label}
     </Button>
   );
 }

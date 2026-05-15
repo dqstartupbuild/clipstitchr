@@ -194,31 +194,31 @@ export function AvatarsPageClient() {
             onUploaded={photoLibrary.refresh}
           />
         ) : null}
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-end">
-          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+        <div className="grid gap-3">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-end">
             <AvatarFilterSelect
               avatars={photoLibrary.avatars}
               label="Avatar"
               value={avatarFilterId}
               onChange={setAvatarFilterId}
             />
-            <SelectedAvatarActions
-              key={selectedFilterAvatar?.id ?? "all"}
-              avatar={selectedFilterAvatar}
-              isSaving={photoLibrary.isSaving}
-              photoCount={selectedFilterAvatarPhotoCount}
-              onDelete={deleteAvatar}
-              onRename={photoLibrary.renameAvatar}
-              onWardrobeStyleChange={photoLibrary.updateAvatarWardrobeStyle}
-              onVoiceChange={photoLibrary.updateAvatarCliprVoice}
+            <SearchInput
+              label="Search avatars"
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search avatars"
+              className="w-full"
             />
           </div>
-          <SearchInput
-            label="Search avatars"
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search avatars"
-            className="w-full"
+          <SelectedAvatarActions
+            key={selectedFilterAvatar?.id ?? "all"}
+            avatar={selectedFilterAvatar}
+            isSaving={photoLibrary.isSaving}
+            photoCount={selectedFilterAvatarPhotoCount}
+            onDelete={deleteAvatar}
+            onRename={photoLibrary.renameAvatar}
+            onWardrobeStyleChange={photoLibrary.updateAvatarWardrobeStyle}
+            onVoiceChange={photoLibrary.updateAvatarCliprVoice}
           />
         </div>
         <AvatarGenerationPanel

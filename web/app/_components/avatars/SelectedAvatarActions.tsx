@@ -190,6 +190,8 @@ export function SelectedAvatarActions({
       />
       <CliprVoicePreviewButton
         key={voice.id}
+        disabled={isDisabled}
+        isCompact
         src={voice.previewSrc}
         voiceName={voice.name}
       />
