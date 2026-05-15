@@ -1,3 +1,5 @@
+"use client";
+
 import Script from "next/script";
 import { tiktokPixelId } from "@/lib/clipstitchr/analytics/tiktokPixelId";
 
@@ -17,6 +19,8 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
 ;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
 
 
+  ttq.grantConsent();
+  ttq.enableCookie();
   ttq.load(${serializedTikTokPixelId});
   ttq.page();
 }(window, document, 'ttq');
