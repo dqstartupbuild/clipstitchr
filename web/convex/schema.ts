@@ -24,6 +24,16 @@ import { textOverlayValidator } from "./validators/textOverlay";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
 export default defineSchema({
+  waitlist: defineTable({
+    name: v.string(),
+    email: v.string(),
+    normalizedEmail: v.string(),
+    source: v.string(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_normalized_email", ["normalizedEmail"])
+    .index("by_created", ["createdAt"]),
   videoClips: defineTable({
     ownerId: v.string(),
     id: v.string(),
