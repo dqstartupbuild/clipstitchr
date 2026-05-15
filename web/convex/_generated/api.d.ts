@@ -46,6 +46,7 @@ import type * as validators_swiprSlide from "../validators/swiprSlide.js";
 import type * as validators_textOverlay from "../validators/textOverlay.js";
 import type * as validators_videoTrimRange from "../validators/videoTrimRange.js";
 import type * as videoClips from "../videoClips.js";
+import type * as waitlist from "../waitlist.js";
 
 import type {
   ApiFromModules,
@@ -92,6 +93,7 @@ declare const fullApi: ApiFromModules<{
   "validators/textOverlay": typeof validators_textOverlay;
   "validators/videoTrimRange": typeof validators_videoTrimRange;
   videoClips: typeof videoClips;
+  waitlist: typeof waitlist;
 }>;
 
 /**

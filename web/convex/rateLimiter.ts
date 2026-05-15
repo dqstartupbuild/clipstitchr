@@ -204,6 +204,19 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 100,
     shards: 10,
   },
+  waitlistSubmitByEmail: {
+    kind: "token bucket",
+    rate: 3,
+    period: HOUR,
+    capacity: 3,
+  },
+  waitlistSubmitGlobal: {
+    kind: "token bucket",
+    rate: 500,
+    period: HOUR,
+    capacity: 100,
+    shards: 5,
+  },
   cliprJobCreate: {
     kind: "token bucket",
     rate: 3,
