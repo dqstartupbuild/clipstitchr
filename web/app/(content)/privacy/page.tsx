@@ -86,7 +86,8 @@ export default function PrivacyPage() {
             <p>
               If marketing cookies are on, we may also send TikTok a hashed
               version of your email or account ID when you join the waitlist or
-              sign in. Hashing means the plain email or ID is not sent.
+              sign in. Hashing means TikTok does not receive the plain email or
+              ID from us.
             </p>
             <p>
               We use this to understand what is working and improve the site.
@@ -146,8 +147,9 @@ export default function PrivacyPage() {
               If you allow optional cookies, we use them to understand visits,
               remember where visitors came from, and measure sign-ups or future
               purchases. If you allow marketing cookies, we may load the TikTok
-              Pixel to help measure ads. TikTok may receive hashed contact or
-              account details for matching when marketing cookies are on.
+              Pixel and send server-side TikTok events to help measure ads.
+              TikTok may receive hashed contact or account details for matching
+              when marketing cookies are on.
             </p>
             <CookiePreferencesButton />
           </section>

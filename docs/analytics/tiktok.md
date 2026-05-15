@@ -4,8 +4,8 @@
 
 ClipStitchr uses the TikTok Pixel to measure website visits, waitlist sign-up
 conversions, and future subscription purchases after the visitor allows
-marketing cookies. The implementation is front-end only and does not create a
-new backend operation, provider call, Convex write, or storage cost.
+marketing cookies. Browser pixel events and server-side Events API forwarding
+share event IDs so TikTok can deduplicate matching events.
 
 ## Consent Model
 
@@ -55,7 +55,8 @@ also set or read third-party advertising cookies through its own domains.
 
 TikTok events are routed through
 `web/lib/clipstitchr/analytics/trackTikTokEvent.ts`, which checks marketing
-cookie consent before sending anything to `window.ttq`.
+cookie consent before sending anything to `window.ttq` or to the server-side
+Events API route.
 
 All event payloads use TikTok's `contents`, `value`, and `currency` shape from
 `web/lib/clipstitchr/analytics/createTikTokEventPayload.ts`.
@@ -117,11 +118,51 @@ ttq.grantConsent();
 ttq.enableCookie();
 ttq.load(pixelId);
 ttq.page();
-ttq.track("ViewContent", viewContentPayload);
 ```
 
 This means TikTok page tracking is available across the app after the browser
 becomes interactive and after marketing consent is present.
+
+`ViewContent` browser events are sent by
+`web/app/_components/analytics/TikTokViewContentTracker.tsx` after the pixel has
+had time to load. Client route changes also call `ttq.page()`.
+
+## Events API Configuration
+
+Server-side TikTok Events API forwarding is handled by:
+
+- `POST /api/analytics/tiktok/events`
+- `web/lib/clipstitchr/server/analytics/createTikTokEventsApiPayload.ts`
+- `web/lib/clipstitchr/server/analytics/sendTikTokEventsApiPayload.ts`
+
+Required environment variable:
+
+```bash
+TIKTOK_EVENTS_API_ACCESS_TOKEN=PLACEHOLDER
+```
+
+Optional environment variables:
+
+```bash
+TIKTOK_EVENTS_API_PIXEL_ID=PLACEHOLDER
+TIKTOK_EVENTS_API_TEST_EVENT_CODE=TEST61771
+```
+
+`TIKTOK_EVENTS_API_PIXEL_ID` overrides the server-side `event_source_id`. If it
+is not set, the server uses `NEXT_PUBLIC_TIKTOK_PIXEL_ID` or the default app
+pixel ID.
+
+`TIKTOK_EVENTS_API_TEST_EVENT_CODE` adds TikTok's test code to every forwarded
+Events API payload. Use it only while testing in TikTok Events Manager, then
+remove it so production events are counted normally.
+
+The server route:
+
+- Requires marketing-cookie consent from `clipstitchr_cookie_consent`.
+- Skips forwarding if `TIKTOK_EVENTS_API_ACCESS_TOKEN` is missing.
+- Consumes `consumeTikTokEventsApi` before calling TikTok.
+- Sends browser `event_id` values to support TikTok browser/server dedupe.
+- Adds `event_source: "web"` and posts to TikTok's Events API endpoint.
 
 ## Waitlist Conversion
 
@@ -133,7 +174,8 @@ trackWaitlistSignupConversion({ email });
 ```
 
 The helper lives in
-`web/lib/clipstitchr/analytics/trackWaitlistSignupConversion.ts` and sends:
+`web/lib/clipstitchr/analytics/trackWaitlistSignupConversion.ts` and sends the
+same event to the browser pixel and Events API:
 
 ```ts
 ttq.identify({
@@ -141,6 +183,7 @@ ttq.identify({
 });
 
 ttq.track("Lead", {
+  event_id: generatedEventId,
   contents: [
     {
       brand: "ClipStitchr",
@@ -201,6 +244,8 @@ Do not fire purchase events before payment is confirmed.
   Convex document IDs, or other direct identifiers to TikTok.
 - Only hashed identifiers may be sent through TikTok `identify`, and only after
   marketing consent is present.
+- The Events API route may receive plain identifiers from the app over HTTPS,
+  but hashes them on the server before sending anything to TikTok.
 - First-party attribution cookies are stored in the browser only; they are not
   written to Convex.
 - Purchase payloads should include only plan metadata, currency, and purchase
@@ -222,4 +267,13 @@ npm test
 In a browser, confirm that the TikTok script request is loaded from
 `https://analytics.tiktok.com/i18n/pixel/events.js` only after marketing
 cookies are accepted, and that a new waitlist submission fires one
-`Lead` event.
+browser `Lead` event.
+
+In TikTok Events Manager, set:
+
+```bash
+TIKTOK_EVENTS_API_TEST_EVENT_CODE=TEST61771
+```
+
+Then submit a new waitlist email. The server-side test panel should show a
+`Lead` event. Remove `TIKTOK_EVENTS_API_TEST_EVENT_CODE` after testing.

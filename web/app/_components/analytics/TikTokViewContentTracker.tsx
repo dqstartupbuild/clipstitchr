@@ -7,18 +7,17 @@ import { trackTikTokViewContent } from "@/lib/clipstitchr/analytics/trackTikTokV
 
 export function TikTokViewContentTracker() {
   const pathname = usePathname();
-  const hasSkippedInitialPath = useRef(false);
+  const hasTrackedInitialPath = useRef(false);
 
   useEffect(() => {
-    if (!hasSkippedInitialPath.current) {
-      hasSkippedInitialPath.current = true;
-      return;
-    }
-
     const trackingTimer = window.setTimeout(() => {
-      trackTikTokPageView();
+      if (hasTrackedInitialPath.current) {
+        trackTikTokPageView();
+      }
+
       trackTikTokViewContent(pathname);
-    }, 0);
+      hasTrackedInitialPath.current = true;
+    }, 1000);
 
     return () => {
       window.clearTimeout(trackingTimer);

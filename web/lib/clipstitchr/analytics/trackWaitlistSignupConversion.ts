@@ -21,5 +21,10 @@ export async function trackWaitlistSignupConversion({
       contentName: "ClipStitchr waitlist",
       contentType: "product_group",
     }),
+    {
+      user: {
+        email,
+      },
+    },
   );
 }
