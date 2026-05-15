@@ -3,12 +3,16 @@ import { trackTikTokEvent } from "@/lib/clipstitchr/analytics/trackTikTokEvent";
 
 type TrackSubscriptionPurchaseOptions = {
   currency: string;
+  email?: string;
+  externalId?: string;
   value: number;
   planName?: string;
 };
 
 export function trackSubscriptionPurchase({
   currency,
+  email,
+  externalId,
   value,
   planName,
 }: TrackSubscriptionPurchaseOptions) {
@@ -22,5 +26,11 @@ export function trackSubscriptionPurchase({
       currency,
       value,
     }),
+    {
+      user: {
+        email,
+        externalId,
+      },
+    },
   );
 }

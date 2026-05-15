@@ -52,6 +52,16 @@ npx convex dev --once
 - Must be a high-entropy random secret.
 - Must not be prefixed with `NEXT_PUBLIC_`.
 
+TikTok Events API variables:
+
+- `TIKTOK_EVENTS_API_ACCESS_TOKEN` enables server-side TikTok Events API
+  forwarding from `POST /api/analytics/tiktok/events`.
+- `TIKTOK_EVENTS_API_PIXEL_ID` optionally overrides the server-side
+  `event_source_id`; when omitted, the server uses `NEXT_PUBLIC_TIKTOK_PIXEL_ID`
+  or the app's default pixel ID.
+- `TIKTOK_EVENTS_API_TEST_EVENT_CODE` optionally adds TikTok's test event code
+  to Events API payloads during testing. Remove it for production attribution.
+
 Existing Convex auth variables still apply:
 
 - `NEXT_PUBLIC_CONVEX_URL` in Next.js.
@@ -109,6 +119,7 @@ Optional Replicate model overrides:
 | Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 5; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
 | Swipr seeded background import | `POST /api/dev/swipr/backgrounds/seed` in development; future admin-only seed runner in production | Development route is unavailable outside `NODE_ENV=development`, imports at most 5 images/request, skips already-saved seed IDs, consumes the development seed-generation bucket before provider work, consumes R2 upload limits before storage work, and saves through `swiprBackgrounds.save`; production runner must be admin-only, batch-capped, checkpointed, and counted against shared provider, R2 upload, and Convex record-save protection before persistence |
 | Public waitlist submission | `waitlist.submit` from `/sign-up` | 3/hour/normalized email, burst 3; shared global bucket 500/hour, burst 100 |
+| TikTok Events API forwarding | `POST /api/analytics/tiktok/events` after marketing-cookie consent | 120/hour/client fingerprint, burst 30; shared global bucket 5,000/hour, burst 1,000 |
 | Product enrichment | `POST /api/settings/products`, `PATCH /api/settings/products/{id}` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
 | Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; shared global provider bucket 10,000 units/hour, burst 2,000 |
 | Clipr hook/script generation | `POST /api/clipr/jobs` and `POST /api/clipr/text` | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000 |

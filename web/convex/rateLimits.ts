@@ -95,6 +95,24 @@ export const consumeR2Delete = mutation({
   },
 });
 
+export const consumeTikTokEventsApi = mutation({
+  args: {
+    key: v.string(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { key, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    await rateLimiter.limit(ctx, "tiktokEventsApiByClient", {
+      key,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "tiktokEventsApiGlobal", {
+      throws: true,
+    });
+  },
+});
+
 export const consumeUploadAnalysis = mutation({
   args: {
     secret: v.string(),

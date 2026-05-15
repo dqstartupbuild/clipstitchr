@@ -217,6 +217,19 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 100,
     shards: 5,
   },
+  tiktokEventsApiByClient: {
+    kind: "token bucket",
+    rate: 120,
+    period: HOUR,
+    capacity: 30,
+  },
+  tiktokEventsApiGlobal: {
+    kind: "token bucket",
+    rate: 5000,
+    period: HOUR,
+    capacity: 1000,
+    shards: 10,
+  },
   cliprJobCreate: {
     kind: "token bucket",
     rate: 3,

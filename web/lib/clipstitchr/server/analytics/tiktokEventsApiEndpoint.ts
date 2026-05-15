@@ -1,0 +1,2 @@
+export const tiktokEventsApiEndpoint =
+  "https://business-api.tiktok.com/open_api/v1.3/event/track/";

@@ -1,21 +1,14 @@
 "use client";
 
 import Script from "next/script";
-import { usePathname } from "next/navigation";
-import { createTikTokViewContentPayload } from "@/lib/clipstitchr/analytics/createTikTokViewContentPayload";
 import { tiktokPixelId } from "@/lib/clipstitchr/analytics/tiktokPixelId";
 
 export function TikTokPixelScript() {
-  const pathname = usePathname();
-
   if (!tiktokPixelId) {
     return null;
   }
 
   const serializedTikTokPixelId = JSON.stringify(tiktokPixelId);
-  const serializedViewContentPayload = JSON.stringify(
-    createTikTokViewContentPayload(pathname),
-  );
 
   return (
     <Script id="tiktok-pixel" strategy="afterInteractive">
@@ -30,7 +23,6 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
   ttq.enableCookie();
   ttq.load(${serializedTikTokPixelId});
   ttq.page();
-  ttq.track('ViewContent', ${serializedViewContentPayload});
 }(window, document, 'ttq');
       `}
     </Script>
