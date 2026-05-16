@@ -8,6 +8,7 @@ import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRa
 import { createR2ObjectKey } from "@/lib/clipstitchr/server/r2/createR2ObjectKey";
 import { getR2UploadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2UploadSignedUrl";
 import { readR2UploadUrlRequest } from "@/lib/clipstitchr/server/r2/readR2UploadUrlRequest";
+import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/capturePostHogServerEvent";
 
 export const runtime = "nodejs";
 
@@ -42,6 +43,17 @@ export async function POST(request: Request) {
     const signedUrl = await getR2UploadSignedUrl({
       key,
       contentType: body.contentType,
+    });
+
+    await capturePostHogServerEvent({
+      distinctId: userId,
+      event: "upload_url_requested",
+      properties: {
+        kind: body.kind,
+        content_type: body.contentType,
+        size_bytes: body.sizeBytes,
+      },
+      request,
     });
 
     return Response.json({

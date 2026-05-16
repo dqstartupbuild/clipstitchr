@@ -10,6 +10,7 @@ import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightin
 import type { AvatarPhotoGenerationCount } from "@/lib/clipstitchr/types/AvatarPhotoGenerationCount";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
+import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 
 type AvatarGenerationPanelProps = {
   context: string;
@@ -153,7 +154,15 @@ export function AvatarGenerationPanel({
               className="w-full self-end"
               isLoading={isGenerating}
               disabled={!selectedAvatar || !selectedPhoto || !hasDescription}
-              onClick={onGenerate}
+              onClick={() => {
+                trackPostHogEvent("avatar_photos_generate_clicked", {
+                  avatar_id: selectedAvatar?.id,
+                  count,
+                  style,
+                  lighting,
+                });
+                onGenerate();
+              }}
             >
               {isGenerating ? "Working..." : "Create Photos"}
             </Button>

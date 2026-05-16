@@ -8,6 +8,7 @@ import {
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { trackTikTokButtonClick } from "@/lib/clipstitchr/analytics/trackTikTokButtonClick";
+import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 import { site } from "@/lib/site";
 
 type HeaderAuthActionsProps = {
@@ -37,6 +38,11 @@ export function HeaderAuthActions({
   }
 
   const handleSignIn = () => {
+    trackPostHogEvent("auth_cta_clicked", {
+      action: "sign_in",
+      location: "header",
+      variant,
+    });
     trackTikTokButtonClick({
       contentCategory: "Auth",
       contentId: "header_sign_in",
@@ -46,6 +52,11 @@ export function HeaderAuthActions({
   };
 
   const handleSignUp = () => {
+    trackPostHogEvent("auth_cta_clicked", {
+      action: "sign_up",
+      location: "header",
+      variant,
+    });
     trackTikTokButtonClick({
       contentCategory: "Auth",
       contentId: "header_sign_up",
@@ -55,6 +66,10 @@ export function HeaderAuthActions({
   };
 
   const handleDashboardClick = () => {
+    trackPostHogEvent("dashboard_cta_clicked", {
+      location: "header",
+      variant,
+    });
     trackTikTokButtonClick({
       contentCategory: "App",
       contentId: "header_dashboard",

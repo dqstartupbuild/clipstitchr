@@ -17,6 +17,7 @@ import { getSwaprMode } from "@/lib/clipstitchr/server/getSwaprMode";
 import { getGenerationSpeedTier } from "@/lib/clipstitchr/utils/getGenerationSpeedTier";
 import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
 import { getSwaprReferenceDurationLimit } from "@/lib/clipstitchr/utils/getSwaprReferenceDurationLimit";
+import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/capturePostHogServerEvent";
 
 export const runtime = "nodejs";
 
@@ -86,6 +87,19 @@ export async function POST(request: Request) {
       status: getReplicatePredictionStatus(prediction.status),
       createdAt: now,
       updatedAt: now,
+    });
+
+    await capturePostHogServerEvent({
+      distinctId: userId,
+      event: "swapr_job_created",
+      properties: {
+        prediction_id: prediction.id,
+        mode,
+        character_orientation: characterOrientation,
+        generation_speed_tier: generationSpeedTier,
+        keep_original_sound: keepOriginalSound,
+      },
+      request,
     });
 
     return NextResponse.json(

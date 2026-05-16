@@ -10,7 +10,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function PrivacyPage() {
-  const lastUpdated = "May 15, 2026";
+  const lastUpdated = "May 16, 2026";
 
   return (
     <article className="px-6 py-20 md:py-28">
@@ -81,7 +81,15 @@ export default function PrivacyPage() {
               If you allow optional cookies, we may also remember a random
               visitor ID, your session, the page you landed on, where you came
               from, campaign links, ad click IDs, and events such as waitlist
-              sign-ups or future purchases.
+              sign-ups, uploads, exports, AI generation requests, or future
+              purchases.
+            </p>
+            <p>
+              If analytics cookies are on, we use PostHog to understand how
+              people move through the landing pages and dashboard. When you are
+              signed in, PostHog may receive your account ID, email, and name so
+              we can connect activity to the right account and support the
+              product better.
             </p>
             <p>
               If marketing cookies are on, we may also send TikTok a hashed
@@ -145,11 +153,12 @@ export default function PrivacyPage() {
             </p>
             <p>
               If you allow optional cookies, we use them to understand visits,
-              remember where visitors came from, and measure sign-ups or future
-              purchases. If you allow marketing cookies, we may load the TikTok
-              Pixel and send server-side TikTok events to help measure ads.
-              TikTok may receive hashed contact or account details for matching
-              when marketing cookies are on.
+              remember where visitors came from, measure sign-ups or future
+              purchases, and see which dashboard features people use most. If
+              you allow marketing cookies, we may load the TikTok Pixel and send
+              server-side TikTok events to help measure ads. TikTok may receive
+              hashed contact or account details for matching when marketing
+              cookies are on.
             </p>
             <CookiePreferencesButton />
           </section>

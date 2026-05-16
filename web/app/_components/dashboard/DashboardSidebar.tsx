@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { BrandMark } from "@/app/_components/BrandMark";
+import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -85,7 +86,13 @@ export function DashboardSidebar() {
                 key={item.href}
                 href={item.href}
                 className="inline-flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-text-secondary transition-colors hover:bg-surface-muted hover:text-accent"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  trackPostHogEvent("dashboard_navigation_clicked", {
+                    destination: item.href,
+                    label: item.label,
+                  });
+                  setIsOpen(false);
+                }}
               >
                 <Icon aria-hidden className="h-4 w-4" />
                 {item.label}

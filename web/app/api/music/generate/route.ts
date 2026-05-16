@@ -15,6 +15,7 @@ import type { MusicTrackSource } from "@/lib/clipstitchr/types/MusicTrackSource"
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getGeneratedMusicTrackTags } from "@/lib/clipstitchr/utils/getGeneratedMusicTrackTags";
 import { getGeneratedMusicTrackTitle } from "@/lib/clipstitchr/utils/getGeneratedMusicTrackTitle";
+import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/capturePostHogServerEvent";
 
 export const runtime = "nodejs";
 
@@ -105,6 +106,18 @@ export async function POST(request: Request) {
     });
 
     const track = await convex.query(api.sharedMusicTracks.get, { id: trackId });
+
+    await capturePostHogServerEvent({
+      distinctId: userId,
+      event: "library_music_generated",
+      properties: {
+        track_id: trackId,
+        source,
+        style: style || undefined,
+        duration_seconds: generatedMusic.durationSeconds,
+      },
+      request,
+    });
 
     return NextResponse.json({ track });
   } catch (error) {

@@ -7,6 +7,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/convex/_generated/api";
 import { trackTikTokButtonClick } from "@/lib/clipstitchr/analytics/trackTikTokButtonClick";
+import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 import { trackWaitlistSignupConversion } from "@/lib/clipstitchr/analytics/trackWaitlistSignupConversion";
 
 export function WaitlistForm() {
@@ -21,6 +22,9 @@ export function WaitlistForm() {
     event.preventDefault();
     setErrorMessage("");
     setIsSubmitting(true);
+    trackPostHogEvent("waitlist_form_submitted", {
+      location: "sign_up_page",
+    });
     trackTikTokButtonClick({
       contentCategory: "Waitlist",
       contentId: "waitlist_submit_button",
@@ -34,21 +38,35 @@ export function WaitlistForm() {
         void trackWaitlistSignupConversion({ email });
       }
 
+      trackPostHogEvent("waitlist_joined", {
+        location: "sign_up_page",
+        status: result.status,
+      });
+
       setIsSubmitted(true);
       setName("");
       setEmail("");
     } catch (error) {
       const serverMessage = error instanceof Error ? error.message : "";
+      let errorCategory = "unknown";
 
       if (serverMessage.includes("Too many waitlist submissions")) {
+        errorCategory = "rate_limited";
         setErrorMessage("Too many waitlist submissions. Try again later.");
       } else if (serverMessage.includes("name between")) {
+        errorCategory = "invalid_name";
         setErrorMessage("Enter a name between 2 and 120 characters.");
       } else if (serverMessage.includes("valid email address")) {
+        errorCategory = "invalid_email";
         setErrorMessage("Enter a valid email address.");
       } else {
         setErrorMessage("Unable to join the waitlist right now.");
       }
+
+      trackPostHogEvent("waitlist_join_failed", {
+        error_category: errorCategory,
+        location: "sign_up_page",
+      });
     } finally {
       setIsSubmitting(false);
     }

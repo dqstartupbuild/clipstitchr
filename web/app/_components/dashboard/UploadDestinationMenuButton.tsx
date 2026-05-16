@@ -15,6 +15,7 @@ import {
   UPLOAD_CONTROLS_SEARCH_PARAM,
   UPLOAD_CONTROLS_SEARCH_PARAM_VALUE,
 } from "@/lib/clipstitchr/constants/uploadControlsSearchParam";
+import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 import { dispatchShowUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchShowUploadControlsEvent";
 
 const uploadControlsSearch = `${UPLOAD_CONTROLS_SEARCH_PARAM}=${UPLOAD_CONTROLS_SEARCH_PARAM_VALUE}`;
@@ -79,7 +80,15 @@ export function UploadDestinationMenuButton() {
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         className="bg-white"
-        onClick={() => setIsOpen((currentValue) => !currentValue)}
+        onClick={() => {
+          if (!isOpen) {
+            trackPostHogEvent("upload_menu_opened", {
+              page_path: pathname,
+            });
+          }
+
+          setIsOpen((currentValue) => !currentValue);
+        }}
       >
         Upload
         <ChevronDown aria-hidden className="h-4 w-4 text-text-tertiary" />
@@ -110,6 +119,11 @@ export function UploadDestinationMenuButton() {
                     type="button"
                     className="flex w-full items-start gap-3 rounded-lg px-3 py-3 text-left transition-colors hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     onClick={() => {
+                      trackPostHogEvent("upload_destination_selected", {
+                        asset_type: destination.assetType,
+                        destination: destination.href,
+                        page_path: pathname,
+                      });
                       setIsOpen(false);
                       router.push(destination.href);
 
