@@ -113,6 +113,29 @@ export const consumeTikTokEventsApi = mutation({
   },
 });
 
+export const consumeIndexNowSubmit = mutation({
+  args: {
+    key: v.string(),
+    secret: v.string(),
+    urlCount: v.number(),
+  },
+  handler: async (ctx, { key, secret, urlCount }) => {
+    assertRateLimitApiSecret(secret);
+
+    const submittedUrlCount = getPositiveCount(urlCount, "URL count");
+
+    await rateLimiter.limit(ctx, "indexNowSubmitUrlsByClient", {
+      key,
+      count: submittedUrlCount,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "indexNowSubmitUrlsGlobal", {
+      count: submittedUrlCount,
+      throws: true,
+    });
+  },
+});
+
 export const consumeUploadAnalysis = mutation({
   args: {
     secret: v.string(),

@@ -230,6 +230,19 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 1000,
     shards: 10,
   },
+  indexNowSubmitUrlsByClient: {
+    kind: "token bucket",
+    rate: 500,
+    period: HOUR,
+    capacity: 100,
+  },
+  indexNowSubmitUrlsGlobal: {
+    kind: "token bucket",
+    rate: 5000,
+    period: HOUR,
+    capacity: 500,
+    shards: 5,
+  },
   cliprJobCreate: {
     kind: "token bucket",
     rate: 3,
