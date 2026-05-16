@@ -8,9 +8,7 @@ describe("sitemap", () => {
 
     expect(urls).toContain("http://localhost:3000/");
     expect(urls).toContain("http://localhost:3000/blog");
-    expect(urls).toContain(
-      "http://localhost:3000/blog/getting-started",
-    );
+    expect(urls).toContain("http://localhost:3000/blog/what-is-ugc");
     expect(urls).toContain("http://localhost:3000/docs");
     expect(urls).toContain("http://localhost:3000/docs/getting-started");
     expect(urls).toContain("http://localhost:3000/docs/stitchr");

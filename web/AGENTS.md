@@ -19,6 +19,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - `seoTitle` is required for blog posts and must stay between 50 and 70 characters.
 - Metadata descriptions for content and non-content pages must stay between 110 and 170 characters.
 - Visible page titles can be longer than `seoTitle` when editorial clarity benefits from it.
-- Canonical URLs in content frontmatter must be absolute and must match the configured site URL plus the post slug.
+- Do not hard-code published canonical URLs in content frontmatter. Blog canonicals are derived from the active deployment URL plus the post slug during the content build.
 - Keep MDX component registration centralized in `lib/content/mdx-components.tsx`; do not import components directly inside MDX files.
 - Keep FAQ data in frontmatter when the same questions should power both page content and JSON-LD.

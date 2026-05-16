@@ -34,7 +34,7 @@ const baseDocumentSchema = z.object({
   category: z.string().trim().min(1),
   tags: z.array(z.string().trim().min(1)).min(1),
   image: z.string().trim().startsWith("/"),
-  canonical: absoluteUrlSchema,
+  canonical: absoluteUrlSchema.optional(),
   targetKeyword: z.string().trim().min(1),
   intent: z.enum([
     "informational",
