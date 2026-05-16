@@ -44,8 +44,6 @@ describe("content SEO helpers", () => {
     const xml = createRssXml(getPublishedBlogPosts());
 
     expect(xml).toContain('<rss version="2.0">');
-    expect(xml).toContain(
-      "http://localhost:3000/blog/getting-started",
-    );
+    expect(xml).toContain("http://localhost:3000/blog/what-is-ugc");
   });
 });

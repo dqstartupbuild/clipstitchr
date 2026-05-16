@@ -13,7 +13,6 @@ All authored MDX lives in `content/blog/`.
 - `category`
 - `tags`
 - `image`: relative asset path such as `/og/default.png`
-- `canonical`: absolute URL that matches the configured site URL and the article slug
 - `targetKeyword`
 - `intent`
 - `ctaVariant`
@@ -28,6 +27,8 @@ All authored MDX lives in `content/blog/`.
 - `relatedSlugs`
 - `excerpt`
 - `featured`
+- `canonical`: legacy/local authoring override. Published canonicals are derived
+  from the deployment site URL and post slug during the content build.
 
 ## MDX Rules
 
@@ -38,6 +39,9 @@ All authored MDX lives in `content/blog/`.
 
 ## Canonical Rules
 
-- Update `NEXT_PUBLIC_SITE_URL` or `SITE_URL` before production builds.
-- Update each article `canonical` field whenever the site domain changes.
-- The content build fails if a canonical URL does not match the configured site URL plus the slug.
+- Production builds use `NEXT_PUBLIC_SITE_URL` or `SITE_URL` when configured.
+- Vercel preview builds use `NEXT_PUBLIC_PREVIEW_SITE_URL` or
+  `PREVIEW_SITE_URL` first, then Vercel's branch/deployment URL system
+  variables.
+- Do not hard-code published blog canonicals in MDX. The content build derives
+  them from the active deployment URL plus the slug.

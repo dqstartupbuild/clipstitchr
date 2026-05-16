@@ -16,13 +16,7 @@ const blog = defineCollection({
   schema: blogDocumentSchema,
   transform: async (document, context) => {
     const url = `/blog/${document.slug}`;
-    const expectedCanonical = createCanonicalUrl(url);
-
-    if (document.canonical !== expectedCanonical) {
-      throw new Error(
-        `Canonical mismatch for ${document._meta.filePath}: expected ${expectedCanonical}`,
-      );
-    }
+    const canonical = createCanonicalUrl(url);
 
     const body = await compileMDX(context, document, {
       remarkPlugins: [remarkGfm],
@@ -31,6 +25,7 @@ const blog = defineCollection({
     return {
       ...document,
       body,
+      canonical,
       excerpt: document.excerpt ?? document.description,
       readingTimeMinutes: estimateReadingTime(document.content),
       url,

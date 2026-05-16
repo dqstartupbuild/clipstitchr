@@ -28,6 +28,17 @@ describe("blogDocumentSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts blog documents without authored canonical URLs", () => {
+    const documentWithoutCanonical: Partial<typeof validDocument> = {
+      ...validDocument,
+    };
+    delete documentWithoutCanonical.canonical;
+
+    const result = blogDocumentSchema.safeParse(documentWithoutCanonical);
+
+    expect(result.success).toBe(true);
+  });
+
   it("rejects seo titles that are too short", () => {
     const result = blogDocumentSchema.safeParse({
       ...validDocument,
