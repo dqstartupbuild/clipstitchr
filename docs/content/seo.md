@@ -65,7 +65,7 @@ These references should be used to understand market language and content angles
 
 | Keyword | Blog angle |
 | --- | --- |
-| what is a UGC ad | Definition post |
+| what is UGC | Definition post |
 | UGC ads vs influencer ads | Comparison |
 | UGC ads vs product demo ads | Comparison |
 | UGC ad examples | Breakdown post |
