@@ -1,23 +1,26 @@
 import type { ComponentPropsWithoutRef } from "react";
 import { site } from "@/lib/site";
 
-function CallToAction() {
+type CallToActionProps = {
+  href?: string;
+  label?: string;
+};
+
+function CallToAction({
+  href = site.ctaUrl,
+  label = site.ctaLabel,
+}: CallToActionProps) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
       <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">
-        {site.ctaLabel}
+        {label}
       </p>
       <p className="mt-3 text-base leading-7 text-text-secondary">
         Interested in what we&apos;re building? We&apos;d love to hear from you.
         Click the link below to get started.
       </p>
-      <a
-        href={site.ctaUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="btn-primary mt-5"
-      >
-        {site.ctaLabel}
+      <a href={href} className="btn-primary mt-5">
+        {label}
       </a>
     </div>
   );
