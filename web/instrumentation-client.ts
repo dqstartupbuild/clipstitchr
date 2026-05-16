@@ -21,6 +21,7 @@ if (postHogProjectToken) {
     capture_pageleave: true,
     capture_pageview: false,
     capture_performance: true,
+    disable_scroll_properties: false,
     mask_all_text: true,
     mask_personal_data_properties: true,
     opt_out_capturing_by_default: true,
