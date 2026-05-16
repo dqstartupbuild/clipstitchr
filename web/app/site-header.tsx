@@ -48,7 +48,12 @@ export function SiteHeader({
             >
               Blog
             </Link>
-            <span className="font-semibold text-text-tertiary">Pricing</span>
+            <Link
+              href="/sign-up"
+              className="font-semibold transition-colors hover:text-text-primary"
+            >
+              Pricing
+            </Link>
           </>
         ) : (
           <>
