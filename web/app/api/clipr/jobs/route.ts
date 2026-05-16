@@ -25,6 +25,7 @@ import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getGeneratedMusicTrackTags } from "@/lib/clipstitchr/utils/getGeneratedMusicTrackTags";
 import { getGeneratedMusicTrackTitle } from "@/lib/clipstitchr/utils/getGeneratedMusicTrackTitle";
+import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/capturePostHogServerEvent";
 
 export const runtime = "nodejs";
 
@@ -321,6 +322,20 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
     });
 
+    await capturePostHogServerEvent({
+      distinctId: userId,
+      event: "clipr_job_created",
+      properties: {
+        job_id: jobId,
+        product_id: productId,
+        avatar_id: avatarId,
+        duration_seconds: durationSeconds,
+        voice_id: voiceId,
+        has_music: Boolean(musicMetadata),
+      },
+      request,
+    });
+
     return NextResponse.json({ job });
   } catch (error) {
     await convex
@@ -334,6 +349,18 @@ export async function POST(request: Request) {
         updatedAt: new Date().toISOString(),
       })
       .catch(() => null);
+
+    await capturePostHogServerEvent({
+      distinctId: userId,
+      event: "clipr_job_failed",
+      properties: {
+        job_id: jobId,
+        product_id: productId,
+        avatar_id: avatarId,
+        error_name: error instanceof Error ? error.name : "UnknownError",
+      },
+      request,
+    });
 
     const rateLimitResponse = createRateLimitExceededResponse(error);
 

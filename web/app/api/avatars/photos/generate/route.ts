@@ -27,6 +27,7 @@ import type { GeneratedAvatarPhoto } from "@/lib/clipstitchr/types/GeneratedAvat
 import { getGenerationSpeedTier } from "@/lib/clipstitchr/utils/getGenerationSpeedTier";
 import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
 import { mapWithConcurrency } from "@/lib/clipstitchr/utils/mapWithConcurrency";
+import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/capturePostHogServerEvent";
 
 export const runtime = "nodejs";
 
@@ -175,6 +176,20 @@ export async function POST(request: Request) {
         };
       },
     );
+
+    await capturePostHogServerEvent({
+      distinctId: userId,
+      event: "avatar_photos_generation_requested",
+      properties: {
+        count,
+        style,
+        lighting,
+        identity_mode: identityMode,
+        generation_speed_tier: generationSpeedTier,
+        model_id: modelId,
+      },
+      request,
+    });
 
     return NextResponse.json({
       generationSpeedLabel: speedProfile.publicSpeedLabel,

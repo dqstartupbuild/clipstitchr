@@ -20,6 +20,8 @@ import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getUseInSwaprStitchHref } from "@/lib/clipstitchr/utils/getUseInSwaprStitchHref";
+import { capturePostHogException } from "@/lib/clipstitchr/analytics/capturePostHogException";
+import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 
 type StitchCardProps = {
   stitch: Stitch;
@@ -117,6 +119,12 @@ export function StitchCard({
   };
   const openDetails = (shouldLoadPreview = false) => {
     setIsDetailsOpen(true);
+    trackPostHogEvent("stitch_preview_viewed", {
+      stitch_id: stitch.id,
+      duration_seconds: stitch.duration,
+      has_music: Boolean(stitch.music),
+      has_text_overlay: Boolean(stitch.textOverlay),
+    });
 
     if (shouldLoadPreview) {
       void loadPreview();
@@ -131,7 +139,18 @@ export function StitchCard({
         await createStitchExportBlob(stitch, { loadClip: onLoadClip }),
         stitch.name,
       );
+      trackPostHogEvent("stitch_downloaded", {
+        stitch_id: stitch.id,
+        duration_seconds: stitch.duration,
+        has_music: Boolean(stitch.music),
+        has_text_overlay: Boolean(stitch.textOverlay),
+        size_bytes: stitch.size,
+      });
     } catch (nextError) {
+      capturePostHogException(nextError, {
+        feature: "stitch_download",
+        stitch_id: stitch.id,
+      });
       setDownloadError(
         nextError instanceof Error
           ? nextError.message
@@ -146,8 +165,18 @@ export function StitchCard({
     setMusicError(null);
 
     try {
-      return await onGenerateMusic(stitch);
+      const result = await onGenerateMusic(stitch);
+      if (result) {
+        trackPostHogEvent("stitch_music_generated", {
+          stitch_id: stitch.id,
+        });
+      }
+      return result;
     } catch (nextError) {
+      capturePostHogException(nextError, {
+        feature: "stitch_music_generation",
+        stitch_id: stitch.id,
+      });
       setMusicError(
         nextError instanceof Error
           ? nextError.message
@@ -218,7 +247,15 @@ export function StitchCard({
       label: "Delete stitch",
       variant: "danger",
       icon: <Trash2 aria-hidden className="h-4 w-4" />,
-      onClick: () => void onDelete(stitch.id),
+      onClick: () => {
+        trackPostHogEvent("stitch_deleted", {
+          stitch_id: stitch.id,
+          duration_seconds: stitch.duration,
+          has_music: Boolean(stitch.music),
+          has_text_overlay: Boolean(stitch.textOverlay),
+        });
+        void onDelete(stitch.id);
+      },
     },
   ];
 

@@ -16,6 +16,7 @@ import type { AvatarPhotoGenerationCount } from "@/lib/clipstitchr/types/AvatarP
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 
 type CreateAvatarFromClipDialogProps = {
   clip: VideoClipMetadata;
@@ -67,6 +68,13 @@ export function CreateAvatarFromClipDialog({
     });
 
     if (didCreate) {
+      trackPostHogEvent("avatar_created_from_clip", {
+        clip_id: clip.id,
+        count,
+        style,
+        lighting,
+        identity_mode: identityMode,
+      });
       onClose();
     }
   };

@@ -1,9 +1,9 @@
 import { getCookieConsentPreferencesFromCookieHeader } from "@/lib/clipstitchr/server/analytics/getCookieConsentPreferencesFromCookieHeader";
 
-export function getHasMarketingConsentFromCookieHeader(
+export function getHasAnalyticsConsentFromCookieHeader(
   cookieHeader: string | null,
 ) {
   return (
-    getCookieConsentPreferencesFromCookieHeader(cookieHeader)?.marketing === true
+    getCookieConsentPreferencesFromCookieHeader(cookieHeader)?.analytics === true
   );
 }

@@ -1,1 +1,1 @@
-export const cookieConsentVersion = "2026-05-15";
+export const cookieConsentVersion = "2026-05-16";
