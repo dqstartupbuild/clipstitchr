@@ -10,10 +10,10 @@ If a visitor chooses essentials only, PostHog capture stays off and any PostHog 
 
 Marketing consent is separate. TikTok uses the `marketing` category.
 
-PostHog autocapture, pageleave, exceptions, and performance capture are enabled
-after analytics consent. Autocapture masks text and ignores sensitive element
-attributes, so explicit events are still the source of truth for button labels,
-feature names, and funnel context.
+PostHog autocapture, pageleave, scroll depth properties, exceptions, and
+performance capture are enabled after analytics consent. Autocapture masks text
+and ignores sensitive element attributes, so explicit events are still the
+source of truth for button labels, feature names, and funnel context.
 
 ## Environment
 
@@ -33,6 +33,8 @@ Core browser tracking:
 | Event | Trigger | Notes |
 | --- | --- | --- |
 | `$pageview` | Route changes after analytics consent | Includes page path, URL, title, and page category. |
+| `$pageleave` | Browser page hide/unload after analytics consent | Supports bounce rate, session duration, and final scroll-depth properties. |
+| `$prev_pageview_*_scroll*` | Attached to following `$pageview` or `$pageleave` events | Built-in PostHog scroll-depth properties remain enabled with `disable_scroll_properties: false`. |
 | `cta_clicked` | Landing page CTA links | Tracks CTA ID, label, location, and destination. |
 | `auth_cta_clicked` | Header sign-in/sign-up clicks | Tracks action, header location, and desktop/mobile variant. |
 | `dashboard_cta_clicked` | Header dashboard CTA | Tracks header location and variant. |
