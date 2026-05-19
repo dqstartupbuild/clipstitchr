@@ -2,6 +2,7 @@
 
 import { Save, X } from "lucide-react";
 import { useState } from "react";
+import { ProductHookStyleSelect } from "@/app/_components/settings/ProductHookStyleSelect";
 import { Button } from "@/app/_components/ui/Button";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
@@ -24,6 +25,9 @@ export function ProductSettingsEditDialog({
   const [audienceDetails, setAudienceDetails] = useState(
     product.audienceDetails,
   );
+  const [preferredCliprHookStyleKey, setPreferredCliprHookStyleKey] = useState(
+    product.preferredCliprHookStyleKey ?? "",
+  );
   const canSave = name.trim().length > 0 && !isSaving;
 
   return (
@@ -41,7 +45,13 @@ export function ProductSettingsEditDialog({
           }
 
           try {
-            await onSave({ name, productDetails, audienceDetails });
+            await onSave({
+              name,
+              productDetails,
+              audienceDetails,
+              preferredCliprHookStyleKey:
+                preferredCliprHookStyleKey || undefined,
+            });
           } catch {
             return;
           }
@@ -78,6 +88,10 @@ export function ProductSettingsEditDialog({
               onChange={(event) => setName(event.currentTarget.value)}
             />
           </label>
+          <ProductHookStyleSelect
+            value={preferredCliprHookStyleKey}
+            onChange={setPreferredCliprHookStyleKey}
+          />
           <div className="grid gap-4 lg:grid-cols-2">
             <label className="block">
               <span className="text-sm font-semibold text-text-primary">

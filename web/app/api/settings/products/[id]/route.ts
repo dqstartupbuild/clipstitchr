@@ -83,6 +83,7 @@ export async function PATCH(
       eligibleCliprHookStyleKeys: product.eligibleCliprHookStyleKeys,
       eligibleCliprHookTemplateIds: product.eligibleCliprHookTemplateIds,
       cliprPlaceholderFillers: product.cliprPlaceholderFillers,
+      preferredCliprHookStyleKey: product.preferredCliprHookStyleKey,
       updatedAt: product.updatedAt,
     });
 

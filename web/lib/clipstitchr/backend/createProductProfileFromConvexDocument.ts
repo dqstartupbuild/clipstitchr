@@ -14,6 +14,7 @@ export function createProductProfileFromConvexDocument(
     eligibleCliprHookTemplateIds: product.eligibleCliprHookTemplateIds,
     inferredProblem: product.inferredProblem,
     inferredPainPoints: product.inferredPainPoints,
+    preferredCliprHookStyleKey: product.preferredCliprHookStyleKey,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
   };

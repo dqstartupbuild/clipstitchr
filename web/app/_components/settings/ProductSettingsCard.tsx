@@ -6,6 +6,7 @@ import { ProductSettingsEditDialog } from "@/app/_components/settings/ProductSet
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
+import { getCliprHookStyleName } from "@/lib/clipstitchr/utils/getCliprHookStyleName";
 
 type ProductSettingsCardProps = {
   product: ProductProfile;
@@ -30,6 +31,7 @@ export function ProductSettingsCard({
   const [isEditing, setIsEditing] = useState(false);
   const summary =
     product.productDetails || product.audienceDetails || "Saved product";
+  const hookStyleName = getCliprHookStyleName(product.preferredCliprHookStyleKey);
   const handleDelete = async () => {
     const didConfirm = window.confirm(
       `Delete "${product.name}"?\n\nExisting saved Swipes and generated clips keep their saved snapshots. This cannot be undone.`,
@@ -56,6 +58,9 @@ export function ProductSettingsCard({
             </p>
             <p className="mt-1 line-clamp-2 text-xs leading-5 text-text-secondary">
               {summary}
+            </p>
+            <p className="mt-1 text-xs font-semibold text-text-tertiary">
+              Hook style: {hookStyleName}
             </p>
           </div>
           <div className="flex shrink-0 gap-2">

@@ -131,9 +131,10 @@ Implementation can then expose typed runtime data through one-file-one-purpose
 modules under `web/lib/clipstitchr/resources/clipr/` or
 `web/lib/clipstitchr/constants/clipr/`, depending on the cleanest local pattern.
 
-The resources must stay internal:
+The resources must stay internal except for the saved product's preferred hook
+style selector:
 
-- no UI for selecting styles
+- UI may show friendly hook style names for product-level preference
 - no UI for selecting templates
 - no UI for viewing template IDs
 - no user-facing mention of ClipsPal
@@ -348,12 +349,14 @@ Implementation details:
   unless a template-specific override is added later.
 - The template picker should randomly choose from active templates in the
   product's eligible pool.
+- A saved product may set `preferredCliprHookStyleKey`; when present, the
+  picker should use active templates from that style before falling back to the
+  inferred eligible pool.
 - Purpose filtering happens before model prompting. Clipr must only receive
   non-promotional engagement templates, while Swipr and Stitchr may also receive
   direct product/ad hook templates.
-- Clipr blocks aggressive templates. Swipr and Stitchr may use aggressive
-  templates because their formats provide a validation/payoff beat after the
-  initial reaction.
+- Clipr, Swipr, and Stitchr may use aggressive styles. Direct product/ad hook
+  templates still depend on purpose-specific `allowedPurposes`.
 - The random choice should happen server-side so the client does not ship the
   whole private resource library unnecessarily.
 
