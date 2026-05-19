@@ -13,6 +13,7 @@ const CLIPR_HOOK_TEMPLATE_LIMIT = 200;
 const CLIPR_FILLER_KEY_MAX_LENGTH = 40;
 const CLIPR_FILLER_VALUE_MAX_LENGTH = 120;
 const CLIPR_FILLER_VALUE_LIMIT = 16;
+const CLIPR_HOOK_STYLE_KEY_MAX_LENGTH = 80;
 
 function normalizeText(value: string, maxLength: number) {
   return value.trim().slice(0, maxLength);
@@ -77,6 +78,7 @@ export const create = mutation({
     cliprPlaceholderFillers: v.optional(
       v.record(v.string(), v.array(v.string())),
     ),
+    preferredCliprHookStyleKey: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
   },
@@ -92,6 +94,7 @@ export const create = mutation({
       eligibleCliprHookStyleKeys,
       eligibleCliprHookTemplateIds,
       cliprPlaceholderFillers,
+      preferredCliprHookStyleKey,
       createdAt,
       updatedAt,
     },
@@ -134,6 +137,12 @@ export const create = mutation({
         80,
       ),
       cliprPlaceholderFillers: normalizeFillers(cliprPlaceholderFillers),
+      preferredCliprHookStyleKey: preferredCliprHookStyleKey
+        ? normalizeText(
+            preferredCliprHookStyleKey,
+            CLIPR_HOOK_STYLE_KEY_MAX_LENGTH,
+          )
+        : undefined,
       createdAt,
       updatedAt,
     });
@@ -153,6 +162,7 @@ export const update = mutation({
     cliprPlaceholderFillers: v.optional(
       v.record(v.string(), v.array(v.string())),
     ),
+    preferredCliprHookStyleKey: v.optional(v.string()),
     updatedAt: v.string(),
   },
   handler: async (
@@ -167,6 +177,7 @@ export const update = mutation({
       eligibleCliprHookStyleKeys,
       eligibleCliprHookTemplateIds,
       cliprPlaceholderFillers,
+      preferredCliprHookStyleKey,
       updatedAt,
     },
   ) => {
@@ -215,6 +226,12 @@ export const update = mutation({
         80,
       ),
       cliprPlaceholderFillers: normalizeFillers(cliprPlaceholderFillers),
+      preferredCliprHookStyleKey: preferredCliprHookStyleKey
+        ? normalizeText(
+            preferredCliprHookStyleKey,
+            CLIPR_HOOK_STYLE_KEY_MAX_LENGTH,
+          )
+        : undefined,
       updatedAt,
     });
   },

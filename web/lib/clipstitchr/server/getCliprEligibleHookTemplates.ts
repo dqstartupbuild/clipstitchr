@@ -36,13 +36,9 @@ function getIsEligibleTemplate(
   template: CliprHookTemplate,
   purpose: CliprTextPurpose,
 ) {
-  const isAggressiveBlocked =
-    template.riskLevel === "aggressive" && purpose === "clipr";
-
   return (
     template.active &&
     template.allowedPurposes.includes(purpose) &&
-    !isAggressiveBlocked &&
     !getCliprTextHasForbiddenCta(template.template)
   );
 }
@@ -55,6 +51,19 @@ export function getCliprEligibleHookTemplates(
   const eligibleStyleKeys = new Set(product.eligibleCliprHookStyleKeys ?? []);
   const hasTemplatePool = eligibleTemplateIds.size > 0;
   const hasStylePool = eligibleStyleKeys.size > 0;
+  const preferredStyleKey = product.preferredCliprHookStyleKey?.trim();
+  const preferredTemplates = preferredStyleKey
+    ? cliprHookTemplates.filter(
+        (template) =>
+          getIsEligibleTemplate(template, purpose) &&
+          template.styleKey === preferredStyleKey,
+      )
+    : [];
+
+  if (preferredTemplates.length) {
+    return preferredTemplates;
+  }
+
   const templates = cliprHookTemplates.filter((template) => {
     if (!getIsEligibleTemplate(template, purpose)) {
       return false;

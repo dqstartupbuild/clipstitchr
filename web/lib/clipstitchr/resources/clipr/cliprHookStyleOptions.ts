@@ -1,0 +1,18 @@
+export const cliprHookStyleOptions = [
+  { label: "Mystery Gap", value: "mystery_gap" },
+  { label: "Authority Signal", value: "authority_signal" },
+  { label: "Anti-Advice", value: "anti_advice" },
+  { label: "Inside Room", value: "inside_room" },
+  { label: "Direct Diagnosis", value: "direct_diagnosis" },
+  { label: "Before/After Arc", value: "before_after_arc" },
+  { label: "Cost Alert", value: "cost_alert" },
+  { label: "Deadline Pull", value: "deadline_pull" },
+  { label: "Receipt Stack", value: "receipt_stack" },
+  { label: "Future Cast", value: "future_cast" },
+  { label: "Test Drive", value: "test_drive" },
+  { label: "Pattern Break", value: "pattern_break" },
+  { label: "Vulnerable Reveal", value: "vulnerable_reveal" },
+  { label: "Viewer Dare", value: "viewer_dare" },
+  { label: "Identity Challenge", value: "identity_challenge" },
+  { label: "Cold Open Story", value: "cold_open_story" },
+] as const;

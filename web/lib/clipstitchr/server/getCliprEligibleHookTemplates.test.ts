@@ -37,7 +37,7 @@ describe("getCliprEligibleHookTemplates", () => {
     ).toBe(true);
   });
 
-  it("blocks aggressive templates for Clipr but allows them for Stitchr", () => {
+  it("allows aggressive templates for Clipr and Stitchr", () => {
     const broadProduct = {
       ...product,
       eligibleCliprHookStyleKeys: undefined,
@@ -51,13 +51,28 @@ describe("getCliprEligibleHookTemplates", () => {
     );
 
     expect(
-      cliprTemplates.every((template) => template.riskLevel !== "aggressive"),
+      cliprTemplates.some((template) => template.styleKey === "identity_challenge"),
     ).toBe(true);
     expect(
       stitchrTemplates.some((template) => template.styleKey === "identity_challenge"),
     ).toBe(true);
     expect(
       stitchrTemplates.some((template) => template.riskLevel === "aggressive"),
+    ).toBe(true);
+  });
+
+  it("prefers a saved hook style over the inferred product pool", () => {
+    const templates = getCliprEligibleHookTemplates(
+      {
+        ...product,
+        preferredCliprHookStyleKey: "identity_challenge",
+      },
+      "clipr",
+    );
+
+    expect(templates.length).toBeGreaterThan(0);
+    expect(
+      templates.every((template) => template.styleKey === "identity_challenge"),
     ).toBe(true);
   });
 });

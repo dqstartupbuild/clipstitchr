@@ -2,6 +2,7 @@
 
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { ProductHookStyleSelect } from "@/app/_components/settings/ProductHookStyleSelect";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
@@ -18,6 +19,8 @@ export function ProductSettingsForm({
   const [name, setName] = useState("");
   const [productDetails, setProductDetails] = useState("");
   const [audienceDetails, setAudienceDetails] = useState("");
+  const [preferredCliprHookStyleKey, setPreferredCliprHookStyleKey] =
+    useState("");
   const trimmedName = name.trim();
   const canSave = trimmedName.length > 0 && !isSaving;
 
@@ -37,6 +40,8 @@ export function ProductSettingsForm({
               name,
               productDetails,
               audienceDetails,
+              preferredCliprHookStyleKey:
+                preferredCliprHookStyleKey || undefined,
             });
           } catch {
             return;
@@ -45,6 +50,7 @@ export function ProductSettingsForm({
           setName("");
           setProductDetails("");
           setAudienceDetails("");
+          setPreferredCliprHookStyleKey("");
         }}
       >
         <div>
@@ -67,6 +73,10 @@ export function ProductSettingsForm({
             onChange={(event) => setName(event.currentTarget.value)}
           />
         </label>
+        <ProductHookStyleSelect
+          value={preferredCliprHookStyleKey}
+          onChange={setPreferredCliprHookStyleKey}
+        />
         <div className="grid gap-4 lg:grid-cols-2">
           <label className="block">
             <span className="text-sm font-semibold text-text-primary">

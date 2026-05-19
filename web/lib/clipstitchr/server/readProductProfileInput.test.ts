@@ -16,6 +16,28 @@ describe("readProductProfileInput", () => {
     });
   });
 
+  it("accepts valid preferred Clipr hook styles", () => {
+    expect(
+      readProductProfileInput({
+        name: "LaunchKit",
+        productDetails: "AI launch planning",
+        audienceDetails: "solo founders",
+        preferredCliprHookStyleKey: "identity_challenge",
+      }).preferredCliprHookStyleKey,
+    ).toBe("identity_challenge");
+  });
+
+  it("ignores invalid preferred Clipr hook styles", () => {
+    expect(
+      readProductProfileInput({
+        name: "LaunchKit",
+        productDetails: "AI launch planning",
+        audienceDetails: "solo founders",
+        preferredCliprHookStyleKey: "fake_style",
+      }),
+    ).not.toHaveProperty("preferredCliprHookStyleKey");
+  });
+
   it("requires a product name", () => {
     expect(() =>
       readProductProfileInput({

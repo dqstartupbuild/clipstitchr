@@ -128,6 +128,7 @@ export default defineSchema({
     cliprPlaceholderFillers: v.optional(
       v.record(v.string(), v.array(v.string())),
     ),
+    preferredCliprHookStyleKey: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
   })

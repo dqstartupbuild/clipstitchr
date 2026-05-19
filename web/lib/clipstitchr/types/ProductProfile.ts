@@ -8,6 +8,7 @@ export type ProductProfile = {
   eligibleCliprHookTemplateIds?: string[];
   inferredProblem?: string;
   inferredPainPoints: string[];
+  preferredCliprHookStyleKey?: string;
   createdAt: string;
   updatedAt: string;
 };

@@ -14,7 +14,7 @@ describe("rawIdentityChallengeHookTemplates", () => {
     expect(new Set(templateIds).size).toBe(templateIds.length);
   });
 
-  it("limits identity challenge templates to Swipr and Stitchr", () => {
+  it("allows identity challenge templates across Clipr, Swipr, and Stitchr", () => {
     expect(
       rawIdentityChallengeHookTemplates.every(
         (template) => {
@@ -22,9 +22,9 @@ describe("rawIdentityChallengeHookTemplates", () => {
 
           return (
             template.styleKey === "identity_challenge" &&
+            purposes.includes("clipr") &&
             purposes.includes("swipr") &&
-            purposes.includes("stitchr") &&
-            !purposes.includes("clipr")
+            purposes.includes("stitchr")
           );
         },
       ),
