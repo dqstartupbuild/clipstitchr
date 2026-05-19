@@ -36,10 +36,13 @@ function getIsEligibleTemplate(
   template: CliprHookTemplate,
   purpose: CliprTextPurpose,
 ) {
+  const isAggressiveBlocked =
+    template.riskLevel === "aggressive" && purpose === "clipr";
+
   return (
     template.active &&
     template.allowedPurposes.includes(purpose) &&
-    template.riskLevel !== "aggressive" &&
+    !isAggressiveBlocked &&
     !getCliprTextHasForbiddenCta(template.template)
   );
 }

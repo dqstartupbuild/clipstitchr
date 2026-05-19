@@ -10,7 +10,7 @@ Product category: {{product_category}}
 Tone: {{tone}}
 
 Rules:
-- Use fill-in-the-blank placeholders like {{audience}}, {{topic}}, {{pain_point}}, {{workflow}}, {{result}}, {{mistake}}, {{timeframe}}, {{tool}}, {{metric}}, {{before_state}}, {{after_state}}.
+- Use fill-in-the-blank placeholders like {{audience}}, {{topic}}, {{pain_point}}, {{workflow}}, {{result}}, {{mistake}}, {{timeframe}}, {{tool}}, {{metric}}, {{before_state}}, {{after_state}}, {{core_belief}}, {{popular_method}}, {{identity}}, {{common_assumption}}, {{controversial_take}}.
 - Do not write finished hooks for one niche only.
 - Do not use fake research, fake statistics, fake quotes, or fake expert claims.
 - Keep each hook under 18 words when possible.

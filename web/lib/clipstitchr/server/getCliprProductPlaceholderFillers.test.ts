@@ -23,4 +23,15 @@ describe("getCliprProductPlaceholderFillers", () => {
     expect(fillers.topic).toContain("launch content chaos");
     expect(fillers.topic).not.toContain("Problem solved: launch content chaos.");
   });
+
+  it("adds reaction-quality fallback fillers for identity challenge templates", () => {
+    const fillers = getCliprProductPlaceholderFillers(product);
+
+    expect(fillers.core_belief).toContain(
+      "doing it manually means it is more authentic",
+    );
+    expect(fillers.popular_method).toContain("doing everything manually");
+    expect(fillers.identity).toContain("Founders and solo marketers");
+    expect(fillers.time).toContain("3 hours per post");
+  });
 });

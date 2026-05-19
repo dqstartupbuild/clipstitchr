@@ -36,4 +36,28 @@ describe("getCliprEligibleHookTemplates", () => {
       templates.every((template) => template.allowedPurposes.includes("stitchr")),
     ).toBe(true);
   });
+
+  it("blocks aggressive templates for Clipr but allows them for Stitchr", () => {
+    const broadProduct = {
+      ...product,
+      eligibleCliprHookStyleKeys: undefined,
+      eligibleCliprHookTemplateIds: undefined,
+    };
+
+    const cliprTemplates = getCliprEligibleHookTemplates(broadProduct, "clipr");
+    const stitchrTemplates = getCliprEligibleHookTemplates(
+      broadProduct,
+      "stitchr",
+    );
+
+    expect(
+      cliprTemplates.every((template) => template.riskLevel !== "aggressive"),
+    ).toBe(true);
+    expect(
+      stitchrTemplates.some((template) => template.styleKey === "identity_challenge"),
+    ).toBe(true);
+    expect(
+      stitchrTemplates.some((template) => template.riskLevel === "aggressive"),
+    ).toBe(true);
+  });
 });

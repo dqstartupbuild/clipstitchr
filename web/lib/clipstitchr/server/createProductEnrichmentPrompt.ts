@@ -5,7 +5,9 @@ const MIN_FILLERS_PER_KEY = 6;
 const MAX_FILLERS_PER_KEY = 16;
 
 const productEnrichmentHookTemplates = cliprHookTemplates.filter(
-  (template) => template.source === "clipstitchr",
+  (template) =>
+    template.source === "clipstitchr" ||
+    template.styleKey === "identity_challenge",
 );
 
 function getHookStylePromptText() {
@@ -58,6 +60,8 @@ export function createProductEnrichmentPrompt({
     "Make filler values short, concrete, and conversational. Good fillers sound like things a person would say, not a consultant deck.",
     "Keep fillers non-promotional. They should help make relatable engagement hooks, not direct ads.",
     "Use the product details for context, but do not repeat the product name in every filler.",
+    "For core_belief, audience, identity, and popular_method fillers: write beliefs the audience would emotionally defend, specific identity labels they use for themselves, and concrete methods or habits they consider part of who they are. These must feel personal enough that challenging them would cause a reaction.",
+    "For number, time, and timeframe fillers: use specific quantities, costs, and durations from the niche rather than vague approximations. Prefer '3 hours editing one TikTok' over 'some time' and '$47/mo on subscriptions' over 'money'.",
     "Do not include markdown.",
     "Available Clipr hook styles:",
     getHookStylePromptText(),
