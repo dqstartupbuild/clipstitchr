@@ -53,6 +53,8 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain(
       "For Stitchr, the generated text may frame the selected product",
     );
+    expect(prompt).toContain("the hook must cause a gut reaction in 2-3 seconds");
+    expect(prompt).toContain("the Demo clip is the validation");
   });
 
   it("defines Swipr as a hook payoff carousel with a final CTA", () => {
@@ -66,8 +68,8 @@ describe("createCliprTextGenerationPrompt", () => {
     });
 
     expect(prompt).toContain("slides[0] must exactly match filledHook");
-    expect(prompt).toContain("final slide must be a product CTA");
-    expect(prompt).toContain("middle slides must pay off the hook");
+    expect(prompt).toContain("final slide must plug the product");
+    expect(prompt).toContain("middle slides must validate the bold claim");
     expect(prompt).toContain("middle slides must not mention the product name");
   });
 });

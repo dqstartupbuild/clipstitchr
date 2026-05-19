@@ -128,6 +128,15 @@ export const cliprHookStyles: CliprHookStyle[] = [
     riskLevel: "aggressive",
   },
   {
+    styleKey: "identity_challenge",
+    styleName: "Identity Challenge",
+    sourceCategory: "Provocation",
+    coreIntent: "Make a bold claim the viewer's identity or core belief won't let them scroll past",
+    emotionalTrigger: "defiance",
+    bestFor: ["scroll-stop hooks", "belief disruption", "audience-targeted ads", "reaction content"],
+    riskLevel: "aggressive",
+  },
+  {
     styleKey: "cold_open_story",
     styleName: "Cold Open Story",
     sourceCategory: "Storytime",

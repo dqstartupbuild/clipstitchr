@@ -153,6 +153,20 @@ Good variables: `task`, `example`, `time_limit`, `option_a`, `option_b`.
 
 Avoid: challenges with no clear answer.
 
+## Identity Challenge
+
+Principle: make a bold claim the viewer's core belief or identity won't let
+them scroll past. The claim must be specific enough to trigger an emotional
+response and honest enough that the content can validate it.
+
+Formula: denial or challenge of core belief + audience signal.
+
+Good variables: `core_belief`, `audience`, `popular_method`, `identity`,
+`controversial_take`, `common_assumption`.
+
+Avoid: claims that are discriminatory, medically dangerous, factually reckless,
+or impossible to validate with a demo, result, or explanation in the content.
+
 ## Cold Open Story
 
 Principle: drop the viewer into a specific moment before explaining context.

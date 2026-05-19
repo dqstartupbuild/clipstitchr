@@ -46,6 +46,7 @@ export function getCliprProductPlaceholderFillers(
 ): CliprPlaceholderFillers {
   const inferredPainPoint = product.inferredPainPoints[0] ?? "";
   const savedFillers = product.cliprPlaceholderFillers ?? {};
+  const currentYear = String(new Date().getFullYear());
 
   return {
     ...savedFillers,
@@ -82,9 +83,24 @@ export function getCliprProductPlaceholderFillers(
       product.name,
       ...(savedFillers.category ?? []),
     ]),
+    common_assumption: uniqueValues([
+      "more effort means better results",
+      "the old way is safer",
+      ...(savedFillers.common_assumption ?? []),
+    ]),
+    controversial_take: uniqueValues([
+      "the accepted way is slowing you down",
+      "the obvious fix is not the real fix",
+      ...(savedFillers.controversial_take ?? []),
+    ]),
+    core_belief: uniqueValues([
+      "doing it manually means it is more authentic",
+      "more tools mean better results",
+      ...(savedFillers.core_belief ?? []),
+    ]),
     goal: uniqueValues([
-      "a smoother workflow",
-      "better creative output",
+      "getting the next post out",
+      "a repeatable content workflow",
       ...(savedFillers.goal ?? []),
     ]),
     habit: uniqueValues([
@@ -92,9 +108,14 @@ export function getCliprProductPlaceholderFillers(
       "keeping up with content",
       ...(savedFillers.habit ?? []),
     ]),
+    identity: uniqueValues([
+      product.audienceDetails,
+      ...(savedFillers.identity ?? []),
+    ]),
     method: uniqueValues([
       product.name,
-      "a simpler workflow",
+      "doing everything manually",
+      "guessing what will work",
       ...(savedFillers.method ?? []),
     ]),
     new_way: uniqueValues([
@@ -104,12 +125,12 @@ export function getCliprProductPlaceholderFillers(
     ]),
     number: uniqueValues(["3", "5", "30", ...(savedFillers.number ?? [])]),
     old_way: uniqueValues([
-      "the manual way",
-      "the old process",
+      "doing everything manually",
+      "guessing from a blank page",
       ...(savedFillers.old_way ?? []),
     ]),
     option_a: uniqueValues([
-      "the manual way",
+      "doing everything manually",
       ...(savedFillers.option_a ?? []),
     ]),
     option_b: uniqueValues([
@@ -122,10 +143,20 @@ export function getCliprProductPlaceholderFillers(
       "launch",
       ...(savedFillers.period ?? []),
     ]),
+    popular_method: uniqueValues([
+      "doing everything manually",
+      "copying what everyone else posts",
+      ...(savedFillers.popular_method ?? []),
+    ]),
     result: uniqueValues([
-      "a clearer workflow",
-      "less wasted effort",
+      "fewer unfinished posts",
+      "cleaner publish-ready content",
       ...(savedFillers.result ?? []),
+    ]),
+    real_thing: uniqueValues([
+      "the repeatable system",
+      "the part that actually moves the output",
+      ...(savedFillers.real_thing ?? []),
     ]),
     task: uniqueValues([
       product.inferredProblem ?? "",
@@ -137,6 +168,16 @@ export function getCliprProductPlaceholderFillers(
       product.name,
       ...(savedFillers.thing ?? []),
     ]),
+    time: uniqueValues([
+      "3 hours per post",
+      "20 minutes of cleanup",
+      ...(savedFillers.time ?? []),
+    ]),
+    time_period: uniqueValues([
+      "two weeks",
+      "one month",
+      ...(savedFillers.time_period ?? []),
+    ]),
     timeframe: uniqueValues([
       "one week",
       "30 days",
@@ -146,10 +187,16 @@ export function getCliprProductPlaceholderFillers(
       product.name,
       ...(savedFillers.tool ?? []),
     ]),
+    trend: uniqueValues([
+      "AI-assisted content",
+      "faster creative cycles",
+      ...(savedFillers.trend ?? []),
+    ]),
     workflow: uniqueValues([
       product.inferredProblem ?? "",
       product.productDetails,
       ...(savedFillers.workflow ?? []),
     ]),
+    year: uniqueValues([currentYear, ...(savedFillers.year ?? [])]),
   };
 }

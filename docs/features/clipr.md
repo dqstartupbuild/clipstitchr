@@ -119,9 +119,9 @@ Create a root `resources/` folder if it does not exist.
 Create these non-user-facing files:
 
 - `resources/clipr/hook-styles.csv`
-  - Stores the 15 starter hook styles.
+  - Stores the 16 starter hook styles.
 - `resources/clipr/hook-templates.csv`
-  - Stores the 150 starter hook templates.
+  - Stores the starter hook templates plus purpose-specific expansions.
 - `resources/clipr/hook-style-rules.md`
   - Stores style-by-style generation rules.
 - `resources/clipr/hook-template-generation-prompt.md`
@@ -156,6 +156,7 @@ test_drive,Test Drive,Experiment,Show what happened after trying comparing or st
 pattern_break,Pattern Break,Shock,Open with a surprising result stat contrast or unexpected outcome
 vulnerable_reveal,Vulnerable Reveal,Confession,Admit something honest uncomfortable or personal
 viewer_dare,Viewer Dare,Challenge,Dare the viewer to prove skill knowledge or self-awareness
+identity_challenge,Identity Challenge,Provocation,Make a bold claim the viewer's identity or core belief won't let them scroll past
 cold_open_story,Cold Open Story,Storytime,Start inside a specific moment that needs resolution
 ```
 
@@ -318,6 +319,9 @@ cold_open_story,CS-009,"The best idea came after I almost quit {{project}}"
 cold_open_story,CS-010,"I showed {{thing}} to {{person}}, and their reaction changed everything"
 ```
 
+The identity challenge expansion also lives in the internal template resources
+as `IC-001` through `IC-115` for Swipr and Stitchr reaction-first ad hooks.
+
 ## Hook Template Model
 
 Runtime template records should support:
@@ -347,8 +351,9 @@ Implementation details:
 - Purpose filtering happens before model prompting. Clipr must only receive
   non-promotional engagement templates, while Swipr and Stitchr may also receive
   direct product/ad hook templates.
-- The picker can filter out aggressive templates for product contexts where a
-  direct or sensitive angle would be a bad fit.
+- Clipr blocks aggressive templates. Swipr and Stitchr may use aggressive
+  templates because their formats provide a validation/payoff beat after the
+  initial reaction.
 - The random choice should happen server-side so the client does not ship the
   whole private resource library unnecessarily.
 
@@ -527,6 +532,19 @@ Formula: challenge + constraint + reveal/payoff.
 Good variables: `task`, `example`, `time_limit`, `option_a`, `option_b`.
 
 Avoid: challenges with no clear answer.
+
+### Identity Challenge
+
+Principle: make a bold claim the viewer's core belief or identity won't let
+them scroll past.
+
+Formula: denial or challenge of core belief + audience signal.
+
+Good variables: `core_belief`, `audience`, `popular_method`, `identity`,
+`controversial_take`, `common_assumption`.
+
+Avoid: claims that are discriminatory, medically dangerous, factually reckless,
+or impossible to validate with a demo, result, or explanation in the content.
 
 ### Cold Open Story
 

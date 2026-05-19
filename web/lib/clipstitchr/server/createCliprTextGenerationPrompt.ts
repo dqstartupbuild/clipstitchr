@@ -28,11 +28,13 @@ function getPurposeRules(purpose: CliprTextPurpose) {
       "- For Swipr, use the product only as context for the audience, problem, and topic.",
       "- For Swipr, slides must contain exactly the requested slide count.",
       "- For Swipr, slides[0] must exactly match filledHook.",
-      "- For Swipr, middle slides must pay off the hook with engaging content: insight, mistake, pattern, reframe, useful explanation, or relatable tension.",
+      "- For Swipr, slides[0] must cause an immediate emotional reaction. The viewer must feel provoked, curious, or called out within the first second of reading.",
+      "- For Swipr, middle slides must validate the bold claim from slide 1. Show proof, a story, a transformation, or a reframe that earns the viewer's trust.",
       "- For Swipr, middle slides must not mention the product name, product features, product benefits, or sound like a pitch.",
-      "- For Swipr, the final slide must be a product CTA that mentions the product name. Use a soft CTA such as \"Use [product] when...\" or \"Make this easier with [product]\".",
+      "- For Swipr, the final slide must plug the product while the viewer's trust is highest. Use a soft CTA such as \"Use [product] when...\" or \"Make this easier with [product]\".",
       "- For Swipr, do not repeat the hook after slide 1 and do not make every slide another hook.",
       "- For Swipr, make every slide short enough for a vertical carousel image.",
+      "- For Swipr, prefer identity-level claims the audience would defend or resist over informational tips.",
     ];
   }
 
@@ -40,6 +42,9 @@ function getPurposeRules(purpose: CliprTextPurpose) {
     "- For Stitchr, the generated text may frame the selected product as the useful example or solution.",
     "- For Stitchr, overlayText must be one concise editable text overlay.",
     "- For Stitchr, write overlayText as an ad hook that can sit over a UGC-then-demo sequence.",
+    "- For Stitchr, the hook must cause a gut reaction in 2-3 seconds. Make a bold, specific claim the audience will emotionally resist or strongly agree with.",
+    "- For Stitchr, the UGC clip is the reaction trigger and the Demo clip is the validation. The overlayText should amplify this arc, not describe it.",
+    "- For Stitchr, prefer identity-level claims over informational hooks. Challenge a core belief the audience holds rather than sharing a safe tip.",
   ];
 }
 

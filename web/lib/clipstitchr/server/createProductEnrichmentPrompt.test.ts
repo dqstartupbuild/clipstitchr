@@ -22,6 +22,8 @@ describe("createProductEnrichmentPrompt", () => {
     expect(prompt).toContain("Choose every relevant Clipr hook style");
     expect(prompt).toContain("Cover hundreds of useful hook scenarios");
     expect(prompt).toContain("audience,");
+    expect(prompt).toContain("core_belief");
+    expect(prompt).toContain("IC-001");
     expect(prompt).toContain("wrong_goal");
     expect(prompt).toContain(lastStyle?.styleKey);
     expect(prompt).toContain(starterTemplate?.id);

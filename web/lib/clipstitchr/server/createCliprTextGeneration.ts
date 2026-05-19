@@ -3,15 +3,13 @@ import { createCliprTextGenerationPrompt } from "@/lib/clipstitchr/server/create
 import { getCliprEligibleHookTemplates } from "@/lib/clipstitchr/server/getCliprEligibleHookTemplates";
 import { getCliprHookModelId } from "@/lib/clipstitchr/server/getCliprHookModelId";
 import { getCliprProductPlaceholderFillers } from "@/lib/clipstitchr/server/getCliprProductPlaceholderFillers";
+import { getCliprTextSystemPrompt } from "@/lib/clipstitchr/server/getCliprTextSystemPrompt";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { parseCliprTextGenerationOutput } from "@/lib/clipstitchr/server/parseCliprTextGenerationOutput";
 import { selectCliprHookCandidates } from "@/lib/clipstitchr/server/selectCliprHookCandidates";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
-
-const CLIPR_TEXT_SYSTEM_PROMPT =
-  "You write concise non-promotional short-form engagement copy. Return valid JSON only.";
 
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
@@ -43,7 +41,7 @@ export async function createCliprTextGeneration({
         purpose,
         slideCount,
       }),
-      system_prompt: CLIPR_TEXT_SYSTEM_PROMPT,
+      system_prompt: getCliprTextSystemPrompt(purpose),
       temperature: 0.65,
       max_completion_tokens: 1200,
     },
