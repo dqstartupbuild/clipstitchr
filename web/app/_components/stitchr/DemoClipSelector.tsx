@@ -17,6 +17,7 @@ type DemoClipSelectorProps = {
   selectedId: string | null;
   selectedTrimRange: VideoTrimRange | null;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect: (id: string) => void;
   onUpdateTrim: (clip: VideoClipMetadata, trimRange: VideoTrimRange) => void;
 };
@@ -27,6 +28,7 @@ export function DemoClipSelector({
   selectedId,
   selectedTrimRange,
   onLoadClip,
+  onLoadPoster,
   onSelect,
   onUpdateTrim,
 }: DemoClipSelectorProps) {
@@ -70,6 +72,7 @@ export function DemoClipSelector({
                   }
                   isSelected={clip.id === selectedId}
                   onLoadClip={onLoadClip}
+                  onLoadPoster={onLoadPoster}
                   onSelect={onSelect}
                   onUpdateTrim={onUpdateTrim}
                 />

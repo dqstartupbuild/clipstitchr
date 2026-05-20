@@ -1,14 +1,16 @@
 "use client";
 
 import { GripVertical, X } from "lucide-react";
+import { useCallback } from "react";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
 type LongrTimelineCardProps = {
   clip: VideoClipMetadata;
   index: number;
   isDragging: boolean;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDragStart: (id: string) => void;
   onDrop: (id: string) => void;
   onRemove: (id: string) => void;
@@ -18,11 +20,20 @@ export function LongrTimelineCard({
   clip,
   index,
   isDragging,
+  onLoadPoster,
   onDragStart,
   onDrop,
   onRemove,
 }: LongrTimelineCardProps) {
-  const posterUrl = useObjectUrl(clip.posterBlob);
+  const loadPosterBlob = useCallback(
+    () => onLoadPoster?.(clip.id) ?? Promise.resolve(null),
+    [clip.id, onLoadPoster],
+  );
+  const posterUrl = useLazyBlobObjectUrl({
+    cacheKey: clip.posterObject?.key,
+    fallbackBlob: clip.posterBlob,
+    loadBlob: loadPosterBlob,
+  });
 
   return (
     <div

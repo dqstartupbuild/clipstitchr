@@ -15,6 +15,7 @@ type UgcClipSelectorProps = {
   selectedIds: string[];
   selectedTrimRangesByClipId: Record<string, VideoTrimRange>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect: (id: string) => void;
   onUpdateTrim: (clip: VideoClipMetadata, trimRange: VideoTrimRange) => void;
 };
@@ -24,6 +25,7 @@ export function UgcClipSelector({
   selectedIds,
   selectedTrimRangesByClipId,
   onLoadClip,
+  onLoadPoster,
   onSelect,
   onUpdateTrim,
 }: UgcClipSelectorProps) {
@@ -71,6 +73,7 @@ export function UgcClipSelector({
                       !isSelected
                     }
                     onLoadClip={onLoadClip}
+                    onLoadPoster={onLoadPoster}
                     onSelect={onSelect}
                     onUpdateTrim={onUpdateTrim}
                   />

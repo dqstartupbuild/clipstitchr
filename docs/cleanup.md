@@ -67,13 +67,23 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
   - `web/app/_components/stitchr/TextOverlayBox.tsx`
   - `web/app/_components/stitchr/TextOverlayPreviewBox.tsx`
   - `web/app/_components/swipr/SwiprStaticTextOverlayBox.tsx`
+- Replaced eager library hydration with paginated Convex metadata queries and lazy blob loaders:
+  - `videoClips.list`, `stitches.list`, and `longrVideos.list` now paginate metadata instead of collecting every document.
+  - `useClipLibraryState` no longer downloads poster blobs or full Longr blobs during dashboard/library load.
+  - Clip, stitch, and Longr poster blobs load on card demand; full Longr video blobs load only for preview/download.
+  - Dashboard, Uploads, Stitchr, and Longr library views now expose "load more" controls for paginated metadata.
+- Added focused coverage for paginated library queries, lazy library blob loading, lazy object URL cleanup, and Longr card lazy-download behavior.
+- Added batched, cacheable image downloads for visible poster/thumbnail media:
+  - `POST /api/r2/download-urls` signs up to 48 user-owned poster/thumbnail keys after one auth and R2-download rate-limit check.
+  - Client poster and thumbnail loading now checks persistent browser Cache Storage first, batch-signs cache misses, and fetches image blobs with limited parallelism.
+  - Full video/audio/blob downloads still use the single-object path and are not persisted in browser cache.
 
 ## Verification After Cleanup
 
 - `npm run lint`: pass, 0 warnings.
 - `npm run typecheck`: pass.
-- `npm test`: pass, 235 test files / 710 tests.
-- Full all-file coverage: 75.03% statements, 62.41% branches, 61.16% functions, 75.23% lines.
+- `npm test`: pass, 239 test files / 727 tests.
+- Full all-file coverage: 75.11% statements, 62.19% branches, 61.57% functions, 75.33% lines.
 - `npm run build` with placeholder production environment: pass on Next.js `16.2.6`.
 - `npm audit`: reports 4 moderate vulnerabilities and no high or critical vulnerabilities; npm's automated fixes still require `--force` and incompatible downgrade paths.
 
@@ -87,8 +97,8 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
 
 - **Quality gates:** `npm test`, `npm run typecheck`, and `npm run lint` pass; `placeholder-env npm run build` passed in the dependency cleanup pass.
 - **Lint:** Has 0 errors and 0 warnings after excluding `web/convex/_generated/*`.
-- **Scale:** 1,144 TS/JS source/test files, 77,968 lines, 65 files over 250 lines, 14 over 500 lines.
-- **Tests:** 235 test files / 710 tests. Coverage includes unloaded source and now reports 75.03% statements, 62.41% branches, 61.16% functions, and 75.23% lines.
+- **Scale:** 1,147 TS/JS source/test files, 78,735 lines, 65 files over 250 lines, 14 over 500 lines.
+- **Tests:** 239 test files / 727 tests. Coverage includes unloaded source and now reports 75.11% statements, 62.19% branches, 61.57% functions, and 75.33% lines.
 - **Security:** `npm audit` reports 4 vulnerabilities: 0 high, 4 moderate via `next/postcss` and `convex/ws`.
 
 ## Highest-ROI Debt
@@ -97,7 +107,7 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
    - **File:** `web/package.json:27` now pins `next@16.2.6`; the high-severity advisories are cleared.
    - **Residual:** npm still reports a moderate `postcss` advisory through `next`.
 2. **High: Misleading coverage and missing workflow tests**
-   - `coverage.include/all` is now enabled and the 75% sprint target is complete: all-file statement coverage is 75.03%.
+   - `coverage.include/all` is now enabled and the 75% sprint target is complete: all-file statement coverage is 75%.
    - Covered slices now include expensive API routes, analytics routes, Convex mutations/queries, core hooks, dashboard page clients, preview components, client helpers, Media Bunny helpers, media canvas helpers, dialog/card workflows, and text overlay utilities.
    - Remaining gap: content pages, analytics UI components, music selectors, upload controls, larger page clients, and deeper player branches still need tests.
    - **Action:** Continue toward 80% with content route/page coverage, music/upload UI workflows, and remaining dashboard client branches.
@@ -105,10 +115,10 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
    - **File:** `web/app/api/clipr/jobs/route.ts:43` is 404 lines and owns auth, rate limits, Convex writes, Replicate text/image/video/music calls, R2 saves, shared music saves, analytics, and failure handling.
    - **Action:** Split into request parsing, quota consumption, generation steps, persistence, and cleanup.
    - **Effort:** 16-24h.
-4. **High: Eager library hydration can become expensive**
-   - **File:** `web/lib/clipstitchr/hooks/useClipLibraryState.ts:392` downloads poster blobs for all clips/stitches and full Longr blobs during hydration. That turns dashboard/library load into O(saved media bytes).
-   - **Action:** Lazy-load video blobs and paginate metadata.
-   - **Effort:** 8-16h.
+4. **Done: Eager library hydration can become expensive**
+   - **Action:** `useClipLibraryState` now subscribes to paginated metadata and keeps saved media bytes out of initial dashboard/library hydration.
+   - **Files:** `web/lib/clipstitchr/hooks/useClipLibraryState.ts`, Convex clip/stitch/Longr list queries, and dashboard library consumers.
+   - **Result:** Poster blobs load when cards need them but now coalesce same-page cache misses through `POST /api/r2/download-urls`, persistent browser Cache Storage avoids refetching posters/thumbnails across refreshes, full Longr video blobs load only for preview/download, and library views can request additional metadata pages.
 5. **Medium: Duplicated Media Bunny export pipeline**
    - **Files:**
      - `web/lib/clipstitchr/media/stitchNormalizedVideos.ts:52`
@@ -123,8 +133,8 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
 
 ## Roadmap
 
-- **This sprint:** Complete. Coverage was expanded from the all-file baseline to 75.03% statements across API routes, analytics routing, Convex modules, hooks, dashboard SSR renders, client helpers, media utilities, preview components, and dialog/card workflows.
-- **Month 1:** Split `clipr/jobs` route; add route tests for auth, 429, validation, provider failure; lazy-load Longr/video blobs; continue coverage toward 80%.
+- **This sprint:** Complete. Coverage was expanded from the all-file baseline to 75% statements across API routes, analytics routing, Convex modules, hooks, dashboard SSR renders, client helpers, media utilities, preview components, and dialog/card workflows.
+- **Month 1:** Split `clipr/jobs` route; add route tests for auth, 429, validation, provider failure; continue coverage toward 80%.
 - **Quarter:** Add integration/E2E coverage for upload normalization, Stitchr UGC-then-Demo export, dashboard library flows, and paid provider routes; add dependency/audit checks to CI.
 
 ## Prevention

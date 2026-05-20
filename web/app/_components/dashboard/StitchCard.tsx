@@ -1,7 +1,7 @@
 "use client";
 
 import { Download, Music2, Play, Shuffle, Trash2, Type } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { StitchDetailsDialog } from "@/app/_components/dashboard/StitchDetailsDialog";
 import { StitchMusicSettingsDialog } from "@/app/_components/dashboard/StitchMusicSettingsDialog";
 import { StitchTextSettingsDialog } from "@/app/_components/dashboard/StitchTextSettingsDialog";
@@ -10,7 +10,7 @@ import {
   type MediaCardActionMenuItem,
 } from "@/app/_components/ui/MediaCardActionMenu";
 import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExportBlob";
-import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -28,6 +28,7 @@ type StitchCardProps = {
   onDelete: (id: string) => void | Promise<void>;
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
@@ -43,6 +44,7 @@ export function StitchCard({
   onDelete,
   onGenerateMusic,
   onLoadClip,
+  onLoadPoster,
   onUpdateMusic,
   onUpdateTextOverlay,
 }: StitchCardProps) {
@@ -66,7 +68,15 @@ export function StitchCard({
     previewErrorState?.cacheKey === previewCacheKey
       ? previewErrorState.message
       : null;
-  const posterUrl = useObjectUrl(stitch.posterBlob);
+  const loadPosterBlob = useCallback(
+    () => onLoadPoster?.(stitch.id) ?? Promise.resolve(null),
+    [onLoadPoster, stitch.id],
+  );
+  const posterUrl = useLazyBlobObjectUrl({
+    cacheKey: stitch.posterObject?.key ?? stitch.ugcClipId,
+    fallbackBlob: stitch.posterBlob,
+    loadBlob: loadPosterBlob,
+  });
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isMusicOpen, setIsMusicOpen] = useState(false);
   const [isTextOpen, setIsTextOpen] = useState(false);

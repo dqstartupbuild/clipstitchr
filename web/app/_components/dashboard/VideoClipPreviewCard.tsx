@@ -2,13 +2,14 @@
 
 import { Play } from "lucide-react";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { VideoClipDetailsDialog } from "@/app/_components/dashboard/VideoClipDetailsDialog";
 import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
 import {
   MediaCardActionMenu,
   type MediaCardActionMenuItem,
 } from "@/app/_components/ui/MediaCardActionMenu";
+import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -46,6 +47,7 @@ type VideoClipPreviewCardProps = {
   actions?: (actions: VideoClipPreviewCardActions) => MediaCardActionMenuItem[];
   footer?: (actions: VideoClipPreviewCardActions) => ReactNode;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect?: () => void;
   cliprMusicEditor?: VideoClipDetailsMusicEditor;
   trimEditor?: VideoClipPreviewCardTrimEditor;
@@ -60,6 +62,7 @@ export function VideoClipPreviewCard({
   actions,
   footer,
   onLoadClip,
+  onLoadPoster,
   onSelect,
   cliprMusicEditor,
   trimEditor,
@@ -87,7 +90,15 @@ export function VideoClipPreviewCard({
   const loadedClip =
     loadedClipState?.cacheKey === clipCacheKey ? loadedClipState.clip : null;
   const videoUrl = useObjectUrl(loadedClip?.blob);
-  const posterUrl = useObjectUrl(clip.posterBlob);
+  const loadPosterBlob = useCallback(
+    () => onLoadPoster?.(clip.id) ?? Promise.resolve(null),
+    [clip.id, onLoadPoster],
+  );
+  const posterUrl = useLazyBlobObjectUrl({
+    cacheKey: clip.posterObject?.key,
+    fallbackBlob: clip.posterBlob,
+    loadBlob: loadPosterBlob,
+  });
   const visibleDuration =
     displayDuration ??
     getVideoTrimDisplayDuration(clip.duration, getDefaultVideoTrimRange(clip));

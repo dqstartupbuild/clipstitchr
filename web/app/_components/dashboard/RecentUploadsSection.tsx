@@ -13,6 +13,7 @@ type RecentUploadsSectionProps = {
   clips: VideoClipMetadata[];
   products?: ProductProfile[];
   onLoadClip: (id: string) => Promise<VideoClip | null>;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
   onUpdateMetadata: (
     clip: VideoClipMetadata,
@@ -28,6 +29,7 @@ export function RecentUploadsSection({
   clips,
   products = [],
   onLoadClip,
+  onLoadPoster,
   onDelete,
   onUpdateMetadata,
   onUpdateTrim,
@@ -53,6 +55,7 @@ export function RecentUploadsSection({
               clip={clip}
               products={products}
               onLoadClip={onLoadClip}
+              onLoadPoster={onLoadPoster}
               onDelete={onDelete}
               onUpdateMetadata={onUpdateMetadata}
               onUpdateTrim={onUpdateTrim}

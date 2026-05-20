@@ -207,15 +207,20 @@ export function LongrPageClient() {
               duration={selectedDuration}
               products={products.products}
               demoProductFilterId={activeDemoProductFilterId}
+              hasMoreClips={library.hasMoreClips}
               isBuilding={isBuilding}
+              isLoadingMoreClips={library.isLoadingMoreClips}
               selectedClipIds={selectedClipIds}
               onAddClip={handleAddClip}
               onBuild={handleBuild}
               onDemoProductFilterChange={setDemoProductFilterId}
+              onLoadMoreClips={library.loadMoreClips}
+              onLoadPoster={library.loadClipPoster}
               onRemoveClip={handleRemoveClip}
             />
             <LongrTimelineStrip
               clips={selectedClips}
+              onLoadPoster={library.loadClipPoster}
               onMoveClip={handleMoveClip}
               onRemoveClip={handleRemoveClip}
             />

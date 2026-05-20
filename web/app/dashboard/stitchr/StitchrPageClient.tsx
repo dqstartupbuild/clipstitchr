@@ -394,6 +394,8 @@ export function StitchrPageClient() {
                 addMusic={addMusic}
                 includeDemoAudio={includeDemoAudio}
                 includeUgcAudio={includeUgcAudio}
+                hasMoreClips={library.hasMoreClips}
+                isLoadingMoreClips={library.isLoadingMoreClips}
                 selectedMusicTrack={selectedMusicTrack}
                 products={products.products}
                 ugcClips={ugcClips}
@@ -404,6 +406,7 @@ export function StitchrPageClient() {
                 selectedUgcTrimRangesByClipId={selectedUgcTrimRangesByClipId}
                 selectedDemoTrimRange={selectedDemoTrimRange}
                 onLoadClip={loadClip}
+                onLoadPoster={library.loadClipPoster}
                 onSelectUgc={handleSelectUgc}
                 onSelectDemo={handleSelectDemo}
                 onDemoProductFilterChange={handleDemoProductFilterChange}
@@ -420,6 +423,7 @@ export function StitchrPageClient() {
                 }}
                 onIncludeDemoAudioChange={setIncludeDemoAudio}
                 onIncludeUgcAudioChange={setIncludeUgcAudio}
+                onLoadMoreClips={library.loadMoreClips}
                 onSelectMusicTrack={(track) => {
                   setSelectedMusicTrack(track);
                   setAddMusic(false);

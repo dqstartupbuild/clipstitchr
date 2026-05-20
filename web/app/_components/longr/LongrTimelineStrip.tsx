@@ -7,12 +7,14 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 
 type LongrTimelineStripProps = {
   clips: VideoClipMetadata[];
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
   onMoveClip: (draggedId: string, targetId: string) => void;
   onRemoveClip: (id: string) => void;
 };
 
 export function LongrTimelineStrip({
   clips,
+  onLoadPoster,
   onMoveClip,
   onRemoveClip,
 }: LongrTimelineStripProps) {
@@ -42,6 +44,7 @@ export function LongrTimelineStrip({
             clip={clip}
             index={index}
             isDragging={draggingId === clip.id}
+            onLoadPoster={onLoadPoster}
             onDragStart={setDraggingId}
             onDrop={(targetId) => {
               if (draggingId && draggingId !== targetId) {

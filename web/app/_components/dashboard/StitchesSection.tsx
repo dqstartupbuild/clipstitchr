@@ -2,6 +2,7 @@
 
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
+import { Button } from "@/app/_components/ui/Button";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -11,11 +12,15 @@ type StitchesSectionProps = {
   stitches: Stitch[];
   emptyDescription?: string;
   emptyTitle?: string;
+  hasMoreItems?: boolean;
   id?: string;
+  isLoadingMoreItems?: boolean;
   title?: string;
   onDelete: (id: string) => void | Promise<void>;
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
+  onLoadMoreItems?: () => void;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
@@ -30,11 +35,15 @@ export function StitchesSection({
   stitches,
   emptyDescription = "Stitch a video after you have at least one UGC and one demo video.",
   emptyTitle = "No stitches yet",
+  hasMoreItems = false,
   id = "stitches",
+  isLoadingMoreItems = false,
   title = "Stitches",
   onDelete,
   onGenerateMusic,
   onLoadClip,
+  onLoadMoreItems,
+  onLoadPoster,
   onUpdateMusic,
   onUpdateTextOverlay,
 }: StitchesSectionProps) {
@@ -55,6 +64,7 @@ export function StitchesSection({
               onDelete={onDelete}
               onGenerateMusic={onGenerateMusic}
               onLoadClip={onLoadClip}
+              onLoadPoster={onLoadPoster}
               onUpdateMusic={onUpdateMusic}
               onUpdateTextOverlay={onUpdateTextOverlay}
             />
@@ -66,6 +76,18 @@ export function StitchesSection({
           description={emptyDescription}
         />
       )}
+      {hasMoreItems && onLoadMoreItems ? (
+        <div className="mt-4 flex justify-center">
+          <Button
+            type="button"
+            variant="secondary"
+            isLoading={isLoadingMoreItems}
+            onClick={onLoadMoreItems}
+          >
+            Load more stitches
+          </Button>
+        </div>
+      ) : null}
     </section>
   );
 }

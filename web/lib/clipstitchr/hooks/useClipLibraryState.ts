@@ -1,21 +1,30 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useConvex, useConvexAuth, useMutation, useQuery } from "convex/react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  useConvex,
+  useConvexAuth,
+  useMutation,
+  usePaginatedQuery,
+} from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { createLongrVideoMetadataFromConvexDocument } from "@/lib/clipstitchr/backend/createLongrVideoMetadataFromConvexDocument";
 import { createLongrVideoFromConvexDocument } from "@/lib/clipstitchr/backend/createLongrVideoFromConvexDocument";
 import { createStitchFromConvexDocument } from "@/lib/clipstitchr/backend/createStitchFromConvexDocument";
 import { createVideoClipFromConvexDocument } from "@/lib/clipstitchr/backend/createVideoClipFromConvexDocument";
 import { createVideoClipMetadataFromConvexDocument } from "@/lib/clipstitchr/backend/createVideoClipMetadataFromConvexDocument";
 import { getDefinedR2Objects } from "@/lib/clipstitchr/backend/getDefinedR2Objects";
 import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
+import { downloadCachedR2ImageBlobs } from "@/lib/clipstitchr/client/r2/downloadCachedR2ImageBlobs";
 import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
 import { generateCliprMusic as requestCliprMusicGeneration } from "@/lib/clipstitchr/client/generateCliprMusic";
 import { generateStitchMusic as requestStitchMusicGeneration } from "@/lib/clipstitchr/client/generateStitchMusic";
+import { libraryMetadataPageSize } from "@/lib/clipstitchr/constants/libraryMetadataPageSize";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { ClipLibraryValue } from "@/lib/clipstitchr/types/ClipLibraryValue";
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -26,21 +35,35 @@ import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange
 import { getDeletableMusicAudioObject } from "@/lib/clipstitchr/utils/getDeletableMusicAudioObject";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
+type PendingPosterBlobLoad = {
+  object: R2ObjectReference;
+  promise: Promise<Blob | null>;
+  resolve: (blob: Blob | null) => void;
+};
+
 export function useClipLibraryState(): ClipLibraryValue {
   const convex = useConvex();
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
-  const clipDocuments = useQuery(
+  const [error, setError] = useState<string | null>(null);
+  const [refreshNonce, setRefreshNonce] = useState(0);
+  const clipDocumentsQuery = usePaginatedQuery(
     api.videoClips.list,
-    isAuthenticated ? {} : "skip",
+    isAuthenticated ? { refreshNonce } : "skip",
+    { initialNumItems: libraryMetadataPageSize },
   );
-  const stitchDocuments = useQuery(
+  const stitchDocumentsQuery = usePaginatedQuery(
     api.stitches.list,
-    isAuthenticated ? {} : "skip",
+    isAuthenticated ? { refreshNonce } : "skip",
+    { initialNumItems: libraryMetadataPageSize },
   );
-  const longrVideoDocuments = useQuery(
+  const longrVideoDocumentsQuery = usePaginatedQuery(
     api.longrVideos.list,
-    isAuthenticated ? {} : "skip",
+    isAuthenticated ? { refreshNonce } : "skip",
+    { initialNumItems: libraryMetadataPageSize },
   );
+  const clipDocuments = clipDocumentsQuery.results;
+  const stitchDocuments = stitchDocumentsQuery.results;
+  const longrVideoDocuments = longrVideoDocumentsQuery.results;
   const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
   const updateCliprMusicMutation = useMutation(api.videoClips.updateCliprMusic);
   const updateStitchMusicMutation = useMutation(api.stitches.updateMusic);
@@ -50,17 +73,136 @@ export function useClipLibraryState(): ClipLibraryValue {
   const removeClipMutation = useMutation(api.videoClips.remove);
   const removeLongrVideoMutation = useMutation(api.longrVideos.remove);
   const removeStitchMutation = useMutation(api.stitches.remove);
-  const [clips, setClips] = useState<VideoClipMetadata[]>([]);
-  const [longrVideos, setLongrVideos] = useState<LongrVideo[]>([]);
-  const [stitches, setStitches] = useState<Stitch[]>([]);
-  const [isHydrating, setIsHydrating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshNonce, setRefreshNonce] = useState(0);
   const clipCacheRef = useRef(new Map<string, VideoClip>());
+  const longrVideoCacheRef = useRef(new Map<string, LongrVideo>());
+  const posterBlobCacheRef = useRef(new Map<string, Blob>());
+  const pendingPosterBlobLoadsRef = useRef(
+    new Map<string, PendingPosterBlobLoad>(),
+  );
+  const queuedPosterBlobLoadKeysRef = useRef(new Set<string>());
+  const isPosterBlobFlushScheduledRef = useRef(false);
+  const clips = useMemo(
+    () => clipDocuments.map((clip) => createVideoClipMetadataFromConvexDocument(clip)),
+    [clipDocuments],
+  );
+  const stitches = useMemo(
+    () =>
+      stitchDocuments.map((stitch) =>
+        createStitchFromConvexDocument({ stitch }),
+      ),
+    [stitchDocuments],
+  );
+  const longrVideos = useMemo(
+    () =>
+      longrVideoDocuments.map((longrVideo) =>
+        createLongrVideoMetadataFromConvexDocument(longrVideo),
+      ),
+    [longrVideoDocuments],
+  );
 
   const refresh = useCallback(async () => {
+    setError(null);
     setRefreshNonce((currentNonce) => currentNonce + 1);
   }, []);
+
+  const flushQueuedPosterBlobLoads = useCallback(() => {
+    isPosterBlobFlushScheduledRef.current = false;
+
+    const queuedKeys = [...queuedPosterBlobLoadKeysRef.current];
+
+    queuedPosterBlobLoadKeysRef.current.clear();
+
+    const posterObjects = queuedKeys
+      .map((key) => pendingPosterBlobLoadsRef.current.get(key)?.object)
+      .filter((object): object is R2ObjectReference => Boolean(object));
+
+    if (posterObjects.length === 0) {
+      return;
+    }
+
+    void downloadCachedR2ImageBlobs(posterObjects)
+      .then((posterBlobsByKey) => {
+        for (const posterObject of posterObjects) {
+          const pendingLoad = pendingPosterBlobLoadsRef.current.get(
+            posterObject.key,
+          );
+
+          if (!pendingLoad) {
+            continue;
+          }
+
+          const posterBlob = posterBlobsByKey.get(posterObject.key) ?? null;
+
+          if (posterBlob) {
+            posterBlobCacheRef.current.set(posterObject.key, posterBlob);
+          }
+
+          pendingLoad.resolve(posterBlob);
+          pendingPosterBlobLoadsRef.current.delete(posterObject.key);
+        }
+      })
+      .catch(() => {
+        for (const posterObject of posterObjects) {
+          const pendingLoad = pendingPosterBlobLoadsRef.current.get(
+            posterObject.key,
+          );
+
+          if (!pendingLoad) {
+            continue;
+          }
+
+          pendingLoad.resolve(null);
+          pendingPosterBlobLoadsRef.current.delete(posterObject.key);
+        }
+      });
+  }, []);
+
+  const schedulePosterBlobLoadFlush = useCallback(() => {
+    if (isPosterBlobFlushScheduledRef.current) {
+      return;
+    }
+
+    isPosterBlobFlushScheduledRef.current = true;
+    void Promise.resolve().then(flushQueuedPosterBlobLoads);
+  }, [flushQueuedPosterBlobLoads]);
+
+  const loadPosterBlob = useCallback(
+    async (posterObject?: R2ObjectReference) => {
+      if (!posterObject) {
+        return null;
+      }
+
+      const cachedPosterBlob = posterBlobCacheRef.current.get(posterObject.key);
+
+      if (cachedPosterBlob) {
+        return cachedPosterBlob;
+      }
+
+      const pendingLoad = pendingPosterBlobLoadsRef.current.get(
+        posterObject.key,
+      );
+
+      if (pendingLoad) {
+        return await pendingLoad.promise;
+      }
+
+      let resolvePendingLoad: (blob: Blob | null) => void = () => undefined;
+      const promise = new Promise<Blob | null>((resolve) => {
+        resolvePendingLoad = resolve;
+      });
+
+      pendingPosterBlobLoadsRef.current.set(posterObject.key, {
+        object: posterObject,
+        promise,
+        resolve: resolvePendingLoad,
+      });
+      queuedPosterBlobLoadKeysRef.current.add(posterObject.key);
+      schedulePosterBlobLoadFlush();
+
+      return await promise;
+    },
+    [schedulePosterBlobLoadFlush],
+  );
 
   const loadClip = useCallback(async (id: string) => {
     const cachedClip = clipCacheRef.current.get(id);
@@ -77,24 +219,94 @@ export function useClipLibraryState(): ClipLibraryValue {
       return null;
     }
 
-    const hydratedClipMetadata = clips.find((clip) => clip.id === id);
     const [blob, posterBlob] = await Promise.all([
       downloadBlobFromR2(clipDocument.videoObject),
-      hydratedClipMetadata?.posterBlob
-        ? Promise.resolve(hydratedClipMetadata.posterBlob)
-        : clipDocument.posterObject
-          ? downloadBlobFromR2(clipDocument.posterObject)
-          : Promise.resolve(undefined),
+      loadPosterBlob(clipDocument.posterObject),
     ]);
     const clip = createVideoClipFromConvexDocument({
       clip: clipDocument,
       blob,
-      posterBlob,
+      posterBlob: posterBlob ?? undefined,
     });
 
     clipCacheRef.current.set(id, clip);
     return clip;
-  }, [clips, convex, clipDocuments]);
+  }, [convex, clipDocuments, loadPosterBlob]);
+
+  const loadClipPoster = useCallback(async (id: string) => {
+    const clipDocument =
+      clipDocuments.find((clip) => clip.id === id) ??
+      (await convex.query(api.videoClips.get, { id }));
+
+    if (!clipDocument) {
+      return null;
+    }
+
+    return await loadPosterBlob(clipDocument.posterObject);
+  }, [clipDocuments, convex, loadPosterBlob]);
+
+  const loadStitchPoster = useCallback(async (id: string) => {
+    const stitchDocument =
+      stitchDocuments.find((stitch) => stitch.id === id) ??
+      (await convex.query(api.stitches.get, { id }));
+
+    if (!stitchDocument) {
+      return null;
+    }
+
+    if (stitchDocument.posterObject) {
+      return await loadPosterBlob(stitchDocument.posterObject);
+    }
+
+    const ugcClipDocument =
+      clipDocuments.find((clip) => clip.id === stitchDocument.ugcClipId) ??
+      (await convex.query(api.videoClips.get, {
+        id: stitchDocument.ugcClipId,
+      }));
+
+    return await loadPosterBlob(ugcClipDocument?.posterObject);
+  }, [clipDocuments, convex, loadPosterBlob, stitchDocuments]);
+
+  const loadLongrPoster = useCallback(async (id: string) => {
+    const longrVideoDocument =
+      longrVideoDocuments.find((longrVideo) => longrVideo.id === id) ??
+      (await convex.query(api.longrVideos.get, { id }));
+
+    if (!longrVideoDocument) {
+      return null;
+    }
+
+    return await loadPosterBlob(longrVideoDocument.posterObject);
+  }, [convex, loadPosterBlob, longrVideoDocuments]);
+
+  const loadLongrVideo = useCallback(async (id: string) => {
+    const cachedLongrVideo = longrVideoCacheRef.current.get(id);
+
+    if (cachedLongrVideo) {
+      return cachedLongrVideo;
+    }
+
+    const longrVideoDocument =
+      longrVideoDocuments.find((longrVideo) => longrVideo.id === id) ??
+      (await convex.query(api.longrVideos.get, { id }));
+
+    if (!longrVideoDocument) {
+      return null;
+    }
+
+    const [blob, posterBlob] = await Promise.all([
+      downloadBlobFromR2(longrVideoDocument.longrObject),
+      loadPosterBlob(longrVideoDocument.posterObject),
+    ]);
+    const longrVideo = createLongrVideoFromConvexDocument({
+      longrVideo: longrVideoDocument,
+      blob,
+      posterBlob: posterBlob ?? undefined,
+    });
+
+    longrVideoCacheRef.current.set(id, longrVideo);
+    return longrVideo;
+  }, [convex, loadPosterBlob, longrVideoDocuments]);
 
   const removeClip = useCallback(
     async (id: string) => {
@@ -354,136 +566,55 @@ export function useClipLibraryState(): ClipLibraryValue {
       }
 
       await removeLongrVideoMutation({ id });
+      longrVideoCacheRef.current.delete(id);
       await refresh();
     },
     [convex, longrVideoDocuments, refresh, removeLongrVideoMutation],
   );
 
-  useEffect(() => {
-    if (
-      isAuthLoading ||
-      !isAuthenticated ||
-      !clipDocuments ||
-      !stitchDocuments ||
-      !longrVideoDocuments
-    ) {
-      if (!isAuthLoading && !isAuthenticated) {
-        void Promise.resolve().then(() => {
-          setClips([]);
-          setLongrVideos([]);
-          setStitches([]);
-        });
-      }
-
-      return;
+  const loadMoreClips = useCallback(() => {
+    if (clipDocumentsQuery.status === "CanLoadMore") {
+      clipDocumentsQuery.loadMore(libraryMetadataPageSize);
     }
-
-    let isCancelled = false;
-
-    void Promise.resolve().then(async () => {
-      if (isCancelled) {
-        return;
-      }
-
-      setIsHydrating(true);
-      setError(null);
-
-      try {
-        const nextClips = await Promise.all(
-          clipDocuments.map(async (clip) => {
-            const posterBlob = clip.posterObject
-              ? await downloadBlobFromR2(clip.posterObject).catch(
-                  () => undefined,
-                )
-              : undefined;
-
-            return createVideoClipMetadataFromConvexDocument(clip, posterBlob);
-          }),
-        );
-        const posterBlobsByClipId = new Map(
-          nextClips.map((clip) => [clip.id, clip.posterBlob]),
-        );
-        const [nextStitches, nextLongrVideos] = await Promise.all([
-          Promise.all(
-            stitchDocuments.map(async (stitch) => {
-              const posterBlob = stitch.posterObject
-                ? await downloadBlobFromR2(stitch.posterObject).catch(
-                    () => undefined,
-                  )
-                : posterBlobsByClipId.get(stitch.ugcClipId);
-
-              return createStitchFromConvexDocument({
-                stitch,
-                posterBlob,
-              });
-            }),
-          ),
-          Promise.all(
-            longrVideoDocuments.map(async (longrVideo) => {
-              const [blob, posterBlob] = await Promise.all([
-                downloadBlobFromR2(longrVideo.longrObject),
-                longrVideo.posterObject
-                  ? downloadBlobFromR2(longrVideo.posterObject).catch(
-                      () => undefined,
-                    )
-                  : Promise.resolve(undefined),
-              ]);
-
-              return createLongrVideoFromConvexDocument({
-                longrVideo,
-                blob,
-                posterBlob,
-              });
-            }),
-          ),
-        ]);
-
-        if (!isCancelled) {
-          setClips(nextClips);
-          setLongrVideos(nextLongrVideos);
-          setStitches(nextStitches);
-        }
-      } catch (nextError) {
-        if (!isCancelled) {
-          setError(
-            nextError instanceof Error
-              ? nextError.message
-              : "Unable to load the ClipStitchr library.",
-          );
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsHydrating(false);
-        }
-      }
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [
-    clipDocuments,
-    isAuthenticated,
-    isAuthLoading,
-    longrVideoDocuments,
-    refreshNonce,
-    stitchDocuments,
-  ]);
+  }, [clipDocumentsQuery]);
+  const loadMoreStitches = useCallback(() => {
+    if (stitchDocumentsQuery.status === "CanLoadMore") {
+      stitchDocumentsQuery.loadMore(libraryMetadataPageSize);
+    }
+  }, [stitchDocumentsQuery]);
+  const loadMoreLongrVideos = useCallback(() => {
+    if (longrVideoDocumentsQuery.status === "CanLoadMore") {
+      longrVideoDocumentsQuery.loadMore(libraryMetadataPageSize);
+    }
+  }, [longrVideoDocumentsQuery]);
+  const isLoadingFirstPage =
+    isAuthenticated &&
+    (clipDocumentsQuery.status === "LoadingFirstPage" ||
+      stitchDocumentsQuery.status === "LoadingFirstPage" ||
+      longrVideoDocumentsQuery.status === "LoadingFirstPage");
 
   return {
     clips,
     longrVideos,
     stitches,
-    isLoading:
-      isAuthLoading ||
-      (isAuthenticated &&
-        (clipDocuments === undefined ||
-          stitchDocuments === undefined ||
-          longrVideoDocuments === undefined)) ||
-      isHydrating,
+    isLoading: isAuthLoading || isLoadingFirstPage,
+    hasMoreClips: clipDocumentsQuery.status === "CanLoadMore",
+    hasMoreLongrVideos: longrVideoDocumentsQuery.status === "CanLoadMore",
+    hasMoreStitches: stitchDocumentsQuery.status === "CanLoadMore",
+    isLoadingMoreClips: clipDocumentsQuery.status === "LoadingMore",
+    isLoadingMoreLongrVideos:
+      longrVideoDocumentsQuery.status === "LoadingMore",
+    isLoadingMoreStitches: stitchDocumentsQuery.status === "LoadingMore",
     error,
     refresh,
     loadClip,
+    loadClipPoster,
+    loadLongrPoster,
+    loadLongrVideo,
+    loadMoreClips,
+    loadMoreLongrVideos,
+    loadMoreStitches,
+    loadStitchPoster,
     removeClip,
     renameClip,
     updateClipMetadata,

@@ -88,6 +88,10 @@ vi.mock("@/lib/clipstitchr/hooks/useObjectUrl", () => ({
   useObjectUrl: mocks.useObjectUrl,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useLazyBlobObjectUrl", () => ({
+  useLazyBlobObjectUrl: mocks.useObjectUrl,
+}));
+
 vi.mock("@/lib/clipstitchr/client/createStitchExportBlob", () => ({
   createStitchExportBlob: mocks.createStitchExportBlob,
 }));

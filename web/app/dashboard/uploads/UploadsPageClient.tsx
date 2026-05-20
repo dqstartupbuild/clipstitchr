@@ -325,7 +325,12 @@ export function UploadsPageClient() {
                   ? videoLibraryContent.ugc.searchEmptyDescription
                   : videoLibraryContent.ugc.emptyDescription
               }
+              hasMoreItems={library.hasMoreClips}
+              isLoadingMoreItems={library.isLoadingMoreClips}
+              loadMoreLabel="Load more videos"
               onLoadClip={library.loadClip}
+              onLoadPoster={library.loadClipPoster}
+              onLoadMoreItems={library.loadMoreClips}
               isCreatingAvatarFromClip={avatarCreator.isGenerating}
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
@@ -350,7 +355,12 @@ export function UploadsPageClient() {
                   ? videoLibraryContent.clips.searchEmptyDescription
                   : videoLibraryContent.clips.emptyDescription
               }
+              hasMoreItems={library.hasMoreClips}
+              isLoadingMoreItems={library.isLoadingMoreClips}
+              loadMoreLabel="Load more videos"
               onLoadClip={library.loadClip}
+              onLoadPoster={library.loadClipPoster}
+              onLoadMoreItems={library.loadMoreClips}
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
               onUpdateCliprMusic={library.updateCliprMusic}
@@ -373,7 +383,12 @@ export function UploadsPageClient() {
                   ? videoLibraryContent.demo.searchEmptyDescription
                   : videoLibraryContent.demo.emptyDescription
               }
+              hasMoreItems={library.hasMoreClips}
+              isLoadingMoreItems={library.isLoadingMoreClips}
+              loadMoreLabel="Load more videos"
               onLoadClip={library.loadClip}
+              onLoadPoster={library.loadClipPoster}
+              onLoadMoreItems={library.loadMoreClips}
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
               onUpdateCliprMusic={library.updateCliprMusic}
@@ -396,7 +411,12 @@ export function UploadsPageClient() {
                   ? videoLibraryContent.swaps.searchEmptyDescription
                   : videoLibraryContent.swaps.emptyDescription
               }
+              hasMoreItems={library.hasMoreClips}
+              isLoadingMoreItems={library.isLoadingMoreClips}
+              loadMoreLabel="Load more videos"
               onLoadClip={library.loadClip}
+              onLoadPoster={library.loadClipPoster}
+              onLoadMoreItems={library.loadMoreClips}
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
               onUpdateCliprMusic={library.updateCliprMusic}
@@ -412,9 +432,13 @@ export function UploadsPageClient() {
                   ? "No stitches match that name."
                   : undefined
               }
+              hasMoreItems={library.hasMoreStitches}
+              isLoadingMoreItems={library.isLoadingMoreStitches}
               onDelete={library.removeStitch}
               onGenerateMusic={library.generateStitchMusic}
               onLoadClip={library.loadClip}
+              onLoadMoreItems={library.loadMoreStitches}
+              onLoadPoster={library.loadStitchPoster}
               onUpdateMusic={library.updateStitchMusic}
               onUpdateTextOverlay={library.updateStitchTextOverlay}
             />
@@ -427,7 +451,12 @@ export function UploadsPageClient() {
                   ? "No Longs match that name."
                   : undefined
               }
+              hasMoreItems={library.hasMoreLongrVideos}
+              isLoadingMoreItems={library.isLoadingMoreLongrVideos}
               onDelete={library.removeLongrVideo}
+              onLoadLongrVideo={library.loadLongrVideo}
+              onLoadMoreItems={library.loadMoreLongrVideos}
+              onLoadPoster={library.loadLongrPoster}
             />
             <SwiprSwipesSection
               key={`all-swipes-${searchQuery}`}
@@ -468,7 +497,12 @@ export function UploadsPageClient() {
                   ? "No saved demo videos are linked to that product."
                 : selectedVideoSection.content.emptyDescription
             }
+            hasMoreItems={library.hasMoreClips}
+            isLoadingMoreItems={library.isLoadingMoreClips}
+            loadMoreLabel="Load more videos"
             onLoadClip={library.loadClip}
+            onLoadPoster={library.loadClipPoster}
+            onLoadMoreItems={library.loadMoreClips}
             isCreatingAvatarFromClip={
               selectedTab === "ugc" && avatarCreator.isGenerating
             }
@@ -492,9 +526,13 @@ export function UploadsPageClient() {
                 ? "No stitches match that name."
                 : undefined
             }
+            hasMoreItems={library.hasMoreStitches}
+            isLoadingMoreItems={library.isLoadingMoreStitches}
             onDelete={library.removeStitch}
             onGenerateMusic={library.generateStitchMusic}
             onLoadClip={library.loadClip}
+            onLoadMoreItems={library.loadMoreStitches}
+            onLoadPoster={library.loadStitchPoster}
             onUpdateMusic={library.updateStitchMusic}
             onUpdateTextOverlay={library.updateStitchTextOverlay}
           />
@@ -509,7 +547,12 @@ export function UploadsPageClient() {
                 ? "No Longs match that name."
                 : undefined
             }
+            hasMoreItems={library.hasMoreLongrVideos}
+            isLoadingMoreItems={library.isLoadingMoreLongrVideos}
             onDelete={library.removeLongrVideo}
+            onLoadLongrVideo={library.loadLongrVideo}
+            onLoadMoreItems={library.loadMoreLongrVideos}
+            onLoadPoster={library.loadLongrPoster}
           />
         ) : null}
         {selectedTab === "swipes" ? (

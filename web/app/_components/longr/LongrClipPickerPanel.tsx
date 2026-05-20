@@ -19,11 +19,15 @@ type LongrClipPickerPanelProps = {
   duration: number;
   products: ProductProfile[];
   demoProductFilterId: string;
+  hasMoreClips?: boolean;
   isBuilding: boolean;
+  isLoadingMoreClips?: boolean;
   selectedClipIds: string[];
   onAddClip: (clip: VideoClipMetadata) => void;
   onBuild: () => void;
   onDemoProductFilterChange: (productId: string) => void;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
+  onLoadMoreClips?: () => void;
   onRemoveClip: (clipId: string) => void;
 };
 
@@ -32,11 +36,15 @@ export function LongrClipPickerPanel({
   duration,
   products,
   demoProductFilterId,
+  hasMoreClips = false,
   isBuilding,
+  isLoadingMoreClips = false,
   selectedClipIds,
   onAddClip,
   onBuild,
   onDemoProductFilterChange,
+  onLoadPoster,
+  onLoadMoreClips,
   onRemoveClip,
 }: LongrClipPickerPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -101,12 +109,25 @@ export function LongrClipPickerPanel({
               }
               disabled={duration + clipDuration > longrMaxDurationSeconds}
               isSelected={isSelected}
+              onLoadPoster={onLoadPoster}
               onAdd={onAddClip}
               onRemove={(selectedClip) => onRemoveClip(selectedClip.id)}
             />
           );
         })}
       </div>
+      {hasMoreClips && onLoadMoreClips ? (
+        <div className="mt-4 flex justify-center">
+          <Button
+            type="button"
+            variant="secondary"
+            isLoading={isLoadingMoreClips}
+            onClick={onLoadMoreClips}
+          >
+            Load more clips
+          </Button>
+        </div>
+      ) : null}
     </Panel>
   );
 }
