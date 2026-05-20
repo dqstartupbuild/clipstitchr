@@ -133,7 +133,7 @@ Optional Replicate model overrides:
 | Product enrichment | `POST /api/settings/products`, `PATCH /api/settings/products/{id}` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
 | Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; shared global provider bucket 10,000 units/hour, burst 2,000 |
 | Clipr hook/script generation | `POST /api/clipr/jobs` and `POST /api/clipr/text` | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000 |
-| Clipr avatar still generation | `POST /api/clipr/jobs` before the full-script avatar video call | 20 images/hour/user, burst 6; global provider bucket counted once per still |
+| Clipr avatar still generation | `POST /api/clipr/jobs` before the full-script avatar video call | 20 images/hour/user, burst 6; global provider bucket counted once per still. After the still succeeds, the route consumes R2 upload byte limits before saving personal avatar-photo and thumbnail copies. |
 | Clipr avatar video and voice generation | `POST /api/clipr/jobs` before calling `prunaai/p-video-avatar` | 600 estimated avatar seconds/hour/user, burst 180; global provider bucket counted by estimated seconds |
 | Clipr music generation | `POST /api/clipr/jobs` when music is selected and `POST /api/clipr/music` when regenerating music for an existing Clip | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
 | Stitchr music generation | `POST /api/stitches/music` when creating or regenerating music for a saved stitch | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
@@ -210,10 +210,13 @@ scenes. The expensive surfaces are gated before work starts: job creation,
 hook/script generation, avatar still generation, full-script avatar video
 generation, optional music generation, R2 object creation, and Convex final
 save. Clipr saves the normalized full avatar video directly as the final Clipr
-clip. Optional generated music is stored as a personal audio object and as a
-shared library track; selecting an existing shared track skips the music
-provider call. Music is mixed into a fresh downloadable file only when the user
-exports/downloads. That export-time Media Bunny render is browser-local and is
+clip. The generated avatar still is also saved as an avatar photo attached to
+the selected avatar; the route consumes R2 upload byte limits before writing the
+photo and thumbnail objects, and `photoAssets.save` consumes the shared Convex
+record-save limit. Optional generated music is stored as a personal audio
+object and as a shared library track; selecting an existing shared track skips
+the music provider call. Music is mixed into a fresh downloadable file only when
+the user exports/downloads. That export-time Media Bunny render is browser-local and is
 not separately rate-limited. Saved Stitchr outputs use the same export-time
 model: saving a stitch stores source clip references, trim ranges, text, source
 audio flags, and music metadata in Convex without uploading a rendered stitch
