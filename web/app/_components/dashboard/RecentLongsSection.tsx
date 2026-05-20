@@ -4,15 +4,20 @@ import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyS
 import { LongrVideoCard } from "@/app/_components/dashboard/LongrVideoCard";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
+import type { LongrVideoMetadata } from "@/lib/clipstitchr/types/LongrVideoMetadata";
 
 type RecentLongsSectionProps = {
-  longrVideos: LongrVideo[];
+  longrVideos: LongrVideoMetadata[];
   onDelete: (id: string) => void | Promise<void>;
+  onLoadLongrVideo: (id: string) => Promise<LongrVideo | null>;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
 };
 
 export function RecentLongsSection({
   longrVideos,
   onDelete,
+  onLoadLongrVideo,
+  onLoadPoster,
 }: RecentLongsSectionProps) {
   return (
     <section id="recent-longs">
@@ -32,6 +37,8 @@ export function RecentLongsSection({
               key={longrVideo.id}
               longrVideo={longrVideo}
               onDelete={onDelete}
+              onLoadLongrVideo={onLoadLongrVideo}
+              onLoadPoster={onLoadPoster}
             />
           ))}
         </div>

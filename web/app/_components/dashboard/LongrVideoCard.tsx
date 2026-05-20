@@ -1,44 +1,87 @@
 "use client";
 
 import { Download, Play, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { LongrVideoDetailsDialog } from "@/app/_components/dashboard/LongrVideoDetailsDialog";
 import {
   MediaCardActionMenu,
   type MediaCardActionMenuItem,
 } from "@/app/_components/ui/MediaCardActionMenu";
+import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { createVideoBlobWithPosterMetadata } from "@/lib/clipstitchr/media/createVideoBlobWithPosterMetadata";
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
+import type { LongrVideoMetadata } from "@/lib/clipstitchr/types/LongrVideoMetadata";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 
 type LongrVideoCardProps = {
-  longrVideo: LongrVideo;
+  longrVideo: LongrVideoMetadata;
   onDelete: (id: string) => void | Promise<void>;
+  onLoadLongrVideo: (id: string) => Promise<LongrVideo | null>;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
 };
 
 export function LongrVideoCard({
   longrVideo,
   onDelete,
+  onLoadLongrVideo,
+  onLoadPoster,
 }: LongrVideoCardProps) {
-  const url = useObjectUrl(longrVideo.blob);
-  const posterUrl = useObjectUrl(longrVideo.posterBlob);
+  const [loadedLongrVideo, setLoadedLongrVideo] =
+    useState<LongrVideo | null>(null);
+  const url = useObjectUrl(loadedLongrVideo?.blob);
+  const loadPosterBlob = useCallback(
+    () => onLoadPoster?.(longrVideo.id) ?? Promise.resolve(null),
+    [longrVideo.id, onLoadPoster],
+  );
+  const posterUrl = useLazyBlobObjectUrl({
+    cacheKey: longrVideo.posterObject?.key,
+    fallbackBlob: loadedLongrVideo?.posterBlob ?? longrVideo.posterBlob,
+    loadBlob: loadPosterBlob,
+  });
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isLoadingVideo, setIsLoadingVideo] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const loadFullLongrVideo = async () => {
+    if (loadedLongrVideo) {
+      return loadedLongrVideo;
+    }
+
+    setIsLoadingVideo(true);
+
+    try {
+      const nextLongrVideo = await onLoadLongrVideo(longrVideo.id);
+
+      setLoadedLongrVideo(nextLongrVideo);
+      return nextLongrVideo;
+    } finally {
+      setIsLoadingVideo(false);
+    }
+  };
+  const openDetails = () => {
+    setIsDetailsOpen(true);
+    void loadFullLongrVideo();
+  };
   const handleDownload = async () => {
     setIsDownloading(true);
     setDownloadError(null);
 
     try {
+      const nextLongrVideo = await loadFullLongrVideo();
+
+      if (!nextLongrVideo) {
+        throw new Error("Unable to load this Long.");
+      }
+
       downloadBlob(
         await createVideoBlobWithPosterMetadata({
-          posterBlob: longrVideo.posterBlob,
-          title: longrVideo.name,
-          videoBlob: longrVideo.blob,
+          posterBlob: nextLongrVideo.posterBlob,
+          title: nextLongrVideo.name,
+          videoBlob: nextLongrVideo.blob,
         }),
         longrVideo.name,
       );
@@ -56,7 +99,7 @@ export function LongrVideoCard({
     {
       label: "Download Long",
       icon: <Download aria-hidden className="h-4 w-4" />,
-      disabled: isDownloading,
+      disabled: isDownloading || isLoadingVideo,
       onClick: () => void handleDownload(),
     },
     {
@@ -75,7 +118,7 @@ export function LongrVideoCard({
             type="button"
             aria-label={`Open details for ${longrVideo.name}`}
             className="group relative block aspect-square w-full text-left"
-            onClick={() => setIsDetailsOpen(true)}
+            onClick={openDetails}
           >
             {posterUrl ? (
               <span
@@ -103,7 +146,7 @@ export function LongrVideoCard({
           <button
             type="button"
             className="min-w-0 flex-1 rounded-md text-left outline-none transition-colors hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            onClick={() => setIsDetailsOpen(true)}
+            onClick={openDetails}
           >
             <h3 className="truncate text-sm font-bold text-text-primary">
               {longrVideo.name}

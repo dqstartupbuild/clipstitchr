@@ -16,6 +16,7 @@ import {
 import { analyzeUploadAsset } from "@/lib/clipstitchr/client/analyzeUploadAsset";
 import { expandSwaprPhotoWithAi } from "@/lib/clipstitchr/client/expandSwaprPhotoWithAi";
 import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
+import { downloadCachedR2ImageBlobs } from "@/lib/clipstitchr/client/r2/downloadCachedR2ImageBlobs";
 import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { createImageThumbnailBlob } from "@/lib/clipstitchr/media/createImageThumbnailBlob";
@@ -150,15 +151,18 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
       return null;
     }
 
-    const [blob, originalBlob, thumbnailBlob] = await Promise.all([
+    const [blob, originalBlob, thumbnailBlobsByKey] = await Promise.all([
       downloadBlobFromR2(photoDocument.photoObject),
       photoDocument.originalObject
         ? downloadBlobFromR2(photoDocument.originalObject)
         : Promise.resolve(undefined),
       photoDocument.thumbnailObject
-        ? downloadBlobFromR2(photoDocument.thumbnailObject)
-        : Promise.resolve(undefined),
+        ? downloadCachedR2ImageBlobs([photoDocument.thumbnailObject])
+        : Promise.resolve(new Map<string, Blob>()),
     ]);
+    const thumbnailBlob = photoDocument.thumbnailObject
+      ? thumbnailBlobsByKey.get(photoDocument.thumbnailObject.key)
+      : undefined;
     const photo = createPhotoAssetFromConvexDocument({
       photo: photoDocument,
       blob,
@@ -732,19 +736,21 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
       setError(null);
 
       try {
-        const nextPhotos = await Promise.all(
-          photoDocuments.map(async (photo) => {
-            const thumbnailBlob = photo.thumbnailObject
-              ? await downloadBlobFromR2(photo.thumbnailObject).catch(
-                  () => undefined,
-                )
-              : undefined;
-
-            return createPhotoAssetMetadataFromConvexDocument(
-              photo,
-              thumbnailBlob,
-            );
-          }),
+        const thumbnailObjects = photoDocuments
+          .map((photo) => photo.thumbnailObject)
+          .filter((object): object is NonNullable<typeof object> =>
+            Boolean(object),
+          );
+        const thumbnailBlobsByKey = await downloadCachedR2ImageBlobs(
+          thumbnailObjects,
+        ).catch(() => new Map<string, Blob>());
+        const nextPhotos = photoDocuments.map((photo) =>
+          createPhotoAssetMetadataFromConvexDocument(
+            photo,
+            photo.thumbnailObject
+              ? thumbnailBlobsByKey.get(photo.thumbnailObject.key)
+              : undefined,
+          ),
         );
 
         if (!isCancelled) {

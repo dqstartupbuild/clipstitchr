@@ -1,3 +1,4 @@
+import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
@@ -26,15 +27,18 @@ const saveArgs = {
 };
 
 export const list = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    paginationOpts: paginationOptsValidator,
+    refreshNonce: v.optional(v.number()),
+  },
+  handler: async (ctx, { paginationOpts }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     return await ctx.db
       .query("longrVideos")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order("desc")
-      .collect();
+      .paginate(paginationOpts);
   },
 });
 

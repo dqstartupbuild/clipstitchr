@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => {
     createSwaprOutpaintInputs: vi.fn(),
     createSwaprPortraitPhotoBlob: vi.fn(),
     deleteObjectsFromR2: vi.fn(),
+    downloadCachedR2ImageBlobs: vi.fn(),
     downloadBlobFromR2: vi.fn(),
     expandSwaprPhotoWithAi: vi.fn(),
     getImageDimensions: vi.fn(),
@@ -101,6 +102,10 @@ vi.mock("@/lib/clipstitchr/client/expandSwaprPhotoWithAi", () => ({
 
 vi.mock("@/lib/clipstitchr/client/r2/deleteObjectsFromR2", () => ({
   deleteObjectsFromR2: mocks.deleteObjectsFromR2,
+}));
+
+vi.mock("@/lib/clipstitchr/client/r2/downloadCachedR2ImageBlobs", () => ({
+  downloadCachedR2ImageBlobs: mocks.downloadCachedR2ImageBlobs,
 }));
 
 vi.mock("@/lib/clipstitchr/client/r2/downloadBlobFromR2", () => ({
@@ -225,6 +230,14 @@ describe("usePhotoLibraryState", () => {
     mocks.downloadBlobFromR2.mockResolvedValue(new Blob(["photo"], {
       type: "image/jpeg",
     }));
+    mocks.downloadCachedR2ImageBlobs.mockImplementation(async (objects) => {
+      return new Map(
+        objects.map((object: { key: string }) => [
+          object.key,
+          new Blob(["thumbnail"], { type: "image/jpeg" }),
+        ]),
+      );
+    });
     mocks.createPhotoAssetFromConvexDocument.mockReturnValue({
       id: "photo_1",
       name: "Loaded photo",
@@ -326,7 +339,12 @@ describe("usePhotoLibraryState", () => {
       name: "Loaded photo",
     });
     expect(mocks.convex.query).toHaveBeenCalledTimes(1);
-    expect(mocks.downloadBlobFromR2).toHaveBeenCalledTimes(3);
+    expect(mocks.downloadBlobFromR2).toHaveBeenCalledTimes(2);
+    expect(mocks.downloadCachedR2ImageBlobs).toHaveBeenCalledWith([
+      expect.objectContaining({
+        key: "users/user_123/photos/photo_1/thumbnail.jpg",
+      }),
+    ]);
     expect(mocks.createPhotoAssetFromConvexDocument).toHaveBeenCalledWith(
       expect.objectContaining({
         blob: expect.any(Blob),
@@ -516,11 +534,11 @@ describe("usePhotoLibraryState", () => {
     }
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(mocks.downloadBlobFromR2).toHaveBeenCalledWith(
+    expect(mocks.downloadCachedR2ImageBlobs).toHaveBeenCalledWith([
       expect.objectContaining({
         key: "users/user_123/photos/photo_1/thumbnail.jpg",
       }),
-    );
+    ]);
     expect(mocks.createPhotoAssetMetadataFromConvexDocument).toHaveBeenCalledWith(
       expect.objectContaining({ id: "photo_1" }),
       expect.any(Blob),

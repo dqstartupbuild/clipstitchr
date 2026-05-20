@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { VideoClipCard } from "@/app/_components/dashboard/VideoClipCard";
+import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
@@ -22,7 +23,10 @@ type VideoLibrarySectionProps = {
   avatarCreatorError?: string | null;
   emptyDescription: string;
   emptyTitle?: string;
+  hasMoreItems?: boolean;
   isCreatingAvatarFromClip?: boolean;
+  isLoadingMoreItems?: boolean;
+  loadMoreLabel?: string;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onDelete: (id: string) => void | Promise<void>;
   onUpdateMetadata: (
@@ -32,6 +36,8 @@ type VideoLibrarySectionProps = {
   onGenerateCliprMusic?: (
     clip: VideoClipMetadata,
   ) => Promise<CliprMusicMetadata | null>;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
+  onLoadMoreItems?: () => void;
   onUpdateCliprMusic?: (
     clip: VideoClipMetadata,
     music: CliprMusicMetadata | null,
@@ -54,10 +60,15 @@ export function VideoLibrarySection({
   avatarCreatorError = null,
   emptyDescription,
   emptyTitle = "No videos yet",
+  hasMoreItems = false,
   isCreatingAvatarFromClip = false,
+  isLoadingMoreItems = false,
+  loadMoreLabel = "Load more videos",
   onLoadClip,
+  onLoadPoster,
   onDelete,
   onGenerateCliprMusic,
+  onLoadMoreItems,
   onUpdateCliprMusic,
   onUpdateMetadata,
   onUpdateTrim,
@@ -93,6 +104,7 @@ export function VideoLibrarySection({
                 avatarCreatorError={avatarCreatorError}
                 isCreatingAvatarFromClip={isCreatingAvatarFromClip}
                 onLoadClip={onLoadClip}
+                onLoadPoster={onLoadPoster}
                 onDelete={onDelete}
                 onGenerateCliprMusic={onGenerateCliprMusic}
                 onUpdateCliprMusic={onUpdateCliprMusic}
@@ -119,6 +131,18 @@ export function VideoLibrarySection({
       ) : (
         <DashboardEmptyState title={emptyTitle} description={emptyDescription} />
       )}
+      {hasMoreItems && onLoadMoreItems ? (
+        <div className="mt-4 flex justify-center">
+          <Button
+            type="button"
+            variant="secondary"
+            isLoading={isLoadingMoreItems}
+            onClick={onLoadMoreItems}
+          >
+            {loadMoreLabel}
+          </Button>
+        </div>
+      ) : null}
     </section>
   );
 }

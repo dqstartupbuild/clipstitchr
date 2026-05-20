@@ -4,13 +4,13 @@ import { X } from "lucide-react";
 import { LongVideoPreview } from "@/app/_components/dashboard/LongVideoPreview";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
+import type { LongrVideoMetadata } from "@/lib/clipstitchr/types/LongrVideoMetadata";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 
 type LongrVideoDetailsDialogProps = {
-  longrVideo: LongrVideo;
+  longrVideo: LongrVideoMetadata;
   posterUrl: string | null;
   videoUrl: string | null;
   onClose: () => void;

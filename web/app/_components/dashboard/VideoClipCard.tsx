@@ -40,6 +40,7 @@ type VideoClipCardProps = {
   avatarCreatorError?: string | null;
   isCreatingAvatarFromClip?: boolean;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
   onUpdateMetadata: (
     clip: VideoClipMetadata,
@@ -69,6 +70,7 @@ export function VideoClipCard({
   avatarCreatorError = null,
   isCreatingAvatarFromClip = false,
   onLoadClip,
+  onLoadPoster,
   onDelete,
   onGenerateCliprMusic,
   onUpdateCliprMusic,
@@ -113,7 +115,7 @@ export function VideoClipCard({
             ).blob
           : nextClip.blob;
       const exportBlob = await createVideoBlobWithPosterMetadata({
-        posterBlob: clip.posterBlob,
+        posterBlob: nextClip.posterBlob ?? clip.posterBlob,
         title: clip.name,
         videoBlob: renderedBlob,
       });
@@ -185,6 +187,7 @@ export function VideoClipCard({
         productName={productName}
         displayDuration={displayDuration}
         onLoadClip={onLoadClip}
+        onLoadPoster={onLoadPoster}
         trimEditor={{
           initialTrimRange: defaultTrimRange,
           saveLabel: "Save trim",

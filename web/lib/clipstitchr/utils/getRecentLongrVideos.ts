@@ -1,7 +1,7 @@
-import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
+import type { LongrVideoMetadata } from "@/lib/clipstitchr/types/LongrVideoMetadata";
 
 export function getRecentLongrVideos(
-  longrVideos: LongrVideo[],
+  longrVideos: LongrVideoMetadata[],
   limit: number,
 ) {
   return [...longrVideos]

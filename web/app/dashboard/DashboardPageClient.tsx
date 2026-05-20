@@ -101,12 +101,15 @@ export function DashboardPageClient() {
           onDelete={library.removeStitch}
           onGenerateMusic={library.generateStitchMusic}
           onLoadClip={library.loadClip}
+          onLoadPoster={library.loadStitchPoster}
           onUpdateMusic={library.updateStitchMusic}
           onUpdateTextOverlay={library.updateStitchTextOverlay}
         />
         <RecentLongsSection
           longrVideos={recentLongs}
           onDelete={library.removeLongrVideo}
+          onLoadLongrVideo={library.loadLongrVideo}
+          onLoadPoster={library.loadLongrPoster}
         />
         <RecentSwipesSection
           backgrounds={swiprLibrary.backgrounds}
@@ -118,6 +121,7 @@ export function DashboardPageClient() {
           clips={recentUploads}
           products={products.products}
           onLoadClip={library.loadClip}
+          onLoadPoster={library.loadClipPoster}
           onDelete={library.removeClip}
           onUpdateMetadata={library.updateClipMetadata}
           onUpdateTrim={library.updateClipTrimRange}

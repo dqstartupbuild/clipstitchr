@@ -1,9 +1,10 @@
 "use client";
 
 import { Check, Plus } from "lucide-react";
+import { useCallback } from "react";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
@@ -14,6 +15,7 @@ type LongrClipLibraryCardProps = {
   productName?: string;
   disabled: boolean;
   isSelected: boolean;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
   onAdd: (clip: VideoClipMetadata) => void;
   onRemove: (clip: VideoClipMetadata) => void;
 };
@@ -23,10 +25,19 @@ export function LongrClipLibraryCard({
   productName,
   disabled,
   isSelected,
+  onLoadPoster,
   onAdd,
   onRemove,
 }: LongrClipLibraryCardProps) {
-  const posterUrl = useObjectUrl(clip.posterBlob);
+  const loadPosterBlob = useCallback(
+    () => onLoadPoster?.(clip.id) ?? Promise.resolve(null),
+    [clip.id, onLoadPoster],
+  );
+  const posterUrl = useLazyBlobObjectUrl({
+    cacheKey: clip.posterObject?.key,
+    fallbackBlob: clip.posterBlob,
+    loadBlob: loadPosterBlob,
+  });
   const duration = getVideoTrimRangeDuration(getDefaultVideoTrimRange(clip));
 
   return (

@@ -46,6 +46,7 @@ function createQueryChain(uniqueValues: unknown[] = [], collect: unknown[] = [])
   const chain = {
     collect: vi.fn(async () => collect),
     order: vi.fn(() => chain),
+    paginate: vi.fn(async () => collect),
     unique: vi.fn(async () => uniqueValues.shift() ?? null),
     withIndex: vi.fn((_indexName: string, callback: (q: typeof indexQuery) => void) => {
       callback(indexQuery);
@@ -111,13 +112,21 @@ describe("convex videoClips", () => {
     const clips = [{ _id: "doc_1", id: "clip_1" }];
     const { chain, ctx } = createCtx([{ _id: "doc_1", id: "clip_1" }], clips);
 
-    await expect(getHandler(list)(ctx, {})).resolves.toBe(clips);
+    await expect(
+      getHandler(list)(ctx, {
+        paginationOpts: { cursor: null, numItems: 20 },
+      }),
+    ).resolves.toBe(clips);
     await expect(getHandler(get)(ctx, { id: "clip_1" })).resolves.toEqual({
       _id: "doc_1",
       id: "clip_1",
     });
     expect(ctx.db.query).toHaveBeenCalledWith("videoClips");
     expect(chain.order).toHaveBeenCalledWith("desc");
+    expect(chain.paginate).toHaveBeenCalledWith({
+      cursor: null,
+      numItems: 20,
+    });
   });
 
   it("requires valid products for demo saves and inserts or patches clips", async () => {

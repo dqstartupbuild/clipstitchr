@@ -13,6 +13,7 @@ type RecentStitchesSectionProps = {
   onDelete: (id: string) => void | Promise<void>;
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
@@ -28,6 +29,7 @@ export function RecentStitchesSection({
   onDelete,
   onGenerateMusic,
   onLoadClip,
+  onLoadPoster,
   onUpdateMusic,
   onUpdateTextOverlay,
 }: RecentStitchesSectionProps) {
@@ -53,6 +55,7 @@ export function RecentStitchesSection({
               onDelete={onDelete}
               onGenerateMusic={onGenerateMusic}
               onLoadClip={onLoadClip}
+              onLoadPoster={onLoadPoster}
               onUpdateMusic={onUpdateMusic}
               onUpdateTextOverlay={onUpdateTextOverlay}
             />

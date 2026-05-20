@@ -5,6 +5,7 @@ import { ClipAudioControls } from "@/app/_components/stitchr/ClipAudioControls";
 import { ClipPickerActionBar } from "@/app/_components/stitchr/ClipPickerActionBar";
 import { DemoClipSelector } from "@/app/_components/stitchr/DemoClipSelector";
 import { UgcClipSelector } from "@/app/_components/stitchr/UgcClipSelector";
+import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { ProductFilterSelect } from "@/app/_components/products/ProductFilterSelect";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
@@ -20,6 +21,8 @@ type ClipPickerPanelProps = {
   selectedMusicTrack: SharedMusicTrack | null;
   includeDemoAudio: boolean;
   includeUgcAudio: boolean;
+  hasMoreClips?: boolean;
+  isLoadingMoreClips?: boolean;
   products: ProductProfile[];
   ugcClips: VideoClipMetadata[];
   demoClips: VideoClipMetadata[];
@@ -29,6 +32,7 @@ type ClipPickerPanelProps = {
   selectedUgcTrimRangesByClipId: Record<string, VideoTrimRange>;
   selectedDemoTrimRange: VideoTrimRange | null;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
+  onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelectUgc: (id: string) => void;
   onSelectDemo: (id: string) => void;
   onDemoProductFilterChange: (productId: string) => void;
@@ -45,6 +49,7 @@ type ClipPickerPanelProps = {
   onAddMusicChange: (addMusic: boolean) => void;
   onIncludeDemoAudioChange: (includeDemoAudio: boolean) => void;
   onIncludeUgcAudioChange: (includeUgcAudio: boolean) => void;
+  onLoadMoreClips?: () => void;
   onSelectMusicTrack: (track: SharedMusicTrack) => void | Promise<void>;
   onStitch: () => void;
 };
@@ -54,6 +59,8 @@ export function ClipPickerPanel({
   selectedMusicTrack,
   includeDemoAudio,
   includeUgcAudio,
+  hasMoreClips = false,
+  isLoadingMoreClips = false,
   products,
   ugcClips,
   demoClips,
@@ -63,6 +70,7 @@ export function ClipPickerPanel({
   selectedUgcTrimRangesByClipId,
   selectedDemoTrimRange,
   onLoadClip,
+  onLoadPoster,
   onSelectUgc,
   onSelectDemo,
   onDemoProductFilterChange,
@@ -73,6 +81,7 @@ export function ClipPickerPanel({
   onAddMusicChange,
   onIncludeDemoAudioChange,
   onIncludeUgcAudioChange,
+  onLoadMoreClips,
   onSelectMusicTrack,
   onStitch,
 }: ClipPickerPanelProps) {
@@ -117,6 +126,7 @@ export function ClipPickerPanel({
           selectedIds={selectedUgcIds}
           selectedTrimRangesByClipId={selectedUgcTrimRangesByClipId}
           onLoadClip={onLoadClip}
+          onLoadPoster={onLoadPoster}
           onSelect={onSelectUgc}
           onUpdateTrim={onUpdateUgcTrim}
         />
@@ -127,10 +137,23 @@ export function ClipPickerPanel({
           selectedId={selectedDemoId}
           selectedTrimRange={selectedDemoTrimRange}
           onLoadClip={onLoadClip}
+          onLoadPoster={onLoadPoster}
           onSelect={onSelectDemo}
           onUpdateTrim={onUpdateDemoTrim}
         />
       </div>
+      {hasMoreClips && onLoadMoreClips ? (
+        <div className="mt-4 flex justify-center">
+          <Button
+            type="button"
+            variant="secondary"
+            isLoading={isLoadingMoreClips}
+            onClick={onLoadMoreClips}
+          >
+            Load more clips
+          </Button>
+        </div>
+      ) : null}
       <ClipAudioControls
         addMusic={addMusic}
         includeDemoAudio={includeDemoAudio}

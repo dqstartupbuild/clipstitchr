@@ -112,6 +112,7 @@ Optional Replicate model overrides:
 | R2 upload signed URL | `POST /api/r2/upload-url` | 2,000/hour/user, burst 500 |
 | R2 upload bytes | `POST /api/r2/upload-url` | 10 GB/day/user; 500 GB/30 days/user |
 | R2 download signed URL | `POST /api/r2/download-url` | 5,000/hour/user, burst 1,000 |
+| R2 batch image download signed URLs | `POST /api/r2/download-urls` | Uses the R2 download signed URL limit once per authenticated batch after validating every key belongs to the user and is a cacheable `poster.*` or `thumbnail.*` image. Requests are capped at 48 keys. |
 | R2 deletes | `POST /api/r2/delete-objects` | 2,000 objects/hour/user, burst 500 |
 | Shared Swipr background R2 upload signed URL | `POST /api/swipr/backgrounds/upload-url` | Uses the R2 upload signed URL and byte limits before creating a shared-background PUT URL |
 | Shared Swipr background R2 download signed URL | `POST /api/swipr/backgrounds/download-url` | Uses the R2 download signed URL limit after validating the shared background exists |

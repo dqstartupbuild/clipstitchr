@@ -47,6 +47,7 @@ function createQueryChain(uniqueValues: unknown[] = [], collect: unknown[] = [])
   const chain = {
     collect: vi.fn(async () => collect),
     order: vi.fn(() => chain),
+    paginate: vi.fn(async () => collect),
     unique: vi.fn(async () => uniqueValues.shift() ?? null),
     withIndex: vi.fn((_indexName: string, callback: (q: typeof indexQuery) => void) => {
       callback(indexQuery);
@@ -101,11 +102,19 @@ describe("convex stitches", () => {
     const stitches = [{ _id: "doc_1", id: "stitch_1" }];
     let setup = createCtx([{ _id: "doc_1", id: "stitch_1" }], stitches);
 
-    await expect(getHandler(list)(setup.ctx, {})).resolves.toBe(stitches);
+    await expect(
+      getHandler(list)(setup.ctx, {
+        paginationOpts: { cursor: null, numItems: 20 },
+      }),
+    ).resolves.toBe(stitches);
     await expect(getHandler(get)(setup.ctx, { id: "stitch_1" })).resolves.toEqual(
       { _id: "doc_1", id: "stitch_1" },
     );
     expect(setup.chain.order).toHaveBeenCalledWith("desc");
+    expect(setup.chain.paginate).toHaveBeenCalledWith({
+      cursor: null,
+      numItems: 20,
+    });
 
     setup = createCtx([null]);
     await expect(getHandler(save)(setup.ctx, createSaveArgs())).resolves.toBe(
