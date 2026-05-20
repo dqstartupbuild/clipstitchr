@@ -30,6 +30,31 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
 - Added focused hook coverage for clip/photo/Swipr libraries, Upload Processor, Stitchr, Longr, Swapr generation, Clipr generation, product state, avatar photo generation, avatar-from-UGC creation, video music details, and sequence players.
 - Added SSR render coverage for dashboard page clients and media preview components, including `VideoPreview`, `VideoClipMusicPreview`, and `LongVideoPreview`.
 - Added focused Media/UI utility coverage for text overlay drawing, avatar-generation constants, and Clipr raw hook template resources.
+- Added follow-up next-sprint coverage for:
+  - `POST /api/clipr/jobs`
+  - `DELETE /api/avatars/[id]`
+  - `GET /api/swapr/jobs/[id]`
+  - `POST /api/swapr/jobs/[id]/cancel`
+  - `POST /api/swipr/backgrounds/upload-url`
+  - `POST /api/swipr/backgrounds/analyze`
+  - `POST /api/swipr/backgrounds/download-url`
+  - `POST /api/indexnow`
+  - `generateAvatarPhotos`
+  - `createSwaprOutpaintInputs`
+  - `createSwaprPortraitPhotoBlob`
+  - `getClipMetadata`
+  - `useShowUploadControls`
+  - `useLoadedVideoClip`
+- Added an additional continuation batch for:
+  - `POST /api/analytics/tiktok/events`
+  - `createVideoPosterCandidateTimes`
+  - `encodeCanvasAsPosterBlob`
+  - `getCanvasVisiblePixelRatio`
+  - `getSupportedOutputCodecs`
+  - `getVideoMimeType`
+  - `createRetimedAudioSample`
+  - `createRetimedVideoSample`
+  - `registerAacEncoderIfNeeded`
 - Reused the shared overlay style helper from:
   - `web/app/_components/stitchr/TextOverlayBox.tsx`
   - `web/app/_components/stitchr/TextOverlayPreviewBox.tsx`
@@ -39,10 +64,10 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
 
 - `npm run lint`: pass, 0 warnings.
 - `npm run typecheck`: pass.
-- `npm test`: pass, 137 test files / 458 tests.
-- Full all-file coverage: 50.26% statements, 40.40% branches, 41.80% functions, 50.33% lines.
+- `npm test`: pass, 160 test files / 529 tests.
+- Full all-file coverage: 54.98% statements, 43.77% branches, 44.01% functions, 55.13% lines.
 - `npm run build` with placeholder production environment: pass on Next.js `16.2.6`.
-- `npm audit --omit=dev --json`: 0 critical, 0 high, 4 moderate vulnerabilities remain.
+- `npm audit --audit-level=moderate`: 0 critical, 0 high, 4 moderate vulnerabilities remain.
 
 ## Current Residual Audit Findings
 
@@ -54,9 +79,9 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
 
 - **Quality gates:** `npm test`, `npm run typecheck`, and `npm run lint` pass; `placeholder-env npm run build` passed in the dependency cleanup pass.
 - **Lint:** Has 0 errors and 0 warnings after excluding `web/convex/_generated/*`.
-- **Scale:** 1,042 TS/JS source/test files, 64,175 lines, 54 files over 250 lines, 12 over 500 lines.
-- **Tests:** 137 test files / 458 tests. Coverage includes unloaded source and now reports 50.26% statements, 40.40% branches, 41.80% functions, and 50.33% lines.
-- **Security:** `npm audit --omit=dev` reports 4 prod vulnerabilities: 0 high, 4 moderate via `next/postcss` and `convex/ws`.
+- **Scale:** 1,069 TS/JS source/test files, 67,623 lines, 54 files over 250 lines, 12 over 500 lines.
+- **Tests:** 160 test files / 529 tests. Coverage includes unloaded source and now reports 54.98% statements, 43.77% branches, 44.01% functions, and 55.13% lines.
+- **Security:** `npm audit --audit-level=moderate` reports 4 vulnerabilities: 0 high, 4 moderate via `next/postcss` and `convex/ws`.
 
 ## Highest-ROI Debt
 
@@ -64,10 +89,10 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
    - **File:** `web/package.json:27` now pins `next@16.2.6`; the high-severity advisories are cleared.
    - **Residual:** npm still reports a moderate `postcss` advisory through `next`.
 2. **High: Misleading coverage and missing workflow tests**
-   - `coverage.include/all` is now enabled and the first next-sprint target is complete: all-file statement coverage is above 50%.
-   - Covered slices now include expensive API routes, Convex mutations/queries, core hooks, dashboard page clients, preview components, and text overlay utilities.
-   - Remaining gap: `clipr/jobs`, media export pipelines, large dashboard components, and content/analytics routes still need deeper tests.
-   - **Action:** Continue toward 60% with `clipr/jobs`, Media Bunny export helpers, and the largest dashboard components.
+   - `coverage.include/all` is now enabled and the first next-sprint target is complete: all-file statement coverage is almost 55%.
+   - Covered slices now include expensive API routes, analytics routes, Convex mutations/queries, core hooks, dashboard page clients, preview components, client helpers, media canvas helpers, and text overlay utilities.
+   - Remaining gap: page clients, Media Bunny export pipelines, large dashboard/upload/music components, and content/analytics routes still need deeper tests.
+   - **Action:** Continue toward 60% with Media Bunny export helpers, the largest dashboard components, and route-level analytics coverage.
 3. **High: Oversized orchestration route**
    - **File:** `web/app/api/clipr/jobs/route.ts:43` is 404 lines and owns auth, rate limits, Convex writes, Replicate text/image/video/music calls, R2 saves, shared music saves, analytics, and failure handling.
    - **Action:** Split into request parsing, quota consumption, generation steps, persistence, and cleanup.
@@ -90,7 +115,7 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
 
 ## Roadmap
 
-- **This sprint:** Complete. Coverage was expanded from the all-file baseline to 50.26% statements across API routes, Convex modules, hooks, dashboard SSR renders, and media utilities.
+- **This sprint:** Complete. Coverage was expanded from the all-file baseline to 54.98% statements across API routes, analytics routing, Convex modules, hooks, dashboard SSR renders, client helpers, and media utilities.
 - **Month 1:** Split `clipr/jobs` route; add route tests for auth, 429, validation, provider failure; lazy-load Longr/video blobs; extract Media Bunny export helpers; continue coverage toward 60%.
 - **Quarter:** Add integration/E2E coverage for upload normalization, Stitchr UGC-then-Demo export, dashboard library flows, and paid provider routes; add dependency/audit checks to CI.
 
