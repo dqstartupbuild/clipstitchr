@@ -77,13 +77,17 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
   - `POST /api/r2/download-urls` signs up to 48 user-owned poster/thumbnail keys after one auth and R2-download rate-limit check.
   - Client poster and thumbnail loading now checks persistent browser Cache Storage first, batch-signs cache misses, and fetches image blobs with limited parallelism.
   - Full video/audio/blob downloads still use the single-object path and are not persisted in browser cache.
+- Split the oversized Clipr job orchestration route:
+  - `web/app/api/clipr/jobs/route.ts` now owns auth, request-scoped setup, response formatting, and error mapping.
+  - Request parsing, start quotas, Convex input loading, queued job persistence, script planning, avatar image generation, avatar video/music generation, shared music persistence, analytics, and failure cleanup now live in focused `web/lib/clipstitchr/server/clipr/*` modules.
+  - Existing Clipr route coverage continues to cover auth, validation, rate-limit, selected-music, generated-music, provider, R2, Convex persistence, analytics, and failure behavior.
 
 ## Verification After Cleanup
 
 - `npm run lint`: pass, 0 warnings.
 - `npm run typecheck`: pass.
 - `npm test`: pass, 239 test files / 727 tests.
-- Full all-file coverage: 75.11% statements, 62.19% branches, 61.57% functions, 75.33% lines.
+- Full all-file coverage: 75.14% statements, 62.2% branches, 61.83% functions, 75.36% lines.
 - `npm run build` with placeholder production environment: pass on Next.js `16.2.6`.
 - `npm audit`: reports 4 moderate vulnerabilities and no high or critical vulnerabilities; npm's automated fixes still require `--force` and incompatible downgrade paths.
 
@@ -98,7 +102,7 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
 - **Quality gates:** `npm test`, `npm run typecheck`, and `npm run lint` pass; `placeholder-env npm run build` passed in the dependency cleanup pass.
 - **Lint:** Has 0 errors and 0 warnings after excluding `web/convex/_generated/*`.
 - **Scale:** 1,147 TS/JS source/test files, 78,735 lines, 65 files over 250 lines, 14 over 500 lines.
-- **Tests:** 239 test files / 727 tests. Coverage includes unloaded source and now reports 75.11% statements, 62.19% branches, 61.57% functions, and 75.33% lines.
+- **Tests:** 239 test files / 727 tests. Coverage includes unloaded source and now reports 75.14% statements, 62.2% branches, 61.83% functions, and 75.36% lines.
 - **Security:** `npm audit` reports 4 vulnerabilities: 0 high, 4 moderate via `next/postcss` and `convex/ws`.
 
 ## Highest-ROI Debt
@@ -111,10 +115,10 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
    - Covered slices now include expensive API routes, analytics routes, Convex mutations/queries, core hooks, dashboard page clients, preview components, client helpers, Media Bunny helpers, media canvas helpers, dialog/card workflows, and text overlay utilities.
    - Remaining gap: content pages, analytics UI components, music selectors, upload controls, larger page clients, and deeper player branches still need tests.
    - **Action:** Continue toward 80% with content route/page coverage, music/upload UI workflows, and remaining dashboard client branches.
-3. **High: Oversized orchestration route**
-   - **File:** `web/app/api/clipr/jobs/route.ts:43` is 404 lines and owns auth, rate limits, Convex writes, Replicate text/image/video/music calls, R2 saves, shared music saves, analytics, and failure handling.
-   - **Action:** Split into request parsing, quota consumption, generation steps, persistence, and cleanup.
-   - **Effort:** 16-24h.
+3. **Done: Oversized orchestration route**
+   - **Action:** Split `POST /api/clipr/jobs` into request parsing, quota consumption, input loading, generation steps, persistence, analytics, and failure cleanup helpers.
+   - **Files:** `web/app/api/clipr/jobs/route.ts` and `web/lib/clipstitchr/server/clipr/*`.
+   - **Result:** The route is now 82 lines and delegates the multi-step Clipr workflow to focused server modules while preserving existing route behavior.
 4. **Done: Eager library hydration can become expensive**
    - **Action:** `useClipLibraryState` now subscribes to paginated metadata and keeps saved media bytes out of initial dashboard/library hydration.
    - **Files:** `web/lib/clipstitchr/hooks/useClipLibraryState.ts`, Convex clip/stitch/Longr list queries, and dashboard library consumers.
@@ -134,7 +138,7 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
 ## Roadmap
 
 - **This sprint:** Complete. Coverage was expanded from the all-file baseline to 75% statements across API routes, analytics routing, Convex modules, hooks, dashboard SSR renders, client helpers, media utilities, preview components, and dialog/card workflows.
-- **Month 1:** Split `clipr/jobs` route; add route tests for auth, 429, validation, provider failure; continue coverage toward 80%.
+- **Month 1:** Continue coverage toward 80% with remaining content/page UI, music/upload UI workflows, and deeper dashboard client branches.
 - **Quarter:** Add integration/E2E coverage for upload normalization, Stitchr UGC-then-Demo export, dashboard library flows, and paid provider routes; add dependency/audit checks to CI.
 
 ## Prevention

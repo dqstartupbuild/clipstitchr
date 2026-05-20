@@ -48,6 +48,11 @@ export default function PrivacyPage() {
               Convex.
             </p>
             <p>
+              Your browser may cache generated poster and thumbnail preview
+              images to make library pages load faster. Clearing browser or site
+              data removes that local preview cache.
+            </p>
+            <p>
               You can delete clips, photos, and stitches in the dashboard. Those
               actions remove the saved record and associated media objects for
               your account.

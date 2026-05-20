@@ -3,17 +3,26 @@
 ClipStitchr is moving from browser-local IndexedDB to a backend-backed model:
 
 - Convex owns all searchable/queryable records, user scoping, metadata, trim ranges, tags, and stitch history.
-- Cloudflare R2 owns every binary object: normalized videos, stitched videos, video posters, normalized photos, original photos, and thumbnails.
+- Cloudflare R2 owns every binary object: normalized videos, video posters,
+  normalized photos, original photos, thumbnails, audio tracks, and any future
+  server-rendered video outputs.
 - IndexedDB is not read, migrated, or retained. Existing browser-local data is intentionally abandoned.
 
 ## Required Outcome
 
-After the migration, the dashboard must never call `indexedDB`, never import `web/lib/clipstitchr/storage/*`, and never persist media in browser storage. The browser may keep in-memory `Blob` values and object URLs for the current session only.
+After the migration, the dashboard must never call `indexedDB` or import
+`web/lib/clipstitchr/storage/*`. The browser may keep in-memory `Blob` values
+and object URLs for the current session. It may also keep cacheable
+poster/thumbnail image blobs in Cache Storage so library pages can repaint
+quickly after refresh. Full videos, photos, source files, generated audio, and
+rendered outputs must not be persisted in browser storage.
 
 Every user-facing library view must be assembled from:
 
-1. Convex query results for records and object keys.
-2. R2 downloads for media, poster, and thumbnail blobs.
+1. Convex paginated query results for records and object keys.
+2. Cached, batched R2 image downloads for visible poster and thumbnail blobs.
+3. Lazy R2 downloads for full media blobs only when preview, export, or download
+   needs the bytes.
 
 Every create/update/delete workflow must write to:
 
@@ -50,8 +59,13 @@ Every create/update/delete workflow must write to:
 
 - User owner ID.
 - Stable app-level `id`.
-- UGC and demo clip IDs/names, copied trim ranges, output MIME type, size, dimensions, duration, optional text overlay, created timestamp, poster capture version.
-- R2 references for the stitched video and optional poster image.
+- UGC and demo clip IDs/names, copied trim ranges, output MIME type, size,
+  dimensions, duration, optional text overlay, source audio settings, optional
+  music settings, created timestamp, and poster capture version.
+- Saved Stitchr records store editable source metadata. They do not write a
+  rendered stitch video or stitch poster to R2 in the current MVP; card posters
+  can reuse the selected UGC poster and export-time rendering stays
+  browser-local.
 
 ### R2 Objects
 
@@ -63,8 +77,10 @@ users/{clerkUserId}/video-clips/{clipId}/poster.jpg
 users/{clerkUserId}/photos/{photoId}/photo.jpg
 users/{clerkUserId}/photos/{photoId}/original.jpg
 users/{clerkUserId}/photos/{photoId}/thumbnail.jpg
-users/{clerkUserId}/stitches/{stitchId}/video.mp4
-users/{clerkUserId}/stitches/{stitchId}/poster.jpg
+users/{clerkUserId}/stitches/{stitchId}/video.mp4      # legacy/future rendered output
+users/{clerkUserId}/stitches/{stitchId}/poster.jpg     # legacy/future rendered output
+users/{clerkUserId}/music/{trackId}/audio.*
+shared/music/{trackId}/audio.*
 ```
 
 The client must never receive R2 credentials. It asks authenticated Next.js API routes for short-lived signed URLs, then uploads/downloads directly with those URLs.
@@ -75,20 +91,20 @@ Delete or stop importing every file under `web/lib/clipstitchr/storage/`.
 
 Replace these operations:
 
-- `getVideoClips()` -> Convex `videoClips.list` query, then R2 poster hydration.
-- `getVideoClip(id)` -> Convex `videoClips.get` query or cached list record, then R2 video and poster hydration.
+- `getVideoClips()` -> paginated Convex `videoClips.list` metadata query, then cached batched R2 poster hydration for visible cards.
+- `getVideoClip(id)` -> Convex `videoClips.get` query or cached list record, then cached poster hydration and lazy R2 video hydration only when bytes are needed.
 - `saveVideoClip(clip)` -> upload video/poster to R2, then Convex `videoClips.save` mutation.
 - `saveVideoClipMetadata(clip)` -> Convex `videoClips.updateMetadata` mutation.
 - `deleteVideoClip(id)` -> Convex lookup for object keys, including optional
   Clipr music objects, R2 delete, then Convex `videoClips.remove` mutation.
-- `getPhotoAssets()` -> Convex `photoAssets.list` query, then R2 thumbnail hydration.
-- `getPhotoAsset(id)` -> Convex lookup, then R2 photo/original/thumbnail hydration.
+- `getPhotoAssets()` -> Convex `photoAssets.list` query, then cached batched R2 thumbnail hydration for visible photos.
+- `getPhotoAsset(id)` -> Convex lookup, then cached thumbnail hydration and lazy R2 photo/original hydration only when bytes are needed.
 - `savePhotoAsset(photo)` -> upload photo/original/thumbnail to R2, then Convex `photoAssets.save` mutation.
 - `savePhotoAssetMetadata(photo)` -> Convex `photoAssets.updateMetadata` mutation.
 - `deletePhotoAsset(id)` -> Convex lookup for object keys, R2 delete, then Convex `photoAssets.remove` mutation.
-- `getStitches()` -> Convex `stitches.list` query, then R2 video/poster hydration for current card behavior.
-- `getStitch(id)` -> Convex lookup, then R2 video/poster hydration.
-- `saveStitch(stitch)` -> upload stitched video/poster to R2, then Convex `stitches.save` mutation.
+- `getStitches()` -> paginated Convex `stitches.list` metadata query, then cached poster hydration from the stitch poster or selected UGC poster.
+- `getStitch(id)` -> Convex lookup, then lazy source clip hydration for preview/export.
+- `saveStitch(stitch)` -> Convex `stitches.save` mutation for editable source refs, trims, text, source audio, and music metadata. Do not upload a rendered stitch video/poster in the current MVP save path.
 - `deleteStitch(id)` -> Convex lookup for object keys, R2 delete, then Convex `stitches.remove` mutation.
 - `clearClipStitchrDatabase()` and all IndexedDB migrations -> delete; there is no local database reset flow after this change.
 
@@ -130,6 +146,13 @@ Add authenticated Next.js route handlers:
   - Body: R2 object key.
   - Validates that the key starts with `users/{clerkUserId}/`.
   - Returns: signed GET URL, expiration seconds.
+- `POST /api/r2/download-urls`
+  - Body: up to 48 R2 object keys.
+  - Validates every key starts with `users/{clerkUserId}/` and points to a
+    cacheable `poster.*` or `thumbnail.*` image.
+  - Consumes the R2 download signed URL rate limit once per authenticated batch.
+  - Returns signed GET URLs for image cache misses so visible library media can
+    hydrate without a serial waterfall.
 - `POST /api/r2/delete-objects`
   - Body: R2 object keys.
   - Validates each key is user scoped.
@@ -141,6 +164,9 @@ Add client helpers outside `storage/`:
 
 - Upload a `Blob` by requesting an upload URL, then `PUT`ing the blob with the exact signed content type.
 - Download a `Blob` by requesting a download URL, then fetching the signed URL.
+- Download poster/thumbnail image blobs with `downloadCachedR2ImageBlobs`, which
+  checks Cache Storage, batch-signs cache misses through `POST
+  /api/r2/download-urls`, and fetches image blobs with limited parallelism.
 - Delete a group of object keys through the delete route.
 - Convert Convex records plus hydrated blobs into existing `VideoClip`, `VideoClipMetadata`, `PhotoAsset`, `PhotoAssetMetadata`, and `Stitch` shapes.
 
@@ -148,11 +174,17 @@ Add client helpers outside `storage/`:
 
 Replace `useClipLibraryState` and `usePhotoLibraryState` internals:
 
-- Use Convex `useQuery` for list data.
+- Use paginated Convex list queries for library metadata where the view can grow
+  with user content.
 - Use Convex `useMutation` for metadata saves/removes.
-- Hydrate poster/thumbnail blobs from R2 after query data arrives.
-- Keep existing in-memory `Map` caches for full video/photo blobs.
-- Use R2 upload helpers during upload, Swapr generation, and stitch generation before saving Convex records.
+- Hydrate visible poster/thumbnail blobs from the cached, batched R2 image path
+  after query data arrives.
+- Keep existing in-memory `Map` caches for full video/photo/audio blobs and load
+  those blobs only on preview, export, or download demand.
+- Use R2 upload helpers during upload, Swapr generation, Clipr browser final
+  save, Longr save, and any rendered export flow before saving Convex records.
+  Current Stitchr saves write editable metadata only; a later rendered stitch
+  save/export path should upload R2 objects before linking them from Convex.
 
 Remove `useClipLibraryPosterBackfill`. No IndexedDB backfill logic remains.
 
@@ -255,11 +287,11 @@ npm run build
 - [x] R2 signed URL routes reject keys outside `users/{clerkUserId}/`.
 - [x] Upload normalization saves normalized video and poster to R2 before Convex metadata.
 - [x] Photo upload saves normalized photo, original photo, and thumbnail to R2 before Convex metadata.
-- [x] Stitch generation saves stitched output and poster to R2 before Convex metadata.
-- [x] Library list views query Convex and hydrate thumbnails/posters from R2.
+- [x] Saved stitches persist editable source refs, trims, text, source audio, and music metadata in Convex without rendered R2 output; export-time rendering stays browser-local.
+- [x] Library list views query Convex metadata first and hydrate visible thumbnails/posters through cached batched R2 image downloads.
 - [x] Preview, trim, Swapr, Stitchr, and download flows hydrate full media blobs from R2 on demand.
 - [x] Rename/tag/trim edits update Convex only.
 - [x] Deletions remove R2 objects and Convex records.
 - [x] No application code imports `web/lib/clipstitchr/storage/*`.
 - [x] No application code references `indexedDB`.
-- [x] User-facing docs and privacy copy no longer claim browser-local media persistence.
+- [x] User-facing docs and privacy copy distinguish saved R2 media from the local poster/thumbnail preview cache.

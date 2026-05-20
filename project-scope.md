@@ -348,6 +348,12 @@ selected slides.
 - The preview should let the user tap or swipe through each selected UGC + Demo sequence before export.
 - Each exported stitch must be a single 9:16 file using the same normalized assets shown in preview. A batch saves one stitch per selected UGC clip.
 - Clip cards should use the HTML video `poster` attribute for the static preview state. Generate poster images in the browser by seeking through early candidate frames, choosing the first visibly non-black frame, encoding it as JPEG, and storing it beside the video blob. Saved stitch cards can reuse the selected UGC poster because Stitchr does not persist rendered stitch videos at save time.
+- Library routes must load Convex metadata first, then hydrate visible
+  poster/thumbnail images through the batched `POST /api/r2/download-urls`
+  image path. Cacheable poster and thumbnail blobs may be stored in browser
+  Cache Storage using the R2 object key, content type, and size as the cache
+  identity. Full video/audio blobs must stay lazy and should not be persisted
+  in browser cache.
 - Poster generation is infrastructure for video previews. User-authored thumbnail generation, thumbnail selection, and thumbnail editing remain out of scope for the MVP.
 
 ### Media Bunny API Map (MVP)
@@ -541,9 +547,14 @@ interface Stitch {
 
 ## 11. Key Constraints
 
-1. **Browser-first:** All video processing must happen client-side in the MVP.
-2. **No external services:** MVP should work fully offline after initial page load.
-3. **Free tooling only:** No paid video processing APIs or licensed codecs.
+1. **Browser-first media processing:** Upload normalization, poster capture,
+   Stitchr export, Longr export, and Clipr music mixing happen client-side in
+   the MVP.
+2. **Server-gated paid AI:** Clipr, Swapr, avatar photo, Swipr background, and
+   music generation may call paid providers, but only through authenticated
+   server routes with rate limits consumed before provider work starts.
+3. **Free/local video processing:** No paid video processing APIs or licensed
+   codecs for the Media Bunny render paths.
 4. **TikTok-first output:** All uploaded clips and stitches must be normalized to 9:16 before preview, stitching, or download.
 5. **Fast iteration:** The starship boilerplate gives us Next.js + good defaults — build on top of it, don't fight it.
 
@@ -553,10 +564,10 @@ interface Stitch {
 
 - [ ] User can upload 5 UGC clips and 1 demo video.
 - [ ] Each uploaded video is normalized to TikTok 9:16 using Media Bunny before it appears in the usable library.
-- [ ] Each uploaded video and stitch has a non-black generated poster image in its default/static preview state.
+- [ ] Each uploaded video has a non-black generated poster image, and saved stitch cards have a visible static preview state using the selected UGC poster.
 - [ ] User can select up to 20 UGC clips + the demo and tap/swipe through exact UGC-then-Demo previews.
 - [ ] User can create stitched 9:16 videos where the Demo starts immediately after each UGC clip ends.
 - [ ] A single text overlay can be applied consistently across all selected UGC + Demo outputs.
 - [ ] All resulting 9:16 videos can be downloaded.
 - [ ] User can create multiple finished ad variants from the same library without opening a traditional editor.
-- [ ] Everything works on `localhost` with no external dependencies.
+- [ ] Core media workflows work on `localhost`; AI helper workflows require configured provider, Convex, R2, Clerk, and rate-limit environment variables.
