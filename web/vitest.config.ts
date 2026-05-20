@@ -14,6 +14,20 @@ export default defineConfig({
   test: {
     environment: "node",
     coverage: {
+      include: [
+        "app/**/*.{ts,tsx}",
+        "convex/**/*.{ts,tsx}",
+        "lib/**/*.{ts,tsx}",
+      ],
+      exclude: [
+        "**/*.test.{ts,tsx}",
+        ".content-collections/**",
+        ".next/**",
+        "app/**/*.png",
+        "convex/_generated/**",
+        "coverage/**",
+        "next-env.d.ts",
+      ],
       provider: "v8",
       reporter: ["text", "html"],
     },
