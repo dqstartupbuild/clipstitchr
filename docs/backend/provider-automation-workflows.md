@@ -206,6 +206,16 @@ The current media finalization job is a useful downstream piece. The missing
 piece is making the provider steps before `clipr-finalization` durable when the
 browser or request disappears.
 
+The current `POST /api/clipr/jobs` implementation is still route-local, but the
+orchestration is split across focused modules in
+`web/lib/clipstitchr/server/clipr/*`: request parsing, start-quota consumption,
+Convex input loading, queued job persistence, script planning, avatar still
+generation, avatar video/music generation, shared music persistence, analytics,
+and failure cleanup are separate units. That split improves maintainability and
+testability, but it does not replace the durable target above; provider execution
+can still be interrupted by request/runtime failure until those steps move to a
+recoverable worker/finalizer path.
+
 ## Swipr Durable Target
 
 Swipr should not stream generated provider images back to the browser as the

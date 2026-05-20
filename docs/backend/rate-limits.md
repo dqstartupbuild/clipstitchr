@@ -310,6 +310,15 @@ enforcement mechanism because the browser uploads directly to R2 after the URL i
 issued. Keep signed URL lifetimes short and add orphan cleanup for objects that
 were uploaded but never saved to Convex.
 
+Library poster and thumbnail hydration should use `POST /api/r2/download-urls`
+instead of many serial `POST /api/r2/download-url` calls. The batch route only
+accepts user-owned `poster.*` and `thumbnail.*` keys, caps each request at 48
+keys, and consumes the normal R2 download signed URL limit once after validation.
+Clients should check persistent Cache Storage first and batch-sign only image
+cache misses. Full video, photo, and audio blobs must continue to use the
+single-object download helpers and should not be written to persistent browser
+cache.
+
 Client save flows that write multiple R2 objects for one logical asset request
 all signed URLs before any `PUT` starts. That keeps a rate-limit rejection on
 one object from leaving a partially uploaded photo, video, Swapr output, or

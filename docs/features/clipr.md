@@ -904,8 +904,14 @@ Provider calls must never start before the matching rate limit is consumed.
 Clipr cannot be a page-local state machine only. It is a multi-provider workflow
 and must be recoverable.
 
-Add a durable job model such as `cliprJobs` rather than cramming all Clipr state
-into the existing simple `replicateJobs` table.
+The current implementation uses `cliprJobs` for user-facing job state and splits
+the `POST /api/clipr/jobs` server orchestration into focused helpers under
+`web/lib/clipstitchr/server/clipr/*`. That route-local split covers request
+parsing, quota consumption, Convex input loading, queued job persistence, script
+planning, avatar still generation, avatar video/music generation, shared music
+persistence, analytics, and failure cleanup. It improves the implementation
+shape, but it is not the final durable architecture because provider execution
+can still be interrupted by request/runtime failure.
 
 The durable job should track:
 
@@ -939,48 +945,47 @@ starts.
 
 ## Implementation Touchpoints
 
-Likely code changes after docs/resources are approved:
+Current and future code areas:
 
 - `web/convex/schema.ts`
-  - add `cliprJobs`
-  - add `cliprMetadata` to `videoClips`
-  - add optional `cliprMetadata.music` for export-time music settings
-  - add product-level eligible hook style/template IDs and placeholder fillers
-  - add per-avatar Clipr voice preference storage
+  - `cliprJobs` stores user-facing job state.
+  - `videoClips` stores Clipr provenance and optional export-time music settings.
+  - Products and avatars store hook/style context and saved voice preferences.
 - `web/convex/validators/*`
-  - add Clipr metadata/job validators
-  - add provider status validators if needed
+  - Clipr metadata/job validators and provider status validators.
 - `web/convex/rateLimiter.ts`
-  - add Clipr limit buckets
+  - Clipr limit buckets.
 - `web/convex/rateLimits.ts`
-  - add consume mutations for Clipr operations
+  - consume mutations for Clipr operations.
 - `web/convex/videoClips.ts`
-  - accept and update Clipr metadata
+  - accepts and updates Clipr metadata.
 - `web/lib/clipstitchr/types/*`
-  - add Clipr metadata, job, scene, voice, and generation status types
+  - Clipr metadata, job, scene, voice, and generation status types.
+- `web/lib/clipstitchr/server/clipr/*`
+  - request parsing, start quotas, Convex input loading, queued job persistence,
+    script planning, avatar still generation, avatar video/music generation,
+    shared music persistence, analytics, and failure cleanup.
 - `web/lib/clipstitchr/server/*`
-  - add Clipr prompt creation, response parsing, provider clients, and model ID
-    helpers
-  - update product enrichment prompt, parser, and tests for hook eligibility and
-    placeholder fillers
+  - shared prompt creation, response parsing, provider clients, model ID helpers,
+    product enrichment, and rate-limit helpers.
 - `web/app/api/clipr/*`
-  - add job create/poll/cancel and any provider helper routes
+  - job create, text, music, cancellation, and any future provider helper routes.
 - `web/lib/clipstitchr/media/*`
-  - reuse upload normalization and poster helpers for the generated avatar video
-  - add export-time Clipr music mixing from clean video and separate R2 audio
+  - reuse upload normalization and poster helpers for the generated avatar video.
+  - export-time Clipr music mixing from clean video and separate R2 audio.
 - `web/app/dashboard/clipr/*`
-  - add Clipr page client and controls
+  - Clipr page client and controls.
 - `web/app/_components/clipr/*`
   - one component per file for product, avatar, duration, voice, progress,
-    preview, and generated output controls
+    preview, and generated output controls.
 - `web/app/dashboard/uploads/UploadsPageClient.tsx`
-  - add Clips tab/filter behavior
+  - Clips tab/filter behavior.
 - `web/lib/clipstitchr/utils/*`
-  - add Clipr filters and library-tab helpers
+  - Clipr filters and library-tab helpers.
 - `web/app/_components/dashboard/DashboardSidebar.tsx`
-  - add Clipr nav link
+  - Clipr nav link.
 - landing page components
-  - update product copy with non-technical Clipr positioning
+  - product copy with non-technical Clipr positioning.
 
 ## Verification Plan
 

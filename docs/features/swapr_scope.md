@@ -237,7 +237,9 @@ If exact location swapping becomes a hard requirement, it should be researched s
 
 ### MVP: Local Library Plus Server-Side AI Call
 
-Swapr cannot be fully offline because it depends on Replicate. It also cannot safely call Replicate directly from browser code because the Replicate API token must remain secret.
+Swapr is a server-gated paid-provider helper workflow because it depends on
+Replicate. It cannot safely call Replicate directly from browser code because
+the Replicate API token must remain secret.
 
 ```
 +------------------------------------------+
@@ -521,7 +523,9 @@ Use careful language:
 ## 14. Key Constraints
 
 1. **Server-side secret handling:** Replicate calls must go through a server route.
-2. **External dependency:** Swapr is not part of the fully offline ClipStitchr MVP.
+2. **External dependency:** Swapr is outside the browser-local media processing
+   path and requires configured provider credentials, server auth, and rate
+   limits.
 3. **UGC-only video source:** only UGC clips can drive Swapr motion; Demo clips are excluded.
 4. **TikTok-first output:** final saved output should be normalized to 9:16.
 5. **Temporary AI outputs:** Replicate API outputs must be copied into app storage quickly.
