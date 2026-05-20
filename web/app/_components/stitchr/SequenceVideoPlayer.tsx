@@ -10,6 +10,7 @@ import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getTextOverlayIsVisible } from "@/lib/clipstitchr/utils/getTextOverlayIsVisible";
 
 type SequenceVideoPlayerProps = {
   ugcClip: VideoClip;
@@ -58,6 +59,10 @@ export function SequenceVideoPlayer({
     demoTrimRange,
   });
   const progressValue = Math.min(currentTime, totalDuration);
+  const visibleTextOverlay =
+    textOverlay && getTextOverlayIsVisible(textOverlay, currentTime)
+      ? textOverlay
+      : null;
 
   useEffect(() => {
     onPlaybackTimeChange(currentTime);
@@ -110,9 +115,9 @@ export function SequenceVideoPlayer({
             Preview unavailable
           </div>
         )}
-        {textOverlay ? (
+        {visibleTextOverlay ? (
           <TextOverlayBox
-            textOverlay={textOverlay}
+            textOverlay={visibleTextOverlay}
             stageRef={stageRef}
             totalDuration={totalDuration}
             onChange={onTextOverlayChange}
