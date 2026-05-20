@@ -229,6 +229,10 @@ describe("usePhotoLibraryState", () => {
       id: "photo_1",
       name: "Loaded photo",
     });
+    mocks.createPhotoAssetMetadataFromConvexDocument.mockReturnValue({
+      id: "photo_1",
+      name: "Hydrated photo",
+    });
     mocks.getImageDimensions.mockResolvedValue({ height: 1920, width: 1080 });
     mocks.createSwaprPortraitPhotoBlob.mockResolvedValue(
       new Blob(["normalized"], { type: "image/jpeg" }),
@@ -487,5 +491,55 @@ describe("usePhotoLibraryState", () => {
     });
 
     vi.unstubAllGlobals();
+  });
+
+  it("hydrates photo documents inside the sync effect", async () => {
+    mocks.useQuery.mockImplementation((queryId: string) => {
+      if (queryId === "photoAssets.list") {
+        return [createPhotoDocument()];
+      }
+
+      if (queryId === "avatars.list") {
+        return [{ id: "avatar_doc_1" }];
+      }
+
+      return undefined;
+    });
+    mocks.useEffect.mockImplementationOnce((effect: () => void) => {
+      effect();
+    });
+
+    usePhotoLibraryState();
+
+    for (let index = 0; index < 5; index += 1) {
+      await Promise.resolve();
+    }
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(mocks.downloadBlobFromR2).toHaveBeenCalledWith(
+      expect.objectContaining({
+        key: "users/user_123/photos/photo_1/thumbnail.jpg",
+      }),
+    );
+    expect(mocks.createPhotoAssetMetadataFromConvexDocument).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "photo_1" }),
+      expect.any(Blob),
+    );
+  });
+
+  it("clears hydrated photos from the sync effect when signed out", async () => {
+    mocks.useConvexAuth.mockReturnValue({
+      isAuthenticated: false,
+      isLoading: false,
+    });
+    mocks.useEffect.mockImplementationOnce((effect: () => void) => {
+      effect();
+    });
+
+    usePhotoLibraryState();
+
+    await Promise.resolve();
+
+    expect(mocks.useStateSetter).toHaveBeenCalledWith([]);
   });
 });
