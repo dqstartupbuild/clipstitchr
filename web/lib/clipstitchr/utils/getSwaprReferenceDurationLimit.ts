@@ -1,7 +1,5 @@
-import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
+import { SWAPR_MAX_REFERENCE_DURATION_SECONDS } from "@/lib/clipstitchr/constants/swaprMaxReferenceDurationSeconds";
 
-export function getSwaprReferenceDurationLimit(
-  characterOrientation: SwaprCharacterOrientation,
-) {
-  return characterOrientation === "image" ? 10 : 30;
+export function getSwaprReferenceDurationLimit() {
+  return SWAPR_MAX_REFERENCE_DURATION_SECONDS;
 }

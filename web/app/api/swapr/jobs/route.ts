@@ -12,9 +12,10 @@ import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRa
 import { assertR2ObjectKeyBelongsToUser } from "@/lib/clipstitchr/server/r2/assertR2ObjectKeyBelongsToUser";
 import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl";
 import { readSwaprJobCreateRequest } from "@/lib/clipstitchr/server/readSwaprJobCreateRequest";
+import { SWAPR_MAX_REFERENCE_DURATION_SECONDS } from "@/lib/clipstitchr/constants/swaprMaxReferenceDurationSeconds";
 import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipstitchr/constants/swaprReferenceVideoMaxSizeBytes";
 import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
-import { getSwaprReferenceDurationLimit } from "@/lib/clipstitchr/utils/getSwaprReferenceDurationLimit";
+import { getSwaprSegmentDurationLimit } from "@/lib/clipstitchr/utils/getSwaprSegmentDurationLimit";
 import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/capturePostHogServerEvent";
 
 export const runtime = "nodejs";
@@ -68,10 +69,35 @@ export async function POST(request: Request) {
     const mode = speedProfile?.swaprMode ?? body.mode;
     const characterOrientation =
       speedProfile?.swaprCharacterOrientation ?? body.characterOrientation;
+    const segmentDurationLimit = getSwaprSegmentDurationLimit(
+      characterOrientation,
+    );
+
+    if (body.estimatedDurationSeconds > segmentDurationLimit + 0.25) {
+      throw new Error("Swapr reference segment is too long.");
+    }
+
+    if (
+      body.totalEstimatedDurationSeconds >
+      SWAPR_MAX_REFERENCE_DURATION_SECONDS + 0.25
+    ) {
+      throw new Error("Swapr reference video is too long.");
+    }
+
+    if (
+      body.totalSegmentCount >
+      Math.ceil(body.totalEstimatedDurationSeconds / segmentDurationLimit)
+    ) {
+      throw new Error("Swapr batch has too many segments.");
+    }
 
     await convex.mutation(api.rateLimits.consumeSwaprJobCreate, {
-      estimatedSeconds: getSwaprReferenceDurationLimit(characterOrientation),
+      estimatedSeconds:
+        body.segmentIndex === 0
+          ? body.totalEstimatedDurationSeconds
+          : body.estimatedDurationSeconds,
       secret,
+      shouldConsumeUserQuota: body.segmentIndex === 0,
     });
     await Promise.all([
       convex.mutation(api.rateLimits.consumeR2Download, { secret }),
@@ -111,9 +137,13 @@ export async function POST(request: Request) {
       event: "swapr_job_created",
       properties: {
         prediction_id: prediction.id,
+        batch_id: body.batchId,
+        segment_index: body.segmentIndex,
+        total_segment_count: body.totalSegmentCount,
         mode,
         character_orientation: characterOrientation,
         generation_speed_tier: generationSpeedTier,
+        estimated_duration_seconds: body.estimatedDurationSeconds,
         keep_original_sound: body.keepOriginalSound,
       },
       request,

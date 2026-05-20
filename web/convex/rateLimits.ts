@@ -236,8 +236,12 @@ export const consumeSwaprJobCreate = mutation({
   args: {
     estimatedSeconds: v.number(),
     secret: v.string(),
+    shouldConsumeUserQuota: v.optional(v.boolean()),
   },
-  handler: async (ctx, { estimatedSeconds, secret }) => {
+  handler: async (
+    ctx,
+    { estimatedSeconds, secret, shouldConsumeUserQuota = true },
+  ) => {
     assertRateLimitApiSecret(secret);
 
     const ownerId = await getAuthenticatedOwnerId(ctx);
@@ -246,17 +250,28 @@ export const consumeSwaprJobCreate = mutation({
       "Estimated generated seconds",
     );
 
-    await rateLimiter.limit(ctx, "replicateSwaprJobCreate", {
+    if (shouldConsumeUserQuota) {
+      await rateLimiter.limit(ctx, "replicateSwaprJobCreate", {
+        key: ownerId,
+        throws: true,
+      });
+      await rateLimiter.limit(ctx, "replicateSwaprJobCreateDaily", {
+        key: ownerId,
+        throws: true,
+      });
+      await rateLimiter.limit(ctx, "replicateSwaprGeneratedSecondsMonthly", {
+        key: ownerId,
+        count: generatedSeconds,
+        throws: true,
+      });
+    }
+
+    await rateLimiter.limit(ctx, "replicateSwaprProviderSegment", {
       key: ownerId,
       throws: true,
     });
-    await rateLimiter.limit(ctx, "replicateSwaprJobCreateDaily", {
+    await rateLimiter.limit(ctx, "replicateSwaprProviderSegmentDaily", {
       key: ownerId,
-      throws: true,
-    });
-    await rateLimiter.limit(ctx, "replicateSwaprGeneratedSecondsMonthly", {
-      key: ownerId,
-      count: generatedSeconds,
       throws: true,
     });
     await rateLimiter.limit(ctx, "replicateSwaprJobCreateGlobal", {

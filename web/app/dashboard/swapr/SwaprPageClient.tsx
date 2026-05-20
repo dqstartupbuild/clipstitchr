@@ -13,20 +13,24 @@ import { SwaprPhotoSelector } from "@/app/_components/swapr/SwaprPhotoSelector";
 import { SwaprSourceClipSelector } from "@/app/_components/swapr/SwaprSourceClipSelector";
 import { Panel } from "@/app/_components/ui/Panel";
 import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExportBlob";
+import { createTemporarySwaprReferenceVideoSegments } from "@/lib/clipstitchr/client/createTemporarySwaprReferenceVideoSegments";
+import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
+import { SWAPR_MAX_REFERENCE_DURATION_SECONDS } from "@/lib/clipstitchr/constants/swaprMaxReferenceDurationSeconds";
 import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipstitchr/constants/swaprReferenceVideoMaxSizeBytes";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useSwaprGeneration } from "@/lib/clipstitchr/hooks/useSwaprGeneration";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
-import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
 import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
+import type { SwaprReferenceVideoSegment } from "@/lib/clipstitchr/types/SwaprReferenceVideoSegment";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { createVideoClipMetadataFromStitch } from "@/lib/clipstitchr/utils/createVideoClipMetadataFromStitch";
 import { filterSwaprSourceClips } from "@/lib/clipstitchr/utils/filterSwaprSourceClips";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
+import { getSwaprSegmentDurationLimit } from "@/lib/clipstitchr/utils/getSwaprSegmentDurationLimit";
 
 export function SwaprPageClient() {
   const library = useClipLibrary();
@@ -144,26 +148,49 @@ export function SwaprPageClient() {
       sourceMimeType: blob.type || metadata.sourceMimeType,
     };
   };
-  const getReferenceVideoObject = async (
+  const getReferenceVideoSegments = async (
     clip: VideoClipMetadata,
-  ): Promise<R2ObjectReference> => {
-    if (!clip.videoObject.key.endsWith("/render-on-export")) {
-      return clip.videoObject;
+    requestedCharacterOrientation: SwaprCharacterOrientation,
+  ): Promise<SwaprReferenceVideoSegment[]> => {
+    if (clip.duration > SWAPR_MAX_REFERENCE_DURATION_SECONDS) {
+      throw new Error("Choose a source video that is 90 seconds or shorter.");
     }
 
-    const renderedClip = await loadSourceClip(clip.id);
+    const segmentDurationLimit = getSwaprSegmentDurationLimit(
+      requestedCharacterOrientation,
+    );
+    const isRenderedOnExport = clip.videoObject.key.endsWith("/render-on-export");
 
-    if (!renderedClip) {
-      throw new Error("Unable to render the selected stitch for Swapr.");
+    if (!isRenderedOnExport && clip.duration <= segmentDurationLimit) {
+      return [
+        {
+          duration: clip.duration,
+          videoObject: clip.videoObject,
+        },
+      ];
     }
 
-    if (renderedClip.blob.size > SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES) {
+    const sourceClip = await loadSourceClip(clip.id);
+
+    if (!sourceClip) {
+      throw new Error("Unable to load the selected source video for Swapr.");
+    }
+
+    if (sourceClip.blob.size > SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES) {
       throw new Error("Choose a smaller source video for Swapr.");
+    }
+
+    if (sourceClip.duration > segmentDurationLimit) {
+      return createTemporarySwaprReferenceVideoSegments({
+        clip,
+        segmentDurationLimit,
+        sourceClip,
+      });
     }
 
     const [stitchObject] = await uploadBlobsToR2([
       {
-        blob: renderedClip.blob,
+        blob: sourceClip.blob,
         kind: "stitch-video",
         recordId: clip.id,
       },
@@ -171,13 +198,18 @@ export function SwaprPageClient() {
 
     await updateRenderedStitchVideo({
       id: clip.id,
-      mimeType: renderedClip.mimeType,
-      size: renderedClip.blob.size,
+      mimeType: sourceClip.mimeType,
+      size: sourceClip.blob.size,
       stitchObject,
     });
     await library.refresh();
 
-    return stitchObject;
+    return [
+      {
+        duration: sourceClip.duration,
+        videoObject: stitchObject,
+      },
+    ];
   };
   const handleGenerate = async () => {
     if (!selectedPhoto || !selectedClip) {
@@ -187,13 +219,21 @@ export function SwaprPageClient() {
     setAssetLoadError(null);
     setIsPreparingSource(true);
 
+    let temporaryObjects: SwaprReferenceVideoSegment["videoObject"][] = [];
+
     try {
-      const referenceVideoObject = await getReferenceVideoObject(selectedClip);
+      const referenceVideoSegments = await getReferenceVideoSegments(
+        selectedClip,
+        characterOrientation,
+      );
+      temporaryObjects = referenceVideoSegments
+        .filter((segment) => segment.isTemporary)
+        .map((segment) => segment.videoObject);
 
       await generator.generate({
         photo: selectedPhoto,
         clip: selectedClip,
-        referenceVideoObject,
+        referenceVideoSegments,
         prompt,
         mode,
         characterOrientation,
@@ -206,6 +246,10 @@ export function SwaprPageClient() {
           : "Unable to prepare the selected Swapr assets.",
       );
     } finally {
+      if (temporaryObjects.length) {
+        await deleteObjectsFromR2(temporaryObjects).catch(() => null);
+      }
+
       setIsPreparingSource(false);
     }
   };

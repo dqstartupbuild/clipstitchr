@@ -69,6 +69,17 @@ describe("createR2ObjectKey", () => {
       }),
     ).toBe("users/user_123/longr/longr_456/video.mp4");
   });
+
+  it("creates user-scoped keys for temporary Swapr segments", () => {
+    expect(
+      createR2ObjectKey({
+        userId: "user_123",
+        kind: "swapr-segment-video",
+        recordId: "clip_456-segment_1",
+        contentType: "video/mp4",
+      }),
+    ).toBe("users/user_123/swapr-segments/clip_456-segment_1/segment.mp4");
+  });
 });
 
 describe("createSharedMusicR2ObjectKey", () => {
