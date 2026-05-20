@@ -231,6 +231,9 @@ describe("useClipLibraryState", () => {
       id: "clip_1",
       name: "Loaded clip",
     });
+    mocks.createVideoClipMetadataFromConvexDocument.mockReturnValue(
+      createClipMetadata(),
+    );
     mocks.createLongrVideoFromConvexDocument.mockReturnValue({
       id: "longr_1",
     });
@@ -373,10 +376,15 @@ describe("useClipLibraryState", () => {
     const textOverlay = {
       backgroundColor: "#000000",
       color: "#ffffff",
+      endTime: 5,
       fontSize: 48,
-      position: { x: 50, y: 50 },
+      startTime: 1,
+      styleId: "hook",
       text: "Hook",
-    } as unknown as TextOverlay;
+      width: 0.8,
+      x: 0.5,
+      y: 0.5,
+    } satisfies TextOverlay;
 
     await expect(state.generateStitchMusic(stitch)).resolves.toEqual({
       audioObject: { key: "users/user_123/music/new-stitch.mp3" },
@@ -430,5 +438,64 @@ describe("useClipLibraryState", () => {
     expect(getMutation("longrVideos.remove")).toHaveBeenCalledWith({
       id: "longr_1",
     });
+  });
+
+  it("hydrates library documents inside the sync effect", async () => {
+    mocks.useQuery.mockImplementation((queryId: string) => {
+      if (queryId === "videoClips.list") {
+        return [createClipDocument()];
+      }
+
+      if (queryId === "stitches.list") {
+        return [createStitch()];
+      }
+
+      if (queryId === "longrVideos.list") {
+        return [createLongrVideo()];
+      }
+
+      return undefined;
+    });
+    mocks.useEffect.mockImplementationOnce((effect: () => void) => {
+      effect();
+    });
+
+    useClipLibraryState();
+
+    for (let index = 0; index < 5; index += 1) {
+      await Promise.resolve();
+    }
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(mocks.downloadBlobFromR2).toHaveBeenCalledWith({
+      key: "users/user_123/clips/clip_1/poster.jpg",
+    });
+    expect(mocks.createVideoClipMetadataFromConvexDocument).toHaveBeenCalled();
+    expect(mocks.createStitchFromConvexDocument).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stitch: expect.objectContaining({ id: "stitch_1" }),
+      }),
+    );
+    expect(mocks.createLongrVideoFromConvexDocument).toHaveBeenCalledWith(
+      expect.objectContaining({
+        longrVideo: expect.objectContaining({ id: "longr_1" }),
+      }),
+    );
+  });
+
+  it("clears hydrated state from the sync effect when signed out", async () => {
+    mocks.useConvexAuth.mockReturnValue({
+      isAuthenticated: false,
+      isLoading: false,
+    });
+    mocks.useEffect.mockImplementationOnce((effect: () => void) => {
+      effect();
+    });
+
+    useClipLibraryState();
+
+    await Promise.resolve();
+
+    expect(mocks.useStateSetter).toHaveBeenCalledWith([]);
   });
 });
