@@ -15,6 +15,7 @@ import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2Downloa
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { saveCliprAvatarVideoObject } from "@/lib/clipstitchr/server/saveCliprAvatarVideoObject";
+import { saveCliprGeneratedAvatarPhoto } from "@/lib/clipstitchr/server/saveCliprGeneratedAvatarPhoto";
 import { saveCliprMusicObject } from "@/lib/clipstitchr/server/saveCliprMusicObject";
 import { saveCliprSceneImageObject } from "@/lib/clipstitchr/server/saveCliprSceneImageObject";
 import { saveSharedMusicObject } from "@/lib/clipstitchr/server/saveSharedMusicObject";
@@ -184,13 +185,34 @@ export async function POST(request: Request) {
       replicate,
       scene: avatarSourceScene,
     });
-    const avatarImageObject = await saveCliprSceneImageObject({
-      body: generatedAvatarImage.body,
-      contentType: generatedAvatarImage.contentType,
-      jobId,
-      sceneId: "avatar-source",
-      userId,
+    const generatedAvatarPhotoId = createId();
+
+    await convex.mutation(api.rateLimits.consumeR2Upload, {
+      secret,
+      sizeBytes: generatedAvatarImage.body.byteLength * 2,
     });
+
+    const [avatarImageObject] = await Promise.all([
+      saveCliprSceneImageObject({
+        body: generatedAvatarImage.body,
+        contentType: generatedAvatarImage.contentType,
+        jobId,
+        sceneId: "avatar-source",
+        userId,
+      }),
+      saveCliprGeneratedAvatarPhoto({
+        avatarDescription: avatarDocument.description,
+        avatarId: avatarDocument.id,
+        avatarName: avatarDocument.name,
+        body: generatedAvatarImage.body,
+        contentType: generatedAvatarImage.contentType,
+        convex,
+        createdAt: new Date().toISOString(),
+        photoId: generatedAvatarPhotoId,
+        scene: avatarSourceScene,
+        userId,
+      }),
+    ]);
 
     await convex.mutation(api.cliprJobs.recordAvatarImageOutput, {
       secret,
