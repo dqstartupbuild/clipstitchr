@@ -9,12 +9,10 @@ import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticate
 import { getReplicatePredictionStatus } from "@/lib/clipstitchr/server/getReplicatePredictionStatus";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
-import { getSwaprCharacterOrientation } from "@/lib/clipstitchr/server/getSwaprCharacterOrientation";
-import { getSwaprFormBoolean } from "@/lib/clipstitchr/server/getSwaprFormBoolean";
-import { getSwaprFormFile } from "@/lib/clipstitchr/server/getSwaprFormFile";
-import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString";
-import { getSwaprMode } from "@/lib/clipstitchr/server/getSwaprMode";
-import { getGenerationSpeedTier } from "@/lib/clipstitchr/utils/getGenerationSpeedTier";
+import { assertR2ObjectKeyBelongsToUser } from "@/lib/clipstitchr/server/r2/assertR2ObjectKeyBelongsToUser";
+import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl";
+import { readSwaprJobCreateRequest } from "@/lib/clipstitchr/server/readSwaprJobCreateRequest";
+import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipstitchr/constants/swaprReferenceVideoMaxSizeBytes";
 import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
 import { getSwaprReferenceDurationLimit } from "@/lib/clipstitchr/utils/getSwaprReferenceDurationLimit";
 import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/capturePostHogServerEvent";
@@ -39,42 +37,61 @@ export async function POST(request: Request) {
 
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const secret = getRateLimitApiSecret();
-    const formData = await request.formData();
-    const image = getSwaprFormFile(formData, "image");
-    const video = getSwaprFormFile(formData, "video");
-    const prompt = getSwaprFormString(formData, "prompt").trim();
-    const requestedMode = getSwaprMode(getSwaprFormString(formData, "mode"));
-    const requestedCharacterOrientation = getSwaprCharacterOrientation(
-      getSwaprFormString(formData, "characterOrientation"),
-    );
-    const generationSpeedTier = formData.has("generationSpeedTier")
-      ? getGenerationSpeedTier(getSwaprFormString(formData, "generationSpeedTier"))
-      : undefined;
+    const body = await readSwaprJobCreateRequest(request);
+    const photoDocument = await convex.query(api.photoAssets.get, {
+      id: body.photoId,
+    });
+
+    if (!photoDocument) {
+      throw new Error("Saved Swapr photo not found.");
+    }
+
+    assertR2ObjectKeyBelongsToUser(photoDocument.photoObject.key, userId);
+    assertR2ObjectKeyBelongsToUser(body.videoObject.key, userId);
+
+    if (!photoDocument.photoObject.contentType.startsWith("image/")) {
+      throw new Error("Swapr photo object must be an image.");
+    }
+
+    if (!body.videoObject.contentType.startsWith("video/")) {
+      throw new Error("Swapr reference object must be a video.");
+    }
+
+    if (body.videoObject.size > SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES) {
+      throw new Error("Choose a smaller source video for Swapr.");
+    }
+
+    const generationSpeedTier = body.generationSpeedTier;
     const speedProfile = generationSpeedTier
       ? getGenerationSpeedTierProfile(generationSpeedTier)
       : undefined;
-    const mode = speedProfile?.swaprMode ?? requestedMode;
+    const mode = speedProfile?.swaprMode ?? body.mode;
     const characterOrientation =
-      speedProfile?.swaprCharacterOrientation ?? requestedCharacterOrientation;
-    const keepOriginalSound = getSwaprFormBoolean(
-      formData,
-      "keepOriginalSound",
-    );
+      speedProfile?.swaprCharacterOrientation ?? body.characterOrientation;
 
     await convex.mutation(api.rateLimits.consumeSwaprJobCreate, {
       estimatedSeconds: getSwaprReferenceDurationLimit(characterOrientation),
       secret,
     });
+    await Promise.all([
+      convex.mutation(api.rateLimits.consumeR2Download, { secret }),
+      convex.mutation(api.rateLimits.consumeR2Download, { secret }),
+    ]);
+
+    const [image, video] = await Promise.all([
+      getR2DownloadSignedUrl(photoDocument.photoObject.key),
+      getR2DownloadSignedUrl(body.videoObject.key),
+    ]);
 
     const replicate = createReplicateClient();
     const prediction = await replicate.predictions.create({
       model: SWAPR_MODEL_ID,
       input: {
-        image,
-        video,
-        prompt,
+        image: image.url,
+        video: video.url,
+        prompt: body.prompt,
         mode,
-        keep_original_sound: keepOriginalSound,
+        keep_original_sound: body.keepOriginalSound,
         character_orientation: characterOrientation,
       },
     });
@@ -97,7 +114,7 @@ export async function POST(request: Request) {
         mode,
         character_orientation: characterOrientation,
         generation_speed_tier: generationSpeedTier,
-        keep_original_sound: keepOriginalSound,
+        keep_original_sound: body.keepOriginalSound,
       },
       request,
     });
