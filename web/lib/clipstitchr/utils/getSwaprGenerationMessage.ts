@@ -12,6 +12,8 @@ export function getSwaprGenerationMessage(status: SwaprGenerationStatus) {
       return "Getting the finished clip.";
     case "normalizing":
       return "Preparing the clip for your library.";
+    case "stitching":
+      return "Stitching swapped segments.";
     case "saving":
       return "Saving the clip to your library.";
     case "succeeded":

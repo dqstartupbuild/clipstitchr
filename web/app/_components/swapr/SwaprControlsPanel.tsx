@@ -46,7 +46,7 @@ export function SwaprControlsPanel({
   onConsentChange,
   onGenerate,
 }: SwaprControlsPanelProps) {
-  const durationLimit = getSwaprReferenceDurationLimit(characterOrientation);
+  const durationLimit = getSwaprReferenceDurationLimit();
   const isDurationValid = selectedClip
     ? selectedClip.duration >= 3 && selectedClip.duration <= durationLimit
     : true;

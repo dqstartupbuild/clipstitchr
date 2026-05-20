@@ -36,6 +36,11 @@ const objectKindConfig: Record<
     baseName: "thumbnail",
     fallbackExtension: "jpg",
   },
+  "swapr-segment-video": {
+    directory: "swapr-segments",
+    baseName: "segment",
+    fallbackExtension: "mp4",
+  },
   "library-music-audio": {
     directory: "library-music",
     baseName: "music",

@@ -7,22 +7,32 @@ import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
 import { getGenerationSpeedTier } from "@/lib/clipstitchr/utils/getGenerationSpeedTier";
 
 type SwaprJobCreateRequestBody = {
+  batchId?: unknown;
   characterOrientation?: unknown;
+  estimatedDurationSeconds?: unknown;
   generationSpeedTier?: unknown;
   keepOriginalSound?: unknown;
   mode?: unknown;
   photoId?: unknown;
   prompt?: unknown;
+  segmentIndex?: unknown;
+  totalEstimatedDurationSeconds?: unknown;
+  totalSegmentCount?: unknown;
   videoObject?: unknown;
 };
 
 export type SwaprJobCreateRequest = {
+  batchId: string;
   characterOrientation: SwaprCharacterOrientation;
+  estimatedDurationSeconds: number;
   generationSpeedTier?: GenerationSpeedTier;
   keepOriginalSound: boolean;
   mode: SwaprMode;
   photoId: string;
   prompt: string;
+  segmentIndex: number;
+  totalEstimatedDurationSeconds: number;
+  totalSegmentCount: number;
   videoObject: R2ObjectReference;
 };
 
@@ -65,15 +75,53 @@ export async function readSwaprJobCreateRequest(
 ): Promise<SwaprJobCreateRequest> {
   const body = (await request.json()) as SwaprJobCreateRequestBody;
   const photoId = getStringValue(body.photoId).trim();
+  const estimatedDurationSeconds =
+    typeof body.estimatedDurationSeconds === "number" &&
+    Number.isFinite(body.estimatedDurationSeconds)
+      ? body.estimatedDurationSeconds
+      : 0;
+  const segmentIndex =
+    typeof body.segmentIndex === "number" && Number.isFinite(body.segmentIndex)
+      ? Math.trunc(body.segmentIndex)
+      : 0;
+  const totalSegmentCount =
+    typeof body.totalSegmentCount === "number" &&
+    Number.isFinite(body.totalSegmentCount)
+      ? Math.trunc(body.totalSegmentCount)
+      : 1;
+  const totalEstimatedDurationSeconds =
+    typeof body.totalEstimatedDurationSeconds === "number" &&
+    Number.isFinite(body.totalEstimatedDurationSeconds)
+      ? body.totalEstimatedDurationSeconds
+      : estimatedDurationSeconds;
+  const batchId = getStringValue(body.batchId).trim() || "single";
 
   if (!photoId) {
     throw new Error("Choose a saved Swapr photo first.");
   }
 
+  if (estimatedDurationSeconds <= 0) {
+    throw new Error("Missing Swapr reference video duration.");
+  }
+
+  if (totalEstimatedDurationSeconds <= 0) {
+    throw new Error("Missing Swapr total reference video duration.");
+  }
+
+  if (totalSegmentCount <= 0) {
+    throw new Error("Missing Swapr segment count.");
+  }
+
+  if (segmentIndex < 0 || segmentIndex >= totalSegmentCount) {
+    throw new Error("Invalid Swapr segment index.");
+  }
+
   return {
+    batchId,
     characterOrientation: getSwaprCharacterOrientation(
       getStringValue(body.characterOrientation),
     ),
+    estimatedDurationSeconds,
     generationSpeedTier:
       typeof body.generationSpeedTier === "string"
         ? getGenerationSpeedTier(body.generationSpeedTier)
@@ -82,6 +130,9 @@ export async function readSwaprJobCreateRequest(
     mode: getSwaprMode(getStringValue(body.mode)),
     photoId,
     prompt: getStringValue(body.prompt).trim(),
+    segmentIndex,
+    totalEstimatedDurationSeconds,
+    totalSegmentCount,
     videoObject: getR2ObjectReference(body.videoObject),
   };
 }

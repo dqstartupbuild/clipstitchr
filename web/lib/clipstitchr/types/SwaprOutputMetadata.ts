@@ -6,6 +6,8 @@ export type SwaprOutputMetadata = {
   sourcePhotoId: string;
   referenceUgcClipId: string;
   replicatePredictionId: string;
+  replicatePredictionIds?: string[];
+  sourceSegmentCount?: number;
   modelId: string;
   mode: SwaprMode;
   characterOrientation: SwaprCharacterOrientation;

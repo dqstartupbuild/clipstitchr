@@ -5,6 +5,8 @@ export const swaprMetadataValidator = v.object({
   sourcePhotoId: v.string(),
   referenceUgcClipId: v.string(),
   replicatePredictionId: v.string(),
+  replicatePredictionIds: v.optional(v.array(v.string())),
+  sourceSegmentCount: v.optional(v.number()),
   modelId: v.string(),
   mode: v.union(v.literal("std"), v.literal("pro")),
   characterOrientation: v.union(v.literal("image"), v.literal("video")),

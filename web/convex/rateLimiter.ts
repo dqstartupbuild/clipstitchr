@@ -116,6 +116,18 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     period: MONTH,
     capacity: 500,
   },
+  replicateSwaprProviderSegment: {
+    kind: "token bucket",
+    rate: 60,
+    period: HOUR,
+    capacity: 60,
+  },
+  replicateSwaprProviderSegmentDaily: {
+    kind: "token bucket",
+    rate: 180,
+    period: DAY,
+    capacity: 180,
+  },
   replicateSwaprJobCreateGlobal: {
     kind: "token bucket",
     rate: 300,

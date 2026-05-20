@@ -5,6 +5,7 @@ export type SwaprGenerationStatus =
   | "processing"
   | "downloading"
   | "normalizing"
+  | "stitching"
   | "saving"
   | "succeeded"
   | "failed";
