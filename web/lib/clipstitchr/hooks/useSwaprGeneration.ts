@@ -3,17 +3,18 @@
 import { useCallback, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { createSwaprGenerationPhotoBlob } from "@/lib/clipstitchr/client/createSwaprGenerationPhotoBlob";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
 import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpeedTier";
-import type { PhotoAsset } from "@/lib/clipstitchr/types/PhotoAsset";
+import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
 import type { SwaprGenerationStatus } from "@/lib/clipstitchr/types/SwaprGenerationStatus";
 import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getSwaprPredictionOutputUrl } from "@/lib/clipstitchr/utils/getSwaprPredictionOutputUrl";
 import { readSwaprPredictionResponse } from "@/lib/clipstitchr/utils/readSwaprPredictionResponse";
@@ -22,8 +23,9 @@ import { waitForSwaprPollInterval } from "@/lib/clipstitchr/utils/waitForSwaprPo
 const SWAPR_MODEL_ID = "kwaivgi/kling-v3-motion-control";
 
 type GenerateSwaprVideoOptions = {
-  photo: PhotoAsset;
-  clip: VideoClip;
+  photo: PhotoAssetMetadata;
+  clip: VideoClipMetadata;
+  referenceVideoObject: R2ObjectReference;
   prompt: string;
   mode: SwaprMode;
   characterOrientation: SwaprCharacterOrientation;
@@ -43,6 +45,7 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
     async ({
       photo,
       clip,
+      referenceVideoObject,
       prompt,
       mode,
       characterOrientation,
@@ -56,29 +59,20 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
       setGeneratedClip(null);
 
       try {
-        const referencePhotoBlob = await createSwaprGenerationPhotoBlob(photo);
-        const formData = new FormData();
-        formData.set(
-          "image",
-          new File([referencePhotoBlob], photo.originalName, {
-            type: referencePhotoBlob.type || "image/jpeg",
-          }),
-        );
-        formData.set(
-          "video",
-          new File([clip.blob], `${clip.name}.mp4`, { type: clip.mimeType }),
-        );
-        formData.set("prompt", prompt);
-        formData.set("mode", mode);
-        formData.set("characterOrientation", characterOrientation);
-        if (generationSpeedTier) {
-          formData.set("generationSpeedTier", generationSpeedTier);
-        }
-        formData.set("keepOriginalSound", String(keepOriginalSound));
-
         const createResponse = await fetch("/api/swapr/jobs", {
           method: "POST",
-          body: formData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            photoId: photo.id,
+            videoObject: referenceVideoObject,
+            prompt,
+            mode,
+            characterOrientation,
+            generationSpeedTier,
+            keepOriginalSound,
+          }),
         });
         let prediction = await readSwaprPredictionResponse(createResponse);
         const effectiveMode = prediction.mode ?? mode;

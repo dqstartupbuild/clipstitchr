@@ -120,7 +120,7 @@ Optional Replicate model overrides:
 | Swipr background metadata analysis | `POST /api/swipr/backgrounds/analyze` | Uses the upload image metadata analysis limits before calling GPT-4.1 mini through Replicate |
 | Upload video action analysis | `POST /api/uploads/analyze` for UGC/demo videos | 60/hour/user, burst 20; 1,500/30 days/user; global 1,000/hour. Gemini full-video analysis runs first for videos up to 100 MB; OpenAI poster analysis is the fallback when Gemini fails or the video exceeds the analysis size cap. |
 | Swapr photo expansion | `POST /api/swapr/photos/expand` | 10/hour/user, burst 5; 20/day/user; 375/30 days/user; global 300/hour |
-| Swapr video job create | `POST /api/swapr/jobs` | 2/hour/user, burst 2; 5/day/user; 500 estimated output seconds/30 days/user; global 300/hour |
+| Swapr video job create | `POST /api/swapr/jobs` | 2/hour/user, burst 2; 5/day/user; 500 estimated output seconds/30 days/user; global 300/hour. The route accepts saved R2 media references only, consumes the R2 download signed URL limit for the photo and reference video, then creates short-lived R2 read URLs for Replicate. |
 | Swapr job polling | `GET /api/swapr/jobs/{id}` | 600/minute/user, burst 150 |
 | Swapr job cancellation | `POST /api/swapr/jobs/{id}/cancel` | 100/hour/user, burst 20 |
 | Swapr output proxy | `GET /api/swapr/output` | 1,000/hour/user, burst 200 |
@@ -142,7 +142,7 @@ Optional Replicate model overrides:
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `longrVideos.save`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
-| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `stitches.updateMusic`, `stitches.updateTextOverlay`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
+| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `stitches.updateMusic`, `stitches.updateTextOverlay`, `stitches.updateRenderedVideo`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
 | Convex Clipr job writes | `cliprJobs.createQueued`, `cliprJobs.applyScriptPlan`, `cliprJobs.recordAvatarImageOutput`, `cliprJobs.recordAvatarVideoOutput`, `cliprJobs.markBrowserSaving`, `cliprJobs.finalizeWithClip` | 3,000/hour/user, burst 500 |

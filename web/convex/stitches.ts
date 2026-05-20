@@ -118,6 +118,38 @@ export const updatePoster = mutation({
   },
 });
 
+export const updateRenderedVideo = mutation({
+  args: {
+    id: v.string(),
+    mimeType: v.string(),
+    size: v.number(),
+    stitchObject: r2ObjectValidator,
+  },
+  handler: async (ctx, { id, mimeType, size, stitchObject }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    await ctx.db.patch(stitch._id, {
+      mimeType,
+      size,
+      stitchObject,
+    });
+  },
+});
+
 export const updateMusic = mutation({
   args: {
     id: v.string(),
