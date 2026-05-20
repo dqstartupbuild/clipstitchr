@@ -1,0 +1,382 @@
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { AvatarsPageClient } from "@/app/dashboard/avatars/AvatarsPageClient";
+import { CliprPageClient } from "@/app/dashboard/clipr/CliprPageClient";
+import { LongrPageClient } from "@/app/dashboard/longr/LongrPageClient";
+import { StitchrPageClient } from "@/app/dashboard/stitchr/StitchrPageClient";
+import { SwaprPageClient } from "@/app/dashboard/swapr/SwaprPageClient";
+import { SwiprPageClient } from "@/app/dashboard/swipr/SwiprPageClient";
+import { UploadsPageClient } from "@/app/dashboard/uploads/UploadsPageClient";
+
+const mocks = vi.hoisted(() => ({
+  exportCarousel: vi.fn(),
+  loadBackgroundBlob: vi.fn(),
+  loadClip: vi.fn(),
+  loadPhoto: vi.fn(),
+  refresh: vi.fn(),
+  remove: vi.fn(),
+  saveBackground: vi.fn(),
+  saveFiles: vi.fn(),
+  saveGeneratedPhotos: vi.fn(),
+  saveSwipe: vi.fn(),
+  stitchVideos: vi.fn(),
+  useMutation: vi.fn(() => vi.fn()),
+}));
+
+vi.mock("convex/react", () => ({
+  useConvexAuth: () => ({
+    isAuthenticated: true,
+    isLoading: false,
+  }),
+  useMutation: mocks.useMutation,
+  useQuery: () => [],
+}));
+
+vi.mock("@/convex/_generated/api", () => ({
+  api: {
+    sharedMusicTracks: {
+      list: "sharedMusicTracks.list",
+    },
+    stitches: {
+      updateRenderedVideo: "stitches.updateRenderedVideo",
+    },
+    videoClips: {
+      save: "videoClips.save",
+    },
+  },
+}));
+
+vi.mock("@clerk/nextjs", () => ({
+  UserButton: () => <div data-testid="user-button" />,
+}));
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/dashboard/stitchr",
+  useRouter: () => ({
+    push: vi.fn(),
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
+  useProducts: () => ({
+    error: null,
+    isLoading: false,
+    products: [
+      {
+        id: "product_1",
+        inferredPainPoints: ["slow launch"],
+        inferredProblem: "campaigns take too long",
+        name: "Launch Kit",
+        productDetails: "AI launch planner",
+        audienceDetails: "Founders",
+      },
+    ],
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useSwiprExport", () => ({
+  useSwiprExport: () => ({
+    error: null,
+    exportCarousel: mocks.exportCarousel,
+    progress: 0,
+    status: "idle",
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({
+  useSwiprLibrary: () => ({
+    backgrounds: [
+      {
+        blob: new Blob(["background"], { type: "image/jpeg" }),
+        category: "studio",
+        id: "background_1",
+        name: "Studio",
+        source: "upload",
+        tags: ["studio"],
+        thumbnailBlob: new Blob(["thumb"], { type: "image/jpeg" }),
+      },
+    ],
+    error: null,
+    isSavingBackground: false,
+    isSavingSwipe: false,
+    loadBackgroundBlob: mocks.loadBackgroundBlob,
+    removeSwipe: mocks.remove,
+    refresh: mocks.refresh,
+    saveBackground: mocks.saveBackground,
+    saveSwipe: mocks.saveSwipe,
+    swipes: [],
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useClipLibrary", () => ({
+  useClipLibrary: () => ({
+    clips: [
+      createClip({
+        clipType: "ugc",
+        id: "ugc_1",
+        name: "UGC clip",
+      }),
+      createClip({
+        clipType: "demo",
+        id: "demo_1",
+        name: "Demo clip",
+        productId: "product_1",
+      }),
+    ],
+    error: null,
+    isLoading: false,
+    isSaving: false,
+    loadClip: mocks.loadClip,
+    longrVideos: [
+      {
+        createdAt: "2026-05-20T00:00:00.000Z",
+        duration: 120,
+        height: 1920,
+        id: "longr_1",
+        longrObject: { key: "users/user_123/longr/longr_1.mp4" },
+        mimeType: "video/mp4",
+        name: "Saved Long",
+        size: 100,
+        updatedAt: "2026-05-20T00:00:00.000Z",
+        width: 1080,
+      },
+    ],
+    generateCliprMusic: vi.fn(),
+    generateStitchMusic: vi.fn(),
+    removeClip: mocks.remove,
+    removeLongrVideo: mocks.remove,
+    removeStitch: mocks.remove,
+    refresh: mocks.refresh,
+    updateClipMetadata: vi.fn(),
+    updateCliprMusic: vi.fn(),
+    updateClipTrimRange: vi.fn(),
+    updateStitchMusic: vi.fn(),
+    updateStitchTextOverlay: vi.fn(),
+    stitches: [
+      {
+        createdAt: "2026-05-20T00:00:00.000Z",
+        demoClipId: "demo_1",
+        demoClipName: "Demo clip",
+        duration: 18,
+        height: 1920,
+        id: "stitch_1",
+        mimeType: "video/mp4",
+        name: "Saved stitch",
+        size: 100,
+        stitchObject: { key: "users/user_123/stitches/stitch_1.mp4" },
+        ugcClipId: "ugc_1",
+        ugcClipName: "UGC clip",
+        updatedAt: "2026-05-20T00:00:00.000Z",
+        width: 1080,
+      },
+    ],
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useLoadedVideoClip", () => ({
+  useLoadedVideoClip: ({ clipId }: { clipId: string | null }) => ({
+    clip: clipId ? createClip({ id: clipId, name: `Loaded ${clipId}` }) : null,
+    error: null,
+    isLoading: false,
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useStitchr", () => ({
+  useStitchr: () => ({
+    completedCount: 0,
+    error: null,
+    progress: 0,
+    status: "idle",
+    stitchVideos: mocks.stitchVideos,
+    stitches: [],
+    totalCount: 0,
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useShowUploadControls", () => ({
+  useShowUploadControls: () => true,
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useCreateAvatarFromUgcClip", () => ({
+  useCreateAvatarFromUgcClip: () => ({
+    createdAvatar: null,
+    error: null,
+    generate: vi.fn(async () => null),
+    generatedCount: 0,
+    isGenerating: false,
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
+  usePhotoLibrary: () => ({
+    avatars: [
+      {
+        cliprVoiceId: "Zephyr (Female)",
+        id: "avatar_1",
+        name: "Avatar",
+        wardrobeStyle: "any",
+      },
+    ],
+    error: null,
+    isLoading: false,
+    isSaving: false,
+    createAvatar: vi.fn(),
+    loadPhoto: mocks.loadPhoto,
+    photos: [
+      {
+        avatarId: "avatar_1",
+        height: 1920,
+        id: "photo_1",
+        name: "Avatar photo",
+        photoObject: { key: "users/user_123/photos/photo_1.jpg" },
+        thumbnailBlob: new Blob(["thumb"], { type: "image/jpeg" }),
+        tags: ["photo"],
+        width: 1080,
+      },
+    ],
+    refresh: mocks.refresh,
+    removeAvatar: mocks.remove,
+    removePhoto: mocks.remove,
+    renameAvatar: vi.fn(),
+    saveFiles: mocks.saveFiles,
+    saveGeneratedPhotos: mocks.saveGeneratedPhotos,
+    updateAvatarCliprVoice: vi.fn(),
+    updateAvatarWardrobeStyle: vi.fn(),
+    updatePhotoMetadata: vi.fn(),
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useAvatarPhotoGeneration", () => ({
+  useAvatarPhotoGeneration: () => ({
+    error: null,
+    generate: vi.fn(),
+    generatedCount: 0,
+    isGenerating: false,
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useSwaprGeneration", () => ({
+  useSwaprGeneration: () => ({
+    error: null,
+    generate: vi.fn(),
+    generatedClip: null,
+    isGenerating: false,
+    progress: 0,
+    status: "idle",
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useLongr", () => ({
+  useLongr: () => ({
+    buildLongrVideo: vi.fn(),
+    error: null,
+    longrVideo: null,
+    progress: 0,
+    status: "idle",
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useCliprGeneration", () => ({
+  useCliprGeneration: () => ({
+    error: null,
+    finalClipId: null,
+    generate: vi.fn(),
+    isGenerating: false,
+    job: null,
+    message: null,
+    progress: 0,
+    status: "idle",
+  }),
+}));
+
+function createClip(overrides: Record<string, unknown> = {}) {
+  return {
+    aspectRatio: 9 / 16,
+    blob: new Blob(["video"], { type: "video/mp4" }),
+    clipType: "ugc",
+    defaultTrimRange: { end: 12, start: 0 },
+    duration: 12,
+    hasAudio: true,
+    height: 1920,
+    id: "clip_1",
+    mimeType: "video/mp4",
+    name: "Clip",
+    originalName: "clip.mp4",
+    originalSize: 100,
+    posterObject: { key: "users/user_123/poster.jpg" },
+    size: 100,
+    sourceMimeType: "video/mp4",
+    tags: ["ugc"],
+    videoObject: { key: "users/user_123/video.mp4" },
+    width: 1080,
+    ...overrides,
+  };
+}
+
+describe("dashboard page clients", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.loadBackgroundBlob.mockResolvedValue(
+      new Blob(["background"], { type: "image/jpeg" }),
+    );
+    mocks.loadClip.mockResolvedValue(createClip());
+  });
+
+  it("renders the Stitchr workflow with available UGC and demo clips", () => {
+    const markup = renderToStaticMarkup(<StitchrPageClient />);
+
+    expect(markup).toContain("Stitchr");
+    expect(markup).toContain("UGC clip");
+    expect(markup).toContain("Demo clip");
+  });
+
+  it("renders the Swapr workflow with photo and source clip inputs", () => {
+    const markup = renderToStaticMarkup(<SwaprPageClient />);
+
+    expect(markup).toContain("Create UGC");
+    expect(markup).toContain("Avatar photo");
+    expect(markup).toContain("UGC clip");
+  });
+
+  it("renders the Swipr carousel workflow with saved product and background data", () => {
+    const markup = renderToStaticMarkup(<SwiprPageClient />);
+
+    expect(markup).toContain("Create TikTok carousels");
+    expect(markup).toContain("Launch Kit");
+    expect(markup).toContain("Studio");
+  });
+
+  it("renders the Content Library with upload controls and saved assets", () => {
+    const markup = renderToStaticMarkup(<UploadsPageClient />);
+
+    expect(markup).toContain("Content Library");
+    expect(markup).toContain("UGC clip");
+    expect(markup).toContain("Saved stitch");
+    expect(markup).toContain("Saved Long");
+  });
+
+  it("renders the Avatars library with upload and generation controls", () => {
+    const markup = renderToStaticMarkup(<AvatarsPageClient />);
+
+    expect(markup).toContain("Avatars");
+    expect(markup).toContain("Avatar photo");
+    expect(markup).toContain("Create avatar photos");
+  });
+
+  it("renders the Longr builder with selectable clips", () => {
+    const markup = renderToStaticMarkup(<LongrPageClient />);
+
+    expect(markup).toContain("Longr");
+    expect(markup).toContain("UGC clip");
+    expect(markup).toContain("Demo clip");
+  });
+
+  it("renders the Clipr generator with product and avatar selectors", () => {
+    const markup = renderToStaticMarkup(<CliprPageClient />);
+
+    expect(markup).toContain("Create engagement Clips");
+    expect(markup).toContain("Launch Kit");
+    expect(markup).toContain("Avatar");
+  });
+});

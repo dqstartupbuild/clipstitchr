@@ -1,6 +1,6 @@
 # Codebase Cleanup & Tech Debt Analysis
 
-Used `codebase-cleanup-tech-debt` for the initial inventory and this follow-up cleanup pass.
+Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup pass, and next-sprint test pass.
 
 ## Cleanup Changes Applied
 
@@ -9,6 +9,27 @@ Used `codebase-cleanup-tech-debt` for the initial inventory and this follow-up c
 - Updated Vitest coverage collection to include unloaded `app`, `convex`, and `lib` source files while excluding tests, generated Convex files, build output, and generated content.
 - Extracted duplicate text overlay CSS generation into `web/lib/clipstitchr/utils/getTextOverlayCssProperties.ts`.
 - Added focused unit coverage for the shared text overlay CSS helper.
+- Added focused route coverage for `POST /api/r2/upload-url` auth, request validation, quota consumption, signed URL creation, and 429 retry timing.
+- Added focused route coverage for `POST /api/r2/download-url` auth, request validation, owner-scope enforcement, quota consumption, signed URL creation, and 429 retry timing.
+- Added next-sprint coverage for high-cost API routes:
+  - `POST /api/swapr/jobs`
+  - `POST /api/swapr/photos/expand`
+  - `GET /api/swapr/output`
+  - `POST /api/avatars/photos/generate`
+  - `POST /api/dev/swipr/backgrounds/seed`
+  - `POST /api/uploads/analyze`
+  - `POST /api/music/generate`
+  - `POST /api/music/download-url`
+  - `POST /api/stitches/music`
+  - `POST /api/clipr/music`
+  - `POST /api/clipr/text`
+  - `POST /api/settings/products`
+  - `PATCH /api/settings/products/[id]`
+  - `POST /api/r2/delete-objects`
+- Added focused Convex coverage for Clipr jobs, media collections, products, rate limits, shared music tracks, Swipr backgrounds, and waitlist submission behavior.
+- Added focused hook coverage for clip/photo/Swipr libraries, Upload Processor, Stitchr, Longr, Swapr generation, Clipr generation, product state, avatar photo generation, avatar-from-UGC creation, video music details, and sequence players.
+- Added SSR render coverage for dashboard page clients and media preview components, including `VideoPreview`, `VideoClipMusicPreview`, and `LongVideoPreview`.
+- Added focused Media/UI utility coverage for text overlay drawing, avatar-generation constants, and Clipr raw hook template resources.
 - Reused the shared overlay style helper from:
   - `web/app/_components/stitchr/TextOverlayBox.tsx`
   - `web/app/_components/stitchr/TextOverlayPreviewBox.tsx`
@@ -18,7 +39,8 @@ Used `codebase-cleanup-tech-debt` for the initial inventory and this follow-up c
 
 - `npm run lint`: pass, 0 warnings.
 - `npm run typecheck`: pass.
-- `npm test`: pass, 87 test files / 213 tests.
+- `npm test`: pass, 137 test files / 458 tests.
+- Full all-file coverage: 50.26% statements, 40.40% branches, 41.80% functions, 50.33% lines.
 - `npm run build` with placeholder production environment: pass on Next.js `16.2.6`.
 - `npm audit --omit=dev --json`: 0 critical, 0 high, 4 moderate vulnerabilities remain.
 
@@ -30,10 +52,10 @@ Used `codebase-cleanup-tech-debt` for the initial inventory and this follow-up c
 
 ## Current State
 
-- **Quality gates:** `npm test`, `npm run typecheck`, `npm run lint`, and `placeholder-env npm run build` pass.
+- **Quality gates:** `npm test`, `npm run typecheck`, and `npm run lint` pass; `placeholder-env npm run build` passed in the dependency cleanup pass.
 - **Lint:** Has 0 errors and 0 warnings after excluding `web/convex/_generated/*`.
-- **Scale:** 992 TS/JS source/test files, 54,309 lines, 36 files over 250 lines, 8 over 500 lines.
-- **Tests:** 87 test files / 213 tests. Coverage now includes unloaded source and reports the real baseline: 11.22% statements, 13.29% branches, 13.19% functions, and 11.23% lines.
+- **Scale:** 1,042 TS/JS source/test files, 64,175 lines, 54 files over 250 lines, 12 over 500 lines.
+- **Tests:** 137 test files / 458 tests. Coverage includes unloaded source and now reports 50.26% statements, 40.40% branches, 41.80% functions, and 50.33% lines.
 - **Security:** `npm audit --omit=dev` reports 4 prod vulnerabilities: 0 high, 4 moderate via `next/postcss` and `convex/ws`.
 
 ## Highest-ROI Debt
@@ -42,8 +64,10 @@ Used `codebase-cleanup-tech-debt` for the initial inventory and this follow-up c
    - **File:** `web/package.json:27` now pins `next@16.2.6`; the high-severity advisories are cleared.
    - **Residual:** npm still reports a moderate `postcss` advisory through `next`.
 2. **High: Misleading coverage and missing workflow tests**
-   - `app/api` has 26 source files and 0 tests; `app/_components` has 165 source files and 0 tests; hooks have 27 source files and 0 tests; media has 39 source files and 1 test.
-   - **Action:** Add `coverage.include/all` first, then cover expensive API routes and browser media flows.
+   - `coverage.include/all` is now enabled and the first next-sprint target is complete: all-file statement coverage is above 50%.
+   - Covered slices now include expensive API routes, Convex mutations/queries, core hooks, dashboard page clients, preview components, and text overlay utilities.
+   - Remaining gap: `clipr/jobs`, media export pipelines, large dashboard components, and content/analytics routes still need deeper tests.
+   - **Action:** Continue toward 60% with `clipr/jobs`, Media Bunny export helpers, and the largest dashboard components.
 3. **High: Oversized orchestration route**
    - **File:** `web/app/api/clipr/jobs/route.ts:43` is 404 lines and owns auth, rate limits, Convex writes, Replicate text/image/video/music calls, R2 saves, shared music saves, analytics, and failure handling.
    - **Action:** Split into request parsing, quota consumption, generation steps, persistence, and cleanup.
@@ -66,8 +90,8 @@ Used `codebase-cleanup-tech-debt` for the initial inventory and this follow-up c
 
 ## Roadmap
 
-- **This sprint:** Add tests against the newly visible coverage gaps, starting with API route auth/rate-limit behavior and the shared text overlay style helper.
-- **Month 1:** Split `clipr/jobs` route; add route tests for auth, 429, validation, provider failure; lazy-load Longr/video blobs; extract Media Bunny export helpers.
+- **This sprint:** Complete. Coverage was expanded from the all-file baseline to 50.26% statements across API routes, Convex modules, hooks, dashboard SSR renders, and media utilities.
+- **Month 1:** Split `clipr/jobs` route; add route tests for auth, 429, validation, provider failure; lazy-load Longr/video blobs; extract Media Bunny export helpers; continue coverage toward 60%.
 - **Quarter:** Add integration/E2E coverage for upload normalization, Stitchr UGC-then-Demo export, dashboard library flows, and paid provider routes; add dependency/audit checks to CI.
 
 ## Prevention
