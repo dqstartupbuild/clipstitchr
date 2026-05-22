@@ -204,8 +204,9 @@ export function SwiprSwipeEditDialog({
                   Photo unavailable
                 </div>
               )}
-              {activeSlide?.textOverlay.text.trim() ? (
+              {activeSlide ? (
                 <TextOverlayBox
+                  emptyLabel="Text"
                   textOverlay={activeSlide.textOverlay}
                   stageRef={stageRef}
                   totalDuration={SWIPR_STATIC_DURATION}
@@ -213,7 +214,7 @@ export function SwiprSwipeEditDialog({
                   onOpenStyleControls={() => setAreTextControlsOpen(true)}
                 />
               ) : null}
-              {activeSlide?.textOverlay.text.trim() && areTextControlsOpen ? (
+              {activeSlide && areTextControlsOpen ? (
                 <TextOverlayQuickControls
                   textOverlay={activeSlide.textOverlay}
                   totalDuration={SWIPR_STATIC_DURATION}
