@@ -23,7 +23,6 @@ import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { createDefaultTextOverlay } from "@/lib/clipstitchr/utils/createDefaultTextOverlay";
-import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
 import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
@@ -33,7 +32,10 @@ import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchr
 export function StitchrPageClient() {
   const library = useClipLibrary();
   const products = useProducts();
-  const stitchrState = useStitchr({ onCreated: library.refresh });
+  const stitchrState = useStitchr({
+    loadClip: library.loadClip,
+    onCreated: library.refresh,
+  });
   const [addMusic, setAddMusic] = useState(false);
   const [includeDemoAudio, setIncludeDemoAudio] = useState(true);
   const [includeUgcAudio, setIncludeUgcAudio] = useState(true);
@@ -53,14 +55,52 @@ export function StitchrPageClient() {
     Record<string, VideoTrimRange>
   >({});
   const loadClip = library.loadClip;
+  const {
+    clips: plainUgcClips,
+    hasMoreItems: hasMorePlainUgcClips,
+    isLoadingMoreItems: isLoadingMorePlainUgcClips,
+    loadMoreItems: loadMorePlainUgcClips,
+  } = library.videoGroups.ugc;
+  const {
+    clips: cliprClips,
+    hasMoreItems: hasMoreCliprClips,
+    isLoadingMoreItems: isLoadingMoreCliprClips,
+    loadMoreItems: loadMoreCliprClips,
+  } = library.videoGroups.clipr;
+  const {
+    clips: swaprClips,
+    hasMoreItems: hasMoreSwaprClips,
+    isLoadingMoreItems: isLoadingMoreSwaprClips,
+    loadMoreItems: loadMoreSwaprClips,
+  } = library.videoGroups.swapr;
+  const {
+    clips: demoClips,
+    hasMoreItems: hasMoreDemoClips,
+    isLoadingMoreItems: isLoadingMoreDemoClips,
+    loadMoreItems: loadMoreDemoClips,
+  } = library.videoGroups.demo;
   const ugcClips = useMemo(
-    () => filterClipsByType(library.clips, "ugc"),
-    [library.clips],
+    () => {
+      const clipsById = new Map<string, VideoClipMetadata>();
+
+      for (const clip of [...plainUgcClips, ...cliprClips, ...swaprClips]) {
+        clipsById.set(clip.id, clip);
+      }
+
+      return [...clipsById.values()];
+    },
+    [cliprClips, plainUgcClips, swaprClips],
   );
-  const demoClips = useMemo(
-    () => filterClipsByType(library.clips, "demo"),
-    [library.clips],
-  );
+  const hasMoreStitchrClips =
+    hasMorePlainUgcClips ||
+    hasMoreCliprClips ||
+    hasMoreSwaprClips ||
+    hasMoreDemoClips;
+  const isLoadingMoreStitchrClips =
+    isLoadingMorePlainUgcClips ||
+    isLoadingMoreCliprClips ||
+    isLoadingMoreSwaprClips ||
+    isLoadingMoreDemoClips;
   const productIds = useMemo(
     () => new Set(products.products.map((product) => product.id)),
     [products.products],
@@ -445,11 +485,38 @@ export function StitchrPageClient() {
     setDemoProductFilterId(productId);
     setSelectedDemoId(undefined);
   }, []);
+  const handleLoadMoreStitchrClips = useCallback(() => {
+    if (hasMorePlainUgcClips) {
+      loadMorePlainUgcClips();
+    }
+
+    if (hasMoreCliprClips) {
+      loadMoreCliprClips();
+    }
+
+    if (hasMoreSwaprClips) {
+      loadMoreSwaprClips();
+    }
+
+    if (hasMoreDemoClips) {
+      loadMoreDemoClips();
+    }
+  }, [
+    hasMoreCliprClips,
+    hasMoreDemoClips,
+    hasMorePlainUgcClips,
+    hasMoreSwaprClips,
+    loadMoreCliprClips,
+    loadMoreDemoClips,
+    loadMorePlainUgcClips,
+    loadMoreSwaprClips,
+  ]);
 
   const isStitching =
     stitchrState.status === "reading" ||
     stitchrState.status === "saving" ||
     stitchrState.status === "stitching";
+  const hasStitchrInputs = ugcClips.length > 0 && demoClips.length > 0;
 
   return (
     <StitchrShell>
@@ -460,15 +527,15 @@ export function StitchrPageClient() {
             {library.error}
           </div>
         ) : null}
-        {ugcClips.length && demoClips.length ? (
+        {hasStitchrInputs ? (
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
             <div className="flex min-w-0 flex-col gap-5">
               <ClipPickerPanel
                 addMusic={addMusic}
                 includeDemoAudio={includeDemoAudio}
                 includeUgcAudio={includeUgcAudio}
-                hasMoreClips={library.hasMoreClips}
-                isLoadingMoreClips={library.isLoadingMoreClips}
+                hasMoreClips={hasMoreStitchrClips}
+                isLoadingMoreClips={isLoadingMoreStitchrClips}
                 selectedMusicTrack={selectedMusicTrack}
                 products={products.products}
                 ugcClips={ugcClips}
@@ -496,7 +563,7 @@ export function StitchrPageClient() {
                 }}
                 onIncludeDemoAudioChange={setIncludeDemoAudio}
                 onIncludeUgcAudioChange={setIncludeUgcAudio}
-                onLoadMoreClips={library.loadMoreClips}
+                onLoadMoreClips={handleLoadMoreStitchrClips}
                 onSelectMusicTrack={(track) => {
                   setSelectedMusicTrack(track);
                   setAddMusic(false);
@@ -540,6 +607,10 @@ export function StitchrPageClient() {
                 onTextOverlayChange={handleTextOverlayChange}
               />
             </div>
+          </div>
+        ) : library.isLoading ? (
+          <div className="rounded-lg border border-border bg-surface p-5 text-sm text-text-secondary">
+            Loading Stitchr clips...
           </div>
         ) : (
           <StitchrEmptyState />

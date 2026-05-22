@@ -1,10 +1,6 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
-import { TextOverlayBackgroundColorPicker } from "@/app/_components/stitchr/TextOverlayBackgroundColorPicker";
-import { TextOverlayColorPicker } from "@/app/_components/stitchr/TextOverlayColorPicker";
-import { TextOverlayStrokeColorPicker } from "@/app/_components/stitchr/TextOverlayStrokeColorPicker";
-import { TextOverlayStylePicker } from "@/app/_components/stitchr/TextOverlayStylePicker";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { SWIPR_STATIC_DURATION } from "@/lib/clipstitchr/constants/swiprStaticDuration";
 import type { SwiprSlide } from "@/lib/clipstitchr/types/SwiprSlide";
@@ -64,24 +60,6 @@ export function SwiprTextOverlayPanel({
             handleChange({ ...textOverlay, text: event.target.value })
           }
         />
-        <TextOverlayStylePicker
-          textOverlay={textOverlay}
-          onChange={handleChange}
-        />
-        <div className="grid gap-3 lg:grid-cols-3">
-          <TextOverlayColorPicker
-            textOverlay={textOverlay}
-            onChange={handleChange}
-          />
-          <TextOverlayBackgroundColorPicker
-            textOverlay={textOverlay}
-            onChange={handleChange}
-          />
-          <TextOverlayStrokeColorPicker
-            textOverlay={textOverlay}
-            onChange={handleChange}
-          />
-        </div>
       </div>
     </section>
   );

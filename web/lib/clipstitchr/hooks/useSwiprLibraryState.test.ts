@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useSwiprLibraryState } from "@/lib/clipstitchr/hooks/useSwiprLibraryState";
+import type { SwiprSlide } from "@/lib/clipstitchr/types/SwiprSlide";
 
 const mocks = vi.hoisted(() => {
   const mutationFns = new Map<string, ReturnType<typeof vi.fn>>();
@@ -9,9 +10,13 @@ const mocks = vi.hoisted(() => {
     createId: vi.fn(),
     createSwiprBackgroundAssetFromConvexDocument: vi.fn(),
     createSwiprSwipeFromConvexDocument: vi.fn(),
+    deleteObjectsFromR2: vi.fn(),
+    downloadCachedR2ImageBlobs: vi.fn(),
     downloadSwiprBackgroundBlobFromR2: vi.fn(),
     getImageDimensions: vi.fn(),
     mutationFns,
+    renderSwiprSlideBlob: vi.fn(),
+    uploadBlobsToR2: vi.fn(),
     uploadSwiprBackgroundBlobToR2: vi.fn(),
     useConvexAuth: vi.fn(),
     useEffect: vi.fn(),
@@ -100,6 +105,18 @@ vi.mock(
   }),
 );
 
+vi.mock("@/lib/clipstitchr/client/r2/deleteObjectsFromR2", () => ({
+  deleteObjectsFromR2: mocks.deleteObjectsFromR2,
+}));
+
+vi.mock("@/lib/clipstitchr/client/r2/downloadCachedR2ImageBlobs", () => ({
+  downloadCachedR2ImageBlobs: mocks.downloadCachedR2ImageBlobs,
+}));
+
+vi.mock("@/lib/clipstitchr/client/r2/uploadBlobsToR2", () => ({
+  uploadBlobsToR2: mocks.uploadBlobsToR2,
+}));
+
 vi.mock(
   "@/lib/clipstitchr/client/r2/uploadSwiprBackgroundBlobToR2",
   () => ({
@@ -109,6 +126,10 @@ vi.mock(
 
 vi.mock("@/lib/clipstitchr/media/getImageDimensions", () => ({
   getImageDimensions: mocks.getImageDimensions,
+}));
+
+vi.mock("@/lib/clipstitchr/media/renderSwiprSlideBlob", () => ({
+  renderSwiprSlideBlob: mocks.renderSwiprSlideBlob,
 }));
 
 vi.mock("@/lib/clipstitchr/utils/createId", () => ({
@@ -200,7 +221,26 @@ describe("useSwiprLibraryState", () => {
     mocks.downloadSwiprBackgroundBlobFromR2.mockResolvedValue(
       new Blob(["background"], { type: "image/jpeg" }),
     );
+    mocks.deleteObjectsFromR2.mockResolvedValue(undefined);
+    mocks.downloadCachedR2ImageBlobs.mockImplementation(async (objects) => {
+      return new Map(
+        objects.map((object: { key: string }) => [
+          object.key,
+          new Blob(["poster"], { type: "image/png" }),
+        ]),
+      );
+    });
     mocks.getImageDimensions.mockResolvedValue({ height: 1920, width: 1080 });
+    mocks.renderSwiprSlideBlob.mockResolvedValue(
+      new Blob(["poster"], { type: "image/png" }),
+    );
+    mocks.uploadBlobsToR2.mockResolvedValue([
+      {
+        contentType: "image/png",
+        key: "users/user_123/swipes/swipe_new/poster.png",
+        size: 12,
+      },
+    ]);
     mocks.uploadSwiprBackgroundBlobToR2.mockResolvedValue({
       contentType: "image/jpeg",
       key: "users/user_123/swipr/background_new.jpg",
@@ -419,6 +459,69 @@ describe("useSwiprLibraryState", () => {
       expect.objectContaining({
         createdAt: "2026-01-01T00:00:00.000Z",
         updatedAt: "2026-01-02T00:00:00.000Z",
+      }),
+    );
+  });
+
+  it("renders and saves a first-slide poster for Swipes", async () => {
+    const state = useSwiprLibraryState();
+    const firstSlide = {
+      backgroundId: "background_1",
+      id: "slide_1",
+      textOverlay: {
+        endTime: 1,
+        fontSize: 48,
+        startTime: 0,
+        styleId: "hook",
+        text: "Launch now",
+        width: 0.8,
+        x: 0.5,
+        y: 0.5,
+      },
+    } satisfies SwiprSlide;
+
+    await expect(
+      state.saveSwipe({
+        backgroundId: "background_1",
+        id: "swipe_new",
+        name: "New Swipe",
+        productContext: "Context",
+        productName: "Product",
+        productSourceId: "product_1",
+        productSourceType: "saved-product",
+        slides: [firstSlide],
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        posterBlob: expect.any(Blob),
+        posterObject: expect.objectContaining({
+          key: "users/user_123/swipes/swipe_new/poster.png",
+        }),
+        posterVersion: 1,
+      }),
+    );
+
+    expect(mocks.downloadSwiprBackgroundBlobFromR2).toHaveBeenCalledWith(
+      "background_1",
+    );
+    expect(mocks.renderSwiprSlideBlob).toHaveBeenCalledWith(
+      expect.any(Blob),
+      firstSlide,
+    );
+    expect(mocks.uploadBlobsToR2).toHaveBeenCalledWith([
+      {
+        blob: expect.any(Blob),
+        kind: "swipe-poster",
+        recordId: "swipe_new",
+      },
+    ]);
+    expect(getMutation("swipes.save")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "swipe_new",
+        posterObject: expect.objectContaining({
+          key: "users/user_123/swipes/swipe_new/poster.png",
+        }),
+        posterVersion: 1,
       }),
     );
   });

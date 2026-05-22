@@ -6,11 +6,13 @@ import { getTextOverlayColor } from "@/lib/clipstitchr/utils/getTextOverlayColor
 
 type TextOverlayColorPickerProps = {
   textOverlay: TextOverlay;
+  variant?: "default" | "compact";
   onChange: (textOverlay: TextOverlay) => void;
 };
 
 export function TextOverlayColorPicker({
   textOverlay,
+  variant = "default",
   onChange,
 }: TextOverlayColorPickerProps) {
   const selectedColor = getTextOverlayColor(textOverlay);
@@ -19,6 +21,7 @@ export function TextOverlayColorPicker({
     <TextOverlaySwatchPicker
       label="Text"
       selectedColor={selectedColor}
+      variant={variant}
       onChange={(color) => onChange({ ...textOverlay, color })}
     />
   );

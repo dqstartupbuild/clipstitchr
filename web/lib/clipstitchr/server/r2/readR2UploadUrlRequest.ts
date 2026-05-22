@@ -11,6 +11,7 @@ const R2_OBJECT_KINDS = new Set<R2ObjectKind>([
   "longr-poster",
   "stitch-video",
   "stitch-poster",
+  "swipe-poster",
 ]);
 
 type R2UploadUrlRequest = {

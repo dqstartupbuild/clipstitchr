@@ -224,6 +224,8 @@ export default defineSchema({
     productName: v.string(),
     backgroundId: v.string(),
     slides: v.array(swiprSlideValidator),
+    posterObject: v.optional(r2ObjectValidator),
+    posterVersion: v.optional(v.number()),
     createdAt: v.string(),
     updatedAt: v.string(),
   })

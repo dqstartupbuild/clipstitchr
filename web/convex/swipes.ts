@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
+import { r2ObjectValidator } from "./validators/r2Object";
 import { swiprProductSourceTypeValidator } from "./validators/swiprProductSourceType";
 import { swiprSlideValidator } from "./validators/swiprSlide";
 
@@ -22,6 +23,8 @@ const saveArgs = {
   productName: v.string(),
   backgroundId: v.string(),
   slides: v.array(swiprSlideValidator),
+  posterObject: v.optional(r2ObjectValidator),
+  posterVersion: v.optional(v.number()),
   createdAt: v.string(),
   updatedAt: v.string(),
 };

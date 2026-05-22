@@ -23,6 +23,7 @@ const mocks = vi.hoisted(() => ({
     isSavingBackground: false,
     isSavingSwipe: false,
     loadBackgroundBlob: vi.fn(),
+    loadSwipePoster: vi.fn(),
     refresh: vi.fn(),
     saveBackground: vi.fn(),
     saveSwipe: vi.fn(),

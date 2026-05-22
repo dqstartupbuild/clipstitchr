@@ -1,12 +1,15 @@
 "use client";
 
 import { X } from "lucide-react";
+import { MediaActionButtonList } from "@/app/_components/dashboard/MediaActionButtonList";
 import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 
 type PhotoAssetDetailsDialogProps = {
+  actionItems?: MediaCardActionMenuItem[];
   avatarName?: string;
   imageUrl: string | null;
   photo: PhotoAssetMetadata;
@@ -14,6 +17,7 @@ type PhotoAssetDetailsDialogProps = {
 };
 
 export function PhotoAssetDetailsDialog({
+  actionItems = [],
   avatarName,
   imageUrl,
   photo,
@@ -42,6 +46,7 @@ export function PhotoAssetDetailsDialog({
             >
               {photo.name}
             </h2>
+            <MediaActionButtonList items={actionItems} className="mt-3" />
           </div>
           <IconButton
             type="button"

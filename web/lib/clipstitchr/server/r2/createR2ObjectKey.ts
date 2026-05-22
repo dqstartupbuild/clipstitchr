@@ -86,6 +86,11 @@ const objectKindConfig: Record<
     baseName: "poster",
     fallbackExtension: "jpg",
   },
+  "swipe-poster": {
+    directory: "swipes",
+    baseName: "poster",
+    fallbackExtension: "png",
+  },
 };
 
 type CreateR2ObjectKeyOptions = {

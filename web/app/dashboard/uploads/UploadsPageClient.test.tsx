@@ -332,6 +332,7 @@ describe("UploadsPageClient", () => {
       backgrounds: [{ id: "background_1", name: "Background" }],
       error: null,
       loadBackgroundBlob: vi.fn(),
+      loadSwipePoster: vi.fn(),
       removeSwipe: vi.fn(),
       swipes: [
         {

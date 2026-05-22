@@ -13,4 +13,5 @@ export type R2ObjectKind =
   | "longr-poster"
   | "stitch-music-audio"
   | "stitch-video"
-  | "stitch-poster";
+  | "stitch-poster"
+  | "swipe-poster";

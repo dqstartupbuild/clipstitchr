@@ -1,6 +1,13 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Download, Edit3, X } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Edit3,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useCallback, useState } from "react";
 import { SwiprStaticTextOverlayBox } from "@/app/_components/swipr/SwiprStaticTextOverlayBox";
 import { Button } from "@/app/_components/ui/Button";
@@ -16,7 +23,9 @@ type SwiprSwipeDetailsDialogProps = {
   isDownloading: boolean;
   swipe: SwiprSwipe;
   onClose: () => void;
+  onDelete: () => void;
   onDownload: () => void;
+  onEdit: () => void;
 };
 
 export function SwiprSwipeDetailsDialog({
@@ -24,7 +33,9 @@ export function SwiprSwipeDetailsDialog({
   isDownloading,
   swipe,
   onClose,
+  onDelete,
   onDownload,
+  onEdit,
 }: SwiprSwipeDetailsDialogProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const backgroundUrl = useObjectUrl(background.blob);
@@ -139,13 +150,22 @@ export function SwiprSwipeDetailsDialog({
               >
                 Download
               </Button>
-              <a
-                href={`/dashboard/swipr?swipe=${encodeURIComponent(swipe.id)}`}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-semibold text-text-primary transition-colors hover:border-accent"
+              <Button
+                type="button"
+                variant="secondary"
+                icon={<Edit3 aria-hidden className="h-4 w-4" />}
+                onClick={onEdit}
               >
-                <Edit3 aria-hidden className="h-4 w-4" />
                 Edit
-              </a>
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                icon={<Trash2 aria-hidden className="h-4 w-4" />}
+                onClick={onDelete}
+              >
+                Delete
+              </Button>
             </div>
           </div>
         </div>

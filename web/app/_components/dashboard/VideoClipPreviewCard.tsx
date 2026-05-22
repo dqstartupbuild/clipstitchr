@@ -4,6 +4,7 @@ import { Play } from "lucide-react";
 import type { ReactNode } from "react";
 import { useCallback, useState } from "react";
 import { VideoClipDetailsDialog } from "@/app/_components/dashboard/VideoClipDetailsDialog";
+import { VideoClipEditDialog } from "@/app/_components/dashboard/VideoClipEditDialog";
 import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
 import {
   MediaCardActionMenu,
@@ -11,6 +12,8 @@ import {
 } from "@/app/_components/ui/MediaCardActionMenu";
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -22,10 +25,12 @@ import { getVideoClipBadgeLabel } from "@/lib/clipstitchr/utils/getVideoClipBadg
 import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
 
 type OpenVideoClipDetailsOptions = {
+  showEditDialog?: boolean;
   showControlsEditor?: boolean;
 };
 
 type VideoClipPreviewCardActions = {
+  closeDetails: () => void;
   isLoading: boolean;
   loadFullClip: () => Promise<VideoClip | null>;
   openDetails: (options?: OpenVideoClipDetailsOptions) => void;
@@ -36,6 +41,11 @@ type VideoClipPreviewCardTrimEditor = {
   saveLabel: string;
   title: string;
   onSave: (trimRange: VideoTrimRange) => void | Promise<void>;
+};
+
+type VideoClipPreviewCardMetadataEditor = {
+  products?: ProductProfile[];
+  onSave: (metadata: AssetMetadataUpdate) => void | Promise<void>;
 };
 
 type VideoClipPreviewCardProps = {
@@ -50,6 +60,7 @@ type VideoClipPreviewCardProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect?: () => void;
   cliprMusicEditor?: VideoClipDetailsMusicEditor;
+  metadataEditor?: VideoClipPreviewCardMetadataEditor;
   trimEditor?: VideoClipPreviewCardTrimEditor;
 };
 
@@ -65,6 +76,7 @@ export function VideoClipPreviewCard({
   onLoadPoster,
   onSelect,
   cliprMusicEditor,
+  metadataEditor,
   trimEditor,
 }: VideoClipPreviewCardProps) {
   const [loadedClipState, setLoadedClipState] = useState<{
@@ -72,9 +84,9 @@ export function VideoClipPreviewCard({
     clip: VideoClip;
   } | null>(null);
   const [isClipLoading, setIsClipLoading] = useState(false);
-  const [detailsMode, setDetailsMode] = useState<"details" | "trim" | null>(
-    null,
-  );
+  const [detailsMode, setDetailsMode] = useState<
+    "details" | "controls" | "edit" | null
+  >(null);
   const musicObjectKey = clip.cliprMetadata?.music?.audioObject.key;
   const musicEnabled = clip.cliprMetadata?.music?.enabled;
   const musicUpdatedAt = clip.cliprMetadata?.music?.updatedAt;
@@ -121,10 +133,20 @@ export function VideoClipPreviewCard({
     }
   };
   const openDetails = (options?: OpenVideoClipDetailsOptions) => {
-    setDetailsMode(options?.showControlsEditor ? "trim" : "details");
+    setDetailsMode(
+      options?.showEditDialog
+        ? "edit"
+        : options?.showControlsEditor
+          ? "controls"
+          : "details",
+    );
     void loadFullClip();
   };
+  const closeDetails = () => {
+    setDetailsMode(null);
+  };
   const actionContext = {
+    closeDetails,
     isLoading: isClipLoading,
     loadFullClip,
     openDetails,
@@ -200,11 +222,28 @@ export function VideoClipPreviewCard({
         </div>
         {footerContent ? <div className="mt-4">{footerContent}</div> : null}
       </div>
-      {detailsMode ? (
+      {detailsMode === "details" || detailsMode === "controls" ? (
         <VideoClipDetailsDialog
+          actionItems={actionItems}
           clip={clip}
           productName={productName}
-          initialControlsEditorOpen={detailsMode === "trim"}
+          initialControlsEditorOpen={detailsMode === "controls"}
+          isLoading={isClipLoading}
+          musicEditor={detailsMode === "controls" ? cliprMusicEditor : undefined}
+          posterUrl={posterUrl}
+          trimEditor={detailsMode === "controls" ? trimEditor : undefined}
+          videoUrl={videoUrl}
+          onClose={() => setDetailsMode(null)}
+          onLoadPreview={() => {
+            void loadFullClip();
+          }}
+        />
+      ) : null}
+      {detailsMode === "edit" && metadataEditor ? (
+        <VideoClipEditDialog
+          clip={clip}
+          productName={productName}
+          products={metadataEditor.products}
           isLoading={isClipLoading}
           musicEditor={cliprMusicEditor}
           posterUrl={posterUrl}
@@ -214,6 +253,7 @@ export function VideoClipPreviewCard({
           onLoadPreview={() => {
             void loadFullClip();
           }}
+          onSaveMetadata={metadataEditor.onSave}
         />
       ) : null}
     </>

@@ -1,0 +1,1 @@
+export const SWIPR_POSTER_CAPTURE_VERSION = 1;

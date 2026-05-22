@@ -6,14 +6,20 @@ import { api } from "@/convex/_generated/api";
 import { createSwiprBackgroundAssetFromConvexDocument } from "@/lib/clipstitchr/backend/createSwiprBackgroundAssetFromConvexDocument";
 import { createSwiprSwipeFromConvexDocument } from "@/lib/clipstitchr/backend/createSwiprSwipeFromConvexDocument";
 import { analyzeSwiprBackground } from "@/lib/clipstitchr/client/analyzeSwiprBackground";
+import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
+import { downloadCachedR2ImageBlobs } from "@/lib/clipstitchr/client/r2/downloadCachedR2ImageBlobs";
 import { downloadSwiprBackgroundBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadSwiprBackgroundBlobFromR2";
+import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
+import { SWIPR_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/swiprPosterCaptureVersion";
 import { uploadSwiprBackgroundBlobToR2 } from "@/lib/clipstitchr/client/r2/uploadSwiprBackgroundBlobToR2";
 import { getImageDimensions } from "@/lib/clipstitchr/media/getImageDimensions";
+import { renderSwiprSlideBlob } from "@/lib/clipstitchr/media/renderSwiprSlideBlob";
 import type {
   SaveSwiprBackgroundOptions,
   SaveSwiprSwipeInput,
   SwiprLibraryValue,
 } from "@/lib/clipstitchr/types/SwiprLibraryValue";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 
@@ -40,8 +46,12 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
   const backgroundBlobCacheRef = useRef(new Map<string, Blob>());
   const backgroundDownloadPromisesRef = useRef(new Map<string, Promise<Blob>>());
   const backgroundDownloadQueueRef = useRef(Promise.resolve());
+  const swipePosterBlobCacheRef = useRef(new Map<string, Blob>());
   const swipes = useMemo(
-    () => swipeDocuments?.map(createSwiprSwipeFromConvexDocument) ?? [],
+    () =>
+      swipeDocuments?.map((swipe) =>
+        createSwiprSwipeFromConvexDocument(swipe),
+      ) ?? [],
     [swipeDocuments],
   );
 
@@ -88,6 +98,41 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
       backgroundDownloadPromisesRef.current.delete(id);
     }
   }, []);
+
+  const loadSwipePosterBlob = useCallback(
+    async (posterObject?: R2ObjectReference) => {
+      if (!posterObject) {
+        return null;
+      }
+
+      const cachedPosterBlob = swipePosterBlobCacheRef.current.get(
+        posterObject.key,
+      );
+
+      if (cachedPosterBlob) {
+        return cachedPosterBlob;
+      }
+
+      const posterBlobsByKey = await downloadCachedR2ImageBlobs([posterObject]);
+      const posterBlob = posterBlobsByKey.get(posterObject.key) ?? null;
+
+      if (posterBlob) {
+        swipePosterBlobCacheRef.current.set(posterObject.key, posterBlob);
+      }
+
+      return posterBlob;
+    },
+    [],
+  );
+
+  const loadSwipePoster = useCallback(
+    async (id: string) => {
+      const swipeDocument = swipeDocuments?.find((swipe) => swipe.id === id);
+
+      return await loadSwipePosterBlob(swipeDocument?.posterObject);
+    },
+    [loadSwipePosterBlob, swipeDocuments],
+  );
 
   const saveBackground = useCallback(
     async ({
@@ -182,8 +227,37 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
 
       try {
         const now = new Date().toISOString();
+        const firstSlide = input.slides[0];
+        let posterBlob: Blob | undefined;
+        let posterObject: R2ObjectReference | undefined;
+
+        if (firstSlide) {
+          const backgroundBlob = await loadBackgroundBlob(
+            firstSlide.backgroundId ?? input.backgroundId,
+          );
+
+          posterBlob = await renderSwiprSlideBlob(backgroundBlob, firstSlide);
+          [posterObject] = await uploadBlobsToR2([
+            {
+              blob: posterBlob,
+              kind: "swipe-poster",
+              recordId: input.id,
+            },
+          ]);
+
+          if (posterObject) {
+            swipePosterBlobCacheRef.current.set(posterObject.key, posterBlob);
+          }
+        }
+
         const swipe = {
           ...input,
+          ...(posterObject
+            ? {
+                posterObject,
+                posterVersion: SWIPR_POSTER_CAPTURE_VERSION,
+              }
+            : {}),
           createdAt: input.createdAt ?? now,
           updatedAt: input.updatedAt ?? now,
         };
@@ -191,7 +265,10 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
         await saveSwipeMutation(swipe);
         await refresh();
 
-        return swipe;
+        return {
+          ...swipe,
+          posterBlob,
+        };
       } catch (nextError) {
         setError(
           nextError instanceof Error
@@ -203,7 +280,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
         setIsSavingSwipe(false);
       }
     },
-    [refresh, saveSwipeMutation],
+    [loadBackgroundBlob, refresh, saveSwipeMutation],
   );
 
   const removeSwipe = useCallback(
@@ -211,6 +288,13 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
       setError(null);
 
       try {
+        const swipeDocument = swipeDocuments?.find((swipe) => swipe.id === id);
+
+        if (swipeDocument?.posterObject) {
+          await deleteObjectsFromR2([swipeDocument.posterObject]);
+          swipePosterBlobCacheRef.current.delete(swipeDocument.posterObject.key);
+        }
+
         await removeSwipeMutation({ id });
         await refresh();
       } catch (nextError) {
@@ -222,7 +306,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
         throw nextError;
       }
     },
-    [refresh, removeSwipeMutation],
+    [refresh, removeSwipeMutation, swipeDocuments],
   );
 
   useEffect(() => {
@@ -231,6 +315,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
         void Promise.resolve().then(() => {
           backgroundBlobCacheRef.current.clear();
           backgroundDownloadPromisesRef.current.clear();
+          swipePosterBlobCacheRef.current.clear();
           setBackgrounds([]);
         });
       }
@@ -278,6 +363,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
     error,
     refresh,
     loadBackgroundBlob,
+    loadSwipePoster,
     saveBackground,
     saveSwipe,
     removeSwipe,

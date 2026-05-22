@@ -1,8 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { TextOverlayBox } from "@/app/_components/stitchr/TextOverlayBox";
+import { TextOverlayQuickControls } from "@/app/_components/stitchr/TextOverlayQuickControls";
 import { SwiprPreviewActions } from "@/app/_components/swipr/SwiprPreviewActions";
 import { Panel } from "@/app/_components/ui/Panel";
 import { SWIPR_STATIC_DURATION } from "@/lib/clipstitchr/constants/swiprStaticDuration";
@@ -44,6 +45,7 @@ export function SwiprPreviewPanel({
   onTextOverlayChange,
 }: SwiprPreviewPanelProps) {
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const [areTextControlsOpen, setAreTextControlsOpen] = useState(false);
   const backgroundUrl = useObjectUrl(background?.blob);
 
   return (
@@ -89,6 +91,15 @@ export function SwiprPreviewPanel({
             stageRef={stageRef}
             totalDuration={SWIPR_STATIC_DURATION}
             onChange={onTextOverlayChange}
+            onOpenStyleControls={() => setAreTextControlsOpen(true)}
+          />
+        ) : null}
+        {activeSlide && activeSlide.textOverlay.text.trim() && areTextControlsOpen ? (
+          <TextOverlayQuickControls
+            textOverlay={activeSlide.textOverlay}
+            totalDuration={SWIPR_STATIC_DURATION}
+            onChange={onTextOverlayChange}
+            onClose={() => setAreTextControlsOpen(false)}
           />
         ) : null}
       </div>

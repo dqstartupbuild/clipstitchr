@@ -1,15 +1,18 @@
 "use client";
 
 import { X } from "lucide-react";
+import { MediaActionButtonList } from "@/app/_components/dashboard/MediaActionButtonList";
 import { LongVideoPreview } from "@/app/_components/dashboard/LongVideoPreview";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import type { LongrVideoMetadata } from "@/lib/clipstitchr/types/LongrVideoMetadata";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 
 type LongrVideoDetailsDialogProps = {
+  actionItems?: MediaCardActionMenuItem[];
   longrVideo: LongrVideoMetadata;
   posterUrl: string | null;
   videoUrl: string | null;
@@ -17,6 +20,7 @@ type LongrVideoDetailsDialogProps = {
 };
 
 export function LongrVideoDetailsDialog({
+  actionItems = [],
   longrVideo,
   posterUrl,
   videoUrl,
@@ -49,6 +53,7 @@ export function LongrVideoDetailsDialog({
             >
               {longrVideo.name}
             </h2>
+            <MediaActionButtonList items={actionItems} className="mt-3" />
           </div>
           <IconButton
             type="button"

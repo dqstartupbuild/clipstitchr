@@ -106,7 +106,10 @@ export function LongrVideoCard({
       label: "Delete Long",
       variant: "danger",
       icon: <Trash2 aria-hidden className="h-4 w-4" />,
-      onClick: () => void onDelete(longrVideo.id),
+      onClick: () => {
+        setIsDetailsOpen(false);
+        void onDelete(longrVideo.id);
+      },
     },
   ];
 
@@ -172,6 +175,7 @@ export function LongrVideoCard({
       </div>
       {isDetailsOpen ? (
         <LongrVideoDetailsDialog
+          actionItems={actionItems}
           longrVideo={longrVideo}
           posterUrl={posterUrl}
           videoUrl={url}

@@ -47,6 +47,7 @@ const mocks = vi.hoisted(() => ({
     backgrounds: [],
     error: null as string | null,
     loadBackgroundBlob: vi.fn(),
+    loadSwipePoster: vi.fn(),
     removeSwipe: vi.fn(),
     swipes: [],
   },

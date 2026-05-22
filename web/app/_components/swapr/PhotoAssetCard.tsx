@@ -49,6 +49,10 @@ export function PhotoAssetCard({
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isMetadataOpen, setIsMetadataOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const openMetadataEditor = () => {
+    setIsDetailsOpen(false);
+    setIsMetadataOpen(true);
+  };
   const handleDownload = async () => {
     if (!onLoadPhoto) {
       return;
@@ -118,9 +122,9 @@ export function PhotoAssetCard({
 
   if (onUpdateMetadata) {
     actionItems.push({
-      label: "Edit photo details",
+      label: "Edit photo",
       icon: <Edit3 aria-hidden className="h-4 w-4" />,
-      onClick: () => setIsMetadataOpen(true),
+      onClick: openMetadataEditor,
     });
   }
 
@@ -129,7 +133,10 @@ export function PhotoAssetCard({
       label: "Delete photo",
       variant: "danger",
       icon: <Trash2 aria-hidden className="h-4 w-4" />,
-      onClick: () => void onDelete(photo.id),
+      onClick: () => {
+        setIsDetailsOpen(false);
+        void onDelete(photo.id);
+      },
     });
   }
 
@@ -178,6 +185,7 @@ export function PhotoAssetCard({
       </div>
       {isDetailsOpen ? (
         <PhotoAssetDetailsDialog
+          actionItems={actionItems}
           avatarName={avatarName}
           imageUrl={imageUrl}
           photo={photo}

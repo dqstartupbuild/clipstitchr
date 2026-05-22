@@ -15,10 +15,14 @@ const mocks = vi.hoisted(() => ({
     onCreate: (options: unknown) => Promise<boolean>;
   },
   createVideoBlobWithPosterMetadata: vi.fn(),
+  closeDetails: vi.fn(),
   downloadBlob: vi.fn(),
   downloadMusicBlob: vi.fn(),
   metadataDialogProps: null as null | {
     onClose: () => void;
+    onSave: (metadata: unknown) => Promise<void>;
+  },
+  metadataEditor: null as null | {
     onSave: (metadata: unknown) => Promise<void>;
   },
   loadFullClip: vi.fn(),
@@ -53,20 +57,25 @@ vi.mock("@/app/_components/dashboard/VideoClipPreviewCard", () => ({
     actions,
     cliprMusicEditor,
     footer,
+    metadataEditor,
     trimEditor,
   }: {
     actions: (input: {
+      closeDetails: () => void;
       isLoading: boolean;
       loadFullClip: () => Promise<VideoClip | null>;
       openDetails: (options?: unknown) => void;
     }) => MediaCardActionMenuItem[];
     cliprMusicEditor?: typeof mocks.cliprMusicEditor;
     footer: () => React.ReactNode;
+    metadataEditor?: typeof mocks.metadataEditor;
     trimEditor: typeof mocks.trimEditor;
   }) => {
     mocks.trimEditor = trimEditor;
     mocks.cliprMusicEditor = cliprMusicEditor ?? null;
+    mocks.metadataEditor = metadataEditor ?? null;
     mocks.actionItems = actions({
+      closeDetails: mocks.closeDetails,
       isLoading: false,
       loadFullClip: mocks.loadFullClip,
       openDetails: mocks.openDetails,
@@ -192,6 +201,7 @@ describe("VideoClipCard", () => {
     mocks.actionItems = [];
     mocks.avatarDialogProps = null;
     mocks.metadataDialogProps = null;
+    mocks.metadataEditor = null;
     mocks.trimEditor = null;
     mocks.cliprMusicEditor = null;
     mocks.stateQueue = [];
@@ -213,7 +223,7 @@ describe("VideoClipCard", () => {
     );
   });
 
-  it("builds clip action items and invokes download, metadata, trim, music, avatar, and delete callbacks", async () => {
+  it("builds clip action items and invokes download, edit, trim, music, avatar, and delete callbacks", async () => {
     const onCreateAvatarFromClip = vi.fn(async () => true);
     const onDelete = vi.fn();
     const onGenerateCliprMusic = vi.fn(async () =>
@@ -250,15 +260,13 @@ describe("VideoClipCard", () => {
       "Use in Stitchr",
       "Use in Swapr",
       "Download clip",
-      "Edit clip details",
-      "Edit trim and music",
+      "Edit clip",
       "Create avatar from UGC",
       "Delete clip",
     ]);
 
     mocks.actionItems.find((item) => item.label === "Download clip")?.onClick?.();
-    mocks.actionItems.find((item) => item.label === "Edit clip details")?.onClick?.();
-    mocks.actionItems.find((item) => item.label === "Edit trim and music")?.onClick?.();
+    mocks.actionItems.find((item) => item.label === "Edit clip")?.onClick?.();
     mocks.actionItems
       .find((item) => item.label === "Create avatar from UGC")
       ?.onClick?.();
@@ -280,8 +288,9 @@ describe("VideoClipCard", () => {
       "ugc-clip.mp4",
     );
     expect(mocks.setState).toHaveBeenCalledWith(true);
+    expect(mocks.closeDetails).toHaveBeenCalledTimes(2);
     expect(mocks.openDetails).toHaveBeenCalledWith({
-      showControlsEditor: true,
+      showEditDialog: true,
     });
     expect(onDelete).toHaveBeenCalledWith("clip_1");
     expect(onUpdateTrim).toHaveBeenCalledWith(createClipMetadata(), {
@@ -309,8 +318,7 @@ describe("VideoClipCard", () => {
     expect(mocks.actionItems.map((item) => item.label)).toEqual([
       "Use in Stitchr",
       "Download clip",
-      "Edit clip details",
-      "Edit default trim",
+      "Edit clip",
       "Delete clip",
     ]);
   });
@@ -444,11 +452,10 @@ describe("VideoClipCard", () => {
     );
   });
 
-  it("saves metadata and creates avatars from open dialogs", async () => {
+  it("saves metadata through the edit dialog and creates avatars from open dialogs", async () => {
     const onCreateAvatarFromClip = vi.fn(async () => true);
     const onUpdateMetadata = vi.fn(async () => undefined);
 
-    mocks.stateQueue = [false, true, false, false, false, null, null];
     renderToStaticMarkup(
       <VideoClipCard
         clip={createClipMetadata()}
@@ -460,13 +467,12 @@ describe("VideoClipCard", () => {
       />,
     );
 
-    mocks.metadataDialogProps?.onClose();
-    await mocks.metadataDialogProps?.onSave({
+    await mocks.metadataEditor?.onSave({
       name: "Updated",
       tags: ["ugc"],
     });
 
-    mocks.stateQueue = [true, false, false, false, false, null, null];
+    mocks.stateQueue = [true, false, false, false, null, null];
     renderToStaticMarkup(
       <VideoClipCard
         clip={createClipMetadata()}

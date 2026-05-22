@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => {
     createLongrVideoMetadataFromConvexDocument: vi.fn(),
     createLongrVideoFromConvexDocument: vi.fn(),
     createStitchFromConvexDocument: vi.fn(),
+    createStitchPosterBlob: vi.fn(),
     createVideoClipFromConvexDocument: vi.fn(),
     createVideoClipMetadataFromConvexDocument: vi.fn(),
     deleteObjectsFromR2: vi.fn(),
@@ -35,6 +36,7 @@ const mocks = vi.hoisted(() => {
     usePaginatedQuery: vi.fn(),
     useQuery: vi.fn(),
     useStateSetter: vi.fn(),
+    uploadBlobsToR2: vi.fn(),
   };
 });
 
@@ -86,6 +88,7 @@ vi.mock("@/convex/_generated/api", () => ({
       list: "stitches.list",
       remove: "stitches.remove",
       updateMusic: "stitches.updateMusic",
+      updatePoster: "stitches.updatePoster",
       updateTextOverlay: "stitches.updateTextOverlay",
     },
     videoClips: {
@@ -143,12 +146,20 @@ vi.mock("@/lib/clipstitchr/client/r2/downloadBlobFromR2", () => ({
   downloadBlobFromR2: mocks.downloadBlobFromR2,
 }));
 
+vi.mock("@/lib/clipstitchr/client/r2/uploadBlobsToR2", () => ({
+  uploadBlobsToR2: mocks.uploadBlobsToR2,
+}));
+
 vi.mock("@/lib/clipstitchr/client/generateCliprMusic", () => ({
   generateCliprMusic: mocks.generateCliprMusic,
 }));
 
 vi.mock("@/lib/clipstitchr/client/generateStitchMusic", () => ({
   generateStitchMusic: mocks.generateStitchMusic,
+}));
+
+vi.mock("@/lib/clipstitchr/media/createStitchPosterBlob", () => ({
+  createStitchPosterBlob: mocks.createStitchPosterBlob,
 }));
 
 function getMutation(id: string) {
@@ -273,6 +284,16 @@ describe("useClipLibraryState", () => {
         ]),
       );
     });
+    mocks.createStitchPosterBlob.mockResolvedValue(
+      new Blob(["stitch-poster"], { type: "image/jpeg" }),
+    );
+    mocks.uploadBlobsToR2.mockResolvedValue([
+      {
+        contentType: "image/jpeg",
+        key: "users/user_123/stitches/stitch_1/poster.jpg",
+        size: 10,
+      },
+    ]);
     mocks.createVideoClipFromConvexDocument.mockReturnValue({
       id: "clip_1",
       name: "Loaded clip",
@@ -693,6 +714,13 @@ describe("useClipLibraryState", () => {
     expect(getMutation("stitches.updateTextOverlay")).toHaveBeenCalledWith({
       id: "stitch_1",
       textOverlay,
+    });
+    expect(getMutation("stitches.updatePoster")).toHaveBeenCalledWith({
+      id: "stitch_1",
+      posterObject: expect.objectContaining({
+        key: "users/user_123/stitches/stitch_1/poster.jpg",
+      }),
+      posterVersion: 2,
     });
     expect(mocks.deleteObjectsFromR2).toHaveBeenCalledWith([
       { key: "users/user_123/stitches/stitch_1/video.mp4" },

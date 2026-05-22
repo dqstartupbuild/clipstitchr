@@ -8,15 +8,25 @@ import { getTextPreviewBackgroundColor } from "@/lib/clipstitchr/utils/getTextPr
 
 type TextOverlayStylePickerProps = {
   textOverlay: TextOverlay;
+  variant?: "default" | "compact";
   onChange: (textOverlay: TextOverlay) => void;
 };
 
 export function TextOverlayStylePicker({
   textOverlay,
+  variant = "default",
   onChange,
 }: TextOverlayStylePickerProps) {
+  const isCompact = variant === "compact";
+
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+    <div
+      className={
+        isCompact
+          ? "flex min-w-0 items-center gap-1.5 overflow-x-auto py-1"
+          : "grid grid-cols-2 gap-2 sm:grid-cols-5"
+      }
+    >
       {TEXT_OVERLAY_STYLES.map((style) => {
         const isSelected = style.id === textOverlay.styleId;
         const previewColor = textOverlay.color ?? style.color;
@@ -37,7 +47,10 @@ export function TextOverlayStylePicker({
             aria-pressed={isSelected}
             title={style.label}
             className={[
-              "flex h-14 flex-col items-center justify-center gap-0.5 rounded-lg border text-sm font-bold transition-colors",
+              isCompact
+                ? "h-10 min-w-12 shrink-0 px-1"
+                : "h-14 text-sm",
+              "flex flex-col items-center justify-center gap-0.5 rounded-lg border font-bold transition-colors",
               isSelected
                 ? "border-accent bg-surface-muted text-accent-dark"
                 : "border-border bg-white text-text-secondary hover:border-accent",
@@ -53,7 +66,8 @@ export function TextOverlayStylePicker({
           >
             <span
               className={[
-                "inline-flex h-7 min-w-12 items-center justify-center px-2 text-base leading-none shadow-inner",
+                isCompact ? "h-6 min-w-9 text-sm" : "h-7 min-w-12 text-base",
+                "inline-flex items-center justify-center px-2 leading-none shadow-inner",
                 style.fullWidthBand ? "w-16 rounded-none" : "rounded-md",
               ]
                 .filter(Boolean)
@@ -69,7 +83,13 @@ export function TextOverlayStylePicker({
             >
               Aa
             </span>
-            <span className="text-[10px] leading-none text-text-tertiary">
+            <span
+              className={
+                isCompact
+                  ? "sr-only"
+                  : "text-[10px] leading-none text-text-tertiary"
+              }
+            >
               {style.label}
             </span>
           </button>

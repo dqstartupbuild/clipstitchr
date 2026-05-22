@@ -9,9 +9,13 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 
 const mocks = vi.hoisted(() => ({
   actionContext: null as null | {
+    closeDetails: () => void;
     isLoading: boolean;
     loadFullClip: () => Promise<VideoClip | null>;
-    openDetails: (options?: { showControlsEditor?: boolean }) => void;
+    openDetails: (options?: {
+      showControlsEditor?: boolean;
+      showEditDialog?: boolean;
+    }) => void;
   },
   detailsDialogProps: null as null | {
     initialControlsEditorOpen: boolean;
@@ -20,6 +24,11 @@ const mocks = vi.hoisted(() => ({
     onLoadPreview: () => void;
     posterUrl?: string | null;
     videoUrl?: string | null;
+  },
+  editDialogProps: null as null | {
+    onClose: () => void;
+    onLoadPreview: () => void;
+    onSaveMetadata: (metadata: unknown) => Promise<void>;
   },
   lazyOptions: null as null | {
     cacheKey?: string;
@@ -59,6 +68,13 @@ vi.mock("@/app/_components/dashboard/VideoClipDetailsDialog", () => ({
   VideoClipDetailsDialog: (props: typeof mocks.detailsDialogProps) => {
     mocks.detailsDialogProps = props;
     return "VideoClipDetailsDialog";
+  },
+}));
+
+vi.mock("@/app/_components/dashboard/VideoClipEditDialog", () => ({
+  VideoClipEditDialog: (props: typeof mocks.editDialogProps) => {
+    mocks.editDialogProps = props;
+    return "VideoClipEditDialog";
   },
 }));
 
@@ -203,6 +219,7 @@ describe("VideoClipPreviewCard", () => {
     vi.clearAllMocks();
     mocks.actionContext = null;
     mocks.detailsDialogProps = null;
+    mocks.editDialogProps = null;
     mocks.lazyOptions = null;
     mocks.lazyUrl = "blob:poster";
     mocks.menuProps = null;
@@ -268,7 +285,7 @@ describe("VideoClipPreviewCard", () => {
       cacheKey: getClipCacheKey(createClipMetadata()),
       clip: fullClip,
     });
-    expect(mocks.setState).toHaveBeenCalledWith("trim");
+    expect(mocks.setState).toHaveBeenCalledWith("controls");
     expect(mocks.setState).toHaveBeenCalledWith("details");
   });
 
@@ -323,7 +340,7 @@ describe("VideoClipPreviewCard", () => {
 
   it("renders details dialog controls and preview reload callbacks", async () => {
     const onLoadClip = vi.fn(async () => createFullClip());
-    mocks.stateQueue = [null, true, "trim"];
+    mocks.stateQueue = [null, true, "controls"];
 
     renderToStaticMarkup(
       <VideoClipPreviewCard

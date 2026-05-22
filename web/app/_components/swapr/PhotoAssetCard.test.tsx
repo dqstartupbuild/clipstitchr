@@ -150,7 +150,7 @@ describe("PhotoAssetCard", () => {
       (button.props?.onClick as (() => void) | undefined)?.();
     }
     (selection?.props?.onClick as (() => void) | undefined)?.();
-    findAction(elements, "Edit photo details").onClick?.();
+    findAction(elements, "Edit photo").onClick?.();
     findAction(elements, "Delete photo").onClick?.();
     findAction(elements, "Download photo").onClick?.();
     await new Promise((resolve) => setTimeout(resolve, 0));
