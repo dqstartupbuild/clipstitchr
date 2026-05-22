@@ -1,21 +1,14 @@
-import { AudioSampleSource, VideoSampleSource } from "mediabunny";
-import {
-  OUTPUT_AUDIO_NUMBER_OF_CHANNELS,
-  OUTPUT_AUDIO_SAMPLE_RATE,
-} from "@/lib/clipstitchr/constants/audioOutputParameters";
-import {
-  TIKTOK_OUTPUT_HEIGHT,
-  TIKTOK_OUTPUT_WIDTH,
-} from "@/lib/clipstitchr/constants/tiktokOutputSize";
+import { assertNormalizedAudioParameters } from "@/lib/clipstitchr/media/assertNormalizedAudioParameters";
 import { copyAudioSamplesToSource } from "@/lib/clipstitchr/media/copyAudioSamplesToSource";
 import { copyVideoSamplesToSource } from "@/lib/clipstitchr/media/copyVideoSamplesToSource";
+import { createMediaBunnyExportSession } from "@/lib/clipstitchr/media/createMediaBunnyExportSession";
+import { createMediaBunnyProgressMapper } from "@/lib/clipstitchr/media/createMediaBunnyProgressMapper";
 import { createMediaInput } from "@/lib/clipstitchr/media/createMediaInput";
-import { createMp4Output } from "@/lib/clipstitchr/media/createMp4Output";
-import { createVideoBlobFromBuffer } from "@/lib/clipstitchr/media/createVideoBlobFromBuffer";
+import { createOutputAudioSampleSource } from "@/lib/clipstitchr/media/createOutputAudioSampleSource";
+import { createTikTokVideoSampleSource } from "@/lib/clipstitchr/media/createTikTokVideoSampleSource";
+import { finalizeMediaBunnyExportSession } from "@/lib/clipstitchr/media/finalizeMediaBunnyExportSession";
 import { getInputAudioParameters } from "@/lib/clipstitchr/media/getInputAudioParameters";
-import { getSupportedOutputCodecs } from "@/lib/clipstitchr/media/getSupportedOutputCodecs";
-import { getVideoMimeType } from "@/lib/clipstitchr/media/getVideoMimeType";
-import { registerAacEncoderIfNeeded } from "@/lib/clipstitchr/media/registerAacEncoderIfNeeded";
+import { resolveMediaBunnyOutputCodecs } from "@/lib/clipstitchr/media/resolveMediaBunnyOutputCodecs";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
@@ -44,87 +37,44 @@ export async function createVideoSegmentBlob(
     const audioParameters = await getInputAudioParameters(input);
     const includeAudio = Boolean(audioParameters);
 
-    if (
-      audioParameters &&
-      (audioParameters.numberOfChannels !== OUTPUT_AUDIO_NUMBER_OF_CHANNELS ||
-        audioParameters.sampleRate !== OUTPUT_AUDIO_SAMPLE_RATE)
-    ) {
-      throw new Error(
-        `The selected clip has audio at ${audioParameters.numberOfChannels} channels and ` +
-          `${audioParameters.sampleRate} Hz. Re-upload it so ClipStitchr can normalize audio to ` +
-          `${OUTPUT_AUDIO_NUMBER_OF_CHANNELS} channels at ${OUTPUT_AUDIO_SAMPLE_RATE} Hz before swapping.`,
-      );
-    }
-
-    if (includeAudio) {
-      await registerAacEncoderIfNeeded();
-    }
-
-    const codecs = await getSupportedOutputCodecs(includeAudio);
-
-    if (!codecs.videoCodec) {
-      throw new Error(codecs.warnings[0] ?? "No supported video encoder found.");
-    }
-
-    if (includeAudio && !codecs.audioCodec) {
-      throw new Error(
-        codecs.warnings[1] ?? "No supported audio encoder found for this segment.",
-      );
-    }
-
-    const output = createMp4Output();
-    const videoSource = new VideoSampleSource({
-      codec: codecs.videoCodec,
-      bitrate: 8_000_000,
-      keyFrameInterval: 2,
-      sizeChangeBehavior: "contain",
-      transform: {
-        width: TIKTOK_OUTPUT_WIDTH,
-        height: TIKTOK_OUTPUT_HEIGHT,
-      },
-    });
-    const audioSource = includeAudio
-      ? new AudioSampleSource({
-          codec: codecs.audioCodec ?? "aac",
-          bitrate: 160_000,
-        })
-      : null;
-
-    output.addVideoTrack(videoSource, {
-      rotation: 0,
+    assertNormalizedAudioParameters({
+      audioParameters,
+      subject: "The selected clip",
+      workflow: "swapping",
     });
 
-    if (audioSource) {
-      output.addAudioTrack(audioSource);
-    }
-
-    await output.start();
+    const codecs = await resolveMediaBunnyOutputCodecs(
+      includeAudio,
+      "No supported audio encoder found for this segment.",
+    );
+    const session = await createMediaBunnyExportSession({
+      audioSource: createOutputAudioSampleSource(
+        includeAudio,
+        codecs.audioCodec,
+      ),
+      videoSource: createTikTokVideoSampleSource(codecs.videoCodec),
+    });
 
     const video = await copyVideoSamplesToSource({
       input,
-      source: videoSource,
+      source: session.videoSource,
       timelineOffset: 0,
       trimRange: clampedTrimRange,
-      onProgress: (progress) => onProgress?.(progress * 0.7),
+      onProgress: createMediaBunnyProgressMapper(onProgress, 0, 0.7),
     });
-    const audio = audioSource
+    const audio = session.audioSource
       ? await copyAudioSamplesToSource({
           input,
-          source: audioSource,
+          source: session.audioSource,
           timelineOffset: 0,
           trimRange: clampedTrimRange,
-          onProgress: (progress) => onProgress?.(0.7 + progress * 0.25),
+          onProgress: createMediaBunnyProgressMapper(onProgress, 0.7, 0.25),
         })
       : { endTimestamp: 0 };
-
-    videoSource.close();
-    audioSource?.close();
-
-    await output.finalize();
-    onProgress?.(1);
-
-    const mimeType = await getVideoMimeType(output);
-    const blob = createVideoBlobFromBuffer(output.target.buffer, mimeType);
+    const { blob, mimeType } = await finalizeMediaBunnyExportSession({
+      onProgress,
+      session,
+    });
 
     return {
       blob,

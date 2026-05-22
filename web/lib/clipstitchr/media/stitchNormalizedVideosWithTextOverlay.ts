@@ -1,22 +1,19 @@
-import { AudioSampleSource, CanvasSource } from "mediabunny";
-import {
-  OUTPUT_AUDIO_NUMBER_OF_CHANNELS,
-  OUTPUT_AUDIO_SAMPLE_RATE,
-} from "@/lib/clipstitchr/constants/audioOutputParameters";
+import { assertNormalizedAudioParameters } from "@/lib/clipstitchr/media/assertNormalizedAudioParameters";
 import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
 import { copyAudioSamplesToSource } from "@/lib/clipstitchr/media/copyAudioSamplesToSource";
 import { copyTextOverlayVideoFramesToSource } from "@/lib/clipstitchr/media/copyTextOverlayVideoFramesToSource";
+import { createMediaBunnyExportSession } from "@/lib/clipstitchr/media/createMediaBunnyExportSession";
+import { createMediaBunnyProgressMapper } from "@/lib/clipstitchr/media/createMediaBunnyProgressMapper";
 import { createMediaInput } from "@/lib/clipstitchr/media/createMediaInput";
-import { createMp4Output } from "@/lib/clipstitchr/media/createMp4Output";
+import { createOutputAudioSampleSource } from "@/lib/clipstitchr/media/createOutputAudioSampleSource";
 import { createTextOverlayRenderContext } from "@/lib/clipstitchr/media/createTextOverlayRenderContext";
-import { createVideoBlobFromBuffer } from "@/lib/clipstitchr/media/createVideoBlobFromBuffer";
+import { createTikTokCanvasSource } from "@/lib/clipstitchr/media/createTikTokCanvasSource";
+import { finalizeMediaBunnyExportSession } from "@/lib/clipstitchr/media/finalizeMediaBunnyExportSession";
 import { getInputAudioParameters } from "@/lib/clipstitchr/media/getInputAudioParameters";
-import { getSupportedOutputCodecs } from "@/lib/clipstitchr/media/getSupportedOutputCodecs";
-import { getVideoMimeType } from "@/lib/clipstitchr/media/getVideoMimeType";
-import { registerAacEncoderIfNeeded } from "@/lib/clipstitchr/media/registerAacEncoderIfNeeded";
+import { resolveMediaBunnyOutputCodecs } from "@/lib/clipstitchr/media/resolveMediaBunnyOutputCodecs";
 import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSourceAudioOptions";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -68,105 +65,83 @@ export async function stitchNormalizedVideosWithTextOverlay(
     const ugcDuration = getVideoTrimRangeDuration(clampedUgcTrimRange);
     const demoDuration = getVideoTrimRangeDuration(clampedDemoTrimRange);
     const includeAudio = Boolean(ugcAudioParameters || demoAudioParameters);
-    const unsupportedAudioParameters = [
-      ugcAudioParameters,
-      demoAudioParameters,
-    ].find(
-      (parameters) =>
-        parameters &&
-        (parameters.numberOfChannels !== OUTPUT_AUDIO_NUMBER_OF_CHANNELS ||
-          parameters.sampleRate !== OUTPUT_AUDIO_SAMPLE_RATE),
+
+    assertNormalizedAudioParameters({
+      audioParameters: ugcAudioParameters,
+      subject: "One selected clip",
+      workflow: "stitching",
+    });
+    assertNormalizedAudioParameters({
+      audioParameters: demoAudioParameters,
+      subject: "One selected clip",
+      workflow: "stitching",
+    });
+
+    const codecs = await resolveMediaBunnyOutputCodecs(
+      includeAudio,
+      "No supported audio encoder found for this export.",
     );
-
-    if (unsupportedAudioParameters) {
-      throw new Error(
-        `One selected clip has audio at ${unsupportedAudioParameters.numberOfChannels} channels and ` +
-          `${unsupportedAudioParameters.sampleRate} Hz. Re-upload it so ClipStitchr can normalize audio to ` +
-          `${OUTPUT_AUDIO_NUMBER_OF_CHANNELS} channels at ${OUTPUT_AUDIO_SAMPLE_RATE} Hz before stitching.`,
-      );
-    }
-
-    if (includeAudio) {
-      await registerAacEncoderIfNeeded();
-    }
-
-    const codecs = await getSupportedOutputCodecs(includeAudio);
-
-    if (!codecs.videoCodec) {
-      throw new Error(codecs.warnings[0] ?? "No supported video encoder found.");
-    }
-
-    if (includeAudio && !codecs.audioCodec) {
-      throw new Error(
-        codecs.warnings[1] ?? "No supported audio encoder found for this export.",
-      );
-    }
-
-    const output = createMp4Output();
     const renderContext = createTextOverlayRenderContext(
       TIKTOK_OUTPUT_WIDTH,
       TIKTOK_OUTPUT_HEIGHT,
     );
-    const videoSource = new CanvasSource(renderContext.canvas, {
-      codec: codecs.videoCodec,
-      bitrate: 8_000_000,
-      keyFrameInterval: 2,
+    const session = await createMediaBunnyExportSession({
+      audioSource: createOutputAudioSampleSource(
+        includeAudio,
+        codecs.audioCodec,
+      ),
+      videoSource: createTikTokCanvasSource(
+        renderContext.canvas,
+        codecs.videoCodec,
+      ),
     });
-    const audioSource = includeAudio
-      ? new AudioSampleSource({
-          codec: codecs.audioCodec ?? "aac",
-          bitrate: 160_000,
-        })
-      : null;
-
-    output.addVideoTrack(videoSource, {
-      rotation: 0,
-    });
-
-    if (audioSource) {
-      output.addAudioTrack(audioSource);
-    }
-
-    await output.start();
 
     const ugcVideo = await copyTextOverlayVideoFramesToSource({
       input: ugcInput,
-      source: videoSource,
+      source: session.videoSource,
       renderContext,
       timelineOffset: 0,
       trimRange: clampedUgcTrimRange,
       textOverlay,
-      onProgress: (progress) => onProgress?.(progress * 0.35),
+      onProgress: createMediaBunnyProgressMapper(onProgress, 0, 0.35),
     });
     const demoTimelineOffset = Math.max(ugcDuration, ugcVideo.endTimestamp);
     const demoVideo = await copyTextOverlayVideoFramesToSource({
       input: demoInput,
-      source: videoSource,
+      source: session.videoSource,
       renderContext,
       timelineOffset: demoTimelineOffset,
       trimRange: clampedDemoTrimRange,
       textOverlay,
-      onProgress: (progress) => onProgress?.(0.35 + progress * 0.35),
+      onProgress: createMediaBunnyProgressMapper(onProgress, 0.35, 0.35),
     });
     let endTimestamp = Math.max(ugcVideo.endTimestamp, demoVideo.endTimestamp);
 
-    if (audioSource) {
+    if (session.audioSource) {
       const ugcAudio = includeUgcAudio
         ? await copyAudioSamplesToSource({
             input: ugcInput,
-            source: audioSource,
+            source: session.audioSource,
             timelineOffset: 0,
             trimRange: clampedUgcTrimRange,
-            onProgress: (progress) => onProgress?.(0.7 + progress * 0.15),
+            onProgress: createMediaBunnyProgressMapper(
+              onProgress,
+              0.7,
+              0.15,
+            ),
           })
         : { endTimestamp: 0 };
       const demoAudio = includeDemoAudio
         ? await copyAudioSamplesToSource({
             input: demoInput,
-            source: audioSource,
+            source: session.audioSource,
             timelineOffset: demoTimelineOffset,
             trimRange: clampedDemoTrimRange,
-            onProgress: (progress) => onProgress?.(0.85 + progress * 0.1),
+            onProgress: createMediaBunnyProgressMapper(
+              onProgress,
+              0.85,
+              0.1,
+            ),
           })
         : { endTimestamp: demoTimelineOffset };
       endTimestamp = Math.max(
@@ -176,15 +151,10 @@ export async function stitchNormalizedVideosWithTextOverlay(
       );
     }
 
-    videoSource.close();
-    audioSource?.close();
-
-    await output.finalize();
-
-    onProgress?.(1);
-
-    const mimeType = await getVideoMimeType(output);
-    const blob = createVideoBlobFromBuffer(output.target.buffer, mimeType);
+    const { blob, mimeType } = await finalizeMediaBunnyExportSession({
+      onProgress,
+      session,
+    });
 
     return {
       blob,

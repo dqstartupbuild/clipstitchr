@@ -136,13 +136,14 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
    - **Action:** `useClipLibraryState` now subscribes to paginated metadata and keeps saved media bytes out of initial dashboard/library hydration.
    - **Files:** `web/lib/clipstitchr/hooks/useClipLibraryState.ts`, Convex clip/stitch/Longr list queries, and dashboard library consumers.
    - **Result:** Poster blobs load when cards need them but now coalesce same-page cache misses through `POST /api/r2/download-urls`, persistent browser Cache Storage avoids refetching posters/thumbnails across refreshes, full Longr video blobs load only for preview/download, and library views can request additional metadata pages.
-5. **Medium: Duplicated Media Bunny export pipeline**
+5. **Done: Duplicated Media Bunny export pipeline**
    - **Files:**
-     - `web/lib/clipstitchr/media/stitchNormalizedVideos.ts:52`
-     - `web/lib/clipstitchr/media/stitchNormalizedVideosWithTextOverlay.ts:56`
-     - `createVideoSegmentBlob.ts` (repeat codec selection, audio validation, output setup, finalization, and progress math).
+     - `web/lib/clipstitchr/media/stitchNormalizedVideos.ts`
+     - `web/lib/clipstitchr/media/stitchNormalizedVideosWithTextOverlay.ts`
+     - `web/lib/clipstitchr/media/createVideoSegmentBlob.ts`
+     - `web/lib/clipstitchr/media/*MediaBunny*`, `createTikTok*`, `createOutputAudioSampleSource.ts`, and `assertNormalizedAudioParameters.ts`
    - **Action:** Extract shared output/session helpers without using Conversion for stitching.
-   - **Effort:** 8-12h.
+   - **Result:** Shared Media Bunny helpers now own normalized-audio validation, output codec resolution, TikTok video/canvas/audio source creation, output session setup, progress mapping, and finalization while Stitchr still manually writes UGC-then-Demo samples.
 6. **Done: Text overlay style drift risk**
    - **Action:** Extracted `getTextOverlayCssProperties` and removed the duplicated style calculation from Stitchr and Swipr overlay boxes.
 7. **Done: Lint scans generated Convex files**
