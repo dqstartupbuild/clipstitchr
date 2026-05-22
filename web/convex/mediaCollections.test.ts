@@ -788,6 +788,28 @@ describe("convex media collections", () => {
       ),
     ).rejects.toThrow("Swipr background not found.");
 
+    const missingSlideBackgroundCtx = createCtx({
+      swiprBackgrounds: [
+        { unique: { _id: "background_doc" } },
+        { unique: null },
+      ],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(swipes.save)(
+        missingSlideBackgroundCtx,
+        createSwipeArgs({
+          slides: [
+            {
+              backgroundId: "missing_background",
+              id: "slide_1",
+              textOverlay: {},
+            },
+          ],
+        }),
+      ),
+    ).rejects.toThrow("Swipr slide background not found.");
+
     const missingProductCtx = createCtx({
       products: [{ unique: null }],
       swiprBackgrounds: [{ unique: { _id: "background_doc" } }],

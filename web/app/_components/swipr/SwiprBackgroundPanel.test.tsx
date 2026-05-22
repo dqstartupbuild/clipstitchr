@@ -178,6 +178,7 @@ describe("SwiprBackgroundPanel", () => {
     });
     const next = createBackground({ id: "background_3" });
     const onBackgroundSearchChange = vi.fn();
+    const onGenerationPromptChange = vi.fn();
     const onGenerateAiBackground = vi.fn();
     const onLoadBackgroundBlob = vi.fn(async () => new Blob(["loaded"]));
     const onSeedBackgroundLibrary = vi.fn();
@@ -198,10 +199,13 @@ describe("SwiprBackgroundPanel", () => {
       },
       backgroundSearchQuery: "studio",
       backgrounds: [first, loaded, next],
+      generationPrompt: "warm studio",
       isAiDisabled: false,
       isGeneratingAi: false,
       isSaving: false,
+      slideCount: 3,
       onBackgroundSearchChange,
+      onGenerationPromptChange,
       onGenerateAiBackground,
       onLoadBackgroundBlob,
       onSeedBackgroundLibrary,
@@ -241,8 +245,20 @@ describe("SwiprBackgroundPanel", () => {
       tree,
       (element) => element.type === "input",
     );
+    const [promptInput] = findElements(
+      tree,
+      (element) => element.type === "textarea",
+    );
+    (promptInput.props.onChange as (event: {
+      target: { value: string };
+    }) => void)({
+      target: { value: "brighter counter" },
+    });
     const target = {
-      files: [new File(["bg"], "background.jpg", { type: "image/jpeg" })],
+      files: [
+        new File(["bg"], "background.jpg", { type: "image/jpeg" }),
+        new File(["bg2"], "background-2.jpg", { type: "image/jpeg" }),
+      ],
       value: "background.jpg",
     };
     (fileInput.props.onChange as (event: { target: typeof target }) => void)({
@@ -253,11 +269,12 @@ describe("SwiprBackgroundPanel", () => {
     });
 
     expect(onBackgroundSearchChange).toHaveBeenCalledWith("new query");
+    expect(onGenerationPromptChange).toHaveBeenCalledWith("brighter counter");
     expect(onSelectBackground).toHaveBeenCalledWith(first);
     expect(mocks.paginationValue?.goToNextPage).toHaveBeenCalled();
     expect(onGenerateAiBackground).toHaveBeenCalled();
     expect(onSeedBackgroundLibrary).toHaveBeenCalled();
-    expect(onUploadBackground).toHaveBeenCalledWith(target.files[0]);
+    expect(onUploadBackground).toHaveBeenCalledWith(target.files);
     expect(target.value).toBe("");
   });
 
@@ -275,10 +292,13 @@ describe("SwiprBackgroundPanel", () => {
       background: null,
       backgroundSearchQuery: "",
       backgrounds: [],
+      generationPrompt: "",
       isAiDisabled: true,
       isGeneratingAi: true,
       isSaving: true,
+      slideCount: 3,
       onBackgroundSearchChange: vi.fn(),
+      onGenerationPromptChange: vi.fn(),
       onGenerateAiBackground: vi.fn(),
       onLoadBackgroundBlob,
       onSelectBackground: vi.fn(),

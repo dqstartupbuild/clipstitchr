@@ -182,7 +182,7 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     kind: "token bucket",
     rate: 20,
     period: HOUR,
-    capacity: 5,
+    capacity: 8,
   },
   replicateSwiprBackgroundGenerateDaily: {
     kind: "token bucket",

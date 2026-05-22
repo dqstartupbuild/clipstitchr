@@ -22,6 +22,7 @@ import { getSwiprBackgroundPresetId } from "@/lib/clipstitchr/utils/getSwiprBack
 export const runtime = "nodejs";
 
 type SwiprBackgroundGenerationRequest = {
+  prompt?: unknown;
   productContext?: unknown;
   presetId?: unknown;
 };
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as SwiprBackgroundGenerationRequest;
     const productContext =
       typeof body.productContext === "string" ? body.productContext : "";
+    const userPrompt = typeof body.prompt === "string" ? body.prompt : "";
     const preferredPresetId =
       typeof body.presetId === "string"
         ? getSwiprBackgroundPresetId(body.presetId)
@@ -63,6 +65,7 @@ export async function POST(request: Request) {
       modelId,
       productContext,
       presetId: variation.presetId,
+      userPrompt,
       variation,
     });
     const replicate = createReplicateClient();
@@ -92,7 +95,7 @@ export async function POST(request: Request) {
     const headers = new Headers();
     const contentType = outputResponse.headers.get("content-type");
     const generationMetadata =
-      createSwiprBackgroundGenerationMetadataText(variation);
+      createSwiprBackgroundGenerationMetadataText(variation, userPrompt);
 
     headers.set("content-type", contentType ?? "image/jpeg");
     headers.set(

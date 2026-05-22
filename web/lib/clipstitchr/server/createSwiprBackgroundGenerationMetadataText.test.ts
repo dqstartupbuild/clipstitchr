@@ -4,18 +4,21 @@ import { createSwiprBackgroundGenerationMetadataText } from "@/lib/clipstitchr/s
 describe("createSwiprBackgroundGenerationMetadataText", () => {
   it("serializes variation details for hidden background metadata", () => {
     expect(
-      createSwiprBackgroundGenerationMetadataText({
-        cameraAngle: "low angle",
-        category: "fitness",
-        composition: "open center",
-        lighting: "morning daylight",
-        palette: "charcoal and blue",
-        presetId: "outdoor",
-        scene: "empty training park",
-        surface: "smooth concrete",
-      }),
+      createSwiprBackgroundGenerationMetadataText(
+        {
+          cameraAngle: "low angle",
+          category: "fitness",
+          composition: "open center",
+          lighting: "morning daylight",
+          palette: "charcoal and blue",
+          presetId: "outdoor",
+          scene: "empty training park",
+          surface: "smooth concrete",
+        },
+        "cool blue wall",
+      ),
     ).toBe(
-      "Category: fitness; Preset: outdoor; Scene: empty training park; Lighting: morning daylight; Camera angle: low angle; Surface: smooth concrete; Palette: charcoal and blue; Composition: open center",
+      "Category: fitness; Preset: outdoor; Scene: empty training park; Lighting: morning daylight; Camera angle: low angle; Surface: smooth concrete; Palette: charcoal and blue; Composition: open center; User prompt: cool blue wall",
     );
   });
 });

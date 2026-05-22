@@ -33,14 +33,17 @@ export function createSwiprBackgroundGenerationPrompt({
   modelId = "openai/gpt-image-2",
   productContext,
   presetId,
+  userPrompt,
   variation,
 }: {
   modelId?: string;
   productContext: string;
   presetId: SwiprBackgroundPresetId;
+  userPrompt?: string;
   variation?: SwiprBackgroundGenerationVariation;
 }) {
   const context = productContext.trim().slice(0, 2400);
+  const customPrompt = userPrompt?.trim().slice(0, 1000) ?? "";
   const modelFamily = getSwiprBackgroundGenerationModelFamily(modelId);
   const prunaContext = getPrunaSwiprBackgroundPromptContext(productContext);
 
@@ -58,6 +61,7 @@ export function createSwiprBackgroundGenerationPrompt({
       variation ? `Color palette: ${variation.palette}.` : "",
       variation ? `Composition: ${variation.composition}.` : "",
       prunaContext ? `Scene mood notes: ${prunaContext}.` : "",
+      customPrompt ? `User visual direction: ${customPrompt}.` : "",
       "Single continuous image with one uninterrupted scene.",
     ]
       .filter(Boolean)
@@ -82,6 +86,7 @@ export function createSwiprBackgroundGenerationPrompt({
     variation ? `Color palette: ${variation.palette}.` : "",
     variation ? `Composition rule: ${variation.composition}.` : "",
     context ? `Product and audience context: ${context}.` : "",
+    customPrompt ? `User visual direction: ${customPrompt}.` : "",
   ]
     .filter(Boolean)
     .join(" ");

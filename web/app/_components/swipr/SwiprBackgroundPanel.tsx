@@ -16,27 +16,33 @@ type SwiprBackgroundPanelProps = {
   background: SwiprBackground | null;
   backgrounds: SwiprBackgroundAsset[];
   backgroundSearchQuery: string;
+  generationPrompt: string;
   isSaving: boolean;
   isGeneratingAi: boolean;
   isAiDisabled: boolean;
   isSeedingDevBackgrounds?: boolean;
+  slideCount: number;
   onBackgroundSearchChange: (query: string) => void;
+  onGenerationPromptChange: (prompt: string) => void;
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onSelectBackground: (background: SwiprBackgroundAsset) => void;
   onGenerateAiBackground: () => void;
   onSeedBackgroundLibrary?: () => void;
-  onUploadBackground: (file: File) => void;
+  onUploadBackground: (files: File[]) => void;
 };
 
 export function SwiprBackgroundPanel({
   background,
   backgrounds,
   backgroundSearchQuery,
+  generationPrompt,
   isSaving,
   isGeneratingAi,
   isAiDisabled,
   isSeedingDevBackgrounds = false,
+  slideCount,
   onBackgroundSearchChange,
+  onGenerationPromptChange,
   onLoadBackgroundBlob,
   onSelectBackground,
   onGenerateAiBackground,
@@ -87,11 +93,21 @@ export function SwiprBackgroundPanel({
         <div>
           <p className="text-sm font-semibold text-accent-dark">Background</p>
           <h2 className="mt-0.5 text-base font-bold text-text-primary">
-            Single image
+            Photos
           </h2>
         </div>
       </div>
       <div className="grid min-w-0 gap-3">
+        <label className="grid gap-1 text-sm font-semibold text-text-primary">
+          Image prompt
+          <textarea
+            className="min-h-20 resize-y rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text-primary outline-none transition-colors placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+            value={generationPrompt}
+            onChange={(event) => onGenerationPromptChange(event.target.value)}
+            placeholder="Clean studio product scene with warm daylight"
+            disabled={isBusy}
+          />
+        </label>
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
           <SearchInput
             label="Search backgrounds"
@@ -108,7 +124,7 @@ export function SwiprBackgroundPanel({
               disabled={isSaving || isSeedingDevBackgrounds || isAiDisabled}
               onClick={onGenerateAiBackground}
             >
-              Generate
+              Generate {slideCount}
             </Button>
             {onSeedBackgroundLibrary ? (
               <Button
@@ -135,11 +151,12 @@ export function SwiprBackgroundPanel({
                 accept={ACCEPTED_PHOTO_TYPES.join(",")}
                 className="sr-only"
                 disabled={isBusy}
+                multiple
                 onChange={(event) => {
-                  const file = event.target.files?.[0];
+                  const files = Array.from(event.target.files ?? []);
 
-                  if (file) {
-                    onUploadBackground(file);
+                  if (files.length) {
+                    onUploadBackground(files);
                   }
 
                   event.target.value = "";

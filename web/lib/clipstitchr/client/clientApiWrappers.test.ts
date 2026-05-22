@@ -241,6 +241,7 @@ describe("client API wrappers", () => {
 
     await expect(
       generateSwiprBackgroundWithAi({
+        prompt: "sunlit counter",
         presetId: "studio",
         productContext: "Launch Kit",
       }),
@@ -269,6 +270,16 @@ describe("client API wrappers", () => {
     });
     await expect(seedSwiprBackgroundLibrary({ count: 1 })).rejects.toThrow(
       "Unable to seed Swipr backgrounds.",
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/swipr/backgrounds/generate",
+      expect.objectContaining({
+        body: JSON.stringify({
+          productContext: "Launch Kit",
+          prompt: "sunlit counter",
+          presetId: "studio",
+        }),
+      }),
     );
   });
 

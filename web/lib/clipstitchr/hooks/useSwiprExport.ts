@@ -13,6 +13,7 @@ import type { ZipFileEntry } from "@/lib/clipstitchr/types/ZipFileEntry";
 
 type ExportSwiprOptions = {
   background: SwiprBackground | null;
+  slideBackgrounds?: Record<string, SwiprBackground | undefined>;
   slides: SwiprSlide[];
   productName: string;
 };
@@ -23,10 +24,19 @@ export function useSwiprExport() {
   const [error, setError] = useState<string | null>(null);
 
   const exportCarousel = useCallback(
-    async ({ background, slides, productName }: ExportSwiprOptions) => {
-      if (!background) {
+    async ({
+      background,
+      slideBackgrounds = {},
+      slides,
+      productName,
+    }: ExportSwiprOptions) => {
+      const hasEverySlideBackground = slides.every(
+        (slide) => slideBackgrounds[slide.id] ?? background,
+      );
+
+      if (!hasEverySlideBackground) {
         setStatus("error");
-        setError("Choose a background before exporting.");
+        setError("Choose photos for every image before exporting.");
         return;
       }
 
@@ -38,9 +48,16 @@ export function useSwiprExport() {
         const files: ZipFileEntry[] = [];
 
         for (let index = 0; index < slides.length; index += 1) {
+          const slide = slides[index];
+          const slideBackground = slideBackgrounds[slide.id] ?? background;
+
+          if (!slideBackground) {
+            throw new Error("Choose photos for every image before exporting.");
+          }
+
           const slideBlob = await renderSwiprSlideBlob(
-            background.blob,
-            slides[index],
+            slideBackground.blob,
+            slide,
           );
 
           files.push({

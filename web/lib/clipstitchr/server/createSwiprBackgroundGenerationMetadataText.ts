@@ -2,7 +2,10 @@ import type { SwiprBackgroundGenerationVariation } from "@/lib/clipstitchr/types
 
 export function createSwiprBackgroundGenerationMetadataText(
   variation: SwiprBackgroundGenerationVariation,
+  userPrompt = "",
 ) {
+  const customPrompt = userPrompt.trim().slice(0, 1000);
+
   return [
     `Category: ${variation.category}`,
     `Preset: ${variation.presetId}`,
@@ -12,5 +15,8 @@ export function createSwiprBackgroundGenerationMetadataText(
     `Surface: ${variation.surface}`,
     `Palette: ${variation.palette}`,
     `Composition: ${variation.composition}`,
-  ].join("; ");
+    customPrompt ? `User prompt: ${customPrompt}` : "",
+  ]
+    .filter(Boolean)
+    .join("; ");
 }
