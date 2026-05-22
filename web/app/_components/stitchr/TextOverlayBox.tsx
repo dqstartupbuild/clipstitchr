@@ -62,6 +62,17 @@ export function TextOverlayBox({
   const hasText = textOverlay.text.trim().length > 0;
   const displayText = hasText ? textOverlay.text : (emptyLabel ?? textOverlay.text);
 
+  const resizeTextInput = () => {
+    const input = textInputRef.current;
+
+    if (!input) {
+      return;
+    }
+
+    input.style.height = "auto";
+    input.style.height = `${input.scrollHeight}px`;
+  };
+
   useEffect(() => {
     if (!isTextEditing) {
       return;
@@ -71,7 +82,14 @@ export function TextOverlayBox({
 
     input?.focus();
     input?.setSelectionRange(input.value.length, input.value.length);
+    resizeTextInput();
   }, [isTextEditing]);
+
+  useEffect(() => {
+    if (isTextEditing) {
+      resizeTextInput();
+    }
+  }, [isTextEditing, textOverlay.text]);
 
   const openTextEditor = () => {
     setIsTextEditing(true);
@@ -165,7 +183,8 @@ export function TextOverlayBox({
             maxLength={96}
             rows={1}
             value={textOverlay.text}
-            className="block min-h-[1.1em] w-full resize-none overflow-hidden border-0 bg-transparent p-0 text-center outline-none select-text"
+            wrap="soft"
+            className="block min-h-[1.1em] w-full resize-none overflow-hidden whitespace-pre-wrap border-0 bg-transparent p-0 text-center outline-none select-text"
             style={{
               color: "inherit",
               font: "inherit",
@@ -178,6 +197,7 @@ export function TextOverlayBox({
             onChange={(event) =>
               onChange({ ...textOverlay, text: event.currentTarget.value })
             }
+            onInput={resizeTextInput}
             onClick={(event) => event.stopPropagation()}
             onDoubleClick={(event) => event.stopPropagation()}
             onKeyDown={(event) => {
