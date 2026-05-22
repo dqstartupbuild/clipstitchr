@@ -85,8 +85,9 @@ export function SwiprPreviewPanel({
             Photo unavailable
           </div>
         )}
-        {activeSlide && activeSlide.textOverlay.text.trim() ? (
+        {activeSlide ? (
           <TextOverlayBox
+            emptyLabel="Text"
             textOverlay={activeSlide.textOverlay}
             stageRef={stageRef}
             totalDuration={SWIPR_STATIC_DURATION}
@@ -94,7 +95,7 @@ export function SwiprPreviewPanel({
             onOpenStyleControls={() => setAreTextControlsOpen(true)}
           />
         ) : null}
-        {activeSlide && activeSlide.textOverlay.text.trim() && areTextControlsOpen ? (
+        {activeSlide && areTextControlsOpen ? (
           <TextOverlayQuickControls
             textOverlay={activeSlide.textOverlay}
             totalDuration={SWIPR_STATIC_DURATION}

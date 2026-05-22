@@ -77,14 +77,6 @@ export function TextOverlayEditor({
         </div>
       </div>
       <div className="flex flex-col gap-3">
-        <input
-          value={textOverlay.text}
-          maxLength={96}
-          className="h-10 w-full rounded-lg border border-border bg-white px-3 text-sm font-medium text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
-          onChange={(event) =>
-            onChange({ ...textOverlay, text: event.target.value })
-          }
-        />
         <TextOverlayTimeline
           textOverlay={textOverlay}
           totalDuration={totalDuration}

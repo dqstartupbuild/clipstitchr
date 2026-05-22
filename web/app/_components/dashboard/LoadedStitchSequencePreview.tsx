@@ -69,10 +69,11 @@ export function LoadedStitchSequencePreview({
   );
   const textOverlay = useMemo(
     () =>
-      stitch.textOverlay && stitch.textOverlay.text.trim().length > 0
+      stitch.textOverlay &&
+      (onTextOverlayChange || stitch.textOverlay.text.trim().length > 0)
         ? clampTextOverlay(stitch.textOverlay, totalDuration)
         : null,
-    [stitch.textOverlay, totalDuration],
+    [onTextOverlayChange, stitch.textOverlay, totalDuration],
   );
   const {
     activeSegment,
@@ -151,6 +152,7 @@ export function LoadedStitchSequencePreview({
             />
             {textOverlay && shouldShowTextOverlay && onTextOverlayChange ? (
               <TextOverlayBox
+                emptyLabel="Text"
                 textOverlay={textOverlay}
                 stageRef={stageRef}
                 totalDuration={totalDuration}

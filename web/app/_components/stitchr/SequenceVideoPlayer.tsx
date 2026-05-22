@@ -61,8 +61,13 @@ export function SequenceVideoPlayer({
     demoTrimRange,
   });
   const progressValue = Math.min(currentTime, totalDuration);
+  const isTextOverlayInRange =
+    textOverlay &&
+    currentTime >= textOverlay.startTime &&
+    currentTime <= textOverlay.endTime;
   const visibleTextOverlay =
-    textOverlay && getTextOverlayIsVisible(textOverlay, currentTime)
+    textOverlay &&
+    (getTextOverlayIsVisible(textOverlay, currentTime) || isTextOverlayInRange)
       ? textOverlay
       : null;
 
@@ -119,6 +124,7 @@ export function SequenceVideoPlayer({
         )}
         {visibleTextOverlay ? (
           <TextOverlayBox
+            emptyLabel="Text"
             textOverlay={visibleTextOverlay}
             stageRef={stageRef}
             totalDuration={totalDuration}

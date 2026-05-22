@@ -14,6 +14,7 @@ import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import { getTextOverlayCssProperties } from "@/lib/clipstitchr/utils/getTextOverlayCssProperties";
 
 type TextOverlayBoxProps = {
+  emptyLabel?: string;
   textOverlay: TextOverlay;
   stageRef: RefObject<HTMLDivElement | null>;
   totalDuration: number;
@@ -22,6 +23,7 @@ type TextOverlayBoxProps = {
 };
 
 export function TextOverlayBox({
+  emptyLabel,
   textOverlay,
   stageRef,
   totalDuration,
@@ -57,6 +59,8 @@ export function TextOverlayBox({
     onChange,
   });
   const style = getTextOverlayCssProperties(textOverlay);
+  const hasText = textOverlay.text.trim().length > 0;
+  const displayText = hasText ? textOverlay.text : (emptyLabel ?? textOverlay.text);
 
   useEffect(() => {
     if (!isTextEditing) {
@@ -73,12 +77,29 @@ export function TextOverlayBox({
     setIsTextEditing(true);
   };
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const lastTap = lastTapRef.current;
+
     pointerStartRef.current = {
       id: event.pointerId,
       time: event.timeStamp,
       x: event.clientX,
       y: event.clientY,
     };
+
+    if (
+      !isTextEditing &&
+      (event.detail > 1 ||
+        (lastTap &&
+          event.timeStamp - lastTap.time < 360 &&
+          Math.hypot(event.clientX - lastTap.x, event.clientY - lastTap.y) < 24))
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      pointerStartRef.current = null;
+      lastTapRef.current = null;
+      openTextEditor();
+      return;
+    }
 
     if (!isTextEditing) {
       handleDrag(event);
@@ -102,20 +123,6 @@ export function TextOverlayBox({
 
     if (travel > 10 || event.timeStamp - pointerStart.time > 450) {
       lastTapRef.current = null;
-      return;
-    }
-
-    const lastTap = lastTapRef.current;
-
-    if (
-      lastTap &&
-      event.timeStamp - lastTap.time < 360 &&
-      Math.hypot(event.clientX - lastTap.x, event.clientY - lastTap.y) < 24
-    ) {
-      event.preventDefault();
-      event.stopPropagation();
-      lastTapRef.current = null;
-      openTextEditor();
       return;
     }
 
@@ -187,7 +194,9 @@ export function TextOverlayBox({
             onPointerDown={(event) => event.stopPropagation()}
           />
         ) : (
-          textOverlay.text
+          <span className={hasText ? undefined : "opacity-70"}>
+            {displayText}
+          </span>
         )}
         {onOpenStyleControls ? (
           <button
