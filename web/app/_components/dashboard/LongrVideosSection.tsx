@@ -3,6 +3,9 @@
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { LongrVideoCard } from "@/app/_components/dashboard/LongrVideoCard";
 import { Button } from "@/app/_components/ui/Button";
+import { PaginationControls } from "@/app/_components/ui/PaginationControls";
+import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
+import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
 import type { LongrVideoMetadata } from "@/lib/clipstitchr/types/LongrVideoMetadata";
 
@@ -35,6 +38,10 @@ export function LongrVideosSection({
   title = "Longs",
   totalCount,
 }: LongrVideosSectionProps) {
+  const pagination = usePagination(longrVideos, {
+    pageSize: uploadLibraryPageSize,
+  });
+
   return (
     <section id={id}>
       <div className="mb-4 flex items-center justify-between">
@@ -44,17 +51,32 @@ export function LongrVideosSection({
         </span>
       </div>
       {longrVideos.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {longrVideos.map((longrVideo) => (
-            <LongrVideoCard
-              key={longrVideo.id}
-              longrVideo={longrVideo}
-              onDelete={onDelete}
-              onLoadLongrVideo={onLoadLongrVideo}
-              onLoadPoster={onLoadPoster}
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {pagination.pageItems.map((longrVideo) => (
+              <LongrVideoCard
+                key={longrVideo.id}
+                longrVideo={longrVideo}
+                onDelete={onDelete}
+                onLoadLongrVideo={onLoadLongrVideo}
+                onLoadPoster={onLoadPoster}
+              />
+            ))}
+          </div>
+          {pagination.totalPages > 1 ? (
+            <PaginationControls
+              canGoNext={pagination.canGoNext}
+              canGoPrevious={pagination.canGoPrevious}
+              currentPage={pagination.currentPage}
+              totalItems={pagination.totalItems}
+              totalPages={pagination.totalPages}
+              visibleEnd={pagination.visibleEnd}
+              visibleStart={pagination.visibleStart}
+              onNext={pagination.goToNextPage}
+              onPrevious={pagination.goToPreviousPage}
             />
-          ))}
-        </div>
+          ) : null}
+        </>
       ) : (
         <DashboardEmptyState
           title={emptyTitle}

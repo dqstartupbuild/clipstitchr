@@ -3,6 +3,9 @@
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import { Button } from "@/app/_components/ui/Button";
+import { PaginationControls } from "@/app/_components/ui/PaginationControls";
+import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
+import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -49,6 +52,10 @@ export function StitchesSection({
   onUpdateMusic,
   onUpdateTextOverlay,
 }: StitchesSectionProps) {
+  const pagination = usePagination(stitches, {
+    pageSize: uploadLibraryPageSize,
+  });
+
   return (
     <section id={id}>
       <div className="mb-4 flex items-center justify-between">
@@ -58,20 +65,35 @@ export function StitchesSection({
         </span>
       </div>
       {stitches.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {stitches.map((stitch) => (
-            <StitchCard
-              key={stitch.id}
-              stitch={stitch}
-              onDelete={onDelete}
-              onGenerateMusic={onGenerateMusic}
-              onLoadClip={onLoadClip}
-              onLoadPoster={onLoadPoster}
-              onUpdateMusic={onUpdateMusic}
-              onUpdateTextOverlay={onUpdateTextOverlay}
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {pagination.pageItems.map((stitch) => (
+              <StitchCard
+                key={stitch.id}
+                stitch={stitch}
+                onDelete={onDelete}
+                onGenerateMusic={onGenerateMusic}
+                onLoadClip={onLoadClip}
+                onLoadPoster={onLoadPoster}
+                onUpdateMusic={onUpdateMusic}
+                onUpdateTextOverlay={onUpdateTextOverlay}
+              />
+            ))}
+          </div>
+          {pagination.totalPages > 1 ? (
+            <PaginationControls
+              canGoNext={pagination.canGoNext}
+              canGoPrevious={pagination.canGoPrevious}
+              currentPage={pagination.currentPage}
+              totalItems={pagination.totalItems}
+              totalPages={pagination.totalPages}
+              visibleEnd={pagination.visibleEnd}
+              visibleStart={pagination.visibleStart}
+              onNext={pagination.goToNextPage}
+              onPrevious={pagination.goToPreviousPage}
             />
-          ))}
-        </div>
+          ) : null}
+        </>
       ) : (
         <DashboardEmptyState
           title={emptyTitle}

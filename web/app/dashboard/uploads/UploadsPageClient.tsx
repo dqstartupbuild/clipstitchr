@@ -12,6 +12,7 @@ import { ProductDemoUploadControls } from "@/app/_components/products/ProductDem
 import { ProductFilterSelect } from "@/app/_components/products/ProductFilterSelect";
 import { UploadLibraryTabs } from "@/app/_components/uploads/UploadLibraryTabs";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
+import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { SHOW_UPLOAD_CONTROLS_EVENT_NAME } from "@/lib/clipstitchr/constants/showUploadControlsEventName";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useCreateAvatarFromUgcClip } from "@/lib/clipstitchr/hooks/useCreateAvatarFromUgcClip";
@@ -20,23 +21,25 @@ import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
+import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
 import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
-import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
-import { filterCliprClips } from "@/lib/clipstitchr/utils/filterCliprClips";
 import { filterLongrVideosByName } from "@/lib/clipstitchr/utils/filterLongrVideosByName";
 import { filterStitchesByName } from "@/lib/clipstitchr/utils/filterStitchesByName";
 import { filterSwipesBySearchQuery } from "@/lib/clipstitchr/utils/filterSwipesBySearchQuery";
-import { filterSwaprClips } from "@/lib/clipstitchr/utils/filterSwaprClips";
-import { filterPlainUgcClips } from "@/lib/clipstitchr/utils/filterPlainUgcClips";
 import { dispatchHideUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchHideUploadControlsEvent";
 import { getInitialUploadLibraryTab } from "@/lib/clipstitchr/utils/getInitialUploadLibraryTab";
 import { getUploadAssetTypeFromLibraryTab } from "@/lib/clipstitchr/utils/getUploadAssetTypeFromLibraryTab";
 import { getUploadLibraryTabFromAssetType } from "@/lib/clipstitchr/utils/getUploadLibraryTabFromAssetType";
 
 type VideoLibraryTab = "ugc" | "clips" | "demo" | "swaps";
+
+const sortOptions = [
+  { label: "Most recent", value: "newest" },
+  { label: "Oldest", value: "oldest" },
+];
 
 const videoLibraryContent: Record<
   VideoLibraryTab,
@@ -119,21 +122,18 @@ export function UploadsPageClient() {
   const activeDemoUploadProductId = productIds.has(demoUploadProductId)
     ? demoUploadProductId
     : (products.products[0]?.id ?? "");
-  const searchFilteredClips = useMemo(
-    () => filterClipsBySearchQuery(library.clips, searchQuery),
-    [library.clips, searchQuery],
-  );
   const ugcClips = useMemo(
-    () => filterPlainUgcClips(searchFilteredClips),
-    [searchFilteredClips],
+    () => filterClipsBySearchQuery(library.videoGroups.ugc.clips, searchQuery),
+    [library.videoGroups.ugc.clips, searchQuery],
   );
   const cliprClips = useMemo(
-    () => filterCliprClips(searchFilteredClips),
-    [searchFilteredClips],
+    () =>
+      filterClipsBySearchQuery(library.videoGroups.clipr.clips, searchQuery),
+    [library.videoGroups.clipr.clips, searchQuery],
   );
   const allDemoClips = useMemo(
-    () => filterClipsByType(searchFilteredClips, "demo"),
-    [searchFilteredClips],
+    () => filterClipsBySearchQuery(library.videoGroups.demo.clips, searchQuery),
+    [library.videoGroups.demo.clips, searchQuery],
   );
   const demoClips = useMemo(
     () =>
@@ -144,8 +144,9 @@ export function UploadsPageClient() {
     [activeDemoProductFilterId, allDemoClips, selectedTab],
   );
   const swapClips = useMemo(
-    () => filterSwaprClips(searchFilteredClips),
-    [searchFilteredClips],
+    () =>
+      filterClipsBySearchQuery(library.videoGroups.swapr.clips, searchQuery),
+    [library.videoGroups.swapr.clips, searchQuery],
   );
   const stitches = useMemo(
     () => filterStitchesByName(library.stitches, searchQuery),
@@ -155,10 +156,18 @@ export function UploadsPageClient() {
     () => filterLongrVideosByName(library.longrVideos, searchQuery),
     [library.longrVideos, searchQuery],
   );
-  const swipes = useMemo(
-    () => filterSwipesBySearchQuery(swiprLibrary.swipes, searchQuery),
-    [searchQuery, swiprLibrary.swipes],
-  );
+  const swipes = useMemo(() => {
+    const sortedSwipes = [...swiprLibrary.swipes].sort((left, right) => {
+      const leftTime = Date.parse(left.createdAt);
+      const rightTime = Date.parse(right.createdAt);
+
+      return library.sortOrder === "oldest"
+        ? leftTime - rightTime
+        : rightTime - leftTime;
+    });
+
+    return filterSwipesBySearchQuery(sortedSwipes, searchQuery);
+  }, [library.sortOrder, searchQuery, swiprLibrary.swipes]);
   const hasSearchQuery = searchQuery.trim().length > 0;
   const error = library.error ?? swiprLibrary.error ?? products.error;
   const hasDemoProductFilter =
@@ -183,13 +192,29 @@ export function UploadsPageClient() {
     : "Create a product in Settings before uploading demo videos.";
   const selectedVideoSection =
     selectedTab === "ugc"
-      ? { clips: ugcClips, content: videoLibraryContent.ugc }
+      ? {
+          clips: ugcClips,
+          content: videoLibraryContent.ugc,
+          group: library.videoGroups.ugc,
+        }
       : selectedTab === "clips"
-        ? { clips: cliprClips, content: videoLibraryContent.clips }
+        ? {
+            clips: cliprClips,
+            content: videoLibraryContent.clips,
+            group: library.videoGroups.clipr,
+          }
         : selectedTab === "demo"
-          ? { clips: demoClips, content: videoLibraryContent.demo }
+          ? {
+              clips: demoClips,
+              content: videoLibraryContent.demo,
+              group: library.videoGroups.demo,
+            }
           : selectedTab === "swaps"
-            ? { clips: swapClips, content: videoLibraryContent.swaps }
+            ? {
+                clips: swapClips,
+                content: videoLibraryContent.swaps,
+                group: library.videoGroups.swapr,
+              }
             : null;
 
   const handleTabChange = useCallback((nextTab: UploadLibraryTab) => {
@@ -298,10 +323,18 @@ export function UploadsPageClient() {
             className={[
               "grid w-full gap-3 sm:items-end",
               selectedTab === "demo"
-                ? "sm:grid-cols-2 lg:max-w-xl"
-                : "lg:max-w-sm",
+                ? "sm:grid-cols-3 lg:max-w-3xl"
+                : "sm:grid-cols-2 lg:max-w-xl",
             ].join(" ")}
           >
+            <SelectInput
+              label="Sort"
+              options={sortOptions}
+              value={library.sortOrder}
+              onChange={(event) =>
+                library.setSortOrder(event.target.value as ClipLibrarySortOrder)
+              }
+            />
             {selectedTab === "demo" ? (
               <ProductFilterSelect
                 products={products.products}
@@ -322,7 +355,7 @@ export function UploadsPageClient() {
         {selectedTab === "all" ? (
           <div className="flex flex-col gap-8">
             <VideoLibrarySection
-              key={`all-ugc-${searchQuery}`}
+              key={`all-ugc-${searchQuery}-${library.sortOrder}`}
               id={videoLibraryContent.ugc.sectionId}
               title={videoLibraryContent.ugc.title}
               clips={ugcClips}
@@ -341,12 +374,12 @@ export function UploadsPageClient() {
                   ? videoLibraryContent.ugc.searchEmptyDescription
                   : videoLibraryContent.ugc.emptyDescription
               }
-              hasMoreItems={library.hasMoreClips}
-              isLoadingMoreItems={library.isLoadingMoreClips}
+              hasMoreItems={library.videoGroups.ugc.hasMoreItems}
+              isLoadingMoreItems={library.videoGroups.ugc.isLoadingMoreItems}
               loadMoreLabel="Load more videos"
               onLoadClip={library.loadClip}
               onLoadPoster={library.loadClipPoster}
-              onLoadMoreItems={library.loadMoreClips}
+              onLoadMoreItems={library.videoGroups.ugc.loadMoreItems}
               isCreatingAvatarFromClip={avatarCreator.isGenerating}
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
@@ -356,7 +389,7 @@ export function UploadsPageClient() {
               onCreateAvatarFromClip={handleCreateAvatarFromClip}
             />
             <VideoLibrarySection
-              key={`all-clips-${searchQuery}`}
+              key={`all-clips-${searchQuery}-${library.sortOrder}`}
               id={videoLibraryContent.clips.sectionId}
               title={videoLibraryContent.clips.title}
               clips={cliprClips}
@@ -374,12 +407,12 @@ export function UploadsPageClient() {
                   ? videoLibraryContent.clips.searchEmptyDescription
                   : videoLibraryContent.clips.emptyDescription
               }
-              hasMoreItems={library.hasMoreClips}
-              isLoadingMoreItems={library.isLoadingMoreClips}
+              hasMoreItems={library.videoGroups.clipr.hasMoreItems}
+              isLoadingMoreItems={library.videoGroups.clipr.isLoadingMoreItems}
               loadMoreLabel="Load more videos"
               onLoadClip={library.loadClip}
               onLoadPoster={library.loadClipPoster}
-              onLoadMoreItems={library.loadMoreClips}
+              onLoadMoreItems={library.videoGroups.clipr.loadMoreItems}
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
               onUpdateCliprMusic={library.updateCliprMusic}
@@ -387,7 +420,7 @@ export function UploadsPageClient() {
               onUpdateTrim={library.updateClipTrimRange}
             />
             <VideoLibrarySection
-              key={`all-demo-${searchQuery}`}
+              key={`all-demo-${searchQuery}-${library.sortOrder}`}
               id={videoLibraryContent.demo.sectionId}
               title={videoLibraryContent.demo.title}
               clips={demoClips}
@@ -405,12 +438,12 @@ export function UploadsPageClient() {
                   ? videoLibraryContent.demo.searchEmptyDescription
                   : videoLibraryContent.demo.emptyDescription
               }
-              hasMoreItems={library.hasMoreClips}
-              isLoadingMoreItems={library.isLoadingMoreClips}
+              hasMoreItems={library.videoGroups.demo.hasMoreItems}
+              isLoadingMoreItems={library.videoGroups.demo.isLoadingMoreItems}
               loadMoreLabel="Load more videos"
               onLoadClip={library.loadClip}
               onLoadPoster={library.loadClipPoster}
-              onLoadMoreItems={library.loadMoreClips}
+              onLoadMoreItems={library.videoGroups.demo.loadMoreItems}
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
               onUpdateCliprMusic={library.updateCliprMusic}
@@ -418,7 +451,7 @@ export function UploadsPageClient() {
               onUpdateTrim={library.updateClipTrimRange}
             />
             <VideoLibrarySection
-              key={`all-swaps-${searchQuery}`}
+              key={`all-swaps-${searchQuery}-${library.sortOrder}`}
               id={videoLibraryContent.swaps.sectionId}
               title={videoLibraryContent.swaps.title}
               clips={swapClips}
@@ -436,12 +469,12 @@ export function UploadsPageClient() {
                   ? videoLibraryContent.swaps.searchEmptyDescription
                   : videoLibraryContent.swaps.emptyDescription
               }
-              hasMoreItems={library.hasMoreClips}
-              isLoadingMoreItems={library.isLoadingMoreClips}
+              hasMoreItems={library.videoGroups.swapr.hasMoreItems}
+              isLoadingMoreItems={library.videoGroups.swapr.isLoadingMoreItems}
               loadMoreLabel="Load more videos"
               onLoadClip={library.loadClip}
               onLoadPoster={library.loadClipPoster}
-              onLoadMoreItems={library.loadMoreClips}
+              onLoadMoreItems={library.videoGroups.swapr.loadMoreItems}
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
               onUpdateCliprMusic={library.updateCliprMusic}
@@ -449,7 +482,7 @@ export function UploadsPageClient() {
               onUpdateTrim={library.updateClipTrimRange}
             />
             <StitchesSection
-              key={`all-stitches-${searchQuery}`}
+              key={`all-stitches-${searchQuery}-${library.sortOrder}`}
               stitches={stitches}
               totalCount={
                 canUseLibraryTotals ? library.counts.stitches : undefined
@@ -471,7 +504,7 @@ export function UploadsPageClient() {
               onUpdateTextOverlay={library.updateStitchTextOverlay}
             />
             <LongrVideosSection
-              key={`all-longr-${searchQuery}`}
+              key={`all-longr-${searchQuery}-${library.sortOrder}`}
               longrVideos={longrVideos}
               totalCount={
                 canUseLibraryTotals ? library.counts.longrVideos : undefined
@@ -490,7 +523,7 @@ export function UploadsPageClient() {
               onLoadPoster={library.loadLongrPoster}
             />
             <SwiprSwipesSection
-              key={`all-swipes-${searchQuery}`}
+              key={`all-swipes-${searchQuery}-${library.sortOrder}`}
               backgrounds={swiprLibrary.backgrounds}
               swipes={swipes}
               emptyTitle={hasSearchQuery ? "No matching Swipes" : undefined}
@@ -506,7 +539,7 @@ export function UploadsPageClient() {
         ) : null}
         {selectedVideoSection ? (
           <VideoLibrarySection
-            key={`${selectedTab}-${searchQuery}`}
+            key={`${selectedTab}-${searchQuery}-${library.sortOrder}`}
             id={selectedVideoSection.content.sectionId}
             title={selectedVideoSection.content.title}
             clips={selectedVideoSection.clips}
@@ -529,12 +562,12 @@ export function UploadsPageClient() {
                   ? "No saved demo videos are linked to that product."
                 : selectedVideoSection.content.emptyDescription
             }
-            hasMoreItems={library.hasMoreClips}
-            isLoadingMoreItems={library.isLoadingMoreClips}
+            hasMoreItems={selectedVideoSection.group.hasMoreItems}
+            isLoadingMoreItems={selectedVideoSection.group.isLoadingMoreItems}
             loadMoreLabel="Load more videos"
             onLoadClip={library.loadClip}
             onLoadPoster={library.loadClipPoster}
-            onLoadMoreItems={library.loadMoreClips}
+            onLoadMoreItems={selectedVideoSection.group.loadMoreItems}
             isCreatingAvatarFromClip={
               selectedTab === "ugc" && avatarCreator.isGenerating
             }
@@ -550,7 +583,7 @@ export function UploadsPageClient() {
         ) : null}
         {selectedTab === "stitches" ? (
           <StitchesSection
-            key={`stitches-${searchQuery}`}
+            key={`stitches-${searchQuery}-${library.sortOrder}`}
             stitches={stitches}
             totalCount={
               canUseLibraryTotals ? library.counts.stitches : undefined
@@ -574,7 +607,7 @@ export function UploadsPageClient() {
         ) : null}
         {selectedTab === "longr" ? (
           <LongrVideosSection
-            key={`longr-${searchQuery}`}
+            key={`longr-${searchQuery}-${library.sortOrder}`}
             longrVideos={longrVideos}
             totalCount={
               canUseLibraryTotals ? library.counts.longrVideos : undefined
@@ -595,7 +628,7 @@ export function UploadsPageClient() {
         ) : null}
         {selectedTab === "swipes" ? (
           <SwiprSwipesSection
-            key={`swipes-${searchQuery}`}
+            key={`swipes-${searchQuery}-${library.sortOrder}`}
             backgrounds={swiprLibrary.backgrounds}
             swipes={swipes}
             emptyTitle={hasSearchQuery ? "No matching Swipes" : undefined}

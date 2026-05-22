@@ -23,6 +23,7 @@ import { generateStitchMusic as requestStitchMusicGeneration } from "@/lib/clips
 import { libraryMetadataPageSize } from "@/lib/clipstitchr/constants/libraryMetadataPageSize";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { ClipLibraryCounts } from "@/lib/clipstitchr/types/ClipLibraryCounts";
+import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { ClipLibraryValue } from "@/lib/clipstitchr/types/ClipLibraryValue";
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
@@ -49,19 +50,41 @@ export function useClipLibraryState(): ClipLibraryValue {
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const [error, setError] = useState<string | null>(null);
   const [refreshNonce, setRefreshNonce] = useState(0);
+  const [sortOrder, setSortOrder] =
+    useState<ClipLibrarySortOrder>("newest");
   const clipDocumentsQuery = usePaginatedQuery(
     api.videoClips.list,
-    isAuthenticated ? { refreshNonce } : "skip",
+    isAuthenticated ? { refreshNonce, sortOrder } : "skip",
+    { initialNumItems: libraryMetadataPageSize },
+  );
+  const ugcClipDocumentsQuery = usePaginatedQuery(
+    api.videoClips.listByLibraryKind,
+    isAuthenticated ? { kind: "ugc", refreshNonce, sortOrder } : "skip",
+    { initialNumItems: libraryMetadataPageSize },
+  );
+  const cliprClipDocumentsQuery = usePaginatedQuery(
+    api.videoClips.listByLibraryKind,
+    isAuthenticated ? { kind: "clipr", refreshNonce, sortOrder } : "skip",
+    { initialNumItems: libraryMetadataPageSize },
+  );
+  const demoClipDocumentsQuery = usePaginatedQuery(
+    api.videoClips.listByLibraryKind,
+    isAuthenticated ? { kind: "demo", refreshNonce, sortOrder } : "skip",
+    { initialNumItems: libraryMetadataPageSize },
+  );
+  const swapClipDocumentsQuery = usePaginatedQuery(
+    api.videoClips.listByLibraryKind,
+    isAuthenticated ? { kind: "swapr", refreshNonce, sortOrder } : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const stitchDocumentsQuery = usePaginatedQuery(
     api.stitches.list,
-    isAuthenticated ? { refreshNonce } : "skip",
+    isAuthenticated ? { refreshNonce, sortOrder } : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const longrVideoDocumentsQuery = usePaginatedQuery(
     api.longrVideos.list,
-    isAuthenticated ? { refreshNonce } : "skip",
+    isAuthenticated ? { refreshNonce, sortOrder } : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const aggregateCounts = useQuery(
@@ -69,6 +92,10 @@ export function useClipLibraryState(): ClipLibraryValue {
     isAuthenticated ? { refreshNonce } : "skip",
   );
   const clipDocuments = clipDocumentsQuery.results;
+  const ugcClipDocuments = ugcClipDocumentsQuery.results;
+  const cliprClipDocuments = cliprClipDocumentsQuery.results;
+  const demoClipDocuments = demoClipDocumentsQuery.results;
+  const swapClipDocuments = swapClipDocumentsQuery.results;
   const stitchDocuments = stitchDocumentsQuery.results;
   const longrVideoDocuments = longrVideoDocumentsQuery.results;
   const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
@@ -91,6 +118,34 @@ export function useClipLibraryState(): ClipLibraryValue {
   const clips = useMemo(
     () => clipDocuments.map((clip) => createVideoClipMetadataFromConvexDocument(clip)),
     [clipDocuments],
+  );
+  const ugcClips = useMemo(
+    () =>
+      ugcClipDocuments.map((clip) =>
+        createVideoClipMetadataFromConvexDocument(clip),
+      ),
+    [ugcClipDocuments],
+  );
+  const cliprClips = useMemo(
+    () =>
+      cliprClipDocuments.map((clip) =>
+        createVideoClipMetadataFromConvexDocument(clip),
+      ),
+    [cliprClipDocuments],
+  );
+  const demoClips = useMemo(
+    () =>
+      demoClipDocuments.map((clip) =>
+        createVideoClipMetadataFromConvexDocument(clip),
+      ),
+    [demoClipDocuments],
+  );
+  const swapClips = useMemo(
+    () =>
+      swapClipDocuments.map((clip) =>
+        createVideoClipMetadataFromConvexDocument(clip),
+      ),
+    [swapClipDocuments],
   );
   const stitches = useMemo(
     () =>
@@ -603,6 +658,26 @@ export function useClipLibraryState(): ClipLibraryValue {
       clipDocumentsQuery.loadMore(libraryMetadataPageSize);
     }
   }, [clipDocumentsQuery]);
+  const loadMoreUgcClips = useCallback(() => {
+    if (ugcClipDocumentsQuery.status === "CanLoadMore") {
+      ugcClipDocumentsQuery.loadMore(libraryMetadataPageSize);
+    }
+  }, [ugcClipDocumentsQuery]);
+  const loadMoreCliprClips = useCallback(() => {
+    if (cliprClipDocumentsQuery.status === "CanLoadMore") {
+      cliprClipDocumentsQuery.loadMore(libraryMetadataPageSize);
+    }
+  }, [cliprClipDocumentsQuery]);
+  const loadMoreDemoClips = useCallback(() => {
+    if (demoClipDocumentsQuery.status === "CanLoadMore") {
+      demoClipDocumentsQuery.loadMore(libraryMetadataPageSize);
+    }
+  }, [demoClipDocumentsQuery]);
+  const loadMoreSwapClips = useCallback(() => {
+    if (swapClipDocumentsQuery.status === "CanLoadMore") {
+      swapClipDocumentsQuery.loadMore(libraryMetadataPageSize);
+    }
+  }, [swapClipDocumentsQuery]);
   const loadMoreStitches = useCallback(() => {
     if (stitchDocumentsQuery.status === "CanLoadMore") {
       stitchDocumentsQuery.loadMore(libraryMetadataPageSize);
@@ -616,6 +691,10 @@ export function useClipLibraryState(): ClipLibraryValue {
   const isLoadingFirstPage =
     isAuthenticated &&
     (clipDocumentsQuery.status === "LoadingFirstPage" ||
+      ugcClipDocumentsQuery.status === "LoadingFirstPage" ||
+      cliprClipDocumentsQuery.status === "LoadingFirstPage" ||
+      demoClipDocumentsQuery.status === "LoadingFirstPage" ||
+      swapClipDocumentsQuery.status === "LoadingFirstPage" ||
       stitchDocumentsQuery.status === "LoadingFirstPage" ||
       longrVideoDocumentsQuery.status === "LoadingFirstPage");
 
@@ -624,6 +703,33 @@ export function useClipLibraryState(): ClipLibraryValue {
     counts,
     longrVideos,
     stitches,
+    sortOrder,
+    videoGroups: {
+      clipr: {
+        clips: cliprClips,
+        hasMoreItems: cliprClipDocumentsQuery.status === "CanLoadMore",
+        isLoadingMoreItems: cliprClipDocumentsQuery.status === "LoadingMore",
+        loadMoreItems: loadMoreCliprClips,
+      },
+      demo: {
+        clips: demoClips,
+        hasMoreItems: demoClipDocumentsQuery.status === "CanLoadMore",
+        isLoadingMoreItems: demoClipDocumentsQuery.status === "LoadingMore",
+        loadMoreItems: loadMoreDemoClips,
+      },
+      swapr: {
+        clips: swapClips,
+        hasMoreItems: swapClipDocumentsQuery.status === "CanLoadMore",
+        isLoadingMoreItems: swapClipDocumentsQuery.status === "LoadingMore",
+        loadMoreItems: loadMoreSwapClips,
+      },
+      ugc: {
+        clips: ugcClips,
+        hasMoreItems: ugcClipDocumentsQuery.status === "CanLoadMore",
+        isLoadingMoreItems: ugcClipDocumentsQuery.status === "LoadingMore",
+        loadMoreItems: loadMoreUgcClips,
+      },
+    },
     isLoading: isAuthLoading || isLoadingFirstPage,
     hasMoreClips: clipDocumentsQuery.status === "CanLoadMore",
     hasMoreLongrVideos: longrVideoDocumentsQuery.status === "CanLoadMore",
@@ -634,6 +740,7 @@ export function useClipLibraryState(): ClipLibraryValue {
     isLoadingMoreStitches: stitchDocumentsQuery.status === "LoadingMore",
     error,
     refresh,
+    setSortOrder,
     loadClip,
     loadClipPoster,
     loadLongrPoster,

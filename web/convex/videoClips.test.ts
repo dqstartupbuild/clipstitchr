@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   get,
   list,
+  listByLibraryKind,
   remove,
   save,
   updateCliprMusic,
@@ -54,6 +55,7 @@ function createQueryChain(uniqueValues: unknown[] = [], collect: unknown[] = [])
   };
   const chain = {
     collect: vi.fn(async () => collect),
+    filter: vi.fn(() => chain),
     order: vi.fn(() => chain),
     paginate: vi.fn(async () => collect),
     unique: vi.fn(async () => uniqueValues.shift() ?? null),
@@ -125,6 +127,7 @@ describe("convex videoClips", () => {
     await expect(
       getHandler(list)(ctx, {
         paginationOpts: { cursor: null, numItems: 20 },
+        sortOrder: "oldest",
       }),
     ).resolves.toBe(clips);
     await expect(getHandler(get)(ctx, { id: "clip_1" })).resolves.toEqual({
@@ -132,6 +135,25 @@ describe("convex videoClips", () => {
       id: "clip_1",
     });
     expect(ctx.db.query).toHaveBeenCalledWith("videoClips");
+    expect(chain.order).toHaveBeenCalledWith("asc");
+    expect(chain.paginate).toHaveBeenCalledWith({
+      cursor: null,
+      numItems: 20,
+    });
+  });
+
+  it("lists clips by library kind", async () => {
+    const clips = [{ _id: "doc_1", id: "clip_1" }];
+    const { chain, ctx } = createCtx([], clips);
+
+    await expect(
+      getHandler(listByLibraryKind)(ctx, {
+        kind: "demo",
+        paginationOpts: { cursor: null, numItems: 20 },
+      }),
+    ).resolves.toBe(clips);
+
+    expect(chain.filter).toHaveBeenCalled();
     expect(chain.order).toHaveBeenCalledWith("desc");
     expect(chain.paginate).toHaveBeenCalledWith({
       cursor: null,
