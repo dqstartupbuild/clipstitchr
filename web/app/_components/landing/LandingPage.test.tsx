@@ -53,6 +53,7 @@ describe("LandingPage", () => {
 
     expect(markup).toContain("Turn your UGC into");
     expect(markup).toContain("One reusable ad library");
+    expect(markup).toContain("/social-proof/clipstitchr-stitch-01.webm");
     expect(markup).toContain("Stitch first, generate when needed");
     expect(markup).toContain("Stop collecting clips you never use");
     expect(markup).toContain("Five ways to turn your library");
@@ -68,6 +69,11 @@ describe("LandingPage", () => {
 
     expect(landingMarkup).toContain("Features");
     expect(landingMarkup).toContain("How it Works");
+    expect(landingMarkup).not.toContain("Real Stitchr output");
+    expect(landingMarkup).not.toContain("Real output reel");
+    expect(
+      landingMarkup.indexOf("/social-proof/clipstitchr-stitch-01.webm"),
+    ).toBeLessThan(landingMarkup.indexOf("One reusable ad library"));
     expect(contentHeaderMarkup).toContain("Home");
     expect(contentHeaderMarkup).toContain("Dashboard");
   });
