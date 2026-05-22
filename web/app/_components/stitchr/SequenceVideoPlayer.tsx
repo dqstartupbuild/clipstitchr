@@ -1,8 +1,9 @@
 "use client";
 
 import { Pause, Play, RotateCcw } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TextOverlayBox } from "@/app/_components/stitchr/TextOverlayBox";
+import { TextOverlayQuickControls } from "@/app/_components/stitchr/TextOverlayQuickControls";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { useSequenceVideoPlayer } from "@/lib/clipstitchr/hooks/useSequenceVideoPlayer";
@@ -38,6 +39,7 @@ export function SequenceVideoPlayer({
   onPlaybackTimeChange,
 }: SequenceVideoPlayerProps) {
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const [areTextControlsOpen, setAreTextControlsOpen] = useState(false);
   const ugcUrl = useObjectUrl(ugcClip.blob);
   const demoUrl = useObjectUrl(demoClip.blob);
   const ugcPosterUrl = useObjectUrl(ugcClip.posterBlob);
@@ -121,6 +123,15 @@ export function SequenceVideoPlayer({
             stageRef={stageRef}
             totalDuration={totalDuration}
             onChange={onTextOverlayChange}
+            onOpenStyleControls={() => setAreTextControlsOpen(true)}
+          />
+        ) : null}
+        {visibleTextOverlay && areTextControlsOpen ? (
+          <TextOverlayQuickControls
+            textOverlay={visibleTextOverlay}
+            totalDuration={totalDuration}
+            onChange={onTextOverlayChange}
+            onClose={() => setAreTextControlsOpen(false)}
           />
         ) : null}
       </div>

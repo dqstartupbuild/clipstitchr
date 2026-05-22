@@ -3,11 +3,13 @@
 import { SlidersHorizontal, X } from "lucide-react";
 import { useState } from "react";
 import { CliprMusicControls } from "@/app/_components/dashboard/CliprMusicControls";
+import { MediaActionButtonList } from "@/app/_components/dashboard/MediaActionButtonList";
 import { VideoClipMusicPreview } from "@/app/_components/dashboard/VideoClipMusicPreview";
 import { VideoTrimEditor } from "@/app/_components/trim/VideoTrimEditor";
 import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import { useVideoClipDetailsMusic } from "@/lib/clipstitchr/hooks/useVideoClipDetailsMusic";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -27,6 +29,7 @@ type VideoClipDetailsTrimEditor = {
 };
 
 type VideoClipDetailsDialogProps = {
+  actionItems?: MediaCardActionMenuItem[];
   clip: VideoClipMetadata;
   productName?: string;
   initialControlsEditorOpen?: boolean;
@@ -40,6 +43,7 @@ type VideoClipDetailsDialogProps = {
 };
 
 export function VideoClipDetailsDialog({
+  actionItems = [],
   clip,
   productName,
   initialControlsEditorOpen = false,
@@ -135,6 +139,7 @@ export function VideoClipDetailsDialog({
             >
               {clip.name}
             </h2>
+            <MediaActionButtonList items={actionItems} className="mt-3" />
           </div>
           <IconButton
             type="button"

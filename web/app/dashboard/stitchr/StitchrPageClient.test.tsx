@@ -15,8 +15,37 @@ const mocks = vi.hoisted(() => ({
   clipLibraryState: {
     clips: [] as VideoClipMetadata[],
     error: null as string | null,
+    isLoading: false,
     loadClip: vi.fn(),
+    loadClipPoster: vi.fn(),
+    loadMoreClips: vi.fn(),
     refresh: vi.fn(),
+    videoGroups: {
+      clipr: {
+        clips: [] as VideoClipMetadata[],
+        hasMoreItems: false,
+        isLoadingMoreItems: false,
+        loadMoreItems: vi.fn(),
+      },
+      demo: {
+        clips: [] as VideoClipMetadata[],
+        hasMoreItems: false,
+        isLoadingMoreItems: false,
+        loadMoreItems: vi.fn(),
+      },
+      swapr: {
+        clips: [] as VideoClipMetadata[],
+        hasMoreItems: false,
+        isLoadingMoreItems: false,
+        loadMoreItems: vi.fn(),
+      },
+      ugc: {
+        clips: [] as VideoClipMetadata[],
+        hasMoreItems: false,
+        isLoadingMoreItems: false,
+        loadMoreItems: vi.fn(),
+      },
+    },
   },
   loadedClipState: {
     clip: null,
@@ -173,6 +202,34 @@ function createProduct(): ProductProfile {
   };
 }
 
+function createVideoGroup(clips: VideoClipMetadata[] = []) {
+  return {
+    clips,
+    hasMoreItems: false,
+    isLoadingMoreItems: false,
+    loadMoreItems: vi.fn(),
+  };
+}
+
+function setClipLibraryVideoGroups({
+  clipr = [],
+  demo = [createClip("demo_1", "demo")],
+  swapr = [],
+  ugc = [createClip("ugc_1", "ugc")],
+}: {
+  clipr?: VideoClipMetadata[];
+  demo?: VideoClipMetadata[];
+  swapr?: VideoClipMetadata[];
+  ugc?: VideoClipMetadata[];
+} = {}) {
+  mocks.clipLibraryState.videoGroups = {
+    clipr: createVideoGroup(clipr),
+    demo: createVideoGroup(demo),
+    swapr: createVideoGroup(swapr),
+    ugc: createVideoGroup(ugc),
+  };
+}
+
 function queueStitchrState(
   overrides: {
     addMusic?: boolean;
@@ -212,11 +269,10 @@ function queueStitchrState(
 describe("StitchrPageClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.clipLibraryState.clips = [
-      createClip("ugc_1", "ugc"),
-      createClip("demo_1", "demo"),
-    ];
+    mocks.clipLibraryState.clips = [];
     mocks.clipLibraryState.error = null;
+    mocks.clipLibraryState.isLoading = false;
+    setClipLibraryVideoGroups();
     mocks.productState.products = [createProduct()];
     mocks.stitchrState.stitchVideos.mockResolvedValue(undefined);
     mocks.generateCliprText.mockResolvedValue({
@@ -231,7 +287,7 @@ describe("StitchrPageClient", () => {
     mocks.useEffect.mockReset();
   });
 
-  it("renders the Stitchr build workspace when UGC and demo clips exist", () => {
+  it("renders the Stitchr build workspace from category-specific media groups", () => {
     const markup = renderToStaticMarkup(<StitchrPageClient />);
 
     expect(markup).toContain("StitchrHeader");
@@ -240,16 +296,81 @@ describe("StitchrPageClient", () => {
     expect(markup).toContain("StitchrProgressPanel");
     expect(markup).toContain("DownloadStitchesPanel");
     expect(markup).toContain("SequencePreviewPanel");
+    expect(mocks.clipLibraryState.clips).toEqual([]);
+    expect(
+      (mocks.clipPickerPanelProps?.ugcClips as VideoClipMetadata[]).map(
+        (clip) => clip.id,
+      ),
+    ).toEqual(["ugc_1"]);
+    expect(
+      (mocks.clipPickerPanelProps?.demoClips as VideoClipMetadata[]).map(
+        (clip) => clip.id,
+      ),
+    ).toEqual(["demo_1"]);
   });
 
   it("renders empty and error states", () => {
-    mocks.clipLibraryState.clips = [];
+    setClipLibraryVideoGroups({ demo: [], ugc: [] });
     mocks.clipLibraryState.error = "Clip library unavailable.";
 
     const markup = renderToStaticMarkup(<StitchrPageClient />);
 
     expect(markup).toContain("Clip library unavailable.");
     expect(markup).toContain("StitchrEmptyState");
+  });
+
+  it("shows loading state instead of the upload prompt while groups are loading", () => {
+    setClipLibraryVideoGroups({ demo: [], ugc: [] });
+    mocks.clipLibraryState.isLoading = true;
+
+    const markup = renderToStaticMarkup(<StitchrPageClient />);
+
+    expect(markup).toContain("Loading Stitchr clips...");
+    expect(markup).not.toContain("StitchrEmptyState");
+  });
+
+  it("includes Clipr and Swapr clips as reusable UGC inputs", () => {
+    setClipLibraryVideoGroups({
+      clipr: [createClip("clipr_1", "ugc")],
+      demo: [createClip("demo_1", "demo")],
+      swapr: [createClip("swapr_1", "ugc")],
+      ugc: [],
+    });
+
+    renderToStaticMarkup(<StitchrPageClient />);
+
+    expect(
+      (mocks.clipPickerPanelProps?.ugcClips as VideoClipMetadata[]).map(
+        (clip) => clip.id,
+      ),
+    ).toEqual(["clipr_1", "swapr_1"]);
+  });
+
+  it("loads more clips from the Stitchr category groups", () => {
+    const ugcLoadMore = mocks.clipLibraryState.videoGroups.ugc.loadMoreItems;
+    const cliprLoadMore = mocks.clipLibraryState.videoGroups.clipr.loadMoreItems;
+    const swaprLoadMore = mocks.clipLibraryState.videoGroups.swapr.loadMoreItems;
+    const demoLoadMore = mocks.clipLibraryState.videoGroups.demo.loadMoreItems;
+
+    mocks.clipLibraryState.videoGroups.ugc.hasMoreItems = true;
+    mocks.clipLibraryState.videoGroups.clipr.hasMoreItems = false;
+    mocks.clipLibraryState.videoGroups.swapr.hasMoreItems = true;
+    mocks.clipLibraryState.videoGroups.demo.hasMoreItems = true;
+    renderToStaticMarkup(<StitchrPageClient />);
+
+    const clipPickerProps = mocks.clipPickerPanelProps as {
+      hasMoreClips: boolean;
+      onLoadMoreClips: () => void;
+    };
+
+    expect(clipPickerProps.hasMoreClips).toBe(true);
+    clipPickerProps.onLoadMoreClips();
+
+    expect(ugcLoadMore).toHaveBeenCalledTimes(1);
+    expect(cliprLoadMore).not.toHaveBeenCalled();
+    expect(swaprLoadMore).toHaveBeenCalledTimes(1);
+    expect(demoLoadMore).toHaveBeenCalledTimes(1);
+    expect(mocks.clipLibraryState.loadMoreClips).not.toHaveBeenCalled();
   });
 
   it("exercises Stitchr selection, trim, music, stitch, and auto-text callbacks", async () => {
@@ -282,8 +403,8 @@ describe("StitchrPageClient", () => {
       onCopyTextOverlayToAll: () => void;
       onTextOverlayChange: (overlay: TextOverlay) => void;
     };
-    const ugcClip = mocks.clipLibraryState.clips[0];
-    const demoClip = mocks.clipLibraryState.clips[1];
+    const ugcClip = mocks.clipLibraryState.videoGroups.ugc.clips[0];
+    const demoClip = mocks.clipLibraryState.videoGroups.demo.clips[0];
 
     clipPickerProps.onSelectUgc(ugcClip.id);
     clipPickerProps.onSelectDemo(demoClip.id);
@@ -385,11 +506,10 @@ describe("StitchrPageClient", () => {
   });
 
   it("covers UGC and demo selection edge paths", () => {
-    mocks.clipLibraryState.clips = [
-      createClip("ugc_1", "ugc"),
-      createClip("ugc_2", "ugc"),
-      createClip("demo_1", "demo"),
-    ];
+    setClipLibraryVideoGroups({
+      demo: [createClip("demo_1", "demo")],
+      ugc: [createClip("ugc_1", "ugc"), createClip("ugc_2", "ugc")],
+    });
     renderToStaticMarkup(<StitchrPageClient />);
 
     const clipPickerProps = mocks.clipPickerPanelProps as {
@@ -414,20 +534,24 @@ describe("StitchrPageClient", () => {
     (mocks.autoTextPanelProps as { onGenerate: () => void }).onGenerate();
 
     mocks.productState.products = [createProduct()];
-    mocks.clipLibraryState.clips = [
-      createClip("ugc_1", "ugc"),
-      createClip("demo_1", "demo"),
-    ].map((clip) => ({
-      ...clip,
-      duration: 0,
-    }));
+    setClipLibraryVideoGroups({
+      demo: [
+        createClip("demo_1", "demo"),
+      ].map((clip) => ({
+        ...clip,
+        duration: 0,
+      })),
+      ugc: [
+        createClip("ugc_1", "ugc"),
+      ].map((clip) => ({
+        ...clip,
+        duration: 0,
+      })),
+    });
     renderToStaticMarkup(<StitchrPageClient />);
     (mocks.autoTextPanelProps as { onGenerate: () => void }).onGenerate();
 
-    mocks.clipLibraryState.clips = [
-      createClip("ugc_1", "ugc"),
-      createClip("demo_1", "demo"),
-    ];
+    setClipLibraryVideoGroups();
     mocks.generateCliprText.mockRejectedValueOnce(new Error("text failed"));
     renderToStaticMarkup(<StitchrPageClient />);
     (mocks.autoTextPanelProps as { onGenerate: () => void }).onGenerate();

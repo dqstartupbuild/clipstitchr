@@ -7,11 +7,13 @@ import { getTextOverlayStyle } from "@/lib/clipstitchr/utils/getTextOverlayStyle
 
 type TextOverlayStrokeColorPickerProps = {
   textOverlay: TextOverlay;
+  variant?: "default" | "compact";
   onChange: (textOverlay: TextOverlay) => void;
 };
 
 export function TextOverlayStrokeColorPicker({
   textOverlay,
+  variant = "default",
   onChange,
 }: TextOverlayStrokeColorPickerProps) {
   const overlayStyle = getTextOverlayStyle(textOverlay.styleId);
@@ -27,6 +29,7 @@ export function TextOverlayStrokeColorPicker({
     <TextOverlaySwatchPicker
       label="Outline"
       selectedColor={selectedColor}
+      variant={variant}
       onChange={(strokeColor) => onChange({ ...textOverlay, strokeColor })}
     />
   );

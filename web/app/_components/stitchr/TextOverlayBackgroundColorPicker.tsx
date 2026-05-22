@@ -7,11 +7,13 @@ import { getTextOverlayStyle } from "@/lib/clipstitchr/utils/getTextOverlayStyle
 
 type TextOverlayBackgroundColorPickerProps = {
   textOverlay: TextOverlay;
+  variant?: "default" | "compact";
   onChange: (textOverlay: TextOverlay) => void;
 };
 
 export function TextOverlayBackgroundColorPicker({
   textOverlay,
+  variant = "default",
   onChange,
 }: TextOverlayBackgroundColorPickerProps) {
   const overlayStyle = getTextOverlayStyle(textOverlay.styleId);
@@ -27,6 +29,7 @@ export function TextOverlayBackgroundColorPicker({
     <TextOverlaySwatchPicker
       label="Background"
       selectedColor={selectedColor}
+      variant={variant}
       onChange={(backgroundColor) =>
         onChange({ ...textOverlay, backgroundColor })
       }

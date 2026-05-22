@@ -525,6 +525,7 @@ export function UploadsPageClient() {
             <SwiprSwipesSection
               key={`all-swipes-${searchQuery}-${library.sortOrder}`}
               backgrounds={swiprLibrary.backgrounds}
+              isSaving={swiprLibrary.isSavingSwipe}
               swipes={swipes}
               emptyTitle={hasSearchQuery ? "No matching Swipes" : undefined}
               emptyDescription={
@@ -533,7 +534,9 @@ export function UploadsPageClient() {
                   : undefined
               }
               onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
+              onLoadPoster={swiprLibrary.loadSwipePoster}
               onDelete={swiprLibrary.removeSwipe}
+              onSave={swiprLibrary.saveSwipe}
             />
           </div>
         ) : null}
@@ -630,6 +633,7 @@ export function UploadsPageClient() {
           <SwiprSwipesSection
             key={`swipes-${searchQuery}-${library.sortOrder}`}
             backgrounds={swiprLibrary.backgrounds}
+            isSaving={swiprLibrary.isSavingSwipe}
             swipes={swipes}
             emptyTitle={hasSearchQuery ? "No matching Swipes" : undefined}
             emptyDescription={
@@ -638,7 +642,9 @@ export function UploadsPageClient() {
                 : undefined
             }
             onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
+            onLoadPoster={swiprLibrary.loadSwipePoster}
             onDelete={swiprLibrary.removeSwipe}
+            onSave={swiprLibrary.saveSwipe}
           />
         ) : null}
       </div>

@@ -3,13 +3,8 @@
 import { Copy, Trash2, Type } from "lucide-react";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
-import { TextOverlayBackgroundColorPicker } from "@/app/_components/stitchr/TextOverlayBackgroundColorPicker";
-import { TextOverlayColorPicker } from "@/app/_components/stitchr/TextOverlayColorPicker";
-import { TextOverlayStrokeColorPicker } from "@/app/_components/stitchr/TextOverlayStrokeColorPicker";
-import { TextOverlayStylePicker } from "@/app/_components/stitchr/TextOverlayStylePicker";
 import { TextOverlayTimeline } from "@/app/_components/stitchr/TextOverlayTimeline";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
-import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { createDefaultTextOverlay } from "@/lib/clipstitchr/utils/createDefaultTextOverlay";
 
 type TextOverlayEditorProps = {
@@ -90,32 +85,6 @@ export function TextOverlayEditor({
             onChange({ ...textOverlay, text: event.target.value })
           }
         />
-        <TextOverlayStylePicker
-          textOverlay={textOverlay}
-          onChange={(nextOverlay) =>
-            onChange(clampTextOverlay(nextOverlay, totalDuration))
-          }
-        />
-        <div className="grid gap-3 lg:grid-cols-3">
-          <TextOverlayColorPicker
-            textOverlay={textOverlay}
-            onChange={(nextOverlay) =>
-              onChange(clampTextOverlay(nextOverlay, totalDuration))
-            }
-          />
-          <TextOverlayBackgroundColorPicker
-            textOverlay={textOverlay}
-            onChange={(nextOverlay) =>
-              onChange(clampTextOverlay(nextOverlay, totalDuration))
-            }
-          />
-          <TextOverlayStrokeColorPicker
-            textOverlay={textOverlay}
-            onChange={(nextOverlay) =>
-              onChange(clampTextOverlay(nextOverlay, totalDuration))
-            }
-          />
-        </div>
         <TextOverlayTimeline
           textOverlay={textOverlay}
           totalDuration={totalDuration}

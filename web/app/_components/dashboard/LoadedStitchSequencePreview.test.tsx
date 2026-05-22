@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
     togglePlayback: vi.fn(),
     ugcVideoRef: { current: null },
   },
+  setState: vi.fn(),
   useObjectUrl: vi.fn(),
   useSequenceVideoPlayer: vi.fn(),
 }));
@@ -29,6 +30,8 @@ vi.mock("react", async (importOriginal) => {
   return {
     ...actual,
     useMemo: (factory: () => unknown) => factory(),
+    useRef: (initialValue: unknown) => ({ current: initialValue }),
+    useState: (initialValue: unknown) => [initialValue, mocks.setState],
   };
 });
 
@@ -142,6 +145,7 @@ describe("LoadedStitchSequencePreview", () => {
       togglePlayback: vi.fn(),
       ugcVideoRef: { current: null },
     };
+    mocks.setState.mockReset();
     mocks.useObjectUrl.mockImplementation((blob: Blob | undefined) =>
       blob ? `blob:${blob.type}` : null,
     );

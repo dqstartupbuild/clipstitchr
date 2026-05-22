@@ -80,6 +80,17 @@ describe("createR2ObjectKey", () => {
       }),
     ).toBe("users/user_123/swapr-segments/clip_456-segment_1/segment.mp4");
   });
+
+  it("creates user-scoped keys for Swipe posters", () => {
+    expect(
+      createR2ObjectKey({
+        userId: "user_123",
+        kind: "swipe-poster",
+        recordId: "swipe_456",
+        contentType: "image/png",
+      }),
+    ).toBe("users/user_123/swipes/swipe_456/poster.png");
+  });
 });
 
 describe("createSharedMusicR2ObjectKey", () => {

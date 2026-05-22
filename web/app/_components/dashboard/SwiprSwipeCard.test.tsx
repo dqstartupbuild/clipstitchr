@@ -11,6 +11,8 @@ const mocks = vi.hoisted(() => ({
     progress: 0,
     status: "idle",
   },
+  lazyObjectUrlOptions: null as null | { loadBlob: () => Promise<Blob | null> },
+  lazyPosterUrl: null as string | null,
   refValue: { current: null },
   setStateCalls: [] as Array<ReturnType<typeof vi.fn>>,
   stateQueue: [] as unknown[],
@@ -23,6 +25,7 @@ vi.mock("react", async (importOriginal) => {
 
   return {
     ...actual,
+    useCallback: (callback: unknown) => callback,
     useEffect: (effect: () => void | (() => void)) => effect(),
     useState: (initialValue: unknown) => {
       const value = mocks.stateQueue.length
@@ -41,6 +44,13 @@ vi.mock("react", async (importOriginal) => {
 
 vi.mock("@/lib/clipstitchr/hooks/useObjectUrl", () => ({
   useObjectUrl: mocks.useObjectUrl,
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useLazyBlobObjectUrl", () => ({
+  useLazyBlobObjectUrl: (options: { loadBlob: () => Promise<Blob | null> }) => {
+    mocks.lazyObjectUrlOptions = options;
+    return mocks.lazyPosterUrl;
+  },
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useSwiprExport", () => ({
@@ -147,6 +157,8 @@ describe("SwiprSwipeCard", () => {
     };
     mocks.setStateCalls = [];
     mocks.stateQueue = [];
+    mocks.lazyObjectUrlOptions = null;
+    mocks.lazyPosterUrl = null;
     mocks.useObjectUrl.mockImplementation((blob: Blob | undefined) =>
       blob ? "blob:background" : null,
     );
@@ -158,12 +170,14 @@ describe("SwiprSwipeCard", () => {
     const onDelete = vi.fn();
     const onLoadBackgroundBlob = vi.fn(async () => loadedBlob);
 
-    mocks.stateQueue = [false, null, null];
+    mocks.stateQueue = [false, false, null, null];
 
     const tree = SwiprSwipeCard({
       background: createBackground(),
+      backgrounds: [createBackground()],
       onDelete,
       onLoadBackgroundBlob,
+      onSave: async (input) => createSwipe(input),
       swipe: createSwipe(),
     });
     const previewButton = findElements(
@@ -177,7 +191,7 @@ describe("SwiprSwipeCard", () => {
     await Promise.resolve();
 
     expect(onLoadBackgroundBlob).toHaveBeenCalledWith("bg_1");
-    expect(mocks.setStateCalls[1]).toHaveBeenCalledWith({
+    expect(mocks.setStateCalls[2]).toHaveBeenCalledWith({
       blob: loadedBlob,
       id: "bg_1",
     });
@@ -191,7 +205,9 @@ describe("SwiprSwipeCard", () => {
     (previewButton.props.onClick as () => void)();
     actionItems[0].onClick?.();
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(true);
-    expect(actionItems[2].href).toBe("/dashboard/swipr?swipe=swipe_1");
+    expect(actionItems[2].href).toBeUndefined();
+    actionItems[2].onClick?.();
+    expect(mocks.setStateCalls[1]).toHaveBeenCalledWith(true);
 
     actionItems[1].onClick?.();
     await Promise.resolve();
@@ -224,6 +240,7 @@ describe("SwiprSwipeCard", () => {
     };
     mocks.stateQueue = [
       true,
+      false,
       null,
       {
         id: "bg_1",
@@ -233,8 +250,10 @@ describe("SwiprSwipeCard", () => {
 
     const tree = SwiprSwipeCard({
       background: createBackground({ blob: backgroundBlob }),
+      backgrounds: [createBackground({ blob: backgroundBlob })],
       onDelete: vi.fn(),
       onLoadBackgroundBlob: vi.fn(),
+      onSave: async (input) => createSwipe(input),
       swipe: createSwipe(),
     });
     const actionItems = getActionItems(tree);
@@ -260,19 +279,21 @@ describe("SwiprSwipeCard", () => {
       .mockRejectedValueOnce(new Error("Load failed"))
       .mockRejectedValueOnce("Download failed");
 
-    mocks.stateQueue = [false, null, null];
+    mocks.stateQueue = [false, false, null, null];
 
     const tree = SwiprSwipeCard({
       background: createBackground(),
+      backgrounds: [createBackground()],
       onDelete: vi.fn(),
       onLoadBackgroundBlob,
+      onSave: async (input) => createSwipe(input),
       swipe: createSwipe(),
     });
 
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(mocks.setStateCalls[2]).toHaveBeenCalledWith({
+    expect(mocks.setStateCalls[3]).toHaveBeenCalledWith({
       id: "bg_1",
       message: "Load failed",
     });
@@ -282,7 +303,7 @@ describe("SwiprSwipeCard", () => {
     await Promise.resolve();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(mocks.setStateCalls[2]).toHaveBeenCalledWith({
+    expect(mocks.setStateCalls[3]).toHaveBeenCalledWith({
       id: "bg_1",
       message: "Unable to load this Swipe background.",
     });

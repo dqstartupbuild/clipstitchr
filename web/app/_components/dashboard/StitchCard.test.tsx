@@ -17,6 +17,14 @@ const mocks = vi.hoisted(() => ({
     onLoadPreview: () => void;
   },
   downloadBlob: vi.fn(),
+  editProps: null as null | {
+    onClose: () => void;
+    onGenerateMusic: () => Promise<StitchMusicMetadata | null>;
+    onLoadPreview: () => void;
+    onRemoveMusic: () => Promise<void>;
+    onSaveMusic: (music: StitchMusicMetadata) => Promise<void>;
+    onSaveTextOverlay: (textOverlay: TextOverlay | null) => Promise<void>;
+  },
   lazyObjectUrlOptions: null as null | { loadBlob: () => Promise<Blob | null> },
   musicProps: null as null | {
     onClose: () => void;
@@ -61,6 +69,13 @@ vi.mock("@/app/_components/dashboard/StitchDetailsDialog", () => ({
   }) => {
     mocks.detailsProps = props;
     return "StitchDetailsDialog";
+  },
+}));
+
+vi.mock("@/app/_components/dashboard/StitchEditDialog", () => ({
+  StitchEditDialog: (props: typeof mocks.editProps) => {
+    mocks.editProps = props;
+    return "StitchEditDialog";
   },
 }));
 
@@ -218,6 +233,7 @@ describe("StitchCard", () => {
     vi.clearAllMocks();
     mocks.actionItems = [];
     mocks.detailsProps = null;
+    mocks.editProps = null;
     mocks.lazyObjectUrlOptions = null;
     mocks.musicProps = null;
     mocks.textProps = null;
@@ -246,8 +262,7 @@ describe("StitchCard", () => {
     expect(mocks.actionItems.map((item) => item.label)).toEqual([
       "Use in Swapr",
       "Download stitch",
-      "Edit stitch text",
-      "Edit stitch music",
+      "Edit stitch",
       "Delete stitch",
     ]);
   });
@@ -294,7 +309,6 @@ describe("StitchCard", () => {
       null,
       true,
       true,
-      true,
       false,
       false,
       false,
@@ -318,18 +332,12 @@ describe("StitchCard", () => {
 
     mocks.detailsProps?.onLoadPreview();
     mocks.detailsProps?.onClose();
-    mocks.actionItems
-      .find((item) => item.label === "Edit stitch text")
-      ?.onClick?.();
-    mocks.actionItems
-      .find((item) => item.label === "Edit stitch music")
-      ?.onClick?.();
-    await mocks.musicProps?.onGenerate();
-    await mocks.musicProps?.onSave(createStitchMusic());
-    await mocks.musicProps?.onRemove();
-    mocks.musicProps?.onClose();
-    await mocks.textProps?.onSave(null);
-    mocks.textProps?.onClose();
+    mocks.actionItems.find((item) => item.label === "Edit stitch")?.onClick?.();
+    await mocks.editProps?.onGenerateMusic();
+    await mocks.editProps?.onSaveMusic(createStitchMusic());
+    await mocks.editProps?.onRemoveMusic();
+    await mocks.editProps?.onSaveTextOverlay(null);
+    mocks.editProps?.onClose();
     mocks.actionItems.find((item) => item.label === "Download stitch")?.onClick?.();
     mocks.actionItems.find((item) => item.label === "Delete stitch")?.onClick?.();
 
@@ -371,7 +379,6 @@ describe("StitchCard", () => {
       false,
       false,
       false,
-      false,
       null,
       null,
       null,
@@ -388,7 +395,7 @@ describe("StitchCard", () => {
       />,
     );
 
-    await mocks.musicProps?.onGenerate();
+    await mocks.editProps?.onGenerateMusic();
     mocks.actionItems.find((item) => item.label === "Download stitch")?.onClick?.();
 
     for (let index = 0; index < 5; index += 1) {
@@ -417,7 +424,6 @@ describe("StitchCard", () => {
       null,
       true,
       true,
-      true,
       false,
       false,
       false,
@@ -440,10 +446,10 @@ describe("StitchCard", () => {
     );
 
     mocks.detailsProps?.onLoadPreview();
-    await expect(mocks.musicProps?.onSave(createStitchMusic())).rejects.toThrow(
+    await expect(mocks.editProps?.onSaveMusic(createStitchMusic())).rejects.toThrow(
       "music update failed",
     );
-    await expect(mocks.textProps?.onSave(null)).rejects.toThrow(
+    await expect(mocks.editProps?.onSaveTextOverlay(null)).rejects.toThrow(
       "text update failed",
     );
     await new Promise((resolve) => setTimeout(resolve, 0));

@@ -4,7 +4,6 @@ import {
   Download,
   Edit3,
   Scissors,
-  SlidersHorizontal,
   Shuffle,
   Trash2,
   UserRound,
@@ -12,7 +11,6 @@ import {
 import { useState } from "react";
 import { CreateAvatarFromClipDialog } from "@/app/_components/dashboard/CreateAvatarFromClipDialog";
 import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPreviewCard";
-import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import { downloadMusicBlob } from "@/lib/clipstitchr/client/r2/downloadMusicBlob";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
@@ -79,7 +77,6 @@ export function VideoClipCard({
   onCreateAvatarFromClip,
 }: VideoClipCardProps) {
   const [isAvatarCreatorOpen, setIsAvatarCreatorOpen] = useState(false);
-  const [isMetadataOpen, setIsMetadataOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
   const [isSavingMusic, setIsSavingMusic] = useState(false);
@@ -206,7 +203,11 @@ export function VideoClipCard({
               }
             : undefined
         }
-        actions={({ isLoading, loadFullClip, openDetails }) => {
+        metadataEditor={{
+          products,
+          onSave: (metadata) => onUpdateMetadata(clip, metadata),
+        }}
+        actions={({ closeDetails, isLoading, loadFullClip, openDetails }) => {
           const items: MediaCardActionMenuItem[] = [
             {
               label: "Use in Stitchr",
@@ -231,18 +232,10 @@ export function VideoClipCard({
               onClick: () => void handleDownload(loadFullClip),
             },
             {
-              label: "Edit clip details",
+              label: "Edit clip",
               icon: <Edit3 aria-hidden className="h-4 w-4" />,
-              onClick: () => setIsMetadataOpen(true),
-            },
-            {
-              label:
-                clip.cliprMetadata && onGenerateCliprMusic && onUpdateCliprMusic
-                  ? "Edit trim and music"
-                  : "Edit default trim",
-              icon: <SlidersHorizontal aria-hidden className="h-4 w-4" />,
               disabled: isLoading,
-              onClick: () => openDetails({ showControlsEditor: true }),
+              onClick: () => openDetails({ showEditDialog: true }),
             },
           );
 
@@ -251,7 +244,10 @@ export function VideoClipCard({
               label: "Create avatar from UGC",
               icon: <UserRound aria-hidden className="h-4 w-4" />,
               disabled: isLoading || isCreatingAvatarFromClip,
-              onClick: () => setIsAvatarCreatorOpen(true),
+              onClick: () => {
+                closeDetails();
+                setIsAvatarCreatorOpen(true);
+              },
             });
           }
 
@@ -259,7 +255,10 @@ export function VideoClipCard({
             label: "Delete clip",
             variant: "danger",
             icon: <Trash2 aria-hidden className="h-4 w-4" />,
-            onClick: () => void onDelete(clip.id),
+            onClick: () => {
+              closeDetails();
+              void onDelete(clip.id);
+            },
           });
 
           return items;
@@ -272,30 +271,6 @@ export function VideoClipCard({
           ) : null
         }
       />
-      {isMetadataOpen ? (
-        <AssetMetadataEditDialog
-          title={clip.name}
-          initialName={clip.name}
-          initialLocationDescription={clip.locationDescription}
-          initialMainPersonDescription={clip.mainPersonDescription}
-          initialOutfitDescription={clip.outfitDescription}
-          initialPoseDescription={clip.poseDescription}
-          initialProductDescription={clip.productDescription}
-          initialProductId={clip.productId}
-          initialTags={clip.tags}
-          initialVideoDescription={clip.videoDescription}
-          products={products}
-          requiredTag={clip.clipType}
-          showMainPersonDescriptionFields={clip.clipType === "ugc"}
-          showProductDescriptionField={clip.clipType === "demo"}
-          showVideoDescriptionFields
-          onClose={() => setIsMetadataOpen(false)}
-          onSave={async (metadata) => {
-            await onUpdateMetadata(clip, metadata);
-            setIsMetadataOpen(false);
-          }}
-        />
-      ) : null}
       {isAvatarCreatorOpen && onCreateAvatarFromClip ? (
         <CreateAvatarFromClipDialog
           clip={clip}

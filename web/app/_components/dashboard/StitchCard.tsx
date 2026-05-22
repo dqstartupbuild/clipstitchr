@@ -1,10 +1,9 @@
 "use client";
 
-import { Download, Music2, Play, Shuffle, Trash2, Type } from "lucide-react";
+import { Download, Edit3, Play, Shuffle, Trash2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { StitchDetailsDialog } from "@/app/_components/dashboard/StitchDetailsDialog";
-import { StitchMusicSettingsDialog } from "@/app/_components/dashboard/StitchMusicSettingsDialog";
-import { StitchTextSettingsDialog } from "@/app/_components/dashboard/StitchTextSettingsDialog";
+import { StitchEditDialog } from "@/app/_components/dashboard/StitchEditDialog";
 import {
   MediaCardActionMenu,
   type MediaCardActionMenuItem,
@@ -72,14 +71,16 @@ export function StitchCard({
     () => onLoadPoster?.(stitch.id) ?? Promise.resolve(null),
     [onLoadPoster, stitch.id],
   );
+  const posterContentKey = JSON.stringify(stitch.textOverlay ?? null);
   const posterUrl = useLazyBlobObjectUrl({
-    cacheKey: stitch.posterObject?.key ?? stitch.ugcClipId,
+    cacheKey: stitch.posterObject?.key
+      ? `${stitch.posterObject.key}:${stitch.posterVersion ?? 0}:${posterContentKey}`
+      : stitch.ugcClipId,
     fallbackBlob: stitch.posterBlob,
     loadBlob: loadPosterBlob,
   });
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isMusicOpen, setIsMusicOpen] = useState(false);
-  const [isTextOpen, setIsTextOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
@@ -139,6 +140,11 @@ export function StitchCard({
     if (shouldLoadPreview) {
       void loadPreview();
     }
+  };
+  const openEdit = () => {
+    setIsDetailsOpen(false);
+    setIsEditOpen(true);
+    void loadPreview();
   };
   const handleDownload = async () => {
     setIsDownloading(true);
@@ -244,20 +250,16 @@ export function StitchCard({
       onClick: () => void handleDownload(),
     },
     {
-      label: "Edit stitch text",
-      icon: <Type aria-hidden className="h-4 w-4" />,
-      onClick: () => setIsTextOpen(true),
-    },
-    {
-      label: "Edit stitch music",
-      icon: <Music2 aria-hidden className="h-4 w-4" />,
-      onClick: () => setIsMusicOpen(true),
+      label: "Edit stitch",
+      icon: <Edit3 aria-hidden className="h-4 w-4" />,
+      onClick: openEdit,
     },
     {
       label: "Delete stitch",
       variant: "danger",
       icon: <Trash2 aria-hidden className="h-4 w-4" />,
       onClick: () => {
+        setIsDetailsOpen(false);
         trackPostHogEvent("stitch_deleted", {
           stitch_id: stitch.id,
           duration_seconds: stitch.duration,
@@ -330,6 +332,7 @@ export function StitchCard({
       </div>
       {isDetailsOpen ? (
         <StitchDetailsDialog
+          actionItems={actionItems}
           demoClip={previewSources?.demoClip ?? null}
           isLoadingPreview={isLoadingPreview}
           posterUrl={posterUrl}
@@ -342,25 +345,27 @@ export function StitchCard({
           }}
         />
       ) : null}
-      {isMusicOpen ? (
-        <StitchMusicSettingsDialog
+      {isEditOpen ? (
+        <StitchEditDialog
+          demoClip={previewSources?.demoClip ?? null}
+          isGeneratingMusic={isGeneratingMusic}
+          isLoadingPreview={isLoadingPreview}
+          isSavingMusic={isSavingMusic}
+          isSavingText={isSavingText}
+          musicError={musicError}
+          posterUrl={posterUrl}
+          previewError={previewError}
           stitch={stitch}
-          error={musicError}
-          isGenerating={isGeneratingMusic}
-          isSaving={isSavingMusic}
-          onClose={() => setIsMusicOpen(false)}
-          onGenerate={handleGenerateMusic}
-          onRemove={() => handleUpdateMusic(null)}
-          onSave={handleUpdateMusic}
-        />
-      ) : null}
-      {isTextOpen ? (
-        <StitchTextSettingsDialog
-          stitch={stitch}
-          error={textError}
-          isSaving={isSavingText}
-          onClose={() => setIsTextOpen(false)}
-          onSave={handleUpdateTextOverlay}
+          textError={textError}
+          ugcClip={previewSources?.ugcClip ?? null}
+          onClose={() => setIsEditOpen(false)}
+          onGenerateMusic={handleGenerateMusic}
+          onLoadPreview={() => {
+            void loadPreview();
+          }}
+          onRemoveMusic={() => handleUpdateMusic(null)}
+          onSaveMusic={handleUpdateMusic}
+          onSaveTextOverlay={handleUpdateTextOverlay}
         />
       ) : null}
     </>

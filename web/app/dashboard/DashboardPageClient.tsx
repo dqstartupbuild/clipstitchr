@@ -98,9 +98,12 @@ export function DashboardPageClient() {
         />
         <RecentSwipesSection
           backgrounds={swiprLibrary.backgrounds}
+          isSaving={swiprLibrary.isSavingSwipe}
           swipes={recentSwipes}
           onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
+          onLoadPoster={swiprLibrary.loadSwipePoster}
           onDelete={swiprLibrary.removeSwipe}
+          onSave={swiprLibrary.saveSwipe}
         />
         <RecentUploadsSection
           clips={recentUploads}

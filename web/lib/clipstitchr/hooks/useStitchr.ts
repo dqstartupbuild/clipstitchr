@@ -7,9 +7,13 @@ import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
+import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { generateStitchMusic as requestStitchMusicGeneration } from "@/lib/clipstitchr/client/generateStitchMusic";
+import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
+import { createStitchPosterBlob } from "@/lib/clipstitchr/media/createStitchPosterBlob";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
 import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSourceAudioOptions";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
@@ -25,6 +29,7 @@ import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type UseStitchrOptions = {
+  loadClip?: (id: string) => Promise<VideoClip | null>;
   onCreated?: () => void | Promise<void>;
 };
 
@@ -33,7 +38,7 @@ type StitchrBuildOptions = {
   musicTrack?: SharedMusicTrack | null;
 } & StitchSourceAudioOptions;
 
-export function useStitchr({ onCreated }: UseStitchrOptions) {
+export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
   const saveStitch = useMutation(api.stitches.save);
   const updateStitchMusic = useMutation(api.stitches.updateMusic);
   const [status, setStatus] = useState<ProcessingStatus>("idle");
@@ -67,6 +72,39 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
         getVideoTrimRangeDuration(clampedDemoTrimRange);
       const now = new Date().toISOString();
       const stitchId = createId();
+      let posterBlob = ugcClip.posterBlob;
+      let posterObject: R2ObjectReference | undefined;
+
+      if (textOverlay?.text.trim() && loadClip) {
+        try {
+          const [loadedUgcClip, loadedDemoClip] = await Promise.all([
+            loadClip(ugcClip.id),
+            loadClip(demoClip.id),
+          ]);
+
+          if (loadedUgcClip && loadedDemoClip) {
+            posterBlob = await createStitchPosterBlob({
+              demoClip: loadedDemoClip,
+              demoTrimRange: clampedDemoTrimRange,
+              duration,
+              textOverlay,
+              ugcClip: loadedUgcClip,
+              ugcTrimRange: clampedUgcTrimRange,
+            });
+            [posterObject] = await uploadBlobsToR2([
+              {
+                blob: posterBlob,
+                kind: "stitch-poster",
+                recordId: stitchId,
+              },
+            ]);
+          }
+        } catch {
+          posterBlob = ugcClip.posterBlob;
+          posterObject = undefined;
+        }
+      }
+
       const nextStitch: Stitch = {
         id: stitchId,
         name: getDownloadFileName(ugcClip.name, demoClip.name),
@@ -76,7 +114,9 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
         demoClipName: demoClip.name,
         ugcTrimRange: clampedUgcTrimRange,
         demoTrimRange: clampedDemoTrimRange,
-        posterBlob: ugcClip.posterBlob,
+        posterBlob,
+        posterObject,
+        posterVersion: posterObject ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
         width: TIKTOK_OUTPUT_WIDTH,
         height: TIKTOK_OUTPUT_HEIGHT,
         duration,
@@ -95,6 +135,12 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
         demoClipName: nextStitch.demoClipName,
         ugcTrimRange: nextStitch.ugcTrimRange,
         demoTrimRange: nextStitch.demoTrimRange,
+        ...(nextStitch.posterObject
+          ? {
+              posterObject: nextStitch.posterObject,
+              posterVersion: nextStitch.posterVersion,
+            }
+          : {}),
         width: nextStitch.width,
         height: nextStitch.height,
         duration: nextStitch.duration,
@@ -126,7 +172,7 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
 
       return nextStitch;
     },
-    [saveStitch, updateStitchMusic],
+    [loadClip, saveStitch, updateStitchMusic],
   );
 
   const stitchVideos = useCallback(

@@ -165,9 +165,11 @@ rate-limited; operators should run them in bounded pages and stop when
 
 Swipr carousel export is intentionally not rate-limited in the MVP because the
 browser renders saved editable Swipe state into 9:16 PNG images with Canvas and
-creates a local ZIP download. Saved Swipes store only Convex metadata, slide
-text overlay state, per-slide background references, and a fallback background
-reference for older Swipes; rendered carousel images are not persisted.
+creates a local ZIP download. Saving a Swipe stores Convex metadata, slide text
+overlay state, per-slide background references, a fallback background reference
+for older Swipes, and one R2-backed poster image rendered from the first slide
+with its text overlay. The poster upload consumes the normal R2 upload signed
+URL and byte limits before `swipes.save`.
 
 Longr rendering is browser-local and has no provider cost unless the user opens
 the shared music picker and generates a new music track through
@@ -241,8 +243,10 @@ the user exports/downloads. That export-time Media Bunny render is browser-local
 not separately rate-limited. Saved Stitchr outputs use the same export-time
 model: saving a stitch stores source clip references, trim ranges, text, source
 audio flags, and music metadata in Convex without uploading a rendered stitch
-video or poster to R2. Export-time stitching and music mixing are browser-local
-and are not separately rate-limited. `POST /api/stitches/music` consumes the
+video to R2. When a stitch has text, the browser renders and uploads one
+text-aware stitch poster through the normal R2 upload limits and records it with
+`stitches.save` or `stitches.updatePoster`; export-time stitching and music
+mixing are browser-local and are not separately rate-limited. `POST /api/stitches/music` consumes the
 Stitchr music limits before Replicate, then R2 upload limits for both personal
 and shared copies. After script planning, Clipr
 consumes the avatar-video limit and, when generated music is requested, the 60
@@ -265,7 +269,7 @@ request, R2 upload, or Convex save starts:
 | Photo upload without AI expansion | 100 files at once | Each photo creates 3 R2 objects and 1 metadata analysis request, fitting under the R2 upload, analysis, and Convex-save burst limits. |
 | Photo upload with AI expansion | 1 file at once | Each source image may trigger paid outpainting before it is saved, so the UI keeps this workflow explicitly one-at-a-time. |
 | Video upload | 20 files at once | Each video usually creates 1 normalized video object, 1 poster object, and 1 Gemini video analysis request, fitting under the R2 upload, video-analysis, and Convex-save burst limits. |
-| Stitchr UGC batch | 20 selected UGC videos at once | Each selected UGC creates one editable stitch with the selected demo, copied trims, text, and audio settings. Creating the batch consumes Convex stitch saves but no rendered stitch-video or stitch-poster R2 uploads; export-time browser encoding runs only when the user downloads/exports. |
+| Stitchr UGC batch | 20 selected UGC videos at once | Each selected UGC creates one editable stitch with the selected demo, copied trims, text, and audio settings. Creating the batch consumes Convex stitch saves and, when text is present, one stitch-poster R2 upload per output; export-time browser encoding runs only when the user downloads/exports. |
 | Longr selected duration | 5 minutes total | Longr creates one browser-rendered 9:16 video from the selected sequence. The cap limits browser encode time, output size, R2 upload bytes, and preview complexity. |
 
 These caps reduce partial batches and orphaned R2 objects. They do not replace

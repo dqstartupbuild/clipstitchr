@@ -1,12 +1,15 @@
 "use client";
 
 import { Pause, Play, RotateCcw } from "lucide-react";
-import { type KeyboardEvent, useMemo } from "react";
+import { type KeyboardEvent, useMemo, useRef, useState } from "react";
+import { TextOverlayBox } from "@/app/_components/stitchr/TextOverlayBox";
 import { TextOverlayPreviewBox } from "@/app/_components/stitchr/TextOverlayPreviewBox";
+import { TextOverlayQuickControls } from "@/app/_components/stitchr/TextOverlayQuickControls";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { useSequenceVideoPlayer } from "@/lib/clipstitchr/hooks/useSequenceVideoPlayer";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
+import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
@@ -17,13 +20,17 @@ type LoadedStitchSequencePreviewProps = {
   demoClip: VideoClip;
   stitch: Stitch;
   ugcClip: VideoClip;
+  onTextOverlayChange?: (textOverlay: TextOverlay) => void;
 };
 
 export function LoadedStitchSequencePreview({
   demoClip,
   stitch,
   ugcClip,
+  onTextOverlayChange,
 }: LoadedStitchSequencePreviewProps) {
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const [areTextControlsOpen, setAreTextControlsOpen] = useState(false);
   const ugcUrl = useObjectUrl(ugcClip.blob);
   const demoUrl = useObjectUrl(demoClip.blob);
   const ugcPosterUrl = useObjectUrl(ugcClip.posterBlob);
@@ -99,6 +106,7 @@ export function LoadedStitchSequencePreview({
   return (
     <div>
       <div
+        ref={stageRef}
         aria-label={isPlaying ? "Pause stitch preview" : "Play stitch preview"}
         className="relative aspect-[9/16] overflow-hidden rounded-lg bg-slate-950"
         role="button"
@@ -141,8 +149,28 @@ export function LoadedStitchSequencePreview({
               preload="metadata"
               src={demoUrl}
             />
-            {textOverlay && shouldShowTextOverlay ? (
+            {textOverlay && shouldShowTextOverlay && onTextOverlayChange ? (
+              <TextOverlayBox
+                textOverlay={textOverlay}
+                stageRef={stageRef}
+                totalDuration={totalDuration}
+                onChange={onTextOverlayChange}
+                onOpenStyleControls={() => setAreTextControlsOpen(true)}
+              />
+            ) : null}
+            {textOverlay && shouldShowTextOverlay && !onTextOverlayChange ? (
               <TextOverlayPreviewBox textOverlay={textOverlay} />
+            ) : null}
+            {textOverlay &&
+            shouldShowTextOverlay &&
+            onTextOverlayChange &&
+            areTextControlsOpen ? (
+              <TextOverlayQuickControls
+                textOverlay={textOverlay}
+                totalDuration={totalDuration}
+                onChange={onTextOverlayChange}
+                onClose={() => setAreTextControlsOpen(false)}
+              />
             ) : null}
           </>
         ) : (
