@@ -11,10 +11,11 @@ or remove images, and download the latest saved version at any time.
 1. The user opens `/dashboard/swipr`.
 2. The user chooses a saved Settings product as the product context.
 3. The user chooses 3-8 carousel images.
-4. The user chooses one shared background image for the whole carousel:
+4. The user chooses one photo for each carousel image:
    - A saved background from the shared Background Library.
-   - An uploaded background image.
-   - An AI-generated background image.
+   - Uploaded background images.
+   - AI-generated background images from product context and an optional user
+     prompt.
 5. The user edits text independently on each carousel image.
 6. The user can generate editable slide text from the shared hidden Clipr
    hook-template engine. The first slide uses the generated hook, and the
@@ -38,20 +39,22 @@ The saved record includes:
 - Display name.
 - Saved Settings product ID.
 - Product context snapshot used for export naming and prompt context.
-- Selected background ID.
+- Fallback selected background ID for compatibility and default rendering.
 - Slide count.
 - Ordered slide records.
 - Text overlay state for each slide.
 - Created and updated timestamps.
 
-Each slide stores only the editable data needed to render it again. The final
-PNG is rendered in the browser on demand when the user downloads the Swipe.
+Each slide stores only the editable data needed to render it again, including
+its selected background ID when it differs from the saved fallback background.
+The final PNG is rendered in the browser on demand when the user downloads the
+Swipe.
 
 ## Download Behavior
 
 The download action renders the currently saved version of the Swipe. It uses:
 
-- The saved background image blob loaded from R2.
+- The saved background image blobs loaded from R2.
 - The saved ordered slide list.
 - The saved text overlay for each slide.
 - The existing 9:16 Swipr rendering pipeline.
@@ -185,6 +188,11 @@ outside `NODE_ENV=development`. Each click imports the next five missing seed
 plans, skips seed IDs already saved in Convex, generates the image, uploads it
 to the shared Swipr R2 prefix, and saves the prefilled seed metadata directly.
 
+The Swipr creation page can upload multiple photos in one selection and
+generate one AI photo per current carousel image. Each generated image consumes
+the existing Swipr AI background generation limit, then follows the existing
+analysis, R2 upload, and `swiprBackgrounds.save` path.
+
 ## Abuse Protection
 
 Swipr persistence adds new cost surfaces:
@@ -214,7 +222,8 @@ Required protections:
 ## MVP Constraints
 
 - Swipr exports static 9:16 PNG carousel images in a ZIP.
-- Each Swipe uses one shared background image across all slides.
+- Each Swipe keeps a fallback background for compatibility, and each slide can
+  use its own selected background image.
 - Each slide has one text overlay.
 - The carousel contains 3-8 images.
 - Rendered PNG images are not stored.

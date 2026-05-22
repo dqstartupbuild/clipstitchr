@@ -164,6 +164,7 @@ describe("POST /api/swipr/backgrounds/generate", () => {
   it("creates a background image and returns generation metadata headers", async () => {
     const response = await POST(
       createRequest({
+        prompt: "brass counter with daylight",
         presetId: "studio",
         productContext: "portable launch kit",
       }),
@@ -183,6 +184,16 @@ describe("POST /api/swipr/backgrounds/generate", () => {
       preferredPresetId: "studio",
       productContext: "portable launch kit",
     });
+    expect(mocks.createSwiprBackgroundGenerationPrompt).toHaveBeenCalledWith(
+      expect.objectContaining({
+        productContext: "portable launch kit",
+        userPrompt: "brass counter with daylight",
+      }),
+    );
+    expect(mocks.createSwiprBackgroundGenerationMetadataText).toHaveBeenCalledWith(
+      expect.any(Object),
+      "brass counter with daylight",
+    );
     expect(mocks.replicate.predictions.create).toHaveBeenCalledWith(
       expect.objectContaining({
         input: {

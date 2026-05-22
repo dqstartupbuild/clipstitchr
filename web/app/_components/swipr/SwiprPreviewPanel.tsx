@@ -80,7 +80,7 @@ export function SwiprPreviewPanel({
           />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-slate-400">
-            Background unavailable
+            Photo unavailable
           </div>
         )}
         {activeSlide && activeSlide.textOverlay.text.trim() ? (

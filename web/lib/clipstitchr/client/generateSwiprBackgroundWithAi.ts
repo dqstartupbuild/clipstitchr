@@ -3,11 +3,13 @@ import type { SwiprBackgroundPresetId } from "@/lib/clipstitchr/types/SwiprBackg
 
 type GenerateSwiprBackgroundWithAiOptions = {
   productContext: string;
+  prompt?: string;
   presetId?: SwiprBackgroundPresetId;
 };
 
 export async function generateSwiprBackgroundWithAi({
   productContext,
+  prompt,
   presetId,
 }: GenerateSwiprBackgroundWithAiOptions) {
   const response = await fetch("/api/swipr/backgrounds/generate", {
@@ -17,6 +19,7 @@ export async function generateSwiprBackgroundWithAi({
     },
     body: JSON.stringify({
       productContext,
+      ...(prompt?.trim() ? { prompt } : {}),
       ...(presetId ? { presetId } : {}),
     }),
   });

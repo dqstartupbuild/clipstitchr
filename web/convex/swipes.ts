@@ -66,6 +66,25 @@ export const save = mutation({
       throw new Error("Swipr background not found.");
     }
 
+    const slideBackgroundIds = [
+      ...new Set(
+        args.slides
+          .map((slide) => slide.backgroundId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+
+    for (const slideBackgroundId of slideBackgroundIds) {
+      const slideBackground = await ctx.db
+        .query("swiprBackgrounds")
+        .withIndex("by_background_id", (q) => q.eq("id", slideBackgroundId))
+        .unique();
+
+      if (!slideBackground) {
+        throw new Error("Swipr slide background not found.");
+      }
+    }
+
     const product = await ctx.db
       .query("products")
       .withIndex("by_owner_id", (q) =>

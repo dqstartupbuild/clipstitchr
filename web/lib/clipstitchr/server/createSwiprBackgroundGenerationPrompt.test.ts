@@ -17,6 +17,7 @@ describe("createSwiprBackgroundGenerationPrompt", () => {
     const prompt = createSwiprBackgroundGenerationPrompt({
       productContext: "A compact espresso machine for busy founders",
       presetId: "studio",
+      userPrompt: "matte green tile with morning light",
       variation,
     });
 
@@ -24,6 +25,7 @@ describe("createSwiprBackgroundGenerationPrompt", () => {
     expect(prompt).toContain("cropped to 9:16");
     expect(prompt).toContain("Do not include any visible words");
     expect(prompt).toContain("compact espresso machine");
+    expect(prompt).toContain("matte green tile");
     expect(prompt).toContain("Variation scene");
     expect(prompt).toContain(variation.scene);
     expect(prompt).toContain(variation.palette);
@@ -35,6 +37,7 @@ describe("createSwiprBackgroundGenerationPrompt", () => {
       productContext:
         "A compact espresso machine app for TikTok carousel ads with iPhone screen mockups",
       presetId: "studio",
+      userPrompt: "sunlit walnut kitchen counter",
       variation,
     });
     const lowerPrompt = prompt.toLowerCase();
@@ -42,6 +45,7 @@ describe("createSwiprBackgroundGenerationPrompt", () => {
     expect(prompt).toContain("vertical 9:16 portrait photography backdrop");
     expect(prompt).toContain("empty real-world scene");
     expect(prompt).toContain("plain unmarked surfaces");
+    expect(prompt).toContain("sunlit walnut kitchen counter");
     expect(prompt).toContain(variation.scene);
     expect(prompt).toContain(variation.palette);
     expect(lowerPrompt).not.toContain("tiktok");

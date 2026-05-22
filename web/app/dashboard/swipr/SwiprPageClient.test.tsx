@@ -204,6 +204,7 @@ function queueSwiprState(
     background?: unknown;
     backgroundError?: string | null;
     editingSwipeId?: string | null;
+    generationPrompt?: string;
     isGeneratingAiBackground?: boolean;
     isGeneratingAutoText?: boolean;
     isSeedingDevBackgrounds?: boolean;
@@ -224,6 +225,7 @@ function queueSwiprState(
     overrides.activeSlideId ?? slides[0]?.id ?? null,
     overrides.background ?? null,
     "",
+    overrides.generationPrompt ?? "",
     overrides.backgroundError ?? null,
     overrides.isGeneratingAiBackground ?? false,
     overrides.isSeedingDevBackgrounds ?? false,
@@ -323,10 +325,11 @@ describe("SwiprPageClient", () => {
       onSlideCountChange: (count: number) => void;
     };
     const backgroundPanelProps = mocks.backgroundPanelProps as {
+      onGenerationPromptChange: (value: string) => void;
       onBackgroundSearchChange: (value: string) => void;
       onGenerateAiBackground: () => void;
       onSelectBackground: (background: SwiprBackgroundAsset) => void;
-      onUploadBackground: (file: File) => void;
+      onUploadBackground: (files: File[]) => void;
     };
     const textOverlayPanelProps = mocks.textOverlayPanelProps as {
       onChange: (textOverlay: TextOverlay) => void;
@@ -353,10 +356,11 @@ describe("SwiprPageClient", () => {
     productPanelProps.onSlideCountChange(8);
     productPanelProps.onGenerateText();
     backgroundPanelProps.onBackgroundSearchChange("studio");
+    backgroundPanelProps.onGenerationPromptChange("sunny counter");
     backgroundPanelProps.onSelectBackground(createBackground());
-    backgroundPanelProps.onUploadBackground(
+    backgroundPanelProps.onUploadBackground([
       new File(["background"], "background.jpg", { type: "image/jpeg" }),
-    );
+    ]);
     backgroundPanelProps.onGenerateAiBackground();
     textOverlayPanelProps.onChange(overlay);
     previewPanelProps.onTextOverlayChange(overlay);
@@ -378,6 +382,7 @@ describe("SwiprPageClient", () => {
     expect(mocks.swiprLibraryState.saveBackground).toHaveBeenCalled();
     expect(mocks.generateSwiprBackgroundWithAi).toHaveBeenCalledWith({
       productContext: expect.stringContaining("Launch Kit"),
+      prompt: "",
     });
   });
 
@@ -391,7 +396,7 @@ describe("SwiprPageClient", () => {
     const backgroundPanelProps = mocks.backgroundPanelProps as {
       onGenerateAiBackground: () => void;
       onSelectBackground: (background: SwiprBackgroundAsset) => void;
-      onUploadBackground: (file: File) => void;
+      onUploadBackground: (files: File[]) => void;
     };
     const previewPanelProps = mocks.previewPanelProps as {
       onSave: () => void;
@@ -412,9 +417,9 @@ describe("SwiprPageClient", () => {
     mocks.swiprLibraryState.saveBackground.mockRejectedValueOnce(
       new Error("save failed"),
     );
-    backgroundPanelProps.onUploadBackground(
+    backgroundPanelProps.onUploadBackground([
       new File(["background"], "background.jpg", { type: "image/jpeg" }),
-    );
+    ]);
 
     await Promise.resolve();
     await Promise.resolve();

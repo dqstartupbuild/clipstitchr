@@ -9,7 +9,10 @@ import { SwiprProductPanel } from "@/app/_components/swipr/SwiprProductPanel";
 import { SwiprSlideStrip } from "@/app/_components/swipr/SwiprSlideStrip";
 import { SwiprTextOverlayPanel } from "@/app/_components/swipr/SwiprTextOverlayPanel";
 import { Panel } from "@/app/_components/ui/Panel";
-import { SWIPR_MIN_SLIDE_COUNT } from "@/lib/clipstitchr/constants/swiprSlideCountBounds";
+import {
+  SWIPR_MAX_SLIDE_COUNT,
+  SWIPR_MIN_SLIDE_COUNT,
+} from "@/lib/clipstitchr/constants/swiprSlideCountBounds";
 import { SWIPR_STATIC_DURATION } from "@/lib/clipstitchr/constants/swiprStaticDuration";
 import { generateSwiprBackgroundWithAi } from "@/lib/clipstitchr/client/generateSwiprBackgroundWithAi";
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
@@ -29,8 +32,10 @@ import { getProductSwiprContext } from "@/lib/clipstitchr/utils/getProductSwiprC
 import { getSwiprBackgroundFromAsset } from "@/lib/clipstitchr/utils/getSwiprBackgroundFromAsset";
 import { getSwiprSavedProductIdFromOptionValue } from "@/lib/clipstitchr/utils/getSwiprSavedProductIdFromOptionValue";
 import { getSwiprSavedProductOptionValue } from "@/lib/clipstitchr/utils/getSwiprSavedProductOptionValue";
+import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
 import { getSwiprSwipeName } from "@/lib/clipstitchr/utils/getSwiprSwipeName";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { assignSwiprBackgroundsToSlides } from "@/lib/clipstitchr/utils/assignSwiprBackgroundsToSlides";
 import { resizeSwiprSlides } from "@/lib/clipstitchr/utils/resizeSwiprSlides";
 
 const SWIPR_DEV_SEED_BATCH_SIZE = 5;
@@ -58,6 +63,7 @@ export function SwiprPageClient() {
   );
   const [background, setBackground] = useState<SwiprBackground | null>(null);
   const [backgroundSearchQuery, setBackgroundSearchQuery] = useState("");
+  const [generationPrompt, setGenerationPrompt] = useState("");
   const [backgroundError, setBackgroundError] = useState<string | null>(null);
   const [isGeneratingAiBackground, setIsGeneratingAiBackground] =
     useState(false);
@@ -97,11 +103,31 @@ export function SwiprPageClient() {
   const selectedBackgroundAsset = background?.id
     ? swiprLibrary.backgrounds.find((item) => item.id === background.id)
     : undefined;
+  const activeSlideBackgroundAsset = activeSlide?.backgroundId
+    ? swiprLibrary.backgrounds.find(
+        (item) => item.id === activeSlide.backgroundId,
+      )
+    : undefined;
+  const activeBackground =
+    activeSlide?.backgroundId && background?.id !== activeSlide.backgroundId
+      ? activeSlideBackgroundAsset?.blob
+        ? getSwiprBackgroundFromAsset({
+            ...activeSlideBackgroundAsset,
+            blob: activeSlideBackgroundAsset.blob,
+          })
+        : null
+      : background;
   const savedSwipeBackground = savedSwipeSnapshot
     ? swiprLibrary.backgrounds.find(
         (item) => item.id === savedSwipeSnapshot.backgroundId,
       )
     : undefined;
+  const savedSwipeBackgroundIds =
+    savedSwipeSnapshot && savedSwipeBackground
+      ? savedSwipeSnapshot.slides.map((slide) =>
+          getSwiprSlideBackgroundId(slide, savedSwipeSnapshot.backgroundId),
+        )
+      : [];
   const filteredBackgrounds = useMemo(
     () =>
       filterSwiprBackgroundsBySearchQuery(
@@ -114,46 +140,98 @@ export function SwiprPageClient() {
     swiprLibrary.isSavingBackground ||
     isGeneratingAiBackground ||
     isSeedingDevBackgrounds;
-  const isSavedExportReady = Boolean(savedSwipeSnapshot && savedSwipeBackground);
+  const hasSlidePhotos = Boolean(
+    background?.id && slides.every((slide) => slide.backgroundId ?? background.id),
+  );
+  const isSavedExportReady = Boolean(
+    savedSwipeSnapshot &&
+      savedSwipeBackground &&
+      savedSwipeBackgroundIds.every((id) =>
+        swiprLibrary.backgrounds.some((item) => item.id === id),
+      ),
+  );
 
-  const generateAiBackground = useCallback(async () => {
+  const assignSavedBackgroundsToSlides = useCallback(
+    (savedBackgrounds: Array<SwiprBackgroundAsset & { blob: Blob }>) => {
+      if (!savedBackgrounds.length) {
+        return;
+      }
+
+      const backgroundIds = savedBackgrounds.map(
+        (savedBackground) => savedBackground.id,
+      );
+      const nextSlideCount = getClampedSwiprSlideCount(
+        Math.max(slideCount, backgroundIds.length),
+      );
+
+      setSlideCount(nextSlideCount);
+      setSlides((currentSlides) => {
+        const nextSlides = assignSwiprBackgroundsToSlides(
+          resizeSwiprSlides(currentSlides, nextSlideCount),
+          backgroundIds,
+        );
+
+        setActiveSlideId(nextSlides[0]?.id ?? null);
+
+        return nextSlides;
+      });
+      setBackground(getSwiprBackgroundFromAsset(savedBackgrounds[0]));
+    },
+    [slideCount],
+  );
+
+  const generateAiBackgrounds = useCallback(async () => {
     if (!selectedSavedProduct) {
       setBackgroundError(
-        "Choose a saved Settings product before generating a background.",
+        "Choose a saved Settings product before generating photos.",
       );
       return;
     }
 
     setIsGeneratingAiBackground(true);
     setBackgroundError(null);
+    setAutoTextMessage(null);
 
     try {
-      const generatedBackground = await generateSwiprBackgroundWithAi({
-        productContext: effectiveProductContext,
-      });
-      const savedBackground = await swiprLibrary.saveBackground({
-        blob: generatedBackground.blob,
-        generationDetails: generatedBackground.generationDetails,
-        originalName: "AI background",
-        source: "ai",
-      });
+      const savedBackgrounds: Array<SwiprBackgroundAsset & { blob: Blob }> = [];
 
-      setBackground(
-        getSwiprBackgroundFromAsset({
+      for (let index = 0; index < slideCount; index += 1) {
+        const generatedBackground = await generateSwiprBackgroundWithAi({
+          productContext: effectiveProductContext,
+          prompt: generationPrompt,
+        });
+        const savedBackground = await swiprLibrary.saveBackground({
+          blob: generatedBackground.blob,
+          generationDetails: generatedBackground.generationDetails,
+          originalName: `AI photo ${index + 1}`,
+          source: "ai",
+        });
+
+        savedBackgrounds.push({
           ...savedBackground,
           blob: generatedBackground.blob,
-        }),
-      );
+        });
+      }
+
+      assignSavedBackgroundsToSlides(savedBackgrounds);
+      setAutoTextMessage(`Generated ${savedBackgrounds.length} photos.`);
     } catch (error) {
       setBackgroundError(
         error instanceof Error
           ? error.message
-          : "Unable to generate this background.",
+          : "Unable to generate these photos.",
       );
     } finally {
       setIsGeneratingAiBackground(false);
     }
-  }, [effectiveProductContext, selectedSavedProduct, swiprLibrary]);
+  }, [
+    assignSavedBackgroundsToSlides,
+    effectiveProductContext,
+    generationPrompt,
+    selectedSavedProduct,
+    slideCount,
+    swiprLibrary,
+  ]);
 
   const handleSlideCountChange = (count: number) => {
     const nextCount = getClampedSwiprSlideCount(count);
@@ -172,25 +250,42 @@ export function SwiprPageClient() {
     });
   };
 
-  const handleUploadBackground = (file: File) => {
+  const handleUploadBackgrounds = (files: File[]) => {
+    const selectedFiles = files.slice(0, SWIPR_MAX_SLIDE_COUNT);
+
+    if (!selectedFiles.length) {
+      return;
+    }
+
     setBackgroundError(null);
+    setAutoTextMessage(null);
     void Promise.resolve()
       .then(async () => {
-        const savedBackground = await swiprLibrary.saveBackground({
-          blob: file,
-          originalName: file.name,
-          source: "upload",
-        });
+        const savedBackgrounds: Array<SwiprBackgroundAsset & { blob: Blob }> =
+          [];
 
-        setBackground(
-          getSwiprBackgroundFromAsset({ ...savedBackground, blob: file }),
+        for (const file of selectedFiles) {
+          const savedBackground = await swiprLibrary.saveBackground({
+            blob: file,
+            originalName: file.name,
+            source: "upload",
+          });
+
+          savedBackgrounds.push({ ...savedBackground, blob: file });
+        }
+
+        assignSavedBackgroundsToSlides(savedBackgrounds);
+        setAutoTextMessage(
+          files.length > selectedFiles.length
+            ? `Uploaded ${selectedFiles.length} photos.`
+            : `Uploaded ${savedBackgrounds.length} photos.`,
         );
       })
       .catch((error) => {
         setBackgroundError(
           error instanceof Error
             ? error.message
-            : "Unable to save this background.",
+            : "Unable to save these photos.",
         );
       });
   };
@@ -231,6 +326,15 @@ export function SwiprPageClient() {
           (await swiprLibrary.loadBackgroundBlob(backgroundAsset.id));
 
         setBackground(getSwiprBackgroundFromAsset({ ...backgroundAsset, blob }));
+        setSlides((currentSlides) =>
+          activeSlide
+            ? currentSlides.map((slide) =>
+                slide.id === activeSlide.id
+                  ? { ...slide, backgroundId: backgroundAsset.id }
+                  : slide,
+              )
+            : currentSlides,
+        );
       })
       .catch((error) => {
         setBackgroundError(
@@ -310,6 +414,10 @@ export function SwiprPageClient() {
 
     const id = editingSwipeId ?? createId();
     const existingSwipe = swiprLibrary.swipes.find((swipe) => swipe.id === id);
+    const slidesForSave = slides.map((slide) => ({
+      ...slide,
+      backgroundId: slide.backgroundId ?? selectedBackgroundAsset.id,
+    }));
 
     void swiprLibrary
       .saveSwipe({
@@ -320,7 +428,7 @@ export function SwiprPageClient() {
         productContext: effectiveProductContext,
         productName: exportProductName,
         backgroundId: selectedBackgroundAsset.id,
-        slides,
+        slides: slidesForSave,
         createdAt: existingSwipe?.createdAt ?? savedSwipeSnapshot?.createdAt,
       })
       .then((savedSwipe) => {
@@ -351,15 +459,44 @@ export function SwiprPageClient() {
 
     void Promise.resolve()
       .then(async () => {
-        const blob =
+        const fallbackBlob =
           savedSwipeBackground.blob ??
           (await swiprLibrary.loadBackgroundBlob(savedSwipeBackground.id));
+        const fallbackBackground = getSwiprBackgroundFromAsset({
+          ...savedSwipeBackground,
+          blob: fallbackBlob,
+        });
+        const slideBackgrounds: Record<string, SwiprBackground> = {};
+
+        for (const slide of savedSwipeSnapshot.slides) {
+          const backgroundId = getSwiprSlideBackgroundId(
+            slide,
+            savedSwipeSnapshot.backgroundId,
+          );
+          const backgroundAsset =
+            backgroundId === savedSwipeBackground.id
+              ? savedSwipeBackground
+              : swiprLibrary.backgrounds.find((item) => item.id === backgroundId);
+
+          if (!backgroundAsset) {
+            throw new Error("Unable to load this Swipe photo.");
+          }
+
+          const blob =
+            backgroundId === savedSwipeBackground.id
+              ? fallbackBlob
+              : backgroundAsset.blob ??
+                (await swiprLibrary.loadBackgroundBlob(backgroundAsset.id));
+
+          slideBackgrounds[slide.id] = getSwiprBackgroundFromAsset({
+            ...backgroundAsset,
+            blob,
+          });
+        }
 
         await exporter.exportCarousel({
-          background: getSwiprBackgroundFromAsset({
-            ...savedSwipeBackground,
-            blob,
-          }),
+          background: fallbackBackground,
+          slideBackgrounds,
           slides: savedSwipeSnapshot.slides,
           productName: savedSwipeSnapshot.productName,
         });
@@ -395,9 +532,39 @@ export function SwiprPageClient() {
 
     void Promise.resolve()
       .then(async () => {
-        const blob =
-          savedBackground.blob ??
-          (await swiprLibrary.loadBackgroundBlob(savedBackground.id));
+        const slidesWithBackgrounds = savedSwipe.slides.map((slide) => ({
+          ...slide,
+          backgroundId: slide.backgroundId ?? savedSwipe.backgroundId,
+        }));
+        const backgroundIds = [
+          ...new Set([
+            savedSwipe.backgroundId,
+            ...slidesWithBackgrounds.map((slide) => slide.backgroundId),
+          ]),
+        ];
+        const backgroundBlobs = new Map<string, Blob>();
+
+        for (const backgroundId of backgroundIds) {
+          const backgroundAsset =
+            backgroundId === savedBackground.id
+              ? savedBackground
+              : swiprLibrary.backgrounds.find((item) => item.id === backgroundId);
+
+          if (!backgroundAsset) {
+            throw new Error("Unable to load this Swipe photo.");
+          }
+
+          backgroundBlobs.set(
+            backgroundId,
+            backgroundAsset.blob ??
+              (await swiprLibrary.loadBackgroundBlob(backgroundAsset.id)),
+          );
+        }
+        const blob = backgroundBlobs.get(savedBackground.id);
+
+        if (!blob) {
+          throw new Error("Unable to load this background.");
+        }
 
         if (isCancelled) {
           return;
@@ -406,9 +573,9 @@ export function SwiprPageClient() {
         setSelectedProductId(
           getSwiprSavedProductOptionValue(savedSwipe.productSourceId),
         );
-        setSlideCount(savedSwipe.slides.length);
-        setSlides(savedSwipe.slides);
-        setActiveSlideId(savedSwipe.slides[0]?.id ?? null);
+        setSlideCount(slidesWithBackgrounds.length);
+        setSlides(slidesWithBackgrounds);
+        setActiveSlideId(slidesWithBackgrounds[0]?.id ?? null);
         setBackground(getSwiprBackgroundFromAsset({ ...savedBackground, blob }));
         setSavedSwipeSnapshot(savedSwipe);
         setLoadedSwipeId(savedSwipe.id);
@@ -442,7 +609,7 @@ export function SwiprPageClient() {
         <DashboardPageHeader
           eyebrow="Carousel generator"
           title="Create TikTok carousels"
-          description="Build 3-8 vertical images from one reusable background and per-image text overlays."
+          description="Build 3-8 vertical images from reusable photos and per-image text overlays."
         />
 
         {products.error || swiprLibrary.error || backgroundError ? (
@@ -470,21 +637,24 @@ export function SwiprPageClient() {
                   onSlideCountChange={handleSlideCountChange}
                 />
                 <SwiprBackgroundPanel
-                  background={background}
+                  background={activeBackground ?? background}
                   backgrounds={filteredBackgrounds}
                   backgroundSearchQuery={backgroundSearchQuery}
+                  generationPrompt={generationPrompt}
                   isSaving={swiprLibrary.isSavingBackground}
                   isGeneratingAi={isGeneratingAiBackground}
                   isAiDisabled={!selectedSavedProduct}
                   isSeedingDevBackgrounds={isSeedingDevBackgrounds}
+                  slideCount={slideCount}
                   onBackgroundSearchChange={setBackgroundSearchQuery}
+                  onGenerationPromptChange={setGenerationPrompt}
                   onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
                   onSelectBackground={handleSelectBackground}
-                  onGenerateAiBackground={() => void generateAiBackground()}
+                  onGenerateAiBackground={() => void generateAiBackgrounds()}
                   onSeedBackgroundLibrary={
                     isDevelopment ? handleSeedBackgroundLibrary : undefined
                   }
-                  onUploadBackground={handleUploadBackground}
+                  onUploadBackground={handleUploadBackgrounds}
                 />
                 <SwiprSlideStrip
                   slides={slides}
@@ -501,12 +671,12 @@ export function SwiprPageClient() {
           </Panel>
           <div className="order-1 min-w-0 w-full max-w-[340px] justify-self-center xl:sticky xl:top-5 xl:order-2 xl:justify-self-end">
             <SwiprPreviewPanel
-              background={background}
+              background={activeBackground}
               activeSlide={activeSlide}
               activeSlideIndex={activeSlideIndex}
               saveMessage={saveMessage}
               isSaveDisabled={
-                !selectedSavedProduct || !background?.id || isCreatingBackground
+                !selectedSavedProduct || !hasSlidePhotos || isCreatingBackground
               }
               isSaving={swiprLibrary.isSavingSwipe}
               exportStatus={exporter.status}

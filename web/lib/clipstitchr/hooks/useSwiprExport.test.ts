@@ -72,7 +72,7 @@ describe("useSwiprExport", () => {
 
     expect(mocks.stateSetter).toHaveBeenCalledWith("error");
     expect(mocks.stateSetter).toHaveBeenCalledWith(
-      "Choose a background before exporting.",
+      "Choose photos for every image before exporting.",
     );
     expect(mocks.renderSwiprSlideBlob).not.toHaveBeenCalled();
   });
@@ -84,10 +84,22 @@ describe("useSwiprExport", () => {
     await state.exportCarousel({
       background,
       productName: "Launch Kit",
+      slideBackgrounds: {
+        slide_2: {
+          ...background,
+          blob: new Blob(["second"], { type: "image/jpeg" }),
+          id: "background_2",
+        },
+      },
       slides: [createSlide(1), createSlide(2)],
     });
 
     expect(mocks.renderSwiprSlideBlob).toHaveBeenCalledTimes(2);
+    expect(mocks.renderSwiprSlideBlob).toHaveBeenNthCalledWith(
+      2,
+      expect.any(Blob),
+      expect.objectContaining({ id: "slide_2" }),
+    );
     expect(mocks.createZipBlob).toHaveBeenCalledWith([
       expect.objectContaining({ name: "swipr-slide-01.png" }),
       expect.objectContaining({ name: "swipr-slide-02.png" }),

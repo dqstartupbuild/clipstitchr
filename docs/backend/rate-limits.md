@@ -126,7 +126,7 @@ Optional Replicate model overrides:
 | Swapr job cancellation | `POST /api/swapr/jobs/{id}/cancel` | 100/hour/user, burst 20 |
 | Swapr output proxy | `GET /api/swapr/output` | 1,000/hour/user, burst 200 |
 | Avatar photo generation | `POST /api/avatars/photos/generate` from the Avatars page or UGC clip avatar action | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour |
-| Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 5; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
+| Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 8; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
 | Swipr seeded background import | `POST /api/dev/swipr/backgrounds/seed` in development; future admin-only seed runner in production | Development route is unavailable outside `NODE_ENV=development`, imports at most 5 images/request, skips already-saved seed IDs, consumes the development seed-generation bucket before provider work, consumes R2 upload limits before storage work, and saves through `swiprBackgrounds.save`; production runner must be admin-only, batch-capped, checkpointed, and counted against shared provider, R2 upload, and Convex record-save protection before persistence |
 | Public waitlist submission | `waitlist.submit` from `/sign-up` | 3/hour/normalized email, burst 3; shared global bucket 500/hour, burst 100 |
 | TikTok Events API forwarding | `POST /api/analytics/tiktok/events` after marketing-cookie consent | 120/hour/client fingerprint, burst 30; shared global bucket 5,000/hour, burst 1,000 |
@@ -153,8 +153,8 @@ Optional Replicate model overrides:
 Swipr carousel export is intentionally not rate-limited in the MVP because the
 browser renders saved editable Swipe state into 9:16 PNG images with Canvas and
 creates a local ZIP download. Saved Swipes store only Convex metadata, slide
-text overlay state, and a shared background reference; rendered carousel images
-are not persisted.
+text overlay state, per-slide background references, and a fallback background
+reference for older Swipes; rendered carousel images are not persisted.
 
 Longr rendering is browser-local and has no provider cost unless the user opens
 the shared music picker and generates a new music track through
@@ -177,6 +177,13 @@ Uploaded Swipr backgrounds use the same analysis, shared R2 upload, and
 prefix and are downloadable by authenticated users through the Swipr background
 download route after Convex validation. They are intentionally not user-deletable
 through the shared background model.
+
+The Swipr creation page can upload multiple photos in one browser selection and
+generate one AI photo per current carousel image. There is no separate batch
+endpoint: each generated photo calls `POST /api/swipr/backgrounds/generate` and
+consumes the existing per-image Swipr AI background limits before provider work;
+each uploaded or generated photo then consumes the existing image-analysis, R2
+upload, and Convex record-save protections before persistence.
 
 Seeded Swipr backgrounds are planned through the deterministic seed catalog in
 `createSwiprBackgroundSeedPlans`. The seed metadata replaces the background
