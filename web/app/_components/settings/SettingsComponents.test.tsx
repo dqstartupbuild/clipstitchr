@@ -5,12 +5,20 @@ import { ProductHookStyleSelect } from "@/app/_components/settings/ProductHookSt
 import { ProductSettingsCard } from "@/app/_components/settings/ProductSettingsCard";
 import { ProductSettingsForm } from "@/app/_components/settings/ProductSettingsForm";
 import { ProductSettingsList } from "@/app/_components/settings/ProductSettingsList";
+import { SettingsAppearancePanel } from "@/app/_components/settings/SettingsAppearancePanel";
 import { SettingsSubscriptionPanel } from "@/app/_components/settings/SettingsSubscriptionPanel";
 import { SettingsSupportPanel } from "@/app/_components/settings/SettingsSupportPanel";
+import { ThemeModeSelect } from "@/app/_components/settings/ThemeModeSelect";
+import { themeModeChangeEventName } from "@/lib/clipstitchr/theme/themeModeChangeEventName";
+import { themeModeStorageKey } from "@/lib/clipstitchr/theme/themeModeStorageKey";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 
 const mocks = vi.hoisted(() => ({
   confirm: vi.fn(),
+  dispatchEvent: vi.fn(),
+  localStorageGetItem: vi.fn(),
+  localStorageRemoveItem: vi.fn(),
+  localStorageSetItem: vi.fn(),
   setStateCalls: [] as Array<ReturnType<typeof vi.fn>>,
   stateQueue: [] as unknown[],
 }));
@@ -20,6 +28,8 @@ vi.mock("react", async (importOriginal) => {
 
   return {
     ...actual,
+    useCallback: (callback: unknown) => callback,
+    useEffect: () => undefined,
     useState: (initialValue: unknown) => {
       const value = mocks.stateQueue.length
         ? mocks.stateQueue.shift()
@@ -30,6 +40,11 @@ vi.mock("react", async (importOriginal) => {
 
       return [value, setState];
     },
+    useSyncExternalStore: (
+      _subscribe: () => () => void,
+      _getSnapshot: () => unknown,
+      getServerSnapshot: () => unknown,
+    ) => getServerSnapshot(),
   };
 });
 
@@ -78,10 +93,17 @@ describe("settings components", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.confirm.mockReturnValue(true);
+    mocks.localStorageGetItem.mockReturnValue(null);
     mocks.setStateCalls = [];
     mocks.stateQueue = [];
     vi.stubGlobal("window", {
       confirm: mocks.confirm,
+      dispatchEvent: mocks.dispatchEvent,
+      localStorage: {
+        getItem: mocks.localStorageGetItem,
+        removeItem: mocks.localStorageRemoveItem,
+        setItem: mocks.localStorageSetItem,
+      },
     });
   });
 
@@ -92,6 +114,7 @@ describe("settings components", () => {
   it("renders support, subscription, and product list states", () => {
     const emptyMarkup = renderToStaticMarkup(
       <>
+        <SettingsAppearancePanel />
         <SettingsSupportPanel />
         <SettingsSubscriptionPanel />
         <ProductSettingsList
@@ -115,10 +138,32 @@ describe("settings components", () => {
       />,
     );
 
+    expect(emptyMarkup).toContain("Color mode");
     expect(emptyMarkup).toContain("Contact support");
     expect(emptyMarkup).toContain("Coming soon");
     expect(emptyMarkup).toContain("Saved products will appear");
     expect(populatedMarkup).toContain("Launch Kit");
+  });
+
+  it("forwards theme selector changes", () => {
+    const selectTree = ThemeModeSelect();
+    const [selectInput] = findElements(
+      selectTree,
+      (element) =>
+        typeof element.type === "function" && element.type.name === "SelectInput",
+    );
+
+    (selectInput.props.onChange as (event: {
+      currentTarget: { value: string };
+    }) => void)({ currentTarget: { value: "dark" } });
+
+    expect(mocks.localStorageSetItem).toHaveBeenCalledWith(
+      themeModeStorageKey,
+      "dark",
+    );
+    expect(mocks.dispatchEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ type: themeModeChangeEventName }),
+    );
   });
 
   it("submits and resets the product settings form", async () => {

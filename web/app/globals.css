@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-:root {
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
   --background: #f3f4f6;
   --foreground: #111827;
   --surface: #ffffff;
@@ -17,6 +19,166 @@
   --text-inverse: #ffffff;
   --success: var(--accent);
   --warning: #d97706;
+  --utility-bg-white: #ffffff;
+  --utility-bg-slate-50: #f8fafc;
+  --utility-bg-slate-100: #f1f5f9;
+  --utility-bg-slate-200: #e2e8f0;
+  --utility-bg-red-50: #fef2f2;
+  --utility-border-red-200: #fecaca;
+  --utility-text-red-500: #ef4444;
+  --utility-text-red-600: #dc2626;
+  --utility-text-red-700: #b91c1c;
+  --utility-bg-amber-50: #fffbeb;
+  --utility-border-amber-200: #fde68a;
+  --utility-text-amber-800: #92400e;
+  --utility-bg-purple-50: #faf5ff;
+  --utility-border-purple-200: #e9d5ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --background: #101114;
+    --foreground: #f8fafc;
+    --surface: #181a20;
+    --surface-muted: #252133;
+    --surface-elevated: #20232a;
+    --border: #303541;
+    --border-hover: #7668ff;
+    --accent: #9b7cff;
+    --accent-light: #b59bff;
+    --accent-dark: #d8ccff;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    --text-inverse: #0f1117;
+    --success: var(--accent);
+    --warning: #f59e0b;
+    --utility-bg-white: var(--surface);
+    --utility-bg-slate-50: var(--surface-elevated);
+    --utility-bg-slate-100: #262b35;
+    --utility-bg-slate-200: #343a47;
+    --utility-bg-red-50: rgba(127, 29, 29, 0.28);
+    --utility-border-red-200: rgba(248, 113, 113, 0.36);
+    --utility-text-red-500: #fca5a5;
+    --utility-text-red-600: #fca5a5;
+    --utility-text-red-700: #fecaca;
+    --utility-bg-amber-50: rgba(120, 53, 15, 0.28);
+    --utility-border-amber-200: rgba(251, 191, 36, 0.36);
+    --utility-text-amber-800: #fcd34d;
+    --utility-bg-purple-50: rgba(76, 29, 149, 0.3);
+    --utility-border-purple-200: rgba(167, 139, 250, 0.4);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #101114;
+  --foreground: #f8fafc;
+  --surface: #181a20;
+  --surface-muted: #252133;
+  --surface-elevated: #20232a;
+  --border: #303541;
+  --border-hover: #7668ff;
+  --accent: #9b7cff;
+  --accent-light: #b59bff;
+  --accent-dark: #d8ccff;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-inverse: #0f1117;
+  --success: var(--accent);
+  --warning: #f59e0b;
+  --utility-bg-white: var(--surface);
+  --utility-bg-slate-50: var(--surface-elevated);
+  --utility-bg-slate-100: #262b35;
+  --utility-bg-slate-200: #343a47;
+  --utility-bg-red-50: rgba(127, 29, 29, 0.28);
+  --utility-border-red-200: rgba(248, 113, 113, 0.36);
+  --utility-text-red-500: #fca5a5;
+  --utility-text-red-600: #fca5a5;
+  --utility-text-red-700: #fecaca;
+  --utility-bg-amber-50: rgba(120, 53, 15, 0.28);
+  --utility-border-amber-200: rgba(251, 191, 36, 0.36);
+  --utility-text-amber-800: #fcd34d;
+  --utility-bg-purple-50: rgba(76, 29, 149, 0.3);
+  --utility-border-purple-200: rgba(167, 139, 250, 0.4);
+}
+
+.bg-white {
+  background-color: var(--utility-bg-white);
+}
+
+.bg-white\/95 {
+  background-color: color-mix(
+    in srgb,
+    var(--utility-bg-white) 95%,
+    transparent
+  );
+}
+
+.bg-slate-50 {
+  background-color: var(--utility-bg-slate-50);
+}
+
+.bg-slate-100 {
+  background-color: var(--utility-bg-slate-100);
+}
+
+.bg-slate-200 {
+  background-color: var(--utility-bg-slate-200);
+}
+
+.bg-red-50 {
+  background-color: var(--utility-bg-red-50);
+}
+
+.border-red-200 {
+  border-color: var(--utility-border-red-200);
+}
+
+.text-red-500 {
+  color: var(--utility-text-red-500);
+}
+
+.text-red-600 {
+  color: var(--utility-text-red-600);
+}
+
+.text-red-700 {
+  color: var(--utility-text-red-700);
+}
+
+.bg-amber-50 {
+  background-color: var(--utility-bg-amber-50);
+}
+
+.border-amber-200 {
+  border-color: var(--utility-border-amber-200);
+}
+
+.text-amber-800 {
+  color: var(--utility-text-amber-800);
+}
+
+.bg-purple-50 {
+  background-color: var(--utility-bg-purple-50);
+}
+
+.border-purple-200 {
+  border-color: var(--utility-border-purple-200);
+}
+
+.hover\:bg-white:hover {
+  background-color: var(--utility-bg-white);
+}
+
+.hover\:bg-slate-100:hover {
+  background-color: var(--utility-bg-slate-100);
+}
+
+.hover\:bg-red-50:hover {
+  background-color: var(--utility-bg-red-50);
 }
 
 @theme inline {
@@ -134,7 +296,7 @@ textarea {
   padding: 0.625rem 1rem;
   border: 1px solid var(--border);
   border-radius: 0.5rem;
-  background: white;
+  background: var(--surface);
   color: var(--text-primary);
   font-size: 0.875rem;
   font-weight: 700;

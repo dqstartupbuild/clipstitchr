@@ -25,7 +25,7 @@ export function SelectInput({
       <span className="relative mt-2 block">
         <select
           className={[
-            "h-10 w-full appearance-none rounded-lg border border-border bg-white px-3 pr-10 text-sm font-semibold text-text-primary shadow-sm shadow-slate-200/50 outline-none transition-colors hover:border-accent/70 focus:border-accent focus:ring-2 focus:ring-accent/15",
+            "h-10 w-full appearance-none rounded-lg border border-border bg-surface px-3 pr-10 text-sm font-semibold text-text-primary shadow-sm shadow-slate-200/50 outline-none transition-colors hover:border-accent/70 focus:border-accent focus:ring-2 focus:ring-accent/15",
             className,
           ]
             .filter(Boolean)
