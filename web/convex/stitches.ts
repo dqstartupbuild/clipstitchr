@@ -4,6 +4,7 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { stitchCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
+import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
 import { textOverlayValidator } from "./validators/textOverlay";
@@ -37,14 +38,15 @@ export const list = query({
   args: {
     paginationOpts: paginationOptsValidator,
     refreshNonce: v.optional(v.number()),
+    sortOrder: v.optional(librarySortOrderValidator),
   },
-  handler: async (ctx, { paginationOpts }) => {
+  handler: async (ctx, { paginationOpts, sortOrder }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     return await ctx.db
       .query("stitches")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
+      .order(sortOrder === "oldest" ? "asc" : "desc")
       .paginate(paginationOpts);
   },
 });

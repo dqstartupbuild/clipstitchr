@@ -2,6 +2,9 @@
 
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { SwiprSwipeCard } from "@/app/_components/dashboard/SwiprSwipeCard";
+import { PaginationControls } from "@/app/_components/ui/PaginationControls";
+import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
+import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 
@@ -32,6 +35,9 @@ export function SwiprSwipesSection({
   const visibleSwipes = swipes.filter((swipe) =>
     backgroundsById.has(swipe.backgroundId),
   );
+  const pagination = usePagination(visibleSwipes, {
+    pageSize: uploadLibraryPageSize,
+  });
 
   return (
     <section id={id}>
@@ -42,25 +48,40 @@ export function SwiprSwipesSection({
         </span>
       </div>
       {visibleSwipes.length ? (
-        <div className="grid justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {visibleSwipes.map((swipe) => {
-            const background = backgroundsById.get(swipe.backgroundId);
+        <>
+          <div className="grid justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {pagination.pageItems.map((swipe) => {
+              const background = backgroundsById.get(swipe.backgroundId);
 
-            if (!background) {
-              return null;
-            }
+              if (!background) {
+                return null;
+              }
 
-            return (
-              <SwiprSwipeCard
-                key={swipe.id}
-                background={background}
-                swipe={swipe}
-                onLoadBackgroundBlob={onLoadBackgroundBlob}
-                onDelete={onDelete}
-              />
-            );
-          })}
-        </div>
+              return (
+                <SwiprSwipeCard
+                  key={swipe.id}
+                  background={background}
+                  swipe={swipe}
+                  onLoadBackgroundBlob={onLoadBackgroundBlob}
+                  onDelete={onDelete}
+                />
+              );
+            })}
+          </div>
+          {pagination.totalPages > 1 ? (
+            <PaginationControls
+              canGoNext={pagination.canGoNext}
+              canGoPrevious={pagination.canGoPrevious}
+              currentPage={pagination.currentPage}
+              totalItems={pagination.totalItems}
+              totalPages={pagination.totalPages}
+              visibleEnd={pagination.visibleEnd}
+              visibleStart={pagination.visibleStart}
+              onNext={pagination.goToNextPage}
+              onPrevious={pagination.goToPreviousPage}
+            />
+          ) : null}
+        </>
       ) : (
         <DashboardEmptyState
           title={emptyTitle}

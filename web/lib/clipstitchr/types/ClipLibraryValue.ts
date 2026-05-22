@@ -1,6 +1,8 @@
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { ClipLibraryCounts } from "@/lib/clipstitchr/types/ClipLibraryCounts";
+import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
+import type { ClipLibraryVideoGroup } from "@/lib/clipstitchr/types/ClipLibraryVideoGroup";
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
 import type { LongrVideoMetadata } from "@/lib/clipstitchr/types/LongrVideoMetadata";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
@@ -15,6 +17,13 @@ export type ClipLibraryValue = {
   counts: ClipLibraryCounts;
   longrVideos: LongrVideoMetadata[];
   stitches: Stitch[];
+  sortOrder: ClipLibrarySortOrder;
+  videoGroups: {
+    clipr: ClipLibraryVideoGroup;
+    demo: ClipLibraryVideoGroup;
+    swapr: ClipLibraryVideoGroup;
+    ugc: ClipLibraryVideoGroup;
+  };
   isLoading: boolean;
   hasMoreClips: boolean;
   hasMoreLongrVideos: boolean;
@@ -24,6 +33,7 @@ export type ClipLibraryValue = {
   isLoadingMoreStitches: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  setSortOrder: (sortOrder: ClipLibrarySortOrder) => void;
   loadClip: (id: string) => Promise<VideoClip | null>;
   loadClipPoster: (id: string) => Promise<Blob | null>;
   loadLongrPoster: (id: string) => Promise<Blob | null>;

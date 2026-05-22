@@ -91,6 +91,7 @@ vi.mock("@/convex/_generated/api", () => ({
     videoClips: {
       get: "videoClips.get",
       list: "videoClips.list",
+      listByLibraryKind: "videoClips.listByLibraryKind",
       remove: "videoClips.remove",
       updateCliprMusic: "videoClips.updateCliprMusic",
       updateMetadata: "videoClips.updateMetadata",
@@ -309,6 +310,11 @@ describe("useClipLibraryState", () => {
     expect(state.isLoading).toBe(false);
     expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
       "videoClips.list",
+      "skip",
+      { initialNumItems: 48 },
+    );
+    expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
+      "videoClips.listByLibraryKind",
       "skip",
       { initialNumItems: 48 },
     );

@@ -8,8 +8,10 @@ import { assetTagsValidator } from "./validators/assetTags";
 import { cliprMetadataValidator } from "./validators/cliprMetadata";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { clipTypeValidator } from "./validators/clipType";
+import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
+import { videoClipLibraryKindValidator } from "./validators/videoClipLibraryKind";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
 const saveArgs = {
@@ -48,15 +50,49 @@ export const list = query({
   args: {
     paginationOpts: paginationOptsValidator,
     refreshNonce: v.optional(v.number()),
+    sortOrder: v.optional(librarySortOrderValidator),
   },
-  handler: async (ctx, { paginationOpts }) => {
+  handler: async (ctx, { paginationOpts, sortOrder }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     return await ctx.db
       .query("videoClips")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
+      .order(sortOrder === "oldest" ? "asc" : "desc")
       .paginate(paginationOpts);
+  },
+});
+
+export const listByLibraryKind = query({
+  args: {
+    kind: videoClipLibraryKindValidator,
+    paginationOpts: paginationOptsValidator,
+    refreshNonce: v.optional(v.number()),
+    sortOrder: v.optional(librarySortOrderValidator),
+  },
+  handler: async (ctx, { kind, paginationOpts, sortOrder }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const clips = ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .order(sortOrder === "oldest" ? "asc" : "desc");
+
+    const filteredClips =
+      kind === "clipr"
+        ? clips.filter((q) => q.neq(q.field("cliprMetadata"), undefined))
+        : kind === "swapr"
+          ? clips.filter((q) => q.neq(q.field("swaprMetadata"), undefined))
+          : kind === "demo"
+            ? clips.filter((q) => q.eq(q.field("clipType"), "demo"))
+            : clips.filter((q) =>
+                q.and(
+                  q.eq(q.field("clipType"), "ugc"),
+                  q.eq(q.field("cliprMetadata"), undefined),
+                  q.eq(q.field("swaprMetadata"), undefined),
+                ),
+              );
+
+    return await filteredClips.paginate(paginationOpts);
   },
 });
 

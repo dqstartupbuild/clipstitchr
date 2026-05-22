@@ -35,6 +35,7 @@ import type * as validators_cliprJobStatus from "../validators/cliprJobStatus.js
 import type * as validators_cliprMetadata from "../validators/cliprMetadata.js";
 import type * as validators_cliprMusicMetadata from "../validators/cliprMusicMetadata.js";
 import type * as validators_cliprScenePlan from "../validators/cliprScenePlan.js";
+import type * as validators_librarySortOrder from "../validators/librarySortOrder.js";
 import type * as validators_longrClipSegment from "../validators/longrClipSegment.js";
 import type * as validators_longrMusicClip from "../validators/longrMusicClip.js";
 import type * as validators_musicTrackSource from "../validators/musicTrackSource.js";
@@ -47,6 +48,7 @@ import type * as validators_swiprBackgroundSource from "../validators/swiprBackg
 import type * as validators_swiprProductSourceType from "../validators/swiprProductSourceType.js";
 import type * as validators_swiprSlide from "../validators/swiprSlide.js";
 import type * as validators_textOverlay from "../validators/textOverlay.js";
+import type * as validators_videoClipLibraryKind from "../validators/videoClipLibraryKind.js";
 import type * as validators_videoTrimRange from "../validators/videoTrimRange.js";
 import type * as videoClips from "../videoClips.js";
 import type * as waitlist from "../waitlist.js";
@@ -85,6 +87,7 @@ declare const fullApi: ApiFromModules<{
   "validators/cliprMetadata": typeof validators_cliprMetadata;
   "validators/cliprMusicMetadata": typeof validators_cliprMusicMetadata;
   "validators/cliprScenePlan": typeof validators_cliprScenePlan;
+  "validators/librarySortOrder": typeof validators_librarySortOrder;
   "validators/longrClipSegment": typeof validators_longrClipSegment;
   "validators/longrMusicClip": typeof validators_longrMusicClip;
   "validators/musicTrackSource": typeof validators_musicTrackSource;
@@ -97,6 +100,7 @@ declare const fullApi: ApiFromModules<{
   "validators/swiprProductSourceType": typeof validators_swiprProductSourceType;
   "validators/swiprSlide": typeof validators_swiprSlide;
   "validators/textOverlay": typeof validators_textOverlay;
+  "validators/videoClipLibraryKind": typeof validators_videoClipLibraryKind;
   "validators/videoTrimRange": typeof validators_videoTrimRange;
   videoClips: typeof videoClips;
   waitlist: typeof waitlist;

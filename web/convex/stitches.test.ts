@@ -115,12 +115,13 @@ describe("convex stitches", () => {
     await expect(
       getHandler(list)(setup.ctx, {
         paginationOpts: { cursor: null, numItems: 20 },
+        sortOrder: "oldest",
       }),
     ).resolves.toBe(stitches);
     await expect(getHandler(get)(setup.ctx, { id: "stitch_1" })).resolves.toEqual(
       { _id: "doc_1", id: "stitch_1" },
     );
-    expect(setup.chain.order).toHaveBeenCalledWith("desc");
+    expect(setup.chain.order).toHaveBeenCalledWith("asc");
     expect(setup.chain.paginate).toHaveBeenCalledWith({
       cursor: null,
       numItems: 20,

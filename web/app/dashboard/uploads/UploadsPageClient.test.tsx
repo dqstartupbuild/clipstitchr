@@ -234,25 +234,24 @@ describe("UploadsPageClient", () => {
     mocks.avatarCreator.generatedCount = 3;
     mocks.avatarCreator.generate.mockResolvedValue({ id: "avatar_1" });
     mocks.avatarCreator.isGenerating = true;
+    const ugcClip = createClip("ugc_1", "ugc");
+    const cliprClip = createClip("clipr_1", "ugc", {
+      cliprMetadata: { prompt: "Hook" } as unknown as VideoClipMetadata["cliprMetadata"],
+      name: "Clipr hook",
+    });
+    const demoClip = createClip("demo_1", "demo", {
+      name: "Demo match",
+      productId: "product_1",
+    });
+    const swapClip = createClip("swap_1", "ugc", {
+      name: "Swap match",
+      swaprMetadata: {
+        createdAt: "2026-05-20T00:00:00.000Z",
+        source: "swapr",
+      } as unknown as VideoClipMetadata["swaprMetadata"],
+    });
     mocks.library = {
-      clips: [
-        createClip("ugc_1", "ugc"),
-        createClip("clipr_1", "ugc", {
-          cliprMetadata: { prompt: "Hook" } as unknown as VideoClipMetadata["cliprMetadata"],
-          name: "Clipr hook",
-        }),
-        createClip("demo_1", "demo", {
-          name: "Demo match",
-          productId: "product_1",
-        }),
-        createClip("swap_1", "ugc", {
-          name: "Swap match",
-          swaprMetadata: {
-            createdAt: "2026-05-20T00:00:00.000Z",
-            source: "swapr",
-          } as unknown as VideoClipMetadata["swaprMetadata"],
-        }),
-      ],
+      clips: [ugcClip, cliprClip, demoClip, swapClip],
       counts: {
         cliprClips: 20,
         demoClips: 30,
@@ -283,12 +282,40 @@ describe("UploadsPageClient", () => {
       removeClip: vi.fn(),
       removeLongrVideo: vi.fn(),
       removeStitch: vi.fn(),
+      setSortOrder: vi.fn(),
+      sortOrder: "newest",
       stitches: [{ id: "stitch_1", name: "Stitch match" }],
       updateClipMetadata: vi.fn(),
       updateCliprMusic: vi.fn(),
       updateClipTrimRange: vi.fn(),
       updateStitchMusic: vi.fn(),
       updateStitchTextOverlay: vi.fn(),
+      videoGroups: {
+        clipr: {
+          clips: [cliprClip],
+          hasMoreItems: true,
+          isLoadingMoreItems: false,
+          loadMoreItems: vi.fn(),
+        },
+        demo: {
+          clips: [demoClip],
+          hasMoreItems: true,
+          isLoadingMoreItems: false,
+          loadMoreItems: vi.fn(),
+        },
+        swapr: {
+          clips: [swapClip],
+          hasMoreItems: true,
+          isLoadingMoreItems: false,
+          loadMoreItems: vi.fn(),
+        },
+        ugc: {
+          clips: [ugcClip],
+          hasMoreItems: true,
+          isLoadingMoreItems: false,
+          loadMoreItems: vi.fn(),
+        },
+      },
     };
     mocks.photoLibrary = {
       createAvatar: vi.fn(),
