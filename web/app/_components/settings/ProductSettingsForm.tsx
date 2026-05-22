@@ -68,7 +68,7 @@ export function ProductSettingsForm({
           <input
             value={name}
             maxLength={120}
-            className="mt-1.5 h-9 w-full rounded-lg border border-border bg-white px-3 text-sm font-medium text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
+            className="mt-1.5 h-9 w-full rounded-lg border border-border bg-surface px-3 text-sm font-medium text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
             placeholder="Product or offer"
             onChange={(event) => setName(event.currentTarget.value)}
           />
@@ -86,7 +86,7 @@ export function ProductSettingsForm({
               value={productDetails}
               maxLength={2000}
               rows={3}
-              className="mt-1.5 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-5 text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
+              className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm leading-5 text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
               placeholder="Benefits, proof points, offer, constraints."
               onChange={(event) =>
                 setProductDetails(event.currentTarget.value)
@@ -101,7 +101,7 @@ export function ProductSettingsForm({
               value={audienceDetails}
               maxLength={2000}
               rows={3}
-              className="mt-1.5 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-5 text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
+              className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm leading-5 text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
               placeholder="Audience, pains, buying triggers, language."
               onChange={(event) =>
                 setAudienceDetails(event.currentTarget.value)

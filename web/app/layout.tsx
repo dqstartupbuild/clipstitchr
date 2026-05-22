@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { CookieConsentManager } from "@/app/_components/analytics/CookieConsentManager";
+import { ThemeModeScript } from "@/app/_components/theme/ThemeModeScript";
 import { ConvexClientProvider } from "@/app/ConvexClientProvider";
 import { createPageMetadata } from "@/lib/metadata";
 import {
@@ -41,10 +42,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       data-scroll-behavior="smooth"
       className={`${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <ThemeModeScript />
         <ClerkProvider
           signInUrl="/sign-in"
           signUpUrl="/sign-up"

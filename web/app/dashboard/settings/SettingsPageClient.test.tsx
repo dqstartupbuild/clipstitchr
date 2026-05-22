@@ -78,6 +78,7 @@ describe("SettingsPageClient", () => {
 
     expect(markup).toContain("Settings");
     expect(markup).toContain("Save product context");
+    expect(markup).toContain("Color mode");
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Contact support");
   });

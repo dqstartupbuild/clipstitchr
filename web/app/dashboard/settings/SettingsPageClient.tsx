@@ -4,6 +4,7 @@ import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHe
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { ProductSettingsForm } from "@/app/_components/settings/ProductSettingsForm";
 import { ProductSettingsList } from "@/app/_components/settings/ProductSettingsList";
+import { SettingsAppearancePanel } from "@/app/_components/settings/SettingsAppearancePanel";
 import { SettingsSubscriptionPanel } from "@/app/_components/settings/SettingsSubscriptionPanel";
 import { SettingsSupportPanel } from "@/app/_components/settings/SettingsSupportPanel";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
@@ -20,6 +21,7 @@ export function SettingsPageClient() {
           description="Save product context for Swipr and future workspace controls."
           actions={null}
         />
+        <SettingsAppearancePanel />
         {products.error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {products.error}
