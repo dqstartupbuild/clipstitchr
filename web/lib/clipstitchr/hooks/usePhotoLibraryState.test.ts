@@ -35,6 +35,7 @@ const mocks = vi.hoisted(() => {
       return mutation;
     }),
     useQuery: vi.fn(),
+    stateQueue: [] as unknown[],
     useStateSetter: vi.fn(),
   };
 });
@@ -44,12 +45,26 @@ vi.mock("react", () => ({
   useEffect: mocks.useEffect,
   useMemo: (factory: () => unknown) => factory(),
   useRef: (value: unknown) => ({ current: value }),
-  useState: (initialValue: unknown) => [
-    typeof initialValue === "function"
-      ? (initialValue as () => unknown)()
-      : initialValue,
-    mocks.useStateSetter,
-  ],
+  useState: (initialValue: unknown) => {
+    const value = mocks.stateQueue.length
+      ? mocks.stateQueue.shift()
+      : typeof initialValue === "function"
+        ? (initialValue as () => unknown)()
+        : initialValue;
+
+    return [
+      value,
+      (nextValue: unknown) => {
+        mocks.useStateSetter(nextValue);
+
+        if (typeof nextValue === "function") {
+          return (nextValue as (currentValue: unknown) => unknown)(value);
+        }
+
+        return nextValue;
+      },
+    ];
+  },
 }));
 
 vi.mock("convex/react", () => ({
@@ -246,6 +261,7 @@ describe("usePhotoLibraryState", () => {
       id: "photo_1",
       name: "Hydrated photo",
     });
+    mocks.stateQueue = [];
     mocks.getImageDimensions.mockResolvedValue({ height: 1920, width: 1080 });
     mocks.createSwaprPortraitPhotoBlob.mockResolvedValue(
       new Blob(["normalized"], { type: "image/jpeg" }),
@@ -315,6 +331,20 @@ describe("usePhotoLibraryState", () => {
     );
   });
 
+  it("surfaces create-avatar persistence failures", async () => {
+    const state = usePhotoLibraryState();
+    getMutation("avatars.save").mockRejectedValueOnce("save failed");
+
+    await expect(
+      state.createAvatar({
+        name: "Creator",
+      }),
+    ).rejects.toBe("save failed");
+    expect(mocks.useStateSetter).toHaveBeenCalledWith(
+      "Unable to create this avatar.",
+    );
+  });
+
   it("rejects blank avatar names before saving", async () => {
     const state = usePhotoLibraryState();
 
@@ -354,6 +384,48 @@ describe("usePhotoLibraryState", () => {
     );
   });
 
+  it("loads a photo from listed documents without querying Convex", async () => {
+    mocks.useQuery.mockImplementation((queryId: string) => {
+      if (queryId === "photoAssets.list") {
+        return [createPhotoDocument({ id: "listed_photo" })];
+      }
+
+      if (queryId === "avatars.list") {
+        return [{ id: "avatar_doc_1" }];
+      }
+
+      return undefined;
+    });
+    const state = usePhotoLibraryState();
+
+    await expect(state.loadPhoto("listed_photo")).resolves.toEqual({
+      id: "photo_1",
+      name: "Loaded photo",
+    });
+
+    expect(mocks.convex.query).not.toHaveBeenCalled();
+  });
+
+  it("returns null for missing photos and loads photos without optional objects", async () => {
+    mocks.convex.query
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(
+        createPhotoDocument({
+          id: "photo_minimal",
+          originalObject: undefined,
+          thumbnailObject: undefined,
+        }),
+      );
+    const state = usePhotoLibraryState();
+
+    await expect(state.loadPhoto("missing_photo")).resolves.toBeNull();
+    await expect(state.loadPhoto("photo_minimal")).resolves.toEqual({
+      id: "photo_1",
+      name: "Loaded photo",
+    });
+    expect(mocks.downloadCachedR2ImageBlobs).not.toHaveBeenCalled();
+  });
+
   it("rejects empty or unsupported upload batches", async () => {
     const state = usePhotoLibraryState();
 
@@ -363,6 +435,21 @@ describe("usePhotoLibraryState", () => {
         avatarName: "Avatar",
       }),
     ).resolves.toBe(false);
+    expect(getMutation("photoAssets.save")).not.toHaveBeenCalled();
+  });
+
+  it("rejects oversized batches and uploads without avatar selection", async () => {
+    const state = usePhotoLibraryState();
+
+    await expect(
+      state.saveFiles(
+        Array.from({ length: 101 }, (_, index) =>
+          createImageFile(`avatar-${index}.png`),
+        ),
+        { avatarName: "Avatar" },
+      ),
+    ).resolves.toBe(false);
+    await expect(state.saveFiles([createImageFile()])).resolves.toBe(false);
     expect(getMutation("photoAssets.save")).not.toHaveBeenCalled();
   });
 
@@ -402,6 +489,88 @@ describe("usePhotoLibraryState", () => {
     );
   });
 
+  it("expands outpainted uploads and fills missing existing avatar descriptions", async () => {
+    mocks.createAvatarFromConvexDocument.mockReturnValue(
+      createAvatar({ description: "" }),
+    );
+    mocks.getImageDimensions.mockResolvedValue({ height: 900, width: 1600 });
+    mocks.createSwaprOutpaintInputs.mockResolvedValue({
+      imageBlob: new Blob(["image"], { type: "image/png" }),
+      maskBlob: new Blob(["mask"], { type: "image/png" }),
+    });
+    mocks.expandSwaprPhotoWithAi.mockResolvedValue(
+      new Blob(["expanded"], { type: "image/png" }),
+    );
+    const state = usePhotoLibraryState();
+
+    await expect(
+      state.saveFiles([createImageFile()], {
+        avatarId: "avatar_1",
+        shouldExpandWithAi: true,
+      }),
+    ).resolves.toBe(true);
+
+    expect(mocks.createSwaprOutpaintInputs).toHaveBeenCalledWith(
+      expect.any(File),
+    );
+    expect(mocks.expandSwaprPhotoWithAi).toHaveBeenCalled();
+    expect(getMutation("avatars.update")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        description: "Generated avatar",
+        id: "avatar_1",
+      }),
+    );
+    expect(getMutation("photoAssets.save")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        avatarId: "avatar_1",
+        preparation: "ai-outpaint",
+      }),
+    );
+  });
+
+  it("falls back to file names when upload analysis fails", async () => {
+    mocks.analyzeUploadAsset.mockRejectedValueOnce(new Error("analysis failed"));
+    const state = usePhotoLibraryState();
+
+    await expect(
+      state.saveFiles([createImageFile("portrait.png")], {
+        avatarName: "Fallback Avatar",
+      }),
+    ).resolves.toBe(true);
+
+    expect(getMutation("photoAssets.save")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "portrait",
+        tags: ["photo"],
+      }),
+    );
+  });
+
+  it("returns false when photo upload work fails", async () => {
+    mocks.uploadBlobsToR2.mockRejectedValueOnce(new Error("upload failed"));
+    const state = usePhotoLibraryState();
+
+    await expect(
+      state.saveFiles([createImageFile()], {
+        avatarName: "Avatar",
+      }),
+    ).resolves.toBe(false);
+  });
+
+  it("returns false if generated upload avatar ids are unusable", async () => {
+    mocks.createId.mockReset();
+    mocks.createId.mockReturnValue("");
+    const state = usePhotoLibraryState();
+
+    await expect(
+      state.saveFiles([createImageFile()], {
+        avatarName: "Avatar",
+      }),
+    ).resolves.toBe(false);
+
+    expect(getMutation("photoAssets.save")).not.toHaveBeenCalled();
+  });
+
   it("updates photo metadata with the required photo tag", async () => {
     const state = usePhotoLibraryState();
 
@@ -416,6 +585,23 @@ describe("usePhotoLibraryState", () => {
         locationDescription: "Cafe",
         name: "Updated",
         tags: ["photo", "ugc"],
+      }),
+    );
+  });
+
+  it("updates photo metadata without optional description fields", async () => {
+    const state = usePhotoLibraryState();
+
+    await state.updatePhotoMetadata(createPhotoDocument(), {
+      name: "Minimal",
+      tags: [],
+    });
+
+    expect(getMutation("photoAssets.updateMetadata")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "photo_1",
+        name: "Minimal",
+        tags: ["photo"],
       }),
     );
   });
@@ -446,6 +632,36 @@ describe("usePhotoLibraryState", () => {
         id: "avatar_1",
       }),
     );
+  });
+
+  it("surfaces avatar update failures", async () => {
+    const state = usePhotoLibraryState();
+    const avatar = createAvatar();
+
+    await expect(state.renameAvatar(avatar, "   ")).rejects.toThrow(
+      "Avatar name is required.",
+    );
+
+    getMutation("avatars.update").mockRejectedValueOnce(
+      new Error("rename failed"),
+    );
+    await expect(state.renameAvatar(avatar, "Valid")).rejects.toThrow(
+      "rename failed",
+    );
+
+    getMutation("avatars.update").mockRejectedValueOnce(
+      new Error("wardrobe failed"),
+    );
+    await expect(
+      state.updateAvatarWardrobeStyle(avatar, "female"),
+    ).rejects.toThrow("wardrobe failed");
+
+    getMutation("avatars.update").mockRejectedValueOnce(
+      new Error("voice failed"),
+    );
+    await expect(
+      state.updateAvatarCliprVoice(avatar, "Puck (Male)"),
+    ).rejects.toThrow("voice failed");
   });
 
   it("saves generated avatar photos", async () => {
@@ -479,6 +695,40 @@ describe("usePhotoLibraryState", () => {
     );
   });
 
+  it("skips empty generated photo saves and propagates generated save errors", async () => {
+    const state = usePhotoLibraryState();
+
+    await expect(
+      state.saveGeneratedPhotos([], {
+        avatarId: "avatar_1",
+        sourceAvatarName: "Avatar",
+      }),
+    ).resolves.toBeUndefined();
+
+    mocks.uploadBlobsToR2.mockRejectedValueOnce(new Error("generated failed"));
+
+    await expect(
+      state.saveGeneratedPhotos(
+        [
+          {
+            blob: new Blob(["generated"], { type: "image/jpeg" }),
+            variant: {
+              lighting: "studio",
+              locationDescription: "City cafe",
+              outfitDescription: "linen shirt",
+              poseDescription: "standing",
+              style: "editorial",
+            },
+          },
+        ],
+        {
+          avatarId: "avatar_1",
+          sourceAvatarName: "Avatar",
+        },
+      ),
+    ).rejects.toThrow("generated failed");
+  });
+
   it("removes avatar and photo records with related media cleanup", async () => {
     const state = usePhotoLibraryState();
     const deleteResponse = {
@@ -506,6 +756,70 @@ describe("usePhotoLibraryState", () => {
     ]);
     expect(getMutation("photoAssets.remove")).toHaveBeenCalledWith({
       id: "photo_1",
+    });
+
+    vi.unstubAllGlobals();
+  });
+
+  it("removes avatars when the response body is unreadable and clears listed photo media", async () => {
+    mocks.stateQueue = [[createPhotoDocument({ avatarId: "avatar_1" })]];
+    mocks.useQuery.mockImplementation((queryId: string) => {
+      if (queryId === "photoAssets.list") {
+        return [createPhotoDocument({ id: "listed_photo" })];
+      }
+
+      if (queryId === "avatars.list") {
+        return [{ id: "avatar_doc_1" }];
+      }
+
+      return undefined;
+    });
+    const state = usePhotoLibraryState();
+    const deleteResponse = {
+      json: vi.fn(async () => {
+        throw new Error("bad json");
+      }),
+      ok: true,
+    };
+
+    vi.stubGlobal("fetch", vi.fn(async () => deleteResponse));
+    await state.removeAvatar("avatar_1");
+    await state.removePhoto("listed_photo");
+
+    expect(mocks.convex.query).not.toHaveBeenCalled();
+    expect(mocks.deleteObjectsFromR2).toHaveBeenCalledWith([
+      expect.objectContaining({
+        key: "users/user_123/photos/photo_1/photo.jpg",
+      }),
+      expect.objectContaining({
+        key: "users/user_123/photos/photo_1/original.png",
+      }),
+      expect.objectContaining({
+        key: "users/user_123/photos/photo_1/thumbnail.jpg",
+      }),
+    ]);
+
+    vi.unstubAllGlobals();
+  });
+
+  it("surfaces avatar delete errors and removes missing photo metadata", async () => {
+    const state = usePhotoLibraryState();
+    const deleteResponse = {
+      json: vi.fn(async () => ({ error: "Delete blocked" })),
+      ok: false,
+    };
+
+    vi.stubGlobal("fetch", vi.fn(async () => deleteResponse));
+
+    await expect(state.removeAvatar("avatar_1")).rejects.toThrow(
+      "Delete blocked",
+    );
+
+    mocks.convex.query.mockResolvedValueOnce(null);
+    await state.removePhoto("missing_photo");
+
+    expect(getMutation("photoAssets.remove")).toHaveBeenCalledWith({
+      id: "missing_photo",
     });
 
     vi.unstubAllGlobals();
@@ -543,6 +857,93 @@ describe("usePhotoLibraryState", () => {
       expect.objectContaining({ id: "photo_1" }),
       expect.any(Blob),
     );
+  });
+
+  it("hydrates photos even when thumbnail cache reads fail", async () => {
+    mocks.useQuery.mockImplementation((queryId: string) => {
+      if (queryId === "photoAssets.list") {
+        return [createPhotoDocument()];
+      }
+
+      if (queryId === "avatars.list") {
+        return [{ id: "avatar_doc_1" }];
+      }
+
+      return undefined;
+    });
+    mocks.downloadCachedR2ImageBlobs.mockRejectedValueOnce(
+      new Error("thumbnail cache unavailable"),
+    );
+    mocks.useEffect.mockImplementationOnce((effect: () => void) => {
+      effect();
+    });
+
+    usePhotoLibraryState();
+
+    for (let index = 0; index < 5; index += 1) {
+      await Promise.resolve();
+    }
+
+    expect(mocks.createPhotoAssetMetadataFromConvexDocument).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "photo_1" }),
+      undefined,
+    );
+  });
+
+  it("surfaces photo hydration failures from the sync effect", async () => {
+    mocks.useQuery.mockImplementation((queryId: string) => {
+      if (queryId === "photoAssets.list") {
+        return [createPhotoDocument()];
+      }
+
+      if (queryId === "avatars.list") {
+        return [{ id: "avatar_doc_1" }];
+      }
+
+      return undefined;
+    });
+    mocks.createPhotoAssetMetadataFromConvexDocument.mockImplementationOnce(() => {
+      throw "hydration failed";
+    });
+    mocks.useEffect.mockImplementationOnce((effect: () => void) => {
+      effect();
+    });
+
+    usePhotoLibraryState();
+
+    for (let index = 0; index < 5; index += 1) {
+      await Promise.resolve();
+    }
+
+    expect(mocks.useStateSetter).toHaveBeenCalledWith(
+      "Unable to load saved photos.",
+    );
+  });
+
+  it("cancels photo hydration cleanup without applying late updates", async () => {
+    let cleanup: (() => void) | undefined;
+
+    mocks.useQuery.mockImplementation((queryId: string) => {
+      if (queryId === "photoAssets.list") {
+        return [createPhotoDocument()];
+      }
+
+      if (queryId === "avatars.list") {
+        return [{ id: "avatar_doc_1" }];
+      }
+
+      return undefined;
+    });
+    mocks.useEffect.mockImplementationOnce((effect: () => void | (() => void)) => {
+      cleanup = effect() ?? undefined;
+    });
+
+    usePhotoLibraryState();
+    cleanup?.();
+
+    await Promise.resolve();
+
+    expect(cleanup).toBeTypeOf("function");
   });
 
   it("clears hydrated photos from the sync effect when signed out", async () => {

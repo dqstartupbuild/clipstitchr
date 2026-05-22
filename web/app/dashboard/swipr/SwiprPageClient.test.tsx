@@ -2,6 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SwiprPageClient } from "@/app/dashboard/swipr/SwiprPageClient";
+import { createSwiprSlides } from "@/lib/clipstitchr/utils/createSwiprSlides";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
@@ -40,8 +41,41 @@ const mocks = vi.hoisted(() => ({
   productPanelProps: null as Record<string, unknown> | null,
   seedSwiprBackgroundLibrary: vi.fn(),
   slideStripProps: null as Record<string, unknown> | null,
+  stateQueue: [] as unknown[],
+  stateSetters: [] as ReturnType<typeof vi.fn>[],
+  useEffect: vi.fn(),
   textOverlayPanelProps: null as Record<string, unknown> | null,
 }));
+
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react")>();
+
+  return {
+    ...actual,
+    useCallback: (callback: unknown) => callback,
+    useEffect: mocks.useEffect,
+    useMemo: (factory: () => unknown) => factory(),
+    useState: (initialValue: unknown) => {
+      const value =
+        mocks.stateQueue.length > 0
+          ? mocks.stateQueue.shift()
+          : typeof initialValue === "function"
+            ? (initialValue as () => unknown)()
+            : initialValue;
+      const setter = vi.fn((nextValue: unknown) => {
+        if (typeof nextValue === "function") {
+          return (nextValue as (currentValue: unknown) => unknown)(value);
+        }
+
+        return nextValue;
+      });
+
+      mocks.stateSetters.push(setter);
+
+      return [value, setter];
+    },
+  };
+});
 
 vi.mock("@/app/_components/dashboard/DashboardShell", () => ({
   DashboardShell: ({ children }: ChildrenProps) => children,
@@ -145,6 +179,63 @@ function createBackground(): SwiprBackgroundAsset {
   };
 }
 
+function createSwipe(overrides: Partial<SwiprSwipe> = {}): SwiprSwipe {
+  const slides = createSwiprSlides(3);
+
+  return {
+    backgroundId: "background_1",
+    createdAt: "2026-01-01T00:00:00.000Z",
+    id: "swipe_1",
+    name: "Launch Kit Swipe",
+    productContext: "Launch Kit",
+    productName: "Launch Kit",
+    productSourceId: "product_1",
+    productSourceType: "saved-product",
+    slides,
+    updatedAt: "2026-01-01T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+function queueSwiprState(
+  overrides: {
+    activeSlideId?: string | null;
+    autoTextMessage?: string | null;
+    background?: unknown;
+    backgroundError?: string | null;
+    editingSwipeId?: string | null;
+    isGeneratingAiBackground?: boolean;
+    isGeneratingAutoText?: boolean;
+    isSeedingDevBackgrounds?: boolean;
+    loadedSwipeId?: string | null;
+    saveMessage?: string | null;
+    savedSwipeSnapshot?: SwiprSwipe | null;
+    selectedProductId?: string;
+    slideCount?: number;
+    slides?: ReturnType<typeof createSwiprSlides>;
+  } = {},
+) {
+  const slides = overrides.slides ?? createSwiprSlides(3);
+
+  mocks.stateQueue.push(
+    overrides.selectedProductId,
+    overrides.slideCount ?? 3,
+    slides,
+    overrides.activeSlideId ?? slides[0]?.id ?? null,
+    overrides.background ?? null,
+    "",
+    overrides.backgroundError ?? null,
+    overrides.isGeneratingAiBackground ?? false,
+    overrides.isSeedingDevBackgrounds ?? false,
+    overrides.isGeneratingAutoText ?? false,
+    overrides.editingSwipeId ?? null,
+    overrides.loadedSwipeId ?? null,
+    overrides.savedSwipeSnapshot ?? null,
+    overrides.saveMessage ?? null,
+    overrides.autoTextMessage ?? null,
+  );
+}
+
 describe("SwiprPageClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -191,6 +282,9 @@ describe("SwiprPageClient", () => {
     mocks.previewPanelProps = null;
     mocks.productPanelProps = null;
     mocks.slideStripProps = null;
+    mocks.stateQueue.length = 0;
+    mocks.stateSetters.length = 0;
+    mocks.useEffect.mockReset();
     mocks.textOverlayPanelProps = null;
   });
 
@@ -285,5 +379,346 @@ describe("SwiprPageClient", () => {
     expect(mocks.generateSwiprBackgroundWithAi).toHaveBeenCalledWith({
       productContext: expect.stringContaining("Launch Kit"),
     });
+  });
+
+  it("covers disabled product and background error branches", async () => {
+    mocks.productState.products = [];
+    renderToStaticMarkup(<SwiprPageClient />);
+
+    const productPanelProps = mocks.productPanelProps as {
+      onGenerateText: () => void;
+    };
+    const backgroundPanelProps = mocks.backgroundPanelProps as {
+      onGenerateAiBackground: () => void;
+      onSelectBackground: (background: SwiprBackgroundAsset) => void;
+      onUploadBackground: (file: File) => void;
+    };
+    const previewPanelProps = mocks.previewPanelProps as {
+      onSave: () => void;
+    };
+
+    productPanelProps.onGenerateText();
+    backgroundPanelProps.onGenerateAiBackground();
+    previewPanelProps.onSave();
+
+    mocks.swiprLibraryState.loadBackgroundBlob.mockRejectedValueOnce(
+      new Error("background missing"),
+    );
+    backgroundPanelProps.onSelectBackground({
+      ...createBackground(),
+      blob: undefined,
+    });
+
+    mocks.swiprLibraryState.saveBackground.mockRejectedValueOnce(
+      new Error("save failed"),
+    );
+    backgroundPanelProps.onUploadBackground(
+      new File(["background"], "background.jpg", { type: "image/jpeg" }),
+    );
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mocks.generateCliprText).not.toHaveBeenCalled();
+    expect(mocks.generateSwiprBackgroundWithAi).not.toHaveBeenCalled();
+  });
+
+  it("returns early when there is no active slide to edit", () => {
+    queueSwiprState({
+      activeSlideId: null,
+      slides: [],
+    });
+
+    renderToStaticMarkup(<SwiprPageClient />);
+
+    const textOverlayPanelProps = mocks.textOverlayPanelProps as {
+      onChange: (textOverlay: TextOverlay) => void;
+    };
+
+    textOverlayPanelProps.onChange({
+      backgroundColor: "#000000",
+      color: "#ffffff",
+      endTime: 3,
+      fontSize: 48,
+      startTime: 0,
+      styleId: "hook",
+      text: "Hook",
+      width: 0.8,
+      x: 0.5,
+      y: 0.5,
+    });
+
+    expect(mocks.stateSetters[2]).not.toHaveBeenCalled();
+  });
+
+  it("requires a saved product before saving a swipe", () => {
+    mocks.productState.products = [];
+    queueSwiprState({
+      background: {
+        blob: new Blob(["background"], { type: "image/jpeg" }),
+        id: "background_1",
+        url: "blob:background",
+      },
+    });
+
+    renderToStaticMarkup(<SwiprPageClient />);
+
+    const previewPanelProps = mocks.previewPanelProps as {
+      onSave: () => void;
+    };
+
+    previewPanelProps.onSave();
+
+    expect(
+      mocks.stateSetters.some((setter) =>
+        setter.mock.calls.some(
+          (call) =>
+            call[0] === "Choose a saved Settings product before saving.",
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it("surfaces swipe save failures", async () => {
+    mocks.swiprLibraryState.saveSwipe.mockRejectedValueOnce(
+      new Error("save failed"),
+    );
+    queueSwiprState({
+      background: {
+        blob: new Blob(["background"], { type: "image/jpeg" }),
+        id: "background_1",
+        url: "blob:background",
+      },
+    });
+
+    renderToStaticMarkup(<SwiprPageClient />);
+
+    const previewPanelProps = mocks.previewPanelProps as {
+      onSave: () => void;
+    };
+
+    previewPanelProps.onSave();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(
+      mocks.stateSetters.some((setter) =>
+        setter.mock.calls.some((call) => call[0] === "save failed"),
+      ),
+    ).toBe(true);
+  });
+
+  it("saves and exports a ready swipe", async () => {
+    const slides = createSwiprSlides(3);
+    const savedSwipe = createSwipe({ slides });
+
+    queueSwiprState({
+      background: {
+        blob: new Blob(["background"], { type: "image/jpeg" }),
+        id: "background_1",
+        url: "blob:background",
+      },
+      savedSwipeSnapshot: savedSwipe,
+      slides,
+    });
+    vi.stubGlobal("window", {
+      history: {
+        replaceState: vi.fn(),
+      },
+      location: {
+        href: "https://example.com/dashboard/swipr",
+      },
+    });
+
+    renderToStaticMarkup(<SwiprPageClient />);
+
+    const previewPanelProps = mocks.previewPanelProps as {
+      onExport: () => void;
+      onSave: () => void;
+    };
+
+    previewPanelProps.onSave();
+    previewPanelProps.onExport();
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mocks.swiprLibraryState.saveSwipe).toHaveBeenCalledWith(
+      expect.objectContaining({
+        backgroundId: "background_1",
+        productSourceId: "product_1",
+      }),
+    );
+    expect(mocks.swiprExportState.exportCarousel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        productName: "Launch Kit",
+        slides,
+      }),
+    );
+    expect(window.history.replaceState).toHaveBeenCalled();
+
+    vi.unstubAllGlobals();
+  });
+
+  it("loads a saved swipe from the URL effect", async () => {
+    const slides = createSwiprSlides(3);
+    const savedSwipe = createSwipe({ slides });
+    const effects: Array<() => void | (() => void)> = [];
+
+    mocks.swiprLibraryState.swipes = [savedSwipe];
+    mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
+      effects.push(effect);
+    });
+    queueSwiprState({
+      editingSwipeId: "swipe_1",
+      loadedSwipeId: null,
+    });
+
+    renderToStaticMarkup(<SwiprPageClient />);
+
+    effects[0]?.();
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mocks.swiprLibraryState.loadBackgroundBlob).toHaveBeenCalledWith(
+      "background_1",
+    );
+    expect(
+      mocks.stateSetters.some((setter) =>
+        setter.mock.calls.some((call) => call[0] === "Loaded saved Swipe."),
+      ),
+    ).toBe(true);
+  });
+
+  it("skips saved-swipe loading when there is no new swipe id", () => {
+    const effects: Array<() => void | (() => void)> = [];
+
+    mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
+      effects.push(effect);
+    });
+    queueSwiprState({
+      editingSwipeId: "swipe_1",
+      loadedSwipeId: "swipe_1",
+    });
+
+    renderToStaticMarkup(<SwiprPageClient />);
+    effects[0]?.();
+
+    expect(mocks.swiprLibraryState.loadBackgroundBlob).not.toHaveBeenCalled();
+  });
+
+  it("skips saved-swipe loading when the URL id is missing from the library", () => {
+    const effects: Array<() => void | (() => void)> = [];
+
+    mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
+      effects.push(effect);
+    });
+    queueSwiprState({
+      editingSwipeId: "missing_swipe",
+      loadedSwipeId: null,
+    });
+
+    renderToStaticMarkup(<SwiprPageClient />);
+    effects[0]?.();
+
+    expect(mocks.swiprLibraryState.loadBackgroundBlob).not.toHaveBeenCalled();
+  });
+
+  it("does not hydrate a saved swipe after effect cleanup", async () => {
+    const slides = createSwiprSlides(3);
+    const savedSwipe = createSwipe({ slides });
+    const effects: Array<() => void | (() => void)> = [];
+
+    mocks.swiprLibraryState.swipes = [savedSwipe];
+    mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
+      effects.push(effect);
+    });
+    queueSwiprState({
+      editingSwipeId: "swipe_1",
+      loadedSwipeId: null,
+    });
+
+    renderToStaticMarkup(<SwiprPageClient />);
+    const cleanup = effects[0]?.();
+    if (typeof cleanup === "function") {
+      cleanup();
+    }
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(
+      mocks.stateSetters.some((setter) =>
+        setter.mock.calls.some((call) => call[0] === "Loaded saved Swipe."),
+      ),
+    ).toBe(false);
+  });
+
+  it("surfaces saved-swipe hydration failures", async () => {
+    const slides = createSwiprSlides(3);
+    const savedSwipe = createSwipe({ slides });
+    const effects: Array<() => void | (() => void)> = [];
+
+    mocks.swiprLibraryState.swipes = [savedSwipe];
+    mocks.swiprLibraryState.loadBackgroundBlob.mockRejectedValueOnce(
+      new Error("load failed"),
+    );
+    mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
+      effects.push(effect);
+    });
+    queueSwiprState({
+      editingSwipeId: "swipe_1",
+      loadedSwipeId: null,
+    });
+
+    renderToStaticMarkup(<SwiprPageClient />);
+    effects[0]?.();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(
+      mocks.stateSetters.some((setter) =>
+        setter.mock.calls.some((call) => call[0] === "load failed"),
+      ),
+    ).toBe(true);
+  });
+
+  it("surfaces async generation and export failures", async () => {
+    const slides = createSwiprSlides(3);
+    const savedSwipe = createSwipe({ slides });
+
+    mocks.generateCliprText.mockRejectedValueOnce(new Error("text failed"));
+    mocks.generateSwiprBackgroundWithAi.mockRejectedValueOnce(
+      new Error("ai failed"),
+    );
+    mocks.swiprLibraryState.loadBackgroundBlob.mockRejectedValueOnce(
+      new Error("export failed"),
+    );
+    queueSwiprState({
+      savedSwipeSnapshot: savedSwipe,
+      slides,
+    });
+
+    renderToStaticMarkup(<SwiprPageClient />);
+
+    const productPanelProps = mocks.productPanelProps as {
+      onGenerateText: () => void;
+    };
+    const backgroundPanelProps = mocks.backgroundPanelProps as {
+      onGenerateAiBackground: () => void;
+    };
+    const previewPanelProps = mocks.previewPanelProps as {
+      onExport: () => void;
+    };
+
+    productPanelProps.onGenerateText();
+    backgroundPanelProps.onGenerateAiBackground();
+    previewPanelProps.onExport();
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mocks.generateCliprText).toHaveBeenCalled();
+    expect(mocks.generateSwiprBackgroundWithAi).toHaveBeenCalled();
+    expect(mocks.swiprExportState.exportCarousel).not.toHaveBeenCalled();
   });
 });

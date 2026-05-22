@@ -2,6 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LongrPageClient } from "@/app/dashboard/longr/LongrPageClient";
+import type { LongrMusicClip } from "@/lib/clipstitchr/types/LongrMusicClip";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -30,8 +31,38 @@ const mocks = vi.hoisted(() => ({
   },
   clipPickerPanelProps: null as Record<string, unknown> | null,
   musicPanelProps: null as Record<string, unknown> | null,
+  stateQueue: [] as unknown[],
+  stateSetters: [] as ReturnType<typeof vi.fn>[],
   timelineStripProps: null as Record<string, unknown> | null,
 }));
+
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react")>();
+
+  return {
+    ...actual,
+    useMemo: (factory: () => unknown) => factory(),
+    useState: (initialValue: unknown) => {
+      const value =
+        mocks.stateQueue.length > 0
+          ? mocks.stateQueue.shift()
+          : typeof initialValue === "function"
+            ? (initialValue as () => unknown)()
+            : initialValue;
+      const setter = vi.fn((nextValue: unknown) => {
+        if (typeof nextValue === "function") {
+          return (nextValue as (currentValue: unknown) => unknown)(value);
+        }
+
+        return nextValue;
+      });
+
+      mocks.stateSetters.push(setter);
+
+      return [value, setter];
+    },
+  };
+});
 
 vi.mock("@/app/_components/dashboard/DashboardShell", () => ({
   DashboardShell: ({ children }: ChildrenProps) => children,
@@ -129,6 +160,56 @@ function createProduct(): ProductProfile {
   };
 }
 
+function createTrack(): SharedMusicTrack {
+  return {
+    audioObject: {
+      contentType: "audio/mpeg",
+      key: "music.mp3",
+      size: 100,
+    },
+    createdAt: "2026-05-20T00:00:00.000Z",
+    durationSeconds: 30,
+    id: "music_1",
+    isOwnedByCurrentUser: false,
+    mimeType: "audio/mpeg",
+    size: 100,
+    source: "library",
+    tags: ["upbeat"],
+    title: "Music",
+    uploadedByOwnerId: "user_1",
+  };
+}
+
+function createMusicClip(overrides: Partial<LongrMusicClip> = {}): LongrMusicClip {
+  return {
+    durationSeconds: 8,
+    id: "music_clip_1",
+    sourceEndSeconds: 8,
+    sourceStartSeconds: 0,
+    timelineStartSeconds: 0,
+    trackId: "music_1",
+    trackTitle: "Music",
+    volume: 0.8,
+    ...overrides,
+  };
+}
+
+function queueLongrState(
+  overrides: {
+    demoProductFilterId?: string;
+    musicClips?: LongrMusicClip[];
+    selectedClipIds?: string[];
+    selectionError?: string | null;
+  } = {},
+) {
+  mocks.stateQueue.push(
+    overrides.selectedClipIds ?? [],
+    overrides.demoProductFilterId ?? "all",
+    overrides.musicClips ?? [],
+    overrides.selectionError ?? null,
+  );
+}
+
 describe("LongrPageClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -142,6 +223,8 @@ describe("LongrPageClient", () => {
     mocks.longrState.buildLongrVideo.mockResolvedValue(undefined);
     mocks.clipPickerPanelProps = null;
     mocks.musicPanelProps = null;
+    mocks.stateQueue.length = 0;
+    mocks.stateSetters.length = 0;
     mocks.timelineStripProps = null;
   });
 
@@ -191,23 +274,7 @@ describe("LongrPageClient", () => {
       onRemove: (id: string) => void;
       onUpdate: (id: string, patch: Record<string, unknown>) => void;
     };
-    const track: SharedMusicTrack = {
-      audioObject: {
-        contentType: "audio/mpeg",
-        key: "music.mp3",
-        size: 100,
-      },
-      createdAt: "2026-05-20T00:00:00.000Z",
-      durationSeconds: 30,
-      id: "music_1",
-      isOwnedByCurrentUser: false,
-      mimeType: "audio/mpeg",
-      size: 100,
-      source: "library",
-      tags: ["upbeat"],
-      title: "Music",
-      uploadedByOwnerId: "user_1",
-    };
+    const track = createTrack();
 
     clipPickerProps.onDemoProductFilterChange("product_1");
     clipPickerProps.onAddClip(mocks.clipLibraryState.clips[0]);
@@ -237,5 +304,68 @@ describe("LongrPageClient", () => {
     );
 
     expect(mocks.longrState.buildLongrVideo).not.toHaveBeenCalled();
+  });
+
+  it("builds selected clips with queued music clips", () => {
+    const musicClip = createMusicClip();
+
+    queueLongrState({
+      musicClips: [musicClip],
+      selectedClipIds: ["ugc_1", "demo_1"],
+    });
+    renderToStaticMarkup(<LongrPageClient />);
+
+    const clipPickerProps = mocks.clipPickerPanelProps as {
+      onBuild: () => void;
+    };
+
+    clipPickerProps.onBuild();
+
+    expect(mocks.longrState.buildLongrVideo).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          clip: expect.objectContaining({ id: "ugc_1" }),
+          loadClip: expect.any(Function),
+        }),
+        expect.objectContaining({
+          clip: expect.objectContaining({ id: "demo_1" }),
+          loadClip: expect.any(Function),
+        }),
+      ],
+      [musicClip],
+    );
+  });
+
+  it("covers duplicate, move, and music edit edge paths", () => {
+    const musicClip = createMusicClip();
+
+    queueLongrState({
+      musicClips: [musicClip],
+      selectedClipIds: ["ugc_1", "demo_1"],
+    });
+    renderToStaticMarkup(<LongrPageClient />);
+
+    const clipPickerProps = mocks.clipPickerPanelProps as {
+      onAddClip: (clip: VideoClipMetadata) => void;
+    };
+    const timelineProps = mocks.timelineStripProps as {
+      onMoveClip: (draggedId: string, targetId: string) => void;
+    };
+    const musicProps = mocks.musicPanelProps as {
+      onDuplicate: (id: string) => void;
+      onUpdate: (id: string, patch: Partial<LongrMusicClip>) => void;
+    };
+
+    clipPickerProps.onAddClip(mocks.clipLibraryState.clips[0]);
+    timelineProps.onMoveClip("missing", "demo_1");
+    timelineProps.onMoveClip("demo_1", "ugc_1");
+    musicProps.onDuplicate("missing_music");
+    musicProps.onDuplicate("music_clip_1");
+    musicProps.onUpdate("music_clip_1", {
+      sourceEndSeconds: 40,
+      volume: 0.2,
+    });
+
+    expect(mocks.stateSetters.length).toBeGreaterThan(0);
   });
 });

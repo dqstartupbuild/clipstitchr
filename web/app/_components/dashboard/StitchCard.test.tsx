@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
     onLoadPreview: () => void;
   },
   downloadBlob: vi.fn(),
+  lazyObjectUrlOptions: null as null | { loadBlob: () => Promise<Blob | null> },
   musicProps: null as null | {
     onClose: () => void;
     onGenerate: () => Promise<StitchMusicMetadata | null>;
@@ -38,6 +39,7 @@ vi.mock("react", async (importOriginal) => {
 
   return {
     ...actual,
+    useCallback: (callback: unknown) => callback,
     useState: (initialValue: unknown) => [
       mocks.stateQueue.length ? mocks.stateQueue.shift() : initialValue,
       mocks.stateSetter,
@@ -89,7 +91,10 @@ vi.mock("@/lib/clipstitchr/hooks/useObjectUrl", () => ({
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useLazyBlobObjectUrl", () => ({
-  useLazyBlobObjectUrl: mocks.useObjectUrl,
+  useLazyBlobObjectUrl: (options: { loadBlob: () => Promise<Blob | null> }) => {
+    mocks.lazyObjectUrlOptions = options;
+    return mocks.useObjectUrl(options);
+  },
 }));
 
 vi.mock("@/lib/clipstitchr/client/createStitchExportBlob", () => ({
@@ -184,11 +189,36 @@ function createClip(id: string): VideoClip {
   };
 }
 
+type ElementLike = {
+  props?: Record<string, unknown>;
+  type?: unknown;
+};
+
+function collectElements(element: unknown): ElementLike[] {
+  if (Array.isArray(element)) {
+    return element.flatMap(collectElements);
+  }
+
+  if (
+    !element ||
+    typeof element !== "object" ||
+    !("props" in element) ||
+    !("type" in element)
+  ) {
+    return [];
+  }
+
+  const elementLike = element as ElementLike;
+
+  return [elementLike, ...collectElements(elementLike.props?.children)];
+}
+
 describe("StitchCard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.actionItems = [];
     mocks.detailsProps = null;
+    mocks.lazyObjectUrlOptions = null;
     mocks.musicProps = null;
     mocks.textProps = null;
     mocks.stateQueue = [];
@@ -220,6 +250,36 @@ describe("StitchCard", () => {
       "Edit stitch music",
       "Delete stitch",
     ]);
+  });
+
+  it("opens details from card buttons and loads poster blobs", async () => {
+    const onLoadPoster = vi.fn(async () => new Blob(["poster"]));
+    const elements = collectElements(
+      StitchCard({
+        stitch: createStitch(),
+        onDelete: vi.fn(),
+        onGenerateMusic: vi.fn(),
+        onLoadClip: vi.fn(),
+        onLoadPoster,
+        onUpdateMusic: vi.fn(),
+        onUpdateTextOverlay: vi.fn(),
+      }),
+    );
+
+    for (const button of elements.filter((element) => element.type === "button")) {
+      (button.props?.onClick as (() => void) | undefined)?.();
+    }
+    await expect(mocks.lazyObjectUrlOptions?.loadBlob()).resolves.toEqual(
+      expect.any(Blob),
+    );
+
+    expect(onLoadPoster).toHaveBeenCalledWith("stitch_1");
+    expect(mocks.trackPostHogEvent).toHaveBeenCalledWith(
+      "stitch_preview_viewed",
+      expect.objectContaining({
+        stitch_id: "stitch_1",
+      }),
+    );
   });
 
   it("invokes preview, download, music, text, and delete flows", async () => {
@@ -257,10 +317,19 @@ describe("StitchCard", () => {
     );
 
     mocks.detailsProps?.onLoadPreview();
+    mocks.detailsProps?.onClose();
+    mocks.actionItems
+      .find((item) => item.label === "Edit stitch text")
+      ?.onClick?.();
+    mocks.actionItems
+      .find((item) => item.label === "Edit stitch music")
+      ?.onClick?.();
     await mocks.musicProps?.onGenerate();
     await mocks.musicProps?.onSave(createStitchMusic());
     await mocks.musicProps?.onRemove();
+    mocks.musicProps?.onClose();
     await mocks.textProps?.onSave(null);
+    mocks.textProps?.onClose();
     mocks.actionItems.find((item) => item.label === "Download stitch")?.onClick?.();
     mocks.actionItems.find((item) => item.label === "Delete stitch")?.onClick?.();
 
@@ -332,5 +401,55 @@ describe("StitchCard", () => {
         feature: "stitch_download",
       }),
     );
+  });
+
+  it("surfaces preview, music update, and text update failures", async () => {
+    const onLoadClip = vi.fn(async () => null);
+    const onUpdateMusic = vi.fn(async () => {
+      throw new Error("music update failed");
+    });
+    const onUpdateTextOverlay = vi.fn(async () => {
+      throw new Error("text update failed");
+    });
+
+    mocks.stateQueue = [
+      null,
+      null,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      null,
+      null,
+      null,
+    ];
+
+    renderToStaticMarkup(
+      <StitchCard
+        stitch={createStitch()}
+        onDelete={vi.fn()}
+        onGenerateMusic={vi.fn()}
+        onLoadClip={onLoadClip}
+        onUpdateMusic={onUpdateMusic}
+        onUpdateTextOverlay={onUpdateTextOverlay}
+      />,
+    );
+
+    mocks.detailsProps?.onLoadPreview();
+    await expect(mocks.musicProps?.onSave(createStitchMusic())).rejects.toThrow(
+      "music update failed",
+    );
+    await expect(mocks.textProps?.onSave(null)).rejects.toThrow(
+      "text update failed",
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(onLoadClip).toHaveBeenCalledWith("ugc_1");
+    expect(onUpdateMusic).toHaveBeenCalled();
+    expect(onUpdateTextOverlay).toHaveBeenCalled();
   });
 });

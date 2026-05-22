@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CookieConsentManager } from "@/app/_components/analytics/CookieConsentManager";
 import type { CookieConsentPreferences } from "@/lib/clipstitchr/analytics/CookieConsentPreferences";
+import { openCookiePreferencesEventName } from "@/lib/clipstitchr/analytics/openCookiePreferencesEventName";
 
 const mocks = vi.hoisted(() => ({
   applyCookieConsentPreferences: vi.fn(),
@@ -176,5 +177,102 @@ describe("CookieConsentManager", () => {
       }),
     );
     expect(mocks.stateSetter).toHaveBeenCalledWith(null);
+  });
+
+  it("hydrates stored preferences and cleans up the preference listener", () => {
+    const cleanupFns: Array<() => void> = [];
+    const storedPreferences = createPreferences({
+      analytics: false,
+      marketing: true,
+    });
+    const addEventListener = vi.fn();
+    const clearTimeout = vi.fn();
+    const removeEventListener = vi.fn();
+    const setTimeout = vi.fn((callback: () => void) => {
+      callback();
+      return 17;
+    });
+
+    mocks.getStoredCookieConsent.mockReturnValue(storedPreferences);
+    mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
+      const cleanup = effect();
+
+      if (typeof cleanup === "function") {
+        cleanupFns.push(cleanup);
+      }
+    });
+    mocks.stateQueue = [null, false, null];
+    vi.stubGlobal("window", {
+      addEventListener,
+      clearTimeout,
+      removeEventListener,
+      setTimeout,
+    });
+
+    renderToStaticMarkup(<CookieConsentManager />);
+
+    expect(mocks.applyCookieConsentPreferences).toHaveBeenCalledWith(
+      storedPreferences,
+    );
+    expect(mocks.stateSetter).toHaveBeenCalledWith(storedPreferences);
+    expect(mocks.stateSetter).toHaveBeenCalledWith(true);
+
+    const [, openPreferences] = addEventListener.mock.calls[0] as [
+      string,
+      () => void,
+    ];
+    openPreferences();
+
+    expect(addEventListener).toHaveBeenCalledWith(
+      openCookiePreferencesEventName,
+      openPreferences,
+    );
+    expect(mocks.stateSetter).toHaveBeenCalledWith("preferences");
+
+    cleanupFns[0]();
+
+    expect(clearTimeout).toHaveBeenCalledWith(17);
+    expect(removeEventListener).toHaveBeenCalledWith(
+      openCookiePreferencesEventName,
+      openPreferences,
+    );
+
+    vi.unstubAllGlobals();
+  });
+
+  it("hydrates essential-only defaults when no stored preferences exist", () => {
+    const setTimeout = vi.fn((callback: () => void) => {
+      callback();
+      return 18;
+    });
+
+    mocks.getStoredCookieConsent.mockReturnValue(null);
+    mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
+      effect();
+    });
+    mocks.stateQueue = [null, false, null];
+    vi.stubGlobal("window", {
+      addEventListener: vi.fn(),
+      clearTimeout: vi.fn(),
+      removeEventListener: vi.fn(),
+      setTimeout,
+    });
+
+    renderToStaticMarkup(<CookieConsentManager />);
+
+    expect(mocks.createCookieConsentPreferences).toHaveBeenCalledWith({
+      analytics: false,
+      marketing: false,
+    });
+    expect(mocks.applyCookieConsentPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({
+        analytics: false,
+        marketing: false,
+      }),
+    );
+    expect(mocks.stateSetter).toHaveBeenCalledWith("banner");
+    expect(mocks.stateSetter).toHaveBeenCalledWith(true);
+
+    vi.unstubAllGlobals();
   });
 });
