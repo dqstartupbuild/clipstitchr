@@ -2,6 +2,7 @@ import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import { longrVideoCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
 import { longrClipSegmentValidator } from "./validators/longrClipSegment";
 import { longrMusicClipValidator } from "./validators/longrMusicClip";
@@ -86,10 +87,27 @@ export const save = mutation({
 
     if (existingLongrVideo) {
       await ctx.db.patch(existingLongrVideo._id, longrVideo);
+      const updatedLongrVideo = await ctx.db.get(existingLongrVideo._id);
+
+      if (updatedLongrVideo) {
+        await longrVideoCounts.replaceOrInsert(
+          ctx,
+          existingLongrVideo,
+          updatedLongrVideo,
+        );
+      }
+
       return existingLongrVideo._id;
     }
 
-    return await ctx.db.insert("longrVideos", longrVideo);
+    const longrVideoId = await ctx.db.insert("longrVideos", longrVideo);
+    const insertedLongrVideo = await ctx.db.get(longrVideoId);
+
+    if (insertedLongrVideo) {
+      await longrVideoCounts.insertIfDoesNotExist(ctx, insertedLongrVideo);
+    }
+
+    return longrVideoId;
   },
 });
 
@@ -115,6 +133,7 @@ export const remove = mutation({
     }
 
     await ctx.db.delete(longrVideo._id);
+    await longrVideoCounts.deleteIfExists(ctx, longrVideo);
     return longrVideo;
   },
 });

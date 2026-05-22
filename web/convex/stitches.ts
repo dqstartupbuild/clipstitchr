@@ -2,6 +2,7 @@ import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import { stitchCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
@@ -85,10 +86,23 @@ export const save = mutation({
 
     if (existingStitch) {
       await ctx.db.patch(existingStitch._id, stitch);
+      const updatedStitch = await ctx.db.get(existingStitch._id);
+
+      if (updatedStitch) {
+        await stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch);
+      }
+
       return existingStitch._id;
     }
 
-    return await ctx.db.insert("stitches", stitch);
+    const stitchId = await ctx.db.insert("stitches", stitch);
+    const insertedStitch = await ctx.db.get(stitchId);
+
+    if (insertedStitch) {
+      await stitchCounts.insertIfDoesNotExist(ctx, insertedStitch);
+    }
+
+    return stitchId;
   },
 });
 
@@ -119,6 +133,11 @@ export const updatePoster = mutation({
       posterObject,
       posterVersion,
     });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+    }
   },
 });
 
@@ -151,6 +170,11 @@ export const updateRenderedVideo = mutation({
       size,
       stitchObject,
     });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+    }
   },
 });
 
@@ -179,6 +203,11 @@ export const updateMusic = mutation({
     await ctx.db.patch(stitch._id, {
       music: music ?? undefined,
     });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+    }
   },
 });
 
@@ -207,6 +236,11 @@ export const updateTextOverlay = mutation({
     await ctx.db.patch(stitch._id, {
       textOverlay: textOverlay ?? undefined,
     });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+    }
   },
 });
 
@@ -232,6 +266,7 @@ export const remove = mutation({
     }
 
     await ctx.db.delete(stitch._id);
+    await stitchCounts.deleteIfExists(ctx, stitch);
     return stitch;
   },
 });

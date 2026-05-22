@@ -27,6 +27,7 @@ type VideoLibrarySectionProps = {
   isCreatingAvatarFromClip?: boolean;
   isLoadingMoreItems?: boolean;
   loadMoreLabel?: string;
+  totalCount?: number;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onDelete: (id: string) => void | Promise<void>;
   onUpdateMetadata: (
@@ -64,6 +65,7 @@ export function VideoLibrarySection({
   isCreatingAvatarFromClip = false,
   isLoadingMoreItems = false,
   loadMoreLabel = "Load more videos",
+  totalCount,
   onLoadClip,
   onLoadPoster,
   onDelete,
@@ -87,7 +89,7 @@ export function VideoLibrarySection({
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-bold text-text-primary">{title}</h2>
         <span className="text-sm font-semibold text-text-tertiary">
-          {clips.length}
+          {totalCount ?? clips.length}
         </span>
       </div>
       {clips.length ? (

@@ -22,10 +22,25 @@ type QueryResult = {
 const mocks = vi.hoisted(() => ({
   assertRateLimitApiSecret: vi.fn(),
   getAuthenticatedOwnerId: vi.fn(),
+  longrVideoCounts: {
+    deleteIfExists: vi.fn(),
+    insertIfDoesNotExist: vi.fn(),
+    replaceOrInsert: vi.fn(),
+  },
   mutation: vi.fn((definition) => definition),
   query: vi.fn((definition) => definition),
   rateLimiter: {
     limit: vi.fn(),
+  },
+  stitchCounts: {
+    deleteIfExists: vi.fn(),
+    insertIfDoesNotExist: vi.fn(),
+    replaceOrInsert: vi.fn(),
+  },
+  videoClipCounts: {
+    deleteIfExists: vi.fn(),
+    insertIfDoesNotExist: vi.fn(),
+    replaceOrInsert: vi.fn(),
   },
 }));
 
@@ -44,6 +59,12 @@ vi.mock("./auth/getAuthenticatedOwnerId", () => ({
 
 vi.mock("./rateLimiter", () => ({
   rateLimiter: mocks.rateLimiter,
+}));
+
+vi.mock("./aggregateCounts", () => ({
+  longrVideoCounts: mocks.longrVideoCounts,
+  stitchCounts: mocks.stitchCounts,
+  videoClipCounts: mocks.videoClipCounts,
 }));
 
 function getHandler<Args, Result>(convexFunction: unknown) {
@@ -86,6 +107,7 @@ function createCtx(resultsByTable: Record<string, QueryResult[]> = {}) {
   const ctx = {
     db: {
       delete: vi.fn(async () => undefined),
+      get: vi.fn(async (_id: string) => ({ _id, id: String(_id) })),
       insert: vi.fn(async () => "inserted_doc"),
       patch: vi.fn(async () => undefined),
       query: vi.fn((table: string) => {

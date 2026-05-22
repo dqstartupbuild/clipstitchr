@@ -10,6 +10,14 @@ type ChildrenProps = {
 const mocks = vi.hoisted(() => ({
   clipLibraryState: {
     clips: [],
+    counts: {
+      cliprClips: 0,
+      demoClips: 0,
+      longrVideos: 0,
+      stitches: 0,
+      swapClips: 0,
+      ugcClips: 0,
+    },
     error: null as string | null,
     generateStitchMusic: vi.fn(),
     loadClip: vi.fn(),
@@ -120,6 +128,14 @@ function createClip(id: string, clipType: "ugc" | "demo") {
 describe("DashboardPageClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.clipLibraryState.counts = {
+      cliprClips: 10,
+      demoClips: 20,
+      longrVideos: 0,
+      stitches: 40,
+      swapClips: 0,
+      ugcClips: 30,
+    };
     mocks.clipLibraryState.clips = [
       createClip("ugc_1", "ugc"),
       createClip("demo_1", "demo"),
@@ -177,7 +193,7 @@ describe("DashboardPageClient", () => {
     const markup = renderToStaticMarkup(<DashboardPageClient />);
 
     expect(markup).toContain("DashboardHeader");
-    expect(markup).toContain("DashboardStats:1:1:1:1");
+    expect(markup).toContain("DashboardStats:30:20:10:40");
     expect(markup).toContain("RecentStitchesSection");
     expect(markup).toContain("RecentLongsSection");
     expect(markup).toContain("RecentSwipesSection");

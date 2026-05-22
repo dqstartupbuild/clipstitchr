@@ -16,6 +16,7 @@ type StitchesSectionProps = {
   id?: string;
   isLoadingMoreItems?: boolean;
   title?: string;
+  totalCount?: number;
   onDelete: (id: string) => void | Promise<void>;
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
@@ -39,6 +40,7 @@ export function StitchesSection({
   id = "stitches",
   isLoadingMoreItems = false,
   title = "Stitches",
+  totalCount,
   onDelete,
   onGenerateMusic,
   onLoadClip,
@@ -52,7 +54,7 @@ export function StitchesSection({
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-bold text-text-primary">{title}</h2>
         <span className="text-sm font-semibold text-text-tertiary">
-          {stitches.length}
+          {totalCount ?? stitches.length}
         </span>
       </div>
       {stitches.length ? (

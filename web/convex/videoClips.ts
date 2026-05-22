@@ -2,6 +2,7 @@ import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import { videoClipCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
 import { cliprMetadataValidator } from "./validators/cliprMetadata";
@@ -124,10 +125,23 @@ export const save = mutation({
 
     if (existingClip) {
       await ctx.db.patch(existingClip._id, clip);
+      const updatedClip = await ctx.db.get(existingClip._id);
+
+      if (updatedClip) {
+        await videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip);
+      }
+
       return existingClip._id;
     }
 
-    return await ctx.db.insert("videoClips", clip);
+    const clipId = await ctx.db.insert("videoClips", clip);
+    const insertedClip = await ctx.db.get(clipId);
+
+    if (insertedClip) {
+      await videoClipCounts.insertIfDoesNotExist(ctx, insertedClip);
+    }
+
+    return clipId;
   },
 });
 
@@ -219,6 +233,11 @@ export const updateMetadata = mutation({
       ...(defaultTrimRange === undefined ? {} : { defaultTrimRange }),
       updatedAt,
     });
+    const updatedClip = await ctx.db.get(clip._id);
+
+    if (updatedClip) {
+      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+    }
   },
 });
 
@@ -251,6 +270,11 @@ export const updatePoster = mutation({
       posterVersion,
       updatedAt,
     });
+    const updatedClip = await ctx.db.get(clip._id);
+
+    if (updatedClip) {
+      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+    }
   },
 });
 
@@ -294,6 +318,11 @@ export const updateCliprMusic = mutation({
             },
       updatedAt,
     });
+    const updatedClip = await ctx.db.get(clip._id);
+
+    if (updatedClip) {
+      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+    }
   },
 });
 
@@ -319,6 +348,7 @@ export const remove = mutation({
     }
 
     await ctx.db.delete(clip._id);
+    await videoClipCounts.deleteIfExists(ctx, clip);
     return clip;
   },
 });

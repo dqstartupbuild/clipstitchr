@@ -163,6 +163,19 @@ export function UploadsPageClient() {
   const error = library.error ?? swiprLibrary.error ?? products.error;
   const hasDemoProductFilter =
     selectedTab === "demo" && activeDemoProductFilterId !== "all";
+  const canUseLibraryTotals = !hasSearchQuery;
+  const selectedVideoTotalCount =
+    !canUseLibraryTotals || hasDemoProductFilter
+      ? undefined
+      : selectedTab === "ugc"
+        ? library.counts.ugcClips
+        : selectedTab === "clips"
+          ? library.counts.cliprClips
+          : selectedTab === "demo"
+            ? library.counts.demoClips
+            : selectedTab === "swaps"
+              ? library.counts.swapClips
+              : undefined;
   const canUploadDemo =
     products.products.length > 0 && activeDemoUploadProductId.length > 0;
   const demoUploadBlockedMessage = products.isLoading
@@ -313,6 +326,9 @@ export function UploadsPageClient() {
               id={videoLibraryContent.ugc.sectionId}
               title={videoLibraryContent.ugc.title}
               clips={ugcClips}
+              totalCount={
+                canUseLibraryTotals ? library.counts.ugcClips : undefined
+              }
               products={products.products}
               avatarCreatorError={avatarCreator.error}
               emptyTitle={
@@ -344,6 +360,9 @@ export function UploadsPageClient() {
               id={videoLibraryContent.clips.sectionId}
               title={videoLibraryContent.clips.title}
               clips={cliprClips}
+              totalCount={
+                canUseLibraryTotals ? library.counts.cliprClips : undefined
+              }
               products={products.products}
               emptyTitle={
                 hasSearchQuery
@@ -372,6 +391,9 @@ export function UploadsPageClient() {
               id={videoLibraryContent.demo.sectionId}
               title={videoLibraryContent.demo.title}
               clips={demoClips}
+              totalCount={
+                canUseLibraryTotals ? library.counts.demoClips : undefined
+              }
               products={products.products}
               emptyTitle={
                 hasSearchQuery
@@ -400,6 +422,9 @@ export function UploadsPageClient() {
               id={videoLibraryContent.swaps.sectionId}
               title={videoLibraryContent.swaps.title}
               clips={swapClips}
+              totalCount={
+                canUseLibraryTotals ? library.counts.swapClips : undefined
+              }
               products={products.products}
               emptyTitle={
                 hasSearchQuery
@@ -426,6 +451,9 @@ export function UploadsPageClient() {
             <StitchesSection
               key={`all-stitches-${searchQuery}`}
               stitches={stitches}
+              totalCount={
+                canUseLibraryTotals ? library.counts.stitches : undefined
+              }
               emptyTitle={hasSearchQuery ? "No matching stitches" : undefined}
               emptyDescription={
                 hasSearchQuery
@@ -445,6 +473,9 @@ export function UploadsPageClient() {
             <LongrVideosSection
               key={`all-longr-${searchQuery}`}
               longrVideos={longrVideos}
+              totalCount={
+                canUseLibraryTotals ? library.counts.longrVideos : undefined
+              }
               emptyTitle={hasSearchQuery ? "No matching Longs" : undefined}
               emptyDescription={
                 hasSearchQuery
@@ -479,6 +510,7 @@ export function UploadsPageClient() {
             id={selectedVideoSection.content.sectionId}
             title={selectedVideoSection.content.title}
             clips={selectedVideoSection.clips}
+            totalCount={selectedVideoTotalCount}
             products={products.products}
             avatarCreatorError={
               selectedTab === "ugc" ? avatarCreator.error : null
@@ -520,6 +552,9 @@ export function UploadsPageClient() {
           <StitchesSection
             key={`stitches-${searchQuery}`}
             stitches={stitches}
+            totalCount={
+              canUseLibraryTotals ? library.counts.stitches : undefined
+            }
             emptyTitle={hasSearchQuery ? "No matching stitches" : undefined}
             emptyDescription={
               hasSearchQuery
@@ -541,6 +576,9 @@ export function UploadsPageClient() {
           <LongrVideosSection
             key={`longr-${searchQuery}`}
             longrVideos={longrVideos}
+            totalCount={
+              canUseLibraryTotals ? library.counts.longrVideos : undefined
+            }
             emptyTitle={hasSearchQuery ? "No matching Longs" : undefined}
             emptyDescription={
               hasSearchQuery

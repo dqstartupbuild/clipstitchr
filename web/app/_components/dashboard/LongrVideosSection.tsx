@@ -18,6 +18,7 @@ type LongrVideosSectionProps = {
   onLoadMoreItems?: () => void;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   title?: string;
+  totalCount?: number;
 };
 
 export function LongrVideosSection({
@@ -32,13 +33,14 @@ export function LongrVideosSection({
   onLoadMoreItems,
   onLoadPoster,
   title = "Longs",
+  totalCount,
 }: LongrVideosSectionProps) {
   return (
     <section id={id}>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-bold text-text-primary">{title}</h2>
         <span className="text-sm font-semibold text-text-tertiary">
-          {longrVideos.length}
+          {totalCount ?? longrVideos.length}
         </span>
       </div>
       {longrVideos.length ? (

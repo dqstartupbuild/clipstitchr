@@ -18,6 +18,11 @@ const mocks = vi.hoisted(() => ({
   getAuthenticatedOwnerId: vi.fn(),
   mutation: vi.fn((definition) => definition),
   query: vi.fn((definition) => definition),
+  stitchCounts: {
+    deleteIfExists: vi.fn(),
+    insertIfDoesNotExist: vi.fn(),
+    replaceOrInsert: vi.fn(),
+  },
   rateLimiter: {
     limit: vi.fn(),
   },
@@ -34,6 +39,10 @@ vi.mock("./auth/getAuthenticatedOwnerId", () => ({
 
 vi.mock("./rateLimiter", () => ({
   rateLimiter: mocks.rateLimiter,
+}));
+
+vi.mock("./aggregateCounts", () => ({
+  stitchCounts: mocks.stitchCounts,
 }));
 
 function getHandler<Args, Result>(convexFunction: unknown) {
@@ -67,6 +76,7 @@ function createCtx(uniqueValues: unknown[] = [], collect: unknown[] = []) {
     ctx: {
       db: {
         delete: vi.fn(),
+        get: vi.fn(async (_id: string) => ({ _id, id: "stitch_1" })),
         insert: vi.fn(async () => "doc_inserted"),
         patch: vi.fn(),
         query: vi.fn(() => chain),
