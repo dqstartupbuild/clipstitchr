@@ -85,7 +85,7 @@ Deployment choices and where those variables live are documented in
 | Job type | Durable source | Worker output |
 | --- | --- | --- |
 | `upload-normalization` | Original video uploaded to R2 as `raw-video` | Normalized 9:16 video, poster image, final `videoClips` record |
-| `stitchr-export` | Saved UGC clips, one saved Demo clip, copied trims, shared text overlay, audio settings | One finished stitch per selected UGC, poster images, final `stitches` records |
+| `stitchr-export` | Saved UGC clips, one saved Demo clip, copied trims, per-stitch text overlay, audio settings | One finished stitch per selected UGC, poster images, final `stitches` records |
 | `longr-export` | Saved sequence clips, copied trims, output metadata | One finished Longr video, poster image, final `longrVideos` record |
 | `clipr-finalization` | Provider-generated avatar video already copied to R2 and referenced by a Clipr job | Normalized final Clip video, poster image, final `videoClips` record |
 | `swapr-finalization` | Provider output URL and Swapr metadata already recorded server-side | Normalized UGC clip, poster image, final `videoClips` record |

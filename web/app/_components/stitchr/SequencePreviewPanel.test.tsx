@@ -30,8 +30,10 @@ const mocks = vi.hoisted(() => ({
     onSwipeRight: () => void;
   } | null,
   textEditorProps: null as {
+    canCopyToAll: boolean;
     currentTime: number;
     onChange: (textOverlay: TextOverlay | null) => void;
+    onCopyToAll?: () => void;
     totalDuration: number;
     ugcDuration: number;
   } | null,
@@ -152,6 +154,7 @@ describe("SequencePreviewPanel", () => {
 
   it("renders a loaded preview and wires navigation, swipe, and overlay callbacks", () => {
     const onActiveUgcChange = vi.fn();
+    const onCopyTextOverlayToAll = vi.fn();
     const onTextOverlayChange = vi.fn();
     const overlay = createTextOverlay();
     const tree = SequencePreviewPanel({
@@ -160,7 +163,9 @@ describe("SequencePreviewPanel", () => {
       demoTrimRange,
       includeDemoAudio: true,
       includeUgcAudio: false,
+      canCopyTextOverlayToAll: true,
       onActiveUgcChange,
+      onCopyTextOverlayToAll,
       onTextOverlayChange,
       previewUgcClips: [
         createClipMetadata("ugc_1", "First UGC"),
@@ -180,6 +185,7 @@ describe("SequencePreviewPanel", () => {
     mocks.swipeOptions?.onSwipeRight();
     mocks.playerProps?.onTextOverlayChange(createTextOverlay({ text: "Next" }));
     mocks.playerProps?.onPlaybackTimeChange(2.5);
+    mocks.textEditorProps?.onCopyToAll?.();
     mocks.textEditorProps?.onChange(null);
 
     expect(markup).toContain("Navigator:Second UGC");
@@ -195,8 +201,10 @@ describe("SequencePreviewPanel", () => {
       expect.objectContaining({ text: "Next" }),
     );
     expect(onTextOverlayChange).toHaveBeenCalledWith(null);
+    expect(onCopyTextOverlayToAll).toHaveBeenCalledTimes(1);
     expect(mocks.setState).toHaveBeenCalledWith(2.5);
     expect(mocks.textEditorProps).toMatchObject({
+      canCopyToAll: true,
       currentTime: 0,
       totalDuration: 9,
       ugcDuration: 5,

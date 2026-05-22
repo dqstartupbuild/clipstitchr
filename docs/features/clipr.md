@@ -91,8 +91,7 @@ Clipr affects these docs:
 - `docs/features/stitchr.md`
   - Add optional auto-generated text overlays from the shared hook-template
     engine.
-  - Explain that the generated overlay is editable and one shared overlay still
-    applies to the Stitchr batch.
+  - Explain that the generated overlay is editable per selected Stitchr output.
 - `docs/product/positioning.md`
   - Add Clipr as a secondary source-creation workflow.
   - Keep Stitchr as the primary product promise.
@@ -818,8 +817,8 @@ Suggested Swipr flow:
 
 ## Stitchr Auto-Generated Text
 
-Stitchr should use the shared hook/template engine to auto-generate the single
-shared text overlay.
+Stitchr should use the shared hook/template engine to auto-generate a single
+text overlay for the active selected output.
 
 Rules:
 
@@ -829,8 +828,8 @@ Rules:
   pool and may include app-promo hook-library templates.
 - GPT-4.1 fills one short overlay hook.
 - The generated overlay is editable.
-- The existing one-overlay-per-batch rule remains unchanged.
-- The same overlay applies to all selected UGC + Demo outputs in the batch.
+- The existing one-overlay-per-stitch rule remains unchanged.
+- The active overlay can be copied to all selected UGC + Demo outputs in the batch.
 
 ## Landing Page And Copy Updates
 

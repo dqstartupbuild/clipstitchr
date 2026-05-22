@@ -23,8 +23,9 @@ library, not editing from scratch.
 
 ## Core Promise
 
-Select up to 20 UGC clips and one product demo. Preview each pairing, apply one
-shared text overlay when needed, and create finished vertical ad variants.
+Select up to 20 UGC clips and one product demo. Preview each pairing, customize
+one text overlay per output when needed, and create finished vertical ad
+variants.
 
 ## Intended Sequence
 
@@ -35,7 +36,9 @@ Every Stitchr output follows the same basic ad structure:
 3. Single normalized 9:16 output at export time.
 
 When multiple UGC clips are selected, Stitchr creates one output per selected
-UGC clip while reusing the same selected product demo and overlay settings.
+UGC clip while reusing the same selected product demo. Each output can keep its
+own overlay settings, and the active overlay can be copied to every selected
+output.
 
 This sequence supports a common direct-response creative pattern: attention or
 social proof first, product proof immediately after.
@@ -50,8 +53,9 @@ social proof first, product proof immediately after.
    product filter when the library contains demos for multiple products.
 6. Copy clip default trims into the Stitchr session.
 7. Tap or swipe through each exact UGC-then-demo preview.
-8. Optionally configure one shared text overlay for every output.
-9. Optionally generate the shared overlay from the hidden Clipr hook-template
+8. Optionally configure one text overlay per output or copy one overlay across
+   the batch.
+9. Optionally generate an overlay from the hidden Clipr hook-template
    engine using saved product context. Stitchr auto-text can draw from
    product/ad hook-library templates, but source names and template IDs stay
    hidden. The generated overlay stays editable.
@@ -73,7 +77,7 @@ selected music only when the user downloads the stitch.
 - Preserve source clips; trims are editable metadata.
 - Make outputs easy to recognize later with names, posters, and metadata.
 - Keep batch creation predictable: one selected demo, up to 20 selected UGC
-  clips, and one shared overlay for the batch.
+  clips, and one editable overlay per output.
 - Keep AI-generated Clips and Swaps as UGC-compatible clips that can flow into
   Stitchr.
 - Keep generated overlay text editable and hide hook style/template mechanics.

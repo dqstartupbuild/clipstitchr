@@ -187,7 +187,7 @@ function queueStitchrState(
     selectedDemoId?: string | null;
     selectedMusicTrack?: SharedMusicTrack | null;
     selectedUgcIds?: string[];
-    textOverlay?: TextOverlay | null;
+    textOverlaysByUgcId?: Record<string, TextOverlay | null>;
     ugcTrimRangesByClipId?: Record<string, { start: number; end: number }>;
   } = {},
 ) {
@@ -196,7 +196,7 @@ function queueStitchrState(
     overrides.includeDemoAudio ?? true,
     overrides.includeUgcAudio ?? true,
     overrides.selectedMusicTrack ?? null,
-    overrides.textOverlay ?? null,
+    overrides.textOverlaysByUgcId ?? {},
     overrides.selectedAutoTextProductId ?? "",
     overrides.demoProductFilterId ?? "all",
     overrides.isGeneratingAutoText ?? false,
@@ -279,6 +279,7 @@ describe("StitchrPageClient", () => {
     };
     const sequencePreviewProps = mocks.sequencePreviewPanelProps as {
       onActiveUgcChange: (id: string) => void;
+      onCopyTextOverlayToAll: () => void;
       onTextOverlayChange: (overlay: TextOverlay) => void;
     };
     const ugcClip = mocks.clipLibraryState.clips[0];
@@ -310,6 +311,7 @@ describe("StitchrPageClient", () => {
     });
     clipPickerProps.onDemoProductFilterChange("product_1");
     sequencePreviewProps.onActiveUgcChange(ugcClip.id);
+    sequencePreviewProps.onCopyTextOverlayToAll();
     sequencePreviewProps.onTextOverlayChange({
       backgroundColor: "#000000",
       color: "#ffffff",
@@ -472,17 +474,26 @@ describe("StitchrPageClient", () => {
       includeDemoAudio: false,
       includeUgcAudio: false,
       selectedMusicTrack: musicTrack,
-      textOverlay,
+      textOverlaysByUgcId: {
+        ugc_1: textOverlay,
+      },
     });
     renderToStaticMarkup(<StitchrPageClient />);
 
     (mocks.clipPickerPanelProps as { onStitch: () => void }).onStitch();
 
     expect(mocks.stitchrState.stitchVideos).toHaveBeenCalledWith(
-      expect.any(Array),
+      expect.arrayContaining([
+        expect.objectContaining({
+          textOverlay: expect.objectContaining({
+            backgroundColor: textOverlay.backgroundColor,
+            text: textOverlay.text,
+          }),
+        }),
+      ]),
       expect.objectContaining({ id: "demo_1" }),
       expect.any(Object),
-      textOverlay,
+      null,
       expect.objectContaining({
         addMusic: false,
         includeDemoAudio: false,

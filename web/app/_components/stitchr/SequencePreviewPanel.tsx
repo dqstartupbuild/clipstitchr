@@ -22,7 +22,9 @@ type SequencePreviewPanelProps = {
   includeDemoAudio: boolean;
   includeUgcAudio: boolean;
   textOverlay: TextOverlay | null;
+  canCopyTextOverlayToAll?: boolean;
   onActiveUgcChange: (id: string) => void;
+  onCopyTextOverlayToAll?: () => void;
   onTextOverlayChange: (textOverlay: TextOverlay | null) => void;
 };
 
@@ -36,7 +38,9 @@ export function SequencePreviewPanel({
   includeDemoAudio,
   includeUgcAudio,
   textOverlay,
+  canCopyTextOverlayToAll = false,
   onActiveUgcChange,
+  onCopyTextOverlayToAll,
   onTextOverlayChange,
 }: SequencePreviewPanelProps) {
   const [playbackTime, setPlaybackTime] = useState(0);
@@ -132,7 +136,9 @@ export function SequencePreviewPanel({
             totalDuration={totalDuration}
             ugcDuration={ugcDuration}
             currentTime={playbackTime}
+            canCopyToAll={canCopyTextOverlayToAll}
             onChange={onTextOverlayChange}
+            onCopyToAll={onCopyTextOverlayToAll}
           />
         </>
       ) : (

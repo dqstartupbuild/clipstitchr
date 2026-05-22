@@ -132,7 +132,7 @@ device cannot resume the work.
 | Swapr generation | Replicate prediction is recorded and pollable, but download, normalization, R2 upload, and clip save are client-side. Refresh can orphan successful videos. | Finalize provider output server-side, or store a durable post-processing job if normalization remains browser-side. |
 | Photo upload | Browser prepares photo, uploads objects, and saves Convex metadata. Refresh can stop before completion. | Upload original source to a durable job first, then finalize from a recoverable source. |
 | Video upload normalization | Browser Media Bunny normalization and R2 upload run from a page-local queue. Refresh stops work. | Persist source first and process in a backend worker, or persist a local resumable queue. |
-| Stitchr composition | Inputs are durable saved clips, but each stitch job is browser-local. Refresh stops work, including multi-UGC batches that have not finished saving every output. Optional music is durable once generated because the audio object and editable settings live on the saved stitch. | Create a stitch job with selected UGC clip IDs, demo clip ID, trim ranges, shared overlay config, and optional music settings, then process in a backend worker or resumable browser queue. |
+| Stitchr composition | Inputs are durable saved clips, but each stitch job is browser-local. Refresh stops work, including multi-UGC batches that have not finished saving every output. Optional music is durable once generated because the audio object and editable settings live on the saved stitch. | Create a stitch job with selected UGC clip IDs, demo clip ID, trim ranges, per-output overlay configs, and optional music settings, then process in a backend worker or resumable browser queue. |
 | Longr composition | Inputs are durable saved clips, but the combined long-form render is browser-local. Refresh stops the build before the final Long, poster, and Convex record are saved. | Create a Longr job with ordered source clip IDs and trim ranges, then process in a backend worker or resumable browser queue. |
 | Clipr generation | `POST /api/clipr/jobs` creates and updates `cliprJobs` records while route-local server helpers handle request parsing, quotas, input loading, script planning, avatar still generation, avatar video/music generation, R2 copies, analytics, and failure cleanup. Browser Media Bunny final preparation saves the clean Clip video, and export/download can render a temporary music mix from durable video and audio objects. A request/runtime failure can still interrupt provider orchestration before finalization. | Move provider execution, final video preparation, and music export rendering to recoverable workers/finalizers when browser reliability or route timeout limits require it. |
 
@@ -183,7 +183,7 @@ For Stitchr, each job needs:
 - selected UGC clip IDs
 - Demo clip ID
 - copied trim ranges
-- shared text overlay settings
+- per-output text overlay settings
 - final stitch IDs after finalization
 
 For upload normalization, each job needs:

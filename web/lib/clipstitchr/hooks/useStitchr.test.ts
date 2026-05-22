@@ -209,6 +209,53 @@ describe("useStitchr", () => {
     expect(mocks.useStateSetter).toHaveBeenCalledWith("complete");
   });
 
+  it("saves per-selection text overlays for batch stitches", async () => {
+    const state = useStitchr({});
+    const demoClip = createClip("demo_1", "Demo", 10);
+    const ugcOne = createClip("ugc_1", "UGC One", 8);
+    const ugcTwo = createClip("ugc_2", "UGC Two", 8);
+
+    await expect(
+      state.stitchVideos(
+        [
+          {
+            clip: ugcOne,
+            textOverlay: {
+              ...createTextOverlay(),
+              text: "First hook",
+            },
+            trimRange: { end: 4, start: 0 },
+          },
+          {
+            clip: ugcTwo,
+            textOverlay: {
+              ...createTextOverlay(),
+              text: "Second hook",
+            },
+            trimRange: { end: 5, start: 1 },
+          },
+        ],
+        demoClip,
+        { end: 4, start: 0 },
+      ),
+    ).resolves.toHaveLength(2);
+
+    expect(getMutation("stitches.save")).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        id: "stitch_1",
+        textOverlay: expect.objectContaining({ text: "First hook" }),
+      }),
+    );
+    expect(getMutation("stitches.save")).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        id: "stitch_2",
+        textOverlay: expect.objectContaining({ text: "Second hook" }),
+      }),
+    );
+  });
+
   it("generates stitch music when requested without a selected track", async () => {
     const state = useStitchr({});
 
