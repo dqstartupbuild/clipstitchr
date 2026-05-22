@@ -4,6 +4,33 @@ import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose"
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import { getCliprTextHasForbiddenCta } from "@/lib/clipstitchr/utils/getCliprTextHasForbiddenCta";
 
+const POLARIZING_REACTION_SOURCE = "polarizing_reaction_patterns";
+
+function getUniqueHookTemplates(templates: CliprHookTemplate[]) {
+  const seenIds = new Set<string>();
+
+  return templates.filter((template) => {
+    if (seenIds.has(template.id)) {
+      return false;
+    }
+
+    seenIds.add(template.id);
+    return true;
+  });
+}
+
+function getStitchrPolarizingTemplates(purpose: CliprTextPurpose) {
+  if (purpose !== "stitchr") {
+    return [];
+  }
+
+  return cliprHookTemplates.filter(
+    (template) =>
+      getIsEligibleTemplate(template, purpose) &&
+      template.source === POLARIZING_REACTION_SOURCE,
+  );
+}
+
 function getTemplateMatchesProductPool({
   eligibleStyleKeys,
   eligibleTemplateIds,
@@ -52,6 +79,7 @@ export function getCliprEligibleHookTemplates(
   const hasTemplatePool = eligibleTemplateIds.size > 0;
   const hasStylePool = eligibleStyleKeys.size > 0;
   const preferredStyleKey = product.preferredCliprHookStyleKey?.trim();
+  const stitchrPolarizingTemplates = getStitchrPolarizingTemplates(purpose);
   const preferredTemplates = preferredStyleKey
     ? cliprHookTemplates.filter(
         (template) =>
@@ -61,7 +89,10 @@ export function getCliprEligibleHookTemplates(
     : [];
 
   if (preferredTemplates.length) {
-    return preferredTemplates;
+    return getUniqueHookTemplates([
+      ...stitchrPolarizingTemplates,
+      ...preferredTemplates,
+    ]);
   }
 
   const templates = cliprHookTemplates.filter((template) => {
@@ -78,8 +109,13 @@ export function getCliprEligibleHookTemplates(
     });
   });
 
-  return templates.length
-    ? templates
+  const purposeTemplates = getUniqueHookTemplates([
+    ...stitchrPolarizingTemplates,
+    ...templates,
+  ]);
+
+  return purposeTemplates.length
+    ? purposeTemplates
     : cliprHookTemplates.filter((template) =>
         getIsEligibleTemplate(template, purpose),
       );

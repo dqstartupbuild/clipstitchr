@@ -64,7 +64,6 @@ function getProductProblemPhrase(product: ProductProfile) {
   const source =
     product.inferredPainPoints[0] ??
     product.inferredProblem ??
-    product.productDetails ??
     "the messy part";
 
   return sanitizeCliprGeneratedText(source, "the messy part")
@@ -73,15 +72,17 @@ function getProductProblemPhrase(product: ProductProfile) {
 }
 
 function createFallbackHook(product: ProductProfile, purpose: CliprTextPurpose) {
+  const problem = getProductProblemPhrase(product);
+
   if (purpose === "clipr") {
     return "The small workflow mistake most people miss";
   }
 
   if (purpose === "swipr") {
-    return `What changes when ${product.name} handles the messy part`;
+    return `Most people notice ${problem} too late`;
   }
 
-  return `${product.name} makes the messy part easier to handle`;
+  return `Most people notice ${problem} too late`;
 }
 
 function normalizeScriptString(value: unknown, fallback: string) {

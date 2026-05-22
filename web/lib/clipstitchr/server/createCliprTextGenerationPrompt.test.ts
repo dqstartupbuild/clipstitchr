@@ -38,9 +38,12 @@ describe("createCliprTextGenerationPrompt", () => {
     });
 
     expect(prompt).toContain("For Clipr, do not directly promote the product.");
+    expect(prompt).toContain("The video should still make sense");
+    expect(prompt).toContain("Audience and problem are the primary source");
+    expect(prompt).toContain("Product proof bank, not the script spine");
   });
 
-  it("allows Stitchr prompts to use product hooks", () => {
+  it("keeps Stitchr prompts human-first instead of product-first", () => {
     const prompt = createCliprTextGenerationPrompt({
       candidates: [candidate],
       durationSeconds: 30,
@@ -51,8 +54,9 @@ describe("createCliprTextGenerationPrompt", () => {
     });
 
     expect(prompt).toContain(
-      "For Stitchr, the generated text may frame the selected product",
+      "For Stitchr, the generated text should read like a human social hook",
     );
+    expect(prompt).toContain("do not mention the product name or product features");
     expect(prompt).toContain("the hook must cause a gut reaction in 2-3 seconds");
     expect(prompt).toContain("the Demo clip is the validation");
   });
@@ -71,5 +75,6 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("final slide must plug the product");
     expect(prompt).toContain("middle slides must validate the bold claim");
     expect(prompt).toContain("middle slides must not mention the product name");
+    expect(prompt).toContain("filledHook and middle slides must read like creator");
   });
 });

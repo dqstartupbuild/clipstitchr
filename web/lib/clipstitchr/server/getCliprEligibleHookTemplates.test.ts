@@ -37,6 +37,26 @@ describe("getCliprEligibleHookTemplates", () => {
     ).toBe(true);
   });
 
+  it("adds polarizing reaction templates for Stitchr auto-text", () => {
+    const templates = getCliprEligibleHookTemplates(product, "stitchr");
+
+    expect(
+      templates.some(
+        (template) => template.source === "polarizing_reaction_patterns",
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps polarizing reaction templates out of Clipr generations", () => {
+    const templates = getCliprEligibleHookTemplates(product, "clipr");
+
+    expect(
+      templates.some(
+        (template) => template.source === "polarizing_reaction_patterns",
+      ),
+    ).toBe(false);
+  });
+
   it("allows aggressive templates for Clipr and Stitchr", () => {
     const broadProduct = {
       ...product,

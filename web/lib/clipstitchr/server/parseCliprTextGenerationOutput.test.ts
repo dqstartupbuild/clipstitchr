@@ -145,7 +145,7 @@ describe("parseCliprTextGenerationOutput", () => {
     });
 
     expect(generation.filledHook).toBe(
-      "LaunchKit makes the messy part easier to handle",
+      "Most people notice launch content gets scattered too late",
     );
     expect(generation.overlayText).toBe(generation.filledHook);
     expect(generation.script).toBe("Explain the idea simply.");
@@ -201,10 +201,10 @@ describe("parseCliprTextGenerationOutput", () => {
     });
 
     expect(generation.filledHook).toBe(
-      "What changes when LaunchKit handles the messy part",
+      "Most people notice launch content gets scattered too late",
     );
     expect(generation.slides).toEqual([
-      "What changes when LaunchKit handles the messy part",
+      "Most people notice launch content gets scattered too late",
     ]);
   });
 });

@@ -20,6 +20,8 @@ describe("createProductEnrichmentPrompt", () => {
 
     expect(prompt).toContain("Write in plain speech");
     expect(prompt).toContain("Choose every relevant Clipr hook style");
+    expect(prompt).toContain("Make the enrichment audience-first");
+    expect(prompt).toContain("product details as a proof bank");
     expect(prompt).toContain("Cover hundreds of useful hook scenarios");
     expect(prompt).toContain("audience,");
     expect(prompt).toContain("core_belief");

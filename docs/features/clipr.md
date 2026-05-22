@@ -89,6 +89,7 @@ Clipr affects these docs:
   - Explain that selected product settings drive hidden template selection.
   - Keep rendered slide export behavior unchanged.
 - `docs/features/stitchr.md`
+- `docs/features/audience-first-generation.md`
   - Add optional auto-generated text overlays from the shared hook-template
     engine.
   - Explain that the generated overlay is editable per selected Stitchr output.
@@ -321,6 +322,9 @@ cold_open_story,CS-010,"I showed {{thing}} to {{person}}, and their reaction cha
 
 The identity challenge expansion also lives in the internal template resources
 as `IC-001` through `IC-115` for Swipr and Stitchr reaction-first ad hooks.
+The polarizing reaction pack lives beside it as `PR-001` through `PR-050` and
+is Stitchr-only so UGC-then-demo overlays can favor sharper comparison,
+callout, and identity-pressure hooks without changing Clipr behavior.
 
 ## Hook Template Model
 
@@ -333,7 +337,11 @@ type HookTemplate = {
   template: string;
   requiredVariables: string[];
   allowedPurposes: Array<"clipr" | "swipr" | "stitchr">;
-  source: "clipstitchr" | "app_hook_library" | "education_viral_patterns";
+  source:
+    | "clipstitchr"
+    | "app_hook_library"
+    | "education_viral_patterns"
+    | "polarizing_reaction_patterns";
   emotionalTrigger: string;
   bestFor: string[];
   riskLevel: "safe" | "medium" | "aggressive";
@@ -361,7 +369,7 @@ Implementation details:
 
 ## Hook Asset Integration
 
-The runtime hook engine now has three hidden template sources:
+The runtime hook engine now has four hidden template sources:
 
 - `clipstitchr`: original non-promotional starter templates used by Clipr,
   Swipr, and Stitchr.
@@ -373,11 +381,13 @@ The runtime hook engine now has three hidden template sources:
   `assets/hooks/hook-library.json`. Bracket placeholders such as `[outcome]`
   are normalized to the app's `{{outcome}}` placeholder format, and direct
   phrases such as "this app" are normalized around `{{product_name}}`.
+- `polarizing_reaction_patterns`: broad Stitchr-only templates for comparison,
+  callout, identity challenge, unpopular-opinion, and dare-style overlays.
 
 The UI must not expose the source names, template IDs, risk labels, or
 placeholder mechanics. The app-promo library is available only to Swipr and
 Stitchr auto-text because Clipr outputs must remain non-promotional engagement
-clips.
+clips. The polarizing reaction pack is available only to Stitchr auto-text.
 
 ## Style Generation Rules
 
