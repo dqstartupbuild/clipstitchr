@@ -37,8 +37,8 @@ export function StitchrPageClient() {
     onCreated: library.refresh,
   });
   const [addMusic, setAddMusic] = useState(false);
-  const [includeDemoAudio, setIncludeDemoAudio] = useState(true);
-  const [includeUgcAudio, setIncludeUgcAudio] = useState(true);
+  const [includeDemoAudio, setIncludeDemoAudio] = useState(false);
+  const [includeUgcAudio, setIncludeUgcAudio] = useState(false);
   const [selectedMusicTrack, setSelectedMusicTrack] =
     useState<SharedMusicTrack | null>(null);
   const [textOverlaysByUgcId, setTextOverlaysByUgcId] = useState<
@@ -113,11 +113,11 @@ export function StitchrPageClient() {
     () => filterClipsByDemoProductId(demoClips, activeDemoProductFilterId),
     [activeDemoProductFilterId, demoClips],
   );
-  const [selectedUgcIds, setSelectedUgcIds] = useState<string[] | undefined>(
+  const [selectedUgcIds, setSelectedUgcIds] = useState<string[]>(
     () => {
       const initialUgcId = getSearchParamValue("ugcId");
 
-      return initialUgcId ? [initialUgcId] : undefined;
+      return initialUgcId ? [initialUgcId] : [];
     },
   );
   const [activePreviewUgcId, setActivePreviewUgcId] = useState<
@@ -128,14 +128,8 @@ export function StitchrPageClient() {
   >(() => getSearchParamValue("demoId"));
   const activeSelectedUgcIds = useMemo(() => {
     const validUgcIds = new Set(ugcClips.map((clip) => clip.id));
-    const nextSelectedIds =
-      selectedUgcIds === undefined
-        ? ugcClips[0]
-          ? [ugcClips[0].id]
-          : []
-        : selectedUgcIds;
 
-    return nextSelectedIds
+    return selectedUgcIds
       .filter((id) => validUgcIds.has(id))
       .slice(0, maxStitchrUgcSelectionCount);
   }, [selectedUgcIds, ugcClips]);
@@ -252,14 +246,7 @@ export function StitchrPageClient() {
       const isCurrentlySelected = activeSelectedUgcIds.includes(id);
 
       setSelectedUgcIds((currentIds) => {
-        const currentSelectedIds =
-          currentIds === undefined
-            ? ugcClips[0]
-              ? [ugcClips[0].id]
-              : []
-            : currentIds;
-
-        return toggleStitchrUgcSelection(currentSelectedIds, id);
+        return toggleStitchrUgcSelection(currentIds, id);
       });
 
       if (!clip) {

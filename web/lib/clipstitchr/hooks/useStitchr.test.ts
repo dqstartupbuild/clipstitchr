@@ -244,6 +244,8 @@ describe("useStitchr", () => {
       1,
       expect.objectContaining({
         id: "stitch_1",
+        includeDemoAudio: false,
+        includeUgcAudio: false,
         textOverlay: expect.objectContaining({ text: "First hook" }),
       }),
     );

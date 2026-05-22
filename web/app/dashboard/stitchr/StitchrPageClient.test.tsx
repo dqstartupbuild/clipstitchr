@@ -250,8 +250,8 @@ function queueStitchrState(
 ) {
   mocks.stateQueue.push(
     overrides.addMusic ?? false,
-    overrides.includeDemoAudio ?? true,
-    overrides.includeUgcAudio ?? true,
+    overrides.includeDemoAudio ?? false,
+    overrides.includeUgcAudio ?? false,
     overrides.selectedMusicTrack ?? null,
     overrides.textOverlaysByUgcId ?? {},
     overrides.selectedAutoTextProductId ?? "",
@@ -260,7 +260,7 @@ function queueStitchrState(
     overrides.autoTextMessage ?? null,
     overrides.ugcTrimRangesByClipId ?? {},
     overrides.demoTrimRangesByClipId ?? {},
-    overrides.selectedUgcIds,
+    overrides.selectedUgcIds ?? [],
     overrides.activePreviewUgcId,
     overrides.selectedDemoId,
   );
@@ -307,6 +307,10 @@ describe("StitchrPageClient", () => {
         (clip) => clip.id,
       ),
     ).toEqual(["demo_1"]);
+    expect(mocks.clipPickerPanelProps?.selectedUgcIds).toEqual([]);
+    expect(mocks.clipPickerPanelProps?.includeDemoAudio).toBe(false);
+    expect(mocks.clipPickerPanelProps?.includeUgcAudio).toBe(false);
+    expect(mocks.clipPickerPanelProps?.canStitch).toBe(false);
   });
 
   it("renders empty and error states", () => {
@@ -374,6 +378,10 @@ describe("StitchrPageClient", () => {
   });
 
   it("exercises Stitchr selection, trim, music, stitch, and auto-text callbacks", async () => {
+    queueStitchrState({
+      activePreviewUgcId: "ugc_1",
+      selectedUgcIds: ["ugc_1"],
+    });
     renderToStaticMarkup(<StitchrPageClient />);
 
     const clipPickerProps = mocks.clipPickerPanelProps as {
@@ -468,8 +476,8 @@ describe("StitchrPageClient", () => {
       expect.any(Object),
       null,
       expect.objectContaining({
-        includeDemoAudio: true,
-        includeUgcAudio: true,
+        includeDemoAudio: false,
+        includeUgcAudio: false,
       }),
     );
   });
@@ -553,6 +561,10 @@ describe("StitchrPageClient", () => {
 
     setClipLibraryVideoGroups();
     mocks.generateCliprText.mockRejectedValueOnce(new Error("text failed"));
+    queueStitchrState({
+      activePreviewUgcId: "ugc_1",
+      selectedUgcIds: ["ugc_1"],
+    });
     renderToStaticMarkup(<StitchrPageClient />);
     (mocks.autoTextPanelProps as { onGenerate: () => void }).onGenerate();
 
@@ -597,7 +609,9 @@ describe("StitchrPageClient", () => {
       addMusic: true,
       includeDemoAudio: false,
       includeUgcAudio: false,
+      activePreviewUgcId: "ugc_1",
       selectedMusicTrack: musicTrack,
+      selectedUgcIds: ["ugc_1"],
       textOverlaysByUgcId: {
         ugc_1: textOverlay,
       },
