@@ -13,10 +13,35 @@ type CreateCliprTextGenerationPromptOptions = {
   slideCount: number;
 };
 
+const contentAngles = [
+  "polarizing belief",
+  "beginner mistake",
+  "unpopular opinion",
+  "confidence or status",
+  "myth busting",
+  "story or confession",
+  "hard truth",
+  "comparison",
+  "tactical tip",
+  "identity callout",
+];
+
+const followThroughArcs = [
+  "hot take -> why people believe the wrong thing -> better reframe",
+  "callout -> example behavior -> consequence -> fix",
+  "story/confession -> mistake -> realization -> lesson",
+  "comparison -> old way -> new way -> why it matters",
+  "myth -> truth -> practical next step",
+  "identity challenge -> emotional reason -> behavior change",
+];
+
 function getPurposeRules(purpose: CliprTextPurpose) {
   if (purpose === "clipr") {
     return [
       "- For Clipr, do not directly promote the product.",
+      "- For Clipr, the product is background context only. The script spine must come from the audience, the problem, a belief, a mistake, or a useful reframe.",
+      "- For Clipr, do not mention the product name, product features, app screens, onboarding steps, scans, dashboards, generated plans, or product-specific mechanisms.",
+      "- For Clipr, do not paraphrase the product description as the script. The video should still make sense if the viewer never learns the product exists.",
       "- For Clipr, script must start with the hook and must be written as a natural spoken avatar monologue.",
       "- For Clipr, scenePlan must contain exactly one avatar scene and no supplemental scenes.",
       "- For Clipr, scenePlan[0].scriptText must match the full script, not a short summary.",
@@ -26,6 +51,7 @@ function getPurposeRules(purpose: CliprTextPurpose) {
   if (purpose === "swipr") {
     return [
       "- For Swipr, use the product only as context for the audience, problem, and topic.",
+      "- For Swipr, filledHook and middle slides must read like creator/value content, not product copy.",
       "- For Swipr, slides must contain exactly the requested slide count.",
       "- For Swipr, slides[0] must exactly match filledHook.",
       "- For Swipr, slides[0] must cause an immediate emotional reaction. The viewer must feel provoked, curious, or called out within the first second of reading.",
@@ -39,9 +65,11 @@ function getPurposeRules(purpose: CliprTextPurpose) {
   }
 
   return [
-    "- For Stitchr, the generated text may frame the selected product as the useful example or solution.",
+    "- For Stitchr, the generated text should read like a human social hook, not a product line.",
+    "- For Stitchr, use the product only as background context for what the audience cares about.",
+    "- For Stitchr, do not mention the product name or product features unless the selected candidate template explicitly requires product_name and the result still sounds like a natural creator caption.",
     "- For Stitchr, overlayText must be one concise editable text overlay.",
-    "- For Stitchr, write overlayText as an ad hook that can sit over a UGC-then-demo sequence.",
+    "- For Stitchr, write overlayText as a short-form hook that can sit over a UGC-then-demo sequence.",
     "- For Stitchr, the hook must cause a gut reaction in 2-3 seconds. Make a bold, specific claim the audience will emotionally resist or strongly agree with.",
     "- For Stitchr, the UGC clip is the reaction trigger and the Demo clip is the validation. The overlayText should amplify this arc, not describe it.",
     "- For Stitchr, prefer identity-level claims over informational hooks. Challenge a core belief the audience holds rather than sharing a safe tip.",
@@ -61,6 +89,12 @@ export function createCliprTextGenerationPrompt({
     "Return only compact JSON with this exact shape:",
     '{"templateId":"one candidate id","filledHook":"short hook","variablesUsed":{"placeholder":"value"},"overlayText":"short editable overlay","slides":["first slide hook","supporting point"],"script":"30 or 60 second spoken avatar script","scenePlan":[{"sceneType":"avatar","scriptText":"the same full spoken script","visualPrompt":"vertical avatar video prompt","estimatedDurationSeconds":30}]}',
     "Rules:",
+    "- Audience and problem are the primary source of truth. Product details are only a proof bank and should not become the main topic.",
+    "- Silently choose one content angle and one follow-through arc before writing. Do not name the angle or arc in the JSON.",
+    "- Do not reuse phrases from Product details verbatim. Translate any useful product proof into an audience behavior, mistake, belief, or tension.",
+    "- At most one product proof point may appear in the supporting content, and only when the purpose rules allow it.",
+    "- Avoid ad-like language such as game changer, unlock, transform, powerful, seamless, revolutionary, and built for, unless the user provided that wording.",
+    "- Avoid generic AI cadence. Use concrete, human phrasing with a point of view.",
     "- Except for the final Swipr CTA slide, do not ask viewers to try, download, save, comment, follow, buy, book, subscribe, or sign up.",
     "- Except for the final Swipr CTA slide, do not write product-feature or product-benefit copy.",
     "- Do not invent fake stats, fake studies, fake quotes, or fake testimonials.",
@@ -74,11 +108,13 @@ export function createCliprTextGenerationPrompt({
     `Purpose: ${purpose}`,
     `Target duration: ${durationSeconds} seconds`,
     `Slide count: ${slideCount}`,
-    `Product name: ${product.name}`,
-    `Product details: ${product.productDetails}`,
     `Audience details: ${product.audienceDetails}`,
     `Inferred problem: ${product.inferredProblem ?? ""}`,
     `Pain points: ${product.inferredPainPoints.join("; ")}`,
+    `Content angles to choose from: ${contentAngles.join("; ")}`,
+    `Follow-through arcs to choose from: ${followThroughArcs.join("; ")}`,
+    `Product name, for final CTA or proof only when allowed: ${product.name}`,
+    `Product proof bank, not the script spine: ${product.productDetails}`,
     `Placeholder fillers: ${JSON.stringify(fillers)}`,
     `Candidate templates: ${JSON.stringify(
       candidates.map((candidate) => ({

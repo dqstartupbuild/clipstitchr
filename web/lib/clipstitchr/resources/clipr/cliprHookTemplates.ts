@@ -3,6 +3,7 @@ import { rawAppHookTemplates } from "@/lib/clipstitchr/resources/clipr/rawAppHoo
 import { rawCliprHookTemplates } from "@/lib/clipstitchr/resources/clipr/rawCliprHookTemplates";
 import { rawIdentityChallengeHookTemplates } from "@/lib/clipstitchr/resources/clipr/rawIdentityChallengeHookTemplates";
 import { rawEducationHookTemplates } from "@/lib/clipstitchr/resources/clipr/rawEducationHookTemplates";
+import { rawPolarizingReactionHookTemplates } from "@/lib/clipstitchr/resources/clipr/rawPolarizingReactionHookTemplates";
 import type { CliprHookTemplate } from "@/lib/clipstitchr/types/CliprHookTemplate";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import { getCliprTemplateRequiredVariables } from "@/lib/clipstitchr/utils/getCliprTemplateRequiredVariables";
@@ -19,6 +20,7 @@ export const cliprHookTemplates: CliprHookTemplate[] =
     ...rawEducationHookTemplates,
     ...rawAppHookTemplates,
     ...rawIdentityChallengeHookTemplates,
+    ...rawPolarizingReactionHookTemplates,
   ].map((template) => {
     const style = cliprHookStyles.find(
       (item) => item.styleKey === template.styleKey,

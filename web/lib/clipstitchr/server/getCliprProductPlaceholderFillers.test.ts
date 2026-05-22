@@ -19,8 +19,9 @@ describe("getCliprProductPlaceholderFillers", () => {
   it("cleans labels and helper wording before prompt construction", () => {
     const fillers = getCliprProductPlaceholderFillers(product);
 
-    expect(fillers.topic).toContain("organize product launch content");
+    expect(fillers.topic?.[0]).toBe("launch content gets scattered");
     expect(fillers.topic).toContain("launch content chaos");
+    expect(fillers.topic).toContain("organize product launch content");
     expect(fillers.topic).not.toContain("Problem solved: launch content chaos.");
   });
 
@@ -33,5 +34,14 @@ describe("getCliprProductPlaceholderFillers", () => {
     expect(fillers.popular_method).toContain("doing everything manually");
     expect(fillers.identity).toContain("Founders and solo marketers");
     expect(fillers.time).toContain("3 hours per post");
+  });
+
+  it("keeps general placeholders audience-first before product-specific values", () => {
+    const fillers = getCliprProductPlaceholderFillers(product);
+
+    expect(fillers.method).not.toContain("LaunchKit");
+    expect(fillers.option_b).not.toContain("LaunchKit");
+    expect(fillers.thing?.[0]).toBe("launch content gets scattered");
+    expect(fillers.tool?.at(-1)).toBe("LaunchKit");
   });
 });
