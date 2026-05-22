@@ -6,6 +6,7 @@ import {
   useConvexAuth,
   useMutation,
   usePaginatedQuery,
+  useQuery,
 } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { createLongrVideoMetadataFromConvexDocument } from "@/lib/clipstitchr/backend/createLongrVideoMetadataFromConvexDocument";
@@ -21,6 +22,7 @@ import { generateCliprMusic as requestCliprMusicGeneration } from "@/lib/clipsti
 import { generateStitchMusic as requestStitchMusicGeneration } from "@/lib/clipstitchr/client/generateStitchMusic";
 import { libraryMetadataPageSize } from "@/lib/clipstitchr/constants/libraryMetadataPageSize";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { ClipLibraryCounts } from "@/lib/clipstitchr/types/ClipLibraryCounts";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { ClipLibraryValue } from "@/lib/clipstitchr/types/ClipLibraryValue";
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
@@ -32,6 +34,7 @@ import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { getClipLibraryDisplayCounts } from "@/lib/clipstitchr/utils/getClipLibraryDisplayCounts";
 import { getDeletableMusicAudioObject } from "@/lib/clipstitchr/utils/getDeletableMusicAudioObject";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
@@ -60,6 +63,10 @@ export function useClipLibraryState(): ClipLibraryValue {
     api.longrVideos.list,
     isAuthenticated ? { refreshNonce } : "skip",
     { initialNumItems: libraryMetadataPageSize },
+  );
+  const aggregateCounts = useQuery(
+    api.libraryCounts.get,
+    isAuthenticated ? { refreshNonce } : "skip",
   );
   const clipDocuments = clipDocumentsQuery.results;
   const stitchDocuments = stitchDocumentsQuery.results;
@@ -99,6 +106,25 @@ export function useClipLibraryState(): ClipLibraryValue {
       ),
     [longrVideoDocuments],
   );
+  const loadedCounts = useMemo<ClipLibraryCounts>(
+    () => ({
+      cliprClips: clips.filter((clip) => Boolean(clip.cliprMetadata)).length,
+      demoClips: clips.filter((clip) => clip.clipType === "demo").length,
+      longrVideos: longrVideos.length,
+      stitches: stitches.length,
+      swapClips: clips.filter(
+        (clip) => clip.swaprMetadata?.source === "swapr",
+      ).length,
+      ugcClips: clips.filter(
+        (clip) =>
+          clip.clipType === "ugc" &&
+          !clip.cliprMetadata &&
+          clip.swaprMetadata?.source !== "swapr",
+      ).length,
+    }),
+    [clips, longrVideos.length, stitches.length],
+  );
+  const counts = getClipLibraryDisplayCounts(aggregateCounts, loadedCounts);
 
   const refresh = useCallback(async () => {
     setError(null);
@@ -595,6 +621,7 @@ export function useClipLibraryState(): ClipLibraryValue {
 
   return {
     clips,
+    counts,
     longrVideos,
     stitches,
     isLoading: isAuthLoading || isLoadingFirstPage,

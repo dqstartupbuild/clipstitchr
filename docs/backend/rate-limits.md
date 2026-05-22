@@ -148,6 +148,19 @@ Optional Replicate model overrides:
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
 | Convex Clipr job writes | `cliprJobs.createQueued`, `cliprJobs.applyScriptPlan`, `cliprJobs.recordAvatarImageOutput`, `cliprJobs.recordAvatarVideoOutput`, `cliprJobs.markBrowserSaving`, `cliprJobs.finalizeWithClip` | 3,000/hour/user, burst 500 |
 
+## Intentionally Not Rate-Limited
+
+Aggregate library count reads through `libraryCounts.get` are authenticated,
+read-only Convex queries backed by the Aggregate component. They do not create
+storage, bandwidth, provider, or external API cost, so they are not
+rate-limited.
+
+Aggregate backfill mutations in `aggregateBackfills.ts` are operator-only
+maintenance functions gated by `RATE_LIMIT_API_SECRET`, paginated, and
+idempotent. They are intentionally not exposed in the UI and are not
+rate-limited; operators should run them in bounded pages and stop when
+`isDone` is `true`.
+
 ## Local-Only Workflows
 
 Swipr carousel export is intentionally not rate-limited in the MVP because the

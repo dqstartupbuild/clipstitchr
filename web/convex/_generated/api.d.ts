@@ -8,11 +8,14 @@
  * @module
  */
 
+import type * as aggregateBackfills from "../aggregateBackfills.js";
+import type * as aggregateCounts from "../aggregateCounts.js";
 import type * as auth_assertRateLimitApiSecret from "../auth/assertRateLimitApiSecret.js";
 import type * as auth_getAuthenticatedOwnerId from "../auth/getAuthenticatedOwnerId.js";
 import type * as avatars from "../avatars.js";
 import type * as cliprJobs from "../cliprJobs.js";
 import type * as cliprPreferences from "../cliprPreferences.js";
+import type * as libraryCounts from "../libraryCounts.js";
 import type * as longrVideos from "../longrVideos.js";
 import type * as photoAssets from "../photoAssets.js";
 import type * as products from "../products.js";
@@ -55,11 +58,14 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  aggregateBackfills: typeof aggregateBackfills;
+  aggregateCounts: typeof aggregateCounts;
   "auth/assertRateLimitApiSecret": typeof auth_assertRateLimitApiSecret;
   "auth/getAuthenticatedOwnerId": typeof auth_getAuthenticatedOwnerId;
   avatars: typeof avatars;
   cliprJobs: typeof cliprJobs;
   cliprPreferences: typeof cliprPreferences;
+  libraryCounts: typeof libraryCounts;
   longrVideos: typeof longrVideos;
   photoAssets: typeof photoAssets;
   products: typeof products;
@@ -124,4 +130,7 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
+  videoClipCounts: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"videoClipCounts">;
+  stitchCounts: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"stitchCounts">;
+  longrVideoCounts: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"longrVideoCounts">;
 };

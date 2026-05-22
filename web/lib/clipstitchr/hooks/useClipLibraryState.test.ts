@@ -33,6 +33,7 @@ const mocks = vi.hoisted(() => {
       return mutation;
     }),
     usePaginatedQuery: vi.fn(),
+    useQuery: vi.fn(),
     useStateSetter: vi.fn(),
   };
 });
@@ -67,6 +68,7 @@ vi.mock("convex/react", () => ({
   useConvexAuth: mocks.useConvexAuth,
   useMutation: mocks.useMutation,
   usePaginatedQuery: mocks.usePaginatedQuery,
+  useQuery: mocks.useQuery,
 }));
 
 vi.mock("@/convex/_generated/api", () => ({
@@ -75,6 +77,9 @@ vi.mock("@/convex/_generated/api", () => ({
       get: "longrVideos.get",
       list: "longrVideos.list",
       remove: "longrVideos.remove",
+    },
+    libraryCounts: {
+      get: "libraryCounts.get",
     },
     stitches: {
       get: "stitches.get",
@@ -232,6 +237,14 @@ describe("useClipLibraryState", () => {
         status: "Exhausted",
       };
     });
+    mocks.useQuery.mockReturnValue({
+      cliprClips: 0,
+      demoClips: 0,
+      longrVideos: 0,
+      stitches: 0,
+      swapClips: 0,
+      ugcClips: 0,
+    });
     mocks.convex.query.mockImplementation(async (queryId: string) => {
       if (queryId === "videoClips.get") {
         return createClipDocument();
@@ -309,6 +322,7 @@ describe("useClipLibraryState", () => {
       "skip",
       { initialNumItems: 48 },
     );
+    expect(mocks.useQuery).toHaveBeenCalledWith("libraryCounts.get", "skip");
   });
 
   it("loads a clip from Convex and R2 once, then reuses the cache", async () => {
@@ -826,6 +840,14 @@ describe("useClipLibraryState", () => {
     const state = useClipLibraryState();
 
     expect(state.clips).toHaveLength(1);
+    expect(state.counts).toEqual({
+      cliprClips: 1,
+      demoClips: 0,
+      longrVideos: 1,
+      stitches: 1,
+      swapClips: 0,
+      ugcClips: 0,
+    });
     expect(state.stitches).toEqual([{ id: "stitch_1" }]);
     expect(state.longrVideos).toEqual([{ id: "longr_1" }]);
     expect(mocks.downloadBlobFromR2).not.toHaveBeenCalled();
@@ -840,6 +862,45 @@ describe("useClipLibraryState", () => {
       mocks.createLongrVideoMetadataFromConvexDocument,
     ).toHaveBeenCalledWith(expect.objectContaining({ id: "longr_1" }));
     expect(mocks.createLongrVideoFromConvexDocument).not.toHaveBeenCalled();
+  });
+
+  it("uses aggregate counts when they are larger than the loaded page", () => {
+    mocks.useQuery.mockReturnValue({
+      cliprClips: 10,
+      demoClips: 20,
+      longrVideos: 30,
+      stitches: 40,
+      swapClips: 50,
+      ugcClips: 60,
+    });
+    mocks.usePaginatedQuery.mockImplementation((queryId: string) => {
+      if (queryId === "videoClips.list") {
+        return {
+          isLoading: false,
+          loadMore: vi.fn(),
+          results: [createClipDocument()],
+          status: "CanLoadMore",
+        };
+      }
+
+      return {
+        isLoading: false,
+        loadMore: vi.fn(),
+        results: [],
+        status: "Exhausted",
+      };
+    });
+
+    const state = useClipLibraryState();
+
+    expect(state.counts).toEqual({
+      cliprClips: 10,
+      demoClips: 20,
+      longrVideos: 30,
+      stitches: 40,
+      swapClips: 50,
+      ugcClips: 60,
+    });
   });
 
   it("lazy-loads full Longr videos and poster blobs on demand", async () => {
@@ -956,9 +1017,18 @@ describe("useClipLibraryState", () => {
       isAuthenticated: false,
       isLoading: false,
     });
+    mocks.useQuery.mockReturnValue(undefined);
 
     const state = useClipLibraryState();
 
+    expect(state.counts).toEqual({
+      cliprClips: 0,
+      demoClips: 0,
+      longrVideos: 0,
+      stitches: 0,
+      swapClips: 0,
+      ugcClips: 0,
+    });
     expect(state.clips).toEqual([]);
     expect(state.stitches).toEqual([]);
     expect(state.longrVideos).toEqual([]);

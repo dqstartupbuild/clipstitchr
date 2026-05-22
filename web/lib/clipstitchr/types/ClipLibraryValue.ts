@@ -1,5 +1,6 @@
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
+import type { ClipLibraryCounts } from "@/lib/clipstitchr/types/ClipLibraryCounts";
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
 import type { LongrVideoMetadata } from "@/lib/clipstitchr/types/LongrVideoMetadata";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
@@ -11,6 +12,7 @@ import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 export type ClipLibraryValue = {
   clips: VideoClipMetadata[];
+  counts: ClipLibraryCounts;
   longrVideos: LongrVideoMetadata[];
   stitches: Stitch[];
   isLoading: boolean;

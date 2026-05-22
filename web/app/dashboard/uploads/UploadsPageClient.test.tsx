@@ -253,6 +253,14 @@ describe("UploadsPageClient", () => {
           } as unknown as VideoClipMetadata["swaprMetadata"],
         }),
       ],
+      counts: {
+        cliprClips: 20,
+        demoClips: 30,
+        longrVideos: 60,
+        stitches: 50,
+        swapClips: 40,
+        ugcClips: 10,
+      },
       error: "Library error",
       generateCliprMusic: vi.fn(),
       generateStitchMusic: vi.fn(),
@@ -343,6 +351,10 @@ describe("UploadsPageClient", () => {
     expect(
       (elements.filter((element) => element.props?.loadMoreLabel) ?? []).length,
     ).toBe(4);
+    expect(ugcSection?.props?.totalCount).toBe(10);
+    expect(findByProp(elements, "id", "clips")?.props?.totalCount).toBe(20);
+    expect(findByProp(elements, "id", "demo-videos")?.props?.totalCount).toBe(30);
+    expect(findByProp(elements, "id", "swaps")?.props?.totalCount).toBe(40);
 
     await expect(
       (
@@ -403,6 +415,7 @@ describe("UploadsPageClient", () => {
         avatarCreatorError: "Avatar error",
         emptyTitle: "No matching UGC",
         isCreatingAvatarFromClip: true,
+        totalCount: undefined,
       }),
     );
     await expect(
@@ -455,6 +468,7 @@ describe("UploadsPageClient", () => {
       expect.objectContaining({
         emptyDescription: "No saved demo videos are linked to that product.",
         emptyTitle: "No demos for this product",
+        totalCount: undefined,
       }),
     );
   });

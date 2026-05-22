@@ -14,9 +14,6 @@ import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
-import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
-import { filterCliprClips } from "@/lib/clipstitchr/utils/filterCliprClips";
-import { filterPlainUgcClips } from "@/lib/clipstitchr/utils/filterPlainUgcClips";
 import { getRecentAvatarPhotos } from "@/lib/clipstitchr/utils/getRecentAvatarPhotos";
 import { getRecentLongrVideos } from "@/lib/clipstitchr/utils/getRecentLongrVideos";
 import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
@@ -30,18 +27,6 @@ export function DashboardPageClient() {
   const photoLibrary = usePhotoLibrary();
   const products = useProducts();
   const swiprLibrary = useSwiprLibrary();
-  const ugcClips = useMemo(
-    () => filterPlainUgcClips(library.clips),
-    [library.clips],
-  );
-  const cliprClips = useMemo(
-    () => filterCliprClips(library.clips),
-    [library.clips],
-  );
-  const demoClips = useMemo(
-    () => filterClipsByType(library.clips, "demo"),
-    [library.clips],
-  );
   const recentUploads = useMemo(
     () => getRecentVideoClips(library.clips, RECENT_DASHBOARD_ITEM_LIMIT),
     [library.clips],
@@ -91,10 +76,10 @@ export function DashboardPageClient() {
           </div>
         ) : null}
         <DashboardStats
-          ugcCount={ugcClips.length}
-          demoCount={demoClips.length}
-          clipsCount={cliprClips.length}
-          stitchesCount={library.stitches.length}
+          ugcCount={library.counts.ugcClips}
+          demoCount={library.counts.demoClips}
+          clipsCount={library.counts.cliprClips}
+          stitchesCount={library.counts.stitches}
         />
         <RecentStitchesSection
           stitches={recentStitches}
