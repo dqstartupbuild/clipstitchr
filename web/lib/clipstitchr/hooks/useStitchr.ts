@@ -120,8 +120,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         width: TIKTOK_OUTPUT_WIDTH,
         height: TIKTOK_OUTPUT_HEIGHT,
         duration,
-        includeDemoAudio: options.includeDemoAudio ?? true,
-        includeUgcAudio: options.includeUgcAudio ?? true,
+        includeDemoAudio: options.includeDemoAudio ?? false,
+        includeUgcAudio: options.includeUgcAudio ?? false,
         textOverlay: textOverlay ?? undefined,
         createdAt: now,
       };
