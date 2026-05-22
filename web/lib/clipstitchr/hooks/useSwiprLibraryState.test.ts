@@ -31,12 +31,25 @@ vi.mock("react", () => ({
   useEffect: mocks.useEffect,
   useMemo: (factory: () => unknown) => factory(),
   useRef: (value: unknown) => ({ current: value }),
-  useState: (initialValue: unknown) => [
-    typeof initialValue === "function"
-      ? (initialValue as () => unknown)()
-      : initialValue,
-    mocks.useStateSetter,
-  ],
+  useState: (initialValue: unknown) => {
+    const value =
+      typeof initialValue === "function"
+        ? (initialValue as () => unknown)()
+        : initialValue;
+
+    return [
+      value,
+      (nextValue: unknown) => {
+        mocks.useStateSetter(nextValue);
+
+        if (typeof nextValue === "function") {
+          return (nextValue as (currentValue: unknown) => unknown)(value);
+        }
+
+        return nextValue;
+      },
+    ];
+  },
 }));
 
 vi.mock("convex/react", () => ({
@@ -236,6 +249,43 @@ describe("useSwiprLibraryState", () => {
     );
   });
 
+  it("reuses a pending background blob download for concurrent callers", async () => {
+    let resolveDownload: ((blob: Blob) => void) | undefined;
+    const download = new Promise<Blob>((resolve) => {
+      resolveDownload = resolve;
+    });
+    mocks.downloadSwiprBackgroundBlobFromR2.mockReturnValueOnce(download);
+    const state = useSwiprLibraryState();
+
+    const firstLoad = state.loadBackgroundBlob("background_1");
+    const secondLoad = state.loadBackgroundBlob("background_1");
+    const blob = new Blob(["background"], { type: "image/jpeg" });
+    resolveDownload?.(blob);
+
+    await expect(firstLoad).resolves.toBe(blob);
+    await expect(secondLoad).resolves.toBe(blob);
+    expect(mocks.downloadSwiprBackgroundBlobFromR2).toHaveBeenCalledTimes(1);
+  });
+
+  it("continues queued background downloads after a rejected download", async () => {
+    mocks.downloadSwiprBackgroundBlobFromR2
+      .mockRejectedValueOnce(new Error("download failed"))
+      .mockResolvedValueOnce(new Blob(["second"], { type: "image/jpeg" }));
+    const state = useSwiprLibraryState();
+
+    await expect(state.loadBackgroundBlob("background_1")).rejects.toThrow(
+      "download failed",
+    );
+    await expect(state.loadBackgroundBlob("background_2")).resolves.toEqual(
+      expect.any(Blob),
+    );
+
+    expect(mocks.downloadSwiprBackgroundBlobFromR2).toHaveBeenNthCalledWith(
+      2,
+      "background_2",
+    );
+  });
+
   it("saves an analyzed background with dimensions and generation details", async () => {
     const state = useSwiprLibraryState();
     const blob = new Blob(["background"], { type: "image/jpeg" });
@@ -279,6 +329,34 @@ describe("useSwiprLibraryState", () => {
     );
   });
 
+  it("omits empty background details when analysis and generation metadata are blank", async () => {
+    mocks.analyzeSwiprBackground.mockResolvedValueOnce({
+      description: "Analyzed description",
+      details: "",
+      name: "Analyzed background",
+      tags: ["ai"],
+    });
+    const state = useSwiprLibraryState();
+
+    await expect(
+      state.saveBackground({
+        blob: new Blob(["background"], { type: "image/jpeg" }),
+        originalName: "wall.jpg",
+        source: "upload",
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        details: undefined,
+      }),
+    );
+
+    expect(getMutation("swiprBackgrounds.save")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        details: undefined,
+      }),
+    );
+  });
+
   it("saves swipes with generated timestamps and removes swipes by id", async () => {
     const state = useSwiprLibraryState();
 
@@ -314,6 +392,37 @@ describe("useSwiprLibraryState", () => {
     });
   });
 
+  it("preserves provided swipe timestamps", async () => {
+    const state = useSwiprLibraryState();
+
+    await expect(
+      state.saveSwipe({
+        backgroundId: "background_1",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        id: "swipe_existing",
+        name: "Existing Swipe",
+        productContext: "Context",
+        productName: "Product",
+        productSourceId: "product_1",
+        productSourceType: "saved-product",
+        slides: [],
+        updatedAt: "2026-01-02T00:00:00.000Z",
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-02T00:00:00.000Z",
+      }),
+    );
+
+    expect(getMutation("swipes.save")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-02T00:00:00.000Z",
+      }),
+    );
+  });
+
   it("surfaces save and delete failures", async () => {
     const state = useSwiprLibraryState();
 
@@ -332,5 +441,73 @@ describe("useSwiprLibraryState", () => {
       }),
     ).rejects.toThrow("analysis failed");
     await expect(state.removeSwipe("swipe_1")).rejects.toThrow("delete failed");
+  });
+
+  it("surfaces swipe save failures", async () => {
+    const state = useSwiprLibraryState();
+
+    getMutation("swipes.save").mockRejectedValueOnce(new Error("save failed"));
+
+    await expect(
+      state.saveSwipe({
+        backgroundId: "background_1",
+        id: "swipe_new",
+        name: "New Swipe",
+        productContext: "Context",
+        productName: "Product",
+        productSourceId: "product_1",
+        productSourceType: "saved-product",
+        slides: [],
+      }),
+    ).rejects.toThrow("save failed");
+  });
+
+  it("hydrates background documents after authentication", async () => {
+    mocks.useEffect.mockImplementationOnce(
+      (effect: () => void | (() => void)) => effect(),
+    );
+
+    useSwiprLibraryState();
+    await Promise.resolve();
+
+    expect(mocks.createSwiprBackgroundAssetFromConvexDocument).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "background_1" }),
+      undefined,
+    );
+    expect(mocks.useStateSetter).toHaveBeenCalledWith([
+      { id: "background_1", name: "Mapped background" },
+    ]);
+  });
+
+  it("clears cached backgrounds when authentication is resolved signed out", async () => {
+    mocks.useConvexAuth.mockReturnValue({
+      isAuthenticated: false,
+      isLoading: false,
+    });
+    mocks.useEffect.mockImplementationOnce(
+      (effect: () => void | (() => void)) => effect(),
+    );
+
+    useSwiprLibraryState();
+    await Promise.resolve();
+
+    expect(mocks.useStateSetter).toHaveBeenCalledWith([]);
+  });
+
+  it("skips background hydration after the effect cleanup runs", async () => {
+    let cleanup: (() => void) | undefined;
+    mocks.useEffect.mockImplementationOnce(
+      (effect: () => void | (() => void)) => {
+        cleanup = effect() ?? undefined;
+      },
+    );
+
+    useSwiprLibraryState();
+    cleanup?.();
+    await Promise.resolve();
+
+    expect(
+      mocks.createSwiprBackgroundAssetFromConvexDocument,
+    ).not.toHaveBeenCalled();
   });
 });

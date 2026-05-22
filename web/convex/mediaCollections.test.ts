@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as avatars from "./avatars";
+import * as cliprPreferences from "./cliprPreferences";
 import * as longrVideos from "./longrVideos";
 import * as photoAssets from "./photoAssets";
 import * as replicateJobs from "./replicateJobs";
@@ -13,6 +14,7 @@ type ConvexFunction<Args, Result> = {
 
 type QueryResult = {
   collect?: unknown[];
+  paginate?: unknown;
   take?: unknown[];
   unique?: unknown;
 };
@@ -55,6 +57,13 @@ function createQueryChain(result: QueryResult = {}) {
   const chain = {
     collect: vi.fn(async () => result.collect ?? []),
     order: vi.fn(() => chain),
+    paginate: vi.fn(async () =>
+      result.paginate ?? {
+        continueCursor: null,
+        isDone: true,
+        page: [],
+      },
+    ),
     take: vi.fn(async () => result.take ?? []),
     unique: vi.fn(async () => result.unique ?? null),
     withIndex: vi.fn((_index: string, callback: (q: typeof indexQuery) => void) => {
@@ -351,11 +360,25 @@ describe("convex media collections", () => {
     const secondPhoto = { _id: "photo_doc_2", avatarId: "avatar_2", id: "b" };
     const queryCtx = createCtx({
       photoAssets: [
+        { collect: [firstPhoto, secondPhoto] },
+        { unique: firstPhoto },
         { collect: [secondPhoto, firstPhoto] },
         { collect: [firstPhoto, secondPhoto] },
       ],
     });
 
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(photoAssets.list)(
+        queryCtx,
+        {},
+      ),
+    ).resolves.toEqual([firstPhoto, secondPhoto]);
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(photoAssets.get)(
+        queryCtx,
+        { id: "photo_1" },
+      ),
+    ).resolves.toBe(firstPhoto);
     await expect(
       getHandler<Record<string, unknown>, unknown>(
         photoAssets.getMostRecentForAvatar,
@@ -367,10 +390,20 @@ describe("convex media collections", () => {
       )(queryCtx, { avatarId: "avatar_2" }),
     ).resolves.toBe(secondPhoto);
 
+    const insertCtx = createCtx({ photoAssets: [{ unique: null }] });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(photoAssets.save)(
+        insertCtx,
+        createPhotoArgs(),
+      ),
+    ).resolves.toBe("inserted_doc");
+
     const saveCtx = createCtx({
       photoAssets: [
         { unique: { _id: "photo_doc_1" } },
         { unique: { _id: "photo_doc_1" } },
+        { unique: null },
       ],
     });
 
@@ -390,6 +423,17 @@ describe("convex media collections", () => {
         updatedAt: now,
       },
     );
+    await expect(
+      getHandler<Record<string, unknown>, void>(photoAssets.updateMetadata)(
+        saveCtx,
+        {
+          id: "missing_photo",
+          name: "Missing photo",
+          tags: ["photo"],
+          updatedAt: now,
+        },
+      ),
+    ).rejects.toThrow("Photo not found.");
     expect(saveCtx.db.patch).toHaveBeenCalledWith(
       "photo_doc_1",
       expect.objectContaining({
@@ -398,7 +442,12 @@ describe("convex media collections", () => {
       }),
     );
 
-    const removeCtx = createCtx({ photoAssets: [{ unique: null }] });
+    const removeCtx = createCtx({
+      photoAssets: [
+        { unique: null },
+        { unique: { _id: "photo_doc_1", id: "photo_1" } },
+      ],
+    });
 
     await expect(
       getHandler<Record<string, unknown>, unknown>(photoAssets.remove)(
@@ -406,10 +455,33 @@ describe("convex media collections", () => {
         { id: "missing" },
       ),
     ).resolves.toBeNull();
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(photoAssets.remove)(
+        removeCtx,
+        { id: "photo_1" },
+      ),
+    ).resolves.toEqual({ _id: "photo_doc_1", id: "photo_1" });
+    expect(removeCtx.db.delete).toHaveBeenCalledWith("photo_doc_1");
   });
 
   it("updates avatars and deletes them only after the provided photos match", async () => {
-    const saveCtx = createCtx({ avatars: [{ unique: null }] });
+    const listAvatar = { _id: "avatar_doc_1", id: "avatar_1" };
+    const queryCtx = createCtx({
+      avatars: [{ collect: [listAvatar] }, { unique: listAvatar }],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(avatars.list)(queryCtx, {}),
+    ).resolves.toEqual([listAvatar]);
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(avatars.get)(queryCtx, {
+        id: "avatar_1",
+      }),
+    ).resolves.toBe(listAvatar);
+
+    const saveCtx = createCtx({
+      avatars: [{ unique: null }, { unique: { _id: "avatar_doc" } }],
+    });
 
     await expect(
       getHandler<Record<string, unknown>, unknown>(avatars.save)(
@@ -421,9 +493,19 @@ describe("convex media collections", () => {
       "avatars",
       expect.objectContaining({ ownerId: "owner_123" }),
     );
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(avatars.save)(
+        saveCtx,
+        createAvatarArgs({ name: "Patched Avatar" }),
+      ),
+    ).resolves.toBe("avatar_doc");
+    expect(saveCtx.db.patch).toHaveBeenCalledWith(
+      "avatar_doc",
+      expect.objectContaining({ name: "Patched Avatar" }),
+    );
 
     const updateCtx = createCtx({
-      avatars: [{ unique: { _id: "avatar_doc" } }],
+      avatars: [{ unique: { _id: "avatar_doc" } }, { unique: null }],
     });
 
     await getHandler<Record<string, unknown>, void>(avatars.update)(updateCtx, {
@@ -439,6 +521,44 @@ describe("convex media collections", () => {
         name: "Updated Avatar",
       }),
     );
+    await expect(
+      getHandler<Record<string, unknown>, void>(avatars.update)(updateCtx, {
+        id: "missing_avatar",
+        name: "Missing Avatar",
+        updatedAt: now,
+      }),
+    ).rejects.toThrow("Avatar not found.");
+
+    const bundleCtx = createCtx({
+      avatars: [
+        { unique: null },
+        { unique: { _id: "avatar_doc", id: "avatar_1" } },
+      ],
+      photoAssets: [
+        {
+          collect: [
+            { _id: "photo_doc_1", avatarId: "avatar_1", id: "photo_1" },
+            { _id: "photo_doc_2", avatarId: "other", id: "photo_2" },
+          ],
+        },
+      ],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(avatars.getDeleteBundle)(
+        bundleCtx,
+        { id: "missing_avatar" },
+      ),
+    ).resolves.toBeNull();
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(avatars.getDeleteBundle)(
+        bundleCtx,
+        { id: "avatar_1" },
+      ),
+    ).resolves.toEqual({
+      avatar: { _id: "avatar_doc", id: "avatar_1" },
+      photos: [{ _id: "photo_doc_1", avatarId: "avatar_1", id: "photo_1" }],
+    });
 
     const deleteCtx = createCtx({
       avatars: [{ unique: { _id: "avatar_doc", id: "avatar_1" } }],
@@ -464,6 +584,21 @@ describe("convex media collections", () => {
     ).resolves.toEqual({ deletedAvatar: true, deletedPhotoCount: 1 });
     expect(deleteCtx.db.delete).toHaveBeenCalledWith("photo_doc_1");
     expect(deleteCtx.db.delete).toHaveBeenCalledWith("avatar_doc");
+
+    const missingAvatarDeleteCtx = createCtx({
+      avatars: [{ unique: null }],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(avatars.removeWithPhotos)(
+        missingAvatarDeleteCtx,
+        {
+          id: "missing_avatar",
+          photoIds: [],
+          secret: "secret",
+        },
+      ),
+    ).resolves.toEqual({ deletedAvatar: false, deletedPhotoCount: 0 });
 
     const changedPhotosCtx = createCtx({
       avatars: [{ unique: { _id: "avatar_doc", id: "avatar_1" } }],
@@ -514,11 +649,105 @@ describe("convex media collections", () => {
     expect(saveCtx.db.delete).toHaveBeenCalledWith("longr_doc");
   });
 
+  it("lists, gets, patches, and no-ops missing Longr records", async () => {
+    const longrRecord = {
+      _id: "longr_doc",
+      id: "longr_1",
+      ownerId: "owner_123",
+    };
+    const queryCtx = createCtx({
+      longrVideos: [
+        {
+          paginate: {
+            continueCursor: null,
+            isDone: true,
+            page: [longrRecord],
+          },
+        },
+        { unique: longrRecord },
+      ],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(longrVideos.list)(
+        queryCtx,
+        {
+          paginationOpts: {
+            cursor: null,
+            numItems: 10,
+          },
+        },
+      ),
+    ).resolves.toEqual({
+      continueCursor: null,
+      isDone: true,
+      page: [longrRecord],
+    });
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(longrVideos.get)(queryCtx, {
+        id: "longr_1",
+      }),
+    ).resolves.toBe(longrRecord);
+
+    const patchCtx = createCtx({
+      longrVideos: [{ unique: longrRecord }],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(longrVideos.save)(
+        patchCtx,
+        createLongrArgs(),
+      ),
+    ).resolves.toBe("longr_doc");
+    expect(patchCtx.db.patch).toHaveBeenCalledWith(
+      "longr_doc",
+      expect.objectContaining({
+        id: "longr_1",
+        ownerId: "owner_123",
+      }),
+    );
+
+    const missingRemoveCtx = createCtx({
+      longrVideos: [{ unique: null }],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(longrVideos.remove)(
+        missingRemoveCtx,
+        { id: "missing_longr" },
+      ),
+    ).resolves.toBeNull();
+    expect(missingRemoveCtx.db.delete).not.toHaveBeenCalled();
+  });
+
   it("normalizes Swipr records after validating background and product", async () => {
+    const listSwipe = { _id: "swipe_doc_1", id: "swipe_1" };
+    const queryCtx = createCtx({
+      swipes: [{ collect: [listSwipe] }, { unique: listSwipe }],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(swipes.list)(queryCtx, {}),
+    ).resolves.toEqual([listSwipe]);
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(swipes.get)(queryCtx, {
+        id: "swipe_1",
+      }),
+    ).resolves.toBe(listSwipe);
+
     const saveCtx = createCtx({
-      products: [{ unique: { _id: "product_doc", id: "product_1" } }],
-      swipes: [{ unique: null }],
-      swiprBackgrounds: [{ unique: { _id: "background_doc" } }],
+      products: [
+        { unique: { _id: "product_doc", id: "product_1" } },
+        { unique: { _id: "product_doc", id: "product_1" } },
+      ],
+      swipes: [
+        { unique: null },
+        { unique: { _id: "swipe_doc", createdAt: now, id: "swipe_1" } },
+      ],
+      swiprBackgrounds: [
+        { unique: { _id: "background_doc" } },
+        { unique: { _id: "background_doc" } },
+      ],
     });
 
     await expect(
@@ -535,6 +764,18 @@ describe("convex media collections", () => {
         productName: "Product",
       }),
     );
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(swipes.save)(
+        saveCtx,
+        createSwipeArgs({ name: "Updated Swipe" }),
+      ),
+    ).resolves.toBe("swipe_doc");
+    expect(saveCtx.db.patch).toHaveBeenCalledWith(
+      "swipe_doc",
+      expect.objectContaining({
+        name: "Updated Swipe",
+      }),
+    );
 
     const missingBackgroundCtx = createCtx({
       swiprBackgrounds: [{ unique: null }],
@@ -547,10 +788,28 @@ describe("convex media collections", () => {
       ),
     ).rejects.toThrow("Swipr background not found.");
 
-    const blankNameCtx = createCtx({
-      products: [{ unique: { _id: "product_doc" } }],
-      swipes: [{ unique: null }],
+    const missingProductCtx = createCtx({
+      products: [{ unique: null }],
       swiprBackgrounds: [{ unique: { _id: "background_doc" } }],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(swipes.save)(
+        missingProductCtx,
+        createSwipeArgs(),
+      ),
+    ).rejects.toThrow("Saved Settings product not found.");
+
+    const blankNameCtx = createCtx({
+      products: [
+        { unique: { _id: "product_doc" } },
+        { unique: { _id: "product_doc" } },
+      ],
+      swipes: [{ unique: null }, { unique: null }],
+      swiprBackgrounds: [
+        { unique: { _id: "background_doc" } },
+        { unique: { _id: "background_doc" } },
+      ],
     });
 
     await expect(
@@ -559,6 +818,28 @@ describe("convex media collections", () => {
         createSwipeArgs({ name: "   " }),
       ),
     ).rejects.toThrow("Swipe name is required.");
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(swipes.save)(
+        blankNameCtx,
+        createSwipeArgs({ productName: "   " }),
+      ),
+    ).rejects.toThrow("Swipe product name is required.");
+
+    const removeCtx = createCtx({
+      swipes: [{ unique: null }, { unique: { _id: "swipe_doc", id: "swipe_1" } }],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(swipes.remove)(removeCtx, {
+        id: "missing",
+      }),
+    ).resolves.toBeNull();
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(swipes.remove)(removeCtx, {
+        id: "swipe_1",
+      }),
+    ).resolves.toEqual({ _id: "swipe_doc", id: "swipe_1" });
+    expect(removeCtx.db.delete).toHaveBeenCalledWith("swipe_doc");
   });
 
   it("records and updates Replicate job rows by purpose", async () => {
@@ -582,6 +863,73 @@ describe("convex media collections", () => {
       expect.objectContaining({
         ownerId: "owner_123",
         purpose: "swapr-video",
+      }),
+    );
+
+    const existingSwaprCtx = createCtx({
+      replicateJobs: [{ unique: { _id: "swapr_job" } }],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(replicateJobs.recordSwaprJob)(
+        existingSwaprCtx,
+        {
+          createdAt: now,
+          modelId: "model_1",
+          predictionId: "prediction_1",
+          secret: "secret",
+          status: "processing",
+          updatedAt: now,
+        },
+      ),
+    ).resolves.toBe("swapr_job");
+    expect(existingSwaprCtx.db.patch).toHaveBeenCalledWith(
+      "swapr_job",
+      expect.objectContaining({
+        purpose: "swapr-video",
+        status: "processing",
+      }),
+    );
+
+    const avatarInsertCtx = createCtx({
+      replicateJobs: [{ unique: null }, { unique: { _id: "avatar_job" } }],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(
+        replicateJobs.recordAvatarPhotoJob,
+      )(avatarInsertCtx, {
+        createdAt: now,
+        modelId: "avatar_model",
+        predictionId: "prediction_avatar_1",
+        secret: "secret",
+        status: "starting",
+        updatedAt: now,
+      }),
+    ).resolves.toBe("inserted_doc");
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(
+        replicateJobs.recordAvatarPhotoJob,
+      )(avatarInsertCtx, {
+        createdAt: now,
+        modelId: "avatar_model",
+        predictionId: "prediction_avatar_1",
+        secret: "secret",
+        status: "processing",
+        updatedAt: now,
+      }),
+    ).resolves.toBe("avatar_job");
+    expect(avatarInsertCtx.db.insert).toHaveBeenCalledWith(
+      "replicateJobs",
+      expect.objectContaining({
+        purpose: "avatar-photo",
+      }),
+    );
+    expect(avatarInsertCtx.db.patch).toHaveBeenCalledWith(
+      "avatar_job",
+      expect.objectContaining({
+        purpose: "avatar-photo",
+        status: "processing",
       }),
     );
 
@@ -633,5 +981,90 @@ describe("convex media collections", () => {
         updatedAt: now,
       }),
     ).rejects.toThrow("Swapr job not found.");
+
+    const missingAvatarCtx = createCtx({
+      replicateJobs: [{ unique: { _id: "job", purpose: "swapr-video" } }],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(
+        replicateJobs.updateAvatarPhotoJobStatus,
+      )(missingAvatarCtx, {
+        predictionId: "prediction_1",
+        secret: "secret",
+        status: "succeeded",
+        updatedAt: now,
+      }),
+    ).rejects.toThrow("Avatar photo job not found.");
+  });
+
+  it("gets and upserts Clipr user preferences", async () => {
+    const getCtx = createCtx({
+      cliprUserPreferences: [
+        {
+          unique: {
+            _id: "preference_doc",
+            defaultVoiceId: "voice_1",
+            ownerId: "owner_123",
+          },
+        },
+      ],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(cliprPreferences.get)(
+        getCtx,
+        {},
+      ),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        defaultVoiceId: "voice_1",
+      }),
+    );
+
+    const insertCtx = createCtx({
+      cliprUserPreferences: [{ unique: null }],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(
+        cliprPreferences.setDefaultVoice,
+      )(insertCtx, {
+        defaultVoiceId: "voice_2",
+        updatedAt: now,
+      }),
+    ).resolves.toBe("inserted_doc");
+    expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
+      insertCtx,
+      "convexMetadataUpdate",
+      {
+        key: "owner_123",
+        throws: true,
+      },
+    );
+    expect(insertCtx.db.insert).toHaveBeenCalledWith(
+      "cliprUserPreferences",
+      expect.objectContaining({
+        defaultVoiceId: "voice_2",
+        ownerId: "owner_123",
+      }),
+    );
+
+    const updateCtx = createCtx({
+      cliprUserPreferences: [{ unique: { _id: "preference_doc" } }],
+    });
+
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(
+        cliprPreferences.setDefaultVoice,
+      )(updateCtx, {
+        defaultVoiceId: "voice_3",
+        updatedAt: now,
+      }),
+    ).resolves.toBe("preference_doc");
+    expect(updateCtx.db.patch).toHaveBeenCalledWith("preference_doc", {
+      defaultVoiceId: "voice_3",
+      updatedAt: now,
+    });
   });
 });

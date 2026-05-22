@@ -11,15 +11,21 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 const mocks = vi.hoisted(() => ({
   actionItems: [] as MediaCardActionMenuItem[],
   avatarDialogProps: null as null | {
+    onClose: () => void;
     onCreate: (options: unknown) => Promise<boolean>;
   },
   createVideoBlobWithPosterMetadata: vi.fn(),
   downloadBlob: vi.fn(),
   downloadMusicBlob: vi.fn(),
   metadataDialogProps: null as null | {
+    onClose: () => void;
     onSave: (metadata: unknown) => Promise<void>;
   },
+  loadFullClip: vi.fn(),
+  openDetails: vi.fn(),
   renderCliprVideoWithMusic: vi.fn(),
+  setState: vi.fn(),
+  stateQueue: [] as unknown[],
   trimEditor: null as null | {
     onSave: (trimRange: { start: number; end: number }) => void | Promise<void>;
   },
@@ -29,6 +35,18 @@ const mocks = vi.hoisted(() => ({
     onSave: (music: CliprMusicMetadata | null) => void | Promise<void>;
   },
 }));
+
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react")>();
+
+  return {
+    ...actual,
+    useState: (initialValue: unknown) => [
+      mocks.stateQueue.length ? mocks.stateQueue.shift() : initialValue,
+      mocks.setState,
+    ],
+  };
+});
 
 vi.mock("@/app/_components/dashboard/VideoClipPreviewCard", () => ({
   VideoClipPreviewCard: ({
@@ -50,14 +68,8 @@ vi.mock("@/app/_components/dashboard/VideoClipPreviewCard", () => ({
     mocks.cliprMusicEditor = cliprMusicEditor ?? null;
     mocks.actionItems = actions({
       isLoading: false,
-      loadFullClip: vi.fn(async () => ({
-        ...createClipMetadata(),
-        blob: new Blob(["clip"], { type: "video/mp4" }),
-        cliprMetadata: createCliprMetadata({
-          music: createCliprMusic({ volume: 0.8 }),
-        }),
-      })),
-      openDetails: vi.fn(),
+      loadFullClip: mocks.loadFullClip,
+      openDetails: mocks.openDetails,
     });
     footer();
     return "VideoClipPreviewCard";
@@ -66,6 +78,7 @@ vi.mock("@/app/_components/dashboard/VideoClipPreviewCard", () => ({
 
 vi.mock("@/app/_components/uploads/AssetMetadataEditDialog", () => ({
   AssetMetadataEditDialog: (props: {
+    onClose: () => void;
     onSave: (metadata: unknown) => Promise<void>;
   }) => {
     mocks.metadataDialogProps = props;
@@ -75,6 +88,7 @@ vi.mock("@/app/_components/uploads/AssetMetadataEditDialog", () => ({
 
 vi.mock("@/app/_components/dashboard/CreateAvatarFromClipDialog", () => ({
   CreateAvatarFromClipDialog: (props: {
+    onClose: () => void;
     onCreate: (options: unknown) => Promise<boolean>;
   }) => {
     mocks.avatarDialogProps = props;
@@ -180,6 +194,14 @@ describe("VideoClipCard", () => {
     mocks.metadataDialogProps = null;
     mocks.trimEditor = null;
     mocks.cliprMusicEditor = null;
+    mocks.stateQueue = [];
+    mocks.loadFullClip.mockResolvedValue({
+      ...createClipMetadata(),
+      blob: new Blob(["clip"], { type: "video/mp4" }),
+      cliprMetadata: createCliprMetadata({
+        music: createCliprMusic({ volume: 0.8 }),
+      }),
+    });
     mocks.downloadMusicBlob.mockResolvedValue(
       new Blob(["music"], { type: "audio/mpeg" }),
     );
@@ -235,6 +257,8 @@ describe("VideoClipCard", () => {
     ]);
 
     mocks.actionItems.find((item) => item.label === "Download clip")?.onClick?.();
+    mocks.actionItems.find((item) => item.label === "Edit clip details")?.onClick?.();
+    mocks.actionItems.find((item) => item.label === "Edit trim and music")?.onClick?.();
     mocks.actionItems
       .find((item) => item.label === "Create avatar from UGC")
       ?.onClick?.();
@@ -255,6 +279,10 @@ describe("VideoClipCard", () => {
       expect.any(Blob),
       "ugc-clip.mp4",
     );
+    expect(mocks.setState).toHaveBeenCalledWith(true);
+    expect(mocks.openDetails).toHaveBeenCalledWith({
+      showControlsEditor: true,
+    });
     expect(onDelete).toHaveBeenCalledWith("clip_1");
     expect(onUpdateTrim).toHaveBeenCalledWith(createClipMetadata(), {
       start: 1,
@@ -285,5 +313,181 @@ describe("VideoClipCard", () => {
       "Edit default trim",
       "Delete clip",
     ]);
+  });
+
+  it("skips clip download when the full clip cannot be loaded", async () => {
+    mocks.loadFullClip.mockResolvedValueOnce(null);
+
+    renderToStaticMarkup(
+      <VideoClipCard
+        clip={createClipMetadata()}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onUpdateMetadata={vi.fn()}
+        onUpdateTrim={vi.fn()}
+      />,
+    );
+
+    mocks.actionItems.find((item) => item.label === "Download clip")?.onClick?.();
+    await Promise.resolve();
+
+    expect(mocks.downloadBlob).not.toHaveBeenCalled();
+  });
+
+  it("downloads raw video when music is disabled and uses the clip MIME fallback", async () => {
+    mocks.loadFullClip.mockResolvedValueOnce({
+      ...createClipMetadata({
+        cliprMetadata: createCliprMetadata({
+          music: createCliprMusic({ enabled: false }),
+        }),
+      }),
+      blob: new Blob(["clip"], { type: "video/mp4" }),
+    });
+    mocks.createVideoBlobWithPosterMetadata.mockResolvedValueOnce(
+      new Blob(["export"]),
+    );
+
+    renderToStaticMarkup(
+      <VideoClipCard
+        clip={createClipMetadata()}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onUpdateMetadata={vi.fn()}
+        onUpdateTrim={vi.fn()}
+      />,
+    );
+
+    mocks.actionItems.find((item) => item.label === "Download clip")?.onClick?.();
+
+    for (let index = 0; index < 3; index += 1) {
+      await Promise.resolve();
+    }
+
+    expect(mocks.renderCliprVideoWithMusic).not.toHaveBeenCalled();
+    expect(mocks.downloadBlob).toHaveBeenCalledWith(
+      expect.any(Blob),
+      "ugc-clip.mp4",
+    );
+  });
+
+  it("reports download and music failures from card actions", async () => {
+    const onGenerateCliprMusic = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("Generation failed"));
+    const onUpdateCliprMusic = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("Save failed"));
+
+    mocks.createVideoBlobWithPosterMetadata.mockRejectedValueOnce(
+      new Error("Export failed"),
+    );
+
+    renderToStaticMarkup(
+      <VideoClipCard
+        clip={createClipMetadata()}
+        onDelete={vi.fn()}
+        onGenerateCliprMusic={onGenerateCliprMusic}
+        onLoadClip={vi.fn()}
+        onUpdateCliprMusic={onUpdateCliprMusic}
+        onUpdateMetadata={vi.fn()}
+        onUpdateTrim={vi.fn()}
+      />,
+    );
+
+    mocks.actionItems.find((item) => item.label === "Download clip")?.onClick?.();
+    await mocks.cliprMusicEditor?.onGenerate();
+    await expect(
+      mocks.cliprMusicEditor?.onSave(createCliprMusic()),
+    ).rejects.toThrow("Save failed");
+
+    for (let index = 0; index < 4; index += 1) {
+      await Promise.resolve();
+    }
+
+    expect(mocks.setState).toHaveBeenCalledWith("Export failed");
+    expect(mocks.setState).toHaveBeenCalledWith("Generation failed");
+    expect(mocks.setState).toHaveBeenCalledWith("Save failed");
+  });
+
+  it("uses fallback failure messages for non-Error download and music failures", async () => {
+    const onGenerateCliprMusic = vi.fn().mockRejectedValueOnce("no music");
+    const onUpdateCliprMusic = vi.fn().mockRejectedValueOnce("no save");
+
+    mocks.createVideoBlobWithPosterMetadata.mockRejectedValueOnce("no export");
+
+    renderToStaticMarkup(
+      <VideoClipCard
+        clip={createClipMetadata()}
+        onDelete={vi.fn()}
+        onGenerateCliprMusic={onGenerateCliprMusic}
+        onLoadClip={vi.fn()}
+        onUpdateCliprMusic={onUpdateCliprMusic}
+        onUpdateMetadata={vi.fn()}
+        onUpdateTrim={vi.fn()}
+      />,
+    );
+
+    mocks.actionItems.find((item) => item.label === "Download clip")?.onClick?.();
+    await mocks.cliprMusicEditor?.onGenerate();
+    await expect(mocks.cliprMusicEditor?.onSave(null)).rejects.toBe("no save");
+
+    for (let index = 0; index < 4; index += 1) {
+      await Promise.resolve();
+    }
+
+    expect(mocks.setState).toHaveBeenCalledWith("Unable to export this Clip.");
+    expect(mocks.setState).toHaveBeenCalledWith(
+      "Unable to generate music for this Clip.",
+    );
+    expect(mocks.setState).toHaveBeenCalledWith(
+      "Unable to update music for this Clip.",
+    );
+  });
+
+  it("saves metadata and creates avatars from open dialogs", async () => {
+    const onCreateAvatarFromClip = vi.fn(async () => true);
+    const onUpdateMetadata = vi.fn(async () => undefined);
+
+    mocks.stateQueue = [false, true, false, false, false, null, null];
+    renderToStaticMarkup(
+      <VideoClipCard
+        clip={createClipMetadata()}
+        onCreateAvatarFromClip={onCreateAvatarFromClip}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onUpdateMetadata={onUpdateMetadata}
+        onUpdateTrim={vi.fn()}
+      />,
+    );
+
+    mocks.metadataDialogProps?.onClose();
+    await mocks.metadataDialogProps?.onSave({
+      name: "Updated",
+      tags: ["ugc"],
+    });
+
+    mocks.stateQueue = [true, false, false, false, false, null, null];
+    renderToStaticMarkup(
+      <VideoClipCard
+        clip={createClipMetadata()}
+        onCreateAvatarFromClip={onCreateAvatarFromClip}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onUpdateMetadata={vi.fn()}
+        onUpdateTrim={vi.fn()}
+      />,
+    );
+
+    mocks.avatarDialogProps?.onClose();
+    await mocks.avatarDialogProps?.onCreate({ avatarName: "Ava" });
+
+    expect(onUpdateMetadata).toHaveBeenCalledWith(createClipMetadata(), {
+      name: "Updated",
+      tags: ["ugc"],
+    });
+    expect(onCreateAvatarFromClip).toHaveBeenCalledWith(createClipMetadata(), {
+      avatarName: "Ava",
+    });
+    expect(mocks.setState).toHaveBeenCalledWith(false);
   });
 });

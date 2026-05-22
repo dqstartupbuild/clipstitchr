@@ -1,6 +1,6 @@
 # Codebase Cleanup & Tech Debt Analysis
 
-Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup pass, and next-sprint test pass.
+Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup pass, next-sprint test pass, 80% coverage completion pass, and 93% coverage continuation pass.
 
 ## Cleanup Changes Applied
 
@@ -81,13 +81,26 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
   - `web/app/api/clipr/jobs/route.ts` now owns auth, request-scoped setup, response formatting, and error mapping.
   - Request parsing, start quotas, Convex input loading, queued job persistence, script planning, avatar image generation, avatar video/music generation, shared music persistence, analytics, and failure cleanup now live in focused `web/lib/clipstitchr/server/clipr/*` modules.
   - Existing Clipr route coverage continues to cover auth, validation, rate-limit, selected-music, generated-music, provider, R2, Convex persistence, analytics, and failure behavior.
+- Added the 80% coverage completion batch for:
+  - static RSS and `llms.txt` route responses.
+  - content/blog/docs route rendering, MDX component mapping, and landing/app route wrapper coverage.
+  - analytics preference UI/reporters and waitlist submit success/error flows.
+  - music selector, upload/tag/product demo controls, Settings client wiring, and Product Settings UI.
+  - Clipr controls/result/progress components and Longr timeline/music/sequence player branches.
+  - dashboard shell/sidebar/stats/recent sections and focused misc Stitchr/Swapr/Swipr empty/dialog/pagination states.
+- Added the 93% coverage continuation batch for:
+  - cookie consent hydration/cleanup, media action menu event cleanup, and object URL lifecycle coverage.
+  - Clipr avatar image creation, Clipr text parsing fallbacks, PostHog server capture, and additional R2/client utility wrappers.
+  - paginated and lazy library state edge cases across clips, photos, Swipr backgrounds, and Longr media records.
+  - Video clip cards/previews/music previews, Stitch download/export cards, Swipr background/details dialogs, Stitch text settings, sequence preview, trim editor/slider, and product edit dialog interactions.
+  - Waitlist validation branches, Convex Longr list/get/save/remove paths, and additional dashboard/page-client workflow branches.
 
 ## Verification After Cleanup
 
 - `npm run lint`: pass, 0 warnings.
 - `npm run typecheck`: pass.
-- `npm test`: pass, 239 test files / 727 tests.
-- Full all-file coverage: 75.14% statements, 62.2% branches, 61.83% functions, 75.36% lines.
+- `npm test`: pass, 286 test files / 982 tests.
+- Full all-file coverage: 93.51% statements, 81.05% branches, 88.39% functions, 93.65% lines.
 - `npm run build` with placeholder production environment: pass on Next.js `16.2.6`.
 - `npm audit`: reports 4 moderate vulnerabilities and no high or critical vulnerabilities; npm's automated fixes still require `--force` and incompatible downgrade paths.
 
@@ -101,8 +114,8 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
 
 - **Quality gates:** `npm test`, `npm run typecheck`, and `npm run lint` pass; `placeholder-env npm run build` passed in the dependency cleanup pass.
 - **Lint:** Has 0 errors and 0 warnings after excluding `web/convex/_generated/*`.
-- **Scale:** 1,147 TS/JS source/test files, 78,735 lines, 65 files over 250 lines, 14 over 500 lines.
-- **Tests:** 239 test files / 727 tests. Coverage includes unloaded source and now reports 75.14% statements, 62.2% branches, 61.83% functions, and 75.36% lines.
+- **Scale:** 1,204 TS/JS source/test files, 83,680 lines, 66 files over 250 lines, 14 over 500 lines.
+- **Tests:** 286 test files / 982 tests. Coverage includes unloaded source and now reports 93.51% statements, 81.05% branches, 88.39% functions, and 93.65% lines.
 - **Security:** `npm audit` reports 4 vulnerabilities: 0 high, 4 moderate via `next/postcss` and `convex/ws`.
 
 ## Highest-ROI Debt
@@ -110,11 +123,11 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
 1. **Done: Vulnerable Next.js dependency**
    - **File:** `web/package.json:27` now pins `next@16.2.6`; the high-severity advisories are cleared.
    - **Residual:** npm still reports a moderate `postcss` advisory through `next`.
-2. **High: Misleading coverage and missing workflow tests**
-   - `coverage.include/all` is now enabled and the 75% sprint target is complete: all-file statement coverage is 75%.
-   - Covered slices now include expensive API routes, analytics routes, Convex mutations/queries, core hooks, dashboard page clients, preview components, client helpers, Media Bunny helpers, media canvas helpers, dialog/card workflows, and text overlay utilities.
-   - Remaining gap: content pages, analytics UI components, music selectors, upload controls, larger page clients, and deeper player branches still need tests.
-   - **Action:** Continue toward 80% with content route/page coverage, music/upload UI workflows, and remaining dashboard client branches.
+2. **Done: Misleading coverage and missing workflow tests**
+   - `coverage.include/all` is now enabled, the 80% statement coverage target is complete, and the follow-up pass pushed all-file statement/line coverage above 93%.
+   - Covered slices now include expensive API routes, analytics routes, Convex mutations/queries, core hooks, dashboard page clients, preview components, client helpers, Media Bunny helpers, media canvas helpers, dialog/card workflows, content pages, analytics UI, music/upload controls, Settings/Product UI, Longr timeline branches, text overlay utilities, lazy object URLs, Clipr parser/provider helpers, and additional Swipr/Stitchr/Waitlist/Product workflows.
+   - Remaining gap: literal 100% still requires broad branch-heavy coverage across Swipr/Clipr page clients, avatar generation/actions, Stitchr sequence/editor controls, Swapr controls, provider/R2 edge helpers, and low-level media export branches.
+   - **Action:** Continue with branch/deeper workflow coverage; prioritize high-risk workflows over chasing low-value generated/config wrappers.
 3. **Done: Oversized orchestration route**
    - **Action:** Split `POST /api/clipr/jobs` into request parsing, quota consumption, input loading, generation steps, persistence, analytics, and failure cleanup helpers.
    - **Files:** `web/app/api/clipr/jobs/route.ts` and `web/lib/clipstitchr/server/clipr/*`.
@@ -137,8 +150,8 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
 
 ## Roadmap
 
-- **This sprint:** Complete. Coverage was expanded from the all-file baseline to 75% statements across API routes, analytics routing, Convex modules, hooks, dashboard SSR renders, client helpers, media utilities, preview components, and dialog/card workflows.
-- **Month 1:** Continue coverage toward 80% with remaining content/page UI, music/upload UI workflows, and deeper dashboard client branches.
+- **This sprint:** Coverage was expanded from the all-file baseline to 93.51% statements and 93.65% lines across API routes, analytics routing, Convex modules, hooks, dashboard SSR renders, content routes, client helpers, media utilities, preview components, and dialog/card workflows.
+- **Month 1:** Continue toward literal 100% by targeting branch-heavy workflows: Swipr/Clipr page branches, avatar generation/actions, Swapr controls, Stitchr sequence/editor controls, provider/R2 edge helpers, and media export failure paths.
 - **Quarter:** Add integration/E2E coverage for upload normalization, Stitchr UGC-then-Demo export, dashboard library flows, and paid provider routes; add dependency/audit checks to CI.
 
 ## Prevention

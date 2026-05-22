@@ -115,4 +115,96 @@ describe("parseCliprTextGenerationOutput", () => {
     expect(generation.slides.at(-1)).toContain("LaunchKit");
     expect(generation.slides.at(-1)).toMatch(/\bUse\b/);
   });
+
+  it("uses fallback hooks and scene scripts when generated text is not usable", () => {
+    const generation = parseCliprTextGenerationOutput({
+      candidates,
+      durationSeconds: 30,
+      outputText: JSON.stringify({
+        templateId: "missing-template",
+        filledHook: "product_details: {{topic}}",
+        overlayText: "",
+        scenePlan: [
+          {
+            scriptText: "Sign up now and buy this today.",
+            visualPrompt: "",
+            estimatedDurationSeconds: 2,
+          },
+        ],
+        slides: "not an array",
+        variablesUsed: {
+          empty: "   ",
+          ignored: 42,
+          topic: " launch ops ",
+        },
+      }),
+      providerModel: "openai/gpt-4.1",
+      product,
+      purpose: "stitchr",
+      slideCount: 2,
+    });
+
+    expect(generation.filledHook).toBe(
+      "LaunchKit makes the messy part easier to handle",
+    );
+    expect(generation.overlayText).toBe(generation.filledHook);
+    expect(generation.script).toBe("Explain the idea simply.");
+    expect(generation.scenePlan[0]).toMatchObject({
+      estimatedDurationSeconds: 30,
+      scriptText: "Explain the idea simply.",
+      visualPrompt:
+        "Vertical short-form video, natural light, clear subject, steady camera.",
+    });
+    expect(generation.variablesUsed).toEqual({
+      topic: "launch ops",
+    });
+  });
+
+  it("fills sparse Swipr slide decks with support and CTA fallbacks", () => {
+    const generation = parseCliprTextGenerationOutput({
+      candidates,
+      durationSeconds: 30,
+      outputText: JSON.stringify({
+        filledHook: "The launch mistake nobody talks about",
+        slides: ["The launch mistake nobody talks about"],
+      }),
+      providerModel: "openai/gpt-4.1",
+      product: {
+        ...product,
+        inferredPainPoints: [],
+        inferredProblem: "launch work gets scattered.",
+        productDetails: "",
+      },
+      purpose: "swipr",
+      slideCount: 4,
+    });
+
+    expect(generation.slides).toEqual([
+      "The launch mistake nobody talks about",
+      "The real issue is launch work gets scattered",
+      "Most people notice it after the workflow is already messy",
+      "Use LaunchKit when launch work gets scattered starts slowing you down",
+    ]);
+  });
+
+  it("falls back to the generic Swipr hook when generated hooks are unreadable", () => {
+    const generation = parseCliprTextGenerationOutput({
+      candidates,
+      durationSeconds: 30,
+      outputText: JSON.stringify({
+        filledHook: "The the",
+      }),
+      providerModel: "openai/gpt-4.1",
+      product,
+      purpose: "swipr",
+      slideCount: 1,
+    });
+
+    expect(generation.filledHook).toBe(
+      "What changes when LaunchKit handles the messy part",
+    );
+    expect(generation.slides).toEqual([
+      "What changes when LaunchKit handles the messy part",
+    ]);
+  });
 });
