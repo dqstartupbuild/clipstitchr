@@ -63,6 +63,26 @@ body {
   color: var(--text-inverse);
 }
 
+@keyframes landing-social-proof-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.landing-social-proof-marquee {
+  animation: landing-social-proof-marquee 42s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-social-proof-marquee {
+    animation: none;
+  }
+}
+
 h1,
 h2,
 h3,
