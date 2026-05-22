@@ -96,7 +96,7 @@ Core supporting features:
 - create non-promotional Clipr engagement clips that feed the library
 - trim clips without destructive editing
 - preview the UGC-then-demo sequence
-- apply one shared text overlay across a Stitchr batch
+- customize one text overlay per Stitchr output and copy it across a batch
 - export or save finished stitches
 - keep posters and metadata so clips are easy to recognize
 

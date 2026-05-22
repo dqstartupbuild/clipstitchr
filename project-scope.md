@@ -134,8 +134,9 @@ cleanup.
 ### 4.3 Text Overlays
 
 Stitchr supports one text overlay for each saved stitch. In batch
-stitching, the same overlay is saved to every selected UGC + Demo output and
-can be edited later before export.
+stitching, each selected UGC + Demo output can keep its own overlay, and users
+can copy the active overlay to every selected output when they want shared
+text.
 Multiple independent text layers remain future scope.
 
 | # | Feature | MVP | Future |
@@ -143,7 +144,7 @@ Multiple independent text layers remain future scope.
 | 1 | Add one text overlay on top of the stitched video | ✅ | ✅ |
 | 2 | Timeline control — set start time & end time for text appearance | ✅ | ✅ |
 | 3 | Basic text styling (font size, color, position) | ✅ | ✅ |
-| 4 | Apply one shared overlay across all outputs in a Stitchr batch | ✅ | ✅ |
+| 4 | Set per-output overlay text in a Stitchr batch, with copy-to-all support | ✅ | ✅ |
 | 5 | Multiple text layers | — | ✅ |
 
 ### 4.4 Dashboard & Navigation
@@ -417,7 +418,8 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
 #### Text Overlay Export
 
 - Text overlays are rendered in-browser during Stitchr export.
-- A Stitchr batch uses one shared text overlay configuration for every output.
+- A Stitchr batch can save a different single text overlay on each output, with
+  copy-to-all support for shared batch messaging.
 - For one-file conversion flows, use `ConversionVideoOptions.process`.
 - For custom export flows, use `VideoSampleSource` transform processing or draw onto a canvas before creating/adding a `VideoSample`.
 
@@ -498,7 +500,7 @@ interface Stitch {
 - [ ] Generated poster images for normalized uploads and stitches
 - [ ] UGC + Demo sequence preview with tap/swipe navigation across selected UGC clips
 - [ ] Video stitching (each selected UGC immediately followed by the selected Demo → one 9:16 output per UGC)
-- [ ] Shared text overlay applied across a Stitchr batch
+- [ ] Per-stitch text overlay applied across a Stitchr batch with copy-to-all support
 - [ ] Download finished videos
 - [x] Convex metadata and Cloudflare R2 object storage
 - [x] Integrate Clerk authentication for dashboard and API routes
@@ -538,7 +540,7 @@ interface Stitch {
 - ❌ Server-side video rendering
 - ❌ Mobile-native app
 - ❌ Collaborative editing
-- ❌ Multiple text overlay layers — single shared overlay is supported
+- ❌ Multiple text overlay layers — one overlay per stitch is supported
 - ❌ User-authored thumbnail generation / thumbnail editing
 - ❌ Destructive video cutting — trims are editable metadata only
 - ❌ AI-first content platform positioning — AI supports source creation, while Stitchr remains the primary workflow
@@ -567,7 +569,7 @@ interface Stitch {
 - [ ] Each uploaded video has a non-black generated poster image, and saved stitch cards have a visible static preview state using the selected UGC poster.
 - [ ] User can select up to 20 UGC clips + the demo and tap/swipe through exact UGC-then-Demo previews.
 - [ ] User can create stitched 9:16 videos where the Demo starts immediately after each UGC clip ends.
-- [ ] A single text overlay can be applied consistently across all selected UGC + Demo outputs.
+- [ ] One text overlay can be customized per selected UGC + Demo output and copied across the batch.
 - [ ] All resulting 9:16 videos can be downloaded.
 - [ ] User can create multiple finished ad variants from the same library without opening a traditional editor.
 - [ ] Core media workflows work on `localhost`; AI helper workflows require configured provider, Convex, R2, Clerk, and rate-limit environment variables.

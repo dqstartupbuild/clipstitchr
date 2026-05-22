@@ -169,9 +169,17 @@ export function useStitchr({ onCreated }: UseStitchrOptions) {
             ugcClip.duration,
           );
           const ugcDuration = getVideoTrimRangeDuration(clampedUgcTrimRange);
+          const selectionTextOverlay =
+            "textOverlay" in ugcSelection
+              ? ugcSelection.textOverlay
+              : textOverlay;
           const pairTextOverlay =
-            textOverlay && textOverlay.text.trim().length > 0
-              ? clampTextOverlay(textOverlay, ugcDuration + demoDuration)
+            selectionTextOverlay &&
+            selectionTextOverlay.text.trim().length > 0
+              ? clampTextOverlay(
+                  selectionTextOverlay,
+                  ugcDuration + demoDuration,
+                )
               : null;
 
           setStatus("saving");

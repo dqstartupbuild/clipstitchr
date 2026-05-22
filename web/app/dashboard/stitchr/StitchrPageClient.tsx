@@ -39,7 +39,9 @@ export function StitchrPageClient() {
   const [includeUgcAudio, setIncludeUgcAudio] = useState(true);
   const [selectedMusicTrack, setSelectedMusicTrack] =
     useState<SharedMusicTrack | null>(null);
-  const [textOverlay, setTextOverlay] = useState<TextOverlay | null>(null);
+  const [textOverlaysByUgcId, setTextOverlaysByUgcId] = useState<
+    Record<string, TextOverlay | null>
+  >({});
   const [selectedAutoTextProductId, setSelectedAutoTextProductId] = useState("");
   const [demoProductFilterId, setDemoProductFilterId] = useState("all");
   const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
@@ -168,8 +170,11 @@ export function StitchrPageClient() {
       selectedDemoTrimRange,
   );
   const totalDuration = selectedUgcDuration + selectedDemoDuration;
-  const clampedTextOverlay = textOverlay
-    ? clampTextOverlay(textOverlay, totalDuration)
+  const activeTextOverlay = activeUgcMetadata
+    ? (textOverlaysByUgcId[activeUgcMetadata.id] ?? null)
+    : null;
+  const clampedTextOverlay = activeTextOverlay
+    ? clampTextOverlay(activeTextOverlay, totalDuration)
     : null;
   const activeAutoTextProductId =
     selectedAutoTextProductId || products.products[0]?.id || "";
@@ -291,28 +296,85 @@ export function StitchrPageClient() {
     [],
   );
 
+  const handleTextOverlayChange = useCallback(
+    (nextTextOverlay: TextOverlay | null) => {
+      if (!activeUgcMetadata) {
+        return;
+      }
+
+      setTextOverlaysByUgcId((overlays) => ({
+        ...overlays,
+        [activeUgcMetadata.id]: nextTextOverlay
+          ? clampTextOverlay(nextTextOverlay, totalDuration)
+          : null,
+      }));
+    },
+    [activeUgcMetadata, totalDuration],
+  );
+
+  const handleCopyTextOverlayToAll = useCallback(() => {
+    if (!activeUgcMetadata) {
+      return;
+    }
+
+    setTextOverlaysByUgcId((overlays) =>
+      selectedUgcMetadata.reduce<Record<string, TextOverlay | null>>(
+        (nextOverlays, clip) => {
+          const sourceTextOverlay = overlays[activeUgcMetadata.id] ?? null;
+          const ugcTrimRange =
+            selectedUgcTrimRangesByClipId[clip.id] ??
+            getDefaultVideoTrimRange(clip);
+          const clipDuration =
+            getVideoTrimRangeDuration(ugcTrimRange) + selectedDemoDuration;
+
+          return {
+            ...nextOverlays,
+            [clip.id]: sourceTextOverlay
+              ? clampTextOverlay({ ...sourceTextOverlay }, clipDuration)
+              : null,
+          };
+        },
+        { ...overlays },
+      ),
+    );
+  }, [
+    activeUgcMetadata,
+    selectedDemoDuration,
+    selectedUgcMetadata,
+    selectedUgcTrimRangesByClipId,
+  ]);
+
   const handleStitch = () => {
     if (
       selectedDemoMetadata &&
       selectedDemoTrimRange &&
       selectedUgcMetadata.length
     ) {
-      const exportTextOverlay =
-        textOverlay && textOverlay.text.trim().length > 0 ? textOverlay : null;
       const ugcSelections: StitchrUgcSelection[] = selectedUgcMetadata.map(
-        (clip) => ({
-          clip,
-          trimRange:
+        (clip) => {
+          const trimRange =
             selectedUgcTrimRangesByClipId[clip.id] ??
-            getDefaultVideoTrimRange(clip),
-        }),
+            getDefaultVideoTrimRange(clip);
+          const pairTextOverlay = textOverlaysByUgcId[clip.id] ?? null;
+          const pairDuration =
+            getVideoTrimRangeDuration(trimRange) + selectedDemoDuration;
+
+          return {
+            clip,
+            textOverlay:
+              pairTextOverlay && pairTextOverlay.text.trim().length > 0
+                ? clampTextOverlay(pairTextOverlay, pairDuration)
+                : null,
+            trimRange,
+          };
+        },
       );
 
       void stitchrState.stitchVideos(
         ugcSelections,
         selectedDemoMetadata,
         selectedDemoTrimRange,
-        exportTextOverlay,
+        null,
         {
           addMusic: addMusic && !selectedMusicTrack,
           includeDemoAudio,
@@ -334,6 +396,11 @@ export function StitchrPageClient() {
       return;
     }
 
+    if (!activeUgcMetadata) {
+      setAutoTextMessage("Select UGC before generating text.");
+      return;
+    }
+
     setIsGeneratingAutoText(true);
     setAutoTextMessage(null);
 
@@ -344,17 +411,18 @@ export function StitchrPageClient() {
     })
       .then((text) => {
         const baseOverlay =
-          textOverlay ?? createDefaultTextOverlay(totalDuration, 0);
+          activeTextOverlay ?? createDefaultTextOverlay(totalDuration, 0);
 
-        setTextOverlay(
-          clampTextOverlay(
+        setTextOverlaysByUgcId((overlays) => ({
+          ...overlays,
+          [activeUgcMetadata.id]: clampTextOverlay(
             {
               ...baseOverlay,
               text: text.overlayText || text.hook,
             },
             totalDuration,
           ),
-        );
+        }));
         setAutoTextMessage("Text generated.");
       })
       .catch((error) => {
@@ -363,7 +431,12 @@ export function StitchrPageClient() {
         );
       })
       .finally(() => setIsGeneratingAutoText(false));
-  }, [activeAutoTextProductId, textOverlay, totalDuration]);
+  }, [
+    activeAutoTextProductId,
+    activeTextOverlay,
+    activeUgcMetadata,
+    totalDuration,
+  ]);
 
   const handleActiveUgcChange = useCallback((id: string) => {
     setActivePreviewUgcId(id);
@@ -461,8 +534,10 @@ export function StitchrPageClient() {
                 includeDemoAudio={includeDemoAudio}
                 includeUgcAudio={includeUgcAudio}
                 textOverlay={clampedTextOverlay}
+                canCopyTextOverlayToAll={selectedUgcMetadata.length > 1}
                 onActiveUgcChange={handleActiveUgcChange}
-                onTextOverlayChange={setTextOverlay}
+                onCopyTextOverlayToAll={handleCopyTextOverlayToAll}
+                onTextOverlayChange={handleTextOverlayChange}
               />
             </div>
           </div>

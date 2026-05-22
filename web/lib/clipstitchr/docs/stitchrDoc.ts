@@ -9,7 +9,7 @@ export const stitchrDoc = {
     "Choose UGC, pick one demo, preview each ad, and export finished variants.",
   category: "feature",
   order: 10,
-  updated: "2026-05-13",
+  updated: "2026-05-22",
   sections: [
     {
       title: "What Stitchr does",
@@ -41,8 +41,8 @@ export const stitchrDoc = {
     {
       title: "Text overlay",
       body: [
-        "Add one shared text hook when the batch needs it. The same overlay appears across the selected ads, so you can test the same message against different UGC openers.",
-        "Write the hook yourself or generate a starting point from your product settings. Edit it before export.",
+        "Add one text hook per selected ad when the batch needs it. Use different text for each UGC opener, or copy the active overlay to all selected ads.",
+        "Write the hook yourself or generate a starting point from your product settings. Edit each overlay before export.",
       ],
     },
     {
