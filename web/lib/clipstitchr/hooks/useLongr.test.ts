@@ -200,8 +200,14 @@ describe("useLongr", () => {
     expect(mocks.downloadMusicTrackBlobFromR2).toHaveBeenCalledWith("track_1");
     expect(mocks.stitchLongrSequence).toHaveBeenCalledWith(
       [
-        expect.objectContaining({ clip: expect.objectContaining({ id: "clip_1" }) }),
-        expect.objectContaining({ clip: expect.objectContaining({ id: "clip_2" }) }),
+        expect.objectContaining({
+          clip: expect.objectContaining({ id: "clip_1" }),
+          playbackRate: 1,
+        }),
+        expect.objectContaining({
+          clip: expect.objectContaining({ id: "clip_2" }),
+          playbackRate: 1,
+        }),
       ],
       {
         musicClips: [
@@ -224,11 +230,13 @@ describe("useLongr", () => {
             clipId: "clip_1",
             duration: 18,
             order: 0,
+            playbackRate: 1,
           }),
           expect.objectContaining({
             clipId: "clip_2",
             duration: 22,
             order: 1,
+            playbackRate: 1,
           }),
         ],
         duration: 40,

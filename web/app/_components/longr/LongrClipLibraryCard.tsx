@@ -6,14 +6,16 @@ import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type LongrClipLibraryCardProps = {
   clip: VideoClipMetadata;
   productName?: string;
   disabled: boolean;
+  playbackRate: VideoPlaybackRate;
   isSelected: boolean;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onAdd: (clip: VideoClipMetadata) => void;
@@ -24,6 +26,7 @@ export function LongrClipLibraryCard({
   clip,
   productName,
   disabled,
+  playbackRate,
   isSelected,
   onLoadPoster,
   onAdd,
@@ -38,7 +41,11 @@ export function LongrClipLibraryCard({
     fallbackBlob: clip.posterBlob,
     loadBlob: loadPosterBlob,
   });
-  const duration = getVideoTrimRangeDuration(getDefaultVideoTrimRange(clip));
+  const duration = getPlaybackRateDuration(
+    getDefaultVideoTrimRange(clip),
+    playbackRate,
+  );
+  const speedLabel = playbackRate === 1 ? null : `${playbackRate}x`;
 
   return (
     <div className="grid grid-cols-[54px_minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-border bg-white p-2">
@@ -56,7 +63,9 @@ export function LongrClipLibraryCard({
           <Badge>{clip.clipType.toUpperCase()}</Badge>
         </div>
         <p className="mt-1 text-xs font-semibold text-text-tertiary">
-          {[productName, formatDuration(duration)].filter(Boolean).join(" . ")}
+          {[productName, formatDuration(duration), speedLabel]
+            .filter(Boolean)
+            .join(" . ")}
         </p>
       </div>
       <IconButton

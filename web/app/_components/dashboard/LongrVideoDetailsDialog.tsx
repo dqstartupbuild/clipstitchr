@@ -99,7 +99,8 @@ export function LongrVideoDetailsDialog({
                     </p>
                     <p className="mt-1 text-xs font-semibold text-text-tertiary">
                       {segment.clipType.toUpperCase()} .{" "}
-                      {formatDuration(segment.duration)}
+                      {formatDuration(segment.duration)} .{" "}
+                      {segment.playbackRate ?? 1}x
                     </p>
                   </div>
                 ))}

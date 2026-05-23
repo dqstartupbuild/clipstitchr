@@ -33,6 +33,8 @@ export function createStitchFromConvexDocument({
     duration: stitch.duration,
     includeDemoAudio: stitch.includeDemoAudio,
     includeUgcAudio: stitch.includeUgcAudio,
+    demoPlaybackRate: stitch.demoPlaybackRate,
+    ugcPlaybackRate: stitch.ugcPlaybackRate,
     music: stitch.music,
     textOverlay: stitch.textOverlay,
     createdAt: stitch.createdAt,

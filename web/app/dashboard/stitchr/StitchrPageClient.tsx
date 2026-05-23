@@ -19,14 +19,15 @@ import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSele
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { createDefaultTextOverlay } from "@/lib/clipstitchr/utils/createDefaultTextOverlay";
 import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchrUgcSelection";
 
 export function StitchrPageClient() {
@@ -39,6 +40,9 @@ export function StitchrPageClient() {
   const [addMusic, setAddMusic] = useState(false);
   const [includeDemoAudio, setIncludeDemoAudio] = useState(false);
   const [includeUgcAudio, setIncludeUgcAudio] = useState(false);
+  const [demoPlaybackRate, setDemoPlaybackRate] =
+    useState<VideoPlaybackRate>(1);
+  const [ugcPlaybackRate, setUgcPlaybackRate] = useState<VideoPlaybackRate>(1);
   const [selectedMusicTrack, setSelectedMusicTrack] =
     useState<SharedMusicTrack | null>(null);
   const [textOverlaysByUgcId, setTextOverlaysByUgcId] = useState<
@@ -192,10 +196,10 @@ export function StitchrPageClient() {
       )
     : null;
   const selectedUgcDuration = selectedUgcTrimRange
-    ? getVideoTrimRangeDuration(selectedUgcTrimRange)
+    ? getPlaybackRateDuration(selectedUgcTrimRange, ugcPlaybackRate)
     : 0;
   const selectedDemoDuration = selectedDemoTrimRange
-    ? getVideoTrimRangeDuration(selectedDemoTrimRange)
+    ? getPlaybackRateDuration(selectedDemoTrimRange, demoPlaybackRate)
     : 0;
   const canStitch = Boolean(
     selectedUgcMetadata.length &&
@@ -352,7 +356,8 @@ export function StitchrPageClient() {
             selectedUgcTrimRangesByClipId[clip.id] ??
             getDefaultVideoTrimRange(clip);
           const clipDuration =
-            getVideoTrimRangeDuration(ugcTrimRange) + selectedDemoDuration;
+            getPlaybackRateDuration(ugcTrimRange, ugcPlaybackRate) +
+            selectedDemoDuration;
 
           return {
             ...nextOverlays,
@@ -369,6 +374,7 @@ export function StitchrPageClient() {
     selectedDemoDuration,
     selectedUgcMetadata,
     selectedUgcTrimRangesByClipId,
+    ugcPlaybackRate,
   ]);
 
   const handleStitch = () => {
@@ -384,7 +390,8 @@ export function StitchrPageClient() {
             getDefaultVideoTrimRange(clip);
           const pairTextOverlay = textOverlaysByUgcId[clip.id] ?? null;
           const pairDuration =
-            getVideoTrimRangeDuration(trimRange) + selectedDemoDuration;
+            getPlaybackRateDuration(trimRange, ugcPlaybackRate) +
+            selectedDemoDuration;
 
           return {
             clip,
@@ -404,9 +411,11 @@ export function StitchrPageClient() {
         null,
         {
           addMusic: addMusic && !selectedMusicTrack,
+          demoPlaybackRate,
           includeDemoAudio,
           includeUgcAudio,
           musicTrack: selectedMusicTrack,
+          ugcPlaybackRate,
         },
       );
     }
@@ -519,6 +528,7 @@ export function StitchrPageClient() {
             <div className="flex min-w-0 flex-col gap-5">
               <ClipPickerPanel
                 addMusic={addMusic}
+                demoPlaybackRate={demoPlaybackRate}
                 includeDemoAudio={includeDemoAudio}
                 includeUgcAudio={includeUgcAudio}
                 hasMoreClips={hasMoreStitchrClips}
@@ -532,6 +542,7 @@ export function StitchrPageClient() {
                 selectedDemoId={selectedDemoMetadata?.id ?? null}
                 selectedUgcTrimRangesByClipId={selectedUgcTrimRangesByClipId}
                 selectedDemoTrimRange={selectedDemoTrimRange}
+                ugcPlaybackRate={ugcPlaybackRate}
                 onLoadClip={loadClip}
                 onLoadPoster={library.loadClipPoster}
                 onSelectUgc={handleSelectUgc}
@@ -548,6 +559,7 @@ export function StitchrPageClient() {
                     setSelectedMusicTrack(null);
                   }
                 }}
+                onDemoPlaybackRateChange={setDemoPlaybackRate}
                 onIncludeDemoAudioChange={setIncludeDemoAudio}
                 onIncludeUgcAudioChange={setIncludeUgcAudio}
                 onLoadMoreClips={handleLoadMoreStitchrClips}
@@ -556,6 +568,7 @@ export function StitchrPageClient() {
                   setAddMusic(false);
                 }}
                 onStitch={handleStitch}
+                onUgcPlaybackRateChange={setUgcPlaybackRate}
               />
               <StitchrAutoTextPanel
                 products={products.products}
@@ -585,9 +598,11 @@ export function StitchrPageClient() {
                 demoClip={selectedDemoClip}
                 ugcTrimRange={selectedUgcTrimRange}
                 demoTrimRange={selectedDemoTrimRange}
+                demoPlaybackRate={demoPlaybackRate}
                 includeDemoAudio={includeDemoAudio}
                 includeUgcAudio={includeUgcAudio}
                 textOverlay={clampedTextOverlay}
+                ugcPlaybackRate={ugcPlaybackRate}
                 canCopyTextOverlayToAll={selectedUgcMetadata.length > 1}
                 onActiveUgcChange={handleActiveUgcChange}
                 onCopyTextOverlayToAll={handleCopyTextOverlayToAll}

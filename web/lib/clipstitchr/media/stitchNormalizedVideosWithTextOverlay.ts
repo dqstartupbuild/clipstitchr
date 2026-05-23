@@ -8,18 +8,21 @@ import { copyTextOverlayVideoFramesToSource } from "@/lib/clipstitchr/media/copy
 import { createMediaBunnyExportSession } from "@/lib/clipstitchr/media/createMediaBunnyExportSession";
 import { createMediaBunnyProgressMapper } from "@/lib/clipstitchr/media/createMediaBunnyProgressMapper";
 import { createMediaInput } from "@/lib/clipstitchr/media/createMediaInput";
+import { createOutputAudioBufferSource } from "@/lib/clipstitchr/media/createOutputAudioBufferSource";
 import { createOutputAudioSampleSource } from "@/lib/clipstitchr/media/createOutputAudioSampleSource";
+import { createStitchSourceAudioBuffer } from "@/lib/clipstitchr/media/createStitchSourceAudioBuffer";
 import { createTextOverlayRenderContext } from "@/lib/clipstitchr/media/createTextOverlayRenderContext";
 import { createTikTokCanvasSource } from "@/lib/clipstitchr/media/createTikTokCanvasSource";
 import { finalizeMediaBunnyExportSession } from "@/lib/clipstitchr/media/finalizeMediaBunnyExportSession";
 import { getInputAudioParameters } from "@/lib/clipstitchr/media/getInputAudioParameters";
 import { resolveMediaBunnyOutputCodecs } from "@/lib/clipstitchr/media/resolveMediaBunnyOutputCodecs";
+import type { SourcePlaybackRateOptions } from "@/lib/clipstitchr/types/SourcePlaybackRateOptions";
 import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSourceAudioOptions";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type StitchNormalizedVideosWithTextOverlayResult = {
   blob: Blob;
@@ -32,7 +35,8 @@ type StitchNormalizedVideosWithTextOverlayOptions = {
   demoTrimRange: VideoTrimRange;
   textOverlay: TextOverlay;
   onProgress?: (progress: number) => void;
-} & StitchSourceAudioOptions;
+} & SourcePlaybackRateOptions &
+  StitchSourceAudioOptions;
 
 export async function stitchNormalizedVideosWithTextOverlay(
   ugcClip: VideoClip,
@@ -40,10 +44,12 @@ export async function stitchNormalizedVideosWithTextOverlay(
   {
     ugcTrimRange,
     demoTrimRange,
+    demoPlaybackRate = 1,
     includeDemoAudio = true,
     includeUgcAudio = true,
     textOverlay,
     onProgress,
+    ugcPlaybackRate = 1,
   }: StitchNormalizedVideosWithTextOverlayOptions,
 ): Promise<StitchNormalizedVideosWithTextOverlayResult> {
   const ugcInput = createMediaInput(ugcClip.blob);
@@ -62,9 +68,17 @@ export async function stitchNormalizedVideosWithTextOverlay(
       demoTrimRange,
       demoClip.duration,
     );
-    const ugcDuration = getVideoTrimRangeDuration(clampedUgcTrimRange);
-    const demoDuration = getVideoTrimRangeDuration(clampedDemoTrimRange);
+    const ugcDuration = getPlaybackRateDuration(
+      clampedUgcTrimRange,
+      ugcPlaybackRate,
+    );
+    const demoDuration = getPlaybackRateDuration(
+      clampedDemoTrimRange,
+      demoPlaybackRate,
+    );
     const includeAudio = Boolean(ugcAudioParameters || demoAudioParameters);
+    const usesPlaybackRateAudioBuffer =
+      includeAudio && (ugcPlaybackRate !== 1 || demoPlaybackRate !== 1);
 
     assertNormalizedAudioParameters({
       audioParameters: ugcAudioParameters,
@@ -85,11 +99,16 @@ export async function stitchNormalizedVideosWithTextOverlay(
       TIKTOK_OUTPUT_WIDTH,
       TIKTOK_OUTPUT_HEIGHT,
     );
+    const audioBufferSource = createOutputAudioBufferSource(
+      usesPlaybackRateAudioBuffer,
+      codecs.audioCodec,
+    );
+    const audioSampleSource = createOutputAudioSampleSource(
+      includeAudio && !usesPlaybackRateAudioBuffer,
+      codecs.audioCodec,
+    );
     const session = await createMediaBunnyExportSession({
-      audioSource: createOutputAudioSampleSource(
-        includeAudio,
-        codecs.audioCodec,
-      ),
+      audioSource: audioBufferSource ?? audioSampleSource,
       videoSource: createTikTokCanvasSource(
         renderContext.canvas,
         codecs.videoCodec,
@@ -98,6 +117,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
 
     const ugcVideo = await copyTextOverlayVideoFramesToSource({
       input: ugcInput,
+      playbackRate: ugcPlaybackRate,
       source: session.videoSource,
       renderContext,
       timelineOffset: 0,
@@ -108,6 +128,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
     const demoTimelineOffset = Math.max(ugcDuration, ugcVideo.endTimestamp);
     const demoVideo = await copyTextOverlayVideoFramesToSource({
       input: demoInput,
+      playbackRate: demoPlaybackRate,
       source: session.videoSource,
       renderContext,
       timelineOffset: demoTimelineOffset,
@@ -117,11 +138,33 @@ export async function stitchNormalizedVideosWithTextOverlay(
     });
     let endTimestamp = Math.max(ugcVideo.endTimestamp, demoVideo.endTimestamp);
 
-    if (session.audioSource) {
+    if (audioBufferSource) {
+      const outputDuration = Math.max(
+        endTimestamp,
+        demoTimelineOffset + demoDuration,
+        ugcDuration + demoDuration,
+      );
+      const audioBuffer = await createStitchSourceAudioBuffer({
+        demoInput,
+        demoPlaybackRate,
+        demoTimelineOffset,
+        demoTrimRange: clampedDemoTrimRange,
+        includeDemoAudio,
+        includeUgcAudio,
+        outputDuration,
+        ugcInput,
+        ugcPlaybackRate,
+        ugcTrimRange: clampedUgcTrimRange,
+      });
+
+      await audioBufferSource.add(audioBuffer);
+      endTimestamp = Math.max(endTimestamp, outputDuration);
+      onProgress?.(0.95);
+    } else if (audioSampleSource) {
       const ugcAudio = includeUgcAudio
         ? await copyAudioSamplesToSource({
             input: ugcInput,
-            source: session.audioSource,
+            source: audioSampleSource,
             timelineOffset: 0,
             trimRange: clampedUgcTrimRange,
             onProgress: createMediaBunnyProgressMapper(
@@ -134,7 +177,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
       const demoAudio = includeDemoAudio
         ? await copyAudioSamplesToSource({
             input: demoInput,
-            source: session.audioSource,
+            source: audioSampleSource,
             timelineOffset: demoTimelineOffset,
             trimRange: clampedDemoTrimRange,
             onProgress: createMediaBunnyProgressMapper(

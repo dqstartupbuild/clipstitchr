@@ -14,7 +14,7 @@ import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type LoadedStitchSequencePreviewProps = {
   demoClip: VideoClip;
@@ -39,6 +39,8 @@ export function LoadedStitchSequencePreview({
   const ugcTrimEnd = stitch.ugcTrimRange?.end;
   const demoTrimStart = stitch.demoTrimRange?.start;
   const demoTrimEnd = stitch.demoTrimRange?.end;
+  const ugcPlaybackRate = stitch.ugcPlaybackRate ?? 1;
+  const demoPlaybackRate = stitch.demoPlaybackRate ?? 1;
   const ugcTrimRange = useMemo(
     () =>
       clampVideoTrimRange(
@@ -63,9 +65,9 @@ export function LoadedStitchSequencePreview({
   );
   const totalDuration = useMemo(
     () =>
-      getVideoTrimRangeDuration(ugcTrimRange) +
-      getVideoTrimRangeDuration(demoTrimRange),
-    [demoTrimRange, ugcTrimRange],
+      getPlaybackRateDuration(ugcTrimRange, ugcPlaybackRate) +
+      getPlaybackRateDuration(demoTrimRange, demoPlaybackRate),
+    [demoPlaybackRate, demoTrimRange, ugcPlaybackRate, ugcTrimRange],
   );
   const textOverlay = useMemo(
     () =>
@@ -88,8 +90,10 @@ export function LoadedStitchSequencePreview({
     togglePlayback,
     ugcVideoRef,
   } = useSequenceVideoPlayer({
+    demoPlaybackRate,
     ugcTrimRange,
     demoTrimRange,
+    ugcPlaybackRate,
   });
   const shouldShowTextOverlay =
     Boolean(textOverlay) &&

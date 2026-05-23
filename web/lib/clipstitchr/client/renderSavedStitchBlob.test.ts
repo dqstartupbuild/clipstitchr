@@ -90,10 +90,12 @@ describe("renderSavedStitchBlob", () => {
       expect.objectContaining({ id: "ugc_1" }),
       expect.objectContaining({ id: "demo_1" }),
       expect.objectContaining({
+        demoPlaybackRate: 1,
         demoTrimRange: { start: 0, end: 5 },
         includeDemoAudio: false,
         includeUgcAudio: true,
         onProgress,
+        ugcPlaybackRate: 1,
         ugcTrimRange: { start: 1, end: 8 },
       }),
     );
@@ -107,6 +109,7 @@ describe("renderSavedStitchBlob", () => {
     await renderSavedStitchBlob({
       loadClip,
       stitch: createStitch({
+        demoPlaybackRate: 2,
         textOverlay: {
           backgroundColor: "#000000",
           color: "#ffffff",
@@ -119,6 +122,7 @@ describe("renderSavedStitchBlob", () => {
           x: 0.5,
           y: 0.5,
         },
+        ugcPlaybackRate: 2,
       }),
     });
 
@@ -127,9 +131,11 @@ describe("renderSavedStitchBlob", () => {
       expect.objectContaining({ id: "ugc_1" }),
       expect.objectContaining({ id: "demo_1" }),
       expect.objectContaining({
+        demoPlaybackRate: 2,
         textOverlay: expect.objectContaining({
           text: " Hook ",
         }),
+        ugcPlaybackRate: 2,
       }),
     );
   });

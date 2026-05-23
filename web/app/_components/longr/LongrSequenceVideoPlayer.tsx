@@ -5,16 +5,19 @@ import { LongrSequenceVideoLayer } from "@/app/_components/longr/LongrSequenceVi
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { useLongrSequenceVideoPlayer } from "@/lib/clipstitchr/hooks/useLongrSequenceVideoPlayer";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 
 type LongrSequenceVideoPlayerProps = {
   clips: VideoClip[];
+  playbackRates: VideoPlaybackRate[];
   trimRanges: VideoTrimRange[];
 };
 
 export function LongrSequenceVideoPlayer({
   clips,
+  playbackRates,
   trimRanges,
 }: LongrSequenceVideoPlayerProps) {
   const {
@@ -29,7 +32,7 @@ export function LongrSequenceVideoPlayer({
     setVideoRef,
     togglePlayback,
     totalDuration,
-  } = useLongrSequenceVideoPlayer({ trimRanges });
+  } = useLongrSequenceVideoPlayer({ playbackRates, trimRanges });
   const progressValue = Math.min(currentTime, totalDuration);
 
   return (
@@ -41,6 +44,7 @@ export function LongrSequenceVideoPlayer({
               key={clip.id}
               clip={clip}
               isActive={activeIndex === index}
+              playbackRate={playbackRates[index] ?? 1}
               videoRef={(video) => setVideoRef(index, video)}
               onEnded={() => handleEnded(index)}
               onLoadedMetadata={() => handleLoadedMetadata(index)}

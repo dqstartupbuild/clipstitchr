@@ -100,7 +100,11 @@ describe("LongrSequenceVideoPlayer", () => {
   it("renders unavailable state when no clips are provided", () => {
     expect(
       renderToStaticMarkup(
-        <LongrSequenceVideoPlayer clips={[]} trimRanges={[]} />,
+        <LongrSequenceVideoPlayer
+          clips={[]}
+          playbackRates={[]}
+          trimRanges={[]}
+        />,
       ),
     ).toContain("Preview unavailable");
   });
@@ -108,6 +112,7 @@ describe("LongrSequenceVideoPlayer", () => {
   it("wires layer callbacks, playback buttons, and timeline seeking", () => {
     const tree = LongrSequenceVideoPlayer({
       clips: [createClip("clip_1"), createClip("clip_2")],
+      playbackRates: [1, 2],
       trimRanges: [
         { start: 0, end: 10 },
         { start: 0, end: 10 },
@@ -143,6 +148,7 @@ describe("LongrSequenceVideoPlayer", () => {
 
     expect(layers[0].props.isActive).toBe(false);
     expect(layers[1].props.isActive).toBe(true);
+    expect(layers[1].props.playbackRate).toBe(2);
     expect(mocks.setVideoRef).toHaveBeenCalledWith(1, {});
     expect(mocks.handleEnded).toHaveBeenCalledWith(1);
     expect(mocks.handleLoadedMetadata).toHaveBeenCalledWith(1);
@@ -158,6 +164,7 @@ describe("LongrSequenceVideoPlayer", () => {
     const layer = LongrSequenceVideoLayer({
       clip: createClip("clip_1"),
       isActive: true,
+      playbackRate: 2,
       onEnded: vi.fn(),
       onLoadedMetadata: vi.fn(),
       onTimeUpdate: vi.fn(),
@@ -175,6 +182,7 @@ describe("LongrSequenceVideoPlayer", () => {
       LongrSequenceVideoLayer({
         clip: createClip("clip_2"),
         isActive: false,
+        playbackRate: 1,
         onEnded: vi.fn(),
         onLoadedMetadata: vi.fn(),
         onTimeUpdate: vi.fn(),

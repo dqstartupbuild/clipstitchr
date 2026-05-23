@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { SourcePlaybackRateControls } from "@/app/_components/controls/SourcePlaybackRateControls";
 import { LongrClipLibraryCard } from "@/app/_components/longr/LongrClipLibraryCard";
 import { LongrDurationMeter } from "@/app/_components/longr/LongrDurationMeter";
 import { ProductFilterSelect } from "@/app/_components/products/ProductFilterSelect";
@@ -10,12 +11,15 @@ import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { longrMaxDurationSeconds } from "@/lib/clipstitchr/constants/longrMaxDurationSeconds";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
+import { getClipPlaybackRate } from "@/lib/clipstitchr/utils/getClipPlaybackRate";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type LongrClipPickerPanelProps = {
   clips: VideoClipMetadata[];
+  demoPlaybackRate: VideoPlaybackRate;
   duration: number;
   products: ProductProfile[];
   demoProductFilterId: string;
@@ -23,16 +27,20 @@ type LongrClipPickerPanelProps = {
   isBuilding: boolean;
   isLoadingMoreClips?: boolean;
   selectedClipIds: string[];
+  ugcPlaybackRate: VideoPlaybackRate;
   onAddClip: (clip: VideoClipMetadata) => void;
   onBuild: () => void;
+  onDemoPlaybackRateChange: (playbackRate: VideoPlaybackRate) => void;
   onDemoProductFilterChange: (productId: string) => void;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadMoreClips?: () => void;
   onRemoveClip: (clipId: string) => void;
+  onUgcPlaybackRateChange: (playbackRate: VideoPlaybackRate) => void;
 };
 
 export function LongrClipPickerPanel({
   clips,
+  demoPlaybackRate,
   duration,
   products,
   demoProductFilterId,
@@ -40,12 +48,15 @@ export function LongrClipPickerPanel({
   isBuilding,
   isLoadingMoreClips = false,
   selectedClipIds,
+  ugcPlaybackRate,
   onAddClip,
   onBuild,
+  onDemoPlaybackRateChange,
   onDemoProductFilterChange,
   onLoadPoster,
   onLoadMoreClips,
   onRemoveClip,
+  onUgcPlaybackRateChange,
 }: LongrClipPickerPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const filteredClips = useMemo(
@@ -93,11 +104,23 @@ export function LongrClipPickerPanel({
         />
         <LongrDurationMeter duration={duration} />
       </div>
+      <SourcePlaybackRateControls
+        demoPlaybackRate={demoPlaybackRate}
+        disabled={isBuilding}
+        ugcPlaybackRate={ugcPlaybackRate}
+        onDemoPlaybackRateChange={onDemoPlaybackRateChange}
+        onUgcPlaybackRateChange={onUgcPlaybackRateChange}
+      />
       <div className="mt-4 grid max-h-[560px] gap-3 overflow-y-auto pr-1">
         {filteredClips.map((clip) => {
           const isSelected = selectedClipIds.includes(clip.id);
-          const clipDuration = getVideoTrimRangeDuration(
+          const clipPlaybackRate = getClipPlaybackRate(clip.clipType, {
+            demoPlaybackRate,
+            ugcPlaybackRate,
+          });
+          const clipDuration = getPlaybackRateDuration(
             getDefaultVideoTrimRange(clip),
+            clipPlaybackRate,
           );
 
           return (
@@ -108,6 +131,7 @@ export function LongrClipPickerPanel({
                 clip.productId ? productNamesById.get(clip.productId) : undefined
               }
               disabled={duration + clipDuration > longrMaxDurationSeconds}
+              playbackRate={clipPlaybackRate}
               isSelected={isSelected}
               onLoadPoster={onLoadPoster}
               onAdd={onAddClip}

@@ -197,13 +197,17 @@ function createMusicClip(overrides: Partial<LongrMusicClip> = {}): LongrMusicCli
 function queueLongrState(
   overrides: {
     demoProductFilterId?: string;
+    demoPlaybackRate?: 1 | 2;
     musicClips?: LongrMusicClip[];
     selectedClipIds?: string[];
     selectionError?: string | null;
+    ugcPlaybackRate?: 1 | 2;
   } = {},
 ) {
   mocks.stateQueue.push(
     overrides.selectedClipIds ?? [],
+    overrides.demoPlaybackRate ?? 1,
+    overrides.ugcPlaybackRate ?? 1,
     overrides.demoProductFilterId ?? "all",
     overrides.musicClips ?? [],
     overrides.selectionError ?? null,
@@ -238,6 +242,8 @@ describe("LongrPageClient", () => {
     expect(markup).toContain("LongrProgressPanel");
     expect(markup).toContain("LongrBuildResult");
     expect(markup).toContain("LongrPreviewPanel");
+    expect(mocks.clipPickerPanelProps?.demoPlaybackRate).toBe(1);
+    expect(mocks.clipPickerPanelProps?.ugcPlaybackRate).toBe(1);
   });
 
   it("surfaces library and product errors", () => {
@@ -326,10 +332,12 @@ describe("LongrPageClient", () => {
         expect.objectContaining({
           clip: expect.objectContaining({ id: "ugc_1" }),
           loadClip: expect.any(Function),
+          playbackRate: 1,
         }),
         expect.objectContaining({
           clip: expect.objectContaining({ id: "demo_1" }),
           loadClip: expect.any(Function),
+          playbackRate: 1,
         }),
       ],
       [musicClip],

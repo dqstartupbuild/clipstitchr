@@ -4,11 +4,14 @@ import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 
 const mocks = vi.hoisted(() => ({
+  audioBufferSourceAdd: vi.fn(),
+  audioBufferSourceClose: vi.fn(),
   audioSourceClose: vi.fn(),
   copyAudioSamplesToSource: vi.fn(),
   copyTextOverlayVideoFramesToSource: vi.fn(),
   createMediaInput: vi.fn(),
   createMp4Output: vi.fn(),
+  createStitchSourceAudioBuffer: vi.fn(),
   createTextOverlayRenderContext: vi.fn(),
   createVideoBlobFromBuffer: vi.fn(),
   getInputAudioParameters: vi.fn(),
@@ -19,6 +22,12 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("mediabunny", () => ({
+  AudioBufferSource: vi.fn(function AudioBufferSource() {
+    return {
+      add: mocks.audioBufferSourceAdd,
+      close: mocks.audioBufferSourceClose,
+    };
+  }),
   AudioSampleSource: vi.fn(function AudioSampleSource() {
     return { close: mocks.audioSourceClose };
   }),
@@ -45,6 +54,10 @@ vi.mock("@/lib/clipstitchr/media/createMediaInput", () => ({
 
 vi.mock("@/lib/clipstitchr/media/createMp4Output", () => ({
   createMp4Output: mocks.createMp4Output,
+}));
+
+vi.mock("@/lib/clipstitchr/media/createStitchSourceAudioBuffer", () => ({
+  createStitchSourceAudioBuffer: mocks.createStitchSourceAudioBuffer,
 }));
 
 vi.mock("@/lib/clipstitchr/media/createTextOverlayRenderContext", () => ({
@@ -140,6 +153,7 @@ describe("stitchNormalizedVideosWithTextOverlay", () => {
       .mockResolvedValueOnce({ endTimestamp: 3 })
       .mockResolvedValueOnce({ endTimestamp: 8 });
     mocks.copyAudioSamplesToSource.mockResolvedValue({ endTimestamp: 8 });
+    mocks.createStitchSourceAudioBuffer.mockResolvedValue({ duration: 8 });
     mocks.getVideoMimeType.mockResolvedValue("video/mp4");
     mocks.createVideoBlobFromBuffer.mockReturnValue(
       new Blob(["stitch"], { type: "video/mp4" }),

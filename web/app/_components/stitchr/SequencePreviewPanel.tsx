@@ -9,8 +9,9 @@ import { useHorizontalSwipeNavigation } from "@/lib/clipstitchr/hooks/useHorizon
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type SequencePreviewPanelProps = {
   previewUgcClips: VideoClipMetadata[];
@@ -19,9 +20,11 @@ type SequencePreviewPanelProps = {
   demoClip: VideoClip | null;
   ugcTrimRange: VideoTrimRange | null;
   demoTrimRange: VideoTrimRange | null;
+  demoPlaybackRate: VideoPlaybackRate;
   includeDemoAudio: boolean;
   includeUgcAudio: boolean;
   textOverlay: TextOverlay | null;
+  ugcPlaybackRate: VideoPlaybackRate;
   canCopyTextOverlayToAll?: boolean;
   onActiveUgcChange: (id: string) => void;
   onCopyTextOverlayToAll?: () => void;
@@ -35,9 +38,11 @@ export function SequencePreviewPanel({
   demoClip,
   ugcTrimRange,
   demoTrimRange,
+  demoPlaybackRate,
   includeDemoAudio,
   includeUgcAudio,
   textOverlay,
+  ugcPlaybackRate,
   canCopyTextOverlayToAll = false,
   onActiveUgcChange,
   onCopyTextOverlayToAll,
@@ -50,10 +55,10 @@ export function SequencePreviewPanel({
   );
   const activePreviewClip = previewUgcClips[activePreviewIndex] ?? null;
   const ugcDuration = ugcTrimRange
-    ? getVideoTrimRangeDuration(ugcTrimRange)
+    ? getPlaybackRateDuration(ugcTrimRange, ugcPlaybackRate)
     : 0;
   const demoDuration = demoTrimRange
-    ? getVideoTrimRangeDuration(demoTrimRange)
+    ? getPlaybackRateDuration(demoTrimRange, demoPlaybackRate)
     : 0;
   const totalDuration = useMemo(
     () => ugcDuration + demoDuration,
@@ -118,15 +123,17 @@ export function SequencePreviewPanel({
           />
           <div {...swipeHandlers}>
             <SequenceVideoPlayer
-              key={`${ugcClip.id}:${ugcTrimRange.start}:${ugcTrimRange.end}:${demoClip.id}:${demoTrimRange.start}:${demoTrimRange.end}`}
+              key={`${ugcClip.id}:${ugcTrimRange.start}:${ugcTrimRange.end}:${ugcPlaybackRate}:${demoClip.id}:${demoTrimRange.start}:${demoTrimRange.end}:${demoPlaybackRate}`}
               ugcClip={ugcClip}
               demoClip={demoClip}
+              demoPlaybackRate={demoPlaybackRate}
               ugcTrimRange={ugcTrimRange}
               demoTrimRange={demoTrimRange}
               includeDemoAudio={includeDemoAudio}
               includeUgcAudio={includeUgcAudio}
               textOverlay={textOverlay}
               totalDuration={totalDuration}
+              ugcPlaybackRate={ugcPlaybackRate}
               onTextOverlayChange={handleOverlayChange}
               onPlaybackTimeChange={setPlaybackTime}
             />

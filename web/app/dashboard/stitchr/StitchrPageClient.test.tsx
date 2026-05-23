@@ -236,6 +236,7 @@ function queueStitchrState(
     activePreviewUgcId?: string;
     autoTextMessage?: string | null;
     demoProductFilterId?: string;
+    demoPlaybackRate?: 1 | 2;
     demoTrimRangesByClipId?: Record<string, { start: number; end: number }>;
     includeDemoAudio?: boolean;
     includeUgcAudio?: boolean;
@@ -245,6 +246,7 @@ function queueStitchrState(
     selectedMusicTrack?: SharedMusicTrack | null;
     selectedUgcIds?: string[];
     textOverlaysByUgcId?: Record<string, TextOverlay | null>;
+    ugcPlaybackRate?: 1 | 2;
     ugcTrimRangesByClipId?: Record<string, { start: number; end: number }>;
   } = {},
 ) {
@@ -252,6 +254,8 @@ function queueStitchrState(
     overrides.addMusic ?? false,
     overrides.includeDemoAudio ?? false,
     overrides.includeUgcAudio ?? false,
+    overrides.demoPlaybackRate ?? 1,
+    overrides.ugcPlaybackRate ?? 1,
     overrides.selectedMusicTrack ?? null,
     overrides.textOverlaysByUgcId ?? {},
     overrides.selectedAutoTextProductId ?? "",
@@ -310,6 +314,8 @@ describe("StitchrPageClient", () => {
     expect(mocks.clipPickerPanelProps?.selectedUgcIds).toEqual([]);
     expect(mocks.clipPickerPanelProps?.includeDemoAudio).toBe(false);
     expect(mocks.clipPickerPanelProps?.includeUgcAudio).toBe(false);
+    expect(mocks.clipPickerPanelProps?.demoPlaybackRate).toBe(1);
+    expect(mocks.clipPickerPanelProps?.ugcPlaybackRate).toBe(1);
     expect(mocks.clipPickerPanelProps?.canStitch).toBe(false);
   });
 
@@ -476,8 +482,10 @@ describe("StitchrPageClient", () => {
       expect.any(Object),
       null,
       expect.objectContaining({
+        demoPlaybackRate: 1,
         includeDemoAudio: false,
         includeUgcAudio: false,
+        ugcPlaybackRate: 1,
       }),
     );
   });
@@ -634,9 +642,11 @@ describe("StitchrPageClient", () => {
       null,
       expect.objectContaining({
         addMusic: false,
+        demoPlaybackRate: 1,
         includeDemoAudio: false,
         includeUgcAudio: false,
         musicTrack,
+        ugcPlaybackRate: 1,
       }),
     );
   });

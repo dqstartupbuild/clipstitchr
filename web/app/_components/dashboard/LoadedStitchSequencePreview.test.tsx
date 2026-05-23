@@ -187,7 +187,9 @@ describe("LoadedStitchSequencePreview", () => {
     expect(videos[0].props.muted).toBe(true);
     expect(videos[1].props.muted).toBe(true);
     expect(mocks.useSequenceVideoPlayer).toHaveBeenCalledWith({
+      demoPlaybackRate: 1,
       demoTrimRange: { start: 1, end: 4 },
+      ugcPlaybackRate: 1,
       ugcTrimRange: { start: 0.5, end: 3.5 },
     });
 

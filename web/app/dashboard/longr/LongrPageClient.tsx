@@ -17,20 +17,25 @@ import type { LongrBuildClipSelection } from "@/lib/clipstitchr/types/LongrBuild
 import type { LongrMusicClip } from "@/lib/clipstitchr/types/LongrMusicClip";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import { clampLongrMusicClip } from "@/lib/clipstitchr/utils/clampLongrMusicClip";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { createLongrMusicClip } from "@/lib/clipstitchr/utils/createLongrMusicClip";
 import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
 import { filterClipsByType } from "@/lib/clipstitchr/utils/filterClipsByType";
+import { getClipPlaybackRate } from "@/lib/clipstitchr/utils/getClipPlaybackRate";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getLongrTotalDuration } from "@/lib/clipstitchr/utils/getLongrTotalDuration";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 export function LongrPageClient() {
   const library = useClipLibrary();
   const products = useProducts();
   const longr = useLongr({ onCreated: library.refresh });
   const [selectedClipIds, setSelectedClipIds] = useState<string[]>([]);
+  const [demoPlaybackRate, setDemoPlaybackRate] =
+    useState<VideoPlaybackRate>(1);
+  const [ugcPlaybackRate, setUgcPlaybackRate] = useState<VideoPlaybackRate>(1);
   const [demoProductFilterId, setDemoProductFilterId] = useState("all");
   const [musicClips, setMusicClips] = useState<LongrMusicClip[]>([]);
   const [selectionError, setSelectionError] = useState<string | null>(null);
@@ -70,8 +75,22 @@ export function LongrPageClient() {
     [availableClips, selectedClipIds],
   );
   const selectedDuration = useMemo(
-    () => getLongrTotalDuration(selectedClips),
-    [selectedClips],
+    () =>
+      getLongrTotalDuration(selectedClips, {
+        demoPlaybackRate,
+        ugcPlaybackRate,
+      }),
+    [demoPlaybackRate, selectedClips, ugcPlaybackRate],
+  );
+  const clampedMusicClips = useMemo(
+    () =>
+      musicClips.map((clip) =>
+        clampLongrMusicClip({
+          clip,
+          timelineDurationSeconds: selectedDuration,
+        }),
+      ),
+    [musicClips, selectedDuration],
   );
   const isBuilding =
     longr.status === "reading" ||
@@ -83,8 +102,12 @@ export function LongrPageClient() {
       return;
     }
 
-    const clipDuration = getVideoTrimRangeDuration(
+    const clipDuration = getPlaybackRateDuration(
       getDefaultVideoTrimRange(clip),
+      getClipPlaybackRate(clip.clipType, {
+        demoPlaybackRate,
+        ugcPlaybackRate,
+      }),
     );
 
     if (selectedDuration + clipDuration > longrMaxDurationSeconds) {
@@ -122,11 +145,15 @@ export function LongrPageClient() {
   const handleBuild = () => {
     const selections: LongrBuildClipSelection[] = selectedClips.map((clip) => ({
       clip,
+      playbackRate: getClipPlaybackRate(clip.clipType, {
+        demoPlaybackRate,
+        ugcPlaybackRate,
+      }),
       trimRange: getDefaultVideoTrimRange(clip),
       loadClip: () => library.loadClip(clip.id),
     }));
 
-    void longr.buildLongrVideo(selections, musicClips);
+    void longr.buildLongrVideo(selections, clampedMusicClips);
   };
   const handleAddMusicTrack = (track: SharedMusicTrack) => {
     setMusicClips((currentClips) => [
@@ -204,6 +231,7 @@ export function LongrPageClient() {
           <div className="flex min-w-0 flex-col gap-5">
             <LongrClipPickerPanel
               clips={visibleAvailableClips}
+              demoPlaybackRate={demoPlaybackRate}
               duration={selectedDuration}
               products={products.products}
               demoProductFilterId={activeDemoProductFilterId}
@@ -211,12 +239,15 @@ export function LongrPageClient() {
               isBuilding={isBuilding}
               isLoadingMoreClips={library.isLoadingMoreClips}
               selectedClipIds={selectedClipIds}
+              ugcPlaybackRate={ugcPlaybackRate}
               onAddClip={handleAddClip}
               onBuild={handleBuild}
+              onDemoPlaybackRateChange={setDemoPlaybackRate}
               onDemoProductFilterChange={setDemoProductFilterId}
               onLoadMoreClips={library.loadMoreClips}
               onLoadPoster={library.loadClipPoster}
               onRemoveClip={handleRemoveClip}
+              onUgcPlaybackRateChange={setUgcPlaybackRate}
             />
             <LongrTimelineStrip
               clips={selectedClips}
@@ -226,7 +257,7 @@ export function LongrPageClient() {
             />
             <LongrMusicPanel
               isBuilding={isBuilding}
-              musicClips={musicClips}
+              musicClips={clampedMusicClips}
               onAddTrack={handleAddMusicTrack}
               onDuplicate={handleDuplicateMusicClip}
               onRemove={handleRemoveMusicClip}
@@ -242,6 +273,8 @@ export function LongrPageClient() {
           <div className="min-w-0 w-full max-w-[360px] justify-self-center xl:sticky xl:top-5 xl:justify-self-end">
             <LongrPreviewPanel
               clips={selectedClips}
+              demoPlaybackRate={demoPlaybackRate}
+              ugcPlaybackRate={ugcPlaybackRate}
               onLoadClip={library.loadClip}
             />
           </div>

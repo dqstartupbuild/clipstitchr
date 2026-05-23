@@ -58,6 +58,8 @@ export function StitchDetailsDialog({
       label: "Demo audio",
       value: stitch.includeDemoAudio === false ? "Muted" : "Included",
     },
+    { label: "UGC speed", value: `${stitch.ugcPlaybackRate ?? 1}x` },
+    { label: "Demo speed", value: `${stitch.demoPlaybackRate ?? 1}x` },
     { label: "Music", value: musicLabel },
     { label: "Text overlay", value: textOverlayText },
   ].flatMap((item) =>

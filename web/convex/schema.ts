@@ -21,6 +21,7 @@ import { swiprSlideValidator } from "./validators/swiprSlide";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
 import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
 import { textOverlayValidator } from "./validators/textOverlay";
+import { videoPlaybackRateValidator } from "./validators/videoPlaybackRate";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
 export default defineSchema({
@@ -154,6 +155,8 @@ export default defineSchema({
     duration: v.number(),
     includeDemoAudio: v.optional(v.boolean()),
     includeUgcAudio: v.optional(v.boolean()),
+    demoPlaybackRate: v.optional(videoPlaybackRateValidator),
+    ugcPlaybackRate: v.optional(videoPlaybackRateValidator),
     music: v.optional(stitchMusicMetadataValidator),
     textOverlay: v.optional(textOverlayValidator),
     createdAt: v.string(),
