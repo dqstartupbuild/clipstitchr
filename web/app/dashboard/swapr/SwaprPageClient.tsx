@@ -148,6 +148,17 @@ export function SwaprPageClient() {
       sourceMimeType: blob.type || metadata.sourceMimeType,
     };
   };
+  const loadSourcePoster = async (id: string): Promise<Blob | null> => {
+    if (sourceUgcClips.some((clip) => clip.id === id)) {
+      return await library.loadClipPoster(id);
+    }
+
+    if (library.stitches.some((stitch) => stitch.id === id)) {
+      return await library.loadStitchPoster(id);
+    }
+
+    return await library.loadClipPoster(id);
+  };
   const getReferenceVideoSegments = async (
     clip: VideoClipMetadata,
     requestedCharacterOrientation: SwaprCharacterOrientation,
@@ -300,6 +311,7 @@ export function SwaprPageClient() {
                     clips={sourceClips}
                     selectedClipId={selectedClipId}
                     onLoadClip={loadSourceClip}
+                    onLoadPoster={loadSourcePoster}
                     onSelect={selectClip}
                   />
                 </div>

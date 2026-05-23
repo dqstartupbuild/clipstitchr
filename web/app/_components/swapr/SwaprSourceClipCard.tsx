@@ -8,6 +8,7 @@ type SwaprSourceClipCardProps = {
   clip: VideoClipMetadata;
   isSelected: boolean;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
+  onLoadPoster: (id: string) => Promise<Blob | null>;
   onSelect: (clip: VideoClipMetadata) => void;
 };
 
@@ -15,6 +16,7 @@ export function SwaprSourceClipCard({
   clip,
   isSelected,
   onLoadClip,
+  onLoadPoster,
   onSelect,
 }: SwaprSourceClipCardProps) {
   return (
@@ -22,6 +24,7 @@ export function SwaprSourceClipCard({
       clip={clip}
       isSelected={isSelected}
       onLoadClip={onLoadClip}
+      onLoadPoster={onLoadPoster}
       onSelect={() => onSelect(clip)}
     />
   );
