@@ -12,6 +12,7 @@ type SwaprSourceClipSelectorProps = {
   clips: VideoClipMetadata[];
   selectedClipId?: string;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
+  onLoadPoster: (id: string) => Promise<Blob | null>;
   onSelect: (clip: VideoClipMetadata) => void;
 };
 
@@ -19,6 +20,7 @@ export function SwaprSourceClipSelector({
   clips,
   selectedClipId,
   onLoadClip,
+  onLoadPoster,
   onSelect,
 }: SwaprSourceClipSelectorProps) {
   const pagination = usePagination(clips, {
@@ -51,6 +53,7 @@ export function SwaprSourceClipSelector({
                   clip={clip}
                   isSelected={clip.id === selectedClipId}
                   onLoadClip={onLoadClip}
+                  onLoadPoster={onLoadPoster}
                   onSelect={onSelect}
                 />
               </div>
