@@ -49,6 +49,7 @@ import type * as validators_swiprProductSourceType from "../validators/swiprProd
 import type * as validators_swiprSlide from "../validators/swiprSlide.js";
 import type * as validators_textOverlay from "../validators/textOverlay.js";
 import type * as validators_videoClipLibraryKind from "../validators/videoClipLibraryKind.js";
+import type * as validators_videoPlaybackRate from "../validators/videoPlaybackRate.js";
 import type * as validators_videoTrimRange from "../validators/videoTrimRange.js";
 import type * as videoClips from "../videoClips.js";
 import type * as waitlist from "../waitlist.js";
@@ -101,6 +102,7 @@ declare const fullApi: ApiFromModules<{
   "validators/swiprSlide": typeof validators_swiprSlide;
   "validators/textOverlay": typeof validators_textOverlay;
   "validators/videoClipLibraryKind": typeof validators_videoClipLibraryKind;
+  "validators/videoPlaybackRate": typeof validators_videoPlaybackRate;
   "validators/videoTrimRange": typeof validators_videoTrimRange;
   videoClips: typeof videoClips;
   waitlist: typeof waitlist;
