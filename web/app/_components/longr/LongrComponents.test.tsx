@@ -192,14 +192,24 @@ describe("Longr components", () => {
     mocks.stateQueue = [new Map()];
     expect(
       renderToStaticMarkup(
-        <LongrPreviewPanel clips={[]} onLoadClip={async () => null} />,
+        <LongrPreviewPanel
+          clips={[]}
+          demoPlaybackRate={1}
+          ugcPlaybackRate={1}
+          onLoadClip={async () => null}
+        />,
       ),
     ).toContain("No clips selected");
 
     mocks.stateQueue = [new Map()];
     expect(
       renderToStaticMarkup(
-        <LongrPreviewPanel clips={[createClip()]} onLoadClip={async () => null} />,
+        <LongrPreviewPanel
+          clips={[createClip()]}
+          demoPlaybackRate={1}
+          ugcPlaybackRate={1}
+          onLoadClip={async () => null}
+        />,
       ),
     ).toContain("Loading preview");
 
@@ -213,6 +223,8 @@ describe("Longr components", () => {
       renderToStaticMarkup(
         <LongrPreviewPanel
           clips={[createClip()]}
+          demoPlaybackRate={1}
+          ugcPlaybackRate={1}
           onLoadClip={async () => loadedClip}
         />,
       ),

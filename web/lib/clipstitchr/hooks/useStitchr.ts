@@ -14,6 +14,7 @@ import { createStitchPosterBlob } from "@/lib/clipstitchr/media/createStitchPost
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
+import type { SourcePlaybackRateOptions } from "@/lib/clipstitchr/types/SourcePlaybackRateOptions";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
 import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSourceAudioOptions";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
@@ -26,7 +27,7 @@ import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
 import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type UseStitchrOptions = {
   loadClip?: (id: string) => Promise<VideoClip | null>;
@@ -36,7 +37,8 @@ type UseStitchrOptions = {
 type StitchrBuildOptions = {
   addMusic?: boolean;
   musicTrack?: SharedMusicTrack | null;
-} & StitchSourceAudioOptions;
+} & SourcePlaybackRateOptions &
+  StitchSourceAudioOptions;
 
 export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
   const saveStitch = useMutation(api.stitches.save);
@@ -67,9 +69,11 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         demoTrimRange,
         demoClip.duration,
       );
+      const ugcPlaybackRate = options.ugcPlaybackRate ?? 1;
+      const demoPlaybackRate = options.demoPlaybackRate ?? 1;
       const duration =
-        getVideoTrimRangeDuration(clampedUgcTrimRange) +
-        getVideoTrimRangeDuration(clampedDemoTrimRange);
+        getPlaybackRateDuration(clampedUgcTrimRange, ugcPlaybackRate) +
+        getPlaybackRateDuration(clampedDemoTrimRange, demoPlaybackRate);
       const now = new Date().toISOString();
       const stitchId = createId();
       let posterBlob = ugcClip.posterBlob;
@@ -85,10 +89,12 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
           if (loadedUgcClip && loadedDemoClip) {
             posterBlob = await createStitchPosterBlob({
               demoClip: loadedDemoClip,
+              demoPlaybackRate,
               demoTrimRange: clampedDemoTrimRange,
               duration,
               textOverlay,
               ugcClip: loadedUgcClip,
+              ugcPlaybackRate,
               ugcTrimRange: clampedUgcTrimRange,
             });
             [posterObject] = await uploadBlobsToR2([
@@ -122,6 +128,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         duration,
         includeDemoAudio: options.includeDemoAudio ?? false,
         includeUgcAudio: options.includeUgcAudio ?? false,
+        demoPlaybackRate,
+        ugcPlaybackRate,
         textOverlay: textOverlay ?? undefined,
         createdAt: now,
       };
@@ -146,6 +154,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         duration: nextStitch.duration,
         includeDemoAudio: nextStitch.includeDemoAudio,
         includeUgcAudio: nextStitch.includeUgcAudio,
+        demoPlaybackRate: nextStitch.demoPlaybackRate,
+        ugcPlaybackRate: nextStitch.ugcPlaybackRate,
         textOverlay: nextStitch.textOverlay,
         createdAt: nextStitch.createdAt,
       });
@@ -204,7 +214,10 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
           demoTrimRange,
           demoClip.duration,
         );
-        const demoDuration = getVideoTrimRangeDuration(clampedDemoTrimRange);
+        const demoDuration = getPlaybackRateDuration(
+          clampedDemoTrimRange,
+          options.demoPlaybackRate ?? 1,
+        );
 
         for (let index = 0; index < ugcSelections.length; index += 1) {
           const ugcSelection = ugcSelections[index];
@@ -214,7 +227,10 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
             ugcSelection.trimRange,
             ugcClip.duration,
           );
-          const ugcDuration = getVideoTrimRangeDuration(clampedUgcTrimRange);
+          const ugcDuration = getPlaybackRateDuration(
+            clampedUgcTrimRange,
+            options.ugcPlaybackRate ?? 1,
+          );
           const selectionTextOverlay =
             "textOverlay" in ugcSelection
               ? ugcSelection.textOverlay

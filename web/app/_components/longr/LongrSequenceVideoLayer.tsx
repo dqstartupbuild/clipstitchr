@@ -2,10 +2,12 @@
 
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 
 type LongrSequenceVideoLayerProps = {
   clip: VideoClip;
   isActive: boolean;
+  playbackRate: VideoPlaybackRate;
   videoRef: (video: HTMLVideoElement | null) => void;
   onEnded: () => void;
   onLoadedMetadata: () => void;
@@ -15,6 +17,7 @@ type LongrSequenceVideoLayerProps = {
 export function LongrSequenceVideoLayer({
   clip,
   isActive,
+  playbackRate,
   videoRef,
   onEnded,
   onLoadedMetadata,
@@ -39,6 +42,9 @@ export function LongrSequenceVideoLayer({
       poster={posterUrl ?? undefined}
       preload="auto"
       src={videoUrl}
+      onCanPlay={(event) => {
+        event.currentTarget.playbackRate = playbackRate;
+      }}
       onEnded={onEnded}
       onLoadedMetadata={onLoadedMetadata}
       onTimeUpdate={onTimeUpdate}

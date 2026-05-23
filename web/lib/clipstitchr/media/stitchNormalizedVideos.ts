@@ -4,16 +4,19 @@ import { copyVideoSamplesToSource } from "@/lib/clipstitchr/media/copyVideoSampl
 import { createMediaBunnyExportSession } from "@/lib/clipstitchr/media/createMediaBunnyExportSession";
 import { createMediaBunnyProgressMapper } from "@/lib/clipstitchr/media/createMediaBunnyProgressMapper";
 import { createMediaInput } from "@/lib/clipstitchr/media/createMediaInput";
+import { createOutputAudioBufferSource } from "@/lib/clipstitchr/media/createOutputAudioBufferSource";
 import { createOutputAudioSampleSource } from "@/lib/clipstitchr/media/createOutputAudioSampleSource";
+import { createStitchSourceAudioBuffer } from "@/lib/clipstitchr/media/createStitchSourceAudioBuffer";
 import { createTikTokVideoSampleSource } from "@/lib/clipstitchr/media/createTikTokVideoSampleSource";
 import { finalizeMediaBunnyExportSession } from "@/lib/clipstitchr/media/finalizeMediaBunnyExportSession";
 import { getInputAudioParameters } from "@/lib/clipstitchr/media/getInputAudioParameters";
 import { resolveMediaBunnyOutputCodecs } from "@/lib/clipstitchr/media/resolveMediaBunnyOutputCodecs";
+import type { SourcePlaybackRateOptions } from "@/lib/clipstitchr/types/SourcePlaybackRateOptions";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSourceAudioOptions";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type StitchNormalizedVideosResult = {
   blob: Blob;
@@ -25,7 +28,8 @@ type StitchNormalizedVideosOptions = {
   ugcTrimRange: VideoTrimRange;
   demoTrimRange: VideoTrimRange;
   onProgress?: (progress: number) => void;
-} & StitchSourceAudioOptions;
+} & SourcePlaybackRateOptions &
+  StitchSourceAudioOptions;
 
 export async function stitchNormalizedVideos(
   ugcClip: VideoClip,
@@ -33,9 +37,11 @@ export async function stitchNormalizedVideos(
   {
     ugcTrimRange,
     demoTrimRange,
+    demoPlaybackRate = 1,
     includeDemoAudio = true,
     includeUgcAudio = true,
     onProgress,
+    ugcPlaybackRate = 1,
   }: StitchNormalizedVideosOptions,
 ): Promise<StitchNormalizedVideosResult> {
   const ugcInput = createMediaInput(ugcClip.blob);
@@ -54,9 +60,17 @@ export async function stitchNormalizedVideos(
       demoTrimRange,
       demoClip.duration,
     );
-    const ugcDuration = getVideoTrimRangeDuration(clampedUgcTrimRange);
-    const demoDuration = getVideoTrimRangeDuration(clampedDemoTrimRange);
+    const ugcDuration = getPlaybackRateDuration(
+      clampedUgcTrimRange,
+      ugcPlaybackRate,
+    );
+    const demoDuration = getPlaybackRateDuration(
+      clampedDemoTrimRange,
+      demoPlaybackRate,
+    );
     const includeAudio = Boolean(ugcAudioParameters || demoAudioParameters);
+    const usesPlaybackRateAudioBuffer =
+      includeAudio && (ugcPlaybackRate !== 1 || demoPlaybackRate !== 1);
 
     assertNormalizedAudioParameters({
       audioParameters: ugcAudioParameters,
@@ -73,16 +87,22 @@ export async function stitchNormalizedVideos(
       includeAudio,
       "No supported audio encoder found for this export.",
     );
+    const audioBufferSource = createOutputAudioBufferSource(
+      usesPlaybackRateAudioBuffer,
+      codecs.audioCodec,
+    );
+    const audioSampleSource = createOutputAudioSampleSource(
+      includeAudio && !usesPlaybackRateAudioBuffer,
+      codecs.audioCodec,
+    );
     const session = await createMediaBunnyExportSession({
-      audioSource: createOutputAudioSampleSource(
-        includeAudio,
-        codecs.audioCodec,
-      ),
+      audioSource: audioBufferSource ?? audioSampleSource,
       videoSource: createTikTokVideoSampleSource(codecs.videoCodec),
     });
 
     const ugcVideo = await copyVideoSamplesToSource({
       input: ugcInput,
+      playbackRate: ugcPlaybackRate,
       source: session.videoSource,
       timelineOffset: 0,
       trimRange: clampedUgcTrimRange,
@@ -91,6 +111,7 @@ export async function stitchNormalizedVideos(
     const demoTimelineOffset = Math.max(ugcDuration, ugcVideo.endTimestamp);
     const demoVideo = await copyVideoSamplesToSource({
       input: demoInput,
+      playbackRate: demoPlaybackRate,
       source: session.videoSource,
       timelineOffset: demoTimelineOffset,
       trimRange: clampedDemoTrimRange,
@@ -98,11 +119,33 @@ export async function stitchNormalizedVideos(
     });
     let endTimestamp = Math.max(ugcVideo.endTimestamp, demoVideo.endTimestamp);
 
-    if (session.audioSource) {
+    if (audioBufferSource) {
+      const outputDuration = Math.max(
+        endTimestamp,
+        demoTimelineOffset + demoDuration,
+        ugcDuration + demoDuration,
+      );
+      const audioBuffer = await createStitchSourceAudioBuffer({
+        demoInput,
+        demoPlaybackRate,
+        demoTimelineOffset,
+        demoTrimRange: clampedDemoTrimRange,
+        includeDemoAudio,
+        includeUgcAudio,
+        outputDuration,
+        ugcInput,
+        ugcPlaybackRate,
+        ugcTrimRange: clampedUgcTrimRange,
+      });
+
+      await audioBufferSource.add(audioBuffer);
+      endTimestamp = Math.max(endTimestamp, outputDuration);
+      onProgress?.(0.95);
+    } else if (audioSampleSource) {
       const ugcAudio = includeUgcAudio
         ? await copyAudioSamplesToSource({
             input: ugcInput,
-            source: session.audioSource,
+            source: audioSampleSource,
             timelineOffset: 0,
             trimRange: clampedUgcTrimRange,
             onProgress: createMediaBunnyProgressMapper(
@@ -115,7 +158,7 @@ export async function stitchNormalizedVideos(
       const demoAudio = includeDemoAudio
         ? await copyAudioSamplesToSource({
             input: demoInput,
-            source: session.audioSource,
+            source: audioSampleSource,
             timelineOffset: demoTimelineOffset,
             trimRange: clampedDemoTrimRange,
             onProgress: createMediaBunnyProgressMapper(

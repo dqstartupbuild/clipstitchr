@@ -4,7 +4,7 @@ import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type RenderSavedStitchBlobOptions = {
   loadClip: (id: string) => Promise<VideoClip | null>;
@@ -40,18 +40,22 @@ export async function renderSavedStitchBlob({
     },
     demoClip.duration,
   );
+  const ugcPlaybackRate = stitch.ugcPlaybackRate ?? 1;
+  const demoPlaybackRate = stitch.demoPlaybackRate ?? 1;
   const totalDuration =
-    getVideoTrimRangeDuration(ugcTrimRange) +
-    getVideoTrimRangeDuration(demoTrimRange);
+    getPlaybackRateDuration(ugcTrimRange, ugcPlaybackRate) +
+    getPlaybackRateDuration(demoTrimRange, demoPlaybackRate);
   const textOverlay =
     stitch.textOverlay && stitch.textOverlay.text.trim().length > 0
       ? clampTextOverlay(stitch.textOverlay, totalDuration)
       : null;
   const options = {
     demoTrimRange,
+    demoPlaybackRate,
     includeDemoAudio: stitch.includeDemoAudio,
     includeUgcAudio: stitch.includeUgcAudio,
     onProgress,
+    ugcPlaybackRate,
     ugcTrimRange,
   };
 

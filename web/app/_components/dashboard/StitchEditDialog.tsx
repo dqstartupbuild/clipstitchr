@@ -17,8 +17,8 @@ import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type StitchEditDialogProps = {
   demoClip: VideoClip | null;
@@ -68,7 +68,7 @@ export function StitchEditDialog({
   const [enabled, setEnabled] = useState(music?.enabled ?? true);
   const [volume, setVolume] = useState(music?.volume ?? 1);
   const ugcDuration = stitch.ugcTrimRange
-    ? getVideoTrimRangeDuration(stitch.ugcTrimRange)
+    ? getPlaybackRateDuration(stitch.ugcTrimRange, stitch.ugcPlaybackRate)
     : 0;
   const fileSizeLabel = stitch.size
     ? formatBytes(stitch.size)

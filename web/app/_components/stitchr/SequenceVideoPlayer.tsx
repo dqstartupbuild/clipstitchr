@@ -9,6 +9,7 @@ import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { useSequenceVideoPlayer } from "@/lib/clipstitchr/hooks/useSequenceVideoPlayer";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getTextOverlayIsVisible } from "@/lib/clipstitchr/utils/getTextOverlayIsVisible";
@@ -16,12 +17,14 @@ import { getTextOverlayIsVisible } from "@/lib/clipstitchr/utils/getTextOverlayI
 type SequenceVideoPlayerProps = {
   ugcClip: VideoClip;
   demoClip: VideoClip;
+  demoPlaybackRate: VideoPlaybackRate;
   ugcTrimRange: VideoTrimRange;
   demoTrimRange: VideoTrimRange;
   includeDemoAudio: boolean;
   includeUgcAudio: boolean;
   textOverlay: TextOverlay | null;
   totalDuration: number;
+  ugcPlaybackRate: VideoPlaybackRate;
   onTextOverlayChange: (textOverlay: TextOverlay) => void;
   onPlaybackTimeChange: (currentTime: number) => void;
 };
@@ -29,12 +32,14 @@ type SequenceVideoPlayerProps = {
 export function SequenceVideoPlayer({
   ugcClip,
   demoClip,
+  demoPlaybackRate,
   ugcTrimRange,
   demoTrimRange,
   includeDemoAudio,
   includeUgcAudio,
   textOverlay,
   totalDuration,
+  ugcPlaybackRate,
   onTextOverlayChange,
   onPlaybackTimeChange,
 }: SequenceVideoPlayerProps) {
@@ -57,8 +62,10 @@ export function SequenceVideoPlayer({
     togglePlayback,
     ugcVideoRef,
   } = useSequenceVideoPlayer({
+    demoPlaybackRate,
     ugcTrimRange,
     demoTrimRange,
+    ugcPlaybackRate,
   });
   const progressValue = Math.min(currentTime, totalDuration);
   const isTextOverlayInRange =

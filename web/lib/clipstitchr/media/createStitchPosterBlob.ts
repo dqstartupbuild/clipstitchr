@@ -7,26 +7,31 @@ import { drawVideoFrameToCanvas } from "@/lib/clipstitchr/media/drawVideoFrameTo
 import { encodeCanvasAsPosterBlob } from "@/lib/clipstitchr/media/encodeCanvasAsPosterBlob";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type CreateStitchPosterBlobOptions = {
   demoClip: VideoClip;
+  demoPlaybackRate?: VideoPlaybackRate;
   demoTrimRange: VideoTrimRange;
   duration: number;
   textOverlay: TextOverlay | null;
   ugcClip: VideoClip;
+  ugcPlaybackRate?: VideoPlaybackRate;
   ugcTrimRange: VideoTrimRange;
 };
 
 export async function createStitchPosterBlob({
   demoClip,
+  demoPlaybackRate = 1,
   demoTrimRange,
   duration,
   textOverlay,
   ugcClip,
+  ugcPlaybackRate = 1,
   ugcTrimRange,
 }: CreateStitchPosterBlobOptions): Promise<Blob> {
   const clampedUgcTrimRange = clampVideoTrimRange(
@@ -37,7 +42,10 @@ export async function createStitchPosterBlob({
     demoTrimRange,
     demoClip.duration,
   );
-  const ugcDuration = getVideoTrimRangeDuration(clampedUgcTrimRange);
+  const ugcDuration = getPlaybackRateDuration(
+    clampedUgcTrimRange,
+    ugcPlaybackRate,
+  );
   const visibleTextOverlay =
     textOverlay && textOverlay.text.trim().length > 0
       ? clampTextOverlay(textOverlay, duration)
@@ -53,17 +61,20 @@ export async function createStitchPosterBlob({
     posterTimelineTime < ugcDuration
       ? {
           clip: ugcClip,
+          playbackRate: ugcPlaybackRate,
           timelineOffset: 0,
           trimRange: clampedUgcTrimRange,
         }
       : {
           clip: demoClip,
+          playbackRate: demoPlaybackRate,
           timelineOffset: ugcDuration,
           trimRange: clampedDemoTrimRange,
         };
   const sourceOffset = Math.max(
     0,
-    posterTimelineTime - posterSource.timelineOffset,
+    (posterTimelineTime - posterSource.timelineOffset) *
+      posterSource.playbackRate,
   );
   const sourceTime = Math.min(
     posterSource.trimRange.end,

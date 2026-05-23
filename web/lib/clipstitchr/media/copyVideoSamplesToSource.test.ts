@@ -91,6 +91,35 @@ describe("copyVideoSamplesToSource", () => {
     expect(progress).toHaveBeenLastCalledWith(1);
   });
 
+  it("compresses video sample timestamps and durations for 2x playback", async () => {
+    const track = {
+      computeDuration: vi.fn().mockResolvedValue(20),
+      getFirstTimestamp: vi.fn().mockResolvedValue(10),
+    };
+    const firstSample = createSample(12, 2);
+    const secondSample = createSample(16, 4);
+    const source = {
+      add: vi.fn().mockResolvedValue(undefined),
+    } as unknown as VideoSampleSource;
+
+    mocks.samples = [firstSample, secondSample];
+
+    await expect(
+      copyVideoSamplesToSource({
+        input: createInput(track),
+        playbackRate: 2,
+        source,
+        timelineOffset: 5,
+        trimRange: { start: 2, end: 8 },
+      }),
+    ).resolves.toEqual({ endTimestamp: 8 });
+
+    expect(firstSample.setTimestamp).toHaveBeenCalledWith(5);
+    expect(firstSample.setDuration).toHaveBeenCalledWith(1);
+    expect(secondSample.setTimestamp).toHaveBeenCalledWith(7);
+    expect(secondSample.setDuration).toHaveBeenCalledWith(1);
+  });
+
   it("throws when the input has no video track", async () => {
     await expect(
       copyVideoSamplesToSource({

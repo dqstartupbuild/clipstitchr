@@ -160,6 +160,7 @@ describe("SequencePreviewPanel", () => {
     const tree = SequencePreviewPanel({
       activeUgcId: "ugc_2",
       demoClip: createClip("demo_1", "Demo clip"),
+      demoPlaybackRate: 1,
       demoTrimRange,
       includeDemoAudio: true,
       includeUgcAudio: false,
@@ -173,6 +174,7 @@ describe("SequencePreviewPanel", () => {
       ],
       textOverlay: overlay,
       ugcClip: createClip("ugc_2", "Loaded UGC"),
+      ugcPlaybackRate: 1,
       ugcTrimRange,
     });
     const markup = renderToStaticMarkup(tree);
@@ -216,6 +218,7 @@ describe("SequencePreviewPanel", () => {
       <SequencePreviewPanel
         activeUgcId={null}
         demoClip={null}
+        demoPlaybackRate={1}
         demoTrimRange={null}
         includeDemoAudio={false}
         includeUgcAudio={false}
@@ -224,6 +227,7 @@ describe("SequencePreviewPanel", () => {
         previewUgcClips={[]}
         textOverlay={null}
         ugcClip={null}
+        ugcPlaybackRate={1}
         ugcTrimRange={null}
       />,
     );
@@ -241,6 +245,7 @@ describe("SequencePreviewPanel", () => {
       <SequencePreviewPanel
         activeUgcId="missing"
         demoClip={createClip("demo_1", "Demo clip")}
+        demoPlaybackRate={1}
         demoTrimRange={demoTrimRange}
         includeDemoAudio={false}
         includeUgcAudio={false}
@@ -249,6 +254,7 @@ describe("SequencePreviewPanel", () => {
         previewUgcClips={[createClipMetadata("ugc_1", "First UGC")]}
         textOverlay={null}
         ugcClip={createClip("ugc_1", "Loaded UGC")}
+        ugcPlaybackRate={1}
         ugcTrimRange={ugcTrimRange}
       />,
     );

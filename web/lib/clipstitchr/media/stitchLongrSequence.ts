@@ -18,7 +18,7 @@ import { registerAacEncoderIfNeeded } from "@/lib/clipstitchr/media/registerAacE
 import type { LongrSequenceClip } from "@/lib/clipstitchr/types/LongrSequenceClip";
 import type { LongrSequenceMusicClip } from "@/lib/clipstitchr/types/LongrSequenceMusicClip";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type StitchLongrSequenceOptions = {
   musicClips?: LongrSequenceMusicClip[];
@@ -86,6 +86,7 @@ export async function stitchLongrSequence(
     const trimRanges = sequence.map(({ clip, trimRange }) =>
       clampVideoTrimRange(trimRange, clip.duration),
     );
+    const playbackRates = sequence.map(({ playbackRate }) => playbackRate ?? 1);
 
     output.addVideoTrack(videoSource, {
       rotation: 0,
@@ -103,10 +104,12 @@ export async function stitchLongrSequence(
     for (let index = 0; index < sequence.length; index += 1) {
       const input = inputs[index];
       const trimRange = trimRanges[index];
-      const trimDuration = getVideoTrimRangeDuration(trimRange);
+      const playbackRate = playbackRates[index] ?? 1;
+      const trimDuration = getPlaybackRateDuration(trimRange, playbackRate);
       const segmentOffset = Math.max(timelineOffset, endTimestamp);
       const segmentVideo = await copyVideoSamplesToSource({
         input,
+        playbackRate,
         source: videoSource,
         timelineOffset: segmentOffset,
         trimRange,
@@ -125,6 +128,7 @@ export async function stitchLongrSequence(
         inputs,
         musicClips,
         outputDuration,
+        playbackRates,
         timelineOffsets,
         trimRanges,
       });

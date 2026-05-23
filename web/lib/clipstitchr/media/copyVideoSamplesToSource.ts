@@ -1,11 +1,14 @@
 import { VideoSampleSink, type Input, type VideoSampleSource } from "mediabunny";
 import { createRetimedVideoSample } from "@/lib/clipstitchr/media/createRetimedVideoSample";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type CopyVideoSamplesOptions = {
   input: Input;
+  playbackRate?: VideoPlaybackRate;
   source: VideoSampleSource;
   timelineOffset: number;
   trimRange: VideoTrimRange;
@@ -18,6 +21,7 @@ type CopyVideoSamplesResult = {
 
 export async function copyVideoSamplesToSource({
   input,
+  playbackRate = 1,
   source,
   timelineOffset,
   trimRange,
@@ -34,9 +38,13 @@ export async function copyVideoSamplesToSource({
   const duration = await track.computeDuration();
   const clampedTrimRange = clampVideoTrimRange(trimRange, duration);
   const trimDuration = getVideoTrimRangeDuration(clampedTrimRange);
+  const outputDuration = getPlaybackRateDuration(
+    clampedTrimRange,
+    playbackRate,
+  );
   const sourceStartTimestamp = sourceOffset + clampedTrimRange.start;
   const sourceEndTimestamp = sourceOffset + clampedTrimRange.end;
-  const outputEndTimestamp = timelineOffset + trimDuration;
+  const outputEndTimestamp = timelineOffset + outputDuration;
   let isFirstSample = true;
   let endTimestamp = timelineOffset;
 
@@ -49,6 +57,7 @@ export async function copyVideoSamplesToSource({
       sample,
       timelineOffset,
       sourceStartTimestamp,
+      playbackRate,
     );
 
     try {

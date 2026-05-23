@@ -20,6 +20,7 @@ vi.mock("@/lib/clipstitchr/media/decodeAudioBlob", () => ({
 }));
 
 function createOfflineAudioContextMock() {
+  const playbackRates: number[] = [];
   const starts: Array<[number, number, number]> = [];
   const gains: number[] = [];
   const renderedBuffer = { duration: 2 };
@@ -31,6 +32,11 @@ function createOfflineAudioContextMock() {
       createBufferSource: vi.fn(() => ({
         buffer: null,
         connect: vi.fn((gain) => gain),
+        playbackRate: {
+          set value(nextValue: number) {
+            playbackRates.push(nextValue);
+          },
+        },
         start: vi.fn((startTime: number, offset: number, duration: number) => {
           starts.push([startTime, offset, duration]);
         }),
@@ -54,6 +60,7 @@ function createOfflineAudioContextMock() {
   return {
     OfflineAudioContextMock,
     gains,
+    playbackRates,
     renderedBuffer,
     starts,
   };
@@ -117,6 +124,7 @@ describe("createLongrMixedAudioBuffer", () => {
           },
         ],
         outputDuration: 2,
+        playbackRates: [1],
         timelineOffsets: [0.5],
         trimRanges: [{ start: 0.2, end: 1.2 }],
       }),
@@ -128,6 +136,7 @@ describe("createLongrMixedAudioBuffer", () => {
       [0.5, 0, 0.5],
       [1.5, 0, 0.5],
     ]);
+    expect(context.playbackRates).toEqual([1]);
     expect(context.gains).toEqual([1, 0.09]);
   });
 
@@ -157,6 +166,7 @@ describe("createLongrMixedAudioBuffer", () => {
         },
       ],
       outputDuration: 2,
+      playbackRates: [1],
       timelineOffsets: [0],
       trimRanges: [{ start: 0, end: 1 }],
     });

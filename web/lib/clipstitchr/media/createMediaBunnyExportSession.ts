@@ -1,21 +1,26 @@
-import type { AudioSampleSource, VideoSource } from "mediabunny";
+import type { AudioSource, VideoSource } from "mediabunny";
 import { createMp4Output } from "@/lib/clipstitchr/media/createMp4Output";
 import type { MediaBunnyExportSession } from "@/lib/clipstitchr/types/MediaBunnyExportSession";
 
 type CreateMediaBunnyExportSessionOptions<
   VideoSourceType extends VideoSource,
+  AudioSourceType extends AudioSource | null,
 > = {
-  audioSource: AudioSampleSource | null;
+  audioSource: AudioSourceType;
   videoSource: VideoSourceType;
 };
 
 export async function createMediaBunnyExportSession<
   VideoSourceType extends VideoSource,
+  AudioSourceType extends AudioSource | null,
 >({
   audioSource,
   videoSource,
-}: CreateMediaBunnyExportSessionOptions<VideoSourceType>): Promise<
-  MediaBunnyExportSession<VideoSourceType>
+}: CreateMediaBunnyExportSessionOptions<
+  VideoSourceType,
+  AudioSourceType
+>): Promise<
+  MediaBunnyExportSession<VideoSourceType, AudioSourceType>
 > {
   const output = createMp4Output();
 

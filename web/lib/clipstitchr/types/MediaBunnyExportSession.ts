@@ -1,5 +1,5 @@
 import type {
-  AudioSampleSource,
+  AudioSource,
   BufferTarget,
   Mp4OutputFormat,
   Output,
@@ -8,8 +8,9 @@ import type {
 
 export type MediaBunnyExportSession<
   VideoSourceType extends VideoSource = VideoSource,
+  AudioSourceType extends AudioSource | null = AudioSource | null,
 > = {
-  audioSource: AudioSampleSource | null;
+  audioSource: AudioSourceType;
   output: Output<Mp4OutputFormat, BufferTarget>;
   videoSource: VideoSourceType;
 };

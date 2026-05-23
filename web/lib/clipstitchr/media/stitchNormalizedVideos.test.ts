@@ -3,11 +3,14 @@ import { stitchNormalizedVideos } from "@/lib/clipstitchr/media/stitchNormalized
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 
 const mocks = vi.hoisted(() => ({
+  audioBufferSourceAdd: vi.fn(),
+  audioBufferSourceClose: vi.fn(),
   audioSourceClose: vi.fn(),
   copyAudioSamplesToSource: vi.fn(),
   copyVideoSamplesToSource: vi.fn(),
   createMediaInput: vi.fn(),
   createMp4Output: vi.fn(),
+  createStitchSourceAudioBuffer: vi.fn(),
   createVideoBlobFromBuffer: vi.fn(),
   getInputAudioParameters: vi.fn(),
   getSupportedOutputCodecs: vi.fn(),
@@ -17,6 +20,12 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("mediabunny", () => ({
+  AudioBufferSource: vi.fn(function AudioBufferSource() {
+    return {
+      add: mocks.audioBufferSourceAdd,
+      close: mocks.audioBufferSourceClose,
+    };
+  }),
   AudioSampleSource: vi.fn(function AudioSampleSource() {
     return { close: mocks.audioSourceClose };
   }),
@@ -39,6 +48,10 @@ vi.mock("@/lib/clipstitchr/media/createMediaInput", () => ({
 
 vi.mock("@/lib/clipstitchr/media/createMp4Output", () => ({
   createMp4Output: mocks.createMp4Output,
+}));
+
+vi.mock("@/lib/clipstitchr/media/createStitchSourceAudioBuffer", () => ({
+  createStitchSourceAudioBuffer: mocks.createStitchSourceAudioBuffer,
 }));
 
 vi.mock("@/lib/clipstitchr/media/createVideoBlobFromBuffer", () => ({
@@ -113,6 +126,7 @@ describe("stitchNormalizedVideos", () => {
       .mockResolvedValueOnce({ endTimestamp: 3 })
       .mockResolvedValueOnce({ endTimestamp: 8 });
     mocks.copyAudioSamplesToSource.mockResolvedValue({ endTimestamp: 8 });
+    mocks.createStitchSourceAudioBuffer.mockResolvedValue({ duration: 6.5 });
     mocks.getVideoMimeType.mockResolvedValue("video/mp4");
     mocks.createVideoBlobFromBuffer.mockReturnValue(
       new Blob(["stitch"], { type: "video/mp4" }),
@@ -162,6 +176,48 @@ describe("stitchNormalizedVideos", () => {
     });
 
     expect(mocks.getSupportedOutputCodecs).toHaveBeenCalledWith(false);
+    expect(mocks.copyAudioSamplesToSource).not.toHaveBeenCalled();
+  });
+
+  it("uses an audio buffer source when source clips are sped up", async () => {
+    mocks.copyVideoSamplesToSource
+      .mockReset()
+      .mockResolvedValueOnce({ endTimestamp: 1.5 })
+      .mockResolvedValueOnce({ endTimestamp: 6.5 });
+
+    await expect(
+      stitchNormalizedVideos(createClip("ugc", 6), createClip("demo", 5), {
+        demoTrimRange: { start: 0, end: 5 },
+        ugcPlaybackRate: 2,
+        ugcTrimRange: { start: 1, end: 4 },
+      }),
+    ).resolves.toEqual({
+      blob: expect.any(Blob),
+      duration: 6.5,
+      mimeType: "video/mp4",
+    });
+
+    expect(mocks.copyVideoSamplesToSource).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        playbackRate: 2,
+        timelineOffset: 0,
+      }),
+    );
+    expect(mocks.copyVideoSamplesToSource).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        playbackRate: 1,
+        timelineOffset: 1.5,
+      }),
+    );
+    expect(mocks.createStitchSourceAudioBuffer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        outputDuration: 6.5,
+        ugcPlaybackRate: 2,
+      }),
+    );
+    expect(mocks.audioBufferSourceAdd).toHaveBeenCalledWith({ duration: 6.5 });
     expect(mocks.copyAudioSamplesToSource).not.toHaveBeenCalled();
   });
 

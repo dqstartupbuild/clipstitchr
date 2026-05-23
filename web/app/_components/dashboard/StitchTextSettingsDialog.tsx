@@ -8,7 +8,7 @@ import { IconButton } from "@/app/_components/ui/IconButton";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type StitchTextSettingsDialogProps = {
   error: string | null;
@@ -29,7 +29,7 @@ export function StitchTextSettingsDialog({
     stitch.textOverlay ?? null,
   );
   const ugcDuration = stitch.ugcTrimRange
-    ? getVideoTrimRangeDuration(stitch.ugcTrimRange)
+    ? getPlaybackRateDuration(stitch.ugcTrimRange, stitch.ugcPlaybackRate)
     : 0;
   const handleSave = async () => {
     const nextTextOverlay =

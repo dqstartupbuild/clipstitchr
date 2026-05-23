@@ -8,6 +8,7 @@ import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
 import { textOverlayValidator } from "./validators/textOverlay";
+import { videoPlaybackRateValidator } from "./validators/videoPlaybackRate";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
 const saveArgs = {
@@ -29,6 +30,8 @@ const saveArgs = {
   duration: v.number(),
   includeDemoAudio: v.optional(v.boolean()),
   includeUgcAudio: v.optional(v.boolean()),
+  demoPlaybackRate: v.optional(videoPlaybackRateValidator),
+  ugcPlaybackRate: v.optional(videoPlaybackRateValidator),
   music: v.optional(stitchMusicMetadataValidator),
   textOverlay: v.optional(textOverlayValidator),
   createdAt: v.string(),

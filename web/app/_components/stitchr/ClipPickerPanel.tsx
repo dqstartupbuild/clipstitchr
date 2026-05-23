@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { SourcePlaybackRateControls } from "@/app/_components/controls/SourcePlaybackRateControls";
 import { ClipAudioControls } from "@/app/_components/stitchr/ClipAudioControls";
 import { ClipPickerActionBar } from "@/app/_components/stitchr/ClipPickerActionBar";
 import { DemoClipSelector } from "@/app/_components/stitchr/DemoClipSelector";
@@ -11,6 +12,7 @@ import { ProductFilterSelect } from "@/app/_components/products/ProductFilterSel
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -19,6 +21,7 @@ import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsByS
 type ClipPickerPanelProps = {
   addMusic: boolean;
   selectedMusicTrack: SharedMusicTrack | null;
+  demoPlaybackRate: VideoPlaybackRate;
   includeDemoAudio: boolean;
   includeUgcAudio: boolean;
   hasMoreClips?: boolean;
@@ -31,6 +34,7 @@ type ClipPickerPanelProps = {
   selectedDemoId: string | null;
   selectedUgcTrimRangesByClipId: Record<string, VideoTrimRange>;
   selectedDemoTrimRange: VideoTrimRange | null;
+  ugcPlaybackRate: VideoPlaybackRate;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelectUgc: (id: string) => void;
@@ -47,16 +51,19 @@ type ClipPickerPanelProps = {
   canStitch: boolean;
   isStitching: boolean;
   onAddMusicChange: (addMusic: boolean) => void;
+  onDemoPlaybackRateChange: (playbackRate: VideoPlaybackRate) => void;
   onIncludeDemoAudioChange: (includeDemoAudio: boolean) => void;
   onIncludeUgcAudioChange: (includeUgcAudio: boolean) => void;
   onLoadMoreClips?: () => void;
   onSelectMusicTrack: (track: SharedMusicTrack) => void | Promise<void>;
   onStitch: () => void;
+  onUgcPlaybackRateChange: (playbackRate: VideoPlaybackRate) => void;
 };
 
 export function ClipPickerPanel({
   addMusic,
   selectedMusicTrack,
+  demoPlaybackRate,
   includeDemoAudio,
   includeUgcAudio,
   hasMoreClips = false,
@@ -69,6 +76,7 @@ export function ClipPickerPanel({
   selectedDemoId,
   selectedUgcTrimRangesByClipId,
   selectedDemoTrimRange,
+  ugcPlaybackRate,
   onLoadClip,
   onLoadPoster,
   onSelectUgc,
@@ -79,11 +87,13 @@ export function ClipPickerPanel({
   canStitch,
   isStitching,
   onAddMusicChange,
+  onDemoPlaybackRateChange,
   onIncludeDemoAudioChange,
   onIncludeUgcAudioChange,
   onLoadMoreClips,
   onSelectMusicTrack,
   onStitch,
+  onUgcPlaybackRateChange,
 }: ClipPickerPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const filteredUgcClips = useMemo(
@@ -164,6 +174,13 @@ export function ClipPickerPanel({
         onIncludeDemoAudioChange={onIncludeDemoAudioChange}
         onIncludeUgcAudioChange={onIncludeUgcAudioChange}
         onSelectMusicTrack={onSelectMusicTrack}
+      />
+      <SourcePlaybackRateControls
+        demoPlaybackRate={demoPlaybackRate}
+        disabled={isStitching}
+        ugcPlaybackRate={ugcPlaybackRate}
+        onDemoPlaybackRateChange={onDemoPlaybackRateChange}
+        onUgcPlaybackRateChange={onUgcPlaybackRateChange}
       />
     </Panel>
   );

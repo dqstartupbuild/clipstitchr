@@ -5,15 +5,17 @@ import {
 } from "@/lib/clipstitchr/constants/audioOutputParameters";
 import { decodeAudioBlob } from "@/lib/clipstitchr/media/decodeAudioBlob";
 import { getCliprMusicGain } from "@/lib/clipstitchr/media/getCliprMusicGain";
+import { schedulePlaybackRateAudioBuffer } from "@/lib/clipstitchr/media/schedulePlaybackRateAudioBuffer";
 import type { LongrSequenceMusicClip } from "@/lib/clipstitchr/types/LongrSequenceMusicClip";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clamp } from "@/lib/clipstitchr/utils/clamp";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type CreateLongrMixedAudioBufferOptions = {
   inputs: Input[];
   musicClips: LongrSequenceMusicClip[];
   outputDuration: number;
+  playbackRates: VideoPlaybackRate[];
   timelineOffsets: number[];
   trimRanges: VideoTrimRange[];
 };
@@ -22,6 +24,7 @@ export async function createLongrMixedAudioBuffer({
   inputs,
   musicClips,
   outputDuration,
+  playbackRates,
   timelineOffsets,
   trimRanges,
 }: CreateLongrMixedAudioBufferOptions) {
@@ -48,37 +51,28 @@ export async function createLongrMixedAudioBuffer({
 
     const sink = new AudioBufferSink(audioTrack);
     const trimRange = trimRanges[index];
-    const trimDuration = getVideoTrimRangeDuration(trimRange);
     const sourceOffset = await audioTrack.getFirstTimestamp();
     const sourceStartTimestamp = sourceOffset + trimRange.start;
     const sourceEndTimestamp = sourceOffset + trimRange.end;
     const timelineOffset = timelineOffsets[index] ?? 0;
+    const playbackRate = playbackRates[index] ?? 1;
 
     for await (const {
       buffer,
       duration,
       timestamp,
     } of sink.buffers(sourceStartTimestamp, sourceEndTimestamp)) {
-      const source = context.createBufferSource();
-      const gain = context.createGain();
-      const bufferStartOffset = Math.max(0, sourceStartTimestamp - timestamp);
-      const startTime =
-        timelineOffset + Math.max(0, timestamp - sourceStartTimestamp);
-      const elapsedInTrim = Math.max(0, startTime - timelineOffset);
-      const playableDuration = Math.min(
-        Math.max(0, duration - bufferStartOffset),
-        Math.max(0, trimDuration - elapsedInTrim),
-        Math.max(0, outputDuration - startTime),
-      );
-
-      if (playableDuration <= 0) {
-        continue;
-      }
-
-      source.buffer = buffer;
-      gain.gain.value = 1;
-      source.connect(gain).connect(context.destination);
-      source.start(startTime, bufferStartOffset, playableDuration);
+      schedulePlaybackRateAudioBuffer({
+        buffer,
+        context,
+        duration,
+        outputDuration,
+        playbackRate,
+        sourceEndTimestamp,
+        sourceStartTimestamp,
+        timelineOffset,
+        timestamp,
+      });
     }
   }
 

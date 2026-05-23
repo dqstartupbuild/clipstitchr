@@ -90,6 +90,7 @@ function createClip(id: string, duration: number): VideoClip {
 function createSequenceClip(id: string, duration: number): LongrSequenceClip {
   return {
     clip: createClip(id, duration),
+    playbackRate: 1,
     trimRange: { start: 0, end: duration },
   };
 }
@@ -141,12 +142,14 @@ describe("stitchLongrSequence", () => {
     expect(mocks.copyVideoSamplesToSource).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
+        playbackRate: 1,
         timelineOffset: 4,
       }),
     );
     expect(mocks.createLongrMixedAudioBuffer).toHaveBeenCalledWith(
       expect.objectContaining({
         outputDuration: 9,
+        playbackRates: [1, 1],
         timelineOffsets: [0, 4],
       }),
     );
@@ -169,5 +172,40 @@ describe("stitchLongrSequence", () => {
 
     await expect(stitchLongrSequence([createSequenceClip("clip_1", 4)])).rejects
       .toThrow("No video codec.");
+  });
+
+  it("compresses Longr segment offsets when clips use 2x playback", async () => {
+    mocks.copyVideoSamplesToSource
+      .mockReset()
+      .mockResolvedValueOnce({ endTimestamp: 2 })
+      .mockResolvedValueOnce({ endTimestamp: 4.5 });
+
+    await stitchLongrSequence([
+      {
+        ...createSequenceClip("clip_1", 4),
+        playbackRate: 2,
+      },
+      createSequenceClip("clip_2", 5),
+    ]);
+
+    expect(mocks.copyVideoSamplesToSource).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        playbackRate: 2,
+        timelineOffset: 0,
+      }),
+    );
+    expect(mocks.copyVideoSamplesToSource).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        timelineOffset: 2,
+      }),
+    );
+    expect(mocks.createLongrMixedAudioBuffer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        playbackRates: [2, 1],
+        timelineOffsets: [0, 2],
+      }),
+    );
   });
 });

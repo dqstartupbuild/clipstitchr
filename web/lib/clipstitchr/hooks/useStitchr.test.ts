@@ -181,6 +181,7 @@ describe("useStitchr", () => {
     expect(getMutation("stitches.save")).toHaveBeenCalledWith(
       expect.objectContaining({
         demoTrimRange: { end: 20, start: 4 },
+        demoPlaybackRate: 1,
         duration: 26,
         id: "stitch_1",
         includeDemoAudio: false,
@@ -194,6 +195,7 @@ describe("useStitchr", () => {
           y: 0,
         }),
         ugcTrimRange: { end: 10, start: 0 },
+        ugcPlaybackRate: 1,
       }),
     );
     expect(getMutation("stitches.updateMusic")).toHaveBeenCalledWith(

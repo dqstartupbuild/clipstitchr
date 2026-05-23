@@ -96,6 +96,52 @@ describe("copyTextOverlayVideoFramesToSource", () => {
     expect(progress).toHaveBeenLastCalledWith(1);
   });
 
+  it("compresses overlay frame timing for 2x playback", async () => {
+    const track = {
+      computeDuration: vi.fn().mockResolvedValue(20),
+      getFirstTimestamp: vi.fn().mockResolvedValue(10),
+    };
+    const context = {
+      clearRect: vi.fn(),
+      drawImage: vi.fn(),
+    };
+    const source = {
+      add: vi.fn().mockResolvedValue(undefined),
+    } as unknown as CanvasSource;
+
+    mocks.frames = [
+      { canvas: {}, duration: 2, timestamp: 12 },
+      { canvas: {}, duration: 4, timestamp: 16 },
+    ];
+
+    await expect(
+      copyTextOverlayVideoFramesToSource({
+        input: createInput(track),
+        playbackRate: 2,
+        renderContext: { canvas: {}, context } as never,
+        source,
+        textOverlay: createOverlay(),
+        timelineOffset: 5,
+        trimRange: { start: 2, end: 8 },
+      }),
+    ).resolves.toEqual({ endTimestamp: 8 });
+
+    expect(source.add).toHaveBeenNthCalledWith(1, 5, 1, { keyFrame: true });
+    expect(source.add).toHaveBeenNthCalledWith(2, 7, 1, undefined);
+    expect(mocks.drawTextOverlay).toHaveBeenNthCalledWith(
+      1,
+      context,
+      expect.objectContaining({ text: "Hello" }),
+      5,
+    );
+    expect(mocks.drawTextOverlay).toHaveBeenNthCalledWith(
+      2,
+      context,
+      expect.objectContaining({ text: "Hello" }),
+      7,
+    );
+  });
+
   it("throws when the input has no video track", async () => {
     await expect(
       copyTextOverlayVideoFramesToSource({

@@ -60,6 +60,7 @@ export function useLongr({ onCreated }: UseLongrOptions) {
 
             return {
               clip,
+              playbackRate: selection.playbackRate ?? 1,
               trimRange: selection.trimRange,
             };
           }),
@@ -68,6 +69,7 @@ export function useLongr({ onCreated }: UseLongrOptions) {
           createLongrClipSegment({
             clip: selection.clip,
             order: index,
+            playbackRate: selection.playbackRate ?? 1,
             trimRange: selection.trimRange,
           }),
         );

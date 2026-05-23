@@ -1,17 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clamp } from "@/lib/clipstitchr/utils/clamp";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type UseLongrSequenceVideoPlayerOptions = {
+  playbackRates?: VideoPlaybackRate[];
   trimRanges: VideoTrimRange[];
 };
 
 const LONGR_SEQUENCE_TRANSITION_EPSILON_SECONDS = 0.03;
 
 export function useLongrSequenceVideoPlayer({
+  playbackRates = [],
   trimRanges,
 }: UseLongrSequenceVideoPlayerOptions) {
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
@@ -22,8 +25,11 @@ export function useLongrSequenceVideoPlayer({
   const [currentTime, setCurrentTimeState] = useState(0);
   const [isPlaying, setIsPlayingState] = useState(false);
   const segmentDurations = useMemo(
-    () => trimRanges.map((trimRange) => getVideoTrimRangeDuration(trimRange)),
-    [trimRanges],
+    () =>
+      trimRanges.map((trimRange, index) =>
+        getPlaybackRateDuration(trimRange, playbackRates[index] ?? 1),
+      ),
+    [playbackRates, trimRanges],
   );
   const segmentOffsets = useMemo(() => {
     return segmentDurations.map((_, index) =>
@@ -88,6 +94,7 @@ export function useLongrSequenceVideoPlayer({
     (index: number = activeIndexRef.current) => {
       const video = getVideo(index);
       const trimRange = trimRanges[index];
+      const playbackRate = playbackRates[index] ?? 1;
       const segmentDuration = segmentDurations[index] ?? 0;
       const segmentOffset = segmentOffsets[index] ?? 0;
 
@@ -97,7 +104,8 @@ export function useLongrSequenceVideoPlayer({
       }
 
       const rawSegmentTime =
-        (video?.currentTime ?? trimRange.start) - trimRange.start;
+        ((video?.currentTime ?? trimRange.start) - trimRange.start) /
+        playbackRate;
       const segmentTime = clamp(rawSegmentTime, 0, segmentDuration);
 
       setCurrentTime(clamp(segmentOffset + segmentTime, 0, totalDuration));
@@ -108,6 +116,7 @@ export function useLongrSequenceVideoPlayer({
       segmentOffsets,
       setCurrentTime,
       totalDuration,
+      playbackRates,
       trimRanges,
     ],
   );
@@ -139,6 +148,7 @@ export function useLongrSequenceVideoPlayer({
     const index = activeIndexRef.current;
     const video = getVideo(index);
     const trimRange = trimRanges[index];
+    const playbackRate = playbackRates[index] ?? 1;
 
     if (!video || !trimRange || totalDuration <= 0) {
       setIsPlaying(false);
@@ -152,12 +162,20 @@ export function useLongrSequenceVideoPlayer({
       video.currentTime = trimRange.start;
     }
 
+    video.playbackRate = playbackRate;
     pauseAllExcept(index);
     setIsPlaying(true);
     void video.play().catch(() => {
       setIsPlaying(false);
     });
-  }, [getVideo, pauseAllExcept, setIsPlaying, totalDuration, trimRanges]);
+  }, [
+    getVideo,
+    pauseAllExcept,
+    playbackRates,
+    setIsPlaying,
+    totalDuration,
+    trimRanges,
+  ]);
 
   const transitionToIndex = useCallback(
     (nextIndex: number) => {
@@ -178,6 +196,7 @@ export function useLongrSequenceVideoPlayer({
 
       if (nextVideo && nextTrimRange) {
         nextVideo.currentTime = nextTrimRange.start;
+        nextVideo.playbackRate = playbackRates[playableIndex] ?? 1;
       }
 
       if (shouldKeepPlaying) {
@@ -190,6 +209,7 @@ export function useLongrSequenceVideoPlayer({
       getVideo,
       pauseAllExcept,
       playActiveClip,
+      playbackRates,
       segmentOffsets,
       setActiveIndex,
       setCurrentTime,
@@ -268,6 +288,7 @@ export function useLongrSequenceVideoPlayer({
     (index: number) => {
       const video = getVideo(index);
       const trimRange = trimRanges[index];
+      const playbackRate = playbackRates[index] ?? 1;
 
       if (!video || !trimRange) {
         return;
@@ -280,11 +301,13 @@ export function useLongrSequenceVideoPlayer({
         video.currentTime = trimRange.start;
       }
 
+      video.playbackRate = playbackRate;
+
       if (index === activeIndexRef.current) {
         updateCurrentTime(index);
       }
     },
-    [getVideo, trimRanges, updateCurrentTime],
+    [getVideo, playbackRates, trimRanges, updateCurrentTime],
   );
 
   const handleTimeUpdate = useCallback(
@@ -356,10 +379,11 @@ export function useLongrSequenceVideoPlayer({
       const nextIndex = findIndexForTime(nextTime);
       const nextTrimRange = trimRanges[nextIndex];
       const nextVideo = getVideo(nextIndex);
+      const nextPlaybackRate = playbackRates[nextIndex] ?? 1;
       const nextSegmentTime = nextTime - (segmentOffsets[nextIndex] ?? 0);
       const nextVideoTime = nextTrimRange
         ? clamp(
-            nextTrimRange.start + nextSegmentTime,
+            nextTrimRange.start + nextSegmentTime * nextPlaybackRate,
             nextTrimRange.start,
             nextTrimRange.end,
           )
@@ -371,6 +395,7 @@ export function useLongrSequenceVideoPlayer({
 
       if (nextVideo) {
         nextVideo.currentTime = nextVideoTime;
+        nextVideo.playbackRate = nextPlaybackRate;
       }
 
       if (shouldKeepPlaying) {
@@ -382,6 +407,7 @@ export function useLongrSequenceVideoPlayer({
       findIndexForTime,
       getVideo,
       pauseAllExcept,
+      playbackRates,
       playActiveClip,
       segmentOffsets,
       setActiveIndex,
@@ -430,6 +456,7 @@ export function useLongrSequenceVideoPlayer({
 
       if (video) {
         video.currentTime = trimRange.start;
+        video.playbackRate = playbackRates[index] ?? 1;
       }
     });
 
@@ -439,6 +466,7 @@ export function useLongrSequenceVideoPlayer({
     getNextPlayableIndex,
     getVideo,
     pauseAllExcept,
+    playbackRates,
     playActiveClip,
     segmentOffsets,
     setActiveIndex,

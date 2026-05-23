@@ -6,12 +6,15 @@ import {
 import { drawTextOverlay } from "@/lib/clipstitchr/media/drawTextOverlay";
 import type { TextOverlayRenderContext } from "@/lib/clipstitchr/media/createTextOverlayRenderContext";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type CopyTextOverlayVideoFramesOptions = {
   input: Input;
+  playbackRate?: VideoPlaybackRate;
   source: CanvasSource;
   renderContext: TextOverlayRenderContext;
   timelineOffset: number;
@@ -26,6 +29,7 @@ type CopyTextOverlayVideoFramesResult = {
 
 export async function copyTextOverlayVideoFramesToSource({
   input,
+  playbackRate = 1,
   source,
   renderContext,
   timelineOffset,
@@ -50,9 +54,13 @@ export async function copyTextOverlayVideoFramesToSource({
   const duration = await track.computeDuration();
   const clampedTrimRange = clampVideoTrimRange(trimRange, duration);
   const trimDuration = getVideoTrimRangeDuration(clampedTrimRange);
+  const outputDuration = getPlaybackRateDuration(
+    clampedTrimRange,
+    playbackRate,
+  );
   const sourceStartTimestamp = sourceOffset + clampedTrimRange.start;
   const sourceEndTimestamp = sourceOffset + clampedTrimRange.end;
-  const outputEndTimestamp = timelineOffset + trimDuration;
+  const outputEndTimestamp = timelineOffset + outputDuration;
   let isFirstFrame = true;
   let endTimestamp = timelineOffset;
 
@@ -62,9 +70,10 @@ export async function copyTextOverlayVideoFramesToSource({
   )) {
     const sourceTimestamp = frame.timestamp;
     const outputTimestamp =
-      Math.max(0, sourceTimestamp - sourceStartTimestamp) + timelineOffset;
+      Math.max(0, sourceTimestamp - sourceStartTimestamp) / playbackRate +
+      timelineOffset;
     const frameDuration = Math.min(
-      frame.duration,
+      frame.duration / playbackRate,
       outputEndTimestamp - outputTimestamp,
     );
 

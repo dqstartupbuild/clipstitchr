@@ -5,15 +5,21 @@ import { LongrSequenceVideoPlayer } from "@/app/_components/longr/LongrSequenceV
 import { Panel } from "@/app/_components/ui/Panel";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
+import { getClipPlaybackRate } from "@/lib/clipstitchr/utils/getClipPlaybackRate";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 
 type LongrPreviewPanelProps = {
   clips: VideoClipMetadata[];
+  demoPlaybackRate: VideoPlaybackRate;
+  ugcPlaybackRate: VideoPlaybackRate;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
 };
 
 export function LongrPreviewPanel({
   clips,
+  demoPlaybackRate,
+  ugcPlaybackRate,
   onLoadClip,
 }: LongrPreviewPanelProps) {
   const [loadedClipMap, setLoadedClipMap] = useState(
@@ -31,6 +37,16 @@ export function LongrPreviewPanel({
   const trimRanges = useMemo(
     () => clips.map((clip) => getDefaultVideoTrimRange(clip)),
     [clips],
+  );
+  const playbackRates = useMemo(
+    () =>
+      clips.map((clip) =>
+        getClipPlaybackRate(clip.clipType, {
+          demoPlaybackRate,
+          ugcPlaybackRate,
+        }),
+      ),
+    [clips, demoPlaybackRate, ugcPlaybackRate],
   );
   const isLoadingSequence =
     clips.length > 0 && loadedClips.length !== clips.length;
@@ -90,6 +106,7 @@ export function LongrPreviewPanel({
         ) : (
           <LongrSequenceVideoPlayer
             clips={loadedClips}
+            playbackRates={playbackRates}
             trimRanges={trimRanges}
           />
         )

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { clipTypeValidator } from "./clipType";
+import { videoPlaybackRateValidator } from "./videoPlaybackRate";
 import { videoTrimRangeValidator } from "./videoTrimRange";
 
 export const longrClipSegmentValidator = v.object({
@@ -8,5 +9,6 @@ export const longrClipSegmentValidator = v.object({
   clipType: clipTypeValidator,
   duration: v.number(),
   order: v.number(),
+  playbackRate: v.optional(videoPlaybackRateValidator),
   trimRange: videoTrimRangeValidator,
 });

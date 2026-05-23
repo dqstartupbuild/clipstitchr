@@ -2,20 +2,25 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { VideoSequenceSegment } from "@/lib/clipstitchr/types/VideoSequenceSegment";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clamp } from "@/lib/clipstitchr/utils/clamp";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type UseSequenceVideoPlayerOptions = {
+  demoPlaybackRate?: VideoPlaybackRate;
   ugcTrimRange: VideoTrimRange;
   demoTrimRange: VideoTrimRange;
+  ugcPlaybackRate?: VideoPlaybackRate;
 };
 
 const SEQUENCE_TRANSITION_EPSILON_SECONDS = 0.03;
 
 export function useSequenceVideoPlayer({
+  demoPlaybackRate = 1,
   ugcTrimRange,
   demoTrimRange,
+  ugcPlaybackRate = 1,
 }: UseSequenceVideoPlayerOptions) {
   const ugcVideoRef = useRef<HTMLVideoElement | null>(null);
   const demoVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -26,8 +31,11 @@ export function useSequenceVideoPlayer({
     useState<VideoSequenceSegment>("ugc");
   const [currentTime, setCurrentTimeState] = useState(0);
   const [isPlaying, setIsPlayingState] = useState(false);
-  const ugcDuration = getVideoTrimRangeDuration(ugcTrimRange);
-  const demoDuration = getVideoTrimRangeDuration(demoTrimRange);
+  const ugcDuration = getPlaybackRateDuration(ugcTrimRange, ugcPlaybackRate);
+  const demoDuration = getPlaybackRateDuration(
+    demoTrimRange,
+    demoPlaybackRate,
+  );
   const totalDuration = ugcDuration + demoDuration;
 
   const setActiveSegment = useCallback((segment: VideoSequenceSegment) => {
@@ -54,14 +62,21 @@ export function useSequenceVideoPlayer({
       segment === "ugc" ? ugcTrimRange : demoTrimRange,
     [demoTrimRange, ugcTrimRange],
   );
+  const getActivePlaybackRate = useCallback(
+    (segment: VideoSequenceSegment) =>
+      segment === "ugc" ? ugcPlaybackRate : demoPlaybackRate,
+    [demoPlaybackRate, ugcPlaybackRate],
+  );
 
   const updateCurrentTime = useCallback(
     (segment: VideoSequenceSegment = activeSegmentRef.current) => {
       const video = getSegmentVideo(segment);
       const trimRange = getActiveTrimRange(segment);
+      const playbackRate = getActivePlaybackRate(segment);
       const segmentDuration = segment === "ugc" ? ugcDuration : demoDuration;
       const rawSegmentTime =
-        (video?.currentTime ?? trimRange.start) - trimRange.start;
+        ((video?.currentTime ?? trimRange.start) - trimRange.start) /
+        playbackRate;
       const segmentTime = clamp(rawSegmentTime, 0, segmentDuration);
 
       setCurrentTime(
@@ -74,6 +89,7 @@ export function useSequenceVideoPlayer({
     },
     [
       demoDuration,
+      getActivePlaybackRate,
       getActiveTrimRange,
       getSegmentVideo,
       setCurrentTime,
@@ -93,6 +109,7 @@ export function useSequenceVideoPlayer({
     const segment = activeSegmentRef.current;
     const video = getSegmentVideo(segment);
     const trimRange = getActiveTrimRange(segment);
+    const playbackRate = getActivePlaybackRate(segment);
 
     if (!video) {
       setIsPlaying(false);
@@ -106,11 +123,12 @@ export function useSequenceVideoPlayer({
       video.currentTime = trimRange.start;
     }
 
+    video.playbackRate = playbackRate;
     setIsPlaying(true);
     void video.play().catch(() => {
       setIsPlaying(false);
     });
-  }, [getActiveTrimRange, getSegmentVideo, setIsPlaying]);
+  }, [getActivePlaybackRate, getActiveTrimRange, getSegmentVideo, setIsPlaying]);
 
   const completeSequence = useCallback(() => {
     pauseSegment("ugc");
@@ -152,6 +170,7 @@ export function useSequenceVideoPlayer({
     }
 
     demoVideo.currentTime = demoTrimRange.start;
+    demoVideo.playbackRate = demoPlaybackRate;
 
     if (shouldKeepPlaying) {
       setIsPlaying(true);
@@ -162,6 +181,7 @@ export function useSequenceVideoPlayer({
   }, [
     completeSequence,
     demoDuration,
+    demoPlaybackRate,
     demoTrimRange.start,
     setActiveSegment,
     setCurrentTime,
@@ -225,6 +245,7 @@ export function useSequenceVideoPlayer({
     (segment: VideoSequenceSegment) => {
       const video = getSegmentVideo(segment);
       const trimRange = getActiveTrimRange(segment);
+      const playbackRate = getActivePlaybackRate(segment);
 
       if (!video) {
         return;
@@ -237,11 +258,18 @@ export function useSequenceVideoPlayer({
         video.currentTime = trimRange.start;
       }
 
+      video.playbackRate = playbackRate;
+
       if (segment === activeSegmentRef.current) {
         updateCurrentTime(segment);
       }
     },
-    [getActiveTrimRange, getSegmentVideo, updateCurrentTime],
+    [
+      getActivePlaybackRate,
+      getActiveTrimRange,
+      getSegmentVideo,
+      updateCurrentTime,
+    ],
   );
 
   const handleTimeUpdate = useCallback(
@@ -306,8 +334,9 @@ export function useSequenceVideoPlayer({
       const nextTrimRange = getActiveTrimRange(nextSegment);
       const nextSegmentTime =
         nextSegment === "ugc" ? nextTime : nextTime - ugcDuration;
+      const nextPlaybackRate = getActivePlaybackRate(nextSegment);
       const nextVideoTime = clamp(
-        nextTrimRange.start + nextSegmentTime,
+        nextTrimRange.start + nextSegmentTime * nextPlaybackRate,
         nextTrimRange.start,
         nextTrimRange.end,
       );
@@ -321,6 +350,7 @@ export function useSequenceVideoPlayer({
 
       if (nextVideo) {
         nextVideo.currentTime = nextVideoTime;
+        nextVideo.playbackRate = nextPlaybackRate;
       }
 
       if (nextTime >= totalDuration) {
@@ -335,6 +365,7 @@ export function useSequenceVideoPlayer({
     [
       completeSequence,
       demoDuration,
+      getActivePlaybackRate,
       getActiveTrimRange,
       getSegmentVideo,
       pauseSegment,
@@ -370,20 +401,24 @@ export function useSequenceVideoPlayer({
 
     if (ugcVideoRef.current) {
       ugcVideoRef.current.currentTime = ugcTrimRange.start;
+      ugcVideoRef.current.playbackRate = ugcPlaybackRate;
     }
 
     if (demoVideoRef.current) {
       demoVideoRef.current.currentTime = demoTrimRange.start;
+      demoVideoRef.current.playbackRate = demoPlaybackRate;
     }
 
     playActiveSegment();
   }, [
     demoTrimRange.start,
+    demoPlaybackRate,
     pauseSegment,
     playActiveSegment,
     setActiveSegment,
     setCurrentTime,
     ugcTrimRange.start,
+    ugcPlaybackRate,
   ]);
 
   return useMemo(
