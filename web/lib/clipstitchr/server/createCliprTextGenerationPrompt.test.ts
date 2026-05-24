@@ -77,4 +77,39 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("middle slides must not mention the product name");
     expect(prompt).toContain("filledHook and middle slides must read like creator");
   });
+
+  it("requires b-roll Clipr prompts to stay silent and text-free", () => {
+    const prompt = createCliprTextGenerationPrompt({
+      candidates: [candidate],
+      contentType: "b-roll-reel",
+      durationSeconds: 30,
+      fillers: { topic: ["launches"] },
+      product,
+      purpose: "clipr",
+      sceneCount: 3,
+      slideCount: 4,
+    });
+
+    expect(prompt).toContain("B-roll Reel must be b-roll only");
+    expect(prompt).toContain("Do not write voiceover narration");
+    expect(prompt).toContain("visible words, letters, numbers");
+    expect(prompt).toContain("speech bubbles");
+  });
+
+  it("allows narration only for voiceover reel Clipr prompts", () => {
+    const prompt = createCliprTextGenerationPrompt({
+      candidates: [candidate],
+      contentType: "voiceover-reel",
+      durationSeconds: 30,
+      fillers: { topic: ["launches"] },
+      product,
+      purpose: "clipr",
+      sceneCount: 3,
+      slideCount: 4,
+    });
+
+    expect(prompt).toContain("only non-avatar format that may use spoken");
+    expect(prompt).toContain("visuals should be silent b-roll under narration");
+    expect(prompt).toContain("must not show anyone speaking");
+  });
 });

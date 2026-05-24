@@ -234,10 +234,11 @@ the MVP because the provider and storage costs are gated before the browser work
 starts. Avatar Talking Head normalizes one generated avatar video and saves it
 as a clean Clip. Non-avatar Clipr formats download generated p-video scene
 objects from R2 and compose them into one clean 9:16 Clip with Media Bunny;
-Voiceover Reel also downloads the avatar-voice source video and copies that
-audio over the generated visuals. These browser composition and normalization
-steps are local CPU work, then the final Clip save consumes the normal R2 upload
-and Convex record-save limits.
+Only Voiceover Reel downloads the avatar-voice source video and copies that
+audio over the generated visuals. B-roll Reel and the other p-video formats stay
+silent unless the user adds background music. These browser composition and
+normalization steps are local CPU work, then the final Clip save consumes the
+normal R2 upload and Convex record-save limits.
 
 The expensive Clipr surfaces are gated before provider work starts: job
 creation, hook/script generation, avatar still generation, full-script avatar or

@@ -8,6 +8,7 @@ import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose"
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 
 import { getCliprContentTypeLabel } from "@/lib/clipstitchr/utils/getCliprContentTypeLabel";
+import { getCliprContentTypeUsesVoiceover } from "@/lib/clipstitchr/utils/getCliprContentTypeUsesVoiceover";
 
 type CreateCliprTextGenerationPromptOptions = {
   candidates: CliprHookTemplate[];
@@ -71,6 +72,7 @@ function getCliprContentRules({
     contentType === "objection-handler" ||
     contentType === "how-to" ||
     contentType === "soft-cta";
+  const usesVoiceover = getCliprContentTypeUsesVoiceover(contentType);
 
   return [
     `- For Clipr, contentType is ${contentType} (${getCliprContentTypeLabel(contentType)}).`,
@@ -81,8 +83,16 @@ function getCliprContentRules({
         : "the single scene should carry the whole idea without needing extra cuts."
     }`,
     "- For Clipr, do not include baked-in captions, subtitles, lower thirds, or text in visualPrompt. Text belongs in overlayText only.",
+    "- For Clipr, visualPrompt must also avoid visible words, letters, numbers, signs, labels, posters, packaging text, logos, watermarks, UI, phone screens, dashboards, app screens, social-media interfaces, speech bubbles, and graphic overlays.",
     "- For Clipr, visualPrompt must describe realistic vertical footage that a video model can generate.",
-    "- For Clipr, script can be voiceover narration only when the format needs spoken audio; otherwise script is the concise planning copy for the clip.",
+    usesVoiceover
+      ? "- For Clipr, this is the only non-avatar format that may use spoken avatar-voice narration. script must be the voiceover narration, while visualPrompt must not show anyone speaking or lip-syncing."
+      : "- For Clipr, this format must be silent footage. Do not write voiceover narration, dialogue, spoken lines, or talking-head delivery. script and scenePlan[].scriptText are planning notes only, not spoken audio.",
+    contentType === "b-roll-reel"
+      ? "- For Clipr, B-roll Reel must be b-roll only: no talking, no mouth-to-camera delivery, no lip-sync, no dialogue, no narrator, and no person visibly speaking."
+      : usesVoiceover
+        ? "- For Clipr, Voiceover Reel visuals should be silent b-roll under narration; do not show people speaking, lip-syncing, or addressing the camera."
+        : "- For Clipr, generated scenes must not show people speaking, lip-syncing, or addressing the camera as if delivering lines.",
     "- For Clipr, overlayText must be one concise editable on-screen text layer when the format benefits from text.",
     productAllowed
       ? "- For Clipr, product details may shape the story, proof, examples, and soft CTA, but the result should still feel like creator content."
