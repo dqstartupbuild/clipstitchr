@@ -1,3 +1,5 @@
+import type { CliprCompositionStrategy } from "@/lib/clipstitchr/types/CliprCompositionStrategy";
+import type { CliprContentType } from "@/lib/clipstitchr/types/CliprContentType";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprJobStage } from "@/lib/clipstitchr/types/CliprJobStage";
 import type { CliprJobStatus } from "@/lib/clipstitchr/types/CliprJobStatus";
@@ -9,6 +11,8 @@ export type CliprClientJob = {
   id: string;
   productId: string;
   productName: string;
+  contentType?: CliprContentType;
+  compositionStrategy?: CliprCompositionStrategy;
   avatarId: string;
   avatarPhotoId: string;
   avatarImageObject?: R2ObjectReference;
@@ -19,6 +23,7 @@ export type CliprClientJob = {
   voiceId: string;
   targetDurationSeconds: CliprDurationSeconds;
   filledHook?: string;
+  overlayText?: string;
   script?: string;
   scenePlan: CliprScenePlan[];
   status: CliprJobStatus;

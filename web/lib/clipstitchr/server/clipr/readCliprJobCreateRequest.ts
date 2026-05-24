@@ -1,4 +1,5 @@
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { getCliprContentType } from "@/lib/clipstitchr/utils/getCliprContentType";
 import { getCliprDurationSeconds } from "@/lib/clipstitchr/utils/getCliprDurationSeconds";
 import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 import type { CliprJobCreateInput } from "@/lib/clipstitchr/server/clipr/CliprJobCreateInput";
@@ -6,6 +7,7 @@ import type { CliprJobCreateInput } from "@/lib/clipstitchr/server/clipr/CliprJo
 type CliprJobCreateRequestBody = {
   addMusic?: unknown;
   avatarId?: unknown;
+  contentType?: unknown;
   durationSeconds?: unknown;
   jobId?: unknown;
   musicTrackId?: unknown;
@@ -27,6 +29,7 @@ export async function readCliprJobCreateRequest(
   return {
     addMusic: body.addMusic === true && !musicTrackId,
     avatarId: getStringValue(body.avatarId),
+    contentType: getCliprContentType(body.contentType),
     durationSeconds: getCliprDurationSeconds(body.durationSeconds),
     jobId: requestedJobId ? requestedJobId.slice(0, 128) : createId(),
     musicTrackId,

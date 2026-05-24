@@ -7,6 +7,9 @@ import { getCliprTextSystemPrompt } from "@/lib/clipstitchr/server/getCliprTextS
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { parseCliprTextGenerationOutput } from "@/lib/clipstitchr/server/parseCliprTextGenerationOutput";
 import { selectCliprHookCandidates } from "@/lib/clipstitchr/server/selectCliprHookCandidates";
+import type { CliprCompositionStrategy } from "@/lib/clipstitchr/types/CliprCompositionStrategy";
+import { defaultCliprContentType } from "@/lib/clipstitchr/constants/defaultCliprContentType";
+import type { CliprContentType } from "@/lib/clipstitchr/types/CliprContentType";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
@@ -14,16 +17,22 @@ import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
 export async function createCliprTextGeneration({
+  compositionStrategy = "single-video",
+  contentType = defaultCliprContentType,
   durationSeconds,
   product,
   purpose,
   replicate,
+  sceneCount = 1,
   slideCount,
 }: {
+  compositionStrategy?: CliprCompositionStrategy;
+  contentType?: CliprContentType;
   durationSeconds: CliprDurationSeconds;
   product: ProductProfile;
   purpose: CliprTextPurpose;
   replicate: ReplicateClient;
+  sceneCount?: number;
   slideCount: number;
 }) {
   const providerModel = getCliprHookModelId();
@@ -36,10 +45,13 @@ export async function createCliprTextGeneration({
     input: {
       prompt: createCliprTextGenerationPrompt({
         candidates,
+        compositionStrategy,
+        contentType,
         durationSeconds,
         fillers: getCliprProductPlaceholderFillers(product),
         product,
         purpose,
+        sceneCount,
         slideCount,
       }),
       system_prompt: getCliprTextSystemPrompt(purpose),
@@ -60,6 +72,9 @@ export async function createCliprTextGeneration({
     providerModel,
     product,
     purpose,
+    compositionStrategy,
+    contentType,
+    sceneCount,
     slideCount,
   });
 }

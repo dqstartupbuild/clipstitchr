@@ -2,6 +2,8 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { assetTagsValidator } from "./validators/assetTags";
 import { avatarWardrobeStyleValidator } from "./validators/avatarWardrobeStyle";
+import { cliprCompositionStrategyValidator } from "./validators/cliprCompositionStrategy";
+import { cliprContentTypeValidator } from "./validators/cliprContentType";
 import { cliprDurationSecondsValidator } from "./validators/cliprDurationSeconds";
 import { cliprJobStageValidator } from "./validators/cliprJobStage";
 import { cliprJobStatusValidator } from "./validators/cliprJobStatus";
@@ -256,6 +258,8 @@ export default defineSchema({
     audienceDetails: v.string(),
     productInferredProblem: v.optional(v.string()),
     productInferredPainPoints: v.array(v.string()),
+    contentType: v.optional(cliprContentTypeValidator),
+    compositionStrategy: v.optional(cliprCompositionStrategyValidator),
     avatarId: v.string(),
     avatarName: v.string(),
     avatarPhotoId: v.string(),
@@ -271,6 +275,7 @@ export default defineSchema({
     filledHook: v.optional(v.string()),
     variablesUsed: v.optional(v.record(v.string(), v.string())),
     script: v.optional(v.string()),
+    overlayText: v.optional(v.string()),
     scenePlan: v.array(cliprScenePlanValidator),
     providerModels: v.array(v.string()),
     status: cliprJobStatusValidator,

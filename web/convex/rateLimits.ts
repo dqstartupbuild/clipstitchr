@@ -358,6 +358,37 @@ export const consumeCliprVoiceGeneration = mutation({
   },
 });
 
+export const consumeCliprGeneratedVideoGeneration = mutation({
+  args: {
+    estimatedSeconds: v.number(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { estimatedSeconds, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const generatedSeconds = getPositiveCount(
+      estimatedSeconds,
+      "Estimated generated video seconds",
+    );
+
+    await rateLimiter.limit(ctx, "cliprGeneratedVideoGenerate", {
+      key: ownerId,
+      count: generatedSeconds,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprGeneratedVideoGenerateDaily", {
+      key: ownerId,
+      count: generatedSeconds,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      count: generatedSeconds,
+      throws: true,
+    });
+  },
+});
+
 export const consumeCliprAvatarStillGeneration = mutation({
   args: {
     secret: v.string(),

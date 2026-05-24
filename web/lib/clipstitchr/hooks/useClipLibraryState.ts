@@ -103,6 +103,9 @@ export function useClipLibraryState(): ClipLibraryValue {
   const longrVideoDocuments = longrVideoDocumentsQuery.results;
   const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
   const updateCliprMusicMutation = useMutation(api.videoClips.updateCliprMusic);
+  const updateCliprTextOverlayMutation = useMutation(
+    api.videoClips.updateCliprTextOverlay,
+  );
   const updateStitchMusicMutation = useMutation(api.stitches.updateMusic);
   const updateStitchPosterMutation = useMutation(api.stitches.updatePoster);
   const updateStitchTextOverlayMutation = useMutation(
@@ -540,6 +543,22 @@ export function useClipLibraryState(): ClipLibraryValue {
     [refresh, updateCliprMusicMutation],
   );
 
+  const updateCliprTextOverlay = useCallback(
+    async (clip: VideoClipMetadata, textOverlay: TextOverlay | null) => {
+      const nextUpdatedAt = new Date().toISOString();
+
+      await updateCliprTextOverlayMutation({
+        id: clip.id,
+        textOverlay,
+        updatedAt: nextUpdatedAt,
+      });
+
+      clipCacheRef.current.delete(clip.id);
+      await refresh();
+    },
+    [refresh, updateCliprTextOverlayMutation],
+  );
+
   const generateCliprMusic = useCallback(
     async (clip: VideoClipMetadata) => {
       if (!clip.cliprMetadata) {
@@ -808,6 +827,7 @@ export function useClipLibraryState(): ClipLibraryValue {
     updateClipMetadata,
     generateCliprMusic,
     updateCliprMusic,
+    updateCliprTextOverlay,
     updateClipTrimRange,
     generateStitchMusic,
     updateStitchMusic,

@@ -11,6 +11,7 @@ import { clipTypeValidator } from "./validators/clipType";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
+import { textOverlayValidator } from "./validators/textOverlay";
 import { videoClipLibraryKindValidator } from "./validators/videoClipLibraryKind";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
@@ -351,6 +352,51 @@ export const updateCliprMusic = mutation({
               providerModels: Array.from(
                 new Set([...cliprMetadata.providerModels, music.providerModel]),
               ),
+            },
+      updatedAt,
+    });
+    const updatedClip = await ctx.db.get(clip._id);
+
+    if (updatedClip) {
+      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+    }
+  },
+});
+
+export const updateCliprTextOverlay = mutation({
+  args: {
+    id: v.string(),
+    textOverlay: v.union(textOverlayValidator, v.null()),
+    updatedAt: v.string(),
+  },
+  handler: async (ctx, { id, textOverlay, updatedAt }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const clip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!clip?.cliprMetadata) {
+      throw new Error("Clipr clip not found.");
+    }
+
+    const cliprMetadata = { ...clip.cliprMetadata };
+
+    delete cliprMetadata.textOverlay;
+
+    await ctx.db.patch(clip._id, {
+      cliprMetadata:
+        textOverlay === null
+          ? cliprMetadata
+          : {
+              ...cliprMetadata,
+              textOverlay,
             },
       updatedAt,
     });

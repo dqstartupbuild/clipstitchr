@@ -1,9 +1,11 @@
 import type { CliprClientJob } from "@/lib/clipstitchr/types/CliprClientJob";
+import type { CliprContentType } from "@/lib/clipstitchr/types/CliprContentType";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 
 type CreateCliprJobOptions = {
   addMusic: boolean;
   avatarId: string;
+  contentType?: CliprContentType;
   durationSeconds: CliprDurationSeconds;
   jobId: string;
   musicTrackId?: string;

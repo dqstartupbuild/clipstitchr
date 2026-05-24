@@ -61,6 +61,11 @@ const objectKindConfig: Record<
     baseName: "image",
     fallbackExtension: "jpg",
   },
+  "clipr-scene-video": {
+    directory: "clipr-scenes",
+    baseName: "scene",
+    fallbackExtension: "mp4",
+  },
   "longr-video": {
     directory: "longr",
     baseName: "video",

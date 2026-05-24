@@ -3,10 +3,13 @@ import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
+import { cliprCompositionStrategyValidator } from "./validators/cliprCompositionStrategy";
+import { cliprContentTypeValidator } from "./validators/cliprContentType";
 import { cliprDurationSecondsValidator } from "./validators/cliprDurationSeconds";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { r2ObjectValidator } from "./validators/r2Object";
+import { textOverlayValidator } from "./validators/textOverlay";
 
 const clientJobFields = (job: {
   avatarId: string;
@@ -16,6 +19,8 @@ const clientJobFields = (job: {
   avatarVideoObject?: { contentType: string; key: string; size: number };
   avatarVideoProviderPredictionId?: string;
   completedAt?: string;
+  compositionStrategy?: "single-video" | "multi-scene";
+  contentType?: string;
   createdAt: string;
   error?: string;
   filledHook?: string;
@@ -35,6 +40,7 @@ const clientJobFields = (job: {
     updatedAt: string;
     volume: number;
   };
+  overlayText?: string;
   productId: string;
   productName: string;
   progress: number;
@@ -47,7 +53,7 @@ const clientJobFields = (job: {
     photoScript?: string;
     providerImagePredictionId?: string;
     providerPredictionId?: string;
-    sceneType: "avatar";
+    sceneType: "avatar" | "generated-video";
     scriptText: string;
     visualPrompt: string;
     voiceAudioObject?: { contentType: string; key: string; size: number };
@@ -62,6 +68,8 @@ const clientJobFields = (job: {
   id: job.id,
   productId: job.productId,
   productName: job.productName,
+  contentType: job.contentType ?? "avatar-talking-head",
+  compositionStrategy: job.compositionStrategy ?? "single-video",
   avatarId: job.avatarId,
   avatarPhotoId: job.avatarPhotoId,
   avatarImageObject: job.avatarImageObject,
@@ -72,6 +80,7 @@ const clientJobFields = (job: {
   voiceId: job.voiceId,
   targetDurationSeconds: job.targetDurationSeconds,
   filledHook: job.filledHook,
+  overlayText: job.overlayText,
   script: job.script,
   scenePlan: job.scenePlan,
   status: job.status,
@@ -123,6 +132,8 @@ export const createQueued = mutation({
     audienceDetails: v.string(),
     productInferredProblem: v.optional(v.string()),
     productInferredPainPoints: v.array(v.string()),
+    contentType: cliprContentTypeValidator,
+    compositionStrategy: cliprCompositionStrategyValidator,
     avatarId: v.string(),
     avatarName: v.string(),
     avatarPhotoId: v.string(),
@@ -162,6 +173,7 @@ export const applyScriptPlan = mutation({
     filledHook: v.string(),
     variablesUsed: v.record(v.string(), v.string()),
     script: v.string(),
+    overlayText: v.string(),
     scenePlan: v.array(cliprScenePlanValidator),
     providerModel: v.string(),
     updatedAt: v.string(),
@@ -176,6 +188,7 @@ export const applyScriptPlan = mutation({
       filledHook,
       variablesUsed,
       script,
+      overlayText,
       scenePlan,
       providerModel,
       updatedAt,
@@ -198,16 +211,22 @@ export const applyScriptPlan = mutation({
       throws: true,
     });
 
+    const isAvatarTalkingHead =
+      (job.contentType ?? "avatar-talking-head") === "avatar-talking-head";
+
     await ctx.db.patch(job._id, {
       hookStyleKey,
       hookTemplateId,
       filledHook,
       variablesUsed,
       script,
+      overlayText,
       scenePlan,
       providerModels: Array.from(new Set([...job.providerModels, providerModel])),
-      status: "generating-avatar-image",
-      stage: "avatar-image",
+      status: isAvatarTalkingHead
+        ? "generating-avatar-image"
+        : "generating-video",
+      stage: isAvatarTalkingHead ? "avatar-image" : "generated-video",
       progress: 0.25,
       updatedAt,
     });
@@ -330,6 +349,74 @@ export const recordAvatarVideoOutput = mutation({
   },
 });
 
+export const recordGeneratedVideoOutput = mutation({
+  args: {
+    secret: v.string(),
+    id: v.string(),
+    avatarVideoObject: v.optional(r2ObjectValidator),
+    avatarVideoProviderPredictionId: v.optional(v.string()),
+    scenePlan: v.array(cliprScenePlanValidator),
+    music: v.optional(cliprMusicMetadataValidator),
+    providerModels: v.array(v.string()),
+    progress: v.number(),
+    updatedAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    {
+      secret,
+      id,
+      avatarVideoObject,
+      avatarVideoProviderPredictionId,
+      scenePlan,
+      music,
+      providerModels,
+      progress,
+      updatedAt,
+    },
+  ) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const job = await ctx.db
+      .query("cliprJobs")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!job) {
+      throw new Error("Clipr job not found.");
+    }
+
+    await rateLimiter.limit(ctx, "convexCliprJobWrite", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const patch = {
+      ...(avatarVideoObject ? { avatarVideoObject } : {}),
+      ...(avatarVideoProviderPredictionId
+        ? { avatarVideoProviderPredictionId }
+        : {}),
+      ...(music ? { music } : {}),
+      scenePlan,
+      providerModels: Array.from(
+        new Set([...job.providerModels, ...providerModels]),
+      ),
+      status: "ready-to-save" as const,
+      stage: "browser-save" as const,
+      progress,
+      updatedAt,
+    };
+
+    await ctx.db.patch(job._id, patch);
+
+    return clientJobFields({
+      ...job,
+      ...patch,
+    });
+  },
+});
+
 export const markBrowserSaving = mutation({
   args: {
     id: v.string(),
@@ -372,6 +459,8 @@ export const finalizeWithClip = mutation({
     aspectRatio: v.number(),
     duration: v.number(),
     hasAudio: v.boolean(),
+    tags: v.optional(v.array(v.string())),
+    textOverlay: v.optional(textOverlayValidator),
     updatedAt: v.string(),
   },
   handler: async (ctx, args) => {
@@ -414,7 +503,7 @@ export const finalizeWithClip = mutation({
       ownerId,
       id: args.clipId,
       name: args.name,
-      tags: ["ugc", "clipr"],
+      tags: args.tags ?? ["ugc", "clipr"],
       originalName: `${args.name}.mp4`,
       clipType: "ugc",
       videoObject: args.videoObject,
@@ -433,6 +522,8 @@ export const finalizeWithClip = mutation({
         jobId: job.id,
         productId: job.productId,
         productName: job.productName,
+        contentType: job.contentType ?? "avatar-talking-head",
+        compositionStrategy: job.compositionStrategy ?? "single-video",
         avatarId: job.avatarId,
         avatarPhotoId: job.avatarPhotoId,
         voiceId: job.voiceId,
@@ -445,6 +536,7 @@ export const finalizeWithClip = mutation({
         sceneCount: job.scenePlan.length,
         finalDurationSeconds: args.duration,
         music: job.music,
+        textOverlay: args.textOverlay,
         providerModels: job.providerModels,
         createdAt: job.createdAt,
       },

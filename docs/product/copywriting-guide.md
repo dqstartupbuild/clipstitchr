@@ -76,10 +76,10 @@ Write feature copy around user outcomes:
 | Feature | User-facing angle |
 | --- | --- |
 | Upload normalization | Every clip becomes ready for vertical ad output. |
-| Content Library | Keep UGC, demos, swaps, and stitches in one searchable place. |
+| Content Library | Keep UGC, demos, Clips, swaps, carousels, and stitches in one searchable place. |
 | Stitchr | Pair up to 20 UGC with one product demo and create finished ads. |
 | Swipr | Create carousel posts, save the draft, and come back to revise or download it later. |
-| Clipr | Generate reusable engagement Clips when the library needs fresh source footage. |
+| Clipr | Generate reusable Clips in different formats when the library needs fresh source footage. |
 | Trim ranges | Cut dead space without damaging the original clip. |
 | Posters | Recognize clips quickly without opening every file. |
 | AI avatar photos | Create more source material when you need it. |
@@ -95,7 +95,9 @@ Use:
 - "Create more source material when your library is thin."
 - "Use AI to fill gaps in your content library."
 - "Generate optional UGC-style inputs, then stitch them into ads."
-- "Generate short engagement Clips when your library needs fresh material."
+- "Generate short Clips when your library needs fresh material."
+- "Choose an avatar clip, b-roll reel, text shot, voiceover reel, product video,
+  value clip, or soft CTA."
 
 Avoid:
 
@@ -148,14 +150,16 @@ more finished creative so they can test faster.
   one-demo-to-many-UGC relationship stays clear.
 - For Swipr flows, say "carousel posts," "slides," "looks," and "ready to
   publish" before naming implementation details.
-- For Clipr flows, say "Clips," "engagement clips," "avatar," "voice,"
-  "music," and "Use in Stitchr."
+- For Clipr flows, say "Clips," "clip type," "avatar," "voice," "music,"
+  "text," and "Use in Stitchr."
 - Do not mention hidden hook styles, template IDs, risk labels, provider names,
   or placeholder mechanics in user-facing Clipr copy.
 - Do not mention internal hook source names such as app hook library or
   education viral patterns in user-facing copy.
-- Clipr copy must not include platform, sales, or app CTAs such as "comment,"
-  "follow," "buy," "book," "download it," or "sign up."
+- Default Clipr copy must not include platform, sales, or app CTAs such as
+  "comment," "follow," "buy," "book," "download it," or "sign up." Soft CTA
+  and product-aware formats can use a gentle final prompt when the user chose
+  that clip type.
 - Describe Swipr as a way to create, save, edit, and download carousels.
 - Avoid naming internal storage or setup choices in marketing copy.
 - Keep buttons action-oriented: `Upload Clips`, `Create Stitch`, `Save Trim`.

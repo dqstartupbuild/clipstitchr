@@ -55,6 +55,10 @@ export type ClipLibraryValue = {
     clip: VideoClipMetadata,
     music: CliprMusicMetadata | null,
   ) => Promise<void>;
+  updateCliprTextOverlay: (
+    clip: VideoClipMetadata,
+    textOverlay: TextOverlay | null,
+  ) => Promise<void>;
   updateClipTrimRange: (
     clip: VideoClipMetadata,
     defaultTrimRange: VideoTrimRange,
