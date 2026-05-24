@@ -3,23 +3,30 @@
 import { useCallback, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { defaultCliprContentType } from "@/lib/clipstitchr/constants/defaultCliprContentType";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createCliprJob } from "@/lib/clipstitchr/client/createCliprJob";
 import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
+import { composeCliprGeneratedVideo } from "@/lib/clipstitchr/media/composeCliprGeneratedVideo";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
 import type { CliprClientJob } from "@/lib/clipstitchr/types/CliprClientJob";
+import type { CliprContentType } from "@/lib/clipstitchr/types/CliprContentType";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { createDefaultTextOverlay } from "@/lib/clipstitchr/utils/createDefaultTextOverlay";
+import { getCliprContentTypeTag } from "@/lib/clipstitchr/utils/getCliprContentTypeTag";
+import { getCliprContentTypeUsesTextOverlay } from "@/lib/clipstitchr/utils/getCliprContentTypeUsesTextOverlay";
 import { getCliprFinalClipName } from "@/lib/clipstitchr/utils/getCliprFinalClipName";
 
 type GenerateCliprOptions = {
   addMusic: boolean;
   avatarId: string;
+  contentType: CliprContentType;
   durationSeconds: CliprDurationSeconds;
   musicTrackId?: string;
   productId: string;
@@ -52,6 +59,16 @@ function getActiveJobProgress(job: CliprClientJob | null | undefined) {
           ? "Generating full avatar video and music"
           : "Generating full avatar video",
         progress: Math.max(0.45, Math.min(job.progress, 0.62)),
+      };
+    case "generated-video":
+      return {
+        message: "Generating Clipr video scenes",
+        progress: Math.max(0.35, Math.min(job.progress, 0.62)),
+      };
+    case "media-compose":
+      return {
+        message: "Preparing generated scenes",
+        progress: Math.max(0.62, Math.min(job.progress, 0.7)),
       };
     case "browser-save":
       return {
@@ -132,6 +149,70 @@ export function useCliprGeneration({ onCreated }: UseCliprGenerationOptions) {
     [],
   );
 
+  const createComposedGeneratedClip = useCallback(
+    async (
+      nextJob: CliprClientJob,
+      {
+        id,
+        name,
+        onProgress,
+        tags,
+      }: {
+        id: string;
+        name: string;
+        onProgress?: (progress: number) => void;
+        tags: string[];
+      },
+    ): Promise<VideoClip> => {
+      const sceneObjects = nextJob.scenePlan
+        .map((scene) => scene.generatedVideoObject)
+        .filter((object): object is R2ObjectReference => Boolean(object));
+
+      if (!sceneObjects.length) {
+        throw new Error("Clipr did not return generated video scenes.");
+      }
+
+      const [sceneBlobs, voiceSourceBlob] = await Promise.all([
+        Promise.all(sceneObjects.map((object) => downloadBlobFromR2(object))),
+        (nextJob.contentType ?? defaultCliprContentType) ===
+          "voiceover-reel" && nextJob.avatarVideoObject
+          ? downloadBlobFromR2(nextJob.avatarVideoObject)
+          : Promise.resolve(undefined),
+      ]);
+      const composedClip = await composeCliprGeneratedVideo({
+        audioBlob: voiceSourceBlob,
+        videoBlobs: sceneBlobs,
+        onProgress,
+      });
+      const originalSize = sceneBlobs.reduce(
+        (total, blob) => total + blob.size,
+        voiceSourceBlob?.size ?? 0,
+      );
+
+      return {
+        id,
+        name,
+        tags,
+        originalName: `${id}.mp4`,
+        clipType: "ugc",
+        videoObject: sceneObjects[0],
+        blob: composedClip.blob,
+        mimeType: composedClip.mimeType,
+        sourceMimeType: sceneBlobs[0]?.type || sceneObjects[0].contentType,
+        size: composedClip.blob.size,
+        originalSize,
+        width: 1080,
+        height: 1920,
+        aspectRatio: 9 / 16,
+        duration: composedClip.duration,
+        hasAudio: Boolean(voiceSourceBlob),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    },
+    [],
+  );
+
   const generate = useCallback(
     async (options: GenerateCliprOptions) => {
       setStatus("reading");
@@ -148,16 +229,23 @@ export function useCliprGeneration({ onCreated }: UseCliprGenerationOptions) {
           ...options,
           jobId: requestedJobId,
         });
+        const jobContentType = nextJob.contentType ?? defaultCliprContentType;
 
         setJob(nextJob);
         setProgress(0.7);
-        setMessage("Avatar video generated");
+        setMessage(
+          jobContentType === "avatar-talking-head"
+            ? "Avatar video generated"
+            : "Generated scenes ready",
+        );
 
         if (!nextJob.scenePlan.length) {
           throw new Error("Clipr did not return the avatar script plan.");
         }
 
-        if (!nextJob.avatarVideoObject) {
+        if (
+          jobContentType === "avatar-talking-head" && !nextJob.avatarVideoObject
+        ) {
           throw new Error("Clipr did not return the generated avatar video.");
         }
 
@@ -167,7 +255,11 @@ export function useCliprGeneration({ onCreated }: UseCliprGenerationOptions) {
         });
 
         setStatus("normalizing");
-        setMessage("Downloading avatar video");
+        setMessage(
+          jobContentType === "avatar-talking-head"
+            ? "Downloading avatar video"
+            : "Composing generated scenes",
+        );
         setProgress(0.72);
 
         const clipId = createId();
@@ -175,14 +267,40 @@ export function useCliprGeneration({ onCreated }: UseCliprGenerationOptions) {
           nextJob.productName,
           nextJob.createdAt,
         );
-        const avatarClip = await createGeneratedClip(nextJob.avatarVideoObject, {
-          fit: "cover",
-          id: clipId,
-          name: clipName,
-          tags: ["ugc", "clipr"],
-          onProgress: (avatarProgress) =>
-            setProgress(0.72 + avatarProgress * 0.2),
-        });
+        const tags = [
+          "ugc",
+          "clipr",
+          getCliprContentTypeTag(jobContentType),
+        ];
+        const avatarClip =
+          jobContentType === "avatar-talking-head" &&
+          nextJob.avatarVideoObject
+            ? await createGeneratedClip(nextJob.avatarVideoObject, {
+                fit: "cover",
+                id: clipId,
+                name: clipName,
+                tags,
+                onProgress: (avatarProgress) =>
+                  setProgress(0.72 + avatarProgress * 0.2),
+              })
+            : await createComposedGeneratedClip(nextJob, {
+                id: clipId,
+                name: clipName,
+                tags,
+                onProgress: (composeProgress) =>
+                  setProgress(0.72 + composeProgress * 0.2),
+              });
+        const textOverlay = getCliprContentTypeUsesTextOverlay(
+          jobContentType,
+        )
+          ? {
+              ...createDefaultTextOverlay(avatarClip.duration, 0),
+              text:
+                nextJob.overlayText?.trim() ||
+                nextJob.filledHook?.trim() ||
+                "Your text here",
+            }
+          : undefined;
         let posterBlob: Blob | undefined;
 
         setMessage("Generating poster");
@@ -231,6 +349,8 @@ export function useCliprGeneration({ onCreated }: UseCliprGenerationOptions) {
           aspectRatio: avatarClip.aspectRatio,
           duration: avatarClip.duration,
           hasAudio: avatarClip.hasAudio,
+          tags,
+          textOverlay,
           updatedAt: now,
         });
 
@@ -258,6 +378,7 @@ export function useCliprGeneration({ onCreated }: UseCliprGenerationOptions) {
     },
     [
       createGeneratedClip,
+      createComposedGeneratedClip,
       finalizeWithClip,
       markBrowserSaving,
       onCreated,

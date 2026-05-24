@@ -160,7 +160,7 @@ Multiple independent text layers remain future scope.
 | 7 | Avatar photos store a detailed non-sensitive visual description of the person for scenario generation | ✅ | ✅ |
 | 8 | Users can generate 1, 3, or 5 new avatar scenario photos from a selected Replicate image model | ✅ | ✅ |
 | 9 | Swapr-generated outputs appear in the Content Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
-| 10 | Clipr-generated outputs appear in the Content Library Clips tab and remain reusable as UGC-style clips | ✅ | ✅ |
+| 10 | Clipr-generated outputs appear in the Content Library Clips tab, show searchable/filterable content-type tags, and remain reusable as UGC-style clips | ✅ | ✅ |
 | 11 | Stitches appear in the Content Library Stitches tab; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
 | 12 | The Content Library includes an All tab so users can view every saved video output type at once | ✅ | ✅ |
 | 13 | The dashboard header upload action opens an upload selector for UGC, Demo, or Photo, then routes to the relevant page/tab with controls revealed | ✅ | ✅ |
@@ -178,12 +178,29 @@ main product promise.
 | 2 | Avatar photo generation creates additional reusable source photos | ✅ | ✅ |
 | 3 | Swapr generates UGC-style video clips that can be saved back into the UGC library | ✅ | ✅ |
 | 4 | AI features use rate limits, credit budgeting, and speed profiles because they create external provider cost | ✅ | ✅ |
-| 5 | Clipr generates non-promotional short engagement Clips from saved product and avatar context | ✅ | ✅ |
-| 6 | Clipr can select reusable shared-library music or generate a separate 60 second background music asset for export-time mixing | ✅ | ✅ |
+| 5 | Clipr generates avatar talking-head Clips from saved product/avatar context and the selected avatar voice | ✅ | ✅ |
+| 6 | Clipr generates non-avatar Clips such as b-roll reels, text shots, voiceover reels, product videos, value videos, problem/solution clips, objection handlers, how-to clips, and soft-CTA clips | ✅ | ✅ |
+| 7 | Clipr can select reusable shared-library music or generate a separate 60 second background music asset for export-time mixing | ✅ | ✅ |
+| 8 | Text-based Clipr outputs save editable overlay state and render that text into the video only at export/download time | ✅ | ✅ |
 
-Clipr uses hidden non-promotional hook templates only. Broader internal hook
-assets can support Swipr and Stitchr auto-text, but direct product/ad hook
-patterns must not leak into Clipr outputs.
+Clipr uses hidden audience-first hook templates for most formats. Avatar Talking
+Head, B-roll Reel, Text Shot, and Voiceover Reel remain non-promotional by
+default. Product Video, Value Video, Problem/Solution, Objection Handler,
+How-To, and Soft CTA formats can use existing saved product details when they
+support creator-style proof, examples, tutorials, objections, or a gentle final
+prompt. Broader internal hook assets can support Swipr and Stitchr auto-text,
+but direct product/ad hook mechanics must not leak into default Clipr outputs.
+
+Non-avatar Clipr visuals use `prunaai/p-video`. Voiceover Reel uses the
+selected avatar voice by generating an avatar-voice source video, then Media
+Bunny composes that audio over generated p-video scenes after all clips are
+available. B-roll Reel can use the avatar photo as a visual reference without
+speech. The composition rule is conservative: use a single provider video for
+30 second Avatar Talking Head, Text Shot, and Soft CTA outputs when one shot can
+carry the idea; use multiple scenes for 60 second non-avatar outputs and for
+30 second formats that need visual progression. Current non-avatar multi-scene
+jobs use 3 scenes at 30 seconds and 6 scenes at 60 seconds, with each provider
+scene capped at 20 seconds.
 
 Clipr music is optional and off by default. Users can select an existing shared
 music-library track or generate a 60 second instrumental track. Generated music
@@ -194,6 +211,10 @@ volume.
 Media Bunny mixes the music into a fresh downloadable file only during
 export/download, so users can later remove music, regenerate it, or change
 volume without altering the saved video.
+
+Clipr text overlays follow the same non-destructive rule as Stitchr and Swipr:
+the text is editable and visible in preview, but the saved clean Clip does not
+contain baked-in text until the user exports/downloads.
 
 Stitchr music follows the same non-destructive model for saved stitches. The
 Stitchr build controls can select shared music or request new generated music,
@@ -260,11 +281,11 @@ selected slides.
 /                → Landing page (marketing + "Go to Dashboard" CTA)
 /dashboard       → Authenticated main workspace
 /dashboard/stitchr → Authenticated Stitchr video stitching interface
-/dashboard/clipr → Authenticated Clipr engagement clip generator
+/dashboard/clipr → Authenticated Clipr generator with content-type, product, avatar, voice, duration, and music controls
 /dashboard/swipr → Authenticated TikTok carousel image generator
 /dashboard/swapr → Authenticated AI motion-transfer studio using saved photos with UGC clips or finished stitches
 /dashboard/avatars → Authenticated avatar photo library with hidden-until-requested photo upload controls, avatar assignment, descriptions, and AI scenario photo generation
-/dashboard/uploads → Authenticated Content Library with All, UGC, Clips, Demo, Swaps, Swipes, and Stitches tabs; UGC/Demo upload controls open from the header upload selector
+/dashboard/uploads → Authenticated Content Library with All, UGC, Clips, Demo, Swaps, Swipes, and Stitches tabs; Clips support content-type filtering; UGC/Demo upload controls open from the header upload selector
 /dashboard/stitches → Compatibility redirect to `/dashboard/uploads?tab=stitches`
 ```
 
@@ -344,6 +365,12 @@ selected slides.
 - Clipr music export must not mutate the saved video. Export/download reads the
   clean saved Clipr video and optional R2 music object, then creates a temporary
   mixed MP4 in the browser with Media Bunny.
+- Non-avatar Clipr generation must use Media Bunny after provider generation to
+  compose the saved generated p-video scene clips, and optional avatar-voice
+  source audio, into one clean 9:16 Clip.
+- Clipr text export must not mutate the saved video. Preview renders editable
+  overlay state on top of the clean video, and export/download bakes the current
+  text overlay into a temporary MP4 with Media Bunny.
 - Trimming is non-destructive metadata. Uploads store a default trim range. When clips are selected in Stitchr, the default trim range for each selected UGC and the selected Demo is copied into that Stitchr session and can be changed independently.
 - Preview, saved stitches, and exports must use the copied Stitchr trim ranges when present.
 - The preview should let the user tap or swipe through each selected UGC + Demo sequence before export.
@@ -452,6 +479,7 @@ interface VideoClip {
   id: string;
   name: string;
   type: 'ugc' | 'demo';
+  tags: string[]; // Clipr outputs include "clipr" and "clipr-{content-type}"
   videoObject: R2ObjectReference; // normalized 9:16 clip in R2
   posterObject?: R2ObjectReference; // generated JPEG poster in R2
   posterVersion?: number; // capture algorithm version for backfilling stale posters
@@ -460,7 +488,36 @@ interface VideoClip {
   aspectRatio: '9:16';
   duration: number; // seconds
   defaultTrimRange?: { start: number; end: number }; // seconds, non-destructive default
+  cliprMetadata?: CliprMetadata; // present when the clip was generated by Clipr
   createdAt: string; // ISO timestamp
+}
+
+interface CliprMetadata {
+  jobId: string;
+  productId: string;
+  productName: string;
+  avatarId: string;
+  avatarPhotoId: string;
+  voiceId: string;
+  targetDurationSeconds: 30 | 60;
+  contentType:
+    | 'avatar-talking-head'
+    | 'b-roll-reel'
+    | 'text-shot'
+    | 'voiceover-reel'
+    | 'product-video'
+    | 'value-video'
+    | 'problem-solution'
+    | 'objection-handler'
+    | 'how-to'
+    | 'soft-cta';
+  compositionStrategy: 'single-video' | 'multi-scene';
+  filledHook: string;
+  script: string;
+  textOverlay?: TextOverlay;
+  music?: CliprMusicMetadata;
+  providerModels: string[];
+  createdAt: string;
 }
 
 interface Stitch {
@@ -527,6 +584,7 @@ interface Stitch {
 
 - [ ] Video trimming & cutting tools
 - [ ] Swapr — upload saved avatar photos, create scenario photos, choose existing UGC clips or finished stitches, and generate AI motion-transfer UGC outputs through Replicate
+- [ ] Clipr — generate avatar talking-head Clips and non-avatar p-video Clips with editable content-type tags, optional avatar-voice narration, optional music, and export-time text rendering
 - [ ] AI video analysis to detect optimal trim/cut points (e.g., scene changes, pauses, energy peaks)
 - [ ] AI-suggested highlights — automatically surface the best moments from UGC clips
 - [ ] Smart auto-edit — one-click to trim dead air, awkward pauses, or low-energy segments
@@ -550,15 +608,18 @@ interface Stitch {
 ## 11. Key Constraints
 
 1. **Browser-first media processing:** Upload normalization, poster capture,
-   Stitchr export, Longr export, and Clipr music mixing happen client-side in
-   the MVP.
+   Stitchr export, Longr export, Clipr generated-scene composition, Clipr text
+   overlay export, and Clipr music mixing happen client-side in the MVP.
 2. **Server-gated paid AI:** Clipr, Swapr, avatar photo, Swipr background, and
    music generation may call paid providers, but only through authenticated
    server routes with rate limits consumed before provider work starts.
-3. **Free/local video processing:** No paid video processing APIs or licensed
+3. **Paid provider video generation is scoped:** non-avatar Clipr visuals can
+   call `prunaai/p-video`, but stitching, overlay baking, music mixing, and
+   final media preparation stay in Media Bunny.
+4. **Free/local video processing:** No paid video processing APIs or licensed
    codecs for the Media Bunny render paths.
-4. **TikTok-first output:** All uploaded clips and stitches must be normalized to 9:16 before preview, stitching, or download.
-5. **Fast iteration:** The starship boilerplate gives us Next.js + good defaults — build on top of it, don't fight it.
+5. **TikTok-first output:** All uploaded clips and stitches must be normalized to 9:16 before preview, stitching, or download.
+6. **Fast iteration:** The starship boilerplate gives us Next.js + good defaults — build on top of it, don't fight it.
 
 ---
 
@@ -572,4 +633,6 @@ interface Stitch {
 - [ ] One text overlay can be customized per selected UGC + Demo output and copied across the batch.
 - [ ] All resulting 9:16 videos can be downloaded.
 - [ ] User can create multiple finished ad variants from the same library without opening a traditional editor.
+- [ ] User can generate different Clipr content types, filter/search saved Clips
+  by type, and edit text overlay style, position, and duration before export.
 - [ ] Core media workflows work on `localhost`; AI helper workflows require configured provider, Convex, R2, Clerk, and rate-limit environment variables.

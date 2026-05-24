@@ -97,6 +97,8 @@ Optional Replicate model overrides:
   one source still before full-script avatar video generation.
 - `CLIPR_AVATAR_VIDEO_MODEL_ID` defaults to `prunaai/p-video-avatar` for Clipr
   full-script avatar video and voice generation.
+- `CLIPR_GENERATED_VIDEO_MODEL_ID` defaults to `prunaai/p-video` for non-avatar
+  Clipr generated scene video.
 - `CLIPR_MUSIC_MODEL_ID` defaults to `stability-ai/stable-audio-2.5` for
   optional 60 second Clipr, Stitchr, Longr, and shared-library background music
   generation. Generated music is copied to the shared music library and, when
@@ -135,7 +137,8 @@ Optional Replicate model overrides:
 | Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; shared global provider bucket 10,000 units/hour, burst 2,000 |
 | Clipr hook/script generation | `POST /api/clipr/jobs` and `POST /api/clipr/text` | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000 |
 | Clipr avatar still generation | `POST /api/clipr/jobs` before the full-script avatar video call | 20 images/hour/user, burst 6; global provider bucket counted once per still. After the still succeeds, the route consumes R2 upload byte limits before saving personal avatar-photo and thumbnail copies. |
-| Clipr avatar video and voice generation | `POST /api/clipr/jobs` before calling `prunaai/p-video-avatar` | 600 estimated avatar seconds/hour/user, burst 180; global provider bucket counted by estimated seconds |
+| Clipr avatar video and voice generation | `POST /api/clipr/jobs` before calling `prunaai/p-video-avatar` for Avatar Talking Head or Voiceover Reel voice-source audio | 600 estimated avatar/voice seconds/hour/user, burst 180; global provider bucket counted by estimated seconds |
+| Clipr generated scene video generation | `POST /api/clipr/jobs` before calling `prunaai/p-video` for non-avatar visual scenes | 600 estimated generated video seconds/hour/user, burst 180; 1,200 generated video seconds/day/user; shared global provider bucket counted by estimated scene seconds. Each p-video scene input is capped at 20 seconds, so 30 second multi-scene jobs use 3 scenes and 60 second jobs use 6 scenes. |
 | Clipr music generation | `POST /api/clipr/jobs` when music is selected and `POST /api/clipr/music` when regenerating music for an existing Clip | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
 | Stitchr music generation | `POST /api/stitches/music` when creating or regenerating music for a saved stitch | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
 | Shared music generation | `POST /api/music/generate` from the shared music picker | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
@@ -143,10 +146,10 @@ Optional Replicate model overrides:
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `longrVideos.save`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
-| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `stitches.updateMusic`, `stitches.updateTextOverlay`, `stitches.updateRenderedVideo`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
+| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `videoClips.updateCliprTextOverlay`, `stitches.updateMusic`, `stitches.updateTextOverlay`, `stitches.updateRenderedVideo`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
-| Convex Clipr job writes | `cliprJobs.createQueued`, `cliprJobs.applyScriptPlan`, `cliprJobs.recordAvatarImageOutput`, `cliprJobs.recordAvatarVideoOutput`, `cliprJobs.markBrowserSaving`, `cliprJobs.finalizeWithClip` | 3,000/hour/user, burst 500 |
+| Convex Clipr job writes | `cliprJobs.createQueued`, `cliprJobs.applyScriptPlan`, `cliprJobs.recordAvatarImageOutput`, `cliprJobs.recordAvatarVideoOutput`, `cliprJobs.recordGeneratedVideoOutput`, `cliprJobs.markBrowserSaving`, `cliprJobs.finalizeWithClip` | 3,000/hour/user, burst 500 |
 
 ## Intentionally Not Rate-Limited
 
@@ -227,32 +230,45 @@ shared Convex record-save limit. Shared music objects are not user-deletable
 through the personal R2 delete route.
 
 Clipr browser final preparation is intentionally not separately rate-limited in
-the MVP because the current simplified Clipr flow normalizes one generated
-avatar video and saves it as a Clip rather than stitching multiple generated
-scenes. The expensive surfaces are gated before work starts: job creation,
-hook/script generation, avatar still generation, full-script avatar video
-generation, optional music generation, R2 object creation, and Convex final
-save. Clipr saves the normalized full avatar video directly as the final Clipr
-clip. The generated avatar still is also saved as an avatar photo attached to
-the selected avatar; the route consumes R2 upload byte limits before writing the
-photo and thumbnail objects, and `photoAssets.save` consumes the shared Convex
-record-save limit. Optional generated music is stored as a personal audio
-object and as a shared library track; selecting an existing shared track skips
-the music provider call. Music is mixed into a fresh downloadable file only when
-the user exports/downloads. That export-time Media Bunny render is browser-local and is
-not separately rate-limited. Saved Stitchr outputs use the same export-time
-model: saving a stitch stores source clip references, trim ranges, text, source
-audio flags, and music metadata in Convex without uploading a rendered stitch
-video to R2. When a stitch has text, the browser renders and uploads one
-text-aware stitch poster through the normal R2 upload limits and records it with
-`stitches.save` or `stitches.updatePoster`; export-time stitching and music
-mixing are browser-local and are not separately rate-limited. `POST /api/stitches/music` consumes the
-Stitchr music limits before Replicate, then R2 upload limits for both personal
-and shared copies. After script planning, Clipr
-consumes the avatar-video limit and, when generated music is requested, the 60
-second music-generation limit before creating the avatar still, so a rate-limit
-rejection does not leave an image generated without the provider work that
-follows.
+the MVP because the provider and storage costs are gated before the browser work
+starts. Avatar Talking Head normalizes one generated avatar video and saves it
+as a clean Clip. Non-avatar Clipr formats download generated p-video scene
+objects from R2 and compose them into one clean 9:16 Clip with Media Bunny;
+Voiceover Reel also downloads the avatar-voice source video and copies that
+audio over the generated visuals. These browser composition and normalization
+steps are local CPU work, then the final Clip save consumes the normal R2 upload
+and Convex record-save limits.
+
+The expensive Clipr surfaces are gated before provider work starts: job
+creation, hook/script generation, avatar still generation, full-script avatar or
+voice-source video generation, p-video scene generation, optional music
+generation, R2 object creation, and Convex final save. The generated avatar
+still is also saved as an avatar photo attached to the selected avatar; the
+route consumes R2 upload byte limits before writing the photo and thumbnail
+objects, and `photoAssets.save` consumes the shared Convex record-save limit.
+Generated p-video scenes are copied to R2 as `clipr-scene-video` objects before
+the browser Media Bunny composition step begins.
+
+Optional generated music is stored as a personal audio object and as a shared
+library track; selecting an existing shared track skips the music provider call.
+Music is mixed into a fresh downloadable file only when the user
+exports/downloads. Clipr text overlays follow the same model: preview reads
+editable metadata, and export/download renders the current overlay into a fresh
+MP4 without mutating the saved clean Clip. These export-time Media Bunny renders
+are browser-local and are not separately rate-limited.
+
+Saved Stitchr outputs use the same export-time model: saving a stitch stores
+source clip references, trim ranges, text, source audio flags, and music
+metadata in Convex without uploading a rendered stitch video to R2. When a
+stitch has text, the browser renders and uploads one text-aware stitch poster
+through the normal R2 upload limits and records it with `stitches.save` or
+`stitches.updatePoster`; export-time stitching and music mixing are
+browser-local and are not separately rate-limited. `POST /api/stitches/music`
+consumes the Stitchr music limits before Replicate, then R2 upload limits for
+both personal and shared copies. After script planning, Clipr consumes the
+avatar-video or generated-video limit and, when generated music is requested,
+the 60 second music-generation limit before creating downstream provider work,
+so a rate-limit rejection does not leave partially generated provider assets.
 
 The expanded hook libraries are local prompt resources, not new backend
 operations. Swipr and Stitchr auto-text continue to use `POST /api/clipr/text`
@@ -271,6 +287,7 @@ request, R2 upload, or Convex save starts:
 | Video upload | 20 files at once | Each video usually creates 1 normalized video object, 1 poster object, and 1 Gemini video analysis request, fitting under the R2 upload, video-analysis, and Convex-save burst limits. |
 | Stitchr UGC batch | 20 selected UGC videos at once | Each selected UGC creates one editable stitch with the selected demo, copied trims, text, and audio settings. Creating the batch consumes Convex stitch saves and, when text is present, one stitch-poster R2 upload per output; export-time browser encoding runs only when the user downloads/exports. |
 | Longr selected duration | 5 minutes total | Longr creates one browser-rendered 9:16 video from the selected sequence. The cap limits browser encode time, output size, R2 upload bytes, and preview complexity. |
+| Clipr generated scene batch | 1-6 provider scenes per job | 30 second non-avatar multi-scene jobs use 3 p-video scenes; 60 second non-avatar jobs use 6 scenes. The server consumes generated-video seconds before scene creation and caps each provider scene at 20 seconds. |
 
 These caps reduce partial batches and orphaned R2 objects. They do not replace
 server-side rate limits: prior usage in the same window can still cause a `429`

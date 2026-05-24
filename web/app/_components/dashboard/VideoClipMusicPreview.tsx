@@ -2,10 +2,14 @@
 
 import { Play } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { TextOverlayBox } from "@/app/_components/stitchr/TextOverlayBox";
+import { TextOverlayQuickControls } from "@/app/_components/stitchr/TextOverlayQuickControls";
 import { CLIPR_MUSIC_AD_GAIN } from "@/lib/clipstitchr/constants/cliprMusicMix";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { getCliprMusicGain } from "@/lib/clipstitchr/media/getCliprMusicGain";
+import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { getTextOverlayIsVisible } from "@/lib/clipstitchr/utils/getTextOverlayIsVisible";
 
 type VideoClipMusicPreviewProps = {
   src: string | null;
@@ -18,7 +22,11 @@ type VideoClipMusicPreviewProps = {
   musicBlob: Blob | null;
   musicEnabled: boolean;
   musicVolume: number;
+  textOverlay?: TextOverlay | null;
   trimRange?: VideoTrimRange | null;
+  totalDuration?: number;
+  onTextOverlayChange?: (textOverlay: TextOverlay) => void;
+  onPlaybackTimeChange?: (currentTime: number) => void;
   onLoadPreview?: () => void;
 };
 
@@ -33,14 +41,21 @@ export function VideoClipMusicPreview({
   musicBlob,
   musicEnabled,
   musicVolume,
+  textOverlay = null,
   trimRange = null,
+  totalDuration = trimRange?.end ?? 0,
+  onTextOverlayChange,
+  onPlaybackTimeChange,
   onLoadPreview,
 }: VideoClipMusicPreviewProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
   const musicUrl = useObjectUrl(musicBlob);
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(trimRange?.start ?? 0);
+  const [areTextControlsOpen, setAreTextControlsOpen] = useState(false);
   const shouldPlayMusic = Boolean(musicEnabled && musicUrl);
   const musicGain = shouldPlayMusic
     ? getCliprMusicGain({ hasSourceAudio, volume: musicVolume })
@@ -145,6 +160,7 @@ export function VideoClipMusicPreview({
   const handleLoadedMetadata = () => {
     if (videoRef.current && trimRange) {
       videoRef.current.currentTime = trimRange.start;
+      setCurrentTime(trimRange.start);
     }
 
     syncMusicToVideo();
@@ -171,13 +187,26 @@ export function VideoClipMusicPreview({
   };
 
   const handleTimeUpdate = () => {
+    const video = videoRef.current;
+
+    if (video) {
+      setCurrentTime(video.currentTime);
+      onPlaybackTimeChange?.(video.currentTime);
+    }
+
     keepPlaybackInsideTrim();
     syncMusicToVideo();
   };
+  const visibleTextOverlay =
+    textOverlay && getTextOverlayIsVisible(textOverlay, currentTime)
+      ? textOverlay
+      : null;
 
   return (
     <div
-      className="aspect-[9/16] overflow-hidden rounded-lg bg-slate-950"
+      ref={stageRef}
+      className="relative aspect-[9/16] overflow-hidden rounded-lg bg-slate-950"
+      style={{ containerType: "size" }}
       onBlur={() => setIsHovered(false)}
       onFocus={() => setIsHovered(true)}
       onMouseEnter={() => setIsHovered(true)}
@@ -185,26 +214,53 @@ export function VideoClipMusicPreview({
     >
       {src ? (
         <>
-          <video
-            ref={videoRef}
-            key={`${src}:${posterSrc ?? "no-poster"}`}
-            aria-label={label}
-            autoPlay={autoPlay}
-            className="h-full w-full object-contain"
-            controls={shouldShowVideoControls}
-            loop={!trimRange}
-            muted={!shouldPlayMusic}
-            onEnded={keepPlaybackInsideTrim}
-            onLoadedMetadata={handleLoadedMetadata}
-            onPause={handlePause}
-            onPlay={handlePlay}
-            onSeeked={syncMusicToVideo}
-            onTimeUpdate={handleTimeUpdate}
-            playsInline
-            poster={posterSrc ?? undefined}
-            preload="metadata"
-            src={src}
-          />
+          <div className="relative h-full w-full">
+            <video
+              ref={videoRef}
+              key={`${src}:${posterSrc ?? "no-poster"}`}
+              aria-label={label}
+              autoPlay={autoPlay}
+              className="h-full w-full object-contain"
+              controls={shouldShowVideoControls}
+              loop={!trimRange}
+              muted={!shouldPlayMusic}
+              onEnded={keepPlaybackInsideTrim}
+              onLoadedMetadata={handleLoadedMetadata}
+              onPause={handlePause}
+              onPlay={handlePlay}
+              onSeeked={() => {
+                if (videoRef.current) {
+                  setCurrentTime(videoRef.current.currentTime);
+                  onPlaybackTimeChange?.(videoRef.current.currentTime);
+                }
+
+                syncMusicToVideo();
+              }}
+              onTimeUpdate={handleTimeUpdate}
+              playsInline
+              poster={posterSrc ?? undefined}
+              preload="metadata"
+              src={src}
+            />
+            {visibleTextOverlay && onTextOverlayChange ? (
+              <TextOverlayBox
+                emptyLabel="Text"
+                textOverlay={visibleTextOverlay}
+                stageRef={stageRef}
+                totalDuration={totalDuration}
+                onChange={onTextOverlayChange}
+                onOpenStyleControls={() => setAreTextControlsOpen(true)}
+              />
+            ) : null}
+            {visibleTextOverlay && areTextControlsOpen && onTextOverlayChange ? (
+              <TextOverlayQuickControls
+                textOverlay={visibleTextOverlay}
+                totalDuration={totalDuration}
+                onChange={onTextOverlayChange}
+                onClose={() => setAreTextControlsOpen(false)}
+              />
+            ) : null}
+          </div>
           {musicUrl ? (
             <audio
               ref={audioRef}

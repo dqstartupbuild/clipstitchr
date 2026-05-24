@@ -14,6 +14,7 @@ import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectU
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -48,6 +49,10 @@ type VideoClipPreviewCardMetadataEditor = {
   onSave: (metadata: AssetMetadataUpdate) => void | Promise<void>;
 };
 
+type VideoClipPreviewCardTextOverlayEditor = {
+  onSave: (textOverlay: TextOverlay | null) => void | Promise<void>;
+};
+
 type VideoClipPreviewCardProps = {
   clip: VideoClipMetadata;
   productName?: string;
@@ -60,6 +65,7 @@ type VideoClipPreviewCardProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect?: () => void;
   cliprMusicEditor?: VideoClipDetailsMusicEditor;
+  cliprTextOverlayEditor?: VideoClipPreviewCardTextOverlayEditor;
   metadataEditor?: VideoClipPreviewCardMetadataEditor;
   trimEditor?: VideoClipPreviewCardTrimEditor;
 };
@@ -76,6 +82,7 @@ export function VideoClipPreviewCard({
   onLoadPoster,
   onSelect,
   cliprMusicEditor,
+  cliprTextOverlayEditor,
   metadataEditor,
   trimEditor,
 }: VideoClipPreviewCardProps) {
@@ -231,6 +238,9 @@ export function VideoClipPreviewCard({
           isLoading={isClipLoading}
           musicEditor={detailsMode === "controls" ? cliprMusicEditor : undefined}
           posterUrl={posterUrl}
+          textOverlayEditor={
+            detailsMode === "controls" ? cliprTextOverlayEditor : undefined
+          }
           trimEditor={detailsMode === "controls" ? trimEditor : undefined}
           videoUrl={videoUrl}
           onClose={() => setDetailsMode(null)}

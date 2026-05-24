@@ -8,10 +8,14 @@ import {
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
 import { copyVideoSamplesToSource } from "@/lib/clipstitchr/media/copyVideoSamplesToSource";
+import { copyTextOverlayVideoFramesToSource } from "@/lib/clipstitchr/media/copyTextOverlayVideoFramesToSource";
 import { createCliprMixedAudioBuffer } from "@/lib/clipstitchr/media/createCliprMixedAudioBuffer";
+import { createTextOverlayRenderContext } from "@/lib/clipstitchr/media/createTextOverlayRenderContext";
+import { createTikTokCanvasSource } from "@/lib/clipstitchr/media/createTikTokCanvasSource";
 import { createMediaInput } from "@/lib/clipstitchr/media/createMediaInput";
 import { createMp4Output } from "@/lib/clipstitchr/media/createMp4Output";
 import { createVideoBlobFromBuffer } from "@/lib/clipstitchr/media/createVideoBlobFromBuffer";
+import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import { getInputDuration } from "@/lib/clipstitchr/media/getInputDuration";
 import { getSupportedOutputCodecs } from "@/lib/clipstitchr/media/getSupportedOutputCodecs";
 import { getVideoMimeType } from "@/lib/clipstitchr/media/getVideoMimeType";
@@ -20,6 +24,7 @@ import { registerAacEncoderIfNeeded } from "@/lib/clipstitchr/media/registerAacE
 type RenderCliprVideoWithMusicOptions = {
   musicBlob: Blob;
   onProgress?: (progress: number) => void;
+  textOverlay?: TextOverlay | null;
   videoBlob: Blob;
   volume: number;
 };
@@ -33,6 +38,7 @@ type RenderCliprVideoWithMusicResult = {
 export async function renderCliprVideoWithMusic({
   musicBlob,
   onProgress,
+  textOverlay = null,
   videoBlob,
   volume,
 }: RenderCliprVideoWithMusicOptions): Promise<RenderCliprVideoWithMusicResult> {
@@ -64,16 +70,21 @@ export async function renderCliprVideoWithMusic({
     }
 
     const output = createMp4Output();
-    const videoSource = new VideoSampleSource({
-      codec: codecs.videoCodec,
-      bitrate: 8_000_000,
-      keyFrameInterval: 2,
-      sizeChangeBehavior: "contain",
-      transform: {
-        width: TIKTOK_OUTPUT_WIDTH,
-        height: TIKTOK_OUTPUT_HEIGHT,
-      },
-    });
+    const renderContext = textOverlay
+      ? createTextOverlayRenderContext(TIKTOK_OUTPUT_WIDTH, TIKTOK_OUTPUT_HEIGHT)
+      : null;
+    const videoSource = renderContext
+      ? createTikTokCanvasSource(renderContext.canvas, codecs.videoCodec)
+      : new VideoSampleSource({
+          codec: codecs.videoCodec,
+          bitrate: 8_000_000,
+          keyFrameInterval: 2,
+          sizeChangeBehavior: "contain",
+          transform: {
+            width: TIKTOK_OUTPUT_WIDTH,
+            height: TIKTOK_OUTPUT_HEIGHT,
+          },
+        });
     const audioSource = new AudioBufferSource({
       codec: codecs.audioCodec,
       bitrate: 160_000,
@@ -89,16 +100,31 @@ export async function renderCliprVideoWithMusic({
     output.addAudioTrack(audioSource);
 
     await output.start();
-    await copyVideoSamplesToSource({
-      input,
-      source: videoSource,
-      timelineOffset: 0,
-      trimRange: {
-        start: 0,
-        end: duration,
-      },
-      onProgress: (progress) => onProgress?.(0.15 + progress * 0.7),
-    });
+    if (renderContext && textOverlay) {
+      await copyTextOverlayVideoFramesToSource({
+        input,
+        source: videoSource as ReturnType<typeof createTikTokCanvasSource>,
+        renderContext,
+        timelineOffset: 0,
+        trimRange: {
+          start: 0,
+          end: duration,
+        },
+        textOverlay,
+        onProgress: (progress) => onProgress?.(0.15 + progress * 0.7),
+      });
+    } else {
+      await copyVideoSamplesToSource({
+        input,
+        source: videoSource as VideoSampleSource,
+        timelineOffset: 0,
+        trimRange: {
+          start: 0,
+          end: duration,
+        },
+        onProgress: (progress) => onProgress?.(0.15 + progress * 0.7),
+      });
+    }
     await audioSource.add(mixedAudioBuffer);
 
     onProgress?.(0.95);

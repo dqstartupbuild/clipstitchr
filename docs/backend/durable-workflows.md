@@ -134,7 +134,7 @@ device cannot resume the work.
 | Video upload normalization | Browser Media Bunny normalization and R2 upload run from a page-local queue. Refresh stops work. | Persist source first and process in a backend worker, or persist a local resumable queue. |
 | Stitchr composition | Inputs are durable saved clips, but each stitch job is browser-local. Refresh stops work, including multi-UGC batches that have not finished saving every output. Optional music is durable once generated because the audio object and editable settings live on the saved stitch. | Create a stitch job with selected UGC clip IDs, demo clip ID, trim ranges, per-output overlay configs, and optional music settings, then process in a backend worker or resumable browser queue. |
 | Longr composition | Inputs are durable saved clips, but the combined long-form render is browser-local. Refresh stops the build before the final Long, poster, and Convex record are saved. | Create a Longr job with ordered source clip IDs and trim ranges, then process in a backend worker or resumable browser queue. |
-| Clipr generation | `POST /api/clipr/jobs` creates and updates `cliprJobs` records while route-local server helpers handle request parsing, quotas, input loading, script planning, avatar still generation, avatar video/music generation, R2 copies, analytics, and failure cleanup. Browser Media Bunny final preparation saves the clean Clip video, and export/download can render a temporary music mix from durable video and audio objects. A request/runtime failure can still interrupt provider orchestration before finalization. | Move provider execution, final video preparation, and music export rendering to recoverable workers/finalizers when browser reliability or route timeout limits require it. |
+| Clipr generation | `POST /api/clipr/jobs` creates and updates `cliprJobs` records while route-local server helpers handle request parsing, quotas, input loading, script planning, avatar still generation, avatar video/music generation, non-avatar p-video scene generation, generated scene R2 copies, shared music persistence, analytics, and failure cleanup. Browser Media Bunny final preparation saves the clean Clip video: Avatar Talking Head normalizes the generated avatar video, and non-avatar formats compose generated p-video scenes plus optional avatar-voice audio. Export/download can render temporary text-overlay and music mixes from durable clean video, overlay metadata, and audio objects. A request/runtime failure can still interrupt provider orchestration before finalization, and a browser failure can still interrupt final Media Bunny composition. | Move provider execution, final video preparation, text-overlay rendering, and music export rendering to recoverable workers/finalizers when browser reliability or route timeout limits require it. |
 
 ## Recovery Requirements
 
@@ -169,10 +169,13 @@ For Clipr, each job needs:
 - saved product ID and product snapshot
 - selected avatar ID and resolved most recent avatar photo ID
 - selected voice ID and duration target
+- selected content type and single-video/multi-scene composition strategy
 - hidden hook style/template IDs and filled variables
 - generated hook, script, and scene plan
+- editable overlay text when the selected content type uses on-screen text
 - provider prediction IDs or request IDs for each scene
 - intermediate scene R2 object references
+- optional avatar-voice source video object for voiceover formats
 - optional music prompt, provider prediction ID, R2 object reference, enabled
   flag, and export volume
 - final video/poster R2 object references
