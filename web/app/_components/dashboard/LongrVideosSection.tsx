@@ -1,10 +1,13 @@
 "use client";
 
+import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
+import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { LongrVideoCard } from "@/app/_components/dashboard/LongrVideoCard";
 import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
+import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
 import type { LongrVideoMetadata } from "@/lib/clipstitchr/types/LongrVideoMetadata";
@@ -41,14 +44,42 @@ export function LongrVideosSection({
   const pagination = usePagination(longrVideos, {
     pageSize: uploadLibraryPageSize,
   });
+  const pageItemIds = useMemo(
+    () => pagination.pageItems.map((longrVideo) => longrVideo.id),
+    [pagination.pageItems],
+  );
+  const batchDelete = useLibraryBatchDelete({
+    itemIds: pageItemIds,
+    itemName: "Long",
+    itemPluralName: "Longs",
+    onDelete,
+  });
 
   return (
     <section id={id}>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-text-primary">{title}</h2>
-        <span className="text-sm font-semibold text-text-tertiary">
-          {totalCount ?? longrVideos.length}
-        </span>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold text-text-primary">{title}</h2>
+          <span className="text-sm font-semibold text-text-tertiary">
+            {totalCount ?? longrVideos.length}
+          </span>
+        </div>
+        {longrVideos.length ? (
+          <LibraryBatchActionBar
+            areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
+            isDeletingSelected={batchDelete.isDeletingSelected}
+            isSelecting={batchDelete.isSelecting}
+            selectedCount={batchDelete.selectedCount}
+            visibleItemCount={batchDelete.visibleItemCount}
+            onClearSelection={batchDelete.clearSelection}
+            onDeleteSelected={() => {
+              void batchDelete.deleteSelectedItems();
+            }}
+            onSelectVisible={batchDelete.selectVisibleItems}
+            onStartSelecting={batchDelete.startSelecting}
+            onStopSelecting={batchDelete.stopSelecting}
+          />
+        ) : null}
       </div>
       {longrVideos.length ? (
         <>
@@ -57,9 +88,16 @@ export function LongrVideosSection({
               <LongrVideoCard
                 key={longrVideo.id}
                 longrVideo={longrVideo}
+                isSelected={batchDelete.selectedIds.has(longrVideo.id)}
+                isSelectionDisabled={batchDelete.isDeletingSelected}
                 onDelete={onDelete}
                 onLoadLongrVideo={onLoadLongrVideo}
                 onLoadPoster={onLoadPoster}
+                onSelect={
+                  batchDelete.isSelecting
+                    ? () => batchDelete.toggleItemSelection(longrVideo.id)
+                    : undefined
+                }
               />
             ))}
           </div>

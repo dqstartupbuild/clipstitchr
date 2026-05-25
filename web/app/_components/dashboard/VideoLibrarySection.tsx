@@ -2,10 +2,12 @@
 
 import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
+import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { VideoClipCard } from "@/app/_components/dashboard/VideoClipCard";
 import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
+import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
@@ -89,14 +91,42 @@ export function VideoLibrarySection({
   const pagination = usePagination(clips, {
     pageSize: uploadLibraryPageSize,
   });
+  const pageItemIds = useMemo(
+    () => pagination.pageItems.map((clip) => clip.id),
+    [pagination.pageItems],
+  );
+  const batchDelete = useLibraryBatchDelete({
+    itemIds: pageItemIds,
+    itemName: "video",
+    itemPluralName: "videos",
+    onDelete,
+  });
 
   return (
     <section id={id}>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-text-primary">{title}</h2>
-        <span className="text-sm font-semibold text-text-tertiary">
-          {totalCount ?? clips.length}
-        </span>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold text-text-primary">{title}</h2>
+          <span className="text-sm font-semibold text-text-tertiary">
+            {totalCount ?? clips.length}
+          </span>
+        </div>
+        {clips.length ? (
+          <LibraryBatchActionBar
+            areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
+            isDeletingSelected={batchDelete.isDeletingSelected}
+            isSelecting={batchDelete.isSelecting}
+            selectedCount={batchDelete.selectedCount}
+            visibleItemCount={batchDelete.visibleItemCount}
+            onClearSelection={batchDelete.clearSelection}
+            onDeleteSelected={() => {
+              void batchDelete.deleteSelectedItems();
+            }}
+            onSelectVisible={batchDelete.selectVisibleItems}
+            onStartSelecting={batchDelete.startSelecting}
+            onStopSelecting={batchDelete.stopSelecting}
+          />
+        ) : null}
       </div>
       {clips.length ? (
         <>
@@ -110,10 +140,17 @@ export function VideoLibrarySection({
                   clip.productId ? productNamesById.get(clip.productId) : undefined
                 }
                 avatarCreatorError={avatarCreatorError}
+                isSelected={batchDelete.selectedIds.has(clip.id)}
+                isSelectionDisabled={batchDelete.isDeletingSelected}
                 isCreatingAvatarFromClip={isCreatingAvatarFromClip}
                 onLoadClip={onLoadClip}
                 onLoadPoster={onLoadPoster}
                 onDelete={onDelete}
+                onSelect={
+                  batchDelete.isSelecting
+                    ? () => batchDelete.toggleItemSelection(clip.id)
+                    : undefined
+                }
                 onGenerateCliprMusic={onGenerateCliprMusic}
                 onUpdateCliprMusic={onUpdateCliprMusic}
                 onUpdateCliprTextOverlay={onUpdateCliprTextOverlay}

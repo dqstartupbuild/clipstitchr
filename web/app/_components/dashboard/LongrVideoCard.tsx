@@ -7,6 +7,7 @@ import {
   MediaCardActionMenu,
   type MediaCardActionMenuItem,
 } from "@/app/_components/ui/MediaCardActionMenu";
+import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { createVideoBlobWithPosterMetadata } from "@/lib/clipstitchr/media/createVideoBlobWithPosterMetadata";
@@ -19,16 +20,22 @@ import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 
 type LongrVideoCardProps = {
   longrVideo: LongrVideoMetadata;
+  isSelected?: boolean;
+  isSelectionDisabled?: boolean;
   onDelete: (id: string) => void | Promise<void>;
   onLoadLongrVideo: (id: string) => Promise<LongrVideo | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
+  onSelect?: () => void;
 };
 
 export function LongrVideoCard({
   longrVideo,
+  isSelected = false,
+  isSelectionDisabled = false,
   onDelete,
   onLoadLongrVideo,
   onLoadPoster,
+  onSelect,
 }: LongrVideoCardProps) {
   const [loadedLongrVideo, setLoadedLongrVideo] =
     useState<LongrVideo | null>(null);
@@ -115,7 +122,12 @@ export function LongrVideoCard({
 
   return (
     <>
-      <div className="mx-auto h-full w-full max-w-[280px] min-w-0 overflow-hidden rounded-lg border border-border bg-white p-2 transition-colors">
+      <div
+        className={[
+          "mx-auto h-full w-full max-w-[280px] min-w-0 overflow-hidden rounded-lg border bg-white p-2 transition-colors",
+          isSelected ? "border-accent ring-2 ring-accent/15" : "border-border",
+        ].join(" ")}
+      >
         <div className="relative overflow-hidden rounded-md bg-slate-100">
           <button
             type="button"
@@ -144,6 +156,15 @@ export function LongrVideoCard({
           <span className="pointer-events-none absolute left-2 top-2 max-w-[75%] truncate rounded-md border border-purple-200 bg-white/95 px-2 py-1 text-[11px] font-bold leading-none text-accent-dark shadow-sm shadow-slate-900/10">
             LONG
           </span>
+          {onSelect ? (
+            <SelectionCheckboxButton
+              isSelected={isSelected}
+              label={`${isSelected ? "Deselect" : "Select"} ${longrVideo.name}`}
+              disabled={isSelectionDisabled}
+              className="absolute right-2 top-2 z-10"
+              onClick={onSelect}
+            />
+          ) : null}
         </div>
         <div className="mt-3 flex items-start justify-between gap-2">
           <button

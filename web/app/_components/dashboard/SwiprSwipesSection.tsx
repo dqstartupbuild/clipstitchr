@@ -1,9 +1,12 @@
 "use client";
 
+import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
+import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { SwiprSwipeCard } from "@/app/_components/dashboard/SwiprSwipeCard";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
+import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SaveSwiprSwipeInput } from "@/lib/clipstitchr/types/SwiprLibraryValue";
@@ -36,23 +39,53 @@ export function SwiprSwipesSection({
   onDelete,
   onSave,
 }: SwiprSwipesSectionProps) {
-  const backgroundsById = new Map(
-    backgrounds.map((background) => [background.id, background]),
+  const backgroundsById = useMemo(
+    () => new Map(backgrounds.map((background) => [background.id, background])),
+    [backgrounds],
   );
-  const visibleSwipes = swipes.filter((swipe) =>
-    backgroundsById.has(swipe.backgroundId),
+  const visibleSwipes = useMemo(
+    () => swipes.filter((swipe) => backgroundsById.has(swipe.backgroundId)),
+    [backgroundsById, swipes],
   );
   const pagination = usePagination(visibleSwipes, {
     pageSize: uploadLibraryPageSize,
   });
+  const pageItemIds = useMemo(
+    () => pagination.pageItems.map((swipe) => swipe.id),
+    [pagination.pageItems],
+  );
+  const batchDelete = useLibraryBatchDelete({
+    itemIds: pageItemIds,
+    itemName: "Swipe",
+    itemPluralName: "Swipes",
+    onDelete,
+  });
 
   return (
     <section id={id}>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-text-primary">{title}</h2>
-        <span className="text-sm font-semibold text-text-tertiary">
-          {visibleSwipes.length}
-        </span>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold text-text-primary">{title}</h2>
+          <span className="text-sm font-semibold text-text-tertiary">
+            {visibleSwipes.length}
+          </span>
+        </div>
+        {visibleSwipes.length ? (
+          <LibraryBatchActionBar
+            areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
+            isDeletingSelected={batchDelete.isDeletingSelected}
+            isSelecting={batchDelete.isSelecting}
+            selectedCount={batchDelete.selectedCount}
+            visibleItemCount={batchDelete.visibleItemCount}
+            onClearSelection={batchDelete.clearSelection}
+            onDeleteSelected={() => {
+              void batchDelete.deleteSelectedItems();
+            }}
+            onSelectVisible={batchDelete.selectVisibleItems}
+            onStartSelecting={batchDelete.startSelecting}
+            onStopSelecting={batchDelete.stopSelecting}
+          />
+        ) : null}
       </div>
       {visibleSwipes.length ? (
         <>
@@ -71,9 +104,16 @@ export function SwiprSwipesSection({
                   backgrounds={backgrounds}
                   isSaving={isSaving}
                   swipe={swipe}
+                  isSelected={batchDelete.selectedIds.has(swipe.id)}
+                  isSelectionDisabled={batchDelete.isDeletingSelected}
                   onLoadBackgroundBlob={onLoadBackgroundBlob}
                   onLoadPoster={onLoadPoster}
                   onDelete={onDelete}
+                  onSelect={
+                    batchDelete.isSelecting
+                      ? () => batchDelete.toggleItemSelection(swipe.id)
+                      : undefined
+                  }
                   onSave={onSave}
                 />
               );
