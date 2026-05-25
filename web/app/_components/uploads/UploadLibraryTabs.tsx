@@ -14,7 +14,6 @@ const tabs: { label: string; value: UploadLibraryTab }[] = [
   { label: "Demo", value: "demo" },
   { label: "Swaps", value: "swaps" },
   { label: "Swipes", value: "swipes" },
-  { label: "Longs", value: "longr" },
   { label: "Stitches", value: "stitches" },
 ];
 

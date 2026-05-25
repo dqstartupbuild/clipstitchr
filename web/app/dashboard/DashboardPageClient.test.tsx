@@ -13,7 +13,6 @@ const mocks = vi.hoisted(() => ({
     counts: {
       cliprClips: 0,
       demoClips: 0,
-      longrVideos: 0,
       stitches: 0,
       swapClips: 0,
       ugcClips: 0,
@@ -21,9 +20,7 @@ const mocks = vi.hoisted(() => ({
     error: null as string | null,
     generateStitchMusic: vi.fn(),
     loadClip: vi.fn(),
-    longrVideos: [],
     removeClip: vi.fn(),
-    removeLongrVideo: vi.fn(),
     removeStitch: vi.fn(),
     stitches: [],
     updateClipMetadata: vi.fn(),
@@ -79,10 +76,6 @@ vi.mock("@/app/_components/dashboard/RecentStitchesSection", () => ({
   RecentStitchesSection: () => "RecentStitchesSection",
 }));
 
-vi.mock("@/app/_components/dashboard/RecentLongsSection", () => ({
-  RecentLongsSection: () => "RecentLongsSection",
-}));
-
 vi.mock("@/app/_components/dashboard/RecentSwipesSection", () => ({
   RecentSwipesSection: () => "RecentSwipesSection",
 }));
@@ -132,7 +125,6 @@ describe("DashboardPageClient", () => {
     mocks.clipLibraryState.counts = {
       cliprClips: 10,
       demoClips: 20,
-      longrVideos: 0,
       stitches: 40,
       swapClips: 0,
       ugcClips: 30,
@@ -152,12 +144,6 @@ describe("DashboardPageClient", () => {
         createdAt: "2026-05-20T00:00:00.000Z",
         id: "stitch_1",
         updatedAt: "2026-05-20T00:00:00.000Z",
-      },
-    ] as never;
-    mocks.clipLibraryState.longrVideos = [
-      {
-        createdAt: "2026-05-20T00:00:00.000Z",
-        id: "longr_1",
       },
     ] as never;
     mocks.photoLibraryState.error = null;
@@ -196,7 +182,6 @@ describe("DashboardPageClient", () => {
     expect(markup).toContain("DashboardHeader");
     expect(markup).toContain("DashboardStats:30:20:10:40");
     expect(markup).toContain("RecentStitchesSection");
-    expect(markup).toContain("RecentLongsSection");
     expect(markup).toContain("RecentSwipesSection");
     expect(markup).toContain("RecentUploadsSection");
     expect(markup).toContain("RecentAvatarsSection");

@@ -12,7 +12,7 @@ const featureLabels = [
   },
   {
     icon: Layers3,
-    label: "Swipr and Longr tools",
+    label: "Swipr carousel tools",
   },
   {
     icon: Sparkles,

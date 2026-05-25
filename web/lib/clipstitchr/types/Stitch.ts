@@ -1,4 +1,6 @@
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
+import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
+import type { StitchSequenceSegment } from "@/lib/clipstitchr/types/StitchSequenceSegment";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
@@ -6,6 +8,7 @@ import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 export type Stitch = {
   id: string;
+  mode?: StitchrMode;
   name: string;
   ugcClipId: string;
   demoClipId: string;
@@ -13,6 +16,7 @@ export type Stitch = {
   demoClipName: string;
   ugcTrimRange?: VideoTrimRange;
   demoTrimRange?: VideoTrimRange;
+  sequenceSegments?: StitchSequenceSegment[];
   stitchObject?: R2ObjectReference;
   blob?: Blob;
   posterObject?: R2ObjectReference;

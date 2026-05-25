@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { LibraryPageHeader } from "@/app/_components/dashboard/LibraryPageHeader";
-import { LongrVideosSection } from "@/app/_components/dashboard/LongrVideosSection";
 import { StitchesSection } from "@/app/_components/dashboard/StitchesSection";
 import { SwiprSwipesSection } from "@/app/_components/dashboard/SwiprSwipesSection";
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
@@ -29,7 +28,6 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 import { filterClipsByCliprContentType } from "@/lib/clipstitchr/utils/filterClipsByCliprContentType";
 import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
-import { filterLongrVideosByName } from "@/lib/clipstitchr/utils/filterLongrVideosByName";
 import { filterStitchesByName } from "@/lib/clipstitchr/utils/filterStitchesByName";
 import { filterSwipesBySearchQuery } from "@/lib/clipstitchr/utils/filterSwipesBySearchQuery";
 import { dispatchHideUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchHideUploadControlsEvent";
@@ -175,10 +173,6 @@ export function UploadsPageClient() {
     () => filterStitchesByName(library.stitches, searchQuery),
     [library.stitches, searchQuery],
   );
-  const longrVideos = useMemo(
-    () => filterLongrVideosByName(library.longrVideos, searchQuery),
-    [library.longrVideos, searchQuery],
-  );
   const swipes = useMemo(() => {
     const sortedSwipes = [...swiprLibrary.swipes].sort((left, right) => {
       const leftTime = Date.parse(left.createdAt);
@@ -304,7 +298,7 @@ export function UploadsPageClient() {
         <LibraryPageHeader
           eyebrow="Library"
           title="Content Library"
-          description="Keep UGC, product demos, Clips, swaps, Swipes, stitches, and Longs ready for the next export."
+          description="Keep UGC, product demos, Clips, swaps, Swipes, and stitches ready for the next export."
         />
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -546,25 +540,6 @@ export function UploadsPageClient() {
               onUpdateMusic={library.updateStitchMusic}
               onUpdateTextOverlay={library.updateStitchTextOverlay}
             />
-            <LongrVideosSection
-              key={`all-longr-${searchQuery}-${library.sortOrder}`}
-              longrVideos={longrVideos}
-              totalCount={
-                canUseLibraryTotals ? library.counts.longrVideos : undefined
-              }
-              emptyTitle={hasSearchQuery ? "No matching Longs" : undefined}
-              emptyDescription={
-                hasSearchQuery
-                  ? "No Longs match that name."
-                  : undefined
-              }
-              hasMoreItems={library.hasMoreLongrVideos}
-              isLoadingMoreItems={library.isLoadingMoreLongrVideos}
-              onDelete={library.removeLongrVideo}
-              onLoadLongrVideo={library.loadLongrVideo}
-              onLoadMoreItems={library.loadMoreLongrVideos}
-              onLoadPoster={library.loadLongrPoster}
-            />
             <SwiprSwipesSection
               key={`all-swipes-${searchQuery}-${library.sortOrder}`}
               backgrounds={swiprLibrary.backgrounds}
@@ -654,27 +629,6 @@ export function UploadsPageClient() {
             onLoadPoster={library.loadStitchPoster}
             onUpdateMusic={library.updateStitchMusic}
             onUpdateTextOverlay={library.updateStitchTextOverlay}
-          />
-        ) : null}
-        {selectedTab === "longr" ? (
-          <LongrVideosSection
-            key={`longr-${searchQuery}-${library.sortOrder}`}
-            longrVideos={longrVideos}
-            totalCount={
-              canUseLibraryTotals ? library.counts.longrVideos : undefined
-            }
-            emptyTitle={hasSearchQuery ? "No matching Longs" : undefined}
-            emptyDescription={
-              hasSearchQuery
-                ? "No Longs match that name."
-                : undefined
-            }
-            hasMoreItems={library.hasMoreLongrVideos}
-            isLoadingMoreItems={library.isLoadingMoreLongrVideos}
-            onDelete={library.removeLongrVideo}
-            onLoadLongrVideo={library.loadLongrVideo}
-            onLoadMoreItems={library.loadMoreLongrVideos}
-            onLoadPoster={library.loadLongrPoster}
           />
         ) : null}
         {selectedTab === "swipes" ? (

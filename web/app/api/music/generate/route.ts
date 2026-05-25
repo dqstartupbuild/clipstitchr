@@ -27,7 +27,6 @@ type MusicGenerateRequest = {
 function getMusicTrackSource(value: unknown): MusicTrackSource {
   return value === "clipr" ||
     value === "stitchr" ||
-    value === "longr" ||
     value === "swipr" ||
     value === "library"
     ? value

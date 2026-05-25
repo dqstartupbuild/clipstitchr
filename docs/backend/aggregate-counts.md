@@ -34,24 +34,22 @@ Every aggregate must answer three questions before it is added:
 
 For ClipStitchr library counts, the namespace is `ownerId`. Video counts use one
 grouping key per surfaced asset type: `ugc`, `demo`, `clipr`, and `swapr`.
-Stitches and Longs use a `null` key because they only need a per-user total.
+Stitches use a `null` key because they only need a per-user total.
 
 ## Current Setup
 
-The Aggregate component is registered three times in
+The Aggregate component is registered twice in
 `web/convex/convex.config.ts`:
 
 ```ts
 app.use(aggregate, { name: "videoClipCounts" });
 app.use(aggregate, { name: "stitchCounts" });
-app.use(aggregate, { name: "longrVideoCounts" });
 ```
 
 The shared aggregate definitions live in `web/convex/aggregateCounts.ts`:
 
 - `videoClipCounts` counts `videoClips` by `ownerId` and video library type.
 - `stitchCounts` counts `stitches` by `ownerId`.
-- `longrVideoCounts` counts `longrVideos` by `ownerId`.
 
 The read query lives in `web/convex/libraryCounts.ts`. It returns:
 
@@ -59,7 +57,6 @@ The read query lives in `web/convex/libraryCounts.ts`. It returns:
 {
   cliprClips: number;
   demoClips: number;
-  longrVideos: number;
   stitches: number;
   swapClips: number;
   ugcClips: number;
@@ -185,11 +182,11 @@ npm ls @convex-dev/aggregate
 npx convex dev --once
 ```
 
-3. Confirm generated API types include `components.videoClipCounts`,
-   `components.stitchCounts`, and `components.longrVideoCounts`.
+3. Confirm generated API types include `components.videoClipCounts` and
+   `components.stitchCounts`.
 
 ```bash
-rg "videoClipCounts|stitchCounts|longrVideoCounts" convex/_generated/api.d.ts
+rg "videoClipCounts|stitchCounts" convex/_generated/api.d.ts
 ```
 
 4. Run each aggregate backfill to completion in the target deployment.

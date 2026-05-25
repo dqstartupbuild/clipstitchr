@@ -1,25 +1,42 @@
 "use client";
 
 import { Pause, Play, RotateCcw } from "lucide-react";
-import { LongrSequenceVideoLayer } from "@/app/_components/longr/LongrSequenceVideoLayer";
+import { useEffect, useRef, useState } from "react";
+import { StitchrSequenceVideoLayer } from "@/app/_components/stitchr/StitchrSequenceVideoLayer";
+import { TextOverlayBox } from "@/app/_components/stitchr/TextOverlayBox";
+import { TextOverlayQuickControls } from "@/app/_components/stitchr/TextOverlayQuickControls";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { useLongrSequenceVideoPlayer } from "@/lib/clipstitchr/hooks/useLongrSequenceVideoPlayer";
+import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getTextOverlayIsVisible } from "@/lib/clipstitchr/utils/getTextOverlayIsVisible";
 
-type LongrSequenceVideoPlayerProps = {
+type StitchrSequenceVideoPlayerProps = {
   clips: VideoClip[];
+  includeAudioFlags: boolean[];
   playbackRates: VideoPlaybackRate[];
+  textOverlay: TextOverlay | null;
+  totalDuration: number;
   trimRanges: VideoTrimRange[];
+  onPlaybackTimeChange: (currentTime: number) => void;
+  onTextOverlayChange: (textOverlay: TextOverlay) => void;
 };
 
-export function LongrSequenceVideoPlayer({
+export function StitchrSequenceVideoPlayer({
   clips,
+  includeAudioFlags,
   playbackRates,
+  textOverlay,
+  totalDuration,
   trimRanges,
-}: LongrSequenceVideoPlayerProps) {
+  onPlaybackTimeChange,
+  onTextOverlayChange,
+}: StitchrSequenceVideoPlayerProps) {
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const [areTextControlsOpen, setAreTextControlsOpen] = useState(false);
   const {
     activeIndex,
     currentTime,
@@ -31,19 +48,36 @@ export function LongrSequenceVideoPlayer({
     seekTo,
     setVideoRef,
     togglePlayback,
-    totalDuration,
   } = useLongrSequenceVideoPlayer({ playbackRates, trimRanges });
   const progressValue = Math.min(currentTime, totalDuration);
+  const isTextOverlayInRange =
+    textOverlay &&
+    currentTime >= textOverlay.startTime &&
+    currentTime <= textOverlay.endTime;
+  const visibleTextOverlay =
+    textOverlay &&
+    (getTextOverlayIsVisible(textOverlay, currentTime) || isTextOverlayInRange)
+      ? textOverlay
+      : null;
+
+  useEffect(() => {
+    onPlaybackTimeChange(currentTime);
+  }, [currentTime, onPlaybackTimeChange]);
 
   return (
-    <div className="p-4">
-      <div className="relative mx-auto aspect-[9/16] w-full max-w-[340px] overflow-hidden rounded-lg bg-slate-950">
+    <div>
+      <div
+        ref={stageRef}
+        className="relative mx-auto aspect-[9/16] w-full max-w-[292px] overflow-hidden rounded-lg bg-slate-950"
+        style={{ containerType: "size" }}
+      >
         {clips.length ? (
           clips.map((clip, index) => (
-            <LongrSequenceVideoLayer
-              key={clip.id}
+            <StitchrSequenceVideoLayer
+              key={`${clip.id}-${index}`}
               clip={clip}
               isActive={activeIndex === index}
+              isMuted={!includeAudioFlags[index]}
               playbackRate={playbackRates[index] ?? 1}
               videoRef={(video) => setVideoRef(index, video)}
               onEnded={() => handleEnded(index)}
@@ -56,12 +90,30 @@ export function LongrSequenceVideoPlayer({
             Preview unavailable
           </div>
         )}
+        {visibleTextOverlay ? (
+          <TextOverlayBox
+            emptyLabel="Text"
+            textOverlay={visibleTextOverlay}
+            stageRef={stageRef}
+            totalDuration={totalDuration}
+            onChange={onTextOverlayChange}
+            onOpenStyleControls={() => setAreTextControlsOpen(true)}
+          />
+        ) : null}
+        {visibleTextOverlay && areTextControlsOpen ? (
+          <TextOverlayQuickControls
+            textOverlay={visibleTextOverlay}
+            totalDuration={totalDuration}
+            onChange={onTextOverlayChange}
+            onClose={() => setAreTextControlsOpen(false)}
+          />
+        ) : null}
       </div>
       <div className="mt-3 flex justify-end">
         <div className="flex items-center gap-2">
           <IconButton
             type="button"
-            label={isPlaying ? "Pause Long preview" : "Play Long preview"}
+            label={isPlaying ? "Pause preview" : "Play preview"}
             icon={
               isPlaying ? (
                 <Pause aria-hidden className="h-4 w-4" />
@@ -73,7 +125,7 @@ export function LongrSequenceVideoPlayer({
           />
           <IconButton
             type="button"
-            label="Replay Long preview"
+            label="Restart preview"
             icon={<RotateCcw aria-hidden className="h-4 w-4" />}
             onClick={restart}
           />
@@ -82,7 +134,7 @@ export function LongrSequenceVideoPlayer({
       <div className="mt-3 flex items-center gap-3">
         <input
           type="range"
-          aria-label="Long preview time"
+          aria-label="Preview time"
           min={0}
           max={totalDuration}
           step={0.05}

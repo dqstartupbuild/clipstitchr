@@ -11,12 +11,12 @@ import { cliprMetadataValidator } from "./validators/cliprMetadata";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { clipTypeValidator } from "./validators/clipType";
-import { longrClipSegmentValidator } from "./validators/longrClipSegment";
-import { longrMusicClipValidator } from "./validators/longrMusicClip";
 import { musicTrackSourceValidator } from "./validators/musicTrackSource";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
 import { replicatePredictionStatusValidator } from "./validators/replicatePredictionStatus";
+import { stitchrModeValidator } from "./validators/stitchrMode";
+import { stitchSequenceSegmentValidator } from "./validators/stitchSequenceSegment";
 import { swiprBackgroundSourceValidator } from "./validators/swiprBackgroundSource";
 import { swiprProductSourceTypeValidator } from "./validators/swiprProductSourceType";
 import { swiprSlideValidator } from "./validators/swiprSlide";
@@ -140,6 +140,7 @@ export default defineSchema({
   stitches: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    mode: v.optional(stitchrModeValidator),
     name: v.string(),
     ugcClipId: v.string(),
     demoClipId: v.string(),
@@ -147,6 +148,7 @@ export default defineSchema({
     demoClipName: v.string(),
     ugcTrimRange: v.optional(videoTrimRangeValidator),
     demoTrimRange: v.optional(videoTrimRangeValidator),
+    sequenceSegments: v.optional(v.array(stitchSequenceSegmentValidator)),
     stitchObject: v.optional(r2ObjectValidator),
     posterObject: v.optional(r2ObjectValidator),
     posterVersion: v.optional(v.number()),
@@ -161,24 +163,6 @@ export default defineSchema({
     ugcPlaybackRate: v.optional(videoPlaybackRateValidator),
     music: v.optional(stitchMusicMetadataValidator),
     textOverlay: v.optional(textOverlayValidator),
-    createdAt: v.string(),
-  })
-    .index("by_owner_created", ["ownerId", "createdAt"])
-    .index("by_owner_id", ["ownerId", "id"]),
-  longrVideos: defineTable({
-    ownerId: v.string(),
-    id: v.string(),
-    name: v.string(),
-    clipSegments: v.array(longrClipSegmentValidator),
-    musicClips: v.optional(v.array(longrMusicClipValidator)),
-    longrObject: r2ObjectValidator,
-    posterObject: v.optional(r2ObjectValidator),
-    posterVersion: v.optional(v.number()),
-    mimeType: v.string(),
-    size: v.number(),
-    width: v.number(),
-    height: v.number(),
-    duration: v.number(),
     createdAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])

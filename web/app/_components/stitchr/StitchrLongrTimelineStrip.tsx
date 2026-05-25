@@ -1,23 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { LongrTimelineCard } from "@/app/_components/longr/LongrTimelineCard";
+import { StitchrLongrTimelineCard } from "@/app/_components/stitchr/StitchrLongrTimelineCard";
 import { Panel } from "@/app/_components/ui/Panel";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
-type LongrTimelineStripProps = {
+type StitchrLongrTimelineStripProps = {
   clips: VideoClipMetadata[];
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onMoveClip: (draggedId: string, targetId: string) => void;
   onRemoveClip: (id: string) => void;
 };
 
-export function LongrTimelineStrip({
+export function StitchrLongrTimelineStrip({
   clips,
   onLoadPoster,
   onMoveClip,
   onRemoveClip,
-}: LongrTimelineStripProps) {
+}: StitchrLongrTimelineStripProps) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
   if (!clips.length) {
@@ -39,12 +39,11 @@ export function LongrTimelineStrip({
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2">
         {clips.map((clip, index) => (
-          <LongrTimelineCard
+          <StitchrLongrTimelineCard
             key={clip.id}
             clip={clip}
             index={index}
             isDragging={draggingId === clip.id}
-            onLoadPoster={onLoadPoster}
             onDragStart={setDraggingId}
             onDrop={(targetId) => {
               if (draggingId && draggingId !== targetId) {
@@ -53,6 +52,7 @@ export function LongrTimelineStrip({
 
               setDraggingId(null);
             }}
+            onLoadPoster={onLoadPoster}
             onRemove={onRemoveClip}
           />
         ))}

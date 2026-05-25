@@ -86,7 +86,7 @@ Deployment choices and where those variables live are documented in
 | --- | --- | --- |
 | `upload-normalization` | Original video uploaded to R2 as `raw-video` | Normalized 9:16 video, poster image, final `videoClips` record |
 | `stitchr-export` | Saved UGC clips, one saved Demo clip, copied trims, per-stitch text overlay, audio settings | One finished stitch per selected UGC, poster images, final `stitches` records |
-| `longr-export` | Saved sequence clips, copied trims, output metadata | One finished Longr video, poster image, final `longrVideos` record |
+| `stitchr-longr-export` | Saved sequence clips, copied trims, output metadata | One finished Stitch from the ordered Longr-mode sequence, poster image, final `stitches` record |
 | `clipr-finalization` | Provider-generated avatar video already copied to R2 and referenced by a Clipr job | Normalized final Clip video, poster image, final `videoClips` record |
 | `swapr-finalization` | Provider output URL and Swapr metadata already recorded server-side | Normalized UGC clip, poster image, final `videoClips` record |
 
@@ -102,7 +102,7 @@ Durability starts at different points for different workflows:
 | --- | --- |
 | New video upload | The raw source upload finishes and the `upload-normalization` job exists in Convex |
 | Stitchr | The `stitchr-export` job exists in Convex |
-| Longr | The `longr-export` job exists in Convex |
+| Stitchr Longr mode | The `stitchr-longr-export` job exists in Convex |
 | Clipr final video preparation | The provider avatar video object is saved to R2 and the `clipr-finalization` job exists |
 | Swapr final video preparation | The provider output URL/metadata is recorded and the `swapr-finalization` job exists |
 

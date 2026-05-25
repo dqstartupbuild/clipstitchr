@@ -60,6 +60,7 @@ const mocks = vi.hoisted(() => ({
     error: null,
     progress: 0,
     status: "idle",
+    stitchLongrSequence: vi.fn(),
     stitchVideos: vi.fn(),
     stitches: [],
     totalCount: 0,
@@ -241,8 +242,13 @@ function queueStitchrState(
     includeDemoAudio?: boolean;
     includeUgcAudio?: boolean;
     isGeneratingAutoText?: boolean;
+    loadedLongrClipsById?: Record<string, unknown>;
+    longrTextOverlay?: TextOverlay | null;
+    longrTimelineClipIds?: string[];
+    mode?: "normal" | "longr";
     selectedAutoTextProductId?: string;
     selectedDemoId?: string | null;
+    selectedDemoIds?: string[];
     selectedMusicTrack?: SharedMusicTrack | null;
     selectedUgcIds?: string[];
     textOverlaysByUgcId?: Record<string, TextOverlay | null>;
@@ -252,21 +258,26 @@ function queueStitchrState(
 ) {
   mocks.stateQueue.push(
     overrides.addMusic ?? false,
+    overrides.mode ?? "normal",
     overrides.includeDemoAudio ?? false,
     overrides.includeUgcAudio ?? false,
     overrides.demoPlaybackRate ?? 1,
     overrides.ugcPlaybackRate ?? 1,
     overrides.selectedMusicTrack ?? null,
     overrides.textOverlaysByUgcId ?? {},
+    overrides.longrTextOverlay ?? null,
     overrides.selectedAutoTextProductId ?? "",
     overrides.demoProductFilterId ?? "all",
     overrides.isGeneratingAutoText ?? false,
     overrides.autoTextMessage ?? null,
     overrides.ugcTrimRangesByClipId ?? {},
     overrides.demoTrimRangesByClipId ?? {},
+    overrides.loadedLongrClipsById ?? {},
     overrides.selectedUgcIds ?? [],
     overrides.activePreviewUgcId,
     overrides.selectedDemoId,
+    overrides.selectedDemoIds ?? [],
+    overrides.longrTimelineClipIds ?? [],
   );
 }
 
@@ -278,6 +289,7 @@ describe("StitchrPageClient", () => {
     mocks.clipLibraryState.isLoading = false;
     setClipLibraryVideoGroups();
     mocks.productState.products = [createProduct()];
+    mocks.stitchrState.stitchLongrSequence.mockResolvedValue(undefined);
     mocks.stitchrState.stitchVideos.mockResolvedValue(undefined);
     mocks.generateCliprText.mockResolvedValue({
       hook: "Generated hook",

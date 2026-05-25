@@ -3,14 +3,12 @@ import { HIDE_UPLOAD_CONTROLS_EVENT_NAME } from "@/lib/clipstitchr/constants/hid
 import { SHOW_UPLOAD_CONTROLS_EVENT_NAME } from "@/lib/clipstitchr/constants/showUploadControlsEventName";
 import { UPLOAD_CONTROLS_SEARCH_PARAM_VALUE } from "@/lib/clipstitchr/constants/uploadControlsSearchParam";
 import { applyCssColorAlpha } from "@/lib/clipstitchr/utils/applyCssColorAlpha";
-import { clampLongrMusicClip } from "@/lib/clipstitchr/utils/clampLongrMusicClip";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { createBlobFromDataUrl } from "@/lib/clipstitchr/utils/createBlobFromDataUrl";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { createSwaprSegmentTrimRanges } from "@/lib/clipstitchr/utils/createSwaprSegmentTrimRanges";
 import { dispatchHideUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchHideUploadControlsEvent";
 import { dispatchShowUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchShowUploadControlsEvent";
-import { filterLongrVideosByName } from "@/lib/clipstitchr/utils/filterLongrVideosByName";
 import { filterSwipesBySearchQuery } from "@/lib/clipstitchr/utils/filterSwipesBySearchQuery";
 import { filterSwiprBackgroundsBySearchQuery } from "@/lib/clipstitchr/utils/filterSwiprBackgroundsBySearchQuery";
 import { getAvatarLightingPrompt } from "@/lib/clipstitchr/utils/getAvatarLightingPrompt";
@@ -22,8 +20,6 @@ import { getCssColorHex } from "@/lib/clipstitchr/utils/getCssColorHex";
 import { getGeneratedAvatarPhotoName } from "@/lib/clipstitchr/utils/getGeneratedAvatarPhotoName";
 import { getHexColorLuminance } from "@/lib/clipstitchr/utils/getHexColorLuminance";
 import { getInitialUploadLibraryTab } from "@/lib/clipstitchr/utils/getInitialUploadLibraryTab";
-import { getLongrTotalDuration } from "@/lib/clipstitchr/utils/getLongrTotalDuration";
-import { getLongrVideoName } from "@/lib/clipstitchr/utils/getLongrVideoName";
 import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
 import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
 import { getSwiprBackgroundSearchText } from "@/lib/clipstitchr/utils/getSwiprBackgroundSearchText";
@@ -35,13 +31,11 @@ import { resizeSwiprSlides } from "@/lib/clipstitchr/utils/resizeSwiprSlides";
 import { waitForSwaprPollInterval } from "@/lib/clipstitchr/utils/waitForSwaprPollInterval";
 import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightingOption";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
-import type { LongrVideoMetadata } from "@/lib/clipstitchr/types/LongrVideoMetadata";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSlide } from "@/lib/clipstitchr/types/SwiprSlide";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
-import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
 function createTextOverlay(overrides: Partial<TextOverlay> = {}): TextOverlay {
   return {
@@ -228,18 +222,6 @@ describe("additional utility coverage", () => {
     );
     expect(getSwiprBackgroundSearchText(background)).toContain("studio blue");
     expect(
-      filterLongrVideosByName(
-        [{ id: "longr_1", name: "Launch Compilation" } as LongrVideoMetadata],
-        "launch",
-      ),
-    ).toHaveLength(1);
-    expect(
-      filterLongrVideosByName(
-        [{ id: "longr_1", name: "Launch Compilation" } as LongrVideoMetadata],
-        "missing",
-      ),
-    ).toEqual([]);
-    expect(
       getRecentStitches(
         [
           { createdAt: "2026-01-01T00:00:00.000Z", id: "old" } as Stitch,
@@ -255,18 +237,9 @@ describe("additional utility coverage", () => {
       }),
     ).toBe("00:03 - 00:12 (00:09)");
     expect(getStitchTrimRangeLabel()).toBeUndefined();
-    expect(
-      getLongrTotalDuration([
-        {
-          defaultTrimRange: { end: 8, start: 2 },
-          duration: 10,
-        } as VideoClipMetadata,
-        { duration: 4 } as VideoClipMetadata,
-      ]),
-    ).toBe(10);
   });
 
-  it("resizes Swipr slides and clamps Longr music clips", () => {
+  it("resizes Swipr slides", () => {
     const slides: SwiprSlide[] = [
       { id: "slide_1", textOverlay: createTextOverlay() },
       { id: "slide_2", textOverlay: createTextOverlay() },
@@ -276,29 +249,6 @@ describe("additional utility coverage", () => {
 
     expect(resizeSwiprSlides(slides, 3)).toHaveLength(3);
     expect(resizeSwiprSlides(slides.slice(0, 1), 3)).toHaveLength(3);
-    expect(
-      clampLongrMusicClip({
-        clip: {
-          durationSeconds: -1,
-          id: "music_1",
-          sourceEndSeconds: 20,
-          sourceStartSeconds: -5,
-          timelineStartSeconds: 20,
-          trackId: "track_1",
-          trackTitle: "Track",
-          volume: 2,
-        },
-        timelineDurationSeconds: 10,
-      }),
-    ).toEqual(
-      expect.objectContaining({
-        durationSeconds: 0.1,
-        sourceEndSeconds: 0.1,
-        sourceStartSeconds: 0,
-        timelineStartSeconds: 10,
-        volume: 1,
-      }),
-    );
   });
 
   it("reads prediction responses and dispatches upload-control events", async () => {
@@ -363,7 +313,7 @@ describe("additional utility coverage", () => {
     expect(window.setTimeout).toHaveBeenCalledWith(expect.any(Function), 3000);
   });
 
-  it("reads initial upload tabs and date-based Longr names", () => {
+  it("reads initial upload tabs", () => {
     expect(getInitialUploadLibraryTab()).toBe("all");
 
     vi.stubGlobal("window", {
@@ -371,12 +321,6 @@ describe("additional utility coverage", () => {
         search: "?tab=swipes",
       },
     });
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-05-22T12:00:00.000Z"));
-
     expect(getInitialUploadLibraryTab()).toBe("swipes");
-    expect(getLongrVideoName()).toBe("clipstitchr-longr-2026-05-22.mp4");
-
-    vi.useRealTimers();
   });
 });

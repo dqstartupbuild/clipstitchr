@@ -3,8 +3,6 @@ import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetad
 import type { ClipLibraryCounts } from "@/lib/clipstitchr/types/ClipLibraryCounts";
 import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
 import type { ClipLibraryVideoGroup } from "@/lib/clipstitchr/types/ClipLibraryVideoGroup";
-import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
-import type { LongrVideoMetadata } from "@/lib/clipstitchr/types/LongrVideoMetadata";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -15,7 +13,6 @@ import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 export type ClipLibraryValue = {
   clips: VideoClipMetadata[];
   counts: ClipLibraryCounts;
-  longrVideos: LongrVideoMetadata[];
   stitches: Stitch[];
   sortOrder: ClipLibrarySortOrder;
   videoGroups: {
@@ -26,20 +23,15 @@ export type ClipLibraryValue = {
   };
   isLoading: boolean;
   hasMoreClips: boolean;
-  hasMoreLongrVideos: boolean;
   hasMoreStitches: boolean;
   isLoadingMoreClips: boolean;
-  isLoadingMoreLongrVideos: boolean;
   isLoadingMoreStitches: boolean;
   error: string | null;
   refresh: () => Promise<void>;
   setSortOrder: (sortOrder: ClipLibrarySortOrder) => void;
   loadClip: (id: string) => Promise<VideoClip | null>;
   loadClipPoster: (id: string) => Promise<Blob | null>;
-  loadLongrPoster: (id: string) => Promise<Blob | null>;
-  loadLongrVideo: (id: string) => Promise<LongrVideo | null>;
   loadMoreClips: () => void;
-  loadMoreLongrVideos: () => void;
   loadMoreStitches: () => void;
   loadStitchPoster: (id: string) => Promise<Blob | null>;
   removeClip: (id: string) => Promise<void>;
@@ -74,6 +66,5 @@ export type ClipLibraryValue = {
     stitch: Stitch,
     textOverlay: TextOverlay | null,
   ) => Promise<void>;
-  removeLongrVideo: (id: string) => Promise<void>;
   removeStitch: (id: string) => Promise<void>;
 };

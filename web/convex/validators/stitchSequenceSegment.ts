@@ -3,7 +3,7 @@ import { clipTypeValidator } from "./clipType";
 import { videoPlaybackRateValidator } from "./videoPlaybackRate";
 import { videoTrimRangeValidator } from "./videoTrimRange";
 
-export const longrClipSegmentValidator = v.object({
+export const stitchSequenceSegmentValidator = v.object({
   clipId: v.string(),
   clipName: v.string(),
   clipType: clipTypeValidator,

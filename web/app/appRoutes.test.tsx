@@ -9,7 +9,6 @@ import DashboardPage from "@/app/dashboard/page";
 import DashboardLayout from "@/app/dashboard/layout";
 import AvatarsPage from "@/app/dashboard/avatars/page";
 import CliprPage from "@/app/dashboard/clipr/page";
-import LongrPage from "@/app/dashboard/longr/page";
 import SettingsPage from "@/app/dashboard/settings/page";
 import StitchesPage from "@/app/dashboard/stitches/page";
 import StitchrPage from "@/app/dashboard/stitchr/page";
@@ -73,10 +72,6 @@ vi.mock("@/app/dashboard/clipr/CliprPageClient", () => ({
   CliprPageClient: () => <main>Clipr client</main>,
 }));
 
-vi.mock("@/app/dashboard/longr/LongrPageClient", () => ({
-  LongrPageClient: () => <main>Longr client</main>,
-}));
-
 vi.mock("@/app/dashboard/settings/SettingsPageClient", () => ({
   SettingsPageClient: () => <main>Settings client</main>,
 }));
@@ -131,7 +126,6 @@ describe("app route wrappers", () => {
         <DashboardPage />
         <AvatarsPage />
         <CliprPage />
-        <LongrPage />
         <SettingsPage />
         <StitchrPage />
         <SwaprPage />
@@ -143,7 +137,6 @@ describe("app route wrappers", () => {
     expect(markup).toContain("Dashboard client");
     expect(markup).toContain("Avatars client");
     expect(markup).toContain("Clipr client");
-    expect(markup).toContain("Longr client");
     expect(markup).toContain("Settings client");
     expect(markup).toContain("Stitchr client");
     expect(markup).toContain("Swapr client");
