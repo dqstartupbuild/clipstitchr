@@ -1,10 +1,13 @@
 "use client";
 
+import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
+import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
+import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
@@ -55,14 +58,42 @@ export function StitchesSection({
   const pagination = usePagination(stitches, {
     pageSize: uploadLibraryPageSize,
   });
+  const pageItemIds = useMemo(
+    () => pagination.pageItems.map((stitch) => stitch.id),
+    [pagination.pageItems],
+  );
+  const batchDelete = useLibraryBatchDelete({
+    itemIds: pageItemIds,
+    itemName: "stitch",
+    itemPluralName: "stitches",
+    onDelete,
+  });
 
   return (
     <section id={id}>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-text-primary">{title}</h2>
-        <span className="text-sm font-semibold text-text-tertiary">
-          {totalCount ?? stitches.length}
-        </span>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold text-text-primary">{title}</h2>
+          <span className="text-sm font-semibold text-text-tertiary">
+            {totalCount ?? stitches.length}
+          </span>
+        </div>
+        {stitches.length ? (
+          <LibraryBatchActionBar
+            areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
+            isDeletingSelected={batchDelete.isDeletingSelected}
+            isSelecting={batchDelete.isSelecting}
+            selectedCount={batchDelete.selectedCount}
+            visibleItemCount={batchDelete.visibleItemCount}
+            onClearSelection={batchDelete.clearSelection}
+            onDeleteSelected={() => {
+              void batchDelete.deleteSelectedItems();
+            }}
+            onSelectVisible={batchDelete.selectVisibleItems}
+            onStartSelecting={batchDelete.startSelecting}
+            onStopSelecting={batchDelete.stopSelecting}
+          />
+        ) : null}
       </div>
       {stitches.length ? (
         <>
@@ -71,10 +102,17 @@ export function StitchesSection({
               <StitchCard
                 key={stitch.id}
                 stitch={stitch}
+                isSelected={batchDelete.selectedIds.has(stitch.id)}
+                isSelectionDisabled={batchDelete.isDeletingSelected}
                 onDelete={onDelete}
                 onGenerateMusic={onGenerateMusic}
                 onLoadClip={onLoadClip}
                 onLoadPoster={onLoadPoster}
+                onSelect={
+                  batchDelete.isSelecting
+                    ? () => batchDelete.toggleItemSelection(stitch.id)
+                    : undefined
+                }
                 onUpdateMusic={onUpdateMusic}
                 onUpdateTextOverlay={onUpdateTextOverlay}
               />

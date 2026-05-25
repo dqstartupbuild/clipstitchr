@@ -38,10 +38,13 @@ type VideoClipCardProps = {
   products?: ProductProfile[];
   productName?: string;
   avatarCreatorError?: string | null;
+  isSelected?: boolean;
+  isSelectionDisabled?: boolean;
   isCreatingAvatarFromClip?: boolean;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
+  onSelect?: () => void;
   onUpdateMetadata: (
     clip: VideoClipMetadata,
     metadata: AssetMetadataUpdate,
@@ -72,10 +75,13 @@ export function VideoClipCard({
   products = [],
   productName,
   avatarCreatorError = null,
+  isSelected = false,
+  isSelectionDisabled = false,
   isCreatingAvatarFromClip = false,
   onLoadClip,
   onLoadPoster,
   onDelete,
+  onSelect,
   onGenerateCliprMusic,
   onUpdateCliprMusic,
   onUpdateCliprTextOverlay,
@@ -199,8 +205,11 @@ export function VideoClipCard({
         clip={clip}
         productName={productName}
         displayDuration={displayDuration}
+        isSelected={isSelected}
+        isSelectionDisabled={isSelectionDisabled}
         onLoadClip={onLoadClip}
         onLoadPoster={onLoadPoster}
+        onSelect={onSelect}
         trimEditor={{
           initialTrimRange: defaultTrimRange,
           saveLabel: "Save trim",

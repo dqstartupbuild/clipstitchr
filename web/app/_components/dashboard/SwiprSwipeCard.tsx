@@ -10,6 +10,7 @@ import {
   type MediaCardActionMenuItem,
 } from "@/app/_components/ui/MediaCardActionMenu";
 import { Panel } from "@/app/_components/ui/Panel";
+import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
@@ -23,10 +24,13 @@ type SwiprSwipeCardProps = {
   background: SwiprBackgroundAsset;
   backgrounds: SwiprBackgroundAsset[];
   isSaving?: boolean;
+  isSelected?: boolean;
+  isSelectionDisabled?: boolean;
   swipe: SwiprSwipe;
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
+  onSelect?: () => void;
   onSave: (input: SaveSwiprSwipeInput) => Promise<SwiprSwipe>;
 };
 
@@ -34,10 +38,13 @@ export function SwiprSwipeCard({
   background,
   backgrounds,
   isSaving = false,
+  isSelected = false,
+  isSelectionDisabled = false,
   swipe,
   onLoadBackgroundBlob,
   onLoadPoster,
   onDelete,
+  onSelect,
   onSave,
 }: SwiprSwipeCardProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -162,7 +169,12 @@ export function SwiprSwipeCard({
 
   return (
     <>
-      <Panel className="w-full max-w-[260px] justify-self-center overflow-hidden">
+      <Panel
+        className={[
+          "relative w-full max-w-[260px] justify-self-center overflow-hidden",
+          isSelected ? "!border-accent ring-2 ring-accent/15" : "",
+        ].join(" ")}
+      >
         <button
           type="button"
           aria-label={`Open details for ${swipe.name}`}
@@ -188,6 +200,15 @@ export function SwiprSwipeCard({
             </span>
           ) : null}
         </button>
+        {onSelect ? (
+          <SelectionCheckboxButton
+            isSelected={isSelected}
+            label={`${isSelected ? "Deselect" : "Select"} ${swipe.name}`}
+            disabled={isSelectionDisabled}
+            className="absolute right-2 top-2 z-10"
+            onClick={onSelect}
+          />
+        ) : null}
         <div className="p-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">

@@ -8,6 +8,7 @@ import {
   MediaCardActionMenu,
   type MediaCardActionMenuItem,
 } from "@/app/_components/ui/MediaCardActionMenu";
+import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
 import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExportBlob";
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
@@ -24,10 +25,13 @@ import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent
 
 type StitchCardProps = {
   stitch: Stitch;
+  isSelected?: boolean;
+  isSelectionDisabled?: boolean;
   onDelete: (id: string) => void | Promise<void>;
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
+  onSelect?: () => void;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
@@ -40,10 +44,13 @@ type StitchCardProps = {
 
 export function StitchCard({
   stitch,
+  isSelected = false,
+  isSelectionDisabled = false,
   onDelete,
   onGenerateMusic,
   onLoadClip,
   onLoadPoster,
+  onSelect,
   onUpdateMusic,
   onUpdateTextOverlay,
 }: StitchCardProps) {
@@ -273,7 +280,12 @@ export function StitchCard({
 
   return (
     <>
-      <div className="mx-auto h-full w-full max-w-[280px] min-w-0 overflow-hidden rounded-lg border border-border bg-white p-2 transition-colors">
+      <div
+        className={[
+          "mx-auto h-full w-full max-w-[280px] min-w-0 overflow-hidden rounded-lg border bg-white p-2 transition-colors",
+          isSelected ? "border-accent ring-2 ring-accent/15" : "border-border",
+        ].join(" ")}
+      >
         <div className="relative overflow-hidden rounded-md bg-slate-100">
           <button
             type="button"
@@ -302,6 +314,15 @@ export function StitchCard({
           <span className="pointer-events-none absolute left-2 top-2 max-w-[75%] truncate rounded-md border border-purple-200 bg-white/95 px-2 py-1 text-[11px] font-bold leading-none text-accent-dark shadow-sm shadow-slate-900/10">
             STITCH
           </span>
+          {onSelect ? (
+            <SelectionCheckboxButton
+              isSelected={isSelected}
+              label={`${isSelected ? "Deselect" : "Select"} ${stitch.name}`}
+              disabled={isSelectionDisabled}
+              className="absolute right-2 top-2 z-10"
+              onClick={onSelect}
+            />
+          ) : null}
         </div>
         <div className="mt-3 flex items-start justify-between gap-2">
           <button
