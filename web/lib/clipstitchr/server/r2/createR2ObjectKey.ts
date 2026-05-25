@@ -66,16 +66,6 @@ const objectKindConfig: Record<
     baseName: "scene",
     fallbackExtension: "mp4",
   },
-  "longr-video": {
-    directory: "longr",
-    baseName: "video",
-    fallbackExtension: "mp4",
-  },
-  "longr-poster": {
-    directory: "longr",
-    baseName: "poster",
-    fallbackExtension: "jpg",
-  },
   "stitch-music-audio": {
     directory: "stitch-music",
     baseName: "music",

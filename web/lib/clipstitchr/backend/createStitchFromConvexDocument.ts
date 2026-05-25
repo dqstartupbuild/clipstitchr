@@ -14,6 +14,7 @@ export function createStitchFromConvexDocument({
 }: CreateStitchFromConvexDocumentOptions): Stitch {
   return {
     id: stitch.id,
+    mode: stitch.mode,
     name: stitch.name,
     ugcClipId: stitch.ugcClipId,
     demoClipId: stitch.demoClipId,
@@ -21,6 +22,7 @@ export function createStitchFromConvexDocument({
     demoClipName: stitch.demoClipName,
     ugcTrimRange: stitch.ugcTrimRange,
     demoTrimRange: stitch.demoTrimRange,
+    sequenceSegments: stitch.sequenceSegments,
     stitchObject: stitch.stitchObject,
     blob,
     posterObject: stitch.posterObject,

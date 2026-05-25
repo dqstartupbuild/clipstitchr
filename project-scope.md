@@ -225,26 +225,24 @@ enable/disable, or adjust volume. Saved stitches store source metadata, text,
 source audio flags, and music settings; Media Bunny creates the clean stitch and
 final music-mixed download on demand in the browser.
 
-### 4.6 Longr Long-Form Builder
+### 4.6 Stitchr Longr Mode
 
-Longr is a standalone dashboard tool at `/dashboard/longr`. It is not a Stitchr
-mode toggle.
+Longr is a Stitchr mode toggle, not a standalone dashboard tool. Normal mode
+keeps the batch UGC-to-Demo workflow. Longr mode creates one saved Stitch from
+an ordered sequence of selected source clips.
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
-| 1 | User selects multiple saved UGC clips and/or Demo videos | ✅ | ✅ |
-| 2 | Selection order becomes play order | ✅ | ✅ |
-| 3 | Compact horizontal timeline strip supports drag reordering | ✅ | ✅ |
-| 4 | One Build action creates a single combined 9:16 MP4 | ✅ | ✅ |
-| 5 | Combined selected duration is capped at 5 minutes | ✅ | ✅ |
-| 6 | Running duration total shows remaining time | ✅ | ✅ |
-| 7 | Saved Longr outputs appear in the Content Library Longs tab | ✅ | ✅ |
-| 8 | Shared music tracks can be added multiple times, duplicated, trimmed, moved, extended, removed, and mixed into the Longr output | ✅ | ✅ |
+| 1 | User toggles Stitchr between Normal and Longr mode | ✅ | ✅ |
+| 2 | Longr mode allows multiple saved UGC-compatible clips, Swapr clips, Clipr clips, and Demo videos | ✅ | ✅ |
+| 3 | Selected Longr clips appear in a compact horizontal timeline for drag reordering | ✅ | ✅ |
+| 4 | One Stitch action creates one saved Stitch from the ordered Longr sequence | ✅ | ✅ |
+| 5 | Longr mode uses the same trim, text overlay, source-audio, music, preview, and download model as normal Stitches | ✅ | ✅ |
+| 6 | Longr-mode Stitches appear in the Content Library Stitches tab | ✅ | ✅ |
 
-Longr uses the same browser-local Media Bunny output pattern as Stitchr, but it
-accepts an arbitrary ordered sequence instead of a UGC-to-Demo pairing. It uses
-the current default trim range for each source clip and saves one R2-backed
-output with ordered segment metadata and optional music clip metadata in Convex.
+Longr mode uses the same browser-local Media Bunny output pattern as Stitchr,
+but accepts an arbitrary ordered sequence instead of a UGC-to-Demo pairing.
+Saved outputs are Stitches with ordered segment metadata in Convex.
 
 ### 4.7 Carousel Generation
 
@@ -610,7 +608,7 @@ interface Stitch {
 ## 11. Key Constraints
 
 1. **Browser-first media processing:** Upload normalization, poster capture,
-   Stitchr export, Longr export, Clipr generated-scene composition, Clipr text
+   Stitchr export, Stitchr Longr-mode export, Clipr generated-scene composition, Clipr text
    overlay export, and Clipr music mixing happen client-side in the MVP.
 2. **Server-gated paid AI:** Clipr, Swapr, avatar photo, Swipr background, and
    music generation may call paid providers, but only through authenticated

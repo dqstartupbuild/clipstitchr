@@ -2,7 +2,7 @@ import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
-export type LongrClipSegment = {
+export type StitchSequenceSegment = {
   clipId: string;
   clipName: string;
   clipType: ClipType;

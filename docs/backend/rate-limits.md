@@ -100,7 +100,7 @@ Optional Replicate model overrides:
 - `CLIPR_GENERATED_VIDEO_MODEL_ID` defaults to `prunaai/p-video` for non-avatar
   Clipr generated scene video.
 - `CLIPR_MUSIC_MODEL_ID` defaults to `stability-ai/stable-audio-2.5` for
-  optional 60 second Clipr, Stitchr, Longr, and shared-library background music
+  optional 60 second Clipr, Stitchr, and shared-library background music
   generation. Generated music is copied to the shared music library and, when
   attached to a user's output or generated from the picker, to the user's
   personal R2 prefix.
@@ -145,7 +145,7 @@ Optional Replicate model overrides:
 | Clipr job polling | Reserved Clipr polling route and Convex job refreshes | 600/minute/user, burst 150 |
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
-| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `longrVideos.save`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
+| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
 | Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `videoClips.updateCliprTextOverlay`, `stitches.updateMusic`, `stitches.updateTextOverlay`, `stitches.updateRenderedVideo`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
@@ -174,11 +174,11 @@ for older Swipes, and one R2-backed poster image rendered from the first slide
 with its text overlay. The poster upload consumes the normal R2 upload signed
 URL and byte limits before `swipes.save`.
 
-Longr rendering is browser-local and has no provider cost unless the user opens
-the shared music picker and generates a new music track through
-`POST /api/music/generate`. The user-facing cap is 5 minutes of combined
-source-clip duration before build starts. Saving a Longr output still consumes
-the shared R2 upload limits and the shared Convex record-save limit.
+Stitchr Longr-mode rendering is browser-local and has no provider cost unless
+the user opens the shared music picker and generates a new music track through
+`POST /api/music/generate`. Saving the finished output stores a normal Stitch,
+so it consumes the shared R2 upload limits and the shared Convex record-save
+limit for `stitches.save`.
 
 Swipr AI background generation is separate from export: it calls the selected
 Replicate image model through `POST /api/swipr/backgrounds/generate`, consumes
@@ -287,7 +287,7 @@ request, R2 upload, or Convex save starts:
 | Photo upload with AI expansion | 1 file at once | Each source image may trigger paid outpainting before it is saved, so the UI keeps this workflow explicitly one-at-a-time. |
 | Video upload | 20 files at once | Each video usually creates 1 normalized video object, 1 poster object, and 1 Gemini video analysis request, fitting under the R2 upload, video-analysis, and Convex-save burst limits. |
 | Stitchr UGC batch | 20 selected UGC videos at once | Each selected UGC creates one editable stitch with the selected demo, copied trims, text, and audio settings. Creating the batch consumes Convex stitch saves and, when text is present, one stitch-poster R2 upload per output; export-time browser encoding runs only when the user downloads/exports. |
-| Longr selected duration | 5 minutes total | Longr creates one browser-rendered 9:16 video from the selected sequence. The cap limits browser encode time, output size, R2 upload bytes, and preview complexity. |
+| Stitchr Longr-mode output | 1 finished Stitch at a time | Longr mode creates one browser-rendered 9:16 Stitch from the ordered sequence. The one-at-a-time cap limits browser encode work, output size, R2 upload bytes, and preview complexity. |
 | Clipr generated scene batch | 1-6 provider scenes per job | 30 second non-avatar multi-scene jobs use 3 p-video scenes; 60 second non-avatar jobs use 6 scenes. The server consumes generated-video seconds before scene creation and caps each provider scene at 20 seconds. |
 
 These caps reduce partial batches and orphaned R2 objects. They do not replace

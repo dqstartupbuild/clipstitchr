@@ -3,9 +3,11 @@
 import { useCallback, useMemo, useState } from "react";
 import { SequencePreviewNavigator } from "@/app/_components/stitchr/SequencePreviewNavigator";
 import { SequenceVideoPlayer } from "@/app/_components/stitchr/SequenceVideoPlayer";
+import { StitchrSequenceVideoPlayer } from "@/app/_components/stitchr/StitchrSequenceVideoPlayer";
 import { TextOverlayEditor } from "@/app/_components/stitchr/TextOverlayEditor";
 import { Panel } from "@/app/_components/ui/Panel";
 import { useHorizontalSwipeNavigation } from "@/lib/clipstitchr/hooks/useHorizontalSwipeNavigation";
+import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -14,10 +16,15 @@ import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type SequencePreviewPanelProps = {
+  mode?: StitchrMode;
   previewUgcClips: VideoClipMetadata[];
   activeUgcId: string | null;
   ugcClip: VideoClip | null;
   demoClip: VideoClip | null;
+  sequenceClips?: VideoClip[];
+  sequenceIncludeAudioFlags?: boolean[];
+  sequencePlaybackRates?: VideoPlaybackRate[];
+  sequenceTrimRanges?: VideoTrimRange[];
   ugcTrimRange: VideoTrimRange | null;
   demoTrimRange: VideoTrimRange | null;
   demoPlaybackRate: VideoPlaybackRate;
@@ -32,10 +39,15 @@ type SequencePreviewPanelProps = {
 };
 
 export function SequencePreviewPanel({
+  mode = "normal",
   previewUgcClips,
   activeUgcId,
   ugcClip,
   demoClip,
+  sequenceClips = [],
+  sequenceIncludeAudioFlags = [],
+  sequencePlaybackRates = [],
+  sequenceTrimRanges = [],
   ugcTrimRange,
   demoTrimRange,
   demoPlaybackRate,
@@ -61,8 +73,25 @@ export function SequencePreviewPanel({
     ? getPlaybackRateDuration(demoTrimRange, demoPlaybackRate)
     : 0;
   const totalDuration = useMemo(
-    () => ugcDuration + demoDuration,
-    [demoDuration, ugcDuration],
+    () =>
+      mode === "longr"
+        ? sequenceTrimRanges.reduce(
+            (duration, trimRange, index) =>
+              duration +
+              getPlaybackRateDuration(
+                trimRange,
+                sequencePlaybackRates[index] ?? 1,
+              ),
+            0,
+          )
+        : ugcDuration + demoDuration,
+    [
+      demoDuration,
+      mode,
+      sequencePlaybackRates,
+      sequenceTrimRanges,
+      ugcDuration,
+    ],
   );
   const handleOverlayChange = useCallback(
     (nextTextOverlay: TextOverlay) => {
@@ -111,7 +140,34 @@ export function SequencePreviewPanel({
           Ad sequence
         </h2>
       </div>
-      {ugcClip && demoClip && ugcTrimRange && demoTrimRange ? (
+      {mode === "longr" && sequenceClips.length && sequenceTrimRanges.length ? (
+        <>
+          <StitchrSequenceVideoPlayer
+            key={sequenceClips
+              .map((clip, index) => {
+                const trimRange = sequenceTrimRanges[index];
+
+                return `${clip.id}:${trimRange?.start}:${trimRange?.end}:${sequencePlaybackRates[index] ?? 1}`;
+              })
+              .join("|")}
+            clips={sequenceClips}
+            includeAudioFlags={sequenceIncludeAudioFlags}
+            playbackRates={sequencePlaybackRates}
+            textOverlay={textOverlay}
+            totalDuration={totalDuration}
+            trimRanges={sequenceTrimRanges}
+            onTextOverlayChange={handleOverlayChange}
+            onPlaybackTimeChange={setPlaybackTime}
+          />
+          <TextOverlayEditor
+            textOverlay={textOverlay}
+            totalDuration={totalDuration}
+            ugcDuration={0}
+            currentTime={playbackTime}
+            onChange={onTextOverlayChange}
+          />
+        </>
+      ) : ugcClip && demoClip && ugcTrimRange && demoTrimRange ? (
         <>
           <SequencePreviewNavigator
             activeIndex={activePreviewIndex}

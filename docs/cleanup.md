@@ -27,8 +27,8 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
   - `PATCH /api/settings/products/[id]`
   - `POST /api/r2/delete-objects`
 - Added focused Convex coverage for Clipr jobs, media collections, products, rate limits, shared music tracks, Swipr backgrounds, and waitlist submission behavior.
-- Added focused hook coverage for clip/photo/Swipr libraries, Upload Processor, Stitchr, Longr, Swapr generation, Clipr generation, product state, avatar photo generation, avatar-from-UGC creation, video music details, and sequence players.
-- Added SSR render coverage for dashboard page clients and media preview components, including `VideoPreview`, `VideoClipMusicPreview`, and `LongVideoPreview`.
+- Added focused hook coverage for clip/photo/Swipr libraries, Upload Processor, Stitchr, Swapr generation, Clipr generation, product state, avatar photo generation, avatar-from-UGC creation, video music details, and sequence players.
+- Added SSR render coverage for dashboard page clients and media preview components, including `VideoPreview` and `VideoClipMusicPreview`.
 - Added focused Media/UI utility coverage for text overlay drawing, avatar-generation constants, and Clipr raw hook template resources.
 - Added follow-up next-sprint coverage for:
   - `POST /api/clipr/jobs`
@@ -56,23 +56,22 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
   - `createRetimedVideoSample`
   - `registerAacEncoderIfNeeded`
 - Added the 75% coverage continuation batch for:
-  - `LongVideoPreview`
   - `VideoPreview`
   - `LoadedStitchSequencePreview`
   - `CreateAvatarFromClipDialog`
   - `SwiprSwipeCard`
   - `VideoClipDetailsDialog`
-  - typed fixture updates for current `TextOverlay`, music metadata, shared track, Swipr slide, and Longr music clip shapes.
+  - typed fixture updates for current `TextOverlay`, music metadata, shared track, and Swipr slide shapes.
 - Reused the shared overlay style helper from:
   - `web/app/_components/stitchr/TextOverlayBox.tsx`
   - `web/app/_components/stitchr/TextOverlayPreviewBox.tsx`
   - `web/app/_components/swipr/SwiprStaticTextOverlayBox.tsx`
 - Replaced eager library hydration with paginated Convex metadata queries and lazy blob loaders:
-  - `videoClips.list`, `stitches.list`, and `longrVideos.list` now paginate metadata instead of collecting every document.
-  - `useClipLibraryState` no longer downloads poster blobs or full Longr blobs during dashboard/library load.
-  - Clip, stitch, and Longr poster blobs load on card demand; full Longr video blobs load only for preview/download.
-  - Dashboard, Uploads, Stitchr, and Longr library views now expose "load more" controls for paginated metadata.
-- Added focused coverage for paginated library queries, lazy library blob loading, lazy object URL cleanup, and Longr card lazy-download behavior.
+  - `videoClips.list` and `stitches.list` now paginate metadata instead of collecting every document.
+  - `useClipLibraryState` no longer downloads poster blobs during dashboard/library load.
+  - Clip and stitch poster blobs load on card demand.
+  - Dashboard, Uploads, and Stitchr library views now expose "load more" controls for paginated metadata.
+- Added focused coverage for paginated library queries, lazy library blob loading, and lazy object URL cleanup.
 - Added batched, cacheable image downloads for visible poster/thumbnail media:
   - `POST /api/r2/download-urls` signs up to 48 user-owned poster/thumbnail keys after one auth and R2-download rate-limit check.
   - Client poster and thumbnail loading now checks persistent browser Cache Storage first, batch-signs cache misses, and fetches image blobs with limited parallelism.

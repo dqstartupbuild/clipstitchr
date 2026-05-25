@@ -1,11 +1,7 @@
 import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { query } from "./_generated/server";
-import {
-  longrVideoCounts,
-  stitchCounts,
-  videoClipCounts,
-} from "./aggregateCounts";
+import { stitchCounts, videoClipCounts } from "./aggregateCounts";
 
 export const get = query({
   args: {
@@ -13,14 +9,8 @@ export const get = query({
   },
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const [
-      ugcClips,
-      demoClips,
-      cliprClips,
-      swapClips,
-      stitches,
-      longrVideos,
-    ] = await Promise.all([
+    const [ugcClips, demoClips, cliprClips, swapClips, stitches] =
+      await Promise.all([
       videoClipCounts.count(ctx, {
         bounds: { eq: "ugc" },
         namespace: ownerId,
@@ -38,13 +28,11 @@ export const get = query({
         namespace: ownerId,
       }),
       stitchCounts.count(ctx, { namespace: ownerId }),
-      longrVideoCounts.count(ctx, { namespace: ownerId }),
     ]);
 
     return {
       cliprClips,
       demoClips,
-      longrVideos,
       stitches,
       swapClips,
       ugcClips,

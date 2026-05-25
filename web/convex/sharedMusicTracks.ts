@@ -38,7 +38,7 @@ function clientTrackFields(
     providerModel?: string;
     providerPredictionId?: string;
     size: number;
-    source: "clipr" | "stitchr" | "longr" | "swipr" | "library";
+    source: "clipr" | "stitchr" | "swipr" | "library";
     style?: string;
     tags: string[];
     title: string;

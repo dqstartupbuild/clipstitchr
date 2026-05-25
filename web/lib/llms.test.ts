@@ -7,9 +7,8 @@ describe("createLlmsTxt", () => {
 
     expect(text).toContain("## Facts Block");
     expect(text).toContain("## Core Reading Path");
-    expect(text).toContain("- /docs/longr");
     expect(text).toContain("## Site Context");
-    expect(text).toContain("Longs");
+    expect(text).toContain("Stitchr includes a Longr mode");
     expect(text).not.toContain("- /dashboard");
   });
 });

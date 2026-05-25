@@ -9,8 +9,6 @@ import {
   useQuery,
 } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { createLongrVideoMetadataFromConvexDocument } from "@/lib/clipstitchr/backend/createLongrVideoMetadataFromConvexDocument";
-import { createLongrVideoFromConvexDocument } from "@/lib/clipstitchr/backend/createLongrVideoFromConvexDocument";
 import { createStitchFromConvexDocument } from "@/lib/clipstitchr/backend/createStitchFromConvexDocument";
 import { createVideoClipFromConvexDocument } from "@/lib/clipstitchr/backend/createVideoClipFromConvexDocument";
 import { createVideoClipMetadataFromConvexDocument } from "@/lib/clipstitchr/backend/createVideoClipMetadataFromConvexDocument";
@@ -29,7 +27,6 @@ import type { ClipLibraryCounts } from "@/lib/clipstitchr/types/ClipLibraryCount
 import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { ClipLibraryValue } from "@/lib/clipstitchr/types/ClipLibraryValue";
-import type { LongrVideo } from "@/lib/clipstitchr/types/LongrVideo";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
@@ -85,11 +82,6 @@ export function useClipLibraryState(): ClipLibraryValue {
     isAuthenticated ? { refreshNonce, sortOrder } : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
-  const longrVideoDocumentsQuery = usePaginatedQuery(
-    api.longrVideos.list,
-    isAuthenticated ? { refreshNonce, sortOrder } : "skip",
-    { initialNumItems: libraryMetadataPageSize },
-  );
   const aggregateCounts = useQuery(
     api.libraryCounts.get,
     isAuthenticated ? { refreshNonce } : "skip",
@@ -100,7 +92,6 @@ export function useClipLibraryState(): ClipLibraryValue {
   const demoClipDocuments = demoClipDocumentsQuery.results;
   const swapClipDocuments = swapClipDocumentsQuery.results;
   const stitchDocuments = stitchDocumentsQuery.results;
-  const longrVideoDocuments = longrVideoDocumentsQuery.results;
   const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
   const updateCliprMusicMutation = useMutation(api.videoClips.updateCliprMusic);
   const updateCliprTextOverlayMutation = useMutation(
@@ -112,10 +103,8 @@ export function useClipLibraryState(): ClipLibraryValue {
     api.stitches.updateTextOverlay,
   );
   const removeClipMutation = useMutation(api.videoClips.remove);
-  const removeLongrVideoMutation = useMutation(api.longrVideos.remove);
   const removeStitchMutation = useMutation(api.stitches.remove);
   const clipCacheRef = useRef(new Map<string, VideoClip>());
-  const longrVideoCacheRef = useRef(new Map<string, LongrVideo>());
   const posterBlobCacheRef = useRef(new Map<string, Blob>());
   const pendingPosterBlobLoadsRef = useRef(
     new Map<string, PendingPosterBlobLoad>(),
@@ -161,18 +150,10 @@ export function useClipLibraryState(): ClipLibraryValue {
       ),
     [stitchDocuments],
   );
-  const longrVideos = useMemo(
-    () =>
-      longrVideoDocuments.map((longrVideo) =>
-        createLongrVideoMetadataFromConvexDocument(longrVideo),
-      ),
-    [longrVideoDocuments],
-  );
   const loadedCounts = useMemo<ClipLibraryCounts>(
     () => ({
       cliprClips: clips.filter((clip) => Boolean(clip.cliprMetadata)).length,
       demoClips: clips.filter((clip) => clip.clipType === "demo").length,
-      longrVideos: longrVideos.length,
       stitches: stitches.length,
       swapClips: clips.filter(
         (clip) => clip.swaprMetadata?.source === "swapr",
@@ -184,7 +165,7 @@ export function useClipLibraryState(): ClipLibraryValue {
           clip.swaprMetadata?.source !== "swapr",
       ).length,
     }),
-    [clips, longrVideos.length, stitches.length],
+    [clips, stitches.length],
   );
   const counts = getClipLibraryDisplayCounts(aggregateCounts, loadedCounts);
 
@@ -354,47 +335,6 @@ export function useClipLibraryState(): ClipLibraryValue {
 
     return await loadPosterBlob(ugcClipDocument?.posterObject);
   }, [clipDocuments, convex, loadPosterBlob, stitchDocuments]);
-
-  const loadLongrPoster = useCallback(async (id: string) => {
-    const longrVideoDocument =
-      longrVideoDocuments.find((longrVideo) => longrVideo.id === id) ??
-      (await convex.query(api.longrVideos.get, { id }));
-
-    if (!longrVideoDocument) {
-      return null;
-    }
-
-    return await loadPosterBlob(longrVideoDocument.posterObject);
-  }, [convex, loadPosterBlob, longrVideoDocuments]);
-
-  const loadLongrVideo = useCallback(async (id: string) => {
-    const cachedLongrVideo = longrVideoCacheRef.current.get(id);
-
-    if (cachedLongrVideo) {
-      return cachedLongrVideo;
-    }
-
-    const longrVideoDocument =
-      longrVideoDocuments.find((longrVideo) => longrVideo.id === id) ??
-      (await convex.query(api.longrVideos.get, { id }));
-
-    if (!longrVideoDocument) {
-      return null;
-    }
-
-    const [blob, posterBlob] = await Promise.all([
-      downloadBlobFromR2(longrVideoDocument.longrObject),
-      loadPosterBlob(longrVideoDocument.posterObject),
-    ]);
-    const longrVideo = createLongrVideoFromConvexDocument({
-      longrVideo: longrVideoDocument,
-      blob,
-      posterBlob: posterBlob ?? undefined,
-    });
-
-    longrVideoCacheRef.current.set(id, longrVideo);
-    return longrVideo;
-  }, [convex, loadPosterBlob, longrVideoDocuments]);
 
   const removeClip = useCallback(
     async (id: string) => {
@@ -704,28 +644,6 @@ export function useClipLibraryState(): ClipLibraryValue {
     [convex, refresh, removeStitchMutation, stitchDocuments],
   );
 
-  const removeLongrVideo = useCallback(
-    async (id: string) => {
-      const longrVideoDocument =
-        longrVideoDocuments?.find((longrVideo) => longrVideo.id === id) ??
-        (await convex.query(api.longrVideos.get, { id }));
-
-      if (longrVideoDocument) {
-        await deleteObjectsFromR2(
-          getDefinedR2Objects([
-            longrVideoDocument.longrObject,
-            longrVideoDocument.posterObject,
-          ]),
-        );
-      }
-
-      await removeLongrVideoMutation({ id });
-      longrVideoCacheRef.current.delete(id);
-      await refresh();
-    },
-    [convex, longrVideoDocuments, refresh, removeLongrVideoMutation],
-  );
-
   const loadMoreClips = useCallback(() => {
     if (clipDocumentsQuery.status === "CanLoadMore") {
       clipDocumentsQuery.loadMore(libraryMetadataPageSize);
@@ -756,11 +674,6 @@ export function useClipLibraryState(): ClipLibraryValue {
       stitchDocumentsQuery.loadMore(libraryMetadataPageSize);
     }
   }, [stitchDocumentsQuery]);
-  const loadMoreLongrVideos = useCallback(() => {
-    if (longrVideoDocumentsQuery.status === "CanLoadMore") {
-      longrVideoDocumentsQuery.loadMore(libraryMetadataPageSize);
-    }
-  }, [longrVideoDocumentsQuery]);
   const isLoadingFirstPage =
     isAuthenticated &&
     (clipDocumentsQuery.status === "LoadingFirstPage" ||
@@ -768,13 +681,11 @@ export function useClipLibraryState(): ClipLibraryValue {
       cliprClipDocumentsQuery.status === "LoadingFirstPage" ||
       demoClipDocumentsQuery.status === "LoadingFirstPage" ||
       swapClipDocumentsQuery.status === "LoadingFirstPage" ||
-      stitchDocumentsQuery.status === "LoadingFirstPage" ||
-      longrVideoDocumentsQuery.status === "LoadingFirstPage");
+      stitchDocumentsQuery.status === "LoadingFirstPage");
 
   return {
     clips,
     counts,
-    longrVideos,
     stitches,
     sortOrder,
     videoGroups: {
@@ -805,21 +716,15 @@ export function useClipLibraryState(): ClipLibraryValue {
     },
     isLoading: isAuthLoading || isLoadingFirstPage,
     hasMoreClips: clipDocumentsQuery.status === "CanLoadMore",
-    hasMoreLongrVideos: longrVideoDocumentsQuery.status === "CanLoadMore",
     hasMoreStitches: stitchDocumentsQuery.status === "CanLoadMore",
     isLoadingMoreClips: clipDocumentsQuery.status === "LoadingMore",
-    isLoadingMoreLongrVideos:
-      longrVideoDocumentsQuery.status === "LoadingMore",
     isLoadingMoreStitches: stitchDocumentsQuery.status === "LoadingMore",
     error,
     refresh,
     setSortOrder,
     loadClip,
     loadClipPoster,
-    loadLongrPoster,
-    loadLongrVideo,
     loadMoreClips,
-    loadMoreLongrVideos,
     loadMoreStitches,
     loadStitchPoster,
     removeClip,
@@ -832,7 +737,6 @@ export function useClipLibraryState(): ClipLibraryValue {
     generateStitchMusic,
     updateStitchMusic,
     updateStitchTextOverlay,
-    removeLongrVideo,
     removeStitch,
   };
 }

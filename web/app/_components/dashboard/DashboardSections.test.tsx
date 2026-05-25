@@ -7,12 +7,10 @@ import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardSidebar } from "@/app/_components/dashboard/DashboardSidebar";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
 import { RecentAvatarsSection } from "@/app/_components/dashboard/RecentAvatarsSection";
-import { RecentLongsSection } from "@/app/_components/dashboard/RecentLongsSection";
 import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitchesSection";
 import { RecentSwipesSection } from "@/app/_components/dashboard/RecentSwipesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
-import type { LongrVideoMetadata } from "@/lib/clipstitchr/types/LongrVideoMetadata";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
@@ -42,12 +40,6 @@ vi.mock("@/app/_components/swapr/PhotoAssetCard", () => ({
     <article>
       Photo {photo.id} {avatarName}
     </article>
-  ),
-}));
-
-vi.mock("@/app/_components/dashboard/LongrVideoCard", () => ({
-  LongrVideoCard: ({ longrVideo }: { longrVideo: LongrVideoMetadata }) => (
-    <article>Long {longrVideo.id}</article>
   ),
 }));
 
@@ -111,11 +103,6 @@ describe("dashboard shell sections", () => {
           onLoadPhoto={async () => null}
           onUpdateMetadata={noop}
         />
-        <RecentLongsSection
-          longrVideos={[]}
-          onDelete={noop}
-          onLoadLongrVideo={async () => null}
-        />
         <RecentStitchesSection
           stitches={[]}
           onDelete={noop}
@@ -142,7 +129,6 @@ describe("dashboard shell sections", () => {
     );
 
     expect(markup).toContain("No avatars yet");
-    expect(markup).toContain("No Longs yet");
     expect(markup).toContain("No stitches yet");
     expect(markup).toContain("No Swipes yet");
     expect(markup).toContain("No uploads yet");
@@ -157,11 +143,6 @@ describe("dashboard shell sections", () => {
           onDelete={noop}
           onLoadPhoto={async () => null}
           onUpdateMetadata={noop}
-        />
-        <RecentLongsSection
-          longrVideos={[{ id: "long_1" } as LongrVideoMetadata]}
-          onDelete={noop}
-          onLoadLongrVideo={async () => null}
         />
         <RecentStitchesSection
           stitches={[{ id: "stitch_1" } as Stitch]}
@@ -192,7 +173,6 @@ describe("dashboard shell sections", () => {
     );
 
     expect(markup).toContain("Photo photo_1 Ava");
-    expect(markup).toContain("Long long_1");
     expect(markup).toContain("Stitch stitch_1");
     expect(markup).toContain("Swipe swipe_1");
     expect(markup).not.toContain("Swipe swipe_2");

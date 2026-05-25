@@ -14,8 +14,11 @@ import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVide
 type DemoClipSelectorProps = {
   clips: VideoClipMetadata[];
   products: ProductProfile[];
+  selectionMode?: "single" | "multiple";
   selectedId: string | null;
+  selectedIds?: string[];
   selectedTrimRange: VideoTrimRange | null;
+  selectedTrimRangesByClipId?: Record<string, VideoTrimRange>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect: (id: string) => void;
@@ -25,8 +28,11 @@ type DemoClipSelectorProps = {
 export function DemoClipSelector({
   clips,
   products,
+  selectionMode = "single",
   selectedId,
+  selectedIds = [],
   selectedTrimRange,
+  selectedTrimRangesByClipId = {},
   onLoadClip,
   onLoadPoster,
   onSelect,
@@ -66,11 +72,18 @@ export function DemoClipSelector({
                       : undefined
                   }
                   trimRange={
-                    clip.id === selectedId && selectedTrimRange
-                      ? selectedTrimRange
-                      : getDefaultVideoTrimRange(clip)
+                    selectionMode === "multiple"
+                      ? (selectedTrimRangesByClipId[clip.id] ??
+                        getDefaultVideoTrimRange(clip))
+                      : clip.id === selectedId && selectedTrimRange
+                        ? selectedTrimRange
+                        : getDefaultVideoTrimRange(clip)
                   }
-                  isSelected={clip.id === selectedId}
+                  isSelected={
+                    selectionMode === "multiple"
+                      ? selectedIds.includes(clip.id)
+                      : clip.id === selectedId
+                  }
                   onLoadClip={onLoadClip}
                   onLoadPoster={onLoadPoster}
                   onSelect={onSelect}

@@ -14,7 +14,7 @@ const mocks = vi.hoisted(() => {
     downloadSwaprPredictionOutputBlob: vi.fn(),
     mutationFns,
     normalizeUploadedVideo: vi.fn(),
-    stitchLongrSequence: vi.fn(),
+    stitchStitchrSequence: vi.fn(),
     uploadBlobsToR2: vi.fn(),
     useMutation: vi.fn((mutationId: string) => {
       const mutation = mutationFns.get(mutationId) ?? vi.fn();
@@ -77,8 +77,8 @@ vi.mock("@/lib/clipstitchr/media/normalizeUploadedVideo", () => ({
   normalizeUploadedVideo: mocks.normalizeUploadedVideo,
 }));
 
-vi.mock("@/lib/clipstitchr/media/stitchLongrSequence", () => ({
-  stitchLongrSequence: mocks.stitchLongrSequence,
+vi.mock("@/lib/clipstitchr/media/stitchStitchrSequence", () => ({
+  stitchStitchrSequence: mocks.stitchStitchrSequence,
 }));
 
 vi.mock("@/lib/clipstitchr/utils/createId", () => ({
@@ -203,7 +203,7 @@ describe("useSwaprGeneration", () => {
     mocks.createVideoPosterBlob.mockResolvedValue(
       new Blob(["poster"], { type: "image/jpeg" }),
     );
-    mocks.stitchLongrSequence.mockResolvedValue({
+    mocks.stitchStitchrSequence.mockResolvedValue({
       blob: new Blob(["stitched"], { type: "video/mp4" }),
       duration: 12,
       mimeType: "video/mp4",
@@ -255,7 +255,7 @@ describe("useSwaprGeneration", () => {
       expect.any(Function),
       { fit: "cover" },
     );
-    expect(mocks.stitchLongrSequence).not.toHaveBeenCalled();
+    expect(mocks.stitchStitchrSequence).not.toHaveBeenCalled();
     expect(mocks.uploadBlobsToR2).toHaveBeenCalledWith([
       expect.objectContaining({
         kind: "video-clip-video",
@@ -328,13 +328,15 @@ describe("useSwaprGeneration", () => {
       referenceVideoSegments: [createSegment(0), createSegment(1)],
     });
 
-    expect(mocks.stitchLongrSequence).toHaveBeenCalledWith(
+    expect(mocks.stitchStitchrSequence).toHaveBeenCalledWith(
       [
         expect.objectContaining({
           clip: expect.objectContaining({ id: "segment_clip_1" }),
+          includeAudio: true,
         }),
         expect.objectContaining({
           clip: expect.objectContaining({ id: "segment_clip_2" }),
+          includeAudio: true,
         }),
       ],
       { onProgress: expect.any(Function) },

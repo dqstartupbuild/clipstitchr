@@ -149,8 +149,8 @@ truth for the background object or authorization decision.
 Good second target after the shared-background pilot.
 
 Current app data already includes searchable metadata on `videoClips`,
-`photoAssets`, `avatars`, `stitches`, `longrVideos`, `swipes`, and
-`sharedMusicTracks`. For user-owned assets, RAG could support natural-language
+`photoAssets`, `avatars`, `stitches`, `swipes`, and `sharedMusicTracks`. For
+user-owned assets, RAG could support natural-language
 search such as:
 
 - "UGC in a car with a strong reaction"
@@ -366,4 +366,3 @@ libraries, especially the Swipr Background Library and later private media
 search. It should be adopted as a focused search pilot, not as a general AI
 agent layer, and not before rate limits, namespace ownership, and indexing
 lifecycle are designed.
-

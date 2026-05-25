@@ -3,7 +3,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AvatarsPageClient } from "@/app/dashboard/avatars/AvatarsPageClient";
 import { CliprPageClient } from "@/app/dashboard/clipr/CliprPageClient";
-import { LongrPageClient } from "@/app/dashboard/longr/LongrPageClient";
 import { StitchrPageClient } from "@/app/dashboard/stitchr/StitchrPageClient";
 import { SwaprPageClient } from "@/app/dashboard/swapr/SwaprPageClient";
 import { SwiprPageClient } from "@/app/dashboard/swipr/SwiprPageClient";
@@ -20,6 +19,7 @@ const mocks = vi.hoisted(() => ({
   saveFiles: vi.fn(),
   saveGeneratedPhotos: vi.fn(),
   saveSwipe: vi.fn(),
+  stitchLongrSequence: vi.fn(),
   stitchVideos: vi.fn(),
   useMutation: vi.fn(() => vi.fn()),
 }));
@@ -130,42 +130,21 @@ vi.mock("@/lib/clipstitchr/hooks/useClipLibrary", () => ({
       counts: {
         cliprClips: 0,
         demoClips: 1,
-        longrVideos: 1,
         stitches: 1,
         swapClips: 0,
         ugcClips: 1,
       },
       error: null,
-      hasMoreLongrVideos: false,
       hasMoreStitches: false,
       isLoading: false,
-      isLoadingMoreLongrVideos: false,
       isLoadingMoreStitches: false,
       isSaving: false,
       loadClip: mocks.loadClip,
       loadClipPoster: vi.fn(),
-      loadLongrPoster: vi.fn(),
-      loadLongrVideo: vi.fn(),
-      loadMoreLongrVideos: vi.fn(),
       loadMoreStitches: vi.fn(),
-      longrVideos: [
-        {
-          createdAt: "2026-05-20T00:00:00.000Z",
-          duration: 120,
-          height: 1920,
-          id: "longr_1",
-          longrObject: { key: "users/user_123/longr/longr_1.mp4" },
-          mimeType: "video/mp4",
-          name: "Saved Long",
-          size: 100,
-          updatedAt: "2026-05-20T00:00:00.000Z",
-          width: 1080,
-        },
-      ],
       generateCliprMusic: vi.fn(),
       generateStitchMusic: vi.fn(),
       removeClip: mocks.remove,
-      removeLongrVideo: mocks.remove,
       removeStitch: mocks.remove,
       refresh: mocks.refresh,
       setSortOrder: vi.fn(),
@@ -237,6 +216,7 @@ vi.mock("@/lib/clipstitchr/hooks/useStitchr", () => ({
     error: null,
     progress: 0,
     status: "idle",
+    stitchLongrSequence: mocks.stitchLongrSequence,
     stitchVideos: mocks.stitchVideos,
     stitches: [],
     totalCount: 0,
@@ -311,16 +291,6 @@ vi.mock("@/lib/clipstitchr/hooks/useSwaprGeneration", () => ({
     generate: vi.fn(),
     generatedClip: null,
     isGenerating: false,
-    progress: 0,
-    status: "idle",
-  }),
-}));
-
-vi.mock("@/lib/clipstitchr/hooks/useLongr", () => ({
-  useLongr: () => ({
-    buildLongrVideo: vi.fn(),
-    error: null,
-    longrVideo: null,
     progress: 0,
     status: "idle",
   }),
@@ -402,7 +372,6 @@ describe("dashboard page clients", () => {
     expect(markup).toContain("Content Library");
     expect(markup).toContain("UGC clip");
     expect(markup).toContain("Saved stitch");
-    expect(markup).toContain("Saved Long");
   });
 
   it("renders the Avatars library with upload and generation controls", () => {
@@ -411,14 +380,6 @@ describe("dashboard page clients", () => {
     expect(markup).toContain("Avatars");
     expect(markup).toContain("Avatar photo");
     expect(markup).toContain("Create avatar photos");
-  });
-
-  it("renders the Longr builder with selectable clips", () => {
-    const markup = renderToStaticMarkup(<LongrPageClient />);
-
-    expect(markup).toContain("Longr");
-    expect(markup).toContain("UGC clip");
-    expect(markup).toContain("Demo clip");
   });
 
   it("renders the Clipr generator with product and avatar selectors", () => {

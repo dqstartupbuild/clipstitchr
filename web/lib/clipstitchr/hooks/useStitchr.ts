@@ -15,6 +15,7 @@ import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SourcePlaybackRateOptions } from "@/lib/clipstitchr/types/SourcePlaybackRateOptions";
+import type { StitchrLongrSelection } from "@/lib/clipstitchr/types/StitchrLongrSelection";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
 import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSourceAudioOptions";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
@@ -26,7 +27,9 @@ import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
+import { createStitchSequenceSegment } from "@/lib/clipstitchr/utils/createStitchSequenceSegment";
 import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName";
+import { getLongrStitchFileName } from "@/lib/clipstitchr/utils/getLongrStitchFileName";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type UseStitchrOptions = {
@@ -113,6 +116,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
 
       const nextStitch: Stitch = {
         id: stitchId,
+        mode: "normal",
         name: getDownloadFileName(ugcClip.name, demoClip.name),
         ugcClipId: ugcClip.id,
         demoClipId: demoClip.id,
@@ -136,6 +140,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
 
       await saveStitch({
         id: nextStitch.id,
+        mode: nextStitch.mode,
         name: nextStitch.name,
         ugcClipId: nextStitch.ugcClipId,
         demoClipId: nextStitch.demoClipId,
@@ -183,6 +188,114 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
       return nextStitch;
     },
     [loadClip, saveStitch, updateStitchMusic],
+  );
+
+  const createLongrStitch = useCallback(
+    async (
+      selections: StitchrLongrSelection[],
+      textOverlay: TextOverlay | null = null,
+      options: StitchrBuildOptions = {},
+      onPairProgress?: (progress: number) => void,
+    ) => {
+      if (!selections.length) {
+        throw new Error("Select at least one source clip before stitching.");
+      }
+
+      const segments = selections.map((selection, index) =>
+        createStitchSequenceSegment({
+          clip: selection.clip,
+          order: index,
+          playbackRate: selection.playbackRate ?? 1,
+          trimRange: selection.trimRange,
+        }),
+      );
+      const duration = segments.reduce(
+        (total, segment) => total + segment.duration,
+        0,
+      );
+      const representativeUgc =
+        selections.find((selection) => selection.clip.clipType !== "demo") ??
+        selections[0];
+      const representativeDemo =
+        selections.find((selection) => selection.clip.clipType === "demo") ??
+        selections[selections.length - 1] ??
+        selections[0];
+      const now = new Date().toISOString();
+      const stitchId = createId();
+      const nextStitch: Stitch = {
+        id: stitchId,
+        mode: "longr",
+        name: getLongrStitchFileName(),
+        ugcClipId: representativeUgc.clip.id,
+        demoClipId: representativeDemo.clip.id,
+        ugcClipName: representativeUgc.clip.name,
+        demoClipName: representativeDemo.clip.name,
+        ugcTrimRange: clampVideoTrimRange(
+          representativeUgc.trimRange,
+          representativeUgc.clip.duration,
+        ),
+        demoTrimRange: clampVideoTrimRange(
+          representativeDemo.trimRange,
+          representativeDemo.clip.duration,
+        ),
+        sequenceSegments: segments,
+        posterBlob: selections[0]?.clip.posterBlob,
+        width: TIKTOK_OUTPUT_WIDTH,
+        height: TIKTOK_OUTPUT_HEIGHT,
+        duration,
+        includeDemoAudio: options.includeDemoAudio ?? false,
+        includeUgcAudio: options.includeUgcAudio ?? false,
+        demoPlaybackRate: options.demoPlaybackRate ?? 1,
+        ugcPlaybackRate: options.ugcPlaybackRate ?? 1,
+        textOverlay: textOverlay ?? undefined,
+        createdAt: now,
+      };
+
+      await saveStitch({
+        id: nextStitch.id,
+        mode: nextStitch.mode,
+        name: nextStitch.name,
+        ugcClipId: nextStitch.ugcClipId,
+        demoClipId: nextStitch.demoClipId,
+        ugcClipName: nextStitch.ugcClipName,
+        demoClipName: nextStitch.demoClipName,
+        ugcTrimRange: nextStitch.ugcTrimRange,
+        demoTrimRange: nextStitch.demoTrimRange,
+        sequenceSegments: nextStitch.sequenceSegments,
+        width: nextStitch.width,
+        height: nextStitch.height,
+        duration: nextStitch.duration,
+        includeDemoAudio: nextStitch.includeDemoAudio,
+        includeUgcAudio: nextStitch.includeUgcAudio,
+        demoPlaybackRate: nextStitch.demoPlaybackRate,
+        ugcPlaybackRate: nextStitch.ugcPlaybackRate,
+        textOverlay: nextStitch.textOverlay,
+        createdAt: nextStitch.createdAt,
+      });
+
+      const selectedMusic = options.musicTrack
+        ? createStitchMusicMetadataFromSharedTrack(options.musicTrack)
+        : null;
+
+      if (selectedMusic || options.addMusic) {
+        const music =
+          selectedMusic ??
+          (await requestStitchMusicGeneration({
+            stitchId: nextStitch.id,
+          }));
+
+        await updateStitchMusic({
+          id: nextStitch.id,
+          music,
+        });
+        nextStitch.music = music;
+      }
+
+      onPairProgress?.(1);
+
+      return nextStitch;
+    },
+    [saveStitch, updateStitchMusic],
   );
 
   const stitchVideos = useCallback(
@@ -284,6 +397,74 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
     [createStitch, onCreated],
   );
 
+  const stitchLongrSequence = useCallback(
+    async (
+      selections: StitchrLongrSelection[],
+      textOverlay: TextOverlay | null = null,
+      options: StitchrBuildOptions = {},
+    ) => {
+      setStatus("saving");
+      setProgress(0);
+      setError(null);
+      setStitch(null);
+      setStitches([]);
+      setCompletedCount(0);
+      setTotalCount(1);
+
+      if (!selections.length) {
+        setStatus("error");
+        setError("Select at least one source clip before stitching.");
+        return null;
+      }
+
+      try {
+        const nextTextOverlay =
+          textOverlay && textOverlay.text.trim().length > 0
+            ? clampTextOverlay(
+                textOverlay,
+                selections.reduce(
+                  (total, selection) =>
+                    total +
+                    getPlaybackRateDuration(
+                      clampVideoTrimRange(
+                        selection.trimRange,
+                        selection.clip.duration,
+                      ),
+                      selection.playbackRate ?? 1,
+                    ),
+                  0,
+                ),
+              )
+            : null;
+        const nextStitch = await createLongrStitch(
+          selections,
+          nextTextOverlay,
+          options,
+          setProgress,
+        );
+
+        await onCreated?.();
+
+        setStitch(nextStitch);
+        setStitches([nextStitch]);
+        setCompletedCount(1);
+        setProgress(1);
+        setStatus("complete");
+
+        return nextStitch;
+      } catch (nextError) {
+        setStatus("error");
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to stitch the videos.",
+        );
+        return null;
+      }
+    },
+    [createLongrStitch, onCreated],
+  );
+
   const stitchVideo = useCallback(
     async (
       ugcClip: VideoClip,
@@ -319,6 +500,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
     stitches,
     completedCount,
     totalCount,
+    stitchLongrSequence,
     stitchVideo,
     stitchVideos,
   };

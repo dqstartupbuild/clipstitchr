@@ -5,5 +5,4 @@ export type UploadLibraryTab =
   | "demo"
   | "swaps"
   | "swipes"
-  | "longr"
   | "stitches";

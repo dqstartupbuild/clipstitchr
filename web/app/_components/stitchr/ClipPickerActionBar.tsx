@@ -1,23 +1,33 @@
 "use client";
 
 import { Scissors } from "lucide-react";
+import { StitchrModeToggle } from "@/app/_components/stitchr/StitchrModeToggle";
 import { Button } from "@/app/_components/ui/Button";
+import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 
 type ClipPickerActionBarProps = {
   canStitch: boolean;
+  mode: StitchrMode;
   selectedUgcCount: number;
+  selectedLongrCount?: number;
   isStitching: boolean;
+  onModeChange: (mode: StitchrMode) => void;
   onStitch: () => void;
 };
 
 export function ClipPickerActionBar({
   canStitch,
+  mode,
   selectedUgcCount,
+  selectedLongrCount = 0,
   isStitching,
+  onModeChange,
   onStitch,
 }: ClipPickerActionBarProps) {
   const buttonLabel =
-    selectedUgcCount > 1
+    mode === "longr"
+      ? "Create Longr"
+      : selectedUgcCount > 1
       ? `Stitch ${selectedUgcCount} ads`
       : "Stitch";
 
@@ -26,10 +36,16 @@ export function ClipPickerActionBar({
       <div>
         <p className="text-sm font-semibold text-accent-dark">Stitchr</p>
         <h2 className="mt-0.5 text-base font-bold text-text-primary">
-          Stitch selected clips
+          {mode === "longr" ? "Arrange one Longr stitch" : "Stitch selected clips"}
         </h2>
+        {mode === "longr" ? (
+          <p className="mt-1 text-xs font-semibold text-text-tertiary">
+            {selectedLongrCount} source clips selected
+          </p>
+        ) : null}
       </div>
-      <div>
+      <div className="flex flex-wrap items-center gap-2">
+        <StitchrModeToggle value={mode} onChange={onModeChange} />
         <Button
           type="button"
           disabled={!canStitch}

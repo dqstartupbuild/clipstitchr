@@ -255,7 +255,6 @@ describe("UploadsPageClient", () => {
       counts: {
         cliprClips: 20,
         demoClips: 30,
-        longrVideos: 60,
         stitches: 50,
         swapClips: 40,
         ugcClips: 10,
@@ -264,23 +263,16 @@ describe("UploadsPageClient", () => {
       generateCliprMusic: vi.fn(),
       generateStitchMusic: vi.fn(),
       hasMoreClips: true,
-      hasMoreLongrVideos: true,
       hasMoreStitches: true,
       isLoadingMoreClips: false,
-      isLoadingMoreLongrVideos: false,
       isLoadingMoreStitches: false,
       loadClip: vi.fn(),
       loadClipPoster: vi.fn(),
-      loadLongrPoster: vi.fn(),
-      loadLongrVideo: vi.fn(),
       loadMoreClips: vi.fn(),
-      loadMoreLongrVideos: vi.fn(),
       loadMoreStitches: vi.fn(),
       loadStitchPoster: vi.fn(),
-      longrVideos: [{ id: "longr_1", name: "Long match" }],
       refresh: vi.fn(),
       removeClip: vi.fn(),
-      removeLongrVideo: vi.fn(),
       removeStitch: vi.fn(),
       setSortOrder: vi.fn(),
       sortOrder: "newest",
@@ -505,17 +497,11 @@ describe("UploadsPageClient", () => {
     const stitches = renderUploadsPage({
       stateValues: ["stitches", "stitch", "all", ""],
     }).elements;
-    const longr = renderUploadsPage({
-      stateValues: ["longr", "long", "all", ""],
-    }).elements;
     const swipes = renderUploadsPage({
       stateValues: ["swipes", "swipe", "all", ""],
     }).elements;
 
     expect(stitches.some((element) => "stitches" in (element.props ?? {}))).toBe(
-      true,
-    );
-    expect(longr.some((element) => "longrVideos" in (element.props ?? {}))).toBe(
       true,
     );
     expect(swipes.some((element) => "swipes" in (element.props ?? {}))).toBe(

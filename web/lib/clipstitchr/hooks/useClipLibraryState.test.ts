@@ -13,8 +13,6 @@ const mocks = vi.hoisted(() => {
     convex: {
       query: vi.fn(),
     },
-    createLongrVideoMetadataFromConvexDocument: vi.fn(),
-    createLongrVideoFromConvexDocument: vi.fn(),
     createStitchFromConvexDocument: vi.fn(),
     createStitchPosterBlob: vi.fn(),
     createVideoClipFromConvexDocument: vi.fn(),
@@ -75,11 +73,6 @@ vi.mock("convex/react", () => ({
 
 vi.mock("@/convex/_generated/api", () => ({
   api: {
-    longrVideos: {
-      get: "longrVideos.get",
-      list: "longrVideos.list",
-      remove: "longrVideos.remove",
-    },
     libraryCounts: {
       get: "libraryCounts.get",
     },
@@ -101,22 +94,6 @@ vi.mock("@/convex/_generated/api", () => ({
     },
   },
 }));
-
-vi.mock(
-  "@/lib/clipstitchr/backend/createLongrVideoMetadataFromConvexDocument",
-  () => ({
-    createLongrVideoMetadataFromConvexDocument:
-      mocks.createLongrVideoMetadataFromConvexDocument,
-  }),
-);
-
-vi.mock(
-  "@/lib/clipstitchr/backend/createLongrVideoFromConvexDocument",
-  () => ({
-    createLongrVideoFromConvexDocument:
-      mocks.createLongrVideoFromConvexDocument,
-  }),
-);
 
 vi.mock("@/lib/clipstitchr/backend/createStitchFromConvexDocument", () => ({
   createStitchFromConvexDocument: mocks.createStitchFromConvexDocument,
@@ -220,18 +197,6 @@ function createStitch(overrides: Record<string, unknown> = {}) {
   } as unknown as Stitch;
 }
 
-function createLongrVideo(overrides: Record<string, unknown> = {}) {
-  return {
-    createdAt: "2026-05-20T00:00:00.000Z",
-    id: "longr_1",
-    longrObject: { key: "users/user_123/longr/longr_1/video.mp4" },
-    name: "Longr",
-    posterObject: { key: "users/user_123/longr/longr_1/poster.jpg" },
-    updatedAt: "2026-05-20T00:00:00.000Z",
-    ...overrides,
-  };
-}
-
 describe("useClipLibraryState", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -252,7 +217,6 @@ describe("useClipLibraryState", () => {
     mocks.useQuery.mockReturnValue({
       cliprClips: 0,
       demoClips: 0,
-      longrVideos: 0,
       stitches: 0,
       swapClips: 0,
       ugcClips: 0,
@@ -264,10 +228,6 @@ describe("useClipLibraryState", () => {
 
       if (queryId === "stitches.get") {
         return createStitch();
-      }
-
-      if (queryId === "longrVideos.get") {
-        return createLongrVideo();
       }
 
       return null;
@@ -301,12 +261,6 @@ describe("useClipLibraryState", () => {
     mocks.createVideoClipMetadataFromConvexDocument.mockReturnValue(
       createClipMetadata(),
     );
-    mocks.createLongrVideoFromConvexDocument.mockReturnValue({
-      id: "longr_1",
-    });
-    mocks.createLongrVideoMetadataFromConvexDocument.mockReturnValue({
-      id: "longr_1",
-    });
     mocks.createStitchFromConvexDocument.mockReturnValue({
       id: "stitch_1",
     });
@@ -341,11 +295,6 @@ describe("useClipLibraryState", () => {
     );
     expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
       "stitches.list",
-      "skip",
-      { initialNumItems: 48 },
-    );
-    expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
-      "longrVideos.list",
       "skip",
       { initialNumItems: 48 },
     );
@@ -393,7 +342,7 @@ describe("useClipLibraryState", () => {
     expect(mocks.downloadCachedR2ImageBlobs).toHaveBeenCalledTimes(1);
   });
 
-  it("loads listed documents, poster fallbacks, and cached Longr videos", async () => {
+  it("loads listed documents and poster fallbacks", async () => {
     const clipWithoutPoster = createClipDocument({
       id: "clip_without_poster",
       posterObject: undefined,
@@ -427,7 +376,7 @@ describe("useClipLibraryState", () => {
                   ugcClipId: "clip_without_poster",
                 }),
               ]
-            : [createLongrVideo()],
+            : [],
       status: "Exhausted",
     }));
     const state = useClipLibraryState();
@@ -440,9 +389,6 @@ describe("useClipLibraryState", () => {
     const stitchPoster = await state.loadStitchPoster("stitch_1");
     const fallbackPoster = await state.loadStitchPoster("stitch_2");
     const missingFallbackPoster = await state.loadStitchPoster("stitch_3");
-    const longrPoster = await state.loadLongrPoster("longr_1");
-    const longrVideo = await state.loadLongrVideo("longr_1");
-    const cachedLongrVideo = await state.loadLongrVideo("longr_1");
 
     expect(firstPoster).toBeInstanceOf(Blob);
     expect(secondPoster).toBeInstanceOf(Blob);
@@ -450,8 +396,6 @@ describe("useClipLibraryState", () => {
     expect(stitchPoster).toBeInstanceOf(Blob);
     expect(fallbackPoster).toBeInstanceOf(Blob);
     expect(missingFallbackPoster).toBeNull();
-    expect(longrPoster).toBeInstanceOf(Blob);
-    expect(cachedLongrVideo).toBe(longrVideo);
     expect(mocks.convex.query).not.toHaveBeenCalled();
   });
 
@@ -464,15 +408,13 @@ describe("useClipLibraryState", () => {
     await expect(state.loadClipPoster("clip_1")).resolves.toBeNull();
   });
 
-  it("returns null for missing clip, stitch, and longr documents", async () => {
+  it("returns null for missing clip and stitch documents", async () => {
     mocks.convex.query.mockResolvedValue(null);
     const state = useClipLibraryState();
 
     await expect(state.loadClip("missing_clip")).resolves.toBeNull();
     await expect(state.loadClipPoster("missing_clip")).resolves.toBeNull();
     await expect(state.loadStitchPoster("missing_stitch")).resolves.toBeNull();
-    await expect(state.loadLongrPoster("missing_longr")).resolves.toBeNull();
-    await expect(state.loadLongrVideo("missing_longr")).resolves.toBeNull();
   });
 
   it("falls back to the UGC poster for stitches without their own poster", async () => {
@@ -768,7 +710,6 @@ describe("useClipLibraryState", () => {
 
     await state.removeClip("missing_clip");
     await state.removeStitch("missing_stitch");
-    await state.removeLongrVideo("missing_longr");
 
     expect(mocks.deleteObjectsFromR2).not.toHaveBeenCalled();
     expect(getMutation("videoClips.remove")).toHaveBeenCalledWith({
@@ -777,31 +718,20 @@ describe("useClipLibraryState", () => {
     expect(getMutation("stitches.remove")).toHaveBeenCalledWith({
       id: "missing_stitch",
     });
-    expect(getMutation("longrVideos.remove")).toHaveBeenCalledWith({
-      id: "missing_longr",
-    });
   });
 
-  it("removes clip and longr media from R2 before deleting metadata", async () => {
+  it("removes clip media from R2 before deleting metadata", async () => {
     const state = useClipLibraryState();
 
     await state.removeClip("clip_1");
-    await state.removeLongrVideo("longr_1");
 
     expect(mocks.deleteObjectsFromR2).toHaveBeenCalledWith([
       { key: "users/user_123/clips/clip_1/video.mp4" },
       { key: "users/user_123/clips/clip_1/poster.jpg" },
       { key: "users/user_123/music/old-clipr.mp3" },
     ]);
-    expect(mocks.deleteObjectsFromR2).toHaveBeenCalledWith([
-      { key: "users/user_123/longr/longr_1/video.mp4" },
-      { key: "users/user_123/longr/longr_1/poster.jpg" },
-    ]);
     expect(getMutation("videoClips.remove")).toHaveBeenCalledWith({
       id: "clip_1",
-    });
-    expect(getMutation("longrVideos.remove")).toHaveBeenCalledWith({
-      id: "longr_1",
     });
   });
 
@@ -814,14 +744,13 @@ describe("useClipLibraryState", () => {
           ? [createClipDocument({ cliprMetadata: undefined })]
           : queryId === "stitches.list"
             ? [createStitch({ music: undefined })]
-            : [createLongrVideo()],
+            : [],
       status: "Exhausted",
     }));
     const state = useClipLibraryState();
 
     await state.removeClip("clip_1");
     await state.removeStitch("stitch_1");
-    await state.removeLongrVideo("longr_1");
 
     expect(mocks.convex.query).not.toHaveBeenCalled();
     expect(mocks.deleteObjectsFromR2).toHaveBeenCalledWith([
@@ -854,15 +783,6 @@ describe("useClipLibraryState", () => {
         };
       }
 
-      if (queryId === "longrVideos.list") {
-        return {
-          isLoading: false,
-          loadMore: vi.fn(),
-          results: [createLongrVideo()],
-          status: "Exhausted",
-        };
-      }
-
       return {
         isLoading: false,
         loadMore: vi.fn(),
@@ -877,13 +797,11 @@ describe("useClipLibraryState", () => {
     expect(state.counts).toEqual({
       cliprClips: 1,
       demoClips: 0,
-      longrVideos: 1,
       stitches: 1,
       swapClips: 0,
       ugcClips: 0,
     });
     expect(state.stitches).toEqual([{ id: "stitch_1" }]);
-    expect(state.longrVideos).toEqual([{ id: "longr_1" }]);
     expect(mocks.downloadBlobFromR2).not.toHaveBeenCalled();
     expect(mocks.downloadCachedR2ImageBlobs).not.toHaveBeenCalled();
     expect(mocks.createVideoClipMetadataFromConvexDocument).toHaveBeenCalled();
@@ -892,17 +810,12 @@ describe("useClipLibraryState", () => {
         stitch: expect.objectContaining({ id: "stitch_1" }),
       }),
     );
-    expect(
-      mocks.createLongrVideoMetadataFromConvexDocument,
-    ).toHaveBeenCalledWith(expect.objectContaining({ id: "longr_1" }));
-    expect(mocks.createLongrVideoFromConvexDocument).not.toHaveBeenCalled();
   });
 
   it("uses aggregate counts when they are larger than the loaded page", () => {
     mocks.useQuery.mockReturnValue({
       cliprClips: 10,
       demoClips: 20,
-      longrVideos: 30,
       stitches: 40,
       swapClips: 50,
       ugcClips: 60,
@@ -930,46 +843,14 @@ describe("useClipLibraryState", () => {
     expect(state.counts).toEqual({
       cliprClips: 10,
       demoClips: 20,
-      longrVideos: 30,
       stitches: 40,
       swapClips: 50,
       ugcClips: 60,
     });
   });
 
-  it("lazy-loads full Longr videos and poster blobs on demand", async () => {
-    mocks.usePaginatedQuery.mockImplementation((queryId: string) => ({
-      isLoading: false,
-      loadMore: vi.fn(),
-      results: queryId === "longrVideos.list" ? [createLongrVideo()] : [],
-      status: "Exhausted",
-    }));
-    const state = useClipLibraryState();
-
-    await expect(state.loadLongrVideo("longr_1")).resolves.toEqual({
-      id: "longr_1",
-    });
-
-    expect(mocks.downloadBlobFromR2).toHaveBeenCalledWith({
-      key: "users/user_123/longr/longr_1/video.mp4",
-    });
-    expect(mocks.downloadCachedR2ImageBlobs).toHaveBeenCalledWith([
-      {
-        key: "users/user_123/longr/longr_1/poster.jpg",
-      },
-    ]);
-    expect(mocks.createLongrVideoFromConvexDocument).toHaveBeenCalledWith(
-      expect.objectContaining({
-        blob: expect.any(Blob),
-        longrVideo: expect.objectContaining({ id: "longr_1" }),
-        posterBlob: expect.any(Blob),
-      }),
-    );
-  });
-
   it("loads the next metadata page when available", () => {
     const loadMoreClips = vi.fn();
-    const loadMoreLongrVideos = vi.fn();
     const loadMoreStitches = vi.fn();
 
     mocks.usePaginatedQuery.mockImplementation((queryId: string) => ({
@@ -977,9 +858,7 @@ describe("useClipLibraryState", () => {
       loadMore:
         queryId === "videoClips.list"
           ? loadMoreClips
-          : queryId === "stitches.list"
-            ? loadMoreStitches
-            : loadMoreLongrVideos,
+          : loadMoreStitches,
       results: [],
       status: "CanLoadMore",
     }));
@@ -987,20 +866,16 @@ describe("useClipLibraryState", () => {
     const state = useClipLibraryState();
 
     expect(state.hasMoreClips).toBe(true);
-    expect(state.hasMoreLongrVideos).toBe(true);
     expect(state.hasMoreStitches).toBe(true);
     state.loadMoreClips();
-    state.loadMoreLongrVideos();
     state.loadMoreStitches();
 
     expect(loadMoreClips).toHaveBeenCalledWith(48);
-    expect(loadMoreLongrVideos).toHaveBeenCalledWith(48);
     expect(loadMoreStitches).toHaveBeenCalledWith(48);
   });
 
   it("ignores load-more requests when each paginated query is exhausted", () => {
     const loadMoreClips = vi.fn();
-    const loadMoreLongrVideos = vi.fn();
     const loadMoreStitches = vi.fn();
 
     mocks.usePaginatedQuery.mockImplementation((queryId: string) => ({
@@ -1008,9 +883,7 @@ describe("useClipLibraryState", () => {
       loadMore:
         queryId === "videoClips.list"
           ? loadMoreClips
-          : queryId === "stitches.list"
-            ? loadMoreStitches
-            : loadMoreLongrVideos,
+          : loadMoreStitches,
       results: [],
       status: "Exhausted",
     }));
@@ -1018,11 +891,9 @@ describe("useClipLibraryState", () => {
     const state = useClipLibraryState();
 
     state.loadMoreClips();
-    state.loadMoreLongrVideos();
     state.loadMoreStitches();
 
     expect(loadMoreClips).not.toHaveBeenCalled();
-    expect(loadMoreLongrVideos).not.toHaveBeenCalled();
     expect(loadMoreStitches).not.toHaveBeenCalled();
   });
 
@@ -1034,15 +905,12 @@ describe("useClipLibraryState", () => {
       status:
         queryId === "videoClips.list"
           ? "LoadingFirstPage"
-          : queryId === "stitches.list"
-            ? "LoadingMore"
-            : "LoadingMore",
+          : "LoadingMore",
     }));
 
     const state = useClipLibraryState();
 
     expect(state.isLoading).toBe(true);
-    expect(state.isLoadingMoreLongrVideos).toBe(true);
     expect(state.isLoadingMoreStitches).toBe(true);
   });
 
@@ -1058,13 +926,11 @@ describe("useClipLibraryState", () => {
     expect(state.counts).toEqual({
       cliprClips: 0,
       demoClips: 0,
-      longrVideos: 0,
       stitches: 0,
       swapClips: 0,
       ugcClips: 0,
     });
     expect(state.clips).toEqual([]);
     expect(state.stitches).toEqual([]);
-    expect(state.longrVideos).toEqual([]);
   });
 });

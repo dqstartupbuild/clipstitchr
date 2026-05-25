@@ -41,13 +41,3 @@ export const stitchCounts = new TableAggregate<{
   namespace: (stitch) => stitch.ownerId,
   sortKey: () => null,
 });
-
-export const longrVideoCounts = new TableAggregate<{
-  DataModel: DataModel;
-  Key: null;
-  Namespace: string;
-  TableName: "longrVideos";
-}>(components.longrVideoCounts, {
-  namespace: (longrVideo) => longrVideo.ownerId,
-  sortKey: () => null,
-});

@@ -74,7 +74,7 @@ Good candidate events:
 - onboarding step completion;
 - upload flow milestones;
 - Stitchr build started, completed, failed;
-- Clipr, Swapr, Swipr, Longr feature adoption;
+- Clipr, Swapr, Swipr, and Stitchr mode adoption;
 - rate-limit hit categories;
 - paid-plan feature gate encounters after billing exists;
 - export/download success counts by feature and plan.

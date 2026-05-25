@@ -1,6 +1,5 @@
 import {
   Download,
-  Film,
   FolderSearch,
   CirclePlay,
   Images,
@@ -29,7 +28,7 @@ const features = [
   {
     title: "Organize your library",
     description:
-      "Keep UGC, demos, Clips, Swaps, Swipes, Stitches, and Longs in one place.",
+      "Keep UGC, demos, Clips, Swaps, Swipes, and Stitches in one place.",
     icon: FolderSearch,
   },
   {
@@ -49,12 +48,6 @@ const features = [
     description:
       "Choose UGC and a product demo, and create a finished ad in seconds.",
     icon: Scissors,
-  },
-  {
-    title: "Build long-form sequences",
-    description:
-      "Use Longr to arrange multiple saved clips into one longer 9:16 video.",
-    icon: Film,
   },
   {
     title: "Save avatar photos",

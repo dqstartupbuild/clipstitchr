@@ -10,7 +10,7 @@ import { waitForSwaprPrediction } from "@/lib/clipstitchr/client/waitForSwaprPre
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
-import { stitchLongrSequence } from "@/lib/clipstitchr/media/stitchLongrSequence";
+import { stitchStitchrSequence } from "@/lib/clipstitchr/media/stitchStitchrSequence";
 import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpeedTier";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCharacterOrientation";
@@ -208,9 +208,10 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
         if (normalizedSegments.length > 1) {
           setStatus("stitching");
 
-          const stitched = await stitchLongrSequence(
+          const stitched = await stitchStitchrSequence(
             normalizedSegments.map(({ clip: segmentClip }) => ({
               clip: segmentClip,
+              includeAudio: true,
               trimRange: {
                 start: 0,
                 end: segmentClip.duration,

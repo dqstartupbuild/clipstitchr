@@ -6,6 +6,8 @@ import { stitchCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { r2ObjectValidator } from "./validators/r2Object";
+import { stitchrModeValidator } from "./validators/stitchrMode";
+import { stitchSequenceSegmentValidator } from "./validators/stitchSequenceSegment";
 import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
 import { textOverlayValidator } from "./validators/textOverlay";
 import { videoPlaybackRateValidator } from "./validators/videoPlaybackRate";
@@ -13,6 +15,7 @@ import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
 const saveArgs = {
   id: v.string(),
+  mode: v.optional(stitchrModeValidator),
   name: v.string(),
   ugcClipId: v.string(),
   demoClipId: v.string(),
@@ -20,6 +23,7 @@ const saveArgs = {
   demoClipName: v.string(),
   ugcTrimRange: v.optional(videoTrimRangeValidator),
   demoTrimRange: v.optional(videoTrimRangeValidator),
+  sequenceSegments: v.optional(v.array(stitchSequenceSegmentValidator)),
   stitchObject: v.optional(r2ObjectValidator),
   posterObject: v.optional(r2ObjectValidator),
   posterVersion: v.optional(v.number()),

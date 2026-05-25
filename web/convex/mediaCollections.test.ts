@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as avatars from "./avatars";
 import * as cliprPreferences from "./cliprPreferences";
-import * as longrVideos from "./longrVideos";
 import * as photoAssets from "./photoAssets";
 import * as replicateJobs from "./replicateJobs";
 import * as stitches from "./stitches";
@@ -22,11 +21,6 @@ type QueryResult = {
 const mocks = vi.hoisted(() => ({
   assertRateLimitApiSecret: vi.fn(),
   getAuthenticatedOwnerId: vi.fn(),
-  longrVideoCounts: {
-    deleteIfExists: vi.fn(),
-    insertIfDoesNotExist: vi.fn(),
-    replaceOrInsert: vi.fn(),
-  },
   mutation: vi.fn((definition) => definition),
   query: vi.fn((definition) => definition),
   rateLimiter: {
@@ -62,7 +56,6 @@ vi.mock("./rateLimiter", () => ({
 }));
 
 vi.mock("./aggregateCounts", () => ({
-  longrVideoCounts: mocks.longrVideoCounts,
   stitchCounts: mocks.stitchCounts,
   videoClipCounts: mocks.videoClipCounts,
 }));
@@ -188,22 +181,6 @@ function createPhotoArgs(overrides: Record<string, unknown> = {}) {
     size: 10,
     tags: ["photo"],
     updatedAt: now,
-    width: 1080,
-    ...overrides,
-  };
-}
-
-function createLongrArgs(overrides: Record<string, unknown> = {}) {
-  return {
-    clipSegments: [],
-    createdAt: now,
-    duration: 120,
-    height: 1920,
-    id: "longr_1",
-    longrObject: r2Video,
-    mimeType: "video/mp4",
-    name: "Longr",
-    size: 100,
     width: 1080,
     ...overrides,
   };
@@ -639,107 +616,6 @@ describe("convex media collections", () => {
         { id: "avatar_1", photoIds: [], secret: "secret" },
       ),
     ).rejects.toThrow("Avatar photos changed while deleting. Try again.");
-  });
-
-  it("rejects overlong Longr videos and saves or removes valid records", async () => {
-    const tooLongCtx = createCtx();
-
-    await expect(
-      getHandler<Record<string, unknown>, unknown>(longrVideos.save)(
-        tooLongCtx,
-        createLongrArgs({ duration: 301 }),
-      ),
-    ).rejects.toThrow("Longr videos cannot be longer than 5 minutes.");
-    expect(mocks.rateLimiter.limit).not.toHaveBeenCalled();
-
-    const saveCtx = createCtx({
-      longrVideos: [{ unique: null }, { unique: { _id: "longr_doc" } }],
-    });
-
-    await expect(
-      getHandler<Record<string, unknown>, unknown>(longrVideos.save)(
-        saveCtx,
-        createLongrArgs(),
-      ),
-    ).resolves.toBe("inserted_doc");
-    await expect(
-      getHandler<Record<string, unknown>, unknown>(longrVideos.remove)(
-        saveCtx,
-        { id: "longr_1" },
-      ),
-    ).resolves.toEqual({ _id: "longr_doc" });
-    expect(saveCtx.db.delete).toHaveBeenCalledWith("longr_doc");
-  });
-
-  it("lists, gets, patches, and no-ops missing Longr records", async () => {
-    const longrRecord = {
-      _id: "longr_doc",
-      id: "longr_1",
-      ownerId: "owner_123",
-    };
-    const queryCtx = createCtx({
-      longrVideos: [
-        {
-          paginate: {
-            continueCursor: null,
-            isDone: true,
-            page: [longrRecord],
-          },
-        },
-        { unique: longrRecord },
-      ],
-    });
-
-    await expect(
-      getHandler<Record<string, unknown>, unknown>(longrVideos.list)(
-        queryCtx,
-        {
-          paginationOpts: {
-            cursor: null,
-            numItems: 10,
-          },
-        },
-      ),
-    ).resolves.toEqual({
-      continueCursor: null,
-      isDone: true,
-      page: [longrRecord],
-    });
-    await expect(
-      getHandler<Record<string, unknown>, unknown>(longrVideos.get)(queryCtx, {
-        id: "longr_1",
-      }),
-    ).resolves.toBe(longrRecord);
-
-    const patchCtx = createCtx({
-      longrVideos: [{ unique: longrRecord }],
-    });
-
-    await expect(
-      getHandler<Record<string, unknown>, unknown>(longrVideos.save)(
-        patchCtx,
-        createLongrArgs(),
-      ),
-    ).resolves.toBe("longr_doc");
-    expect(patchCtx.db.patch).toHaveBeenCalledWith(
-      "longr_doc",
-      expect.objectContaining({
-        id: "longr_1",
-        ownerId: "owner_123",
-      }),
-    );
-
-    const missingRemoveCtx = createCtx({
-      longrVideos: [{ unique: null }],
-    });
-
-    await expect(
-      getHandler<Record<string, unknown>, unknown>(longrVideos.remove)(
-        missingRemoveCtx,
-        { id: "missing_longr" },
-      ),
-    ).resolves.toBeNull();
-    expect(missingRemoveCtx.db.delete).not.toHaveBeenCalled();
   });
 
   it("normalizes Swipr records after validating background and product", async () => {

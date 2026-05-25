@@ -16,13 +16,6 @@ const workflows = [
     steps: ["Pick Product", "Pick Avatar", "Choose Voice", "Generate", "Save"],
   },
   {
-    eyebrow: "Longr",
-    title: "Turn several saved clips into one longer vertical video.",
-    description:
-      "Select UGC and demo clips in the order you want, drag the strip to refine the sequence, preview the full run, and build one saved Long.",
-    steps: ["Select Clips", "Order", "Preview", "Build", "Save"],
-  },
-  {
     eyebrow: "Swapr",
     title: "Make more UGC when your library needs it.",
     description:
@@ -50,9 +43,8 @@ export function LandingWorkflow() {
             Five ways to turn your library into something ready to post.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Stitchr is the main workflow. Longr, Clipr, Swapr, and Swipr help
-            when you need a longer sequence, more source clips, or a carousel
-            instead of another video.
+            Stitchr is the main workflow. Clipr, Swapr, and Swipr help when
+            you need more source clips or a carousel instead of another video.
           </p>
         </div>
         <div className="mt-10 grid gap-10">

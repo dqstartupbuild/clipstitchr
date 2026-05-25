@@ -6,7 +6,6 @@ import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
 import { RecentAvatarsSection } from "@/app/_components/dashboard/RecentAvatarsSection";
-import { RecentLongsSection } from "@/app/_components/dashboard/RecentLongsSection";
 import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitchesSection";
 import { RecentSwipesSection } from "@/app/_components/dashboard/RecentSwipesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
@@ -15,7 +14,6 @@ import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import { getRecentAvatarPhotos } from "@/lib/clipstitchr/utils/getRecentAvatarPhotos";
-import { getRecentLongrVideos } from "@/lib/clipstitchr/utils/getRecentLongrVideos";
 import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
 import { getRecentSwiprSwipes } from "@/lib/clipstitchr/utils/getRecentSwiprSwipes";
 import { getRecentVideoClips } from "@/lib/clipstitchr/utils/getRecentVideoClips";
@@ -38,10 +36,6 @@ export function DashboardPageClient() {
         RECENT_DASHBOARD_ITEM_LIMIT,
     ),
     [library.stitches],
-  );
-  const recentLongs = useMemo(
-    () => getRecentLongrVideos(library.longrVideos, RECENT_DASHBOARD_ITEM_LIMIT),
-    [library.longrVideos],
   );
   const recentSwipes = useMemo(() => {
     const backgroundIds = new Set(
@@ -89,12 +83,6 @@ export function DashboardPageClient() {
           onLoadPoster={library.loadStitchPoster}
           onUpdateMusic={library.updateStitchMusic}
           onUpdateTextOverlay={library.updateStitchTextOverlay}
-        />
-        <RecentLongsSection
-          longrVideos={recentLongs}
-          onDelete={library.removeLongrVideo}
-          onLoadLongrVideo={library.loadLongrVideo}
-          onLoadPoster={library.loadLongrPoster}
         />
         <RecentSwipesSection
           backgrounds={swiprLibrary.backgrounds}
