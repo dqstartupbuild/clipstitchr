@@ -191,13 +191,11 @@ support creator-style proof, examples, tutorials, objections, or a gentle final
 prompt. Broader internal hook assets can support Swipr and Stitchr auto-text,
 but direct product/ad hook mechanics must not leak into default Clipr outputs.
 
-Non-avatar Clipr visuals use `prunaai/p-video`. Only Voiceover Reel uses the
+Non-avatar Clipr visuals use `prunaai/p-video`. Voiceover Reel uses the
 selected avatar voice by generating an avatar-voice source video, then Media
 Bunny composes that audio over generated p-video scenes after all clips are
-available. B-roll Reel can use the avatar photo as a visual reference, but it
-must remain silent b-roll with no narration, dialogue, talking-head delivery,
-lip-sync, or person visibly speaking. The composition rule is conservative: use
-a single provider video for
+available. B-roll Reel can use the avatar photo as a visual reference without
+speech. The composition rule is conservative: use a single provider video for
 30 second Avatar Talking Head, Text Shot, and Soft CTA outputs when one shot can
 carry the idea; use multiple scenes for 60 second non-avatar outputs and for
 30 second formats that need visual progression. Current non-avatar multi-scene
