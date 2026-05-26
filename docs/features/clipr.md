@@ -15,10 +15,9 @@ from the user's avatar, product context, hidden hook, and selected avatar voice.
 Clipr also supports non-avatar formats such as b-roll reels, text shots,
 voiceover reels, product-specific videos, value videos, problem/solution clips,
 objection handlers, how-to clips, and soft-CTA clips. Non-avatar visuals use
-`prunaai/p-video`; only Voiceover Reel uses the selected avatar voice as the
-narration source. B-roll Reel is silent b-roll only, with no speaking,
-voiceover, or visible lip-sync. Media Bunny composes the generated scenes after
-the provider clips are available.
+`prunaai/p-video`; voiceover formats use the selected avatar voice as the
+narration source and Media Bunny composes the generated scenes after the
+provider clips are available.
 
 Most Clipr formats are still engagement-first and should not feel like direct
 ads. Product-aware formats may use saved product details for examples, proof,
@@ -82,8 +81,7 @@ hook, and the remaining slides should pay it off with simple supporting points.
   selected avatar voice source, then compose that audio over the generated
   p-video scenes.
 - B-roll Reel can use the selected avatar photo as an image reference when the
-  scene should show the avatar without speech. It must remain silent b-roll: no
-  narration, dialogue, talking-head delivery, or person visibly speaking.
+  scene should show the avatar without speech.
 - Single vs. stitched-scene rule: use a single provider video for 30 second
   Avatar Talking Head, Text Shot, and Soft CTA outputs when one scene can carry
   the idea; use multiple generated scenes for all 60 second non-avatar outputs
@@ -659,8 +657,7 @@ Rules:
     `prunaai/p-video-avatar` to create one talking avatar video.
 14. Non-avatar formats send each generated scene prompt to `prunaai/p-video`.
     Voiceover Reel also sends the selected avatar photo, voice, and script to
-    `prunaai/p-video-avatar` only to create the voice source. B-roll Reel and
-    all other p-video formats do not create a voice source.
+    `prunaai/p-video-avatar` only to create the voice source.
 15. If music is enabled, `stability-ai/stable-audio-2.5` generates one 60
     second instrumental music bed concurrently with video generation.
 16. Generated avatar videos, p-video scene videos, voice source videos, and
@@ -714,8 +711,7 @@ Clipr scripts should:
 - start from one generated hook
 - stay in the selected duration target
 - be written as one natural spoken avatar monologue for avatar-talking-head
-  output, as avatar-voice narration for Voiceover Reel, or as scene planning
-  copy for silent non-avatar output
+  output, or as scene planning/voiceover copy for non-avatar output
 - give the viewer a useful payoff
 - avoid direct product selling by default unless the selected product-aware
   format calls for a soft close
@@ -751,8 +747,8 @@ type CliprScenePlan = {
   id: string;
   index: number;
   sceneType: "avatar" | "generated-video";
-  scriptText: string; // full avatar script, voiceover segment, or silent-scene planning copy
-  visualPrompt: string; // provider prompt; never asks for baked-in text, UI, logos, or visible speaking
+  scriptText: string; // full avatar script, voiceover segment, or planning copy
+  visualPrompt: string; // provider prompt; never asks for baked-in text
   photoScript?: string;
   estimatedDurationSeconds: number;
   generatedVideoObject?: R2ObjectReference;
