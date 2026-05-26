@@ -28,8 +28,6 @@ import type * as swiprBackgrounds from "../swiprBackgrounds.js";
 import type * as validators_assetTags from "../validators/assetTags.js";
 import type * as validators_avatarWardrobeStyle from "../validators/avatarWardrobeStyle.js";
 import type * as validators_clipType from "../validators/clipType.js";
-import type * as validators_cliprCompositionStrategy from "../validators/cliprCompositionStrategy.js";
-import type * as validators_cliprContentType from "../validators/cliprContentType.js";
 import type * as validators_cliprDurationSeconds from "../validators/cliprDurationSeconds.js";
 import type * as validators_cliprJobStage from "../validators/cliprJobStage.js";
 import type * as validators_cliprJobStatus from "../validators/cliprJobStatus.js";
@@ -82,8 +80,6 @@ declare const fullApi: ApiFromModules<{
   "validators/assetTags": typeof validators_assetTags;
   "validators/avatarWardrobeStyle": typeof validators_avatarWardrobeStyle;
   "validators/clipType": typeof validators_clipType;
-  "validators/cliprCompositionStrategy": typeof validators_cliprCompositionStrategy;
-  "validators/cliprContentType": typeof validators_cliprContentType;
   "validators/cliprDurationSeconds": typeof validators_cliprDurationSeconds;
   "validators/cliprJobStage": typeof validators_cliprJobStage;
   "validators/cliprJobStatus": typeof validators_cliprJobStatus;
