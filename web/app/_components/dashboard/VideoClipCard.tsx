@@ -17,13 +17,11 @@ import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataU
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
-import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { createVideoBlobWithPosterMetadata } from "@/lib/clipstitchr/media/createVideoBlobWithPosterMetadata";
 import { renderCliprVideoWithMusic } from "@/lib/clipstitchr/media/renderCliprVideoWithMusic";
-import { renderCliprVideoWithTextOverlay } from "@/lib/clipstitchr/media/renderCliprVideoWithTextOverlay";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
@@ -56,10 +54,6 @@ type VideoClipCardProps = {
     clip: VideoClipMetadata,
     music: CliprMusicMetadata | null,
   ) => void | Promise<void>;
-  onUpdateCliprTextOverlay?: (
-    clip: VideoClipMetadata,
-    textOverlay: TextOverlay | null,
-  ) => void | Promise<void>;
   onUpdateTrim: (
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
@@ -84,7 +78,6 @@ export function VideoClipCard({
   onSelect,
   onGenerateCliprMusic,
   onUpdateCliprMusic,
-  onUpdateCliprTextOverlay,
   onUpdateMetadata,
   onUpdateTrim,
   onCreateAvatarFromClip,
@@ -114,24 +107,15 @@ export function VideoClipCard({
 
     try {
       const music = nextClip.cliprMetadata?.music;
-      const textOverlay = nextClip.cliprMetadata?.textOverlay;
       const renderedBlob =
         music?.enabled && music.audioObject
           ? (
               await renderCliprVideoWithMusic({
                 musicBlob: await downloadMusicBlob(music),
-                textOverlay,
                 videoBlob: nextClip.blob,
                 volume: music.volume,
               })
             ).blob
-          : textOverlay
-            ? (
-                await renderCliprVideoWithTextOverlay({
-                  textOverlay,
-                  videoBlob: nextClip.blob,
-                })
-              ).blob
           : nextClip.blob;
       const exportBlob = await createVideoBlobWithPosterMetadata({
         posterBlob: nextClip.posterBlob ?? clip.posterBlob,
@@ -225,14 +209,6 @@ export function VideoClipCard({
                 onGenerate: handleGenerateCliprMusic,
                 onRemove: () => handleUpdateCliprMusic(null),
                 onSave: handleUpdateCliprMusic,
-              }
-            : undefined
-        }
-        cliprTextOverlayEditor={
-          clip.cliprMetadata && onUpdateCliprTextOverlay
-            ? {
-                onSave: (textOverlay) =>
-                  onUpdateCliprTextOverlay(clip, textOverlay),
               }
             : undefined
         }

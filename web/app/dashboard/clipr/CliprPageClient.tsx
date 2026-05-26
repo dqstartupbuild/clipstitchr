@@ -3,7 +3,6 @@
 import { CirclePlay } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CliprAvatarPanel } from "@/app/_components/clipr/CliprAvatarPanel";
-import { CliprContentTypeSelect } from "@/app/_components/clipr/CliprContentTypeSelect";
 import { CliprDurationControl } from "@/app/_components/clipr/CliprDurationControl";
 import { CliprGenerationProgress } from "@/app/_components/clipr/CliprGenerationProgress";
 import { CliprJobResult } from "@/app/_components/clipr/CliprJobResult";
@@ -14,7 +13,6 @@ import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHe
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
-import { defaultCliprContentType } from "@/lib/clipstitchr/constants/defaultCliprContentType";
 import { defaultCliprDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprDurationSeconds";
 import { defaultCliprVoiceId } from "@/lib/clipstitchr/constants/defaultCliprVoiceId";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
@@ -22,7 +20,6 @@ import { useCliprGeneration } from "@/lib/clipstitchr/hooks/useCliprGeneration";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
-import type { CliprContentType } from "@/lib/clipstitchr/types/CliprContentType";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 
 export function CliprPageClient() {
@@ -32,9 +29,6 @@ export function CliprPageClient() {
   const generator = useCliprGeneration({ onCreated: library.refresh });
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedAvatarId, setSelectedAvatarId] = useState("");
-  const [contentType, setContentType] = useState<CliprContentType>(
-    defaultCliprContentType,
-  );
   const [durationSeconds, setDurationSeconds] = useState<CliprDurationSeconds>(
     defaultCliprDurationSeconds,
   );
@@ -103,10 +97,6 @@ export function CliprPageClient() {
                   setVoiceOverride(null);
                 }}
               />
-              <CliprContentTypeSelect
-                value={contentType}
-                onChange={setContentType}
-              />
               <CliprDurationControl
                 value={durationSeconds}
                 onChange={setDurationSeconds}
@@ -147,7 +137,6 @@ export function CliprPageClient() {
                   void generator.generate({
                     addMusic: addMusic && !selectedMusicTrack,
                     avatarId: activeAvatarId,
-                    contentType,
                     durationSeconds,
                     musicTrackId: selectedMusicTrack?.id,
                     productId: activeProductId,

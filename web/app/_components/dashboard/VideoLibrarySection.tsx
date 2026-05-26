@@ -13,7 +13,6 @@ import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataU
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
-import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -46,10 +45,6 @@ type VideoLibrarySectionProps = {
     clip: VideoClipMetadata,
     music: CliprMusicMetadata | null,
   ) => void | Promise<void>;
-  onUpdateCliprTextOverlay?: (
-    clip: VideoClipMetadata,
-    textOverlay: TextOverlay | null,
-  ) => void | Promise<void>;
   onUpdateTrim: (
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
@@ -79,7 +74,6 @@ export function VideoLibrarySection({
   onGenerateCliprMusic,
   onLoadMoreItems,
   onUpdateCliprMusic,
-  onUpdateCliprTextOverlay,
   onUpdateMetadata,
   onUpdateTrim,
   onCreateAvatarFromClip,
@@ -153,7 +147,6 @@ export function VideoLibrarySection({
                 }
                 onGenerateCliprMusic={onGenerateCliprMusic}
                 onUpdateCliprMusic={onUpdateCliprMusic}
-                onUpdateCliprTextOverlay={onUpdateCliprTextOverlay}
                 onUpdateMetadata={onUpdateMetadata}
                 onUpdateTrim={onUpdateTrim}
                 onCreateAvatarFromClip={onCreateAvatarFromClip}

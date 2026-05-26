@@ -5,7 +5,6 @@ import type { CliprJobCreateInput } from "@/lib/clipstitchr/server/clipr/CliprJo
 import type { CliprJobServerContext } from "@/lib/clipstitchr/server/clipr/CliprJobServerContext";
 import type { CliprTextGeneration } from "@/lib/clipstitchr/types/CliprTextGeneration";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
-import { getCliprGenerationStrategy } from "@/lib/clipstitchr/utils/getCliprGenerationStrategy";
 
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
@@ -22,17 +21,10 @@ export async function createCliprJobScriptPlan({
   replicate,
   secret,
 }: CreateCliprJobScriptPlanOptions): Promise<CliprTextGeneration> {
-  const generationStrategy = getCliprGenerationStrategy({
-    contentType: input.contentType,
-    durationSeconds: input.durationSeconds,
-  });
   const textGeneration = await createCliprTextGeneration({
-    contentType: input.contentType,
-    compositionStrategy: generationStrategy.strategy,
     durationSeconds: input.durationSeconds,
     product,
     purpose: "clipr",
-    sceneCount: generationStrategy.sceneCount,
     replicate,
     slideCount: 4,
   });
@@ -45,7 +37,6 @@ export async function createCliprJobScriptPlan({
     filledHook: textGeneration.filledHook,
     variablesUsed: textGeneration.variablesUsed,
     script: textGeneration.script,
-    overlayText: textGeneration.overlayText,
     scenePlan: textGeneration.scenePlan,
     providerModel: textGeneration.providerModel,
     updatedAt: new Date().toISOString(),

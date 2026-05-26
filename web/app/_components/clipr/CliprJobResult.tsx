@@ -1,7 +1,6 @@
 import { CirclePlay } from "lucide-react";
 import Link from "next/link";
 import type { CliprClientJob } from "@/lib/clipstitchr/types/CliprClientJob";
-import { getCliprContentTypeLabel } from "@/lib/clipstitchr/utils/getCliprContentTypeLabel";
 
 type CliprJobResultProps = {
   finalClipId: string | null;
@@ -23,9 +22,6 @@ export function CliprJobResult({ finalClipId, job }: CliprJobResultProps) {
       <h2 className="mt-1 text-lg font-bold text-text-primary">
         {job.filledHook ?? "Clipr script"}
       </h2>
-      <p className="mt-2 inline-flex rounded-md border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-bold text-accent-dark">
-        {getCliprContentTypeLabel(job.contentType)}
-      </p>
       {job.script ? (
         <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-text-secondary">
           {job.script}
@@ -43,12 +39,10 @@ export function CliprJobResult({ finalClipId, job }: CliprJobResultProps) {
             className="rounded-lg border border-border bg-surface-muted p-3"
           >
             <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
-              {scene.sceneType === "avatar" ? "Avatar video" : "Generated scene"}
+              Avatar video
             </p>
             <p className="mt-1 text-sm font-semibold text-text-primary">
-              {scene.sceneType === "avatar"
-                ? "Full-script avatar"
-                : `Scene ${scene.index + 1}`}
+              Full-script avatar
             </p>
             <p className="mt-2 text-sm leading-6 text-text-secondary">
               {scene.scriptText}

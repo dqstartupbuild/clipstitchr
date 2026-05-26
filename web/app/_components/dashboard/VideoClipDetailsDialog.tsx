@@ -5,7 +5,6 @@ import { useState } from "react";
 import { CliprMusicControls } from "@/app/_components/dashboard/CliprMusicControls";
 import { MediaActionButtonList } from "@/app/_components/dashboard/MediaActionButtonList";
 import { VideoClipMusicPreview } from "@/app/_components/dashboard/VideoClipMusicPreview";
-import { TextOverlayEditor } from "@/app/_components/stitchr/TextOverlayEditor";
 import { VideoTrimEditor } from "@/app/_components/trim/VideoTrimEditor";
 import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { Button } from "@/app/_components/ui/Button";
@@ -13,7 +12,6 @@ import { IconButton } from "@/app/_components/ui/IconButton";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import { useVideoClipDetailsMusic } from "@/lib/clipstitchr/hooks/useVideoClipDetailsMusic";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
-import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
@@ -21,7 +19,6 @@ import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getVideoClipBadgeLabel } from "@/lib/clipstitchr/utils/getVideoClipBadgeLabel";
-import { getCliprContentTypeLabel } from "@/lib/clipstitchr/utils/getCliprContentTypeLabel";
 import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
 
 type VideoClipDetailsTrimEditor = {
@@ -29,10 +26,6 @@ type VideoClipDetailsTrimEditor = {
   saveLabel: string;
   title: string;
   onSave: (trimRange: VideoTrimRange) => void | Promise<void>;
-};
-
-type VideoClipDetailsTextOverlayEditor = {
-  onSave: (textOverlay: TextOverlay | null) => void | Promise<void>;
 };
 
 type VideoClipDetailsDialogProps = {
@@ -43,7 +36,6 @@ type VideoClipDetailsDialogProps = {
   isLoading: boolean;
   musicEditor?: VideoClipDetailsMusicEditor;
   posterUrl: string | null;
-  textOverlayEditor?: VideoClipDetailsTextOverlayEditor;
   trimEditor?: VideoClipDetailsTrimEditor;
   videoUrl: string | null;
   onClose: () => void;
@@ -58,7 +50,6 @@ export function VideoClipDetailsDialog({
   isLoading,
   musicEditor,
   posterUrl,
-  textOverlayEditor,
   trimEditor,
   videoUrl,
   onClose,
@@ -73,18 +64,8 @@ export function VideoClipDetailsDialog({
     clampVideoTrimRange(initialTrimRange, clip.duration),
   );
   const [isControlsEditorOpen, setIsControlsEditorOpen] = useState(
-    Boolean(
-      (trimEditor || musicEditor || textOverlayEditor) &&
-        initialControlsEditorOpen,
-    ),
+    Boolean((trimEditor || musicEditor) && initialControlsEditorOpen),
   );
-  const [activeTextOverlay, setActiveTextOverlay] = useState(
-    () => clip.cliprMetadata?.textOverlay ?? null,
-  );
-  const [savedTextOverlay, setSavedTextOverlay] = useState(
-    () => clip.cliprMetadata?.textOverlay ?? null,
-  );
-  const [playbackTime, setPlaybackTime] = useState(0);
   const musicState = useVideoClipDetailsMusic({ clip, musicEditor });
   const displayDuration = getVideoTrimDisplayDuration(
     clip.duration,
@@ -96,12 +77,6 @@ export function VideoClipDetailsDialog({
       : "Attached but disabled"
     : undefined;
   const detailItems = [
-    {
-      label: "Clip type",
-      value: clip.cliprMetadata
-        ? getCliprContentTypeLabel(clip.cliprMetadata.contentType)
-        : undefined,
-    },
     { label: "Clipr hook", value: clip.cliprMetadata?.filledHook },
     { label: "Clipr product", value: clip.cliprMetadata?.productName },
     { label: "Linked product", value: productName },
@@ -125,7 +100,6 @@ export function VideoClipDetailsDialog({
 
   const handleCancelTrim = () => {
     setActiveTrimRange(savedTrimRange);
-    setActiveTextOverlay(savedTextOverlay);
   };
 
   const handleSaveTrim = async (trimRange: VideoTrimRange) => {
@@ -139,23 +113,8 @@ export function VideoClipDetailsDialog({
     setActiveTrimRange(clampedTrimRange);
     setSavedTrimRange(clampedTrimRange);
   };
-  const handleSaveTextOverlay = async () => {
-    if (!textOverlayEditor) {
-      return;
-    }
-
-    await textOverlayEditor.onSave(activeTextOverlay);
-    setSavedTextOverlay(activeTextOverlay);
-  };
   const controlsLabel =
-    [
-      trimEditor ? "Trim" : "",
-      musicEditor ? "Music" : "",
-      textOverlayEditor ? "Text" : "",
-    ]
-      .filter(Boolean)
-      .map((label, index) => (index === 0 ? label : label.toLowerCase()))
-      .join(" & ") || "Controls";
+    trimEditor && musicEditor ? "Trim & music" : trimEditor ? "Trim" : "Music";
 
   return (
     <div
@@ -200,13 +159,7 @@ export function VideoClipDetailsDialog({
             musicBlob={musicState.musicBlob}
             musicEnabled={musicState.musicEnabled}
             musicVolume={musicState.musicVolume}
-            textOverlay={activeTextOverlay}
-            totalDuration={clip.duration}
             trimRange={activeTrimRange}
-            onPlaybackTimeChange={setPlaybackTime}
-            onTextOverlayChange={
-              textOverlayEditor ? setActiveTextOverlay : undefined
-            }
             onLoadPreview={onLoadPreview}
           />
           <div className="flex flex-col gap-5">
@@ -268,27 +221,6 @@ export function VideoClipDetailsDialog({
                     }
                     onVolumeChange={musicState.setMusicVolume}
                   />
-                ) : null}
-                {textOverlayEditor ? (
-                  <div className="rounded-lg border border-border bg-surface p-3">
-                    <TextOverlayEditor
-                      textOverlay={activeTextOverlay}
-                      totalDuration={clip.duration}
-                      ugcDuration={0}
-                      currentTime={playbackTime}
-                      onChange={setActiveTextOverlay}
-                    />
-                    <div className="mt-3 flex justify-end">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => void handleSaveTextOverlay()}
-                      >
-                        Save text
-                      </Button>
-                    </div>
-                  </div>
                 ) : null}
               </div>
             ) : null}
