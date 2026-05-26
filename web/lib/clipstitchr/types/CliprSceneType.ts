@@ -1,1 +1,1 @@
-export type CliprSceneType = "avatar" | "generated-video";
+export type CliprSceneType = "avatar";

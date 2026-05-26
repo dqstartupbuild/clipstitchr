@@ -1,10 +1,6 @@
-import type { CliprCompositionStrategy } from "@/lib/clipstitchr/types/CliprCompositionStrategy";
-import { defaultCliprContentType } from "@/lib/clipstitchr/constants/defaultCliprContentType";
-import type { CliprContentType } from "@/lib/clipstitchr/types/CliprContentType";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprHookTemplate } from "@/lib/clipstitchr/types/CliprHookTemplate";
 import type { CliprScenePlan } from "@/lib/clipstitchr/types/CliprScenePlan";
-import type { CliprSceneType } from "@/lib/clipstitchr/types/CliprSceneType";
 import type { CliprTextGeneration } from "@/lib/clipstitchr/types/CliprTextGeneration";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
@@ -89,14 +85,10 @@ function createFallbackHook(product: ProductProfile, purpose: CliprTextPurpose) 
   return `Most people notice ${problem} too late`;
 }
 
-function normalizeScriptString(
-  value: unknown,
-  fallback: string,
-  { allowCta = false }: { allowCta?: boolean } = {},
-) {
+function normalizeScriptString(value: unknown, fallback: string) {
   const text = typeof value === "string" ? value.trim().replace(/\s+/g, " ") : "";
 
-  if (!text || (!allowCta && getCliprTextHasForbiddenCta(text))) {
+  if (!text || getCliprTextHasForbiddenCta(text)) {
     return fallback;
   }
 
@@ -217,26 +209,22 @@ function normalizeVariables(value: unknown) {
   );
 }
 
-function normalizeSceneType(contentType: CliprContentType): CliprSceneType {
-  return contentType === "avatar-talking-head" ? "avatar" : "generated-video";
+function normalizeSceneType(): "avatar" {
+  return "avatar";
 }
 
 function normalizeScenePlan(
   value: unknown,
-  contentType: CliprContentType,
   durationSeconds: CliprDurationSeconds,
-  sceneCount: number,
 ): CliprScenePlan[] {
   const rawScenes = Array.isArray(value) ? value : [];
-  const safeSceneCount = Math.max(1, sceneCount);
-  const fallbackSceneDuration = Math.ceil(durationSeconds / safeSceneCount);
 
   return rawScenes
-    .slice(0, safeSceneCount)
+    .slice(0, 1)
     .map((scene: ParsedCliprScene, index) => ({
       id: createId(),
       index,
-      sceneType: normalizeSceneType(contentType),
+      sceneType: normalizeSceneType(),
       scriptText: normalizeScriptString(
         scene.scriptText,
         "Explain the idea simply.",
@@ -248,7 +236,7 @@ function normalizeScenePlan(
       estimatedDurationSeconds:
         typeof scene.estimatedDurationSeconds === "number"
           ? Math.min(durationSeconds, Math.max(4, scene.estimatedDurationSeconds))
-          : fallbackSceneDuration,
+          : durationSeconds,
     }));
 }
 
@@ -259,20 +247,14 @@ export function parseCliprTextGenerationOutput({
   providerModel,
   product,
   purpose,
-  compositionStrategy = "single-video",
-  contentType = defaultCliprContentType,
-  sceneCount = 1,
   slideCount,
 }: {
   candidates: CliprHookTemplate[];
-  compositionStrategy?: CliprCompositionStrategy;
-  contentType?: CliprContentType;
   durationSeconds: CliprDurationSeconds;
   outputText: string;
   providerModel: string;
   product: ProductProfile;
   purpose: CliprTextPurpose;
-  sceneCount?: number;
   slideCount: number;
 }): CliprTextGeneration {
   const parsed = JSON.parse(getCliprJsonText(outputText)) as {
@@ -297,19 +279,8 @@ export function parseCliprTextGenerationOutput({
   const script = normalizeScriptString(
     parsed.script,
     "",
-    {
-      allowCta:
-        contentType === "soft-cta" ||
-        contentType === "value-video" ||
-        contentType === "product-video",
-    },
   );
-  const scenePlan = normalizeScenePlan(
-    parsed.scenePlan,
-    contentType,
-    durationSeconds,
-    sceneCount,
-  );
+  const scenePlan = normalizeScenePlan(parsed.scenePlan, durationSeconds);
   const fallbackScript = scenePlan
     .map((scene) => scene.scriptText)
     .filter(Boolean)
@@ -319,51 +290,27 @@ export function parseCliprTextGenerationOutput({
     script ||
     fallbackScript ||
     `${filledHook}. Give the viewer a useful explanation without pitching a product.`;
-  const finalScenePlanBase: CliprScenePlan[] = scenePlan.length
+  const finalScenePlan = scenePlan.length
     ? scenePlan.map((scene, index) => ({
         ...scene,
         index,
-        sceneType: normalizeSceneType(contentType),
-        scriptText:
-          contentType === "avatar-talking-head" ? finalScript : scene.scriptText,
-        estimatedDurationSeconds:
-          contentType === "avatar-talking-head"
-            ? durationSeconds
-          : scene.estimatedDurationSeconds,
+        sceneType: "avatar" as const,
+        scriptText: finalScript,
+        estimatedDurationSeconds: durationSeconds,
       }))
     : [
         {
           id: createId(),
           index: 0,
-          sceneType: normalizeSceneType(contentType),
+          sceneType: "avatar" as const,
           scriptText: finalScript,
           visualPrompt:
-            contentType === "avatar-talking-head"
-              ? "Vertical short-form talking scene with a clear, natural delivery."
-              : "Vertical short-form realistic scene with clean space for editable text.",
+            "Vertical short-form talking scene with a clear, natural delivery.",
           estimatedDurationSeconds: durationSeconds,
         },
       ];
-  const finalScenePlan =
-    contentType === "avatar-talking-head"
-      ? finalScenePlanBase.slice(0, 1)
-      : Array.from({ length: Math.max(1, sceneCount) }, (_, index) => {
-          const scene = finalScenePlanBase[index] ?? finalScenePlanBase[0];
-
-          return {
-            ...scene,
-            id: index === scene.index ? scene.id : createId(),
-            index,
-            sceneType: "generated-video" as const,
-            estimatedDurationSeconds: Math.ceil(
-              durationSeconds / Math.max(1, sceneCount),
-            ),
-          };
-        });
 
   return {
-    compositionStrategy,
-    contentType,
     filledHook,
     hookStyleKey: selectedTemplate.styleKey,
     hookTemplateId: selectedTemplate.id,

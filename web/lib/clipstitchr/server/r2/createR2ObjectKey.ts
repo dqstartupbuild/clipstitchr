@@ -61,11 +61,6 @@ const objectKindConfig: Record<
     baseName: "image",
     fallbackExtension: "jpg",
   },
-  "clipr-scene-video": {
-    directory: "clipr-scenes",
-    baseName: "scene",
-    fallbackExtension: "mp4",
-  },
   "stitch-music-audio": {
     directory: "stitch-music",
     baseName: "music",

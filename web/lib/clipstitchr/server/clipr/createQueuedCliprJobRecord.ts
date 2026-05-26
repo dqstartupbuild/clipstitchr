@@ -2,7 +2,6 @@ import { api } from "@/convex/_generated/api";
 import type { CliprJobCreateInput } from "@/lib/clipstitchr/server/clipr/CliprJobCreateInput";
 import type { CliprJobInputDocuments } from "@/lib/clipstitchr/server/clipr/CliprJobInputDocuments";
 import type { CliprJobServerContext } from "@/lib/clipstitchr/server/clipr/CliprJobServerContext";
-import { getCliprGenerationStrategy } from "@/lib/clipstitchr/utils/getCliprGenerationStrategy";
 
 type CreateQueuedCliprJobRecordOptions = CliprJobServerContext & {
   createdAt: string;
@@ -17,11 +16,6 @@ export async function createQueuedCliprJobRecord({
   input,
   secret,
 }: CreateQueuedCliprJobRecordOptions) {
-  const generationStrategy = getCliprGenerationStrategy({
-    contentType: input.contentType,
-    durationSeconds: input.durationSeconds,
-  });
-
   await convex.mutation(api.cliprJobs.createQueued, {
     secret,
     id: input.jobId,
@@ -31,8 +25,6 @@ export async function createQueuedCliprJobRecord({
     audienceDetails: documents.product.audienceDetails,
     productInferredProblem: documents.product.inferredProblem,
     productInferredPainPoints: documents.product.inferredPainPoints,
-    contentType: input.contentType,
-    compositionStrategy: generationStrategy.strategy,
     avatarId: documents.avatar.id,
     avatarName: documents.avatar.name,
     avatarPhotoId: documents.avatarPhoto.id,

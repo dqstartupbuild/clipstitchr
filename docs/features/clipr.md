@@ -5,26 +5,16 @@
 
 ## Summary
 
-Clipr is a ClipStitchr feature for generating reusable short-form Clips when a
-user needs more audience-building source material. It is inspired by ClipsPal's
-public hook-category strategy, but Clipr must use original ClipStitchr hook
-styles and templates, hidden from users as internal resources.
+Clipr is a new ClipStitchr feature for generating reusable short-form engagement clips.
+It is inspired by ClipsPal's public hook-category strategy, but Clipr must use
+original ClipStitchr hook styles and templates, hidden from users as internal
+resources.
 
-The primary Clipr format is still a UGC-style avatar talking-head clip generated
-from the user's avatar, product context, hidden hook, and selected avatar voice.
-Clipr also supports non-avatar formats such as b-roll reels, text shots,
-voiceover reels, product-specific videos, value videos, problem/solution clips,
-objection handlers, how-to clips, and soft-CTA clips. Non-avatar visuals use
-`prunaai/p-video`; voiceover formats use the selected avatar voice as the
-narration source and Media Bunny composes the generated scenes after the
-provider clips are available.
-
-Most Clipr formats are still engagement-first and should not feel like direct
-ads. Product-aware formats may use saved product details for examples, proof,
-objections, tutorials, or a soft close, but the output should feel like creator
-content instead of product-page copy. Generated Clips can be downloaded as
-standalone clips and must be saved into the Content Library and used in Stitchr
-the same way UGC clips are used.
+Clipr is not a direct-promo generator. Generated Clipr clips are meant to create
+engagement around the user's audience, problem space, opinions, stories, tests,
+or educational angles. They must not include a CTA. They can be downloaded as
+standalone clips and must be saved into the Content Library and used in Stitchr the same
+way UGC clips are used.
 
 The implementation must also extend the hook system to Swipr slide text and
 Stitchr text overlays so selected product settings can drive auto-generated
@@ -38,15 +28,10 @@ hook, and the remaining slides should pay it off with simple supporting points.
 - Clipr outputs are UGC-compatible source clips, but they have separate Clipr
   provenance and appear in a new Content Library `Clips` tab.
 - Clipr clips must not promote ClipStitchr.
-- Avatar Talking Head, B-roll Reel, Text Shot, and Voiceover Reel formats should
-  not directly promote the user's product. Product context is background
-  strategy for those formats.
-- Product Video, Value Video, Problem/Solution, Objection Handler, How-To, and
-  Soft CTA formats may use existing saved product details when they support the
-  audience story, proof, example, tutorial, or closing prompt.
-- Clipr clips should not include CTAs such as "try it", "download it", "save
-  this", "comment", "follow", "buy", "book", or "sign up" unless the selected
-  format explicitly allows a low-pressure soft CTA.
+- Clipr clips must not directly promote the user's product. All content is for
+  audience engagement in a non-promotional way.
+- Clipr clips must not include CTAs such as "try it", "download it", "save
+  this", "comment", "follow", "buy", "book", or "sign up".
 - Advice-style hooks can name a behavior or mistake, but generated scripts must
   not ask viewers to take a platform, sales, or app action.
 - Product settings still matter: the saved product profile supplies audience,
@@ -65,8 +50,6 @@ hook, and the remaining slides should pay it off with simple supporting points.
 - Default video length is 30 seconds.
 - The user can choose 30 seconds or 60 seconds.
 - Generated videos can be up to 60 seconds.
-- The user selects a Clipr content type before generation. The default is
-  `Avatar Talking Head`.
 - The user selects an avatar to use as the character reference. They should not
   have to select a specific image; the system should automatically use that
   avatar's first uploaded photo for stable, repeatable character consistency.
@@ -75,24 +58,9 @@ hook, and the remaining slides should pay it off with simple supporting points.
 - The user can still choose a different voice for a single Clipr job without
   changing the avatar's saved voice.
 - Clipr should generate one full-script avatar video from the selected avatar
-  and voice for the primary avatar-talking-head format.
-- Non-avatar visual formats should call `prunaai/p-video` for generated scene
-  footage. Voiceover Reel should use `prunaai/p-video-avatar` only to create the
-  selected avatar voice source, then compose that audio over the generated
-  p-video scenes.
-- B-roll Reel can use the selected avatar photo as an image reference when the
-  scene should show the avatar without speech.
-- Single vs. stitched-scene rule: use a single provider video for 30 second
-  Avatar Talking Head, Text Shot, and Soft CTA outputs when one scene can carry
-  the idea; use multiple generated scenes for all 60 second non-avatar outputs
-  and for 30 second formats that need visual progression. Current non-avatar
-  multi-scene output uses 3 scenes for 30 seconds and 6 scenes for 60 seconds,
-  with each provider scene capped at 20 seconds.
+  and voice.
 - The generated avatar video should get as close as possible to the target
   length of 30 or 60 seconds.
-- Text-based Clipr formats save editable overlay metadata. Text should be shown
-  during preview, but it must not be baked into the saved clean Clip until
-  export/download, matching the Stitchr and Swipr editable-state model.
 - The user can opt into AI-generated background music. The checkbox is off by
   default.
 - Clipr music uses `stability-ai/stable-audio-2.5`, generates one 60 second
@@ -100,10 +68,7 @@ hook, and the remaining slides should pay it off with simple supporting points.
 - Clipr does not bake music into the saved library video. The user can remove
   music, regenerate music, or change music volume later. Media Bunny mixes the
   saved clean video and selected music only when the user exports/downloads.
-- Final Clipr outputs should be saved in the content library and organized into
-  a "Clips" tab. Each saved Clip stores a content-type tag such as
-  `clipr-b-roll-reel`, `clipr-text-shot`, or `clipr-product-video`; the Clips
-  tab should let users search and filter by that content type.
+- Final Clipr outputs should be saved in the content library and organized into a "Clips" tab.
 
 ## Documentation Coverage
 
@@ -421,10 +386,8 @@ The runtime hook engine now has four hidden template sources:
 
 The UI must not expose the source names, template IDs, risk labels, or
 placeholder mechanics. The app-promo library is available only to Swipr and
-Stitchr auto-text. Clipr product-aware formats can use saved product details for
-proof, examples, tutorials, objections, or a soft close, but they should still
-avoid internal ad-hook mechanics. The polarizing reaction pack is available only
-to Stitchr auto-text.
+Stitchr auto-text because Clipr outputs must remain non-promotional engagement
+clips. The polarizing reaction pack is available only to Stitchr auto-text.
 
 ## Style Generation Rules
 
@@ -645,36 +608,26 @@ Rules:
    inferred pain points, audience details, placeholder fillers, and safety
    rules.
 8. GPT-4.1 fills hook placeholders and selects the strongest hook.
-9. GPT-4.1 generates a Clipr script, overlay text, and scene plan from the
-   selected hook and content type.
-10. Avatar Talking Head returns one avatar scene plan for the full script.
-11. Non-avatar formats return one or more `generated-video` scenes with visual
-    prompts that never request baked-in text.
-12. Avatar Talking Head generates one UGC-style avatar still from the selected
-    avatar reference photo, avatar description, full script, and visual
-    direction.
-13. The generated still, selected voice, and full script are sent to
+9. GPT-4.1 generates a Clipr script from the selected hook.
+10. GPT-4.1 returns one avatar scene plan for the full script.
+11. Clipr generates one UGC-style avatar still from the selected avatar
+    reference photo, avatar description, full script, and visual direction.
+12. The generated still, selected voice, and full script are sent to
     `prunaai/p-video-avatar` to create one talking avatar video.
-14. Non-avatar formats send each generated scene prompt to `prunaai/p-video`.
-    Voiceover Reel also sends the selected avatar photo, voice, and script to
-    `prunaai/p-video-avatar` only to create the voice source.
-15. If music is enabled, `stability-ai/stable-audio-2.5` generates one 60
-    second instrumental music bed concurrently with video generation.
-16. Generated avatar videos, p-video scene videos, voice source videos, and
-    optional music files are copied into R2. Music is stored as its own R2
-    object.
-17. The browser normalizes the full avatar video or composes generated p-video
-    scenes with Media Bunny without baking in music or text.
-18. Clipr generates a poster image for the final output.
-19. Final video and poster are uploaded to R2.
-20. Convex saves the final output as a UGC-compatible video clip with Clipr
-    provenance metadata, content-type tags, optional music metadata, and
-    optional editable text-overlay metadata.
-21. The output appears in the Content Library `Clips` tab, can be filtered by
-    content type, and can be used in Stitchr.
-22. If music or text overlay metadata is attached and enabled,
-    download/export renders a fresh MP4 with Media Bunny using the clean video,
-    the R2 music file, saved music volume, and current overlay state.
+13. If music is enabled, `stability-ai/stable-audio-2.5` generates one 60
+    second instrumental music bed concurrently with the avatar video generation.
+14. The generated avatar still, full-script avatar video, and optional music
+    file are copied into R2. Music is stored as its own R2 object.
+15. The browser normalizes the full avatar video without baking in music.
+16. Clipr generates a poster image for the final output.
+17. Final video and poster are uploaded to R2.
+18. Convex saves the final output as a UGC-compatible video clip with Clipr
+    provenance metadata.
+19. The output appears in the Content Library `Clips` tab and can be used in
+    Stitchr.
+20. If music metadata is attached and enabled, download/export renders a fresh
+    MP4 with Media Bunny using the clean video, the R2 music file, and the saved
+    music volume.
 
 ## AI Provider Notes
 
@@ -689,9 +642,6 @@ Planned model roles:
   full-script avatar video.
 - Avatar video and voice generation: `prunaai/p-video-avatar`, using the
   generated still, selected voice, voice prompt, and full script.
-- Non-avatar visual generation: `prunaai/p-video`, using vertical scene prompts
-  with no baked-in captions or lower thirds. Each scene is capped at 20 seconds
-  and copied to R2 before browser composition.
 - Optional background music: `stability-ai/stable-audio-2.5`, using an
   instrumental-only prompt derived from the product context and Clipr script.
   Inputs use `duration: 60`, `steps: 8`, and `cfg_scale: 1`.
@@ -701,7 +651,6 @@ Add environment overrides instead of hard-coding provider choices:
 - `CLIPR_HOOK_MODEL_ID`
 - `AVATAR_PHOTO_MODEL_ID` for avatar photo generation and Clipr avatar stills
 - `CLIPR_AVATAR_VIDEO_MODEL_ID`
-- `CLIPR_GENERATED_VIDEO_MODEL_ID`
 - `CLIPR_MUSIC_MODEL_ID`
 
 ## Script Rules
@@ -710,13 +659,10 @@ Clipr scripts should:
 
 - start from one generated hook
 - stay in the selected duration target
-- be written as one natural spoken avatar monologue for avatar-talking-head
-  output, or as scene planning/voiceover copy for non-avatar output
+- be written as one natural spoken avatar monologue
 - give the viewer a useful payoff
-- avoid direct product selling by default unless the selected product-aware
-  format calls for a soft close
-- avoid CTAs except for the final moment of Soft CTA and supported value/product
-  formats
+- avoid direct product selling by default
+- avoid CTAs
 - avoid fake stats, fake studies, fake quotes, and unverifiable claims
 - avoid regulated claims unless the product profile explicitly and safely
   supports them
@@ -731,27 +677,19 @@ Clipr scripts should not:
 - claim that an expert, study, institution, or dataset exists unless it was
   provided in the product settings
 
-For Soft CTA and product-aware Clipr formats, the closing prompt should stay
-low-pressure and useful. It can point to the product only when the saved product
-details justify it, and it should not turn the clip into a hard-sell ad.
+## Avatar Scene Model
 
-## Scene Model
-
-The generated plan should be represented as structured data. Avatar Talking
-Head uses one `avatar` scene. Non-avatar content uses one or more
-`generated-video` scenes that are copied to R2 and composed with Media Bunny
-after all provider clips finish.
+The generated full-script avatar plan should be represented as structured data:
 
 ```ts
 type CliprScenePlan = {
   id: string;
   index: number;
-  sceneType: "avatar" | "generated-video";
-  scriptText: string; // full avatar script, voiceover segment, or planning copy
-  visualPrompt: string; // provider prompt; never asks for baked-in text
+  sceneType: "avatar";
+  scriptText: string;
+  visualPrompt: string;
   photoScript?: string;
   estimatedDurationSeconds: number;
-  generatedVideoObject?: R2ObjectReference;
   voiceAudioObject?: R2ObjectReference;
   providerPredictionId?: string;
 };
@@ -763,17 +701,13 @@ The final job should preserve:
 - selected avatar ID, resolved avatar photo ID, and source image object
 - selected voice ID
 - selected duration target
-- selected content type
-- single-video or multi-scene composition strategy
 - selected hidden hook style/template IDs
 - filled hook
-- editable overlay text when the content type uses on-screen text
 - variables used
 - full script
-- scene plan
+- single avatar scene plan
 - provider prediction IDs
-- intermediate avatar image, avatar video, and generated scene video object
-  references
+- intermediate avatar image and avatar video object references
 - final clip ID after save
 
 ## Library And Data Model
@@ -798,22 +732,9 @@ type CliprMetadata = {
   avatarPhotoId: string;
   voiceId: string;
   targetDurationSeconds: 30 | 60;
-  contentType:
-    | "avatar-talking-head"
-    | "b-roll-reel"
-    | "text-shot"
-    | "voiceover-reel"
-    | "product-video"
-    | "value-video"
-    | "problem-solution"
-    | "objection-handler"
-    | "how-to"
-    | "soft-cta";
-  compositionStrategy: "single-video" | "multi-scene";
   hookStyleKey: string;
   hookTemplateId: string;
   filledHook: string;
-  textOverlay?: TextOverlay;
   variablesUsed: Record<string, string>;
   script: string;
   sceneCount: number;
@@ -843,15 +764,9 @@ Content Library behavior:
 - `UGC` should show uploaded/non-Clipr/non-Swapr UGC clips.
 - `Swaps` should continue to show Swapr outputs.
 - `All` should include UGC, Demo, Clips, Swaps, Swipes, and Stitches.
-- `Clips` should support text search and content-type filtering using saved
-  content-type tags and Clipr metadata.
 - Clipr clips should have `Use in Stitchr`, preview, metadata edit, music
   settings, download/export, and delete behavior consistent with other saved
   video clips.
-- Text-based Clipr clips should expose the same editable style, position, and
-  duration controls used for Stitchr and Swipr overlays. The saved clean Clip
-  remains unbaked; export/download renders the current overlay into the output
-  file with Media Bunny.
 - Music settings should let the user disable/remove music, regenerate music, and
   change the export volume. These changes update metadata and the R2 music
   object, not the saved clean video.
@@ -861,8 +776,7 @@ Content Library behavior:
 Add:
 
 - `/dashboard/clipr`
-  - Clipr generation studio with product, avatar, voice, duration, music, and
-    content-type selection.
+  - Clipr generation studio.
 - `POST /api/clipr/music`
   - Authenticated, rate-limited regeneration endpoint for existing Clipr music
     assets.
@@ -874,15 +788,11 @@ Update:
 - Dashboard sidebar: add `Clipr`.
 - Dashboard page: add Clipr entry point.
 - Content Library tabs: add `Clips`.
-- Clips tab: add content-type filtering for saved Clipr formats.
 - Stitchr UGC selector: include Clipr outputs as UGC-compatible.
 - Upload/library filters: exclude Clipr outputs from plain UGC tab unless the
   All tab is selected.
 - Video details dialog: show Clipr provenance in a user-friendly way without
   exposing hidden style/template IDs. Keep those IDs in internal metadata only.
-- Video details dialog: for text-based Clipr outputs, show editable overlay
-  style, position, and timing controls; save metadata updates without altering
-  the stored clean video.
 - Settings product flow: ensure saved product context can be selected by Clipr,
   Swipr auto-text, and Stitchr auto-text.
 
@@ -972,7 +882,6 @@ New enforcement surfaces to document and implement:
 - Swipr and Stitchr auto-text through the same Clipr hook/script generation
   route. The expanded local template libraries do not add a new backend surface.
 - Clipr full-script avatar video and voice generation.
-- Clipr non-avatar generated video scene generation through `prunaai/p-video`.
 - Clipr music generation.
 - Clipr avatar still generation.
 - Clipr full job creation.
@@ -981,9 +890,7 @@ New enforcement surfaces to document and implement:
 - Clipr provider output proxying, if any proxy route is added.
 - R2 signed uploads/downloads for generated avatar videos, final videos, and
   posters.
-- R2 storage for generated scene videos before Media Bunny composition.
 - Convex job writes and final clip saves.
-- Convex metadata updates for editable Clipr text overlays.
 
 Required limits:
 
@@ -991,7 +898,6 @@ Required limits:
 - per-user generated seconds limits
 - per-user voice generation limits
 - per-user avatar video generation limits
-- per-user generated scene video seconds limits
 - per-user 60 second music generation limits
 - global provider spend limits
 - polling limits
@@ -1011,27 +917,22 @@ The current implementation uses `cliprJobs` for user-facing job state and splits
 the `POST /api/clipr/jobs` server orchestration into focused helpers under
 `web/lib/clipstitchr/server/clipr/*`. That route-local split covers request
 parsing, quota consumption, Convex input loading, queued job persistence, script
-planning, avatar still generation, avatar video/music generation, non-avatar
-p-video scene generation, generated scene R2 copies, shared music persistence,
-analytics, and failure cleanup. It improves the implementation shape, but it is
-not the final durable architecture because provider execution and browser Media
-Bunny composition can still be interrupted by request/runtime or browser
-failure.
+planning, avatar still generation, avatar video/music generation, shared music
+persistence, analytics, and failure cleanup. It improves the implementation
+shape, but it is not the final durable architecture because provider execution
+can still be interrupted by request/runtime failure.
 
 The durable job should track:
 
 - owner ID
 - product/avatar/voice selections
 - requested duration
-- selected content type and composition strategy
 - hook/template choices
-- editable overlay text
 - script
 - scene plan
 - provider stage
 - provider prediction IDs or request IDs
-- intermediate avatar image/video R2 objects and generated scene video R2
-  objects
+- intermediate avatar image/video R2 objects
 - optional music R2 object, provider prediction ID, prompt, enabled flag, and
   export volume
 - final video/poster R2 objects
@@ -1043,17 +944,13 @@ The durable job should track:
 
 Provider outputs should be copied into R2 as soon as they are available.
 
-For the simplified MVP path, the browser downloads the generated avatar video
-for Avatar Talking Head, or downloads generated p-video scenes for non-avatar
-content and composes them with Media Bunny into a clean 9:16 Clip. Voiceover
-Reel also downloads the avatar-voice source video and copies its audio over the
-generated visuals during composition. The browser then creates a poster, uploads
+For the simplified MVP path, the browser only downloads the generated avatar
+video, normalizes it to the app's 9:16 clip format, creates a poster, uploads
 the final objects, and saves the Clip metadata. Optional generated music is
 copied to R2 before the final Clip is saved, but remains a separate editable
-asset. Editable text overlays stay in metadata and are rendered into a new MP4
-only during export/download. If chunked avatar generation is added later for
-provider duration caps, those chunk outputs should be copied to R2 before any
-Media Bunny merge step starts.
+asset. If chunked avatar generation is added later for provider duration caps,
+those chunk outputs should be copied to R2 before any Media Bunny merge step
+starts.
 
 ## Implementation Touchpoints
 
@@ -1061,8 +958,7 @@ Current and future code areas:
 
 - `web/convex/schema.ts`
   - `cliprJobs` stores user-facing job state.
-  - `videoClips` stores Clipr provenance, content type, optional editable text
-    overlay state, and optional export-time music settings.
+  - `videoClips` stores Clipr provenance and optional export-time music settings.
   - Products and avatars store hook/style context and saved voice preferences.
 - `web/convex/validators/*`
   - Clipr metadata/job validators and provider status validators.
@@ -1077,8 +973,7 @@ Current and future code areas:
 - `web/lib/clipstitchr/server/clipr/*`
   - request parsing, start quotas, Convex input loading, queued job persistence,
     script planning, avatar still generation, avatar video/music generation,
-    p-video scene generation, shared music persistence, analytics, and failure
-    cleanup.
+    shared music persistence, analytics, and failure cleanup.
 - `web/lib/clipstitchr/server/*`
   - shared prompt creation, response parsing, provider clients, model ID helpers,
     product enrichment, and rate-limit helpers.
@@ -1086,20 +981,16 @@ Current and future code areas:
   - job create, text, music, cancellation, and any future provider helper routes.
 - `web/lib/clipstitchr/media/*`
   - reuse upload normalization and poster helpers for the generated avatar video.
-  - compose generated p-video scenes and optional voiceover audio with Media
-    Bunny.
-  - render editable Clipr text overlays only during export/download.
   - export-time Clipr music mixing from clean video and separate R2 audio.
 - `web/app/dashboard/clipr/*`
   - Clipr page client and controls.
 - `web/app/_components/clipr/*`
-  - one component per file for content type, product, avatar, duration, voice,
-    progress, preview, and generated output controls.
+  - one component per file for product, avatar, duration, voice, progress,
+    preview, and generated output controls.
 - `web/app/dashboard/uploads/UploadsPageClient.tsx`
   - Clips tab/filter behavior.
 - `web/lib/clipstitchr/utils/*`
-  - Clipr content type helpers, filters, tags, generation strategy, and
-    library-tab helpers.
+  - Clipr filters and library-tab helpers.
 - `web/app/_components/dashboard/DashboardSidebar.tsx`
   - Clipr nav link.
 - landing page components
@@ -1120,53 +1011,42 @@ After implementation:
 7. Test generated avatar image and avatar video outputs save to R2 before final
    Clip save.
 8. Test the full generated script is passed to `prunaai/p-video-avatar`.
-9. Test non-avatar content types create generated `prunaai/p-video` scene
-   objects and compose them into one clean 9:16 Clip with Media Bunny.
-10. Test Voiceover Reel uses the selected avatar voice over generated footage.
-11. Test Text Shot and other text-based formats preview editable text but do not
-   bake it into the saved clean Clip until export/download.
-12. Test the Clips tab content-type filter and text search include saved Clipr
-   content-type tags.
-13. Test selected music creates a 60 second Stable Audio file in R2 while avatar
+9. Test selected music creates a 60 second Stable Audio file in R2 while avatar
    video generation is running.
-14. Test the generated avatar video normalizes to a single clean 9:16 Clip
+10. Test the generated avatar video normalizes to a single clean 9:16 Clip
     without baked-in music.
-15. Test Clipr music can be disabled, removed, regenerated, and volume-adjusted
+11. Test Clipr music can be disabled, removed, regenerated, and volume-adjusted
     after the Clip is saved.
-16. Test download/export renders a new MP4 with the selected music mix and
+12. Test download/export renders a new MP4 with the selected music mix and
     leaves the saved clean video unchanged.
-17. Test progress updates through script, image, avatar video, generated-video
-    scenes, Media Bunny composition, normalization,
+13. Test progress updates through script, image, avatar video, normalization,
     poster, and save steps.
-18. Test final output appears in the `Clips` tab.
-19. Test Clipr output is selectable in Stitchr.
-20. Test UGC tab does not mix uploaded UGC with Clipr outputs.
-21. Test All tab includes Clipr outputs.
-22. Test Swipr auto-text puts the hook on the first slide and supporting text on
+14. Test final output appears in the `Clips` tab.
+15. Test Clipr output is selectable in Stitchr.
+16. Test UGC tab does not mix uploaded UGC with Clipr outputs.
+17. Test All tab includes Clipr outputs.
+18. Test Swipr auto-text puts the hook on the first slide and supporting text on
     the remaining slides.
-23. Test Stitchr auto-text fills the single editable overlay.
-24. Test paid-provider routes return `429` before provider calls when limited.
-25. Review user-facing copy for non-technical language and format-appropriate
-    CTA rules.
+19. Test Stitchr auto-text fills the single editable overlay.
+20. Test paid-provider routes return `429` before provider calls when limited.
+21. Review user-facing copy for non-technical language and no unwanted CTAs.
 
 ## Approval Decisions
 
 These are the assumptions this scope makes:
 
 - Clipr output should use product settings as context, but not pitch the product.
-- Clipr output should have no platform, sales, or app CTA by default; only
-  product-aware and Soft CTA formats can use a gentle final prompt.
+- Clipr output should have no platform, sales, or app CTA by default.
 - Clipr style/template selection should be random within each product's eligible
   pool and hidden from users.
 - Exact recreation should use saved job metadata, not a new random selection.
 - Clipr outputs should save as UGC-compatible video clips with Clipr provenance
   instead of adding a third `clipType`.
-- The simplified MVP saves one full-script avatar video or one browser-composed
-  p-video scene sequence as the final clean Clipr Clip. Optional music and
-  editable text overlays remain separate metadata/assets and are mixed/rendered
-  only during export/download. If provider output is capped below the requested
-  script length, chunked avatar generation and a durable merge step should be
-  added next.
+- The simplified MVP saves one full-script avatar video directly as the final
+  clean Clipr Clip. Optional music remains a separate R2-backed asset and is
+  mixed only during export/download. If provider output is capped below the
+  requested script length, chunked avatar generation and a durable merge step
+  should be added next.
 - Exact provider model schemas will be verified immediately before
   implementation.
 

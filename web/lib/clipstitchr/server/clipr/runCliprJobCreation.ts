@@ -3,7 +3,6 @@ import { assertCliprJobCreateInput } from "@/lib/clipstitchr/server/clipr/assert
 import { consumeCliprJobStartRateLimits } from "@/lib/clipstitchr/server/clipr/consumeCliprJobStartRateLimits";
 import { createCliprJobAvatarImageOutput } from "@/lib/clipstitchr/server/clipr/createCliprJobAvatarImageOutput";
 import { createCliprJobAvatarVideoOutput } from "@/lib/clipstitchr/server/clipr/createCliprJobAvatarVideoOutput";
-import { createCliprJobGeneratedVideoOutput } from "@/lib/clipstitchr/server/clipr/createCliprJobGeneratedVideoOutput";
 import { createCliprJobScriptPlan } from "@/lib/clipstitchr/server/clipr/createCliprJobScriptPlan";
 import { createQueuedCliprJobRecord } from "@/lib/clipstitchr/server/clipr/createQueuedCliprJobRecord";
 import { loadCliprJobInputDocuments } from "@/lib/clipstitchr/server/clipr/loadCliprJobInputDocuments";
@@ -44,19 +43,6 @@ export async function runCliprJobCreation({
     replicate,
     secret,
   });
-
-  if (input.contentType !== "avatar-talking-head") {
-    return await createCliprJobGeneratedVideoOutput({
-      convex,
-      documents,
-      input,
-      replicate,
-      secret,
-      textGeneration,
-      userId,
-    });
-  }
-
   const avatarImageOutput = await createCliprJobAvatarImageOutput({
     convex,
     documents,

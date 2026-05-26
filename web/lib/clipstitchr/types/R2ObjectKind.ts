@@ -9,7 +9,6 @@ export type R2ObjectKind =
   | "clipr-music-audio"
   | "clipr-avatar-video"
   | "clipr-scene-image"
-  | "clipr-scene-video"
   | "stitch-music-audio"
   | "stitch-video"
   | "stitch-poster"

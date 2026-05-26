@@ -285,18 +285,6 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     period: HOUR,
     capacity: 180,
   },
-  cliprGeneratedVideoGenerate: {
-    kind: "token bucket",
-    rate: 600,
-    period: HOUR,
-    capacity: 180,
-  },
-  cliprGeneratedVideoGenerateDaily: {
-    kind: "token bucket",
-    rate: 1200,
-    period: DAY,
-    capacity: 1200,
-  },
   cliprAvatarStillGenerate: {
     kind: "token bucket",
     rate: 20,
