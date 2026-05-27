@@ -55,7 +55,7 @@ describe("LandingPage", () => {
     expect(markup).toContain("One reusable ad library");
     expect(markup).toContain("/example-outputs/clipstitchr-example-01.webm");
     expect(markup).toContain("/example-outputs/clipstitchr-example-21.webm");
-    expect(markup).toContain("/examples/stitchr-fitness-score-reaction");
+    expect(markup).not.toContain("/examples/stitchr-fitness-score-reaction");
     expect(markup).toContain("Stitch first, generate when needed");
     expect(markup).toContain("Stop collecting clips you never use");
     expect(markup).toContain("Five ways to turn your library");
