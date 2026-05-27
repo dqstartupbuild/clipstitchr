@@ -12,10 +12,16 @@ import DocsArticlePage, {
   generateMetadata as generateDocsArticleMetadata,
   generateStaticParams as generateDocsArticleStaticParams,
 } from "@/app/(content)/docs/[slug]/page";
+import ExamplesIndexPage from "@/app/(content)/examples/page";
+import ExampleOutputPage, {
+  generateMetadata as generateExampleOutputMetadata,
+  generateStaticParams as generateExampleOutputStaticParams,
+} from "@/app/(content)/examples/[slug]/page";
 import PrivacyPage from "@/app/(content)/privacy/page";
 import TermsPage from "@/app/(content)/terms/page";
 import { BlogEmptyState } from "@/app/_components/content/BlogEmptyState";
 import { getCustomerDocs } from "@/lib/clipstitchr/docs/getCustomerDocs";
+import { getPublicVideoExamples } from "@/lib/clipstitchr/example-outputs/getPublicVideoExamples";
 import { getPublishedBlogPosts } from "@/lib/content/queries";
 
 const mocks = vi.hoisted(() => ({
@@ -125,6 +131,53 @@ describe("content pages", () => {
     await expect(
       DocsArticlePage({
         params: Promise.resolve({ slug: "missing-doc" }),
+      }),
+    ).rejects.toThrow("NEXT_NOT_FOUND");
+  });
+
+  it("renders example output pages with video metadata", async () => {
+    const examples = getPublicVideoExamples();
+    const firstExample = examples[0];
+
+    if (!firstExample) {
+      throw new Error("Expected example outputs.");
+    }
+
+    const indexMarkup = renderToStaticMarkup(<ExamplesIndexPage />);
+    const exampleMarkup = renderToStaticMarkup(
+      await ExampleOutputPage({
+        params: Promise.resolve({ slug: firstExample.slug }),
+      }),
+    );
+
+    expect(generateExampleOutputStaticParams()).toContainEqual({
+      slug: firstExample.slug,
+    });
+    await expect(
+      generateExampleOutputMetadata({
+        params: Promise.resolve({ slug: firstExample.slug }),
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        description: firstExample.description,
+      }),
+    );
+    expect(indexMarkup).toContain("Example outputs");
+    expect(indexMarkup).toContain(firstExample.title);
+    expect(exampleMarkup).toContain(firstExample.title);
+    expect(exampleMarkup).toContain("VideoObject");
+    expect(exampleMarkup).toContain(firstExample.videoSrc);
+  });
+
+  it("returns empty metadata and notFound for missing example outputs", async () => {
+    await expect(
+      generateExampleOutputMetadata({
+        params: Promise.resolve({ slug: "missing-example" }),
+      }),
+    ).resolves.toEqual({});
+    await expect(
+      ExampleOutputPage({
+        params: Promise.resolve({ slug: "missing-example" }),
       }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
   });

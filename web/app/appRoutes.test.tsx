@@ -160,6 +160,12 @@ describe("app route wrappers", () => {
     );
 
     expect(robotsMetadata.host).toBe("http://localhost:3000");
+    expect(robotsMetadata.sitemap).toEqual(
+      expect.arrayContaining([
+        "http://localhost:3000/sitemap.xml",
+        "http://localhost:3000/video-sitemap.xml",
+      ]),
+    );
     expect(robotsMetadata.rules).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
