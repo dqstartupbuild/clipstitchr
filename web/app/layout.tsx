@@ -32,6 +32,21 @@ export const metadata: Metadata = {
     canonical: "/",
     keywords: site.keywords,
   }),
+  icons: {
+    icon: [
+      {
+        url: "/icon.png",
+        sizes: "548x550",
+        type: "image/png",
+      },
+      {
+        url: "/brand/icon-dark.png",
+        media: "(prefers-color-scheme: dark)",
+        sizes: "548x550",
+        type: "image/png",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({

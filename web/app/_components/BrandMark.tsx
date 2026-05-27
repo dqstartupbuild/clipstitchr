@@ -6,14 +6,23 @@ export function BrandMark() {
   return (
     <Link
       href="/"
-      className="inline-flex items-center gap-2 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="relative inline-flex h-10 w-[10.25rem] shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <Image
         src="/brand/logo.png"
         alt={site.name}
-        width={131}
-        height={51}
-        className="h-10 w-auto shrink-0 object-contain"
+        fill
+        className="brand-mark-logo-light object-contain"
+        sizes="164px"
+        priority
+      />
+      <Image
+        src="/brand/logo-dark.png"
+        alt=""
+        aria-hidden="true"
+        fill
+        className="brand-mark-logo-dark object-contain"
+        sizes="164px"
         priority
       />
     </Link>
