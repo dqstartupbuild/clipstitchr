@@ -4,7 +4,7 @@ import { LandingBottomBand } from "@/app/_components/landing/LandingBottomBand";
 import { LandingFeatureGrid } from "@/app/_components/landing/LandingFeatureGrid";
 import { LandingHero } from "@/app/_components/landing/LandingHero";
 import { LandingPreview } from "@/app/_components/landing/LandingPreview";
-import { LandingSocialProofSection } from "@/app/_components/landing/LandingSocialProofSection";
+import { LandingExampleOutputSection } from "@/app/_components/landing/LandingExampleOutputSection";
 import { LandingStudioSection } from "@/app/_components/landing/LandingStudioSection";
 import { LandingWorkflow } from "@/app/_components/landing/LandingWorkflow";
 
@@ -13,7 +13,7 @@ export function LandingPage() {
     <div className="min-h-full bg-background text-foreground">
       <SiteHeader variant="landing" />
       <LandingHero />
-      <LandingSocialProofSection />
+      <LandingExampleOutputSection />
       <LandingPreview />
       <LandingStudioSection />
       <LandingFeatureGrid />

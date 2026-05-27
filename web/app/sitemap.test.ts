@@ -10,6 +10,10 @@ describe("sitemap", () => {
     expect(urls).toContain("http://localhost:3000/blog");
     expect(urls).toContain("http://localhost:3000/blog/what-is-ugc");
     expect(urls).toContain("http://localhost:3000/docs");
+    expect(urls).toContain("http://localhost:3000/examples");
+    expect(urls).toContain(
+      "http://localhost:3000/examples/stitchr-boyfriend-ten-out-of-ten",
+    );
     expect(urls).toContain("http://localhost:3000/docs/getting-started");
     expect(urls).toContain("http://localhost:3000/docs/stitchr");
     expect(urls).toContain("http://localhost:3000/docs/clipr");

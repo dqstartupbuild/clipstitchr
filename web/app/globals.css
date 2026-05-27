@@ -225,7 +225,7 @@ body {
   color: var(--text-inverse);
 }
 
-@keyframes landing-social-proof-marquee {
+@keyframes landing-example-output-marquee {
   from {
     transform: translate3d(0, 0, 0);
   }
@@ -235,12 +235,12 @@ body {
   }
 }
 
-.landing-social-proof-marquee {
-  animation: landing-social-proof-marquee 42s linear infinite;
+.landing-example-output-marquee {
+  animation: landing-example-output-marquee 42s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-social-proof-marquee {
+  .landing-example-output-marquee {
     animation: none;
   }
 }

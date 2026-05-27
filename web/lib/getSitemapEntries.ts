@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getCustomerDocs } from "@/lib/clipstitchr/docs/getCustomerDocs";
+import { createPublicVideoExamplePath } from "@/lib/clipstitchr/example-outputs/createPublicVideoExamplePath";
+import { getPublicVideoExamples } from "@/lib/clipstitchr/example-outputs/getPublicVideoExamples";
 import { getPublishedBlogPosts } from "@/lib/content/queries";
 import { createCanonicalUrl, site } from "@/lib/site";
 
@@ -25,5 +27,12 @@ export function getSitemapEntries(): MetadataRoute.Sitemap {
     priority: doc.category === "start" ? 0.84 : 0.8,
   }));
 
-  return [...staticEntries, ...docsEntries, ...postEntries];
+  const exampleEntries = getPublicVideoExamples().map((example) => ({
+    url: createCanonicalUrl(createPublicVideoExamplePath(example)),
+    lastModified: new Date(example.uploadDate),
+    changeFrequency: "monthly" as const,
+    priority: 0.76,
+  }));
+
+  return [...staticEntries, ...docsEntries, ...exampleEntries, ...postEntries];
 }

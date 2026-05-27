@@ -6,10 +6,10 @@ Last checked against Google Search Central on 2026-05-27.
 
 Create public, indexable watch pages for curated ClipStitchr example videos.
 
-The landing-page marquee is useful social proof, but it is not the strongest
-video SEO target because it shows many videos with equal prominence. Google
-defines a watch page as a page whose main purpose is showing one video, and it
-distinguishes that from category or listing pages with multiple equally
+The landing-page marquee is useful as an example-output reel, but it is not the
+strongest video SEO target because it shows many videos with equal prominence.
+Google defines a watch page as a page whose main purpose is showing one video,
+and it distinguishes that from category or listing pages with multiple equally
 prominent videos.
 
 Use watch pages for examples such as:
@@ -108,10 +108,10 @@ Use these fields at minimum:
   "@type": "VideoObject",
   "name": "UGC Hook and Fitness Demo Ad Example",
   "description": "A vertical example ad showing a creator-style hook followed by a fitness product demo.",
-  "thumbnailUrl": "https://clipstitchr.com/social-proof/posters/ugc-hook-fitness-demo.jpg",
+  "thumbnailUrl": "https://clipstitchr.com/example-outputs/posters/ugc-hook-fitness-demo.jpg",
   "uploadDate": "2026-05-27T00:00:00-04:00",
   "duration": "PT12S",
-  "contentUrl": "https://clipstitchr.com/social-proof/clipstitchr-stitch-11.webm",
+  "contentUrl": "https://clipstitchr.com/example-outputs/clipstitchr-example-11.webm",
   "url": "https://clipstitchr.com/examples/ugc-hook-fitness-demo"
 }
 ```
@@ -133,7 +133,7 @@ Generate a poster image for each public example and commit or upload it at a
 stable URL, for example:
 
 ```text
-web/public/social-proof/posters/clipstitchr-stitch-11.jpg
+web/public/example-outputs/posters/clipstitchr-example-11.jpg
 ```
 
 Guidelines:
