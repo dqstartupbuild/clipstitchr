@@ -16,7 +16,7 @@ export function LandingHero() {
         priority
         sizes="100vw"
       />
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--background)_0%,rgba(243,244,246,0.88)_44%,rgba(243,244,246,0.45)_100%)]" />
+      <div className="landing-hero-scrim absolute inset-0" />
 
       <div className="relative mx-auto flex min-h-[82svh] w-full max-w-6xl items-center px-6 py-28">
         <div className="max-w-3xl">

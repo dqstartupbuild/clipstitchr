@@ -21,8 +21,8 @@ export function SiteHeader({
       id="navbar"
       className={`z-50 flex items-center justify-between px-6 py-4 ${
         isLanding
-          ? "fixed left-0 right-0 top-0 border-b border-border bg-white/90 backdrop-blur-xl"
-          : "border-b border-border bg-white"
+          ? "site-header-translucent fixed left-0 right-0 top-0 border-b border-border backdrop-blur-xl"
+          : "border-b border-border bg-surface"
       }`}
     >
       <BrandMark />

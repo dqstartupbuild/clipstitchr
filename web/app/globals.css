@@ -17,6 +17,8 @@
   --text-secondary: #64748b;
   --text-tertiary: #94a3b8;
   --text-inverse: #ffffff;
+  --brand-mark-logo-dark-opacity: 0;
+  --brand-mark-logo-light-opacity: 1;
   --success: var(--accent);
   --warning: #d97706;
   --utility-bg-white: #ffffff;
@@ -52,6 +54,8 @@
     --text-secondary: #cbd5e1;
     --text-tertiary: #94a3b8;
     --text-inverse: #0f1117;
+    --brand-mark-logo-dark-opacity: 1;
+    --brand-mark-logo-light-opacity: 0;
     --success: var(--accent);
     --warning: #f59e0b;
     --utility-bg-white: var(--surface);
@@ -87,6 +91,8 @@
   --text-secondary: #cbd5e1;
   --text-tertiary: #94a3b8;
   --text-inverse: #0f1117;
+  --brand-mark-logo-dark-opacity: 1;
+  --brand-mark-logo-light-opacity: 0;
   --success: var(--accent);
   --warning: #f59e0b;
   --utility-bg-white: var(--surface);
@@ -107,6 +113,10 @@
 
 .bg-white {
   background-color: var(--utility-bg-white);
+}
+
+.site-header-translucent {
+  background-color: color-mix(in srgb, var(--surface) 90%, transparent);
 }
 
 .bg-white\/95 {
@@ -237,6 +247,23 @@ body {
 
 .landing-example-output-marquee {
   animation: landing-example-output-marquee 42s linear infinite;
+}
+
+.brand-mark-logo-dark {
+  opacity: var(--brand-mark-logo-dark-opacity);
+}
+
+.brand-mark-logo-light {
+  opacity: var(--brand-mark-logo-light-opacity);
+}
+
+.landing-hero-scrim {
+  background: linear-gradient(
+    90deg,
+    var(--background) 0%,
+    color-mix(in srgb, var(--background) 88%, transparent) 44%,
+    color-mix(in srgb, var(--background) 45%, transparent) 100%
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {
