@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { createPublicVideoExamplePath } from "@/lib/clipstitchr/example-outputs/createPublicVideoExamplePath";
 import type { PublicVideoExample } from "@/lib/clipstitchr/types/PublicVideoExample";
 
 type LandingExampleOutputVideoCardProps = {
@@ -13,11 +11,7 @@ export function LandingExampleOutputVideoCard({
 }: LandingExampleOutputVideoCardProps) {
   return (
     <article className="w-40 shrink-0 overflow-hidden rounded-lg bg-surface shadow-sm ring-1 ring-border sm:w-44 md:w-48">
-      <Link
-        aria-label={`Watch ${example.title}`}
-        className="block aspect-[9/16] bg-surface-elevated"
-        href={createPublicVideoExamplePath(example)}
-      >
+      <div className="aspect-[9/16] bg-surface-elevated">
         <video
           aria-label={example.title}
           autoPlay
@@ -29,7 +23,7 @@ export function LandingExampleOutputVideoCard({
           preload={index < 5 ? "auto" : "metadata"}
           src={example.videoSrc}
         />
-      </Link>
+      </div>
     </article>
   );
 }
