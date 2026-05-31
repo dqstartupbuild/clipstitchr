@@ -175,7 +175,6 @@ export async function POST(request: Request) {
         status: "running",
         stage: "provider-created",
         providerJobId: prediction.id,
-        releaseLock: true,
         updatedAt,
       });
 

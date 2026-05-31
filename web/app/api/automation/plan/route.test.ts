@@ -43,7 +43,7 @@ describe("POST /api/automation/plan", () => {
     expect(mocks.createConvexHttpClient).not.toHaveBeenCalled();
   });
 
-  it("plans every automation tool for a requested owner", async () => {
+  it("plans active core automation tools for a requested owner", async () => {
     const response = await POST(
       createRequest({
         ownerId: "owner_123",
@@ -54,6 +54,8 @@ describe("POST /api/automation/plan", () => {
 
     expect(response.status).toBe(200);
     expect(body.ownerCount).toBe(1);
+    expect(body.plannedTools).toEqual(["stitchr", "swapr", "clipr"]);
+    expect(body.heldTools).toEqual(["avatar-photo", "swipr"]);
     expect(mocks.convex.query).not.toHaveBeenCalled();
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.automationStitchr.planDaily,
@@ -67,14 +69,7 @@ describe("POST /api/automation/plan", () => {
       api.automationClipr.planDaily,
       expect.objectContaining({ ownerId: "owner_123" }),
     );
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.automationAvatarPhoto.planDaily,
-      expect.objectContaining({ ownerId: "owner_123" }),
-    );
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.automationSwipr.planDaily,
-      expect.objectContaining({ ownerId: "owner_123" }),
-    );
+    expect(mocks.convex.mutation).toHaveBeenCalledTimes(3);
   });
 
   it("loads enabled planner candidates when no owner is specified", async () => {
