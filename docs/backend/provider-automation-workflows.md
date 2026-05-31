@@ -417,7 +417,8 @@ Update `docs/backend/rate-limits.md` whenever these limits are implemented.
 - Add autopilot preferences.
 - Add `automationRuns` and `automationTasks`.
 - Add daily planner with idempotency keys.
-- Start with Swipr and Clipr only.
+- Start active dispatch with Stitchr, Swapr, and Clipr. Avatar photos and Swipr
+  stay planned but held until their durable executors are implemented.
 - Save outputs as drafts and notify the user.
 - Add admin/support visibility into skipped, failed, and retried runs.
 

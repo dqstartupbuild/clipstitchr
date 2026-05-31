@@ -69,6 +69,14 @@ npx convex dev --once
 - Must be a high-entropy random secret.
 - Must not be prefixed with `NEXT_PUBLIC_`.
 
+`AUTOMATION_NEXT_BASE_URL`
+
+- Required in the Convex deployment when Convex Cron dispatches Next.js
+  automation provider routes.
+- Should be the production app origin, for example
+  `https://clipstitchr.example.com`.
+- Must not include a path.
+
 TikTok Events API variables:
 
 - `TIKTOK_EVENTS_API_ACCESS_TOKEN` enables server-side TikTok Events API
@@ -154,8 +162,8 @@ Optional Replicate model overrides:
 | Automatic Stitchr generation | Worker-only automation planner and Stitchr finalizer | 3 Stitchr outputs/day/user; global 300/day |
 | Automatic Swapr generation | Worker-only automation planner before provider work; `POST /api/automation/swapr/execute` is worker-secret authorized and claims one queued Swapr task before creating a Replicate prediction; `POST /api/automation/swapr/finalize` is worker-secret authorized and only claims provider-created Swapr tasks before creating a media finalization job | 1 Swapr output/day/user; global 100/day |
 | Automatic Clipr generation | Worker-only automation planner before provider work; `POST /api/automation/clipr/execute` is worker-secret authorized and runs provider-side script, avatar-image, and avatar-video generation without consuming manual Clipr buckets | 1 Clipr output/day/user; global 100/day |
-| Automatic avatar photo generation | Worker-only automation planner before provider work | 1 generated photo/day/avatar; global 500/day |
-| Automatic Swipr generation | Worker-only automation planner before provider work | 1 Swipe/day/user; global 100/day |
+| Automatic avatar photo generation | Planned but held out of active core automation dispatch | 1 generated photo/day/avatar; global 500/day once enabled |
+| Automatic Swipr generation | Planned but held out of active core automation dispatch | 1 Swipe/day/user; global 100/day once enabled |
 | Automatic provider cost guard | Worker-only automation planner before provider work | 10,000 provider cost units/day global |
 | Automatic asset final saves | Worker-only finalizers for automated Stitches, video clips, avatar photos, and Swipes | 20 saved assets/day/user; global 2,000/day |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
