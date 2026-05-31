@@ -46,6 +46,8 @@ R2_ACCOUNT_ID=...
 R2_BUCKET_NAME=...
 R2_ACCESS_KEY_ID=...
 R2_SECRET_ACCESS_KEY=...
+# Optional, only for authenticated api.replicate.com Swapr output reads.
+REPLICATE_API_TOKEN=...
 ```
 
 Then run:
@@ -69,6 +71,9 @@ npm run media-worker -- --once --max-jobs=3
 `MEDIA_WORKER_SECRET` and `AUTOMATION_WORKER_SECRET` must be the same values in
 `web/.env.worker.local` and in the Convex deployment when processing
 automation-owned media jobs.
+`REPLICATE_API_TOKEN` is optional for public `replicate.delivery` output URLs
+and required only when a Swapr finalization job must fetch an authenticated
+`api.replicate.com` output URL.
 
 The server worker uses FFmpeg for media encoding because plain Node does not
 provide WebCodecs `VideoEncoder`. Locally, install FFmpeg and FFprobe. In Cloud

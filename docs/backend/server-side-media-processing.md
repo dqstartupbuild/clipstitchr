@@ -53,9 +53,10 @@ The implementation uses:
 - Worker env examples in `web/.env.worker.example`.
 
 Current worker execution supports `stitchr-draft-finalization` jobs that save
-editable Stitchr drafts and `clipr-finalization` jobs that normalize provider
-videos. Upload normalization, Longr export, Swapr finalization, launch
-coalescing, and dashboard job visibility remain follow-up phases.
+editable Stitchr drafts, `clipr-finalization` jobs that normalize Clipr provider
+videos, and `swapr-finalization` jobs that download Replicate output, normalize
+it, and save reusable UGC-compatible Swapr clips. Upload normalization, Longr
+export, launch coalescing, and dashboard job visibility remain follow-up phases.
 
 Run the local worker with:
 
@@ -82,6 +83,8 @@ Optional worker environment:
 - `MEDIA_WORKER_LOCK_MS`
 - `MEDIA_WORKER_FFMPEG_PATH`
 - `MEDIA_WORKER_FFPROBE_PATH`
+- `REPLICATE_API_TOKEN` when Swapr provider output URLs require authenticated
+  `api.replicate.com` reads.
 
 Deployment choices and where those variables live are documented in
 `docs/backend/media-worker-deployment.md`.
@@ -94,11 +97,12 @@ Deployment choices and where those variables live are documented in
 | `stitchr-draft-finalization` | Implemented saved UGC clips, one saved Demo clip, copied trims, and audio settings | Editable `stitches` draft records; automation does not render or persist final Stitchr MP4 clips |
 | `stitchr-longr-export` | Planned saved sequence clips, copied trims, output metadata | One finished Stitch from the ordered Longr-mode sequence, poster image, final `stitches` record |
 | `clipr-finalization` | Implemented provider-generated avatar video already copied to R2 and referenced by a Clipr job | Normalized final Clip video, poster image, final `videoClips` record |
-| `swapr-finalization` | Planned provider output URL and Swapr metadata already recorded server-side | Normalized UGC clip, poster image, final `videoClips` record |
+| `swapr-finalization` | Implemented provider output URL and Swapr metadata already recorded server-side | Normalized UGC clip, poster image, final `videoClips` record |
 
-Clipr automation now has a provider-side executor and a first media-worker
-finalization path. Swapr still needs provider polling/output-copy finalization
-before its media step can be considered close-safe.
+Clipr automation now has a provider-side executor and media-worker finalization
+path. Swapr automation now has a provider-side executor, a provider polling
+finalizer at `POST /api/automation/swapr/finalize`, and media-worker
+finalization for successful Replicate outputs.
 
 ## Durability Boundaries
 

@@ -314,8 +314,12 @@ Execution:
 - Consume automatic Swapr daily budget before provider work.
 - Start provider prediction from a durable executor, not from a browser request.
 - Store provider prediction ID before waiting for completion.
-- Copy provider output to R2 from a finalizer.
-- Create a `swapr-finalization` media job when normalization is needed.
+- Poll provider output from `POST /api/automation/swapr/finalize`, which is
+  worker-secret authorized and claims only `provider-created` Swapr tasks.
+- Create a `swapr-finalization` media job once Replicate returns a successful
+  output URL.
+- Let the media worker download the provider output, normalize it, create a
+  poster, and upload the durable media objects to R2.
 - Save the final result as a UGC-compatible `videoClips` record with
   `swaprMetadata` and an automation source marker.
 
@@ -517,7 +521,8 @@ clips and it does not require provider generation.
 
 - Move Swapr provider execution and finalization to durable worker tasks.
 - Add one automatic Swapr output per day.
-- Normalize provider output through the media worker.
+- Poll successful provider output through the Swapr finalizer route.
+- Normalize provider output through the media worker and save a reusable clip.
 - Save reusable UGC-compatible clips.
 
 ### Phase 5: Clipr Autopilot

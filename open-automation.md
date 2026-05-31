@@ -80,8 +80,10 @@ natural UGC prompt. The planner only selects provider-ready UGC references from
 
 Reason: automation should not ask the user for extra per-run settings, and the
 short provider-ready constraint avoids depending on browser-side segment
-creation. Longer automatic Swapr references should move through the media worker
-once server-side segment creation and finalization are wired.
+creation. The finalizer polls Replicate separately from the provider-start
+executor, then creates a `swapr-finalization` media job. The media worker
+downloads the allowlisted provider output URL, normalizes it with FFmpeg, creates
+a poster, and saves the result as an automated UGC-compatible Swapr clip.
 
 ## Clipr Defaults
 

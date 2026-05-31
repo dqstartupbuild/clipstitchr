@@ -164,6 +164,42 @@ export const updateSwaprJobStatus = mutation({
   },
 });
 
+export const updateSwaprAutomationJobStatus = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    predictionId: v.string(),
+    status: replicatePredictionStatusValidator,
+    outputUrl: v.optional(v.string()),
+    error: v.optional(v.string()),
+    updatedAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    { secret, ownerId, predictionId, status, outputUrl, error, updatedAt },
+  ) => {
+    assertAutomationWorkerSecret(secret);
+
+    const job = await ctx.db
+      .query("replicateJobs")
+      .withIndex("by_owner_prediction", (q) =>
+        q.eq("ownerId", ownerId).eq("predictionId", predictionId),
+      )
+      .unique();
+
+    if (!job || job.purpose !== "swapr-video") {
+      throw new Error("Swapr job not found.");
+    }
+
+    await ctx.db.patch(job._id, {
+      status,
+      ...(outputUrl === undefined ? {} : { outputUrl }),
+      ...(error === undefined ? {} : { error }),
+      updatedAt,
+    });
+  },
+});
+
 export const updateAvatarPhotoJobStatus = mutation({
   args: {
     secret: v.string(),

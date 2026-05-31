@@ -143,6 +143,55 @@ export const claimNext = mutation({
   },
 });
 
+export const claimNextByStage = mutation({
+  args: {
+    secret: v.string(),
+    workerId: v.string(),
+    lockedUntil: v.string(),
+    updatedAt: v.string(),
+    tool: automationToolValidator,
+    stage: v.string(),
+  },
+  handler: async (
+    ctx,
+    { secret, workerId, lockedUntil, updatedAt, tool, stage },
+  ) => {
+    assertAutomationWorkerSecret(secret);
+
+    const nowMs = Date.parse(updatedAt);
+    const runningTasks = await ctx.db
+      .query("automationTasks")
+      .withIndex("by_status_created", (q) => q.eq("status", "running"))
+      .order("asc")
+      .take(50);
+    const task = runningTasks.find((candidate) => {
+      const lockedUntilMs = candidate.lockedUntil
+        ? Date.parse(candidate.lockedUntil)
+        : 0;
+
+      return (
+        candidate.tool === tool &&
+        candidate.stage === stage &&
+        (!candidate.lockedUntil ||
+          !Number.isFinite(lockedUntilMs) ||
+          lockedUntilMs <= nowMs)
+      );
+    });
+
+    if (!task) {
+      return null;
+    }
+
+    await ctx.db.patch(task._id, {
+      lockedBy: workerId,
+      lockedUntil,
+      updatedAt,
+    });
+
+    return await ctx.db.get(task._id);
+  },
+});
+
 export const markStatus = mutation({
   args: {
     secret: v.string(),
@@ -154,6 +203,7 @@ export const markStatus = mutation({
     outputAssetId: v.optional(v.string()),
     providerJobId: v.optional(v.string()),
     mediaJobId: v.optional(v.string()),
+    releaseLock: v.optional(v.boolean()),
     updatedAt: v.string(),
   },
   handler: async (
@@ -168,6 +218,7 @@ export const markStatus = mutation({
       outputAssetId,
       providerJobId,
       mediaJobId,
+      releaseLock,
       updatedAt,
     },
   ) => {
@@ -203,7 +254,7 @@ export const markStatus = mutation({
       providerJobIds,
       mediaJobIds,
       ...(status === "completed" ? { completedAt: updatedAt } : {}),
-      ...(status === "running"
+      ...(status === "running" && !releaseLock
         ? {}
         : { lockedBy: undefined, lockedUntil: undefined }),
       ...(error === undefined ? {} : { error }),
