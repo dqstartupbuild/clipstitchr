@@ -33,7 +33,8 @@ Required behavior:
 
 - Automation can be enabled or disabled by the user.
 - Each tool can be enabled or disabled independently.
-- The app stores the user's timezone and preferred generation window.
+- The app uses one global generation window; users do not configure timezone or
+  preferred generation hours.
 - Automation creates drafts only.
 - Manual generation limits remain unchanged.
 - Automatic generation uses separate automation limits.
@@ -84,9 +85,6 @@ Minimum fields:
 
 - `ownerId`
 - `enabled`
-- `timezone`
-- `preferredWindowStartLocal`
-- `preferredWindowEndLocal`
 - `enabledTools`
 - `productSelectionMode`
 - `selectedProductIds`
@@ -100,13 +98,13 @@ Tool keys should include `stitchr`, `swapr`, `clipr`, `avatar-photo`, and
 
 ### `automationRuns`
 
-One row per user, local date, and tool.
+One row per user, automation date, and tool.
 
 Minimum fields:
 
 - `ownerId`
 - `id`
-- `localDate`
+- `automationDate`
 - `tool`
 - `status`
 - `idempotencyKey`
@@ -124,7 +122,7 @@ Minimum fields:
 Recommended idempotency key:
 
 ```text
-ownerId + localDate + tool + automationPreferenceVersion
+ownerId + automationDate + tool + automationPreferenceVersion
 ```
 
 For avatar photo generation, include `avatarId` in the key because the limit is
@@ -340,7 +338,7 @@ Source requirements:
 
 Execution:
 
-- Create one avatar-photo automation run per avatar per local date.
+- Create one avatar-photo automation run per avatar per automation date.
 - Consume automatic avatar-photo budget for that avatar before provider work.
 - Generate one prompt variant from the avatar description, wardrobe style, and
   recent generated-photo history.
@@ -379,14 +377,20 @@ create a saved editable Swipe draft and preview poster.
 
 ## Scheduling
 
-Planning should run at least hourly and create work for users whose local
-preferred window is currently open.
+Planning should run at least hourly and create work during the global
+automation window.
+
+Initial global window:
+
+```text
+09:00 UTC through 13:00 UTC
+```
 
 Recommended schedule:
 
 - Cloud Scheduler or Convex cron triggers the automation planner every hour.
 - Planner pages through eligible users in bounded batches.
-- Planner creates idempotent runs for the user's local date.
+- Planner creates idempotent runs for the current UTC automation date.
 - Planner enqueues tasks only when daily automation budgets are available.
 - Executors claim tasks with leases.
 - Stale locks are released by scheduled recovery.
@@ -406,7 +410,7 @@ Add a dashboard automation surface that shows:
 - queued and running tasks;
 - skipped reasons;
 - failures with retry status;
-- the next scheduled generation window;
+- the next scheduled global generation window;
 - per-tool enabled or disabled state.
 
 Generated drafts should also appear in existing library tabs:
@@ -429,7 +433,7 @@ Add metadata where appropriate:
 - source asset IDs used.
 - source snapshot summary.
 - provider model IDs and prediction IDs.
-- created local date.
+- created automation date.
 
 This lets the app explain why a draft exists, lets support debug failures, and
 lets future selection logic avoid repetitive results.
@@ -504,17 +508,7 @@ clips and it does not require provider generation.
 
 ## Open Decisions
 
-- Whether automation should run for all enabled tools every day or let users set
-  a subset per weekday.
-- Whether generated drafts should count against a future paid credit balance in
-  addition to automation limits.
-- Whether users can set a hard storage cap for automatic outputs.
-- Whether old automatic drafts should be auto-archived or deleted after a
-  configurable retention period.
-- Whether Stitchr automation should prefer product-linked Demo clips only or
-  fall back to all Demos when a product has too few options.
-- Whether automatic text overlays should be generated for Stitchr outputs on day
-  one or added after the core media pipeline is stable.
+The open product decisions are answered in `open-automation.md`.
 
 ## Required References
 
