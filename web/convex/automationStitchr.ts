@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { consumeAutomationBudget } from "./automationBudget";
 import { automationDailyLimits } from "./automationLimits";
 import {
   selectStitchrPairs,
@@ -8,7 +9,6 @@ import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecre
 import type { Id } from "./_generated/dataModel";
 import { mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
-import { rateLimiter } from "./rateLimiter";
 
 function createRunId(ownerId: string, automationDate: string) {
   return `automation:stitchr:${ownerId}:${automationDate}`;
@@ -224,14 +224,10 @@ export const planDaily = mutation({
       };
     }
 
-    await rateLimiter.limit(ctx, "automationStitchrDaily", {
-      key: ownerId,
+    await consumeAutomationBudget(ctx, {
+      ownerId,
+      tool: "stitchr",
       count: selectedPairs.length,
-      throws: true,
-    });
-    await rateLimiter.limit(ctx, "automationStitchrGlobalDaily", {
-      count: selectedPairs.length,
-      throws: true,
     });
 
     const taskIds: string[] = [];
