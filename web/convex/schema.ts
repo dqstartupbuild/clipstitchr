@@ -341,6 +341,7 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_status", ["ownerId", "status"])
+    .index("by_status_created", ["status", "createdAt"])
     .index("by_run", ["runId"])
     .index("by_idempotency_key", ["idempotencyKey"]),
   automationPairHistory: defineTable({
