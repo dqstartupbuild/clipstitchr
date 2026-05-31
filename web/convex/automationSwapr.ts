@@ -113,6 +113,7 @@ export const planDaily = mutation({
       stage: "awaiting-provider",
       idempotencyKey: `${ownerId}:${automationDate}:swapr:1`,
       inputSnapshotJson: JSON.stringify({
+        automationDate,
         characterOrientation: AUTOMATION_SWAPR_CHARACTER_ORIENTATION,
         keepOriginalSound: AUTOMATION_SWAPR_KEEP_ORIGINAL_SOUND,
         mode: AUTOMATION_SWAPR_MODE,

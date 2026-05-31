@@ -195,6 +195,20 @@ export const saveFromAutomation = mutation({
   handler: async (ctx, { secret, ownerId, automation, ...args }) => {
     assertAutomationWorkerSecret(secret);
 
+    const existingClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.id),
+      )
+      .unique();
+
+    if (
+      existingClip?.automation?.source === "automation" &&
+      existingClip.automation.taskId === automation.taskId
+    ) {
+      return existingClip._id;
+    }
+
     await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
       key: ownerId,
       throws: true,
@@ -203,12 +217,6 @@ export const saveFromAutomation = mutation({
       throws: true,
     });
 
-    const existingClip = await ctx.db
-      .query("videoClips")
-      .withIndex("by_owner_id", (q) =>
-        q.eq("ownerId", ownerId).eq("id", args.id),
-      )
-      .unique();
     const clip = {
       ownerId,
       ...args,

@@ -60,6 +60,7 @@ function createTask(overrides: Record<string, unknown> = {}) {
   return {
     id: "automation:swapr:owner_123:2026-05-31:1",
     inputSnapshotJson: JSON.stringify({
+      automationDate: "2026-05-31",
       characterOrientation: "image",
       keepOriginalSound: false,
       mode: "std",
@@ -198,6 +199,7 @@ describe("POST /api/automation/swapr/execute", () => {
         id: "automation:swapr:owner_123:2026-05-31:1",
         ownerId: "owner_123",
         providerJobId: "prediction_1",
+        releaseLock: true,
         stage: "provider-created",
         status: "running",
       }),

@@ -3,6 +3,7 @@ import type { SwaprCharacterOrientation } from "@/lib/clipstitchr/types/SwaprCha
 import type { SwaprMode } from "@/lib/clipstitchr/types/SwaprMode";
 
 export type SwaprAutomationTaskInput = {
+  automationDate: string;
   characterOrientation: SwaprCharacterOrientation;
   keepOriginalSound: boolean;
   mode: SwaprMode;
@@ -81,6 +82,7 @@ export function parseSwaprAutomationTaskInput(
   const keepOriginalSound = input.keepOriginalSound === true;
 
   return {
+    automationDate: getString(input.automationDate, "automation date"),
     characterOrientation: getSwaprCharacterOrientation(
       input.characterOrientation,
     ),

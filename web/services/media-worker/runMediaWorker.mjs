@@ -130,6 +130,58 @@ async function downloadR2Object({ client, config, key, outputPath }) {
   await writeFile(outputPath, await streamToBuffer(response.Body));
 }
 
+const allowedReplicateOutputHosts = new Set([
+  "api.replicate.com",
+  "replicate.delivery",
+]);
+
+function getSafeReplicateOutputUrl(rawUrl) {
+  const url = new URL(rawUrl);
+
+  if (url.protocol !== "https:") {
+    throw new Error("Swapr output URLs must use HTTPS.");
+  }
+
+  if (
+    !allowedReplicateOutputHosts.has(url.hostname) &&
+    !url.hostname.endsWith(".replicate.delivery")
+  ) {
+    throw new Error("Unsupported Swapr output host.");
+  }
+
+  return url;
+}
+
+async function downloadReplicateOutput({ outputPath, rawUrl }) {
+  const url = getSafeReplicateOutputUrl(rawUrl);
+  const headers = new Headers();
+  const replicateToken = process.env.REPLICATE_API_TOKEN;
+
+  if (url.hostname === "api.replicate.com" && replicateToken) {
+    headers.set("Authorization", `Bearer ${replicateToken}`);
+  }
+
+  const response = await fetch(url, { headers });
+
+  if (!response.ok) {
+    throw new Error("Unable to fetch Replicate output.");
+  }
+
+  const body = Buffer.from(await response.arrayBuffer());
+  const contentType = response.headers.get("content-type") || "video/mp4";
+
+  if (!contentType.startsWith("video/")) {
+    throw new Error("Swapr output was not a video.");
+  }
+
+  await writeFile(outputPath, body);
+
+  return {
+    contentType,
+    size: body.byteLength,
+  };
+}
+
 async function uploadR2Object({ body, client, config, contentType, key }) {
   await client.send(
     new PutObjectCommand({
@@ -242,6 +294,39 @@ function parseStitchrDraftFinalizationInput(inputSnapshotJson) {
   };
 }
 
+function parseSwaprFinalizationInput(inputSnapshotJson) {
+  const input = JSON.parse(inputSnapshotJson);
+
+  if (!input || typeof input !== "object") {
+    throw new Error("Invalid Swapr finalization input.");
+  }
+
+  return {
+    automationDate: getString(input.automationDate, "automation date"),
+    automationRunId: getString(input.automationRunId, "automation run ID"),
+    automationTaskId: getString(input.automationTaskId, "automation task ID"),
+    characterOrientation: getSwaprCharacterOrientation(
+      input.characterOrientation,
+    ),
+    clipId: getString(input.clipId, "clip ID"),
+    clipName: getString(input.clipName, "clip name"),
+    keepOriginalSound: input.keepOriginalSound === true,
+    mode: getSwaprMode(input.mode),
+    modelId: getString(input.modelId, "model ID"),
+    outputUrl: getString(input.outputUrl, "output URL"),
+    predictionId: getString(input.predictionId, "prediction ID"),
+    prompt: typeof input.prompt === "string" ? input.prompt.trim() : undefined,
+    referenceClipId: getString(input.referenceClipId, "reference clip ID"),
+    referenceClipName: getString(
+      input.referenceClipName,
+      "reference clip name",
+    ),
+    sourcePhotoId: getString(input.sourcePhotoId, "source photo ID"),
+    sourceSummary:
+      typeof input.sourceSummary === "string" ? input.sourceSummary : undefined,
+  };
+}
+
 function getR2Object(value, label) {
   if (!value || typeof value !== "object") {
     throw new Error(`Missing ${label}.`);
@@ -280,6 +365,22 @@ function getNonNegativeNumber(value, label) {
 
 function getPlaybackRate(value) {
   return value === 2 ? 2 : 1;
+}
+
+function getSwaprCharacterOrientation(value) {
+  if (value !== "image" && value !== "video") {
+    throw new Error("Invalid Swapr character orientation.");
+  }
+
+  return value;
+}
+
+function getSwaprMode(value) {
+  if (value !== "std" && value !== "pro") {
+    throw new Error("Invalid Swapr mode.");
+  }
+
+  return value;
 }
 
 function getTrimRange(value, fallbackDuration) {
@@ -604,10 +705,231 @@ async function processStitchrDraftFinalization({ client, config, job }) {
   });
 }
 
+async function processSwaprFinalization({ client, config, job, r2 }) {
+  const input = parseSwaprFinalizationInput(job.inputSnapshotJson);
+  const scratchDir = join(config.scratchDir, sanitizeR2KeySegment(job.id));
+  const sourcePath = join(scratchDir, "source.mp4");
+  const outputPath = join(scratchDir, "normalized.mp4");
+  const posterPath = join(scratchDir, "poster.jpg");
+
+  await mkdir(scratchDir, { recursive: true });
+
+  try {
+    await client.mutation(api.mediaJobs.markStatus, {
+      secret: config.mediaWorkerSecret,
+      ownerId: job.ownerId,
+      id: job.id,
+      status: "running",
+      stage: "downloading-provider-output",
+      updatedAt: new Date().toISOString(),
+    });
+
+    const sourceObject = await downloadReplicateOutput({
+      outputPath: sourcePath,
+      rawUrl: input.outputUrl,
+    });
+
+    await client.mutation(api.mediaJobs.markStatus, {
+      secret: config.mediaWorkerSecret,
+      ownerId: job.ownerId,
+      id: job.id,
+      status: "running",
+      stage: "normalizing",
+      updatedAt: new Date().toISOString(),
+    });
+    await normalizeVideo({ config, inputPath: sourcePath, outputPath });
+    await createPoster({ config, inputPath: outputPath, outputPath: posterPath });
+
+    const [videoBody, posterBody] = await Promise.all([
+      readFile(outputPath),
+      readFile(posterPath),
+    ]);
+    const metadata = await readVideoMetadata({ config, inputPath: outputPath });
+    const [videoObject, posterObject] = await Promise.all([
+      uploadR2Object({
+        body: videoBody,
+        client: r2,
+        config,
+        contentType: "video/mp4",
+        key: createVideoClipObjectKey({
+          clipId: input.clipId,
+          kind: "video",
+          ownerId: job.ownerId,
+        }),
+      }),
+      uploadR2Object({
+        body: posterBody,
+        client: r2,
+        config,
+        contentType: "image/jpeg",
+        key: createVideoClipObjectKey({
+          clipId: input.clipId,
+          kind: "poster",
+          ownerId: job.ownerId,
+        }),
+      }),
+    ]);
+    const updatedAt = new Date().toISOString();
+    const automationSecret = getRequiredEnv("AUTOMATION_WORKER_SECRET");
+
+    await client.mutation(api.videoClips.saveFromAutomation, {
+      secret: automationSecret,
+      ownerId: job.ownerId,
+      automation: {
+        source: "automation",
+        runId: input.automationRunId,
+        taskId: input.automationTaskId,
+        tool: "swapr",
+        automationDate: input.automationDate,
+        sourceSummary: input.sourceSummary,
+      },
+      id: input.clipId,
+      name: input.clipName,
+      tags: [],
+      originalName: `${input.clipName}.mp4`,
+      clipType: "ugc",
+      videoObject,
+      posterObject,
+      posterVersion: VIDEO_POSTER_CAPTURE_VERSION,
+      mimeType: videoObject.contentType,
+      sourceMimeType: sourceObject.contentType,
+      size: videoObject.size,
+      originalSize: sourceObject.size,
+      width: metadata.width,
+      height: metadata.height,
+      aspectRatio: metadata.aspectRatio,
+      duration: metadata.duration,
+      defaultTrimRange: {
+        start: 0,
+        end: metadata.duration,
+      },
+      hasAudio: metadata.hasAudio,
+      swaprMetadata: {
+        source: "swapr",
+        sourcePhotoId: input.sourcePhotoId,
+        referenceUgcClipId: input.referenceClipId,
+        replicatePredictionId: input.predictionId,
+        replicatePredictionIds: [input.predictionId],
+        sourceSegmentCount: 1,
+        modelId: input.modelId,
+        mode: input.mode,
+        characterOrientation: input.characterOrientation,
+        prompt: input.prompt || undefined,
+        keepOriginalSound: input.keepOriginalSound,
+      },
+      createdAt: updatedAt,
+      updatedAt,
+    });
+    await client.mutation(api.automationTasks.markStatus, {
+      secret: automationSecret,
+      ownerId: job.ownerId,
+      id: input.automationTaskId,
+      status: "completed",
+      stage: "completed",
+      outputAssetId: input.clipId,
+      mediaJobId: job.id,
+      updatedAt,
+    });
+    await client.mutation(api.automationRuns.markStatus, {
+      secret: automationSecret,
+      ownerId: job.ownerId,
+      id: input.automationRunId,
+      status: "completed",
+      updatedAt,
+    });
+    await client.mutation(api.mediaJobs.markStatus, {
+      secret: config.mediaWorkerSecret,
+      ownerId: job.ownerId,
+      id: job.id,
+      status: "completed",
+      stage: "completed",
+      outputAssetId: input.clipId,
+      updatedAt,
+    });
+  } finally {
+    await rm(scratchDir, { force: true, recursive: true });
+  }
+}
+
+function getAutomationMediaJobFailureInput(job) {
+  if (
+    job.jobType !== "clipr-finalization" &&
+    job.jobType !== "stitchr-draft-finalization" &&
+    job.jobType !== "swapr-finalization"
+  ) {
+    return null;
+  }
+
+  const input = JSON.parse(job.inputSnapshotJson);
+
+  if (!input || typeof input !== "object") {
+    return null;
+  }
+
+  return {
+    automationRunId: getString(input.automationRunId, "automation run ID"),
+    automationTaskId: getString(input.automationTaskId, "automation task ID"),
+    cliprJobId:
+      typeof input.cliprJobId === "string" && input.cliprJobId.trim()
+        ? input.cliprJobId
+        : undefined,
+  };
+}
+
+async function failAutomationMediaJob({ client, error, job, message, updatedAt }) {
+  let input = null;
+
+  try {
+    input = getAutomationMediaJobFailureInput(job);
+  } catch {
+    return;
+  }
+
+  if (!input) {
+    return;
+  }
+
+  const secret = getRequiredEnv("AUTOMATION_WORKER_SECRET");
+  const mutations = [
+    client.mutation(api.automationTasks.markStatus, {
+      secret,
+      ownerId: job.ownerId,
+      id: input.automationTaskId,
+      status: "failed",
+      stage: "media-finalization-failed",
+      error: message,
+      updatedAt,
+    }),
+    client.mutation(api.automationRuns.markStatus, {
+      secret,
+      ownerId: job.ownerId,
+      id: input.automationRunId,
+      status: "failed",
+      error: message,
+      updatedAt,
+    }),
+  ];
+
+  if (job.jobType === "clipr-finalization" && input.cliprJobId) {
+    mutations.push(
+      client.mutation(api.cliprJobs.failFromAutomation, {
+        secret,
+        ownerId: job.ownerId,
+        id: input.cliprJobId,
+        error,
+        updatedAt,
+      }),
+    );
+  }
+
+  await Promise.all(mutations.map((mutation) => mutation.catch(() => null)));
+}
+
 async function failJob({ client, config, error, job }) {
   const message =
     error instanceof Error ? error.message : "Unable to process media job.";
   const retry = job.attempt < MEDIA_MAX_JOB_ATTEMPTS;
+  const updatedAt = new Date().toISOString();
 
   await client.mutation(api.mediaJobs.markStatus, {
     secret: config.mediaWorkerSecret,
@@ -616,8 +938,18 @@ async function failJob({ client, config, error, job }) {
     status: retry ? "queued" : "failed",
     stage: retry ? "retry-queued" : "failed",
     error: message,
-    updatedAt: new Date().toISOString(),
+    updatedAt,
   });
+
+  if (!retry) {
+    await failAutomationMediaJob({
+      client,
+      error: message,
+      job,
+      message,
+      updatedAt,
+    });
+  }
 }
 
 async function processJob({ client, config, job, r2 }) {
@@ -628,6 +960,11 @@ async function processJob({ client, config, job, r2 }) {
 
   if (job.jobType === "stitchr-draft-finalization") {
     await processStitchrDraftFinalization({ client, config, job });
+    return;
+  }
+
+  if (job.jobType === "swapr-finalization") {
+    await processSwaprFinalization({ client, config, job, r2 });
     return;
   }
 

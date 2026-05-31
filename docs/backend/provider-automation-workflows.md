@@ -281,9 +281,11 @@ The first Swapr automation executor lives at
 `POST /api/automation/swapr/execute`. It is authorized with
 `AUTOMATION_WORKER_SECRET`, claims one queued `swapr-video` automation task,
 starts the Replicate prediction, records the provider job under the task owner,
-and marks the task `provider-created`. Provider polling, output copying, and
-FFmpeg finalization still belong in follow-up worker phases rather than in this
-request handler.
+and marks the task `provider-created`. Swapr provider polling lives at
+`POST /api/automation/swapr/finalize`; it claims one `provider-created` Swapr
+task, refreshes the Replicate job status, creates a `swapr-finalization` media
+job when the provider succeeds, and marks provider failures against the
+automation task/run.
 
 The first Clipr automation executor lives at
 `POST /api/automation/clipr/execute`. It is authorized with
@@ -297,6 +299,10 @@ The first FFmpeg media worker lives at
 `MEDIA_WORKER_SECRET`; for `clipr-finalization`, it normalizes the durable avatar
 video to 9:16 H.264/AAC, captures a poster, uploads both objects to R2, saves
 the final Clipr `videoClips` record, and marks the automation task/run complete.
+For `swapr-finalization`, it downloads the allowlisted Replicate output URL,
+normalizes the video to the same saved-clip format, captures a poster, uploads
+both objects to R2, saves a UGC-compatible `videoClips` record with
+`swaprMetadata`, and marks the automation task/run complete.
 
 Recommended idempotency key:
 

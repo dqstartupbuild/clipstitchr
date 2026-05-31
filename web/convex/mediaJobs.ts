@@ -56,6 +56,55 @@ export const createCliprFinalizationFromAutomation = mutation({
   },
 });
 
+export const createSwaprFinalizationFromAutomation = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    idempotencyKey: v.string(),
+    inputSnapshotJson: v.string(),
+    createdAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    { secret, ownerId, id, idempotencyKey, inputSnapshotJson, createdAt },
+  ) => {
+    assertAutomationWorkerSecret(secret);
+
+    const existing = await ctx.db
+      .query("mediaJobs")
+      .withIndex("by_idempotency_key", (q) =>
+        q.eq("idempotencyKey", idempotencyKey),
+      )
+      .unique();
+
+    if (existing) {
+      return existing;
+    }
+
+    const mediaJobId = await ctx.db.insert("mediaJobs", {
+      ownerId,
+      id,
+      jobType: "swapr-finalization",
+      status: "queued",
+      stage: "queued",
+      idempotencyKey,
+      inputSnapshotJson,
+      outputAssetIds: [],
+      attempt: 0,
+      createdAt,
+      updatedAt: createdAt,
+    });
+    const mediaJob = await ctx.db.get(mediaJobId);
+
+    if (!mediaJob) {
+      throw new Error("Unable to create media job.");
+    }
+
+    return mediaJob;
+  },
+});
+
 export const claimNext = mutation({
   args: {
     secret: v.string(),
