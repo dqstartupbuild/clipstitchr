@@ -13,6 +13,8 @@ import { assertR2ObjectKeyBelongsToUser } from "@/lib/clipstitchr/server/r2/asse
 import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl";
 import { saveCliprAvatarVideoObject } from "@/lib/clipstitchr/server/saveCliprAvatarVideoObject";
 import { saveCliprSceneImageObject } from "@/lib/clipstitchr/server/saveCliprSceneImageObject";
+import { createId } from "@/lib/clipstitchr/utils/createId";
+import { getCliprFinalClipName } from "@/lib/clipstitchr/utils/getCliprFinalClipName";
 
 export const runtime = "nodejs";
 
@@ -217,6 +219,9 @@ export async function POST(request: Request) {
       jobId: input.jobId,
       userId: task.ownerId,
     });
+    const mediaClipId = createId();
+    const mediaJobId = `media:clipr-finalization:${input.jobId}`;
+    const clipName = getCliprFinalClipName(input.product.name, now);
     const job = await convex.mutation(
       api.cliprJobs.recordAvatarVideoOutputFromAutomation,
       {
@@ -230,6 +235,27 @@ export async function POST(request: Request) {
         updatedAt: new Date().toISOString(),
       },
     );
+    const mediaJob = await convex.mutation(
+      api.mediaJobs.createCliprFinalizationFromAutomation,
+      {
+        secret,
+        ownerId: task.ownerId,
+        id: mediaJobId,
+        idempotencyKey: `${task.id}:clipr-finalization`,
+        inputSnapshotJson: JSON.stringify({
+          automationDate: input.automationDate,
+          automationRunId: task.runId,
+          automationTaskId: task.id,
+          avatarVideoProviderPredictionId: generatedAvatarVideo.predictionId,
+          clipId: mediaClipId,
+          clipName,
+          cliprJobId: input.jobId,
+          sourceSummary: `${input.product.name} with ${input.avatarName}`,
+          sourceVideoObject: avatarVideoObject,
+        }),
+        createdAt: new Date().toISOString(),
+      },
+    );
 
     await convex.mutation(api.automationTasks.markStatus, {
       secret,
@@ -238,6 +264,7 @@ export async function POST(request: Request) {
       status: "running",
       stage: "awaiting-media-finalization",
       providerJobId: generatedAvatarVideo.predictionId,
+      mediaJobId: mediaJob.id,
       updatedAt: new Date().toISOString(),
     });
 
@@ -249,6 +276,7 @@ export async function POST(request: Request) {
         stage: "awaiting-media-finalization",
         status: "running",
       },
+      mediaJob,
       job,
     });
   } catch (error) {

@@ -117,6 +117,7 @@ export const planDaily = mutation({
       idempotencyKey: `${ownerId}:${automationDate}:clipr:1`,
       inputSnapshotJson: JSON.stringify({
         addMusic: AUTOMATION_CLIPR_ADD_MUSIC,
+        automationDate,
         productId: product.id,
         productName: product.name,
         productDetails: product.productDetails,

@@ -76,7 +76,10 @@ Implemented worker dispatch currently includes:
   task and starting its Replicate provider prediction.
 - `POST /api/automation/clipr/execute` for claiming one queued Clipr automation
   task, running provider-side script/avatar-image/avatar-video generation, and
-  leaving the task ready for media finalization.
+  creating a `clipr-finalization` media job.
+- `npm run media-worker` for claiming queued media jobs. The first implemented
+  worker path finalizes Clipr automation videos with FFmpeg and saves the final
+  Clip draft.
 
 Use Convex as the durable ledger. Use Cloud Scheduler, Convex cron, or another
 small scheduler only to trigger planning. Do not put long video rendering,

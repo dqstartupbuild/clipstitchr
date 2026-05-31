@@ -41,6 +41,7 @@ Fill in:
 ```bash
 NEXT_PUBLIC_CONVEX_URL=...
 MEDIA_WORKER_SECRET=...
+AUTOMATION_WORKER_SECRET=...
 R2_ACCOUNT_ID=...
 R2_BUCKET_NAME=...
 R2_ACCESS_KEY_ID=...
@@ -65,8 +66,9 @@ For Cloud Run-style bounded execution, run:
 npm run media-worker -- --once --max-jobs=3
 ```
 
-`MEDIA_WORKER_SECRET` must be the same value in `web/.env.worker.local` and in
-the Convex deployment.
+`MEDIA_WORKER_SECRET` and `AUTOMATION_WORKER_SECRET` must be the same values in
+`web/.env.worker.local` and in the Convex deployment when processing
+automation-owned media jobs.
 
 The server worker uses FFmpeg for media encoding because plain Node does not
 provide WebCodecs `VideoEncoder`. Locally, install FFmpeg and FFprobe. In Cloud
@@ -292,14 +294,15 @@ automatic launch from every media job creation path.
 ## Production Checklist
 
 1. Choose the worker host.
-2. Put `NEXT_PUBLIC_CONVEX_URL`, `MEDIA_WORKER_SECRET`, and R2 credentials in
-   that host's secret/env system.
-3. Put the same `MEDIA_WORKER_SECRET` in Convex.
+2. Put `NEXT_PUBLIC_CONVEX_URL`, `MEDIA_WORKER_SECRET`,
+   `AUTOMATION_WORKER_SECRET`, and R2 credentials in that host's secret/env
+   system.
+3. Put the same `MEDIA_WORKER_SECRET` and `AUTOMATION_WORKER_SECRET` in Convex.
 4. Run `npm run media-worker` for a long-running host, or
    `npm run media-worker -- --once --max-jobs=N` for Cloud Run Jobs.
 5. Confirm startup passes the FFmpeg support self-test.
-6. Upload a short video and confirm the job moves from `queued` to `running` to
-   `succeeded`.
+6. Queue a short Clipr finalization and confirm the job moves from `queued` to
+   `running` to `completed`.
 7. Confirm failed jobs show a clear error in the dashboard job panel.
 8. Add host-level logs and restart policy before production traffic.
 

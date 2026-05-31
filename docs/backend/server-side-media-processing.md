@@ -48,11 +48,13 @@ The implementation uses:
 - Convex `mediaJobs` records in `web/convex/mediaJobs.ts`.
 - Media job validators in `web/convex/validators/mediaJob*.ts`.
 - Worker-only mutation auth through `MEDIA_WORKER_SECRET`.
-- R2 `raw-video` object support for pre-normalization uploads.
 - A media worker entry point at
-  `web/services/media-worker/runMediaWorker.mts`.
-- Dashboard visibility through `MediaJobsPanel`.
+  `web/services/media-worker/runMediaWorker.mjs`.
 - Worker env examples in `web/.env.worker.example`.
+
+Current worker execution supports `clipr-finalization` jobs first. Upload
+normalization, Stitchr export, Longr export, Swapr finalization, launch
+coalescing, and dashboard job visibility remain follow-up phases.
 
 Run the local worker with:
 
@@ -65,6 +67,7 @@ Required worker environment:
 
 - `NEXT_PUBLIC_CONVEX_URL`
 - `MEDIA_WORKER_SECRET`
+- `AUTOMATION_WORKER_SECRET` when processing automation-owned media jobs
 - `R2_ACCOUNT_ID`
 - `R2_BUCKET_NAME`
 - `R2_ACCESS_KEY_ID`
@@ -76,6 +79,8 @@ Optional worker environment:
 - `MEDIA_WORKER_SCRATCH_DIR`
 - `MEDIA_WORKER_POLL_INTERVAL_MS`
 - `MEDIA_WORKER_LOCK_MS`
+- `MEDIA_WORKER_FFMPEG_PATH`
+- `MEDIA_WORKER_FFPROBE_PATH`
 
 Deployment choices and where those variables live are documented in
 `docs/backend/media-worker-deployment.md`.
@@ -84,15 +89,15 @@ Deployment choices and where those variables live are documented in
 
 | Job type | Durable source | Worker output |
 | --- | --- | --- |
-| `upload-normalization` | Original video uploaded to R2 as `raw-video` | Normalized 9:16 video, poster image, final `videoClips` record |
-| `stitchr-export` | Saved UGC clips, one saved Demo clip, copied trims, per-stitch text overlay, audio settings | One finished stitch per selected UGC, poster images, final `stitches` records |
-| `stitchr-longr-export` | Saved sequence clips, copied trims, output metadata | One finished Stitch from the ordered Longr-mode sequence, poster image, final `stitches` record |
-| `clipr-finalization` | Provider-generated avatar video already copied to R2 and referenced by a Clipr job | Normalized final Clip video, poster image, final `videoClips` record |
-| `swapr-finalization` | Provider output URL and Swapr metadata already recorded server-side | Normalized UGC clip, poster image, final `videoClips` record |
+| `upload-normalization` | Planned original video uploaded to R2 as `raw-video` | Normalized 9:16 video, poster image, final `videoClips` record |
+| `stitchr-export` | Planned saved UGC clips, one saved Demo clip, copied trims, per-stitch text overlay, audio settings | One finished stitch per selected UGC, poster images, final `stitches` records |
+| `stitchr-longr-export` | Planned saved sequence clips, copied trims, output metadata | One finished Stitch from the ordered Longr-mode sequence, poster image, final `stitches` record |
+| `clipr-finalization` | Implemented provider-generated avatar video already copied to R2 and referenced by a Clipr job | Normalized final Clip video, poster image, final `videoClips` record |
+| `swapr-finalization` | Planned provider output URL and Swapr metadata already recorded server-side | Normalized UGC clip, poster image, final `videoClips` record |
 
-Clipr and Swapr still have provider-side durability requirements before the
-media finalization step can be considered fully close-safe. Those requirements
-are covered in `docs/backend/provider-automation-workflows.md`.
+Clipr automation now has a provider-side executor and a first media-worker
+finalization path. Swapr still needs provider polling/output-copy finalization
+before its media step can be considered close-safe.
 
 ## Durability Boundaries
 

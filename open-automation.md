@@ -92,5 +92,6 @@ music in the first executor pass.
 Reason: the manual Clipr page defaults to 30 seconds and music off, and keeping
 the automation pass voice/script/video-only avoids adding a second provider
 branch before the core durable finalization path is finished. The executor
-generates the script, avatar source image, and avatar video, then leaves the task
-at `awaiting-media-finalization` for the FFmpeg worker phase.
+generates the script, avatar source image, and avatar video, then creates a
+`clipr-finalization` media job. The first media worker normalizes the video with
+FFmpeg and saves it as an automated Clip draft.

@@ -1,9 +1,12 @@
 import { v } from "convex/values";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
+import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
 import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import { videoClipCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
+import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { cliprDurationSecondsValidator } from "./validators/cliprDurationSeconds";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
@@ -105,6 +108,24 @@ export const get = query({
   },
   handler: async (ctx, { id }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const job = await ctx.db
+      .query("cliprJobs")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    return job ? clientJobFields(job) : null;
+  },
+});
+
+export const getForMediaWorker = query({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+  },
+  handler: async (ctx, { secret, ownerId, id }) => {
+    assertMediaWorkerSecret(secret);
+
     const job = await ctx.db
       .query("cliprJobs")
       .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
@@ -683,6 +704,143 @@ export const finalizeWithClip = mutation({
       createdAt: args.updatedAt,
       updatedAt: args.updatedAt,
     });
+
+    await ctx.db.patch(job._id, {
+      finalClipId: args.clipId,
+      status: "completed",
+      stage: "finalized",
+      progress: 1,
+      completedAt: args.updatedAt,
+      finalizedAt: args.updatedAt,
+      updatedAt: args.updatedAt,
+    });
+
+    return args.clipId;
+  },
+});
+
+export const finalizeWithClipFromMediaWorker = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    clipId: v.string(),
+    name: v.string(),
+    videoObject: r2ObjectValidator,
+    posterObject: v.optional(r2ObjectValidator),
+    posterVersion: v.optional(v.number()),
+    mimeType: v.string(),
+    sourceMimeType: v.string(),
+    size: v.number(),
+    originalSize: v.number(),
+    width: v.number(),
+    height: v.number(),
+    aspectRatio: v.number(),
+    duration: v.number(),
+    hasAudio: v.boolean(),
+    automation: automationProvenanceValidator,
+    updatedAt: v.string(),
+  },
+  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+    assertMediaWorkerSecret(secret);
+
+    const job = await ctx.db
+      .query("cliprJobs")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.id),
+      )
+      .unique();
+
+    if (!job) {
+      throw new Error("Clipr job not found.");
+    }
+
+    if (job.finalClipId) {
+      return job.finalClipId;
+    }
+
+    if (
+      !job.hookStyleKey ||
+      !job.hookTemplateId ||
+      !job.filledHook ||
+      !job.variablesUsed ||
+      !job.script
+    ) {
+      throw new Error("Clipr job is missing script metadata.");
+    }
+
+    await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
+      throws: true,
+    });
+
+    const existingClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.clipId),
+      )
+      .unique();
+    const clip = {
+      ownerId,
+      id: args.clipId,
+      name: args.name,
+      tags: ["ugc", "clipr"],
+      originalName: `${args.name}.mp4`,
+      clipType: "ugc" as const,
+      videoObject: args.videoObject,
+      posterObject: args.posterObject,
+      posterVersion: args.posterVersion,
+      mimeType: args.mimeType,
+      sourceMimeType: args.sourceMimeType,
+      size: args.size,
+      originalSize: args.originalSize,
+      width: args.width,
+      height: args.height,
+      aspectRatio: args.aspectRatio,
+      duration: args.duration,
+      hasAudio: args.hasAudio,
+      cliprMetadata: {
+        jobId: job.id,
+        productId: job.productId,
+        productName: job.productName,
+        avatarId: job.avatarId,
+        avatarPhotoId: job.avatarPhotoId,
+        voiceId: job.voiceId,
+        targetDurationSeconds: job.targetDurationSeconds,
+        hookStyleKey: job.hookStyleKey,
+        hookTemplateId: job.hookTemplateId,
+        filledHook: job.filledHook,
+        variablesUsed: job.variablesUsed,
+        script: job.script,
+        sceneCount: job.scenePlan.length,
+        finalDurationSeconds: args.duration,
+        music: job.music,
+        providerModels: job.providerModels,
+        createdAt: job.createdAt,
+      },
+      automation,
+      createdAt: args.updatedAt,
+      updatedAt: args.updatedAt,
+    };
+
+    if (existingClip) {
+      await ctx.db.patch(existingClip._id, clip);
+      const updatedClip = await ctx.db.get(existingClip._id);
+
+      if (updatedClip) {
+        await videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip);
+      }
+    } else {
+      const insertedClipId = await ctx.db.insert("videoClips", clip);
+      const insertedClip = await ctx.db.get(insertedClipId);
+
+      if (insertedClip) {
+        await videoClipCounts.insertIfDoesNotExist(ctx, insertedClip);
+      }
+    }
 
     await ctx.db.patch(job._id, {
       finalClipId: args.clipId,

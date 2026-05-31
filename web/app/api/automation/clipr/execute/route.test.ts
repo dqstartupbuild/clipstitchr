@@ -42,6 +42,10 @@ vi.mock("@/convex/_generated/api", () => ({
       recordAvatarVideoOutputFromAutomation:
         "cliprJobs.recordAvatarVideoOutputFromAutomation",
     },
+    mediaJobs: {
+      createCliprFinalizationFromAutomation:
+        "mediaJobs.createCliprFinalizationFromAutomation",
+    },
   },
 }));
 
@@ -93,6 +97,7 @@ function createTask(overrides: Record<string, unknown> = {}) {
     id: "automation:clipr:owner_123:2026-05-31:1",
     inputSnapshotJson: JSON.stringify({
       addMusic: false,
+      automationDate: "2026-05-31",
       productId: "product_1",
       productName: "Daily Product",
       productDetails: "Hydrating daily skincare serum",
@@ -145,6 +150,12 @@ describe("POST /api/automation/clipr/execute", () => {
           id: "automation:clipr:owner_123:2026-05-31:1",
           status: "ready-to-save",
           stage: "browser-save",
+        };
+      }
+
+      if (fn === api.mediaJobs.createCliprFinalizationFromAutomation) {
+        return {
+          id: "media:clipr-finalization:automation:clipr:owner_123:2026-05-31:1",
         };
       }
 
@@ -237,6 +248,11 @@ describe("POST /api/automation/clipr/execute", () => {
         status: "ready-to-save",
       }),
     );
+    expect(body.mediaJob).toEqual(
+      expect.objectContaining({
+        id: "media:clipr-finalization:automation:clipr:owner_123:2026-05-31:1",
+      }),
+    );
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.automationTasks.claimNext,
       expect.objectContaining({
@@ -277,9 +293,21 @@ describe("POST /api/automation/clipr/execute", () => {
       }),
     );
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.mediaJobs.createCliprFinalizationFromAutomation,
+      expect.objectContaining({
+        id: "media:clipr-finalization:automation:clipr:owner_123:2026-05-31:1",
+        idempotencyKey:
+          "automation:clipr:owner_123:2026-05-31:1:clipr-finalization",
+        ownerId: "owner_123",
+        secret: "automation_secret",
+      }),
+    );
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.automationTasks.markStatus,
       expect.objectContaining({
         id: "automation:clipr:owner_123:2026-05-31:1",
+        mediaJobId:
+          "media:clipr-finalization:automation:clipr:owner_123:2026-05-31:1",
         ownerId: "owner_123",
         providerJobId: "video_prediction_1",
         stage: "awaiting-media-finalization",
