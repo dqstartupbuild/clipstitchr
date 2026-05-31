@@ -285,6 +285,14 @@ and marks the task `provider-created`. Provider polling, output copying, and
 FFmpeg finalization still belong in follow-up worker phases rather than in this
 request handler.
 
+The first Clipr automation executor lives at
+`POST /api/automation/clipr/execute`. It is authorized with
+`AUTOMATION_WORKER_SECRET`, claims one queued `clipr-video` automation task, and
+runs the provider-side script, avatar source image, and avatar video steps using
+the automation task snapshot. It writes the provider outputs to the Clipr job and
+leaves the automation task at `awaiting-media-finalization`; the final normalized
+Clip library record still belongs in the FFmpeg media-worker phase.
+
 Recommended idempotency key:
 
 ```text

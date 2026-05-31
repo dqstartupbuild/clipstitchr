@@ -74,6 +74,9 @@ Implemented worker dispatch currently includes:
 - `POST /api/automation/plan` for daily run and task planning.
 - `POST /api/automation/swapr/execute` for claiming one queued Swapr automation
   task and starting its Replicate provider prediction.
+- `POST /api/automation/clipr/execute` for claiming one queued Clipr automation
+  task, running provider-side script/avatar-image/avatar-video generation, and
+  leaving the task ready for media finalization.
 
 Use Convex as the durable ledger. Use Cloud Scheduler, Convex cron, or another
 small scheduler only to trigger planning. Do not put long video rendering,
