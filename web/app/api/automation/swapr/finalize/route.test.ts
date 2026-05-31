@@ -203,7 +203,6 @@ describe("POST /api/automation/swapr/finalize", () => {
         id: "automation:swapr:owner_123:2026-05-31:1",
         ownerId: "owner_123",
         providerJobId: "prediction_1",
-        releaseLock: true,
         stage: "provider-created",
         status: "running",
       }),
