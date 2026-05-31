@@ -58,6 +58,7 @@ Target flow:
 
 ```text
 Scheduler or cron
+  -> POST /api/automation/plan with AUTOMATION_WORKER_SECRET
   -> automation planner finds eligible users
   -> planner creates daily automation runs with idempotency keys
   -> planner creates tool-specific automation tasks
