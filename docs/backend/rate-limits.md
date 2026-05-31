@@ -149,6 +149,7 @@ Optional Replicate model overrides:
 | Shared music generation | `POST /api/music/generate` from the shared music picker | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
 | Clipr job polling | Reserved Clipr polling route and Convex job refreshes | 600/minute/user, burst 150 |
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
+| Automation planner dispatch | `POST /api/automation/plan` | Worker-secret authorized only; route dispatches worker-only Convex planners, which consume automation-specific tool budgets before provider or media work |
 | Automatic Stitchr generation | Worker-only automation planner and Stitchr finalizer | 3 Stitchr outputs/day/user; global 300/day |
 | Automatic Swapr generation | Worker-only automation planner before provider work | 1 Swapr output/day/user; global 100/day |
 | Automatic Clipr generation | Worker-only automation planner before provider work | 1 Clipr output/day/user; global 100/day |
