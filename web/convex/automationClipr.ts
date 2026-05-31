@@ -8,6 +8,9 @@ import { mutation } from "./_generated/server";
 import { defaultAutomationCliprVoiceId } from "./defaultAutomationCliprVoiceId";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
+const AUTOMATION_CLIPR_ADD_MUSIC = false;
+const AUTOMATION_CLIPR_DURATION_SECONDS = 30;
+
 export const planDaily = mutation({
   args: {
     secret: v.string(),
@@ -45,7 +48,12 @@ export const planDaily = mutation({
     }
 
     if (!preferences?.enabled || !preferences.enabledTools.includes("clipr")) {
-      await markAutomationRunSkipped(ctx, run._id, "Clipr automation is disabled.", now);
+      await markAutomationRunSkipped(
+        ctx,
+        run._id,
+        "Clipr automation is disabled.",
+        now,
+      );
       return { runId, status: "skipped", taskIds: [] };
     }
 
@@ -75,7 +83,11 @@ export const planDaily = mutation({
       .order("desc")
       .collect();
     const avatarPhoto = avatar
-      ? photos.find((photo) => photo.avatarId === avatar.id)
+      ? photos.find(
+          (photo) =>
+            photo.avatarId === avatar.id &&
+            photo.photoObject.contentType.startsWith("image/"),
+        )
       : undefined;
 
     if (!product || !avatar || !avatarPhoto) {
@@ -104,17 +116,26 @@ export const planDaily = mutation({
       stage: "awaiting-script-provider",
       idempotencyKey: `${ownerId}:${automationDate}:clipr:1`,
       inputSnapshotJson: JSON.stringify({
+        addMusic: AUTOMATION_CLIPR_ADD_MUSIC,
         productId: product.id,
         productName: product.name,
         productDetails: product.productDetails,
         audienceDetails: product.audienceDetails,
+        cliprPlaceholderFillers: product.cliprPlaceholderFillers,
+        eligibleCliprHookStyleKeys: product.eligibleCliprHookStyleKeys,
+        eligibleCliprHookTemplateIds: product.eligibleCliprHookTemplateIds,
         inferredProblem: product.inferredProblem,
         inferredPainPoints: product.inferredPainPoints,
+        preferredCliprHookStyleKey: product.preferredCliprHookStyleKey,
+        productCreatedAt: product.createdAt,
+        productUpdatedAt: product.updatedAt,
         avatarId: avatar.id,
         avatarName: avatar.name,
+        avatarDescription: avatar.description,
         avatarPhotoId: avatarPhoto.id,
+        avatarPhotoObject: avatarPhoto.photoObject,
         voiceId,
-        targetDurationSeconds: 30,
+        targetDurationSeconds: AUTOMATION_CLIPR_DURATION_SECONDS,
       }),
       createdAt: now,
     });

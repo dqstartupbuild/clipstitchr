@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
@@ -153,6 +154,58 @@ export const createQueued = mutation({
   },
 });
 
+export const createQueuedFromAutomation = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    productId: v.string(),
+    productName: v.string(),
+    productDetails: v.string(),
+    audienceDetails: v.string(),
+    productInferredProblem: v.optional(v.string()),
+    productInferredPainPoints: v.array(v.string()),
+    avatarId: v.string(),
+    avatarName: v.string(),
+    avatarPhotoId: v.string(),
+    voiceId: v.string(),
+    targetDurationSeconds: cliprDurationSecondsValidator,
+    createdAt: v.string(),
+  },
+  handler: async (ctx, { secret, ownerId, ...job }) => {
+    assertAutomationWorkerSecret(secret);
+
+    const existingJob = await ctx.db
+      .query("cliprJobs")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", job.id),
+      )
+      .unique();
+
+    if (existingJob) {
+      return clientJobFields(existingJob);
+    }
+
+    const jobId = await ctx.db.insert("cliprJobs", {
+      ownerId,
+      ...job,
+      scenePlan: [],
+      providerModels: [],
+      status: "scripting",
+      stage: "hook-script",
+      progress: 0.08,
+      updatedAt: job.createdAt,
+    });
+    const insertedJob = await ctx.db.get(jobId);
+
+    if (!insertedJob) {
+      throw new Error("Unable to create Clipr automation job.");
+    }
+
+    return clientJobFields(insertedJob);
+  },
+});
+
 export const applyScriptPlan = mutation({
   args: {
     secret: v.string(),
@@ -214,6 +267,70 @@ export const applyScriptPlan = mutation({
   },
 });
 
+export const applyScriptPlanFromAutomation = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    hookStyleKey: v.string(),
+    hookTemplateId: v.string(),
+    filledHook: v.string(),
+    variablesUsed: v.record(v.string(), v.string()),
+    script: v.string(),
+    scenePlan: v.array(cliprScenePlanValidator),
+    providerModel: v.string(),
+    updatedAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    {
+      secret,
+      ownerId,
+      id,
+      hookStyleKey,
+      hookTemplateId,
+      filledHook,
+      variablesUsed,
+      script,
+      scenePlan,
+      providerModel,
+      updatedAt,
+    },
+  ) => {
+    assertAutomationWorkerSecret(secret);
+
+    const job = await ctx.db
+      .query("cliprJobs")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!job) {
+      throw new Error("Clipr job not found.");
+    }
+
+    const patch = {
+      hookStyleKey,
+      hookTemplateId,
+      filledHook,
+      variablesUsed,
+      script,
+      scenePlan,
+      providerModels: Array.from(new Set([...job.providerModels, providerModel])),
+      status: "generating-avatar-image" as const,
+      stage: "avatar-image" as const,
+      progress: 0.25,
+      updatedAt,
+    };
+
+    await ctx.db.patch(job._id, patch);
+
+    return clientJobFields({
+      ...job,
+      ...patch,
+    });
+  },
+});
+
 export const recordAvatarImageOutput = mutation({
   args: {
     secret: v.string(),
@@ -267,6 +384,62 @@ export const recordAvatarImageOutput = mutation({
   },
 });
 
+export const recordAvatarImageOutputFromAutomation = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    avatarImageObject: r2ObjectValidator,
+    avatarImageProviderPredictionId: v.string(),
+    providerModels: v.array(v.string()),
+    progress: v.number(),
+    updatedAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    {
+      secret,
+      ownerId,
+      id,
+      avatarImageObject,
+      avatarImageProviderPredictionId,
+      providerModels,
+      progress,
+      updatedAt,
+    },
+  ) => {
+    assertAutomationWorkerSecret(secret);
+
+    const job = await ctx.db
+      .query("cliprJobs")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!job) {
+      throw new Error("Clipr job not found.");
+    }
+
+    const patch = {
+      avatarImageObject,
+      avatarImageProviderPredictionId,
+      providerModels: Array.from(
+        new Set([...job.providerModels, ...providerModels]),
+      ),
+      status: "generating-avatar-video" as const,
+      stage: "avatar-video" as const,
+      progress,
+      updatedAt,
+    };
+
+    await ctx.db.patch(job._id, patch);
+
+    return clientJobFields({
+      ...job,
+      ...patch,
+    });
+  },
+});
+
 export const recordAvatarVideoOutput = mutation({
   args: {
     secret: v.string(),
@@ -307,6 +480,65 @@ export const recordAvatarVideoOutput = mutation({
       key: ownerId,
       throws: true,
     });
+
+    const patch = {
+      avatarVideoObject,
+      avatarVideoProviderPredictionId,
+      ...(music ? { music } : {}),
+      providerModels: Array.from(
+        new Set([...job.providerModels, ...providerModels]),
+      ),
+      status: "ready-to-save" as const,
+      stage: "browser-save" as const,
+      progress,
+      updatedAt,
+    };
+
+    await ctx.db.patch(job._id, patch);
+
+    return clientJobFields({
+      ...job,
+      ...patch,
+    });
+  },
+});
+
+export const recordAvatarVideoOutputFromAutomation = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    avatarVideoObject: r2ObjectValidator,
+    avatarVideoProviderPredictionId: v.string(),
+    music: v.optional(cliprMusicMetadataValidator),
+    providerModels: v.array(v.string()),
+    progress: v.number(),
+    updatedAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    {
+      secret,
+      ownerId,
+      id,
+      avatarVideoObject,
+      avatarVideoProviderPredictionId,
+      music,
+      providerModels,
+      progress,
+      updatedAt,
+    },
+  ) => {
+    assertAutomationWorkerSecret(secret);
+
+    const job = await ctx.db
+      .query("cliprJobs")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!job) {
+      throw new Error("Clipr job not found.");
+    }
 
     const patch = {
       avatarVideoObject,
@@ -477,6 +709,37 @@ export const fail = mutation({
     assertRateLimitApiSecret(secret);
 
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const job = await ctx.db
+      .query("cliprJobs")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!job) {
+      return null;
+    }
+
+    await ctx.db.patch(job._id, {
+      status: "failed",
+      stage: "failed",
+      error,
+      updatedAt,
+    });
+
+    return null;
+  },
+});
+
+export const failFromAutomation = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    error: v.string(),
+    updatedAt: v.string(),
+  },
+  handler: async (ctx, { secret, ownerId, id, error, updatedAt }) => {
+    assertAutomationWorkerSecret(secret);
+
     const job = await ctx.db
       .query("cliprJobs")
       .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))

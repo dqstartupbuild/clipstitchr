@@ -82,3 +82,15 @@ Reason: automation should not ask the user for extra per-run settings, and the
 short provider-ready constraint avoids depending on browser-side segment
 creation. Longer automatic Swapr references should move through the media worker
 once server-side segment creation and finalization are wired.
+
+## Clipr Defaults
+
+Automatic Clipr uses a 30 second target duration, the avatar's saved Clipr voice
+when present, the global automation fallback voice otherwise, and no generated
+music in the first executor pass.
+
+Reason: the manual Clipr page defaults to 30 seconds and music off, and keeping
+the automation pass voice/script/video-only avoids adding a second provider
+branch before the core durable finalization path is finished. The executor
+generates the script, avatar source image, and avatar video, then leaves the task
+at `awaiting-media-finalization` for the FFmpeg worker phase.
