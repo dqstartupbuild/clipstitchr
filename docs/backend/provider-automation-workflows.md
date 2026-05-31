@@ -263,7 +263,7 @@ Scheduler
   -> planner creates automationRuns with idempotency keys
   -> planner enqueues provider tasks
   -> provider executors create/copy outputs
-  -> media jobs render final videos when needed
+  -> media jobs render final videos only when needed
   -> notifications tell the user content is ready
 ```
 

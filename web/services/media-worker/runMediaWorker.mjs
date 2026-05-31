@@ -11,6 +11,8 @@ const execFileAsync = promisify(execFile);
 const api = anyApi;
 const packageRoot = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 const MEDIA_MAX_JOB_ATTEMPTS = 3;
+const TIKTOK_OUTPUT_HEIGHT = 1920;
+const TIKTOK_OUTPUT_WIDTH = 1080;
 const VIDEO_POSTER_CAPTURE_VERSION = 2;
 
 function readMaxJobs(args) {
@@ -206,6 +208,52 @@ function parseCliprFinalizationInput(inputSnapshotJson) {
   };
 }
 
+function parseStitchrDraftFinalizationInput(inputSnapshotJson) {
+  const input = JSON.parse(inputSnapshotJson);
+
+  if (!input || typeof input !== "object") {
+    throw new Error("Invalid Stitchr export input.");
+  }
+
+  return {
+    automationDate: getString(input.automationDate, "automation date"),
+    automationRunId: getString(input.automationRunId, "automation run ID"),
+    automationTaskId: getString(input.automationTaskId, "automation task ID"),
+    demoClipId: getString(input.demoClipId, "Demo clip ID"),
+    demoClipName: getString(input.demoClipName, "Demo clip name"),
+    demoDuration: getPositiveNumber(input.demoDuration, "Demo duration"),
+    demoHasAudio: input.demoHasAudio === true,
+    demoPlaybackRate: getPlaybackRate(input.demoPlaybackRate),
+    demoTrimRange: getTrimRange(input.demoTrimRange, input.demoDuration),
+    demoVideoObject: getR2Object(input.demoVideoObject, "Demo video object"),
+    includeDemoAudio: input.includeDemoAudio === true,
+    includeUgcAudio: input.includeUgcAudio === true,
+    sourceSummary:
+      typeof input.sourceSummary === "string" ? input.sourceSummary : undefined,
+    stitchId: getString(input.stitchId, "stitch ID"),
+    stitchName: getString(input.stitchName, "stitch name"),
+    ugcClipId: getString(input.ugcClipId, "UGC clip ID"),
+    ugcClipName: getString(input.ugcClipName, "UGC clip name"),
+    ugcDuration: getPositiveNumber(input.ugcDuration, "UGC duration"),
+    ugcHasAudio: input.ugcHasAudio === true,
+    ugcPlaybackRate: getPlaybackRate(input.ugcPlaybackRate),
+    ugcTrimRange: getTrimRange(input.ugcTrimRange, input.ugcDuration),
+    ugcVideoObject: getR2Object(input.ugcVideoObject, "UGC video object"),
+  };
+}
+
+function getR2Object(value, label) {
+  if (!value || typeof value !== "object") {
+    throw new Error(`Missing ${label}.`);
+  }
+
+  return {
+    key: getString(value.key, `${label} key`),
+    contentType: getString(value.contentType, `${label} content type`),
+    size: getPositiveNumber(value.size, `${label} size`),
+  };
+}
+
 function getString(value, label) {
   if (typeof value !== "string" || !value.trim()) {
     throw new Error(`Missing ${label}.`);
@@ -220,6 +268,41 @@ function getPositiveNumber(value, label) {
   }
 
   return Math.ceil(value);
+}
+
+function getNonNegativeNumber(value, label) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    throw new Error(`Missing ${label}.`);
+  }
+
+  return value;
+}
+
+function getPlaybackRate(value) {
+  return value === 2 ? 2 : 1;
+}
+
+function getTrimRange(value, fallbackDuration) {
+  const duration = getPositiveNumber(fallbackDuration, "trim fallback duration");
+
+  if (!value || typeof value !== "object") {
+    return { start: 0, end: duration };
+  }
+
+  const start = Math.min(
+    duration,
+    getNonNegativeNumber(value.start, "trim start"),
+  );
+  const end = Math.min(
+    duration,
+    Math.max(start, getNonNegativeNumber(value.end, "trim end")),
+  );
+
+  return { start, end };
+}
+
+function getTrimDuration(trimRange, playbackRate = 1) {
+  return Math.max(0, trimRange.end - trimRange.start) / playbackRate;
 }
 
 async function runFfmpeg(config, args) {
@@ -454,6 +537,73 @@ async function processCliprFinalization({ client, config, job, r2 }) {
   }
 }
 
+async function processStitchrDraftFinalization({ client, config, job }) {
+  const input = parseStitchrDraftFinalizationInput(job.inputSnapshotJson);
+  const updatedAt = new Date().toISOString();
+  const automationSecret = getRequiredEnv("AUTOMATION_WORKER_SECRET");
+  const duration =
+    getTrimDuration(input.ugcTrimRange, input.ugcPlaybackRate) +
+    getTrimDuration(input.demoTrimRange, input.demoPlaybackRate);
+
+  await client.mutation(api.mediaJobs.markStatus, {
+    secret: config.mediaWorkerSecret,
+    ownerId: job.ownerId,
+    id: job.id,
+    status: "running",
+    stage: "saving-editable-stitch",
+    updatedAt,
+  });
+  await client.mutation(api.stitches.saveFromAutomation, {
+    secret: automationSecret,
+    ownerId: job.ownerId,
+    automation: {
+      source: "automation",
+      runId: input.automationRunId,
+      taskId: input.automationTaskId,
+      tool: "stitchr",
+      automationDate: input.automationDate,
+      sourceSummary: input.sourceSummary,
+    },
+    id: input.stitchId,
+    mode: "normal",
+    name: input.stitchName,
+    ugcClipId: input.ugcClipId,
+    demoClipId: input.demoClipId,
+    ugcClipName: input.ugcClipName,
+    demoClipName: input.demoClipName,
+    ugcTrimRange: input.ugcTrimRange,
+    demoTrimRange: input.demoTrimRange,
+    width: TIKTOK_OUTPUT_WIDTH,
+    height: TIKTOK_OUTPUT_HEIGHT,
+    duration,
+    includeDemoAudio: input.includeDemoAudio,
+    includeUgcAudio: input.includeUgcAudio,
+    demoPlaybackRate: input.demoPlaybackRate,
+    ugcPlaybackRate: input.ugcPlaybackRate,
+    createdAt: updatedAt,
+  });
+  await client.mutation(api.automationStitchr.recordOutput, {
+    secret: automationSecret,
+    ownerId: job.ownerId,
+    taskId: input.automationTaskId,
+    ugcClipId: input.ugcClipId,
+    demoClipId: input.demoClipId,
+    stitchId: input.stitchId,
+    mediaJobId: job.id,
+    automationDate: input.automationDate,
+    completedAt: updatedAt,
+  });
+  await client.mutation(api.mediaJobs.markStatus, {
+    secret: config.mediaWorkerSecret,
+    ownerId: job.ownerId,
+    id: job.id,
+    status: "completed",
+    stage: "completed",
+    outputAssetId: input.stitchId,
+    updatedAt,
+  });
+}
+
 async function failJob({ client, config, error, job }) {
   const message =
     error instanceof Error ? error.message : "Unable to process media job.";
@@ -473,6 +623,11 @@ async function failJob({ client, config, error, job }) {
 async function processJob({ client, config, job, r2 }) {
   if (job.jobType === "clipr-finalization") {
     await processCliprFinalization({ client, config, job, r2 });
+    return;
+  }
+
+  if (job.jobType === "stitchr-draft-finalization") {
+    await processStitchrDraftFinalization({ client, config, job });
     return;
   }
 

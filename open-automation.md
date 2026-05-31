@@ -69,7 +69,7 @@ pipeline is stable.
 
 Reason: generating useful ad copy requires product/hook policy and preview
 quality controls. The first Stitchr automation pass should prove source
-selection, pair diversity, background rendering, and draft saving.
+selection, pair diversity, durable finalization, and editable draft saving.
 
 ## Swapr Defaults
 
