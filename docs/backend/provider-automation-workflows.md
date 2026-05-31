@@ -277,6 +277,14 @@ Eligibility should require at least:
 - spend/rate-limit budget available;
 - no duplicate run for the same user/date/tool/product/avatar key.
 
+The first Swapr automation executor lives at
+`POST /api/automation/swapr/execute`. It is authorized with
+`AUTOMATION_WORKER_SECRET`, claims one queued `swapr-video` automation task,
+starts the Replicate prediction, records the provider job under the task owner,
+and marks the task `provider-created`. Provider polling, output copying, and
+FFmpeg finalization still belong in follow-up worker phases rather than in this
+request handler.
+
 Recommended idempotency key:
 
 ```text

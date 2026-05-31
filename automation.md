@@ -69,6 +69,12 @@ Scheduler or cron
   -> dashboard shows drafts and automation status
 ```
 
+Implemented worker dispatch currently includes:
+
+- `POST /api/automation/plan` for daily run and task planning.
+- `POST /api/automation/swapr/execute` for claiming one queued Swapr automation
+  task and starting its Replicate provider prediction.
+
 Use Convex as the durable ledger. Use Cloud Scheduler, Convex cron, or another
 small scheduler only to trigger planning. Do not put long video rendering,
 provider waits, or multi-step finalization inside a request handler.

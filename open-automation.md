@@ -70,3 +70,15 @@ pipeline is stable.
 Reason: generating useful ad copy requires product/hook policy and preview
 quality controls. The first Stitchr automation pass should prove source
 selection, pair diversity, background rendering, and draft saving.
+
+## Swapr Defaults
+
+Automatic Swapr uses the manual page's conservative defaults: Fast 720p
+(`std`), Match Photo orientation (`image`), original audio off, and a generic
+natural UGC prompt. The planner only selects provider-ready UGC references from
+3 to 10 seconds for this first executor phase.
+
+Reason: automation should not ask the user for extra per-run settings, and the
+short provider-ready constraint avoids depending on browser-side segment
+creation. Longer automatic Swapr references should move through the media worker
+once server-side segment creation and finalization are wired.
