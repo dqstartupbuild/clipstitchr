@@ -9,6 +9,10 @@ without requiring an open browser tab. Users can still manually run Stitchr,
 Swapr, Clipr, avatar photo generation, and Swipr, but the daily automatic runs
 use their own automation budgets and durable background jobs.
 
+Current implementation focus: Stitchr, Swapr, and Clipr are the active core
+automation tools. Avatar photo generation and Swipr remain planned, but their
+executors are held out of active scheduling for now.
+
 The first automated daily target is:
 
 | Tool | Automatic daily output |
