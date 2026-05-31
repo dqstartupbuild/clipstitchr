@@ -9,6 +9,7 @@
     "build": "npm run content:build && next build",
     "start": "next start",
     "lint": "npm run content:build && eslint .",
+    "media-worker": "node ./services/media-worker/runMediaWorker.mjs",
     "typecheck": "npm run content:build && tsc --noEmit",
     "test": "npm run content:build && vitest run --coverage"
   },

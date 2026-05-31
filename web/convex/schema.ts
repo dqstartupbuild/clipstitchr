@@ -15,6 +15,8 @@ import { cliprMetadataValidator } from "./validators/cliprMetadata";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { clipTypeValidator } from "./validators/clipType";
+import { mediaJobStatusValidator } from "./validators/mediaJobStatus";
+import { mediaJobTypeValidator } from "./validators/mediaJobType";
 import { musicTrackSourceValidator } from "./validators/musicTrackSource";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
@@ -284,6 +286,27 @@ export default defineSchema({
     defaultVoiceId: v.string(),
     updatedAt: v.string(),
   }).index("by_owner", ["ownerId"]),
+  mediaJobs: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    jobType: mediaJobTypeValidator,
+    status: mediaJobStatusValidator,
+    stage: v.string(),
+    idempotencyKey: v.string(),
+    inputSnapshotJson: v.string(),
+    outputAssetIds: v.array(v.string()),
+    attempt: v.number(),
+    lockedBy: v.optional(v.string()),
+    lockedUntil: v.optional(v.string()),
+    error: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    completedAt: v.optional(v.string()),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"])
+    .index("by_status_created", ["status", "createdAt"])
+    .index("by_idempotency_key", ["idempotencyKey"]),
   automationPreferences: defineTable({
     ownerId: v.string(),
     enabled: v.boolean(),

@@ -9,6 +9,7 @@ export type CliprAutomationTaskInput = {
   avatarName: string;
   avatarPhotoId: string;
   avatarPhotoObject: R2ObjectReference;
+  automationDate: string;
   jobId: string;
   product: ProductProfile;
   targetDurationSeconds: CliprDurationSeconds;
@@ -107,6 +108,7 @@ export function parseCliprAutomationTaskInput(
       input.avatarPhotoObject,
       "avatar photo object",
     ),
+    automationDate: getString(input.automationDate, "automation date"),
     jobId: taskId,
     product: {
       id: getString(input.productId, "product ID"),

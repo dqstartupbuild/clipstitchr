@@ -290,8 +290,13 @@ The first Clipr automation executor lives at
 `AUTOMATION_WORKER_SECRET`, claims one queued `clipr-video` automation task, and
 runs the provider-side script, avatar source image, and avatar video steps using
 the automation task snapshot. It writes the provider outputs to the Clipr job and
-leaves the automation task at `awaiting-media-finalization`; the final normalized
-Clip library record still belongs in the FFmpeg media-worker phase.
+creates a `clipr-finalization` media job.
+
+The first FFmpeg media worker lives at
+`web/services/media-worker/runMediaWorker.mjs`. It claims queued media jobs with
+`MEDIA_WORKER_SECRET`; for `clipr-finalization`, it normalizes the durable avatar
+video to 9:16 H.264/AAC, captures a poster, uploads both objects to R2, saves
+the final Clipr `videoClips` record, and marks the automation task/run complete.
 
 Recommended idempotency key:
 
