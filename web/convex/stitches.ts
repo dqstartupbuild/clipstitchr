@@ -146,6 +146,20 @@ export const saveFromAutomation = mutation({
       throw new Error("Automation Stitchr source clips were not found.");
     }
 
+    const existingStitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.id),
+      )
+      .unique();
+
+    if (
+      existingStitch?.automation?.source === "automation" &&
+      existingStitch.automation.taskId === automation.taskId
+    ) {
+      return existingStitch._id;
+    }
+
     await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
       key: ownerId,
       throws: true,
@@ -154,12 +168,6 @@ export const saveFromAutomation = mutation({
       throws: true,
     });
 
-    const existingStitch = await ctx.db
-      .query("stitches")
-      .withIndex("by_owner_id", (q) =>
-        q.eq("ownerId", ownerId).eq("id", args.id),
-      )
-      .unique();
     const stitch = {
       ownerId,
       ...args,

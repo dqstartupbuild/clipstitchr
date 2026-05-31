@@ -3,6 +3,7 @@ import type { MutationCtx } from "./_generated/server";
 type AutomationTaskType =
   | "avatar-photo"
   | "clipr-video"
+  | "stitchr-draft"
   | "stitchr-render"
   | "swapr-video"
   | "swipr-draft";

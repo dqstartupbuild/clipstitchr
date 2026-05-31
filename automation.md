@@ -77,9 +77,9 @@ Implemented worker dispatch currently includes:
 - `POST /api/automation/clipr/execute` for claiming one queued Clipr automation
   task, running provider-side script/avatar-image/avatar-video generation, and
   creating a `clipr-finalization` media job.
-- `npm run media-worker` for claiming queued media jobs. The first implemented
-  worker path finalizes Clipr automation videos with FFmpeg and saves the final
-  Clip draft.
+- `npm run media-worker` for claiming queued media jobs. Current worker paths
+  save editable Stitchr automation drafts and finalize Clipr automation videos
+  with FFmpeg.
 
 Use Convex as the durable ledger. Use Cloud Scheduler, Convex cron, or another
 small scheduler only to trigger planning. Do not put long video rendering,
@@ -249,13 +249,15 @@ Source requirements:
 - Optional product filtering should prefer demos linked to the selected product.
 - Exclude clips deleted, failed, or missing R2 objects.
 
-Rendering:
+Draft finalization:
 
-- Create `stitchr-export` media jobs with source clip IDs, copied trim ranges,
-  text overlay settings, audio flags, playback rates, and music settings.
-- Render in the server media worker with FFmpeg.
-- Save outputs as `stitches` records with an automation source marker.
-- Do not require Media Bunny or an open browser.
+- Create `stitchr-draft-finalization` media jobs with source clip IDs, copied
+  trim ranges, audio flags, playback rates, and music settings.
+- Save outputs as editable `stitches` records with an automation source marker.
+- Do not render or persist final Stitchr MP4 clips during automation; saved
+  Stitchr drafts should remain editable and use the existing browser export path
+  when the user downloads or manually renders them.
+- Do not require Media Bunny or an open browser for the draft finalization step.
 
 ### Pair Selection Algorithm
 
@@ -292,7 +294,8 @@ eligible pairs, create as many as possible and mark the rest skipped with a
 clear reason.
 
 History update must happen only after the stitch task reaches a final saved
-asset state. Failed render attempts should not make the pair look used.
+editable draft state. Failed finalization attempts should not make the pair look
+used.
 
 ## Swapr Automation
 
@@ -496,9 +499,9 @@ instead of creating duplicates.
 
 - Implement eligible UGC/Demo discovery.
 - Implement weighted pair selection and pair history.
-- Create three daily `stitchr-export` media tasks.
-- Render with the FFmpeg media worker.
-- Save completed stitches as drafts.
+- Create three daily `stitchr-draft-finalization` media tasks.
+- Finalize editable Stitchr drafts through the media worker ledger.
+- Save completed stitches as editable drafts.
 
 Stitchr is the best first tool because its inputs are already durable saved
 clips and it does not require provider generation.
