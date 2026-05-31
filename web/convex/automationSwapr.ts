@@ -5,6 +5,7 @@ import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
+import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 export const planDaily = mutation({
   args: {
@@ -17,6 +18,11 @@ export const planDaily = mutation({
     assertAutomationWorkerSecret(secret);
 
     const runId = `automation:swapr:${ownerId}:${automationDate}`;
+
+    if (!isWithinAutomationGlobalWindow(now)) {
+      return { runId, status: "skipped", taskIds: [] };
+    }
+
     const preferences = await ctx.db
       .query("automationPreferences")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))

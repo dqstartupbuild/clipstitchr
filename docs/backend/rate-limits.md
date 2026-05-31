@@ -61,6 +61,14 @@ npx convex dev --once
   verification key file.
 - Must not be prefixed with `NEXT_PUBLIC_`.
 
+`AUTOMATION_WORKER_SECRET`
+
+- Required in the Convex deployment and in any scheduler, provider executor, or
+  media worker that plans or finalizes automatic daily generation.
+- Authorizes worker-only automation mutations.
+- Must be a high-entropy random secret.
+- Must not be prefixed with `NEXT_PUBLIC_`.
+
 TikTok Events API variables:
 
 - `TIKTOK_EVENTS_API_ACCESS_TOKEN` enables server-side TikTok Events API
@@ -141,6 +149,13 @@ Optional Replicate model overrides:
 | Shared music generation | `POST /api/music/generate` from the shared music picker | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
 | Clipr job polling | Reserved Clipr polling route and Convex job refreshes | 600/minute/user, burst 150 |
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
+| Automatic Stitchr generation | Worker-only automation planner and Stitchr finalizer | 3 Stitchr outputs/day/user; global 300/day |
+| Automatic Swapr generation | Worker-only automation planner before provider work | 1 Swapr output/day/user; global 100/day |
+| Automatic Clipr generation | Worker-only automation planner before provider work | 1 Clipr output/day/user; global 100/day |
+| Automatic avatar photo generation | Worker-only automation planner before provider work | 1 generated photo/day/avatar; global 500/day |
+| Automatic Swipr generation | Worker-only automation planner before provider work | 1 Swipe/day/user; global 100/day |
+| Automatic provider cost guard | Worker-only automation planner before provider work | 10,000 provider cost units/day global |
+| Automatic asset final saves | Worker-only finalizers for automated Stitches, video clips, avatar photos, and Swipes | 20 saved assets/day/user; global 2,000/day |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
 | Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `stitches.updateMusic`, `stitches.updateTextOverlay`, `stitches.updateRenderedVideo`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |

@@ -5,6 +5,7 @@ import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
+import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 export const planDaily = mutation({
   args: {
@@ -15,6 +16,13 @@ export const planDaily = mutation({
   },
   handler: async (ctx, { secret, ownerId, automationDate, now }) => {
     assertAutomationWorkerSecret(secret);
+
+    if (!isWithinAutomationGlobalWindow(now)) {
+      return {
+        status: "skipped",
+        taskIds: [],
+      };
+    }
 
     const preferences = await ctx.db
       .query("automationPreferences")

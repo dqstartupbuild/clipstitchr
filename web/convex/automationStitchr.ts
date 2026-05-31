@@ -9,6 +9,7 @@ import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecre
 import type { Id } from "./_generated/dataModel";
 import { mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
+import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 function createRunId(ownerId: string, automationDate: string) {
   return `automation:stitchr:${ownerId}:${automationDate}`;
@@ -93,6 +94,14 @@ export const planDaily = mutation({
   },
   handler: async (ctx, { secret, ownerId, automationDate, now }) => {
     assertAutomationWorkerSecret(secret);
+
+    if (!isWithinAutomationGlobalWindow(now)) {
+      return {
+        runId: createRunId(ownerId, automationDate),
+        status: "skipped",
+        taskIds: [],
+      };
+    }
 
     const preferences = await ctx.db
       .query("automationPreferences")
