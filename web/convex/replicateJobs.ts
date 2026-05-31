@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation } from "./_generated/server";
@@ -71,6 +72,47 @@ export const recordAvatarPhotoJob = mutation({
       ownerId,
       predictionId,
       purpose: "avatar-photo" as const,
+      modelId,
+      status,
+      createdAt,
+      updatedAt,
+    };
+
+    if (existingJob) {
+      await ctx.db.patch(existingJob._id, job);
+      return existingJob._id;
+    }
+
+    return await ctx.db.insert("replicateJobs", job);
+  },
+});
+
+export const recordSwaprAutomationJob = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    predictionId: v.string(),
+    modelId: v.string(),
+    status: replicatePredictionStatusValidator,
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    { secret, ownerId, predictionId, modelId, status, createdAt, updatedAt },
+  ) => {
+    assertAutomationWorkerSecret(secret);
+
+    const existingJob = await ctx.db
+      .query("replicateJobs")
+      .withIndex("by_owner_prediction", (q) =>
+        q.eq("ownerId", ownerId).eq("predictionId", predictionId),
+      )
+      .unique();
+    const job = {
+      ownerId,
+      predictionId,
+      purpose: "swapr-video" as const,
       modelId,
       status,
       createdAt,

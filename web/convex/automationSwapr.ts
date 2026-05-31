@@ -7,6 +7,14 @@ import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecre
 import { mutation } from "./_generated/server";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
+const AUTOMATION_SWAPR_CHARACTER_ORIENTATION = "image";
+const AUTOMATION_SWAPR_KEEP_ORIGINAL_SOUND = false;
+const AUTOMATION_SWAPR_MODE = "std";
+const AUTOMATION_SWAPR_PROMPT =
+  "Keep the creator in a natural phone-camera UGC style with the same casual setting and lighting.";
+const AUTOMATION_SWAPR_REFERENCE_DURATION_LIMIT_SECONDS = 10;
+const AUTOMATION_SWAPR_REFERENCE_MAX_SIZE_BYTES = 100 * 1024 * 1024;
+
 export const planDaily = mutation({
   args: {
     secret: v.string(),
@@ -44,7 +52,12 @@ export const planDaily = mutation({
     }
 
     if (!preferences?.enabled || !preferences.enabledTools.includes("swapr")) {
-      await markAutomationRunSkipped(ctx, run._id, "Swapr automation is disabled.", now);
+      await markAutomationRunSkipped(
+        ctx,
+        run._id,
+        "Swapr automation is disabled.",
+        now,
+      );
       return { runId, status: "skipped", taskIds: [] };
     }
 
@@ -54,23 +67,32 @@ export const planDaily = mutation({
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order("desc")
       .collect();
-    const sourcePhoto = photos.find((photo) =>
-      preferences.avatarSelectionMode === "selected"
-        ? photo.avatarId && selectedAvatarIds.has(photo.avatarId)
-        : Boolean(photo.avatarId),
+    const sourcePhoto = photos.find(
+      (photo) =>
+        photo.photoObject.contentType.startsWith("image/") &&
+        (preferences.avatarSelectionMode === "selected"
+          ? photo.avatarId && selectedAvatarIds.has(photo.avatarId)
+          : Boolean(photo.avatarId)),
     );
     const clips = await ctx.db
       .query("videoClips")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order("desc")
       .collect();
-    const referenceClip = clips.find((clip) => clip.clipType === "ugc");
+    const referenceClip = clips.find(
+      (clip) =>
+        clip.clipType === "ugc" &&
+        clip.videoObject.contentType.startsWith("video/") &&
+        clip.videoObject.size <= AUTOMATION_SWAPR_REFERENCE_MAX_SIZE_BYTES &&
+        clip.duration >= 3 &&
+        clip.duration <= AUTOMATION_SWAPR_REFERENCE_DURATION_LIMIT_SECONDS,
+    );
 
     if (!sourcePhoto || !referenceClip) {
       await markAutomationRunSkipped(
         ctx,
         run._id,
-        "Swapr automation needs an avatar photo and one UGC-compatible reference video.",
+        "Swapr automation needs an avatar photo and one provider-ready UGC reference video.",
         now,
       );
       return { runId, status: "skipped", taskIds: [] };
@@ -91,10 +113,17 @@ export const planDaily = mutation({
       stage: "awaiting-provider",
       idempotencyKey: `${ownerId}:${automationDate}:swapr:1`,
       inputSnapshotJson: JSON.stringify({
+        characterOrientation: AUTOMATION_SWAPR_CHARACTER_ORIENTATION,
+        keepOriginalSound: AUTOMATION_SWAPR_KEEP_ORIGINAL_SOUND,
+        mode: AUTOMATION_SWAPR_MODE,
         photoId: sourcePhoto.id,
         photoObject: sourcePhoto.photoObject,
+        prompt: AUTOMATION_SWAPR_PROMPT,
         referenceClipId: referenceClip.id,
+        referenceClipName: referenceClip.name,
+        referenceDurationSeconds: referenceClip.duration,
         referenceVideoObject: referenceClip.videoObject,
+        sourcePhotoName: sourcePhoto.name,
       }),
       createdAt: now,
     });

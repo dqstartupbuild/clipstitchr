@@ -151,7 +151,7 @@ Optional Replicate model overrides:
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
 | Automation planner dispatch | `POST /api/automation/plan` | Worker-secret authorized only; route dispatches worker-only Convex planners, which consume automation-specific tool budgets before provider or media work |
 | Automatic Stitchr generation | Worker-only automation planner and Stitchr finalizer | 3 Stitchr outputs/day/user; global 300/day |
-| Automatic Swapr generation | Worker-only automation planner before provider work | 1 Swapr output/day/user; global 100/day |
+| Automatic Swapr generation | Worker-only automation planner before provider work; `POST /api/automation/swapr/execute` is worker-secret authorized and claims one queued Swapr task before creating a Replicate prediction | 1 Swapr output/day/user; global 100/day |
 | Automatic Clipr generation | Worker-only automation planner before provider work | 1 Clipr output/day/user; global 100/day |
 | Automatic avatar photo generation | Worker-only automation planner before provider work | 1 generated photo/day/avatar; global 500/day |
 | Automatic Swipr generation | Worker-only automation planner before provider work | 1 Swipe/day/user; global 100/day |

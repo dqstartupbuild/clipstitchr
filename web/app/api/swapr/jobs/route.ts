@@ -12,6 +12,7 @@ import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRa
 import { assertR2ObjectKeyBelongsToUser } from "@/lib/clipstitchr/server/r2/assertR2ObjectKeyBelongsToUser";
 import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl";
 import { readSwaprJobCreateRequest } from "@/lib/clipstitchr/server/readSwaprJobCreateRequest";
+import { SWAPR_MODEL_ID } from "@/lib/clipstitchr/constants/swaprModelId";
 import { SWAPR_MAX_REFERENCE_DURATION_SECONDS } from "@/lib/clipstitchr/constants/swaprMaxReferenceDurationSeconds";
 import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipstitchr/constants/swaprReferenceVideoMaxSizeBytes";
 import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
@@ -19,8 +20,6 @@ import { getSwaprSegmentDurationLimit } from "@/lib/clipstitchr/utils/getSwaprSe
 import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/capturePostHogServerEvent";
 
 export const runtime = "nodejs";
-
-const SWAPR_MODEL_ID = "kwaivgi/kling-v3-motion-control";
 
 export async function POST(request: Request) {
   const userId = await getAuthenticatedUserId();
