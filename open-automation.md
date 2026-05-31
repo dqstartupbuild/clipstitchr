@@ -15,8 +15,9 @@ global UTC window for the whole app:
 ```
 
 This is early morning for the United States, which matches the goal of waking up
-to new draft content. Operators can change the global window in code or future
-deployment configuration, but it is not a user setting.
+to new draft content. Operators can change the global window in deployment
+configuration through `AUTOMATION_GLOBAL_WINDOW_START_UTC` and
+`AUTOMATION_GLOBAL_WINDOW_END_UTC`, but it is not a user setting.
 
 ## Tool Cadence
 

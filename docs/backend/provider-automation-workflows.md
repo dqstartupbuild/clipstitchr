@@ -270,7 +270,7 @@ Scheduler
 Eligibility should require at least:
 
 - autopilot enabled;
-- user timezone and preferred generation window;
+- global automation window eligibility from `automation.md`;
 - one saved product with enough strategy metadata;
 - one avatar with at least one usable photo;
 - selected tool preferences such as Clipr, Swipr, or both;
@@ -296,7 +296,7 @@ Before autopilot is exposed to users, add an explicit preferences model:
 - product selection mode;
 - avatar selection mode;
 - generation frequency;
-- quiet hours/timezone;
+- enabled tools and source selection preferences;
 - maximum outputs per day/week;
 - monthly spend or credit cap;
 - approval mode: save as draft versus publish/send automatically;

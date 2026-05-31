@@ -386,6 +386,11 @@ Initial global window:
 09:00 UTC through 13:00 UTC
 ```
 
+The production deployment can override this with
+`AUTOMATION_GLOBAL_WINDOW_START_UTC` and
+`AUTOMATION_GLOBAL_WINDOW_END_UTC`. These remain operator settings, not user
+preferences.
+
 Recommended schedule:
 
 - Cloud Scheduler or Convex cron triggers the automation planner every hour.
