@@ -6,6 +6,7 @@ import { ProductSettingsCard } from "@/app/_components/settings/ProductSettingsC
 import { ProductSettingsForm } from "@/app/_components/settings/ProductSettingsForm";
 import { ProductSettingsList } from "@/app/_components/settings/ProductSettingsList";
 import { SettingsAppearancePanel } from "@/app/_components/settings/SettingsAppearancePanel";
+import { SettingsAutomationPanel } from "@/app/_components/settings/SettingsAutomationPanel";
 import { SettingsSubscriptionPanel } from "@/app/_components/settings/SettingsSubscriptionPanel";
 import { SettingsSupportPanel } from "@/app/_components/settings/SettingsSupportPanel";
 import { ThemeModeSelect } from "@/app/_components/settings/ThemeModeSelect";
@@ -115,6 +116,20 @@ describe("settings components", () => {
     const emptyMarkup = renderToStaticMarkup(
       <>
         <SettingsAppearancePanel />
+        <SettingsAutomationPanel
+          error={null}
+          isLoading={false}
+          isSaving={false}
+          preferences={{
+            enabled: false,
+            enabledTools: ["stitchr", "swapr", "clipr", "avatar-photo", "swipr"],
+            productSelectionMode: "all",
+            selectedProductIds: [],
+            avatarSelectionMode: "all",
+            selectedAvatarIds: [],
+          }}
+          onSave={async () => undefined}
+        />
         <SettingsSupportPanel />
         <SettingsSubscriptionPanel />
         <ProductSettingsList
@@ -139,10 +154,49 @@ describe("settings components", () => {
     );
 
     expect(emptyMarkup).toContain("Color mode");
+    expect(emptyMarkup).toContain("Daily drafts");
     expect(emptyMarkup).toContain("Contact support");
     expect(emptyMarkup).toContain("Coming soon");
     expect(emptyMarkup).toContain("Saved products will appear");
     expect(populatedMarkup).toContain("Launch Kit");
+  });
+
+  it("forwards automation setting changes", async () => {
+    const onSave = vi.fn(async () => undefined);
+    const tree = SettingsAutomationPanel({
+      error: null,
+      isLoading: false,
+      isSaving: false,
+      preferences: {
+        enabled: false,
+        enabledTools: ["stitchr"],
+        productSelectionMode: "all",
+        selectedProductIds: [],
+        avatarSelectionMode: "all",
+        selectedAvatarIds: [],
+      },
+      onSave,
+    });
+    const [enableButton] = findElements(
+      tree,
+      (element) =>
+        typeof element.type === "function" && element.type.name === "Button",
+    );
+    const [stitchrCheckbox] = findElements(
+      tree,
+      (element) =>
+        element.type === "input" && element.props?.checked === true,
+    );
+
+    await (enableButton.props.onClick as () => Promise<void>)();
+    (stitchrCheckbox.props.onChange as () => void)();
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ enabled: true }),
+    );
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ enabledTools: [] }),
+    );
   });
 
   it("forwards theme selector changes", () => {
