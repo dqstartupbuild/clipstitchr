@@ -406,6 +406,19 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 10000,
     shards: 10,
   },
+  automationAssetSaveDaily: {
+    kind: "token bucket",
+    rate: 20,
+    period: DAY,
+    capacity: 20,
+  },
+  automationAssetSaveGlobalDaily: {
+    kind: "token bucket",
+    rate: 2000,
+    period: DAY,
+    capacity: 2000,
+    shards: 10,
+  },
   cliprJobPoll: {
     kind: "token bucket",
     rate: 600,

@@ -1,9 +1,11 @@
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
+import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { stitchCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
+import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchrModeValidator } from "./validators/stitchrMode";
@@ -39,6 +41,13 @@ const saveArgs = {
   music: v.optional(stitchMusicMetadataValidator),
   textOverlay: v.optional(textOverlayValidator),
   createdAt: v.string(),
+};
+
+const saveFromAutomationArgs = {
+  secret: v.string(),
+  ownerId: v.string(),
+  automation: automationProvenanceValidator,
+  ...saveArgs,
 };
 
 export const list = query({
@@ -91,6 +100,70 @@ export const save = mutation({
     const stitch = {
       ownerId,
       ...args,
+    };
+
+    if (existingStitch) {
+      await ctx.db.patch(existingStitch._id, stitch);
+      const updatedStitch = await ctx.db.get(existingStitch._id);
+
+      if (updatedStitch) {
+        await stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch);
+      }
+
+      return existingStitch._id;
+    }
+
+    const stitchId = await ctx.db.insert("stitches", stitch);
+    const insertedStitch = await ctx.db.get(stitchId);
+
+    if (insertedStitch) {
+      await stitchCounts.insertIfDoesNotExist(ctx, insertedStitch);
+    }
+
+    return stitchId;
+  },
+});
+
+export const saveFromAutomation = mutation({
+  args: saveFromAutomationArgs,
+  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+    assertAutomationWorkerSecret(secret);
+
+    const ugcClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.ugcClipId),
+      )
+      .unique();
+    const demoClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.demoClipId),
+      )
+      .unique();
+
+    if (!ugcClip || !demoClip) {
+      throw new Error("Automation Stitchr source clips were not found.");
+    }
+
+    await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
+      throws: true,
+    });
+
+    const existingStitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.id),
+      )
+      .unique();
+    const stitch = {
+      ownerId,
+      ...args,
+      automation,
     };
 
     if (existingStitch) {
