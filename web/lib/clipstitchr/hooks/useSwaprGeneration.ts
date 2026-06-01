@@ -79,6 +79,7 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
         await onClipSaved?.();
         setStatus("succeeded");
         setProgress(1);
+        return true;
       } catch (nextError) {
         setStatus("failed");
         setProgress(1);
@@ -87,6 +88,7 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
             ? nextError.message
             : "Unable to generate this Swapr video.",
         );
+        return false;
       }
     },
     [onClipSaved],

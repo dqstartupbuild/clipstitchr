@@ -291,7 +291,9 @@ Clipr script/avatar-image/avatar-video, avatar-photo generation, and Swipr draft
 text generation. It also owns manual Swapr, manual Clipr, manual avatar-photo
 generation, and upload-video analysis through durable `providerJobs`. Convex
 Cron still plans daily runs, but it no longer dispatches provider work through
-`AUTOMATION_NEXT_BASE_URL`.
+`AUTOMATION_NEXT_BASE_URL`. Creating provider work now schedules a coalesced
+Convex Cloud Run dispatch immediately; the 10-minute Cloud Scheduler trigger is
+only a recovery sweep.
 
 The first FFmpeg media worker lives at
 `web/services/media-worker/runMediaWorker.mjs`. It claims queued media jobs with

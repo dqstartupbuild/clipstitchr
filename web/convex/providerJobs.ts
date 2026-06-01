@@ -6,6 +6,7 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { providerJobStatusValidator } from "./validators/providerJobStatus";
 import { providerJobTypeValidator } from "./validators/providerJobType";
+import { requestWorkerLaunch } from "./workerLaunch";
 
 const PROVIDER_JOB_MAX_ATTEMPTS = 3;
 
@@ -111,6 +112,12 @@ export const create = mutation({
       throw new Error("Unable to create provider job.");
     }
 
+    await requestWorkerLaunch({
+      ctx,
+      now: job.createdAt,
+      worker: "provider",
+    });
+
     return clientJobFields(created);
   },
 });
@@ -155,6 +162,12 @@ export const createFromMediaWorker = mutation({
     if (!created) {
       throw new Error("Unable to create provider job.");
     }
+
+    await requestWorkerLaunch({
+      ctx,
+      now: job.createdAt,
+      worker: "provider",
+    });
 
     return clientJobFields(created);
   },
@@ -315,6 +328,23 @@ export const markProviderStatus = mutation({
       ...(status === "completed" ? { completedAt: updatedAt } : {}),
       updatedAt,
     });
+
+    if (status === "queued") {
+      await requestWorkerLaunch({
+        ctx,
+        now: updatedAt,
+        worker: "provider",
+      });
+    }
+
+    if (status === "running" && releaseLock && stage === "provider-created") {
+      await requestWorkerLaunch({
+        ctx,
+        delayMs: 60_000,
+        now: updatedAt,
+        worker: "provider",
+      });
+    }
   },
 });
 

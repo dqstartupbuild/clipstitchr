@@ -129,10 +129,10 @@ Recommended starting options:
 | Google Cloud Run Jobs | Recommended managed batch path | Requires a billing account. The worker now supports bounded `--once --max-jobs=N` execution, which fits Cloud Run Jobs. Google documents monthly free-tier vCPU/RAM seconds, but usage above the free tier is billable. |
 | Render paid background worker | Viable managed option | Render's free services are not for production background workers; use a paid worker instance. |
 
-The current Preview/dev deployment uses a scheduled Cloud Run Job named
+The current Preview/dev deployment uses a Cloud Run Job named
 `clipstitchr-media-worker` with `npm run media-worker -- --once --max-jobs=3`.
-That same shape is acceptable for production once queue-depth monitoring,
-coalescing, and cleanup are in place.
+Convex dispatches that job immediately when media work is queued and the
+10-minute Cloud Scheduler trigger remains as a recovery sweep.
 
 Avoid these as the primary media worker:
 
@@ -279,26 +279,22 @@ executions.
 Planned coalescing behavior:
 
 1. Media job creation writes the durable `mediaJobs` record first.
-2. A server-side dispatcher requests execution after job creation.
-3. The dispatcher checks a small Convex coordination record, for example
-   `mediaWorkerLaunchState`.
-4. If a launch was requested within the last 15-30 seconds, the dispatcher does
+2. A Convex dispatcher requests execution after job creation.
+3. The dispatcher checks the `workerLaunchState` coordination record.
+4. If an immediate launch was requested within the last 15 seconds, the dispatcher does
    nothing.
-5. If a worker launch is already marked active and not stale, the dispatcher does
-   nothing.
-6. Otherwise, the dispatcher records `lastRequestedAt`, `requestedBy`, and an
-   estimated queue depth, then calls the Cloud Run Jobs API.
-7. The Cloud Run Job processes a bounded batch with `--once --max-jobs=N`.
-8. If jobs remain after the batch, the worker or dispatcher can request another
+5. Otherwise, the dispatcher records `lastRequestedAt`, then calls the Cloud
+   Run Jobs API.
+6. The Cloud Run Job processes a bounded batch with `--once --max-jobs=N`.
+7. If jobs remain after the batch, the worker or dispatcher can request another
    launch after the coalescing window.
 
 Correctness comes from Convex job claiming, not from the launcher. It is safe if
 two Cloud Run Job executions overlap because each worker must atomically claim a
 queued job before processing it.
 
-Initial implementation can start with manual Cloud Run Job execution or a short
-Cloud Scheduler interval. The dispatcher should be added before relying on
-automatic launch from every media job creation path.
+The scheduler interval is still useful for stale-lock recovery and missed
+dispatches, but manual user actions should not wait for the scheduler.
 
 ## Production Checklist
 
@@ -306,13 +302,17 @@ automatic launch from every media job creation path.
 2. Put `NEXT_PUBLIC_CONVEX_URL`, `MEDIA_WORKER_SECRET`, and R2 credentials in
    that host's secret/env system.
 3. Put the same `MEDIA_WORKER_SECRET` in Convex.
-4. Run `npm run media-worker` for a long-running host, or
+4. Put Cloud Run dispatch variables in Convex when using Cloud Run Jobs:
+   `CLOUD_RUN_PROJECT_ID`, `CLOUD_RUN_LOCATION`,
+   `CLOUD_RUN_PROVIDER_WORKER_JOB`, `CLOUD_RUN_MEDIA_WORKER_JOB`,
+   `CLOUD_RUN_DISPATCH_CLIENT_EMAIL`, and `CLOUD_RUN_DISPATCH_PRIVATE_KEY`.
+5. Run `npm run media-worker` for a long-running host, or
    `npm run media-worker -- --once --max-jobs=N` for Cloud Run Jobs.
-5. Confirm startup passes the FFmpeg support self-test.
-6. Queue a short Clipr finalization and confirm the job moves from `queued` to
+6. Confirm startup passes the FFmpeg support self-test.
+7. Queue a short Clipr finalization and confirm the job moves from `queued` to
    `running` to `completed`.
-7. Confirm failed jobs show a clear error in the dashboard job panel.
-8. Add host-level logs and restart policy before production traffic.
+8. Confirm failed jobs show a clear error in the dashboard job panel.
+9. Add host-level logs and restart policy before production traffic.
 
 ## Sources
 

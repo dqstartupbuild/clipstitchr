@@ -241,7 +241,7 @@ export function SwaprPageClient() {
         .filter((segment) => segment.isTemporary)
         .map((segment) => segment.videoObject);
 
-      await generator.generate({
+      const wasQueued = await generator.generate({
         photo: selectedPhoto,
         clip: selectedClip,
         referenceVideoSegments,
@@ -250,17 +250,23 @@ export function SwaprPageClient() {
         characterOrientation,
         keepOriginalSound,
       });
+
+      if (!wasQueued && temporaryObjects.length) {
+        await deleteObjectsFromR2(temporaryObjects).catch(() => null);
+        temporaryObjects = [];
+      }
     } catch (error) {
       setAssetLoadError(
         error instanceof Error
           ? error.message
           : "Unable to prepare the selected Swapr assets.",
       );
-    } finally {
+
       if (temporaryObjects.length) {
         await deleteObjectsFromR2(temporaryObjects).catch(() => null);
+        temporaryObjects = [];
       }
-
+    } finally {
       setIsPreparingSource(false);
     }
   };

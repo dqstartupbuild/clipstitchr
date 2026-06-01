@@ -334,6 +334,11 @@ export default defineSchema({
     .index("by_owner_status", ["ownerId", "status"])
     .index("by_status_created", ["status", "createdAt"])
     .index("by_idempotency_key", ["idempotencyKey"]),
+  workerLaunchState: defineTable({
+    worker: v.union(v.literal("media"), v.literal("provider")),
+    lastRequestedAt: v.string(),
+    updatedAt: v.string(),
+  }).index("by_worker", ["worker"]),
   automationPreferences: defineTable({
     ownerId: v.string(),
     enabled: v.boolean(),
