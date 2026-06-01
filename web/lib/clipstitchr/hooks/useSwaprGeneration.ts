@@ -7,7 +7,6 @@ import { createSwaprPrediction } from "@/lib/clipstitchr/client/createSwaprPredi
 import { downloadSwaprPredictionOutputBlob } from "@/lib/clipstitchr/client/downloadSwaprPredictionOutputBlob";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { waitForSwaprPrediction } from "@/lib/clipstitchr/client/waitForSwaprPrediction";
-import { SWAPR_MODEL_ID } from "@/lib/clipstitchr/constants/swaprModelId";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
@@ -22,6 +21,8 @@ import type { SwaprReferenceVideoSegment } from "@/lib/clipstitchr/types/SwaprRe
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+
+const SWAPR_MODEL_ID = "kwaivgi/kling-v3-motion-control";
 
 type GenerateSwaprVideoOptions = {
   photo: PhotoAssetMetadata;

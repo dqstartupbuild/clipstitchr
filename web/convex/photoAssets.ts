@@ -1,10 +1,8 @@
 import { v } from "convex/values";
-import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
-import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { r2ObjectValidator } from "./validators/r2Object";
 
 const preparationValidator = v.union(
@@ -38,13 +36,6 @@ const saveArgs = {
   consentAcknowledgedAt: v.optional(v.string()),
   createdAt: v.string(),
   updatedAt: v.string(),
-};
-
-const saveFromAutomationArgs = {
-  secret: v.string(),
-  ownerId: v.string(),
-  automation: automationProvenanceValidator,
-  ...saveArgs,
 };
 
 export const list = query({
@@ -125,40 +116,6 @@ export const save = mutation({
     const photo = {
       ownerId,
       ...args,
-    };
-
-    if (existingPhoto) {
-      await ctx.db.patch(existingPhoto._id, photo);
-      return existingPhoto._id;
-    }
-
-    return await ctx.db.insert("photoAssets", photo);
-  },
-});
-
-export const saveFromAutomation = mutation({
-  args: saveFromAutomationArgs,
-  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
-    assertAutomationWorkerSecret(secret);
-
-    await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
-      key: ownerId,
-      throws: true,
-    });
-    await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
-      throws: true,
-    });
-
-    const existingPhoto = await ctx.db
-      .query("photoAssets")
-      .withIndex("by_owner_id", (q) =>
-        q.eq("ownerId", ownerId).eq("id", args.id),
-      )
-      .unique();
-    const photo = {
-      ownerId,
-      ...args,
-      automation,
     };
 
     if (existingPhoto) {
