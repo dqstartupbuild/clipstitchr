@@ -35,6 +35,12 @@ vi.mock("convex/react", () => ({
 
 vi.mock("@/convex/_generated/api", () => ({
   api: {
+    mediaJobs: {
+      listActive: "mediaJobs.listActive",
+    },
+    providerJobs: {
+      listActive: "providerJobs.listActive",
+    },
     sharedMusicTracks: {
       list: "sharedMusicTracks.list",
     },

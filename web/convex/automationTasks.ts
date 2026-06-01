@@ -4,6 +4,8 @@ import {
   automationMaxTaskAttempts,
 } from "./automationLimits";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
+import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
+import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
@@ -192,6 +194,91 @@ export const claimNextByStage = mutation({
   },
 });
 
+export const claimNextForProvider = mutation({
+  args: {
+    secret: v.string(),
+    workerId: v.string(),
+    lockedUntil: v.string(),
+    updatedAt: v.string(),
+    tool: v.optional(automationToolValidator),
+    stage: v.optional(v.string()),
+  },
+  handler: async (
+    ctx,
+    { secret, workerId, lockedUntil, updatedAt, tool, stage },
+  ) => {
+    assertProviderWorkerSecret(secret);
+
+    const matchesTask = (candidate: { stage: string; tool: string }) =>
+      (!tool || candidate.tool === tool) &&
+      (!stage || candidate.stage === stage);
+
+    if (stage) {
+      const nowMs = Date.parse(updatedAt);
+      const runningTasks = await ctx.db
+        .query("automationTasks")
+        .withIndex("by_status_created", (q) => q.eq("status", "running"))
+        .order("asc")
+        .take(50);
+      const task = runningTasks.find((candidate) => {
+        const lockedUntilMs = candidate.lockedUntil
+          ? Date.parse(candidate.lockedUntil)
+          : 0;
+
+        return (
+          matchesTask(candidate) &&
+          (!candidate.lockedUntil ||
+            !Number.isFinite(lockedUntilMs) ||
+            lockedUntilMs <= nowMs)
+        );
+      });
+
+      if (!task) {
+        return null;
+      }
+
+      await ctx.db.patch(task._id, {
+        lockedBy: workerId,
+        lockedUntil,
+        updatedAt,
+      });
+
+      return await ctx.db.get(task._id);
+    }
+
+    const queuedTasks = await ctx.db
+      .query("automationTasks")
+      .withIndex("by_status_created", (q) => q.eq("status", "queued"))
+      .order("asc")
+      .take(50);
+    const task = queuedTasks.find(matchesTask);
+
+    if (!task) {
+      return null;
+    }
+
+    if (task.attempt >= automationMaxTaskAttempts) {
+      await ctx.db.patch(task._id, {
+        status: "failed",
+        error: "Automation task reached the retry limit.",
+        updatedAt,
+      });
+
+      return null;
+    }
+
+    await ctx.db.patch(task._id, {
+      status: "running",
+      attempt: task.attempt + 1,
+      lockedBy: workerId,
+      lockedUntil,
+      updatedAt,
+    });
+
+    return await ctx.db.get(task._id);
+  },
+});
+
 export const markStatus = mutation({
   args: {
     secret: v.string(),
@@ -223,6 +310,148 @@ export const markStatus = mutation({
     },
   ) => {
     assertAutomationWorkerSecret(secret);
+
+    const task = await ctx.db
+      .query("automationTasks")
+      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .filter((q) => q.eq(q.field("id"), id))
+      .unique();
+
+    if (!task) {
+      throw new Error("Automation task not found.");
+    }
+
+    const outputAssetIds =
+      outputAssetId && !task.outputAssetIds.includes(outputAssetId)
+        ? [...task.outputAssetIds, outputAssetId]
+        : task.outputAssetIds;
+    const providerJobIds =
+      providerJobId && !task.providerJobIds.includes(providerJobId)
+        ? [...task.providerJobIds, providerJobId]
+        : task.providerJobIds;
+    const mediaJobIds =
+      mediaJobId && !task.mediaJobIds.includes(mediaJobId)
+        ? [...task.mediaJobIds, mediaJobId]
+        : task.mediaJobIds;
+
+    await ctx.db.patch(task._id, {
+      status,
+      ...(stage === undefined ? {} : { stage }),
+      outputAssetIds,
+      providerJobIds,
+      mediaJobIds,
+      ...(status === "completed" ? { completedAt: updatedAt } : {}),
+      ...(status === "running" && !releaseLock
+        ? {}
+        : { lockedBy: undefined, lockedUntil: undefined }),
+      ...(error === undefined ? {} : { error }),
+      updatedAt,
+    });
+  },
+});
+
+export const markProviderStatus = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    status: automationTaskStatusValidator,
+    stage: v.optional(v.string()),
+    error: v.optional(v.string()),
+    outputAssetId: v.optional(v.string()),
+    providerJobId: v.optional(v.string()),
+    mediaJobId: v.optional(v.string()),
+    releaseLock: v.optional(v.boolean()),
+    updatedAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    {
+      secret,
+      ownerId,
+      id,
+      status,
+      stage,
+      error,
+      outputAssetId,
+      providerJobId,
+      mediaJobId,
+      releaseLock,
+      updatedAt,
+    },
+  ) => {
+    assertProviderWorkerSecret(secret);
+
+    const task = await ctx.db
+      .query("automationTasks")
+      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .filter((q) => q.eq(q.field("id"), id))
+      .unique();
+
+    if (!task) {
+      throw new Error("Automation task not found.");
+    }
+
+    const outputAssetIds =
+      outputAssetId && !task.outputAssetIds.includes(outputAssetId)
+        ? [...task.outputAssetIds, outputAssetId]
+        : task.outputAssetIds;
+    const providerJobIds =
+      providerJobId && !task.providerJobIds.includes(providerJobId)
+        ? [...task.providerJobIds, providerJobId]
+        : task.providerJobIds;
+    const mediaJobIds =
+      mediaJobId && !task.mediaJobIds.includes(mediaJobId)
+        ? [...task.mediaJobIds, mediaJobId]
+        : task.mediaJobIds;
+
+    await ctx.db.patch(task._id, {
+      status,
+      ...(stage === undefined ? {} : { stage }),
+      outputAssetIds,
+      providerJobIds,
+      mediaJobIds,
+      ...(status === "completed" ? { completedAt: updatedAt } : {}),
+      ...(status === "running" && !releaseLock
+        ? {}
+        : { lockedBy: undefined, lockedUntil: undefined }),
+      ...(error === undefined ? {} : { error }),
+      updatedAt,
+    });
+  },
+});
+
+export const markMediaStatus = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    status: automationTaskStatusValidator,
+    stage: v.optional(v.string()),
+    error: v.optional(v.string()),
+    outputAssetId: v.optional(v.string()),
+    providerJobId: v.optional(v.string()),
+    mediaJobId: v.optional(v.string()),
+    releaseLock: v.optional(v.boolean()),
+    updatedAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    {
+      secret,
+      ownerId,
+      id,
+      status,
+      stage,
+      error,
+      outputAssetId,
+      providerJobId,
+      mediaJobId,
+      releaseLock,
+      updatedAt,
+    },
+  ) => {
+    assertMediaWorkerSecret(secret);
 
     const task = await ctx.db
       .query("automationTasks")

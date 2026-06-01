@@ -1,6 +1,6 @@
 # Durable Provider And Automation Workflows
 
-Reviewed: 2026-05-15
+Reviewed: 2026-06-01
 
 ## Purpose
 
@@ -32,9 +32,11 @@ This document covers:
 This document does not cover Media Bunny rendering details. Media processing is
 documented in `docs/backend/server-side-media-processing.md`.
 
-## Current Fragile Pattern
+## Remaining Fragile Pattern
 
-Several flows still behave like request-owned provider workflows:
+The largest save-producing manual and automated provider workflows are now
+worker-owned. Some smaller editor-assist flows still behave like request-owned
+provider workflows:
 
 - A browser action calls a Next.js route.
 - The route consumes rate limits and starts provider work.
@@ -47,11 +49,13 @@ Known examples:
 
 | Workflow | Current risk |
 | --- | --- |
-| Clipr generation | The route performs text generation, avatar still generation, avatar video generation, optional music generation, and R2 copies in one request. Media finalization is durable after the avatar video object is saved, but the provider side before that still needs a durable executor/finalizer model. |
 | Swipr background generation | The route waits for Replicate and streams the generated image back to the browser. The browser then analyzes, uploads, and saves. Refresh can lose the generated output before it becomes a saved background. |
-| Avatar photo generation | Generated photos are returned to the client and saved through client-side upload/library logic. Refresh can interrupt final storage. |
-| Shared music generation | Provider output must be copied into R2 and saved as a shared/user track. This should be finalized server-side with idempotency. |
-| Swapr generation | Prediction ownership is recorded and pollable. The media finalization job improves the final output path, but provider completion should still prefer webhook or server-owned recovery over browser polling. |
+| Swipr background analysis | The analysis route returns metadata for the browser to save with the background. Refresh can still interrupt the generated/uploaded background save path. |
+| Standalone text suggestions | `POST /api/clipr/text` returns generated Clipr/Swipr/Stitchr text directly for the editor. It has no final asset save until the user applies/saves the result. |
+| Existing-asset music regeneration | Clip, Stitch, and shared-library music regeneration routes still wait for provider output, copy it to R2, and return the created track metadata in one request. |
+| Product enrichment | Product create/update waits for provider enrichment before saving. If the request fails after quota consumption, no durable product-enrichment retry exists. |
+| Swapr photo expansion | The outpainted image is streamed back to the browser before the user saves it as a source photo. |
+| Legacy upload image analysis | Photo/avatar image upload metadata analysis still runs in the request path before the browser saves the asset metadata. |
 
 Provider outputs are not a durable storage layer. ClipStitchr must copy them to
 R2 promptly and save enough Convex metadata to recover or retry finalization.
@@ -160,7 +164,7 @@ The production values live in separate places:
 
 | Runtime | Secret store |
 | --- | --- |
-| Next.js / Vercel dispatcher routes | Vercel environment variables |
+| Next.js / Vercel manual app routes | Vercel environment variables |
 | Convex verification secrets | Convex dashboard or `npx convex env set` |
 | Cloud Run provider services/jobs | Google Secret Manager or Cloud Run env/secrets |
 | Cloud Tasks / Scheduler OIDC identity | Google IAM service accounts |
@@ -169,10 +173,8 @@ The production values live in separate places:
 Secrets that must match across runtimes:
 
 - `MEDIA_WORKER_SECRET`: media worker and Convex.
-- `PROVIDER_WORKER_SECRET`: provider finalizers/executors and Convex once those
-  worker-only mutations exist.
-- `AUTOMATION_WORKER_SECRET`: autopilot planners/executors and Convex once those
-  worker-only mutations exist.
+- `PROVIDER_WORKER_SECRET`: provider finalizers/executors and Convex.
+- `AUTOMATION_WORKER_SECRET`: autopilot planners/executors and Convex.
 - `RATE_LIMIT_API_SECRET`: Next.js/server executors and Convex for protected
   rate-limit consume mutations.
 
@@ -189,7 +191,7 @@ fallback, not the preferred production path.
 
 ## Clipr Durable Target
 
-Clipr should become a server-owned workflow with recoverable steps:
+Manual Clipr is now a server-owned workflow with recoverable steps:
 
 1. Create a `clipr` automation run with product/avatar/voice/duration/music
    snapshots.
@@ -202,19 +204,12 @@ Clipr should become a server-owned workflow with recoverable steps:
 7. Create a `clipr-finalization` media job.
 8. Mark the Clipr run complete only after the final `videoClips` record exists.
 
-The current media finalization job is a useful downstream piece. The missing
-piece is making the provider steps before `clipr-finalization` durable when the
-browser or request disappears.
-
-The current `POST /api/clipr/jobs` implementation is still route-local, but the
-orchestration is split across focused modules in
-`web/lib/clipstitchr/server/clipr/*`: request parsing, start-quota consumption,
-Convex input loading, queued job persistence, script planning, avatar still
-generation, avatar video/music generation, shared music persistence, analytics,
-and failure cleanup are separate units. That split improves maintainability and
-testability, but it does not replace the durable target above; provider execution
-can still be interrupted by request/runtime failure until those steps move to a
-recoverable worker/finalizer path.
+`POST /api/clipr/jobs` now handles request parsing, ownership checks, quota
+consumption, Convex input loading, queued job persistence, and creation of one
+`manual-clipr` provider job. The provider worker owns script planning, avatar
+still generation, avatar video/music generation, shared music persistence, and
+creation of the `clipr-finalization` media job. The media worker saves the final
+Clipr clip and marks the provider job complete.
 
 ## Swipr Durable Target
 
@@ -239,7 +234,7 @@ server-side carousel rendering becomes a product requirement.
 
 ## Avatar Photo Durable Target
 
-Avatar photo generation should be finalized server-side:
+Avatar photo generation is finalized server-side:
 
 1. Create one provider job per requested avatar photo variant.
 2. Snapshot the source avatar photo, prompt variant, model, and quality.
@@ -250,6 +245,12 @@ Avatar photo generation should be finalized server-side:
 
 This also supports future autopilot, because the planner can create avatar photo
 tasks without requiring an open browser session.
+
+Manual `POST /api/avatars/photos/generate` stores the source image in R2 and
+creates an `avatar-photo-generation` provider job. The provider worker creates
+one Replicate prediction per requested variant, copies outputs to R2, and saves
+the final `photoAssets` records. Automated avatar photo tasks use the same
+provider worker and final save path.
 
 ## Daily Autopilot Target
 
@@ -277,32 +278,33 @@ Eligibility should require at least:
 - spend/rate-limit budget available;
 - no duplicate run for the same user/date/tool/product/avatar key.
 
-The first Swapr automation executor lives at
-`POST /api/automation/swapr/execute`. It is authorized with
-`AUTOMATION_WORKER_SECRET`, claims one queued `swapr-video` automation task,
-starts the Replicate prediction, records the provider job under the task owner,
-and marks the task `provider-created`. Swapr provider polling lives at
-`POST /api/automation/swapr/finalize`; it claims one `provider-created` Swapr
-task, refreshes the Replicate job status, creates a `swapr-finalization` media
-job when the provider succeeds, and marks provider failures against the
-automation task/run.
+The provider automation executor now lives at
+`web/services/provider-worker/runProviderWorker.ts` and runs with
+`PROVIDER_WORKER_SECRET`. It polls Convex directly instead of posting to
+Preview/Next.js routes, claims queued automation tasks, starts or polls
+Replicate predictions, writes provider state back through provider-only Convex
+mutations, and creates media finalization jobs only after provider output is
+ready.
 
-The first Clipr automation executor lives at
-`POST /api/automation/clipr/execute`. It is authorized with
-`AUTOMATION_WORKER_SECRET`, claims one queued `clipr-video` automation task, and
-runs the provider-side script, avatar source image, and avatar video steps using
-the automation task snapshot. It writes the provider outputs to the Clipr job and
-creates a `clipr-finalization` media job.
+The provider worker owns automatic Stitchr text, Swapr provider create/finalize,
+Clipr script/avatar-image/avatar-video, avatar-photo generation, and Swipr draft
+text generation. It also owns manual Swapr, manual Clipr, manual avatar-photo
+generation, and upload-video analysis through durable `providerJobs`. Convex
+Cron still plans daily runs, but it no longer dispatches provider work through
+`AUTOMATION_NEXT_BASE_URL`.
 
 The first FFmpeg media worker lives at
 `web/services/media-worker/runMediaWorker.mjs`. It claims queued media jobs with
 `MEDIA_WORKER_SECRET`; for `clipr-finalization`, it normalizes the durable avatar
 video to 9:16 H.264/AAC, captures a poster, uploads both objects to R2, saves
 the final Clipr `videoClips` record, and marks the automation task/run complete.
-For `swapr-finalization`, it downloads the allowlisted Replicate output URL,
-normalizes the video to the same saved-clip format, captures a poster, uploads
-both objects to R2, saves a UGC-compatible `videoClips` record with
-`swaprMetadata`, and marks the automation task/run complete.
+For `swapr-finalization`, it downloads one or more allowlisted Replicate output
+URLs, normalizes/concatenates the video to the same saved-clip format, captures
+a poster, uploads both objects to R2, saves a UGC-compatible `videoClips` record
+with `swaprMetadata`, and marks either the automation task/run or the manual
+provider job complete. For `upload-normalization`, it downloads the raw uploaded
+source from R2, normalizes it, captures the poster, saves the `videoClips`
+record, and creates the follow-on `upload-video-analysis` provider job.
 
 Recommended idempotency key:
 
@@ -395,30 +397,28 @@ Update `docs/backend/rate-limits.md` whenever these limits are implemented.
 
 ### Phase 1: Stop Provider Output Loss
 
-- Add provider job records or extend existing `replicateJobs`/`cliprJobs` so
-  every provider prediction has finalization metadata before it starts.
+- Provider job records now cover manual Swapr, manual Clipr, manual avatar
+  photos, and upload-video analysis so those save-producing predictions have
+  finalization metadata before they start.
 - Add webhook routes for provider completion where available.
 - Verify webhook signatures.
 - Add idempotent finalizers that copy provider outputs to R2.
 - Add recovery polling for succeeded-but-unfinalized provider jobs.
-- Move Swipr background and avatar photo saves out of browser-only finalization.
+- Move remaining Swipr background, music regeneration, product enrichment,
+  Swapr outpainting, and image-analysis saves out of browser-only finalization.
 
 ### Phase 2: Split Clipr Into Durable Steps
 
-- Keep the existing `cliprJobs` user-facing state, but make each provider step
-  resumable.
-- Save provider prediction IDs before waiting for completion.
-- Copy avatar still, avatar video, and music outputs to R2 from server-owned
-  finalizers.
-- Create `clipr-finalization` media jobs only after provider outputs are durable.
+- Completed for manual and automatic Clipr through `manual-clipr` provider jobs,
+  automation tasks, provider-worker R2 copies, and media-worker finalization.
+- Remaining Clipr-adjacent work is standalone text suggestion and existing-clip
+  music regeneration, which still return immediate editor results.
 
 ### Phase 3: Add Autopilot Planner
 
-- Add autopilot preferences.
-- Add `automationRuns` and `automationTasks`.
-- Add daily planner with idempotency keys.
-- Start active dispatch with Stitchr, Swapr, and Clipr. Avatar photos and Swipr
-  stay planned but held until their durable executors are implemented.
+- Implemented: autopilot preferences, `automationRuns`, `automationTasks`, daily
+  planner idempotency keys, and active dispatch for Stitchr, Swapr, Clipr,
+  avatar photos, and Swipr draft generation.
 - Save outputs as drafts and notify the user.
 - Add admin/support visibility into skipped, failed, and retried runs.
 

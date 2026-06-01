@@ -18,6 +18,8 @@ import { clipTypeValidator } from "./validators/clipType";
 import { mediaJobStatusValidator } from "./validators/mediaJobStatus";
 import { mediaJobTypeValidator } from "./validators/mediaJobType";
 import { musicTrackSourceValidator } from "./validators/musicTrackSource";
+import { providerJobStatusValidator } from "./validators/providerJobStatus";
+import { providerJobTypeValidator } from "./validators/providerJobType";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
 import { replicatePredictionStatusValidator } from "./validators/replicatePredictionStatus";
@@ -305,6 +307,31 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"])
+    .index("by_status_created", ["status", "createdAt"])
+    .index("by_idempotency_key", ["idempotencyKey"]),
+  providerJobs: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    jobType: providerJobTypeValidator,
+    status: providerJobStatusValidator,
+    stage: v.string(),
+    idempotencyKey: v.string(),
+    inputSnapshotJson: v.string(),
+    outputAssetIds: v.array(v.string()),
+    providerJobIds: v.array(v.string()),
+    mediaJobIds: v.array(v.string()),
+    progress: v.number(),
+    attempt: v.number(),
+    lockedBy: v.optional(v.string()),
+    lockedUntil: v.optional(v.string()),
+    error: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    completedAt: v.optional(v.string()),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"])
+    .index("by_owner_status", ["ownerId", "status"])
     .index("by_status_created", ["status", "createdAt"])
     .index("by_idempotency_key", ["idempotencyKey"]),
   automationPreferences: defineTable({

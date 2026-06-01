@@ -278,7 +278,7 @@ describe("AvatarsPageClient", () => {
     mocks.generatorState.error = null;
     mocks.generatorState.generatedCount = 2;
     expect(renderToStaticMarkup(<AvatarsPageClient />)).toContain(
-      "Saved 2 generated photos.",
+      "Queued 2 generated photos.",
     );
   });
 

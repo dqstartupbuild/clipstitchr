@@ -1,6 +1,7 @@
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
+import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { stitchCounts } from "./aggregateCounts";
@@ -128,6 +129,78 @@ export const saveFromAutomation = mutation({
   args: saveFromAutomationArgs,
   handler: async (ctx, { secret, ownerId, automation, ...args }) => {
     assertAutomationWorkerSecret(secret);
+
+    const ugcClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.ugcClipId),
+      )
+      .unique();
+    const demoClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.demoClipId),
+      )
+      .unique();
+
+    if (!ugcClip || !demoClip) {
+      throw new Error("Automation Stitchr source clips were not found.");
+    }
+
+    const existingStitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.id),
+      )
+      .unique();
+
+    if (
+      existingStitch?.automation?.source === "automation" &&
+      existingStitch.automation.taskId === automation.taskId
+    ) {
+      return existingStitch._id;
+    }
+
+    await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
+      throws: true,
+    });
+
+    const stitch = {
+      ownerId,
+      ...args,
+      automation,
+    };
+
+    if (existingStitch) {
+      await ctx.db.patch(existingStitch._id, stitch);
+      const updatedStitch = await ctx.db.get(existingStitch._id);
+
+      if (updatedStitch) {
+        await stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch);
+      }
+
+      return existingStitch._id;
+    }
+
+    const stitchId = await ctx.db.insert("stitches", stitch);
+    const insertedStitch = await ctx.db.get(stitchId);
+
+    if (insertedStitch) {
+      await stitchCounts.insertIfDoesNotExist(ctx, insertedStitch);
+    }
+
+    return stitchId;
+  },
+});
+
+export const saveFromMediaWorker = mutation({
+  args: saveFromAutomationArgs,
+  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+    assertMediaWorkerSecret(secret);
 
     const ugcClip = await ctx.db
       .query("videoClips")

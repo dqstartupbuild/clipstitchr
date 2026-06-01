@@ -6,6 +6,7 @@ import {
   type StitchrPairCandidate,
 } from "./automationStitchrPairScoring";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
+import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
 import type { Id } from "./_generated/dataModel";
 import { mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
@@ -17,18 +18,6 @@ function createRunId(ownerId: string, automationDate: string) {
 
 function createTaskId(ownerId: string, automationDate: string, index: number) {
   return `automation:stitchr:${ownerId}:${automationDate}:${index}`;
-}
-
-function createStitchId(taskId: string) {
-  return `${taskId}:stitch`;
-}
-
-function createMediaJobId(taskId: string) {
-  return `media:stitchr-draft-finalization:${taskId}`;
-}
-
-function createStitchName(ugcClipName: string, demoClipName: string) {
-  return `${ugcClipName} + ${demoClipName}`;
 }
 
 function createDefaultTrimRange(duration: number) {
@@ -104,100 +93,6 @@ async function markRunSkipped(
   });
 }
 
-async function createStitchrMediaJob(
-  ctx: MutationCtx,
-  {
-    automationDate,
-    createdAt,
-    demo,
-    mediaJobId,
-    runId,
-    taskId,
-    ugc,
-  }: {
-    automationDate: string;
-    createdAt: string;
-    demo: {
-      defaultTrimRange?: { start: number; end: number };
-      duration: number;
-      hasAudio: boolean;
-      id: string;
-      name: string;
-      videoObject: { contentType: string; key: string; size: number };
-    };
-    mediaJobId: string;
-    runId: string;
-    taskId: string;
-    ugc: {
-      defaultTrimRange?: { start: number; end: number };
-      duration: number;
-      hasAudio: boolean;
-      id: string;
-      name: string;
-      ownerId: string;
-      videoObject: { contentType: string; key: string; size: number };
-    };
-  },
-) {
-  const idempotencyKey = `${taskId}:stitchr-draft-finalization`;
-  const existing = await ctx.db
-    .query("mediaJobs")
-    .withIndex("by_idempotency_key", (q) =>
-      q.eq("idempotencyKey", idempotencyKey),
-    )
-    .unique();
-
-  if (existing) {
-    return existing;
-  }
-
-  const stitchId = createStitchId(taskId);
-  const mediaJobDocumentId = await ctx.db.insert("mediaJobs", {
-    ownerId: ugc.ownerId,
-    id: mediaJobId,
-    jobType: "stitchr-draft-finalization",
-    status: "queued",
-    stage: "queued",
-    idempotencyKey,
-    inputSnapshotJson: JSON.stringify({
-      automationDate,
-      automationRunId: runId,
-      automationTaskId: taskId,
-      demoClipId: demo.id,
-      demoClipName: demo.name,
-      demoDuration: demo.duration,
-      demoHasAudio: demo.hasAudio,
-      demoPlaybackRate: 1,
-      demoTrimRange:
-        demo.defaultTrimRange ?? createDefaultTrimRange(demo.duration),
-      demoVideoObject: demo.videoObject,
-      includeDemoAudio: false,
-      includeUgcAudio: false,
-      sourceSummary: createStitchName(ugc.name, demo.name),
-      stitchId,
-      stitchName: createStitchName(ugc.name, demo.name),
-      ugcClipId: ugc.id,
-      ugcClipName: ugc.name,
-      ugcDuration: ugc.duration,
-      ugcHasAudio: ugc.hasAudio,
-      ugcPlaybackRate: 1,
-      ugcTrimRange:
-        ugc.defaultTrimRange ?? createDefaultTrimRange(ugc.duration),
-      ugcVideoObject: ugc.videoObject,
-    }),
-    outputAssetIds: [],
-    attempt: 0,
-    createdAt,
-    updatedAt: createdAt,
-  });
-  const mediaJob = await ctx.db.get(mediaJobDocumentId);
-
-  if (!mediaJob) {
-    throw new Error("Failed to create Stitchr media job.");
-  }
-
-  return mediaJob;
-}
 
 export const planDaily = mutation({
   args: {
@@ -254,6 +149,11 @@ export const planDaily = mutation({
       .query("videoClips")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .collect();
+    const products = await ctx.db
+      .query("products")
+      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .order("desc")
+      .collect();
     const ugcClips = clips.filter((clip) => clip.clipType === "ugc");
     const demoClips = clips.filter((clip) => clip.clipType === "demo");
 
@@ -273,6 +173,15 @@ export const planDaily = mutation({
     }
 
     const selectedProductIds = new Set(preferences.selectedProductIds);
+    const productById = new Map(products.map((product) => [product.id, product]));
+    const selectedProducts = products.filter((product) =>
+      selectedProductIds.has(product.id),
+    );
+    const eligibleProducts =
+      preferences.productSelectionMode === "selected" &&
+      selectedProducts.length > 0
+        ? selectedProducts
+        : products;
     const productFilteredDemos =
       preferences.productSelectionMode === "selected" &&
       selectedProductIds.size > 0
@@ -368,7 +277,6 @@ export const planDaily = mutation({
       }
 
       const taskId = createTaskId(ownerId, automationDate, index + 1);
-      const mediaJobId = createMediaJobId(taskId);
       const idempotencyKey = `${taskId}:${ugc.id}:${demo.id}`;
       const existingTask = await ctx.db
         .query("automationTasks")
@@ -378,36 +286,13 @@ export const planDaily = mutation({
         .unique();
 
       if (existingTask) {
-        const mediaJob = await createStitchrMediaJob(ctx, {
-          automationDate,
-          createdAt: now,
-          demo,
-          mediaJobId,
-          runId: run.id,
-          taskId,
-          ugc,
-        });
-
-        if (!existingTask.mediaJobIds.includes(mediaJob.id)) {
-          await ctx.db.patch(existingTask._id, {
-            mediaJobIds: [...existingTask.mediaJobIds, mediaJob.id],
-            updatedAt: now,
-          });
-        }
-
         taskIds.push(existingTask.id);
         continue;
       }
 
-      const mediaJob = await createStitchrMediaJob(ctx, {
-        automationDate,
-        createdAt: now,
-        demo,
-        mediaJobId,
-        runId: run.id,
-        taskId,
-        ugc,
-      });
+      const product =
+        (demo.productId ? productById.get(demo.productId) : undefined) ??
+        eligibleProducts[0];
 
       await ctx.db.insert("automationTasks", {
         ownerId,
@@ -416,20 +301,40 @@ export const planDaily = mutation({
         tool: "stitchr",
         taskType: "stitchr-draft",
         status: "queued",
-        stage: "awaiting-media-worker",
+        stage: "awaiting-text-provider",
         idempotencyKey,
         inputSnapshotJson: JSON.stringify({
+          automationDate,
           ugcClipId: ugc.id,
           demoClipId: demo.id,
           ugcClipName: ugc.name,
           demoClipName: demo.name,
-          ugcTrimRange: ugc.defaultTrimRange,
-          demoTrimRange: demo.defaultTrimRange,
+          ugcDuration: ugc.duration,
+          demoDuration: demo.duration,
+          ugcHasAudio: ugc.hasAudio,
+          demoHasAudio: demo.hasAudio,
+          ugcTrimRange: ugc.defaultTrimRange ?? createDefaultTrimRange(ugc.duration),
+          demoTrimRange:
+            demo.defaultTrimRange ?? createDefaultTrimRange(demo.duration),
+          ugcVideoObject: ugc.videoObject,
+          demoVideoObject: demo.videoObject,
+          productId: product?.id,
+          productName: product?.name,
+          productDetails: product?.productDetails,
+          audienceDetails: product?.audienceDetails,
+          inferredProblem: product?.inferredProblem,
+          inferredPainPoints: product?.inferredPainPoints ?? [],
+          cliprPlaceholderFillers: product?.cliprPlaceholderFillers,
+          eligibleCliprHookStyleKeys: product?.eligibleCliprHookStyleKeys,
+          eligibleCliprHookTemplateIds: product?.eligibleCliprHookTemplateIds,
+          preferredCliprHookStyleKey: product?.preferredCliprHookStyleKey,
+          productCreatedAt: product?.createdAt,
+          productUpdatedAt: product?.updatedAt,
           selectedScore: selectedPair.score,
         }),
         outputAssetIds: [],
         providerJobIds: [],
-        mediaJobIds: [mediaJob.id],
+        mediaJobIds: [],
         attempt: 0,
         createdAt: now,
         updatedAt: now,
@@ -478,6 +383,127 @@ export const recordOutput = mutation({
     },
   ) => {
     assertAutomationWorkerSecret(secret);
+
+    const task = await ctx.db
+      .query("automationTasks")
+      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .filter((q) => q.eq(q.field("id"), taskId))
+      .unique();
+
+    if (!task) {
+      throw new Error("Automation task not found.");
+    }
+
+    if (task.status === "completed" && task.outputAssetIds.includes(stitchId)) {
+      if (mediaJobId && !task.mediaJobIds.includes(mediaJobId)) {
+        await ctx.db.patch(task._id, {
+          mediaJobIds: [...task.mediaJobIds, mediaJobId],
+          updatedAt: completedAt,
+        });
+      }
+
+      return;
+    }
+
+    const history = await ctx.db
+      .query("automationPairHistory")
+      .withIndex("by_owner_pair", (q) =>
+        q.eq("ownerId", ownerId).eq("ugcClipId", ugcClipId).eq("demoClipId", demoClipId),
+      )
+      .unique();
+
+    if (history) {
+      await ctx.db.patch(history._id, {
+        lastUsedAt: completedAt,
+        useCount: history.useCount + 1,
+        recentUseWindowKey: automationDate,
+        lastOutputStitchId: stitchId,
+        updatedAt: completedAt,
+      });
+    } else {
+      await ctx.db.insert("automationPairHistory", {
+        ownerId,
+        ugcClipId,
+        demoClipId,
+        lastUsedAt: completedAt,
+        useCount: 1,
+        recentUseWindowKey: automationDate,
+        lastOutputStitchId: stitchId,
+        createdAt: completedAt,
+        updatedAt: completedAt,
+      });
+    }
+
+    await ctx.db.patch(task._id, {
+      status: "completed",
+      stage: "completed",
+      outputAssetIds: task.outputAssetIds.includes(stitchId)
+        ? task.outputAssetIds
+        : [...task.outputAssetIds, stitchId],
+      mediaJobIds:
+        mediaJobId && !task.mediaJobIds.includes(mediaJobId)
+          ? [...task.mediaJobIds, mediaJobId]
+          : task.mediaJobIds,
+      lockedBy: undefined,
+      lockedUntil: undefined,
+      completedAt,
+      updatedAt: completedAt,
+    });
+
+    const runTasks = await ctx.db
+      .query("automationTasks")
+      .withIndex("by_run", (q) => q.eq("runId", task.runId))
+      .collect();
+    const allTasksCompleted = runTasks.every((runTask) =>
+      runTask.id === task.id ? true : runTask.status === "completed",
+    );
+
+    if (allTasksCompleted) {
+      const run = await ctx.db
+        .query("automationRuns")
+        .withIndex("by_owner_id", (q) =>
+          q.eq("ownerId", ownerId).eq("id", task.runId),
+        )
+        .unique();
+
+      if (run) {
+        await ctx.db.patch(run._id, {
+          status: "completed",
+          completedAt,
+          updatedAt: completedAt,
+        });
+      }
+    }
+  },
+});
+
+export const recordOutputFromMediaWorker = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    taskId: v.string(),
+    ugcClipId: v.string(),
+    demoClipId: v.string(),
+    stitchId: v.string(),
+    mediaJobId: v.optional(v.string()),
+    automationDate: v.string(),
+    completedAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    {
+      secret,
+      ownerId,
+      taskId,
+      ugcClipId,
+      demoClipId,
+      stitchId,
+      mediaJobId,
+      automationDate,
+      completedAt,
+    },
+  ) => {
+    assertMediaWorkerSecret(secret);
 
     const task = await ctx.db
       .query("automationTasks")

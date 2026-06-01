@@ -10,11 +10,4 @@ crons.cron(
   {},
 );
 
-crons.cron(
-  "dispatch core provider automation",
-  "*/10 * * * *",
-  internal.automationScheduler.dispatchCoreProviders,
-  {},
-);
-
 export default crons;

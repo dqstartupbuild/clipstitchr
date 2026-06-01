@@ -36,7 +36,6 @@ type GenerateAvatarPhotosFromSelectionOptions = {
 
 export function useAvatarPhotoGeneration({
   loadPhoto,
-  saveGeneratedPhotos,
 }: UseAvatarPhotoGenerationOptions) {
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -72,6 +71,8 @@ export function useAvatarPhotoGeneration({
 
         const result = await generateAvatarPhotos({
           avatar: loadedAvatar,
+          avatarId: avatar.id,
+          avatarName: avatar.name,
           avatarDescription,
           context,
           count,
@@ -81,11 +82,7 @@ export function useAvatarPhotoGeneration({
           wardrobeStyle: avatar.wardrobeStyle,
         });
 
-        await saveGeneratedPhotos(result.generatedPhotos, {
-          avatarId: avatar.id,
-          sourceAvatarName: avatar.name,
-        });
-        setGeneratedCount(result.generatedPhotos.length);
+        setGeneratedCount(result.queuedCount);
       } catch (nextError) {
         setError(
           nextError instanceof Error
@@ -96,7 +93,7 @@ export function useAvatarPhotoGeneration({
         setIsGenerating(false);
       }
     },
-    [loadPhoto, saveGeneratedPhotos],
+    [loadPhoto],
   );
 
   return {

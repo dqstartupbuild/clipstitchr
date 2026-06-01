@@ -6,35 +6,25 @@ const mocks = vi.hoisted(() => {
   const convex = {
     mutation: vi.fn(),
   };
-  const replicate = {
-    predictions: {
-      create: vi.fn(),
-    },
-    wait: vi.fn(),
-  };
 
   return {
     capturePostHogServerEvent: vi.fn(),
     convex,
     createAuthenticatedConvexHttpClient: vi.fn(() => convex),
-    createAvatarGenerationVariants: vi.fn(),
-    createAvatarPhotoGenerationPrompt: vi.fn(),
-    createReplicateClient: vi.fn(() => replicate),
-    createReplicateImageDataUrl: vi.fn(),
+    createId: vi.fn(),
     getAuthenticatedConvexToken: vi.fn(),
     getAuthenticatedUserId: vi.fn(),
-    replicate,
+    putR2Object: vi.fn(),
   };
 });
 
 vi.mock("@/convex/_generated/api", () => ({
   api: {
+    providerJobs: {
+      create: "providerJobs.create",
+    },
     rateLimits: {
       consumeAvatarPhotoGenerate: "rateLimits.consumeAvatarPhotoGenerate",
-    },
-    replicateJobs: {
-      recordAvatarPhotoJob: "replicateJobs.recordAvatarPhotoJob",
-      updateAvatarPhotoJobStatus: "replicateJobs.updateAvatarPhotoJobStatus",
     },
   },
 }));
@@ -54,22 +44,6 @@ vi.mock("@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken", () => ({
   getAuthenticatedConvexToken: mocks.getAuthenticatedConvexToken,
 }));
 
-vi.mock("@/lib/clipstitchr/server/createAvatarGenerationVariants", () => ({
-  createAvatarGenerationVariants: mocks.createAvatarGenerationVariants,
-}));
-
-vi.mock("@/lib/clipstitchr/server/createAvatarPhotoGenerationPrompt", () => ({
-  createAvatarPhotoGenerationPrompt: mocks.createAvatarPhotoGenerationPrompt,
-}));
-
-vi.mock("@/lib/clipstitchr/server/createReplicateClient", () => ({
-  createReplicateClient: mocks.createReplicateClient,
-}));
-
-vi.mock("@/lib/clipstitchr/server/createReplicateImageDataUrl", () => ({
-  createReplicateImageDataUrl: mocks.createReplicateImageDataUrl,
-}));
-
 vi.mock("@/lib/clipstitchr/server/getAuthenticatedUserId", () => ({
   getAuthenticatedUserId: mocks.getAuthenticatedUserId,
 }));
@@ -78,14 +52,24 @@ vi.mock("@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret", () => ({
   getRateLimitApiSecret: () => "rate-limit-secret",
 }));
 
+vi.mock("@/lib/clipstitchr/server/r2/putR2Object", () => ({
+  putR2Object: mocks.putR2Object,
+}));
+
+vi.mock("@/lib/clipstitchr/utils/createId", () => ({
+  createId: mocks.createId,
+}));
+
 function createFormRequest(overrides: Record<string, string | Blob> = {}) {
   const formData = new FormData();
 
   formData.set("avatarDescription", "A confident founder in her 30s");
+  formData.set("avatarId", "avatar_1");
+  formData.set("avatarName", "Founder");
   formData.set("context", "holding a product");
   formData.set("count", "5");
   formData.set("generationSpeedTier", "pro");
-  formData.set("identityMode", "preserve");
+  formData.set("identityMode", "same");
   formData.set("image", new File(["avatar"], "avatar.jpg", {
     type: "image/jpeg",
   }));
@@ -107,65 +91,24 @@ function createFormRequest(overrides: Record<string, string | Blob> = {}) {
 describe("POST /api/avatars/photos/generate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.convex.mutation.mockReset();
-    mocks.createAvatarGenerationVariants.mockReset();
-    mocks.createAvatarPhotoGenerationPrompt.mockReset();
-    mocks.createReplicateImageDataUrl.mockReset();
-    mocks.replicate.predictions.create.mockReset();
-    mocks.replicate.wait.mockReset();
     mocks.getAuthenticatedUserId.mockResolvedValue("user_123");
     mocks.getAuthenticatedConvexToken.mockResolvedValue("convex-token");
-    mocks.convex.mutation.mockResolvedValue(null);
-    mocks.createAvatarGenerationVariants.mockReturnValue([
-      {
-        lighting: "studio",
-        locationDescription: "bright office",
-        outfitDescription: "navy blazer",
-        poseDescription: "holding a product",
-        style: "realistic",
-      },
-      {
-        lighting: "studio",
-        locationDescription: "bright office",
-        outfitDescription: "white shirt",
-        poseDescription: "pointing at a product",
-        style: "realistic",
-      },
-    ]);
-    mocks.createAvatarPhotoGenerationPrompt
-      .mockReturnValueOnce("Prompt one")
-      .mockReturnValue("Prompt two");
-    mocks.replicate.predictions.create
-      .mockResolvedValueOnce({
-        id: "prediction_1",
-        status: "starting",
-      })
-      .mockResolvedValue({
-        id: "prediction_2",
-        status: "starting",
-      });
-    mocks.replicate.wait
-      .mockResolvedValueOnce({
-        error: null,
-        output: ["https://replicate.example/avatar-1.jpg"],
-        status: "succeeded",
-      })
-      .mockResolvedValue({
-        error: null,
-        output: ["https://replicate.example/avatar-2.jpg"],
-        status: "succeeded",
-      });
-    mocks.createReplicateImageDataUrl
-      .mockResolvedValueOnce({
-        blob: new Blob(["generated-1"], { type: "image/jpeg" }),
-        dataUrl: "data:image/jpeg;base64,one",
-        mimeType: "image/jpeg",
-      })
-      .mockResolvedValue({
-        blob: new Blob(["generated-2"], { type: "image/jpeg" }),
-        dataUrl: "data:image/jpeg;base64,two",
-        mimeType: "image/jpeg",
-      });
+    mocks.createId.mockReturnValue("source_1");
+    mocks.putR2Object.mockResolvedValue({
+      contentType: "image/jpeg",
+      key: "users/user_123/provider-inputs/source_1/image.jpg",
+      size: 6,
+    });
+    mocks.convex.mutation.mockImplementation(async (mutationId: string) => {
+      if (mutationId === "providerJobs.create") {
+        return {
+          id: "provider:avatar-photo:source_1",
+          status: "queued",
+        };
+      }
+
+      return null;
+    });
   });
 
   it("returns 401 before parsing form data when authentication is missing", async () => {
@@ -180,21 +123,20 @@ describe("POST /api/avatars/photos/generate", () => {
     expect(mocks.getAuthenticatedConvexToken).not.toHaveBeenCalled();
   });
 
-  it("creates avatar photo variants and records Replicate job state", async () => {
+  it("uploads the source image and creates a provider job", async () => {
     const response = await POST(createFormRequest());
     const body = await response.json();
 
     expect(response.status).toBe(200);
     expect(body).toEqual(
       expect.objectContaining({
-        generationSpeedLabel: "Fast",
-        generationSpeedTier: "pro",
-        modelId: "openai/gpt-image-2",
-        prompts: ["Prompt one", "Prompt two"],
-        quality: "medium",
+        job: {
+          id: "provider:avatar-photo:source_1",
+          status: "queued",
+        },
+        queuedCount: 5,
       }),
     );
-    expect(body.images).toHaveLength(2);
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.rateLimits.consumeAvatarPhotoGenerate,
       {
@@ -202,31 +144,19 @@ describe("POST /api/avatars/photos/generate", () => {
         secret: "rate-limit-secret",
       },
     );
-    expect(mocks.createAvatarGenerationVariants).toHaveBeenCalledWith(
+    expect(mocks.putR2Object).toHaveBeenCalledWith(
       expect.objectContaining({
-        context: "holding a product",
-        count: 5,
-        lighting: "studio",
-        location: "bright office",
-        style: "editorial",
-        wardrobeStyle: "female",
+        contentType: "image/jpeg",
+        key: "users/user_123/provider-inputs/source_1/image.jpg",
       }),
     );
-    expect(mocks.replicate.predictions.create).toHaveBeenCalledTimes(2);
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.replicateJobs.recordAvatarPhotoJob,
+      api.providerJobs.create,
       expect.objectContaining({
-        predictionId: "prediction_1",
+        id: "provider:avatar-photo:source_1",
+        jobType: "avatar-photo-generation",
+        ownerId: "user_123",
         secret: "rate-limit-secret",
-        status: "starting",
-      }),
-    );
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.replicateJobs.updateAvatarPhotoJobStatus,
-      expect.objectContaining({
-        outputUrl: "https://replicate.example/avatar-1.jpg",
-        predictionId: "prediction_1",
-        status: "succeeded",
       }),
     );
     expect(mocks.capturePostHogServerEvent).toHaveBeenCalledWith(
@@ -249,43 +179,6 @@ describe("POST /api/avatars/photos/generate", () => {
     expect(mocks.convex.mutation).not.toHaveBeenCalled();
   });
 
-  it("records failed predictions and returns the provider error", async () => {
-    mocks.createAvatarGenerationVariants.mockReturnValueOnce([
-      {
-        lighting: "studio",
-        locationDescription: "bright office",
-        outfitDescription: "navy blazer",
-        poseDescription: "holding a product",
-        style: "realistic",
-      },
-    ]);
-    mocks.replicate.predictions.create.mockReset();
-    mocks.replicate.predictions.create.mockResolvedValueOnce({
-      id: "prediction_failed",
-      status: "starting",
-    });
-    mocks.replicate.wait.mockReset();
-    mocks.replicate.wait.mockResolvedValueOnce({
-      error: "unsafe prompt",
-      output: null,
-      status: "failed",
-    });
-
-    const response = await POST(createFormRequest({ count: "1" }));
-
-    await expect(response.json()).resolves.toEqual({
-      message: "unsafe prompt",
-    });
-    expect(response.status).toBe(500);
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.replicateJobs.updateAvatarPhotoJobStatus,
-      expect.objectContaining({
-        error: "unsafe prompt",
-        status: "failed",
-      }),
-    );
-  });
-
   it("returns 429 when generation quota is exceeded", async () => {
     mocks.convex.mutation.mockRejectedValueOnce({
       data: {
@@ -304,6 +197,6 @@ describe("POST /api/avatars/photos/generate", () => {
       }),
     );
     expect(response.status).toBe(429);
-    expect(mocks.replicate.predictions.create).not.toHaveBeenCalled();
+    expect(mocks.putR2Object).not.toHaveBeenCalled();
   });
 });

@@ -108,6 +108,7 @@ export const planDaily = mutation({
         stage: "awaiting-provider",
         idempotencyKey: `${idempotencyKey}:task`,
         inputSnapshotJson: JSON.stringify({
+          automationDate,
           avatarId: avatar.id,
           avatarName: avatar.name,
           avatarDescription: avatar.description,

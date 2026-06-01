@@ -54,8 +54,14 @@ describe("POST /api/automation/plan", () => {
 
     expect(response.status).toBe(200);
     expect(body.ownerCount).toBe(1);
-    expect(body.plannedTools).toEqual(["stitchr", "swapr", "clipr"]);
-    expect(body.heldTools).toEqual(["avatar-photo", "swipr"]);
+    expect(body.plannedTools).toEqual([
+      "stitchr",
+      "swapr",
+      "clipr",
+      "avatar-photo",
+      "swipr",
+    ]);
+    expect(body.heldTools).toEqual([]);
     expect(mocks.convex.query).not.toHaveBeenCalled();
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.automationStitchr.planDaily,
@@ -69,7 +75,15 @@ describe("POST /api/automation/plan", () => {
       api.automationClipr.planDaily,
       expect.objectContaining({ ownerId: "owner_123" }),
     );
-    expect(mocks.convex.mutation).toHaveBeenCalledTimes(3);
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.automationAvatarPhoto.planDaily,
+      expect.objectContaining({ ownerId: "owner_123" }),
+    );
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.automationSwipr.planDaily,
+      expect.objectContaining({ ownerId: "owner_123" }),
+    );
+    expect(mocks.convex.mutation).toHaveBeenCalledTimes(5);
   });
 
   it("loads enabled planner candidates when no owner is specified", async () => {

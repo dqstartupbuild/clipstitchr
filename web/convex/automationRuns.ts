@@ -1,5 +1,7 @@
 import { v } from "convex/values";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
+import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
+import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { automationRunStatusValidator } from "./validators/automationRunStatus";
@@ -67,6 +69,72 @@ export const markStatus = mutation({
   },
   handler: async (ctx, { secret, ownerId, id, status, error, updatedAt }) => {
     assertAutomationWorkerSecret(secret);
+
+    const run = await ctx.db
+      .query("automationRuns")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!run) {
+      throw new Error("Automation run not found.");
+    }
+
+    await ctx.db.patch(run._id, {
+      status,
+      ...(status === "running" && !run.startedAt ? { startedAt: updatedAt } : {}),
+      ...(status === "completed" ? { completedAt: updatedAt } : {}),
+      ...(status === "skipped" ? { skippedAt: updatedAt } : {}),
+      ...(status === "failed" ? { failedAt: updatedAt } : {}),
+      ...(error === undefined ? {} : { error }),
+      updatedAt,
+    });
+  },
+});
+
+export const markProviderStatus = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    status: automationRunStatusValidator,
+    error: v.optional(v.string()),
+    updatedAt: v.string(),
+  },
+  handler: async (ctx, { secret, ownerId, id, status, error, updatedAt }) => {
+    assertProviderWorkerSecret(secret);
+
+    const run = await ctx.db
+      .query("automationRuns")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!run) {
+      throw new Error("Automation run not found.");
+    }
+
+    await ctx.db.patch(run._id, {
+      status,
+      ...(status === "running" && !run.startedAt ? { startedAt: updatedAt } : {}),
+      ...(status === "completed" ? { completedAt: updatedAt } : {}),
+      ...(status === "skipped" ? { skippedAt: updatedAt } : {}),
+      ...(status === "failed" ? { failedAt: updatedAt } : {}),
+      ...(error === undefined ? {} : { error }),
+      updatedAt,
+    });
+  },
+});
+
+export const markMediaStatus = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    status: automationRunStatusValidator,
+    error: v.optional(v.string()),
+    updatedAt: v.string(),
+  },
+  handler: async (ctx, { secret, ownerId, id, status, error, updatedAt }) => {
+    assertMediaWorkerSecret(secret);
 
     const run = await ctx.db
       .query("automationRuns")

@@ -1,11 +1,103 @@
 import { v } from "convex/values";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
+import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
+import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
+import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { mediaJobStatusValidator } from "./validators/mediaJobStatus";
 import { mediaJobTypeValidator } from "./validators/mediaJobType";
 
 const mediaMaxJobAttempts = 3;
+
+function clientJobFields(job: {
+  completedAt?: string;
+  createdAt: string;
+  error?: string;
+  id: string;
+  jobType: string;
+  outputAssetIds: string[];
+  stage: string;
+  status: string;
+  updatedAt: string;
+}) {
+  return {
+    id: job.id,
+    jobType: job.jobType,
+    status: job.status,
+    stage: job.stage,
+    outputAssetIds: job.outputAssetIds,
+    error: job.error,
+    createdAt: job.createdAt,
+    updatedAt: job.updatedAt,
+    completedAt: job.completedAt,
+  };
+}
+
+export const listActive = query({
+  args: {},
+  handler: async (ctx) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const jobs = await ctx.db
+      .query("mediaJobs")
+      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .order("desc")
+      .take(50);
+
+    return jobs
+      .filter((job) => job.status === "queued" || job.status === "running")
+      .map(clientJobFields);
+  },
+});
+
+export const createUploadNormalization = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    idempotencyKey: v.string(),
+    inputSnapshotJson: v.string(),
+    createdAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    { secret, ownerId, id, idempotencyKey, inputSnapshotJson, createdAt },
+  ) => {
+    assertRateLimitApiSecret(secret);
+
+    const existing = await ctx.db
+      .query("mediaJobs")
+      .withIndex("by_idempotency_key", (q) =>
+        q.eq("idempotencyKey", idempotencyKey),
+      )
+      .unique();
+
+    if (existing) {
+      return existing;
+    }
+
+    const mediaJobId = await ctx.db.insert("mediaJobs", {
+      ownerId,
+      id,
+      jobType: "upload-normalization",
+      status: "queued",
+      stage: "queued",
+      idempotencyKey,
+      inputSnapshotJson,
+      outputAssetIds: [],
+      attempt: 0,
+      createdAt,
+      updatedAt: createdAt,
+    });
+    const mediaJob = await ctx.db.get(mediaJobId);
+
+    if (!mediaJob) {
+      throw new Error("Unable to create media job.");
+    }
+
+    return mediaJob;
+  },
+});
 
 export const createCliprFinalizationFromAutomation = mutation({
   args: {
@@ -21,6 +113,55 @@ export const createCliprFinalizationFromAutomation = mutation({
     { secret, ownerId, id, idempotencyKey, inputSnapshotJson, createdAt },
   ) => {
     assertAutomationWorkerSecret(secret);
+
+    const existing = await ctx.db
+      .query("mediaJobs")
+      .withIndex("by_idempotency_key", (q) =>
+        q.eq("idempotencyKey", idempotencyKey),
+      )
+      .unique();
+
+    if (existing) {
+      return existing;
+    }
+
+    const mediaJobId = await ctx.db.insert("mediaJobs", {
+      ownerId,
+      id,
+      jobType: "clipr-finalization",
+      status: "queued",
+      stage: "queued",
+      idempotencyKey,
+      inputSnapshotJson,
+      outputAssetIds: [],
+      attempt: 0,
+      createdAt,
+      updatedAt: createdAt,
+    });
+    const mediaJob = await ctx.db.get(mediaJobId);
+
+    if (!mediaJob) {
+      throw new Error("Unable to create media job.");
+    }
+
+    return mediaJob;
+  },
+});
+
+export const createCliprFinalizationFromProvider = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    idempotencyKey: v.string(),
+    inputSnapshotJson: v.string(),
+    createdAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    { secret, ownerId, id, idempotencyKey, inputSnapshotJson, createdAt },
+  ) => {
+    assertProviderWorkerSecret(secret);
 
     const existing = await ctx.db
       .query("mediaJobs")
@@ -86,6 +227,104 @@ export const createSwaprFinalizationFromAutomation = mutation({
       ownerId,
       id,
       jobType: "swapr-finalization",
+      status: "queued",
+      stage: "queued",
+      idempotencyKey,
+      inputSnapshotJson,
+      outputAssetIds: [],
+      attempt: 0,
+      createdAt,
+      updatedAt: createdAt,
+    });
+    const mediaJob = await ctx.db.get(mediaJobId);
+
+    if (!mediaJob) {
+      throw new Error("Unable to create media job.");
+    }
+
+    return mediaJob;
+  },
+});
+
+export const createSwaprFinalizationFromProvider = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    idempotencyKey: v.string(),
+    inputSnapshotJson: v.string(),
+    createdAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    { secret, ownerId, id, idempotencyKey, inputSnapshotJson, createdAt },
+  ) => {
+    assertProviderWorkerSecret(secret);
+
+    const existing = await ctx.db
+      .query("mediaJobs")
+      .withIndex("by_idempotency_key", (q) =>
+        q.eq("idempotencyKey", idempotencyKey),
+      )
+      .unique();
+
+    if (existing) {
+      return existing;
+    }
+
+    const mediaJobId = await ctx.db.insert("mediaJobs", {
+      ownerId,
+      id,
+      jobType: "swapr-finalization",
+      status: "queued",
+      stage: "queued",
+      idempotencyKey,
+      inputSnapshotJson,
+      outputAssetIds: [],
+      attempt: 0,
+      createdAt,
+      updatedAt: createdAt,
+    });
+    const mediaJob = await ctx.db.get(mediaJobId);
+
+    if (!mediaJob) {
+      throw new Error("Unable to create media job.");
+    }
+
+    return mediaJob;
+  },
+});
+
+export const createStitchrDraftFinalizationFromProvider = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    idempotencyKey: v.string(),
+    inputSnapshotJson: v.string(),
+    createdAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    { secret, ownerId, id, idempotencyKey, inputSnapshotJson, createdAt },
+  ) => {
+    assertProviderWorkerSecret(secret);
+
+    const existing = await ctx.db
+      .query("mediaJobs")
+      .withIndex("by_idempotency_key", (q) =>
+        q.eq("idempotencyKey", idempotencyKey),
+      )
+      .unique();
+
+    if (existing) {
+      return existing;
+    }
+
+    const mediaJobId = await ctx.db.insert("mediaJobs", {
+      ownerId,
+      id,
+      jobType: "stitchr-draft-finalization",
       status: "queued",
       stage: "queued",
       idempotencyKey,

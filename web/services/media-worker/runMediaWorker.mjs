@@ -227,6 +227,16 @@ function createVideoClipObjectKey({ clipId, kind, ownerId }) {
   ].join("/");
 }
 
+function getUploadFallbackName(originalName) {
+  const withoutExtension = originalName.replace(/\.[^.]+$/, "");
+  const normalizedName = withoutExtension
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return normalizedName || "Uploaded video";
+}
+
 function parseCliprFinalizationInput(inputSnapshotJson) {
   const input = JSON.parse(inputSnapshotJson);
 
@@ -241,12 +251,14 @@ function parseCliprFinalizationInput(inputSnapshotJson) {
   }
 
   return {
-    automationDate: getString(input.automationDate, "automation date"),
-    automationRunId: getString(input.automationRunId, "automation run ID"),
-    automationTaskId: getString(input.automationTaskId, "automation task ID"),
+    automation: getOptionalAutomationInput(input),
     clipId: getString(input.clipId, "clip ID"),
     clipName: getString(input.clipName, "clip name"),
     cliprJobId: getString(input.cliprJobId, "Clipr job ID"),
+    providerJobId:
+      typeof input.providerJobId === "string" && input.providerJobId.trim()
+        ? input.providerJobId.trim()
+        : undefined,
     sourceSummary:
       typeof input.sourceSummary === "string" ? input.sourceSummary : undefined,
     sourceVideoObject: {
@@ -257,6 +269,25 @@ function parseCliprFinalizationInput(inputSnapshotJson) {
       ),
       size: getPositiveNumber(sourceVideoObject.size, "source video size"),
     },
+  };
+}
+
+function parseUploadNormalizationInput(inputSnapshotJson) {
+  const input = JSON.parse(inputSnapshotJson);
+
+  if (!input || typeof input !== "object") {
+    throw new Error("Invalid upload normalization input.");
+  }
+
+  return {
+    clipId: getString(input.clipId, "clip ID"),
+    clipType: input.clipType === "demo" ? "demo" : "ugc",
+    originalName: getString(input.originalName, "original name"),
+    productId:
+      typeof input.productId === "string" && input.productId.trim()
+        ? input.productId.trim()
+        : undefined,
+    sourceVideoObject: getR2Object(input.sourceVideoObject, "source video"),
   };
 }
 
@@ -284,6 +315,7 @@ function parseStitchrDraftFinalizationInput(inputSnapshotJson) {
       typeof input.sourceSummary === "string" ? input.sourceSummary : undefined,
     stitchId: getString(input.stitchId, "stitch ID"),
     stitchName: getString(input.stitchName, "stitch name"),
+    textOverlay: getOptionalTextOverlay(input.textOverlay),
     ugcClipId: getString(input.ugcClipId, "UGC clip ID"),
     ugcClipName: getString(input.ugcClipName, "UGC clip name"),
     ugcDuration: getPositiveNumber(input.ugcDuration, "UGC duration"),
@@ -294,6 +326,48 @@ function parseStitchrDraftFinalizationInput(inputSnapshotJson) {
   };
 }
 
+function getOptionalTextOverlay(value) {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  return {
+    text: getString(value.text, "text overlay text"),
+    startTime: getNonNegativeNumber(value.startTime, "text overlay start"),
+    endTime: getPositiveFloat(value.endTime, "text overlay end"),
+    x: getNonNegativeNumber(value.x, "text overlay x"),
+    y: getNonNegativeNumber(value.y, "text overlay y"),
+    width: getPositiveFloat(value.width, "text overlay width"),
+    fontSize: getPositiveFloat(value.fontSize, "text overlay font size"),
+    styleId: getTextOverlayStyleId(value.styleId),
+    ...(typeof value.color === "string" ? { color: value.color } : {}),
+    ...(typeof value.backgroundColor === "string"
+      ? { backgroundColor: value.backgroundColor }
+      : {}),
+    ...(typeof value.strokeColor === "string"
+      ? { strokeColor: value.strokeColor }
+      : {}),
+  };
+}
+
+function getTextOverlayStyleId(value) {
+  const styleIds = new Set([
+    "clean",
+    "hook",
+    "caption",
+    "serif",
+    "mono",
+    "badge",
+    "outline",
+    "luxe",
+    "neon",
+    "soft",
+    "snapchat",
+  ]);
+
+  return typeof value === "string" && styleIds.has(value) ? value : "hook";
+}
+
 function parseSwaprFinalizationInput(inputSnapshotJson) {
   const input = JSON.parse(inputSnapshotJson);
 
@@ -301,10 +375,45 @@ function parseSwaprFinalizationInput(inputSnapshotJson) {
     throw new Error("Invalid Swapr finalization input.");
   }
 
+  const rawSegments = Array.isArray(input.segments) ? input.segments : [];
+  const segments = rawSegments.length
+    ? rawSegments.map((segment, index) => {
+        if (!segment || typeof segment !== "object") {
+          throw new Error("Invalid Swapr finalization segment.");
+        }
+
+        return {
+          index:
+            typeof segment.index === "number" && Number.isFinite(segment.index)
+              ? Math.trunc(segment.index)
+              : index,
+          outputUrl: getString(segment.outputUrl, "output URL"),
+          predictionId: getString(segment.predictionId, "prediction ID"),
+          referenceClipId: getString(
+            segment.referenceClipId,
+            "reference clip ID",
+          ),
+          referenceClipName: getString(
+            segment.referenceClipName,
+            "reference clip name",
+          ),
+        };
+      })
+    : [
+        {
+          index: 0,
+          outputUrl: getString(input.outputUrl, "output URL"),
+          predictionId: getString(input.predictionId, "prediction ID"),
+          referenceClipId: getString(input.referenceClipId, "reference clip ID"),
+          referenceClipName: getString(
+            input.referenceClipName,
+            "reference clip name",
+          ),
+        },
+      ];
+
   return {
-    automationDate: getString(input.automationDate, "automation date"),
-    automationRunId: getString(input.automationRunId, "automation run ID"),
-    automationTaskId: getString(input.automationTaskId, "automation task ID"),
+    automation: getOptionalAutomationInput(input),
     characterOrientation: getSwaprCharacterOrientation(
       input.characterOrientation,
     ),
@@ -313,17 +422,46 @@ function parseSwaprFinalizationInput(inputSnapshotJson) {
     keepOriginalSound: input.keepOriginalSound === true,
     mode: getSwaprMode(input.mode),
     modelId: getString(input.modelId, "model ID"),
-    outputUrl: getString(input.outputUrl, "output URL"),
-    predictionId: getString(input.predictionId, "prediction ID"),
+    providerJobId:
+      typeof input.providerJobId === "string" && input.providerJobId.trim()
+        ? input.providerJobId.trim()
+        : undefined,
     prompt: typeof input.prompt === "string" ? input.prompt.trim() : undefined,
-    referenceClipId: getString(input.referenceClipId, "reference clip ID"),
-    referenceClipName: getString(
-      input.referenceClipName,
-      "reference clip name",
-    ),
+    referenceClipId: segments[0].referenceClipId,
+    referenceClipName: segments[0].referenceClipName,
+    segments,
     sourcePhotoId: getString(input.sourcePhotoId, "source photo ID"),
     sourceSummary:
       typeof input.sourceSummary === "string" ? input.sourceSummary : undefined,
+  };
+}
+
+function getOptionalAutomationInput(input) {
+  const automationRunId =
+    typeof input.automationRunId === "string" && input.automationRunId.trim()
+      ? input.automationRunId.trim()
+      : undefined;
+  const automationTaskId =
+    typeof input.automationTaskId === "string" && input.automationTaskId.trim()
+      ? input.automationTaskId.trim()
+      : undefined;
+  const automationDate =
+    typeof input.automationDate === "string" && input.automationDate.trim()
+      ? input.automationDate.trim()
+      : undefined;
+
+  if (!automationRunId && !automationTaskId && !automationDate) {
+    return undefined;
+  }
+
+  if (!automationRunId || !automationTaskId || !automationDate) {
+    throw new Error("Incomplete automation finalization input.");
+  }
+
+  return {
+    automationDate,
+    automationRunId,
+    automationTaskId,
   };
 }
 
@@ -357,6 +495,14 @@ function getPositiveNumber(value, label) {
 
 function getNonNegativeNumber(value, label) {
   if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    throw new Error(`Missing ${label}.`);
+  }
+
+  return value;
+}
+
+function getPositiveFloat(value, label) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
     throw new Error(`Missing ${label}.`);
   }
 
@@ -595,35 +741,54 @@ async function processCliprFinalization({ client, config, job, r2 }) {
         aspectRatio: metadata.aspectRatio,
         duration: metadata.duration,
         hasAudio: metadata.hasAudio,
-        automation: {
-          source: "automation",
-          runId: input.automationRunId,
-          taskId: input.automationTaskId,
-          tool: "clipr",
-          automationDate: input.automationDate,
-          sourceSummary: input.sourceSummary,
-        },
+        ...(input.automation
+          ? {
+              automation: {
+                source: "automation",
+                runId: input.automation.automationRunId,
+                taskId: input.automation.automationTaskId,
+                tool: "clipr",
+                automationDate: input.automation.automationDate,
+                sourceSummary: input.sourceSummary,
+              },
+            }
+          : {}),
         updatedAt,
       },
     );
 
-    await client.mutation(api.automationTasks.markStatus, {
-      secret: getRequiredEnv("AUTOMATION_WORKER_SECRET"),
-      ownerId: job.ownerId,
-      id: input.automationTaskId,
-      status: "completed",
-      stage: "completed",
-      outputAssetId: clipId,
-      mediaJobId: job.id,
-      updatedAt,
-    });
-    await client.mutation(api.automationRuns.markStatus, {
-      secret: getRequiredEnv("AUTOMATION_WORKER_SECRET"),
-      ownerId: job.ownerId,
-      id: input.automationRunId,
-      status: "completed",
-      updatedAt,
-    });
+    if (input.automation) {
+      await client.mutation(api.automationTasks.markMediaStatus, {
+        secret: config.mediaWorkerSecret,
+        ownerId: job.ownerId,
+        id: input.automation.automationTaskId,
+        status: "completed",
+        stage: "completed",
+        outputAssetId: clipId,
+        mediaJobId: job.id,
+        updatedAt,
+      });
+      await client.mutation(api.automationRuns.markMediaStatus, {
+        secret: config.mediaWorkerSecret,
+        ownerId: job.ownerId,
+        id: input.automation.automationRunId,
+        status: "completed",
+        updatedAt,
+      });
+    }
+    if (input.providerJobId) {
+      await client.mutation(api.providerJobs.markMediaStatus, {
+        secret: config.mediaWorkerSecret,
+        ownerId: job.ownerId,
+        id: input.providerJobId,
+        status: "completed",
+        stage: "completed",
+        outputAssetId: clipId,
+        mediaJobId: job.id,
+        progress: 1,
+        updatedAt,
+      });
+    }
     await client.mutation(api.mediaJobs.markStatus, {
       secret: config.mediaWorkerSecret,
       ownerId: job.ownerId,
@@ -638,77 +803,10 @@ async function processCliprFinalization({ client, config, job, r2 }) {
   }
 }
 
-async function processStitchrDraftFinalization({ client, config, job }) {
-  const input = parseStitchrDraftFinalizationInput(job.inputSnapshotJson);
-  const updatedAt = new Date().toISOString();
-  const automationSecret = getRequiredEnv("AUTOMATION_WORKER_SECRET");
-  const duration =
-    getTrimDuration(input.ugcTrimRange, input.ugcPlaybackRate) +
-    getTrimDuration(input.demoTrimRange, input.demoPlaybackRate);
-
-  await client.mutation(api.mediaJobs.markStatus, {
-    secret: config.mediaWorkerSecret,
-    ownerId: job.ownerId,
-    id: job.id,
-    status: "running",
-    stage: "saving-editable-stitch",
-    updatedAt,
-  });
-  await client.mutation(api.stitches.saveFromAutomation, {
-    secret: automationSecret,
-    ownerId: job.ownerId,
-    automation: {
-      source: "automation",
-      runId: input.automationRunId,
-      taskId: input.automationTaskId,
-      tool: "stitchr",
-      automationDate: input.automationDate,
-      sourceSummary: input.sourceSummary,
-    },
-    id: input.stitchId,
-    mode: "normal",
-    name: input.stitchName,
-    ugcClipId: input.ugcClipId,
-    demoClipId: input.demoClipId,
-    ugcClipName: input.ugcClipName,
-    demoClipName: input.demoClipName,
-    ugcTrimRange: input.ugcTrimRange,
-    demoTrimRange: input.demoTrimRange,
-    width: TIKTOK_OUTPUT_WIDTH,
-    height: TIKTOK_OUTPUT_HEIGHT,
-    duration,
-    includeDemoAudio: input.includeDemoAudio,
-    includeUgcAudio: input.includeUgcAudio,
-    demoPlaybackRate: input.demoPlaybackRate,
-    ugcPlaybackRate: input.ugcPlaybackRate,
-    createdAt: updatedAt,
-  });
-  await client.mutation(api.automationStitchr.recordOutput, {
-    secret: automationSecret,
-    ownerId: job.ownerId,
-    taskId: input.automationTaskId,
-    ugcClipId: input.ugcClipId,
-    demoClipId: input.demoClipId,
-    stitchId: input.stitchId,
-    mediaJobId: job.id,
-    automationDate: input.automationDate,
-    completedAt: updatedAt,
-  });
-  await client.mutation(api.mediaJobs.markStatus, {
-    secret: config.mediaWorkerSecret,
-    ownerId: job.ownerId,
-    id: job.id,
-    status: "completed",
-    stage: "completed",
-    outputAssetId: input.stitchId,
-    updatedAt,
-  });
-}
-
-async function processSwaprFinalization({ client, config, job, r2 }) {
-  const input = parseSwaprFinalizationInput(job.inputSnapshotJson);
+async function processUploadNormalization({ client, config, job, r2 }) {
+  const input = parseUploadNormalizationInput(job.inputSnapshotJson);
   const scratchDir = join(config.scratchDir, sanitizeR2KeySegment(job.id));
-  const sourcePath = join(scratchDir, "source.mp4");
+  const sourcePath = join(scratchDir, "source");
   const outputPath = join(scratchDir, "normalized.mp4");
   const posterPath = join(scratchDir, "poster.jpg");
 
@@ -720,13 +818,14 @@ async function processSwaprFinalization({ client, config, job, r2 }) {
       ownerId: job.ownerId,
       id: job.id,
       status: "running",
-      stage: "downloading-provider-output",
+      stage: "downloading-source",
       updatedAt: new Date().toISOString(),
     });
-
-    const sourceObject = await downloadReplicateOutput({
+    await downloadR2Object({
+      client: r2,
+      config,
+      key: input.sourceVideoObject.key,
       outputPath: sourcePath,
-      rawUrl: input.outputUrl,
     });
 
     await client.mutation(api.mediaJobs.markStatus, {
@@ -770,19 +869,268 @@ async function processSwaprFinalization({ client, config, job, r2 }) {
       }),
     ]);
     const updatedAt = new Date().toISOString();
-    const automationSecret = getRequiredEnv("AUTOMATION_WORKER_SECRET");
 
-    await client.mutation(api.videoClips.saveFromAutomation, {
-      secret: automationSecret,
+    await client.mutation(api.videoClips.saveFromMediaWorker, {
+      secret: config.mediaWorkerSecret,
       ownerId: job.ownerId,
-      automation: {
-        source: "automation",
-        runId: input.automationRunId,
-        taskId: input.automationTaskId,
-        tool: "swapr",
-        automationDate: input.automationDate,
-        sourceSummary: input.sourceSummary,
+      id: input.clipId,
+      name: getUploadFallbackName(input.originalName),
+      tags: [input.clipType],
+      originalName: input.originalName,
+      clipType: input.clipType,
+      videoObject,
+      posterObject,
+      posterVersion: VIDEO_POSTER_CAPTURE_VERSION,
+      mimeType: videoObject.contentType,
+      sourceMimeType: input.sourceVideoObject.contentType,
+      size: videoObject.size,
+      originalSize: input.sourceVideoObject.size,
+      width: metadata.width,
+      height: metadata.height,
+      aspectRatio: metadata.aspectRatio,
+      duration: metadata.duration,
+      defaultTrimRange: {
+        start: 0,
+        end: metadata.duration,
       },
+      hasAudio: metadata.hasAudio,
+      productId: input.productId,
+      createdAt: updatedAt,
+      updatedAt,
+    });
+
+    await client.mutation(api.providerJobs.createFromMediaWorker, {
+      secret: config.mediaWorkerSecret,
+      ownerId: job.ownerId,
+      id: `provider:upload-analysis:${input.clipId}`,
+      jobType: "upload-video-analysis",
+      stage: "awaiting-analysis-provider",
+      idempotencyKey: `${input.clipId}:upload-video-analysis`,
+      inputSnapshotJson: JSON.stringify({
+        clipId: input.clipId,
+        clipType: input.clipType,
+        originalName: input.originalName,
+        posterObject,
+        productId: input.productId,
+        sourceSizeBytes: input.sourceVideoObject.size,
+        videoObject,
+      }),
+      createdAt: updatedAt,
+    });
+
+    await client.mutation(api.mediaJobs.markStatus, {
+      secret: config.mediaWorkerSecret,
+      ownerId: job.ownerId,
+      id: job.id,
+      status: "completed",
+      stage: "completed",
+      outputAssetId: input.clipId,
+      updatedAt,
+    });
+  } finally {
+    await rm(scratchDir, { force: true, recursive: true });
+  }
+}
+
+async function processStitchrDraftFinalization({ client, config, job }) {
+  const input = parseStitchrDraftFinalizationInput(job.inputSnapshotJson);
+  const updatedAt = new Date().toISOString();
+  const duration =
+    getTrimDuration(input.ugcTrimRange, input.ugcPlaybackRate) +
+    getTrimDuration(input.demoTrimRange, input.demoPlaybackRate);
+
+  await client.mutation(api.mediaJobs.markStatus, {
+    secret: config.mediaWorkerSecret,
+    ownerId: job.ownerId,
+    id: job.id,
+    status: "running",
+    stage: "saving-editable-stitch",
+    updatedAt,
+  });
+  await client.mutation(api.stitches.saveFromMediaWorker, {
+    secret: config.mediaWorkerSecret,
+    ownerId: job.ownerId,
+    automation: {
+      source: "automation",
+      runId: input.automationRunId,
+      taskId: input.automationTaskId,
+      tool: "stitchr",
+      automationDate: input.automationDate,
+      sourceSummary: input.sourceSummary,
+    },
+    id: input.stitchId,
+    mode: "normal",
+    name: input.stitchName,
+    ugcClipId: input.ugcClipId,
+    demoClipId: input.demoClipId,
+    ugcClipName: input.ugcClipName,
+    demoClipName: input.demoClipName,
+    ugcTrimRange: input.ugcTrimRange,
+    demoTrimRange: input.demoTrimRange,
+    width: TIKTOK_OUTPUT_WIDTH,
+    height: TIKTOK_OUTPUT_HEIGHT,
+    duration,
+    includeDemoAudio: input.includeDemoAudio,
+    includeUgcAudio: input.includeUgcAudio,
+    demoPlaybackRate: input.demoPlaybackRate,
+    ugcPlaybackRate: input.ugcPlaybackRate,
+    ...(input.textOverlay ? { textOverlay: input.textOverlay } : {}),
+    createdAt: updatedAt,
+  });
+  await client.mutation(api.automationStitchr.recordOutputFromMediaWorker, {
+    secret: config.mediaWorkerSecret,
+    ownerId: job.ownerId,
+    taskId: input.automationTaskId,
+    ugcClipId: input.ugcClipId,
+    demoClipId: input.demoClipId,
+    stitchId: input.stitchId,
+    mediaJobId: job.id,
+    automationDate: input.automationDate,
+    completedAt: updatedAt,
+  });
+  await client.mutation(api.mediaJobs.markStatus, {
+    secret: config.mediaWorkerSecret,
+    ownerId: job.ownerId,
+    id: job.id,
+    status: "completed",
+    stage: "completed",
+    outputAssetId: input.stitchId,
+    updatedAt,
+  });
+}
+
+async function processSwaprFinalization({ client, config, job, r2 }) {
+  const input = parseSwaprFinalizationInput(job.inputSnapshotJson);
+  const scratchDir = join(config.scratchDir, sanitizeR2KeySegment(job.id));
+  const outputPath = join(scratchDir, "normalized.mp4");
+  const posterPath = join(scratchDir, "poster.jpg");
+
+  await mkdir(scratchDir, { recursive: true });
+
+  try {
+    await client.mutation(api.mediaJobs.markStatus, {
+      secret: config.mediaWorkerSecret,
+      ownerId: job.ownerId,
+      id: job.id,
+      status: "running",
+      stage: "downloading-provider-output",
+      updatedAt: new Date().toISOString(),
+    });
+
+    const sourceObjects = [];
+    const normalizedPaths = [];
+
+    for (const segment of input.segments) {
+      const sourcePath = join(scratchDir, `source-${segment.index}.mp4`);
+      const normalizedPath = join(scratchDir, `normalized-${segment.index}.mp4`);
+      const sourceObject = await downloadReplicateOutput({
+        outputPath: sourcePath,
+        rawUrl: segment.outputUrl,
+      });
+
+      sourceObjects.push(sourceObject);
+
+      await client.mutation(api.mediaJobs.markStatus, {
+        secret: config.mediaWorkerSecret,
+        ownerId: job.ownerId,
+        id: job.id,
+        status: "running",
+        stage: "normalizing",
+        updatedAt: new Date().toISOString(),
+      });
+      await normalizeVideo({
+        config,
+        inputPath: sourcePath,
+        outputPath: normalizedPath,
+      });
+      normalizedPaths.push(normalizedPath);
+    }
+
+    if (normalizedPaths.length === 1) {
+      await runFfmpeg(config, [
+        "-y",
+        "-i",
+        normalizedPaths[0],
+        "-c",
+        "copy",
+        outputPath,
+      ]);
+    } else {
+      const concatListPath = join(scratchDir, "concat.txt");
+      const concatList = normalizedPaths
+        .map((path) => `file '${path.replace(/'/g, "'\\''")}'`)
+        .join("\n");
+
+      await client.mutation(api.mediaJobs.markStatus, {
+        secret: config.mediaWorkerSecret,
+        ownerId: job.ownerId,
+        id: job.id,
+        status: "running",
+        stage: "stitching",
+        updatedAt: new Date().toISOString(),
+      });
+      await writeFile(concatListPath, concatList);
+      await runFfmpeg(config, [
+        "-y",
+        "-f",
+        "concat",
+        "-safe",
+        "0",
+        "-i",
+        concatListPath,
+        "-c",
+        "copy",
+        outputPath,
+      ]);
+    }
+
+    await createPoster({ config, inputPath: outputPath, outputPath: posterPath });
+
+    const [videoBody, posterBody] = await Promise.all([
+      readFile(outputPath),
+      readFile(posterPath),
+    ]);
+    const metadata = await readVideoMetadata({ config, inputPath: outputPath });
+    const [videoObject, posterObject] = await Promise.all([
+      uploadR2Object({
+        body: videoBody,
+        client: r2,
+        config,
+        contentType: "video/mp4",
+        key: createVideoClipObjectKey({
+          clipId: input.clipId,
+          kind: "video",
+          ownerId: job.ownerId,
+        }),
+      }),
+      uploadR2Object({
+        body: posterBody,
+        client: r2,
+        config,
+        contentType: "image/jpeg",
+        key: createVideoClipObjectKey({
+          clipId: input.clipId,
+          kind: "poster",
+          ownerId: job.ownerId,
+        }),
+      }),
+    ]);
+    const updatedAt = new Date().toISOString();
+    await client.mutation(api.videoClips.saveFromMediaWorker, {
+      secret: config.mediaWorkerSecret,
+      ownerId: job.ownerId,
+      ...(input.automation
+        ? {
+            automation: {
+              source: "automation",
+              runId: input.automation.automationRunId,
+              taskId: input.automation.automationTaskId,
+              tool: "swapr",
+              automationDate: input.automation.automationDate,
+              sourceSummary: input.sourceSummary,
+            },
+          }
+        : {}),
       id: input.clipId,
       name: input.clipName,
       tags: [],
@@ -792,9 +1140,12 @@ async function processSwaprFinalization({ client, config, job, r2 }) {
       posterObject,
       posterVersion: VIDEO_POSTER_CAPTURE_VERSION,
       mimeType: videoObject.contentType,
-      sourceMimeType: sourceObject.contentType,
+      sourceMimeType: sourceObjects[0]?.contentType ?? "video/mp4",
       size: videoObject.size,
-      originalSize: sourceObject.size,
+      originalSize: sourceObjects.reduce(
+        (totalSize, sourceObject) => totalSize + sourceObject.size,
+        0,
+      ),
       width: metadata.width,
       height: metadata.height,
       aspectRatio: metadata.aspectRatio,
@@ -808,9 +1159,11 @@ async function processSwaprFinalization({ client, config, job, r2 }) {
         source: "swapr",
         sourcePhotoId: input.sourcePhotoId,
         referenceUgcClipId: input.referenceClipId,
-        replicatePredictionId: input.predictionId,
-        replicatePredictionIds: [input.predictionId],
-        sourceSegmentCount: 1,
+        replicatePredictionId: input.segments[0].predictionId,
+        replicatePredictionIds: input.segments.map(
+          (segment) => segment.predictionId,
+        ),
+        sourceSegmentCount: input.segments.length,
         modelId: input.modelId,
         mode: input.mode,
         characterOrientation: input.characterOrientation,
@@ -820,23 +1173,38 @@ async function processSwaprFinalization({ client, config, job, r2 }) {
       createdAt: updatedAt,
       updatedAt,
     });
-    await client.mutation(api.automationTasks.markStatus, {
-      secret: automationSecret,
-      ownerId: job.ownerId,
-      id: input.automationTaskId,
-      status: "completed",
-      stage: "completed",
-      outputAssetId: input.clipId,
-      mediaJobId: job.id,
-      updatedAt,
-    });
-    await client.mutation(api.automationRuns.markStatus, {
-      secret: automationSecret,
-      ownerId: job.ownerId,
-      id: input.automationRunId,
-      status: "completed",
-      updatedAt,
-    });
+    if (input.automation) {
+      await client.mutation(api.automationTasks.markMediaStatus, {
+        secret: config.mediaWorkerSecret,
+        ownerId: job.ownerId,
+        id: input.automation.automationTaskId,
+        status: "completed",
+        stage: "completed",
+        outputAssetId: input.clipId,
+        mediaJobId: job.id,
+        updatedAt,
+      });
+      await client.mutation(api.automationRuns.markMediaStatus, {
+        secret: config.mediaWorkerSecret,
+        ownerId: job.ownerId,
+        id: input.automation.automationRunId,
+        status: "completed",
+        updatedAt,
+      });
+    }
+    if (input.providerJobId) {
+      await client.mutation(api.providerJobs.markMediaStatus, {
+        secret: config.mediaWorkerSecret,
+        ownerId: job.ownerId,
+        id: input.providerJobId,
+        status: "completed",
+        stage: "completed",
+        outputAssetId: input.clipId,
+        mediaJobId: job.id,
+        progress: 1,
+        updatedAt,
+      });
+    }
     await client.mutation(api.mediaJobs.markStatus, {
       secret: config.mediaWorkerSecret,
       ownerId: job.ownerId,
@@ -876,7 +1244,30 @@ function getAutomationMediaJobFailureInput(job) {
   };
 }
 
-async function failAutomationMediaJob({ client, error, job, message, updatedAt }) {
+function getProviderMediaJobFailureInput(job) {
+  if (job.jobType !== "clipr-finalization" && job.jobType !== "swapr-finalization") {
+    return null;
+  }
+
+  const input = JSON.parse(job.inputSnapshotJson);
+
+  if (!input || typeof input !== "object") {
+    return null;
+  }
+
+  return typeof input.providerJobId === "string" && input.providerJobId.trim()
+    ? { providerJobId: input.providerJobId.trim() }
+    : null;
+}
+
+async function failAutomationMediaJob({
+  client,
+  config,
+  error,
+  job,
+  message,
+  updatedAt,
+}) {
   let input = null;
 
   try {
@@ -889,10 +1280,9 @@ async function failAutomationMediaJob({ client, error, job, message, updatedAt }
     return;
   }
 
-  const secret = getRequiredEnv("AUTOMATION_WORKER_SECRET");
   const mutations = [
-    client.mutation(api.automationTasks.markStatus, {
-      secret,
+    client.mutation(api.automationTasks.markMediaStatus, {
+      secret: config.mediaWorkerSecret,
       ownerId: job.ownerId,
       id: input.automationTaskId,
       status: "failed",
@@ -900,8 +1290,8 @@ async function failAutomationMediaJob({ client, error, job, message, updatedAt }
       error: message,
       updatedAt,
     }),
-    client.mutation(api.automationRuns.markStatus, {
-      secret,
+    client.mutation(api.automationRuns.markMediaStatus, {
+      secret: config.mediaWorkerSecret,
       ownerId: job.ownerId,
       id: input.automationRunId,
       status: "failed",
@@ -912,8 +1302,8 @@ async function failAutomationMediaJob({ client, error, job, message, updatedAt }
 
   if (job.jobType === "clipr-finalization" && input.cliprJobId) {
     mutations.push(
-      client.mutation(api.cliprJobs.failFromAutomation, {
-        secret,
+      client.mutation(api.cliprJobs.failFromMediaWorker, {
+        secret: config.mediaWorkerSecret,
         ownerId: job.ownerId,
         id: input.cliprJobId,
         error,
@@ -923,6 +1313,39 @@ async function failAutomationMediaJob({ client, error, job, message, updatedAt }
   }
 
   await Promise.all(mutations.map((mutation) => mutation.catch(() => null)));
+}
+
+async function failProviderMediaJob({
+  client,
+  config,
+  job,
+  message,
+  updatedAt,
+}) {
+  let input = null;
+
+  try {
+    input = getProviderMediaJobFailureInput(job);
+  } catch {
+    return;
+  }
+
+  if (!input) {
+    return;
+  }
+
+  await client
+    .mutation(api.providerJobs.markMediaStatus, {
+      secret: config.mediaWorkerSecret,
+      ownerId: job.ownerId,
+      id: input.providerJobId,
+      status: "failed",
+      stage: "media-finalization-failed",
+      error: message,
+      mediaJobId: job.id,
+      updatedAt,
+    })
+    .catch(() => null);
 }
 
 async function failJob({ client, config, error, job }) {
@@ -942,17 +1365,32 @@ async function failJob({ client, config, error, job }) {
   });
 
   if (!retry) {
-    await failAutomationMediaJob({
-      client,
-      error: message,
-      job,
-      message,
-      updatedAt,
-    });
+    await Promise.all([
+      failAutomationMediaJob({
+        client,
+        config,
+        error: message,
+        job,
+        message,
+        updatedAt,
+      }),
+      failProviderMediaJob({
+        client,
+        config,
+        job,
+        message,
+        updatedAt,
+      }),
+    ]);
   }
 }
 
 async function processJob({ client, config, job, r2 }) {
+  if (job.jobType === "upload-normalization") {
+    await processUploadNormalization({ client, config, job, r2 });
+    return;
+  }
+
   if (job.jobType === "clipr-finalization") {
     await processCliprFinalization({ client, config, job, r2 });
     return;
