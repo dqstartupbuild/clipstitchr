@@ -23,7 +23,7 @@ export function useTextOverlayResize({
   onChange,
 }: UseTextOverlayResizeOptions) {
   return useCallback(
-    (event: ReactPointerEvent<HTMLDivElement>) => {
+    (event: ReactPointerEvent<HTMLElement>) => {
       if (event.button !== 0) {
         return;
       }
@@ -36,6 +36,10 @@ export function useTextOverlayResize({
 
       event.preventDefault();
       event.stopPropagation();
+
+      const resizeTarget = event.currentTarget;
+
+      resizeTarget?.setPointerCapture?.(event.pointerId);
 
       const stageRect = stage.getBoundingClientRect();
       const startPointerX = event.clientX;
@@ -63,13 +67,23 @@ export function useTextOverlayResize({
         );
       };
 
-      const handlePointerUp = () => {
+      const removeListeners = () => {
         window.removeEventListener("pointermove", handlePointerMove);
         window.removeEventListener("pointerup", handlePointerUp);
+        window.removeEventListener("pointercancel", removeListeners);
+      };
+
+      const handlePointerUp = (upEvent: globalThis.PointerEvent) => {
+        if (resizeTarget?.hasPointerCapture?.(upEvent.pointerId)) {
+          resizeTarget.releasePointerCapture(upEvent.pointerId);
+        }
+
+        removeListeners();
       };
 
       window.addEventListener("pointermove", handlePointerMove);
       window.addEventListener("pointerup", handlePointerUp);
+      window.addEventListener("pointercancel", removeListeners);
     },
     [onChange, stageRef, textOverlay, totalDuration],
   );

@@ -9,6 +9,8 @@ import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { getTextOverlayStyle } from "@/lib/clipstitchr/utils/getTextOverlayStyle";
 
+const MIN_DRAG_DISTANCE_PX = 4;
+
 type TextOverlaySnapGuides = {
   vertical: boolean;
   horizontal: boolean;
@@ -45,6 +47,10 @@ export function useTextOverlayDrag({
 
       event.preventDefault();
 
+      const dragTarget = event.currentTarget;
+
+      dragTarget?.setPointerCapture?.(event.pointerId);
+
       const stageRect = stage.getBoundingClientRect();
       const overlayRect = overlayRef.current?.getBoundingClientRect();
       const overlayStyle = getTextOverlayStyle(textOverlay.styleId);
@@ -60,9 +66,17 @@ export function useTextOverlayDrag({
       const startY = textOverlay.y;
 
       const handlePointerMove = (moveEvent: globalThis.PointerEvent) => {
-        let nextX = startX + (moveEvent.clientX - startPointerX) / stageRect.width;
-        let nextY =
-          startY + (moveEvent.clientY - startPointerY) / stageRect.height;
+        const pointerDeltaX = moveEvent.clientX - startPointerX;
+        const pointerDeltaY = moveEvent.clientY - startPointerY;
+
+        if (
+          Math.hypot(pointerDeltaX, pointerDeltaY) < MIN_DRAG_DISTANCE_PX
+        ) {
+          return;
+        }
+
+        let nextX = startX + pointerDeltaX / stageRect.width;
+        let nextY = startY + pointerDeltaY / stageRect.height;
         const isNearVerticalCenter =
           !overlayStyle.fullWidthBand &&
           Math.abs(nextX + overlayWidth / 2 - 0.5) <= snapThresholdX;
@@ -95,14 +109,24 @@ export function useTextOverlayDrag({
         );
       };
 
-      const handlePointerUp = () => {
+      const removeListeners = () => {
         onSnapGuidesChange({ vertical: false, horizontal: false });
         window.removeEventListener("pointermove", handlePointerMove);
         window.removeEventListener("pointerup", handlePointerUp);
+        window.removeEventListener("pointercancel", removeListeners);
+      };
+
+      const handlePointerUp = (upEvent: globalThis.PointerEvent) => {
+        if (dragTarget?.hasPointerCapture?.(upEvent.pointerId)) {
+          dragTarget.releasePointerCapture(upEvent.pointerId);
+        }
+
+        removeListeners();
       };
 
       window.addEventListener("pointermove", handlePointerMove);
       window.addEventListener("pointerup", handlePointerUp);
+      window.addEventListener("pointercancel", removeListeners);
     },
     [
       onChange,
