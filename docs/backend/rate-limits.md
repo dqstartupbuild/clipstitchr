@@ -89,6 +89,16 @@ npx convex dev --once
 - Must be a high-entropy random secret.
 - Must not be prefixed with `NEXT_PUBLIC_`.
 
+Cloud Run worker dispatch variables in Convex:
+
+- `CLOUD_RUN_PROJECT_ID`, `CLOUD_RUN_LOCATION`,
+  `CLOUD_RUN_PROVIDER_WORKER_JOB`, and `CLOUD_RUN_MEDIA_WORKER_JOB` identify
+  the bounded Cloud Run Jobs that drain provider and media queues.
+- `CLOUD_RUN_DISPATCH_CLIENT_EMAIL` and `CLOUD_RUN_DISPATCH_PRIVATE_KEY`
+  authorize Convex internal actions to call the Cloud Run Jobs `:run` API.
+- The dispatch service account should have only the IAM needed to run the two
+  worker jobs. Store the private key only in Convex env, not in the repository.
+
 TikTok Events API variables:
 
 - `TIKTOK_EVENTS_API_ACCESS_TOKEN` enables server-side TikTok Events API
@@ -170,8 +180,8 @@ Optional Replicate model overrides:
 | Clipr job polling | Reserved Clipr polling route and Convex job refreshes | 600/minute/user, burst 150 |
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
 | Automation planner dispatch | `POST /api/automation/plan` and Convex Cron `automationScheduler.planCoreDaily` | Worker-secret authorized only; planners create durable automation runs/tasks and consume automation-specific tool budgets before provider or media work |
-| Provider worker jobs | `npm run provider-worker` with `PROVIDER_WORKER_SECRET`; provider-only mutations such as `providerJobs.claimNextForProvider`, `automationTasks.claimNextForProvider`, `automationTasks.markProviderStatus`, `mediaJobs.create*FromProvider`, and provider `replicateJobs` writes | Provider work is claimed from Convex and no longer dispatched through protected Next.js Preview routes. The worker handles manual Swapr, manual Clipr, manual avatar-photo generation, upload video analysis, automatic Stitchr text, automatic Swapr create/finalize, automatic Clipr text/still/video, automatic avatar-photo generation, and automatic Swipr text draft generation. Manual routes consume their user limits before creating jobs; automation planners consume tool budgets before worker execution. |
-| Media worker jobs | `mediaJobs.createUploadNormalization`, `mediaJobs.createCliprFinalizationFromProvider`, `mediaJobs.createSwaprFinalizationFromProvider`, `mediaJobs.createStitchrDraftFinalizationFromProvider`, existing automation media creators, and `npm run media-worker` | Media jobs are worker-secret controlled; the worker normalizes close-safe video uploads, creates upload posters, saves uploaded clips, creates upload-analysis provider jobs, saves editable Stitchr drafts, finalizes Swapr provider outputs, and finalizes Clipr outputs. Manual asset saves consume normal user-facing limits before job creation; automatic final asset saves consume automatic asset save buckets: 20 saved assets/day/user; global 2,000/day. |
+| Provider worker jobs | `npm run provider-worker` with `PROVIDER_WORKER_SECRET`; provider-only mutations such as `providerJobs.claimNextForProvider`, `automationTasks.claimNextForProvider`, `automationTasks.markProviderStatus`, `mediaJobs.create*FromProvider`, and provider `replicateJobs` writes | Provider work is claimed from Convex and no longer dispatched through protected Next.js Preview routes. Creating a manual `providerJobs` record or automation task schedules a coalesced Convex dispatch action that runs the Cloud Run provider job immediately; the 10-minute scheduler remains as recovery. The worker handles manual Swapr, manual Clipr, manual avatar-photo generation, upload video analysis, automatic Stitchr text, automatic Swapr create/finalize, automatic Clipr text/still/video, automatic avatar-photo generation, and automatic Swipr text draft generation. Manual routes consume their user limits before creating jobs; automation planners consume tool budgets before worker execution. |
+| Media worker jobs | `mediaJobs.createUploadNormalization`, `mediaJobs.createCliprFinalizationFromProvider`, `mediaJobs.createSwaprFinalizationFromProvider`, `mediaJobs.createStitchrDraftFinalizationFromProvider`, existing automation media creators, and `npm run media-worker` | Media jobs are worker-secret controlled. Creating a media job schedules a coalesced Convex dispatch action that runs the Cloud Run media job immediately; the scheduler remains as recovery. The worker normalizes close-safe video uploads, creates upload posters, saves uploaded clips, creates upload-analysis provider jobs, saves editable Stitchr drafts, finalizes Swapr provider outputs, and finalizes Clipr outputs. Manual asset saves consume normal user-facing limits before job creation; automatic final asset saves consume automatic asset save buckets: 20 saved assets/day/user; global 2,000/day. |
 | Automatic Stitchr generation | Worker-only automation planner before provider work; provider worker generates Stitchr text overlay and creates the media worker job | 3 Stitchr outputs/day/user; global 300/day |
 | Automatic Swapr generation | Worker-only automation planner before provider work; provider worker claims one queued Swapr task before creating a Replicate prediction and later claims provider-created Swapr tasks before creating a media finalization job | 1 Swapr output/day/user; global 100/day |
 | Automatic Clipr generation | Worker-only automation planner before provider work; provider worker runs script, avatar-image, and avatar-video generation without consuming manual Clipr buckets | 1 Clipr output/day/user; global 100/day |

@@ -87,6 +87,8 @@ import type * as validators_videoPlaybackRate from "../validators/videoPlaybackR
 import type * as validators_videoTrimRange from "../validators/videoTrimRange.js";
 import type * as videoClips from "../videoClips.js";
 import type * as waitlist from "../waitlist.js";
+import type * as workerDispatch from "../workerDispatch.js";
+import type * as workerLaunch from "../workerLaunch.js";
 
 import type {
   ApiFromModules,
@@ -174,6 +176,8 @@ declare const fullApi: ApiFromModules<{
   "validators/videoTrimRange": typeof validators_videoTrimRange;
   videoClips: typeof videoClips;
   waitlist: typeof waitlist;
+  workerDispatch: typeof workerDispatch;
+  workerLaunch: typeof workerLaunch;
 }>;
 
 /**

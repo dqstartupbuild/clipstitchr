@@ -7,6 +7,7 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { mediaJobStatusValidator } from "./validators/mediaJobStatus";
 import { mediaJobTypeValidator } from "./validators/mediaJobType";
+import { requestWorkerLaunch } from "./workerLaunch";
 
 const mediaMaxJobAttempts = 3;
 
@@ -95,6 +96,12 @@ export const createUploadNormalization = mutation({
       throw new Error("Unable to create media job.");
     }
 
+    await requestWorkerLaunch({
+      ctx,
+      now: createdAt,
+      worker: "media",
+    });
+
     return mediaJob;
   },
 });
@@ -143,6 +150,12 @@ export const createCliprFinalizationFromAutomation = mutation({
     if (!mediaJob) {
       throw new Error("Unable to create media job.");
     }
+
+    await requestWorkerLaunch({
+      ctx,
+      now: createdAt,
+      worker: "media",
+    });
 
     return mediaJob;
   },
@@ -193,6 +206,12 @@ export const createCliprFinalizationFromProvider = mutation({
       throw new Error("Unable to create media job.");
     }
 
+    await requestWorkerLaunch({
+      ctx,
+      now: createdAt,
+      worker: "media",
+    });
+
     return mediaJob;
   },
 });
@@ -241,6 +260,12 @@ export const createSwaprFinalizationFromAutomation = mutation({
     if (!mediaJob) {
       throw new Error("Unable to create media job.");
     }
+
+    await requestWorkerLaunch({
+      ctx,
+      now: createdAt,
+      worker: "media",
+    });
 
     return mediaJob;
   },
@@ -291,6 +316,12 @@ export const createSwaprFinalizationFromProvider = mutation({
       throw new Error("Unable to create media job.");
     }
 
+    await requestWorkerLaunch({
+      ctx,
+      now: createdAt,
+      worker: "media",
+    });
+
     return mediaJob;
   },
 });
@@ -339,6 +370,12 @@ export const createStitchrDraftFinalizationFromProvider = mutation({
     if (!mediaJob) {
       throw new Error("Unable to create media job.");
     }
+
+    await requestWorkerLaunch({
+      ctx,
+      now: createdAt,
+      worker: "media",
+    });
 
     return mediaJob;
   },

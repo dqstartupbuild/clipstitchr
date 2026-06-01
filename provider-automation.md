@@ -130,11 +130,21 @@ The dashboard now displays active media/provider jobs, so a user who returns
 while work is still running sees that background AI work is queued or running.
 After completion, the final asset appears in the normal Library/Avatar views.
 
+Manual job creation also requests an immediate Cloud Run worker execution
+through a Convex internal dispatcher. The 10-minute scheduler remains as
+recovery, but user-clicked Swapr, Clipr, avatar photo generation, upload
+normalization, and upload analysis should not wait for the schedule tick.
+
 Durability starts after the source upload and job creation finish. If the user
 closes the browser before a brand-new local video or source image finishes
 uploading to R2, the worker cannot recover that local file. Once the R2 upload
 and Convex job creation have completed, the user can navigate away or close the
 browser.
+
+Swapr temporary reference segments must stay in R2 after a queued provider job
+is created. The browser may clean them up only if queue creation fails; deleting
+them immediately after a successful queue leaves the provider worker with stale
+R2 keys and causes Replicate input fetches to fail with 404.
 
 ## Cloud Run Shape
 
@@ -142,8 +152,8 @@ Deployed Preview/dev worker jobs:
 
 | Job | Schedule | Secret boundary |
 | --- | --- | --- |
-| `clipstitchr-provider-worker` | Cloud Scheduler every 10 minutes | `PROVIDER_WORKER_SECRET` plus Replicate/R2 secrets |
-| `clipstitchr-media-worker` | Cloud Scheduler every 10 minutes | `MEDIA_WORKER_SECRET` plus R2 secrets |
+| `clipstitchr-provider-worker` | Convex immediate dispatch plus Cloud Scheduler every 10 minutes | `PROVIDER_WORKER_SECRET` plus Replicate/R2 secrets |
+| `clipstitchr-media-worker` | Convex immediate dispatch plus Cloud Scheduler every 10 minutes | `MEDIA_WORKER_SECRET` plus R2 secrets |
 
 The provider secret was generated with `openssl rand -base64 32`, written to
 Convex and Google Secret Manager without printing it, and granted only to the
@@ -168,10 +178,21 @@ R2_ACCESS_KEY_ID=...
 R2_SECRET_ACCESS_KEY=...
 ```
 
+Required Convex dispatch environment:
+
+```bash
+CLOUD_RUN_PROJECT_ID=clipstitchr
+CLOUD_RUN_LOCATION=us-central1
+CLOUD_RUN_PROVIDER_WORKER_JOB=clipstitchr-provider-worker
+CLOUD_RUN_MEDIA_WORKER_JOB=clipstitchr-media-worker
+CLOUD_RUN_DISPATCH_CLIENT_EMAIL=...
+CLOUD_RUN_DISPATCH_PRIVATE_KEY=...
+```
+
 Operational notes:
 
-- Trigger on a short schedule or from a coalesced dispatcher; avoid launching
-  one Cloud Run execution per task.
+- Trigger immediately from the coalesced Convex dispatcher; keep the short
+  schedule only as a recovery sweep.
 - Keep max jobs bounded so one execution cannot monopolize provider spend.
 - Use Secret Manager for secrets and IAM for deploy/run access.
 - Logs should include task IDs and tool names, never secret values.
