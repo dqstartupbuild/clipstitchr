@@ -281,6 +281,173 @@ gcloud scheduler jobs create http clipstitchr-media-worker-every-10m \
 Start with every 10 minutes. Reduce the interval only after benchmarking FFmpeg
 runtime and provider-output volume.
 
+## Production Cutover From Preview
+
+Use this when the preview branch and development Convex deployment are working
+and you want the automation stack to run against production instead.
+
+Important deployment differences:
+
+- `npx convex env` defaults to the dev deployment. Use `--prod` for production
+  Convex environment variables.
+- `npx convex deploy` defaults to the production deployment unless
+  `CONVEX_DEPLOY_KEY` points at a preview deployment.
+- `AUTOMATION_NEXT_BASE_URL` belongs in Convex and should be the production
+  Next.js app origin, for example `https://clipstitchr.com`, with no path.
+- `NEXT_PUBLIC_CONVEX_URL` belongs in Vercel and Cloud Run. For production it
+  must be the production Convex URL, not the development URL.
+- The Cloud Run Job currently points at one Convex deployment at a time. If you
+  still need the preview worker running, create separate preview and production
+  Cloud Run Jobs, Scheduler jobs, and Secret Manager secrets instead of
+  repointing the existing job.
+
+1. Pause the Cloud Scheduler job before changing the worker target:
+
+```bash
+PROJECT_ID=clipstitchr
+REGION=us-central1
+SCHEDULER_REGION=us-central1
+
+gcloud config set project "$PROJECT_ID"
+gcloud scheduler jobs pause clipstitchr-media-worker-every-10m \
+  --location "$SCHEDULER_REGION"
+```
+
+2. Set production Convex environment variables. Use fresh production secret
+   values unless you intentionally want to share secrets with preview:
+
+```bash
+cd web
+
+AUTOMATION_WORKER_SECRET="..."
+MEDIA_WORKER_SECRET="..."
+PRODUCTION_APP_ORIGIN="https://clipstitchr.com"
+
+npx convex env set --prod AUTOMATION_WORKER_SECRET "$AUTOMATION_WORKER_SECRET"
+npx convex env set --prod MEDIA_WORKER_SECRET "$MEDIA_WORKER_SECRET"
+npx convex env set --prod AUTOMATION_NEXT_BASE_URL "$PRODUCTION_APP_ORIGIN"
+npx convex env set --prod AUTOMATION_GLOBAL_WINDOW_START_UTC "09:00"
+npx convex env set --prod AUTOMATION_GLOBAL_WINDOW_END_UTC "13:00"
+```
+
+3. Deploy Convex production:
+
+```bash
+cd web
+npx convex deploy
+```
+
+Confirm the production Convex dashboard shows these cron jobs:
+
+- `plan core daily automation`
+- `dispatch core provider automation`
+
+4. Set Vercel production environment variables and deploy/promote the
+   production Next.js app. Production Vercel must use the production Convex URL:
+
+```bash
+NEXT_PUBLIC_CONVEX_URL=https://your-production-convex-deployment.convex.cloud
+NEXT_PUBLIC_SITE_URL=https://clipstitchr.com
+AUTOMATION_WORKER_SECRET=...
+RATE_LIMIT_API_SECRET=...
+REPLICATE_API_TOKEN=...
+R2_ACCOUNT_ID=...
+R2_BUCKET_NAME=...
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+```
+
+The `AUTOMATION_WORKER_SECRET` value in Vercel production must exactly match
+the production Convex value from step 2.
+
+5. Update the Cloud Run worker secrets to production values. If the Secret
+   Manager entries already exist, this adds new secret versions:
+
+```bash
+MEDIA_WORKER_SECRET="..."
+AUTOMATION_WORKER_SECRET="..."
+NEXT_PUBLIC_CONVEX_URL="https://your-production-convex-deployment.convex.cloud"
+R2_ACCOUNT_ID="..."
+R2_BUCKET_NAME="..."
+R2_ACCESS_KEY_ID="..."
+R2_SECRET_ACCESS_KEY="..."
+REPLICATE_API_TOKEN="..."
+
+create_or_update_secret() {
+  local name="$1"
+  local value="$2"
+
+  if gcloud secrets describe "$name" >/dev/null 2>&1; then
+    printf "%s" "$value" | gcloud secrets versions add "$name" --data-file=-
+  else
+    printf "%s" "$value" | gcloud secrets create "$name" \
+      --replication-policy=automatic \
+      --data-file=-
+  fi
+}
+
+create_or_update_secret clipstitchr-media-worker-secret "$MEDIA_WORKER_SECRET"
+create_or_update_secret clipstitchr-automation-worker-secret "$AUTOMATION_WORKER_SECRET"
+create_or_update_secret clipstitchr-r2-account-id "$R2_ACCOUNT_ID"
+create_or_update_secret clipstitchr-r2-bucket-name "$R2_BUCKET_NAME"
+create_or_update_secret clipstitchr-r2-access-key-id "$R2_ACCESS_KEY_ID"
+create_or_update_secret clipstitchr-r2-secret-access-key "$R2_SECRET_ACCESS_KEY"
+create_or_update_secret clipstitchr-replicate-api-token "$REPLICATE_API_TOKEN"
+```
+
+6. Repoint the Cloud Run Job to production Convex while keeping the Secret
+   Manager references:
+
+```bash
+gcloud run jobs deploy clipstitchr-media-worker \
+  --image "$REGION-docker.pkg.dev/$PROJECT_ID/clipstitchr/media-worker:latest" \
+  --region "$REGION" \
+  --tasks 1 \
+  --max-retries 1 \
+  --cpu 2 \
+  --memory 4Gi \
+  --task-timeout 30m \
+  --set-env-vars NEXT_PUBLIC_CONVEX_URL="$NEXT_PUBLIC_CONVEX_URL" \
+  --set-secrets MEDIA_WORKER_SECRET=clipstitchr-media-worker-secret:latest,AUTOMATION_WORKER_SECRET=clipstitchr-automation-worker-secret:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest
+```
+
+7. Smoke-test production worker access:
+
+```bash
+gcloud run jobs execute clipstitchr-media-worker \
+  --region "$REGION" \
+  --args="--check"
+
+gcloud run jobs execute clipstitchr-media-worker \
+  --region "$REGION" \
+  --args="--once,--max-jobs=3"
+```
+
+The second command should complete successfully. If no production `mediaJobs`
+are queued, it should log `Media worker processed 0 job(s).`
+
+8. Resume the Scheduler after the production worker succeeds:
+
+```bash
+gcloud scheduler jobs resume clipstitchr-media-worker-every-10m \
+  --location "$SCHEDULER_REGION"
+```
+
+9. Verify production end-to-end:
+
+```bash
+cd web
+npx convex logs --prod --history 200 --success
+```
+
+In the production Convex dashboard, confirm:
+
+- `automationPreferences` has the test user enabled.
+- `automationRuns` and `automationTasks` are created during the global UTC
+  automation window.
+- `mediaJobs` are claimed and completed by the Cloud Run worker.
+- Cloud Run executions continue to succeed after Scheduler resumes.
+
 ## Operational Checks
 
 Before enabling users broadly:
