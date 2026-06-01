@@ -5,7 +5,7 @@ import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
-import { isSwaprAutomationEnabled } from "../lib/clipstitchr/constants/isSwaprAutomationEnabled";
+import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
@@ -53,7 +53,7 @@ export const planDaily = mutation({
       return { runId, status: run.status, taskIds: [] };
     }
 
-    if (!isSwaprAutomationEnabled) {
+    if (!getIsAutomationToolEnabled("swapr")) {
       await markAutomationRunSkipped(
         ctx,
         run._id,

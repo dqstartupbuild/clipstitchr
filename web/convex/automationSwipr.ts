@@ -5,6 +5,7 @@ import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
+import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 export const planDaily = mutation({
@@ -41,6 +42,16 @@ export const planDaily = mutation({
 
     if (run.status !== "queued") {
       return { runId, status: run.status, taskIds: [] };
+    }
+
+    if (!getIsAutomationToolEnabled("swipr")) {
+      await markAutomationRunSkipped(
+        ctx,
+        run._id,
+        "Swipr automation is disabled by the code flag.",
+        now,
+      );
+      return { runId, status: "skipped", taskIds: [] };
     }
 
     if (!preferences?.enabled || !preferences.enabledTools.includes("swipr")) {

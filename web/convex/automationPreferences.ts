@@ -1,16 +1,14 @@
 import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
-import { isSwaprAutomationEnabled } from "../lib/clipstitchr/constants/isSwaprAutomationEnabled";
+import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { rateLimiter } from "./rateLimiter";
 import { automationSelectionModeValidator } from "./validators/automationSelectionMode";
 import { automationToolValidator } from "./validators/automationTool";
 import type { AutomationTool } from "../lib/clipstitchr/types/AutomationTool";
 
 function filterEnabledAutomationTools(tools: AutomationTool[]) {
-  return Array.from(new Set(tools)).filter(
-    (tool) => tool !== "swapr" || isSwaprAutomationEnabled,
-  );
+  return Array.from(new Set(tools)).filter(getIsAutomationToolEnabled);
 }
 
 export const get = query({

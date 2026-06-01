@@ -6,6 +6,7 @@ import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
 import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
+import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 export const planDaily = mutation({
@@ -29,6 +30,13 @@ export const planDaily = mutation({
       .query("automationPreferences")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
       .unique();
+
+    if (!getIsAutomationToolEnabled("avatar-photo")) {
+      return {
+        status: "skipped",
+        taskIds: [],
+      };
+    }
 
     if (!preferences?.enabled || !preferences.enabledTools.includes("avatar-photo")) {
       return {

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { isSwaprAutomationEnabled } from "../lib/clipstitchr/constants/isSwaprAutomationEnabled";
+import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { query } from "./_generated/server";
 
@@ -17,9 +17,7 @@ export const listEnabled = query({
     const enabledPreferences = preferences
       .filter((preference) => preference.enabled)
       .filter((preference) =>
-        preference.enabledTools.some(
-          (tool) => tool !== "swapr" || isSwaprAutomationEnabled,
-        ),
+        preference.enabledTools.some(getIsAutomationToolEnabled),
       )
       .filter((preference) =>
         cursorOwnerId ? preference.ownerId > cursorOwnerId : true,

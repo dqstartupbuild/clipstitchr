@@ -94,22 +94,30 @@ Next.js routes has been removed.
 
 ## Automation Feature Flags
 
-Swapr automation has a code-level kill switch:
+Each automation tool has a code-level kill switch:
 
 ```ts
-// web/lib/clipstitchr/constants/isSwaprAutomationEnabled.ts
-export const isSwaprAutomationEnabled = true;
+// web/lib/clipstitchr/constants/automationToolFeatureFlags.ts
+export const automationToolFeatureFlags = {
+  stitchr: true,
+  swapr: false,
+  clipr: true,
+  "avatar-photo": true,
+  swipr: true,
+};
 ```
 
-Set it to `false` to disable only automatic Swapr generation. Manual Swapr
-generation is not affected. When disabled:
+Set any tool to `false` to disable only that automatic generation path. Manual
+tool usage is not affected. When a tool is disabled:
 
-- Settings no longer renders the Swapr automation checkbox.
-- Client and Convex preference saves remove `swapr` from `enabledTools`.
-- Existing preferences that still contain `swapr` are filtered when read.
-- The planner ignores users whose only enabled automation tool is Swapr.
-- Direct calls to `automationSwapr.planDaily` create a skipped run instead of
-  provider work.
+- Settings no longer renders that automation checkbox.
+- Client and Convex preference saves remove the tool from `enabledTools`.
+- Existing preferences that still contain the tool are filtered when read.
+- The planner ignores users whose only enabled automation tools are disabled.
+- Tool-specific planner calls skip instead of creating provider or media work.
+
+`web/lib/clipstitchr/constants/isSwaprAutomationEnabled.ts` remains as a small
+compatibility export for Swapr, but the flag map above is the source of truth.
 
 ## Default Avatar Automation
 
