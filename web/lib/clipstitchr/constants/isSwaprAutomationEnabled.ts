@@ -1,1 +1,1 @@
-export const isSwaprAutomationEnabled = true;
+export const isSwaprAutomationEnabled = false;
