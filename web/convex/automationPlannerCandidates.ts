@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { isSwaprAutomationEnabled } from "../lib/clipstitchr/constants/isSwaprAutomationEnabled";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { query } from "./_generated/server";
 
@@ -15,6 +16,11 @@ export const listEnabled = query({
     const preferences = await ctx.db.query("automationPreferences").collect();
     const enabledPreferences = preferences
       .filter((preference) => preference.enabled)
+      .filter((preference) =>
+        preference.enabledTools.some(
+          (tool) => tool !== "swapr" || isSwaprAutomationEnabled,
+        ),
+      )
       .filter((preference) =>
         cursorOwnerId ? preference.ownerId > cursorOwnerId : true,
       )

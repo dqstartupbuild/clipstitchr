@@ -5,6 +5,8 @@ import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
+import { isSwaprAutomationEnabled } from "../lib/clipstitchr/constants/isSwaprAutomationEnabled";
+import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 const AUTOMATION_SWAPR_CHARACTER_ORIENTATION = "image";
@@ -51,6 +53,16 @@ export const planDaily = mutation({
       return { runId, status: run.status, taskIds: [] };
     }
 
+    if (!isSwaprAutomationEnabled) {
+      await markAutomationRunSkipped(
+        ctx,
+        run._id,
+        "Swapr automation is disabled by the code flag.",
+        now,
+      );
+      return { runId, status: "skipped", taskIds: [] };
+    }
+
     if (!preferences?.enabled || !preferences.enabledTools.includes("swapr")) {
       await markAutomationRunSkipped(
         ctx,
@@ -61,7 +73,17 @@ export const planDaily = mutation({
       return { runId, status: "skipped", taskIds: [] };
     }
 
-    const selectedAvatarIds = new Set(preferences.selectedAvatarIds);
+    const defaultAvatar = await getDefaultAvatarForOwner(ctx, ownerId);
+    if (!defaultAvatar) {
+      await markAutomationRunSkipped(
+        ctx,
+        run._id,
+        "Swapr automation needs a default avatar.",
+        now,
+      );
+      return { runId, status: "skipped", taskIds: [] };
+    }
+
     const photos = await ctx.db
       .query("photoAssets")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
@@ -69,10 +91,8 @@ export const planDaily = mutation({
       .collect();
     const sourcePhoto = photos.find(
       (photo) =>
-        photo.photoObject.contentType.startsWith("image/") &&
-        (preferences.avatarSelectionMode === "selected"
-          ? photo.avatarId && selectedAvatarIds.has(photo.avatarId)
-          : Boolean(photo.avatarId)),
+        photo.avatarId === defaultAvatar.id &&
+        photo.photoObject.contentType.startsWith("image/"),
     );
     const clips = await ctx.db
       .query("videoClips")

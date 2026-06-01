@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Edit3, Trash2, X } from "lucide-react";
+import { Check, Edit3, Star, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { CliprVoicePreviewButton } from "@/app/_components/clipr/CliprVoicePreviewButton";
 import { IconButton } from "@/app/_components/ui/IconButton";
@@ -13,6 +13,7 @@ import { getCliprVoice } from "@/lib/clipstitchr/utils/getCliprVoice";
 
 type SelectedAvatarActionsProps = {
   avatar?: Avatar;
+  isDefaultAvatar: boolean;
   isSaving: boolean;
   photoCount: number;
   onDelete: (avatar: Avatar) => Promise<void>;
@@ -22,16 +23,19 @@ type SelectedAvatarActionsProps = {
     wardrobeStyle: AvatarWardrobeStyle,
   ) => Promise<void>;
   onVoiceChange: (avatar: Avatar, cliprVoiceId: string) => Promise<void>;
+  onSetDefault: (avatar: Avatar) => Promise<void>;
 };
 
 export function SelectedAvatarActions({
   avatar,
+  isDefaultAvatar,
   isSaving,
   photoCount,
   onDelete,
   onRename,
   onWardrobeStyleChange,
   onVoiceChange,
+  onSetDefault,
 }: SelectedAvatarActionsProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -39,6 +43,7 @@ export function SelectedAvatarActions({
   const [isWardrobeSaving, setIsWardrobeSaving] = useState(false);
   const [isVoiceSaving, setIsVoiceSaving] = useState(false);
   const [name, setName] = useState("");
+  const [isDefaultSaving, setIsDefaultSaving] = useState(false);
 
   if (!avatar) {
     return null;
@@ -51,7 +56,8 @@ export function SelectedAvatarActions({
     !isSaving &&
     !isRenameSaving &&
     !isWardrobeSaving &&
-    !isVoiceSaving;
+    !isVoiceSaving &&
+    !isDefaultSaving;
   const photoLabel = photoCount === 1 ? "1 photo" : `${photoCount} photos`;
   const voice = getCliprVoice(avatar.cliprVoiceId);
   const isDisabled =
@@ -59,7 +65,8 @@ export function SelectedAvatarActions({
     isDeleting ||
     isRenameSaving ||
     isWardrobeSaving ||
-    isVoiceSaving;
+    isVoiceSaving ||
+    isDefaultSaving;
 
   const handleDelete = async () => {
     const didConfirm = window.confirm(
@@ -214,6 +221,34 @@ export function SelectedAvatarActions({
         variant="danger"
         icon={<Trash2 aria-hidden className="h-4 w-4" />}
         onClick={() => void handleDelete()}
+      />
+      <IconButton
+        type="button"
+        label={
+          isDefaultAvatar
+            ? `${avatar.name} is the default avatar`
+            : `Set ${avatar.name} as default avatar`
+        }
+        className="h-10 w-10"
+        disabled={isDisabled || isDefaultAvatar}
+        icon={
+          <Star
+            aria-hidden
+            className="h-4 w-4"
+            fill={isDefaultAvatar ? "currentColor" : "none"}
+          />
+        }
+        onClick={async () => {
+          setIsDefaultSaving(true);
+
+          try {
+            await onSetDefault(avatar);
+          } catch {
+            // The parent hook surfaces the error.
+          } finally {
+            setIsDefaultSaving(false);
+          }
+        }}
       />
     </div>
   );

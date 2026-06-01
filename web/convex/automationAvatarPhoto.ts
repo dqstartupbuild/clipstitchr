@@ -5,6 +5,7 @@ import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
+import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 export const planDaily = mutation({
@@ -36,15 +37,8 @@ export const planDaily = mutation({
       };
     }
 
-    const avatars = await ctx.db
-      .query("avatars")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .collect();
-    const selectedAvatarIds = new Set(preferences.selectedAvatarIds);
-    const eligibleAvatars =
-      preferences.avatarSelectionMode === "selected"
-        ? avatars.filter((avatar) => selectedAvatarIds.has(avatar.id))
-        : avatars;
+    const defaultAvatar = await getDefaultAvatarForOwner(ctx, ownerId);
+    const eligibleAvatars = defaultAvatar ? [defaultAvatar] : [];
 
     if (eligibleAvatars.length === 0) {
       return {

@@ -307,7 +307,7 @@ Daily output: 1 Swapr video draft.
 
 Source requirements:
 
-- At least one eligible avatar photo.
+- A selected default avatar with at least one eligible avatar photo.
 - At least one eligible UGC-compatible or Demo reference video, depending on the
   configured Swapr mode.
 - Required consent and ownership metadata must be present.
@@ -334,8 +334,8 @@ Daily output: 1 Clipr generation draft.
 Source requirements:
 
 - One eligible product with enrichment metadata.
-- One eligible avatar with at least one usable avatar photo.
-- A default or selected voice.
+- Selected default avatar with at least one usable avatar photo.
+- Default avatar voice, falling back to the automation default voice.
 - User automation preferences enable Clipr.
 
 Execution:
@@ -352,17 +352,18 @@ Execution:
 
 ## Avatar Photo Automation
 
-Daily output: 1 generated avatar photo per avatar.
+Daily output: 1 generated avatar photo for the user's default avatar.
 
 Source requirements:
 
-- Avatar is eligible and selected by automation preferences.
-- Avatar has at least one existing source photo.
+- User has selected a default avatar.
+- Default avatar has at least one existing source photo.
 - Consent requirements are satisfied.
 
 Execution:
 
-- Create one avatar-photo automation run per avatar per automation date.
+- Create one avatar-photo automation run for the default avatar per automation
+  date.
 - Consume automatic avatar-photo budget for that avatar before provider work.
 - Generate one prompt variant from the avatar description, wardrobe style, and
   recent generated-photo history.
@@ -371,9 +372,8 @@ Execution:
 - Save a `photoAssets` record linked to the avatar.
 - Mark the run complete only after the photo asset exists.
 
-The avatar-photo automation limit is per avatar, not just per user. A user with
-three eligible avatars can receive up to three automatic avatar photos per day,
-one for each avatar, subject to global automation caps.
+The avatar-photo automation limit remains keyed per avatar for spend controls,
+but the planner only queues the default avatar.
 
 ## Swipr Automation
 

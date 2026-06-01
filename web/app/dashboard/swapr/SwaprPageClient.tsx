@@ -39,7 +39,9 @@ export function SwaprPageClient() {
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | undefined>(
     () => getSearchParamValue("photoId"),
   );
-  const [photoAvatarFilterId, setPhotoAvatarFilterId] = useState("all");
+  const [photoAvatarFilterId, setPhotoAvatarFilterId] = useState<
+    string | undefined
+  >();
   const [selectedClipId, setSelectedClipId] = useState<string | undefined>(
     () => getSearchParamValue("clipId") ?? getSearchParamValue("stitchId"),
   );
@@ -67,18 +69,39 @@ export function SwaprPageClient() {
   const hasPhotos = photoLibrary.photos.length > 0;
   const hasSourceClips = sourceClips.length > 0;
   const hasSwaprInputs = hasPhotos && hasSourceClips;
+  const defaultAvatar = useMemo(
+    () =>
+      photoLibrary.defaultAvatarId
+        ? photoLibrary.avatars.find(
+            (avatar) => avatar.id === photoLibrary.defaultAvatarId,
+          )
+        : undefined,
+    [photoLibrary.avatars, photoLibrary.defaultAvatarId],
+  );
+  const defaultPhoto = useMemo(
+    () =>
+      defaultAvatar
+        ? photoLibrary.photos.find((photo) => photo.avatarId === defaultAvatar.id)
+        : undefined,
+    [defaultAvatar, photoLibrary.photos],
+  );
+  const activePhotoAvatarFilterId =
+    photoAvatarFilterId ?? defaultAvatar?.id ?? "all";
+  const activeSelectedPhotoId =
+    selectedPhotoId ??
+    (photoAvatarFilterId === undefined ? defaultPhoto?.id : undefined);
   const visiblePhotos = useMemo(
     () =>
       photoLibrary.photos.filter(
         (photo) =>
-          photoAvatarFilterId === "all" ||
-          photo.avatarId === photoAvatarFilterId,
+          activePhotoAvatarFilterId === "all" ||
+          photo.avatarId === activePhotoAvatarFilterId,
       ),
-    [photoAvatarFilterId, photoLibrary.photos],
+    [activePhotoAvatarFilterId, photoLibrary.photos],
   );
   const selectedPhoto = useMemo(
-    () => photoLibrary.photos.find((photo) => photo.id === selectedPhotoId),
-    [photoLibrary.photos, selectedPhotoId],
+    () => photoLibrary.photos.find((photo) => photo.id === activeSelectedPhotoId),
+    [activeSelectedPhotoId, photoLibrary.photos],
   );
   const selectedClip = useMemo(
     () => sourceClips.find((clip) => clip.id === selectedClipId),
@@ -302,7 +325,7 @@ export function SwaprPageClient() {
                   <AvatarFilterSelect
                     avatars={photoLibrary.avatars}
                     label="Avatar"
-                    value={photoAvatarFilterId}
+                    value={activePhotoAvatarFilterId}
                     onChange={setPhotoAvatarFilterId}
                   />
                 </div>
@@ -310,7 +333,7 @@ export function SwaprPageClient() {
                   <SwaprPhotoSelector
                     avatars={photoLibrary.avatars}
                     photos={visiblePhotos}
-                    selectedPhotoId={selectedPhotoId}
+                    selectedPhotoId={activeSelectedPhotoId}
                     onSelect={selectPhoto}
                   />
                   <SwaprSourceClipSelector

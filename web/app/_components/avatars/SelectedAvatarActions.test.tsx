@@ -66,9 +66,11 @@ function createAvatar(): Avatar {
 function createProps(overrides: Partial<Parameters<typeof SelectedAvatarActions>[0]> = {}) {
   return {
     avatar: createAvatar(),
+    isDefaultAvatar: false,
     isSaving: false,
     onDelete: vi.fn(),
     onRename: vi.fn(),
+    onSetDefault: vi.fn(),
     onVoiceChange: vi.fn(),
     onWardrobeStyleChange: vi.fn(),
     photoCount: 2,
@@ -100,9 +102,11 @@ describe("SelectedAvatarActions", () => {
       renderToStaticMarkup(
         <SelectedAvatarActions
           isSaving={false}
+          isDefaultAvatar={false}
           photoCount={0}
           onDelete={vi.fn()}
           onRename={vi.fn()}
+          onSetDefault={vi.fn()}
           onVoiceChange={vi.fn()}
           onWardrobeStyleChange={vi.fn()}
         />,
@@ -114,10 +118,12 @@ describe("SelectedAvatarActions", () => {
     const markup = renderToStaticMarkup(
       <SelectedAvatarActions
         avatar={createAvatar()}
+        isDefaultAvatar={false}
         isSaving={false}
         photoCount={2}
         onDelete={vi.fn()}
         onRename={vi.fn()}
+        onSetDefault={vi.fn()}
         onVoiceChange={vi.fn()}
         onWardrobeStyleChange={vi.fn()}
       />,
@@ -128,16 +134,19 @@ describe("SelectedAvatarActions", () => {
     expect(markup).toContain("VoicePreview:");
     expect(markup).toContain("IconButton:Rename Nova:false");
     expect(markup).toContain("IconButton:Delete Nova:false");
+    expect(markup).toContain("IconButton:Set Nova as default avatar:false");
   });
 
   it("disables avatar controls while saving", () => {
     const markup = renderToStaticMarkup(
       <SelectedAvatarActions
         avatar={createAvatar()}
+        isDefaultAvatar={false}
         isSaving
         photoCount={1}
         onDelete={vi.fn()}
         onRename={vi.fn()}
+        onSetDefault={vi.fn()}
         onVoiceChange={vi.fn()}
         onWardrobeStyleChange={vi.fn()}
       />,
@@ -145,6 +154,7 @@ describe("SelectedAvatarActions", () => {
 
     expect(markup).toContain("SelectInput:Outfits:female:true");
     expect(markup).toContain("IconButton:Delete Nova:true");
+    expect(markup).toContain("IconButton:Set Nova as default avatar:true");
   });
 
   it("handles wardrobe, voice, rename, and delete callbacks", async () => {
@@ -168,6 +178,9 @@ describe("SelectedAvatarActions", () => {
     const deleteButton = children[4] as React.ReactElement<{
       onClick: () => void;
     }>;
+    const defaultButton = children[5] as React.ReactElement<{
+      onClick: () => Promise<void>;
+    }>;
 
     await outfitSelect.props.onChange(createSelectChangeEvent("male"));
     await voiceSelect.props.onChange(createSelectChangeEvent("puck"));
@@ -178,6 +191,7 @@ describe("SelectedAvatarActions", () => {
     });
     deleteButton.props.onClick();
     await Promise.resolve();
+    await defaultButton.props.onClick();
 
     vi.mocked(window.confirm).mockReturnValue(true);
     (props.onDelete as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
@@ -192,6 +206,7 @@ describe("SelectedAvatarActions", () => {
     );
     expect(props.onVoiceChange).toHaveBeenCalledWith(props.avatar, "puck");
     expect(props.onDelete).toHaveBeenCalledWith(props.avatar);
+    expect(props.onSetDefault).toHaveBeenCalledWith(props.avatar);
     expect(reactMocks.stateSetters[5]).toHaveBeenCalledWith("Nova");
     expect(reactMocks.stateSetters[0]).toHaveBeenCalledWith(true);
 
@@ -219,6 +234,24 @@ describe("SelectedAvatarActions", () => {
 
     expect(props.onWardrobeStyleChange).not.toHaveBeenCalled();
     expect(props.onVoiceChange).not.toHaveBeenCalled();
+  });
+
+  it("disables the default avatar action for the current default", () => {
+    const markup = renderToStaticMarkup(
+      <SelectedAvatarActions
+        avatar={createAvatar()}
+        isDefaultAvatar
+        isSaving={false}
+        photoCount={2}
+        onDelete={vi.fn()}
+        onRename={vi.fn()}
+        onSetDefault={vi.fn()}
+        onVoiceChange={vi.fn()}
+        onWardrobeStyleChange={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain("IconButton:Nova is the default avatar:true");
   });
 
   it("handles rename form submission, cancellation, and failures", async () => {

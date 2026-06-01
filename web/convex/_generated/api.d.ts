@@ -32,11 +32,13 @@ import type * as automationStitchrPairScoring from "../automationStitchrPairScor
 import type * as automationSwapr from "../automationSwapr.js";
 import type * as automationSwipr from "../automationSwipr.js";
 import type * as automationTasks from "../automationTasks.js";
+import type * as avatarPreferences from "../avatarPreferences.js";
 import type * as avatars from "../avatars.js";
 import type * as cliprJobs from "../cliprJobs.js";
 import type * as cliprPreferences from "../cliprPreferences.js";
 import type * as crons from "../crons.js";
 import type * as defaultAutomationCliprVoiceId from "../defaultAutomationCliprVoiceId.js";
+import type * as getDefaultAvatarForOwner from "../getDefaultAvatarForOwner.js";
 import type * as isWithinAutomationGlobalWindow from "../isWithinAutomationGlobalWindow.js";
 import type * as libraryCounts from "../libraryCounts.js";
 import type * as mediaJobs from "../mediaJobs.js";
@@ -121,11 +123,13 @@ declare const fullApi: ApiFromModules<{
   automationSwapr: typeof automationSwapr;
   automationSwipr: typeof automationSwipr;
   automationTasks: typeof automationTasks;
+  avatarPreferences: typeof avatarPreferences;
   avatars: typeof avatars;
   cliprJobs: typeof cliprJobs;
   cliprPreferences: typeof cliprPreferences;
   crons: typeof crons;
   defaultAutomationCliprVoiceId: typeof defaultAutomationCliprVoiceId;
+  getDefaultAvatarForOwner: typeof getDefaultAvatarForOwner;
   isWithinAutomationGlobalWindow: typeof isWithinAutomationGlobalWindow;
   libraryCounts: typeof libraryCounts;
   mediaJobs: typeof mediaJobs;

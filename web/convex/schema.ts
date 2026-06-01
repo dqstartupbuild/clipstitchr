@@ -128,6 +128,11 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
+  avatarPreferences: defineTable({
+    ownerId: v.string(),
+    defaultAvatarId: v.optional(v.string()),
+    updatedAt: v.string(),
+  }).index("by_owner", ["ownerId"]),
   products: defineTable({
     ownerId: v.string(),
     id: v.string(),
