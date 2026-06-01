@@ -136,7 +136,8 @@ gcloud config set project "$PROJECT_ID"
 gcloud services enable \
   artifactregistry.googleapis.com \
   run.googleapis.com \
-  cloudscheduler.googleapis.com
+  cloudscheduler.googleapis.com \
+  secretmanager.googleapis.com
 ```
 
 2. Create the Artifact Registry Docker repository if it does not already exist,
@@ -165,7 +166,64 @@ docker build \
 docker push "$REGION-docker.pkg.dev/$PROJECT_ID/clipstitchr/media-worker:latest"
 ```
 
-4. Create or update the Cloud Run Job:
+4. Store worker secrets in Secret Manager. The shell variables in this example
+   should come from your private local env files or password manager. Do not put
+   secret values directly into `gcloud run jobs deploy --set-env-vars`, because
+   job configuration changes can appear in Google Cloud audit logs.
+
+```bash
+MEDIA_WORKER_SECRET="..."
+AUTOMATION_WORKER_SECRET="..."
+R2_ACCOUNT_ID="..."
+R2_BUCKET_NAME="..."
+R2_ACCESS_KEY_ID="..."
+R2_SECRET_ACCESS_KEY="..."
+REPLICATE_API_TOKEN="..."
+
+create_or_update_secret() {
+  local name="$1"
+  local value="$2"
+
+  if gcloud secrets describe "$name" >/dev/null 2>&1; then
+    printf "%s" "$value" | gcloud secrets versions add "$name" --data-file=-
+  else
+    printf "%s" "$value" | gcloud secrets create "$name" \
+      --replication-policy=automatic \
+      --data-file=-
+  fi
+}
+
+create_or_update_secret clipstitchr-media-worker-secret "$MEDIA_WORKER_SECRET"
+create_or_update_secret clipstitchr-automation-worker-secret "$AUTOMATION_WORKER_SECRET"
+create_or_update_secret clipstitchr-r2-account-id "$R2_ACCOUNT_ID"
+create_or_update_secret clipstitchr-r2-bucket-name "$R2_BUCKET_NAME"
+create_or_update_secret clipstitchr-r2-access-key-id "$R2_ACCESS_KEY_ID"
+create_or_update_secret clipstitchr-r2-secret-access-key "$R2_SECRET_ACCESS_KEY"
+create_or_update_secret clipstitchr-replicate-api-token "$REPLICATE_API_TOKEN"
+```
+
+5. Allow the Cloud Run Job service account to read those secrets:
+
+```bash
+PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format="value(projectNumber)")"
+WORKER_SERVICE_ACCOUNT="$PROJECT_NUMBER-compute@developer.gserviceaccount.com"
+
+for secret in \
+  clipstitchr-media-worker-secret \
+  clipstitchr-automation-worker-secret \
+  clipstitchr-r2-account-id \
+  clipstitchr-r2-bucket-name \
+  clipstitchr-r2-access-key-id \
+  clipstitchr-r2-secret-access-key \
+  clipstitchr-replicate-api-token
+do
+  gcloud secrets add-iam-policy-binding "$secret" \
+    --member "serviceAccount:$WORKER_SERVICE_ACCOUNT" \
+    --role roles/secretmanager.secretAccessor
+done
+```
+
+6. Create or update the Cloud Run Job:
 
 ```bash
 gcloud run jobs deploy clipstitchr-media-worker \
@@ -177,19 +235,10 @@ gcloud run jobs deploy clipstitchr-media-worker \
   --memory 4Gi \
   --task-timeout 30m \
   --set-env-vars NEXT_PUBLIC_CONVEX_URL="..." \
-  --set-env-vars MEDIA_WORKER_SECRET="..." \
-  --set-env-vars AUTOMATION_WORKER_SECRET="..." \
-  --set-env-vars R2_ACCOUNT_ID="..." \
-  --set-env-vars R2_BUCKET_NAME="..." \
-  --set-env-vars R2_ACCESS_KEY_ID="..." \
-  --set-env-vars R2_SECRET_ACCESS_KEY="..." \
-  --set-env-vars REPLICATE_API_TOKEN="..."
+  --set-secrets MEDIA_WORKER_SECRET=clipstitchr-media-worker-secret:latest,AUTOMATION_WORKER_SECRET=clipstitchr-automation-worker-secret:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest
 ```
 
-Use Secret Manager instead of literal `--set-env-vars` values for production
-secrets once the job is proven.
-
-5. Smoke-test FFmpeg support:
+7. Smoke-test FFmpeg support:
 
 ```bash
 gcloud run jobs execute clipstitchr-media-worker \
@@ -197,7 +246,7 @@ gcloud run jobs execute clipstitchr-media-worker \
   --args="--check"
 ```
 
-6. Run a bounded batch manually:
+8. Run a bounded batch manually:
 
 ```bash
 gcloud run jobs execute clipstitchr-media-worker \
@@ -205,10 +254,9 @@ gcloud run jobs execute clipstitchr-media-worker \
   --args="--once,--max-jobs=3"
 ```
 
-7. Allow the Scheduler service account to execute the Cloud Run Job:
+9. Allow the Scheduler service account to execute the Cloud Run Job:
 
 ```bash
-PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format="value(projectNumber)")"
 SCHEDULER_SERVICE_ACCOUNT="$PROJECT_NUMBER-compute@developer.gserviceaccount.com"
 
 gcloud run jobs add-iam-policy-binding clipstitchr-media-worker \
@@ -217,7 +265,7 @@ gcloud run jobs add-iam-policy-binding clipstitchr-media-worker \
   --role roles/run.invoker
 ```
 
-8. Schedule the Cloud Run Job. The Google Cloud documented path is Cloud
+10. Schedule the Cloud Run Job. The Google Cloud documented path is Cloud
 Scheduler calling the Cloud Run Jobs run endpoint with OAuth:
 
 ```bash
