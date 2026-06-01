@@ -48,11 +48,15 @@ The implementation uses:
 - Convex `mediaJobs` records in `web/convex/mediaJobs.ts`.
 - Media job validators in `web/convex/validators/mediaJob*.ts`.
 - Worker-only mutation auth through `MEDIA_WORKER_SECRET`.
-- R2 `raw-video` object support for pre-normalization uploads.
 - A media worker entry point at
-  `web/services/media-worker/runMediaWorker.mts`.
-- Dashboard visibility through `MediaJobsPanel`.
+  `web/services/media-worker/runMediaWorker.mjs`.
 - Worker env examples in `web/.env.worker.example`.
+
+Current worker execution supports `stitchr-draft-finalization` jobs that save
+editable Stitchr drafts, `clipr-finalization` jobs that normalize Clipr provider
+videos, and `swapr-finalization` jobs that download Replicate output, normalize
+it, and save reusable UGC-compatible Swapr clips. Upload normalization, Longr
+export, launch coalescing, and dashboard job visibility remain follow-up phases.
 
 Run the local worker with:
 
@@ -65,6 +69,7 @@ Required worker environment:
 
 - `NEXT_PUBLIC_CONVEX_URL`
 - `MEDIA_WORKER_SECRET`
+- `AUTOMATION_WORKER_SECRET` when processing automation-owned media jobs
 - `R2_ACCOUNT_ID`
 - `R2_BUCKET_NAME`
 - `R2_ACCESS_KEY_ID`
@@ -76,6 +81,10 @@ Optional worker environment:
 - `MEDIA_WORKER_SCRATCH_DIR`
 - `MEDIA_WORKER_POLL_INTERVAL_MS`
 - `MEDIA_WORKER_LOCK_MS`
+- `MEDIA_WORKER_FFMPEG_PATH`
+- `MEDIA_WORKER_FFPROBE_PATH`
+- `REPLICATE_API_TOKEN` when Swapr provider output URLs require authenticated
+  `api.replicate.com` reads.
 
 Deployment choices and where those variables live are documented in
 `docs/backend/media-worker-deployment.md`.
@@ -84,15 +93,16 @@ Deployment choices and where those variables live are documented in
 
 | Job type | Durable source | Worker output |
 | --- | --- | --- |
-| `upload-normalization` | Original video uploaded to R2 as `raw-video` | Normalized 9:16 video, poster image, final `videoClips` record |
-| `stitchr-export` | Saved UGC clips, one saved Demo clip, copied trims, per-stitch text overlay, audio settings | One finished stitch per selected UGC, poster images, final `stitches` records |
-| `stitchr-longr-export` | Saved sequence clips, copied trims, output metadata | One finished Stitch from the ordered Longr-mode sequence, poster image, final `stitches` record |
-| `clipr-finalization` | Provider-generated avatar video already copied to R2 and referenced by a Clipr job | Normalized final Clip video, poster image, final `videoClips` record |
-| `swapr-finalization` | Provider output URL and Swapr metadata already recorded server-side | Normalized UGC clip, poster image, final `videoClips` record |
+| `upload-normalization` | Planned original video uploaded to R2 as `raw-video` | Normalized 9:16 video, poster image, final `videoClips` record |
+| `stitchr-draft-finalization` | Implemented saved UGC clips, one saved Demo clip, copied trims, and audio settings | Editable `stitches` draft records; automation does not render or persist final Stitchr MP4 clips |
+| `stitchr-longr-export` | Planned saved sequence clips, copied trims, output metadata | One finished Stitch from the ordered Longr-mode sequence, poster image, final `stitches` record |
+| `clipr-finalization` | Implemented provider-generated avatar video already copied to R2 and referenced by a Clipr job | Normalized final Clip video, poster image, final `videoClips` record |
+| `swapr-finalization` | Implemented provider output URL and Swapr metadata already recorded server-side | Normalized UGC clip, poster image, final `videoClips` record |
 
-Clipr and Swapr still have provider-side durability requirements before the
-media finalization step can be considered fully close-safe. Those requirements
-are covered in `docs/backend/provider-automation-workflows.md`.
+Clipr automation now has a provider-side executor and media-worker finalization
+path. Swapr automation now has a provider-side executor, a provider polling
+finalizer at `POST /api/automation/swapr/finalize`, and media-worker
+finalization for successful Replicate outputs.
 
 ## Durability Boundaries
 
@@ -101,7 +111,7 @@ Durability starts at different points for different workflows:
 | Workflow | Safe to close browser after |
 | --- | --- |
 | New video upload | The raw source upload finishes and the `upload-normalization` job exists in Convex |
-| Stitchr | The `stitchr-export` job exists in Convex |
+| Stitchr | The `stitchr-draft-finalization` job exists in Convex |
 | Stitchr Longr mode | The `stitchr-longr-export` job exists in Convex |
 | Clipr final video preparation | The provider avatar video object is saved to R2 and the `clipr-finalization` job exists |
 | Swapr final video preparation | The provider output URL/metadata is recorded and the `swapr-finalization` job exists |
@@ -122,20 +132,22 @@ The server worker uses FFmpeg instead of Mediabunny for encoding because plain
 Node does not provide WebCodecs `VideoEncoder`. ClipStitchr supplies durable
 workflow ownership through Convex, R2, and the worker service.
 
-The worker imports the published packages and uses server-side IO:
+The worker imports the published packages and uses server-side IO when a job
+needs media encoding:
 
 - R2 source objects are downloaded to scratch disk before processing.
 - FFmpeg performs server-side H.264/AAC encoding, normalization, posters, and
-  concatenation.
+  concatenation for jobs that produce rendered media.
 - Completed output and poster files are uploaded back to R2.
 - Scratch files are deleted after completion or failure cleanup.
 
 The worker runs a startup FFmpeg self-test. A target runtime must include
 `ffmpeg`, `ffprobe`, `libx264`, and AAC encoding before it should accept
-production jobs. Stitchr text-overlay rendering additionally needs an FFmpeg
-build with the `drawtext` filter. This is required because plain Node does not
+production media-rendering jobs. Current Stitchr automation finalization does
+not render video; it saves editable draft metadata and leaves export rendering
+to the existing browser path. This is required because plain Node does not
 provide WebCodecs `VideoEncoder`; Mediabunny remains useful for browser-local
-media paths, but the server worker needs a container-native encoder.
+media paths, but rendered server media jobs need a container-native encoder.
 
 ## Runtime Model
 

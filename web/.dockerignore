@@ -1,0 +1,8 @@
+node_modules
+.next
+coverage
+coverage-json
+.env*
+!.env.worker.example
+*.log
+tsconfig.tsbuildinfo
