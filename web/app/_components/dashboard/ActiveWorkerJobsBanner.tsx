@@ -1,7 +1,7 @@
 "use client";
 
 import { Bot, Loader2 } from "lucide-react";
-import { useQuery } from "convex/react";
+import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 type WorkerJob = {
@@ -32,8 +32,15 @@ function getJobStatusLabel(job: WorkerJob) {
 }
 
 export function ActiveWorkerJobsBanner() {
-  const providerJobs = useQuery(api.providerJobs.listActive, {});
-  const mediaJobs = useQuery(api.mediaJobs.listActive, {});
+  const { isAuthenticated } = useConvexAuth();
+  const providerJobs = useQuery(
+    api.providerJobs.listActive,
+    isAuthenticated ? {} : "skip",
+  );
+  const mediaJobs = useQuery(
+    api.mediaJobs.listActive,
+    isAuthenticated ? {} : "skip",
+  );
   const jobs = [...(providerJobs ?? []), ...(mediaJobs ?? [])];
 
   if (jobs.length === 0) {
