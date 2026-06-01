@@ -6,13 +6,13 @@ describe("getSwaprGenerationMessage", () => {
   it("returns user-facing copy for every Swapr generation status", () => {
     const cases: Array<[SwaprGenerationStatus, string]> = [
       ["uploading", "Preparing your selected photo and clip."],
-      ["queued", "Waiting for swap to begin."],
+      ["queued", "Swap queued for background processing."],
       ["processing", "Swapping..."],
       ["downloading", "Getting the finished clip."],
       ["normalizing", "Preparing the clip for your library."],
       ["stitching", "Stitching swapped segments."],
       ["saving", "Saving the clip to your library."],
-      ["succeeded", "New clip saved to your library."],
+      ["succeeded", "Swap saved to your library."],
       ["failed", "Swap failed. Please try again."],
       ["idle", "Choose a photo and UGC clip to start."],
     ];

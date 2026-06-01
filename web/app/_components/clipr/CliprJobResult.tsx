@@ -11,14 +11,17 @@ export function CliprJobResult({ finalClipId, job }: CliprJobResultProps) {
   if (!job) {
     return (
       <section className="rounded-lg border border-dashed border-border bg-slate-50 p-5 text-sm font-semibold text-text-tertiary">
-        Generated Clips will appear here before they save to the library.
+        Queued Clips will appear in the library when background processing
+        finishes.
       </section>
     );
   }
 
   return (
     <section className="rounded-lg border border-border bg-white p-5">
-      <p className="text-sm font-semibold text-accent-dark">Generated Clip</p>
+      <p className="text-sm font-semibold text-accent-dark">
+        {finalClipId ? "Generated Clip" : "Queued Clip"}
+      </p>
       <h2 className="mt-1 text-lg font-bold text-text-primary">
         {job.filledHook ?? "Clipr script"}
       </h2>

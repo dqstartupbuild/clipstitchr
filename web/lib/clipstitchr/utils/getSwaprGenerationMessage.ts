@@ -5,7 +5,7 @@ export function getSwaprGenerationMessage(status: SwaprGenerationStatus) {
     case "uploading":
       return "Preparing your selected photo and clip.";
     case "queued":
-      return "Waiting for swap to begin.";
+      return "Swap queued for background processing.";
     case "processing":
       return "Swapping...";
     case "downloading":
@@ -17,7 +17,7 @@ export function getSwaprGenerationMessage(status: SwaprGenerationStatus) {
     case "saving":
       return "Saving the clip to your library.";
     case "succeeded":
-      return "New clip saved to your library.";
+      return "Swap saved to your library.";
     case "failed":
       return "Swap failed. Please try again.";
     case "idle":

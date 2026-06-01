@@ -75,8 +75,10 @@ describe("useCliprGeneration", () => {
       jobId: "job_1",
     });
     expect(onCreated).toHaveBeenCalledTimes(1);
-    expect(mocks.useStateSetter).toHaveBeenCalledWith("Clip queued");
-    expect(mocks.useStateSetter).toHaveBeenCalledWith("complete");
+    expect(mocks.useStateSetter).toHaveBeenCalledWith(
+      "Clip queued for background processing",
+    );
+    expect(mocks.useStateSetter).toHaveBeenCalledWith("queued");
   });
 
   it("returns null and reports queueing failures", async () => {
