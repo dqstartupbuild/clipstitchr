@@ -26,7 +26,7 @@ export function AvatarsPageClient() {
   const photoLibrary = usePhotoLibrary();
   const showUploadControls = useShowUploadControls();
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | undefined>();
-  const [avatarFilterId, setAvatarFilterId] = useState("all");
+  const [avatarFilterId, setAvatarFilterId] = useState<string | undefined>();
   const [uploadAvatarId, setUploadAvatarId] = useState("");
   const [newAvatarName, setNewAvatarName] = useState("");
   const [pendingPhotoFiles, setPendingPhotoFiles] = useState<File[]>([]);
@@ -41,20 +41,43 @@ export function AvatarsPageClient() {
   const [style, setStyle] = useState<AvatarStyleOption>(
     DEFAULT_AVATAR_STYLE_OPTION,
   );
+  const defaultAvatar = useMemo(
+    () =>
+      photoLibrary.defaultAvatarId
+        ? photoLibrary.avatars.find(
+            (avatar) => avatar.id === photoLibrary.defaultAvatarId,
+          )
+        : undefined,
+    [photoLibrary.avatars, photoLibrary.defaultAvatarId],
+  );
+  const activeAvatarFilterId = avatarFilterId ?? defaultAvatar?.id ?? "all";
+  const activeUploadAvatarId = uploadAvatarId || defaultAvatar?.id || "";
+  const defaultPhoto = useMemo(
+    () =>
+      defaultAvatar
+        ? photoLibrary.photos.find((photo) => photo.avatarId === defaultAvatar.id)
+        : undefined,
+    [defaultAvatar, photoLibrary.photos],
+  );
+  const activeSelectedPhotoId =
+    selectedPhotoId ??
+    (avatarFilterId === undefined ? defaultPhoto?.id : undefined);
   const visiblePhotos = useMemo(
     () =>
       photoLibrary.photos.filter(
-        (photo) => avatarFilterId === "all" || photo.avatarId === avatarFilterId,
+        (photo) =>
+          activeAvatarFilterId === "all" ||
+          photo.avatarId === activeAvatarFilterId,
       ),
-    [avatarFilterId, photoLibrary.photos],
+    [activeAvatarFilterId, photoLibrary.photos],
   );
   const photos = useMemo(
     () => filterPhotosBySearchQuery(visiblePhotos, searchQuery),
     [searchQuery, visiblePhotos],
   );
   const selectedPhoto = useMemo(
-    () => photoLibrary.photos.find((photo) => photo.id === selectedPhotoId),
-    [photoLibrary.photos, selectedPhotoId],
+    () => photoLibrary.photos.find((photo) => photo.id === activeSelectedPhotoId),
+    [activeSelectedPhotoId, photoLibrary.photos],
   );
   const selectedPhotoAvatar = useMemo(
     () =>
@@ -65,10 +88,12 @@ export function AvatarsPageClient() {
   );
   const selectedFilterAvatar = useMemo(
     () =>
-      avatarFilterId === "all"
+      activeAvatarFilterId === "all"
         ? undefined
-        : photoLibrary.avatars.find((avatar) => avatar.id === avatarFilterId),
-    [avatarFilterId, photoLibrary.avatars],
+        : photoLibrary.avatars.find(
+            (avatar) => avatar.id === activeAvatarFilterId,
+          ),
+    [activeAvatarFilterId, photoLibrary.avatars],
   );
   const selectedFilterAvatarPhotoCount = useMemo(
     () =>
@@ -86,9 +111,9 @@ export function AvatarsPageClient() {
   const hasSearchQuery = searchQuery.trim().length > 0;
   const error = photoLibrary.error ?? generator.error;
   const hasPhotoUploadAssignment =
-    uploadAvatarId === "new"
+    activeUploadAvatarId === "new"
       ? newAvatarName.trim().length > 0
-      : uploadAvatarId.trim().length > 0;
+      : activeUploadAvatarId.trim().length > 0;
   const canSavePendingPhotoUpload =
     pendingPhotoFiles.length > 0 &&
     hasPhotoUploadAssignment &&
@@ -113,26 +138,27 @@ export function AvatarsPageClient() {
     }
 
     const didSave = await photoLibrary.saveFiles(pendingPhotoFiles, {
-      avatarId: uploadAvatarId === "new" ? undefined : uploadAvatarId,
-      avatarName: uploadAvatarId === "new" ? newAvatarName : undefined,
+      avatarId:
+        activeUploadAvatarId === "new" ? undefined : activeUploadAvatarId,
+      avatarName: activeUploadAvatarId === "new" ? newAvatarName : undefined,
       shouldExpandWithAi: pendingPhotoShouldExpandWithAi,
     });
 
     if (didSave) {
       setPendingPhotoFiles([]);
 
-      if (uploadAvatarId === "new") {
+      if (activeUploadAvatarId === "new") {
         setUploadAvatarId("");
         setNewAvatarName("");
       }
     }
   }, [
     canSavePendingPhotoUpload,
+    activeUploadAvatarId,
     newAvatarName,
     pendingPhotoFiles,
     pendingPhotoShouldExpandWithAi,
     photoLibrary,
-    uploadAvatarId,
   ]);
   const deleteAvatar = useCallback(
     async (avatar: Avatar) => {
@@ -183,7 +209,7 @@ export function AvatarsPageClient() {
                 isSaving={photoLibrary.isSaving}
                 newAvatarName={newAvatarName}
                 pendingFileCount={pendingPhotoFiles.length}
-                selectedAvatarId={uploadAvatarId}
+                selectedAvatarId={activeUploadAvatarId}
                 onNewAvatarNameChange={setNewAvatarName}
                 onSave={() => void savePendingPhotoUpload()}
                 onSelectedAvatarIdChange={setUploadAvatarId}
@@ -199,7 +225,7 @@ export function AvatarsPageClient() {
             <AvatarFilterSelect
               avatars={photoLibrary.avatars}
               label="Avatar"
-              value={avatarFilterId}
+              value={activeAvatarFilterId}
               onChange={setAvatarFilterId}
             />
             <SearchInput
@@ -213,10 +239,15 @@ export function AvatarsPageClient() {
           <SelectedAvatarActions
             key={selectedFilterAvatar?.id ?? "all"}
             avatar={selectedFilterAvatar}
+            isDefaultAvatar={
+              Boolean(selectedFilterAvatar) &&
+              selectedFilterAvatar?.id === photoLibrary.defaultAvatarId
+            }
             isSaving={photoLibrary.isSaving}
             photoCount={selectedFilterAvatarPhotoCount}
             onDelete={deleteAvatar}
             onRename={photoLibrary.renameAvatar}
+            onSetDefault={photoLibrary.setDefaultAvatar}
             onWardrobeStyleChange={photoLibrary.updateAvatarWardrobeStyle}
             onVoiceChange={photoLibrary.updateAvatarCliprVoice}
           />
@@ -252,7 +283,7 @@ export function AvatarsPageClient() {
         <AvatarLibrarySection
           avatars={photoLibrary.avatars}
           photos={photos}
-          selectedPhotoId={selectedPhotoId}
+          selectedPhotoId={activeSelectedPhotoId}
           emptyTitle={hasSearchQuery ? "No matching avatars" : undefined}
           emptyDescription={
             hasSearchQuery

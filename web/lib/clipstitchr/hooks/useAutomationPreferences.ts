@@ -5,6 +5,7 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { automationToolOptions } from "@/lib/clipstitchr/constants/automationToolOptions";
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
+import { filterEnabledAutomationTools } from "@/lib/clipstitchr/utils/filterEnabledAutomationTools";
 
 const defaultPreferences: AutomationPreferencesInput = {
   enabled: false,
@@ -29,7 +30,9 @@ export function useAutomationPreferences() {
       preferencesDocument
         ? {
             enabled: preferencesDocument.enabled,
-            enabledTools: preferencesDocument.enabledTools,
+            enabledTools: filterEnabledAutomationTools(
+              preferencesDocument.enabledTools,
+            ),
             productSelectionMode: preferencesDocument.productSelectionMode,
             selectedProductIds: preferencesDocument.selectedProductIds,
             avatarSelectionMode: preferencesDocument.avatarSelectionMode,
@@ -46,6 +49,9 @@ export function useAutomationPreferences() {
       try {
         await savePreferencesMutation({
           ...nextPreferences,
+          enabledTools: filterEnabledAutomationTools(
+            nextPreferences.enabledTools,
+          ),
           updatedAt: new Date().toISOString(),
         });
       } catch (nextError) {

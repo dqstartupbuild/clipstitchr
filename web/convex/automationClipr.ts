@@ -6,6 +6,7 @@ import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
 import { defaultAutomationCliprVoiceId } from "./defaultAutomationCliprVoiceId";
+import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 const AUTOMATION_CLIPR_ADD_MUSIC = false;
@@ -67,16 +68,8 @@ export const planDaily = mutation({
       preferences.productSelectionMode === "selected"
         ? products.find((candidate) => selectedProductIds.has(candidate.id))
         : products[0];
-    const avatars = await ctx.db
-      .query("avatars")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .collect();
-    const selectedAvatarIds = new Set(preferences.selectedAvatarIds);
-    const avatar =
-      preferences.avatarSelectionMode === "selected"
-        ? avatars.find((candidate) => selectedAvatarIds.has(candidate.id))
-        : avatars[0];
+    const defaultAvatar = await getDefaultAvatarForOwner(ctx, ownerId);
+    const avatar = defaultAvatar;
     const photos = await ctx.db
       .query("photoAssets")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
@@ -94,7 +87,7 @@ export const planDaily = mutation({
       await markAutomationRunSkipped(
         ctx,
         run._id,
-        "Clipr automation needs one product, one avatar, and one avatar photo.",
+        "Clipr automation needs one product, one default avatar, and one default avatar photo.",
         now,
       );
       return { runId, status: "skipped", taskIds: [] };

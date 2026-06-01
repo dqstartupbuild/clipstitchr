@@ -69,8 +69,15 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     api.avatars.list,
     isAuthenticated ? {} : "skip",
   );
+  const avatarPreferences = useQuery(
+    api.avatarPreferences.get,
+    isAuthenticated ? {} : "skip",
+  );
   const saveAvatar = useMutation(api.avatars.save);
   const updateAvatarMutation = useMutation(api.avatars.update);
+  const setDefaultAvatarMutation = useMutation(
+    api.avatarPreferences.setDefaultAvatar,
+  );
   const savePhotoAsset = useMutation(api.photoAssets.save);
   const updatePhotoMetadataMutation = useMutation(api.photoAssets.updateMetadata);
   const removePhotoMutation = useMutation(api.photoAssets.remove);
@@ -520,6 +527,31 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     [refresh, updateAvatarMutation],
   );
 
+  const setDefaultAvatar = useCallback(
+    async (avatar: Avatar) => {
+      setIsSaving(true);
+      setError(null);
+
+      try {
+        await setDefaultAvatarMutation({
+          avatarId: avatar.id,
+          updatedAt: new Date().toISOString(),
+        });
+        await refresh();
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to set this avatar as the default.",
+        );
+        throw nextError;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [refresh, setDefaultAvatarMutation],
+  );
+
   const removeAvatar = useCallback(
     async (id: string) => {
       setIsSaving(true);
@@ -778,11 +810,13 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
 
   return {
     avatars,
+    defaultAvatarId: avatarPreferences?.defaultAvatarId,
     photos,
     isLoading:
       isAuthLoading ||
       (isAuthenticated && photoDocuments === undefined) ||
       (isAuthenticated && avatarDocuments === undefined) ||
+      (isAuthenticated && avatarPreferences === undefined) ||
       isHydrating,
     isSaving,
     error,
@@ -795,6 +829,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     renameAvatar,
     updateAvatarWardrobeStyle,
     updateAvatarCliprVoice,
+    setDefaultAvatar,
     removeAvatar,
     removePhoto,
   };

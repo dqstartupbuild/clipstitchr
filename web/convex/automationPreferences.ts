@@ -1,19 +1,34 @@
 import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import { isSwaprAutomationEnabled } from "../lib/clipstitchr/constants/isSwaprAutomationEnabled";
 import { rateLimiter } from "./rateLimiter";
 import { automationSelectionModeValidator } from "./validators/automationSelectionMode";
 import { automationToolValidator } from "./validators/automationTool";
+import type { AutomationTool } from "../lib/clipstitchr/types/AutomationTool";
+
+function filterEnabledAutomationTools(tools: AutomationTool[]) {
+  return Array.from(new Set(tools)).filter(
+    (tool) => tool !== "swapr" || isSwaprAutomationEnabled,
+  );
+}
 
 export const get = query({
   args: {},
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
-    return await ctx.db
+    const preferences = await ctx.db
       .query("automationPreferences")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
       .unique();
+
+    return preferences
+      ? {
+          ...preferences,
+          enabledTools: filterEnabledAutomationTools(preferences.enabledTools),
+        }
+      : null;
   },
 });
 
@@ -48,7 +63,7 @@ export const save = mutation({
     const preferences = {
       ownerId,
       enabled: args.enabled,
-      enabledTools: Array.from(new Set(args.enabledTools)),
+      enabledTools: filterEnabledAutomationTools(args.enabledTools),
       productSelectionMode: args.productSelectionMode,
       selectedProductIds:
         args.productSelectionMode === "selected" ? productIds : [],

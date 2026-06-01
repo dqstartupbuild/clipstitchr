@@ -86,11 +86,46 @@ The worker now handles automated provider work for:
 - Clipr: runs script generation, avatar still generation, avatar video
   generation, stores intermediate outputs in R2, then creates the media job.
 - Avatar photo automation: generates one new avatar photo from the latest
-  eligible source photo and saves it to `photoAssets`.
+  default-avatar source photo and saves it to `photoAssets`.
 - Swipr automation: generates editable slide text and saves a `swipes` draft.
 
 Convex Cron still plans daily automation, but provider dispatch through protected
 Next.js routes has been removed.
+
+## Automation Feature Flags
+
+Swapr automation has a code-level kill switch:
+
+```ts
+// web/lib/clipstitchr/constants/isSwaprAutomationEnabled.ts
+export const isSwaprAutomationEnabled = true;
+```
+
+Set it to `false` to disable only automatic Swapr generation. Manual Swapr
+generation is not affected. When disabled:
+
+- Settings no longer renders the Swapr automation checkbox.
+- Client and Convex preference saves remove `swapr` from `enabledTools`.
+- Existing preferences that still contain `swapr` are filtered when read.
+- The planner ignores users whose only enabled automation tool is Swapr.
+- Direct calls to `automationSwapr.planDaily` create a skipped run instead of
+  provider work.
+
+## Default Avatar Automation
+
+The default avatar is stored in Convex `avatarPreferences.defaultAvatarId`. Users
+set it from the Avatars page with the star action next to the existing wardrobe,
+voice, rename, and delete controls.
+
+Manual tools use the default avatar as the initial selection, while still
+allowing the user to choose a different avatar or photo for that run. Automated
+avatar-based tools require the default avatar:
+
+- Automatic Swapr uses the latest default-avatar photo as the source image.
+- Automatic Clipr uses the default avatar, its default Clipr voice, and one
+  default-avatar source photo.
+- Automatic avatar photo generation queues only one generated photo for the
+  default avatar. It no longer creates one run per avatar.
 
 ## Manual AI Worker Migration
 

@@ -178,6 +178,15 @@ export const removeWithPhotos = mutation({
 
     await ctx.db.delete(avatar._id);
 
+    const preferences = await ctx.db
+      .query("avatarPreferences")
+      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+      .unique();
+
+    if (preferences?.defaultAvatarId === id) {
+      await ctx.db.delete(preferences._id);
+    }
+
     return {
       deletedAvatar: true,
       deletedPhotoCount: avatarPhotos.length,

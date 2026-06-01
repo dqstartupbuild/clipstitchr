@@ -288,12 +288,14 @@ ready.
 
 The provider worker owns automatic Stitchr text, Swapr provider create/finalize,
 Clipr script/avatar-image/avatar-video, avatar-photo generation, and Swipr draft
-text generation. It also owns manual Swapr, manual Clipr, manual avatar-photo
-generation, and upload-video analysis through durable `providerJobs`. Convex
-Cron still plans daily runs, but it no longer dispatches provider work through
-`AUTOMATION_NEXT_BASE_URL`. Creating provider work now schedules a coalesced
-Convex Cloud Run dispatch immediately; the 10-minute Cloud Scheduler trigger is
-only a recovery sweep.
+text generation. Avatar-based automation uses
+`avatarPreferences.defaultAvatarId`; automatic avatar-photo generation queues
+only that default avatar. It also owns manual Swapr, manual Clipr, manual
+avatar-photo generation, and upload-video analysis through durable
+`providerJobs`. Convex Cron still plans daily runs, but it no longer dispatches
+provider work through `AUTOMATION_NEXT_BASE_URL`. Creating provider work now
+schedules a coalesced Convex Cloud Run dispatch immediately; the 10-minute Cloud
+Scheduler trigger is only a recovery sweep.
 
 The first FFmpeg media worker lives at
 `web/services/media-worker/runMediaWorker.mjs`. It claims queued media jobs with
@@ -421,6 +423,10 @@ Update `docs/backend/rate-limits.md` whenever these limits are implemented.
 - Implemented: autopilot preferences, `automationRuns`, `automationTasks`, daily
   planner idempotency keys, and active dispatch for Stitchr, Swapr, Clipr,
   avatar photos, and Swipr draft generation.
+- Implemented: Swapr automation code flag in
+  `web/lib/clipstitchr/constants/isSwaprAutomationEnabled.ts`; disabling it
+  hides Swapr automation settings, filters saved preferences, and makes the
+  Swapr planner skip without affecting manual Swapr.
 - Save outputs as drafts and notify the user.
 - Add admin/support visibility into skipped, failed, and retried runs.
 

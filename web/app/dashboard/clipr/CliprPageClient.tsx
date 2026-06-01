@@ -40,8 +40,17 @@ export function CliprPageClient() {
   const [selectedMusicTrack, setSelectedMusicTrack] =
     useState<SharedMusicTrack | null>(null);
   const activeProductId = selectedProductId || products.products[0]?.id || "";
+  const defaultAvatar = useMemo(
+    () =>
+      photoLibrary.defaultAvatarId
+        ? photoLibrary.avatars.find(
+            (avatar) => avatar.id === photoLibrary.defaultAvatarId,
+          )
+        : undefined,
+    [photoLibrary.avatars, photoLibrary.defaultAvatarId],
+  );
   const activeAvatarId =
-    selectedAvatarId || photoLibrary.avatars[0]?.id || "";
+    selectedAvatarId || defaultAvatar?.id || photoLibrary.avatars[0]?.id || "";
   const activeAvatar = useMemo(
     () => photoLibrary.avatars.find((avatar) => avatar.id === activeAvatarId),
     [activeAvatarId, photoLibrary.avatars],
