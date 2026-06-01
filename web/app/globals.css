@@ -347,6 +347,17 @@ textarea {
   pointer-events: none;
 }
 
+.video-clip-preview-frame {
+  width: min(100%, calc(50svh * 9 / 16));
+  margin-inline: auto;
+}
+
+@media (min-width: 1024px) {
+  .video-clip-preview-frame {
+    width: 100%;
+  }
+}
+
 .video-trim-range-input::-webkit-slider-runnable-track {
   height: 0.5rem;
   appearance: none;
