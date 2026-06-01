@@ -26,11 +26,11 @@ export function AssetTagList({
   const hiddenTagCount = normalizedTags.length - visibleTags.length;
 
   return (
-    <div className={["flex flex-wrap gap-1.5", className].join(" ")}>
+    <div className={["flex min-w-0 flex-wrap gap-1.5", className].join(" ")}>
       {visibleTags.map((tag) => (
         <span
           key={tag}
-          className="inline-flex max-w-full items-center truncate rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold leading-none text-text-tertiary"
+          className="inline-flex min-w-0 max-w-full items-center truncate rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold leading-none text-text-tertiary"
         >
           {tag}
         </span>
