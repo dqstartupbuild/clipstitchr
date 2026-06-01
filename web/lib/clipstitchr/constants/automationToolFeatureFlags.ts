@@ -4,7 +4,7 @@ export const automationToolFeatureFlags = {
   stitchr: true,
   swapr: false,
   clipr: true,
-  "avatar-photo": true,
+  "avatar-photo": false,
   swipr: true,
 } satisfies Record<AutomationTool, boolean>;
 
