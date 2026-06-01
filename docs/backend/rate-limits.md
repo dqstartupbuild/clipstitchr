@@ -74,7 +74,7 @@ npx convex dev --once
 - Required in the Convex deployment when Convex Cron dispatches Next.js
   automation provider routes.
 - Should be the production app origin, for example
-  `https://clipstitchr.example.com`.
+  `https://clipstitchr.com`.
 - Must not include a path.
 
 TikTok Events API variables:
