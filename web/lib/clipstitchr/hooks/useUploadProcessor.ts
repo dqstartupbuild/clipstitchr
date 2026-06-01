@@ -113,8 +113,8 @@ export function useUploadProcessor({
             await onClipSaved?.();
 
             updateQueueItem(item.id, {
-              status: "complete",
-              progress: 1,
+              status: "queued",
+              progress: 0.25,
             });
           } catch (error) {
             updateQueueItem(item.id, {

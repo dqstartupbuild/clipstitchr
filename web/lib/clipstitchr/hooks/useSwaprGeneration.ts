@@ -77,8 +77,8 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
 
         setPredictionId(job?.id ?? null);
         await onClipSaved?.();
-        setStatus("succeeded");
-        setProgress(1);
+        setStatus("queued");
+        setProgress(0.2);
         return true;
       } catch (nextError) {
         setStatus("failed");
@@ -101,7 +101,10 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
     predictionId,
     generatedClip,
     isGenerating:
-      status !== "idle" && status !== "succeeded" && status !== "failed",
+      status !== "idle" &&
+      status !== "queued" &&
+      status !== "succeeded" &&
+      status !== "failed",
     generate,
   };
 }

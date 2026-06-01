@@ -186,6 +186,7 @@ describe("Clipr components", () => {
           "normalizing",
           "saving",
           "stitching",
+          "queued",
           "complete",
           "error",
         ].map((status) => (
@@ -209,7 +210,9 @@ describe("Clipr components", () => {
     expect(markup).toContain("Preparing clip");
     expect(markup).toContain("Saving clip");
     expect(markup).toContain("Preparing final clip");
+    expect(markup).toContain("Clip queued");
     expect(markup).toContain("Clip saved");
+    expect(markup).toContain("Queued");
     expect(markup).toContain("Generation stopped");
     expect(markup).toContain("13%");
     expect(markup).toContain("Generation failed.");
@@ -233,7 +236,7 @@ describe("Clipr components", () => {
       />,
     );
 
-    expect(emptyMarkup).toContain("Generated Clips will appear");
+    expect(emptyMarkup).toContain("Queued Clips will appear");
     expect(populatedMarkup).toContain("Stop losing demo viewers");
     expect(populatedMarkup).toContain("Music generated for export.");
     expect(populatedMarkup).toContain("Here is the generated avatar line.");

@@ -6,6 +6,25 @@ type UploadQueueListProps = {
   queue: UploadQueueItem[];
 };
 
+function getQueueStatusLabel(item: UploadQueueItem) {
+  if (item.error) {
+    return "Failed";
+  }
+
+  switch (item.status) {
+    case "queued":
+      return "Queued";
+    case "reading":
+      return "Uploading";
+    case "saving":
+      return "Creating job";
+    case "complete":
+      return "Complete";
+    default:
+      return `${Math.round(item.progress * 100)}%`;
+  }
+}
+
 export function UploadQueueList({ queue }: UploadQueueListProps) {
   if (queue.length === 0) {
     return null;
@@ -25,7 +44,7 @@ export function UploadQueueList({ queue }: UploadQueueListProps) {
               </p>
             </div>
             <span className="text-xs font-semibold text-text-secondary">
-              {Math.round(item.progress * 100)}%
+              {getQueueStatusLabel(item)}
             </span>
           </div>
           <div className="mt-3">

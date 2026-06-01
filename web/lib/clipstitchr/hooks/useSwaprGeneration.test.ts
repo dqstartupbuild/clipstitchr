@@ -99,8 +99,8 @@ describe("useSwaprGeneration", () => {
       totalEstimatedDurationSeconds: 6,
     });
     expect(onClipSaved).toHaveBeenCalledTimes(1);
-    expect(mocks.useStateSetter).toHaveBeenCalledWith("succeeded");
-    expect(mocks.useStateSetter).toHaveBeenCalledWith(1);
+    expect(mocks.useStateSetter).toHaveBeenCalledWith("queued");
+    expect(mocks.useStateSetter).toHaveBeenCalledWith(0.2);
   });
 
   it("passes all selected segments to the provider job", async () => {

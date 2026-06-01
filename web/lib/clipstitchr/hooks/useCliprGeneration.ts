@@ -46,9 +46,9 @@ export function useCliprGeneration({ onCreated }: UseCliprGenerationOptions) {
         setJob(nextJob);
         await onCreated?.();
 
-        setProgress(1);
-        setMessage("Clip queued");
-        setStatus("complete");
+        setProgress(0.2);
+        setMessage("Clip queued for background processing");
+        setStatus("queued");
 
         return nextJob.id;
       } catch (nextError) {
@@ -71,7 +71,11 @@ export function useCliprGeneration({ onCreated }: UseCliprGenerationOptions) {
     finalClipId,
     generate,
     isGenerating:
-      status !== "idle" && status !== "complete" && status !== "error",
+      status !== "idle" &&
+      status !== "queued" &&
+      status !== "complete" &&
+      status !== "error",
+    isQueued: status === "queued",
     job,
     message,
     progress,
