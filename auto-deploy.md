@@ -174,6 +174,7 @@ docker push "$REGION-docker.pkg.dev/$PROJECT_ID/clipstitchr/media-worker:latest"
 ```bash
 MEDIA_WORKER_SECRET="..."
 AUTOMATION_WORKER_SECRET="..."
+NEXT_PUBLIC_CONVEX_URL="https://your-convex-deployment.convex.cloud"
 R2_ACCOUNT_ID="..."
 R2_BUCKET_NAME="..."
 R2_ACCESS_KEY_ID="..."
@@ -234,7 +235,7 @@ gcloud run jobs deploy clipstitchr-media-worker \
   --cpu 2 \
   --memory 4Gi \
   --task-timeout 30m \
-  --set-env-vars NEXT_PUBLIC_CONVEX_URL="..." \
+  --set-env-vars NEXT_PUBLIC_CONVEX_URL="$NEXT_PUBLIC_CONVEX_URL" \
   --set-secrets MEDIA_WORKER_SECRET=clipstitchr-media-worker-secret:latest,AUTOMATION_WORKER_SECRET=clipstitchr-automation-worker-secret:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest
 ```
 
