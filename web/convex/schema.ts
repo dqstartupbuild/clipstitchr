@@ -1,12 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { assetTagsValidator } from "./validators/assetTags";
-import { automationProvenanceValidator } from "./validators/automationProvenance";
-import { automationRunStatusValidator } from "./validators/automationRunStatus";
-import { automationSelectionModeValidator } from "./validators/automationSelectionMode";
-import { automationTaskStatusValidator } from "./validators/automationTaskStatus";
-import { automationTaskTypeValidator } from "./validators/automationTaskType";
-import { automationToolValidator } from "./validators/automationTool";
 import { avatarWardrobeStyleValidator } from "./validators/avatarWardrobeStyle";
 import { cliprDurationSecondsValidator } from "./validators/cliprDurationSeconds";
 import { cliprJobStageValidator } from "./validators/cliprJobStage";
@@ -15,8 +9,6 @@ import { cliprMetadataValidator } from "./validators/cliprMetadata";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { clipTypeValidator } from "./validators/clipType";
-import { mediaJobStatusValidator } from "./validators/mediaJobStatus";
-import { mediaJobTypeValidator } from "./validators/mediaJobType";
 import { musicTrackSourceValidator } from "./validators/musicTrackSource";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
@@ -72,7 +64,6 @@ export default defineSchema({
     hasAudio: v.boolean(),
     swaprMetadata: v.optional(swaprMetadataValidator),
     cliprMetadata: v.optional(cliprMetadataValidator),
-    automation: v.optional(automationProvenanceValidator),
     createdAt: v.string(),
     updatedAt: v.string(),
   })
@@ -107,7 +98,6 @@ export default defineSchema({
         v.literal("auto-crop"),
       ),
     ),
-    automation: v.optional(automationProvenanceValidator),
     consentAcknowledgedAt: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
@@ -171,7 +161,6 @@ export default defineSchema({
     ugcPlaybackRate: v.optional(videoPlaybackRateValidator),
     music: v.optional(stitchMusicMetadataValidator),
     textOverlay: v.optional(textOverlayValidator),
-    automation: v.optional(automationProvenanceValidator),
     createdAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
@@ -224,7 +213,6 @@ export default defineSchema({
     slides: v.array(swiprSlideValidator),
     posterObject: v.optional(r2ObjectValidator),
     posterVersion: v.optional(v.number()),
-    automation: v.optional(automationProvenanceValidator),
     createdAt: v.string(),
     updatedAt: v.string(),
   })
@@ -286,98 +274,4 @@ export default defineSchema({
     defaultVoiceId: v.string(),
     updatedAt: v.string(),
   }).index("by_owner", ["ownerId"]),
-  mediaJobs: defineTable({
-    ownerId: v.string(),
-    id: v.string(),
-    jobType: mediaJobTypeValidator,
-    status: mediaJobStatusValidator,
-    stage: v.string(),
-    idempotencyKey: v.string(),
-    inputSnapshotJson: v.string(),
-    outputAssetIds: v.array(v.string()),
-    attempt: v.number(),
-    lockedBy: v.optional(v.string()),
-    lockedUntil: v.optional(v.string()),
-    error: v.optional(v.string()),
-    createdAt: v.string(),
-    updatedAt: v.string(),
-    completedAt: v.optional(v.string()),
-  })
-    .index("by_owner_created", ["ownerId", "createdAt"])
-    .index("by_owner_id", ["ownerId", "id"])
-    .index("by_status_created", ["status", "createdAt"])
-    .index("by_idempotency_key", ["idempotencyKey"]),
-  automationPreferences: defineTable({
-    ownerId: v.string(),
-    enabled: v.boolean(),
-    enabledTools: v.array(automationToolValidator),
-    productSelectionMode: automationSelectionModeValidator,
-    selectedProductIds: v.array(v.string()),
-    avatarSelectionMode: automationSelectionModeValidator,
-    selectedAvatarIds: v.array(v.string()),
-    preferenceVersion: v.number(),
-    createdAt: v.string(),
-    updatedAt: v.string(),
-  }).index("by_owner", ["ownerId"]),
-  automationRuns: defineTable({
-    ownerId: v.string(),
-    id: v.string(),
-    automationDate: v.string(),
-    tool: automationToolValidator,
-    status: automationRunStatusValidator,
-    idempotencyKey: v.string(),
-    inputSnapshotJson: v.string(),
-    dailyLimit: v.number(),
-    attempt: v.number(),
-    startedAt: v.optional(v.string()),
-    completedAt: v.optional(v.string()),
-    skippedAt: v.optional(v.string()),
-    failedAt: v.optional(v.string()),
-    error: v.optional(v.string()),
-    createdAt: v.string(),
-    updatedAt: v.string(),
-  })
-    .index("by_owner_created", ["ownerId", "createdAt"])
-    .index("by_owner_id", ["ownerId", "id"])
-    .index("by_owner_date_tool", ["ownerId", "automationDate", "tool"])
-    .index("by_idempotency_key", ["idempotencyKey"]),
-  automationTasks: defineTable({
-    ownerId: v.string(),
-    id: v.string(),
-    runId: v.string(),
-    tool: automationToolValidator,
-    taskType: automationTaskTypeValidator,
-    status: automationTaskStatusValidator,
-    stage: v.string(),
-    idempotencyKey: v.string(),
-    inputSnapshotJson: v.string(),
-    outputAssetIds: v.array(v.string()),
-    providerJobIds: v.array(v.string()),
-    mediaJobIds: v.array(v.string()),
-    attempt: v.number(),
-    lockedBy: v.optional(v.string()),
-    lockedUntil: v.optional(v.string()),
-    error: v.optional(v.string()),
-    createdAt: v.string(),
-    updatedAt: v.string(),
-    completedAt: v.optional(v.string()),
-  })
-    .index("by_owner_created", ["ownerId", "createdAt"])
-    .index("by_owner_status", ["ownerId", "status"])
-    .index("by_status_created", ["status", "createdAt"])
-    .index("by_run", ["runId"])
-    .index("by_idempotency_key", ["idempotencyKey"]),
-  automationPairHistory: defineTable({
-    ownerId: v.string(),
-    ugcClipId: v.string(),
-    demoClipId: v.string(),
-    lastUsedAt: v.string(),
-    useCount: v.number(),
-    recentUseWindowKey: v.string(),
-    lastOutputStitchId: v.optional(v.string()),
-    createdAt: v.string(),
-    updatedAt: v.string(),
-  })
-    .index("by_owner_pair", ["ownerId", "ugcClipId", "demoClipId"])
-    .index("by_owner_last_used", ["ownerId", "lastUsedAt"]),
 });

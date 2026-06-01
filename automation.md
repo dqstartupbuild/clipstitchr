@@ -9,10 +9,6 @@ without requiring an open browser tab. Users can still manually run Stitchr,
 Swapr, Clipr, avatar photo generation, and Swipr, but the daily automatic runs
 use their own automation budgets and durable background jobs.
 
-Current implementation focus: Stitchr, Swapr, and Clipr are the active core
-automation tools. Avatar photo generation and Swipr remain planned, but their
-executors are held out of active scheduling for now.
-
 The first automated daily target is:
 
 | Tool | Automatic daily output |
@@ -37,8 +33,7 @@ Required behavior:
 
 - Automation can be enabled or disabled by the user.
 - Each tool can be enabled or disabled independently.
-- The app uses one global generation window; users do not configure timezone or
-  preferred generation hours.
+- The app stores the user's timezone and preferred generation window.
 - Automation creates drafts only.
 - Manual generation limits remain unchanged.
 - Automatic generation uses separate automation limits.
@@ -62,7 +57,6 @@ Target flow:
 
 ```text
 Scheduler or cron
-  -> POST /api/automation/plan with AUTOMATION_WORKER_SECRET
   -> automation planner finds eligible users
   -> planner creates daily automation runs with idempotency keys
   -> planner creates tool-specific automation tasks
@@ -72,18 +66,6 @@ Scheduler or cron
   -> finalizers create library records in Convex
   -> dashboard shows drafts and automation status
 ```
-
-Implemented worker dispatch currently includes:
-
-- `POST /api/automation/plan` for daily run and task planning.
-- `POST /api/automation/swapr/execute` for claiming one queued Swapr automation
-  task and starting its Replicate provider prediction.
-- `POST /api/automation/clipr/execute` for claiming one queued Clipr automation
-  task, running provider-side script/avatar-image/avatar-video generation, and
-  creating a `clipr-finalization` media job.
-- `npm run media-worker` for claiming queued media jobs. Current worker paths
-  save editable Stitchr automation drafts and finalize Clipr automation videos
-  with FFmpeg.
 
 Use Convex as the durable ledger. Use Cloud Scheduler, Convex cron, or another
 small scheduler only to trigger planning. Do not put long video rendering,
@@ -102,6 +84,9 @@ Minimum fields:
 
 - `ownerId`
 - `enabled`
+- `timezone`
+- `preferredWindowStartLocal`
+- `preferredWindowEndLocal`
 - `enabledTools`
 - `productSelectionMode`
 - `selectedProductIds`
@@ -115,13 +100,13 @@ Tool keys should include `stitchr`, `swapr`, `clipr`, `avatar-photo`, and
 
 ### `automationRuns`
 
-One row per user, automation date, and tool.
+One row per user, local date, and tool.
 
 Minimum fields:
 
 - `ownerId`
 - `id`
-- `automationDate`
+- `localDate`
 - `tool`
 - `status`
 - `idempotencyKey`
@@ -139,7 +124,7 @@ Minimum fields:
 Recommended idempotency key:
 
 ```text
-ownerId + automationDate + tool + automationPreferenceVersion
+ownerId + localDate + tool + automationPreferenceVersion
 ```
 
 For avatar photo generation, include `avatarId` in the key because the limit is
@@ -253,15 +238,13 @@ Source requirements:
 - Optional product filtering should prefer demos linked to the selected product.
 - Exclude clips deleted, failed, or missing R2 objects.
 
-Draft finalization:
+Rendering:
 
-- Create `stitchr-draft-finalization` media jobs with source clip IDs, copied
-  trim ranges, audio flags, playback rates, and music settings.
-- Save outputs as editable `stitches` records with an automation source marker.
-- Do not render or persist final Stitchr MP4 clips during automation; saved
-  Stitchr drafts should remain editable and use the existing browser export path
-  when the user downloads or manually renders them.
-- Do not require Media Bunny or an open browser for the draft finalization step.
+- Create `stitchr-export` media jobs with source clip IDs, copied trim ranges,
+  text overlay settings, audio flags, playback rates, and music settings.
+- Render in the server media worker with FFmpeg.
+- Save outputs as `stitches` records with an automation source marker.
+- Do not require Media Bunny or an open browser.
 
 ### Pair Selection Algorithm
 
@@ -298,8 +281,7 @@ eligible pairs, create as many as possible and mark the rest skipped with a
 clear reason.
 
 History update must happen only after the stitch task reaches a final saved
-editable draft state. Failed finalization attempts should not make the pair look
-used.
+asset state. Failed render attempts should not make the pair look used.
 
 ## Swapr Automation
 
@@ -318,12 +300,8 @@ Execution:
 - Consume automatic Swapr daily budget before provider work.
 - Start provider prediction from a durable executor, not from a browser request.
 - Store provider prediction ID before waiting for completion.
-- Poll provider output from `POST /api/automation/swapr/finalize`, which is
-  worker-secret authorized and claims only `provider-created` Swapr tasks.
-- Create a `swapr-finalization` media job once Replicate returns a successful
-  output URL.
-- Let the media worker download the provider output, normalize it, create a
-  poster, and upload the durable media objects to R2.
+- Copy provider output to R2 from a finalizer.
+- Create a `swapr-finalization` media job when normalization is needed.
 - Save the final result as a UGC-compatible `videoClips` record with
   `swaprMetadata` and an automation source marker.
 
@@ -362,7 +340,7 @@ Source requirements:
 
 Execution:
 
-- Create one avatar-photo automation run per avatar per automation date.
+- Create one avatar-photo automation run per avatar per local date.
 - Consume automatic avatar-photo budget for that avatar before provider work.
 - Generate one prompt variant from the avatar description, wardrobe style, and
   recent generated-photo history.
@@ -401,25 +379,14 @@ create a saved editable Swipe draft and preview poster.
 
 ## Scheduling
 
-Planning should run at least hourly and create work during the global
-automation window.
-
-Initial global window:
-
-```text
-09:00 UTC through 13:00 UTC
-```
-
-The production deployment can override this with
-`AUTOMATION_GLOBAL_WINDOW_START_UTC` and
-`AUTOMATION_GLOBAL_WINDOW_END_UTC`. These remain operator settings, not user
-preferences.
+Planning should run at least hourly and create work for users whose local
+preferred window is currently open.
 
 Recommended schedule:
 
 - Cloud Scheduler or Convex cron triggers the automation planner every hour.
 - Planner pages through eligible users in bounded batches.
-- Planner creates idempotent runs for the current UTC automation date.
+- Planner creates idempotent runs for the user's local date.
 - Planner enqueues tasks only when daily automation budgets are available.
 - Executors claim tasks with leases.
 - Stale locks are released by scheduled recovery.
@@ -439,7 +406,7 @@ Add a dashboard automation surface that shows:
 - queued and running tasks;
 - skipped reasons;
 - failures with retry status;
-- the next scheduled global generation window;
+- the next scheduled generation window;
 - per-tool enabled or disabled state.
 
 Generated drafts should also appear in existing library tabs:
@@ -462,7 +429,7 @@ Add metadata where appropriate:
 - source asset IDs used.
 - source snapshot summary.
 - provider model IDs and prediction IDs.
-- created automation date.
+- created local date.
 
 This lets the app explain why a draft exists, lets support debug failures, and
 lets future selection logic avoid repetitive results.
@@ -507,9 +474,9 @@ instead of creating duplicates.
 
 - Implement eligible UGC/Demo discovery.
 - Implement weighted pair selection and pair history.
-- Create three daily `stitchr-draft-finalization` media tasks.
-- Finalize editable Stitchr drafts through the media worker ledger.
-- Save completed stitches as editable drafts.
+- Create three daily `stitchr-export` media tasks.
+- Render with the FFmpeg media worker.
+- Save completed stitches as drafts.
 
 Stitchr is the best first tool because its inputs are already durable saved
 clips and it does not require provider generation.
@@ -525,8 +492,7 @@ clips and it does not require provider generation.
 
 - Move Swapr provider execution and finalization to durable worker tasks.
 - Add one automatic Swapr output per day.
-- Poll successful provider output through the Swapr finalizer route.
-- Normalize provider output through the media worker and save a reusable clip.
+- Normalize provider output through the media worker.
 - Save reusable UGC-compatible clips.
 
 ### Phase 5: Clipr Autopilot
@@ -538,7 +504,17 @@ clips and it does not require provider generation.
 
 ## Open Decisions
 
-The open product decisions are answered in `open-automation.md`.
+- Whether automation should run for all enabled tools every day or let users set
+  a subset per weekday.
+- Whether generated drafts should count against a future paid credit balance in
+  addition to automation limits.
+- Whether users can set a hard storage cap for automatic outputs.
+- Whether old automatic drafts should be auto-archived or deleted after a
+  configurable retention period.
+- Whether Stitchr automation should prefer product-linked Demo clips only or
+  fall back to all Demos when a product has too few options.
+- Whether automatic text overlays should be generated for Stitchr outputs on day
+  one or added after the core media pipeline is stable.
 
 ## Required References
 
