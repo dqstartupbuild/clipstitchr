@@ -7,6 +7,7 @@ RUN apt-get update \
 WORKDIR /app
 
 COPY package.json package-lock.json ./
+RUN npm install -g npm@11.5.1
 RUN npm ci --omit=dev
 
 COPY . .

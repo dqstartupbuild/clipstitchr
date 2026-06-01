@@ -125,25 +125,57 @@ npm run media-worker -- --once --max-jobs=3
 
 ## Cloud Run Job Setup
 
-1. Build and publish the worker image from the `web/` directory:
+1. Choose the Google Cloud project and region, then enable the required APIs:
+
+```bash
+PROJECT_ID=your-project-id
+REGION=us-central1
+SCHEDULER_REGION=us-central1
+
+gcloud config set project "$PROJECT_ID"
+gcloud services enable \
+  artifactregistry.googleapis.com \
+  run.googleapis.com \
+  cloudscheduler.googleapis.com
+```
+
+2. Create the Artifact Registry Docker repository if it does not already exist,
+   then configure Docker authentication for that region:
+
+```bash
+gcloud artifacts repositories create clipstitchr \
+  --repository-format=docker \
+  --location "$REGION" \
+  --description="ClipStitchr container images"
+
+gcloud auth configure-docker "$REGION-docker.pkg.dev"
+```
+
+3. Build and publish the worker image from the `web/` directory. The explicit
+   platform matters on Apple Silicon Macs because Cloud Run requires a Linux
+   x86_64-compatible image:
 
 ```bash
 cd web
 docker build \
+  --platform linux/amd64 \
   -f services/media-worker/Dockerfile \
-  -t REGION-docker.pkg.dev/PROJECT_ID/clipstitchr/media-worker:latest \
+  -t "$REGION-docker.pkg.dev/$PROJECT_ID/clipstitchr/media-worker:latest" \
   .
-docker push REGION-docker.pkg.dev/PROJECT_ID/clipstitchr/media-worker:latest
+docker push "$REGION-docker.pkg.dev/$PROJECT_ID/clipstitchr/media-worker:latest"
 ```
 
-2. Create or update the Cloud Run Job:
+4. Create or update the Cloud Run Job:
 
 ```bash
 gcloud run jobs deploy clipstitchr-media-worker \
-  --image REGION-docker.pkg.dev/PROJECT_ID/clipstitchr/media-worker:latest \
-  --region REGION \
+  --image "$REGION-docker.pkg.dev/$PROJECT_ID/clipstitchr/media-worker:latest" \
+  --region "$REGION" \
   --tasks 1 \
   --max-retries 1 \
+  --cpu 2 \
+  --memory 4Gi \
+  --task-timeout 30m \
   --set-env-vars NEXT_PUBLIC_CONVEX_URL="..." \
   --set-env-vars MEDIA_WORKER_SECRET="..." \
   --set-env-vars AUTOMATION_WORKER_SECRET="..." \
@@ -157,32 +189,44 @@ gcloud run jobs deploy clipstitchr-media-worker \
 Use Secret Manager instead of literal `--set-env-vars` values for production
 secrets once the job is proven.
 
-3. Smoke-test FFmpeg support:
+5. Smoke-test FFmpeg support:
 
 ```bash
 gcloud run jobs execute clipstitchr-media-worker \
-  --region REGION \
+  --region "$REGION" \
   --args="--check"
 ```
 
-4. Run a bounded batch manually:
+6. Run a bounded batch manually:
 
 ```bash
 gcloud run jobs execute clipstitchr-media-worker \
-  --region REGION \
+  --region "$REGION" \
   --args="--once,--max-jobs=3"
 ```
 
-5. Schedule the Cloud Run Job. The Google Cloud documented path is Cloud
+7. Allow the Scheduler service account to execute the Cloud Run Job:
+
+```bash
+PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format="value(projectNumber)")"
+SCHEDULER_SERVICE_ACCOUNT="$PROJECT_NUMBER-compute@developer.gserviceaccount.com"
+
+gcloud run jobs add-iam-policy-binding clipstitchr-media-worker \
+  --region "$REGION" \
+  --member "serviceAccount:$SCHEDULER_SERVICE_ACCOUNT" \
+  --role roles/run.invoker
+```
+
+8. Schedule the Cloud Run Job. The Google Cloud documented path is Cloud
 Scheduler calling the Cloud Run Jobs run endpoint with OAuth:
 
 ```bash
 gcloud scheduler jobs create http clipstitchr-media-worker-every-10m \
-  --location SCHEDULER_REGION \
+  --location "$SCHEDULER_REGION" \
   --schedule="*/10 * * * *" \
-  --uri="https://run.googleapis.com/v2/projects/PROJECT_ID/locations/REGION/jobs/clipstitchr-media-worker:run" \
+  --uri="https://run.googleapis.com/v2/projects/$PROJECT_ID/locations/$REGION/jobs/clipstitchr-media-worker:run" \
   --http-method POST \
-  --oauth-service-account-email PROJECT_NUMBER-compute@developer.gserviceaccount.com
+  --oauth-service-account-email "$SCHEDULER_SERVICE_ACCOUNT"
 ```
 
 Start with every 10 minutes. Reduce the interval only after benchmarking FFmpeg
