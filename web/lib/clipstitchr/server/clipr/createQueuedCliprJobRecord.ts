@@ -16,7 +16,7 @@ export async function createQueuedCliprJobRecord({
   input,
   secret,
 }: CreateQueuedCliprJobRecordOptions) {
-  await convex.mutation(api.cliprJobs.createQueued, {
+  return await convex.mutation(api.cliprJobs.createQueued, {
     secret,
     id: input.jobId,
     productId: documents.product.id,

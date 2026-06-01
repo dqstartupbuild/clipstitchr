@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "npm run content:build && eslint .",
     "media-worker": "node ./services/media-worker/runMediaWorker.mjs",
+    "provider-worker": "tsx ./services/provider-worker/runProviderWorker.ts",
     "typecheck": "npm run content:build && tsc --noEmit",
     "test": "npm run content:build && vitest run --coverage"
   },
@@ -33,6 +34,7 @@
     "react-dom": "19.2.4",
     "remark-gfm": "^4.0.1",
     "replicate": "^1.4.0",
+    "tsx": "^4.22.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {

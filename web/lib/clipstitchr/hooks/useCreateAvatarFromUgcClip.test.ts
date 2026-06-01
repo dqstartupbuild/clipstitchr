@@ -70,6 +70,7 @@ describe("useCreateAvatarFromUgcClip", () => {
           variant: { style: "ugc" },
         },
       ],
+      queuedCount: 3,
     });
   });
 
@@ -103,7 +104,7 @@ describe("useCreateAvatarFromUgcClip", () => {
     expect(mocks.generateAvatarPhotos).not.toHaveBeenCalled();
   });
 
-  it("creates an avatar from a poster and saves generated photos", async () => {
+  it("creates an avatar from a poster and queues generated photos", async () => {
     const avatar = {
       cliprVoiceId: "Zephyr (Female)",
       createdAt: "2026-05-20T00:00:00.000Z",
@@ -128,6 +129,8 @@ describe("useCreateAvatarFromUgcClip", () => {
     expect(mocks.generateAvatarPhotos).toHaveBeenCalledWith(
       expect.objectContaining({
         avatarDescription: "Confident founder",
+        avatarId: "avatar_1",
+        avatarName: "Founder",
         avatar: expect.objectContaining({
           mimeType: "image/jpeg",
           name: "Founder testimonial",
@@ -138,20 +141,23 @@ describe("useCreateAvatarFromUgcClip", () => {
       description: "Confident founder",
       name: "Founder",
     });
-    expect(saveGeneratedPhotos).toHaveBeenCalledWith(
-      expect.any(Array),
-      {
-        avatarId: "avatar_1",
-        sourceAvatarName: "Founder",
-      },
-    );
-    expect(mocks.stateSetter).toHaveBeenCalledWith(1);
+    expect(saveGeneratedPhotos).not.toHaveBeenCalled();
+    expect(mocks.stateSetter).toHaveBeenCalledWith(3);
     expect(mocks.stateSetter).toHaveBeenCalledWith(false);
   });
 
   it("loads a full clip poster and surfaces generation failures", async () => {
+    const avatar = {
+      cliprVoiceId: "Zephyr (Female)",
+      createdAt: "2026-05-20T00:00:00.000Z",
+      description: "Confident founder",
+      id: "avatar_1",
+      name: "Founder",
+      updatedAt: "2026-05-20T00:00:00.000Z",
+      wardrobeStyle: "any" as const,
+    };
     const state = useCreateAvatarFromUgcClip({
-      createAvatar: vi.fn(),
+      createAvatar: vi.fn(async () => avatar),
       loadClip: vi.fn(
         async () =>
           ({

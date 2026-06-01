@@ -90,6 +90,7 @@ export const planDaily = mutation({
       stage: "awaiting-text-provider",
       idempotencyKey: `${ownerId}:${automationDate}:swipr:1`,
       inputSnapshotJson: JSON.stringify({
+        automationDate,
         productId: product.id,
         productName: product.name,
         productDetails: product.productDetails,

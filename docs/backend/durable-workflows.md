@@ -7,12 +7,15 @@ external work.
 
 ## Current Failure Mode
 
-The app currently has two kinds of work:
+The app still has two kinds of work:
 
-- Browser-local work: upload normalization, photo preparation, poster capture,
-  and Stitchr composition run in the browser with in-memory `Blob` values.
-- External/provider work: Replicate predictions continue after the browser call
-  that created them.
+- Worker-owned work: manual Swapr, manual Clipr, video upload normalization plus
+  analysis, avatar photo generation, and daily automation now create durable
+  Convex jobs before provider/media work starts.
+- Browser/request-owned work: photo preparation, legacy image analysis, Swipr
+  background generation/analysis, standalone text suggestions, existing-asset
+  music regeneration, product enrichment, Swapr photo expansion, and Stitchr
+  composition still depend on the current request or browser session.
 
 The fragile part is the handoff after a provider finishes. If Replicate succeeds
 but the browser refreshes before the client downloads the output, uploads it to
@@ -128,13 +131,13 @@ device cannot resume the work.
 
 | Workflow | Current behavior | Durable target |
 | --- | --- | --- |
-| Avatar photo generation | Replicate predictions are recorded, but final R2 save is client-side. Refresh can orphan successful outputs. | Store generation metadata on the job and finalize via Replicate webhook or recovery finalizer. |
-| Swapr generation | Replicate prediction is recorded and pollable, but download, normalization, R2 upload, and clip save are client-side. Refresh can orphan successful videos. | Finalize provider output server-side, or store a durable post-processing job if normalization remains browser-side. |
+| Avatar photo generation | Worker-owned. The route uploads the source image to R2, creates an `avatar-photo-generation` provider job, and the provider worker saves final `photoAssets`. | Add webhook-triggered finalization and retry controls; current worker polling already removes browser-close loss. |
+| Swapr generation | Worker-owned. The route validates saved R2 inputs, creates a `manual-swapr` provider job, and the provider/media workers create the final saved Swapr clip. | Add webhook-triggered finalization and operational retry controls; current worker polling already removes browser-close loss. |
 | Photo upload | Browser prepares photo, uploads objects, and saves Convex metadata. Refresh can stop before completion. | Upload original source to a durable job first, then finalize from a recoverable source. |
-| Video upload normalization | Browser Media Bunny normalization and R2 upload run from a page-local queue. Refresh stops work. | Persist source first and process in a backend worker, or persist a local resumable queue. |
+| Video upload normalization | Worker-owned after the raw source upload and `upload-normalization` job creation. The media worker normalizes, captures the poster, saves the clip, and creates the upload-analysis provider job. | Add resumable/multipart source uploads if close-before-upload durability becomes required. |
 | Stitchr composition | Inputs are durable saved clips, but each stitch job is browser-local. Refresh stops work, including multi-UGC batches that have not finished saving every output. Optional music is durable once generated because the audio object and editable settings live on the saved stitch. | Create a stitch job with selected UGC clip IDs, demo clip ID, trim ranges, per-output overlay configs, and optional music settings, then process in a backend worker or resumable browser queue. |
 | Longr composition | Inputs are durable saved clips, but the combined long-form render is browser-local. Refresh stops the build before the final Long, poster, and Convex record are saved. | Create a Longr job with ordered source clip IDs and trim ranges, then process in a backend worker or resumable browser queue. |
-| Clipr generation | `POST /api/clipr/jobs` creates and updates `cliprJobs` records while route-local server helpers handle request parsing, quotas, input loading, script planning, avatar still generation, avatar video/music generation, R2 copies, analytics, and failure cleanup. Browser Media Bunny final preparation saves the clean Clip video, and export/download can render a temporary music mix from durable video and audio objects. A request/runtime failure can still interrupt provider orchestration before finalization. | Move provider execution, final video preparation, and music export rendering to recoverable workers/finalizers when browser reliability or route timeout limits require it. |
+| Clipr generation | Worker-owned. `POST /api/clipr/jobs` creates a queued `cliprJobs` record and `manual-clipr` provider job. The provider worker handles text/still/video/music and the media worker saves the final Clipr clip. | Add webhook-triggered provider completion and richer user-visible retry/recover controls. |
 
 ## Recovery Requirements
 
@@ -197,8 +200,9 @@ For upload normalization, each job needs:
 
 ### Phase 1: Stop Provider Output Loss
 
-- Extend provider job records or create typed job tables with finalization
-  metadata.
+- Provider job records now cover manual Swapr, manual Clipr, manual avatar
+  photos, and upload-video analysis with finalization metadata before worker
+  execution starts.
 - Add Replicate `completed` webhooks for avatar and Swapr predictions.
 - Verify Replicate webhook signatures.
 - Add idempotent finalizers that copy provider outputs to R2 and create final
@@ -208,17 +212,17 @@ For upload normalization, each job needs:
 
 ### Phase 2: Persist Job State in the UI
 
-- Add a dashboard job tray that lists running, failed, and recently completed
-  jobs from Convex.
+- A dashboard banner now lists active provider/media jobs from Convex.
+- Add a full dashboard job tray that lists failed and recently completed jobs.
 - Replace page-local progress as the source of truth with Convex job status.
 - Keep page progress components as views over durable job state.
 
 ### Phase 3: Make Browser Media Work Recoverable
 
 - Decide between server-worker media processing and browser-resume processing.
-- If server-worker processing is chosen, upload raw inputs to R2 before
-  normalization and move normalization/stitching out of route-local component
-  state.
+- Server-worker processing is implemented for video upload normalization, manual
+  Swapr finalization, and manual Clipr finalization. Extend the same model to
+  Stitchr/Longr rendered exports when server-rendered outputs become required.
 - If browser-resume processing is chosen, explicitly allow a transient local job
   store and implement resume-on-load.
 

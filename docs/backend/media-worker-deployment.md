@@ -1,6 +1,6 @@
 # Media Worker Deployment
 
-Reviewed: 2026-05-15
+Reviewed: 2026-06-01
 
 The media worker is a separate runtime from the Next.js app and from Convex.
 It runs `npm run media-worker`, claims queued `mediaJobs` records from Convex,
@@ -41,7 +41,6 @@ Fill in:
 ```bash
 NEXT_PUBLIC_CONVEX_URL=...
 MEDIA_WORKER_SECRET=...
-AUTOMATION_WORKER_SECRET=...
 R2_ACCOUNT_ID=...
 R2_BUCKET_NAME=...
 R2_ACCESS_KEY_ID=...
@@ -68,9 +67,8 @@ For Cloud Run-style bounded execution, run:
 npm run media-worker -- --once --max-jobs=3
 ```
 
-`MEDIA_WORKER_SECRET` and `AUTOMATION_WORKER_SECRET` must be the same values in
-`web/.env.worker.local` and in the Convex deployment when processing
-automation-owned media jobs.
+`MEDIA_WORKER_SECRET` must be the same value in `web/.env.worker.local` and in
+the Convex deployment when processing automation-owned media jobs.
 `REPLICATE_API_TOKEN` is optional for public `replicate.delivery` output URLs
 and required only when a Swapr finalization job must fetch an authenticated
 `api.replicate.com` output URL.
@@ -115,9 +113,10 @@ path. The worker uses R2 credentials directly.
 
 ## Production Recommendation
 
-Use a long-running container or VM for the media worker. The worker is designed
-as a poller, not as a short request handler, so it needs a process that can stay
-alive, use scratch disk, and perform CPU-heavy media work.
+Use a long-running container/VM or bounded Cloud Run Job for the media worker.
+The worker is designed as a poller, not as a short request handler, so it needs
+a process that can stay alive long enough to claim work, use scratch disk, and
+perform CPU-heavy media work.
 
 Recommended starting options:
 
@@ -129,6 +128,11 @@ Recommended starting options:
 | OCI Ampere A1 Always Free VM | Best hosted no-monthly-bill candidate if capacity is available | Oracle documents 3,000 OCPU hours and 18,000 GB hours per month for Ampere A1 Always Free compute, equivalent to 4 OCPUs and 24 GB memory for Always Free tenancies. Requires staying inside Always Free limits and watching capacity/budget settings. |
 | Google Cloud Run Jobs | Recommended managed batch path | Requires a billing account. The worker now supports bounded `--once --max-jobs=N` execution, which fits Cloud Run Jobs. Google documents monthly free-tier vCPU/RAM seconds, but usage above the free tier is billable. |
 | Render paid background worker | Viable managed option | Render's free services are not for production background workers; use a paid worker instance. |
+
+The current Preview/dev deployment uses a scheduled Cloud Run Job named
+`clipstitchr-media-worker` with `npm run media-worker -- --once --max-jobs=3`.
+That same shape is acceptable for production once queue-depth monitoring,
+coalescing, and cleanup are in place.
 
 Avoid these as the primary media worker:
 
@@ -299,10 +303,9 @@ automatic launch from every media job creation path.
 ## Production Checklist
 
 1. Choose the worker host.
-2. Put `NEXT_PUBLIC_CONVEX_URL`, `MEDIA_WORKER_SECRET`,
-   `AUTOMATION_WORKER_SECRET`, and R2 credentials in that host's secret/env
-   system.
-3. Put the same `MEDIA_WORKER_SECRET` and `AUTOMATION_WORKER_SECRET` in Convex.
+2. Put `NEXT_PUBLIC_CONVEX_URL`, `MEDIA_WORKER_SECRET`, and R2 credentials in
+   that host's secret/env system.
+3. Put the same `MEDIA_WORKER_SECRET` in Convex.
 4. Run `npm run media-worker` for a long-running host, or
    `npm run media-worker -- --once --max-jobs=N` for Cloud Run Jobs.
 5. Confirm startup passes the FFmpeg support self-test.

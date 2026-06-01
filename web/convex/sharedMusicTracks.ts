@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
@@ -128,6 +129,62 @@ export const save = mutation({
 
     if (existingTrack) {
       throw new Error("Music track already exists.");
+    }
+
+    await rateLimiter.limit(ctx, "convexRecordSave", {
+      key: ownerId,
+      throws: true,
+    });
+
+    return await ctx.db.insert("sharedMusicTracks", {
+      uploadedByOwnerId: ownerId,
+      ...args,
+      title,
+      tags: normalizeTags(args.tags),
+      style: args.style
+        ? normalizeText(args.style, MUSIC_STYLE_MAX_LENGTH)
+        : undefined,
+      prompt: args.prompt
+        ? normalizeText(args.prompt, MUSIC_PROMPT_MAX_LENGTH)
+        : undefined,
+    });
+  },
+});
+
+export const saveFromProvider = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    title: v.string(),
+    tags: assetTagsValidator,
+    style: v.optional(v.string()),
+    durationSeconds: v.number(),
+    audioObject: r2ObjectValidator,
+    ownerAudioObject: v.optional(r2ObjectValidator),
+    mimeType: v.string(),
+    size: v.number(),
+    prompt: v.optional(v.string()),
+    providerModel: v.optional(v.string()),
+    providerPredictionId: v.optional(v.string()),
+    source: musicTrackSourceValidator,
+    createdAt: v.string(),
+  },
+  handler: async (ctx, { secret, ownerId, ...args }) => {
+    assertProviderWorkerSecret(secret);
+
+    const existingTrack = await ctx.db
+      .query("sharedMusicTracks")
+      .withIndex("by_music_id", (q) => q.eq("id", args.id))
+      .unique();
+    const title = normalizeText(args.title, MUSIC_TITLE_MAX_LENGTH);
+
+    if (!title) {
+      throw new Error("Music title is required.");
+    }
+
+    if (existingTrack) {
+      return existingTrack._id;
     }
 
     await rateLimiter.limit(ctx, "convexRecordSave", {

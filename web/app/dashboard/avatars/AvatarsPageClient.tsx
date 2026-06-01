@@ -167,7 +167,7 @@ export function AvatarsPageClient() {
         ) : null}
         {generator.generatedCount ? (
           <div className="rounded-lg border border-accent/25 bg-surface-muted p-4 text-sm font-semibold text-accent-dark">
-            Saved {generator.generatedCount} generated photos.
+            Queued {generator.generatedCount} generated photos.
           </div>
         ) : null}
         {showUploadControls ? (

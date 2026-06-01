@@ -1,33 +1,24 @@
 import { NextResponse } from "next/server";
-import type { Prediction } from "replicate";
 import { api } from "@/convex/_generated/api";
 import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
-import { createAvatarGenerationVariants } from "@/lib/clipstitchr/server/createAvatarGenerationVariants";
-import { createAvatarPhotoGenerationInput } from "@/lib/clipstitchr/server/createAvatarPhotoGenerationInput";
-import { createAvatarPhotoGenerationPrompt } from "@/lib/clipstitchr/server/createAvatarPhotoGenerationPrompt";
-import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
-import { createReplicateImageDataUrl } from "@/lib/clipstitchr/server/createReplicateImageDataUrl";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { getAvatarIdentityMode } from "@/lib/clipstitchr/server/getAvatarIdentityMode";
 import { getAvatarLightingOption } from "@/lib/clipstitchr/server/getAvatarLightingOption";
 import { getAvatarPhotoGenerationCount } from "@/lib/clipstitchr/server/getAvatarPhotoGenerationCount";
 import { getAvatarPhotoGenerationModelId } from "@/lib/clipstitchr/server/getAvatarPhotoGenerationModelId";
-import { getAvatarWardrobeStyle } from "@/lib/clipstitchr/server/getAvatarWardrobeStyle";
 import { getAvatarStyleOption } from "@/lib/clipstitchr/server/getAvatarStyleOption";
-import { getReplicateOutputUrls } from "@/lib/clipstitchr/server/getReplicateOutputUrls";
-import { getReplicatePredictionStatus } from "@/lib/clipstitchr/server/getReplicatePredictionStatus";
-import { getReplicatePredictionModelReference } from "@/lib/clipstitchr/server/getReplicatePredictionModelReference";
+import { getAvatarWardrobeStyle } from "@/lib/clipstitchr/server/getAvatarWardrobeStyle";
 import { getSwaprFormFile } from "@/lib/clipstitchr/server/getSwaprFormFile";
 import { getSwaprFormString } from "@/lib/clipstitchr/server/getSwaprFormString";
+import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/capturePostHogServerEvent";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
-import type { GeneratedAvatarPhoto } from "@/lib/clipstitchr/types/GeneratedAvatarPhoto";
+import { createR2ObjectKey } from "@/lib/clipstitchr/server/r2/createR2ObjectKey";
+import { putR2Object } from "@/lib/clipstitchr/server/r2/putR2Object";
+import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getGenerationSpeedTier } from "@/lib/clipstitchr/utils/getGenerationSpeedTier";
-import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
-import { mapWithConcurrency } from "@/lib/clipstitchr/utils/mapWithConcurrency";
-import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/capturePostHogServerEvent";
 
 export const runtime = "nodejs";
 
@@ -47,6 +38,8 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const image = getSwaprFormFile(formData, "image");
+    const avatarId = getSwaprFormString(formData, "avatarId").trim();
+    const avatarName = getSwaprFormString(formData, "avatarName").trim();
     const avatarDescription =
       getSwaprFormString(formData, "avatarDescription").trim();
     const count = getAvatarPhotoGenerationCount(
@@ -67,7 +60,14 @@ export async function POST(request: Request) {
     const generationSpeedTier = getGenerationSpeedTier(
       getSwaprFormString(formData, "generationSpeedTier"),
     );
-    const speedProfile = getGenerationSpeedTierProfile(generationSpeedTier);
+
+    if (!avatarId) {
+      throw new Error("Choose an avatar before creating photos.");
+    }
+
+    if (!avatarName) {
+      throw new Error("Avatar name is required.");
+    }
 
     if (!avatarDescription) {
       throw new Error("Add an avatar description before creating photos.");
@@ -81,101 +81,44 @@ export async function POST(request: Request) {
       secret: rateLimitSecret,
     });
 
-    const modelId = getAvatarPhotoGenerationModelId();
-    const replicate = createReplicateClient();
+    const sourceImageId = createId();
     const imageBytes = await image.arrayBuffer();
-    const imageName = image.name || "avatar-reference.jpg";
     const imageType = image.type || "image/jpeg";
-    const variants = createAvatarGenerationVariants({
-      context,
-      count,
-      lighting,
-      location,
-      style,
-      wardrobeStyle,
+    const sourceImageObject = await putR2Object({
+      body: imageBytes,
+      contentType: imageType,
+      key: createR2ObjectKey({
+        contentType: imageType,
+        kind: "provider-input-image",
+        recordId: sourceImageId,
+        userId,
+      }),
     });
-
-    const generatedImages = await mapWithConcurrency(
-      variants,
-      speedProfile.avatarImageConcurrency,
-      async (variant) => {
-        const prompt = createAvatarPhotoGenerationPrompt({
-          avatarDescription,
-          identityMode,
-          modelId,
-          variant,
-        });
-        const referenceImage = new File([imageBytes], imageName, {
-          type: imageType,
-        });
-
-        const prediction = await replicate.predictions.create({
-          ...getReplicatePredictionModelReference(modelId),
-          input: createAvatarPhotoGenerationInput({
-            image: referenceImage,
-            modelId,
-            prompt,
-            quality: speedProfile.avatarImageQuality,
-          }),
-        });
-        const createdAt = new Date().toISOString();
-
-        await convex.mutation(api.replicateJobs.recordAvatarPhotoJob, {
-          secret: rateLimitSecret,
-          predictionId: prediction.id,
-          modelId,
-          status: getReplicatePredictionStatus(prediction.status),
-          createdAt,
-          updatedAt: createdAt,
-        });
-
-        const completedPrediction = await replicate.wait(prediction, {
-          interval: 2000,
-        });
-        const completedStatus = getReplicatePredictionStatus(
-          completedPrediction.status,
-        );
-        const predictionError =
-          typeof completedPrediction.error === "string"
-            ? completedPrediction.error
-            : completedPrediction.error
-              ? JSON.stringify(completedPrediction.error)
-              : undefined;
-        const outputUrl = getReplicateOutputUrls(
-          (completedPrediction as Prediction).output,
-        )[0];
-
-        await convex.mutation(api.replicateJobs.updateAvatarPhotoJobStatus, {
-          secret: rateLimitSecret,
-          predictionId: prediction.id,
-          status: completedStatus,
-          outputUrl,
-          error: predictionError,
-          updatedAt: new Date().toISOString(),
-        });
-
-        if (completedPrediction.status !== "succeeded") {
-          throw new Error(
-            predictionError ??
-            "Replicate did not complete avatar photo generation.",
-          );
-        }
-
-        if (!outputUrl) {
-          throw new Error("Replicate did not return a generated avatar photo.");
-        }
-
-        const imageData = await createReplicateImageDataUrl(outputUrl);
-
-        return {
-          image: {
-            ...imageData,
-            variant,
-          } satisfies GeneratedAvatarPhoto,
-          prompt,
-        };
-      },
-    );
+    const createdAt = new Date().toISOString();
+    const job = await convex.mutation(api.providerJobs.create, {
+      secret: rateLimitSecret,
+      ownerId: userId,
+      id: `provider:avatar-photo:${sourceImageId}`,
+      jobType: "avatar-photo-generation",
+      stage: "awaiting-provider",
+      idempotencyKey: `${userId}:avatar-photo-generation:${sourceImageId}`,
+      inputSnapshotJson: JSON.stringify({
+        avatarDescription,
+        avatarId,
+        avatarName,
+        context,
+        count,
+        generationSpeedTier,
+        identityMode,
+        lighting,
+        location,
+        sourceImageName: image.name || "avatar-reference.jpg",
+        sourceImageObject,
+        style,
+        wardrobeStyle,
+      }),
+      createdAt,
+    });
 
     await capturePostHogServerEvent({
       distinctId: userId,
@@ -186,18 +129,16 @@ export async function POST(request: Request) {
         lighting,
         identity_mode: identityMode,
         generation_speed_tier: generationSpeedTier,
-        model_id: modelId,
+        model_id: getAvatarPhotoGenerationModelId(),
       },
       request,
     });
 
     return NextResponse.json({
-      generationSpeedLabel: speedProfile.publicSpeedLabel,
       generationSpeedTier,
-      images: generatedImages.map((generatedImage) => generatedImage.image),
-      modelId,
-      prompts: generatedImages.map((generatedImage) => generatedImage.prompt),
-      quality: speedProfile.avatarImageQuality,
+      job,
+      modelId: getAvatarPhotoGenerationModelId(),
+      queuedCount: count,
     });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

@@ -1,6 +1,7 @@
 import React from "react";
+import { useQuery } from "convex/react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
@@ -19,6 +20,10 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 
 vi.mock("@clerk/nextjs", () => ({
   UserButton: () => <span>User menu</span>,
+}));
+
+vi.mock("convex/react", () => ({
+  useQuery: vi.fn(() => []),
 }));
 
 vi.mock("@/app/_components/dashboard/UploadDestinationMenuButton", () => ({
@@ -64,6 +69,11 @@ vi.mock("@/app/_components/dashboard/VideoClipCard", () => ({
 const noop = vi.fn();
 
 describe("dashboard shell sections", () => {
+  beforeEach(() => {
+    vi.mocked(useQuery).mockReset();
+    vi.mocked(useQuery).mockReturnValue([]);
+  });
+
   it("renders headers, shell navigation, sidebar links, and stats", () => {
     const headerMarkup = renderToStaticMarkup(<DashboardHeader />);
     const customHeaderMarkup = renderToStaticMarkup(
@@ -91,6 +101,36 @@ describe("dashboard shell sections", () => {
     expect(sidebarMarkup).toContain("Settings");
     expect(statsMarkup).toContain("Demo Videos");
     expect(statsMarkup).toContain("4");
+  });
+
+  it("renders a background job banner when workers are still running", () => {
+    vi.mocked(useQuery)
+      .mockReturnValueOnce([
+        {
+          id: "provider_job_1",
+          jobType: "manual-swapr",
+          stage: "queued",
+          status: "queued",
+        },
+      ])
+      .mockReturnValueOnce([
+        {
+          id: "media_job_1",
+          jobType: "upload-normalization",
+          stage: "claimed",
+          status: "running",
+        },
+      ]);
+
+    const markup = renderToStaticMarkup(
+      <DashboardShell>
+        <p>Workspace child</p>
+      </DashboardShell>,
+    );
+
+    expect(markup).toContain("Background AI work is running");
+    expect(markup).toContain("Swapr generation queued");
+    expect(markup).toContain("Upload processing running");
   });
 
   it("renders empty states for recent dashboard sections", () => {

@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     const results = [];
 
     for (const ownerId of ownerIds) {
-      const [stitchr, swapr, clipr] = await Promise.all([
+      const [stitchr, swapr, clipr, avatarPhoto, swipr] = await Promise.all([
         convex.mutation(api.automationStitchr.planDaily, {
           secret,
           ownerId,
@@ -66,6 +66,18 @@ export async function POST(request: Request) {
           automationDate,
           now,
         }),
+        convex.mutation(api.automationAvatarPhoto.planDaily, {
+          secret,
+          ownerId,
+          automationDate,
+          now,
+        }),
+        convex.mutation(api.automationSwipr.planDaily, {
+          secret,
+          ownerId,
+          automationDate,
+          now,
+        }),
       ]);
 
       results.push({
@@ -73,14 +85,16 @@ export async function POST(request: Request) {
         stitchr,
         swapr,
         clipr,
+        avatarPhoto,
+        swipr,
       });
     }
 
     return NextResponse.json({
       automationDate,
-      heldTools: ["avatar-photo", "swipr"],
+      heldTools: [],
       ownerCount: ownerIds.length,
-      plannedTools: ["stitchr", "swapr", "clipr"],
+      plannedTools: ["stitchr", "swapr", "clipr", "avatar-photo", "swipr"],
       results,
     });
   } catch (error) {

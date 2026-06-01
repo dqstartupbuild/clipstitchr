@@ -273,10 +273,12 @@ describe("server utility coverage", () => {
         replicate,
         slideCount: 3,
       }),
-    ).resolves.toEqual({
-      hooks: ["Hook"],
-      providerModel: "model",
-    });
+    ).resolves.toEqual(
+      expect.objectContaining({
+        hooks: ["Hook"],
+        providerModel: "model",
+      }),
+    );
     expect(mocks.parseCliprTextGenerationOutput).toHaveBeenCalledWith(
       expect.objectContaining({
         durationSeconds: 30,

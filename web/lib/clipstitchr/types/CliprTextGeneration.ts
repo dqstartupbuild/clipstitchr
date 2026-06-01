@@ -6,6 +6,7 @@ export type CliprTextGeneration = {
   hookTemplateId: string;
   overlayText: string;
   providerModel: string;
+  providerPredictionId?: string;
   scenePlan: CliprScenePlan[];
   script: string;
   slides: string[];

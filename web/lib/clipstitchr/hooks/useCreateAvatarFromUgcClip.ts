@@ -17,7 +17,6 @@ type UseCreateAvatarFromUgcClipOptions = {
 export function useCreateAvatarFromUgcClip({
   createAvatar,
   loadClip,
-  saveGeneratedPhotos,
 }: UseCreateAvatarFromUgcClipOptions) {
   const [createdAvatar, setCreatedAvatar] = useState<Avatar | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -57,12 +56,18 @@ export function useCreateAvatarFromUgcClip({
           throw new Error("This clip needs a poster before creating an avatar.");
         }
 
+        const avatar = await createAvatar({
+          description: avatarDescription,
+          name: avatarName,
+        });
         const result = await generateAvatarPhotos({
           avatar: {
             blob: posterBlob,
             mimeType: posterBlob.type || "image/jpeg",
             name: clip.name,
           },
+          avatarId: avatar.id,
+          avatarName: avatar.name,
           avatarDescription,
           context: options.context,
           count: options.count,
@@ -71,17 +76,9 @@ export function useCreateAvatarFromUgcClip({
           location: options.location,
           style: options.style,
         });
-        const avatar = await createAvatar({
-          description: avatarDescription,
-          name: avatarName,
-        });
 
-        await saveGeneratedPhotos(result.generatedPhotos, {
-          avatarId: avatar.id,
-          sourceAvatarName: avatar.name,
-        });
         setCreatedAvatar(avatar);
-        setGeneratedCount(result.generatedPhotos.length);
+        setGeneratedCount(result.queuedCount);
         return avatar;
       } catch (nextError) {
         setError(
@@ -94,7 +91,7 @@ export function useCreateAvatarFromUgcClip({
         setIsGenerating(false);
       }
     },
-    [createAvatar, loadClip, saveGeneratedPhotos],
+    [createAvatar, loadClip],
   );
 
   return {
