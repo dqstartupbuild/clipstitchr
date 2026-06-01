@@ -324,6 +324,43 @@ describe("VideoClipDetailsDialog", () => {
     expect(mocks.musicState.selectMusicTrack).toHaveBeenCalledWith(createTrack());
   });
 
+  it("constrains long saved Swapr metadata inside the mobile dialog width", () => {
+    const longToken = "swapr-output-" + "x".repeat(180);
+    const tree = VideoClipDetailsDialog({
+      clip: createClip({
+        cliprMetadata: undefined,
+        name: longToken,
+        originalName: `users/user_123/video-clips/${longToken}/normalized.mp4`,
+        tags: [longToken],
+        videoDescription: longToken,
+      }),
+      isLoading: false,
+      onClose: vi.fn(),
+      onLoadPreview: vi.fn(),
+      posterUrl: "poster.jpg",
+      videoUrl: "clip.mp4",
+    });
+    const dialog = findElements(
+      tree,
+      (element) => element.props?.role === "dialog",
+    )[0];
+    const contentGrid = findElements(
+      tree,
+      (element) =>
+        element.type === "div" &&
+        String(element.props?.className).includes("grid min-w-0"),
+    )[0];
+    const titleText = findElements(
+      tree,
+      (element) =>
+        element.type === "p" && element.props?.children === longToken,
+    )[0];
+
+    expect(dialog.props.className).toContain("overflow-x-hidden");
+    expect(contentGrid.props.className).toContain("min-w-0");
+    expect(titleText.props.className).toContain("break-words");
+  });
+
   it("handles trim-only, music-only, and missing editor states", () => {
     mocks.musicState = {
       ...mocks.musicState,
