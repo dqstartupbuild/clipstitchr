@@ -263,19 +263,46 @@ Scheduler
   -> planner creates automationRuns with idempotency keys
   -> planner enqueues provider tasks
   -> provider executors create/copy outputs
-  -> media jobs render final videos when needed
+  -> media jobs render final videos only when needed
   -> notifications tell the user content is ready
 ```
 
 Eligibility should require at least:
 
 - autopilot enabled;
-- user timezone and preferred generation window;
+- global automation window eligibility from `automation.md`;
 - one saved product with enough strategy metadata;
 - one avatar with at least one usable photo;
 - selected tool preferences such as Clipr, Swipr, or both;
 - spend/rate-limit budget available;
 - no duplicate run for the same user/date/tool/product/avatar key.
+
+The first Swapr automation executor lives at
+`POST /api/automation/swapr/execute`. It is authorized with
+`AUTOMATION_WORKER_SECRET`, claims one queued `swapr-video` automation task,
+starts the Replicate prediction, records the provider job under the task owner,
+and marks the task `provider-created`. Swapr provider polling lives at
+`POST /api/automation/swapr/finalize`; it claims one `provider-created` Swapr
+task, refreshes the Replicate job status, creates a `swapr-finalization` media
+job when the provider succeeds, and marks provider failures against the
+automation task/run.
+
+The first Clipr automation executor lives at
+`POST /api/automation/clipr/execute`. It is authorized with
+`AUTOMATION_WORKER_SECRET`, claims one queued `clipr-video` automation task, and
+runs the provider-side script, avatar source image, and avatar video steps using
+the automation task snapshot. It writes the provider outputs to the Clipr job and
+creates a `clipr-finalization` media job.
+
+The first FFmpeg media worker lives at
+`web/services/media-worker/runMediaWorker.mjs`. It claims queued media jobs with
+`MEDIA_WORKER_SECRET`; for `clipr-finalization`, it normalizes the durable avatar
+video to 9:16 H.264/AAC, captures a poster, uploads both objects to R2, saves
+the final Clipr `videoClips` record, and marks the automation task/run complete.
+For `swapr-finalization`, it downloads the allowlisted Replicate output URL,
+normalizes the video to the same saved-clip format, captures a poster, uploads
+both objects to R2, saves a UGC-compatible `videoClips` record with
+`swaprMetadata`, and marks the automation task/run complete.
 
 Recommended idempotency key:
 
@@ -296,7 +323,7 @@ Before autopilot is exposed to users, add an explicit preferences model:
 - product selection mode;
 - avatar selection mode;
 - generation frequency;
-- quiet hours/timezone;
+- enabled tools and source selection preferences;
 - maximum outputs per day/week;
 - monthly spend or credit cap;
 - approval mode: save as draft versus publish/send automatically;
@@ -390,7 +417,8 @@ Update `docs/backend/rate-limits.md` whenever these limits are implemented.
 - Add autopilot preferences.
 - Add `automationRuns` and `automationTasks`.
 - Add daily planner with idempotency keys.
-- Start with Swipr and Clipr only.
+- Start active dispatch with Stitchr, Swapr, and Clipr. Avatar photos and Swipr
+  stay planned but held until their durable executors are implemented.
 - Save outputs as drafts and notify the user.
 - Add admin/support visibility into skipped, failed, and retried runs.
 

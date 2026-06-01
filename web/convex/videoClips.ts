@@ -1,10 +1,12 @@
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
+import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { videoClipCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
+import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { cliprMetadataValidator } from "./validators/cliprMetadata";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { clipTypeValidator } from "./validators/clipType";
@@ -44,6 +46,13 @@ const saveArgs = {
   cliprMetadata: v.optional(cliprMetadataValidator),
   createdAt: v.string(),
   updatedAt: v.string(),
+};
+
+const saveFromAutomationArgs = {
+  secret: v.string(),
+  ownerId: v.string(),
+  automation: automationProvenanceValidator,
+  ...saveArgs,
 };
 
 export const list = query({
@@ -157,6 +166,61 @@ export const save = mutation({
       ownerId,
       ...clipArgs,
       ...(demoProductId ? { productId: demoProductId } : {}),
+    };
+
+    if (existingClip) {
+      await ctx.db.patch(existingClip._id, clip);
+      const updatedClip = await ctx.db.get(existingClip._id);
+
+      if (updatedClip) {
+        await videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip);
+      }
+
+      return existingClip._id;
+    }
+
+    const clipId = await ctx.db.insert("videoClips", clip);
+    const insertedClip = await ctx.db.get(clipId);
+
+    if (insertedClip) {
+      await videoClipCounts.insertIfDoesNotExist(ctx, insertedClip);
+    }
+
+    return clipId;
+  },
+});
+
+export const saveFromAutomation = mutation({
+  args: saveFromAutomationArgs,
+  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+    assertAutomationWorkerSecret(secret);
+
+    const existingClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.id),
+      )
+      .unique();
+
+    if (
+      existingClip?.automation?.source === "automation" &&
+      existingClip.automation.taskId === automation.taskId
+    ) {
+      return existingClip._id;
+    }
+
+    await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
+      throws: true,
+    });
+
+    const clip = {
+      ownerId,
+      ...args,
+      automation,
     };
 
     if (existingClip) {

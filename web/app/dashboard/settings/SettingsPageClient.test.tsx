@@ -2,7 +2,16 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsPageClient } from "@/app/dashboard/settings/SettingsPageClient";
+import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+
+type AutomationState = {
+  preferences: AutomationPreferencesInput;
+  isLoading: boolean;
+  isSaving: boolean;
+  error: string | null;
+  savePreferences: ReturnType<typeof vi.fn>;
+};
 
 type ProductsState = {
   products: ProductProfile[];
@@ -18,7 +27,18 @@ type ProductsState = {
 };
 
 const mocks = vi.hoisted(() => ({
+  automationState: null as AutomationState | null,
   productsState: null as ProductsState | null,
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useAutomationPreferences", () => ({
+  useAutomationPreferences: () => {
+    if (!mocks.automationState) {
+      throw new Error("Missing automation state");
+    }
+
+    return mocks.automationState;
+  },
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
@@ -68,8 +88,29 @@ function createProductsState(
   };
 }
 
+function createAutomationState(
+  overrides: Partial<AutomationState> = {},
+): AutomationState {
+  return {
+    preferences: {
+      enabled: false,
+      enabledTools: ["stitchr", "swapr", "clipr", "avatar-photo", "swipr"],
+      productSelectionMode: "all",
+      selectedProductIds: [],
+      avatarSelectionMode: "all",
+      selectedAvatarIds: [],
+    },
+    isLoading: false,
+    isSaving: false,
+    error: null,
+    savePreferences: vi.fn(),
+    ...overrides,
+  };
+}
+
 describe("SettingsPageClient", () => {
   beforeEach(() => {
+    mocks.automationState = createAutomationState();
     mocks.productsState = createProductsState();
   });
 
@@ -79,6 +120,7 @@ describe("SettingsPageClient", () => {
     expect(markup).toContain("Settings");
     expect(markup).toContain("Save product context");
     expect(markup).toContain("Color mode");
+    expect(markup).toContain("Daily drafts");
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Contact support");
   });

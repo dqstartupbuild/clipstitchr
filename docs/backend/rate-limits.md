@@ -61,6 +61,22 @@ npx convex dev --once
   verification key file.
 - Must not be prefixed with `NEXT_PUBLIC_`.
 
+`AUTOMATION_WORKER_SECRET`
+
+- Required in the Convex deployment and in any scheduler, provider executor, or
+  media worker that plans or finalizes automatic daily generation.
+- Authorizes worker-only automation mutations.
+- Must be a high-entropy random secret.
+- Must not be prefixed with `NEXT_PUBLIC_`.
+
+`AUTOMATION_NEXT_BASE_URL`
+
+- Required in the Convex deployment when Convex Cron dispatches Next.js
+  automation provider routes.
+- Should be the production app origin, for example
+  `https://clipstitchr.com`.
+- Must not include a path.
+
 TikTok Events API variables:
 
 - `TIKTOK_EVENTS_API_ACCESS_TOKEN` enables server-side TikTok Events API
@@ -141,6 +157,15 @@ Optional Replicate model overrides:
 | Shared music generation | `POST /api/music/generate` from the shared music picker | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
 | Clipr job polling | Reserved Clipr polling route and Convex job refreshes | 600/minute/user, burst 150 |
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
+| Automation planner dispatch | `POST /api/automation/plan` | Worker-secret authorized only; route dispatches worker-only Convex planners, which consume automation-specific tool budgets before provider or media work |
+| Media worker jobs | `mediaJobs.createCliprFinalizationFromAutomation`, `mediaJobs.createSwaprFinalizationFromAutomation`, Stitchr automation media jobs, and `npm run media-worker` | Media jobs are worker-secret controlled; current implemented worker saves editable Stitchr drafts, finalizes Swapr provider outputs, and finalizes Clipr automation outputs. Final asset saves consume automatic asset save buckets: 20 saved assets/day/user; global 2,000/day |
+| Automatic Stitchr generation | Worker-only automation planner and Stitchr finalizer | 3 Stitchr outputs/day/user; global 300/day |
+| Automatic Swapr generation | Worker-only automation planner before provider work; `POST /api/automation/swapr/execute` is worker-secret authorized and claims one queued Swapr task before creating a Replicate prediction; `POST /api/automation/swapr/finalize` is worker-secret authorized and only claims provider-created Swapr tasks before creating a media finalization job | 1 Swapr output/day/user; global 100/day |
+| Automatic Clipr generation | Worker-only automation planner before provider work; `POST /api/automation/clipr/execute` is worker-secret authorized and runs provider-side script, avatar-image, and avatar-video generation without consuming manual Clipr buckets | 1 Clipr output/day/user; global 100/day |
+| Automatic avatar photo generation | Planned but held out of active core automation dispatch | 1 generated photo/day/avatar; global 500/day once enabled |
+| Automatic Swipr generation | Planned but held out of active core automation dispatch | 1 Swipe/day/user; global 100/day once enabled |
+| Automatic provider cost guard | Worker-only automation planner before provider work | 10,000 provider cost units/day global |
+| Automatic asset final saves | Worker-only finalizers for automated Stitches, video clips, avatar photos, and Swipes | 20 saved assets/day/user; global 2,000/day |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
 | Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `stitches.updateMusic`, `stitches.updateTextOverlay`, `stitches.updateRenderedVideo`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
