@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { TextOverlayBackgroundColorPicker } from "@/app/_components/stitchr/TextOverlayBackgroundColorPicker";
 import { TextOverlayColorPicker } from "@/app/_components/stitchr/TextOverlayColorPicker";
+import { TextOverlaySizeSlider } from "@/app/_components/stitchr/TextOverlaySizeSlider";
 import { TextOverlayStrokeColorPicker } from "@/app/_components/stitchr/TextOverlayStrokeColorPicker";
 import { TextOverlayStylePicker } from "@/app/_components/stitchr/TextOverlayStylePicker";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -50,6 +51,11 @@ export function TextOverlayQuickControls({
         onChange={handleChange}
       />
       <div className="mt-1 grid gap-1">
+        <TextOverlaySizeSlider
+          textOverlay={textOverlay}
+          variant="compact"
+          onChange={handleChange}
+        />
         <TextOverlayColorPicker
           textOverlay={textOverlay}
           variant="compact"

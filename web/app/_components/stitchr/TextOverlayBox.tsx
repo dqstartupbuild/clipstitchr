@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil } from "lucide-react";
+import { MoveDiagonal2, Pencil } from "lucide-react";
 import {
   useEffect,
   useRef,
@@ -34,6 +34,7 @@ export function TextOverlayBox({
   const textInputRef = useRef<HTMLTextAreaElement | null>(null);
   const pointerStartRef = useRef<{
     id: number;
+    pointerType: string;
     time: number;
     x: number;
     y: number;
@@ -94,11 +95,15 @@ export function TextOverlayBox({
   const openTextEditor = () => {
     setIsTextEditing(true);
   };
+  const clearPointerGesture = () => {
+    pointerStartRef.current = null;
+  };
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     const lastTap = lastTapRef.current;
 
     pointerStartRef.current = {
       id: event.pointerId,
+      pointerType: event.pointerType,
       time: event.timeStamp,
       x: event.clientX,
       y: event.clientY,
@@ -134,6 +139,8 @@ export function TextOverlayBox({
       return;
     }
 
+    pointerStartRef.current = null;
+
     const travel = Math.hypot(
       event.clientX - pointerStart.x,
       event.clientY - pointerStart.y,
@@ -141,6 +148,17 @@ export function TextOverlayBox({
 
     if (travel > 10 || event.timeStamp - pointerStart.time > 450) {
       lastTapRef.current = null;
+      return;
+    }
+
+    if (
+      pointerStart.pointerType === "touch" ||
+      pointerStart.pointerType === "pen"
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      lastTapRef.current = null;
+      openTextEditor();
       return;
     }
 
@@ -173,6 +191,7 @@ export function TextOverlayBox({
         }}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
+        onPointerCancel={clearPointerGesture}
       >
         {isTextEditing ? (
           <textarea
@@ -212,6 +231,7 @@ export function TextOverlayBox({
               }
             }}
             onPointerDown={(event) => event.stopPropagation()}
+            onPointerUp={(event) => event.stopPropagation()}
           />
         ) : (
           <span className={hasText ? undefined : "opacity-70"}>
@@ -231,15 +251,27 @@ export function TextOverlayBox({
               onOpenStyleControls();
             }}
             onPointerDown={(event) => event.stopPropagation()}
+            onPointerUp={(event) => event.stopPropagation()}
           >
             <Pencil aria-hidden className="h-3.5 w-3.5" />
           </button>
         ) : null}
-        <div
-          aria-hidden
-          className="absolute -bottom-2 -right-2 h-4 w-4 cursor-nwse-resize rounded-sm border border-white bg-accent opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+        <button
+          type="button"
+          aria-label="Resize text"
+          title="Resize text"
+          data-overlay-control="true"
+          data-swipe-ignore="true"
+          className="absolute bottom-1 right-1 inline-flex h-7 w-7 touch-none cursor-nwse-resize items-center justify-center rounded-full border border-white bg-accent text-white opacity-100 shadow-md transition-colors hover:bg-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:-bottom-2 md:-right-2 md:h-4 md:w-4 md:rounded-sm md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+          }}
           onPointerDown={handleResize}
-        />
+          onPointerUp={(event) => event.stopPropagation()}
+        >
+          <MoveDiagonal2 aria-hidden className="h-3.5 w-3.5 md:h-2.5 md:w-2.5" />
+        </button>
       </div>
     </>
   );
