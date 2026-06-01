@@ -1,18 +1,17 @@
 import type { AutomationTool } from "@/lib/clipstitchr/types/AutomationTool";
-import { isSwaprAutomationEnabled } from "@/lib/clipstitchr/constants/isSwaprAutomationEnabled";
+import { getIsAutomationToolEnabled } from "@/lib/clipstitchr/constants/automationToolFeatureFlags";
 
-export const automationToolOptions: Array<{
+const allAutomationToolOptions: Array<{
   id: AutomationTool;
   label: string;
 }> = [
   { id: "stitchr", label: "Stitchr" },
-  ...(isSwaprAutomationEnabled
-    ? ([{ id: "swapr", label: "Swapr" }] satisfies Array<{
-        id: AutomationTool;
-        label: string;
-      }>)
-    : []),
+  { id: "swapr", label: "Swapr" },
   { id: "clipr", label: "Clipr" },
   { id: "avatar-photo", label: "Avatar photos" },
   { id: "swipr", label: "Swipr" },
 ];
+
+export const automationToolOptions = allAutomationToolOptions.filter((tool) =>
+  getIsAutomationToolEnabled(tool.id),
+);

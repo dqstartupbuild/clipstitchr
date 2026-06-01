@@ -10,6 +10,7 @@ import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
 import type { Id } from "./_generated/dataModel";
 import { mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
+import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 function createRunId(ownerId: string, automationDate: string) {
@@ -131,6 +132,21 @@ export const planDaily = mutation({
       return {
         runId: run.id,
         status: run.status,
+        taskIds: [],
+      };
+    }
+
+    if (!getIsAutomationToolEnabled("stitchr")) {
+      await markRunSkipped(
+        ctx,
+        run._id,
+        "Stitchr automation is disabled by the code flag.",
+        now,
+      );
+
+      return {
+        runId: run.id,
+        status: "skipped",
         taskIds: [],
       };
     }

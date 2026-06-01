@@ -7,6 +7,7 @@ import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecre
 import { mutation } from "./_generated/server";
 import { defaultAutomationCliprVoiceId } from "./defaultAutomationCliprVoiceId";
 import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
+import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 const AUTOMATION_CLIPR_ADD_MUSIC = false;
@@ -46,6 +47,16 @@ export const planDaily = mutation({
 
     if (run.status !== "queued") {
       return { runId, status: run.status, taskIds: [] };
+    }
+
+    if (!getIsAutomationToolEnabled("clipr")) {
+      await markAutomationRunSkipped(
+        ctx,
+        run._id,
+        "Clipr automation is disabled by the code flag.",
+        now,
+      );
+      return { runId, status: "skipped", taskIds: [] };
     }
 
     if (!preferences?.enabled || !preferences.enabledTools.includes("clipr")) {

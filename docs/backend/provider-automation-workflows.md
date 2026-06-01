@@ -423,10 +423,10 @@ Update `docs/backend/rate-limits.md` whenever these limits are implemented.
 - Implemented: autopilot preferences, `automationRuns`, `automationTasks`, daily
   planner idempotency keys, and active dispatch for Stitchr, Swapr, Clipr,
   avatar photos, and Swipr draft generation.
-- Implemented: Swapr automation code flag in
-  `web/lib/clipstitchr/constants/isSwaprAutomationEnabled.ts`; disabling it
-  hides Swapr automation settings, filters saved preferences, and makes the
-  Swapr planner skip without affecting manual Swapr.
+- Implemented: per-tool automation code flags in
+  `web/lib/clipstitchr/constants/automationToolFeatureFlags.ts`; disabling a
+  tool hides its automation setting, filters saved preferences, and makes that
+  planner skip without affecting manual tool usage.
 - Save outputs as drafts and notify the user.
 - Add admin/support visibility into skipped, failed, and retried runs.
 
