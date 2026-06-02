@@ -1,5 +1,5 @@
 import React from "react";
-import { useQuery } from "convex/react";
+import { useConvexAuth, useQuery } from "convex/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
@@ -23,6 +23,10 @@ vi.mock("@clerk/nextjs", () => ({
 }));
 
 vi.mock("convex/react", () => ({
+  useConvexAuth: vi.fn(() => ({
+    isAuthenticated: true,
+    isLoading: false,
+  })),
   useQuery: vi.fn(() => []),
 }));
 
@@ -70,6 +74,11 @@ const noop = vi.fn();
 
 describe("dashboard shell sections", () => {
   beforeEach(() => {
+    vi.mocked(useConvexAuth).mockReset();
+    vi.mocked(useConvexAuth).mockReturnValue({
+      isAuthenticated: true,
+      isLoading: false,
+    });
     vi.mocked(useQuery).mockReset();
     vi.mocked(useQuery).mockReturnValue([]);
   });

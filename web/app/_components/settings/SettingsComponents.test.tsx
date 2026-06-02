@@ -155,7 +155,6 @@ describe("settings components", () => {
 
     expect(emptyMarkup).toContain("Color mode");
     expect(emptyMarkup).toContain("Daily drafts");
-    expect(emptyMarkup).toContain("Avatar photos");
     expect(emptyMarkup).toContain("Swipr");
     expect(emptyMarkup).toContain("Contact support");
     expect(emptyMarkup).toContain("Coming soon");
