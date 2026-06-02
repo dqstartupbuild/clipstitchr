@@ -14,6 +14,9 @@ import {
   avatarGenerationPoses,
   getAvatarGenerationPosesForLocationCategories,
 } from "@/lib/clipstitchr/constants/avatarGenerationPoses";
+import { avatarUgcReactionBackgrounds } from "@/lib/clipstitchr/constants/avatarUgcReactionBackgrounds";
+import { avatarUgcReactionPoseActions } from "@/lib/clipstitchr/constants/avatarUgcReactionPoseActions";
+import { avatarUgcVisibleOutfitOptions } from "@/lib/clipstitchr/constants/avatarUgcVisibleOutfitOptions";
 import { createAvatarGenerationVariants } from "@/lib/clipstitchr/server/createAvatarGenerationVariants";
 
 describe("createAvatarGenerationVariants", () => {
@@ -71,6 +74,42 @@ describe("createAvatarGenerationVariants", () => {
 
     expect(variant?.poseDescription).toEqual(expect.any(String));
     expect(variant?.poseDescription.length).toBeGreaterThan(0);
+  });
+
+  it("uses close reaction poses for default UGC generations", () => {
+    const [variant] = createAvatarGenerationVariants({
+      context: "",
+      count: 3,
+      lighting: "natural",
+      location: "",
+      style: "ugc",
+    });
+
+    expect(avatarUgcReactionPoseActions).toContain(variant?.poseDescription);
+    expect(avatarUgcVisibleOutfitOptions).toContain(
+      variant?.outfitDescription,
+    );
+    expect(avatarUgcReactionBackgrounds).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          description: variant?.locationDescription,
+        }),
+      ]),
+    );
+  });
+
+  it("keeps custom UGC locations as blurred background context", () => {
+    const [variant] = createAvatarGenerationVariants({
+      context: "",
+      count: 1,
+      lighting: "natural",
+      location: "a local grocery store aisle",
+      style: "ugc",
+    });
+
+    expect(variant?.locationDescription).toBe(
+      "a local grocery store aisle, visible only as a close, softly blurred background behind the creator",
+    );
   });
 
   it("filters generated actions to relevant location categories", () => {

@@ -41,6 +41,13 @@ describe("createAvatarPhotoGenerationPrompt", () => {
     expect(prompt).toContain("creator-style UGC source photo");
     expect(prompt).toContain("raw source material for a UGC ad");
     expect(prompt).toContain("not a studio portrait");
+    expect(prompt).toContain("tight vertical front-camera reaction selfie");
+    expect(prompt).toContain("face should occupy roughly 35-55%");
+    expect(prompt).toContain("around 1-2 feet away");
+    expect(prompt).toContain("minor hints only");
+    expect(prompt).toContain("ignore that detail");
+    expect(prompt).toContain("Do not show the person holding large props");
+    expect(prompt).toContain("Do not zoom out into a waist-up");
   });
 
   it("makes the pose action primary over the background location", () => {
