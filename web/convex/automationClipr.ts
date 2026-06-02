@@ -7,6 +7,7 @@ import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecre
 import { mutation } from "./_generated/server";
 import { defaultAutomationCliprVoiceId } from "./defaultAutomationCliprVoiceId";
 import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
+import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
@@ -75,10 +76,11 @@ export const planDaily = mutation({
       .order("desc")
       .collect();
     const selectedProductIds = new Set(preferences.selectedProductIds);
+    const defaultProduct = await getDefaultProductForOwner(ctx, ownerId);
     const product =
       preferences.productSelectionMode === "selected"
         ? products.find((candidate) => selectedProductIds.has(candidate.id))
-        : products[0];
+        : defaultProduct ?? products[0];
     const defaultAvatar = await getDefaultAvatarForOwner(ctx, ownerId);
     const avatar = defaultAvatar;
     const photos = await ctx.db

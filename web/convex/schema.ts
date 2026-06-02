@@ -155,6 +155,11 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
+  productPreferences: defineTable({
+    ownerId: v.string(),
+    defaultProductId: v.optional(v.string()),
+    updatedAt: v.string(),
+  }).index("by_owner", ["ownerId"]),
   stitches: defineTable({
     ownerId: v.string(),
     id: v.string(),

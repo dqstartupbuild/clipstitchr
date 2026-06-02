@@ -5,6 +5,7 @@ import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
+import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
@@ -65,10 +66,11 @@ export const planDaily = mutation({
       .order("desc")
       .collect();
     const selectedProductIds = new Set(preferences.selectedProductIds);
+    const defaultProduct = await getDefaultProductForOwner(ctx, ownerId);
     const product =
       preferences.productSelectionMode === "selected"
         ? products.find((candidate) => selectedProductIds.has(candidate.id))
-        : products[0];
+        : defaultProduct ?? products[0];
     const backgrounds = await ctx.db
       .query("swiprBackgrounds")
       .withIndex("by_created")

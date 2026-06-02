@@ -14,6 +14,7 @@ type ChildrenProps = {
 
 const mocks = vi.hoisted(() => ({
   productState: {
+    defaultProductId: undefined as string | undefined,
     error: null as string | null,
     products: [] as ProductProfile[],
   },
@@ -149,7 +150,7 @@ vi.mock("@/lib/clipstitchr/client/seedSwiprBackgroundLibrary", () => ({
   seedSwiprBackgroundLibrary: mocks.seedSwiprBackgroundLibrary,
 }));
 
-function createProduct(): ProductProfile {
+function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile {
   return {
     audienceDetails: "Founders",
     createdAt: "2026-01-01T00:00:00.000Z",
@@ -158,6 +159,7 @@ function createProduct(): ProductProfile {
     name: "Launch Kit",
     productDetails: "A launch kit",
     updatedAt: "2026-01-01T00:00:00.000Z",
+    ...overrides,
   };
 }
 
@@ -242,6 +244,7 @@ function queueSwiprState(
 describe("SwiprPageClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.productState.defaultProductId = undefined;
     mocks.productState.error = null;
     mocks.productState.products = [createProduct()];
     mocks.swiprLibraryState.backgrounds = [createBackground()];
@@ -300,6 +303,23 @@ describe("SwiprPageClient", () => {
     expect(markup).toContain("SwiprSlideStrip");
     expect(markup).toContain("SwiprTextOverlayPanel");
     expect(markup).toContain("SwiprPreviewPanel");
+  });
+
+  it("selects the default product before falling back to the first product", () => {
+    mocks.productState.defaultProductId = "product_2";
+    mocks.productState.products = [
+      createProduct(),
+      createProduct({
+        id: "product_2",
+        name: "Second Product",
+      }),
+    ];
+
+    renderToStaticMarkup(<SwiprPageClient />);
+
+    expect(mocks.productPanelProps?.selectedProductId).toBe(
+      "saved-product:product_2",
+    );
   });
 
   it("surfaces product and library errors", () => {

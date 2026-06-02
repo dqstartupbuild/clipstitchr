@@ -272,6 +272,18 @@ export const remove = mutation({
       return null;
     }
 
+    const preferences = await ctx.db
+      .query("productPreferences")
+      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+      .unique();
+
+    if (preferences?.defaultProductId === product.id) {
+      await ctx.db.patch(preferences._id, {
+        defaultProductId: undefined,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
     await ctx.db.delete(product._id);
     return product;
   },

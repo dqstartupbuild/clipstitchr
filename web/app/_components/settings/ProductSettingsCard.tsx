@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit3, Trash2 } from "lucide-react";
+import { Edit3, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { ProductSettingsEditDialog } from "@/app/_components/settings/ProductSettingsEditDialog";
 import { IconButton } from "@/app/_components/ui/IconButton";
@@ -10,10 +10,13 @@ import { getCliprHookStyleName } from "@/lib/clipstitchr/utils/getCliprHookStyle
 
 type ProductSettingsCardProps = {
   product: ProductProfile;
+  isDefault: boolean;
+  isDefaulting: boolean;
   isDisabled: boolean;
   isDeleting: boolean;
   isSaving: boolean;
   onDelete: (id: string) => Promise<void>;
+  onSetDefault: (product: ProductProfile) => Promise<void>;
   onUpdate: (
     id: string,
     input: ProductProfileCreateInput,
@@ -22,10 +25,13 @@ type ProductSettingsCardProps = {
 
 export function ProductSettingsCard({
   product,
+  isDefault,
+  isDefaulting,
   isDisabled,
   isDeleting,
   isSaving,
   onDelete,
+  onSetDefault,
   onUpdate,
 }: ProductSettingsCardProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -62,8 +68,31 @@ export function ProductSettingsCard({
             <p className="mt-1 text-xs font-semibold text-text-tertiary">
               Hook style: {hookStyleName}
             </p>
+            {isDefault ? (
+              <p className="mt-1 text-xs font-bold text-accent-dark">
+                Default product
+              </p>
+            ) : null}
           </div>
           <div className="flex shrink-0 gap-2">
+            <IconButton
+              label={
+                isDefault
+                  ? `${product.name} is the default product`
+                  : isDefaulting
+                    ? "Setting default product"
+                    : `Set ${product.name} as default product`
+              }
+              icon={
+                <Star
+                  aria-hidden
+                  className="h-4 w-4"
+                  fill={isDefault ? "currentColor" : "none"}
+                />
+              }
+              disabled={isDisabled || isDefault}
+              onClick={() => void onSetDefault(product)}
+            />
             <IconButton
               label="Edit product"
               icon={<Edit3 aria-hidden className="h-4 w-4" />}

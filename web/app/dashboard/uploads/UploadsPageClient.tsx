@@ -107,19 +107,24 @@ export function UploadsPageClient() {
     getInitialUploadLibraryTab,
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [demoProductFilterId, setDemoProductFilterId] = useState("all");
+  const [demoProductFilterId, setDemoProductFilterId] = useState<
+    string | undefined
+  >();
   const [demoUploadProductId, setDemoUploadProductId] = useState("");
   const productIds = useMemo(
     () => new Set(products.products.map((product) => product.id)),
     [products.products],
   );
+  const defaultProductFilterId = products.defaultProductId ?? "all";
   const activeDemoProductFilterId =
-    demoProductFilterId === "all" || productIds.has(demoProductFilterId)
-      ? demoProductFilterId
+    demoProductFilterId === undefined
+      ? defaultProductFilterId
+      : demoProductFilterId === "all" || productIds.has(demoProductFilterId)
+        ? demoProductFilterId
       : "all";
   const activeDemoUploadProductId = productIds.has(demoUploadProductId)
     ? demoUploadProductId
-    : (products.products[0]?.id ?? "");
+    : (products.defaultProductId ?? products.products[0]?.id ?? "");
   const ugcClips = useMemo(
     () => filterClipsBySearchQuery(library.videoGroups.ugc.clips, searchQuery),
     [library.videoGroups.ugc.clips, searchQuery],

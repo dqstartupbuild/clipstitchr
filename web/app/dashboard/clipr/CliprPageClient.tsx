@@ -39,7 +39,8 @@ export function CliprPageClient() {
   const [addMusic, setAddMusic] = useState(false);
   const [selectedMusicTrack, setSelectedMusicTrack] =
     useState<SharedMusicTrack | null>(null);
-  const activeProductId = selectedProductId || products.products[0]?.id || "";
+  const activeProductId =
+    selectedProductId || products.defaultProductId || products.products[0]?.id || "";
   const defaultAvatar = useMemo(
     () =>
       photoLibrary.defaultAvatarId

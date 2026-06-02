@@ -81,8 +81,9 @@ export function SwiprPageClient() {
     useState<SwiprSwipe | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [autoTextMessage, setAutoTextMessage] = useState<string | null>(null);
-  const defaultSavedProductId = products.products[0]
-    ? getSwiprSavedProductOptionValue(products.products[0].id)
+  const defaultProductId = products.defaultProductId ?? products.products[0]?.id;
+  const defaultSavedProductId = defaultProductId
+    ? getSwiprSavedProductOptionValue(defaultProductId)
     : "";
   const activeProductId = selectedProductId ?? defaultSavedProductId;
   const selectedSavedProductId =

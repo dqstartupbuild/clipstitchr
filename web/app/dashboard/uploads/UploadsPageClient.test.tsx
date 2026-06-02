@@ -316,6 +316,7 @@ describe("UploadsPageClient", () => {
       saveGeneratedPhotos: vi.fn(),
     };
     mocks.products = {
+      defaultProductId: undefined,
       error: null,
       isLoading: false,
       products: [createProduct()],
@@ -450,6 +451,7 @@ describe("UploadsPageClient", () => {
 
   it("renders demo tab product filters and blocked upload copy", () => {
     mocks.products = {
+      defaultProductId: undefined,
       error: null,
       isLoading: true,
       products: [],
@@ -476,6 +478,54 @@ describe("UploadsPageClient", () => {
         demoUploadBlockedMessage: "Products are loading.",
       }),
     );
+  });
+
+  it("uses the default product for demo upload and demo filtering", () => {
+    const secondProduct = createProduct({
+      id: "product_2",
+      name: "Second Product",
+    });
+    const defaultDemoClip = createClip("demo_2", "demo", {
+      name: "Default demo",
+      productId: "product_2",
+    });
+
+    mocks.products = {
+      ...mocks.products,
+      defaultProductId: "product_2",
+      products: [createProduct(), secondProduct],
+    };
+    mocks.library = {
+      ...mocks.library,
+      videoGroups: {
+        ...(mocks.library.videoGroups as Record<string, unknown>),
+        demo: {
+          clips: [
+            createClip("demo_1", "demo", {
+              name: "First demo",
+              productId: "product_1",
+            }),
+            defaultDemoClip,
+          ],
+          hasMoreItems: false,
+          isLoadingMoreItems: false,
+          loadMoreItems: vi.fn(),
+        },
+      },
+    };
+    mocks.useProducts.mockReturnValue(mocks.products);
+    mocks.useClipLibrary.mockReturnValue(mocks.library);
+
+    const { elements } = renderUploadsPage({
+      stateValues: ["demo", "", undefined, ""],
+    });
+    const section = findByProp(elements, "id", "demo-videos");
+    const uploadPanel = elements.find((element) =>
+      Array.isArray(element.props?.allowedAssetTypes),
+    );
+
+    expect(uploadPanel?.props?.demoProductId).toBe("product_2");
+    expect(section?.props?.clips).toEqual([defaultDemoClip]);
   });
 
   it("uses product-specific demo empty copy when a valid product filter is active", () => {

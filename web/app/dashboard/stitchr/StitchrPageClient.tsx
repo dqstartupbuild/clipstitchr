@@ -56,7 +56,9 @@ export function StitchrPageClient() {
   >({});
   const [longrTextOverlays, setLongrTextOverlays] = useState<TextOverlay[]>([]);
   const [selectedAutoTextProductId, setSelectedAutoTextProductId] = useState("");
-  const [demoProductFilterId, setDemoProductFilterId] = useState("all");
+  const [demoProductFilterId, setDemoProductFilterId] = useState<
+    string | undefined
+  >();
   const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
   const [autoTextMessage, setAutoTextMessage] = useState<string | null>(null);
   const [ugcTrimRangesByClipId, setUgcTrimRangesByClipId] = useState<
@@ -119,9 +121,12 @@ export function StitchrPageClient() {
     () => new Set(products.products.map((product) => product.id)),
     [products.products],
   );
+  const defaultProductFilterId = products.defaultProductId ?? "all";
   const activeDemoProductFilterId =
-    demoProductFilterId === "all" || productIds.has(demoProductFilterId)
-      ? demoProductFilterId
+    demoProductFilterId === undefined
+      ? defaultProductFilterId
+      : demoProductFilterId === "all" || productIds.has(demoProductFilterId)
+        ? demoProductFilterId
       : "all";
   const visibleDemoClips = useMemo(
     () => filterClipsByDemoProductId(demoClips, activeDemoProductFilterId),
@@ -314,7 +319,10 @@ export function StitchrPageClient() {
     totalDuration,
   );
   const activeAutoTextProductId =
-    selectedAutoTextProductId || products.products[0]?.id || "";
+    selectedAutoTextProductId ||
+    products.defaultProductId ||
+    products.products[0]?.id ||
+    "";
 
   useEffect(() => {
     const syncSelectionFromUrl = () => {

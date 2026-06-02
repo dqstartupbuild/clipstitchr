@@ -10,6 +10,7 @@ import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
 import type { Id } from "./_generated/dataModel";
 import { mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
+import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
@@ -170,6 +171,7 @@ export const planDaily = mutation({
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order("desc")
       .collect();
+    const defaultProduct = await getDefaultProductForOwner(ctx, ownerId);
     const ugcClips = clips.filter((clip) => clip.clipType === "ugc");
     const demoClips = clips.filter((clip) => clip.clipType === "demo");
 
@@ -193,20 +195,35 @@ export const planDaily = mutation({
     const selectedProducts = products.filter((product) =>
       selectedProductIds.has(product.id),
     );
+    const defaultProducts = defaultProduct ? [defaultProduct] : [];
     const eligibleProducts =
       preferences.productSelectionMode === "selected" &&
       selectedProducts.length > 0
         ? selectedProducts
+        : defaultProducts.length > 0
+          ? defaultProducts
         : products;
-    const productFilteredDemos =
+    const defaultProductIds =
+      preferences.productSelectionMode === "selected"
+        ? new Set<string>()
+        : new Set(defaultProduct ? [defaultProduct.id] : []);
+    const demoProductFilterIds =
       preferences.productSelectionMode === "selected" &&
       selectedProductIds.size > 0
+        ? selectedProductIds
+        : defaultProductIds;
+    const productFilteredDemos =
+      demoProductFilterIds.size > 0
         ? demoClips.filter(
-            (demo) => demo.productId && selectedProductIds.has(demo.productId),
+            (demo) => demo.productId && demoProductFilterIds.has(demo.productId),
           )
         : demoClips;
     const eligibleDemos =
-      productFilteredDemos.length > 0 ? productFilteredDemos : demoClips;
+      productFilteredDemos.length > 0
+        ? productFilteredDemos
+        : defaultProductIds.size > 0
+          ? []
+          : demoClips;
     const histories = await ctx.db
       .query("automationPairHistory")
       .withIndex("by_owner_last_used", (q) => q.eq("ownerId", ownerId))

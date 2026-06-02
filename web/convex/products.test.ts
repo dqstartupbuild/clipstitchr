@@ -272,6 +272,36 @@ describe("convex products", () => {
     expect(ctx.db.delete).toHaveBeenCalledWith("doc_123");
   });
 
+  it("clears the default product preference when deleting the default product", async () => {
+    const product = { _id: "doc_123", id: "product_123" };
+    const preferences = {
+      _id: "pref_doc",
+      defaultProductId: "product_123",
+    };
+    const productQuery = createQueryChain({ unique: product });
+    const preferenceQuery = createQueryChain({ unique: preferences });
+    const ctx = {
+      db: {
+        delete: vi.fn(async () => undefined),
+        patch: vi.fn(async () => undefined),
+        query: vi.fn((tableName: string) =>
+          tableName === "products" ? productQuery : preferenceQuery,
+        ),
+      },
+    };
+
+    await expect(getHandler(remove)(ctx, { id: "product_123" })).resolves.toBe(
+      product,
+    );
+    expect(ctx.db.patch).toHaveBeenCalledWith(
+      "pref_doc",
+      expect.objectContaining({
+        defaultProductId: undefined,
+      }),
+    );
+    expect(ctx.db.delete).toHaveBeenCalledWith("doc_123");
+  });
+
   it("returns null when removing a missing product", async () => {
     const queryChain = createQueryChain();
     const ctx = {

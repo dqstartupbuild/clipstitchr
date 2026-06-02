@@ -15,15 +15,18 @@ type AutomationState = {
 
 type ProductsState = {
   products: ProductProfile[];
+  defaultProductId?: string;
   isLoading: boolean;
   isSaving: boolean;
   isCreating: boolean;
   savingProductId: string | null;
   deletingProductId: string | null;
+  defaultingProductId: string | null;
   error: string | null;
   createProduct: ReturnType<typeof vi.fn>;
   updateProduct: ReturnType<typeof vi.fn>;
   deleteProduct: ReturnType<typeof vi.fn>;
+  setDefaultProduct: ReturnType<typeof vi.fn>;
 };
 
 const mocks = vi.hoisted(() => ({
@@ -75,15 +78,18 @@ function createProductsState(
 ): ProductsState {
   return {
     products: [createProduct()],
+    defaultProductId: "product_1",
     isLoading: false,
     isSaving: false,
     isCreating: false,
     savingProductId: null,
     deletingProductId: null,
+    defaultingProductId: null,
     error: null,
     createProduct: vi.fn(),
     updateProduct: vi.fn(),
     deleteProduct: vi.fn(),
+    setDefaultProduct: vi.fn(),
     ...overrides,
   };
 }
@@ -122,6 +128,7 @@ describe("SettingsPageClient", () => {
     expect(markup).toContain("Color mode");
     expect(markup).toContain("Daily drafts");
     expect(markup).toContain("Launch Kit");
+    expect(markup).toContain("Default product");
     expect(markup).toContain("Contact support");
   });
 

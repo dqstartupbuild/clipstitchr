@@ -5,10 +5,13 @@ import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductP
 
 type ProductSettingsListProps = {
   products: ProductProfile[];
+  defaultProductId?: string;
+  defaultingProductId: string | null;
   deletingProductId: string | null;
   isActionDisabled: boolean;
   savingProductId: string | null;
   onDelete: (id: string) => Promise<void>;
+  onSetDefault: (product: ProductProfile) => Promise<void>;
   onUpdate: (
     id: string,
     input: ProductProfileCreateInput,
@@ -17,10 +20,13 @@ type ProductSettingsListProps = {
 
 export function ProductSettingsList({
   products,
+  defaultProductId,
+  defaultingProductId,
   deletingProductId,
   isActionDisabled,
   savingProductId,
   onDelete,
+  onSetDefault,
   onUpdate,
 }: ProductSettingsListProps) {
   return (
@@ -44,10 +50,13 @@ export function ProductSettingsList({
             <ProductSettingsCard
               key={product.id}
               product={product}
+              isDefault={defaultProductId === product.id}
+              isDefaulting={defaultingProductId === product.id}
               isDisabled={isActionDisabled}
               isDeleting={deletingProductId === product.id}
               isSaving={savingProductId === product.id}
               onDelete={onDelete}
+              onSetDefault={onSetDefault}
               onUpdate={onUpdate}
             />
           ))}

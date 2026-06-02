@@ -43,12 +43,15 @@ export function SettingsPageClient() {
         />
         <ProductSettingsList
           products={products.products}
+          defaultProductId={products.defaultProductId}
+          defaultingProductId={products.defaultingProductId}
           deletingProductId={products.deletingProductId}
           isActionDisabled={
             products.isSaving || products.deletingProductId !== null
           }
           savingProductId={products.savingProductId}
           onDelete={products.deleteProduct}
+          onSetDefault={products.setDefaultProduct}
           onUpdate={products.updateProduct}
         />
         <div className="grid gap-4 md:grid-cols-2">

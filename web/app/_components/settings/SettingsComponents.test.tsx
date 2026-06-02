@@ -134,10 +134,13 @@ describe("settings components", () => {
         <SettingsSubscriptionPanel />
         <ProductSettingsList
           products={[]}
+          defaultProductId={undefined}
+          defaultingProductId={null}
           deletingProductId={null}
           isActionDisabled={false}
           savingProductId={null}
           onDelete={async () => undefined}
+          onSetDefault={async () => undefined}
           onUpdate={async () => undefined}
         />
       </>,
@@ -145,10 +148,13 @@ describe("settings components", () => {
     const populatedMarkup = renderToStaticMarkup(
       <ProductSettingsList
         products={[createProduct()]}
+        defaultProductId="product_1"
+        defaultingProductId={null}
         deletingProductId="product_1"
         isActionDisabled={true}
         savingProductId="product_1"
         onDelete={async () => undefined}
+        onSetDefault={async () => undefined}
         onUpdate={async () => undefined}
       />,
     );
@@ -160,6 +166,7 @@ describe("settings components", () => {
     expect(emptyMarkup).toContain("Coming soon");
     expect(emptyMarkup).toContain("Saved products will appear");
     expect(populatedMarkup).toContain("Launch Kit");
+    expect(populatedMarkup).toContain("Default product");
   });
 
   it("forwards automation setting changes", async () => {
@@ -282,15 +289,19 @@ describe("settings components", () => {
 
   it("opens edit state and confirms product deletion", async () => {
     const onDelete = vi.fn(async () => undefined);
+    const onSetDefault = vi.fn(async () => undefined);
     const onUpdate = vi.fn(async () => undefined);
 
     mocks.stateQueue = [true];
 
     const tree = ProductSettingsCard({
+      isDefault: false,
+      isDefaulting: false,
       isDeleting: false,
       isDisabled: false,
       isSaving: false,
       onDelete,
+      onSetDefault,
       onUpdate,
       product: createProduct({ preferredCliprHookStyleKey: "problem" }),
     });
@@ -309,6 +320,7 @@ describe("settings components", () => {
 
     (iconButtons[0].props.onClick as () => void)();
     (iconButtons[1].props.onClick as () => void)();
+    (iconButtons[2].props.onClick as () => void)();
     await Promise.resolve();
     await (dialog.props.onSave as (input: {
       name: string;
@@ -322,6 +334,9 @@ describe("settings components", () => {
 
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(true);
     expect(mocks.confirm).toHaveBeenCalledWith(expect.stringContaining("Launch Kit"));
+    expect(onSetDefault).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "product_1" }),
+    );
     expect(onDelete).toHaveBeenCalledWith("product_1");
     expect(onUpdate).toHaveBeenCalledWith("product_1", {
       audienceDetails: "Teams",

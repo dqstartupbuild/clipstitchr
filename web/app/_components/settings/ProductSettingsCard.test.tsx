@@ -40,6 +40,7 @@ describe("ProductSettingsCard", () => {
 
   it("renders product summary and invokes delete confirmation", async () => {
     const onDelete = vi.fn(async () => undefined);
+    const onSetDefault = vi.fn(async () => undefined);
 
     vi.stubGlobal("window", {
       confirm: vi.fn(() => true),
@@ -48,10 +49,13 @@ describe("ProductSettingsCard", () => {
     const markup = renderToStaticMarkup(
       <ProductSettingsCard
         product={createProduct()}
+        isDefault={false}
+        isDefaulting={false}
         isDisabled={false}
         isDeleting={false}
         isSaving={false}
         onDelete={onDelete}
+        onSetDefault={onSetDefault}
         onUpdate={vi.fn()}
       />,
     );
@@ -61,9 +65,15 @@ describe("ProductSettingsCard", () => {
     expect(markup).toContain("Hook style:");
 
     await mocks.iconButtons
+      .find((button) => button.label === "Set Launch Kit as default product")
+      ?.onClick?.();
+    await mocks.iconButtons
       .find((button) => button.label === "Delete product")
       ?.onClick?.();
 
+    expect(onSetDefault).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "product_1" }),
+    );
     expect(onDelete).toHaveBeenCalledWith("product_1");
 
     vi.unstubAllGlobals();
@@ -76,15 +86,20 @@ describe("ProductSettingsCard", () => {
           audienceDetails: "",
           productDetails: "",
         })}
+        isDefault
+        isDefaulting={false}
         isDisabled
         isDeleting
         isSaving={false}
         onDelete={vi.fn()}
+        onSetDefault={vi.fn()}
         onUpdate={vi.fn()}
       />,
     );
 
     expect(markup).toContain("Saved product");
+    expect(markup).toContain("Default product");
+    expect(markup).toContain("Launch Kit is the default product");
     expect(markup).toContain("Deleting product");
   });
 });

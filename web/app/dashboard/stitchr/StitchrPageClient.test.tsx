@@ -52,6 +52,7 @@ const mocks = vi.hoisted(() => ({
     isLoading: false,
   },
   productState: {
+    defaultProductId: undefined as string | undefined,
     error: null as string | null,
     products: [] as ProductProfile[],
   },
@@ -191,7 +192,7 @@ function createClip(id: string, clipType: "ugc" | "demo"): VideoClipMetadata {
   };
 }
 
-function createProduct(): ProductProfile {
+function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile {
   return {
     audienceDetails: "Creators",
     createdAt: "2026-01-01T00:00:00.000Z",
@@ -200,6 +201,7 @@ function createProduct(): ProductProfile {
     name: "Launch Kit",
     productDetails: "A launch kit",
     updatedAt: "2026-01-01T00:00:00.000Z",
+    ...overrides,
   };
 }
 
@@ -267,7 +269,7 @@ function queueStitchrState(
     overrides.textOverlaysByUgcId ?? {},
     overrides.longrTextOverlays ?? [],
     overrides.selectedAutoTextProductId ?? "",
-    overrides.demoProductFilterId ?? "all",
+    overrides.demoProductFilterId,
     overrides.isGeneratingAutoText ?? false,
     overrides.autoTextMessage ?? null,
     overrides.ugcTrimRangesByClipId ?? {},
@@ -288,6 +290,7 @@ describe("StitchrPageClient", () => {
     mocks.clipLibraryState.error = null;
     mocks.clipLibraryState.isLoading = false;
     setClipLibraryVideoGroups();
+    mocks.productState.defaultProductId = undefined;
     mocks.productState.products = [createProduct()];
     mocks.stitchrState.stitchLongrSequence.mockResolvedValue(undefined);
     mocks.stitchrState.stitchVideos.mockResolvedValue(undefined);
@@ -329,6 +332,35 @@ describe("StitchrPageClient", () => {
     expect(mocks.clipPickerPanelProps?.demoPlaybackRate).toBe(1);
     expect(mocks.clipPickerPanelProps?.ugcPlaybackRate).toBe(1);
     expect(mocks.clipPickerPanelProps?.canStitch).toBe(false);
+  });
+
+  it("uses the default product for demo filtering and auto-text", () => {
+    mocks.productState.defaultProductId = "product_2";
+    mocks.productState.products = [
+      createProduct(),
+      createProduct({
+        id: "product_2",
+        name: "Second Product",
+      }),
+    ];
+    setClipLibraryVideoGroups({
+      demo: [
+        createClip("demo_1", "demo"),
+        createClip("demo_2", "demo"),
+      ].map((clip) =>
+        clip.id === "demo_2" ? { ...clip, productId: "product_2" } : clip,
+      ),
+    });
+
+    renderToStaticMarkup(<StitchrPageClient />);
+
+    expect(mocks.clipPickerPanelProps?.demoProductFilterId).toBe("product_2");
+    expect(
+      (mocks.clipPickerPanelProps?.demoClips as VideoClipMetadata[]).map(
+        (clip) => clip.id,
+      ),
+    ).toEqual(["demo_2"]);
+    expect(mocks.autoTextPanelProps?.selectedProductId).toBe("product_2");
   });
 
   it("renders empty and error states", () => {

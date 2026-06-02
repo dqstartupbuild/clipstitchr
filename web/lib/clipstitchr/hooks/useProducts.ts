@@ -14,10 +14,20 @@ export function useProducts() {
     api.products.list,
     isAuthenticated ? {} : "skip",
   );
+  const productPreferences = useQuery(
+    api.productPreferences.get,
+    isAuthenticated ? {} : "skip",
+  );
   const removeProductMutation = useMutation(api.products.remove);
+  const setDefaultProductMutation = useMutation(
+    api.productPreferences.setDefaultProduct,
+  );
   const [isCreating, setIsCreating] = useState(false);
   const [savingProductId, setSavingProductId] = useState<string | null>(null);
   const [deletingProductId, setDeletingProductId] = useState<string | null>(
+    null,
+  );
+  const [defaultingProductId, setDefaultingProductId] = useState<string | null>(
     null,
   );
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +49,12 @@ export function useProducts() {
       })) ?? [],
     [productDocuments],
   );
+  const preferredDefaultProductId = productPreferences?.defaultProductId;
+  const defaultProductId =
+    preferredDefaultProductId &&
+    products.some((product) => product.id === preferredDefaultProductId)
+      ? preferredDefaultProductId
+      : undefined;
   const createProduct = useCallback(async (input: ProductProfileCreateInput) => {
     setIsCreating(true);
     setError(null);
@@ -96,18 +112,47 @@ export function useProducts() {
     },
     [removeProductMutation],
   );
+  const setDefaultProduct = useCallback(
+    async (product: ProductProfile) => {
+      setDefaultingProductId(product.id);
+      setError(null);
+
+      try {
+        await setDefaultProductMutation({
+          productId: product.id,
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to update the default product.",
+        );
+        throw nextError;
+      } finally {
+        setDefaultingProductId(null);
+      }
+    },
+    [setDefaultProductMutation],
+  );
 
   return {
     products,
+    defaultProductId,
     isLoading:
-      isAuthLoading || (isAuthenticated && productDocuments === undefined),
-    isSaving: isCreating || savingProductId !== null,
+      isAuthLoading ||
+      (isAuthenticated &&
+        (productDocuments === undefined || productPreferences === undefined)),
+    isSaving:
+      isCreating || savingProductId !== null || defaultingProductId !== null,
     isCreating,
     savingProductId,
     deletingProductId,
+    defaultingProductId,
     error,
     createProduct,
     updateProduct,
     deleteProduct,
+    setDefaultProduct,
   };
 }
