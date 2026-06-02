@@ -3,7 +3,7 @@ import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOptio
 export function getAvatarStylePrompt(style: AvatarStyleOption) {
   switch (style) {
     case "ugc":
-      return "authentic creator-style UGC source photo, casual phone-shot framing, natural everyday lighting, unpolished realism, not a studio portrait";
+      return "authentic creator-style UGC reaction source photo, tight vertical front-camera phone selfie framing, arm's-length talking-head crop, face and shoulders close to camera, natural everyday lighting, unpolished realism, not a studio portrait";
     case "photo":
       return "polished realistic portrait photo style";
     case "candid":

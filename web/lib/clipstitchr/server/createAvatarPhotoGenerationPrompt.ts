@@ -29,6 +29,19 @@ export function createAvatarPhotoGenerationPrompt({
     variant.style === "ugc"
       ? "The image should be a creator-style UGC source photo: raw source material for a UGC ad, believable, not a studio portrait, and not overly posed."
       : "The image should feel like a casual real-world photo, not a synthetic studio render.";
+  const ugcFramingLines =
+    variant.style === "ugc"
+      ? [
+          "Frame the person as a tight vertical front-camera reaction selfie, like a phone held at arm's length for a short-form UGC clip.",
+          "Use close talking-head composition: head, face, neck, shoulders, and maybe upper chest only. The face should occupy roughly 35-55% of the image height.",
+          "The camera is very close to the person, around 1-2 feet away. Use a casual phone lens perspective with slight arm's-length selfie distortion.",
+          "Keep the top of the hair close to the top edge, with very little intentional background. The outfit and location are supporting context, not the subject.",
+          "Treat outfit, props, and background as minor hints only; do not compose the image to display them.",
+          "If any outfit, background, prop, or pose detail would require showing more than the head, shoulders, and upper chest, ignore that detail and keep the close reaction framing.",
+          "Do not show the person holding large props, notebooks, balloons, keys, bags, cups, or tools unless the user's pose explicitly requests it.",
+          "Do not zoom out into a waist-up, full-body, fashion, editorial, commercial, or location-focused portrait. Do not show legs, feet, or the full outfit.",
+        ]
+      : [];
   const modelWorkflowLines =
     modelFamily === "minimax-image-01"
       ? [
@@ -52,6 +65,7 @@ export function createAvatarPhotoGenerationPrompt({
     ...identityLines,
     ...modelWorkflowLines,
     realWorldPhotoLine,
+    ...ugcFramingLines,
     `Avatar description: ${avatarDescription}`,
     `Outfit for this new photo: ${variant.outfitDescription}.`,
     `Background/location for this new photo: ${variant.locationDescription}.`,
