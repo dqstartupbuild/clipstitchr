@@ -18,8 +18,11 @@ const mocks = vi.hoisted(() => ({
     totalCount: number;
   } | null,
   playerProps: null as {
+    activeTextOverlayId: string | null;
+    onActiveTextOverlayIdChange: (textOverlayId: string) => void;
     onPlaybackTimeChange: (time: number) => void;
     onTextOverlayChange: (textOverlay: TextOverlay) => void;
+    textOverlays: TextOverlay[];
     totalDuration: number;
   } | null,
   setState: vi.fn(),
@@ -30,10 +33,13 @@ const mocks = vi.hoisted(() => ({
     onSwipeRight: () => void;
   } | null,
   textEditorProps: null as {
+    activeTextOverlayId: string | null;
     canCopyToAll: boolean;
     currentTime: number;
-    onChange: (textOverlay: TextOverlay | null) => void;
+    onActiveTextOverlayIdChange: (textOverlayId: string | null) => void;
+    onChange: (textOverlays: TextOverlay[]) => void;
     onCopyToAll?: () => void;
+    textOverlays: TextOverlay[];
     totalDuration: number;
     ugcDuration: number;
   } | null,
@@ -155,7 +161,7 @@ describe("SequencePreviewPanel", () => {
   it("renders a loaded preview and wires navigation, swipe, and overlay callbacks", () => {
     const onActiveUgcChange = vi.fn();
     const onCopyTextOverlayToAll = vi.fn();
-    const onTextOverlayChange = vi.fn();
+    const onTextOverlaysChange = vi.fn();
     const overlay = createTextOverlay();
     const tree = SequencePreviewPanel({
       activeUgcId: "ugc_2",
@@ -167,12 +173,12 @@ describe("SequencePreviewPanel", () => {
       canCopyTextOverlayToAll: true,
       onActiveUgcChange,
       onCopyTextOverlayToAll,
-      onTextOverlayChange,
+      onTextOverlaysChange,
       previewUgcClips: [
         createClipMetadata("ugc_1", "First UGC"),
         createClipMetadata("ugc_2", "Second UGC"),
       ],
-      textOverlay: overlay,
+      textOverlays: [overlay],
       ugcClip: createClip("ugc_2", "Loaded UGC"),
       ugcPlaybackRate: 1,
       ugcTrimRange,
@@ -188,7 +194,7 @@ describe("SequencePreviewPanel", () => {
     mocks.playerProps?.onTextOverlayChange(createTextOverlay({ text: "Next" }));
     mocks.playerProps?.onPlaybackTimeChange(2.5);
     mocks.textEditorProps?.onCopyToAll?.();
-    mocks.textEditorProps?.onChange(null);
+    mocks.textEditorProps?.onChange([]);
 
     expect(markup).toContain("Navigator:Second UGC");
     expect(markup).toContain("Player:9");
@@ -199,15 +205,16 @@ describe("SequencePreviewPanel", () => {
     });
     expect(mocks.swipeOptions?.isEnabled).toBe(true);
     expect(onActiveUgcChange).toHaveBeenCalledWith("ugc_1");
-    expect(onTextOverlayChange).toHaveBeenCalledWith(
-      expect.objectContaining({ text: "Next" }),
+    expect(onTextOverlaysChange).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ text: "Next" })]),
     );
-    expect(onTextOverlayChange).toHaveBeenCalledWith(null);
+    expect(onTextOverlaysChange).toHaveBeenCalledWith([]);
     expect(onCopyTextOverlayToAll).toHaveBeenCalledTimes(1);
     expect(mocks.setState).toHaveBeenCalledWith(2.5);
     expect(mocks.textEditorProps).toMatchObject({
       canCopyToAll: true,
       currentTime: 0,
+      textOverlays: [overlay],
       totalDuration: 9,
       ugcDuration: 5,
     });
@@ -223,9 +230,9 @@ describe("SequencePreviewPanel", () => {
         includeDemoAudio={false}
         includeUgcAudio={false}
         onActiveUgcChange={vi.fn()}
-        onTextOverlayChange={vi.fn()}
+        onTextOverlaysChange={vi.fn()}
         previewUgcClips={[]}
-        textOverlay={null}
+        textOverlays={[]}
         ugcClip={null}
         ugcPlaybackRate={1}
         ugcTrimRange={null}
@@ -250,9 +257,9 @@ describe("SequencePreviewPanel", () => {
         includeDemoAudio={false}
         includeUgcAudio={false}
         onActiveUgcChange={onActiveUgcChange}
-        onTextOverlayChange={vi.fn()}
+        onTextOverlaysChange={vi.fn()}
         previewUgcClips={[createClipMetadata("ugc_1", "First UGC")]}
-        textOverlay={null}
+        textOverlays={[]}
         ugcClip={createClip("ugc_1", "Loaded UGC")}
         ugcPlaybackRate={1}
         ugcTrimRange={ugcTrimRange}

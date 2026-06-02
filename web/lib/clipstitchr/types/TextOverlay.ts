@@ -1,6 +1,7 @@
 import type { TextOverlayStyleId } from "@/lib/clipstitchr/types/TextOverlayStyleId";
 
 export type TextOverlay = {
+  id?: string;
   text: string;
   startTime: number;
   endTime: number;

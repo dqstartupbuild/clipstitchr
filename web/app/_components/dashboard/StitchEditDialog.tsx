@@ -13,12 +13,14 @@ import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
-import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
+import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
 import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
+import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 
 type StitchEditDialogProps = {
   demoClip: VideoClip | null;
@@ -37,7 +39,9 @@ type StitchEditDialogProps = {
   onLoadPreview: () => void;
   onRemoveMusic: () => Promise<void>;
   onSaveMusic: (music: StitchMusicMetadata) => Promise<void>;
-  onSaveTextOverlay: (textOverlay: TextOverlay | null) => Promise<void>;
+  onSaveTextOverlay: (
+    textOverlay: TextOverlay | TextOverlay[] | null,
+  ) => Promise<void>;
 };
 
 export function StitchEditDialog({
@@ -59,8 +63,11 @@ export function StitchEditDialog({
   onSaveMusic,
   onSaveTextOverlay,
 }: StitchEditDialogProps) {
-  const [textOverlay, setTextOverlay] = useState<TextOverlay | null>(
-    stitch.textOverlay ?? null,
+  const [textOverlays, setTextOverlays] = useState<TextOverlay[]>(
+    () => getTextOverlayList(stitch.textOverlays, stitch.textOverlay),
+  );
+  const [activeTextOverlayId, setActiveTextOverlayId] = useState<string | null>(
+    null,
   );
   const [music, setMusic] = useState<StitchMusicMetadata | null>(
     stitch.music ?? null,
@@ -75,14 +82,15 @@ export function StitchEditDialog({
     : "Ready to download";
 
   const handleSaveText = async () => {
-    const nextTextOverlay =
-      textOverlay && textOverlay.text.trim().length > 0
-        ? clampTextOverlay(textOverlay, stitch.duration)
-        : null;
+    const nextTextOverlays = getNonEmptyTextOverlays(
+      clampTextOverlays(textOverlays, stitch.duration),
+    );
 
     try {
-      await onSaveTextOverlay(nextTextOverlay);
-      setTextOverlay(nextTextOverlay);
+      await onSaveTextOverlay(
+        nextTextOverlays.length ? nextTextOverlays : null,
+      );
+      setTextOverlays(nextTextOverlays);
     } catch {
       return;
     }
@@ -176,11 +184,12 @@ export function StitchEditDialog({
               stitch={{
                 ...stitch,
                 music: music ?? undefined,
-                textOverlay: textOverlay ?? undefined,
+                textOverlay: textOverlays[0],
+                textOverlays: textOverlays.length ? textOverlays : undefined,
               }}
               ugcClip={ugcClip}
               onLoadPreview={onLoadPreview}
-              onTextOverlayChange={setTextOverlay}
+              onTextOverlayChange={setTextOverlays}
             />
             {previewError ? (
               <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
@@ -226,11 +235,13 @@ export function StitchEditDialog({
                 </div>
               ) : null}
               <TextOverlayEditor
-                textOverlay={textOverlay}
+                textOverlays={textOverlays}
                 totalDuration={stitch.duration}
                 ugcDuration={ugcDuration}
                 currentTime={0}
-                onChange={setTextOverlay}
+                activeTextOverlayId={activeTextOverlayId}
+                onActiveTextOverlayIdChange={setActiveTextOverlayId}
+                onChange={setTextOverlays}
               />
             </section>
             <section className="rounded-lg border border-border p-4">

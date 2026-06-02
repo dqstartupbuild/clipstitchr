@@ -243,7 +243,7 @@ function queueStitchrState(
     includeUgcAudio?: boolean;
     isGeneratingAutoText?: boolean;
     loadedLongrClipsById?: Record<string, unknown>;
-    longrTextOverlay?: TextOverlay | null;
+    longrTextOverlays?: TextOverlay[];
     longrTimelineClipIds?: string[];
     mode?: "normal" | "longr";
     selectedAutoTextProductId?: string;
@@ -251,7 +251,7 @@ function queueStitchrState(
     selectedDemoIds?: string[];
     selectedMusicTrack?: SharedMusicTrack | null;
     selectedUgcIds?: string[];
-    textOverlaysByUgcId?: Record<string, TextOverlay | null>;
+    textOverlaysByUgcId?: Record<string, TextOverlay[]>;
     ugcPlaybackRate?: 1 | 2;
     ugcTrimRangesByClipId?: Record<string, { start: number; end: number }>;
   } = {},
@@ -265,7 +265,7 @@ function queueStitchrState(
     overrides.ugcPlaybackRate ?? 1,
     overrides.selectedMusicTrack ?? null,
     overrides.textOverlaysByUgcId ?? {},
-    overrides.longrTextOverlay ?? null,
+    overrides.longrTextOverlays ?? [],
     overrides.selectedAutoTextProductId ?? "",
     overrides.demoProductFilterId ?? "all",
     overrides.isGeneratingAutoText ?? false,
@@ -427,7 +427,7 @@ describe("StitchrPageClient", () => {
     const sequencePreviewProps = mocks.sequencePreviewPanelProps as {
       onActiveUgcChange: (id: string) => void;
       onCopyTextOverlayToAll: () => void;
-      onTextOverlayChange: (overlay: TextOverlay) => void;
+      onTextOverlaysChange: (textOverlays: TextOverlay[]) => void;
     };
     const ugcClip = mocks.clipLibraryState.videoGroups.ugc.clips[0];
     const demoClip = mocks.clipLibraryState.videoGroups.demo.clips[0];
@@ -459,18 +459,20 @@ describe("StitchrPageClient", () => {
     clipPickerProps.onDemoProductFilterChange("product_1");
     sequencePreviewProps.onActiveUgcChange(ugcClip.id);
     sequencePreviewProps.onCopyTextOverlayToAll();
-    sequencePreviewProps.onTextOverlayChange({
-      backgroundColor: "#000000",
-      color: "#ffffff",
-      endTime: 3,
-      fontSize: 48,
-      startTime: 0,
-      styleId: "hook",
-      text: "Hook",
-      width: 0.8,
-      x: 0.5,
-      y: 0.5,
-    });
+    sequencePreviewProps.onTextOverlaysChange([
+      {
+        backgroundColor: "#000000",
+        color: "#ffffff",
+        endTime: 3,
+        fontSize: 48,
+        startTime: 0,
+        styleId: "hook",
+        text: "Hook",
+        width: 0.8,
+        x: 0.5,
+        y: 0.5,
+      },
+    ]);
     autoTextProps.onProductChange("product_1");
     autoTextProps.onGenerate();
     clipPickerProps.onStitch();
@@ -633,7 +635,7 @@ describe("StitchrPageClient", () => {
       selectedMusicTrack: musicTrack,
       selectedUgcIds: ["ugc_1"],
       textOverlaysByUgcId: {
-        ugc_1: textOverlay,
+        ugc_1: [textOverlay],
       },
     });
     renderToStaticMarkup(<StitchrPageClient />);
@@ -643,10 +645,12 @@ describe("StitchrPageClient", () => {
     expect(mocks.stitchrState.stitchVideos).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({
-          textOverlay: expect.objectContaining({
-            backgroundColor: textOverlay.backgroundColor,
-            text: textOverlay.text,
-          }),
+          textOverlays: expect.arrayContaining([
+            expect.objectContaining({
+              backgroundColor: textOverlay.backgroundColor,
+              text: textOverlay.text,
+            }),
+          ]),
         }),
       ]),
       expect.objectContaining({ id: "demo_1" }),

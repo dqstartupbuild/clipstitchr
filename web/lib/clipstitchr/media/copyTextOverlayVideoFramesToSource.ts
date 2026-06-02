@@ -3,7 +3,7 @@ import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
-import { drawTextOverlay } from "@/lib/clipstitchr/media/drawTextOverlay";
+import { drawTextOverlays } from "@/lib/clipstitchr/media/drawTextOverlays";
 import type { TextOverlayRenderContext } from "@/lib/clipstitchr/media/createTextOverlayRenderContext";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
@@ -19,7 +19,8 @@ type CopyTextOverlayVideoFramesOptions = {
   renderContext: TextOverlayRenderContext;
   timelineOffset: number;
   trimRange: VideoTrimRange;
-  textOverlay: TextOverlay;
+  textOverlay?: TextOverlay;
+  textOverlays?: TextOverlay[];
   onProgress?: (progress: number) => void;
 };
 
@@ -35,6 +36,7 @@ export async function copyTextOverlayVideoFramesToSource({
   timelineOffset,
   trimRange,
   textOverlay,
+  textOverlays,
   onProgress,
 }: CopyTextOverlayVideoFramesOptions): Promise<CopyTextOverlayVideoFramesResult> {
   const track = await input.getPrimaryVideoTrack();
@@ -61,6 +63,7 @@ export async function copyTextOverlayVideoFramesToSource({
   const sourceStartTimestamp = sourceOffset + clampedTrimRange.start;
   const sourceEndTimestamp = sourceOffset + clampedTrimRange.end;
   const outputEndTimestamp = timelineOffset + outputDuration;
+  const overlays = textOverlays ?? (textOverlay ? [textOverlay] : []);
   let isFirstFrame = true;
   let endTimestamp = timelineOffset;
 
@@ -94,7 +97,7 @@ export async function copyTextOverlayVideoFramesToSource({
       TIKTOK_OUTPUT_WIDTH,
       TIKTOK_OUTPUT_HEIGHT,
     );
-    drawTextOverlay(renderContext.context, textOverlay, outputTimestamp);
+    drawTextOverlays(renderContext.context, overlays, outputTimestamp);
 
     await source.add(
       outputTimestamp,

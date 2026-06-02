@@ -60,7 +60,7 @@ export type ClipLibraryValue = {
   ) => Promise<void>;
   updateStitchTextOverlay: (
     stitch: Stitch,
-    textOverlay: TextOverlay | null,
+    textOverlay: TextOverlay | TextOverlay[] | null,
   ) => Promise<void>;
   removeStitch: (id: string) => Promise<void>;
 };

@@ -25,11 +25,12 @@ import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
-import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
+import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { createDefaultTextOverlay } from "@/lib/clipstitchr/utils/createDefaultTextOverlay";
 import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
+import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
 import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchrUgcSelection";
@@ -51,10 +52,9 @@ export function StitchrPageClient() {
   const [selectedMusicTrack, setSelectedMusicTrack] =
     useState<SharedMusicTrack | null>(null);
   const [textOverlaysByUgcId, setTextOverlaysByUgcId] = useState<
-    Record<string, TextOverlay | null>
+    Record<string, TextOverlay[]>
   >({});
-  const [longrTextOverlay, setLongrTextOverlay] =
-    useState<TextOverlay | null>(null);
+  const [longrTextOverlays, setLongrTextOverlays] = useState<TextOverlay[]>([]);
   const [selectedAutoTextProductId, setSelectedAutoTextProductId] = useState("");
   const [demoProductFilterId, setDemoProductFilterId] = useState("all");
   const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
@@ -304,14 +304,15 @@ export function StitchrPageClient() {
     mode === "longr"
       ? selectedLongrDuration
       : selectedUgcDuration + selectedDemoDuration;
-  const activeTextOverlay = activeUgcMetadata
-    ? (textOverlaysByUgcId[activeUgcMetadata.id] ?? null)
-    : null;
-  const previewTextOverlay =
-    mode === "longr" ? longrTextOverlay : activeTextOverlay;
-  const clampedTextOverlay = previewTextOverlay
-    ? clampTextOverlay(previewTextOverlay, totalDuration)
-    : null;
+  const activeTextOverlays = activeUgcMetadata
+    ? (textOverlaysByUgcId[activeUgcMetadata.id] ?? [])
+    : [];
+  const previewTextOverlays =
+    mode === "longr" ? longrTextOverlays : activeTextOverlays;
+  const clampedTextOverlays = clampTextOverlays(
+    previewTextOverlays,
+    totalDuration,
+  );
   const activeAutoTextProductId =
     selectedAutoTextProductId || products.products[0]?.id || "";
 
@@ -509,12 +510,15 @@ export function StitchrPageClient() {
     [],
   );
 
-  const handleTextOverlayChange = useCallback(
-    (nextTextOverlay: TextOverlay | null) => {
+  const handleTextOverlaysChange = useCallback(
+    (nextTextOverlays: TextOverlay[]) => {
+      const nextClampedTextOverlays = clampTextOverlays(
+        nextTextOverlays,
+        totalDuration,
+      );
+
       if (mode === "longr") {
-        setLongrTextOverlay(
-          nextTextOverlay ? clampTextOverlay(nextTextOverlay, totalDuration) : null,
-        );
+        setLongrTextOverlays(nextClampedTextOverlays);
         return;
       }
 
@@ -524,9 +528,7 @@ export function StitchrPageClient() {
 
       setTextOverlaysByUgcId((overlays) => ({
         ...overlays,
-        [activeUgcMetadata.id]: nextTextOverlay
-          ? clampTextOverlay(nextTextOverlay, totalDuration)
-          : null,
+        [activeUgcMetadata.id]: nextClampedTextOverlays,
       }));
     },
     [activeUgcMetadata, mode, totalDuration],
@@ -538,9 +540,9 @@ export function StitchrPageClient() {
     }
 
     setTextOverlaysByUgcId((overlays) =>
-      selectedUgcMetadata.reduce<Record<string, TextOverlay | null>>(
+      selectedUgcMetadata.reduce<Record<string, TextOverlay[]>>(
         (nextOverlays, clip) => {
-          const sourceTextOverlay = overlays[activeUgcMetadata.id] ?? null;
+          const sourceTextOverlays = overlays[activeUgcMetadata.id] ?? [];
           const ugcTrimRange =
             selectedUgcTrimRangesByClipId[clip.id] ??
             getDefaultVideoTrimRange(clip);
@@ -550,9 +552,10 @@ export function StitchrPageClient() {
 
           return {
             ...nextOverlays,
-            [clip.id]: sourceTextOverlay
-              ? clampTextOverlay({ ...sourceTextOverlay }, clipDuration)
-              : null,
+            [clip.id]: clampTextOverlays(
+              sourceTextOverlays.map((textOverlay) => ({ ...textOverlay })),
+              clipDuration,
+            ),
           };
         },
         { ...overlays },
@@ -585,12 +588,11 @@ export function StitchrPageClient() {
           };
         },
       );
-      const textOverlay =
-        longrTextOverlay && longrTextOverlay.text.trim().length > 0
-          ? clampTextOverlay(longrTextOverlay, selectedLongrDuration)
-          : null;
+      const textOverlays = getNonEmptyTextOverlays(
+        clampTextOverlays(longrTextOverlays, selectedLongrDuration),
+      );
 
-      void stitchrState.stitchLongrSequence(selections, textOverlay, {
+      void stitchrState.stitchLongrSequence(selections, textOverlays, {
         addMusic: addMusic && !selectedMusicTrack,
         demoPlaybackRate,
         includeDemoAudio,
@@ -611,17 +613,16 @@ export function StitchrPageClient() {
           const trimRange =
             selectedUgcTrimRangesByClipId[clip.id] ??
             getDefaultVideoTrimRange(clip);
-          const pairTextOverlay = textOverlaysByUgcId[clip.id] ?? null;
+          const pairTextOverlays = textOverlaysByUgcId[clip.id] ?? [];
           const pairDuration =
             getPlaybackRateDuration(trimRange, ugcPlaybackRate) +
             selectedDemoDuration;
 
           return {
             clip,
-            textOverlay:
-              pairTextOverlay && pairTextOverlay.text.trim().length > 0
-                ? clampTextOverlay(pairTextOverlay, pairDuration)
-                : null,
+            textOverlays: getNonEmptyTextOverlays(
+              clampTextOverlays(pairTextOverlays, pairDuration),
+            ),
             trimRange,
           };
         },
@@ -670,17 +671,20 @@ export function StitchrPageClient() {
     })
       .then((text) => {
         const baseOverlay =
-          previewTextOverlay ?? createDefaultTextOverlay(totalDuration, 0);
-        const nextOverlay = clampTextOverlay(
-          {
-            ...baseOverlay,
-            text: text.overlayText || text.hook,
-          },
+          previewTextOverlays[0] ?? createDefaultTextOverlay(totalDuration, 0);
+        const nextTextOverlays = clampTextOverlays(
+          [
+            {
+              ...baseOverlay,
+              text: text.overlayText || text.hook,
+            },
+            ...previewTextOverlays.slice(1),
+          ],
           totalDuration,
         );
 
         if (mode === "longr") {
-          setLongrTextOverlay(nextOverlay);
+          setLongrTextOverlays(nextTextOverlays);
           setAutoTextMessage("Text generated.");
           return;
         }
@@ -691,7 +695,7 @@ export function StitchrPageClient() {
 
         setTextOverlaysByUgcId((overlays) => ({
           ...overlays,
-          [activeUgcMetadata.id]: nextOverlay,
+          [activeUgcMetadata.id]: nextTextOverlays,
         }));
         setAutoTextMessage("Text generated.");
       })
@@ -705,7 +709,7 @@ export function StitchrPageClient() {
     activeAutoTextProductId,
     activeUgcMetadata,
     mode,
-    previewTextOverlay,
+    previewTextOverlays,
     totalDuration,
   ]);
 
@@ -942,14 +946,14 @@ export function StitchrPageClient() {
                 demoPlaybackRate={demoPlaybackRate}
                 includeDemoAudio={includeDemoAudio}
                 includeUgcAudio={includeUgcAudio}
-                textOverlay={clampedTextOverlay}
+                textOverlays={clampedTextOverlays}
                 ugcPlaybackRate={ugcPlaybackRate}
                 canCopyTextOverlayToAll={
                   mode === "normal" && selectedUgcMetadata.length > 1
                 }
                 onActiveUgcChange={handleActiveUgcChange}
                 onCopyTextOverlayToAll={handleCopyTextOverlayToAll}
-                onTextOverlayChange={handleTextOverlayChange}
+                onTextOverlaysChange={handleTextOverlaysChange}
               />
             </div>
           </div>

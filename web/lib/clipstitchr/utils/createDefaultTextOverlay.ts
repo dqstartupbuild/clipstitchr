@@ -1,6 +1,7 @@
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clamp } from "@/lib/clipstitchr/utils/clamp";
+import { createId } from "@/lib/clipstitchr/utils/createId";
 
 export function createDefaultTextOverlay(
   totalDuration: number,
@@ -12,6 +13,7 @@ export function createDefaultTextOverlay(
 
   return clampTextOverlay(
     {
+      id: createId(),
       text: "Your text here",
       startTime,
       endTime,

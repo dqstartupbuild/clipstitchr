@@ -34,7 +34,7 @@ type StitchesSectionProps = {
   ) => void | Promise<void>;
   onUpdateTextOverlay: (
     stitch: Stitch,
-    textOverlay: TextOverlay | null,
+    textOverlay: TextOverlay | TextOverlay[] | null,
   ) => void | Promise<void>;
 };
 
