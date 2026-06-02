@@ -4,9 +4,6 @@ import {
 } from "@/lib/clipstitchr/constants/avatarGenerationLocations";
 import { getAvatarGenerationOutfits } from "@/lib/clipstitchr/constants/avatarGenerationOutfits";
 import { getAvatarGenerationPosesForLocationCategories } from "@/lib/clipstitchr/constants/avatarGenerationPoses";
-import { avatarUgcReactionBackgrounds } from "@/lib/clipstitchr/constants/avatarUgcReactionBackgrounds";
-import { avatarUgcReactionPoseActions } from "@/lib/clipstitchr/constants/avatarUgcReactionPoseActions";
-import { avatarUgcVisibleOutfitOptions } from "@/lib/clipstitchr/constants/avatarUgcVisibleOutfitOptions";
 import type {
   AvatarGenerationResolvedLighting,
   AvatarGenerationVariant,
@@ -47,15 +44,8 @@ export function createAvatarGenerationVariants({
   style: AvatarStyleOption;
   wardrobeStyle?: AvatarWardrobeStyle;
 }): AvatarGenerationVariant[] {
-  const isUgcStyle = style === "ugc";
-  const outfits = getShuffledItems(
-    isUgcStyle
-      ? avatarUgcVisibleOutfitOptions
-      : getAvatarGenerationOutfits(wardrobeStyle),
-  );
-  const locations = getShuffledItems(
-    isUgcStyle ? avatarUgcReactionBackgrounds : avatarGenerationLocationOptions,
-  );
+  const outfits = getShuffledItems(getAvatarGenerationOutfits(wardrobeStyle));
+  const locations = getShuffledItems(avatarGenerationLocationOptions);
   const trimmedContext = context.trim();
   const trimmedLocation = location.trim();
 
@@ -63,17 +53,11 @@ export function createAvatarGenerationVariants({
     const locationOption = trimmedLocation
       ? {
           categories: getAvatarGenerationLocationCategories(trimmedLocation),
-          description: isUgcStyle
-            ? `${trimmedLocation}, visible only as a close, softly blurred background behind the creator`
-            : trimmedLocation,
+          description: trimmedLocation,
         }
       : locations[index % locations.length];
     const poses = getShuffledItems(
-      isUgcStyle
-        ? avatarUgcReactionPoseActions
-        : getAvatarGenerationPosesForLocationCategories(
-            locationOption.categories,
-          ),
+      getAvatarGenerationPosesForLocationCategories(locationOption.categories),
     );
 
     return {

@@ -129,13 +129,6 @@ For each requested output image, ClipStitchr creates a unique variant:
 - lighting generated at request time when the user selected `Any`
 - selected style from the UI
 
-When the selected style is `UGC`, generated default pose/action presets should
-use close talking-head reaction poses. UGC prompts should prioritize tight
-front-camera reaction framing over showing the full outfit, body, or location.
-Default UGC variants should use visible-top outfit descriptions and close,
-softly blurred background descriptions so the model does not widen the shot to
-show pants, props, rooms, stores, or full-body actions.
-
 Generated background/location presets should describe the setting only. They
 must not embed body actions such as taking selfies, walking, sitting, or riding
 bikes. Generated pose/action presets are selected from categories compatible
