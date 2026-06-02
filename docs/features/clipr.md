@@ -637,8 +637,9 @@ model input keys from memory.
 Planned model roles:
 
 - Hook selection and script generation: `anthropic/claude-4.5-haiku` by
-  default, configurable with `CLIPR_HOOK_MODEL_ID`. The existing
-  `openai/gpt-4.1` workflow remains supported.
+  default, configurable with `SHORT_FORM_TEXT_MODEL_ID` across Clipr, Stitchr,
+  and Swipr text generation. `CLIPR_HOOK_MODEL_ID` remains a compatibility
+  fallback. The existing `openai/gpt-4.1` workflow remains supported.
 - Avatar still generation: use the same model, prompt builder, and input
   parameters as avatar photo generation, with one generated source still for the
   full-script avatar video.
@@ -650,7 +651,7 @@ Planned model roles:
 
 Add environment overrides instead of hard-coding provider choices:
 
-- `CLIPR_HOOK_MODEL_ID`
+- `SHORT_FORM_TEXT_MODEL_ID`
 - `AVATAR_PHOTO_MODEL_ID` for avatar photo generation and Clipr avatar stills
 - `CLIPR_AVATAR_VIDEO_MODEL_ID`
 - `CLIPR_MUSIC_MODEL_ID`

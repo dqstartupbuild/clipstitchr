@@ -1,5 +1,5 @@
-import { DEFAULT_CLIPR_HOOK_MODEL_ID } from "@/lib/clipstitchr/constants/defaultCliprHookModelId";
+import { getShortFormTextModelId } from "@/lib/clipstitchr/server/getShortFormTextModelId";
 
 export function getCliprHookModelId() {
-  return process.env.CLIPR_HOOK_MODEL_ID?.trim() || DEFAULT_CLIPR_HOOK_MODEL_ID;
+  return getShortFormTextModelId();
 }

@@ -41,14 +41,15 @@ matching preset when the UI does not supply one, and records the selected scene,
 lighting, camera angle, surface, palette, and composition in the hidden
 background details.
 
-## Clipr Text Generation
+## Short-Form Text Generation
 
-Environment variable: `CLIPR_HOOK_MODEL_ID`
+Environment variable: `SHORT_FORM_TEXT_MODEL_ID`
 
 Default: `anthropic/claude-4.5-haiku`
 
-This model is used for Clipr hook selection, Clipr scripts, Swipr auto-text,
-and Stitchr auto-text.
+This shared model is used for Clipr hook selection and scripts, Stitchr
+auto-text, and Swipr auto-text. `CLIPR_HOOK_MODEL_ID` is still accepted as a
+backward-compatible fallback when `SHORT_FORM_TEXT_MODEL_ID` is not set.
 
 | Model ID | Status | Workflow |
 | --- | --- | --- |
@@ -63,7 +64,7 @@ and Stitchr auto-text.
 | Swipr background metadata analysis | `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID` | `openai/gpt-4.1-mini` | Shares the upload image analysis model with a background-specific prompt. |
 | Upload video action analysis | `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` | `google/gemini-3-flash` | Used for full-video UGC/demo action analysis before falling back to poster analysis when needed. |
 | Product enrichment | `PRODUCT_ENRICHMENT_MODEL_ID` | `openai/gpt-4.1` | Generates hidden product strategy metadata when saving Settings products. |
-| Clipr hook, script, Swipr auto-text, and Stitchr auto-text | `CLIPR_HOOK_MODEL_ID` | `anthropic/claude-4.5-haiku` | Text generation returns structured JSON or short-form copy. See Clipr Text Generation above for supported request workflows. |
+| Clipr hook, script, Swipr auto-text, and Stitchr auto-text | `SHORT_FORM_TEXT_MODEL_ID` | `anthropic/claude-4.5-haiku` | Text generation returns structured JSON or short-form copy. `CLIPR_HOOK_MODEL_ID` remains a fallback. See Short-Form Text Generation above for supported request workflows. |
 | Clipr avatar still image | `AVATAR_PHOTO_MODEL_ID` | `openai/gpt-image-2` | Uses the same avatar photo generation model, prompt builder, and input parameters as avatar photo generation, but creates one source still for the full-script avatar video. |
 | Clipr avatar video and voice | `CLIPR_AVATAR_VIDEO_MODEL_ID` | `prunaai/p-video-avatar` | Generates the full-script talking avatar video with the selected voice. |
 | Clipr and Stitchr background music | `CLIPR_MUSIC_MODEL_ID` | `stability-ai/stable-audio-2.5` | Generates a 60 second instrumental music bed when the user opts in. The MP3 is copied to R2 as a separate editable asset and mixed into the clean video only during export/download. |
