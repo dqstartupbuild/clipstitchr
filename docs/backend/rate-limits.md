@@ -128,8 +128,9 @@ Optional Replicate model overrides:
   `prunaai/p-image`, and `prunaai/wan-2.2-image`.
 - `PRODUCT_ENRICHMENT_MODEL_ID` defaults to `openai/gpt-4.1` for hidden product
   strategy enrichment when saving products in Settings.
-- `CLIPR_HOOK_MODEL_ID` defaults to `openai/gpt-4.1` for Clipr hook, script,
-  Swipr auto-text, and Stitchr auto-text generation.
+- `CLIPR_HOOK_MODEL_ID` defaults to `anthropic/claude-4.5-haiku` for Clipr
+  hook, script, Swipr auto-text, and Stitchr auto-text generation. Supported
+  workflows include `anthropic/claude-4.5-haiku` and `openai/gpt-4.1`.
 - Clipr avatar still generation uses `AVATAR_PHOTO_MODEL_ID`, the same model
   configuration and provider input path as avatar photo generation, but creates
   one source still before full-script avatar video generation.

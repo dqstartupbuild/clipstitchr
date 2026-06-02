@@ -636,7 +636,9 @@ model input keys from memory.
 
 Planned model roles:
 
-- Hook selection and script generation: `openai/gpt-4.1`.
+- Hook selection and script generation: `anthropic/claude-4.5-haiku` by
+  default, configurable with `CLIPR_HOOK_MODEL_ID`. The existing
+  `openai/gpt-4.1` workflow remains supported.
 - Avatar still generation: use the same model, prompt builder, and input
   parameters as avatar photo generation, with one generated source still for the
   full-script avatar video.
