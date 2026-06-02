@@ -2,10 +2,10 @@ import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateC
 import { createCliprTextGenerationInput } from "@/lib/clipstitchr/server/createCliprTextGenerationInput";
 import { createCliprTextGenerationPrompt } from "@/lib/clipstitchr/server/createCliprTextGenerationPrompt";
 import { getCliprEligibleHookTemplates } from "@/lib/clipstitchr/server/getCliprEligibleHookTemplates";
+import { getCliprHookModelId } from "@/lib/clipstitchr/server/getCliprHookModelId";
 import { getCliprProductPlaceholderFillers } from "@/lib/clipstitchr/server/getCliprProductPlaceholderFillers";
 import { getCliprTextSystemPrompt } from "@/lib/clipstitchr/server/getCliprTextSystemPrompt";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
-import { getShortFormTextModelId } from "@/lib/clipstitchr/server/getShortFormTextModelId";
 import { parseCliprTextGenerationOutput } from "@/lib/clipstitchr/server/parseCliprTextGenerationOutput";
 import { selectCliprHookCandidates } from "@/lib/clipstitchr/server/selectCliprHookCandidates";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
@@ -27,7 +27,7 @@ export async function createCliprTextGeneration({
   replicate: ReplicateClient;
   slideCount: number;
 }) {
-  const providerModel = getShortFormTextModelId();
+  const providerModel = getCliprHookModelId();
   const candidates = selectCliprHookCandidates(
     getCliprEligibleHookTemplates(product, purpose),
     purpose,
