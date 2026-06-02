@@ -19,6 +19,8 @@ import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
+import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { getUseInSwaprStitchHref } from "@/lib/clipstitchr/utils/getUseInSwaprStitchHref";
 import { capturePostHogException } from "@/lib/clipstitchr/analytics/capturePostHogException";
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
@@ -38,7 +40,7 @@ type StitchCardProps = {
   ) => void | Promise<void>;
   onUpdateTextOverlay: (
     stitch: Stitch,
-    textOverlay: TextOverlay | null,
+    textOverlay: TextOverlay | TextOverlay[] | null,
   ) => void | Promise<void>;
 };
 
@@ -78,7 +80,15 @@ export function StitchCard({
     () => onLoadPoster?.(stitch.id) ?? Promise.resolve(null),
     [onLoadPoster, stitch.id],
   );
-  const posterContentKey = JSON.stringify(stitch.textOverlay ?? null);
+  const stitchTextOverlays = getTextOverlayList(
+    stitch.textOverlays,
+    stitch.textOverlay,
+  );
+  const hasTextOverlay =
+    getNonEmptyTextOverlays(stitchTextOverlays).length > 0;
+  const posterContentKey = JSON.stringify(
+    stitch.textOverlays ?? stitch.textOverlay ?? null,
+  );
   const posterUrl = useLazyBlobObjectUrl({
     cacheKey: stitch.posterObject?.key
       ? `${stitch.posterObject.key}:${stitch.posterVersion ?? 0}:${posterContentKey}`
@@ -141,7 +151,7 @@ export function StitchCard({
       stitch_id: stitch.id,
       duration_seconds: stitch.duration,
       has_music: Boolean(stitch.music),
-      has_text_overlay: Boolean(stitch.textOverlay),
+      has_text_overlay: hasTextOverlay,
     });
 
     if (shouldLoadPreview) {
@@ -166,7 +176,7 @@ export function StitchCard({
         stitch_id: stitch.id,
         duration_seconds: stitch.duration,
         has_music: Boolean(stitch.music),
-        has_text_overlay: Boolean(stitch.textOverlay),
+        has_text_overlay: hasTextOverlay,
         size_bytes: stitch.size,
       });
     } catch (nextError) {
@@ -227,7 +237,9 @@ export function StitchCard({
       setIsSavingMusic(false);
     }
   };
-  const handleUpdateTextOverlay = async (textOverlay: TextOverlay | null) => {
+  const handleUpdateTextOverlay = async (
+    textOverlay: TextOverlay | TextOverlay[] | null,
+  ) => {
     setIsSavingText(true);
     setTextError(null);
 
@@ -271,7 +283,7 @@ export function StitchCard({
           stitch_id: stitch.id,
           duration_seconds: stitch.duration,
           has_music: Boolean(stitch.music),
-          has_text_overlay: Boolean(stitch.textOverlay),
+          has_text_overlay: hasTextOverlay,
         });
         void onDelete(stitch.id);
       },

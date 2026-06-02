@@ -1,10 +1,14 @@
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
+import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
+import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
+import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { videoClipCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
+import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { cliprMetadataValidator } from "./validators/cliprMetadata";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { clipTypeValidator } from "./validators/clipType";
@@ -44,6 +48,20 @@ const saveArgs = {
   cliprMetadata: v.optional(cliprMetadataValidator),
   createdAt: v.string(),
   updatedAt: v.string(),
+};
+
+const saveFromAutomationArgs = {
+  secret: v.string(),
+  ownerId: v.string(),
+  automation: automationProvenanceValidator,
+  ...saveArgs,
+};
+
+const saveFromMediaWorkerArgs = {
+  secret: v.string(),
+  ownerId: v.string(),
+  automation: v.optional(automationProvenanceValidator),
+  ...saveArgs,
 };
 
 export const list = query({
@@ -178,6 +196,191 @@ export const save = mutation({
     }
 
     return clipId;
+  },
+});
+
+export const saveFromAutomation = mutation({
+  args: saveFromAutomationArgs,
+  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+    assertAutomationWorkerSecret(secret);
+
+    const existingClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.id),
+      )
+      .unique();
+
+    if (
+      existingClip?.automation?.source === "automation" &&
+      existingClip.automation.taskId === automation.taskId
+    ) {
+      return existingClip._id;
+    }
+
+    await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
+      throws: true,
+    });
+
+    const clip = {
+      ownerId,
+      ...args,
+      automation,
+    };
+
+    if (existingClip) {
+      await ctx.db.patch(existingClip._id, clip);
+      const updatedClip = await ctx.db.get(existingClip._id);
+
+      if (updatedClip) {
+        await videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip);
+      }
+
+      return existingClip._id;
+    }
+
+    const clipId = await ctx.db.insert("videoClips", clip);
+    const insertedClip = await ctx.db.get(clipId);
+
+    if (insertedClip) {
+      await videoClipCounts.insertIfDoesNotExist(ctx, insertedClip);
+    }
+
+    return clipId;
+  },
+});
+
+export const saveFromMediaWorker = mutation({
+  args: saveFromMediaWorkerArgs,
+  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+    assertMediaWorkerSecret(secret);
+
+    const existingClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.id),
+      )
+      .unique();
+
+    if (
+      automation &&
+      existingClip?.automation?.source === "automation" &&
+      existingClip.automation.taskId === automation.taskId
+    ) {
+      return existingClip._id;
+    }
+
+    if (automation) {
+      await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
+        key: ownerId,
+        throws: true,
+      });
+      await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
+        throws: true,
+      });
+    } else {
+      await rateLimiter.limit(ctx, "convexRecordSave", {
+        key: ownerId,
+        throws: true,
+      });
+    }
+
+    const clip = {
+      ownerId,
+      ...args,
+      ...(automation ? { automation } : {}),
+    };
+
+    if (existingClip) {
+      await ctx.db.patch(existingClip._id, clip);
+      const updatedClip = await ctx.db.get(existingClip._id);
+
+      if (updatedClip) {
+        await videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip);
+      }
+
+      return existingClip._id;
+    }
+
+    const clipId = await ctx.db.insert("videoClips", clip);
+    const insertedClip = await ctx.db.get(clipId);
+
+    if (insertedClip) {
+      await videoClipCounts.insertIfDoesNotExist(ctx, insertedClip);
+    }
+
+    return clipId;
+  },
+});
+
+export const updateMetadataFromProvider = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    name: v.optional(v.string()),
+    tags: v.optional(assetTagsValidator),
+    videoDescription: v.optional(v.string()),
+    mainPersonDescription: v.optional(v.string()),
+    outfitDescription: v.optional(v.string()),
+    locationDescription: v.optional(v.string()),
+    poseDescription: v.optional(v.string()),
+    productDescription: v.optional(v.string()),
+    productId: v.optional(v.string()),
+    updatedAt: v.string(),
+  },
+  handler: async (
+    ctx,
+    {
+      secret,
+      ownerId,
+      id,
+      name,
+      tags,
+      videoDescription,
+      mainPersonDescription,
+      outfitDescription,
+      locationDescription,
+      poseDescription,
+      productDescription,
+      productId,
+      updatedAt,
+    },
+  ) => {
+    assertProviderWorkerSecret(secret);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const clip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!clip) {
+      throw new Error("Video clip not found.");
+    }
+
+    await ctx.db.patch(clip._id, {
+      ...(name === undefined ? {} : { name }),
+      ...(tags === undefined ? {} : { tags }),
+      ...(videoDescription === undefined ? {} : { videoDescription }),
+      ...(mainPersonDescription === undefined
+        ? {}
+        : { mainPersonDescription }),
+      ...(outfitDescription === undefined ? {} : { outfitDescription }),
+      ...(locationDescription === undefined ? {} : { locationDescription }),
+      ...(poseDescription === undefined ? {} : { poseDescription }),
+      ...(productDescription === undefined ? {} : { productDescription }),
+      ...(productId === undefined ? {} : { productId }),
+      updatedAt,
+    });
   },
 });
 

@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => ({
   },
   photoLibraryState: {
     avatars: [] as Avatar[],
+    defaultAvatarId: undefined as string | undefined,
     error: null as string | null,
     isSaving: false,
     loadPhoto: vi.fn(),
@@ -32,6 +33,7 @@ const mocks = vi.hoisted(() => ({
     renameAvatar: vi.fn(),
     saveFiles: vi.fn(),
     saveGeneratedPhotos: vi.fn(),
+    setDefaultAvatar: vi.fn(),
     updateAvatarCliprVoice: vi.fn(),
     updateAvatarWardrobeStyle: vi.fn(),
     updatePhotoMetadata: vi.fn(),
@@ -224,6 +226,7 @@ describe("AvatarsPageClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.photoLibraryState.avatars = [createAvatar()];
+    mocks.photoLibraryState.defaultAvatarId = undefined;
     mocks.photoLibraryState.error = null;
     mocks.photoLibraryState.isSaving = false;
     mocks.photoLibraryState.photos = [createPhoto()];
@@ -233,6 +236,7 @@ describe("AvatarsPageClient", () => {
     mocks.photoLibraryState.renameAvatar.mockResolvedValue(undefined);
     mocks.photoLibraryState.saveFiles.mockResolvedValue(true);
     mocks.photoLibraryState.saveGeneratedPhotos.mockResolvedValue(undefined);
+    mocks.photoLibraryState.setDefaultAvatar.mockResolvedValue(undefined);
     mocks.photoLibraryState.updateAvatarCliprVoice.mockResolvedValue(undefined);
     mocks.photoLibraryState.updateAvatarWardrobeStyle.mockResolvedValue(undefined);
     mocks.photoLibraryState.updatePhotoMetadata.mockResolvedValue(undefined);
@@ -278,7 +282,7 @@ describe("AvatarsPageClient", () => {
     mocks.generatorState.error = null;
     mocks.generatorState.generatedCount = 2;
     expect(renderToStaticMarkup(<AvatarsPageClient />)).toContain(
-      "Saved 2 generated photos.",
+      "Queued 2 generated photos.",
     );
   });
 
@@ -344,6 +348,7 @@ describe("AvatarsPageClient", () => {
       onChange: (value: string) => void;
     };
     const selectedActions = mocks.selectedAvatarActionsProps as {
+      onSetDefault: (avatar: Avatar) => Promise<void>;
       onDelete: (avatar: Avatar) => Promise<void>;
     };
     const generationProps = mocks.avatarGenerationPanelProps as {
@@ -367,6 +372,7 @@ describe("AvatarsPageClient", () => {
     filterProps.onChange("avatar_1");
     searchProps.onChange("avatar");
     await selectedActions.onDelete(createAvatar());
+    await selectedActions.onSetDefault(createAvatar());
     generationProps.onGenerate();
     libraryProps.onSelect(createPhoto());
     await libraryProps.onDelete("photo_1");
@@ -374,6 +380,9 @@ describe("AvatarsPageClient", () => {
 
     expect(mocks.photoLibraryState.removeAvatar).toHaveBeenCalledWith(
       "avatar_1",
+    );
+    expect(mocks.photoLibraryState.setDefaultAvatar).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "avatar_1" }),
     );
     expect(mocks.generatorState.generate).toHaveBeenCalledWith(
       expect.objectContaining({

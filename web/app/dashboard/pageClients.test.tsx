@@ -35,6 +35,12 @@ vi.mock("convex/react", () => ({
 
 vi.mock("@/convex/_generated/api", () => ({
   api: {
+    mediaJobs: {
+      listActive: "mediaJobs.listActive",
+    },
+    providerJobs: {
+      listActive: "providerJobs.listActive",
+    },
     sharedMusicTracks: {
       list: "sharedMusicTracks.list",
     },
@@ -247,6 +253,7 @@ vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
         wardrobeStyle: "any",
       },
     ],
+    defaultAvatarId: "avatar_1",
     error: null,
     isLoading: false,
     isSaving: false,
@@ -270,6 +277,7 @@ vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
     renameAvatar: vi.fn(),
     saveFiles: mocks.saveFiles,
     saveGeneratedPhotos: mocks.saveGeneratedPhotos,
+    setDefaultAvatar: vi.fn(),
     updateAvatarCliprVoice: vi.fn(),
     updateAvatarWardrobeStyle: vi.fn(),
     updatePhotoMetadata: vi.fn(),

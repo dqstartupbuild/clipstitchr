@@ -21,6 +21,16 @@ const objectKindConfig: Record<
     baseName: "poster",
     fallbackExtension: "jpg",
   },
+  "upload-source-video": {
+    directory: "upload-sources",
+    baseName: "source",
+    fallbackExtension: "mp4",
+  },
+  "provider-input-image": {
+    directory: "provider-inputs",
+    baseName: "image",
+    fallbackExtension: "jpg",
+  },
   photo: {
     directory: "photos",
     baseName: "photo",

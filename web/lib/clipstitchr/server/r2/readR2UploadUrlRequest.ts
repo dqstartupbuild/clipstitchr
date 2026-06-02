@@ -3,6 +3,8 @@ import type { R2ObjectKind } from "@/lib/clipstitchr/types/R2ObjectKind";
 const R2_OBJECT_KINDS = new Set<R2ObjectKind>([
   "video-clip-video",
   "video-clip-poster",
+  "upload-source-video",
+  "provider-input-image",
   "photo",
   "photo-original",
   "photo-thumbnail",

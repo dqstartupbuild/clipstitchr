@@ -2,6 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SwaprPageClient } from "@/app/dashboard/swapr/SwaprPageClient";
+import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
@@ -18,7 +19,8 @@ const mocks = vi.hoisted(() => ({
     stitches: [] as Record<string, unknown>[],
   },
   photoLibraryState: {
-    avatars: [],
+    avatars: [] as Avatar[],
+    defaultAvatarId: undefined as string | undefined,
     error: null as string | null,
     photos: [] as PhotoAssetMetadata[],
   },
@@ -251,6 +253,8 @@ describe("SwaprPageClient", () => {
     mocks.clipLibraryState.refresh.mockResolvedValue(undefined);
     mocks.clipLibraryState.stitches = [];
     mocks.photoLibraryState.error = null;
+    mocks.photoLibraryState.avatars = [];
+    mocks.photoLibraryState.defaultAvatarId = undefined;
     mocks.photoLibraryState.photos = [createPhoto()];
     mocks.swaprGenerationState.generate.mockResolvedValue(undefined);
     mocks.createTemporarySwaprReferenceVideoSegments.mockResolvedValue([
@@ -304,6 +308,28 @@ describe("SwaprPageClient", () => {
 
     expect(markup).toContain("Clip library unavailable.");
     expect(markup).toContain("SwaprEmptyState:false:true");
+  });
+
+  it("applies the default avatar photo as the initial Swapr photo selection", () => {
+    mocks.photoLibraryState.avatars = [
+      {
+        cliprVoiceId: "Zephyr (Female)",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        id: "avatar_1",
+        name: "Avatar",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+        wardrobeStyle: "any",
+      },
+    ];
+    mocks.photoLibraryState.defaultAvatarId = "avatar_1";
+
+    renderToStaticMarkup(<SwaprPageClient />);
+
+    const photoSelectorProps = mocks.photoSelectorProps as {
+      selectedPhotoId: string;
+    };
+
+    expect(photoSelectorProps.selectedPhotoId).toBe("photo_1");
   });
 
   it("exercises Swapr selection and direct-reference generation callbacks", async () => {

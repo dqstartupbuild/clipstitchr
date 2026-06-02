@@ -81,6 +81,10 @@ vi.mock("@/convex/_generated/api", () => ({
       save: "avatars.save",
       update: "avatars.update",
     },
+    avatarPreferences: {
+      get: "avatarPreferences.get",
+      setDefaultAvatar: "avatarPreferences.setDefaultAvatar",
+    },
     photoAssets: {
       get: "photoAssets.get",
       list: "photoAssets.list",
@@ -234,6 +238,10 @@ describe("usePhotoLibraryState", () => {
         return [{ id: "avatar_doc_1" }];
       }
 
+      if (queryId === "avatarPreferences.get") {
+        return null;
+      }
+
       return undefined;
     });
     mocks.createAvatarFromConvexDocument.mockReturnValue(createAvatar());
@@ -290,6 +298,7 @@ describe("usePhotoLibraryState", () => {
     expect(state.isLoading).toBe(false);
     expect(mocks.useQuery).toHaveBeenCalledWith("photoAssets.list", {});
     expect(mocks.useQuery).toHaveBeenCalledWith("avatars.list", {});
+    expect(mocks.useQuery).toHaveBeenCalledWith("avatarPreferences.get", {});
   });
 
   it("skips library queries while signed out", () => {
@@ -303,6 +312,10 @@ describe("usePhotoLibraryState", () => {
     expect(state.isLoading).toBe(false);
     expect(mocks.useQuery).toHaveBeenCalledWith("photoAssets.list", "skip");
     expect(mocks.useQuery).toHaveBeenCalledWith("avatars.list", "skip");
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      "avatarPreferences.get",
+      "skip",
+    );
   });
 
   it("creates an avatar with trimmed text and normalized defaults", async () => {
@@ -392,6 +405,10 @@ describe("usePhotoLibraryState", () => {
 
       if (queryId === "avatars.list") {
         return [{ id: "avatar_doc_1" }];
+      }
+
+      if (queryId === "avatarPreferences.get") {
+        return null;
       }
 
       return undefined;
@@ -634,6 +651,34 @@ describe("usePhotoLibraryState", () => {
     );
   });
 
+  it("reads and updates the default avatar preference", async () => {
+    mocks.useQuery.mockImplementation((queryId: string) => {
+      if (queryId === "photoAssets.list") {
+        return [];
+      }
+
+      if (queryId === "avatars.list") {
+        return [{ id: "avatar_doc_1" }];
+      }
+
+      if (queryId === "avatarPreferences.get") {
+        return { defaultAvatarId: "avatar_1" };
+      }
+
+      return undefined;
+    });
+    const state = usePhotoLibraryState();
+
+    expect(state.defaultAvatarId).toBe("avatar_1");
+    await state.setDefaultAvatar(createAvatar({ id: "avatar_2" }));
+
+    expect(getMutation("avatarPreferences.setDefaultAvatar")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        avatarId: "avatar_2",
+      }),
+    );
+  });
+
   it("surfaces avatar update failures", async () => {
     const state = usePhotoLibraryState();
     const avatar = createAvatar();
@@ -772,6 +817,10 @@ describe("usePhotoLibraryState", () => {
         return [{ id: "avatar_doc_1" }];
       }
 
+      if (queryId === "avatarPreferences.get") {
+        return null;
+      }
+
       return undefined;
     });
     const state = usePhotoLibraryState();
@@ -835,6 +884,10 @@ describe("usePhotoLibraryState", () => {
         return [{ id: "avatar_doc_1" }];
       }
 
+      if (queryId === "avatarPreferences.get") {
+        return null;
+      }
+
       return undefined;
     });
     mocks.useEffect.mockImplementationOnce((effect: () => void) => {
@@ -869,6 +922,10 @@ describe("usePhotoLibraryState", () => {
         return [{ id: "avatar_doc_1" }];
       }
 
+      if (queryId === "avatarPreferences.get") {
+        return null;
+      }
+
       return undefined;
     });
     mocks.downloadCachedR2ImageBlobs.mockRejectedValueOnce(
@@ -898,6 +955,10 @@ describe("usePhotoLibraryState", () => {
 
       if (queryId === "avatars.list") {
         return [{ id: "avatar_doc_1" }];
+      }
+
+      if (queryId === "avatarPreferences.get") {
+        return null;
       }
 
       return undefined;
@@ -930,6 +991,10 @@ describe("usePhotoLibraryState", () => {
 
       if (queryId === "avatars.list") {
         return [{ id: "avatar_doc_1" }];
+      }
+
+      if (queryId === "avatarPreferences.get") {
+        return null;
       }
 
       return undefined;

@@ -18,6 +18,8 @@ function getStatusLabel(status: ProcessingStatus) {
       return "Saving clip";
     case "stitching":
       return "Preparing final clip";
+    case "queued":
+      return "Clip queued";
     case "complete":
       return "Clip saved";
     case "error":
@@ -40,7 +42,7 @@ export function CliprGenerationProgress({
           {getStatusLabel(status)}
         </h2>
         <span className="text-xs font-semibold text-text-tertiary">
-          {Math.round(progress * 100)}%
+          {status === "queued" ? "Queued" : `${Math.round(progress * 100)}%`}
         </span>
       </div>
       <ProgressBar value={progress} />

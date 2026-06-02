@@ -5,5 +5,6 @@ export type ProcessingStatus =
   | "normalizing"
   | "saving"
   | "stitching"
+  | "queued"
   | "complete"
   | "error";

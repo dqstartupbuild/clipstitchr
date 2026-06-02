@@ -49,6 +49,7 @@ describe("useAvatarPhotoGeneration", () => {
           variant: { style: "ugc" },
         },
       ],
+      queuedCount: 3,
     });
   });
 
@@ -71,7 +72,7 @@ describe("useAvatarPhotoGeneration", () => {
     expect(loadPhoto).not.toHaveBeenCalled();
   });
 
-  it("loads the selected photo, generates variants, and saves them", async () => {
+  it("loads the selected photo and queues worker generation", async () => {
     const referencePhoto = new Blob(["photo"], {
       type: "image/jpeg",
     }) as unknown as PhotoAsset;
@@ -88,15 +89,14 @@ describe("useAvatarPhotoGeneration", () => {
     expect(mocks.generateAvatarPhotos).toHaveBeenCalledWith(
       expect.objectContaining({
         avatar: referencePhoto,
+        avatarId: "avatar_1",
+        avatarName: "Founder",
         avatarDescription: "Confident founder",
         wardrobeStyle: "female",
       }),
     );
-    expect(saveGeneratedPhotos).toHaveBeenCalledWith(expect.any(Array), {
-      avatarId: "avatar_1",
-      sourceAvatarName: "Founder",
-    });
-    expect(mocks.stateSetter).toHaveBeenCalledWith(1);
+    expect(saveGeneratedPhotos).not.toHaveBeenCalled();
+    expect(mocks.stateSetter).toHaveBeenCalledWith(3);
     expect(mocks.stateSetter).toHaveBeenCalledWith(false);
   });
 

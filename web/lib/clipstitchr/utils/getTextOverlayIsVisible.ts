@@ -1,4 +1,5 @@
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
+import { getTextOverlayIsInRange } from "@/lib/clipstitchr/utils/getTextOverlayIsInRange";
 
 export function getTextOverlayIsVisible(
   textOverlay: TextOverlay,
@@ -6,7 +7,6 @@ export function getTextOverlayIsVisible(
 ) {
   return (
     textOverlay.text.trim().length > 0 &&
-    currentTime >= textOverlay.startTime &&
-    currentTime <= textOverlay.endTime
+    getTextOverlayIsInRange(textOverlay, currentTime)
   );
 }

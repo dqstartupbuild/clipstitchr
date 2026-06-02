@@ -61,6 +61,44 @@ npx convex dev --once
   verification key file.
 - Must not be prefixed with `NEXT_PUBLIC_`.
 
+`AUTOMATION_WORKER_SECRET`
+
+- Required in the Convex deployment and in any trusted scheduler or manual
+  automation trigger that plans automatic daily generation.
+- Authorizes worker-only automation mutations.
+- Must be a high-entropy random secret.
+- Must not be prefixed with `NEXT_PUBLIC_`.
+
+`PROVIDER_WORKER_SECRET`
+
+- Required in the Convex deployment and in the provider worker runtime.
+- Authorizes provider-only automation task claiming, manual `providerJobs`
+  claiming, Replicate job state writes, provider-owned library saves, and
+  provider-created media finalization jobs.
+- Must be different from `AUTOMATION_WORKER_SECRET` and `MEDIA_WORKER_SECRET`.
+- Must be a high-entropy random secret.
+- Must not be prefixed with `NEXT_PUBLIC_`.
+
+`MEDIA_WORKER_SECRET`
+
+- Required in the Convex deployment and in the media worker runtime.
+- Authorizes media job claiming/finalization and media-worker-created provider
+  jobs such as upload video analysis after normalization.
+- Must be different from `AUTOMATION_WORKER_SECRET` and
+  `PROVIDER_WORKER_SECRET`.
+- Must be a high-entropy random secret.
+- Must not be prefixed with `NEXT_PUBLIC_`.
+
+Cloud Run worker dispatch variables in Convex:
+
+- `CLOUD_RUN_PROJECT_ID`, `CLOUD_RUN_LOCATION`,
+  `CLOUD_RUN_PROVIDER_WORKER_JOB`, and `CLOUD_RUN_MEDIA_WORKER_JOB` identify
+  the bounded Cloud Run Jobs that drain provider and media queues.
+- `CLOUD_RUN_DISPATCH_CLIENT_EMAIL` and `CLOUD_RUN_DISPATCH_PRIVATE_KEY`
+  authorize Convex internal actions to call the Cloud Run Jobs `:run` API.
+- The dispatch service account should have only the IAM needed to run the two
+  worker jobs. Store the private key only in Convex env, not in the repository.
+
 TikTok Events API variables:
 
 - `TIKTOK_EVENTS_API_ACCESS_TOKEN` enables server-side TikTok Events API
@@ -119,31 +157,41 @@ Optional Replicate model overrides:
 | Shared music R2 download signed URL | `POST /api/music/download-url` | Uses the R2 download signed URL limit after validating the shared music track exists |
 | Upload image metadata analysis | `POST /api/uploads/analyze` for avatar/photo images and video fallback posters | 300/hour/user, burst 100; 10,000/30 days/user; global 6,000/hour |
 | Swipr background metadata analysis | `POST /api/swipr/backgrounds/analyze` | Uses the upload image metadata analysis limits before calling GPT-4.1 mini through Replicate |
-| Upload video action analysis | `POST /api/uploads/analyze` for UGC/demo videos | 60/hour/user, burst 20; 1,500/30 days/user; global 1,000/hour. Gemini full-video analysis runs first for videos up to 100 MB; OpenAI poster analysis is the fallback when Gemini fails or the video exceeds the analysis size cap. |
+| Upload video action analysis | `POST /api/uploads/jobs` for close-safe video uploads and `POST /api/uploads/analyze` for legacy/fallback video analysis | 60/hour/user, burst 20; 1,500/30 days/user; global 1,000/hour. The worker path consumes this before creating the durable upload media job; after normalization, the media worker creates an `upload-video-analysis` provider job. Gemini full-video analysis runs first for videos up to 100 MB; OpenAI poster analysis is the fallback when Gemini fails or the video exceeds the analysis size cap. |
 | Swapr photo expansion | `POST /api/swapr/photos/expand` | 10/hour/user, burst 5; 20/day/user; 375/30 days/user; global 300/hour |
-| Swapr video job create | `POST /api/swapr/jobs` | 2 Swapr batches/hour/user, burst 2; 5 Swapr batches/day/user; 500 estimated output seconds/30 days/user; technical provider segment guard 60 segments/hour/user and 180 segments/day/user; global 300 provider segments/hour. The Swapr page accepts source videos up to 90 seconds, cuts longer sources into provider-sized segments, and calls this route once per segment. Only segment 0 consumes the user-facing batch and monthly generated-seconds buckets using the full source duration; every segment still consumes the technical per-user segment guard and global provider bucket. The route accepts saved R2 media references only, consumes the R2 download signed URL limit for the photo and reference video segment, then creates short-lived R2 read URLs for Replicate. |
+| Swapr video job create | `POST /api/swapr/generations` for the close-safe worker path; legacy `POST /api/swapr/jobs` for direct prediction creation | 2 Swapr batches/hour/user, burst 2; 5 Swapr batches/day/user; 500 estimated output seconds/30 days/user; technical provider segment guard 60 segments/hour/user and 180 segments/day/user; global 300 provider segments/hour. The worker route accepts saved R2 media references only, validates every segment before queuing, consumes the job/seconds/segment limits and R2 download limit before creating one durable `manual-swapr` provider job. The provider worker starts and polls segment predictions, and the media worker normalizes/stitches the final saved Swapr clip. |
 | Swapr job polling | `GET /api/swapr/jobs/{id}` | 600/minute/user, burst 150 |
 | Swapr job cancellation | `POST /api/swapr/jobs/{id}/cancel` | 100/hour/user, burst 20 |
 | Swapr output proxy | `GET /api/swapr/output` | 1,000/hour/user, burst 200 |
-| Avatar photo generation | `POST /api/avatars/photos/generate` from the Avatars page or UGC clip avatar action | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour |
+| Avatar photo generation | `POST /api/avatars/photos/generate` from the Avatars page or UGC clip avatar action | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour. The route stores the source image in R2, creates an `avatar-photo-generation` provider job, and returns after durable queuing; the provider worker calls Replicate and saves `photoAssets`. |
 | Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 8; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
 | Swipr seeded background import | `POST /api/dev/swipr/backgrounds/seed` in development; future admin-only seed runner in production | Development route is unavailable outside `NODE_ENV=development`, imports at most 5 images/request, skips already-saved seed IDs, consumes the development seed-generation bucket before provider work, consumes R2 upload limits before storage work, and saves through `swiprBackgrounds.save`; production runner must be admin-only, batch-capped, checkpointed, and counted against shared provider, R2 upload, and Convex record-save protection before persistence |
 | Public waitlist submission | `waitlist.submit` from `/sign-up` | 3/hour/normalized email, burst 3; shared global bucket 500/hour, burst 100 |
 | TikTok Events API forwarding | `POST /api/analytics/tiktok/events` after marketing-cookie consent | 120/hour/client fingerprint, burst 30; shared global bucket 5,000/hour, burst 1,000 |
 | IndexNow sitemap submission | `POST /api/indexnow` with `INDEXNOW_SUBMIT_SECRET` | Submits all public sitemap URLs only, excludes authenticated dashboard/API routes, requires a public `NEXT_PUBLIC_SITE_URL`, consumes 500 submitted URLs/hour/client fingerprint, burst 100; shared global bucket 5,000 submitted URLs/hour, burst 500 |
 | Product enrichment | `POST /api/settings/products`, `PATCH /api/settings/products/{id}` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
-| Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; shared global provider bucket 10,000 units/hour, burst 2,000 |
-| Clipr hook/script generation | `POST /api/clipr/jobs` and `POST /api/clipr/text` | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000 |
-| Clipr avatar still generation | `POST /api/clipr/jobs` before the full-script avatar video call | 20 images/hour/user, burst 6; global provider bucket counted once per still. After the still succeeds, the route consumes R2 upload byte limits before saving personal avatar-photo and thumbnail copies. |
-| Clipr avatar video and voice generation | `POST /api/clipr/jobs` before calling `prunaai/p-video-avatar` | 600 estimated avatar seconds/hour/user, burst 180; global provider bucket counted by estimated seconds |
-| Clipr music generation | `POST /api/clipr/jobs` when music is selected and `POST /api/clipr/music` when regenerating music for an existing Clip | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
+| Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; shared global provider bucket 10,000 units/hour, burst 2,000. The route creates a queued `cliprJobs` record and a durable `manual-clipr` provider job, then returns immediately. |
+| Clipr hook/script generation | `POST /api/clipr/jobs` worker path and `POST /api/clipr/text` immediate suggestion path | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000 |
+| Clipr avatar still generation | `POST /api/clipr/jobs` before queued worker generation | 20 images/hour/user, burst 6; global provider bucket counted once per still. The provider worker creates the avatar still, then R2 upload byte limits are consumed before personal avatar-photo and thumbnail copies are saved. |
+| Clipr avatar video and voice generation | `POST /api/clipr/jobs` before queued worker generation | 600 estimated avatar seconds/hour/user, burst 180; global provider bucket counted by estimated seconds |
+| Clipr music generation | `POST /api/clipr/jobs` when music is selected and `POST /api/clipr/music` when regenerating music for an existing Clip | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. `POST /api/clipr/jobs` queues worker-owned music creation; `POST /api/clipr/music` remains an immediate editor-assist/regeneration route. |
 | Stitchr music generation | `POST /api/stitches/music` when creating or regenerating music for a saved stitch | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
 | Shared music generation | `POST /api/music/generate` from the shared music picker | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
 | Clipr job polling | Reserved Clipr polling route and Convex job refreshes | 600/minute/user, burst 150 |
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
+| Automation planner dispatch | `POST /api/automation/plan` and Convex Cron `automationScheduler.planCoreDaily` | Worker-secret authorized only; planners create durable automation runs/tasks and consume automation-specific tool budgets before provider or media work |
+| Provider worker jobs | `npm run provider-worker` with `PROVIDER_WORKER_SECRET`; provider-only mutations such as `providerJobs.claimNextForProvider`, `automationTasks.claimNextForProvider`, `automationTasks.markProviderStatus`, `mediaJobs.create*FromProvider`, and provider `replicateJobs` writes | Provider work is claimed from Convex and no longer dispatched through protected Next.js Preview routes. Creating a manual `providerJobs` record or automation task schedules a coalesced Convex dispatch action that runs the Cloud Run provider job immediately; the 10-minute scheduler remains as recovery. The worker handles manual Swapr, manual Clipr, manual avatar-photo generation, upload video analysis, automatic Stitchr text, automatic Swapr create/finalize, automatic Clipr text/still/video, automatic avatar-photo generation, and automatic Swipr text draft generation. Manual routes consume their user limits before creating jobs; automation planners consume tool budgets before worker execution. |
+| Media worker jobs | `mediaJobs.createUploadNormalization`, `mediaJobs.createCliprFinalizationFromProvider`, `mediaJobs.createSwaprFinalizationFromProvider`, `mediaJobs.createStitchrDraftFinalizationFromProvider`, existing automation media creators, and `npm run media-worker` | Media jobs are worker-secret controlled. Creating a media job schedules a coalesced Convex dispatch action that runs the Cloud Run media job immediately; the scheduler remains as recovery. The worker normalizes close-safe video uploads, creates upload posters, saves uploaded clips, creates upload-analysis provider jobs, saves editable Stitchr drafts, finalizes Swapr provider outputs, and finalizes Clipr outputs. Manual asset saves consume normal user-facing limits before job creation; automatic final asset saves consume automatic asset save buckets: 20 saved assets/day/user; global 2,000/day. |
+| Automatic Stitchr generation | Worker-only automation planner before provider work; provider worker generates Stitchr text overlay and creates the media worker job | 3 Stitchr outputs/day/user; global 300/day |
+| Automatic Swapr generation | Worker-only automation planner before provider work; provider worker claims one queued Swapr task for the default avatar before creating a Replicate prediction and later claims provider-created Swapr tasks before creating a media finalization job | 1 Swapr output/day/user; global 100/day |
+| Automatic Clipr generation | Worker-only automation planner before provider work; provider worker runs script, avatar-image, and avatar-video generation for the default avatar without consuming manual Clipr buckets | 1 Clipr output/day/user; global 100/day |
+| Automatic avatar photo generation | Worker-only automation planner before provider work; provider worker creates one generated avatar photo from the default avatar's latest source photo | Planner queues only the default avatar; rate bucket is 1 generated photo/day/avatar; global 500/day |
+| Automatic Swipr generation | Worker-only automation planner before provider work; provider worker creates the generated slide text and saves an editable Swipe draft | 1 Swipe/day/user; global 100/day |
+| Automatic provider cost guard | Worker-only automation planner before provider work | 10,000 provider cost units/day global |
+| Automatic asset final saves | Worker-only finalizers for automated Stitches, video clips, avatar photos, and Swipes | 20 saved assets/day/user; global 2,000/day |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
 | Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
-| Convex metadata updates | `avatars.update`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `stitches.updateMusic`, `stitches.updateTextOverlay`, `stitches.updateRenderedVideo`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
+| Convex metadata updates | `avatars.update`, `avatarPreferences.setDefaultAvatar`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `stitches.updateMusic`, `stitches.updateTextOverlay`, `stitches.updateRenderedVideo`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
 | Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
 | Convex Clipr job writes | `cliprJobs.createQueued`, `cliprJobs.applyScriptPlan`, `cliprJobs.recordAvatarImageOutput`, `cliprJobs.recordAvatarVideoOutput`, `cliprJobs.markBrowserSaving`, `cliprJobs.finalizeWithClip` | 3,000/hour/user, burst 500 |
@@ -226,33 +274,24 @@ under the user's personal music prefix. `sharedMusicTracks.save` consumes the
 shared Convex record-save limit. Shared music objects are not user-deletable
 through the personal R2 delete route.
 
-Clipr browser final preparation is intentionally not separately rate-limited in
-the MVP because the current simplified Clipr flow normalizes one generated
-avatar video and saves it as a Clip rather than stitching multiple generated
-scenes. The expensive surfaces are gated before work starts: job creation,
-hook/script generation, avatar still generation, full-script avatar video
-generation, optional music generation, R2 object creation, and Convex final
-save. Clipr saves the normalized full avatar video directly as the final Clipr
-clip. The generated avatar still is also saved as an avatar photo attached to
-the selected avatar; the route consumes R2 upload byte limits before writing the
-photo and thumbnail objects, and `photoAssets.save` consumes the shared Convex
-record-save limit. Optional generated music is stored as a personal audio
-object and as a shared library track; selecting an existing shared track skips
-the music provider call. Music is mixed into a fresh downloadable file only when
-the user exports/downloads. That export-time Media Bunny render is browser-local and is
-not separately rate-limited. Saved Stitchr outputs use the same export-time
-model: saving a stitch stores source clip references, trim ranges, text, source
-audio flags, and music metadata in Convex without uploading a rendered stitch
-video to R2. When a stitch has text, the browser renders and uploads one
-text-aware stitch poster through the normal R2 upload limits and records it with
-`stitches.save` or `stitches.updatePoster`; export-time stitching and music
-mixing are browser-local and are not separately rate-limited. `POST /api/stitches/music` consumes the
-Stitchr music limits before Replicate, then R2 upload limits for both personal
-and shared copies. After script planning, Clipr
-consumes the avatar-video limit and, when generated music is requested, the 60
-second music-generation limit before creating the avatar still, so a rate-limit
-rejection does not leave an image generated without the provider work that
-follows.
+Clipr final preparation is now worker-owned. `POST /api/clipr/jobs` consumes the
+job, script, avatar still, avatar video, optional music, and generated-seconds
+limits before creating the `manual-clipr` provider job. The provider worker
+copies generated still/video/music outputs into R2 and creates the media job; the
+media worker normalizes the avatar video, captures the poster, saves the final
+Clipr clip, and marks the provider job complete. Music is mixed into a fresh
+downloadable file only when the user exports/downloads. That export-time Media
+Bunny render is browser-local and is not separately rate-limited.
+
+Saved Stitchr outputs use the existing export-time model: saving a stitch stores
+source clip references, trim ranges, text, source audio flags, and music
+metadata in Convex without uploading a rendered stitch video to R2. When a
+stitch has text, the browser renders and uploads one text-aware stitch poster
+through the normal R2 upload limits and records it with `stitches.save` or
+`stitches.updatePoster`; export-time stitching and music mixing are
+browser-local and are not separately rate-limited. `POST /api/stitches/music`
+consumes the Stitchr music limits before Replicate, then R2 upload limits for
+both personal and shared copies.
 
 The expanded hook libraries are local prompt resources, not new backend
 operations. Swipr and Stitchr auto-text continue to use `POST /api/clipr/text`
@@ -268,7 +307,7 @@ request, R2 upload, or Convex save starts:
 | --- | --- | --- |
 | Photo upload without AI expansion | 100 files at once | Each photo creates 3 R2 objects and 1 metadata analysis request, fitting under the R2 upload, analysis, and Convex-save burst limits. |
 | Photo upload with AI expansion | 1 file at once | Each source image may trigger paid outpainting before it is saved, so the UI keeps this workflow explicitly one-at-a-time. |
-| Video upload | 20 files at once | Each video usually creates 1 normalized video object, 1 poster object, and 1 Gemini video analysis request, fitting under the R2 upload, video-analysis, and Convex-save burst limits. |
+| Video upload | 20 files at once | Each video uploads one raw source object before creating an `upload-normalization` media job. The worker then creates 1 normalized video object, 1 poster object, 1 library clip, and 1 upload-analysis provider job, fitting under the R2 upload, video-analysis, and Convex-save burst limits. |
 | Stitchr UGC batch | 20 selected UGC videos at once | Each selected UGC creates one editable stitch with the selected demo, copied trims, text, and audio settings. Creating the batch consumes Convex stitch saves and, when text is present, one stitch-poster R2 upload per output; export-time browser encoding runs only when the user downloads/exports. |
 | Stitchr Longr-mode output | 1 finished Stitch at a time | Longr mode creates one browser-rendered 9:16 Stitch from the ordered sequence. The one-at-a-time cap limits browser encode work, output size, R2 upload bytes, and preview complexity. |
 
@@ -283,14 +322,14 @@ output proxy routes must prove the prediction belongs to the authenticated user
 before calling Replicate or fetching an output URL.
 
 Avatar photo generation is rate-limited by requested output image count before
-calling Replicate, including generation started from a UGC clip poster in the
-Content Library. `openai/gpt-image-2` accepts up to 10 outputs in one
-prediction, but ClipStitchr runs one prediction per generated avatar photo so
+creating the durable provider job, including generation started from a UGC clip
+poster in the Content Library. The source image is copied to R2 before the route
+returns. The provider worker runs one prediction per generated avatar photo so
 each output can receive a unique prompt variant and avoid grid/contact-sheet
 results. The MiniMax Image-01 workflow is also one prediction per generated
 image because ClipStitchr gives each output a unique prompt variant and one
-source `subject_reference` image.
-Each prediction is recorded as an `avatar-photo` Replicate job.
+source `subject_reference` image. Each prediction is recorded as an
+`avatar-photo` Replicate job.
 Generation speed profiles may run those one-image predictions concurrently:
 Creator runs 1 at a time, Pro runs up to 2, and Studio runs up to 4. This
 concurrency does not loosen the image-count rate limit; the full requested count
@@ -298,19 +337,23 @@ is consumed before any Replicate prediction is created.
 
 Upload video analysis is rate-limited separately from avatar/photo image
 analysis because it can send the normalized video to Gemini for a chronological
-action breakdown. The client uploads the normalized video to R2 first, requests
-a short-lived R2 download URL, and sends that URL to the analysis route so
-Gemini receives a media URL with the stored object content type instead of a
-Replicate Files URL. The route consumes the video-analysis limit before creating
-the Gemini prediction. If Gemini fails, or if the normalized video is larger
-than 100 MB, the route falls back to the existing OpenAI image-analysis path
-using the generated poster image when one is available.
+action breakdown. The close-safe path uploads the raw source video to R2, queues
+`upload-normalization`, and lets the media worker create the final video/poster
+objects before it creates an `upload-video-analysis` provider job. The provider
+worker signs short-lived R2 read URLs for the stored video/poster and consumes
+the already-authorized analysis work without requiring the browser to stay open.
+If Gemini fails, or if the normalized video is larger than 100 MB, the provider
+worker falls back to the existing OpenAI image-analysis path using the generated
+poster image when one is available. `POST /api/uploads/analyze` remains for
+image analysis and legacy/fallback upload analysis paths.
 
 Swapr video generation is rate-limited both by job count and by estimated output
-seconds. The route uses the source orientation limit as the estimate: image-led
-jobs consume 10 seconds from the monthly budget and video-led jobs consume 30
-seconds. This is a spend-control approximation until provider-side final
-duration is stored in the job ledger.
+seconds before the worker job is created. `POST /api/swapr/generations` uses
+the final source duration and selected speed tier to consume the batch,
+generated-seconds, provider-segment, and R2 read limits, then snapshots all
+segment R2 keys into one `manual-swapr` provider job. The provider worker owns
+Replicate creation/polling and the media worker owns final normalization and
+library save.
 
 Swapr speed profiles can override requested provider settings when a
 `generationSpeedTier` is supplied. Creator maps to `Quality 1080p` with Match

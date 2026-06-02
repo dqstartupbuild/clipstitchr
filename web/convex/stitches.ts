@@ -1,15 +1,21 @@
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
+import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
+import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { stitchCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
+import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchrModeValidator } from "./validators/stitchrMode";
 import { stitchSequenceSegmentValidator } from "./validators/stitchSequenceSegment";
 import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
-import { textOverlayValidator } from "./validators/textOverlay";
+import {
+  textOverlayValidator,
+  textOverlaysValidator,
+} from "./validators/textOverlay";
 import { videoPlaybackRateValidator } from "./validators/videoPlaybackRate";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
@@ -38,7 +44,15 @@ const saveArgs = {
   ugcPlaybackRate: v.optional(videoPlaybackRateValidator),
   music: v.optional(stitchMusicMetadataValidator),
   textOverlay: v.optional(textOverlayValidator),
+  textOverlays: v.optional(textOverlaysValidator),
   createdAt: v.string(),
+};
+
+const saveFromAutomationArgs = {
+  secret: v.string(),
+  ownerId: v.string(),
+  automation: automationProvenanceValidator,
+  ...saveArgs,
 };
 
 export const list = query({
@@ -91,6 +105,150 @@ export const save = mutation({
     const stitch = {
       ownerId,
       ...args,
+    };
+
+    if (existingStitch) {
+      await ctx.db.patch(existingStitch._id, stitch);
+      const updatedStitch = await ctx.db.get(existingStitch._id);
+
+      if (updatedStitch) {
+        await stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch);
+      }
+
+      return existingStitch._id;
+    }
+
+    const stitchId = await ctx.db.insert("stitches", stitch);
+    const insertedStitch = await ctx.db.get(stitchId);
+
+    if (insertedStitch) {
+      await stitchCounts.insertIfDoesNotExist(ctx, insertedStitch);
+    }
+
+    return stitchId;
+  },
+});
+
+export const saveFromAutomation = mutation({
+  args: saveFromAutomationArgs,
+  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+    assertAutomationWorkerSecret(secret);
+
+    const ugcClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.ugcClipId),
+      )
+      .unique();
+    const demoClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.demoClipId),
+      )
+      .unique();
+
+    if (!ugcClip || !demoClip) {
+      throw new Error("Automation Stitchr source clips were not found.");
+    }
+
+    const existingStitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.id),
+      )
+      .unique();
+
+    if (
+      existingStitch?.automation?.source === "automation" &&
+      existingStitch.automation.taskId === automation.taskId
+    ) {
+      return existingStitch._id;
+    }
+
+    await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
+      throws: true,
+    });
+
+    const stitch = {
+      ownerId,
+      ...args,
+      automation,
+    };
+
+    if (existingStitch) {
+      await ctx.db.patch(existingStitch._id, stitch);
+      const updatedStitch = await ctx.db.get(existingStitch._id);
+
+      if (updatedStitch) {
+        await stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch);
+      }
+
+      return existingStitch._id;
+    }
+
+    const stitchId = await ctx.db.insert("stitches", stitch);
+    const insertedStitch = await ctx.db.get(stitchId);
+
+    if (insertedStitch) {
+      await stitchCounts.insertIfDoesNotExist(ctx, insertedStitch);
+    }
+
+    return stitchId;
+  },
+});
+
+export const saveFromMediaWorker = mutation({
+  args: saveFromAutomationArgs,
+  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+    assertMediaWorkerSecret(secret);
+
+    const ugcClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.ugcClipId),
+      )
+      .unique();
+    const demoClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.demoClipId),
+      )
+      .unique();
+
+    if (!ugcClip || !demoClip) {
+      throw new Error("Automation Stitchr source clips were not found.");
+    }
+
+    const existingStitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.id),
+      )
+      .unique();
+
+    if (
+      existingStitch?.automation?.source === "automation" &&
+      existingStitch.automation.taskId === automation.taskId
+    ) {
+      return existingStitch._id;
+    }
+
+    await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
+      throws: true,
+    });
+
+    const stitch = {
+      ownerId,
+      ...args,
+      automation,
     };
 
     if (existingStitch) {
@@ -223,9 +381,10 @@ export const updateMusic = mutation({
 export const updateTextOverlay = mutation({
   args: {
     id: v.string(),
-    textOverlay: v.union(textOverlayValidator, v.null()),
+    textOverlay: v.optional(v.union(textOverlayValidator, v.null())),
+    textOverlays: v.optional(textOverlaysValidator),
   },
-  handler: async (ctx, { id, textOverlay }) => {
+  handler: async (ctx, { id, textOverlay, textOverlays }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
@@ -242,8 +401,15 @@ export const updateTextOverlay = mutation({
       throw new Error("Stitch not found.");
     }
 
+    const normalizedTextOverlays =
+      textOverlays ??
+      (textOverlay && textOverlay.text.trim().length > 0 ? [textOverlay] : []);
+
     await ctx.db.patch(stitch._id, {
-      textOverlay: textOverlay ?? undefined,
+      textOverlay: normalizedTextOverlays[0],
+      textOverlays: normalizedTextOverlays.length
+        ? normalizedTextOverlays
+        : undefined,
     });
     const updatedStitch = await ctx.db.get(stitch._id);
 

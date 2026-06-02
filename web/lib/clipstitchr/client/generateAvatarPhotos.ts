@@ -5,13 +5,13 @@ import type { AvatarIdentityMode } from "@/lib/clipstitchr/types/AvatarIdentityM
 import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightingOption";
 import type { AvatarPhotoGenerationReference } from "@/lib/clipstitchr/types/AvatarPhotoGenerationReference";
 import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpeedTier";
-import type { GeneratedAvatarPhoto } from "@/lib/clipstitchr/types/GeneratedAvatarPhoto";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
 import type { AvatarWardrobeStyle } from "@/lib/clipstitchr/types/AvatarWardrobeStyle";
-import { createBlobFromDataUrl } from "@/lib/clipstitchr/utils/createBlobFromDataUrl";
 
 type GenerateAvatarPhotosOptions = {
   avatar: AvatarPhotoGenerationReference;
+  avatarId?: string;
+  avatarName?: string;
   avatarDescription: string;
   context: string;
   count: AvatarPhotoGenerationCount;
@@ -24,14 +24,16 @@ type GenerateAvatarPhotosOptions = {
 };
 
 type GenerateAvatarPhotosResponse = {
-  images?: GeneratedAvatarPhoto[];
+  job?: { id: string; status: string };
   message?: string;
   modelId?: string;
-  prompts?: string[];
+  queuedCount?: number;
 };
 
 export async function generateAvatarPhotos({
   avatar,
+  avatarId,
+  avatarName,
   avatarDescription,
   context,
   count,
@@ -50,6 +52,8 @@ export async function generateAvatarPhotos({
       type: avatar.blob.type || avatar.mimeType || "image/jpeg",
     }),
   );
+  formData.set("avatarId", avatarId ?? "");
+  formData.set("avatarName", avatarName ?? avatar.name);
   formData.set("avatarDescription", avatarDescription);
   formData.set("context", context);
   formData.set("count", String(count));
@@ -72,17 +76,10 @@ export async function generateAvatarPhotos({
     throw new Error(body.message ?? "Unable to generate avatar photos.");
   }
 
-  const images = Array.isArray(body.images) ? body.images : [];
-  const generatedPhotos = await Promise.all(
-    images.map(async (image) => ({
-      blob: await createBlobFromDataUrl(image.dataUrl),
-      variant: image.variant,
-    })),
-  );
-
   return {
-    generatedPhotos,
+    generatedPhotos: [],
+    job: body.job,
     modelId: body.modelId,
-    prompts: body.prompts ?? [],
+    queuedCount: body.queuedCount ?? count,
   };
 }

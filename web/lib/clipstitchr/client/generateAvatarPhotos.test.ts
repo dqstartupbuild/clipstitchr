@@ -1,22 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { generateAvatarPhotos } from "@/lib/clipstitchr/client/generateAvatarPhotos";
-import type { AvatarGenerationVariant } from "@/lib/clipstitchr/types/AvatarGenerationVariant";
-
-const mocks = vi.hoisted(() => ({
-  createBlobFromDataUrl: vi.fn(),
-}));
-
-vi.mock("@/lib/clipstitchr/utils/createBlobFromDataUrl", () => ({
-  createBlobFromDataUrl: mocks.createBlobFromDataUrl,
-}));
-
-const generatedVariant: AvatarGenerationVariant = {
-  lighting: "studio",
-  locationDescription: "in a bright studio",
-  outfitDescription: "wearing a denim jacket",
-  poseDescription: "holding the product",
-  style: "ugc",
-};
 
 function createAvatarBlob() {
   return new Blob(["avatar"], { type: "image/png" });
@@ -32,24 +15,15 @@ function createSuccessfulResponse(body: object) {
 describe("generateAvatarPhotos", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.createBlobFromDataUrl.mockResolvedValue(
-      new Blob(["generated"], { type: "image/png" }),
-    );
     vi.stubGlobal("fetch", vi.fn());
   });
 
-  it("posts avatar generation form data and converts returned images", async () => {
+  it("posts avatar generation form data and returns the queued worker job", async () => {
     vi.mocked(fetch).mockResolvedValue(
       createSuccessfulResponse({
-        images: [
-          {
-            dataUrl: "data:image/png;base64,Zmlyc3Q=",
-            mimeType: "image/png",
-            variant: generatedVariant,
-          },
-        ],
+        job: { id: "provider:avatar-photo:source_1", status: "queued" },
         modelId: "avatar-model",
-        prompts: ["studio prompt"],
+        queuedCount: 3,
       }),
     );
 
@@ -58,6 +32,8 @@ describe("generateAvatarPhotos", () => {
         blob: createAvatarBlob(),
         name: "reference",
       },
+      avatarId: "avatar_1",
+      avatarName: "Founder",
       avatarDescription: "A founder with short hair",
       context: "Launch post",
       count: 3,
@@ -78,6 +54,8 @@ describe("generateAvatarPhotos", () => {
     expect((formData as FormData).get("avatarDescription")).toBe(
       "A founder with short hair",
     );
+    expect((formData as FormData).get("avatarId")).toBe("avatar_1");
+    expect((formData as FormData).get("avatarName")).toBe("Founder");
     expect((formData as FormData).get("context")).toBe("Launch post");
     expect((formData as FormData).get("count")).toBe("3");
     expect((formData as FormData).get("generationSpeedTier")).toBe("pro");
@@ -87,18 +65,11 @@ describe("generateAvatarPhotos", () => {
     expect((formData as FormData).get("style")).toBe("ugc");
     expect((formData as FormData).get("wardrobeStyle")).toBe("female");
     expect((formData as FormData).get("image")).toBeInstanceOf(File);
-    expect(mocks.createBlobFromDataUrl).toHaveBeenCalledWith(
-      "data:image/png;base64,Zmlyc3Q=",
-    );
     expect(result).toEqual({
-      generatedPhotos: [
-        {
-          blob: expect.any(Blob),
-          variant: generatedVariant,
-        },
-      ],
+      generatedPhotos: [],
+      job: { id: "provider:avatar-photo:source_1", status: "queued" },
       modelId: "avatar-model",
-      prompts: ["studio prompt"],
+      queuedCount: 3,
     });
   });
 
@@ -111,6 +82,8 @@ describe("generateAvatarPhotos", () => {
         mimeType: "image/jpeg",
         name: "reference",
       },
+      avatarId: "avatar_1",
+      avatarName: "Founder",
       avatarDescription: "Reference",
       context: "Context",
       count: 1,
@@ -141,6 +114,8 @@ describe("generateAvatarPhotos", () => {
           blob: createAvatarBlob(),
           name: "reference",
         },
+        avatarId: "avatar_1",
+        avatarName: "Founder",
         avatarDescription: "Reference",
         context: "Context",
         count: 1,
@@ -149,6 +124,5 @@ describe("generateAvatarPhotos", () => {
         style: "selfie",
       }),
     ).rejects.toThrow("Generation quota exceeded.");
-    expect(mocks.createBlobFromDataUrl).not.toHaveBeenCalled();
   });
 });

@@ -53,7 +53,8 @@ export async function createCliprTextGeneration({
     replicate,
   });
 
-  return parseCliprTextGenerationOutput({
+  return {
+    ...parseCliprTextGenerationOutput({
     candidates,
     durationSeconds,
     outputText,
@@ -61,5 +62,7 @@ export async function createCliprTextGeneration({
     product,
     purpose,
     slideCount,
-  });
+    }),
+    providerPredictionId: prediction.id,
+  };
 }

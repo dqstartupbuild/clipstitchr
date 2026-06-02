@@ -2,7 +2,7 @@ import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
-import { drawTextOverlay } from "@/lib/clipstitchr/media/drawTextOverlay";
+import { drawTextOverlays } from "@/lib/clipstitchr/media/drawTextOverlays";
 import { drawVideoFrameToCanvas } from "@/lib/clipstitchr/media/drawVideoFrameToCanvas";
 import { encodeCanvasAsPosterBlob } from "@/lib/clipstitchr/media/encodeCanvasAsPosterBlob";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -11,6 +11,8 @@ import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRat
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
+import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type CreateStitchPosterBlobOptions = {
@@ -19,6 +21,7 @@ type CreateStitchPosterBlobOptions = {
   demoTrimRange: VideoTrimRange;
   duration: number;
   textOverlay: TextOverlay | null;
+  textOverlays?: TextOverlay[];
   ugcClip: VideoClip;
   ugcPlaybackRate?: VideoPlaybackRate;
   ugcTrimRange: VideoTrimRange;
@@ -30,6 +33,7 @@ export async function createStitchPosterBlob({
   demoTrimRange,
   duration,
   textOverlay,
+  textOverlays,
   ugcClip,
   ugcPlaybackRate = 1,
   ugcTrimRange,
@@ -46,14 +50,16 @@ export async function createStitchPosterBlob({
     clampedUgcTrimRange,
     ugcPlaybackRate,
   );
-  const visibleTextOverlay =
-    textOverlay && textOverlay.text.trim().length > 0
-      ? clampTextOverlay(textOverlay, duration)
-      : null;
-  const posterTimelineTime = visibleTextOverlay
+  const visibleTextOverlays = getNonEmptyTextOverlays(
+    getTextOverlayList(textOverlays, textOverlay).map((overlay) =>
+      clampTextOverlay(overlay, duration),
+    ),
+  );
+  const firstVisibleTextOverlay = visibleTextOverlays[0] ?? null;
+  const posterTimelineTime = firstVisibleTextOverlay
     ? Math.min(
-        Math.max(visibleTextOverlay.startTime, 0),
-        visibleTextOverlay.endTime,
+        Math.max(firstVisibleTextOverlay.startTime, 0),
+        firstVisibleTextOverlay.endTime,
         duration,
       )
     : 0;
@@ -97,8 +103,8 @@ export async function createStitchPosterBlob({
     videoBlob: posterSource.clip.blob,
   });
 
-  if (visibleTextOverlay) {
-    drawTextOverlay(context, visibleTextOverlay, posterTimelineTime);
+  if (visibleTextOverlays.length) {
+    drawTextOverlays(context, visibleTextOverlays, posterTimelineTime);
   }
 
   return await encodeCanvasAsPosterBlob(canvas);

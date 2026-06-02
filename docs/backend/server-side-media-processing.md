@@ -1,6 +1,6 @@
 # Durable Server-side Media Processing
 
-Reviewed: 2026-05-15
+Reviewed: 2026-06-01
 
 ## Decision
 
@@ -48,11 +48,16 @@ The implementation uses:
 - Convex `mediaJobs` records in `web/convex/mediaJobs.ts`.
 - Media job validators in `web/convex/validators/mediaJob*.ts`.
 - Worker-only mutation auth through `MEDIA_WORKER_SECRET`.
-- R2 `raw-video` object support for pre-normalization uploads.
 - A media worker entry point at
-  `web/services/media-worker/runMediaWorker.mts`.
-- Dashboard visibility through `MediaJobsPanel`.
+  `web/services/media-worker/runMediaWorker.mjs`.
 - Worker env examples in `web/.env.worker.example`.
+
+Current worker execution supports `upload-normalization` jobs that process raw
+uploaded source videos, `stitchr-draft-finalization` jobs that save editable
+Stitchr drafts, `clipr-finalization` jobs that normalize Clipr provider videos,
+and `swapr-finalization` jobs that download one or more Replicate outputs,
+normalize/concatenate them, and save reusable UGC-compatible Swapr clips. Longr
+export, launch coalescing, and operational dashboards remain follow-up phases.
 
 Run the local worker with:
 
@@ -76,6 +81,10 @@ Optional worker environment:
 - `MEDIA_WORKER_SCRATCH_DIR`
 - `MEDIA_WORKER_POLL_INTERVAL_MS`
 - `MEDIA_WORKER_LOCK_MS`
+- `MEDIA_WORKER_FFMPEG_PATH`
+- `MEDIA_WORKER_FFPROBE_PATH`
+- `REPLICATE_API_TOKEN` when Swapr provider output URLs require authenticated
+  `api.replicate.com` reads.
 
 Deployment choices and where those variables live are documented in
 `docs/backend/media-worker-deployment.md`.
@@ -84,15 +93,17 @@ Deployment choices and where those variables live are documented in
 
 | Job type | Durable source | Worker output |
 | --- | --- | --- |
-| `upload-normalization` | Original video uploaded to R2 as `raw-video` | Normalized 9:16 video, poster image, final `videoClips` record |
-| `stitchr-export` | Saved UGC clips, one saved Demo clip, copied trims, per-stitch text overlay, audio settings | One finished stitch per selected UGC, poster images, final `stitches` records |
-| `stitchr-longr-export` | Saved sequence clips, copied trims, output metadata | One finished Stitch from the ordered Longr-mode sequence, poster image, final `stitches` record |
-| `clipr-finalization` | Provider-generated avatar video already copied to R2 and referenced by a Clipr job | Normalized final Clip video, poster image, final `videoClips` record |
-| `swapr-finalization` | Provider output URL and Swapr metadata already recorded server-side | Normalized UGC clip, poster image, final `videoClips` record |
+| `upload-normalization` | Implemented original video uploaded to R2 as `upload-source-video` | Normalized 9:16 video, poster image, final `videoClips` record, and follow-on `upload-video-analysis` provider job |
+| `stitchr-draft-finalization` | Implemented saved UGC clips, one saved Demo clip, copied trims, and audio settings | Editable `stitches` draft records; automation does not render or persist final Stitchr MP4 clips |
+| `stitchr-longr-export` | Planned saved sequence clips, copied trims, output metadata | One finished Stitch from the ordered Longr-mode sequence, poster image, final `stitches` record |
+| `clipr-finalization` | Implemented provider-generated avatar video already copied to R2 and referenced by a Clipr job/provider job | Normalized final Clip video, poster image, final `videoClips` record |
+| `swapr-finalization` | Implemented provider output URL(s) and Swapr metadata already recorded server-side | Normalized/concatenated UGC clip, poster image, final `videoClips` record |
 
-Clipr and Swapr still have provider-side durability requirements before the
-media finalization step can be considered fully close-safe. Those requirements
-are covered in `docs/backend/provider-automation-workflows.md`.
+Manual and automatic Clipr now have provider-side executors and media-worker
+finalization paths. Manual and automatic Swapr now have provider-side create and
+poll finalizers in the provider worker plus media-worker finalization for
+successful Replicate outputs. The old route-local Swapr automation finalizer is
+kept for compatibility but is no longer the standard execution path.
 
 ## Durability Boundaries
 
@@ -101,10 +112,10 @@ Durability starts at different points for different workflows:
 | Workflow | Safe to close browser after |
 | --- | --- |
 | New video upload | The raw source upload finishes and the `upload-normalization` job exists in Convex |
-| Stitchr | The `stitchr-export` job exists in Convex |
+| Stitchr | The `stitchr-draft-finalization` job exists in Convex |
 | Stitchr Longr mode | The `stitchr-longr-export` job exists in Convex |
-| Clipr final video preparation | The provider avatar video object is saved to R2 and the `clipr-finalization` job exists |
-| Swapr final video preparation | The provider output URL/metadata is recorded and the `swapr-finalization` job exists |
+| Clipr generation | The `manual-clipr` provider job exists; media durability starts after the provider worker creates `clipr-finalization` |
+| Swapr generation | The `manual-swapr` provider job exists; media durability starts after the provider worker records output URL(s) and creates `swapr-finalization` |
 
 Skipping resumable or multipart uploads leaves one intentional gap: a brand-new
 local file is not close-safe until the browser finishes uploading the raw source
@@ -122,20 +133,22 @@ The server worker uses FFmpeg instead of Mediabunny for encoding because plain
 Node does not provide WebCodecs `VideoEncoder`. ClipStitchr supplies durable
 workflow ownership through Convex, R2, and the worker service.
 
-The worker imports the published packages and uses server-side IO:
+The worker imports the published packages and uses server-side IO when a job
+needs media encoding:
 
 - R2 source objects are downloaded to scratch disk before processing.
 - FFmpeg performs server-side H.264/AAC encoding, normalization, posters, and
-  concatenation.
+  concatenation for jobs that produce rendered media.
 - Completed output and poster files are uploaded back to R2.
 - Scratch files are deleted after completion or failure cleanup.
 
 The worker runs a startup FFmpeg self-test. A target runtime must include
 `ffmpeg`, `ffprobe`, `libx264`, and AAC encoding before it should accept
-production jobs. Stitchr text-overlay rendering additionally needs an FFmpeg
-build with the `drawtext` filter. This is required because plain Node does not
+production media-rendering jobs. Current Stitchr automation finalization does
+not render video; it saves editable draft metadata and leaves export rendering
+to the existing browser path. This is required because plain Node does not
 provide WebCodecs `VideoEncoder`; Mediabunny remains useful for browser-local
-media paths, but the server worker needs a container-native encoder.
+media paths, but rendered server media jobs need a container-native encoder.
 
 ## Runtime Model
 
@@ -181,42 +194,34 @@ must happen before creating or completing jobs.
 The media worker is the correct architectural direction, but these items remain
 before treating it as production-complete:
 
-1. Add production deployment for the worker.
-   The repo has the worker code and command, but not a Cloud Run, Cloudflare
-   Container, Docker, or systemd deployment wrapper.
-
-2. Deploy bounded batch mode through Cloud Run Jobs.
-   The worker supports `npm run media-worker -- --once --max-jobs=3`; the
-   remaining work is packaging it as a Cloud Run Job.
-
-3. Add job-trigger coalescing.
+1. Add job-trigger coalescing.
    If a user queues 20 uploads, the backend should not start 20 separate Cloud
    Run Job executions. Use the coalescing gate described in
    `docs/backend/media-worker-deployment.md`.
 
-4. Benchmark the target runtime.
+2. Benchmark the target runtime.
    The startup codec self-test proves capability, not throughput. Test realistic
    UGC, Demo, Clipr, and Longr inputs on the chosen host.
 
-5. Add scheduled recovery and cleanup.
+3. Add scheduled recovery and cleanup.
    Stale locks, abandoned raw inputs, failed jobs, expired provider URLs, and
    old scratch files need scheduled cleanup and visibility.
 
-6. Add resumable upload support if upload-close durability matters.
+4. Add resumable upload support if upload-close durability matters.
    Without multipart/resumable uploads, the only non-durable media gap is the
    initial raw source upload from the user's browser.
 
-7. Complete audio-mixing support.
+5. Complete audio-mixing support.
    Longr jobs with shared music are currently rejected. Persisted Clip/Stitch
    music-mixed exports are also rejected instead of using browser-local Media
    Bunny rendering.
 
-8. Decide the failed-job quota policy.
+6. Decide the failed-job quota policy.
    Current limits are consumed before work starts. That is safest for spend
    control, but product policy should decide if support/admin tooling can grant
    credits after infrastructure failures.
 
-9. Add operational monitoring.
+7. Add operational monitoring.
    Track queue depth, oldest queued job age, job duration, failure rate, worker
    heartbeat age, R2 upload failures, and codec self-test failures.
 

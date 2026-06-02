@@ -23,14 +23,16 @@ import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
-import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
+import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
 import { createStitchSequenceSegment } from "@/lib/clipstitchr/utils/createStitchSequenceSegment";
 import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName";
 import { getLongrStitchFileName } from "@/lib/clipstitchr/utils/getLongrStitchFileName";
+import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 
 type UseStitchrOptions = {
   loadClip?: (id: string) => Promise<VideoClip | null>;
@@ -60,7 +62,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
       demoClip: VideoClipMetadata,
       ugcTrimRange: VideoTrimRange,
       demoTrimRange: VideoTrimRange,
-      textOverlay: TextOverlay | null = null,
+      textOverlays: TextOverlay[] = [],
       options: StitchrBuildOptions = {},
       onPairProgress?: (progress: number) => void,
     ) => {
@@ -79,10 +81,11 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         getPlaybackRateDuration(clampedDemoTrimRange, demoPlaybackRate);
       const now = new Date().toISOString();
       const stitchId = createId();
+      const firstTextOverlay = textOverlays[0];
       let posterBlob = ugcClip.posterBlob;
       let posterObject: R2ObjectReference | undefined;
 
-      if (textOverlay?.text.trim() && loadClip) {
+      if (textOverlays.length && loadClip) {
         try {
           const [loadedUgcClip, loadedDemoClip] = await Promise.all([
             loadClip(ugcClip.id),
@@ -95,7 +98,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
               demoPlaybackRate,
               demoTrimRange: clampedDemoTrimRange,
               duration,
-              textOverlay,
+              textOverlay: firstTextOverlay ?? null,
+              textOverlays,
               ugcClip: loadedUgcClip,
               ugcPlaybackRate,
               ugcTrimRange: clampedUgcTrimRange,
@@ -134,7 +138,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         includeUgcAudio: options.includeUgcAudio ?? false,
         demoPlaybackRate,
         ugcPlaybackRate,
-        textOverlay: textOverlay ?? undefined,
+        textOverlay: firstTextOverlay,
+        textOverlays: textOverlays.length ? textOverlays : undefined,
         createdAt: now,
       };
 
@@ -162,6 +167,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         demoPlaybackRate: nextStitch.demoPlaybackRate,
         ugcPlaybackRate: nextStitch.ugcPlaybackRate,
         textOverlay: nextStitch.textOverlay,
+        textOverlays: nextStitch.textOverlays,
         createdAt: nextStitch.createdAt,
       });
 
@@ -193,7 +199,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
   const createLongrStitch = useCallback(
     async (
       selections: StitchrLongrSelection[],
-      textOverlay: TextOverlay | null = null,
+      textOverlays: TextOverlay[] = [],
       options: StitchrBuildOptions = {},
       onPairProgress?: (progress: number) => void,
     ) => {
@@ -222,6 +228,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         selections[0];
       const now = new Date().toISOString();
       const stitchId = createId();
+      const firstTextOverlay = textOverlays[0];
       const nextStitch: Stitch = {
         id: stitchId,
         mode: "longr",
@@ -247,7 +254,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         includeUgcAudio: options.includeUgcAudio ?? false,
         demoPlaybackRate: options.demoPlaybackRate ?? 1,
         ugcPlaybackRate: options.ugcPlaybackRate ?? 1,
-        textOverlay: textOverlay ?? undefined,
+        textOverlay: firstTextOverlay,
+        textOverlays: textOverlays.length ? textOverlays : undefined,
         createdAt: now,
       };
 
@@ -270,6 +278,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         demoPlaybackRate: nextStitch.demoPlaybackRate,
         ugcPlaybackRate: nextStitch.ugcPlaybackRate,
         textOverlay: nextStitch.textOverlay,
+        textOverlays: nextStitch.textOverlays,
         createdAt: nextStitch.createdAt,
       });
 
@@ -303,7 +312,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
       ugcSelections: StitchrUgcSelection[],
       demoClip: VideoClipMetadata,
       demoTrimRange: VideoTrimRange,
-      textOverlay: TextOverlay | null = null,
+      textOverlay: TextOverlay | TextOverlay[] | null = null,
       options: StitchrBuildOptions = {},
     ) => {
       setStatus("saving");
@@ -348,14 +357,17 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
             "textOverlay" in ugcSelection
               ? ugcSelection.textOverlay
               : textOverlay;
-          const pairTextOverlay =
-            selectionTextOverlay &&
-            selectionTextOverlay.text.trim().length > 0
-              ? clampTextOverlay(
-                  selectionTextOverlay,
-                  ugcDuration + demoDuration,
-                )
-              : null;
+          const selectionTextOverlays =
+            ugcSelection.textOverlays ??
+            (Array.isArray(selectionTextOverlay)
+              ? selectionTextOverlay
+              : getTextOverlayList(undefined, selectionTextOverlay));
+          const pairTextOverlays = getNonEmptyTextOverlays(
+            clampTextOverlays(
+              selectionTextOverlays,
+              ugcDuration + demoDuration,
+            ),
+          );
 
           setStatus("saving");
 
@@ -364,7 +376,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
             demoClip,
             clampedUgcTrimRange,
             clampedDemoTrimRange,
-            pairTextOverlay,
+            pairTextOverlays,
             options,
             (pairProgress) => {
               setProgress((index + pairProgress) / ugcSelections.length);
@@ -400,7 +412,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
   const stitchLongrSequence = useCallback(
     async (
       selections: StitchrLongrSelection[],
-      textOverlay: TextOverlay | null = null,
+      textOverlay: TextOverlay | TextOverlay[] | null = null,
       options: StitchrBuildOptions = {},
     ) => {
       setStatus("saving");
@@ -418,27 +430,24 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
       }
 
       try {
-        const nextTextOverlay =
-          textOverlay && textOverlay.text.trim().length > 0
-            ? clampTextOverlay(
-                textOverlay,
-                selections.reduce(
-                  (total, selection) =>
-                    total +
-                    getPlaybackRateDuration(
-                      clampVideoTrimRange(
-                        selection.trimRange,
-                        selection.clip.duration,
-                      ),
-                      selection.playbackRate ?? 1,
-                    ),
-                  0,
-                ),
-              )
-            : null;
+        const totalDuration = selections.reduce(
+          (total, selection) =>
+            total +
+            getPlaybackRateDuration(
+              clampVideoTrimRange(selection.trimRange, selection.clip.duration),
+              selection.playbackRate ?? 1,
+            ),
+          0,
+        );
+        const sourceTextOverlays = Array.isArray(textOverlay)
+          ? textOverlay
+          : getTextOverlayList(undefined, textOverlay);
+        const nextTextOverlays = getNonEmptyTextOverlays(
+          clampTextOverlays(sourceTextOverlays, totalDuration),
+        );
         const nextStitch = await createLongrStitch(
           selections,
-          nextTextOverlay,
+          nextTextOverlays,
           options,
           setProgress,
         );
@@ -471,7 +480,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
       demoClip: VideoClip,
       ugcTrimRange: VideoTrimRange,
       demoTrimRange: VideoTrimRange,
-      textOverlay: TextOverlay | null = null,
+      textOverlay: TextOverlay | TextOverlay[] | null = null,
       options: StitchrBuildOptions = {},
     ) => {
       const [nextStitch] = await stitchVideos(

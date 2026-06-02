@@ -1,7 +1,10 @@
 import { v } from "convex/values";
+import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
+import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
+import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swiprProductSourceTypeValidator } from "./validators/swiprProductSourceType";
 import { swiprSlideValidator } from "./validators/swiprSlide";
@@ -27,6 +30,13 @@ const saveArgs = {
   posterVersion: v.optional(v.number()),
   createdAt: v.string(),
   updatedAt: v.string(),
+};
+
+const saveFromAutomationArgs = {
+  secret: v.string(),
+  ownerId: v.string(),
+  automation: automationProvenanceValidator,
+  ...saveArgs,
 };
 
 export const list = query({
@@ -133,6 +143,116 @@ export const save = mutation({
     if (!swipe.productName) {
       throw new Error("Swipe product name is required.");
     }
+
+    if (existingSwipe) {
+      await ctx.db.patch(existingSwipe._id, swipe);
+      return existingSwipe._id;
+    }
+
+    return await ctx.db.insert("swipes", swipe);
+  },
+});
+
+export const saveFromAutomation = mutation({
+  args: saveFromAutomationArgs,
+  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+    assertAutomationWorkerSecret(secret);
+
+    const background = await ctx.db
+      .query("swiprBackgrounds")
+      .withIndex("by_background_id", (q) => q.eq("id", args.backgroundId))
+      .unique();
+    const product = await ctx.db
+      .query("products")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.productSourceId),
+      )
+      .unique();
+
+    if (!background || !product) {
+      throw new Error("Automation Swipe source records were not found.");
+    }
+
+    await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
+      throws: true,
+    });
+
+    const existingSwipe = await ctx.db
+      .query("swipes")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.id),
+      )
+      .unique();
+    const swipe = {
+      ownerId,
+      ...args,
+      automation,
+      name: normalizeText(args.name, SWIPE_NAME_MAX_LENGTH),
+      productContext: normalizeText(
+        args.productContext,
+        SWIPE_PRODUCT_CONTEXT_MAX_LENGTH,
+      ),
+      productName: normalizeText(args.productName, SWIPE_PRODUCT_NAME_MAX_LENGTH),
+    };
+
+    if (existingSwipe) {
+      await ctx.db.patch(existingSwipe._id, swipe);
+      return existingSwipe._id;
+    }
+
+    return await ctx.db.insert("swipes", swipe);
+  },
+});
+
+export const saveFromProvider = mutation({
+  args: saveFromAutomationArgs,
+  handler: async (ctx, { secret, ownerId, automation, ...args }) => {
+    assertProviderWorkerSecret(secret);
+
+    const background = await ctx.db
+      .query("swiprBackgrounds")
+      .withIndex("by_background_id", (q) => q.eq("id", args.backgroundId))
+      .unique();
+    const product = await ctx.db
+      .query("products")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.productSourceId),
+      )
+      .unique();
+
+    if (!background || !product) {
+      throw new Error("Automation Swipe source records were not found.");
+    }
+
+    await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
+      throws: true,
+    });
+
+    const existingSwipe = await ctx.db
+      .query("swipes")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", args.id),
+      )
+      .unique();
+    const swipe = {
+      ownerId,
+      ...args,
+      automation,
+      name: normalizeText(args.name, SWIPE_NAME_MAX_LENGTH),
+      productContext: normalizeText(
+        args.productContext,
+        SWIPE_PRODUCT_CONTEXT_MAX_LENGTH,
+      ),
+      productName: normalizeText(args.productName, SWIPE_PRODUCT_NAME_MAX_LENGTH),
+    };
 
     if (existingSwipe) {
       await ctx.db.patch(existingSwipe._id, swipe);

@@ -282,7 +282,7 @@ export function UploadsPageClient() {
         ) : null}
         {avatarCreator.createdAvatar && avatarCreator.generatedCount ? (
           <div className="rounded-lg border border-accent/25 bg-surface-muted p-4 text-sm font-semibold text-accent-dark">
-            Saved {avatarCreator.generatedCount} generated photos for{" "}
+            Queued {avatarCreator.generatedCount} generated photos for{" "}
             {avatarCreator.createdAvatar.name}.
           </div>
         ) : null}

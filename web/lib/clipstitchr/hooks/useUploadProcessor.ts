@@ -1,28 +1,18 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
-import { analyzeUploadAsset } from "@/lib/clipstitchr/client/analyzeUploadAsset";
-import { createR2DownloadUrl } from "@/lib/clipstitchr/client/r2/createR2DownloadUrl";
+import { createUploadVideoJob } from "@/lib/clipstitchr/client/createUploadVideoJob";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
-import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
-import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
 import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
 import type { UploadQueueItem } from "@/lib/clipstitchr/types/UploadQueueItem";
-import type { UploadAssetAnalysis } from "@/lib/clipstitchr/types/UploadAssetAnalysis";
-import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { createId } from "@/lib/clipstitchr/utils/createId";
-import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
 import { getUploadBatchLimit } from "@/lib/clipstitchr/utils/getUploadBatchLimit";
 import { getUploadBatchLimitMessage } from "@/lib/clipstitchr/utils/getUploadBatchLimitMessage";
-import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
 type UseUploadProcessorOptions = {
   initialClipType?: ClipType;
   demoProductId?: string;
-  onClipSaved?: (clip: VideoClip) => void | Promise<void>;
+  onClipSaved?: () => void | Promise<void>;
 };
 
 export function useUploadProcessor({
@@ -30,7 +20,6 @@ export function useUploadProcessor({
   initialClipType = "ugc",
   onClipSaved,
 }: UseUploadProcessorOptions) {
-  const saveVideoClip = useMutation(api.videoClips.save);
   const [clipType, setClipType] = useState<ClipType>(initialClipType);
   const [queue, setQueue] = useState<UploadQueueItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -101,147 +90,31 @@ export function useUploadProcessor({
           updateQueueItem(item.id, { status: "reading", progress: 0.05 });
 
           try {
-            const normalized = await normalizeUploadedVideo(file, (progress) => {
-              updateQueueItem(item.id, {
-                status: "normalizing",
-                progress: Math.max(0.05, Math.min(0.95, progress)),
-              });
-            });
-            let posterBlob: Blob | undefined;
-
-            try {
-              posterBlob = await createVideoPosterBlob(normalized.blob);
-            } catch {
-              posterBlob = undefined;
-            }
-
-            const fallbackName = getUploadFallbackName(file.name);
-            let analysis: UploadAssetAnalysis = {
-              name: fallbackName,
-              tags: [],
-            };
-            const now = new Date().toISOString();
             const clipId = createId();
-            const [videoObject, posterObject] = await uploadBlobsToR2([
+            const [sourceVideoObject] = await uploadBlobsToR2([
               {
-                blob: normalized.blob,
-                kind: "video-clip-video",
+                blob: file,
+                kind: "upload-source-video",
                 recordId: clipId,
               },
-              ...(posterBlob
-                ? [
-                    {
-                      blob: posterBlob,
-                      kind: "video-clip-poster" as const,
-                      recordId: clipId,
-                    },
-                  ]
-                : []),
             ]);
-            let videoAnalysisUrl: string | undefined;
 
             updateQueueItem(item.id, {
-              status: "analyzing",
-              progress: 0.97,
+              status: "saving",
+              progress: 0.9,
             });
-
-            try {
-              videoAnalysisUrl = (await createR2DownloadUrl(videoObject)).url;
-            } catch {
-              videoAnalysisUrl = undefined;
-            }
-
-            try {
-              analysis = await analyzeUploadAsset({
-                fallbackBlob: posterBlob,
-                mediaKind:
-                  item.clipType === "ugc" ? "ugc-video" : "demo-video",
-                originalName: file.name,
-                sourceSizeBytes: normalized.blob.size,
-                sourceUrl: videoAnalysisUrl,
-              });
-            } catch {
-              analysis = {
-                name: fallbackName,
-                tags: [],
-              };
-            }
-
-            const clip: VideoClip = {
-              id: clipId,
-              name: analysis.name,
-              tags: normalizeAssetTagsWithRequiredTag(
-                analysis.tags,
-                item.clipType,
-              ),
-              videoDescription: analysis.videoDescription,
-              mainPersonDescription: analysis.mainPersonDescription,
-              outfitDescription: analysis.outfitDescription,
-              locationDescription: analysis.locationDescription,
-              poseDescription: analysis.poseDescription,
-              productDescription: analysis.productDescription,
-              productId: item.productId,
-              originalName: file.name,
+            await createUploadVideoJob({
+              clipId,
               clipType: item.clipType,
-              videoObject,
-              blob: normalized.blob,
-              posterObject,
-              posterBlob,
-              posterVersion: posterBlob
-                ? VIDEO_POSTER_CAPTURE_VERSION
-                : undefined,
-              mimeType: normalized.mimeType,
-              sourceMimeType: file.type || normalized.metadata.mimeType,
-              size: normalized.blob.size,
-              originalSize: file.size,
-              width: normalized.metadata.width,
-              height: normalized.metadata.height,
-              aspectRatio: normalized.metadata.aspectRatio,
-              duration: normalized.metadata.duration,
-              defaultTrimRange: {
-                start: 0,
-                end: normalized.metadata.duration,
-              },
-              hasAudio: normalized.metadata.hasAudio,
-              createdAt: now,
-              updatedAt: now,
-            };
-
-            await saveVideoClip({
-              id: clip.id,
-              name: clip.name,
-              tags: clip.tags ?? [],
-              videoDescription: clip.videoDescription,
-              mainPersonDescription: clip.mainPersonDescription,
-              outfitDescription: clip.outfitDescription,
-              locationDescription: clip.locationDescription,
-              poseDescription: clip.poseDescription,
-              productDescription: clip.productDescription,
-              productId: clip.productId,
-              originalName: clip.originalName,
-              clipType: clip.clipType,
-              videoObject: clip.videoObject,
-              posterObject: clip.posterObject,
-              posterVersion: clip.posterVersion,
-              mimeType: clip.mimeType,
-              sourceMimeType: clip.sourceMimeType,
-              size: clip.size,
-              originalSize: clip.originalSize,
-              width: clip.width,
-              height: clip.height,
-              aspectRatio: clip.aspectRatio,
-              duration: clip.duration,
-              defaultTrimRange: clip.defaultTrimRange,
-              hasAudio: clip.hasAudio,
-              swaprMetadata: clip.swaprMetadata,
-              createdAt: clip.createdAt,
-              updatedAt: clip.updatedAt,
+              originalName: file.name,
+              productId: item.productId,
+              sourceVideoObject,
             });
-            await onClipSaved?.(clip);
+            await onClipSaved?.();
 
             updateQueueItem(item.id, {
-              status: "complete",
-              progress: 1,
+              status: "queued",
+              progress: 0.25,
             });
           } catch (error) {
             updateQueueItem(item.id, {
@@ -250,7 +123,7 @@ export function useUploadProcessor({
               error:
                 error instanceof Error
                   ? error.message
-                  : "Unable to normalize this video.",
+                  : "Unable to queue this video.",
             });
           }
         }
@@ -258,7 +131,7 @@ export function useUploadProcessor({
         setIsProcessing(false);
       }
     },
-    [clipType, demoProductId, onClipSaved, saveVideoClip, updateQueueItem],
+    [clipType, demoProductId, onClipSaved, updateQueueItem],
   );
 
   const clearQueue = useCallback(() => setQueue([]), []);

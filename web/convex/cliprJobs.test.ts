@@ -215,13 +215,16 @@ describe("convex cliprJobs", () => {
 
   it("creates queued jobs behind the API secret and write limiter", async () => {
     const { ctx } = createCtx();
+    (ctx.db as typeof ctx.db & { get: ReturnType<typeof vi.fn> }).get = vi.fn(
+      async () => createJob(),
+    );
 
     await expect(
       getHandler<Record<string, unknown>, unknown>(cliprJobs.createQueued)(
         ctx,
         createQueuedArgs(),
       ),
-    ).resolves.toBe("inserted_doc");
+    ).resolves.toEqual(expect.objectContaining({ id: "job_1" }));
 
     expect(mocks.assertRateLimitApiSecret).toHaveBeenCalledWith("secret");
     expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(

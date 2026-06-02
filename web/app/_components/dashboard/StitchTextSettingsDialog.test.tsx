@@ -11,15 +11,17 @@ const mocks = vi.hoisted(() => ({
     isLoading?: boolean;
     onClick?: () => void;
   }>,
-  clampTextOverlay: vi.fn(),
-  getVideoTrimRangeDuration: vi.fn(),
+  clampTextOverlays: vi.fn(),
+  getPlaybackRateDuration: vi.fn(),
   iconButtons: [] as Array<{ label: string; onClick?: () => void }>,
   setState: vi.fn(),
   stateQueue: [] as unknown[],
   textEditorProps: null as {
+    activeTextOverlayId: string | null;
     currentTime: number;
-    onChange: (textOverlay: TextOverlay | null) => void;
-    textOverlay: TextOverlay | null;
+    onActiveTextOverlayIdChange: (textOverlayId: string | null) => void;
+    onChange: (textOverlays: TextOverlay[]) => void;
+    textOverlays: TextOverlay[];
     totalDuration: number;
     ugcDuration: number;
   } | null,
@@ -30,10 +32,15 @@ vi.mock("react", async (importOriginal) => {
 
   return {
     ...actual,
-    useState: (initialValue: unknown) => [
-      mocks.stateQueue.length ? mocks.stateQueue.shift() : initialValue,
-      mocks.setState,
-    ],
+    useState: (initialValue: unknown) => {
+      const value = mocks.stateQueue.length
+        ? mocks.stateQueue.shift()
+        : typeof initialValue === "function"
+          ? (initialValue as () => unknown)()
+          : initialValue;
+
+      return [value, mocks.setState];
+    },
   };
 });
 
@@ -70,12 +77,12 @@ vi.mock("@/app/_components/ui/IconButton", () => ({
   },
 }));
 
-vi.mock("@/lib/clipstitchr/utils/clampTextOverlay", () => ({
-  clampTextOverlay: mocks.clampTextOverlay,
+vi.mock("@/lib/clipstitchr/utils/clampTextOverlays", () => ({
+  clampTextOverlays: mocks.clampTextOverlays,
 }));
 
-vi.mock("@/lib/clipstitchr/utils/getVideoTrimRangeDuration", () => ({
-  getVideoTrimRangeDuration: mocks.getVideoTrimRangeDuration,
+vi.mock("@/lib/clipstitchr/utils/getPlaybackRateDuration", () => ({
+  getPlaybackRateDuration: mocks.getPlaybackRateDuration,
 }));
 
 function createTextOverlay(overrides: Partial<TextOverlay> = {}): TextOverlay {
@@ -151,15 +158,17 @@ describe("StitchTextSettingsDialog", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.buttons = [];
-    mocks.getVideoTrimRangeDuration.mockReturnValue(3);
+    mocks.getPlaybackRateDuration.mockReturnValue(3);
     mocks.iconButtons = [];
     mocks.setState.mockReset();
     mocks.stateQueue = [];
     mocks.textEditorProps = null;
-    mocks.clampTextOverlay.mockImplementation((textOverlay: TextOverlay) => ({
-      ...textOverlay,
-      endTime: 12,
-    }));
+    mocks.clampTextOverlays.mockImplementation((textOverlays: TextOverlay[]) =>
+      textOverlays.map((textOverlay) => ({
+        ...textOverlay,
+        endTime: 12,
+      })),
+    );
   });
 
   it("renders the editor, closes from shell controls, and saves clamped text", async () => {
@@ -177,7 +186,7 @@ describe("StitchTextSettingsDialog", () => {
     const markup = renderToStaticMarkup(tree);
     const divs = findElements(tree, (element) => element.type === "div");
 
-    mocks.textEditorProps?.onChange(nextOverlay);
+    mocks.textEditorProps?.onChange([nextOverlay]);
     mocks.iconButtons[0]?.onClick?.();
     (divs[0].props.onClick as () => void)();
     (divs[1].props.onClick as (event: { stopPropagation: () => void }) => void)(
@@ -188,25 +197,30 @@ describe("StitchTextSettingsDialog", () => {
 
     expect(markup).toContain("Launch stitch");
     expect(markup).toContain("Text update failed.");
-    expect(mocks.getVideoTrimRangeDuration).toHaveBeenCalledWith({
-      end: 4,
-      start: 1,
-    });
+    expect(mocks.getPlaybackRateDuration).toHaveBeenCalledWith(
+      {
+        end: 4,
+        start: 1,
+      },
+      undefined,
+    );
     expect(mocks.textEditorProps).toMatchObject({
       currentTime: 0,
       totalDuration: 12,
       ugcDuration: 3,
     });
-    expect(mocks.setState).toHaveBeenCalledWith(nextOverlay);
-    expect(mocks.clampTextOverlay).toHaveBeenCalledWith(
-      createTextOverlay(),
+    expect(mocks.setState).toHaveBeenCalledWith([nextOverlay]);
+    expect(mocks.clampTextOverlays).toHaveBeenCalledWith(
+      [createTextOverlay()],
       12,
     );
     expect(onSave).toHaveBeenCalledWith(
-      expect.objectContaining({
-        endTime: 12,
-        text: "Launch today",
-      }),
+      expect.arrayContaining([
+        expect.objectContaining({
+          endTime: 12,
+          text: "Launch today",
+        }),
+      ]),
     );
     expect(onClose).toHaveBeenCalled();
     expect(stopPropagation).toHaveBeenCalled();
@@ -234,10 +248,10 @@ describe("StitchTextSettingsDialog", () => {
     mocks.buttons[0]?.onClick?.();
     await flushPromises();
 
-    expect(mocks.textEditorProps?.textOverlay).toEqual(blankOverlay);
+    expect(mocks.textEditorProps?.textOverlays).toEqual([blankOverlay]);
     expect(mocks.textEditorProps?.ugcDuration).toBe(0);
-    expect(mocks.getVideoTrimRangeDuration).not.toHaveBeenCalled();
-    expect(mocks.clampTextOverlay).not.toHaveBeenCalled();
+    expect(mocks.getPlaybackRateDuration).not.toHaveBeenCalled();
+    expect(mocks.clampTextOverlays).toHaveBeenCalledWith([blankOverlay], 12);
     expect(onSave).toHaveBeenCalledWith(null);
     expect(onClose).toHaveBeenCalled();
   });

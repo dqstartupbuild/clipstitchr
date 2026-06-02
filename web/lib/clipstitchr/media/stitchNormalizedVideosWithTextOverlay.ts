@@ -33,7 +33,8 @@ type StitchNormalizedVideosWithTextOverlayResult = {
 type StitchNormalizedVideosWithTextOverlayOptions = {
   ugcTrimRange: VideoTrimRange;
   demoTrimRange: VideoTrimRange;
-  textOverlay: TextOverlay;
+  textOverlay?: TextOverlay;
+  textOverlays?: TextOverlay[];
   onProgress?: (progress: number) => void;
 } & SourcePlaybackRateOptions &
   StitchSourceAudioOptions;
@@ -48,6 +49,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
     includeDemoAudio = true,
     includeUgcAudio = true,
     textOverlay,
+    textOverlays,
     onProgress,
     ugcPlaybackRate = 1,
   }: StitchNormalizedVideosWithTextOverlayOptions,
@@ -95,6 +97,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
       includeAudio,
       "No supported audio encoder found for this export.",
     );
+    const overlays = textOverlays ?? (textOverlay ? [textOverlay] : []);
     const renderContext = createTextOverlayRenderContext(
       TIKTOK_OUTPUT_WIDTH,
       TIKTOK_OUTPUT_HEIGHT,
@@ -122,7 +125,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
       renderContext,
       timelineOffset: 0,
       trimRange: clampedUgcTrimRange,
-      textOverlay,
+      textOverlays: overlays,
       onProgress: createMediaBunnyProgressMapper(onProgress, 0, 0.35),
     });
     const demoTimelineOffset = Math.max(ugcDuration, ugcVideo.endTimestamp);
@@ -133,7 +136,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
       renderContext,
       timelineOffset: demoTimelineOffset,
       trimRange: clampedDemoTrimRange,
-      textOverlay,
+      textOverlays: overlays,
       onProgress: createMediaBunnyProgressMapper(onProgress, 0.35, 0.35),
     });
     let endTimestamp = Math.max(ugcVideo.endTimestamp, demoVideo.endTimestamp);

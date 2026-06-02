@@ -110,6 +110,26 @@ describe("VideoClipMusicPreview", () => {
     expect(audio.pause).toHaveBeenCalled();
   });
 
+  it("uses a viewport-capped preview frame for mobile dialogs", () => {
+    const tree = VideoClipMusicPreview({
+      hasSourceAudio: false,
+      label: "Preview clip",
+      musicBlob: null,
+      musicEnabled: false,
+      musicVolume: 1,
+      posterSrc: "poster.jpg",
+      src: "clip.mp4",
+    });
+    const [root] = findElements(
+      tree,
+      (element) =>
+        element.type === "div" &&
+        String(element.props?.className).includes("video-clip-preview-frame"),
+    );
+
+    expect(root.props.className).toContain("aspect-[9/16]");
+  });
+
   it("syncs music during active playback and ignores rejected audio play", async () => {
     const video = {
       currentTime: 2.5,

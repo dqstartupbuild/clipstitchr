@@ -1,6 +1,8 @@
 export type R2ObjectKind =
   | "video-clip-video"
   | "video-clip-poster"
+  | "upload-source-video"
+  | "provider-input-image"
   | "photo"
   | "photo-original"
   | "photo-thumbnail"

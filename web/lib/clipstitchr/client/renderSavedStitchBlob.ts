@@ -4,11 +4,13 @@ import { stitchStitchrSequence } from "@/lib/clipstitchr/media/stitchStitchrSequ
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchrSequenceClip } from "@/lib/clipstitchr/types/StitchrSequenceClip";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
-import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
+import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getOrderedStitchSequenceSegments } from "@/lib/clipstitchr/utils/getOrderedStitchSequenceSegments";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
+import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 
 type RenderSavedStitchBlobOptions = {
   loadClip: (id: string) => Promise<VideoClip | null>;
@@ -50,15 +52,17 @@ export async function renderSavedStitchBlob({
       (duration, segment) => duration + segment.duration,
       0,
     );
-    const textOverlay =
-      stitch.textOverlay && stitch.textOverlay.text.trim().length > 0
-        ? clampTextOverlay(stitch.textOverlay, totalDuration)
-        : null;
+    const textOverlays = getNonEmptyTextOverlays(
+      clampTextOverlays(
+        getTextOverlayList(stitch.textOverlays, stitch.textOverlay),
+        totalDuration,
+      ),
+    );
 
     return (
       await stitchStitchrSequence(sequence, {
         onProgress,
-        textOverlay,
+        textOverlays,
       })
     ).blob;
   }
@@ -91,10 +95,12 @@ export async function renderSavedStitchBlob({
   const totalDuration =
     getPlaybackRateDuration(ugcTrimRange, ugcPlaybackRate) +
     getPlaybackRateDuration(demoTrimRange, demoPlaybackRate);
-  const textOverlay =
-    stitch.textOverlay && stitch.textOverlay.text.trim().length > 0
-      ? clampTextOverlay(stitch.textOverlay, totalDuration)
-      : null;
+  const textOverlays = getNonEmptyTextOverlays(
+    clampTextOverlays(
+      getTextOverlayList(stitch.textOverlays, stitch.textOverlay),
+      totalDuration,
+    ),
+  );
   const options = {
     demoTrimRange,
     demoPlaybackRate,
@@ -105,14 +111,14 @@ export async function renderSavedStitchBlob({
     ugcTrimRange,
   };
 
-  if (!textOverlay) {
+  if (!textOverlays.length) {
     return (await stitchNormalizedVideos(ugcClip, demoClip, options)).blob;
   }
 
   return (
     await stitchNormalizedVideosWithTextOverlay(ugcClip, demoClip, {
       ...options,
-      textOverlay,
+      textOverlays,
     })
   ).blob;
 }
