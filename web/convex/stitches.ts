@@ -12,7 +12,10 @@ import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchrModeValidator } from "./validators/stitchrMode";
 import { stitchSequenceSegmentValidator } from "./validators/stitchSequenceSegment";
 import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
-import { textOverlayValidator } from "./validators/textOverlay";
+import {
+  textOverlayValidator,
+  textOverlaysValidator,
+} from "./validators/textOverlay";
 import { videoPlaybackRateValidator } from "./validators/videoPlaybackRate";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
@@ -41,6 +44,7 @@ const saveArgs = {
   ugcPlaybackRate: v.optional(videoPlaybackRateValidator),
   music: v.optional(stitchMusicMetadataValidator),
   textOverlay: v.optional(textOverlayValidator),
+  textOverlays: v.optional(textOverlaysValidator),
   createdAt: v.string(),
 };
 
@@ -377,9 +381,10 @@ export const updateMusic = mutation({
 export const updateTextOverlay = mutation({
   args: {
     id: v.string(),
-    textOverlay: v.union(textOverlayValidator, v.null()),
+    textOverlay: v.optional(v.union(textOverlayValidator, v.null())),
+    textOverlays: v.optional(textOverlaysValidator),
   },
-  handler: async (ctx, { id, textOverlay }) => {
+  handler: async (ctx, { id, textOverlay, textOverlays }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
@@ -396,8 +401,15 @@ export const updateTextOverlay = mutation({
       throw new Error("Stitch not found.");
     }
 
+    const normalizedTextOverlays =
+      textOverlays ??
+      (textOverlay && textOverlay.text.trim().length > 0 ? [textOverlay] : []);
+
     await ctx.db.patch(stitch._id, {
-      textOverlay: textOverlay ?? undefined,
+      textOverlay: normalizedTextOverlays[0],
+      textOverlays: normalizedTextOverlays.length
+        ? normalizedTextOverlays
+        : undefined,
     });
     const updatedStitch = await ctx.db.get(stitch._id);
 

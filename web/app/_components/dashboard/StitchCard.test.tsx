@@ -23,7 +23,9 @@ const mocks = vi.hoisted(() => ({
     onLoadPreview: () => void;
     onRemoveMusic: () => Promise<void>;
     onSaveMusic: (music: StitchMusicMetadata) => Promise<void>;
-    onSaveTextOverlay: (textOverlay: TextOverlay | null) => Promise<void>;
+    onSaveTextOverlay: (
+      textOverlay: TextOverlay | TextOverlay[] | null,
+    ) => Promise<void>;
   },
   lazyObjectUrlOptions: null as null | { loadBlob: () => Promise<Blob | null> },
   musicProps: null as null | {
@@ -36,7 +38,7 @@ const mocks = vi.hoisted(() => ({
   stateSetter: vi.fn(),
   textProps: null as null | {
     onClose: () => void;
-    onSave: (textOverlay: TextOverlay | null) => Promise<void>;
+    onSave: (textOverlay: TextOverlay | TextOverlay[] | null) => Promise<void>;
   },
   trackPostHogEvent: vi.fn(),
   useObjectUrl: vi.fn(),
@@ -94,7 +96,7 @@ vi.mock("@/app/_components/dashboard/StitchMusicSettingsDialog", () => ({
 vi.mock("@/app/_components/dashboard/StitchTextSettingsDialog", () => ({
   StitchTextSettingsDialog: (props: {
     onClose: () => void;
-    onSave: (textOverlay: TextOverlay | null) => Promise<void>;
+    onSave: (textOverlay: TextOverlay | TextOverlay[] | null) => Promise<void>;
   }) => {
     mocks.textProps = props;
     return "StitchTextSettingsDialog";

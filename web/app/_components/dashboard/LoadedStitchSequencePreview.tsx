@@ -1,7 +1,8 @@
 "use client";
 
 import { Pause, Play, RotateCcw } from "lucide-react";
-import { type KeyboardEvent, useMemo, useRef, useState } from "react";
+import { type KeyboardEvent, useCallback, useMemo, useRef, useState } from "react";
+import { SelectableTextOverlayPreviewBox } from "@/app/_components/stitchr/SelectableTextOverlayPreviewBox";
 import { TextOverlayBox } from "@/app/_components/stitchr/TextOverlayBox";
 import { TextOverlayPreviewBox } from "@/app/_components/stitchr/TextOverlayPreviewBox";
 import { TextOverlayQuickControls } from "@/app/_components/stitchr/TextOverlayQuickControls";
@@ -11,16 +12,23 @@ import { useSequenceVideoPlayer } from "@/lib/clipstitchr/hooks/useSequenceVideo
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
-import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
+import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getActiveTextOverlayId } from "@/lib/clipstitchr/utils/getActiveTextOverlayId";
+import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getTextOverlayId } from "@/lib/clipstitchr/utils/getTextOverlayId";
+import { getTextOverlayIsInRange } from "@/lib/clipstitchr/utils/getTextOverlayIsInRange";
+import { getTextOverlayIsVisible } from "@/lib/clipstitchr/utils/getTextOverlayIsVisible";
+import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
+import { replaceTextOverlayById } from "@/lib/clipstitchr/utils/replaceTextOverlayById";
 
 type LoadedStitchSequencePreviewProps = {
   demoClip: VideoClip;
   stitch: Stitch;
   ugcClip: VideoClip;
-  onTextOverlayChange?: (textOverlay: TextOverlay) => void;
+  onTextOverlayChange?: (textOverlays: TextOverlay[]) => void;
 };
 
 export function LoadedStitchSequencePreview({
@@ -31,6 +39,9 @@ export function LoadedStitchSequencePreview({
 }: LoadedStitchSequencePreviewProps) {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const [areTextControlsOpen, setAreTextControlsOpen] = useState(false);
+  const [activeTextOverlayId, setActiveTextOverlayId] = useState<string | null>(
+    null,
+  );
   const ugcUrl = useObjectUrl(ugcClip.blob);
   const demoUrl = useObjectUrl(demoClip.blob);
   const ugcPosterUrl = useObjectUrl(ugcClip.posterBlob);
@@ -69,14 +80,24 @@ export function LoadedStitchSequencePreview({
       getPlaybackRateDuration(demoTrimRange, demoPlaybackRate),
     [demoPlaybackRate, demoTrimRange, ugcPlaybackRate, ugcTrimRange],
   );
-  const textOverlay = useMemo(
-    () =>
-      stitch.textOverlay &&
-      (onTextOverlayChange || stitch.textOverlay.text.trim().length > 0)
-        ? clampTextOverlay(stitch.textOverlay, totalDuration)
-        : null,
-    [onTextOverlayChange, stitch.textOverlay, totalDuration],
-  );
+  const textOverlays = useMemo(() => {
+    const nextTextOverlays = clampTextOverlays(
+      getTextOverlayList(stitch.textOverlays, stitch.textOverlay),
+      totalDuration,
+    );
+
+    return onTextOverlayChange
+      ? nextTextOverlays
+      : getNonEmptyTextOverlays(nextTextOverlays);
+  }, [
+    onTextOverlayChange,
+    stitch.textOverlay,
+    stitch.textOverlays,
+    totalDuration,
+  ]);
+  const selectedTextOverlayId = onTextOverlayChange
+    ? getActiveTextOverlayId(textOverlays, activeTextOverlayId)
+    : null;
   const {
     activeSegment,
     currentTime,
@@ -95,10 +116,46 @@ export function LoadedStitchSequencePreview({
     demoTrimRange,
     ugcPlaybackRate,
   });
-  const shouldShowTextOverlay =
-    Boolean(textOverlay) &&
-    currentTime >= (textOverlay?.startTime ?? 0) &&
-    currentTime <= (textOverlay?.endTime ?? 0);
+  const renderedTextOverlays = textOverlays
+    .map((textOverlay, index) => {
+      const textOverlayId = getTextOverlayId(textOverlay, index);
+
+      return {
+        id: textOverlayId,
+        isActive: textOverlayId === selectedTextOverlayId,
+        textOverlay,
+      };
+    })
+    .filter(
+      ({ isActive, textOverlay }) =>
+        isActive
+          ? getTextOverlayIsInRange(textOverlay, currentTime)
+          : getTextOverlayIsVisible(textOverlay, currentTime),
+    );
+  const activeTextOverlay =
+    renderedTextOverlays.find((textOverlay) => textOverlay.isActive)
+      ?.textOverlay ?? null;
+  const handleTextOverlayChange = useCallback(
+    (nextTextOverlay: TextOverlay) => {
+      if (!onTextOverlayChange) {
+        return;
+      }
+
+      if (!selectedTextOverlayId) {
+        onTextOverlayChange([nextTextOverlay]);
+        return;
+      }
+
+      onTextOverlayChange(
+        replaceTextOverlayById(
+          textOverlays,
+          selectedTextOverlayId,
+          nextTextOverlay,
+        ),
+      );
+    },
+    [onTextOverlayChange, selectedTextOverlayId, textOverlays],
+  );
   const togglePlaybackFromKeyboard = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== "Enter" && event.key !== " ") {
       return;
@@ -154,27 +211,36 @@ export function LoadedStitchSequencePreview({
               preload="metadata"
               src={demoUrl}
             />
-            {textOverlay && shouldShowTextOverlay && onTextOverlayChange ? (
-              <TextOverlayBox
-                emptyLabel="Text"
-                textOverlay={textOverlay}
-                stageRef={stageRef}
-                totalDuration={totalDuration}
-                onChange={onTextOverlayChange}
-                onOpenStyleControls={() => setAreTextControlsOpen(true)}
-              />
-            ) : null}
-            {textOverlay && shouldShowTextOverlay && !onTextOverlayChange ? (
-              <TextOverlayPreviewBox textOverlay={textOverlay} />
-            ) : null}
-            {textOverlay &&
-            shouldShowTextOverlay &&
-            onTextOverlayChange &&
-            areTextControlsOpen ? (
+            {renderedTextOverlays.map(({ id, isActive, textOverlay }) => {
+              if (!onTextOverlayChange) {
+                return (
+                  <TextOverlayPreviewBox key={id} textOverlay={textOverlay} />
+                );
+              }
+
+              return isActive ? (
+                <TextOverlayBox
+                  key={id}
+                  emptyLabel="Text"
+                  textOverlay={textOverlay}
+                  stageRef={stageRef}
+                  totalDuration={totalDuration}
+                  onChange={handleTextOverlayChange}
+                  onOpenStyleControls={() => setAreTextControlsOpen(true)}
+                />
+              ) : (
+                <SelectableTextOverlayPreviewBox
+                  key={id}
+                  textOverlay={textOverlay}
+                  onSelect={() => setActiveTextOverlayId(id)}
+                />
+              );
+            })}
+            {activeTextOverlay && onTextOverlayChange && areTextControlsOpen ? (
               <TextOverlayQuickControls
-                textOverlay={textOverlay}
+                textOverlay={activeTextOverlay}
                 totalDuration={totalDuration}
-                onChange={onTextOverlayChange}
+                onChange={handleTextOverlayChange}
                 onClose={() => setAreTextControlsOpen(false)}
               />
             ) : null}

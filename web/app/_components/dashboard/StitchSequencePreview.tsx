@@ -13,7 +13,7 @@ type StitchSequencePreviewProps = {
   stitch: Stitch;
   ugcClip: VideoClip | null;
   onLoadPreview: () => void;
-  onTextOverlayChange?: (textOverlay: TextOverlay) => void;
+  onTextOverlayChange?: (textOverlays: TextOverlay[]) => void;
 };
 
 export function StitchSequencePreview({

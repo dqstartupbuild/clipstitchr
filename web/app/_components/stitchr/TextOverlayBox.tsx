@@ -220,6 +220,8 @@ export function TextOverlayBox({
             onClick={(event) => event.stopPropagation()}
             onDoubleClick={(event) => event.stopPropagation()}
             onKeyDown={(event) => {
+              event.stopPropagation();
+
               if (event.key === "Escape") {
                 event.preventDefault();
                 setIsTextEditing(false);

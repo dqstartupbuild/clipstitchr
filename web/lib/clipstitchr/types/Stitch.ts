@@ -33,5 +33,6 @@ export type Stitch = {
   ugcPlaybackRate?: VideoPlaybackRate;
   music?: StitchMusicMetadata;
   textOverlay?: TextOverlay;
+  textOverlays?: TextOverlay[];
   createdAt: string;
 };

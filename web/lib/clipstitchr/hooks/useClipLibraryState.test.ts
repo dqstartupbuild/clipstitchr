@@ -598,7 +598,7 @@ describe("useClipLibraryState", () => {
   it("swallows owned music cleanup failures after metadata updates", async () => {
     const state = useClipLibraryState();
     const clip = createClipMetadata();
-    const stitch = createStitch();
+    const stitch = createStitch({ duration: 12 });
 
     mocks.deleteObjectsFromR2.mockRejectedValueOnce(
       new Error("Clipr cleanup failed"),
@@ -653,10 +653,15 @@ describe("useClipLibraryState", () => {
         music: null,
       }),
     );
-    expect(getMutation("stitches.updateTextOverlay")).toHaveBeenCalledWith({
-      id: "stitch_1",
-      textOverlay,
-    });
+    expect(getMutation("stitches.updateTextOverlay")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "stitch_1",
+        textOverlay: expect.objectContaining({ text: textOverlay.text }),
+        textOverlays: expect.arrayContaining([
+          expect.objectContaining({ text: textOverlay.text }),
+        ]),
+      }),
+    );
     expect(getMutation("stitches.updatePoster")).toHaveBeenCalledWith({
       id: "stitch_1",
       posterObject: expect.objectContaining({

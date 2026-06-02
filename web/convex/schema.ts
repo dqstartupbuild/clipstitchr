@@ -30,7 +30,10 @@ import { swiprProductSourceTypeValidator } from "./validators/swiprProductSource
 import { swiprSlideValidator } from "./validators/swiprSlide";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
 import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
-import { textOverlayValidator } from "./validators/textOverlay";
+import {
+  textOverlayValidator,
+  textOverlaysValidator,
+} from "./validators/textOverlay";
 import { videoPlaybackRateValidator } from "./validators/videoPlaybackRate";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
@@ -178,6 +181,7 @@ export default defineSchema({
     ugcPlaybackRate: v.optional(videoPlaybackRateValidator),
     music: v.optional(stitchMusicMetadataValidator),
     textOverlay: v.optional(textOverlayValidator),
+    textOverlays: v.optional(textOverlaysValidator),
     automation: v.optional(automationProvenanceValidator),
     createdAt: v.string(),
   })

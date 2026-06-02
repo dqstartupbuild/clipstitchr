@@ -132,9 +132,11 @@ describe("renderSavedStitchBlob", () => {
       expect.objectContaining({ id: "demo_1" }),
       expect.objectContaining({
         demoPlaybackRate: 2,
-        textOverlay: expect.objectContaining({
-          text: " Hook ",
-        }),
+        textOverlays: expect.arrayContaining([
+          expect.objectContaining({
+            text: " Hook ",
+          }),
+        ]),
         ugcPlaybackRate: 2,
       }),
     );

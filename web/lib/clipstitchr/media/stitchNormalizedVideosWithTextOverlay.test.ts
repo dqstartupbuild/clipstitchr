@@ -186,7 +186,7 @@ describe("stitchNormalizedVideosWithTextOverlay", () => {
     expect(mocks.copyTextOverlayVideoFramesToSource).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
-        textOverlay: overlay,
+        textOverlays: [overlay],
         timelineOffset: 0,
       }),
     );

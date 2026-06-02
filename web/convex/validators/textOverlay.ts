@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 
 export const textOverlayValidator = v.object({
+  id: v.optional(v.string()),
   text: v.string(),
   startTime: v.number(),
   endTime: v.number(),
@@ -25,3 +26,5 @@ export const textOverlayValidator = v.object({
   backgroundColor: v.optional(v.string()),
   strokeColor: v.optional(v.string()),
 });
+
+export const textOverlaysValidator = v.array(textOverlayValidator);

@@ -34,9 +34,12 @@ import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { getClipLibraryDisplayCounts } from "@/lib/clipstitchr/utils/getClipLibraryDisplayCounts";
 import { getDeletableMusicAudioObject } from "@/lib/clipstitchr/utils/getDeletableMusicAudioObject";
+import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
+import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
 type PendingPosterBlobLoad = {
@@ -525,7 +528,19 @@ export function useClipLibraryState(): ClipLibraryValue {
   );
 
   const updateStitchTextOverlay = useCallback(
-    async (stitch: Stitch, textOverlay: TextOverlay | null) => {
+    async (
+      stitch: Stitch,
+      textOverlay: TextOverlay | TextOverlay[] | null,
+    ) => {
+      const nextTextOverlays = getNonEmptyTextOverlays(
+        clampTextOverlays(
+          Array.isArray(textOverlay)
+            ? textOverlay
+            : getTextOverlayList(undefined, textOverlay),
+          stitch.duration,
+        ),
+      );
+      const firstTextOverlay = nextTextOverlays[0] ?? null;
       let posterObject: R2ObjectReference | undefined;
 
       try {
@@ -542,7 +557,8 @@ export function useClipLibraryState(): ClipLibraryValue {
               end: demoClip.duration,
             },
             duration: stitch.duration,
-            textOverlay,
+            textOverlay: firstTextOverlay,
+            textOverlays: nextTextOverlays,
             ugcClip,
             ugcTrimRange: stitch.ugcTrimRange ?? {
               start: 0,
@@ -564,7 +580,8 @@ export function useClipLibraryState(): ClipLibraryValue {
 
       await updateStitchTextOverlayMutation({
         id: stitch.id,
-        textOverlay,
+        textOverlay: firstTextOverlay,
+        textOverlays: nextTextOverlays,
       });
 
       if (posterObject) {

@@ -5,5 +5,6 @@ import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 export type StitchrUgcSelection = {
   clip: VideoClipMetadata;
   textOverlay?: TextOverlay | null;
+  textOverlays?: TextOverlay[] | null;
   trimRange: VideoTrimRange;
 };

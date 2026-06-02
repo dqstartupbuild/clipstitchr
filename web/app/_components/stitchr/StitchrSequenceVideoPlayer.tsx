@@ -2,6 +2,7 @@
 
 import { Pause, Play, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { SelectableTextOverlayPreviewBox } from "@/app/_components/stitchr/SelectableTextOverlayPreviewBox";
 import { StitchrSequenceVideoLayer } from "@/app/_components/stitchr/StitchrSequenceVideoLayer";
 import { TextOverlayBox } from "@/app/_components/stitchr/TextOverlayBox";
 import { TextOverlayQuickControls } from "@/app/_components/stitchr/TextOverlayQuickControls";
@@ -12,15 +13,19 @@ import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getTextOverlayIsInRange } from "@/lib/clipstitchr/utils/getTextOverlayIsInRange";
 import { getTextOverlayIsVisible } from "@/lib/clipstitchr/utils/getTextOverlayIsVisible";
+import { getTextOverlayId } from "@/lib/clipstitchr/utils/getTextOverlayId";
 
 type StitchrSequenceVideoPlayerProps = {
   clips: VideoClip[];
   includeAudioFlags: boolean[];
   playbackRates: VideoPlaybackRate[];
-  textOverlay: TextOverlay | null;
+  textOverlays: TextOverlay[];
+  activeTextOverlayId: string | null;
   totalDuration: number;
   trimRanges: VideoTrimRange[];
+  onActiveTextOverlayIdChange: (textOverlayId: string) => void;
   onPlaybackTimeChange: (currentTime: number) => void;
   onTextOverlayChange: (textOverlay: TextOverlay) => void;
 };
@@ -29,9 +34,11 @@ export function StitchrSequenceVideoPlayer({
   clips,
   includeAudioFlags,
   playbackRates,
-  textOverlay,
+  textOverlays,
+  activeTextOverlayId,
   totalDuration,
   trimRanges,
+  onActiveTextOverlayIdChange,
   onPlaybackTimeChange,
   onTextOverlayChange,
 }: StitchrSequenceVideoPlayerProps) {
@@ -50,15 +57,25 @@ export function StitchrSequenceVideoPlayer({
     togglePlayback,
   } = useLongrSequenceVideoPlayer({ playbackRates, trimRanges });
   const progressValue = Math.min(currentTime, totalDuration);
-  const isTextOverlayInRange =
-    textOverlay &&
-    currentTime >= textOverlay.startTime &&
-    currentTime <= textOverlay.endTime;
-  const visibleTextOverlay =
-    textOverlay &&
-    (getTextOverlayIsVisible(textOverlay, currentTime) || isTextOverlayInRange)
-      ? textOverlay
-      : null;
+  const renderedTextOverlays = textOverlays
+    .map((textOverlay, index) => {
+      const textOverlayId = getTextOverlayId(textOverlay, index);
+
+      return {
+        id: textOverlayId,
+        isActive: textOverlayId === activeTextOverlayId,
+        textOverlay,
+      };
+    })
+    .filter(
+      ({ isActive, textOverlay }) =>
+        isActive
+          ? getTextOverlayIsInRange(textOverlay, currentTime)
+          : getTextOverlayIsVisible(textOverlay, currentTime),
+    );
+  const activeTextOverlay =
+    renderedTextOverlays.find((textOverlay) => textOverlay.isActive)
+      ?.textOverlay ?? null;
 
   useEffect(() => {
     onPlaybackTimeChange(currentTime);
@@ -90,19 +107,28 @@ export function StitchrSequenceVideoPlayer({
             Preview unavailable
           </div>
         )}
-        {visibleTextOverlay ? (
-          <TextOverlayBox
-            emptyLabel="Text"
-            textOverlay={visibleTextOverlay}
-            stageRef={stageRef}
-            totalDuration={totalDuration}
-            onChange={onTextOverlayChange}
-            onOpenStyleControls={() => setAreTextControlsOpen(true)}
-          />
-        ) : null}
-        {visibleTextOverlay && areTextControlsOpen ? (
+        {renderedTextOverlays.map(({ id, isActive, textOverlay }) =>
+          isActive ? (
+            <TextOverlayBox
+              key={id}
+              emptyLabel="Text"
+              textOverlay={textOverlay}
+              stageRef={stageRef}
+              totalDuration={totalDuration}
+              onChange={onTextOverlayChange}
+              onOpenStyleControls={() => setAreTextControlsOpen(true)}
+            />
+          ) : (
+            <SelectableTextOverlayPreviewBox
+              key={id}
+              textOverlay={textOverlay}
+              onSelect={() => onActiveTextOverlayIdChange(id)}
+            />
+          ),
+        )}
+        {activeTextOverlay && areTextControlsOpen ? (
           <TextOverlayQuickControls
-            textOverlay={visibleTextOverlay}
+            textOverlay={activeTextOverlay}
             totalDuration={totalDuration}
             onChange={onTextOverlayChange}
             onClose={() => setAreTextControlsOpen(false)}

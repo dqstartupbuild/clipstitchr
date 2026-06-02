@@ -7,14 +7,16 @@ import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
-import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
+import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
+import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 
 type StitchTextSettingsDialogProps = {
   error: string | null;
   isSaving: boolean;
   onClose: () => void;
-  onSave: (textOverlay: TextOverlay | null) => Promise<void>;
+  onSave: (textOverlay: TextOverlay | TextOverlay[] | null) => Promise<void>;
   stitch: Stitch;
 };
 
@@ -25,20 +27,22 @@ export function StitchTextSettingsDialog({
   onSave,
   stitch,
 }: StitchTextSettingsDialogProps) {
-  const [textOverlay, setTextOverlay] = useState<TextOverlay | null>(
-    stitch.textOverlay ?? null,
+  const [textOverlays, setTextOverlays] = useState<TextOverlay[]>(
+    () => getTextOverlayList(stitch.textOverlays, stitch.textOverlay),
+  );
+  const [activeTextOverlayId, setActiveTextOverlayId] = useState<string | null>(
+    null,
   );
   const ugcDuration = stitch.ugcTrimRange
     ? getPlaybackRateDuration(stitch.ugcTrimRange, stitch.ugcPlaybackRate)
     : 0;
   const handleSave = async () => {
-    const nextTextOverlay =
-      textOverlay && textOverlay.text.trim().length > 0
-        ? clampTextOverlay(textOverlay, stitch.duration)
-        : null;
+    const nextTextOverlays = getNonEmptyTextOverlays(
+      clampTextOverlays(textOverlays, stitch.duration),
+    );
 
     try {
-      await onSave(nextTextOverlay);
+      await onSave(nextTextOverlays.length ? nextTextOverlays : null);
       onClose();
     } catch {
       return;
@@ -82,11 +86,13 @@ export function StitchTextSettingsDialog({
           ) : null}
 
           <TextOverlayEditor
-            textOverlay={textOverlay}
+            textOverlays={textOverlays}
             totalDuration={stitch.duration}
             ugcDuration={ugcDuration}
             currentTime={0}
-            onChange={setTextOverlay}
+            activeTextOverlayId={activeTextOverlayId}
+            onActiveTextOverlayIdChange={setActiveTextOverlayId}
+            onChange={setTextOverlays}
           />
 
           <div className="mt-5 flex justify-end">

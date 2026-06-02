@@ -13,7 +13,9 @@ import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { getActiveTextOverlayId } from "@/lib/clipstitchr/utils/getActiveTextOverlayId";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { replaceTextOverlayById } from "@/lib/clipstitchr/utils/replaceTextOverlayById";
 
 type SequencePreviewPanelProps = {
   mode?: StitchrMode;
@@ -30,12 +32,12 @@ type SequencePreviewPanelProps = {
   demoPlaybackRate: VideoPlaybackRate;
   includeDemoAudio: boolean;
   includeUgcAudio: boolean;
-  textOverlay: TextOverlay | null;
+  textOverlays: TextOverlay[];
   ugcPlaybackRate: VideoPlaybackRate;
   canCopyTextOverlayToAll?: boolean;
   onActiveUgcChange: (id: string) => void;
   onCopyTextOverlayToAll?: () => void;
-  onTextOverlayChange: (textOverlay: TextOverlay | null) => void;
+  onTextOverlaysChange: (textOverlays: TextOverlay[]) => void;
 };
 
 export function SequencePreviewPanel({
@@ -53,14 +55,17 @@ export function SequencePreviewPanel({
   demoPlaybackRate,
   includeDemoAudio,
   includeUgcAudio,
-  textOverlay,
+  textOverlays,
   ugcPlaybackRate,
   canCopyTextOverlayToAll = false,
   onActiveUgcChange,
   onCopyTextOverlayToAll,
-  onTextOverlayChange,
+  onTextOverlaysChange,
 }: SequencePreviewPanelProps) {
   const [playbackTime, setPlaybackTime] = useState(0);
+  const [activeTextOverlayId, setActiveTextOverlayId] = useState<string | null>(
+    null,
+  );
   const activePreviewIndex = Math.max(
     0,
     previewUgcClips.findIndex((clip) => clip.id === activeUgcId),
@@ -93,11 +98,26 @@ export function SequencePreviewPanel({
       ugcDuration,
     ],
   );
+  const selectedTextOverlayId = getActiveTextOverlayId(
+    textOverlays,
+    activeTextOverlayId,
+  );
   const handleOverlayChange = useCallback(
     (nextTextOverlay: TextOverlay) => {
-      onTextOverlayChange(nextTextOverlay);
+      if (!selectedTextOverlayId) {
+        onTextOverlaysChange([nextTextOverlay]);
+        return;
+      }
+
+      onTextOverlaysChange(
+        replaceTextOverlayById(
+          textOverlays,
+          selectedTextOverlayId,
+          nextTextOverlay,
+        ),
+      );
     },
-    [onTextOverlayChange],
+    [onTextOverlaysChange, selectedTextOverlayId, textOverlays],
   );
   const handleSelectPreviewIndex = useCallback(
     (index: number) => {
@@ -153,18 +173,22 @@ export function SequencePreviewPanel({
             clips={sequenceClips}
             includeAudioFlags={sequenceIncludeAudioFlags}
             playbackRates={sequencePlaybackRates}
-            textOverlay={textOverlay}
+            textOverlays={textOverlays}
+            activeTextOverlayId={selectedTextOverlayId}
             totalDuration={totalDuration}
             trimRanges={sequenceTrimRanges}
+            onActiveTextOverlayIdChange={setActiveTextOverlayId}
             onTextOverlayChange={handleOverlayChange}
             onPlaybackTimeChange={setPlaybackTime}
           />
           <TextOverlayEditor
-            textOverlay={textOverlay}
+            textOverlays={textOverlays}
             totalDuration={totalDuration}
             ugcDuration={0}
             currentTime={playbackTime}
-            onChange={onTextOverlayChange}
+            activeTextOverlayId={selectedTextOverlayId}
+            onActiveTextOverlayIdChange={setActiveTextOverlayId}
+            onChange={onTextOverlaysChange}
           />
         </>
       ) : ugcClip && demoClip && ugcTrimRange && demoTrimRange ? (
@@ -187,20 +211,24 @@ export function SequencePreviewPanel({
               demoTrimRange={demoTrimRange}
               includeDemoAudio={includeDemoAudio}
               includeUgcAudio={includeUgcAudio}
-              textOverlay={textOverlay}
+              textOverlays={textOverlays}
+              activeTextOverlayId={selectedTextOverlayId}
               totalDuration={totalDuration}
               ugcPlaybackRate={ugcPlaybackRate}
+              onActiveTextOverlayIdChange={setActiveTextOverlayId}
               onTextOverlayChange={handleOverlayChange}
               onPlaybackTimeChange={setPlaybackTime}
             />
           </div>
           <TextOverlayEditor
-            textOverlay={textOverlay}
+            textOverlays={textOverlays}
             totalDuration={totalDuration}
             ugcDuration={ugcDuration}
             currentTime={playbackTime}
+            activeTextOverlayId={selectedTextOverlayId}
             canCopyToAll={canCopyTextOverlayToAll}
-            onChange={onTextOverlayChange}
+            onActiveTextOverlayIdChange={setActiveTextOverlayId}
+            onChange={onTextOverlaysChange}
             onCopyToAll={onCopyTextOverlayToAll}
           />
         </>

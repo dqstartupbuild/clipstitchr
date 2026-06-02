@@ -29,6 +29,7 @@ vi.mock("react", async (importOriginal) => {
 
   return {
     ...actual,
+    useCallback: (callback: unknown) => callback,
     useMemo: (factory: () => unknown) => factory(),
     useRef: (initialValue: unknown) => ({ current: initialValue }),
     useState: (initialValue: unknown) => [initialValue, mocks.setState],

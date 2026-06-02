@@ -39,6 +39,7 @@ export function createStitchFromConvexDocument({
     ugcPlaybackRate: stitch.ugcPlaybackRate,
     music: stitch.music,
     textOverlay: stitch.textOverlay,
+    textOverlays: stitch.textOverlays,
     createdAt: stitch.createdAt,
   };
 }

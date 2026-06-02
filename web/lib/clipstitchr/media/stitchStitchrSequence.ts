@@ -24,6 +24,7 @@ import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRate
 type StitchStitchrSequenceOptions = {
   onProgress?: (progress: number) => void;
   textOverlay?: TextOverlay | null;
+  textOverlays?: TextOverlay[];
 };
 
 type StitchStitchrSequenceResult = {
@@ -34,7 +35,11 @@ type StitchStitchrSequenceResult = {
 
 export async function stitchStitchrSequence(
   sequence: StitchrSequenceClip[],
-  { onProgress, textOverlay = null }: StitchStitchrSequenceOptions = {},
+  {
+    onProgress,
+    textOverlay = null,
+    textOverlays,
+  }: StitchStitchrSequenceOptions = {},
 ): Promise<StitchStitchrSequenceResult> {
   if (!sequence.length) {
     throw new Error("Select at least one source clip before stitching.");
@@ -68,7 +73,8 @@ export async function stitchStitchrSequence(
       includeAudio,
       "No supported audio encoder found for this export.",
     );
-    const renderContext = textOverlay
+    const overlays = textOverlays ?? (textOverlay ? [textOverlay] : []);
+    const renderContext = overlays.length
       ? createTextOverlayRenderContext(TIKTOK_OUTPUT_WIDTH, TIKTOK_OUTPUT_HEIGHT)
       : null;
     const audioSource = createOutputAudioBufferSource(
@@ -94,13 +100,13 @@ export async function stitchStitchrSequence(
       const progressStart = (index / sequence.length) * 0.7;
       const progressSpan = 0.7 / sequence.length;
       const segmentVideo =
-        renderContext && textOverlay
+        renderContext
           ? await copyTextOverlayVideoFramesToSource({
               input,
               playbackRate,
               renderContext,
               source: session.videoSource as CanvasSource,
-              textOverlay,
+              textOverlays: overlays,
               timelineOffset: segmentOffset,
               trimRange,
               onProgress: (progress) =>
