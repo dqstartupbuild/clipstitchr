@@ -1,4 +1,5 @@
 import { cliprHookStyleOptions } from "@/lib/clipstitchr/resources/clipr/cliprHookStyleOptions";
+import { normalizeProductWebsiteUrl } from "@/lib/clipstitchr/server/normalizeProductWebsiteUrl";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
 
 const cliprHookStyleKeys = new Set<string>(
@@ -23,6 +24,7 @@ export function readProductProfileInput(
   const preferredCliprHookStyleKey = readPreferredCliprHookStyleKey(
     source.preferredCliprHookStyleKey,
   );
+  const websiteUrl = normalizeProductWebsiteUrl(source.websiteUrl);
   const input = {
     name: typeof source.name === "string" ? source.name.trim() : "",
     productDetails:
@@ -33,6 +35,7 @@ export function readProductProfileInput(
       typeof source.audienceDetails === "string"
         ? source.audienceDetails.trim()
         : "",
+    ...(websiteUrl ? { websiteUrl } : {}),
     ...(preferredCliprHookStyleKey ? { preferredCliprHookStyleKey } : {}),
   };
 

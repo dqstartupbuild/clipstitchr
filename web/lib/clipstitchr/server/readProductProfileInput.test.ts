@@ -6,14 +6,36 @@ describe("readProductProfileInput", () => {
     expect(
       readProductProfileInput({
         name: "  LaunchKit  ",
+        websiteUrl: " launchkit.example.com ",
         productDetails: "  AI launch planning  ",
         audienceDetails: "  solo founders  ",
       }),
     ).toEqual({
       name: "LaunchKit",
+      websiteUrl: "https://launchkit.example.com/",
       productDetails: "AI launch planning",
       audienceDetails: "solo founders",
     });
+  });
+
+  it("rejects private or unsupported website URLs", () => {
+    expect(() =>
+      readProductProfileInput({
+        name: "LaunchKit",
+        websiteUrl: "http://localhost:3000",
+        productDetails: "AI launch planning",
+        audienceDetails: "solo founders",
+      }),
+    ).toThrow("Website URL must be a public website.");
+
+    expect(() =>
+      readProductProfileInput({
+        name: "LaunchKit",
+        websiteUrl: "ftp://launchkit.example.com",
+        productDetails: "AI launch planning",
+        audienceDetails: "solo founders",
+      }),
+    ).toThrow("Website URL must use http or https.");
   });
 
   it("accepts valid preferred Clipr hook styles", () => {

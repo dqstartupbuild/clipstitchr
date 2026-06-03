@@ -42,10 +42,12 @@ export function createProductEnrichmentPrompt({
   audienceDetails,
   name,
   productDetails,
+  websiteUrl,
 }: {
   audienceDetails: string;
   name: string;
   productDetails: string;
+  websiteUrl?: string;
 }) {
   return [
     "Infer hidden strategic metadata for this saved product profile.",
@@ -74,7 +76,8 @@ export function createProductEnrichmentPrompt({
     "Available placeholder keys:",
     getPlaceholderKeyPromptText(),
     `Product name: ${name.trim()}`,
+    websiteUrl ? `Product website URL: ${websiteUrl.trim()}` : "",
     `Product details: ${productDetails.trim()}`,
     `Audience details: ${audienceDetails.trim()}`,
-  ].join("\n");
+  ].filter(Boolean).join("\n");
 }

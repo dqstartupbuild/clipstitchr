@@ -9,6 +9,7 @@ export function createProductProfileFromConvexDocument(
     name: product.name,
     productDetails: product.productDetails,
     audienceDetails: product.audienceDetails,
+    websiteUrl: product.websiteUrl,
     cliprPlaceholderFillers: product.cliprPlaceholderFillers,
     eligibleCliprHookStyleKeys: product.eligibleCliprHookStyleKeys,
     eligibleCliprHookTemplateIds: product.eligibleCliprHookTemplateIds,

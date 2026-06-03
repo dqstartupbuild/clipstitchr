@@ -82,7 +82,7 @@ function createFallbackHook(product: ProductProfile, purpose: CliprTextPurpose) 
     return `Most people notice ${problem} too late`;
   }
 
-  return `Most people notice ${problem} too late`;
+  return "I was not expecting that";
 }
 
 function normalizeScriptString(value: unknown, fallback: string) {
@@ -155,6 +155,10 @@ function normalizeSlides({
     .map((slide) => normalizeString(slide, ""))
     .filter(Boolean)
     .slice(0, slideCount);
+
+  if (purpose === "stitchr") {
+    return [filledHook];
+  }
 
   if (purpose !== "swipr") {
     return [
@@ -276,39 +280,45 @@ export function parseCliprTextGenerationOutput({
   )
     ? candidateFilledHook
     : createFallbackHook(product, purpose);
-  const script = normalizeScriptString(
-    parsed.script,
-    "",
-  );
-  const scenePlan = normalizeScenePlan(parsed.scenePlan, durationSeconds);
+  const script =
+    purpose === "stitchr" ? "" : normalizeScriptString(parsed.script, "");
+  const scenePlan =
+    purpose === "stitchr"
+      ? []
+      : normalizeScenePlan(parsed.scenePlan, durationSeconds);
   const fallbackScript = scenePlan
     .map((scene) => scene.scriptText)
     .filter(Boolean)
     .join(" ")
     .trim();
   const finalScript =
-    script ||
-    fallbackScript ||
-    `${filledHook}. Give the viewer a useful explanation without pitching a product.`;
-  const finalScenePlan = scenePlan.length
-    ? scenePlan.map((scene, index) => ({
-        ...scene,
-        index,
-        sceneType: "avatar" as const,
-        scriptText: finalScript,
-        estimatedDurationSeconds: durationSeconds,
-      }))
-    : [
-        {
-          id: createId(),
-          index: 0,
-          sceneType: "avatar" as const,
-          scriptText: finalScript,
-          visualPrompt:
-            "Vertical short-form talking scene with a clear, natural delivery.",
-          estimatedDurationSeconds: durationSeconds,
-        },
-      ];
+    purpose === "stitchr"
+      ? ""
+      : script ||
+        fallbackScript ||
+        `${filledHook}. Give the viewer a useful explanation without pitching a product.`;
+  const finalScenePlan =
+    purpose === "stitchr"
+      ? []
+      : scenePlan.length
+        ? scenePlan.map((scene, index) => ({
+            ...scene,
+            index,
+            sceneType: "avatar" as const,
+            scriptText: finalScript,
+            estimatedDurationSeconds: durationSeconds,
+          }))
+        : [
+            {
+              id: createId(),
+              index: 0,
+              sceneType: "avatar" as const,
+              scriptText: finalScript,
+              visualPrompt:
+                "Vertical short-form talking scene with a clear, natural delivery.",
+              estimatedDurationSeconds: durationSeconds,
+            },
+          ];
 
   return {
     filledHook,

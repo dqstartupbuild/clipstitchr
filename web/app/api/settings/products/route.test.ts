@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => {
     createAuthenticatedConvexHttpClient: vi.fn(() => convex),
     createId: vi.fn(),
     createProductEnrichment: vi.fn(),
+    createProductProfileInputWithWebsiteDetails: vi.fn(),
     createReplicateClient: vi.fn(() => ({ provider: "replicate" })),
     getAuthenticatedConvexToken: vi.fn(),
     getAuthenticatedUserId: vi.fn(),
@@ -42,6 +43,14 @@ vi.mock("@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken", () => ({
 vi.mock("@/lib/clipstitchr/server/createProductEnrichment", () => ({
   createProductEnrichment: mocks.createProductEnrichment,
 }));
+
+vi.mock(
+  "@/lib/clipstitchr/server/createProductProfileInputWithWebsiteDetails",
+  () => ({
+    createProductProfileInputWithWebsiteDetails:
+      mocks.createProductProfileInputWithWebsiteDetails,
+  }),
+);
 
 vi.mock("@/lib/clipstitchr/server/createReplicateClient", () => ({
   createReplicateClient: mocks.createReplicateClient,
@@ -81,6 +90,13 @@ describe("POST /api/settings/products", () => {
       audienceDetails: "Founders",
       name: "Launch Kit",
       productDetails: "AI launch planner",
+      websiteUrl: "https://launchkit.example.com/",
+    });
+    mocks.createProductProfileInputWithWebsiteDetails.mockResolvedValue({
+      audienceDetails: "Founders",
+      name: "Launch Kit",
+      productDetails: "AI launch planner\n\nWebsite-sourced details:\nPage content",
+      websiteUrl: "https://launchkit.example.com/",
     });
     mocks.createProductEnrichment.mockResolvedValue({
       inferredPainPoints: ["slow launch"],
@@ -113,8 +129,20 @@ describe("POST /api/settings/products", () => {
       api.rateLimits.consumeProductEnrichment,
       { secret: "rate-limit-secret" },
     );
+    expect(
+      mocks.createProductProfileInputWithWebsiteDetails,
+    ).toHaveBeenCalledWith({
+      product: expect.objectContaining({
+        name: "Launch Kit",
+        websiteUrl: "https://launchkit.example.com/",
+      }),
+      shouldScrapeWebsite: true,
+    });
     expect(mocks.createProductEnrichment).toHaveBeenCalledWith({
-      product: expect.objectContaining({ name: "Launch Kit" }),
+      product: expect.objectContaining({
+        name: "Launch Kit",
+        productDetails: expect.stringContaining("Website-sourced details"),
+      }),
       replicate: { provider: "replicate" },
     });
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
@@ -122,6 +150,7 @@ describe("POST /api/settings/products", () => {
       expect.objectContaining({
         id: "product_1",
         name: "Launch Kit",
+        websiteUrl: "https://launchkit.example.com/",
       }),
     );
   });

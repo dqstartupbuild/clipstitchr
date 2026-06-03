@@ -143,6 +143,15 @@ Optional Replicate model overrides:
 - `CLIPR_TTS_MODEL_ID` is legacy/reserved; Clipr voice selection is handled by
   `prunaai/p-video-avatar`.
 
+Firecrawl website import:
+
+- `FIRECRAWL_API_KEY` is required in the Next.js runtime environment when users
+  save a Settings product with a website URL. The route calls Firecrawl's v2
+  scrape endpoint server-side, imports markdown from the public product page,
+  appends a capped excerpt to product details, and then passes that context to
+  product enrichment.
+- The key must not be prefixed with `NEXT_PUBLIC_`.
+
 ## Enforcement Map
 
 | Surface | Enforcement Point | Limit |
@@ -169,7 +178,7 @@ Optional Replicate model overrides:
 | Public waitlist submission | `waitlist.submit` from `/sign-up` | 3/hour/normalized email, burst 3; shared global bucket 500/hour, burst 100 |
 | TikTok Events API forwarding | `POST /api/analytics/tiktok/events` after marketing-cookie consent | 120/hour/client fingerprint, burst 30; shared global bucket 5,000/hour, burst 1,000 |
 | IndexNow sitemap submission | `POST /api/indexnow` with `INDEXNOW_SUBMIT_SECRET` | Submits all public sitemap URLs only, excludes authenticated dashboard/API routes, requires a public `NEXT_PUBLIC_SITE_URL`, consumes 500 submitted URLs/hour/client fingerprint, burst 100; shared global bucket 5,000 submitted URLs/hour, burst 500 |
-| Product enrichment | `POST /api/settings/products`, `PATCH /api/settings/products/{id}` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour |
+| Product enrichment and website import | `POST /api/settings/products`, `PATCH /api/settings/products/{id}` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour. The route consumes this limit before Firecrawl website scraping and before the Replicate product enrichment call. Product edits only re-scrape Firecrawl when the saved website URL changes. |
 | Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; shared global provider bucket 10,000 units/hour, burst 2,000. The route creates a queued `cliprJobs` record and a durable `manual-clipr` provider job, then returns immediately. |
 | Clipr hook/script generation | `POST /api/clipr/jobs` worker path and `POST /api/clipr/text` immediate suggestion path | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000 |
 | Clipr avatar still generation | `POST /api/clipr/jobs` before queued worker generation | 20 images/hour/user, burst 6; global provider bucket counted once per still. The provider worker creates the avatar still, then R2 upload byte limits are consumed before personal avatar-photo and thumbnail copies are saved. |

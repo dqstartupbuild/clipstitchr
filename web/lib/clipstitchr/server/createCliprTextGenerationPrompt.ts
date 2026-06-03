@@ -3,6 +3,7 @@ import type { CliprHookTemplate } from "@/lib/clipstitchr/types/CliprHookTemplat
 import type { CliprPlaceholderFillers } from "@/lib/clipstitchr/types/CliprPlaceholderFillers";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import { createStitchrHookGenerationPrompt } from "@/lib/clipstitchr/server/createStitchrHookGenerationPrompt";
 
 type CreateCliprTextGenerationPromptOptions = {
   candidates: CliprHookTemplate[];
@@ -64,16 +65,7 @@ function getPurposeRules(purpose: CliprTextPurpose) {
     ];
   }
 
-  return [
-    "- For Stitchr, the generated text should read like a human social hook, not a product line.",
-    "- For Stitchr, use the product only as background context for what the audience cares about.",
-    "- For Stitchr, do not mention the product name or product features unless the selected candidate template explicitly requires product_name and the result still sounds like a natural creator caption.",
-    "- For Stitchr, overlayText must be one concise editable text overlay.",
-    "- For Stitchr, write overlayText as a short-form hook that can sit over a UGC-then-demo sequence.",
-    "- For Stitchr, the hook must cause a gut reaction in 2-3 seconds. Make a bold, specific claim the audience will emotionally resist or strongly agree with.",
-    "- For Stitchr, the UGC clip is the reaction trigger and the Demo clip is the validation. The overlayText should amplify this arc, not describe it.",
-    "- For Stitchr, prefer identity-level claims over informational hooks. Challenge a core belief the audience holds rather than sharing a safe tip.",
-  ];
+  return [];
 }
 
 export function createCliprTextGenerationPrompt({
@@ -84,6 +76,14 @@ export function createCliprTextGenerationPrompt({
   purpose,
   slideCount,
 }: CreateCliprTextGenerationPromptOptions) {
+  if (purpose === "stitchr") {
+    return createStitchrHookGenerationPrompt({
+      durationSeconds,
+      fillers,
+      product,
+    });
+  }
+
   return [
     "Create short-form hook copy for ClipStitchr.",
     "Return only compact JSON with this exact shape:",

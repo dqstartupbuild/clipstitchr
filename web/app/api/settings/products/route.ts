@@ -4,6 +4,7 @@ import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/c
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { createProductEnrichment } from "@/lib/clipstitchr/server/createProductEnrichment";
+import { createProductProfileInputWithWebsiteDetails } from "@/lib/clipstitchr/server/createProductProfileInputWithWebsiteDetails";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
@@ -35,15 +36,19 @@ export async function POST(request: Request) {
       secret: rateLimitSecret,
     });
 
+    const productInput = await createProductProfileInputWithWebsiteDetails({
+      product: input,
+      shouldScrapeWebsite: Boolean(input.websiteUrl),
+    });
     const replicate = createReplicateClient();
     const enrichment = await createProductEnrichment({
-      product: input,
+      product: productInput,
       replicate,
     });
     const now = new Date().toISOString();
     const product = {
       id: createId(),
-      ...input,
+      ...productInput,
       ...enrichment,
       createdAt: now,
       updatedAt: now,

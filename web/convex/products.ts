@@ -5,6 +5,7 @@ import { rateLimiter } from "./rateLimiter";
 
 const PRODUCT_TEXT_MAX_LENGTH = 2000;
 const PRODUCT_NAME_MAX_LENGTH = 120;
+const PRODUCT_WEBSITE_URL_MAX_LENGTH = 2048;
 const INFERRED_PROBLEM_MAX_LENGTH = 300;
 const INFERRED_PAIN_POINT_MAX_LENGTH = 160;
 const INFERRED_PAIN_POINT_LIMIT = 10;
@@ -71,6 +72,7 @@ export const create = mutation({
     name: v.string(),
     productDetails: v.string(),
     audienceDetails: v.string(),
+    websiteUrl: v.optional(v.string()),
     inferredProblem: v.optional(v.string()),
     inferredPainPoints: v.array(v.string()),
     eligibleCliprHookStyleKeys: v.optional(v.array(v.string())),
@@ -89,6 +91,7 @@ export const create = mutation({
       name,
       productDetails,
       audienceDetails,
+      websiteUrl,
       inferredProblem,
       inferredPainPoints,
       eligibleCliprHookStyleKeys,
@@ -117,6 +120,9 @@ export const create = mutation({
       name: normalizedName,
       productDetails: normalizeText(productDetails, PRODUCT_TEXT_MAX_LENGTH),
       audienceDetails: normalizeText(audienceDetails, PRODUCT_TEXT_MAX_LENGTH),
+      websiteUrl: websiteUrl
+        ? normalizeText(websiteUrl, PRODUCT_WEBSITE_URL_MAX_LENGTH)
+        : undefined,
       inferredProblem: inferredProblem
         ? normalizeText(inferredProblem, INFERRED_PROBLEM_MAX_LENGTH)
         : undefined,
@@ -155,6 +161,7 @@ export const update = mutation({
     name: v.string(),
     productDetails: v.string(),
     audienceDetails: v.string(),
+    websiteUrl: v.optional(v.string()),
     inferredProblem: v.optional(v.string()),
     inferredPainPoints: v.array(v.string()),
     eligibleCliprHookStyleKeys: v.optional(v.array(v.string())),
@@ -172,6 +179,7 @@ export const update = mutation({
       name,
       productDetails,
       audienceDetails,
+      websiteUrl,
       inferredProblem,
       inferredPainPoints,
       eligibleCliprHookStyleKeys,
@@ -206,6 +214,9 @@ export const update = mutation({
       name: normalizedName,
       productDetails: normalizeText(productDetails, PRODUCT_TEXT_MAX_LENGTH),
       audienceDetails: normalizeText(audienceDetails, PRODUCT_TEXT_MAX_LENGTH),
+      websiteUrl: websiteUrl
+        ? normalizeText(websiteUrl, PRODUCT_WEBSITE_URL_MAX_LENGTH)
+        : undefined,
       inferredProblem: inferredProblem
         ? normalizeText(inferredProblem, INFERRED_PROBLEM_MAX_LENGTH)
         : undefined,

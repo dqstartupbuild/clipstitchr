@@ -142,6 +142,7 @@ export default defineSchema({
     name: v.string(),
     productDetails: v.string(),
     audienceDetails: v.string(),
+    websiteUrl: v.optional(v.string()),
     inferredProblem: v.optional(v.string()),
     inferredPainPoints: v.array(v.string()),
     eligibleCliprHookStyleKeys: v.optional(v.array(v.string())),

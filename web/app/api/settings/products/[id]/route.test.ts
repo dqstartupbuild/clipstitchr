@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => {
     convex,
     createAuthenticatedConvexHttpClient: vi.fn(() => convex),
     createProductEnrichment: vi.fn(),
+    createProductProfileInputWithWebsiteDetails: vi.fn(),
     createReplicateClient: vi.fn(() => ({ provider: "replicate" })),
     getAuthenticatedConvexToken: vi.fn(),
     getAuthenticatedUserId: vi.fn(),
@@ -45,6 +46,14 @@ vi.mock("@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken", () => ({
 vi.mock("@/lib/clipstitchr/server/createProductEnrichment", () => ({
   createProductEnrichment: mocks.createProductEnrichment,
 }));
+
+vi.mock(
+  "@/lib/clipstitchr/server/createProductProfileInputWithWebsiteDetails",
+  () => ({
+    createProductProfileInputWithWebsiteDetails:
+      mocks.createProductProfileInputWithWebsiteDetails,
+  }),
+);
 
 vi.mock("@/lib/clipstitchr/server/createReplicateClient", () => ({
   createReplicateClient: mocks.createReplicateClient,
@@ -83,12 +92,20 @@ describe("PATCH /api/settings/products/[id]", () => {
     mocks.convex.query.mockResolvedValue({
       createdAt: "2026-05-20T00:00:00.000Z",
       id: "product_1",
+      websiteUrl: "https://old.example.com/",
     });
     mocks.convex.mutation.mockResolvedValue(null);
     mocks.readProductProfileInput.mockReturnValue({
       audienceDetails: "Founders",
       name: "Launch Kit",
       productDetails: "AI launch planner",
+      websiteUrl: "https://launchkit.example.com/",
+    });
+    mocks.createProductProfileInputWithWebsiteDetails.mockResolvedValue({
+      audienceDetails: "Founders",
+      name: "Launch Kit",
+      productDetails: "AI launch planner\n\nWebsite-sourced details:\nPage content",
+      websiteUrl: "https://launchkit.example.com/",
     });
     mocks.createProductEnrichment.mockResolvedValue({
       inferredPainPoints: ["slow launch"],
@@ -124,12 +141,41 @@ describe("PATCH /api/settings/products/[id]", () => {
       api.rateLimits.consumeProductEnrichment,
       { secret: "rate-limit-secret" },
     );
+    expect(
+      mocks.createProductProfileInputWithWebsiteDetails,
+    ).toHaveBeenCalledWith({
+      product: expect.objectContaining({
+        name: "Launch Kit",
+        websiteUrl: "https://launchkit.example.com/",
+      }),
+      shouldScrapeWebsite: true,
+    });
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.products.update,
       expect.objectContaining({
         id: "product_1",
         inferredPainPoints: ["slow launch"],
         name: "Launch Kit",
+        websiteUrl: "https://launchkit.example.com/",
+      }),
+    );
+  });
+
+  it("does not rescrape an unchanged product website URL", async () => {
+    mocks.convex.query.mockResolvedValueOnce({
+      createdAt: "2026-05-20T00:00:00.000Z",
+      id: "product_1",
+      websiteUrl: "https://launchkit.example.com/",
+    });
+
+    const response = await PATCH(createRequest(), createContext());
+
+    expect(response.status).toBe(200);
+    expect(
+      mocks.createProductProfileInputWithWebsiteDetails,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        shouldScrapeWebsite: false,
       }),
     );
   });

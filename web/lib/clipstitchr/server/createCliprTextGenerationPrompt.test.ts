@@ -43,7 +43,7 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("Product proof bank, not the script spine");
   });
 
-  it("keeps Stitchr prompts human-first instead of product-first", () => {
+  it("uses the dedicated Stitchr emotional overlay framework", () => {
     const prompt = createCliprTextGenerationPrompt({
       candidates: [candidate],
       durationSeconds: 30,
@@ -53,12 +53,16 @@ describe("createCliprTextGenerationPrompt", () => {
       slideCount: 4,
     });
 
-    expect(prompt).toContain(
-      "For Stitchr, the generated text should read like a human social hook",
-    );
-    expect(prompt).toContain("do not mention the product name or product features");
-    expect(prompt).toContain("the hook must cause a gut reaction in 2-3 seconds");
-    expect(prompt).toContain("the Demo clip is the validation");
+    expect(prompt).toContain("Create Stitchr visual overlay hook copy");
+    expect(prompt).toContain("Stitchr combines a short emotional UGC reaction clip");
+    expect(prompt).toContain("There is no voiceover, no spoken explanation");
+    expect(prompt).toContain("Emotional Narrative Hooks");
+    expect(prompt).toContain("Reaction-Matched Hooks");
+    expect(prompt).toContain("Most hooks should be 3-9 words");
+    expect(prompt).toContain("script must be an empty string");
+    expect(prompt).not.toContain("Content angles to choose from");
+    expect(prompt).not.toContain("Follow-through arcs to choose from");
+    expect(prompt).not.toContain("Candidate templates");
   });
 
   it("defines Swipr as a hook payoff carousel with a final CTA", () => {

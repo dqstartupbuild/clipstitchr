@@ -116,7 +116,7 @@ describe("parseCliprTextGenerationOutput", () => {
     expect(generation.slides.at(-1)).toMatch(/\bUse\b/);
   });
 
-  it("uses fallback hooks and scene scripts when generated text is not usable", () => {
+  it("keeps Stitchr fallback text emotional and scriptless", () => {
     const generation = parseCliprTextGenerationOutput({
       candidates,
       durationSeconds: 30,
@@ -144,17 +144,11 @@ describe("parseCliprTextGenerationOutput", () => {
       slideCount: 2,
     });
 
-    expect(generation.filledHook).toBe(
-      "Most people notice launch content gets scattered too late",
-    );
+    expect(generation.filledHook).toBe("I was not expecting that");
     expect(generation.overlayText).toBe(generation.filledHook);
-    expect(generation.script).toBe("Explain the idea simply.");
-    expect(generation.scenePlan[0]).toMatchObject({
-      estimatedDurationSeconds: 30,
-      scriptText: "Explain the idea simply.",
-      visualPrompt:
-        "Vertical short-form video, natural light, clear subject, steady camera.",
-    });
+    expect(generation.script).toBe("");
+    expect(generation.scenePlan).toEqual([]);
+    expect(generation.slides).toEqual([generation.filledHook]);
     expect(generation.variablesUsed).toEqual({
       topic: "launch ops",
     });

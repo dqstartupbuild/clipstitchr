@@ -4,6 +4,7 @@ import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/c
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { createProductEnrichment } from "@/lib/clipstitchr/server/createProductEnrichment";
+import { createProductProfileInputWithWebsiteDetails } from "@/lib/clipstitchr/server/createProductProfileInputWithWebsiteDetails";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
@@ -59,15 +60,20 @@ export async function PATCH(
       secret: rateLimitSecret,
     });
 
+    const productInput = await createProductProfileInputWithWebsiteDetails({
+      product: input,
+      shouldScrapeWebsite:
+        Boolean(input.websiteUrl) && input.websiteUrl !== existingProduct.websiteUrl,
+    });
     const replicate = createReplicateClient();
     const enrichment = await createProductEnrichment({
-      product: input,
+      product: productInput,
       replicate,
     });
     const now = new Date().toISOString();
     const product = {
       id: productId,
-      ...input,
+      ...productInput,
       ...enrichment,
       createdAt: existingProduct.createdAt,
       updatedAt: now,
@@ -78,6 +84,7 @@ export async function PATCH(
       name: product.name,
       productDetails: product.productDetails,
       audienceDetails: product.audienceDetails,
+      websiteUrl: product.websiteUrl,
       inferredProblem: product.inferredProblem,
       inferredPainPoints: product.inferredPainPoints,
       eligibleCliprHookStyleKeys: product.eligibleCliprHookStyleKeys,

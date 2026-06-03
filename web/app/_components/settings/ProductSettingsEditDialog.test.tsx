@@ -70,6 +70,7 @@ function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile 
     preferredCliprHookStyleKey: "mystery_gap",
     productDetails: "A launch kit",
     updatedAt: "2026-05-20T00:00:00.000Z",
+    websiteUrl: "https://launchkit.example.com/",
     ...overrides,
   };
 }
@@ -124,6 +125,7 @@ describe("ProductSettingsEditDialog", () => {
     expect(markup).toContain("Edit product context");
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("ProductHookStyleSelect:mystery_gap");
+    expect(markup).toContain("Website URL");
     expect(markup).toContain("Product details");
     expect(markup).toContain("Audience details");
     expect(markup).toContain("Save");
@@ -132,6 +134,7 @@ describe("ProductSettingsEditDialog", () => {
   it("updates form fields and submits the current product settings", async () => {
     mocks.stateQueue = [
       "New Launch Kit",
+      "https://new.example.com/",
       "New product details",
       "New audience",
       "direct",
@@ -153,13 +156,19 @@ describe("ProductSettingsEditDialog", () => {
       tree,
       (element) => element.type === "button",
     );
-    const [nameInput] = findElements(tree, (element) => element.type === "input");
+    const [nameInput, websiteInput] = findElements(
+      tree,
+      (element) => element.type === "input",
+    );
     const textareas = findElements(tree, (element) => element.type === "textarea");
     const preventDefault = vi.fn();
 
     (nameInput.props.onChange as (event: {
       currentTarget: { value: string };
     }) => void)({ currentTarget: { value: "Typed name" } });
+    (websiteInput.props.onChange as (event: {
+      currentTarget: { value: string };
+    }) => void)({ currentTarget: { value: "https://typed.example.com/" } });
     (textareas[0].props.onChange as (event: {
       currentTarget: { value: string };
     }) => void)({ currentTarget: { value: "Typed details" } });
@@ -175,6 +184,7 @@ describe("ProductSettingsEditDialog", () => {
 
     expect(preventDefault).toHaveBeenCalled();
     expect(mocks.setState).toHaveBeenCalledWith("Typed name");
+    expect(mocks.setState).toHaveBeenCalledWith("https://typed.example.com/");
     expect(mocks.setState).toHaveBeenCalledWith("Typed details");
     expect(mocks.setState).toHaveBeenCalledWith("Typed audience");
     expect(mocks.setState).toHaveBeenCalledWith("mystery_gap");
@@ -184,11 +194,12 @@ describe("ProductSettingsEditDialog", () => {
       name: "New Launch Kit",
       preferredCliprHookStyleKey: "direct",
       productDetails: "New product details",
+      websiteUrl: "https://new.example.com/",
     });
   });
 
   it("does not submit while disabled and swallows save failures", async () => {
-    mocks.stateQueue = ["   ", "Details", "Audience", ""];
+    mocks.stateQueue = ["   ", "", "Details", "Audience", ""];
     const disabledSave = vi.fn(async () => undefined);
     const disabledTree = ProductSettingsEditDialog({
       isSaving: false,
@@ -210,7 +221,7 @@ describe("ProductSettingsEditDialog", () => {
     expect(mocks.buttons[1]?.disabled).toBe(true);
 
     mocks.buttons = [];
-    mocks.stateQueue = ["Launch Kit", "Details", "Audience", ""];
+    mocks.stateQueue = ["Launch Kit", "", "Details", "Audience", ""];
     const failingSave = vi.fn(async () => {
       throw new Error("save failed");
     });
@@ -234,7 +245,7 @@ describe("ProductSettingsEditDialog", () => {
     expect(mocks.buttons[1]?.isLoading).toBe(true);
 
     mocks.buttons = [];
-    mocks.stateQueue = ["Launch Kit", "Details", "Audience", ""];
+    mocks.stateQueue = ["Launch Kit", "", "Details", "Audience", ""];
     const rejectedSave = vi.fn(async () => {
       throw new Error("save failed");
     });

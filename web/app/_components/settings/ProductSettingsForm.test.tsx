@@ -19,6 +19,7 @@ describe("ProductSettingsForm", () => {
 
     expect(markup).toContain("Add product context");
     expect(markup).toContain("Product name");
+    expect(markup).toContain("Website URL");
     expect(markup).toContain("ProductHookStyleSelect");
     expect(markup).toContain("Save product");
     expect(markup).toContain("disabled");

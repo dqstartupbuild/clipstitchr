@@ -14,12 +14,14 @@ describe("product enrichment and avatar generation helpers", () => {
       audienceDetails: " creators ",
       name: " Launch Kit ",
       productDetails: " helps teams ship ads ",
+      websiteUrl: " https://launchkit.example.com/ ",
     });
 
     expect(prompt).toContain("Infer hidden strategic metadata");
     expect(prompt).toContain("Available Clipr hook styles:");
     expect(prompt).toContain("Available Clipr template IDs:");
     expect(prompt).toContain("Product name: Launch Kit");
+    expect(prompt).toContain("Product website URL: https://launchkit.example.com/");
     expect(prompt).toContain("Product details: helps teams ship ads");
     expect(prompt).toContain("Audience details: creators");
   });

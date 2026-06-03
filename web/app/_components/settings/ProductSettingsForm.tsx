@@ -17,6 +17,7 @@ export function ProductSettingsForm({
   onCreate,
 }: ProductSettingsFormProps) {
   const [name, setName] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
   const [productDetails, setProductDetails] = useState("");
   const [audienceDetails, setAudienceDetails] = useState("");
   const [preferredCliprHookStyleKey, setPreferredCliprHookStyleKey] =
@@ -38,6 +39,7 @@ export function ProductSettingsForm({
           try {
             await onCreate({
               name,
+              websiteUrl: websiteUrl || undefined,
               productDetails,
               audienceDetails,
               preferredCliprHookStyleKey:
@@ -48,6 +50,7 @@ export function ProductSettingsForm({
           }
 
           setName("");
+          setWebsiteUrl("");
           setProductDetails("");
           setAudienceDetails("");
           setPreferredCliprHookStyleKey("");
@@ -71,6 +74,19 @@ export function ProductSettingsForm({
             className="mt-1.5 h-9 w-full rounded-lg border border-border bg-surface px-3 text-sm font-medium text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
             placeholder="Product or offer"
             onChange={(event) => setName(event.currentTarget.value)}
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm font-semibold text-text-primary">
+            Website URL
+          </span>
+          <input
+            value={websiteUrl}
+            maxLength={2048}
+            inputMode="url"
+            className="mt-1.5 h-9 w-full rounded-lg border border-border bg-surface px-3 text-sm font-medium text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
+            placeholder="https://example.com"
+            onChange={(event) => setWebsiteUrl(event.currentTarget.value)}
           />
         </label>
         <ProductHookStyleSelect

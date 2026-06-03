@@ -67,6 +67,7 @@ function createProductArgs(overrides: Record<string, unknown> = {}) {
     eligibleCliprHookStyleKeys: [" direct_diagnosis ", "direct_diagnosis"],
     eligibleCliprHookTemplateIds: [" APP-001 ", "APP-001", "APP-002"],
     id: "product_123",
+    websiteUrl: "  https://launchkit.example.com/  ",
     inferredPainPoints: [
       "  slow launches  ",
       "",
@@ -159,6 +160,7 @@ describe("convex products", () => {
         ownerId: "owner_123",
         preferredCliprHookStyleKey: "direct_diagnosis",
         productDetails: "AI launch planner",
+        websiteUrl: "https://launchkit.example.com/",
       }),
     );
     expect(ctx.db.insert).toHaveBeenCalledWith(
@@ -211,6 +213,7 @@ describe("convex products", () => {
       expect.objectContaining({
         name: "Launch Kit",
         productDetails: "AI launch planner",
+        websiteUrl: "https://launchkit.example.com/",
       }),
     );
   });

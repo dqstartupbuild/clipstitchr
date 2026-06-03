@@ -21,6 +21,7 @@ export function ProductSettingsEditDialog({
   onSave,
 }: ProductSettingsEditDialogProps) {
   const [name, setName] = useState(product.name);
+  const [websiteUrl, setWebsiteUrl] = useState(product.websiteUrl ?? "");
   const [productDetails, setProductDetails] = useState(product.productDetails);
   const [audienceDetails, setAudienceDetails] = useState(
     product.audienceDetails,
@@ -47,6 +48,7 @@ export function ProductSettingsEditDialog({
           try {
             await onSave({
               name,
+              websiteUrl: websiteUrl || undefined,
               productDetails,
               audienceDetails,
               preferredCliprHookStyleKey:
@@ -92,6 +94,19 @@ export function ProductSettingsEditDialog({
             value={preferredCliprHookStyleKey}
             onChange={setPreferredCliprHookStyleKey}
           />
+          <label className="block">
+            <span className="text-sm font-semibold text-text-primary">
+              Website URL
+            </span>
+            <input
+              value={websiteUrl}
+              maxLength={2048}
+              inputMode="url"
+              className="mt-1.5 h-9 w-full rounded-lg border border-border bg-white px-3 text-sm font-medium text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
+              placeholder="https://example.com"
+              onChange={(event) => setWebsiteUrl(event.currentTarget.value)}
+            />
+          </label>
           <div className="grid gap-4 lg:grid-cols-2">
             <label className="block">
               <span className="text-sm font-semibold text-text-primary">
