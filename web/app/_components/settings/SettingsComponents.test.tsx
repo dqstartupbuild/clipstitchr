@@ -231,7 +231,13 @@ describe("settings components", () => {
   it("submits and resets the product settings form", async () => {
     const onCreate = vi.fn(async () => undefined);
 
-    mocks.stateQueue = ["Launch Kit", "Benefits", "Creators", "problem"];
+    mocks.stateQueue = [
+      "Launch Kit",
+      "https://launchkit.example.com/",
+      "Benefits",
+      "Creators",
+      "problem",
+    ];
 
     const tree = ProductSettingsForm({
       isSaving: false,
@@ -250,15 +256,16 @@ describe("settings components", () => {
       name: "Launch Kit",
       preferredCliprHookStyleKey: "problem",
       productDetails: "Benefits",
+      websiteUrl: "https://launchkit.example.com/",
     });
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith("");
-    expect(mocks.setStateCalls[3]).toHaveBeenCalledWith("");
+    expect(mocks.setStateCalls[4]).toHaveBeenCalledWith("");
   });
 
   it("ignores invalid form submissions and forwards hook style changes", async () => {
     const onCreate = vi.fn();
 
-    mocks.stateQueue = ["   ", "", "", ""];
+    mocks.stateQueue = ["   ", "", "", "", ""];
 
     const formTree = ProductSettingsForm({
       isSaving: false,
