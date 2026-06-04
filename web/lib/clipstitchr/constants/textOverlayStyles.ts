@@ -1,4 +1,4 @@
-import type { TextOverlayStyle } from "@/lib/clipstitchr/types/TextOverlayStyle";
+import type { TextOverlayStyle } from "../types/TextOverlayStyle";
 
 export const TEXT_OVERLAY_STYLES: TextOverlayStyle[] = [
   {

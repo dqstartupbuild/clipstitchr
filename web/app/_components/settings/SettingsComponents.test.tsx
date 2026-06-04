@@ -123,6 +123,7 @@ describe("settings components", () => {
           preferences={{
             enabled: false,
             enabledTools: ["stitchr", "swapr", "clipr", "avatar-photo", "swipr"],
+            stitchrTextStyleChoice: "any",
             productSelectionMode: "all",
             selectedProductIds: [],
             avatarSelectionMode: "all",
@@ -178,6 +179,7 @@ describe("settings components", () => {
       preferences: {
         enabled: false,
         enabledTools: ["stitchr"],
+        stitchrTextStyleChoice: "any",
         productSelectionMode: "all",
         selectedProductIds: [],
         avatarSelectionMode: "all",
@@ -195,15 +197,25 @@ describe("settings components", () => {
       (element) =>
         element.type === "input" && element.props?.checked === true,
     );
+    const [stylePicker] = findElements(
+      tree,
+      (element) =>
+        typeof element.type === "function" &&
+        element.type.name === "AutomationStitchrTextStylePicker",
+    );
 
     await (enableButton.props.onClick as () => Promise<void>)();
     (stitchrCheckbox.props.onChange as () => void)();
+    (stylePicker.props.onChange as (value: "hook") => void)("hook");
 
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({ enabled: true }),
     );
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({ enabledTools: [] }),
+    );
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ stitchrTextStyleChoice: "hook" }),
     );
   });
 

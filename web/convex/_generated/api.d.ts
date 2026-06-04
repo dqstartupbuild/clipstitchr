@@ -58,6 +58,7 @@ import type * as validators_assetTags from "../validators/assetTags.js";
 import type * as validators_automationProvenance from "../validators/automationProvenance.js";
 import type * as validators_automationRunStatus from "../validators/automationRunStatus.js";
 import type * as validators_automationSelectionMode from "../validators/automationSelectionMode.js";
+import type * as validators_automationStitchrTextStyleChoice from "../validators/automationStitchrTextStyleChoice.js";
 import type * as validators_automationTaskStatus from "../validators/automationTaskStatus.js";
 import type * as validators_automationTaskType from "../validators/automationTaskType.js";
 import type * as validators_automationTool from "../validators/automationTool.js";
@@ -151,6 +152,7 @@ declare const fullApi: ApiFromModules<{
   "validators/automationProvenance": typeof validators_automationProvenance;
   "validators/automationRunStatus": typeof validators_automationRunStatus;
   "validators/automationSelectionMode": typeof validators_automationSelectionMode;
+  "validators/automationStitchrTextStyleChoice": typeof validators_automationStitchrTextStyleChoice;
   "validators/automationTaskStatus": typeof validators_automationTaskStatus;
   "validators/automationTaskType": typeof validators_automationTaskType;
   "validators/automationTool": typeof validators_automationTool;

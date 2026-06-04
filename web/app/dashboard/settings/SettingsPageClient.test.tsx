@@ -101,6 +101,7 @@ function createAutomationState(
     preferences: {
       enabled: false,
       enabledTools: ["stitchr", "swapr", "clipr", "avatar-photo", "swipr"],
+      stitchrTextStyleChoice: "any",
       productSelectionMode: "all",
       selectedProductIds: [],
       avatarSelectionMode: "all",

@@ -1,4 +1,4 @@
-import type { TextOverlayStyleId } from "@/lib/clipstitchr/types/TextOverlayStyleId";
+import type { TextOverlayStyleId } from "./TextOverlayStyleId";
 
 export type TextOverlayStyle = {
   id: TextOverlayStyleId;

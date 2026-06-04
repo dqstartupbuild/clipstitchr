@@ -11,7 +11,10 @@ import type { Id } from "./_generated/dataModel";
 import { mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
+import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
+import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
+import { resolveAutomationStitchrTextStyleId } from "../lib/clipstitchr/utils/resolveAutomationStitchrTextStyleId";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 function createRunId(ownerId: string, automationDate: string) {
@@ -118,6 +121,9 @@ export const planDaily = mutation({
       .query("automationPreferences")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
       .unique();
+    const stitchrTextStyleChoice = preferences
+      ? getAutomationStitchrTextStyleChoice(preferences.stitchrTextStyleChoice)
+      : defaultAutomationStitchrTextStyleChoice;
     const run = await createRun(
       ctx,
       ownerId,
@@ -125,6 +131,7 @@ export const planDaily = mutation({
       JSON.stringify({
         preferenceVersion: preferences?.preferenceVersion ?? 0,
         selectedProductIds: preferences?.selectedProductIds ?? [],
+        stitchrTextStyleChoice,
       }),
       now,
     );
@@ -326,6 +333,10 @@ export const planDaily = mutation({
       const product =
         (demo.productId ? productById.get(demo.productId) : undefined) ??
         eligibleProducts[0];
+      const stitchrTextStyleId = resolveAutomationStitchrTextStyleId(
+        stitchrTextStyleChoice,
+        `${ownerId}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}`,
+      );
 
       await ctx.db.insert("automationTasks", {
         ownerId,
@@ -365,6 +376,8 @@ export const planDaily = mutation({
           productCreatedAt: product?.createdAt,
           productUpdatedAt: product?.updatedAt,
           selectedScore: selectedPair.score,
+          stitchrTextStyleChoice,
+          stitchrTextStyleId,
         }),
         outputAssetIds: [],
         providerJobIds: [],

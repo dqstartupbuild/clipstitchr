@@ -4,12 +4,15 @@ import { useCallback, useMemo, useState } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { automationToolOptions } from "@/lib/clipstitchr/constants/automationToolOptions";
+import { defaultAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import { filterEnabledAutomationTools } from "@/lib/clipstitchr/utils/filterEnabledAutomationTools";
+import { getAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 
 const defaultPreferences: AutomationPreferencesInput = {
   enabled: false,
   enabledTools: automationToolOptions.map((tool) => tool.id),
+  stitchrTextStyleChoice: defaultAutomationStitchrTextStyleChoice,
   productSelectionMode: "all",
   selectedProductIds: [],
   avatarSelectionMode: "all",
@@ -33,6 +36,9 @@ export function useAutomationPreferences() {
             enabledTools: filterEnabledAutomationTools(
               preferencesDocument.enabledTools,
             ),
+            stitchrTextStyleChoice: getAutomationStitchrTextStyleChoice(
+              preferencesDocument.stitchrTextStyleChoice,
+            ),
             productSelectionMode: preferencesDocument.productSelectionMode,
             selectedProductIds: preferencesDocument.selectedProductIds,
             avatarSelectionMode: preferencesDocument.avatarSelectionMode,
@@ -51,6 +57,9 @@ export function useAutomationPreferences() {
           ...nextPreferences,
           enabledTools: filterEnabledAutomationTools(
             nextPreferences.enabledTools,
+          ),
+          stitchrTextStyleChoice: getAutomationStitchrTextStyleChoice(
+            nextPreferences.stitchrTextStyleChoice,
           ),
           updatedAt: new Date().toISOString(),
         });

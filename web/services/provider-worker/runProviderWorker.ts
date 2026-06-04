@@ -40,9 +40,11 @@ import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
+import type { TextOverlayStyleId } from "@/lib/clipstitchr/types/TextOverlayStyleId";
 import { createCliprMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createCliprMusicMetadataFromSharedTrack";
 import { createDefaultSwiprTextOverlay } from "@/lib/clipstitchr/utils/createDefaultSwiprTextOverlay";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { getAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { getAvatarGenerationTags } from "@/lib/clipstitchr/utils/getAvatarGenerationTags";
 import { getCliprFinalClipName } from "@/lib/clipstitchr/utils/getCliprFinalClipName";
 import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
@@ -187,6 +189,7 @@ type StitchrAutomationTaskInput = {
   demoTrimRange: { start: number; end: number };
   demoVideoObject: R2ObjectReference;
   product: ProductProfile;
+  stitchrTextStyleId: TextOverlayStyleId;
   ugcClipId: string;
   ugcClipName: string;
   ugcDuration: number;
@@ -482,6 +485,7 @@ function parseStitchrAutomationTaskInput(
       "Stitchr Demo object",
     ),
     product,
+    stitchrTextStyleId: getStitchrTextStyleId(input.stitchrTextStyleId),
     ugcClipId: getString(input.ugcClipId, "Stitchr UGC ID"),
     ugcClipName: getString(input.ugcClipName, "Stitchr UGC name"),
     ugcDuration,
@@ -726,7 +730,17 @@ function parseUploadVideoAnalysisProviderJobInput(
   };
 }
 
-function createStitchrTextOverlay(text: string, duration: number): TextOverlay {
+function getStitchrTextStyleId(value: unknown): TextOverlayStyleId {
+  const choice = getAutomationStitchrTextStyleChoice(value);
+
+  return choice === "any" ? "hook" : choice;
+}
+
+function createStitchrTextOverlay(
+  text: string,
+  duration: number,
+  styleId: TextOverlayStyleId,
+): TextOverlay {
   return {
     text,
     startTime: 0,
@@ -735,7 +749,7 @@ function createStitchrTextOverlay(text: string, duration: number): TextOverlay {
     y: 0.15,
     width: 0.8,
     fontSize: 0.055,
-    styleId: "hook",
+    styleId,
   };
 }
 
@@ -1250,6 +1264,7 @@ async function processStitchr({
   const textOverlay = createStitchrTextOverlay(
     textGeneration.overlayText || textGeneration.filledHook,
     duration,
+    input.stitchrTextStyleId,
   );
   const mediaJob = (await client.mutation(
     api.mediaJobs.createStitchrDraftFinalizationFromProvider,

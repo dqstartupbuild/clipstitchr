@@ -4,6 +4,7 @@ import { assetTagsValidator } from "./validators/assetTags";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { automationRunStatusValidator } from "./validators/automationRunStatus";
 import { automationSelectionModeValidator } from "./validators/automationSelectionMode";
+import { automationStitchrTextStyleChoiceValidator } from "./validators/automationStitchrTextStyleChoice";
 import { automationTaskStatusValidator } from "./validators/automationTaskStatus";
 import { automationTaskTypeValidator } from "./validators/automationTaskType";
 import { automationToolValidator } from "./validators/automationTool";
@@ -359,6 +360,9 @@ export default defineSchema({
     ownerId: v.string(),
     enabled: v.boolean(),
     enabledTools: v.array(automationToolValidator),
+    stitchrTextStyleChoice: v.optional(
+      automationStitchrTextStyleChoiceValidator,
+    ),
     productSelectionMode: automationSelectionModeValidator,
     selectedProductIds: v.array(v.string()),
     avatarSelectionMode: automationSelectionModeValidator,

@@ -1,7 +1,9 @@
 import { Bot, Clock } from "lucide-react";
+import { AutomationStitchrTextStylePicker } from "@/app/_components/settings/AutomationStitchrTextStylePicker";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { automationToolOptions } from "@/lib/clipstitchr/constants/automationToolOptions";
+import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import type { AutomationTool } from "@/lib/clipstitchr/types/AutomationTool";
 
@@ -33,6 +35,14 @@ export function SettingsAutomationPanel({
     await onSave({
       ...preferences,
       enabledTools: toggleTool(preferences.enabledTools, tool),
+    });
+  };
+  const handleStitchrTextStyleChange = async (
+    stitchrTextStyleChoice: AutomationStitchrTextStyleChoice,
+  ) => {
+    await onSave({
+      ...preferences,
+      stitchrTextStyleChoice,
     });
   };
 
@@ -83,6 +93,16 @@ export function SettingsAutomationPanel({
               {tool.label}
             </label>
           ))}
+        </div>
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-semibold text-text-primary">
+            Stitchr text style
+          </p>
+          <AutomationStitchrTextStylePicker
+            disabled={isLoading || isSaving}
+            value={preferences.stitchrTextStyleChoice}
+            onChange={(value) => void handleStitchrTextStyleChange(value)}
+          />
         </div>
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
       </div>

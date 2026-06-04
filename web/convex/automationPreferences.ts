@@ -2,8 +2,11 @@ import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
+import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
+import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { rateLimiter } from "./rateLimiter";
 import { automationSelectionModeValidator } from "./validators/automationSelectionMode";
+import { automationStitchrTextStyleChoiceValidator } from "./validators/automationStitchrTextStyleChoice";
 import { automationToolValidator } from "./validators/automationTool";
 import type { AutomationTool } from "../lib/clipstitchr/types/AutomationTool";
 
@@ -25,6 +28,9 @@ export const get = query({
       ? {
           ...preferences,
           enabledTools: filterEnabledAutomationTools(preferences.enabledTools),
+          stitchrTextStyleChoice: getAutomationStitchrTextStyleChoice(
+            preferences.stitchrTextStyleChoice,
+          ),
         }
       : null;
   },
@@ -34,6 +40,9 @@ export const save = mutation({
   args: {
     enabled: v.boolean(),
     enabledTools: v.array(automationToolValidator),
+    stitchrTextStyleChoice: v.optional(
+      automationStitchrTextStyleChoiceValidator,
+    ),
     productSelectionMode: automationSelectionModeValidator,
     selectedProductIds: v.array(v.string()),
     avatarSelectionMode: automationSelectionModeValidator,
@@ -62,6 +71,8 @@ export const save = mutation({
       ownerId,
       enabled: args.enabled,
       enabledTools: filterEnabledAutomationTools(args.enabledTools),
+      stitchrTextStyleChoice:
+        args.stitchrTextStyleChoice ?? defaultAutomationStitchrTextStyleChoice,
       productSelectionMode: args.productSelectionMode,
       selectedProductIds:
         args.productSelectionMode === "selected" ? productIds : [],
