@@ -12,6 +12,7 @@ import { SettingsSupportPanel } from "@/app/_components/settings/SettingsSupport
 import { ThemeModeSelect } from "@/app/_components/settings/ThemeModeSelect";
 import { themeModeChangeEventName } from "@/lib/clipstitchr/theme/themeModeChangeEventName";
 import { themeModeStorageKey } from "@/lib/clipstitchr/theme/themeModeStorageKey";
+import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 
 const mocks = vi.hoisted(() => ({
@@ -31,6 +32,7 @@ vi.mock("react", async (importOriginal) => {
     ...actual,
     useCallback: (callback: unknown) => callback,
     useEffect: () => undefined,
+    useMemo: (callback: () => unknown) => callback(),
     useState: (initialValue: unknown) => {
       const value = mocks.stateQueue.length
         ? mocks.stateQueue.shift()
@@ -124,6 +126,8 @@ describe("settings components", () => {
             enabled: false,
             enabledTools: ["stitchr", "swapr", "clipr", "avatar-photo", "swipr"],
             stitchrTextStyleChoice: "any",
+            stitchrTextColorChoice: "any",
+            stitchrTextBackgroundColorChoice: "any",
             productSelectionMode: "all",
             selectedProductIds: [],
             avatarSelectionMode: "all",
@@ -162,6 +166,8 @@ describe("settings components", () => {
 
     expect(emptyMarkup).toContain("Color mode");
     expect(emptyMarkup).toContain("Daily drafts");
+    expect(emptyMarkup).toContain("Text color");
+    expect(emptyMarkup).toContain("Background color");
     expect(emptyMarkup).toContain("Swipr");
     expect(emptyMarkup).toContain("Contact support");
     expect(emptyMarkup).toContain("Coming soon");
@@ -170,21 +176,24 @@ describe("settings components", () => {
     expect(populatedMarkup).toContain("Default product");
   });
 
-  it("forwards automation setting changes", async () => {
+  it("drafts automation setting changes without saving", () => {
     const onSave = vi.fn(async () => undefined);
+    const preferences: AutomationPreferencesInput = {
+      enabled: false,
+      enabledTools: ["stitchr"],
+      stitchrTextStyleChoice: "any",
+      stitchrTextColorChoice: "any",
+      stitchrTextBackgroundColorChoice: "any",
+      productSelectionMode: "all",
+      selectedProductIds: [],
+      avatarSelectionMode: "all",
+      selectedAvatarIds: [],
+    };
     const tree = SettingsAutomationPanel({
       error: null,
       isLoading: false,
       isSaving: false,
-      preferences: {
-        enabled: false,
-        enabledTools: ["stitchr"],
-        stitchrTextStyleChoice: "any",
-        productSelectionMode: "all",
-        selectedProductIds: [],
-        avatarSelectionMode: "all",
-        selectedAvatarIds: [],
-      },
+      preferences,
       onSave,
     });
     const [enableButton] = findElements(
@@ -203,19 +212,83 @@ describe("settings components", () => {
         typeof element.type === "function" &&
         element.type.name === "AutomationStitchrTextStylePicker",
     );
+    const colorPickers = findElements(
+      tree,
+      (element) =>
+        typeof element.type === "function" &&
+        element.type.name === "AutomationStitchrColorChoicePicker",
+    );
 
-    await (enableButton.props.onClick as () => Promise<void>)();
+    (enableButton.props.onClick as () => void)();
     (stitchrCheckbox.props.onChange as () => void)();
     (stylePicker.props.onChange as (value: "hook") => void)("hook");
+    (colorPickers[0].props.onChange as (value: "#fde047") => void)("#fde047");
+
+    expect(onSave).not.toHaveBeenCalled();
+    expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(
+      expect.objectContaining({
+        preferences: expect.objectContaining({ enabled: true }),
+      }),
+    );
+    expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(
+      expect.objectContaining({
+        preferences: expect.objectContaining({ enabledTools: [] }),
+      }),
+    );
+    expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(
+      expect.objectContaining({
+        preferences: expect.objectContaining({ stitchrTextStyleChoice: "hook" }),
+      }),
+    );
+    expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(
+      expect.objectContaining({
+        preferences: expect.objectContaining({
+          stitchrTextColorChoice: "#fde047",
+        }),
+      }),
+    );
+  });
+
+  it("saves automation drafts from the Save button", async () => {
+    const onSave = vi.fn(async () => undefined);
+    const preferences: AutomationPreferencesInput = {
+      enabled: false,
+      enabledTools: ["stitchr"],
+      stitchrTextStyleChoice: "any",
+      stitchrTextColorChoice: "any",
+      stitchrTextBackgroundColorChoice: "any",
+      productSelectionMode: "all",
+      selectedProductIds: [],
+      avatarSelectionMode: "all",
+      selectedAvatarIds: [],
+    };
+
+    mocks.stateQueue = [
+      {
+        preferences: { ...preferences, enabled: true },
+        preferencesKey: JSON.stringify(preferences),
+      },
+    ];
+
+    const tree = SettingsAutomationPanel({
+      error: null,
+      isLoading: false,
+      isSaving: false,
+      preferences,
+      onSave,
+    });
+    const [saveButton] = findElements(
+      tree,
+      (element) =>
+        typeof element.type === "function" &&
+        element.type.name === "Button" &&
+        element.props?.children === "Save",
+    );
+
+    await (saveButton.props.onClick as () => Promise<void>)();
 
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({ enabled: true }),
-    );
-    expect(onSave).toHaveBeenCalledWith(
-      expect.objectContaining({ enabledTools: [] }),
-    );
-    expect(onSave).toHaveBeenCalledWith(
-      expect.objectContaining({ stitchrTextStyleChoice: "hook" }),
     );
   });
 

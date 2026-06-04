@@ -189,6 +189,8 @@ type StitchrAutomationTaskInput = {
   demoTrimRange: { start: number; end: number };
   demoVideoObject: R2ObjectReference;
   product: ProductProfile;
+  stitchrTextBackgroundColor?: string;
+  stitchrTextColor?: string;
   stitchrTextStyleId: TextOverlayStyleId;
   ugcClipId: string;
   ugcClipName: string;
@@ -485,6 +487,10 @@ function parseStitchrAutomationTaskInput(
       "Stitchr Demo object",
     ),
     product,
+    stitchrTextBackgroundColor: getOptionalString(
+      input.stitchrTextBackgroundColor,
+    ),
+    stitchrTextColor: getOptionalString(input.stitchrTextColor),
     stitchrTextStyleId: getStitchrTextStyleId(input.stitchrTextStyleId),
     ugcClipId: getString(input.ugcClipId, "Stitchr UGC ID"),
     ugcClipName: getString(input.ugcClipName, "Stitchr UGC name"),
@@ -740,6 +746,8 @@ function createStitchrTextOverlay(
   text: string,
   duration: number,
   styleId: TextOverlayStyleId,
+  color: string | undefined,
+  backgroundColor: string | undefined,
 ): TextOverlay {
   return {
     text,
@@ -750,6 +758,8 @@ function createStitchrTextOverlay(
     width: 0.8,
     fontSize: 0.055,
     styleId,
+    ...(color ? { color } : {}),
+    ...(backgroundColor ? { backgroundColor } : {}),
   };
 }
 
@@ -1265,6 +1275,8 @@ async function processStitchr({
     textGeneration.overlayText || textGeneration.filledHook,
     duration,
     input.stitchrTextStyleId,
+    input.stitchrTextColor,
+    input.stitchrTextBackgroundColor,
   );
   const mediaJob = (await client.mutation(
     api.mediaJobs.createStitchrDraftFinalizationFromProvider,

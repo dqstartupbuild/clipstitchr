@@ -102,6 +102,8 @@ function createAutomationState(
       enabled: false,
       enabledTools: ["stitchr", "swapr", "clipr", "avatar-photo", "swipr"],
       stitchrTextStyleChoice: "any",
+      stitchrTextColorChoice: "any",
+      stitchrTextBackgroundColorChoice: "any",
       productSelectionMode: "all",
       selectedProductIds: [],
       avatarSelectionMode: "all",

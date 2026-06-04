@@ -4,15 +4,19 @@ import { useCallback, useMemo, useState } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { automationToolOptions } from "@/lib/clipstitchr/constants/automationToolOptions";
+import { defaultAutomationStitchrColorChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import { filterEnabledAutomationTools } from "@/lib/clipstitchr/utils/filterEnabledAutomationTools";
+import { getAutomationStitchrColorChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 
 const defaultPreferences: AutomationPreferencesInput = {
   enabled: false,
   enabledTools: automationToolOptions.map((tool) => tool.id),
   stitchrTextStyleChoice: defaultAutomationStitchrTextStyleChoice,
+  stitchrTextColorChoice: defaultAutomationStitchrColorChoice,
+  stitchrTextBackgroundColorChoice: defaultAutomationStitchrColorChoice,
   productSelectionMode: "all",
   selectedProductIds: [],
   avatarSelectionMode: "all",
@@ -39,6 +43,12 @@ export function useAutomationPreferences() {
             stitchrTextStyleChoice: getAutomationStitchrTextStyleChoice(
               preferencesDocument.stitchrTextStyleChoice,
             ),
+            stitchrTextColorChoice: getAutomationStitchrColorChoice(
+              preferencesDocument.stitchrTextColorChoice,
+            ),
+            stitchrTextBackgroundColorChoice: getAutomationStitchrColorChoice(
+              preferencesDocument.stitchrTextBackgroundColorChoice,
+            ),
             productSelectionMode: preferencesDocument.productSelectionMode,
             selectedProductIds: preferencesDocument.selectedProductIds,
             avatarSelectionMode: preferencesDocument.avatarSelectionMode,
@@ -60,6 +70,12 @@ export function useAutomationPreferences() {
           ),
           stitchrTextStyleChoice: getAutomationStitchrTextStyleChoice(
             nextPreferences.stitchrTextStyleChoice,
+          ),
+          stitchrTextColorChoice: getAutomationStitchrColorChoice(
+            nextPreferences.stitchrTextColorChoice,
+          ),
+          stitchrTextBackgroundColorChoice: getAutomationStitchrColorChoice(
+            nextPreferences.stitchrTextBackgroundColorChoice,
           ),
           updatedAt: new Date().toISOString(),
         });

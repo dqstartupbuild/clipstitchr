@@ -11,9 +11,13 @@ import type { Id } from "./_generated/dataModel";
 import { mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
+import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
+import { TEXT_OVERLAY_STYLES } from "../lib/clipstitchr/constants/textOverlayStyles";
+import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
+import { resolveAutomationStitchrColor } from "../lib/clipstitchr/utils/resolveAutomationStitchrColor";
 import { resolveAutomationStitchrTextStyleId } from "../lib/clipstitchr/utils/resolveAutomationStitchrTextStyleId";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
@@ -124,6 +128,14 @@ export const planDaily = mutation({
     const stitchrTextStyleChoice = preferences
       ? getAutomationStitchrTextStyleChoice(preferences.stitchrTextStyleChoice)
       : defaultAutomationStitchrTextStyleChoice;
+    const stitchrTextColorChoice = preferences
+      ? getAutomationStitchrColorChoice(preferences.stitchrTextColorChoice)
+      : defaultAutomationStitchrColorChoice;
+    const stitchrTextBackgroundColorChoice = preferences
+      ? getAutomationStitchrColorChoice(
+          preferences.stitchrTextBackgroundColorChoice,
+        )
+      : defaultAutomationStitchrColorChoice;
     const run = await createRun(
       ctx,
       ownerId,
@@ -132,6 +144,8 @@ export const planDaily = mutation({
         preferenceVersion: preferences?.preferenceVersion ?? 0,
         selectedProductIds: preferences?.selectedProductIds ?? [],
         stitchrTextStyleChoice,
+        stitchrTextColorChoice,
+        stitchrTextBackgroundColorChoice,
       }),
       now,
     );
@@ -337,6 +351,19 @@ export const planDaily = mutation({
         stitchrTextStyleChoice,
         `${ownerId}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}`,
       );
+      const stitchrTextStyle = TEXT_OVERLAY_STYLES.find(
+        (style) => style.id === stitchrTextStyleId,
+      );
+      const stitchrTextColor = resolveAutomationStitchrColor(
+        stitchrTextColorChoice,
+        `${ownerId}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:text`,
+      );
+      const stitchrTextBackgroundColor = stitchrTextStyle?.backgroundColor
+        ? resolveAutomationStitchrColor(
+            stitchrTextBackgroundColorChoice,
+            `${ownerId}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:background`,
+          )
+        : undefined;
 
       await ctx.db.insert("automationTasks", {
         ownerId,
@@ -378,6 +405,10 @@ export const planDaily = mutation({
           selectedScore: selectedPair.score,
           stitchrTextStyleChoice,
           stitchrTextStyleId,
+          stitchrTextColorChoice,
+          stitchrTextColor,
+          stitchrTextBackgroundColorChoice,
+          stitchrTextBackgroundColor,
         }),
         outputAssetIds: [],
         providerJobIds: [],

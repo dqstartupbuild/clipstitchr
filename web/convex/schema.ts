@@ -363,6 +363,8 @@ export default defineSchema({
     stitchrTextStyleChoice: v.optional(
       automationStitchrTextStyleChoiceValidator,
     ),
+    stitchrTextColorChoice: v.optional(v.string()),
+    stitchrTextBackgroundColorChoice: v.optional(v.string()),
     productSelectionMode: automationSelectionModeValidator,
     selectedProductIds: v.array(v.string()),
     avatarSelectionMode: automationSelectionModeValidator,

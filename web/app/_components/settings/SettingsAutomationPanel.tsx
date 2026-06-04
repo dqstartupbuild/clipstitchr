@@ -1,11 +1,18 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import { Bot, Clock } from "lucide-react";
+import { AutomationStitchrColorChoicePicker } from "@/app/_components/settings/AutomationStitchrColorChoicePicker";
 import { AutomationStitchrTextStylePicker } from "@/app/_components/settings/AutomationStitchrTextStylePicker";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { automationToolOptions } from "@/lib/clipstitchr/constants/automationToolOptions";
+import { TEXT_OVERLAY_STYLES } from "@/lib/clipstitchr/constants/textOverlayStyles";
+import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
 import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import type { AutomationTool } from "@/lib/clipstitchr/types/AutomationTool";
+import { getCssColorHex } from "@/lib/clipstitchr/utils/getCssColorHex";
 
 type SettingsAutomationPanelProps = {
   error: string | null;
@@ -21,6 +28,10 @@ function toggleTool(tools: AutomationTool[], tool: AutomationTool) {
     : [...tools, tool];
 }
 
+function getAutomationPreferencesKey(preferences: AutomationPreferencesInput) {
+  return JSON.stringify(preferences);
+}
+
 export function SettingsAutomationPanel({
   error,
   isLoading,
@@ -28,22 +39,88 @@ export function SettingsAutomationPanel({
   preferences,
   onSave,
 }: SettingsAutomationPanelProps) {
-  const handleEnabledChange = async () => {
-    await onSave({ ...preferences, enabled: !preferences.enabled });
+  const preferencesKey = useMemo(
+    () => getAutomationPreferencesKey(preferences),
+    [preferences],
+  );
+  const [draftState, setDraftState] = useState({
+    preferences,
+    preferencesKey,
+  });
+  const draftPreferences =
+    draftState.preferencesKey === preferencesKey
+      ? draftState.preferences
+      : preferences;
+  const draftPreferencesKey = useMemo(
+    () => getAutomationPreferencesKey(draftPreferences),
+    [draftPreferences],
+  );
+  const selectedTextStyle =
+    draftPreferences.stitchrTextStyleChoice === "any"
+      ? undefined
+      : TEXT_OVERLAY_STYLES.find(
+          (style) => style.id === draftPreferences.stitchrTextStyleChoice,
+        );
+  const showsBackgroundColor =
+    draftPreferences.stitchrTextStyleChoice === "any" ||
+    Boolean(selectedTextStyle?.backgroundColor);
+  const textColorFallback = getCssColorHex(
+    selectedTextStyle?.color ?? "#ffffff",
+    "#ffffff",
+  );
+  const backgroundColorFallback = getCssColorHex(
+    selectedTextStyle?.backgroundColor ?? "rgba(2, 6, 23, 0.72)",
+    "#020617",
+  );
+  const hasChanges = preferencesKey !== draftPreferencesKey;
+
+  if (draftState.preferencesKey !== preferencesKey) {
+    setDraftState({ preferences, preferencesKey });
+  }
+
+  const updateDraftPreferences = (
+    nextPreferences: AutomationPreferencesInput,
+  ) => {
+    setDraftState({ preferences: nextPreferences, preferencesKey });
   };
-  const handleToolChange = async (tool: AutomationTool) => {
-    await onSave({
-      ...preferences,
-      enabledTools: toggleTool(preferences.enabledTools, tool),
+  const handleEnabledChange = () => {
+    updateDraftPreferences({
+      ...draftPreferences,
+      enabled: !draftPreferences.enabled,
     });
   };
-  const handleStitchrTextStyleChange = async (
+  const handleToolChange = (tool: AutomationTool) => {
+    updateDraftPreferences({
+      ...draftPreferences,
+      enabledTools: toggleTool(draftPreferences.enabledTools, tool),
+    });
+  };
+  const handleStitchrTextStyleChange = (
     stitchrTextStyleChoice: AutomationStitchrTextStyleChoice,
   ) => {
-    await onSave({
-      ...preferences,
+    updateDraftPreferences({
+      ...draftPreferences,
       stitchrTextStyleChoice,
     });
+  };
+  const handleStitchrTextColorChange = (
+    stitchrTextColorChoice: AutomationStitchrColorChoice,
+  ) => {
+    updateDraftPreferences({
+      ...draftPreferences,
+      stitchrTextColorChoice,
+    });
+  };
+  const handleStitchrBackgroundColorChange = (
+    stitchrTextBackgroundColorChoice: AutomationStitchrColorChoice,
+  ) => {
+    updateDraftPreferences({
+      ...draftPreferences,
+      stitchrTextBackgroundColorChoice,
+    });
+  };
+  const handleSave = async () => {
+    await onSave(draftPreferences);
   };
 
   return (
@@ -65,12 +142,11 @@ export function SettingsAutomationPanel({
           </div>
           <Button
             type="button"
-            variant={preferences.enabled ? "secondary" : "primary"}
-            isLoading={isSaving}
-            disabled={isLoading}
+            variant={draftPreferences.enabled ? "secondary" : "primary"}
+            disabled={isLoading || isSaving}
             onClick={handleEnabledChange}
           >
-            {preferences.enabled ? "Pause" : "Enable"}
+            {draftPreferences.enabled ? "Pause" : "Enable"}
           </Button>
         </div>
         <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm text-text-secondary">
@@ -86,9 +162,9 @@ export function SettingsAutomationPanel({
               <input
                 type="checkbox"
                 className="h-4 w-4 accent-accent"
-                checked={preferences.enabledTools.includes(tool.id)}
+                checked={draftPreferences.enabledTools.includes(tool.id)}
                 disabled={isLoading || isSaving}
-                onChange={() => void handleToolChange(tool.id)}
+                onChange={() => handleToolChange(tool.id)}
               />
               {tool.label}
             </label>
@@ -100,11 +176,40 @@ export function SettingsAutomationPanel({
           </p>
           <AutomationStitchrTextStylePicker
             disabled={isLoading || isSaving}
-            value={preferences.stitchrTextStyleChoice}
-            onChange={(value) => void handleStitchrTextStyleChange(value)}
+            value={draftPreferences.stitchrTextStyleChoice}
+            onChange={handleStitchrTextStyleChange}
           />
         </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <AutomationStitchrColorChoicePicker
+            disabled={isLoading || isSaving}
+            fallbackColor={textColorFallback}
+            label="Text color"
+            value={draftPreferences.stitchrTextColorChoice}
+            onChange={handleStitchrTextColorChange}
+          />
+          {showsBackgroundColor ? (
+            <AutomationStitchrColorChoicePicker
+              disabled={isLoading || isSaving}
+              fallbackColor={backgroundColorFallback}
+              label="Background color"
+              value={draftPreferences.stitchrTextBackgroundColorChoice}
+              onChange={handleStitchrBackgroundColorChange}
+            />
+          ) : null}
+        </div>
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="primary"
+            isLoading={isSaving}
+            disabled={isLoading || isSaving || !hasChanges}
+            onClick={handleSave}
+          >
+            Save
+          </Button>
+        </div>
       </div>
     </Panel>
   );

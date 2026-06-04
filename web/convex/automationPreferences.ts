@@ -2,7 +2,9 @@ import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
+import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
+import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { rateLimiter } from "./rateLimiter";
 import { automationSelectionModeValidator } from "./validators/automationSelectionMode";
@@ -31,6 +33,12 @@ export const get = query({
           stitchrTextStyleChoice: getAutomationStitchrTextStyleChoice(
             preferences.stitchrTextStyleChoice,
           ),
+          stitchrTextColorChoice: getAutomationStitchrColorChoice(
+            preferences.stitchrTextColorChoice,
+          ),
+          stitchrTextBackgroundColorChoice: getAutomationStitchrColorChoice(
+            preferences.stitchrTextBackgroundColorChoice,
+          ),
         }
       : null;
   },
@@ -43,6 +51,8 @@ export const save = mutation({
     stitchrTextStyleChoice: v.optional(
       automationStitchrTextStyleChoiceValidator,
     ),
+    stitchrTextColorChoice: v.optional(v.string()),
+    stitchrTextBackgroundColorChoice: v.optional(v.string()),
     productSelectionMode: automationSelectionModeValidator,
     selectedProductIds: v.array(v.string()),
     avatarSelectionMode: automationSelectionModeValidator,
@@ -73,6 +83,13 @@ export const save = mutation({
       enabledTools: filterEnabledAutomationTools(args.enabledTools),
       stitchrTextStyleChoice:
         args.stitchrTextStyleChoice ?? defaultAutomationStitchrTextStyleChoice,
+      stitchrTextColorChoice: getAutomationStitchrColorChoice(
+        args.stitchrTextColorChoice ?? defaultAutomationStitchrColorChoice,
+      ),
+      stitchrTextBackgroundColorChoice: getAutomationStitchrColorChoice(
+        args.stitchrTextBackgroundColorChoice ??
+          defaultAutomationStitchrColorChoice,
+      ),
       productSelectionMode: args.productSelectionMode,
       selectedProductIds:
         args.productSelectionMode === "selected" ? productIds : [],
