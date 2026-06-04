@@ -26,7 +26,22 @@ const mocks = vi.hoisted(() => ({
     updateClipMetadata: vi.fn(),
     updateClipTrimRange: vi.fn(),
     updateStitchMusic: vi.fn(),
+    updateStitchSourceSettings: vi.fn(),
     updateStitchTextOverlay: vi.fn(),
+    videoGroups: {
+      clipr: {
+        clips: [],
+      },
+      demo: {
+        clips: [],
+      },
+      swapr: {
+        clips: [],
+      },
+      ugc: {
+        clips: [],
+      },
+    },
   },
   photoLibraryState: {
     avatars: [],
@@ -137,6 +152,20 @@ describe("DashboardPageClient", () => {
         cliprMetadata: {},
       },
     ] as never;
+    mocks.clipLibraryState.videoGroups = {
+      clipr: {
+        clips: [mocks.clipLibraryState.clips[2]],
+      },
+      demo: {
+        clips: [mocks.clipLibraryState.clips[1]],
+      },
+      swapr: {
+        clips: [],
+      },
+      ugc: {
+        clips: [mocks.clipLibraryState.clips[0]],
+      },
+    } as never;
     mocks.clipLibraryState.error = null;
     mocks.clipLibraryState.stitches = [
       {

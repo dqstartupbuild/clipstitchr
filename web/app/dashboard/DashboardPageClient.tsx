@@ -17,6 +17,7 @@ import { getRecentAvatarPhotos } from "@/lib/clipstitchr/utils/getRecentAvatarPh
 import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
 import { getRecentSwiprSwipes } from "@/lib/clipstitchr/utils/getRecentSwiprSwipes";
 import { getRecentVideoClips } from "@/lib/clipstitchr/utils/getRecentVideoClips";
+import { getStitchrUgcSourceClips } from "@/lib/clipstitchr/utils/getStitchrUgcSourceClips";
 
 const RECENT_DASHBOARD_ITEM_LIMIT = 4;
 
@@ -36,6 +37,19 @@ export function DashboardPageClient() {
         RECENT_DASHBOARD_ITEM_LIMIT,
     ),
     [library.stitches],
+  );
+  const stitchrUgcClips = useMemo(
+    () =>
+      getStitchrUgcSourceClips(
+        library.videoGroups.ugc.clips,
+        library.videoGroups.clipr.clips,
+        library.videoGroups.swapr.clips,
+      ),
+    [
+      library.videoGroups.clipr.clips,
+      library.videoGroups.swapr.clips,
+      library.videoGroups.ugc.clips,
+    ],
   );
   const recentSwipes = useMemo(() => {
     const backgroundIds = new Set(
@@ -76,13 +90,16 @@ export function DashboardPageClient() {
           stitchesCount={library.counts.stitches}
         />
         <RecentStitchesSection
+          demoClips={library.videoGroups.demo.clips}
           stitches={recentStitches}
           onDelete={library.removeStitch}
           onGenerateMusic={library.generateStitchMusic}
           onLoadClip={library.loadClip}
           onLoadPoster={library.loadStitchPoster}
           onUpdateMusic={library.updateStitchMusic}
+          onUpdateSourceSettings={library.updateStitchSourceSettings}
           onUpdateTextOverlay={library.updateStitchTextOverlay}
+          ugcClips={stitchrUgcClips}
         />
         <RecentSwipesSection
           backgrounds={swiprLibrary.backgrounds}

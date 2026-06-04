@@ -7,6 +7,7 @@ import {
   updateMusic,
   updatePoster,
   updateRenderedVideo,
+  updateSourceSettings,
   updateTextOverlay,
 } from "./stitches";
 
@@ -150,11 +151,14 @@ describe("convex stitches", () => {
     );
   });
 
-  it("updates poster, rendered video, music, and text overlay", async () => {
+  it("updates poster, rendered video, source settings, music, and text overlay", async () => {
     const setup = createCtx([
       { _id: "doc_1", id: "stitch_1" },
       { _id: "doc_1", id: "stitch_1" },
       { _id: "doc_1", id: "stitch_1" },
+      { _id: "doc_1", id: "stitch_1" },
+      { id: "ugc_2", clipType: "ugc", name: "UGC 2" },
+      { id: "demo_2", clipType: "demo", name: "Demo 2" },
       { _id: "doc_1", id: "stitch_1" },
     ]);
 
@@ -173,6 +177,26 @@ describe("convex stitches", () => {
       id: "stitch_1",
       music: null,
     });
+    await getHandler(updateSourceSettings)(setup.ctx, {
+      id: "stitch_1",
+      demoClipId: "demo_2",
+      demoClipName: "Demo 2",
+      demoPlaybackRate: 2,
+      demoTrimRange: {
+        end: 8,
+        start: 2,
+      },
+      duration: 9,
+      name: "updated-stitch.mp4",
+      posterObject: null,
+      ugcClipId: "ugc_2",
+      ugcClipName: "UGC 2",
+      ugcPlaybackRate: 1,
+      ugcTrimRange: {
+        end: 3,
+        start: 0,
+      },
+    });
     await getHandler(updateTextOverlay)(setup.ctx, {
       id: "stitch_1",
       textOverlay: null,
@@ -189,6 +213,19 @@ describe("convex stitches", () => {
     expect(setup.ctx.db.patch).toHaveBeenCalledWith("doc_1", {
       music: undefined,
     });
+    expect(setup.ctx.db.patch).toHaveBeenCalledWith(
+      "doc_1",
+      expect.objectContaining({
+        demoClipId: "demo_2",
+        demoPlaybackRate: 2,
+        mimeType: undefined,
+        posterObject: undefined,
+        size: undefined,
+        stitchObject: undefined,
+        ugcClipId: "ugc_2",
+        ugcPlaybackRate: 1,
+      }),
+    );
     expect(setup.ctx.db.patch).toHaveBeenCalledWith("doc_1", {
       textOverlay: undefined,
     });

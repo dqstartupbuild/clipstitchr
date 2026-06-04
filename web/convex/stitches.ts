@@ -378,6 +378,106 @@ export const updateMusic = mutation({
   },
 });
 
+export const updateSourceSettings = mutation({
+  args: {
+    id: v.string(),
+    name: v.string(),
+    ugcClipId: v.string(),
+    demoClipId: v.string(),
+    ugcClipName: v.string(),
+    demoClipName: v.string(),
+    ugcTrimRange: videoTrimRangeValidator,
+    demoTrimRange: videoTrimRangeValidator,
+    duration: v.number(),
+    ugcPlaybackRate: videoPlaybackRateValidator,
+    demoPlaybackRate: videoPlaybackRateValidator,
+    posterObject: v.optional(v.union(r2ObjectValidator, v.null())),
+    posterVersion: v.optional(v.number()),
+  },
+  handler: async (
+    ctx,
+    {
+      id,
+      name,
+      ugcClipId,
+      demoClipId,
+      ugcTrimRange,
+      demoTrimRange,
+      duration,
+      ugcPlaybackRate,
+      demoPlaybackRate,
+      posterObject,
+      posterVersion,
+    },
+  ) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    if (stitch.mode === "longr" && stitch.sequenceSegments?.length) {
+      throw new Error("Longr stitches do not support UGC and demo source edits.");
+    }
+
+    const [ugcClip, demoClip] = await Promise.all([
+      ctx.db
+        .query("videoClips")
+        .withIndex("by_owner_id", (q) =>
+          q.eq("ownerId", ownerId).eq("id", ugcClipId),
+        )
+        .unique(),
+      ctx.db
+        .query("videoClips")
+        .withIndex("by_owner_id", (q) =>
+          q.eq("ownerId", ownerId).eq("id", demoClipId),
+        )
+        .unique(),
+    ]);
+
+    if (!ugcClip || ugcClip.clipType !== "ugc") {
+      throw new Error("UGC source clip not found.");
+    }
+
+    if (!demoClip || demoClip.clipType !== "demo") {
+      throw new Error("Demo source clip not found.");
+    }
+
+    await ctx.db.patch(stitch._id, {
+      demoClipId,
+      demoClipName: demoClip.name,
+      demoPlaybackRate,
+      demoTrimRange,
+      duration,
+      mimeType: undefined,
+      name,
+      posterObject: posterObject ?? undefined,
+      posterVersion: posterObject ? posterVersion : undefined,
+      size: undefined,
+      stitchObject: undefined,
+      ugcClipId,
+      ugcClipName: ugcClip.name,
+      ugcPlaybackRate,
+      ugcTrimRange,
+    });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+    }
+  },
+});
+
 export const updateTextOverlay = mutation({
   args: {
     id: v.string(),

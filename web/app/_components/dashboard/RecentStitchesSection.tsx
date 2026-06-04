@@ -5,10 +5,13 @@ import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
 type RecentStitchesSectionProps = {
+  demoClips: VideoClipMetadata[];
   stitches: Stitch[];
   onDelete: (id: string) => void | Promise<void>;
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
@@ -18,20 +21,28 @@ type RecentStitchesSectionProps = {
     stitch: Stitch,
     music: StitchMusicMetadata | null,
   ) => void | Promise<void>;
+  onUpdateSourceSettings: (
+    stitch: Stitch,
+    update: StitchSourceSettingsUpdate,
+  ) => void | Promise<void>;
   onUpdateTextOverlay: (
     stitch: Stitch,
     textOverlay: TextOverlay | TextOverlay[] | null,
   ) => void | Promise<void>;
+  ugcClips: VideoClipMetadata[];
 };
 
 export function RecentStitchesSection({
+  demoClips,
   stitches,
   onDelete,
   onGenerateMusic,
   onLoadClip,
   onLoadPoster,
   onUpdateMusic,
+  onUpdateSourceSettings,
   onUpdateTextOverlay,
+  ugcClips,
 }: RecentStitchesSectionProps) {
   return (
     <section id="recent-stitches">
@@ -52,12 +63,15 @@ export function RecentStitchesSection({
             <StitchCard
               key={stitch.id}
               stitch={stitch}
+              demoClips={demoClips}
               onDelete={onDelete}
               onGenerateMusic={onGenerateMusic}
               onLoadClip={onLoadClip}
               onLoadPoster={onLoadPoster}
               onUpdateMusic={onUpdateMusic}
+              onUpdateSourceSettings={onUpdateSourceSettings}
               onUpdateTextOverlay={onUpdateTextOverlay}
+              ugcClips={ugcClips}
             />
           ))}
         </div>

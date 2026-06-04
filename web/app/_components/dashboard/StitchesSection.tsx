@@ -11,10 +11,13 @@ import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDe
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
 type StitchesSectionProps = {
+  demoClips: VideoClipMetadata[];
   stitches: Stitch[];
   emptyDescription?: string;
   emptyTitle?: string;
@@ -32,13 +35,19 @@ type StitchesSectionProps = {
     stitch: Stitch,
     music: StitchMusicMetadata | null,
   ) => void | Promise<void>;
+  onUpdateSourceSettings: (
+    stitch: Stitch,
+    update: StitchSourceSettingsUpdate,
+  ) => void | Promise<void>;
   onUpdateTextOverlay: (
     stitch: Stitch,
     textOverlay: TextOverlay | TextOverlay[] | null,
   ) => void | Promise<void>;
+  ugcClips: VideoClipMetadata[];
 };
 
 export function StitchesSection({
+  demoClips,
   stitches,
   emptyDescription = "Stitch a video after you have at least one UGC and one demo video.",
   emptyTitle = "No stitches yet",
@@ -53,7 +62,9 @@ export function StitchesSection({
   onLoadMoreItems,
   onLoadPoster,
   onUpdateMusic,
+  onUpdateSourceSettings,
   onUpdateTextOverlay,
+  ugcClips,
 }: StitchesSectionProps) {
   const pagination = usePagination(stitches, {
     pageSize: uploadLibraryPageSize,
@@ -102,6 +113,7 @@ export function StitchesSection({
               <StitchCard
                 key={stitch.id}
                 stitch={stitch}
+                demoClips={demoClips}
                 isSelected={batchDelete.selectedIds.has(stitch.id)}
                 isSelectionDisabled={batchDelete.isDeletingSelected}
                 onDelete={onDelete}
@@ -114,7 +126,9 @@ export function StitchesSection({
                     : undefined
                 }
                 onUpdateMusic={onUpdateMusic}
+                onUpdateSourceSettings={onUpdateSourceSettings}
                 onUpdateTextOverlay={onUpdateTextOverlay}
+                ugcClips={ugcClips}
               />
             ))}
           </div>

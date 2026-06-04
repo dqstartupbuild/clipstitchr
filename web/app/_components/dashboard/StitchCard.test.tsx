@@ -5,6 +5,7 @@ import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 
@@ -23,8 +24,12 @@ const mocks = vi.hoisted(() => ({
     onLoadPreview: () => void;
     onRemoveMusic: () => Promise<void>;
     onSaveMusic: (music: StitchMusicMetadata) => Promise<void>;
+    onSaveSourceSettings: (
+      update: StitchSourceSettingsUpdate,
+    ) => Promise<void>;
     onSaveTextOverlay: (
       textOverlay: TextOverlay | TextOverlay[] | null,
+      stitchOverride?: Stitch,
     ) => Promise<void>;
   },
   lazyObjectUrlOptions: null as null | { loadBlob: () => Promise<Blob | null> },
@@ -206,6 +211,27 @@ function createClip(id: string): VideoClip {
   };
 }
 
+function createSourceSettingsUpdate(): StitchSourceSettingsUpdate {
+  return {
+    demoClipId: "demo_2",
+    demoClipName: "demo_2",
+    demoPlaybackRate: 2,
+    demoTrimRange: {
+      end: 5,
+      start: 1,
+    },
+    duration: 7,
+    name: "updated-stitch.mp4",
+    ugcClipId: "ugc_2",
+    ugcClipName: "ugc_2",
+    ugcPlaybackRate: 1,
+    ugcTrimRange: {
+      end: 3,
+      start: 0,
+    },
+  };
+}
+
 type ElementLike = {
   props?: Record<string, unknown>;
   type?: unknown;
@@ -254,6 +280,7 @@ describe("StitchCard", () => {
         onGenerateMusic={vi.fn()}
         onLoadClip={vi.fn()}
         onUpdateMusic={vi.fn()}
+        onUpdateSourceSettings={vi.fn()}
         onUpdateTextOverlay={vi.fn()}
       />,
     );
@@ -279,6 +306,7 @@ describe("StitchCard", () => {
         onLoadClip: vi.fn(),
         onLoadPoster,
         onUpdateMusic: vi.fn(),
+        onUpdateSourceSettings: vi.fn(),
         onUpdateTextOverlay: vi.fn(),
       }),
     );
@@ -304,6 +332,7 @@ describe("StitchCard", () => {
     const onGenerateMusic = vi.fn(async () => createStitchMusic());
     const onLoadClip = vi.fn(async (id: string) => createClip(id));
     const onUpdateMusic = vi.fn(async () => undefined);
+    const onUpdateSourceSettings = vi.fn(async () => undefined);
     const onUpdateTextOverlay = vi.fn(async () => undefined);
 
     mocks.stateQueue = [
@@ -316,6 +345,8 @@ describe("StitchCard", () => {
       false,
       false,
       false,
+      false,
+      null,
       null,
       null,
       null,
@@ -328,6 +359,7 @@ describe("StitchCard", () => {
         onGenerateMusic={onGenerateMusic}
         onLoadClip={onLoadClip}
         onUpdateMusic={onUpdateMusic}
+        onUpdateSourceSettings={onUpdateSourceSettings}
         onUpdateTextOverlay={onUpdateTextOverlay}
       />,
     );
@@ -338,6 +370,7 @@ describe("StitchCard", () => {
     await mocks.editProps?.onGenerateMusic();
     await mocks.editProps?.onSaveMusic(createStitchMusic());
     await mocks.editProps?.onRemoveMusic();
+    await mocks.editProps?.onSaveSourceSettings(createSourceSettingsUpdate());
     await mocks.editProps?.onSaveTextOverlay(null);
     mocks.editProps?.onClose();
     mocks.actionItems.find((item) => item.label === "Download stitch")?.onClick?.();
@@ -351,6 +384,10 @@ describe("StitchCard", () => {
     expect(onLoadClip).toHaveBeenCalledWith("demo_1");
     expect(onGenerateMusic).toHaveBeenCalled();
     expect(onUpdateMusic).toHaveBeenCalled();
+    expect(onUpdateSourceSettings).toHaveBeenCalledWith(
+      createStitch(),
+      createSourceSettingsUpdate(),
+    );
     expect(onUpdateTextOverlay).toHaveBeenCalledWith(createStitch(), null);
     expect(mocks.createStitchExportBlob).toHaveBeenCalled();
     expect(mocks.downloadBlob).toHaveBeenCalledWith(
@@ -381,6 +418,8 @@ describe("StitchCard", () => {
       false,
       false,
       false,
+      false,
+      null,
       null,
       null,
       null,
@@ -393,6 +432,7 @@ describe("StitchCard", () => {
         onGenerateMusic={onGenerateMusic}
         onLoadClip={vi.fn()}
         onUpdateMusic={vi.fn()}
+        onUpdateSourceSettings={vi.fn()}
         onUpdateTextOverlay={vi.fn()}
       />,
     );
@@ -417,6 +457,9 @@ describe("StitchCard", () => {
     const onUpdateMusic = vi.fn(async () => {
       throw new Error("music update failed");
     });
+    const onUpdateSourceSettings = vi.fn(async () => {
+      throw new Error("source update failed");
+    });
     const onUpdateTextOverlay = vi.fn(async () => {
       throw new Error("text update failed");
     });
@@ -431,6 +474,8 @@ describe("StitchCard", () => {
       false,
       false,
       false,
+      false,
+      null,
       null,
       null,
       null,
@@ -443,6 +488,7 @@ describe("StitchCard", () => {
         onGenerateMusic={vi.fn()}
         onLoadClip={onLoadClip}
         onUpdateMusic={onUpdateMusic}
+        onUpdateSourceSettings={onUpdateSourceSettings}
         onUpdateTextOverlay={onUpdateTextOverlay}
       />,
     );
@@ -451,6 +497,9 @@ describe("StitchCard", () => {
     await expect(mocks.editProps?.onSaveMusic(createStitchMusic())).rejects.toThrow(
       "music update failed",
     );
+    await expect(
+      mocks.editProps?.onSaveSourceSettings(createSourceSettingsUpdate()),
+    ).rejects.toThrow("source update failed");
     await expect(mocks.editProps?.onSaveTextOverlay(null)).rejects.toThrow(
       "text update failed",
     );
@@ -458,6 +507,7 @@ describe("StitchCard", () => {
 
     expect(onLoadClip).toHaveBeenCalledWith("ugc_1");
     expect(onUpdateMusic).toHaveBeenCalled();
+    expect(onUpdateSourceSettings).toHaveBeenCalled();
     expect(onUpdateTextOverlay).toHaveBeenCalled();
   });
 });

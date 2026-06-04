@@ -13,12 +13,17 @@ import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExp
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { StitchPreviewErrorState } from "@/lib/clipstitchr/types/StitchPreviewErrorState";
+import type { StitchPreviewSources } from "@/lib/clipstitchr/types/StitchPreviewSources";
+import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { createStitchPreviewCacheKey } from "@/lib/clipstitchr/utils/createStitchPreviewCacheKey";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { getUseInSwaprStitchHref } from "@/lib/clipstitchr/utils/getUseInSwaprStitchHref";
@@ -27,6 +32,7 @@ import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent
 
 type StitchCardProps = {
   stitch: Stitch;
+  demoClips?: VideoClipMetadata[];
   isSelected?: boolean;
   isSelectionDisabled?: boolean;
   onDelete: (id: string) => void | Promise<void>;
@@ -38,14 +44,20 @@ type StitchCardProps = {
     stitch: Stitch,
     music: StitchMusicMetadata | null,
   ) => void | Promise<void>;
+  onUpdateSourceSettings: (
+    stitch: Stitch,
+    update: StitchSourceSettingsUpdate,
+  ) => void | Promise<void>;
   onUpdateTextOverlay: (
     stitch: Stitch,
     textOverlay: TextOverlay | TextOverlay[] | null,
   ) => void | Promise<void>;
+  ugcClips?: VideoClipMetadata[];
 };
 
 export function StitchCard({
   stitch,
+  demoClips = [],
   isSelected = false,
   isSelectionDisabled = false,
   onDelete,
@@ -54,22 +66,20 @@ export function StitchCard({
   onLoadPoster,
   onSelect,
   onUpdateMusic,
+  onUpdateSourceSettings,
   onUpdateTextOverlay,
+  ugcClips = [],
 }: StitchCardProps) {
-  const [previewState, setPreviewState] = useState<{
-    demoClip: VideoClip;
-    cacheKey: string;
-    ugcClip: VideoClip;
-  } | null>(null);
-  const [previewErrorState, setPreviewErrorState] = useState<{
-    cacheKey: string;
-    message: string;
-  } | null>(null);
-  const previewCacheKey = [
+  const [previewState, setPreviewState] = useState<StitchPreviewSources | null>(
+    null,
+  );
+  const [previewErrorState, setPreviewErrorState] =
+    useState<StitchPreviewErrorState | null>(null);
+  const previewCacheKey = createStitchPreviewCacheKey(
     stitch.id,
     stitch.ugcClipId,
     stitch.demoClipId,
-  ].join(":");
+  );
   const previewSources =
     previewState?.cacheKey === previewCacheKey ? previewState : null;
   const previewError =
@@ -103,15 +113,28 @@ export function StitchCard({
   const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
   const [isSavingMusic, setIsSavingMusic] = useState(false);
   const [isSavingText, setIsSavingText] = useState(false);
+  const [isSavingSourceSettings, setIsSavingSourceSettings] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [musicError, setMusicError] = useState<string | null>(null);
   const [textError, setTextError] = useState<string | null>(null);
+  const [sourceSettingsError, setSourceSettingsError] = useState<string | null>(
+    null,
+  );
   const fileSizeLabel = stitch.size
     ? formatBytes(stitch.size)
     : "Ready to download";
 
-  const loadPreview = async () => {
-    if (previewSources || isLoadingPreview) {
+  const loadPreview = async (
+    ugcClipId = stitch.ugcClipId,
+    demoClipId = stitch.demoClipId,
+  ) => {
+    const cacheKey = createStitchPreviewCacheKey(
+      stitch.id,
+      ugcClipId,
+      demoClipId,
+    );
+
+    if (previewState?.cacheKey === cacheKey || isLoadingPreview) {
       return;
     }
 
@@ -120,8 +143,8 @@ export function StitchCard({
 
     try {
       const [ugcClip, demoClip] = await Promise.all([
-        onLoadClip(stitch.ugcClipId),
-        onLoadClip(stitch.demoClipId),
+        onLoadClip(ugcClipId),
+        onLoadClip(demoClipId),
       ]);
 
       if (!ugcClip || !demoClip) {
@@ -129,13 +152,13 @@ export function StitchCard({
       }
 
       setPreviewState({
-        cacheKey: previewCacheKey,
+        cacheKey,
         demoClip,
         ugcClip,
       });
     } catch (nextError) {
       setPreviewErrorState({
-        cacheKey: previewCacheKey,
+        cacheKey,
         message:
           nextError instanceof Error
             ? nextError.message
@@ -239,12 +262,13 @@ export function StitchCard({
   };
   const handleUpdateTextOverlay = async (
     textOverlay: TextOverlay | TextOverlay[] | null,
+    stitchOverride = stitch,
   ) => {
     setIsSavingText(true);
     setTextError(null);
 
     try {
-      await onUpdateTextOverlay(stitch, textOverlay);
+      await onUpdateTextOverlay(stitchOverride, textOverlay);
     } catch (nextError) {
       setTextError(
         nextError instanceof Error
@@ -254,6 +278,25 @@ export function StitchCard({
       throw nextError;
     } finally {
       setIsSavingText(false);
+    }
+  };
+  const handleUpdateSourceSettings = async (
+    update: StitchSourceSettingsUpdate,
+  ) => {
+    setIsSavingSourceSettings(true);
+    setSourceSettingsError(null);
+
+    try {
+      await onUpdateSourceSettings(stitch, update);
+    } catch (nextError) {
+      setSourceSettingsError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to update stitch sources.",
+      );
+      throw nextError;
+    } finally {
+      setIsSavingSourceSettings(false);
     }
   };
   const actionItems: MediaCardActionMenuItem[] = [
@@ -380,24 +423,28 @@ export function StitchCard({
       ) : null}
       {isEditOpen ? (
         <StitchEditDialog
-          demoClip={previewSources?.demoClip ?? null}
+          demoClips={demoClips}
           isGeneratingMusic={isGeneratingMusic}
           isLoadingPreview={isLoadingPreview}
           isSavingMusic={isSavingMusic}
+          isSavingSourceSettings={isSavingSourceSettings}
           isSavingText={isSavingText}
           musicError={musicError}
           posterUrl={posterUrl}
-          previewError={previewError}
+          previewErrorState={previewErrorState}
+          previewSources={previewState}
+          sourceSettingsError={sourceSettingsError}
           stitch={stitch}
           textError={textError}
-          ugcClip={previewSources?.ugcClip ?? null}
+          ugcClips={ugcClips}
           onClose={() => setIsEditOpen(false)}
           onGenerateMusic={handleGenerateMusic}
-          onLoadPreview={() => {
-            void loadPreview();
+          onLoadPreview={(ugcClipId, demoClipId) => {
+            void loadPreview(ugcClipId, demoClipId);
           }}
           onRemoveMusic={() => handleUpdateMusic(null)}
           onSaveMusic={handleUpdateMusic}
+          onSaveSourceSettings={handleUpdateSourceSettings}
           onSaveTextOverlay={handleUpdateTextOverlay}
         />
       ) : null}

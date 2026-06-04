@@ -281,6 +281,7 @@ describe("UploadsPageClient", () => {
       updateCliprMusic: vi.fn(),
       updateClipTrimRange: vi.fn(),
       updateStitchMusic: vi.fn(),
+      updateStitchSourceSettings: vi.fn(),
       updateStitchTextOverlay: vi.fn(),
       videoGroups: {
         clipr: {

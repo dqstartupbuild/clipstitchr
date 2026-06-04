@@ -30,6 +30,7 @@ import type { ClipLibraryValue } from "@/lib/clipstitchr/types/ClipLibraryValue"
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -99,6 +100,9 @@ export function useClipLibraryState(): ClipLibraryValue {
   const updateCliprMusicMutation = useMutation(api.videoClips.updateCliprMusic);
   const updateStitchMusicMutation = useMutation(api.stitches.updateMusic);
   const updateStitchPosterMutation = useMutation(api.stitches.updatePoster);
+  const updateStitchSourceSettingsMutation = useMutation(
+    api.stitches.updateSourceSettings,
+  );
   const updateStitchTextOverlayMutation = useMutation(
     api.stitches.updateTextOverlay,
   );
@@ -527,6 +531,63 @@ export function useClipLibraryState(): ClipLibraryValue {
     [refresh, updateStitchMusicMutation],
   );
 
+  const updateStitchSourceSettings = useCallback(
+    async (stitch: Stitch, update: StitchSourceSettingsUpdate) => {
+      let posterObject: R2ObjectReference | null = null;
+      const nextTextOverlays = getNonEmptyTextOverlays(
+        clampTextOverlays(
+          getTextOverlayList(stitch.textOverlays, stitch.textOverlay),
+          update.duration,
+        ),
+      );
+
+      try {
+        const [ugcClip, demoClip] = await Promise.all([
+          loadClip(update.ugcClipId),
+          loadClip(update.demoClipId),
+        ]);
+
+        if (ugcClip && demoClip) {
+          const posterBlob = await createStitchPosterBlob({
+            demoClip,
+            demoPlaybackRate: update.demoPlaybackRate,
+            demoTrimRange: update.demoTrimRange,
+            duration: update.duration,
+            textOverlay: nextTextOverlays[0] ?? null,
+            textOverlays: nextTextOverlays,
+            ugcClip,
+            ugcPlaybackRate: update.ugcPlaybackRate,
+            ugcTrimRange: update.ugcTrimRange,
+          });
+
+          [posterObject] = await uploadBlobsToR2([
+            {
+              blob: posterBlob,
+              kind: "stitch-poster",
+              recordId: stitch.id,
+            },
+          ]);
+        }
+      } catch {
+        posterObject = null;
+      }
+
+      await updateStitchSourceSettingsMutation({
+        id: stitch.id,
+        ...update,
+        posterObject,
+        posterVersion: posterObject ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
+      });
+
+      if (posterObject) {
+        posterBlobCacheRef.current.delete(posterObject.key);
+      }
+
+      await refresh();
+    },
+    [loadClip, refresh, updateStitchSourceSettingsMutation],
+  );
+
   const updateStitchTextOverlay = useCallback(
     async (
       stitch: Stitch,
@@ -552,6 +613,7 @@ export function useClipLibraryState(): ClipLibraryValue {
         if (ugcClip && demoClip) {
           const posterBlob = await createStitchPosterBlob({
             demoClip,
+            demoPlaybackRate: stitch.demoPlaybackRate,
             demoTrimRange: stitch.demoTrimRange ?? {
               start: 0,
               end: demoClip.duration,
@@ -560,6 +622,7 @@ export function useClipLibraryState(): ClipLibraryValue {
             textOverlay: firstTextOverlay,
             textOverlays: nextTextOverlays,
             ugcClip,
+            ugcPlaybackRate: stitch.ugcPlaybackRate,
             ugcTrimRange: stitch.ugcTrimRange ?? {
               start: 0,
               end: ugcClip.duration,
@@ -733,6 +796,7 @@ export function useClipLibraryState(): ClipLibraryValue {
     updateClipTrimRange,
     generateStitchMusic,
     updateStitchMusic,
+    updateStitchSourceSettings,
     updateStitchTextOverlay,
     removeStitch,
   };

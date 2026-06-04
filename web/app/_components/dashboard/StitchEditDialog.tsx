@@ -1,7 +1,8 @@
 "use client";
 
 import { Music2, Save, Type, X } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { StitchSourceSettingsPanel } from "@/app/_components/dashboard/StitchSourceSettingsPanel";
 import { StitchSequencePreview } from "@/app/_components/dashboard/StitchSequencePreview";
 import { TextOverlayEditor } from "@/app/_components/stitchr/TextOverlayEditor";
 import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
@@ -11,58 +12,110 @@ import { IconButton } from "@/app/_components/ui/IconButton";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { StitchPreviewErrorState } from "@/lib/clipstitchr/types/StitchPreviewErrorState";
+import type { StitchPreviewSources } from "@/lib/clipstitchr/types/StitchPreviewSources";
+import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
-import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
+import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { createStitchPreviewCacheKey } from "@/lib/clipstitchr/utils/createStitchPreviewCacheKey";
 import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
+import { findVideoClipMetadataById } from "@/lib/clipstitchr/utils/findVideoClipMetadataById";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
+import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
 import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 
 type StitchEditDialogProps = {
-  demoClip: VideoClip | null;
+  demoClips: VideoClipMetadata[];
   isGeneratingMusic: boolean;
   isLoadingPreview: boolean;
   isSavingMusic: boolean;
+  isSavingSourceSettings: boolean;
   isSavingText: boolean;
   musicError: string | null;
   posterUrl: string | null;
-  previewError: string | null;
+  previewErrorState: StitchPreviewErrorState | null;
+  previewSources: StitchPreviewSources | null;
+  sourceSettingsError: string | null;
   stitch: Stitch;
   textError: string | null;
-  ugcClip: VideoClip | null;
+  ugcClips: VideoClipMetadata[];
   onClose: () => void;
   onGenerateMusic: () => Promise<StitchMusicMetadata | null>;
-  onLoadPreview: () => void;
+  onLoadPreview: (ugcClipId?: string, demoClipId?: string) => void;
   onRemoveMusic: () => Promise<void>;
   onSaveMusic: (music: StitchMusicMetadata) => Promise<void>;
+  onSaveSourceSettings: (
+    update: StitchSourceSettingsUpdate,
+  ) => Promise<void>;
   onSaveTextOverlay: (
     textOverlay: TextOverlay | TextOverlay[] | null,
+    stitchOverride?: Stitch,
   ) => Promise<void>;
 };
 
 export function StitchEditDialog({
-  demoClip,
+  demoClips,
   isGeneratingMusic,
   isLoadingPreview,
   isSavingMusic,
+  isSavingSourceSettings,
   isSavingText,
   musicError,
   posterUrl,
-  previewError,
+  previewErrorState,
+  previewSources,
+  sourceSettingsError,
   stitch,
   textError,
-  ugcClip,
+  ugcClips,
   onClose,
   onGenerateMusic,
   onLoadPreview,
   onRemoveMusic,
   onSaveMusic,
+  onSaveSourceSettings,
   onSaveTextOverlay,
 }: StitchEditDialogProps) {
+  const isLongrStitch = getStitchIsLongr(stitch);
+  const currentUgcFallbackClip = {
+    id: stitch.ugcClipId,
+    name: stitch.ugcClipName,
+  };
+  const currentDemoFallbackClip = {
+    id: stitch.demoClipId,
+    name: stitch.demoClipName,
+  };
+  const sourceUgcClips = useMemo(
+    () =>
+      previewSources?.ugcClip
+        ? [previewSources.ugcClip, ...ugcClips]
+        : ugcClips,
+    [previewSources, ugcClips],
+  );
+  const sourceDemoClips = useMemo(
+    () =>
+      previewSources?.demoClip
+        ? [previewSources.demoClip, ...demoClips]
+        : demoClips,
+    [previewSources, demoClips],
+  );
+  const initialUgcClip = findVideoClipMetadataById(
+    sourceUgcClips,
+    stitch.ugcClipId,
+  );
+  const initialDemoClip = findVideoClipMetadataById(
+    sourceDemoClips,
+    stitch.demoClipId,
+  );
   const [textOverlays, setTextOverlays] = useState<TextOverlay[]>(
     () => getTextOverlayList(stitch.textOverlays, stitch.textOverlay),
   );
@@ -74,23 +127,150 @@ export function StitchEditDialog({
   );
   const [enabled, setEnabled] = useState(music?.enabled ?? true);
   const [volume, setVolume] = useState(music?.volume ?? 1);
-  const ugcDuration = stitch.ugcTrimRange
-    ? getPlaybackRateDuration(stitch.ugcTrimRange, stitch.ugcPlaybackRate)
+  const [selectedUgcClipId, setSelectedUgcClipId] = useState(
+    stitch.ugcClipId,
+  );
+  const [selectedDemoClipId, setSelectedDemoClipId] = useState(
+    stitch.demoClipId,
+  );
+  const [ugcTrimRange, setUgcTrimRange] = useState(() =>
+    initialUgcClip
+      ? clampVideoTrimRange(
+          stitch.ugcTrimRange ?? getDefaultVideoTrimRange(initialUgcClip),
+          initialUgcClip.duration,
+        )
+      : (stitch.ugcTrimRange ?? { start: 0, end: 0 }),
+  );
+  const [demoTrimRange, setDemoTrimRange] = useState(() =>
+    initialDemoClip
+      ? clampVideoTrimRange(
+          stitch.demoTrimRange ?? getDefaultVideoTrimRange(initialDemoClip),
+          initialDemoClip.duration,
+        )
+      : (stitch.demoTrimRange ?? { start: 0, end: 0 }),
+  );
+  const [ugcPlaybackRate, setUgcPlaybackRate] = useState<VideoPlaybackRate>(
+    stitch.ugcPlaybackRate ?? 1,
+  );
+  const [demoPlaybackRate, setDemoPlaybackRate] = useState<VideoPlaybackRate>(
+    stitch.demoPlaybackRate ?? 1,
+  );
+  const selectedUgcClip = findVideoClipMetadataById(
+    sourceUgcClips,
+    selectedUgcClipId,
+  );
+  const selectedDemoClip = findVideoClipMetadataById(
+    sourceDemoClips,
+    selectedDemoClipId,
+  );
+  const clampedUgcTrimRange = selectedUgcClip
+    ? clampVideoTrimRange(ugcTrimRange, selectedUgcClip.duration)
+    : ugcTrimRange;
+  const clampedDemoTrimRange = selectedDemoClip
+    ? clampVideoTrimRange(demoTrimRange, selectedDemoClip.duration)
+    : demoTrimRange;
+  const ugcDuration = selectedUgcClip
+    ? getPlaybackRateDuration(clampedUgcTrimRange, ugcPlaybackRate)
     : 0;
+  const demoDuration = selectedDemoClip
+    ? getPlaybackRateDuration(clampedDemoTrimRange, demoPlaybackRate)
+    : 0;
+  const sourceDuration = ugcDuration + demoDuration;
+  const selectedPreviewCacheKey = createStitchPreviewCacheKey(
+    stitch.id,
+    selectedUgcClipId,
+    selectedDemoClipId,
+  );
+  const selectedPreviewSources =
+    previewSources?.cacheKey === selectedPreviewCacheKey
+      ? previewSources
+      : null;
+  const selectedPreviewError =
+    previewErrorState?.cacheKey === selectedPreviewCacheKey
+      ? previewErrorState.message
+      : null;
+  const draftStitch: Stitch = {
+    ...stitch,
+    demoClipId: selectedDemoClipId,
+    demoClipName: selectedDemoClip?.name ?? stitch.demoClipName,
+    demoPlaybackRate,
+    demoTrimRange: clampedDemoTrimRange,
+    duration: sourceDuration || stitch.duration,
+    music: music ?? undefined,
+    textOverlay: textOverlays[0],
+    textOverlays: textOverlays.length ? textOverlays : undefined,
+    ugcClipId: selectedUgcClipId,
+    ugcClipName: selectedUgcClip?.name ?? stitch.ugcClipName,
+    ugcPlaybackRate,
+    ugcTrimRange: clampedUgcTrimRange,
+  };
   const fileSizeLabel = stitch.size
     ? formatBytes(stitch.size)
     : "Ready to download";
 
   const handleSaveText = async () => {
     const nextTextOverlays = getNonEmptyTextOverlays(
-      clampTextOverlays(textOverlays, stitch.duration),
+      clampTextOverlays(textOverlays, draftStitch.duration),
     );
 
     try {
       await onSaveTextOverlay(
         nextTextOverlays.length ? nextTextOverlays : null,
+        draftStitch,
       );
       setTextOverlays(nextTextOverlays);
+    } catch {
+      return;
+    }
+  };
+  const handleSelectUgcClip = (clipId: string) => {
+    const nextClip = findVideoClipMetadataById(sourceUgcClips, clipId);
+
+    setSelectedUgcClipId(clipId);
+
+    if (nextClip) {
+      setUgcTrimRange(getDefaultVideoTrimRange(nextClip));
+    }
+
+    onLoadPreview(clipId, selectedDemoClipId);
+  };
+  const handleSelectDemoClip = (clipId: string) => {
+    const nextClip = findVideoClipMetadataById(sourceDemoClips, clipId);
+
+    setSelectedDemoClipId(clipId);
+
+    if (nextClip) {
+      setDemoTrimRange(getDefaultVideoTrimRange(nextClip));
+    }
+
+    onLoadPreview(selectedUgcClipId, clipId);
+  };
+  const handleSaveSourceSettings = async () => {
+    if (!selectedUgcClip || !selectedDemoClip) {
+      return;
+    }
+
+    const nextName =
+      selectedUgcClip.id === stitch.ugcClipId &&
+      selectedDemoClip.id === stitch.demoClipId
+        ? stitch.name
+        : getDownloadFileName(selectedUgcClip.name, selectedDemoClip.name);
+
+    try {
+      await onSaveSourceSettings({
+        demoClipId: selectedDemoClip.id,
+        demoClipName: selectedDemoClip.name,
+        demoPlaybackRate,
+        demoTrimRange: clampedDemoTrimRange,
+        duration: sourceDuration,
+        name: nextName,
+        ugcClipId: selectedUgcClip.id,
+        ugcClipName: selectedUgcClip.name,
+        ugcPlaybackRate,
+        ugcTrimRange: clampedUgcTrimRange,
+      });
+      setDemoTrimRange(clampedDemoTrimRange);
+      setUgcTrimRange(clampedUgcTrimRange);
     } catch {
       return;
     }
@@ -178,37 +358,34 @@ export function StitchEditDialog({
         <div className="grid gap-5 p-5 lg:grid-cols-[300px_minmax(0,1fr)]">
           <div className="flex flex-col gap-4">
             <StitchSequencePreview
-              demoClip={demoClip}
+              demoClip={selectedPreviewSources?.demoClip ?? null}
               isLoading={isLoadingPreview}
               posterUrl={posterUrl}
-              stitch={{
-                ...stitch,
-                music: music ?? undefined,
-                textOverlay: textOverlays[0],
-                textOverlays: textOverlays.length ? textOverlays : undefined,
-              }}
-              ugcClip={ugcClip}
-              onLoadPreview={onLoadPreview}
+              stitch={draftStitch}
+              ugcClip={selectedPreviewSources?.ugcClip ?? null}
+              onLoadPreview={() =>
+                onLoadPreview(selectedUgcClipId, selectedDemoClipId)
+              }
               onTextOverlayChange={setTextOverlays}
             />
-            {previewError ? (
+            {selectedPreviewError ? (
               <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
-                {previewError}
+                {selectedPreviewError}
               </p>
             ) : null}
             <div className="rounded-lg border border-border bg-surface-elevated p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge>STITCH</Badge>
                 <span className="text-xs font-semibold text-text-tertiary">
-                  {formatDuration(stitch.duration)}
+                  {formatDuration(draftStitch.duration)}
                 </span>
               </div>
               <p className="mt-3 text-sm font-semibold text-text-primary">
-                {stitch.ugcClipName} to {stitch.demoClipName}
+                {draftStitch.ugcClipName} to {draftStitch.demoClipName}
               </p>
               <p className="mt-2 text-xs font-semibold text-text-tertiary">
-                UGC {getStitchTrimRangeLabel(stitch.ugcTrimRange)} . Demo{" "}
-                {getStitchTrimRangeLabel(stitch.demoTrimRange)}
+                UGC {getStitchTrimRangeLabel(draftStitch.ugcTrimRange)} . Demo{" "}
+                {getStitchTrimRangeLabel(draftStitch.demoTrimRange)}
               </p>
               <p className="mt-2 text-xs text-text-tertiary">
                 {stitch.width} x {stitch.height} . {fileSizeLabel}
@@ -216,6 +393,33 @@ export function StitchEditDialog({
             </div>
           </div>
           <div className="flex flex-col gap-4">
+            {!isLongrStitch ? (
+              <StitchSourceSettingsPanel
+                canSave={Boolean(selectedUgcClip && selectedDemoClip)}
+                demoClips={demoClips}
+                demoFallbackClip={currentDemoFallbackClip}
+                demoPlaybackRate={demoPlaybackRate}
+                demoTrimDuration={selectedDemoClip?.duration ?? 0}
+                demoTrimRange={clampedDemoTrimRange}
+                error={sourceSettingsError}
+                isSaving={isSavingSourceSettings}
+                selectedDemoClipId={selectedDemoClipId}
+                selectedUgcClipId={selectedUgcClipId}
+                totalDuration={draftStitch.duration}
+                ugcClips={ugcClips}
+                ugcFallbackClip={currentUgcFallbackClip}
+                ugcPlaybackRate={ugcPlaybackRate}
+                ugcTrimDuration={selectedUgcClip?.duration ?? 0}
+                ugcTrimRange={clampedUgcTrimRange}
+                onDemoClipChange={handleSelectDemoClip}
+                onDemoPlaybackRateChange={setDemoPlaybackRate}
+                onDemoTrimChange={setDemoTrimRange}
+                onSave={() => void handleSaveSourceSettings()}
+                onUgcClipChange={handleSelectUgcClip}
+                onUgcPlaybackRateChange={setUgcPlaybackRate}
+                onUgcTrimChange={setUgcTrimRange}
+              />
+            ) : null}
             <section className="rounded-lg border border-border p-4">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <h3 className="text-sm font-bold text-text-primary">Text</h3>
@@ -236,7 +440,7 @@ export function StitchEditDialog({
               ) : null}
               <TextOverlayEditor
                 textOverlays={textOverlays}
-                totalDuration={stitch.duration}
+                totalDuration={draftStitch.duration}
                 ugcDuration={ugcDuration}
                 currentTime={0}
                 activeTextOverlayId={activeTextOverlayId}

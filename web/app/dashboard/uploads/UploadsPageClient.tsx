@@ -29,6 +29,7 @@ import { filterStitchesByName } from "@/lib/clipstitchr/utils/filterStitchesByNa
 import { filterSwipesBySearchQuery } from "@/lib/clipstitchr/utils/filterSwipesBySearchQuery";
 import { dispatchHideUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchHideUploadControlsEvent";
 import { getInitialUploadLibraryTab } from "@/lib/clipstitchr/utils/getInitialUploadLibraryTab";
+import { getStitchrUgcSourceClips } from "@/lib/clipstitchr/utils/getStitchrUgcSourceClips";
 import { getUploadAssetTypeFromLibraryTab } from "@/lib/clipstitchr/utils/getUploadAssetTypeFromLibraryTab";
 import { getUploadLibraryTabFromAssetType } from "@/lib/clipstitchr/utils/getUploadLibraryTabFromAssetType";
 
@@ -150,6 +151,19 @@ export function UploadsPageClient() {
     () =>
       filterClipsBySearchQuery(library.videoGroups.swapr.clips, searchQuery),
     [library.videoGroups.swapr.clips, searchQuery],
+  );
+  const stitchrUgcClips = useMemo(
+    () =>
+      getStitchrUgcSourceClips(
+        library.videoGroups.ugc.clips,
+        library.videoGroups.clipr.clips,
+        library.videoGroups.swapr.clips,
+      ),
+    [
+      library.videoGroups.clipr.clips,
+      library.videoGroups.swapr.clips,
+      library.videoGroups.ugc.clips,
+    ],
   );
   const stitches = useMemo(
     () => filterStitchesByName(library.stitches, searchQuery),
@@ -482,6 +496,7 @@ export function UploadsPageClient() {
             />
             <StitchesSection
               key={`all-stitches-${searchQuery}-${library.sortOrder}`}
+              demoClips={library.videoGroups.demo.clips}
               stitches={stitches}
               totalCount={
                 canUseLibraryTotals ? library.counts.stitches : undefined
@@ -500,7 +515,9 @@ export function UploadsPageClient() {
               onLoadMoreItems={library.loadMoreStitches}
               onLoadPoster={library.loadStitchPoster}
               onUpdateMusic={library.updateStitchMusic}
+              onUpdateSourceSettings={library.updateStitchSourceSettings}
               onUpdateTextOverlay={library.updateStitchTextOverlay}
+              ugcClips={stitchrUgcClips}
             />
             <SwiprSwipesSection
               key={`all-swipes-${searchQuery}-${library.sortOrder}`}
@@ -567,6 +584,7 @@ export function UploadsPageClient() {
         {selectedTab === "stitches" ? (
           <StitchesSection
             key={`stitches-${searchQuery}-${library.sortOrder}`}
+            demoClips={library.videoGroups.demo.clips}
             stitches={stitches}
             totalCount={
               canUseLibraryTotals ? library.counts.stitches : undefined
@@ -585,7 +603,9 @@ export function UploadsPageClient() {
             onLoadMoreItems={library.loadMoreStitches}
             onLoadPoster={library.loadStitchPoster}
             onUpdateMusic={library.updateStitchMusic}
+            onUpdateSourceSettings={library.updateStitchSourceSettings}
             onUpdateTextOverlay={library.updateStitchTextOverlay}
+            ugcClips={stitchrUgcClips}
           />
         ) : null}
         {selectedTab === "swipes" ? (

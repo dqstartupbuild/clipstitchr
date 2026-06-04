@@ -159,6 +159,7 @@ vi.mock("@/lib/clipstitchr/hooks/useClipLibrary", () => ({
       updateCliprMusic: vi.fn(),
       updateClipTrimRange: vi.fn(),
       updateStitchMusic: vi.fn(),
+      updateStitchSourceSettings: vi.fn(),
       updateStitchTextOverlay: vi.fn(),
       stitches: [
         {

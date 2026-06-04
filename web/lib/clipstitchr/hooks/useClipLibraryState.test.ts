@@ -82,6 +82,7 @@ vi.mock("@/convex/_generated/api", () => ({
       remove: "stitches.remove",
       updateMusic: "stitches.updateMusic",
       updatePoster: "stitches.updatePoster",
+      updateSourceSettings: "stitches.updateSourceSettings",
       updateTextOverlay: "stitches.updateTextOverlay",
     },
     videoClips: {
@@ -677,6 +678,63 @@ describe("useClipLibraryState", () => {
     expect(getMutation("stitches.remove")).toHaveBeenCalledWith({
       id: "stitch_1",
     });
+  });
+
+  it("updates stitch source settings with a regenerated poster", async () => {
+    const state = useClipLibraryState();
+    const stitch = createStitch({
+      duration: 12,
+      textOverlay: {
+        endTime: 8,
+        fontSize: 48,
+        startTime: 0,
+        styleId: "hook",
+        text: "Hook",
+        width: 0.8,
+        x: 0.5,
+        y: 0.5,
+      },
+    });
+    const update = {
+      demoClipId: "demo_2",
+      demoClipName: "Demo 2",
+      demoPlaybackRate: 2,
+      demoTrimRange: {
+        end: 8,
+        start: 2,
+      },
+      duration: 9,
+      name: "updated-stitch.mp4",
+      ugcClipId: "ugc_2",
+      ugcClipName: "UGC 2",
+      ugcPlaybackRate: 1,
+      ugcTrimRange: {
+        end: 3,
+        start: 0,
+      },
+    } as const;
+
+    await state.updateStitchSourceSettings(stitch, update);
+
+    expect(mocks.createStitchPosterBlob).toHaveBeenCalledWith(
+      expect.objectContaining({
+        demoPlaybackRate: 2,
+        demoTrimRange: update.demoTrimRange,
+        duration: 9,
+        ugcPlaybackRate: 1,
+        ugcTrimRange: update.ugcTrimRange,
+      }),
+    );
+    expect(getMutation("stitches.updateSourceSettings")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "stitch_1",
+        ...update,
+        posterObject: expect.objectContaining({
+          key: "users/user_123/stitches/stitch_1/poster.jpg",
+        }),
+        posterVersion: 2,
+      }),
+    );
   });
 
   it("keeps stitch music when replacing shared or unchanged audio", async () => {

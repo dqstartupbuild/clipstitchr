@@ -153,12 +153,15 @@ describe("dashboard shell sections", () => {
           onUpdateMetadata={noop}
         />
         <RecentStitchesSection
+          demoClips={[]}
           stitches={[]}
           onDelete={noop}
           onGenerateMusic={async () => null}
           onLoadClip={async () => null}
           onUpdateMusic={noop}
+          onUpdateSourceSettings={noop}
           onUpdateTextOverlay={noop}
+          ugcClips={[]}
         />
         <RecentSwipesSection
           backgrounds={[]}
@@ -194,12 +197,15 @@ describe("dashboard shell sections", () => {
           onUpdateMetadata={noop}
         />
         <RecentStitchesSection
+          demoClips={[]}
           stitches={[{ id: "stitch_1" } as Stitch]}
           onDelete={noop}
           onGenerateMusic={async () => null}
           onLoadClip={async () => null}
           onUpdateMusic={noop}
+          onUpdateSourceSettings={noop}
           onUpdateTextOverlay={noop}
+          ugcClips={[]}
         />
         <RecentSwipesSection
           backgrounds={[{ id: "background_1" } as SwiprBackgroundAsset]}
