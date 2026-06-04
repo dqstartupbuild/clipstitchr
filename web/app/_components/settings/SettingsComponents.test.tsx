@@ -236,6 +236,7 @@ describe("settings components", () => {
       "https://launchkit.example.com/",
       "Benefits",
       "Creators",
+      "Creators want to feel proud of launching.",
       "problem",
     ];
 
@@ -253,6 +254,7 @@ describe("settings components", () => {
     expect(preventDefault).toHaveBeenCalledOnce();
     expect(onCreate).toHaveBeenCalledWith({
       audienceDetails: "Creators",
+      emotionalNarrative: "Creators want to feel proud of launching.",
       name: "Launch Kit",
       preferredCliprHookStyleKey: "problem",
       productDetails: "Benefits",
@@ -260,12 +262,13 @@ describe("settings components", () => {
     });
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith("");
     expect(mocks.setStateCalls[4]).toHaveBeenCalledWith("");
+    expect(mocks.setStateCalls[5]).toHaveBeenCalledWith("");
   });
 
   it("ignores invalid form submissions and forwards hook style changes", async () => {
     const onCreate = vi.fn();
 
-    mocks.stateQueue = ["   ", "", "", "", ""];
+    mocks.stateQueue = ["   ", "", "", "", "", ""];
 
     const formTree = ProductSettingsForm({
       isSaving: false,

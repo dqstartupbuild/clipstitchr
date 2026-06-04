@@ -26,6 +26,9 @@ export function ProductSettingsEditDialog({
   const [audienceDetails, setAudienceDetails] = useState(
     product.audienceDetails,
   );
+  const [emotionalNarrative, setEmotionalNarrative] = useState(
+    product.emotionalNarrative ?? "",
+  );
   const [preferredCliprHookStyleKey, setPreferredCliprHookStyleKey] = useState(
     product.preferredCliprHookStyleKey ?? "",
   );
@@ -51,6 +54,7 @@ export function ProductSettingsEditDialog({
               websiteUrl: websiteUrl || undefined,
               productDetails,
               audienceDetails,
+              emotionalNarrative: emotionalNarrative || undefined,
               preferredCliprHookStyleKey:
                 preferredCliprHookStyleKey || undefined,
             });
@@ -139,6 +143,21 @@ export function ProductSettingsEditDialog({
               />
             </label>
           </div>
+          <label className="block">
+            <span className="text-sm font-semibold text-text-primary">
+              Emotional narrative
+            </span>
+            <textarea
+              value={emotionalNarrative}
+              maxLength={3000}
+              rows={5}
+              className="mt-1.5 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-5 text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
+              placeholder="Who they are emotionally, what they are tired of, what identity shift they want, and what kind of story Stitchr hooks should imply."
+              onChange={(event) =>
+                setEmotionalNarrative(event.currentTarget.value)
+              }
+            />
+          </label>
         </div>
         <div className="mt-5 flex flex-wrap justify-end gap-2">
           <Button

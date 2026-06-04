@@ -9,6 +9,8 @@ describe("createProductEnrichmentPrompt", () => {
       name: "LaunchKit",
       productDetails: "Helps small teams plan product launches.",
       audienceDetails: "Founders and solo marketers.",
+      emotionalNarrative: "Founders want to stop feeling scattered.",
+      websiteDetails: "The website says launch work feels messy.",
       websiteUrl: "https://launchkit.example.com/",
     });
     const lastStyle = cliprHookStyles.at(-1);
@@ -22,6 +24,10 @@ describe("createProductEnrichmentPrompt", () => {
     expect(prompt).toContain("Write in plain speech");
     expect(prompt).toContain("Choose every relevant Clipr hook style");
     expect(prompt).toContain("Make the enrichment audience-first");
+    expect(prompt).toContain("Infer emotionalNarrative");
+    expect(prompt).toContain("desired identity shift");
+    expect(prompt).toContain("User-provided emotional narrative");
+    expect(prompt).toContain("Website details for analysis only");
     expect(prompt).toContain("product details as a proof bank");
     expect(prompt).toContain("Product website URL: https://launchkit.example.com/");
     expect(prompt).toContain("Cover hundreds of useful hook scenarios");

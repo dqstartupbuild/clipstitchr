@@ -355,6 +355,7 @@ export const planDaily = mutation({
           productName: product?.name,
           productDetails: product?.productDetails,
           audienceDetails: product?.audienceDetails,
+          emotionalNarrative: product?.emotionalNarrative,
           inferredProblem: product?.inferredProblem,
           inferredPainPoints: product?.inferredPainPoints ?? [],
           cliprPlaceholderFillers: product?.cliprPlaceholderFillers,

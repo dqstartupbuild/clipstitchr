@@ -52,6 +52,7 @@ import { getSwaprPredictionOutputUrl } from "@/lib/clipstitchr/utils/getSwaprPre
 import { getSwaprSegmentDurationLimit } from "@/lib/clipstitchr/utils/getSwaprSegmentDurationLimit";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
+import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
 import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightingOption";
 import type { AvatarPhotoGenerationCount } from "@/lib/clipstitchr/types/AvatarPhotoGenerationCount";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
@@ -442,11 +443,14 @@ function parseStitchrAutomationTaskInput(
         id: getOptionalString(input.productId) ?? fallbackProduct.id,
         name: productName,
         productDetails:
-          getOptionalString(input.productDetails) ??
-          fallbackProduct.productDetails,
+          stripWebsiteSourcedProductDetails(
+            getOptionalString(input.productDetails) ??
+              fallbackProduct.productDetails,
+          ),
         audienceDetails:
           getOptionalString(input.audienceDetails) ??
           fallbackProduct.audienceDetails,
+        emotionalNarrative: getOptionalString(input.emotionalNarrative),
         cliprPlaceholderFillers: getStringArrayRecord(
           input.cliprPlaceholderFillers,
         ),
@@ -527,7 +531,9 @@ function parseSwiprAutomationTaskInput(
     backgroundId: getString(input.backgroundId, "Swipr background ID"),
     inferredPainPoints: getStringArray(input.inferredPainPoints),
     inferredProblem: getOptionalString(input.inferredProblem),
-    productDetails: getString(input.productDetails, "Swipr product details"),
+    productDetails: stripWebsiteSourcedProductDetails(
+      getString(input.productDetails, "Swipr product details"),
+    ),
     productId: getString(input.productId, "Swipr product ID"),
     productName: getString(input.productName, "Swipr product name"),
   };

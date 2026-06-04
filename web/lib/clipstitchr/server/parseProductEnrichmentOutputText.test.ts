@@ -6,6 +6,8 @@ describe("parseProductEnrichmentOutputText", () => {
     expect(
       parseProductEnrichmentOutputText(
         JSON.stringify({
+          emotionalNarrative:
+            "The audience feels stuck and wants visible proof they are improving.",
           inferredProblem: "Teams do not publish enough clips.",
           inferredPainPoints: ["Editing takes too long", "Assets are scattered"],
         }),
@@ -14,6 +16,8 @@ describe("parseProductEnrichmentOutputText", () => {
       cliprPlaceholderFillers: {},
       eligibleCliprHookStyleKeys: [],
       eligibleCliprHookTemplateIds: [],
+      emotionalNarrative:
+        "The audience feels stuck and wants visible proof they are improving.",
       inferredProblem: "Teams do not publish enough clips.",
       inferredPainPoints: ["Editing takes too long", "Assets are scattered"],
     });
@@ -59,6 +63,7 @@ describe("parseProductEnrichmentOutputText", () => {
       cliprPlaceholderFillers: {},
       eligibleCliprHookStyleKeys: [],
       eligibleCliprHookTemplateIds: [],
+      emotionalNarrative: undefined,
       inferredProblem: undefined,
       inferredPainPoints: [],
     });

@@ -64,6 +64,7 @@ function createProductArgs(overrides: Record<string, unknown> = {}) {
       empty: ["   "],
     },
     createdAt: "2026-05-20T00:00:00.000Z",
+    emotionalNarrative: "  Founders want to stop feeling behind  ",
     eligibleCliprHookStyleKeys: [" direct_diagnosis ", "direct_diagnosis"],
     eligibleCliprHookTemplateIds: [" APP-001 ", "APP-001", "APP-002"],
     id: "product_123",
@@ -141,6 +142,7 @@ describe("convex products", () => {
       "products",
       expect.objectContaining({
         audienceDetails: "Busy founders",
+        emotionalNarrative: "Founders want to stop feeling behind",
         eligibleCliprHookStyleKeys: ["direct_diagnosis"],
         eligibleCliprHookTemplateIds: ["APP-001", "APP-002"],
         inferredPainPoints: [
@@ -211,6 +213,7 @@ describe("convex products", () => {
     expect(ctx.db.patch).toHaveBeenCalledWith(
       "doc_123",
       expect.objectContaining({
+        emotionalNarrative: "Founders want to stop feeling behind",
         name: "Launch Kit",
         productDetails: "AI launch planner",
         websiteUrl: "https://launchkit.example.com/",

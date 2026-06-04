@@ -1,4 +1,5 @@
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
+import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 
@@ -113,7 +114,9 @@ export function parseCliprAutomationTaskInput(
     product: {
       id: getString(input.productId, "product ID"),
       name: getString(input.productName, "product name"),
-      productDetails: getString(input.productDetails, "product details"),
+      productDetails: stripWebsiteSourcedProductDetails(
+        getString(input.productDetails, "product details"),
+      ),
       audienceDetails: getString(input.audienceDetails, "audience details"),
       cliprPlaceholderFillers: getStringArrayRecord(
         input.cliprPlaceholderFillers,

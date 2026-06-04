@@ -1,4 +1,5 @@
 import type { Doc } from "@/convex/_generated/dataModel";
+import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 
 export function createProductProfileFromConvexDocument(
@@ -7,8 +8,9 @@ export function createProductProfileFromConvexDocument(
   return {
     id: product.id,
     name: product.name,
-    productDetails: product.productDetails,
+    productDetails: stripWebsiteSourcedProductDetails(product.productDetails),
     audienceDetails: product.audienceDetails,
+    emotionalNarrative: product.emotionalNarrative,
     websiteUrl: product.websiteUrl,
     cliprPlaceholderFillers: product.cliprPlaceholderFillers,
     eligibleCliprHookStyleKeys: product.eligibleCliprHookStyleKeys,

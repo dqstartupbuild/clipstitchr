@@ -92,6 +92,17 @@ describe("useProducts", () => {
   });
 
   it("maps product documents and queries only when authenticated", () => {
+    mocks.useQuery.mockImplementation((queryId) =>
+      queryId === api.productPreferences.get
+        ? { defaultProductId: "product_1" }
+        : [
+            createProductDocument({
+              productDetails:
+                "AI launch planner\n\nWebsite-sourced details:\nOld page copy",
+            }),
+          ],
+    );
+
     const state = useProducts();
 
     expect(state.products).toEqual([
@@ -99,6 +110,7 @@ describe("useProducts", () => {
         audienceDetails: "Founders",
         id: "product_1",
         name: "Launch Kit",
+        productDetails: "AI launch planner",
       }),
     ]);
     expect(state.defaultProductId).toBe("product_1");

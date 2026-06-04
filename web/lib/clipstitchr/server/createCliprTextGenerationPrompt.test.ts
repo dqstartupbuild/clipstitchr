@@ -22,6 +22,7 @@ const product: ProductProfile = {
   productDetails: "Helps founders organize product launch content.",
   audienceDetails: "Founders and solo marketers.",
   createdAt: "2026-01-01T00:00:00.000Z",
+  emotionalNarrative: "Founders want to stop looking scattered and feel proud.",
   inferredPainPoints: ["launch content gets scattered"],
   updatedAt: "2026-01-01T00:00:00.000Z",
 };
@@ -57,6 +58,9 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("Stitchr combines a short emotional UGC reaction clip");
     expect(prompt).toContain("There is no voiceover, no spoken explanation");
     expect(prompt).toContain("Emotional Narrative Hooks");
+    expect(prompt).toContain(
+      "Product emotional narrative: Founders want to stop looking scattered and feel proud.",
+    );
     expect(prompt).toContain("Reaction-Matched Hooks");
     expect(prompt).toContain("Most hooks should be 3-9 words");
     expect(prompt).toContain("script must be an empty string");

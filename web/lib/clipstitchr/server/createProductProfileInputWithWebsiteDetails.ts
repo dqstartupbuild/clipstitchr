@@ -1,5 +1,5 @@
-import { mergeProductDetailsWithWebsiteDetails } from "@/lib/clipstitchr/server/mergeProductDetailsWithWebsiteDetails";
 import { scrapeProductWebsiteDetails } from "@/lib/clipstitchr/server/scrapeProductWebsiteDetails";
+import type { ProductEnrichmentInput } from "@/lib/clipstitchr/types/ProductEnrichmentInput";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
 
 export async function createProductProfileInputWithWebsiteDetails({
@@ -8,7 +8,7 @@ export async function createProductProfileInputWithWebsiteDetails({
 }: {
   product: ProductProfileCreateInput;
   shouldScrapeWebsite: boolean;
-}): Promise<ProductProfileCreateInput> {
+}): Promise<ProductEnrichmentInput> {
   if (!shouldScrapeWebsite || !product.websiteUrl) {
     return product;
   }
@@ -17,9 +17,6 @@ export async function createProductProfileInputWithWebsiteDetails({
 
   return {
     ...product,
-    productDetails: mergeProductDetailsWithWebsiteDetails({
-      productDetails: product.productDetails,
-      websiteDetails,
-    }),
+    websiteDetails,
   };
 }

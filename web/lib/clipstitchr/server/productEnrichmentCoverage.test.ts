@@ -12,8 +12,10 @@ describe("product enrichment and avatar generation helpers", () => {
   it("builds a product enrichment prompt with trimmed product context", () => {
     const prompt = createProductEnrichmentPrompt({
       audienceDetails: " creators ",
+      emotionalNarrative: " creators want to feel proud of shipping ",
       name: " Launch Kit ",
       productDetails: " helps teams ship ads ",
+      websiteDetails: "Website says teams feel behind when campaigns stall.",
       websiteUrl: " https://launchkit.example.com/ ",
     });
 
@@ -22,6 +24,10 @@ describe("product enrichment and avatar generation helpers", () => {
     expect(prompt).toContain("Available Clipr template IDs:");
     expect(prompt).toContain("Product name: Launch Kit");
     expect(prompt).toContain("Product website URL: https://launchkit.example.com/");
+    expect(prompt).toContain(
+      "User-provided emotional narrative: creators want to feel proud of shipping",
+    );
+    expect(prompt).toContain("Website details for analysis only");
     expect(prompt).toContain("Product details: helps teams ship ads");
     expect(prompt).toContain("Audience details: creators");
   });
@@ -47,6 +53,7 @@ describe("product enrichment and avatar generation helpers", () => {
           },
           eligibleCliprHookStyleKeys: [styleKey, "missing_style"],
           eligibleCliprHookTemplateIds: [template.id, "missing_template"],
+          emotionalNarrative: "creators want to feel less behind",
           inferredPainPoints: [" slow editing ", "slow editing", 42],
           problemSolved: "fallback problem",
         }),
@@ -55,6 +62,9 @@ describe("product enrichment and avatar generation helpers", () => {
     );
 
     expect(output.inferredProblem).toBe("fallback problem");
+    expect(output.emotionalNarrative).toBe(
+      "creators want to feel less behind",
+    );
     expect(output.inferredPainPoints).toEqual(["slow editing"]);
     expect(output.eligibleCliprHookStyleKeys).toEqual([styleKey]);
     expect(output.eligibleCliprHookTemplateIds).toEqual([template.id]);
@@ -68,6 +78,7 @@ describe("product enrichment and avatar generation helpers", () => {
       cliprPlaceholderFillers: {},
       eligibleCliprHookStyleKeys: [],
       eligibleCliprHookTemplateIds: [],
+      emotionalNarrative: undefined,
       inferredPainPoints: [],
       inferredProblem: undefined,
     });

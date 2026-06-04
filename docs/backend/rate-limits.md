@@ -148,8 +148,8 @@ Firecrawl website import:
 - `FIRECRAWL_API_KEY` is required in the Next.js runtime environment when users
   save a Settings product with a website URL. The route calls Firecrawl's v2
   scrape endpoint server-side, imports markdown from the public product page,
-  appends a capped excerpt to product details, and then passes that context to
-  product enrichment.
+  passes the capped website context to product enrichment, and keeps that
+  website context out of the user's saved product details.
 - The key must not be prefixed with `NEXT_PUBLIC_`.
 
 ## Enforcement Map

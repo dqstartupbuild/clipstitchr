@@ -3,7 +3,7 @@ import { createProductEnrichmentPrompt } from "@/lib/clipstitchr/server/createPr
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { getProductEnrichmentModelId } from "@/lib/clipstitchr/server/getProductEnrichmentModelId";
 import { parseProductEnrichmentOutputText } from "@/lib/clipstitchr/server/parseProductEnrichmentOutputText";
-import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
+import type { ProductEnrichmentInput } from "@/lib/clipstitchr/types/ProductEnrichmentInput";
 
 const PRODUCT_ENRICHMENT_SYSTEM_PROMPT =
   "You enrich concise product profiles for a marketing creative workflow. Return valid JSON only.";
@@ -14,7 +14,7 @@ export async function createProductEnrichment({
   product,
   replicate,
 }: {
-  product: ProductProfileCreateInput;
+  product: ProductEnrichmentInput;
   replicate: ReplicateClient;
 }) {
   const prediction = await replicate.predictions.create({

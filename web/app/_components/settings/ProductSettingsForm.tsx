@@ -20,6 +20,7 @@ export function ProductSettingsForm({
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [productDetails, setProductDetails] = useState("");
   const [audienceDetails, setAudienceDetails] = useState("");
+  const [emotionalNarrative, setEmotionalNarrative] = useState("");
   const [preferredCliprHookStyleKey, setPreferredCliprHookStyleKey] =
     useState("");
   const trimmedName = name.trim();
@@ -42,6 +43,7 @@ export function ProductSettingsForm({
               websiteUrl: websiteUrl || undefined,
               productDetails,
               audienceDetails,
+              emotionalNarrative: emotionalNarrative || undefined,
               preferredCliprHookStyleKey:
                 preferredCliprHookStyleKey || undefined,
             });
@@ -53,6 +55,7 @@ export function ProductSettingsForm({
           setWebsiteUrl("");
           setProductDetails("");
           setAudienceDetails("");
+          setEmotionalNarrative("");
           setPreferredCliprHookStyleKey("");
         }}
       >
@@ -125,6 +128,21 @@ export function ProductSettingsForm({
             />
           </label>
         </div>
+        <label className="block">
+          <span className="text-sm font-semibold text-text-primary">
+            Emotional narrative
+          </span>
+          <textarea
+            value={emotionalNarrative}
+            maxLength={3000}
+            rows={4}
+            className="mt-1.5 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm leading-5 text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-accent"
+            placeholder="Who they are emotionally, what they are tired of, what identity shift they want, and what kind of story Stitchr hooks should imply."
+            onChange={(event) =>
+              setEmotionalNarrative(event.currentTarget.value)
+            }
+          />
+        </label>
         <div className="flex justify-end">
           <Button
             type="submit"

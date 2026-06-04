@@ -104,10 +104,12 @@ describe("PATCH /api/settings/products/[id]", () => {
     mocks.createProductProfileInputWithWebsiteDetails.mockResolvedValue({
       audienceDetails: "Founders",
       name: "Launch Kit",
-      productDetails: "AI launch planner\n\nWebsite-sourced details:\nPage content",
+      productDetails: "AI launch planner",
+      websiteDetails: "Page content",
       websiteUrl: "https://launchkit.example.com/",
     });
     mocks.createProductEnrichment.mockResolvedValue({
+      emotionalNarrative: "Founders want to stop feeling behind.",
       inferredPainPoints: ["slow launch"],
       inferredProblem: "campaigns take too long",
     });
@@ -130,6 +132,7 @@ describe("PATCH /api/settings/products/[id]", () => {
     expect(body.product).toEqual(
       expect.objectContaining({
         id: "product_1",
+        emotionalNarrative: "Founders want to stop feeling behind.",
         inferredProblem: "campaigns take too long",
         name: "Launch Kit",
       }),
@@ -150,12 +153,27 @@ describe("PATCH /api/settings/products/[id]", () => {
       }),
       shouldScrapeWebsite: true,
     });
+    expect(mocks.createProductEnrichment).toHaveBeenCalledWith({
+      product: expect.objectContaining({
+        name: "Launch Kit",
+        productDetails: "AI launch planner",
+        websiteDetails: "Page content",
+      }),
+      replicate: { provider: "replicate" },
+    });
+    const productUpdateCall = mocks.convex.mutation.mock.calls.find(
+      ([mutationName]) => mutationName === api.products.update,
+    );
+
+    expect(productUpdateCall?.[1]).not.toHaveProperty("websiteDetails");
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.products.update,
       expect.objectContaining({
+        emotionalNarrative: "Founders want to stop feeling behind.",
         id: "product_1",
         inferredPainPoints: ["slow launch"],
         name: "Launch Kit",
+        productDetails: "AI launch planner",
         websiteUrl: "https://launchkit.example.com/",
       }),
     );

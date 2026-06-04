@@ -9,13 +9,26 @@ describe("readProductProfileInput", () => {
         websiteUrl: " launchkit.example.com ",
         productDetails: "  AI launch planning  ",
         audienceDetails: "  solo founders  ",
+        emotionalNarrative: "  solo founders want confidence  ",
       }),
     ).toEqual({
       name: "LaunchKit",
       websiteUrl: "https://launchkit.example.com/",
       productDetails: "AI launch planning",
       audienceDetails: "solo founders",
+      emotionalNarrative: "solo founders want confidence",
     });
+  });
+
+  it("strips old generated website details from saved product details", () => {
+    expect(
+      readProductProfileInput({
+        name: "Guppy",
+        productDetails:
+          "Simple calisthenics app.\n\nWebsite-sourced details:\nPage content that used to be appended.",
+        audienceDetails: "beginner fitness users",
+      }).productDetails,
+    ).toBe("Simple calisthenics app.");
   });
 
   it("rejects private or unsupported website URLs", () => {

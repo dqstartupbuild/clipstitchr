@@ -6,6 +6,7 @@ import { rateLimiter } from "./rateLimiter";
 const PRODUCT_TEXT_MAX_LENGTH = 2000;
 const PRODUCT_NAME_MAX_LENGTH = 120;
 const PRODUCT_WEBSITE_URL_MAX_LENGTH = 2048;
+const PRODUCT_EMOTIONAL_NARRATIVE_MAX_LENGTH = 3000;
 const INFERRED_PROBLEM_MAX_LENGTH = 300;
 const INFERRED_PAIN_POINT_MAX_LENGTH = 160;
 const INFERRED_PAIN_POINT_LIMIT = 10;
@@ -72,6 +73,7 @@ export const create = mutation({
     name: v.string(),
     productDetails: v.string(),
     audienceDetails: v.string(),
+    emotionalNarrative: v.optional(v.string()),
     websiteUrl: v.optional(v.string()),
     inferredProblem: v.optional(v.string()),
     inferredPainPoints: v.array(v.string()),
@@ -91,6 +93,7 @@ export const create = mutation({
       name,
       productDetails,
       audienceDetails,
+      emotionalNarrative,
       websiteUrl,
       inferredProblem,
       inferredPainPoints,
@@ -120,6 +123,12 @@ export const create = mutation({
       name: normalizedName,
       productDetails: normalizeText(productDetails, PRODUCT_TEXT_MAX_LENGTH),
       audienceDetails: normalizeText(audienceDetails, PRODUCT_TEXT_MAX_LENGTH),
+      emotionalNarrative: emotionalNarrative
+        ? normalizeText(
+            emotionalNarrative,
+            PRODUCT_EMOTIONAL_NARRATIVE_MAX_LENGTH,
+          )
+        : undefined,
       websiteUrl: websiteUrl
         ? normalizeText(websiteUrl, PRODUCT_WEBSITE_URL_MAX_LENGTH)
         : undefined,
@@ -161,6 +170,7 @@ export const update = mutation({
     name: v.string(),
     productDetails: v.string(),
     audienceDetails: v.string(),
+    emotionalNarrative: v.optional(v.string()),
     websiteUrl: v.optional(v.string()),
     inferredProblem: v.optional(v.string()),
     inferredPainPoints: v.array(v.string()),
@@ -179,6 +189,7 @@ export const update = mutation({
       name,
       productDetails,
       audienceDetails,
+      emotionalNarrative,
       websiteUrl,
       inferredProblem,
       inferredPainPoints,
@@ -214,6 +225,12 @@ export const update = mutation({
       name: normalizedName,
       productDetails: normalizeText(productDetails, PRODUCT_TEXT_MAX_LENGTH),
       audienceDetails: normalizeText(audienceDetails, PRODUCT_TEXT_MAX_LENGTH),
+      emotionalNarrative: emotionalNarrative
+        ? normalizeText(
+            emotionalNarrative,
+            PRODUCT_EMOTIONAL_NARRATIVE_MAX_LENGTH,
+          )
+        : undefined,
       websiteUrl: websiteUrl
         ? normalizeText(websiteUrl, PRODUCT_WEBSITE_URL_MAX_LENGTH)
         : undefined,

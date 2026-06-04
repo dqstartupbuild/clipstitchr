@@ -142,6 +142,7 @@ export default defineSchema({
     name: v.string(),
     productDetails: v.string(),
     audienceDetails: v.string(),
+    emotionalNarrative: v.optional(v.string()),
     websiteUrl: v.optional(v.string()),
     inferredProblem: v.optional(v.string()),
     inferredPainPoints: v.array(v.string()),

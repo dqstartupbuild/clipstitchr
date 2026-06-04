@@ -10,7 +10,7 @@ vi.mock("@/lib/clipstitchr/server/scrapeProductWebsiteDetails", () => ({
 }));
 
 describe("createProductProfileInputWithWebsiteDetails", () => {
-  it("scrapes and merges website details only when requested", async () => {
+  it("scrapes website details for enrichment without changing saved product details", async () => {
     mocks.scrapeProductWebsiteDetails.mockResolvedValue("Website page content.");
 
     await expect(
@@ -25,7 +25,8 @@ describe("createProductProfileInputWithWebsiteDetails", () => {
       }),
     ).resolves.toEqual(
       expect.objectContaining({
-        productDetails: expect.stringContaining("Website page content."),
+        productDetails: "Manual details.",
+        websiteDetails: "Website page content.",
       }),
     );
 

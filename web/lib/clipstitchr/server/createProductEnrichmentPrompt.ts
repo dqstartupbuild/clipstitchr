@@ -1,5 +1,6 @@
 import { cliprHookStyles } from "@/lib/clipstitchr/resources/clipr/cliprHookStyles";
 import { cliprHookTemplates } from "@/lib/clipstitchr/resources/clipr/cliprHookTemplates";
+import type { ProductEnrichmentInput } from "@/lib/clipstitchr/types/ProductEnrichmentInput";
 
 const MIN_FILLERS_PER_KEY = 6;
 const MAX_FILLERS_PER_KEY = 16;
@@ -40,24 +41,25 @@ function getPlaceholderKeyPromptText() {
 
 export function createProductEnrichmentPrompt({
   audienceDetails,
+  emotionalNarrative,
   name,
   productDetails,
+  websiteDetails,
   websiteUrl,
-}: {
-  audienceDetails: string;
-  name: string;
-  productDetails: string;
-  websiteUrl?: string;
-}) {
+}: ProductEnrichmentInput) {
   return [
     "Infer hidden strategic metadata for this saved product profile.",
     "Write in plain speech. Keep it human, specific, and easy to say out loud.",
     "Avoid robotic strategy words like leverage, optimize, streamline, ecosystem, synergy, robust, cutting-edge, unlock, and empower unless the product input uses them.",
     "Use everyday phrases a real person would recognize. Prefer simple nouns and verbs over technical wording.",
     "Return only compact JSON with this exact shape:",
-    '{"inferredProblem":"plain one-sentence audience problem","inferredPainPoints":["plain pain point"],"eligibleCliprHookStyleKeys":["style_key"],"eligibleCliprHookTemplateIds":["TEMPLATE-001"],"cliprPlaceholderFillers":{"placeholder_key":["natural filler"]}}',
+    '{"inferredProblem":"plain one-sentence audience problem","inferredPainPoints":["plain pain point"],"emotionalNarrative":"editable emotional story for Stitchr hooks","eligibleCliprHookStyleKeys":["style_key"],"eligibleCliprHookTemplateIds":["TEMPLATE-001"],"cliprPlaceholderFillers":{"placeholder_key":["natural filler"]}}',
     "Use 8 to 14 concise pain points. Keep every string under 120 characters. Do not invent regulated claims, pricing, guarantees, or unsupported facts.",
     "Make the enrichment audience-first. The main inventory should be audience beliefs, embarrassing mistakes, desired status, objections, daily situations, and problem language.",
+    "Infer emotionalNarrative when the user did not provide one. It should describe the likely emotional pain, desired identity shift, social or personal payoff, and the emotional open loop Stitchr hooks should imply.",
+    "If the user provided an emotional narrative, preserve its story and concrete details while cleaning up only obvious awkward phrasing.",
+    "For emotionalNarrative, focus on what the person is embarrassed about, tired of, secretly hoping for, trying to become, and hoping other people will notice.",
+    "Write emotionalNarrative as one editable paragraph under 900 characters. It is for reaction-based Stitchr overlay hooks, not a feature list or ad script.",
     "Treat product details as a proof bank, not as the source of every script. Do not turn every product feature into a filler.",
     "Choose every relevant Clipr hook style, not just a few. Include a style if it can produce honest, natural content for this product and audience.",
     "Choose every relevant template ID from the template list. Be broad. Exclude only templates that would force a false claim, fake proof, fake urgency, or awkward wording.",
@@ -77,7 +79,11 @@ export function createProductEnrichmentPrompt({
     getPlaceholderKeyPromptText(),
     `Product name: ${name.trim()}`,
     websiteUrl ? `Product website URL: ${websiteUrl.trim()}` : "",
+    emotionalNarrative
+      ? `User-provided emotional narrative: ${emotionalNarrative.trim()}`
+      : "",
     `Product details: ${productDetails.trim()}`,
+    websiteDetails ? `Website details for analysis only: ${websiteDetails.trim()}` : "",
     `Audience details: ${audienceDetails.trim()}`,
   ].filter(Boolean).join("\n");
 }

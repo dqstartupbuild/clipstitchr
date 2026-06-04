@@ -36,7 +36,10 @@ export function ProductSettingsCard({
 }: ProductSettingsCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const summary =
-    product.productDetails || product.audienceDetails || "Saved product";
+    product.productDetails ||
+    product.emotionalNarrative ||
+    product.audienceDetails ||
+    "Saved product";
   const hookStyleName = getCliprHookStyleName(product.preferredCliprHookStyleKey);
   const handleDelete = async () => {
     const didConfirm = window.confirm(

@@ -60,6 +60,7 @@ function getEmptyProductEnrichment(): ProductEnrichment {
     cliprPlaceholderFillers: {},
     eligibleCliprHookStyleKeys: [],
     eligibleCliprHookTemplateIds: [],
+    emotionalNarrative: undefined,
     inferredProblem: undefined,
     inferredPainPoints: [],
   };
@@ -72,6 +73,7 @@ export function parseProductEnrichmentOutputText(
     cliprPlaceholderFillers?: unknown;
     eligibleCliprHookStyleKeys?: unknown;
     eligibleCliprHookTemplateIds?: unknown;
+    emotionalNarrative?: unknown;
     inferredPainPoints?: unknown;
     inferredProblem?: unknown;
     problemSolved?: unknown;
@@ -114,6 +116,8 @@ export function parseProductEnrichmentOutputText(
       templateIds.size,
       80,
     ),
+    emotionalNarrative:
+      normalizeString(parsed.emotionalNarrative, 1500) || undefined,
     inferredProblem,
     inferredPainPoints,
   };

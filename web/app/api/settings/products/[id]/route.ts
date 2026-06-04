@@ -3,6 +3,7 @@ import { api } from "@/convex/_generated/api";
 import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
+import { createFallbackProductEmotionalNarrative } from "@/lib/clipstitchr/server/createFallbackProductEmotionalNarrative";
 import { createProductEnrichment } from "@/lib/clipstitchr/server/createProductEnrichment";
 import { createProductProfileInputWithWebsiteDetails } from "@/lib/clipstitchr/server/createProductProfileInputWithWebsiteDetails";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
@@ -70,11 +71,16 @@ export async function PATCH(
       product: productInput,
       replicate,
     });
+    const emotionalNarrative =
+      input.emotionalNarrative ||
+      enrichment.emotionalNarrative ||
+      createFallbackProductEmotionalNarrative(input);
     const now = new Date().toISOString();
     const product = {
       id: productId,
-      ...productInput,
+      ...input,
       ...enrichment,
+      emotionalNarrative,
       createdAt: existingProduct.createdAt,
       updatedAt: now,
     };
@@ -84,6 +90,7 @@ export async function PATCH(
       name: product.name,
       productDetails: product.productDetails,
       audienceDetails: product.audienceDetails,
+      emotionalNarrative: product.emotionalNarrative,
       websiteUrl: product.websiteUrl,
       inferredProblem: product.inferredProblem,
       inferredPainPoints: product.inferredPainPoints,

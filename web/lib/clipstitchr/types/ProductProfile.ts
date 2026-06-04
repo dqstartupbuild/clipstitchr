@@ -3,6 +3,7 @@ export type ProductProfile = {
   name: string;
   productDetails: string;
   audienceDetails: string;
+  emotionalNarrative?: string;
   websiteUrl?: string;
   cliprPlaceholderFillers?: Record<string, string[]>;
   eligibleCliprHookStyleKeys?: string[];

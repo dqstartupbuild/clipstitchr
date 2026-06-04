@@ -5,6 +5,7 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { createProductProfile } from "@/lib/clipstitchr/client/createProductProfile";
 import { updateProductProfile } from "@/lib/clipstitchr/client/updateProductProfile";
+import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
 
@@ -36,8 +37,9 @@ export function useProducts() {
       productDocuments?.map((product) => ({
         id: product.id,
         name: product.name,
-        productDetails: product.productDetails,
+        productDetails: stripWebsiteSourcedProductDetails(product.productDetails),
         audienceDetails: product.audienceDetails,
+        emotionalNarrative: product.emotionalNarrative,
         websiteUrl: product.websiteUrl,
         cliprPlaceholderFillers: product.cliprPlaceholderFillers,
         eligibleCliprHookStyleKeys: product.eligibleCliprHookStyleKeys,
