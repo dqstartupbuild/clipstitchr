@@ -9,10 +9,14 @@ import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { automationTaskStatusValidator } from "./validators/automationTaskStatus";
 import { automationTaskTypeValidator } from "./validators/automationTaskType";
 import { automationToolValidator } from "./validators/automationTool";
+import { getAutomationToolDisabledReason } from "./getAutomationToolDisabledReason";
 import { requestWorkerLaunch } from "./workerLaunch";
+
+type AutomationTaskDocument = Doc<"automationTasks">;
 
 async function countActiveTasks(ctx: MutationCtx, ownerId: string) {
   const queued = await ctx.db
@@ -29,6 +33,66 @@ async function countActiveTasks(ctx: MutationCtx, ownerId: string) {
     .take(automationMaxActiveTasksPerUser + 1);
 
   return queued.length + running.length;
+}
+
+async function markTaskSkippedForDisabledTool(
+  ctx: MutationCtx,
+  task: AutomationTaskDocument,
+  reason: string,
+  updatedAt: string,
+) {
+  await ctx.db.patch(task._id, {
+    status: "skipped",
+    stage: "disabled",
+    error: reason,
+    lockedBy: undefined,
+    lockedUntil: undefined,
+    updatedAt,
+  });
+
+  const run = await ctx.db
+    .query("automationRuns")
+    .withIndex("by_owner_id", (q) =>
+      q.eq("ownerId", task.ownerId).eq("id", task.runId),
+    )
+    .unique();
+
+  if (run && (run.status === "queued" || run.status === "running")) {
+    await ctx.db.patch(run._id, {
+      status: "skipped",
+      skippedAt: updatedAt,
+      error: reason,
+      updatedAt,
+    });
+  }
+}
+
+async function getClaimableTask(
+  ctx: MutationCtx,
+  tasks: AutomationTaskDocument[],
+  matchesTask: (task: AutomationTaskDocument) => boolean,
+  updatedAt: string,
+) {
+  for (const task of tasks) {
+    if (!matchesTask(task)) {
+      continue;
+    }
+
+    const disabledReason = await getAutomationToolDisabledReason(
+      ctx,
+      task.ownerId,
+      task.tool,
+    );
+
+    if (disabledReason) {
+      await markTaskSkippedForDisabledTool(ctx, task, disabledReason, updatedAt);
+      continue;
+    }
+
+    return task;
+  }
+
+  return null;
 }
 
 export const listByRun = query({
@@ -70,6 +134,16 @@ export const create = mutation({
   },
   handler: async (ctx, { secret, ...task }) => {
     assertAutomationWorkerSecret(secret);
+
+    const disabledReason = await getAutomationToolDisabledReason(
+      ctx,
+      task.ownerId,
+      task.tool,
+    );
+
+    if (disabledReason) {
+      return null;
+    }
 
     const existing = await ctx.db
       .query("automationTasks")
@@ -124,8 +198,11 @@ export const claimNext = mutation({
       .withIndex("by_status_created", (q) => q.eq("status", "queued"))
       .order("asc")
       .take(50);
-    const task = queuedTasks.find((candidate) =>
-      tool ? candidate.tool === tool : true,
+    const task = await getClaimableTask(
+      ctx,
+      queuedTasks,
+      (candidate) => (tool ? candidate.tool === tool : true),
+      updatedAt,
     );
 
     if (!task) {
@@ -175,19 +252,24 @@ export const claimNextByStage = mutation({
       .withIndex("by_status_created", (q) => q.eq("status", "running"))
       .order("asc")
       .take(50);
-    const task = runningTasks.find((candidate) => {
-      const lockedUntilMs = candidate.lockedUntil
-        ? Date.parse(candidate.lockedUntil)
-        : 0;
+    const task = await getClaimableTask(
+      ctx,
+      runningTasks,
+      (candidate) => {
+        const lockedUntilMs = candidate.lockedUntil
+          ? Date.parse(candidate.lockedUntil)
+          : 0;
 
-      return (
-        candidate.tool === tool &&
-        candidate.stage === stage &&
-        (!candidate.lockedUntil ||
-          !Number.isFinite(lockedUntilMs) ||
-          lockedUntilMs <= nowMs)
-      );
-    });
+        return (
+          candidate.tool === tool &&
+          candidate.stage === stage &&
+          (!candidate.lockedUntil ||
+            !Number.isFinite(lockedUntilMs) ||
+            lockedUntilMs <= nowMs)
+        );
+      },
+      updatedAt,
+    );
 
     if (!task) {
       return null;
@@ -229,18 +311,23 @@ export const claimNextForProvider = mutation({
         .withIndex("by_status_created", (q) => q.eq("status", "running"))
         .order("asc")
         .take(50);
-      const task = runningTasks.find((candidate) => {
-        const lockedUntilMs = candidate.lockedUntil
-          ? Date.parse(candidate.lockedUntil)
-          : 0;
+      const task = await getClaimableTask(
+        ctx,
+        runningTasks,
+        (candidate) => {
+          const lockedUntilMs = candidate.lockedUntil
+            ? Date.parse(candidate.lockedUntil)
+            : 0;
 
-        return (
-          matchesTask(candidate) &&
-          (!candidate.lockedUntil ||
-            !Number.isFinite(lockedUntilMs) ||
-            lockedUntilMs <= nowMs)
-        );
-      });
+          return (
+            matchesTask(candidate) &&
+            (!candidate.lockedUntil ||
+              !Number.isFinite(lockedUntilMs) ||
+              lockedUntilMs <= nowMs)
+          );
+        },
+        updatedAt,
+      );
 
       if (!task) {
         return null;
@@ -260,7 +347,12 @@ export const claimNextForProvider = mutation({
       .withIndex("by_status_created", (q) => q.eq("status", "queued"))
       .order("asc")
       .take(50);
-    const task = queuedTasks.find(matchesTask);
+    const task = await getClaimableTask(
+      ctx,
+      queuedTasks,
+      matchesTask,
+      updatedAt,
+    );
 
     if (!task) {
       return null;

@@ -1,11 +1,14 @@
 import { v } from "convex/values";
 import { api } from "./_generated/api";
 import { internalAction } from "./_generated/server";
+import { coreAutomationTools } from "../lib/clipstitchr/constants/coreAutomationTools";
+import type { AutomationTool } from "../lib/clipstitchr/types/AutomationTool";
 
 const DEFAULT_OWNER_LIMIT = 100;
 
 type PlannerCandidatesResult = {
   preferences: Array<{
+    enabledTools: AutomationTool[];
     ownerId: string;
   }>;
 };
@@ -16,12 +19,12 @@ type CorePlannerResult = {
   ownerCount: number;
   plannedTools: string[];
   results: Array<{
-    avatarPhoto: unknown;
-    clipr: unknown;
+    avatarPhoto?: unknown;
+    clipr?: unknown;
     ownerId: string;
-    stitchr: unknown;
-    swapr: unknown;
-    swipr: unknown;
+    stitchr?: unknown;
+    swapr?: unknown;
+    swipr?: unknown;
   }>;
 };
 
@@ -59,6 +62,10 @@ function getAutomationDate(now: string) {
   return new Date(timestamp).toISOString().slice(0, 10);
 }
 
+function getResultKey(tool: AutomationTool) {
+  return tool === "avatar-photo" ? "avatarPhoto" : tool;
+}
+
 function getPositiveInteger(
   value: number | undefined,
   fallback: number,
@@ -83,7 +90,17 @@ export const planCoreDaily = internalAction({
     const automationDate = args.automationDate ?? getAutomationDate(now);
     const secret = getRequiredEnv("AUTOMATION_WORKER_SECRET");
     const candidates = args.ownerId
-      ? null
+      ? ({
+          preferences: [
+            (await ctx.runQuery(
+              api.automationPlannerCandidates.getEnabledToolsForOwner,
+              {
+                secret,
+                ownerId: args.ownerId,
+              },
+            )) as PlannerCandidatesResult["preferences"][number],
+          ],
+        } satisfies PlannerCandidatesResult)
       : ((await ctx.runQuery(api.automationPlannerCandidates.listEnabled, {
             secret,
             limit: getPositiveInteger(
@@ -92,66 +109,89 @@ export const planCoreDaily = internalAction({
               DEFAULT_OWNER_LIMIT,
             ),
           })) as PlannerCandidatesResult);
-    const ownerIds: string[] = args.ownerId
-      ? [args.ownerId]
-      : candidates?.preferences.map((preference) => preference.ownerId) ?? [];
+    const ownerPreferences = candidates.preferences.filter(
+      (preference) => preference.enabledTools.length > 0,
+    );
     const results: CorePlannerResult["results"] = [];
+    const plannedToolSet = new Set<AutomationTool>();
 
-    for (const ownerId of ownerIds) {
-      const outputs = await Promise.all([
-        ctx.runMutation(api.automationStitchr.planDaily, {
-          secret,
-          ownerId,
-          automationDate,
-          now,
-        }),
-        ctx.runMutation(api.automationSwapr.planDaily, {
-          secret,
-          ownerId,
-          automationDate,
-          now,
-        }),
-        ctx.runMutation(api.automationClipr.planDaily, {
-          secret,
-          ownerId,
-          automationDate,
-          now,
-        }),
-        ctx.runMutation(api.automationAvatarPhoto.planDaily, {
-          secret,
-          ownerId,
-          automationDate,
-          now,
-        }),
-        ctx.runMutation(api.automationSwipr.planDaily, {
-          secret,
-          ownerId,
-          automationDate,
-          now,
-        }),
-      ]);
-      const [stitchr, swapr, clipr, avatarPhoto, swipr] = outputs as [
-        unknown,
-        unknown,
-        unknown,
-        unknown,
-        unknown,
-      ];
+    for (const preference of ownerPreferences) {
+      const ownerId = preference.ownerId;
+      const entries = await Promise.all(
+        preference.enabledTools.map(async (tool) => {
+          if (tool === "stitchr") {
+            return [
+              tool,
+              await ctx.runMutation(api.automationStitchr.planDaily, {
+                secret,
+                ownerId,
+                automationDate,
+                now,
+              }),
+            ] as const;
+          }
 
-      results.push({
-        ownerId,
-        stitchr,
-        swapr,
-        clipr,
-        avatarPhoto,
-        swipr,
-      });
+          if (tool === "swapr") {
+            return [
+              tool,
+              await ctx.runMutation(api.automationSwapr.planDaily, {
+                secret,
+                ownerId,
+                automationDate,
+                now,
+              }),
+            ] as const;
+          }
+
+          if (tool === "clipr") {
+            return [
+              tool,
+              await ctx.runMutation(api.automationClipr.planDaily, {
+                secret,
+                ownerId,
+                automationDate,
+                now,
+              }),
+            ] as const;
+          }
+
+          if (tool === "avatar-photo") {
+            return [
+              tool,
+              await ctx.runMutation(api.automationAvatarPhoto.planDaily, {
+                secret,
+                ownerId,
+                automationDate,
+                now,
+              }),
+            ] as const;
+          }
+
+          return [
+            tool,
+            await ctx.runMutation(api.automationSwipr.planDaily, {
+              secret,
+              ownerId,
+              automationDate,
+              now,
+            }),
+          ] as const;
+        }),
+      );
+      const result: CorePlannerResult["results"][number] = { ownerId };
+
+      for (const [tool, output] of entries) {
+        result[getResultKey(tool)] = output;
+        plannedToolSet.add(tool);
+      }
+
+      results.push(result);
     }
 
     return {
       automationDate,
-      ownerCount: ownerIds.length,
-      plannedTools: ["stitchr", "swapr", "clipr", "avatar-photo", "swipr"],
+      ownerCount: ownerPreferences.length,
+      plannedTools: coreAutomationTools.filter((tool) => plannedToolSet.has(tool)),
       heldTools: [],
       results,
     };

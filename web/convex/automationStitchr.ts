@@ -125,6 +125,23 @@ export const planDaily = mutation({
       .query("automationPreferences")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
       .unique();
+
+    if (!getIsAutomationToolEnabled("stitchr")) {
+      return {
+        runId: createRunId(ownerId, automationDate),
+        status: "skipped",
+        taskIds: [],
+      };
+    }
+
+    if (!preferences?.enabled || !preferences.enabledTools.includes("stitchr")) {
+      return {
+        runId: createRunId(ownerId, automationDate),
+        status: "skipped",
+        taskIds: [],
+      };
+    }
+
     const stitchrTextStyleChoice = preferences
       ? getAutomationStitchrTextStyleChoice(preferences.stitchrTextStyleChoice)
       : defaultAutomationStitchrTextStyleChoice;
@@ -154,31 +171,6 @@ export const planDaily = mutation({
       return {
         runId: run.id,
         status: run.status,
-        taskIds: [],
-      };
-    }
-
-    if (!getIsAutomationToolEnabled("stitchr")) {
-      await markRunSkipped(
-        ctx,
-        run._id,
-        "Stitchr automation is disabled by the code flag.",
-        now,
-      );
-
-      return {
-        runId: run.id,
-        status: "skipped",
-        taskIds: [],
-      };
-    }
-
-    if (!preferences?.enabled || !preferences.enabledTools.includes("stitchr")) {
-      await markRunSkipped(ctx, run._id, "Stitchr automation is disabled.", now);
-
-      return {
-        runId: run.id,
-        status: "skipped",
         taskIds: [],
       };
     }

@@ -1,4 +1,5 @@
 import type { MutationCtx } from "./_generated/server";
+import { getAutomationToolDisabledReason } from "./getAutomationToolDisabledReason";
 
 type AutomationTaskType =
   | "avatar-photo"
@@ -33,6 +34,16 @@ export async function createAutomationTask(
     tool: AutomationTool;
   },
 ) {
+  const disabledReason = await getAutomationToolDisabledReason(
+    ctx,
+    ownerId,
+    tool,
+  );
+
+  if (disabledReason) {
+    throw new Error(disabledReason);
+  }
+
   const existing = await ctx.db
     .query("automationTasks")
     .withIndex("by_idempotency_key", (q) =>

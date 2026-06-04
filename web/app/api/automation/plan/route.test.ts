@@ -31,8 +31,19 @@ describe("POST /api/automation/plan", () => {
     process.env.AUTOMATION_WORKER_SECRET = "automation_secret";
     mocks.createConvexHttpClient.mockReturnValue(mocks.convex);
     mocks.convex.mutation.mockResolvedValue({ status: "running", taskIds: [] });
-    mocks.convex.query.mockResolvedValue({
-      preferences: [{ ownerId: "owner_1" }],
+    mocks.convex.query.mockImplementation((_fn, args) => {
+      if (args && "ownerId" in args) {
+        return Promise.resolve({
+          ownerId: "owner_123",
+          enabledTools: ["stitchr", "clipr", "swipr"],
+        });
+      }
+
+      return Promise.resolve({
+        preferences: [
+          { ownerId: "owner_1", enabledTools: ["stitchr", "clipr", "swipr"] },
+        ],
+      });
     });
   });
 
@@ -54,36 +65,18 @@ describe("POST /api/automation/plan", () => {
 
     expect(response.status).toBe(200);
     expect(body.ownerCount).toBe(1);
-    expect(body.plannedTools).toEqual([
-      "stitchr",
-      "swapr",
-      "clipr",
-      "avatar-photo",
-      "swipr",
-    ]);
+    expect(body.plannedTools).toEqual(["stitchr", "clipr", "swipr"]);
     expect(body.heldTools).toEqual([]);
-    expect(mocks.convex.query).not.toHaveBeenCalled();
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.automationStitchr.planDaily,
+    expect(mocks.convex.query.mock.calls[0]?.[1]).toEqual({
+      secret: "automation_secret",
+      ownerId: "owner_123",
+    });
+    expect(mocks.convex.mutation.mock.calls.map((call) => call[1])).toEqual([
       expect.objectContaining({ ownerId: "owner_123" }),
-    );
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.automationSwapr.planDaily,
       expect.objectContaining({ ownerId: "owner_123" }),
-    );
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.automationClipr.planDaily,
       expect.objectContaining({ ownerId: "owner_123" }),
-    );
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.automationAvatarPhoto.planDaily,
-      expect.objectContaining({ ownerId: "owner_123" }),
-    );
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.automationSwipr.planDaily,
-      expect.objectContaining({ ownerId: "owner_123" }),
-    );
-    expect(mocks.convex.mutation).toHaveBeenCalledTimes(5);
+    ]);
+    expect(mocks.convex.mutation).toHaveBeenCalledTimes(3);
   });
 
   it("loads enabled planner candidates when no owner is specified", async () => {

@@ -5,6 +5,7 @@ import type { Prediction } from "replicate";
 import { ConvexHttpClient } from "convex/browser";
 import { anyApi } from "convex/server";
 import { DEFAULT_GENERATION_SPEED_TIER } from "@/lib/clipstitchr/constants/defaultGenerationSpeedTier";
+import { getIsAutomationToolEnabled } from "@/lib/clipstitchr/constants/automationToolFeatureFlags";
 import { SWAPR_MAX_REFERENCE_DURATION_SECONDS } from "@/lib/clipstitchr/constants/swaprMaxReferenceDurationSeconds";
 import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipstitchr/constants/swaprReferenceVideoMaxSizeBytes";
 import { SWAPR_MODEL_ID } from "@/lib/clipstitchr/constants/swaprModelId";
@@ -292,7 +293,7 @@ function getEnabledTools() {
   const rawValue = process.env.PROVIDER_WORKER_TOOLS?.trim();
 
   if (!rawValue) {
-    return new Set<ProviderTool>(PROVIDER_TOOLS);
+    return new Set<ProviderTool>(PROVIDER_TOOLS.filter(getIsAutomationToolEnabled));
   }
 
   const requested = rawValue
@@ -301,7 +302,7 @@ function getEnabledTools() {
     .filter(Boolean);
   const tools = requested.filter((tool): tool is ProviderTool =>
     PROVIDER_TOOLS.includes(tool as ProviderTool),
-  );
+  ).filter(getIsAutomationToolEnabled);
 
   if (tools.length === 0) {
     throw new Error("PROVIDER_WORKER_TOOLS did not contain a supported tool.");

@@ -30,10 +30,19 @@ export const planDaily = mutation({
       return { runId, status: "skipped", taskIds: [] };
     }
 
+    if (!getIsAutomationToolEnabled("clipr")) {
+      return { runId, status: "skipped", taskIds: [] };
+    }
+
     const preferences = await ctx.db
       .query("automationPreferences")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
       .unique();
+
+    if (!preferences?.enabled || !preferences.enabledTools.includes("clipr")) {
+      return { runId, status: "skipped", taskIds: [] };
+    }
+
     const run = await createAutomationRun(ctx, {
       ownerId,
       id: runId,
@@ -48,26 +57,6 @@ export const planDaily = mutation({
 
     if (run.status !== "queued") {
       return { runId, status: run.status, taskIds: [] };
-    }
-
-    if (!getIsAutomationToolEnabled("clipr")) {
-      await markAutomationRunSkipped(
-        ctx,
-        run._id,
-        "Clipr automation is disabled by the code flag.",
-        now,
-      );
-      return { runId, status: "skipped", taskIds: [] };
-    }
-
-    if (!preferences?.enabled || !preferences.enabledTools.includes("clipr")) {
-      await markAutomationRunSkipped(
-        ctx,
-        run._id,
-        "Clipr automation is disabled.",
-        now,
-      );
-      return { runId, status: "skipped", taskIds: [] };
     }
 
     const products = await ctx.db
