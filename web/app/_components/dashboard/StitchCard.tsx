@@ -360,7 +360,7 @@ export function StitchCard({
       onClick: openEdit,
     },
     {
-      label: isPosted ? "Mark as unposted" : "Mark as posted",
+      label: isPosted ? "Mark as active" : "Mark as posted",
       icon: isPosted ? (
         <RotateCcw aria-hidden className="h-4 w-4" />
       ) : (

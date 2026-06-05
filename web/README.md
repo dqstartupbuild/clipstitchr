@@ -58,8 +58,8 @@ The app processes media in the browser and stores durable data in Convex and Clo
   each UGC-then-Demo sequence, and export one finished stitch per selected UGC.
 - Saved stitches can be reused as Stitchr templates, preselecting their source
   clips, trims, text overlays, audio flags, and playback rates for a new stitch.
-- Saved stitches can be marked posted or unposted; the Stitches library filters
-  them into Unposted, Posted, and All views without changing the saved output.
+- Saved stitches can be marked posted or active; the Stitches library filters
+  them into Active, Posted, and All views without changing the saved output.
 - Convex stores clip, photo, stitch, tag, trim, and R2 object metadata.
 - Cloudflare R2 stores normalized videos, stitched videos, photos, posters, and thumbnails.
 - Library views read Convex metadata first; preview media is hydrated from R2 as needed.

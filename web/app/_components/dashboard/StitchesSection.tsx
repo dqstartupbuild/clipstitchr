@@ -95,7 +95,7 @@ export function StitchesSection({
     label: string;
     value: StitchLibraryStatusFilter;
   }[] = [
-    { label: "Unposted", value: "active" },
+    { label: "Active", value: "active" },
     { label: "Posted", value: "posted" },
     { label: "All", value: "all" },
   ];

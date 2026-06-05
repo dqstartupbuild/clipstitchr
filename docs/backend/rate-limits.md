@@ -302,7 +302,7 @@ browser-local and are not separately rate-limited. `POST /api/stitches/music`
 consumes the Stitchr music limits before Replicate, then R2 upload limits for
 both personal and shared copies.
 
-Marking a saved stitch as posted or unposted is metadata-only. The
+Marking a saved stitch as posted or active is metadata-only. The
 `stitches.updatePostedStatus` mutation authenticates the owner, consumes the
 shared Convex metadata-update limit before patching the record, and does not
 touch R2 objects, source clips, posters, music assets, or provider APIs. Reusing

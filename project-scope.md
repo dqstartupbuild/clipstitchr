@@ -131,7 +131,7 @@ cleanup.
 | 9 | Export/download each finished TikTok 9:16 video file on demand | ✅ | ✅ |
 | 10 | Select reusable shared-library music or generate separate 60 second background music for saved stitches and mix it only at download/export time | ✅ | ✅ |
 | 11 | Reuse a saved stitch as a Stitchr template with its original source clips, trims, text, audio flags, and playback rates preselected for a new stitch | ✅ | ✅ |
-| 12 | Mark saved stitches as posted or unposted so the library can separate published outputs from active templates | ✅ | ✅ |
+| 12 | Mark saved stitches as posted or active so the library can separate published outputs from active templates | ✅ | ✅ |
 
 ### 4.3 Text Overlays
 
@@ -162,7 +162,7 @@ shared text.
 | 8 | Users can generate 1, 3, or 5 new avatar scenario photos from a selected Replicate image model | ✅ | ✅ |
 | 9 | Swapr-generated outputs appear in the Content Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
 | 10 | Clipr-generated outputs appear in the Content Library Clips tab and remain reusable as UGC-style clips | ✅ | ✅ |
-| 11 | Stitches appear in the Content Library Stitches tab with Unposted, Posted, and All status filters; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
+| 11 | Stitches appear in the Content Library Stitches tab with Active, Posted, and All status filters; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
 | 12 | The Content Library includes an All tab so users can view every saved video output type at once | ✅ | ✅ |
 | 13 | The dashboard header upload action opens an upload selector for UGC, Demo, or Photo, then routes to the relevant page/tab with controls revealed | ✅ | ✅ |
 | 14 | Demo upload and picker surfaces can filter demos by linked product | ✅ | ✅ |
