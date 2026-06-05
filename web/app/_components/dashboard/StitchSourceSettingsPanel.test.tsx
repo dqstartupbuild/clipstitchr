@@ -7,11 +7,6 @@ import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRat
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 const mocks = vi.hoisted(() => ({
-  buttons: [] as Array<{
-    disabled?: boolean;
-    isLoading?: boolean;
-    onClick?: () => void;
-  }>,
   clipSelects: [] as Array<{
     label: string;
     onChange: (clipId: string) => void;
@@ -25,23 +20,6 @@ const mocks = vi.hoisted(() => ({
     onChange: (trimRange: VideoTrimRange) => void;
     title: string;
   }>,
-}));
-
-vi.mock("@/app/_components/ui/Button", () => ({
-  Button: ({
-    children,
-    disabled,
-    isLoading,
-    onClick,
-  }: {
-    children: React.ReactNode;
-    disabled?: boolean;
-    isLoading?: boolean;
-    onClick?: () => void;
-  }) => {
-    mocks.buttons.push({ disabled, isLoading, onClick });
-    return <button type="button">{children}</button>;
-  },
 }));
 
 vi.mock("@/app/_components/dashboard/StitchSourceClipSelect", () => ({
@@ -100,23 +78,20 @@ function createClip(id: string, name: string): VideoClipMetadata {
 
 describe("StitchSourceSettingsPanel", () => {
   beforeEach(() => {
-    mocks.buttons = [];
     mocks.clipSelects = [];
     mocks.playbackRateControls = null;
     mocks.trimControls = [];
   });
 
-  it("renders source controls and forwards save, selection, trim, and speed changes", () => {
+  it("renders source controls and forwards selection, trim, and speed changes", () => {
     const onDemoClipChange = vi.fn();
     const onDemoPlaybackRateChange = vi.fn();
     const onDemoTrimChange = vi.fn();
-    const onSave = vi.fn();
     const onUgcClipChange = vi.fn();
     const onUgcPlaybackRateChange = vi.fn();
     const onUgcTrimChange = vi.fn();
     const markup = renderToStaticMarkup(
       <StitchSourceSettingsPanel
-        canSave={true}
         demoClips={[createClip("demo_1", "Demo 1")]}
         demoFallbackClip={{
           id: "demo_1",
@@ -129,7 +104,6 @@ describe("StitchSourceSettingsPanel", () => {
           start: 1,
         }}
         error="Source save failed."
-        isSaving={false}
         selectedDemoClipId="demo_1"
         selectedUgcClipId="ugc_1"
         totalDuration={12}
@@ -147,7 +121,6 @@ describe("StitchSourceSettingsPanel", () => {
         onDemoClipChange={onDemoClipChange}
         onDemoPlaybackRateChange={onDemoPlaybackRateChange}
         onDemoTrimChange={onDemoTrimChange}
-        onSave={onSave}
         onUgcClipChange={onUgcClipChange}
         onUgcPlaybackRateChange={onUgcPlaybackRateChange}
         onUgcTrimChange={onUgcTrimChange}
@@ -158,7 +131,6 @@ describe("StitchSourceSettingsPanel", () => {
     mocks.clipSelects[1].onChange("demo_2");
     mocks.trimControls[0].onChange({ end: 5, start: 2 });
     mocks.trimControls[1].onChange({ end: 8, start: 3 });
-    mocks.buttons[0].onClick?.();
     mocks.playbackRateControls?.onUgcPlaybackRateChange(1);
 
     expect(markup).toContain("Sources");
@@ -173,12 +145,7 @@ describe("StitchSourceSettingsPanel", () => {
       end: 8,
       start: 3,
     });
-    expect(onSave).toHaveBeenCalled();
     expect(onUgcPlaybackRateChange).toHaveBeenCalledWith(1);
     expect(onDemoPlaybackRateChange).not.toHaveBeenCalled();
-    expect(mocks.buttons[0]).toMatchObject({
-      disabled: false,
-      isLoading: false,
-    });
   });
 });

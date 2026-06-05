@@ -9,10 +9,12 @@ import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetad
 type CliprMusicControlsProps = {
   enabled: boolean;
   error: string | null;
+  hasUnsavedChanges?: boolean;
   isGenerating: boolean;
   isLoadingPreview: boolean;
   isSaving: boolean;
   music: CliprMusicMetadata | null;
+  showSaveButton?: boolean;
   volume: number;
   onEnabledChange: (enabled: boolean) => void;
   onGenerate: () => void;
@@ -25,10 +27,12 @@ type CliprMusicControlsProps = {
 export function CliprMusicControls({
   enabled,
   error,
+  hasUnsavedChanges = false,
   isGenerating,
   isLoadingPreview,
   isSaving,
   music,
+  showSaveButton = true,
   volume,
   onEnabledChange,
   onGenerate,
@@ -37,6 +41,9 @@ export function CliprMusicControls({
   onSelectTrack,
   onVolumeChange,
 }: CliprMusicControlsProps) {
+  const shouldShowSaveButton =
+    showSaveButton && (Boolean(music) || hasUnsavedChanges);
+
   return (
     <div className="rounded-lg border border-border bg-surface-elevated p-3">
       <div className="flex items-center justify-between gap-3">
@@ -96,27 +103,27 @@ export function CliprMusicControls({
 
       <div className="mt-3 flex flex-wrap justify-end gap-2">
         {music ? (
-          <>
-            <Button
-              type="button"
-              variant="danger"
-              size="sm"
-              isLoading={isSaving}
-              onClick={onRemove}
-            >
-              Remove music
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              icon={<Save aria-hidden className="h-4 w-4" />}
-              isLoading={isSaving}
-              onClick={onSave}
-            >
-              Save music
-            </Button>
-          </>
+          <Button
+            type="button"
+            variant="danger"
+            size="sm"
+            isLoading={isSaving}
+            onClick={onRemove}
+          >
+            Remove music
+          </Button>
+        ) : null}
+        {shouldShowSaveButton ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            icon={<Save aria-hidden className="h-4 w-4" />}
+            isLoading={isSaving}
+            onClick={onSave}
+          >
+            Save music
+          </Button>
         ) : null}
         <Button
           type="button"

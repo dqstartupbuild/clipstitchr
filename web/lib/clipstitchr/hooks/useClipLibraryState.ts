@@ -113,7 +113,6 @@ export function useClipLibraryState(): ClipLibraryValue {
   const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
   const updateCliprMusicMutation = useMutation(api.videoClips.updateCliprMusic);
   const updateStitchMusicMutation = useMutation(api.stitches.updateMusic);
-  const updateStitchPosterMutation = useMutation(api.stitches.updatePoster);
   const updateStitchSourceSettingsMutation = useMutation(
     api.stitches.updateSourceSettings,
   );
@@ -531,13 +530,9 @@ export function useClipLibraryState(): ClipLibraryValue {
         return null;
       }
 
-      const music = await requestCliprMusicGeneration({ clipId: clip.id });
-
-      await updateCliprMusic(clip, music);
-
-      return music;
+      return requestCliprMusicGeneration({ clipId: clip.id });
     },
-    [updateCliprMusic],
+    [],
   );
 
   const updateStitchMusic = useCallback(
@@ -640,44 +635,6 @@ export function useClipLibraryState(): ClipLibraryValue {
         ),
       );
       const firstTextOverlay = nextTextOverlays[0] ?? null;
-      let posterObject: R2ObjectReference | undefined;
-
-      try {
-        const [ugcClip, demoClip] = await Promise.all([
-          loadClip(stitch.ugcClipId),
-          loadClip(stitch.demoClipId),
-        ]);
-
-        if (ugcClip && demoClip) {
-          const posterBlob = await createStitchPosterBlob({
-            demoClip,
-            demoPlaybackRate: stitch.demoPlaybackRate,
-            demoTrimRange: stitch.demoTrimRange ?? {
-              start: 0,
-              end: demoClip.duration,
-            },
-            duration: stitch.duration,
-            textOverlay: firstTextOverlay,
-            textOverlays: nextTextOverlays,
-            ugcClip,
-            ugcPlaybackRate: stitch.ugcPlaybackRate,
-            ugcTrimRange: stitch.ugcTrimRange ?? {
-              start: 0,
-              end: ugcClip.duration,
-            },
-          });
-
-          [posterObject] = await uploadBlobsToR2([
-            {
-              blob: posterBlob,
-              kind: "stitch-poster",
-              recordId: stitch.id,
-            },
-          ]);
-        }
-      } catch {
-        posterObject = undefined;
-      }
 
       await updateStitchTextOverlayMutation({
         id: stitch.id,
@@ -685,23 +642,9 @@ export function useClipLibraryState(): ClipLibraryValue {
         textOverlays: nextTextOverlays,
       });
 
-      if (posterObject) {
-        await updateStitchPosterMutation({
-          id: stitch.id,
-          posterObject,
-          posterVersion: VIDEO_POSTER_CAPTURE_VERSION,
-        });
-        posterBlobCacheRef.current.delete(posterObject.key);
-      }
-
       await refresh();
     },
-    [
-      loadClip,
-      refresh,
-      updateStitchPosterMutation,
-      updateStitchTextOverlayMutation,
-    ],
+    [refresh, updateStitchTextOverlayMutation],
   );
 
   const updateStitchPostedStatus = useCallback(
@@ -717,15 +660,11 @@ export function useClipLibraryState(): ClipLibraryValue {
 
   const generateStitchMusic = useCallback(
     async (stitch: Stitch) => {
-      const music = await requestStitchMusicGeneration({
+      return requestStitchMusicGeneration({
         stitchId: stitch.id,
       });
-
-      await updateStitchMusic(stitch, music);
-
-      return music;
     },
-    [updateStitchMusic],
+    [],
   );
 
   const removeStitch = useCallback(

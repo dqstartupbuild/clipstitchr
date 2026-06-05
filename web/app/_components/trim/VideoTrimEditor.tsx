@@ -12,6 +12,7 @@ type VideoTrimEditorProps = {
   duration: number;
   title: string;
   saveLabel: string;
+  showActions?: boolean;
   value: VideoTrimRange;
   onCancel: () => void;
   onChange: (trimRange: VideoTrimRange) => void;
@@ -22,6 +23,7 @@ export function VideoTrimEditor({
   duration,
   title,
   saveLabel,
+  showActions = true,
   value,
   onCancel,
   onChange,
@@ -59,20 +61,22 @@ export function VideoTrimEditor({
         <span>Start {formatDuration(value.start)}</span>
         <span>End {formatDuration(value.end)}</span>
       </div>
-      <div className="mt-3 flex justify-end gap-2">
-        <Button type="button" variant="subtle" size="sm" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          icon={<Save aria-hidden className="h-4 w-4" />}
-          isLoading={isSaving}
-          onClick={handleSave}
-        >
-          {saveLabel}
-        </Button>
-      </div>
+      {showActions ? (
+        <div className="mt-3 flex justify-end gap-2">
+          <Button type="button" variant="subtle" size="sm" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            icon={<Save aria-hidden className="h-4 w-4" />}
+            isLoading={isSaving}
+            onClick={handleSave}
+          >
+            {saveLabel}
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

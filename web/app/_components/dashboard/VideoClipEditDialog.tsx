@@ -15,6 +15,7 @@ import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { areVideoTrimRangesEqual } from "@/lib/clipstitchr/utils/areVideoTrimRangesEqual";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
@@ -92,14 +93,42 @@ export function VideoClipEditDialog({
       ? (clip.productId ?? "")
       : "",
   );
-  const [isSavingMetadata, setIsSavingMetadata] = useState(false);
   const musicState = useVideoClipDetailsMusic({ clip, musicEditor });
   const shouldShowProductFields = clip.clipType === "demo";
   const shouldShowPersonFields = clip.clipType === "ugc";
   const shouldShowProductSelect = shouldShowProductFields && products.length > 0;
   const trimmedName = name.trim();
+  const currentMetadata: AssetMetadataUpdate = {
+    locationDescription: locationDescription.trim(),
+    mainPersonDescription: shouldShowPersonFields
+      ? mainPersonDescription.trim()
+      : undefined,
+    name: trimmedName,
+    outfitDescription: shouldShowPersonFields
+      ? outfitDescription.trim()
+      : undefined,
+    poseDescription: poseDescription.trim(),
+    productDescription: shouldShowProductFields
+      ? productDescription.trim()
+      : undefined,
+    ...(shouldShowProductFields && shouldShowProductSelect ? { productId } : {}),
+    tags: normalizeAssetTagsWithRequiredTag(tags, clip.clipType),
+    videoDescription: videoDescription.trim(),
+  };
+  const currentMetadataKey = JSON.stringify(currentMetadata);
+  const [savedMetadataKey, setSavedMetadataKey] = useState(
+    () => currentMetadataKey,
+  );
+  const [isSavingChanges, setIsSavingChanges] = useState(false);
   const canSaveMetadata =
     trimmedName.length > 0 && (!shouldShowProductSelect || productId.length > 0);
+  const hasMetadataChanges = currentMetadataKey !== savedMetadataKey;
+  const hasTrimChanges =
+    Boolean(trimEditor) && !areVideoTrimRangesEqual(activeTrimRange, savedTrimRange);
+  const hasChanges =
+    hasMetadataChanges || hasTrimChanges || musicState.hasUnsavedChanges;
+  const canSaveChanges =
+    canSaveMetadata && hasChanges && !isSavingChanges && !musicState.isSaving;
   const displayDuration = getVideoTrimDisplayDuration(
     clip.duration,
     activeTrimRange,
@@ -121,35 +150,28 @@ export function VideoClipEditDialog({
     setSavedTrimRange(clampedTrimRange);
   };
 
-  const handleSaveMetadata = async () => {
-    if (!canSaveMetadata) {
+  const handleSaveChanges = async () => {
+    if (!canSaveChanges) {
       return;
     }
 
-    setIsSavingMetadata(true);
+    setIsSavingChanges(true);
 
     try {
-      await onSaveMetadata({
-        locationDescription: locationDescription.trim(),
-        mainPersonDescription: shouldShowPersonFields
-          ? mainPersonDescription.trim()
-          : undefined,
-        name: trimmedName,
-        outfitDescription: shouldShowPersonFields
-          ? outfitDescription.trim()
-          : undefined,
-        poseDescription: poseDescription.trim(),
-        productDescription: shouldShowProductFields
-          ? productDescription.trim()
-          : undefined,
-        ...(shouldShowProductFields && shouldShowProductSelect
-          ? { productId }
-          : {}),
-        tags: normalizeAssetTagsWithRequiredTag(tags, clip.clipType),
-        videoDescription: videoDescription.trim(),
-      });
+      if (hasMetadataChanges) {
+        await onSaveMetadata(currentMetadata);
+        setSavedMetadataKey(currentMetadataKey);
+      }
+
+      if (trimEditor && hasTrimChanges) {
+        await handleSaveTrim(activeTrimRange);
+      }
+
+      if (musicState.hasUnsavedChanges) {
+        await musicState.saveMusic();
+      }
     } finally {
-      setIsSavingMetadata(false);
+      setIsSavingChanges(false);
     }
   };
 
@@ -175,12 +197,24 @@ export function VideoClipEditDialog({
               {clip.name}
             </h2>
           </div>
-          <IconButton
-            type="button"
-            label="Close clip editor"
-            icon={<X aria-hidden className="h-4 w-4" />}
-            onClick={onClose}
-          />
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              icon={<Save aria-hidden className="h-4 w-4" />}
+              isLoading={isSavingChanges || musicState.isSaving}
+              disabled={!canSaveChanges}
+              onClick={() => void handleSaveChanges()}
+            >
+              Save changes
+            </Button>
+            <IconButton
+              type="button"
+              label="Close clip editor"
+              icon={<X aria-hidden className="h-4 w-4" />}
+              onClick={onClose}
+            />
+          </div>
         </div>
         <div className="grid gap-5 p-5 lg:grid-cols-[300px_minmax(0,1fr)]">
           <div className="flex flex-col gap-4">
@@ -225,16 +259,6 @@ export function VideoClipEditDialog({
                 <h3 className="text-sm font-bold text-text-primary">
                   Details
                 </h3>
-                <Button
-                  type="button"
-                  size="sm"
-                  icon={<Save aria-hidden className="h-4 w-4" />}
-                  isLoading={isSavingMetadata}
-                  disabled={!canSaveMetadata}
-                  onClick={() => void handleSaveMetadata()}
-                >
-                  Save details
-                </Button>
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <label className="block md:col-span-2">
@@ -366,6 +390,7 @@ export function VideoClipEditDialog({
                 duration={clip.duration}
                 title={trimEditor.title}
                 saveLabel={trimEditor.saveLabel}
+                showActions={false}
                 value={activeTrimRange}
                 onCancel={handleCancelTrim}
                 onChange={setActiveTrimRange}
@@ -376,10 +401,12 @@ export function VideoClipEditDialog({
               <CliprMusicControls
                 enabled={musicState.musicEnabled}
                 error={musicState.error}
+                hasUnsavedChanges={musicState.hasUnsavedChanges}
                 isGenerating={musicState.isGenerating}
                 isLoadingPreview={musicState.isMusicLoading}
                 isSaving={musicState.isSaving}
                 music={musicState.music}
+                showSaveButton={false}
                 volume={musicState.musicVolume}
                 onEnabledChange={musicState.setMusicEnabled}
                 onGenerate={() => void musicState.generateMusic()}

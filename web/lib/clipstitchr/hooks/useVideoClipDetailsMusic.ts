@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { downloadMusicBlob } from "@/lib/clipstitchr/client/r2/downloadMusicBlob";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { createCliprMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createCliprMusicMetadataFromSharedTrack";
+import { createMusicMetadataComparisonKey } from "@/lib/clipstitchr/utils/createMusicMetadataComparisonKey";
 
 type UseVideoClipDetailsMusicOptions = {
   clip: VideoClipMetadata;
@@ -17,8 +18,12 @@ export function useVideoClipDetailsMusic({
   clip,
   musicEditor,
 }: UseVideoClipDetailsMusicOptions) {
+  const initialMusic = clip.cliprMetadata?.music ?? null;
   const [music, setMusic] = useState<CliprMusicMetadata | null>(
-    clip.cliprMetadata?.music ?? null,
+    initialMusic,
+  );
+  const [savedMusic, setSavedMusic] = useState<CliprMusicMetadata | null>(
+    initialMusic,
   );
   const [musicEnabled, setMusicEnabled] = useState(
     clip.cliprMetadata?.music?.enabled ?? true,
@@ -38,6 +43,20 @@ export function useVideoClipDetailsMusic({
     musicObjectKey && musicBlobState?.key === musicObjectKey
       ? musicBlobState.blob
       : null;
+  const currentMusic = useMemo(
+    () =>
+      music
+        ? {
+            ...music,
+            enabled: musicEnabled,
+            volume: musicVolume,
+          }
+        : null,
+    [music, musicEnabled, musicVolume],
+  );
+  const hasUnsavedChanges =
+    createMusicMetadataComparisonKey(currentMusic) !==
+    createMusicMetadataComparisonKey(savedMusic);
 
   useEffect(() => {
     let isCancelled = false;
@@ -111,39 +130,36 @@ export function useVideoClipDetailsMusic({
   }, [musicEditor]);
 
   const removeMusic = useCallback(async () => {
-    if (!musicEditor) {
-      return;
-    }
-
-    try {
-      await musicEditor.onRemove();
-      setMusic(null);
-      setMusicBlobState(null);
-      setMusicLoadError(null);
-    } catch {
-      return;
-    }
-  }, [musicEditor]);
+    setMusic(null);
+    setMusicBlobState(null);
+    setMusicLoadError(null);
+  }, []);
 
   const saveMusic = useCallback(async () => {
-    if (!music || !musicEditor) {
-      return;
+    if (!musicEditor || !hasUnsavedChanges) {
+      return true;
     }
 
-    const nextMusic = {
-      ...music,
-      enabled: musicEnabled,
-      volume: musicVolume,
-      updatedAt: new Date().toISOString(),
-    };
+    const nextMusic = currentMusic
+      ? {
+          ...currentMusic,
+          updatedAt: new Date().toISOString(),
+        }
+      : null;
 
     try {
-      await musicEditor.onSave(nextMusic);
+      if (nextMusic) {
+        await musicEditor.onSave(nextMusic);
+      } else {
+        await musicEditor.onRemove();
+      }
       setMusic(nextMusic);
+      setSavedMusic(nextMusic);
+      return true;
     } catch {
-      return;
+      return false;
     }
-  }, [music, musicEditor, musicEnabled, musicVolume]);
+  }, [currentMusic, hasUnsavedChanges, musicEditor]);
 
   const selectMusicTrack = useCallback(
     async (track: SharedMusicTrack) => {
@@ -153,16 +169,11 @@ export function useVideoClipDetailsMusic({
 
       const nextMusic = createCliprMusicMetadataFromSharedTrack(track);
 
-      try {
-        await musicEditor.onSave(nextMusic);
-        setMusic(nextMusic);
-        setMusicEnabled(nextMusic.enabled);
-        setMusicVolume(nextMusic.volume);
-        setMusicBlobState(null);
-        setMusicLoadError(null);
-      } catch {
-        return;
-      }
+      setMusic(nextMusic);
+      setMusicEnabled(nextMusic.enabled);
+      setMusicVolume(nextMusic.volume);
+      setMusicBlobState(null);
+      setMusicLoadError(null);
     },
     [musicEditor],
   );
@@ -173,6 +184,7 @@ export function useVideoClipDetailsMusic({
     isGenerating: musicEditor?.isGenerating ?? false,
     isMusicLoading,
     isSaving: musicEditor?.isSaving ?? false,
+    hasUnsavedChanges,
     music,
     musicBlob,
     musicEnabled,

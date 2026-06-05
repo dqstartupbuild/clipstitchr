@@ -530,7 +530,7 @@ describe("useClipLibraryState", () => {
     );
   });
 
-  it("generates, replaces, and removes Clipr music with owned-audio cleanup", async () => {
+  it("generates Clipr music drafts and saves replacements with owned-audio cleanup", async () => {
     const state = useClipLibraryState();
     const clip = createClipMetadata();
     const replacementMusic = {
@@ -546,9 +546,8 @@ describe("useClipLibraryState", () => {
     await state.updateCliprMusic(clip, null);
 
     expect(mocks.generateCliprMusic).toHaveBeenCalledWith({ clipId: "clip_1" });
-    expect(getMutation("videoClips.updateCliprMusic")).toHaveBeenCalledWith(
+    expect(getMutation("videoClips.updateCliprMusic")).not.toHaveBeenCalledWith(
       expect.objectContaining({
-        id: "clip_1",
         music: expect.objectContaining({
           audioObject: { key: "users/user_123/music/new-clipr.mp3" },
         }),
@@ -624,7 +623,7 @@ describe("useClipLibraryState", () => {
     expect(mocks.generateCliprMusic).not.toHaveBeenCalled();
   });
 
-  it("updates stitch music and text overlays, then removes stitch media", async () => {
+  it("generates stitch music drafts and updates music and text overlays without poster work", async () => {
     const state = useClipLibraryState();
     const stitch = createStitch();
     const textOverlay = {
@@ -667,13 +666,7 @@ describe("useClipLibraryState", () => {
         ]),
       }),
     );
-    expect(getMutation("stitches.updatePoster")).toHaveBeenCalledWith({
-      id: "stitch_1",
-      posterObject: expect.objectContaining({
-        key: "users/user_123/stitches/stitch_1/poster.jpg",
-      }),
-      posterVersion: 2,
-    });
+    expect(mocks.useMutation).not.toHaveBeenCalledWith("stitches.updatePoster");
     expect(getMutation("stitches.updatePostedStatus")).toHaveBeenCalledWith({
       id: "stitch_1",
       isPosted: true,

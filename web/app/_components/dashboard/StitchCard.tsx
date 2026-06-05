@@ -300,12 +300,13 @@ export function StitchCard({
   };
   const handleUpdateSourceSettings = async (
     update: StitchSourceSettingsUpdate,
+    stitchOverride = stitch,
   ) => {
     setIsSavingSourceSettings(true);
     setSourceSettingsError(null);
 
     try {
-      await onUpdateSourceSettings(stitch, update);
+      await onUpdateSourceSettings(stitchOverride, update);
     } catch (nextError) {
       setSourceSettingsError(
         nextError instanceof Error

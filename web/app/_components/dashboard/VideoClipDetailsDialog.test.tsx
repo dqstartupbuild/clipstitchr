@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   musicState: {
     error: null as string | null,
     generateMusic: vi.fn(),
+    hasUnsavedChanges: false,
     isGenerating: false,
     isMusicLoading: false,
     isSaving: false,
@@ -180,6 +181,7 @@ describe("VideoClipDetailsDialog", () => {
     mocks.musicState = {
       error: null,
       generateMusic: vi.fn(async () => undefined),
+      hasUnsavedChanges: false,
       isGenerating: false,
       isMusicLoading: false,
       isSaving: false,

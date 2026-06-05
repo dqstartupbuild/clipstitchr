@@ -207,6 +207,7 @@ export function VideoClipDetailsDialog({
                   <CliprMusicControls
                     enabled={musicState.musicEnabled}
                     error={musicState.error}
+                    hasUnsavedChanges={musicState.hasUnsavedChanges}
                     isGenerating={musicState.isGenerating}
                     isLoadingPreview={musicState.isMusicLoading}
                     isSaving={musicState.isSaving}

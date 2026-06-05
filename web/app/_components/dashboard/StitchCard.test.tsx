@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => ({
     onSaveMusic: (music: StitchMusicMetadata) => Promise<void>;
     onSaveSourceSettings: (
       update: StitchSourceSettingsUpdate,
+      stitchOverride?: Stitch,
     ) => Promise<void>;
     onSaveTextOverlay: (
       textOverlay: TextOverlay | TextOverlay[] | null,

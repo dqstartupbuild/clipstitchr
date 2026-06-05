@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("react", () => ({
   useCallback: (callback: unknown) => callback,
   useEffect: mocks.useEffect,
+  useMemo: (callback: () => unknown) => callback(),
   useState: (initialValue: unknown) => [
     typeof initialValue === "function"
       ? (initialValue as () => unknown)()
@@ -156,7 +157,7 @@ describe("useVideoClipDetailsMusic", () => {
     expect(mocks.useStateSetter).toHaveBeenCalledWith(false);
   });
 
-  it("generates, saves, removes, and selects music through the editor", async () => {
+  it("generates, removes, and selects music as local draft changes", async () => {
     const editor = {
       error: "editor error",
       isGenerating: true,
@@ -185,8 +186,15 @@ describe("useVideoClipDetailsMusic", () => {
     expect(state.isGenerating).toBe(true);
     expect(state.isSaving).toBe(true);
     expect(editor.onGenerate).toHaveBeenCalledTimes(1);
-    expect(editor.onRemove).toHaveBeenCalledTimes(1);
-    expect(editor.onSave).toHaveBeenCalledWith(
+    expect(editor.onRemove).not.toHaveBeenCalled();
+    expect(editor.onSave).not.toHaveBeenCalled();
+    expect(mocks.useStateSetter).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Generated",
+      }),
+    );
+    expect(mocks.useStateSetter).toHaveBeenCalledWith(null);
+    expect(mocks.useStateSetter).toHaveBeenCalledWith(
       expect.objectContaining({
         audioObject: expect.objectContaining({
           key: "users/user_123/music/track.mp3",
@@ -198,7 +206,7 @@ describe("useVideoClipDetailsMusic", () => {
     );
   });
 
-  it("ignores editor commands when no editor is available or persistence fails", async () => {
+  it("ignores editor commands when no editor is available", async () => {
     const stateWithoutEditor = useVideoClipDetailsMusic({
       clip: createClip(),
     });
@@ -208,30 +216,6 @@ describe("useVideoClipDetailsMusic", () => {
     await stateWithoutEditor.saveMusic();
     await stateWithoutEditor.selectMusicTrack(createSharedTrack());
 
-    const failingEditor = {
-      error: null,
-      isGenerating: false,
-      isSaving: false,
-      onGenerate: vi.fn(async () => null),
-      onRemove: vi.fn(async () => {
-        throw new Error("remove failed");
-      }),
-      onSave: vi.fn(async () => {
-        throw new Error("save failed");
-      }),
-    };
-    const stateWithFailingEditor = useVideoClipDetailsMusic({
-      clip: createClip(),
-      musicEditor: failingEditor,
-    });
-
-    await stateWithFailingEditor.generateMusic();
-    await stateWithFailingEditor.removeMusic();
-    await stateWithFailingEditor.saveMusic();
-    await stateWithFailingEditor.selectMusicTrack(createSharedTrack());
-
-    expect(failingEditor.onGenerate).toHaveBeenCalledTimes(1);
-    expect(failingEditor.onRemove).toHaveBeenCalledTimes(1);
-    expect(failingEditor.onSave).toHaveBeenCalledTimes(2);
+    expect(mocks.useStateSetter).toHaveBeenCalledWith(null);
   });
 });
