@@ -5,6 +5,7 @@ import {
   remove,
   save,
   updateMusic,
+  updatePostedStatus,
   updatePoster,
   updateRenderedVideo,
   updateSourceSettings,
@@ -128,6 +129,18 @@ describe("convex stitches", () => {
       numItems: 20,
     });
 
+    setup = createCtx([], stitches);
+    await expect(
+      getHandler(list)(setup.ctx, {
+        paginationOpts: { cursor: null, numItems: 20 },
+        postedStatus: "posted",
+      }),
+    ).resolves.toBe(stitches);
+    expect(setup.chain.withIndex).toHaveBeenCalledWith(
+      "by_owner_is_posted_created",
+      expect.any(Function),
+    );
+
     setup = createCtx([null]);
     await expect(getHandler(save)(setup.ctx, createSaveArgs())).resolves.toBe(
       "doc_inserted",
@@ -151,7 +164,7 @@ describe("convex stitches", () => {
     );
   });
 
-  it("updates poster, rendered video, source settings, music, and text overlay", async () => {
+  it("updates poster, rendered video, source settings, music, text, and posted status", async () => {
     const setup = createCtx([
       { _id: "doc_1", id: "stitch_1" },
       { _id: "doc_1", id: "stitch_1" },
@@ -159,6 +172,7 @@ describe("convex stitches", () => {
       { _id: "doc_1", id: "stitch_1" },
       { id: "ugc_2", clipType: "ugc", name: "UGC 2" },
       { id: "demo_2", clipType: "demo", name: "Demo 2" },
+      { _id: "doc_1", id: "stitch_1" },
       { _id: "doc_1", id: "stitch_1" },
     ]);
 
@@ -201,6 +215,10 @@ describe("convex stitches", () => {
       id: "stitch_1",
       textOverlay: null,
     });
+    await getHandler(updatePostedStatus)(setup.ctx, {
+      id: "stitch_1",
+      isPosted: true,
+    });
 
     expect(setup.ctx.db.patch).toHaveBeenCalledWith(
       "doc_1",
@@ -229,6 +247,13 @@ describe("convex stitches", () => {
     expect(setup.ctx.db.patch).toHaveBeenCalledWith("doc_1", {
       textOverlay: undefined,
     });
+    expect(setup.ctx.db.patch).toHaveBeenCalledWith(
+      "doc_1",
+      expect.objectContaining({
+        isPosted: true,
+        postedAt: expect.any(String),
+      }),
+    );
   });
 
   it("throws for missing updates and returns removed stitches", async () => {

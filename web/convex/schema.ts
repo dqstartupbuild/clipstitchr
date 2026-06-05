@@ -190,10 +190,13 @@ export default defineSchema({
     music: v.optional(stitchMusicMetadataValidator),
     textOverlay: v.optional(textOverlayValidator),
     textOverlays: v.optional(textOverlaysValidator),
+    isPosted: v.optional(v.boolean()),
+    postedAt: v.optional(v.string()),
     automation: v.optional(automationProvenanceValidator),
     createdAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_is_posted_created", ["ownerId", "isPosted", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
   sharedMusicTracks: defineTable({
     id: v.string(),

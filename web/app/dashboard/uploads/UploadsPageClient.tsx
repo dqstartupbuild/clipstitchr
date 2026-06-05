@@ -21,6 +21,7 @@ import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadCont
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
+import type { StitchLibraryStatusFilter } from "@/lib/clipstitchr/types/StitchLibraryStatusFilter";
 import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
@@ -112,6 +113,8 @@ export function UploadsPageClient() {
     string | undefined
   >();
   const [demoUploadProductId, setDemoUploadProductId] = useState("");
+  const [stitchStatusFilter, setStitchStatusFilter] =
+    useState<StitchLibraryStatusFilter>("active");
   const productIds = useMemo(
     () => new Set(products.products.map((product) => product.id)),
     [products.products],
@@ -165,9 +168,39 @@ export function UploadsPageClient() {
       library.videoGroups.ugc.clips,
     ],
   );
-  const stitches = useMemo(
+  const activeStitches = useMemo(
     () => filterStitchesByName(library.stitches, searchQuery),
     [library.stitches, searchQuery],
+  );
+  const postedStitches = useMemo(
+    () => filterStitchesByName(library.postedStitches, searchQuery),
+    [library.postedStitches, searchQuery],
+  );
+  const allStitches = useMemo(
+    () =>
+      [...activeStitches, ...postedStitches].sort((left, right) => {
+        const leftTime = Date.parse(left.createdAt);
+        const rightTime = Date.parse(right.createdAt);
+
+        return library.sortOrder === "oldest"
+          ? leftTime - rightTime
+          : rightTime - leftTime;
+      }),
+    [activeStitches, library.sortOrder, postedStitches],
+  );
+  const stitches =
+    stitchStatusFilter === "posted"
+      ? postedStitches
+      : stitchStatusFilter === "all"
+        ? allStitches
+        : activeStitches;
+  const stitchStatusCounts = useMemo(
+    () => ({
+      active: activeStitches.length,
+      all: allStitches.length,
+      posted: postedStitches.length,
+    }),
+    [activeStitches.length, allStitches.length, postedStitches.length],
   );
   const swipes = useMemo(() => {
     const sortedSwipes = [...swiprLibrary.swipes].sort((left, right) => {
@@ -229,6 +262,32 @@ export function UploadsPageClient() {
                 group: library.videoGroups.swapr,
               }
             : null;
+  const selectedStitchHasMoreItems =
+    stitchStatusFilter === "posted"
+      ? library.hasMorePostedStitches
+      : stitchStatusFilter === "all"
+        ? library.hasMoreStitches || library.hasMorePostedStitches
+        : library.hasMoreStitches;
+  const selectedStitchIsLoadingMoreItems =
+    stitchStatusFilter === "posted"
+      ? library.isLoadingMorePostedStitches
+      : stitchStatusFilter === "all"
+        ? library.isLoadingMoreStitches || library.isLoadingMorePostedStitches
+        : library.isLoadingMoreStitches;
+  const handleLoadMoreSelectedStitches = useCallback(() => {
+    if (stitchStatusFilter === "posted") {
+      library.loadMorePostedStitches();
+      return;
+    }
+
+    if (stitchStatusFilter === "all") {
+      library.loadMoreStitches();
+      library.loadMorePostedStitches();
+      return;
+    }
+
+    library.loadMoreStitches();
+  }, [library, stitchStatusFilter]);
 
   const handleTabChange = useCallback((nextTab: UploadLibraryTab) => {
     setSelectedTab(nextTab);
@@ -497,10 +556,8 @@ export function UploadsPageClient() {
             <StitchesSection
               key={`all-stitches-${searchQuery}-${library.sortOrder}`}
               demoClips={library.videoGroups.demo.clips}
-              stitches={stitches}
-              totalCount={
-                canUseLibraryTotals ? library.counts.stitches : undefined
-              }
+              stitches={activeStitches}
+              totalCount={hasSearchQuery ? undefined : activeStitches.length}
               emptyTitle={hasSearchQuery ? "No matching stitches" : undefined}
               emptyDescription={
                 hasSearchQuery
@@ -515,6 +572,7 @@ export function UploadsPageClient() {
               onLoadMoreItems={library.loadMoreStitches}
               onLoadPoster={library.loadStitchPoster}
               onUpdateMusic={library.updateStitchMusic}
+              onUpdatePostedStatus={library.updateStitchPostedStatus}
               onUpdateSourceSettings={library.updateStitchSourceSettings}
               onUpdateTextOverlay={library.updateStitchTextOverlay}
               ugcClips={stitchrUgcClips}
@@ -587,22 +645,36 @@ export function UploadsPageClient() {
             demoClips={library.videoGroups.demo.clips}
             stitches={stitches}
             totalCount={
-              canUseLibraryTotals ? library.counts.stitches : undefined
+              hasSearchQuery ? undefined : stitchStatusCounts[stitchStatusFilter]
             }
-            emptyTitle={hasSearchQuery ? "No matching stitches" : undefined}
+            emptyTitle={
+              hasSearchQuery
+                ? "No matching stitches"
+                : stitchStatusFilter === "posted"
+                  ? "No posted stitches"
+                  : stitchStatusFilter === "all"
+                    ? "No stitches yet"
+                    : undefined
+            }
             emptyDescription={
               hasSearchQuery
                 ? "No stitches match that name."
-                : undefined
+                : stitchStatusFilter === "posted"
+                  ? "Mark finished stitches as posted after they go live."
+                  : undefined
             }
-            hasMoreItems={library.hasMoreStitches}
-            isLoadingMoreItems={library.isLoadingMoreStitches}
+            hasMoreItems={selectedStitchHasMoreItems}
+            isLoadingMoreItems={selectedStitchIsLoadingMoreItems}
             onDelete={library.removeStitch}
             onGenerateMusic={library.generateStitchMusic}
             onLoadClip={library.loadClip}
-            onLoadMoreItems={library.loadMoreStitches}
+            onLoadMoreItems={handleLoadMoreSelectedStitches}
             onLoadPoster={library.loadStitchPoster}
+            statusCounts={stitchStatusCounts}
+            statusFilter={stitchStatusFilter}
+            onStatusFilterChange={setStitchStatusFilter}
             onUpdateMusic={library.updateStitchMusic}
+            onUpdatePostedStatus={library.updateStitchPostedStatus}
             onUpdateSourceSettings={library.updateStitchSourceSettings}
             onUpdateTextOverlay={library.updateStitchTextOverlay}
             ugcClips={stitchrUgcClips}

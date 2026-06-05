@@ -10,6 +10,7 @@ import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibrary
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
+import type { StitchLibraryStatusFilter } from "@/lib/clipstitchr/types/StitchLibraryStatusFilter";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -24,6 +25,8 @@ type StitchesSectionProps = {
   hasMoreItems?: boolean;
   id?: string;
   isLoadingMoreItems?: boolean;
+  statusCounts?: Record<StitchLibraryStatusFilter, number>;
+  statusFilter?: StitchLibraryStatusFilter;
   title?: string;
   totalCount?: number;
   onDelete: (id: string) => void | Promise<void>;
@@ -31,9 +34,14 @@ type StitchesSectionProps = {
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadMoreItems?: () => void;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
+  onStatusFilterChange?: (status: StitchLibraryStatusFilter) => void;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
+  ) => void | Promise<void>;
+  onUpdatePostedStatus: (
+    stitch: Stitch,
+    isPosted: boolean,
   ) => void | Promise<void>;
   onUpdateSourceSettings: (
     stitch: Stitch,
@@ -54,6 +62,8 @@ export function StitchesSection({
   hasMoreItems = false,
   id = "stitches",
   isLoadingMoreItems = false,
+  statusCounts,
+  statusFilter = "active",
   title = "Stitches",
   totalCount,
   onDelete,
@@ -61,7 +71,9 @@ export function StitchesSection({
   onLoadClip,
   onLoadMoreItems,
   onLoadPoster,
+  onStatusFilterChange,
   onUpdateMusic,
+  onUpdatePostedStatus,
   onUpdateSourceSettings,
   onUpdateTextOverlay,
   ugcClips,
@@ -79,6 +91,14 @@ export function StitchesSection({
     itemPluralName: "stitches",
     onDelete,
   });
+  const statusFilterOptions: {
+    label: string;
+    value: StitchLibraryStatusFilter;
+  }[] = [
+    { label: "Unposted", value: "active" },
+    { label: "Posted", value: "posted" },
+    { label: "All", value: "all" },
+  ];
 
   return (
     <section id={id}>
@@ -89,22 +109,51 @@ export function StitchesSection({
             {totalCount ?? stitches.length}
           </span>
         </div>
-        {stitches.length ? (
-          <LibraryBatchActionBar
-            areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
-            isDeletingSelected={batchDelete.isDeletingSelected}
-            isSelecting={batchDelete.isSelecting}
-            selectedCount={batchDelete.selectedCount}
-            visibleItemCount={batchDelete.visibleItemCount}
-            onClearSelection={batchDelete.clearSelection}
-            onDeleteSelected={() => {
-              void batchDelete.deleteSelectedItems();
-            }}
-            onSelectVisible={batchDelete.selectVisibleItems}
-            onStartSelecting={batchDelete.startSelecting}
-            onStopSelecting={batchDelete.stopSelecting}
-          />
-        ) : null}
+        <div className="flex flex-col gap-2 sm:items-end">
+          {onStatusFilterChange ? (
+            <div
+              className="inline-flex flex-wrap gap-1 rounded-lg border border-border bg-slate-100 p-1"
+              aria-label="Stitch status filter"
+            >
+              {statusFilterOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => onStatusFilterChange(option.value)}
+                  className={[
+                    "h-8 rounded-md px-3 text-sm font-semibold transition-colors",
+                    statusFilter === option.value
+                      ? "bg-white text-accent shadow-sm"
+                      : "text-text-secondary hover:text-text-primary",
+                  ].join(" ")}
+                >
+                  {option.label}
+                  {statusCounts ? (
+                    <span className="ml-1 text-xs text-text-tertiary">
+                      {statusCounts[option.value]}
+                    </span>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          {stitches.length ? (
+            <LibraryBatchActionBar
+              areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
+              isDeletingSelected={batchDelete.isDeletingSelected}
+              isSelecting={batchDelete.isSelecting}
+              selectedCount={batchDelete.selectedCount}
+              visibleItemCount={batchDelete.visibleItemCount}
+              onClearSelection={batchDelete.clearSelection}
+              onDeleteSelected={() => {
+                void batchDelete.deleteSelectedItems();
+              }}
+              onSelectVisible={batchDelete.selectVisibleItems}
+              onStartSelecting={batchDelete.startSelecting}
+              onStopSelecting={batchDelete.stopSelecting}
+            />
+          ) : null}
+        </div>
       </div>
       {stitches.length ? (
         <>
@@ -126,6 +175,7 @@ export function StitchesSection({
                     : undefined
                 }
                 onUpdateMusic={onUpdateMusic}
+                onUpdatePostedStatus={onUpdatePostedStatus}
                 onUpdateSourceSettings={onUpdateSourceSettings}
                 onUpdateTextOverlay={onUpdateTextOverlay}
                 ugcClips={ugcClips}

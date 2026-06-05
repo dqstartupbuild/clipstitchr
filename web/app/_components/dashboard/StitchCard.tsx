@@ -1,6 +1,14 @@
 "use client";
 
-import { Download, Edit3, Play, Shuffle, Trash2 } from "lucide-react";
+import {
+  CheckCircle2,
+  Download,
+  Edit3,
+  Play,
+  RefreshCw,
+  RotateCcw,
+  Trash2,
+} from "lucide-react";
 import { useCallback, useState } from "react";
 import { StitchDetailsDialog } from "@/app/_components/dashboard/StitchDetailsDialog";
 import { StitchEditDialog } from "@/app/_components/dashboard/StitchEditDialog";
@@ -26,7 +34,7 @@ import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { createStitchPreviewCacheKey } from "@/lib/clipstitchr/utils/createStitchPreviewCacheKey";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
-import { getUseInSwaprStitchHref } from "@/lib/clipstitchr/utils/getUseInSwaprStitchHref";
+import { getReuseStitchHref } from "@/lib/clipstitchr/utils/getReuseStitchHref";
 import { capturePostHogException } from "@/lib/clipstitchr/analytics/capturePostHogException";
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 
@@ -52,6 +60,10 @@ type StitchCardProps = {
     stitch: Stitch,
     textOverlay: TextOverlay | TextOverlay[] | null,
   ) => void | Promise<void>;
+  onUpdatePostedStatus: (
+    stitch: Stitch,
+    isPosted: boolean,
+  ) => void | Promise<void>;
   ugcClips?: VideoClipMetadata[];
 };
 
@@ -66,6 +78,7 @@ export function StitchCard({
   onLoadPoster,
   onSelect,
   onUpdateMusic,
+  onUpdatePostedStatus,
   onUpdateSourceSettings,
   onUpdateTextOverlay,
   ugcClips = [],
@@ -112,10 +125,14 @@ export function StitchCard({
   const [isDownloading, setIsDownloading] = useState(false);
   const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
   const [isSavingMusic, setIsSavingMusic] = useState(false);
+  const [isSavingPostedStatus, setIsSavingPostedStatus] = useState(false);
   const [isSavingText, setIsSavingText] = useState(false);
   const [isSavingSourceSettings, setIsSavingSourceSettings] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [musicError, setMusicError] = useState<string | null>(null);
+  const [postedStatusError, setPostedStatusError] = useState<string | null>(
+    null,
+  );
   const [textError, setTextError] = useState<string | null>(null);
   const [sourceSettingsError, setSourceSettingsError] = useState<string | null>(
     null,
@@ -123,6 +140,7 @@ export function StitchCard({
   const fileSizeLabel = stitch.size
     ? formatBytes(stitch.size)
     : "Ready to download";
+  const isPosted = Boolean(stitch.isPosted);
 
   const loadPreview = async (
     ugcClipId = stitch.ugcClipId,
@@ -299,11 +317,36 @@ export function StitchCard({
       setIsSavingSourceSettings(false);
     }
   };
+  const handleUpdatePostedStatus = async (nextIsPosted: boolean) => {
+    setIsSavingPostedStatus(true);
+    setPostedStatusError(null);
+
+    try {
+      await onUpdatePostedStatus(stitch, nextIsPosted);
+      trackPostHogEvent(
+        nextIsPosted ? "stitch_marked_posted" : "stitch_marked_unposted",
+        {
+          stitch_id: stitch.id,
+          duration_seconds: stitch.duration,
+          has_music: Boolean(stitch.music),
+          has_text_overlay: hasTextOverlay,
+        },
+      );
+    } catch (nextError) {
+      setPostedStatusError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to update posted status.",
+      );
+    } finally {
+      setIsSavingPostedStatus(false);
+    }
+  };
   const actionItems: MediaCardActionMenuItem[] = [
     {
-      label: "Use in Swapr",
-      href: getUseInSwaprStitchHref(stitch),
-      icon: <Shuffle aria-hidden className="h-4 w-4" />,
+      label: "Reuse in Stitchr",
+      href: getReuseStitchHref(stitch),
+      icon: <RefreshCw aria-hidden className="h-4 w-4" />,
     },
     {
       label: "Download stitch",
@@ -315,6 +358,16 @@ export function StitchCard({
       label: "Edit stitch",
       icon: <Edit3 aria-hidden className="h-4 w-4" />,
       onClick: openEdit,
+    },
+    {
+      label: isPosted ? "Mark as unposted" : "Mark as posted",
+      icon: isPosted ? (
+        <RotateCcw aria-hidden className="h-4 w-4" />
+      ) : (
+        <CheckCircle2 aria-hidden className="h-4 w-4" />
+      ),
+      disabled: isSavingPostedStatus,
+      onClick: () => void handleUpdatePostedStatus(!isPosted),
     },
     {
       label: "Delete stitch",
@@ -366,8 +419,15 @@ export function StitchCard({
               </span>
             </span>
           </button>
-          <span className="pointer-events-none absolute left-2 top-2 max-w-[75%] truncate rounded-md border border-purple-200 bg-white/95 px-2 py-1 text-[11px] font-bold leading-none text-accent-dark shadow-sm shadow-slate-900/10">
-            STITCH
+          <span
+            className={[
+              "pointer-events-none absolute left-2 top-2 max-w-[75%] truncate rounded-md border bg-white/95 px-2 py-1 text-[11px] font-bold leading-none shadow-sm shadow-slate-900/10",
+              isPosted
+                ? "border-emerald-200 text-emerald-700"
+                : "border-purple-200 text-accent-dark",
+            ].join(" ")}
+          >
+            {isPosted ? "POSTED" : "STITCH"}
           </span>
           {onSelect ? (
             <SelectionCheckboxButton
@@ -403,6 +463,11 @@ export function StitchCard({
         {downloadError ? (
           <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
             {downloadError}
+          </p>
+        ) : null}
+        {postedStatusError ? (
+          <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+            {postedStatusError}
           </p>
         ) : null}
       </div>

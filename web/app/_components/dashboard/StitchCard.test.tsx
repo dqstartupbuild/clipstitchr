@@ -280,6 +280,7 @@ describe("StitchCard", () => {
         onGenerateMusic={vi.fn()}
         onLoadClip={vi.fn()}
         onUpdateMusic={vi.fn()}
+        onUpdatePostedStatus={vi.fn()}
         onUpdateSourceSettings={vi.fn()}
         onUpdateTextOverlay={vi.fn()}
       />,
@@ -289,9 +290,10 @@ describe("StitchCard", () => {
     expect(markup).toContain("STITCH");
     expect(markup).toContain("MediaCardActionMenu");
     expect(mocks.actionItems.map((item) => item.label)).toEqual([
-      "Use in Swapr",
+      "Reuse in Stitchr",
       "Download stitch",
       "Edit stitch",
+      "Mark as posted",
       "Delete stitch",
     ]);
   });
@@ -306,6 +308,7 @@ describe("StitchCard", () => {
         onLoadClip: vi.fn(),
         onLoadPoster,
         onUpdateMusic: vi.fn(),
+        onUpdatePostedStatus: vi.fn(),
         onUpdateSourceSettings: vi.fn(),
         onUpdateTextOverlay: vi.fn(),
       }),
@@ -332,6 +335,7 @@ describe("StitchCard", () => {
     const onGenerateMusic = vi.fn(async () => createStitchMusic());
     const onLoadClip = vi.fn(async (id: string) => createClip(id));
     const onUpdateMusic = vi.fn(async () => undefined);
+    const onUpdatePostedStatus = vi.fn(async () => undefined);
     const onUpdateSourceSettings = vi.fn(async () => undefined);
     const onUpdateTextOverlay = vi.fn(async () => undefined);
 
@@ -346,6 +350,12 @@ describe("StitchCard", () => {
       false,
       false,
       false,
+      false,
+      false,
+      false,
+      null,
+      null,
+      null,
       null,
       null,
       null,
@@ -359,6 +369,7 @@ describe("StitchCard", () => {
         onGenerateMusic={onGenerateMusic}
         onLoadClip={onLoadClip}
         onUpdateMusic={onUpdateMusic}
+        onUpdatePostedStatus={onUpdatePostedStatus}
         onUpdateSourceSettings={onUpdateSourceSettings}
         onUpdateTextOverlay={onUpdateTextOverlay}
       />,
@@ -373,6 +384,7 @@ describe("StitchCard", () => {
     await mocks.editProps?.onSaveSourceSettings(createSourceSettingsUpdate());
     await mocks.editProps?.onSaveTextOverlay(null);
     mocks.editProps?.onClose();
+    mocks.actionItems.find((item) => item.label === "Mark as posted")?.onClick?.();
     mocks.actionItems.find((item) => item.label === "Download stitch")?.onClick?.();
     mocks.actionItems.find((item) => item.label === "Delete stitch")?.onClick?.();
 
@@ -384,6 +396,7 @@ describe("StitchCard", () => {
     expect(onLoadClip).toHaveBeenCalledWith("demo_1");
     expect(onGenerateMusic).toHaveBeenCalled();
     expect(onUpdateMusic).toHaveBeenCalled();
+    expect(onUpdatePostedStatus).toHaveBeenCalledWith(createStitch(), true);
     expect(onUpdateSourceSettings).toHaveBeenCalledWith(
       createStitch(),
       createSourceSettingsUpdate(),
@@ -419,6 +432,8 @@ describe("StitchCard", () => {
       false,
       false,
       false,
+      false,
+      null,
       null,
       null,
       null,
@@ -432,6 +447,7 @@ describe("StitchCard", () => {
         onGenerateMusic={onGenerateMusic}
         onLoadClip={vi.fn()}
         onUpdateMusic={vi.fn()}
+        onUpdatePostedStatus={vi.fn()}
         onUpdateSourceSettings={vi.fn()}
         onUpdateTextOverlay={vi.fn()}
       />,
@@ -475,6 +491,8 @@ describe("StitchCard", () => {
       false,
       false,
       false,
+      false,
+      null,
       null,
       null,
       null,
@@ -488,6 +506,7 @@ describe("StitchCard", () => {
         onGenerateMusic={vi.fn()}
         onLoadClip={onLoadClip}
         onUpdateMusic={onUpdateMusic}
+        onUpdatePostedStatus={vi.fn()}
         onUpdateSourceSettings={onUpdateSourceSettings}
         onUpdateTextOverlay={onUpdateTextOverlay}
       />,

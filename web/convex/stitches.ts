@@ -55,14 +55,41 @@ const saveFromAutomationArgs = {
   ...saveArgs,
 };
 
+const postedStatusValidator = v.union(
+  v.literal("active"),
+  v.literal("all"),
+  v.literal("posted"),
+);
+
 export const list = query({
   args: {
     paginationOpts: paginationOptsValidator,
+    postedStatus: v.optional(postedStatusValidator),
     refreshNonce: v.optional(v.number()),
     sortOrder: v.optional(librarySortOrderValidator),
   },
-  handler: async (ctx, { paginationOpts, sortOrder }) => {
+  handler: async (ctx, { paginationOpts, postedStatus = "all", sortOrder }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    if (postedStatus === "active") {
+      return await ctx.db
+        .query("stitches")
+        .withIndex("by_owner_is_posted_created", (q) =>
+          q.eq("ownerId", ownerId).eq("isPosted", undefined),
+        )
+        .order(sortOrder === "oldest" ? "asc" : "desc")
+        .paginate(paginationOpts);
+    }
+
+    if (postedStatus === "posted") {
+      return await ctx.db
+        .query("stitches")
+        .withIndex("by_owner_is_posted_created", (q) =>
+          q.eq("ownerId", ownerId).eq("isPosted", true),
+        )
+        .order(sortOrder === "oldest" ? "asc" : "desc")
+        .paginate(paginationOpts);
+    }
 
     return await ctx.db
       .query("stitches")
@@ -510,6 +537,40 @@ export const updateTextOverlay = mutation({
       textOverlays: normalizedTextOverlays.length
         ? normalizedTextOverlays
         : undefined,
+    });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+    }
+  },
+});
+
+export const updatePostedStatus = mutation({
+  args: {
+    id: v.string(),
+    isPosted: v.boolean(),
+  },
+  handler: async (ctx, { id, isPosted }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    await ctx.db.patch(stitch._id, {
+      isPosted: isPosted ? true : undefined,
+      postedAt: isPosted ? new Date().toISOString() : undefined,
     });
     const updatedStitch = await ctx.db.get(stitch._id);
 

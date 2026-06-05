@@ -31,8 +31,10 @@ export const get = query({
     ]);
 
     return {
+      activeStitches: 0,
       cliprClips,
       demoClips,
+      postedStitches: 0,
       stitches,
       swapClips,
       ugcClips,

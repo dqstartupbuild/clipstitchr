@@ -83,7 +83,16 @@ export function useClipLibraryState(): ClipLibraryValue {
   );
   const stitchDocumentsQuery = usePaginatedQuery(
     api.stitches.list,
-    isAuthenticated ? { refreshNonce, sortOrder } : "skip",
+    isAuthenticated
+      ? { postedStatus: "active", refreshNonce, sortOrder }
+      : "skip",
+    { initialNumItems: libraryMetadataPageSize },
+  );
+  const postedStitchDocumentsQuery = usePaginatedQuery(
+    api.stitches.list,
+    isAuthenticated
+      ? { postedStatus: "posted", refreshNonce, sortOrder }
+      : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const aggregateCounts = useQuery(
@@ -96,6 +105,11 @@ export function useClipLibraryState(): ClipLibraryValue {
   const demoClipDocuments = demoClipDocumentsQuery.results;
   const swapClipDocuments = swapClipDocumentsQuery.results;
   const stitchDocuments = stitchDocumentsQuery.results;
+  const postedStitchDocuments = postedStitchDocumentsQuery.results;
+  const allStitchDocuments = useMemo(
+    () => [...stitchDocuments, ...postedStitchDocuments],
+    [postedStitchDocuments, stitchDocuments],
+  );
   const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
   const updateCliprMusicMutation = useMutation(api.videoClips.updateCliprMusic);
   const updateStitchMusicMutation = useMutation(api.stitches.updateMusic);
@@ -105,6 +119,9 @@ export function useClipLibraryState(): ClipLibraryValue {
   );
   const updateStitchTextOverlayMutation = useMutation(
     api.stitches.updateTextOverlay,
+  );
+  const updateStitchPostedStatusMutation = useMutation(
+    api.stitches.updatePostedStatus,
   );
   const removeClipMutation = useMutation(api.videoClips.remove);
   const removeStitchMutation = useMutation(api.stitches.remove);
@@ -154,11 +171,20 @@ export function useClipLibraryState(): ClipLibraryValue {
       ),
     [stitchDocuments],
   );
+  const postedStitches = useMemo(
+    () =>
+      postedStitchDocuments.map((stitch) =>
+        createStitchFromConvexDocument({ stitch }),
+      ),
+    [postedStitchDocuments],
+  );
   const loadedCounts = useMemo<ClipLibraryCounts>(
     () => ({
+      activeStitches: stitches.length,
       cliprClips: clips.filter((clip) => Boolean(clip.cliprMetadata)).length,
       demoClips: clips.filter((clip) => clip.clipType === "demo").length,
-      stitches: stitches.length,
+      postedStitches: postedStitches.length,
+      stitches: stitches.length + postedStitches.length,
       swapClips: clips.filter(
         (clip) => clip.swaprMetadata?.source === "swapr",
       ).length,
@@ -169,7 +195,7 @@ export function useClipLibraryState(): ClipLibraryValue {
           clip.swaprMetadata?.source !== "swapr",
       ).length,
     }),
-    [clips, stitches.length],
+    [clips, postedStitches.length, stitches.length],
   );
   const counts = getClipLibraryDisplayCounts(aggregateCounts, loadedCounts);
 
@@ -318,9 +344,21 @@ export function useClipLibraryState(): ClipLibraryValue {
     return await loadPosterBlob(clipDocument.posterObject);
   }, [clipDocuments, convex, loadPosterBlob]);
 
+  const loadStitch = useCallback(async (id: string) => {
+    const stitchDocument =
+      allStitchDocuments.find((stitch) => stitch.id === id) ??
+      (await convex.query(api.stitches.get, { id }));
+
+    if (!stitchDocument) {
+      return null;
+    }
+
+    return createStitchFromConvexDocument({ stitch: stitchDocument });
+  }, [allStitchDocuments, convex]);
+
   const loadStitchPoster = useCallback(async (id: string) => {
     const stitchDocument =
-      stitchDocuments.find((stitch) => stitch.id === id) ??
+      allStitchDocuments.find((stitch) => stitch.id === id) ??
       (await convex.query(api.stitches.get, { id }));
 
     if (!stitchDocument) {
@@ -338,7 +376,7 @@ export function useClipLibraryState(): ClipLibraryValue {
       }));
 
     return await loadPosterBlob(ugcClipDocument?.posterObject);
-  }, [clipDocuments, convex, loadPosterBlob, stitchDocuments]);
+  }, [allStitchDocuments, clipDocuments, convex, loadPosterBlob]);
 
   const removeClip = useCallback(
     async (id: string) => {
@@ -666,6 +704,17 @@ export function useClipLibraryState(): ClipLibraryValue {
     ],
   );
 
+  const updateStitchPostedStatus = useCallback(
+    async (stitch: Stitch, isPosted: boolean) => {
+      await updateStitchPostedStatusMutation({
+        id: stitch.id,
+        isPosted,
+      });
+      await refresh();
+    },
+    [refresh, updateStitchPostedStatusMutation],
+  );
+
   const generateStitchMusic = useCallback(
     async (stitch: Stitch) => {
       const music = await requestStitchMusicGeneration({
@@ -682,7 +731,7 @@ export function useClipLibraryState(): ClipLibraryValue {
   const removeStitch = useCallback(
     async (id: string) => {
       const stitchDocument =
-        stitchDocuments?.find((stitch) => stitch.id === id) ??
+        allStitchDocuments.find((stitch) => stitch.id === id) ??
         (await convex.query(api.stitches.get, { id }));
 
       if (stitchDocument) {
@@ -702,7 +751,7 @@ export function useClipLibraryState(): ClipLibraryValue {
       await removeStitchMutation({ id });
       await refresh();
     },
-    [convex, refresh, removeStitchMutation, stitchDocuments],
+    [allStitchDocuments, convex, refresh, removeStitchMutation],
   );
 
   const loadMoreClips = useCallback(() => {
@@ -735,6 +784,11 @@ export function useClipLibraryState(): ClipLibraryValue {
       stitchDocumentsQuery.loadMore(libraryMetadataPageSize);
     }
   }, [stitchDocumentsQuery]);
+  const loadMorePostedStitches = useCallback(() => {
+    if (postedStitchDocumentsQuery.status === "CanLoadMore") {
+      postedStitchDocumentsQuery.loadMore(libraryMetadataPageSize);
+    }
+  }, [postedStitchDocumentsQuery]);
   const isLoadingFirstPage =
     isAuthenticated &&
     (clipDocumentsQuery.status === "LoadingFirstPage" ||
@@ -742,11 +796,13 @@ export function useClipLibraryState(): ClipLibraryValue {
       cliprClipDocumentsQuery.status === "LoadingFirstPage" ||
       demoClipDocumentsQuery.status === "LoadingFirstPage" ||
       swapClipDocumentsQuery.status === "LoadingFirstPage" ||
-      stitchDocumentsQuery.status === "LoadingFirstPage");
+      stitchDocumentsQuery.status === "LoadingFirstPage" ||
+      postedStitchDocumentsQuery.status === "LoadingFirstPage");
 
   return {
     clips,
     counts,
+    postedStitches,
     stitches,
     sortOrder,
     videoGroups: {
@@ -777,15 +833,20 @@ export function useClipLibraryState(): ClipLibraryValue {
     },
     isLoading: isAuthLoading || isLoadingFirstPage,
     hasMoreClips: clipDocumentsQuery.status === "CanLoadMore",
+    hasMorePostedStitches: postedStitchDocumentsQuery.status === "CanLoadMore",
     hasMoreStitches: stitchDocumentsQuery.status === "CanLoadMore",
     isLoadingMoreClips: clipDocumentsQuery.status === "LoadingMore",
+    isLoadingMorePostedStitches:
+      postedStitchDocumentsQuery.status === "LoadingMore",
     isLoadingMoreStitches: stitchDocumentsQuery.status === "LoadingMore",
     error,
     refresh,
     setSortOrder,
     loadClip,
     loadClipPoster,
+    loadStitch,
     loadMoreClips,
+    loadMorePostedStitches,
     loadMoreStitches,
     loadStitchPoster,
     removeClip,
@@ -798,6 +859,7 @@ export function useClipLibraryState(): ClipLibraryValue {
     updateStitchMusic,
     updateStitchSourceSettings,
     updateStitchTextOverlay,
+    updateStitchPostedStatus,
     removeStitch,
   };
 }

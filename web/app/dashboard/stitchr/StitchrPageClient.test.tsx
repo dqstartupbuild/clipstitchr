@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
     isLoading: false,
     loadClip: vi.fn(),
     loadClipPoster: vi.fn(),
+    loadStitch: vi.fn(),
     loadMoreClips: vi.fn(),
     refresh: vi.fn(),
     videoGroups: {
@@ -275,6 +276,8 @@ function queueStitchrState(
     overrides.ugcTrimRangesByClipId ?? {},
     overrides.demoTrimRangesByClipId ?? {},
     overrides.loadedLongrClipsById ?? {},
+    [],
+    [],
     overrides.selectedUgcIds ?? [],
     overrides.activePreviewUgcId,
     overrides.selectedDemoId,
@@ -289,6 +292,10 @@ describe("StitchrPageClient", () => {
     mocks.clipLibraryState.clips = [];
     mocks.clipLibraryState.error = null;
     mocks.clipLibraryState.isLoading = false;
+    mocks.clipLibraryState.loadClip.mockImplementation(async (id: string) =>
+      createClip(id, id.startsWith("demo") ? "demo" : "ugc"),
+    );
+    mocks.clipLibraryState.loadStitch.mockResolvedValue(null);
     setClipLibraryVideoGroups();
     mocks.productState.defaultProductId = undefined;
     mocks.productState.products = [createProduct()];
@@ -563,6 +570,78 @@ describe("StitchrPageClient", () => {
       "popstate",
       expect.any(Function),
     );
+
+    vi.unstubAllGlobals();
+  });
+
+  it("prefills Stitchr from a reusable stitch template URL", async () => {
+    let cleanup: (() => void) | undefined;
+    const addEventListener = vi.fn();
+    const removeEventListener = vi.fn();
+    const textOverlay = {
+      backgroundColor: "#000000",
+      color: "#ffffff",
+      endTime: 3,
+      fontSize: 48,
+      startTime: 0,
+      styleId: "hook",
+      text: "Reuse hook",
+      width: 0.8,
+      x: 0.5,
+      y: 0.5,
+    } satisfies TextOverlay;
+
+    mocks.clipLibraryState.loadStitch.mockResolvedValueOnce({
+      createdAt: "2026-05-20T00:00:00.000Z",
+      demoClipId: "demo_2",
+      demoClipName: "Demo 2",
+      demoPlaybackRate: 2,
+      demoTrimRange: { end: 6, start: 1 },
+      duration: 10,
+      height: 1920,
+      id: "template_1",
+      includeDemoAudio: true,
+      includeUgcAudio: true,
+      mode: "normal",
+      name: "Reusable stitch",
+      textOverlays: [textOverlay],
+      ugcClipId: "ugc_2",
+      ugcClipName: "UGC 2",
+      ugcPlaybackRate: 1,
+      ugcTrimRange: { end: 4, start: 0 },
+      width: 1080,
+    });
+    mocks.useEffect.mockImplementationOnce((effect: () => void | (() => void)) => {
+      cleanup = effect() ?? undefined;
+    });
+    vi.stubGlobal("window", {
+      addEventListener,
+      location: {
+        href: "https://clipstitchr.test/dashboard/stitchr?templateStitchId=template_1",
+      },
+      removeEventListener,
+    });
+
+    renderToStaticMarkup(<StitchrPageClient />);
+
+    for (let index = 0; index < 5; index += 1) {
+      await Promise.resolve();
+    }
+    cleanup?.();
+
+    expect(mocks.clipLibraryState.loadStitch).toHaveBeenCalledWith(
+      "template_1",
+    );
+    expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("ugc_2");
+    expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("demo_2");
+    expect(mocks.stateSetters[18]).toHaveBeenCalledWith(["ugc_2"]);
+    expect(mocks.stateSetters[19]).toHaveBeenCalledWith("ugc_2");
+    expect(mocks.stateSetters[20]).toHaveBeenCalledWith("demo_2");
+    expect(mocks.stateSetters[21]).toHaveBeenCalledWith(["demo_2"]);
+    expect(mocks.stateSetters[22]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
+    expect(mocks.stateSetters[7]).toHaveBeenCalledWith({
+      ugc_2: [textOverlay],
+    });
 
     vi.unstubAllGlobals();
   });

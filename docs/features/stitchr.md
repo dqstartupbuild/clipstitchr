@@ -62,11 +62,21 @@ social proof first, product proof immediately after.
 10. Optionally generate separate 60 second music for each stitch.
 11. Create one stitched output per selected UGC clip.
 12. Save and download the finished ad variants.
+13. Mark saved stitches as posted after they go live so the Stitches library can
+    separate reusable drafts from already-published assets.
 
 Saved stitch music is stored separately from the stitch. Users can edit text,
 remove music, regenerate it, enable or disable it, or change volume later from
 the saved stitch card. Media Bunny renders the UGC-then-demo video and mixes the
 selected music only when the user downloads the stitch.
+
+Saved stitches are reusable templates. The saved stitch card can launch Stitchr
+with the original source clips, trims, source-audio flags, playback rates, and
+text overlays already selected, letting users create a new stitch by changing
+only the parts that should differ. Reuse does not overwrite the existing stitch.
+Posted status is also non-destructive metadata: marking or unmarking a stitch as
+posted only changes library organization and does not change source clips,
+stored stitch settings, music, posters, or downloadable output.
 
 ## Product Principles
 
@@ -82,6 +92,7 @@ selected music only when the user downloads the stitch.
   Stitchr.
 - Keep generated overlay text editable and hide hook style/template mechanics.
 - Keep generated music editable and separate from the saved stitch.
+- Keep saved stitches usable as templates even after they are marked posted.
 
 ## Non-Goals
 

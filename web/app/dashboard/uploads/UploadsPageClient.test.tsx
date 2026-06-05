@@ -253,8 +253,10 @@ describe("UploadsPageClient", () => {
     mocks.library = {
       clips: [ugcClip, cliprClip, demoClip, swapClip],
       counts: {
+        activeStitches: 50,
         cliprClips: 20,
         demoClips: 30,
+        postedStitches: 1,
         stitches: 50,
         swapClips: 40,
         ugcClips: 10,
@@ -263,24 +265,44 @@ describe("UploadsPageClient", () => {
       generateCliprMusic: vi.fn(),
       generateStitchMusic: vi.fn(),
       hasMoreClips: true,
+      hasMorePostedStitches: true,
       hasMoreStitches: true,
       isLoadingMoreClips: false,
+      isLoadingMorePostedStitches: false,
       isLoadingMoreStitches: false,
       loadClip: vi.fn(),
       loadClipPoster: vi.fn(),
       loadMoreClips: vi.fn(),
+      loadMorePostedStitches: vi.fn(),
       loadMoreStitches: vi.fn(),
+      loadStitch: vi.fn(),
       loadStitchPoster: vi.fn(),
+      postedStitches: [
+        {
+          createdAt: "2026-05-21T00:00:00.000Z",
+          id: "posted_stitch_1",
+          isPosted: true,
+          name: "Posted stitch match",
+          postedAt: "2026-05-21T00:00:00.000Z",
+        },
+      ],
       refresh: vi.fn(),
       removeClip: vi.fn(),
       removeStitch: vi.fn(),
       setSortOrder: vi.fn(),
       sortOrder: "newest",
-      stitches: [{ id: "stitch_1", name: "Stitch match" }],
+      stitches: [
+        {
+          createdAt: "2026-05-20T00:00:00.000Z",
+          id: "stitch_1",
+          name: "Stitch match",
+        },
+      ],
       updateClipMetadata: vi.fn(),
       updateCliprMusic: vi.fn(),
       updateClipTrimRange: vi.fn(),
       updateStitchMusic: vi.fn(),
+      updateStitchPostedStatus: vi.fn(),
       updateStitchSourceSettings: vi.fn(),
       updateStitchTextOverlay: vi.fn(),
       videoGroups: {
@@ -558,6 +580,34 @@ describe("UploadsPageClient", () => {
     expect(swipes.some((element) => "swipes" in (element.props ?? {}))).toBe(
       true,
     );
+  });
+
+  it("filters the Stitches tab to posted stitches", () => {
+    const { elements } = renderUploadsPage({
+      stateValues: ["stitches", "posted", "all", "", "posted"],
+    });
+    const section = findByProp(elements, "statusFilter", "posted");
+
+    expect(section?.props).toEqual(
+      expect.objectContaining({
+        hasMoreItems: true,
+        statusCounts: {
+          active: 0,
+          all: 1,
+          posted: 1,
+        },
+        stitches: expect.arrayContaining([
+          expect.objectContaining({
+            id: "posted_stitch_1",
+          }),
+        ]),
+      }),
+    );
+
+    (section?.props?.onLoadMoreItems as () => void)();
+
+    expect(mocks.library.loadMorePostedStitches).toHaveBeenCalledTimes(1);
+    expect(mocks.library.loadMoreStitches).not.toHaveBeenCalled();
   });
 
   it("renders clip and swap tabs without upload controls", () => {

@@ -120,10 +120,10 @@ export function StitchDetailsDialog({
                 {previewError}
               </p>
             ) : null}
-          </div>
+            </div>
           <div className="flex flex-col gap-5">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge>STITCH</Badge>
+              <Badge>{stitch.isPosted ? "POSTED" : "STITCH"}</Badge>
               <span className="text-xs font-semibold text-text-tertiary">
                 {formatDuration(stitch.duration)}
               </span>

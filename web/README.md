@@ -56,10 +56,15 @@ The app processes media in the browser and stores durable data in Convex and Clo
 - Uploaded UGC and Demo videos are normalized to TikTok 9:16 before they are saved.
 - Stitchr can select up to 20 UGC videos with one selected Demo video, preview
   each UGC-then-Demo sequence, and export one finished stitch per selected UGC.
+- Saved stitches can be reused as Stitchr templates, preselecting their source
+  clips, trims, text overlays, audio flags, and playback rates for a new stitch.
+- Saved stitches can be marked posted or unposted; the Stitches library filters
+  them into Unposted, Posted, and All views without changing the saved output.
 - Convex stores clip, photo, stitch, tag, trim, and R2 object metadata.
 - Cloudflare R2 stores normalized videos, stitched videos, photos, posters, and thumbnails.
 - Library views read Convex metadata first; preview media is hydrated from R2 as needed.
-- The Content Library route at `/dashboard/uploads` includes All, UGC, Demo, Swaps, and Stitches tabs.
+- The Content Library route at `/dashboard/uploads` includes All, UGC, Demo,
+  Swaps, and Stitches tabs.
 - The Avatars route at `/dashboard/avatars` owns avatar photo upload, avatar descriptions, and generated avatar scenario photos.
 - Each saved video also stores a generated JPEG poster object plus `posterVersion`.
 - Posters are generated in the browser by seeking through candidate frames and choosing a visibly non-black frame for the video element's `poster` attribute.

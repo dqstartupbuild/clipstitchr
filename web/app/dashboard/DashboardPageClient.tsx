@@ -97,6 +97,7 @@ export function DashboardPageClient() {
           onLoadClip={library.loadClip}
           onLoadPoster={library.loadStitchPoster}
           onUpdateMusic={library.updateStitchMusic}
+          onUpdatePostedStatus={library.updateStitchPostedStatus}
           onUpdateSourceSettings={library.updateStitchSourceSettings}
           onUpdateTextOverlay={library.updateStitchTextOverlay}
           ugcClips={stitchrUgcClips}

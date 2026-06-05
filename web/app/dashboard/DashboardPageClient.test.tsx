@@ -11,8 +11,10 @@ const mocks = vi.hoisted(() => ({
   clipLibraryState: {
     clips: [],
     counts: {
+      activeStitches: 0,
       cliprClips: 0,
       demoClips: 0,
+      postedStitches: 0,
       stitches: 0,
       swapClips: 0,
       ugcClips: 0,
@@ -20,12 +22,16 @@ const mocks = vi.hoisted(() => ({
     error: null as string | null,
     generateStitchMusic: vi.fn(),
     loadClip: vi.fn(),
+    loadStitch: vi.fn(),
+    loadStitchPoster: vi.fn(),
+    postedStitches: [],
     removeClip: vi.fn(),
     removeStitch: vi.fn(),
     stitches: [],
     updateClipMetadata: vi.fn(),
     updateClipTrimRange: vi.fn(),
     updateStitchMusic: vi.fn(),
+    updateStitchPostedStatus: vi.fn(),
     updateStitchSourceSettings: vi.fn(),
     updateStitchTextOverlay: vi.fn(),
     videoGroups: {
@@ -138,8 +144,10 @@ describe("DashboardPageClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.clipLibraryState.counts = {
+      activeStitches: 40,
       cliprClips: 10,
       demoClips: 20,
+      postedStitches: 0,
       stitches: 40,
       swapClips: 0,
       ugcClips: 30,

@@ -131,25 +131,32 @@ vi.mock("@/lib/clipstitchr/hooks/useClipLibrary", () => ({
     });
     const clips = [ugcClip, demoClip];
 
-    return {
+      return {
       clips,
       counts: {
+        activeStitches: 1,
         cliprClips: 0,
         demoClips: 1,
+        postedStitches: 0,
         stitches: 1,
         swapClips: 0,
         ugcClips: 1,
       },
       error: null,
+      hasMorePostedStitches: false,
       hasMoreStitches: false,
       isLoading: false,
+      isLoadingMorePostedStitches: false,
       isLoadingMoreStitches: false,
       isSaving: false,
       loadClip: mocks.loadClip,
       loadClipPoster: vi.fn(),
+      loadStitch: vi.fn(),
+      loadMorePostedStitches: vi.fn(),
       loadMoreStitches: vi.fn(),
       generateCliprMusic: vi.fn(),
       generateStitchMusic: vi.fn(),
+      postedStitches: [],
       removeClip: mocks.remove,
       removeStitch: mocks.remove,
       refresh: mocks.refresh,
@@ -159,6 +166,7 @@ vi.mock("@/lib/clipstitchr/hooks/useClipLibrary", () => ({
       updateCliprMusic: vi.fn(),
       updateClipTrimRange: vi.fn(),
       updateStitchMusic: vi.fn(),
+      updateStitchPostedStatus: vi.fn(),
       updateStitchSourceSettings: vi.fn(),
       updateStitchTextOverlay: vi.fn(),
       stitches: [

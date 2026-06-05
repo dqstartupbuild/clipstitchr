@@ -14,6 +14,7 @@ import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 export type ClipLibraryValue = {
   clips: VideoClipMetadata[];
   counts: ClipLibraryCounts;
+  postedStitches: Stitch[];
   stitches: Stitch[];
   sortOrder: ClipLibrarySortOrder;
   videoGroups: {
@@ -24,15 +25,19 @@ export type ClipLibraryValue = {
   };
   isLoading: boolean;
   hasMoreClips: boolean;
+  hasMorePostedStitches: boolean;
   hasMoreStitches: boolean;
   isLoadingMoreClips: boolean;
+  isLoadingMorePostedStitches: boolean;
   isLoadingMoreStitches: boolean;
   error: string | null;
   refresh: () => Promise<void>;
   setSortOrder: (sortOrder: ClipLibrarySortOrder) => void;
   loadClip: (id: string) => Promise<VideoClip | null>;
   loadClipPoster: (id: string) => Promise<Blob | null>;
+  loadStitch: (id: string) => Promise<Stitch | null>;
   loadMoreClips: () => void;
+  loadMorePostedStitches: () => void;
   loadMoreStitches: () => void;
   loadStitchPoster: (id: string) => Promise<Blob | null>;
   removeClip: (id: string) => Promise<void>;
@@ -66,6 +71,10 @@ export type ClipLibraryValue = {
   updateStitchTextOverlay: (
     stitch: Stitch,
     textOverlay: TextOverlay | TextOverlay[] | null,
+  ) => Promise<void>;
+  updateStitchPostedStatus: (
+    stitch: Stitch,
+    isPosted: boolean,
   ) => Promise<void>;
   removeStitch: (id: string) => Promise<void>;
 };

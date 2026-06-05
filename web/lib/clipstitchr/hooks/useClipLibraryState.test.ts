@@ -81,6 +81,7 @@ vi.mock("@/convex/_generated/api", () => ({
       list: "stitches.list",
       remove: "stitches.remove",
       updateMusic: "stitches.updateMusic",
+      updatePostedStatus: "stitches.updatePostedStatus",
       updatePoster: "stitches.updatePoster",
       updateSourceSettings: "stitches.updateSourceSettings",
       updateTextOverlay: "stitches.updateTextOverlay",
@@ -216,8 +217,10 @@ describe("useClipLibraryState", () => {
       };
     });
     mocks.useQuery.mockReturnValue({
+      activeStitches: 0,
       cliprClips: 0,
       demoClips: 0,
+      postedStitches: 0,
       stitches: 0,
       swapClips: 0,
       ugcClips: 0,
@@ -348,7 +351,7 @@ describe("useClipLibraryState", () => {
       id: "clip_without_poster",
       posterObject: undefined,
     });
-    mocks.usePaginatedQuery.mockImplementation((queryId: string) => ({
+    mocks.usePaginatedQuery.mockImplementation((queryId: string, args) => ({
       isLoading: false,
       loadMore: vi.fn(),
       results:
@@ -363,7 +366,7 @@ describe("useClipLibraryState", () => {
               }),
               clipWithoutPoster,
             ]
-          : queryId === "stitches.list"
+          : queryId === "stitches.list" && args?.postedStatus === "active"
             ? [
                 createStitch(),
                 createStitch({
@@ -643,6 +646,7 @@ describe("useClipLibraryState", () => {
     });
     await state.updateStitchMusic(stitch, null);
     await state.updateStitchTextOverlay(stitch, textOverlay);
+    await state.updateStitchPostedStatus(stitch, true);
     await state.removeStitch("stitch_1");
 
     expect(mocks.generateStitchMusic).toHaveBeenCalledWith({
@@ -669,6 +673,10 @@ describe("useClipLibraryState", () => {
         key: "users/user_123/stitches/stitch_1/poster.jpg",
       }),
       posterVersion: 2,
+    });
+    expect(getMutation("stitches.updatePostedStatus")).toHaveBeenCalledWith({
+      id: "stitch_1",
+      isPosted: true,
     });
     expect(mocks.deleteObjectsFromR2).toHaveBeenCalledWith([
       { key: "users/user_123/stitches/stitch_1/video.mp4" },
@@ -799,13 +807,13 @@ describe("useClipLibraryState", () => {
   });
 
   it("removes listed documents and skips optional music object deletes", async () => {
-    mocks.usePaginatedQuery.mockImplementation((queryId: string) => ({
+    mocks.usePaginatedQuery.mockImplementation((queryId: string, args) => ({
       isLoading: false,
       loadMore: vi.fn(),
       results:
         queryId === "videoClips.list"
           ? [createClipDocument({ cliprMetadata: undefined })]
-          : queryId === "stitches.list"
+          : queryId === "stitches.list" && args?.postedStatus === "active"
             ? [createStitch({ music: undefined })]
             : [],
       status: "Exhausted",
@@ -827,7 +835,7 @@ describe("useClipLibraryState", () => {
   });
 
   it("maps paginated metadata without downloading media blobs", () => {
-    mocks.usePaginatedQuery.mockImplementation((queryId: string) => {
+    mocks.usePaginatedQuery.mockImplementation((queryId: string, args) => {
       if (queryId === "videoClips.list") {
         return {
           isLoading: false,
@@ -841,7 +849,7 @@ describe("useClipLibraryState", () => {
         return {
           isLoading: false,
           loadMore: vi.fn(),
-          results: [createStitch()],
+          results: args?.postedStatus === "active" ? [createStitch()] : [],
           status: "Exhausted",
         };
       }
@@ -858,8 +866,10 @@ describe("useClipLibraryState", () => {
 
     expect(state.clips).toHaveLength(1);
     expect(state.counts).toEqual({
+      activeStitches: 1,
       cliprClips: 1,
       demoClips: 0,
+      postedStitches: 0,
       stitches: 1,
       swapClips: 0,
       ugcClips: 0,
@@ -877,8 +887,10 @@ describe("useClipLibraryState", () => {
 
   it("uses aggregate counts when they are larger than the loaded page", () => {
     mocks.useQuery.mockReturnValue({
+      activeStitches: 0,
       cliprClips: 10,
       demoClips: 20,
+      postedStitches: 0,
       stitches: 40,
       swapClips: 50,
       ugcClips: 60,
@@ -904,8 +916,10 @@ describe("useClipLibraryState", () => {
     const state = useClipLibraryState();
 
     expect(state.counts).toEqual({
+      activeStitches: 0,
       cliprClips: 10,
       demoClips: 20,
+      postedStitches: 0,
       stitches: 40,
       swapClips: 50,
       ugcClips: 60,
@@ -987,8 +1001,10 @@ describe("useClipLibraryState", () => {
     const state = useClipLibraryState();
 
     expect(state.counts).toEqual({
+      activeStitches: 0,
       cliprClips: 0,
       demoClips: 0,
+      postedStitches: 0,
       stitches: 0,
       swapClips: 0,
       ugcClips: 0,
