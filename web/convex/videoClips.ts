@@ -16,7 +16,6 @@ import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
 import { videoClipLibraryKindValidator } from "./validators/videoClipLibraryKind";
-import { videoCropBoundsValidator } from "./validators/videoCropBounds";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
 const saveArgs = {
@@ -43,7 +42,6 @@ const saveArgs = {
   height: v.number(),
   aspectRatio: v.number(),
   duration: v.number(),
-  defaultCropBounds: v.optional(videoCropBoundsValidator),
   defaultTrimRange: v.optional(videoTrimRangeValidator),
   hasAudio: v.boolean(),
   swaprMetadata: v.optional(swaprMetadataValidator),
@@ -398,7 +396,6 @@ export const updateMetadata = mutation({
     poseDescription: v.optional(v.string()),
     productDescription: v.optional(v.string()),
     productId: v.optional(v.string()),
-    defaultCropBounds: v.optional(videoCropBoundsValidator),
     defaultTrimRange: v.optional(videoTrimRangeValidator),
     updatedAt: v.string(),
   },
@@ -415,7 +412,6 @@ export const updateMetadata = mutation({
       poseDescription,
       productDescription,
       productId,
-      defaultCropBounds,
       defaultTrimRange,
       updatedAt,
     },
@@ -473,7 +469,6 @@ export const updateMetadata = mutation({
       ...(poseDescription === undefined ? {} : { poseDescription }),
       ...(productDescription === undefined ? {} : { productDescription }),
       ...(demoProductId === undefined ? {} : { productId: demoProductId }),
-      ...(defaultCropBounds === undefined ? {} : { defaultCropBounds }),
       ...(defaultTrimRange === undefined ? {} : { defaultTrimRange }),
       updatedAt,
     });

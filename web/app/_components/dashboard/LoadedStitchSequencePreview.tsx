@@ -16,14 +16,12 @@ import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getActiveTextOverlayId } from "@/lib/clipstitchr/utils/getActiveTextOverlayId";
-import { getDefaultVideoCropBounds } from "@/lib/clipstitchr/utils/getDefaultVideoCropBounds";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getTextOverlayId } from "@/lib/clipstitchr/utils/getTextOverlayId";
 import { getTextOverlayIsInRange } from "@/lib/clipstitchr/utils/getTextOverlayIsInRange";
 import { getTextOverlayIsVisible } from "@/lib/clipstitchr/utils/getTextOverlayIsVisible";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
-import { getVideoCropPreviewStyle } from "@/lib/clipstitchr/utils/getVideoCropPreviewStyle";
 import { replaceTextOverlayById } from "@/lib/clipstitchr/utils/replaceTextOverlayById";
 
 type LoadedStitchSequencePreviewProps = {
@@ -54,9 +52,6 @@ export function LoadedStitchSequencePreview({
   const demoTrimEnd = stitch.demoTrimRange?.end;
   const ugcPlaybackRate = stitch.ugcPlaybackRate ?? 1;
   const demoPlaybackRate = stitch.demoPlaybackRate ?? 1;
-  const ugcCropBounds = stitch.ugcCropBounds ?? getDefaultVideoCropBounds(ugcClip);
-  const demoCropBounds =
-    stitch.demoCropBounds ?? getDefaultVideoCropBounds(demoClip);
   const ugcTrimRange = useMemo(
     () =>
       clampVideoTrimRange(
@@ -188,10 +183,9 @@ export function LoadedStitchSequencePreview({
               ref={ugcVideoRef}
               aria-hidden={activeSegment !== "ugc"}
               className={[
-                "pointer-events-none max-w-none",
+                "pointer-events-none absolute inset-0 h-full w-full object-contain",
                 activeSegment === "ugc" ? "opacity-100" : "opacity-0",
               ].join(" ")}
-              style={getVideoCropPreviewStyle(ugcCropBounds)}
               muted={stitch.includeUgcAudio === false}
               onEnded={() => handleEnded("ugc")}
               onLoadedMetadata={() => handleLoadedMetadata("ugc")}
@@ -205,10 +199,9 @@ export function LoadedStitchSequencePreview({
               ref={demoVideoRef}
               aria-hidden={activeSegment !== "demo"}
               className={[
-                "pointer-events-none max-w-none",
+                "pointer-events-none absolute inset-0 h-full w-full object-contain",
                 activeSegment === "demo" ? "opacity-100" : "opacity-0",
               ].join(" ")}
-              style={getVideoCropPreviewStyle(demoCropBounds)}
               muted={stitch.includeDemoAudio === false}
               onEnded={() => handleEnded("demo")}
               onLoadedMetadata={() => handleLoadedMetadata("demo")}

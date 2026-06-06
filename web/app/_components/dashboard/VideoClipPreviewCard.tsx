@@ -17,7 +17,6 @@ import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
-import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
@@ -44,13 +43,6 @@ type VideoClipPreviewCardTrimEditor = {
   onSave: (trimRange: VideoTrimRange) => void | Promise<void>;
 };
 
-type VideoClipPreviewCardCropEditor = {
-  initialCropBounds: VideoCropBounds;
-  saveLabel: string;
-  title: string;
-  onSave: (cropBounds: VideoCropBounds) => void | Promise<void>;
-};
-
 type VideoClipPreviewCardMetadataEditor = {
   products?: ProductProfile[];
   onSave: (metadata: AssetMetadataUpdate) => void | Promise<void>;
@@ -68,7 +60,6 @@ type VideoClipPreviewCardProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect?: () => void;
   cliprMusicEditor?: VideoClipDetailsMusicEditor;
-  cropEditor?: VideoClipPreviewCardCropEditor;
   metadataEditor?: VideoClipPreviewCardMetadataEditor;
   trimEditor?: VideoClipPreviewCardTrimEditor;
 };
@@ -85,7 +76,6 @@ export function VideoClipPreviewCard({
   onLoadPoster,
   onSelect,
   cliprMusicEditor,
-  cropEditor,
   metadataEditor,
   trimEditor,
 }: VideoClipPreviewCardProps) {
@@ -236,7 +226,6 @@ export function VideoClipPreviewCard({
         <VideoClipDetailsDialog
           actionItems={actionItems}
           clip={clip}
-          cropEditor={detailsMode === "controls" ? cropEditor : undefined}
           productName={productName}
           initialControlsEditorOpen={detailsMode === "controls"}
           isLoading={isClipLoading}
@@ -253,7 +242,6 @@ export function VideoClipPreviewCard({
       {detailsMode === "edit" && metadataEditor ? (
         <VideoClipEditDialog
           clip={clip}
-          cropEditor={cropEditor}
           productName={productName}
           products={metadataEditor.products}
           isLoading={isClipLoading}

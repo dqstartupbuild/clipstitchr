@@ -255,16 +255,8 @@ function queueStitchrState(
     selectedMusicTrack?: SharedMusicTrack | null;
     selectedUgcIds?: string[];
     textOverlaysByUgcId?: Record<string, TextOverlay[]>;
-    ugcCropBoundsByClipId?: Record<
-      string,
-      { bottom: number; left: number; right: number; top: number }
-    >;
     ugcPlaybackRate?: 1 | 2;
     ugcTrimRangesByClipId?: Record<string, { start: number; end: number }>;
-    demoCropBoundsByClipId?: Record<
-      string,
-      { bottom: number; left: number; right: number; top: number }
-    >;
   } = {},
 ) {
   mocks.stateQueue.push(
@@ -282,9 +274,7 @@ function queueStitchrState(
     overrides.isGeneratingAutoText ?? false,
     overrides.autoTextMessage ?? null,
     overrides.ugcTrimRangesByClipId ?? {},
-    overrides.ugcCropBoundsByClipId ?? {},
     overrides.demoTrimRangesByClipId ?? {},
-    overrides.demoCropBoundsByClipId ?? {},
     overrides.loadedLongrClipsById ?? {},
     [],
     [],
@@ -644,11 +634,11 @@ describe("StitchrPageClient", () => {
     );
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("ugc_2");
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[20]).toHaveBeenCalledWith(["ugc_2"]);
-    expect(mocks.stateSetters[21]).toHaveBeenCalledWith("ugc_2");
-    expect(mocks.stateSetters[22]).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[23]).toHaveBeenCalledWith(["demo_2"]);
-    expect(mocks.stateSetters[24]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
+    expect(mocks.stateSetters[18]).toHaveBeenCalledWith(["ugc_2"]);
+    expect(mocks.stateSetters[19]).toHaveBeenCalledWith("ugc_2");
+    expect(mocks.stateSetters[20]).toHaveBeenCalledWith("demo_2");
+    expect(mocks.stateSetters[21]).toHaveBeenCalledWith(["demo_2"]);
+    expect(mocks.stateSetters[22]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
     expect(mocks.stateSetters[7]).toHaveBeenCalledWith({
       ugc_2: [textOverlay],
     });

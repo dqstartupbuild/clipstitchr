@@ -7,33 +7,27 @@ import { maxStitchrUgcSelectionCount } from "@/lib/clipstitchr/constants/maxStit
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
-import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
-import { getDefaultVideoCropBounds } from "@/lib/clipstitchr/utils/getDefaultVideoCropBounds";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 
 type UgcClipSelectorProps = {
   clips: VideoClipMetadata[];
   selectedIds: string[];
-  selectedCropBoundsByClipId: Record<string, VideoCropBounds>;
   selectedTrimRangesByClipId: Record<string, VideoTrimRange>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect: (id: string) => void;
   onUpdateTrim: (clip: VideoClipMetadata, trimRange: VideoTrimRange) => void;
-  onUpdateCrop: (clip: VideoClipMetadata, cropBounds: VideoCropBounds) => void;
 };
 
 export function UgcClipSelector({
   clips,
   selectedIds,
-  selectedCropBoundsByClipId,
   selectedTrimRangesByClipId,
   onLoadClip,
   onLoadPoster,
   onSelect,
   onUpdateTrim,
-  onUpdateCrop,
 }: UgcClipSelectorProps) {
   const pagination = usePagination(clips, {
     pageSize: clipSelectorPageSize,
@@ -67,12 +61,6 @@ export function UgcClipSelector({
                 <div key={clip.id} className="w-44 shrink-0">
                   <SelectableClipCard
                     clip={clip}
-                    cropBounds={
-                      isSelected
-                        ? (selectedCropBoundsByClipId[clip.id] ??
-                          getDefaultVideoCropBounds(clip))
-                        : getDefaultVideoCropBounds(clip)
-                    }
                     trimRange={
                       isSelected
                         ? (selectedTrimRangesByClipId[clip.id] ??
@@ -88,7 +76,6 @@ export function UgcClipSelector({
                     onLoadPoster={onLoadPoster}
                     onSelect={onSelect}
                     onUpdateTrim={onUpdateTrim}
-                    onUpdateCrop={onUpdateCrop}
                   />
                 </div>
               );

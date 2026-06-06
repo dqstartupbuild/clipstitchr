@@ -29,15 +29,12 @@ import { findVideoClipMetadataById } from "@/lib/clipstitchr/utils/findVideoClip
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
-import { getDefaultVideoCropBounds } from "@/lib/clipstitchr/utils/getDefaultVideoCropBounds";
 import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
-import { getVideoCropBoundsLabel } from "@/lib/clipstitchr/utils/getVideoCropBoundsLabel";
 import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
-import { clampVideoCropBounds } from "@/lib/clipstitchr/utils/clampVideoCropBounds";
 
 type StitchEditDialogProps = {
   demoClips: VideoClipMetadata[];
@@ -139,23 +136,11 @@ export function StitchEditDialog({
         initialDemoClip.duration,
       )
     : (stitch.demoTrimRange ?? { start: 0, end: 0 });
-  const initialUgcCropBounds = initialUgcClip
-    ? clampVideoCropBounds(
-        stitch.ugcCropBounds ?? getDefaultVideoCropBounds(initialUgcClip),
-      )
-    : (stitch.ugcCropBounds ?? getDefaultVideoCropBounds());
-  const initialDemoCropBounds = initialDemoClip
-    ? clampVideoCropBounds(
-        stitch.demoCropBounds ?? getDefaultVideoCropBounds(initialDemoClip),
-      )
-    : (stitch.demoCropBounds ?? getDefaultVideoCropBounds());
   const initialSourceSettingsKey = createStitchSourceSettingsComparisonKey({
     demoClipId: stitch.demoClipId,
-    demoCropBounds: initialDemoCropBounds,
     demoPlaybackRate: stitch.demoPlaybackRate ?? 1,
     demoTrimRange: initialDemoTrimRange,
     ugcClipId: stitch.ugcClipId,
-    ugcCropBounds: initialUgcCropBounds,
     ugcPlaybackRate: stitch.ugcPlaybackRate ?? 1,
     ugcTrimRange: initialUgcTrimRange,
   });
@@ -183,12 +168,6 @@ export function StitchEditDialog({
   );
   const [ugcTrimRange, setUgcTrimRange] = useState(() => initialUgcTrimRange);
   const [demoTrimRange, setDemoTrimRange] = useState(() => initialDemoTrimRange);
-  const [ugcCropBounds, setUgcCropBounds] = useState(
-    () => initialUgcCropBounds,
-  );
-  const [demoCropBounds, setDemoCropBounds] = useState(
-    () => initialDemoCropBounds,
-  );
   const [ugcPlaybackRate, setUgcPlaybackRate] = useState<VideoPlaybackRate>(
     stitch.ugcPlaybackRate ?? 1,
   );
@@ -219,8 +198,6 @@ export function StitchEditDialog({
   const clampedDemoTrimRange = selectedDemoClip
     ? clampVideoTrimRange(demoTrimRange, selectedDemoClip.duration)
     : demoTrimRange;
-  const clampedUgcCropBounds = clampVideoCropBounds(ugcCropBounds);
-  const clampedDemoCropBounds = clampVideoCropBounds(demoCropBounds);
   const ugcDuration = selectedUgcClip
     ? getPlaybackRateDuration(clampedUgcTrimRange, ugcPlaybackRate)
     : 0;
@@ -245,7 +222,6 @@ export function StitchEditDialog({
     ...stitch,
     demoClipId: selectedDemoClipId,
     demoClipName: selectedDemoClip?.name ?? stitch.demoClipName,
-    demoCropBounds: clampedDemoCropBounds,
     demoPlaybackRate,
     demoTrimRange: clampedDemoTrimRange,
     duration: sourceDuration || stitch.duration,
@@ -254,7 +230,6 @@ export function StitchEditDialog({
     textOverlays: textOverlays.length ? textOverlays : undefined,
     ugcClipId: selectedUgcClipId,
     ugcClipName: selectedUgcClip?.name ?? stitch.ugcClipName,
-    ugcCropBounds: clampedUgcCropBounds,
     ugcPlaybackRate,
     ugcTrimRange: clampedUgcTrimRange,
   };
@@ -263,11 +238,9 @@ export function StitchEditDialog({
     : "Ready to download";
   const currentSourceSettingsKey = createStitchSourceSettingsComparisonKey({
     demoClipId: selectedDemoClipId,
-    demoCropBounds: clampedDemoCropBounds,
     demoPlaybackRate,
     demoTrimRange: clampedDemoTrimRange,
     ugcClipId: selectedUgcClipId,
-    ugcCropBounds: clampedUgcCropBounds,
     ugcPlaybackRate,
     ugcTrimRange: clampedUgcTrimRange,
   });
@@ -309,14 +282,12 @@ export function StitchEditDialog({
     return {
       demoClipId: selectedDemoClip.id,
       demoClipName: selectedDemoClip.name,
-      demoCropBounds: clampedDemoCropBounds,
       demoPlaybackRate,
       demoTrimRange: clampedDemoTrimRange,
       duration: sourceDuration,
       name: nextName,
       ugcClipId: selectedUgcClip.id,
       ugcClipName: selectedUgcClip.name,
-      ugcCropBounds: clampedUgcCropBounds,
       ugcPlaybackRate,
       ugcTrimRange: clampedUgcTrimRange,
     };
@@ -347,8 +318,6 @@ export function StitchEditDialog({
         await onSaveSourceSettings(sourceSettingsUpdate, stitchDraftForSave);
         setDemoTrimRange(clampedDemoTrimRange);
         setUgcTrimRange(clampedUgcTrimRange);
-        setDemoCropBounds(clampedDemoCropBounds);
-        setUgcCropBounds(clampedUgcCropBounds);
         setSavedSourceSettingsKey(currentSourceSettingsKey);
       }
 
@@ -384,7 +353,6 @@ export function StitchEditDialog({
 
     if (nextClip) {
       setUgcTrimRange(getDefaultVideoTrimRange(nextClip));
-      setUgcCropBounds(getDefaultVideoCropBounds(nextClip));
     }
 
     onLoadPreview(clipId, selectedDemoClipId);
@@ -396,7 +364,6 @@ export function StitchEditDialog({
 
     if (nextClip) {
       setDemoTrimRange(getDefaultVideoTrimRange(nextClip));
-      setDemoCropBounds(getDefaultVideoCropBounds(nextClip));
     }
 
     onLoadPreview(selectedUgcClipId, clipId);
@@ -496,10 +463,6 @@ export function StitchEditDialog({
                 UGC {getStitchTrimRangeLabel(draftStitch.ugcTrimRange)} . Demo{" "}
                 {getStitchTrimRangeLabel(draftStitch.demoTrimRange)}
               </p>
-              <p className="mt-2 text-xs font-semibold text-text-tertiary">
-                UGC crop {getVideoCropBoundsLabel(draftStitch.ugcCropBounds)} .
-                Demo crop {getVideoCropBoundsLabel(draftStitch.demoCropBounds)}
-              </p>
               <p className="mt-2 text-xs text-text-tertiary">
                 {stitch.width} x {stitch.height} . {fileSizeLabel}
               </p>
@@ -509,7 +472,6 @@ export function StitchEditDialog({
             {!isLongrStitch ? (
               <StitchSourceSettingsPanel
                 demoClips={demoClips}
-                demoCropBounds={clampedDemoCropBounds}
                 demoFallbackClip={currentDemoFallbackClip}
                 demoPlaybackRate={demoPlaybackRate}
                 demoTrimDuration={selectedDemoClip?.duration ?? 0}
@@ -519,17 +481,14 @@ export function StitchEditDialog({
                 selectedUgcClipId={selectedUgcClipId}
                 totalDuration={draftStitch.duration}
                 ugcClips={ugcClips}
-                ugcCropBounds={clampedUgcCropBounds}
                 ugcFallbackClip={currentUgcFallbackClip}
                 ugcPlaybackRate={ugcPlaybackRate}
                 ugcTrimDuration={selectedUgcClip?.duration ?? 0}
                 ugcTrimRange={clampedUgcTrimRange}
                 onDemoClipChange={handleSelectDemoClip}
-                onDemoCropChange={setDemoCropBounds}
                 onDemoPlaybackRateChange={setDemoPlaybackRate}
                 onDemoTrimChange={setDemoTrimRange}
                 onUgcClipChange={handleSelectUgcClip}
-                onUgcCropChange={setUgcCropBounds}
                 onUgcPlaybackRateChange={setUgcPlaybackRate}
                 onUgcTrimChange={setUgcTrimRange}
               />

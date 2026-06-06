@@ -699,12 +699,6 @@ describe("useClipLibraryState", () => {
     const update = {
       demoClipId: "demo_2",
       demoClipName: "Demo 2",
-      demoCropBounds: {
-        bottom: 0,
-        left: 0,
-        right: 0,
-        top: 0,
-      },
       demoPlaybackRate: 2,
       demoTrimRange: {
         end: 8,
@@ -714,12 +708,6 @@ describe("useClipLibraryState", () => {
       name: "updated-stitch.mp4",
       ugcClipId: "ugc_2",
       ugcClipName: "UGC 2",
-      ugcCropBounds: {
-        bottom: 0,
-        left: 0,
-        right: 0,
-        top: 0,
-      },
       ugcPlaybackRate: 1,
       ugcTrimRange: {
         end: 3,

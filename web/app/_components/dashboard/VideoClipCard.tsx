@@ -3,7 +3,6 @@
 import {
   Download,
   Edit3,
-  Crop,
   Scissors,
   Shuffle,
   Trash2,
@@ -20,14 +19,12 @@ import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/Cre
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
-import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { createVideoBlobWithPosterMetadata } from "@/lib/clipstitchr/media/createVideoBlobWithPosterMetadata";
 import { renderCliprVideoWithMusic } from "@/lib/clipstitchr/media/renderCliprVideoWithMusic";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
-import { getDefaultVideoCropBounds } from "@/lib/clipstitchr/utils/getDefaultVideoCropBounds";
 import { getClipCanUseInSwapr } from "@/lib/clipstitchr/utils/getClipCanUseInSwapr";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
 import { getUseInStitchrHref } from "@/lib/clipstitchr/utils/getUseInStitchrHref";
@@ -61,10 +58,6 @@ type VideoClipCardProps = {
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void | Promise<void>;
-  onUpdateCrop?: (
-    clip: VideoClipMetadata,
-    cropBounds: VideoCropBounds,
-  ) => void | Promise<void>;
   onCreateAvatarFromClip?: (
     clip: VideoClipMetadata,
     options: CreateAvatarFromUgcClipOptions,
@@ -87,7 +80,6 @@ export function VideoClipCard({
   onUpdateCliprMusic,
   onUpdateMetadata,
   onUpdateTrim,
-  onUpdateCrop,
   onCreateAvatarFromClip,
 }: VideoClipCardProps) {
   const [isAvatarCreatorOpen, setIsAvatarCreatorOpen] = useState(false);
@@ -97,7 +89,6 @@ export function VideoClipCard({
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [musicError, setMusicError] = useState<string | null>(null);
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
-  const defaultCropBounds = getDefaultVideoCropBounds(clip);
   const displayDuration = getVideoTrimDisplayDuration(
     clip.duration,
     defaultTrimRange,
@@ -209,16 +200,6 @@ export function VideoClipCard({
           title: "Default trim",
           onSave: (trimRange) => onUpdateTrim(clip, trimRange),
         }}
-        cropEditor={
-          onUpdateCrop
-            ? {
-                initialCropBounds: defaultCropBounds,
-                saveLabel: "Save crop",
-                title: "Default crop",
-                onSave: (cropBounds) => onUpdateCrop(clip, cropBounds),
-              }
-            : undefined
-        }
         cliprMusicEditor={
           clip.cliprMetadata && onGenerateCliprMusic && onUpdateCliprMusic
             ? {
@@ -276,15 +257,6 @@ export function VideoClipCard({
                 closeDetails();
                 setIsAvatarCreatorOpen(true);
               },
-            });
-          }
-
-          if (onUpdateCrop) {
-            items.push({
-              label: "Trim/crop defaults",
-              icon: <Crop aria-hidden className="h-4 w-4" />,
-              disabled: isLoading,
-              onClick: () => openDetails({ showControlsEditor: true }),
             });
           }
 

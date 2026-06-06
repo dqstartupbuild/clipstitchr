@@ -7,7 +7,6 @@ import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataU
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
-import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 type RecentUploadsSectionProps = {
@@ -24,10 +23,6 @@ type RecentUploadsSectionProps = {
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void | Promise<void>;
-  onUpdateCrop: (
-    clip: VideoClipMetadata,
-    cropBounds: VideoCropBounds,
-  ) => void | Promise<void>;
 };
 
 export function RecentUploadsSection({
@@ -38,7 +33,6 @@ export function RecentUploadsSection({
   onDelete,
   onUpdateMetadata,
   onUpdateTrim,
-  onUpdateCrop,
 }: RecentUploadsSectionProps) {
   return (
     <section id="recent-uploads">
@@ -65,7 +59,6 @@ export function RecentUploadsSection({
               onDelete={onDelete}
               onUpdateMetadata={onUpdateMetadata}
               onUpdateTrim={onUpdateTrim}
-              onUpdateCrop={onUpdateCrop}
             />
           ))}
         </div>

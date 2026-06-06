@@ -19,7 +19,6 @@ import { resolveMediaBunnyOutputCodecs } from "@/lib/clipstitchr/media/resolveMe
 import type { StitchrSequenceClip } from "@/lib/clipstitchr/types/StitchrSequenceClip";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
-import { getVideoCropBoundsIsNeutral } from "@/lib/clipstitchr/utils/getVideoCropBoundsIsNeutral";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type StitchStitchrSequenceOptions = {
@@ -75,10 +74,7 @@ export async function stitchStitchrSequence(
       "No supported audio encoder found for this export.",
     );
     const overlays = textOverlays ?? (textOverlay ? [textOverlay] : []);
-    const hasVideoCrop = sequence.some(
-      ({ cropBounds }) => !getVideoCropBoundsIsNeutral(cropBounds),
-    );
-    const renderContext = overlays.length || hasVideoCrop
+    const renderContext = overlays.length
       ? createTextOverlayRenderContext(TIKTOK_OUTPUT_WIDTH, TIKTOK_OUTPUT_HEIGHT)
       : null;
     const audioSource = createOutputAudioBufferSource(
@@ -113,7 +109,6 @@ export async function stitchStitchrSequence(
               textOverlays: overlays,
               timelineOffset: segmentOffset,
               trimRange,
-              cropBounds: sequence[index]?.cropBounds,
               onProgress: (progress) =>
                 onProgress?.(progressStart + progress * progressSpan),
             })

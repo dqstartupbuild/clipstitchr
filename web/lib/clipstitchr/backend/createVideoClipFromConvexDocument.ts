@@ -38,7 +38,6 @@ export function createVideoClipFromConvexDocument({
     height: clip.height,
     aspectRatio: clip.aspectRatio,
     duration: clip.duration,
-    defaultCropBounds: clip.defaultCropBounds,
     defaultTrimRange: clip.defaultTrimRange,
     hasAudio: clip.hasAudio,
     swaprMetadata: clip.swaprMetadata,

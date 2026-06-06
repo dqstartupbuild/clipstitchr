@@ -1,2 +1,0 @@
-export const VIDEO_CROP_MAX_EDGE_INSET = 0.45;
-export const VIDEO_CROP_MIN_VISIBLE_RATIO = 0.1;

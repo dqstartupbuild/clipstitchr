@@ -34,10 +34,8 @@ import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchS
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
-import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
-import { clampVideoCropBounds } from "@/lib/clipstitchr/utils/clampVideoCropBounds";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { getClipLibraryDisplayCounts } from "@/lib/clipstitchr/utils/getClipLibraryDisplayCounts";
 import { getDeletableMusicAudioObject } from "@/lib/clipstitchr/utils/getDeletableMusicAudioObject";
@@ -495,25 +493,6 @@ export function useClipLibraryState(): ClipLibraryValue {
     [refresh, updateClipMetadataMutation],
   );
 
-  const updateClipCropBounds = useCallback(
-    async (clip: VideoClipMetadata, defaultCropBounds: VideoCropBounds) => {
-      const updatedClip = {
-        ...clip,
-        defaultCropBounds: clampVideoCropBounds(defaultCropBounds),
-        updatedAt: new Date().toISOString(),
-      };
-
-      await updateClipMetadataMutation({
-        id: clip.id,
-        defaultCropBounds: updatedClip.defaultCropBounds,
-        updatedAt: updatedClip.updatedAt,
-      });
-      clipCacheRef.current.delete(clip.id);
-      await refresh();
-    },
-    [refresh, updateClipMetadataMutation],
-  );
-
   const updateCliprMusic = useCallback(
     async (clip: VideoClipMetadata, music: CliprMusicMetadata | null) => {
       const previousMusicObject = clip.cliprMetadata?.music?.audioObject;
@@ -604,14 +583,12 @@ export function useClipLibraryState(): ClipLibraryValue {
         if (ugcClip && demoClip) {
           const posterBlob = await createStitchPosterBlob({
             demoClip,
-            demoCropBounds: update.demoCropBounds,
             demoPlaybackRate: update.demoPlaybackRate,
             demoTrimRange: update.demoTrimRange,
             duration: update.duration,
             textOverlay: nextTextOverlays[0] ?? null,
             textOverlays: nextTextOverlays,
             ugcClip,
-            ugcCropBounds: update.ugcCropBounds,
             ugcPlaybackRate: update.ugcPlaybackRate,
             ugcTrimRange: update.ugcTrimRange,
           });
@@ -814,7 +791,6 @@ export function useClipLibraryState(): ClipLibraryValue {
     removeClip,
     renameClip,
     updateClipMetadata,
-    updateClipCropBounds,
     generateCliprMusic,
     updateCliprMusic,
     updateClipTrimRange,

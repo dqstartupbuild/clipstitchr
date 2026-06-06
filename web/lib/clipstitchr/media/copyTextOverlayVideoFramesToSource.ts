@@ -6,10 +6,8 @@ import {
 import { drawTextOverlays } from "@/lib/clipstitchr/media/drawTextOverlays";
 import type { TextOverlayRenderContext } from "@/lib/clipstitchr/media/createTextOverlayRenderContext";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
-import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
-import { getMediaBunnyCropRectangle } from "@/lib/clipstitchr/media/getMediaBunnyCropRectangle";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
@@ -21,7 +19,6 @@ type CopyTextOverlayVideoFramesOptions = {
   renderContext: TextOverlayRenderContext;
   timelineOffset: number;
   trimRange: VideoTrimRange;
-  cropBounds?: VideoCropBounds | null;
   textOverlay?: TextOverlay;
   textOverlays?: TextOverlay[];
   onProgress?: (progress: number) => void;
@@ -38,7 +35,6 @@ export async function copyTextOverlayVideoFramesToSource({
   renderContext,
   timelineOffset,
   trimRange,
-  cropBounds,
   textOverlay,
   textOverlays,
   onProgress,
@@ -49,19 +45,10 @@ export async function copyTextOverlayVideoFramesToSource({
     throw new Error("A normalized clip was missing its video track.");
   }
 
-  const [displayWidth, displayHeight] = await Promise.all([
-    track.getDisplayWidth(),
-    track.getDisplayHeight(),
-  ]);
-  const crop = getMediaBunnyCropRectangle({
-    cropBounds,
-    height: displayHeight,
-    width: displayWidth,
-  });
   const sink = new CanvasSink(track, {
-    ...(crop ? { crop, fit: "cover" as const } : { fit: "fill" as const }),
     width: TIKTOK_OUTPUT_WIDTH,
     height: TIKTOK_OUTPUT_HEIGHT,
+    fit: "fill",
     rotation: 0,
     poolSize: 1,
   });

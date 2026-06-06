@@ -9,7 +9,6 @@ import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchS
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
-import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 export type ClipLibraryValue = {
@@ -57,10 +56,6 @@ export type ClipLibraryValue = {
   updateClipTrimRange: (
     clip: VideoClipMetadata,
     defaultTrimRange: VideoTrimRange,
-  ) => Promise<void>;
-  updateClipCropBounds: (
-    clip: VideoClipMetadata,
-    defaultCropBounds: VideoCropBounds,
   ) => Promise<void>;
   generateStitchMusic: (
     stitch: Stitch,

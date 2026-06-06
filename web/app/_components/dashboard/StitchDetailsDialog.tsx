@@ -11,7 +11,6 @@ import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
-import { getVideoCropBoundsLabel } from "@/lib/clipstitchr/utils/getVideoCropBoundsLabel";
 import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
 
 type StitchDetailsDialogProps = {
@@ -51,8 +50,6 @@ export function StitchDetailsDialog({
     { label: "Demo clip", value: stitch.demoClipName },
     { label: "UGC trim", value: getStitchTrimRangeLabel(stitch.ugcTrimRange) },
     { label: "Demo trim", value: getStitchTrimRangeLabel(stitch.demoTrimRange) },
-    { label: "UGC crop", value: getVideoCropBoundsLabel(stitch.ugcCropBounds) },
-    { label: "Demo crop", value: getVideoCropBoundsLabel(stitch.demoCropBounds) },
     {
       label: "UGC audio",
       value: stitch.includeUgcAudio === false ? "Muted" : "Included",

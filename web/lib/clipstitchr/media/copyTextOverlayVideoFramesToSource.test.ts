@@ -4,7 +4,6 @@ import { copyTextOverlayVideoFramesToSource } from "@/lib/clipstitchr/media/copy
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 
 const mocks = vi.hoisted(() => ({
-  canvasSinkOptions: null as Record<string, unknown> | null,
   drawTextOverlay: vi.fn(),
   frames: [] as MockFrame[],
 }));
@@ -16,9 +15,7 @@ type MockFrame = {
 };
 
 vi.mock("mediabunny", () => ({
-  CanvasSink: vi.fn(function CanvasSink(_track, options) {
-    mocks.canvasSinkOptions = options;
-
+  CanvasSink: vi.fn(function CanvasSink() {
     return {
       canvases: async function* canvases() {
         yield* mocks.frames;
@@ -53,15 +50,12 @@ function createOverlay(): TextOverlay {
 describe("copyTextOverlayVideoFramesToSource", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.canvasSinkOptions = null;
     mocks.frames = [];
   });
 
   it("draws text overlays onto retimed canvas frames", async () => {
     const track = {
       computeDuration: vi.fn().mockResolvedValue(20),
-      getDisplayHeight: vi.fn().mockResolvedValue(1920),
-      getDisplayWidth: vi.fn().mockResolvedValue(1080),
       getFirstTimestamp: vi.fn().mockResolvedValue(10),
     };
     const context = {
@@ -105,8 +99,6 @@ describe("copyTextOverlayVideoFramesToSource", () => {
   it("compresses overlay frame timing for 2x playback", async () => {
     const track = {
       computeDuration: vi.fn().mockResolvedValue(20),
-      getDisplayHeight: vi.fn().mockResolvedValue(1920),
-      getDisplayWidth: vi.fn().mockResolvedValue(1080),
       getFirstTimestamp: vi.fn().mockResolvedValue(10),
     };
     const context = {
@@ -148,50 +140,6 @@ describe("copyTextOverlayVideoFramesToSource", () => {
       expect.objectContaining({ text: "Hello" }),
       7,
     );
-  });
-
-  it("passes crop bounds to the Media Bunny canvas sink", async () => {
-    const track = {
-      computeDuration: vi.fn().mockResolvedValue(20),
-      getDisplayHeight: vi.fn().mockResolvedValue(2000),
-      getDisplayWidth: vi.fn().mockResolvedValue(1000),
-      getFirstTimestamp: vi.fn().mockResolvedValue(0),
-    };
-    const context = {
-      clearRect: vi.fn(),
-      drawImage: vi.fn(),
-    };
-    const source = {
-      add: vi.fn().mockResolvedValue(undefined),
-    } as unknown as CanvasSource;
-
-    await expect(
-      copyTextOverlayVideoFramesToSource({
-        cropBounds: {
-          bottom: 0.2,
-          left: 0.05,
-          right: 0.15,
-          top: 0.1,
-        },
-        input: createInput(track),
-        renderContext: { canvas: {}, context } as never,
-        source,
-        timelineOffset: 0,
-        trimRange: { start: 0, end: 1 },
-      }),
-    ).resolves.toEqual({ endTimestamp: 0 });
-
-    expect(mocks.canvasSinkOptions).toMatchObject({
-      crop: {
-        height: 1400,
-        left: 50,
-        top: 200,
-        width: 800,
-      },
-      fit: "cover",
-      height: 1920,
-      width: 1080,
-    });
   });
 
   it("throws when the input has no video track", async () => {

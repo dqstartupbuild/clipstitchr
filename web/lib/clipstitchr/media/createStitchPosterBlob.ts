@@ -7,7 +7,6 @@ import { drawVideoFrameToCanvas } from "@/lib/clipstitchr/media/drawVideoFrameTo
 import { encodeCanvasAsPosterBlob } from "@/lib/clipstitchr/media/encodeCanvasAsPosterBlob";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
-import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
@@ -18,28 +17,24 @@ import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRate
 
 type CreateStitchPosterBlobOptions = {
   demoClip: VideoClip;
-  demoCropBounds?: VideoCropBounds;
   demoPlaybackRate?: VideoPlaybackRate;
   demoTrimRange: VideoTrimRange;
   duration: number;
   textOverlay: TextOverlay | null;
   textOverlays?: TextOverlay[];
   ugcClip: VideoClip;
-  ugcCropBounds?: VideoCropBounds;
   ugcPlaybackRate?: VideoPlaybackRate;
   ugcTrimRange: VideoTrimRange;
 };
 
 export async function createStitchPosterBlob({
   demoClip,
-  demoCropBounds,
   demoPlaybackRate = 1,
   demoTrimRange,
   duration,
   textOverlay,
   textOverlays,
   ugcClip,
-  ugcCropBounds,
   ugcPlaybackRate = 1,
   ugcTrimRange,
 }: CreateStitchPosterBlobOptions): Promise<Blob> {
@@ -72,14 +67,12 @@ export async function createStitchPosterBlob({
     posterTimelineTime < ugcDuration
       ? {
           clip: ugcClip,
-          cropBounds: ugcCropBounds,
           playbackRate: ugcPlaybackRate,
           timelineOffset: 0,
           trimRange: clampedUgcTrimRange,
         }
       : {
           clip: demoClip,
-          cropBounds: demoCropBounds,
           playbackRate: demoPlaybackRate,
           timelineOffset: ugcDuration,
           trimRange: clampedDemoTrimRange,
@@ -106,7 +99,6 @@ export async function createStitchPosterBlob({
   await drawVideoFrameToCanvas({
     canvas,
     context,
-    cropBounds: posterSource.cropBounds,
     time: sourceTime,
     videoBlob: posterSource.clip.blob,
   });

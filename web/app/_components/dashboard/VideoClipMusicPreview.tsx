@@ -5,9 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { CLIPR_MUSIC_AD_GAIN } from "@/lib/clipstitchr/constants/cliprMusicMix";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { getCliprMusicGain } from "@/lib/clipstitchr/media/getCliprMusicGain";
-import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
-import { getVideoCropPreviewStyle } from "@/lib/clipstitchr/utils/getVideoCropPreviewStyle";
 
 type VideoClipMusicPreviewProps = {
   src: string | null;
@@ -20,7 +18,6 @@ type VideoClipMusicPreviewProps = {
   musicBlob: Blob | null;
   musicEnabled: boolean;
   musicVolume: number;
-  cropBounds?: VideoCropBounds | null;
   trimRange?: VideoTrimRange | null;
   onLoadPreview?: () => void;
 };
@@ -36,7 +33,6 @@ export function VideoClipMusicPreview({
   musicBlob,
   musicEnabled,
   musicVolume,
-  cropBounds = null,
   trimRange = null,
   onLoadPreview,
 }: VideoClipMusicPreviewProps) {
@@ -181,7 +177,7 @@ export function VideoClipMusicPreview({
 
   return (
     <div
-      className="video-clip-preview-frame relative aspect-[9/16] overflow-hidden rounded-lg bg-slate-950"
+      className="video-clip-preview-frame aspect-[9/16] overflow-hidden rounded-lg bg-slate-950"
       onBlur={() => setIsHovered(false)}
       onFocus={() => setIsHovered(true)}
       onMouseEnter={() => setIsHovered(true)}
@@ -194,7 +190,7 @@ export function VideoClipMusicPreview({
             key={`${src}:${posterSrc ?? "no-poster"}`}
             aria-label={label}
             autoPlay={autoPlay}
-            className="max-w-none"
+            className="h-full w-full object-contain"
             controls={shouldShowVideoControls}
             loop={!trimRange}
             muted={!shouldPlayMusic}
@@ -208,7 +204,6 @@ export function VideoClipMusicPreview({
             poster={posterSrc ?? undefined}
             preload="metadata"
             src={src}
-            style={getVideoCropPreviewStyle(cropBounds)}
           />
           {musicUrl ? (
             <audio
