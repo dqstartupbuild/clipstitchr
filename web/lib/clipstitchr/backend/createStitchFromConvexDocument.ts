@@ -20,6 +20,8 @@ export function createStitchFromConvexDocument({
     demoClipId: stitch.demoClipId,
     ugcClipName: stitch.ugcClipName,
     demoClipName: stitch.demoClipName,
+    ugcCropBounds: stitch.ugcCropBounds,
+    demoCropBounds: stitch.demoCropBounds,
     ugcTrimRange: stitch.ugcTrimRange,
     demoTrimRange: stitch.demoTrimRange,
     sequenceSegments: stitch.sequenceSegments,

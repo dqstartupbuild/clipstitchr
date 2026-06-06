@@ -1,5 +1,11 @@
+import type { CanvasSource, VideoSampleSource } from "mediabunny";
 import { assertNormalizedAudioParameters } from "@/lib/clipstitchr/media/assertNormalizedAudioParameters";
+import {
+  TIKTOK_OUTPUT_HEIGHT,
+  TIKTOK_OUTPUT_WIDTH,
+} from "@/lib/clipstitchr/constants/tiktokOutputSize";
 import { copyAudioSamplesToSource } from "@/lib/clipstitchr/media/copyAudioSamplesToSource";
+import { copyTextOverlayVideoFramesToSource } from "@/lib/clipstitchr/media/copyTextOverlayVideoFramesToSource";
 import { copyVideoSamplesToSource } from "@/lib/clipstitchr/media/copyVideoSamplesToSource";
 import { createMediaBunnyExportSession } from "@/lib/clipstitchr/media/createMediaBunnyExportSession";
 import { createMediaBunnyProgressMapper } from "@/lib/clipstitchr/media/createMediaBunnyProgressMapper";
@@ -7,6 +13,8 @@ import { createMediaInput } from "@/lib/clipstitchr/media/createMediaInput";
 import { createOutputAudioBufferSource } from "@/lib/clipstitchr/media/createOutputAudioBufferSource";
 import { createOutputAudioSampleSource } from "@/lib/clipstitchr/media/createOutputAudioSampleSource";
 import { createStitchSourceAudioBuffer } from "@/lib/clipstitchr/media/createStitchSourceAudioBuffer";
+import { createTextOverlayRenderContext } from "@/lib/clipstitchr/media/createTextOverlayRenderContext";
+import { createTikTokCanvasSource } from "@/lib/clipstitchr/media/createTikTokCanvasSource";
 import { createTikTokVideoSampleSource } from "@/lib/clipstitchr/media/createTikTokVideoSampleSource";
 import { finalizeMediaBunnyExportSession } from "@/lib/clipstitchr/media/finalizeMediaBunnyExportSession";
 import { getInputAudioParameters } from "@/lib/clipstitchr/media/getInputAudioParameters";
@@ -14,8 +22,11 @@ import { resolveMediaBunnyOutputCodecs } from "@/lib/clipstitchr/media/resolveMe
 import type { SourcePlaybackRateOptions } from "@/lib/clipstitchr/types/SourcePlaybackRateOptions";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSourceAudioOptions";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { clampVideoCropBounds } from "@/lib/clipstitchr/utils/clampVideoCropBounds";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { getVideoCropBoundsIsNeutral } from "@/lib/clipstitchr/utils/getVideoCropBoundsIsNeutral";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type StitchNormalizedVideosResult = {
@@ -27,6 +38,8 @@ type StitchNormalizedVideosResult = {
 type StitchNormalizedVideosOptions = {
   ugcTrimRange: VideoTrimRange;
   demoTrimRange: VideoTrimRange;
+  ugcCropBounds?: VideoCropBounds;
+  demoCropBounds?: VideoCropBounds;
   onProgress?: (progress: number) => void;
 } & SourcePlaybackRateOptions &
   StitchSourceAudioOptions;
@@ -37,6 +50,8 @@ export async function stitchNormalizedVideos(
   {
     ugcTrimRange,
     demoTrimRange,
+    ugcCropBounds,
+    demoCropBounds,
     demoPlaybackRate = 1,
     includeDemoAudio = true,
     includeUgcAudio = true,
@@ -60,6 +75,25 @@ export async function stitchNormalizedVideos(
       demoTrimRange,
       demoClip.duration,
     );
+    const clampedUgcCropBounds = clampVideoCropBounds(
+      ugcCropBounds ?? ugcClip.defaultCropBounds ?? {
+        bottom: 0,
+        left: 0,
+        right: 0,
+        top: 0,
+      },
+    );
+    const clampedDemoCropBounds = clampVideoCropBounds(
+      demoCropBounds ?? demoClip.defaultCropBounds ?? {
+        bottom: 0,
+        left: 0,
+        right: 0,
+        top: 0,
+      },
+    );
+    const hasVideoCrop =
+      !getVideoCropBoundsIsNeutral(clampedUgcCropBounds) ||
+      !getVideoCropBoundsIsNeutral(clampedDemoCropBounds);
     const ugcDuration = getPlaybackRateDuration(
       clampedUgcTrimRange,
       ugcPlaybackRate,
@@ -95,28 +129,57 @@ export async function stitchNormalizedVideos(
       includeAudio && !usesPlaybackRateAudioBuffer,
       codecs.audioCodec,
     );
+    const renderContext = hasVideoCrop
+      ? createTextOverlayRenderContext(TIKTOK_OUTPUT_WIDTH, TIKTOK_OUTPUT_HEIGHT)
+      : null;
     const session = await createMediaBunnyExportSession({
       audioSource: audioBufferSource ?? audioSampleSource,
-      videoSource: createTikTokVideoSampleSource(codecs.videoCodec),
+      videoSource: renderContext
+        ? createTikTokCanvasSource(renderContext.canvas, codecs.videoCodec)
+        : createTikTokVideoSampleSource(codecs.videoCodec),
     });
 
-    const ugcVideo = await copyVideoSamplesToSource({
-      input: ugcInput,
-      playbackRate: ugcPlaybackRate,
-      source: session.videoSource,
-      timelineOffset: 0,
-      trimRange: clampedUgcTrimRange,
-      onProgress: createMediaBunnyProgressMapper(onProgress, 0, 0.35),
-    });
+    const ugcVideo = renderContext
+      ? await copyTextOverlayVideoFramesToSource({
+          input: ugcInput,
+          playbackRate: ugcPlaybackRate,
+          source: session.videoSource as CanvasSource,
+          renderContext,
+          timelineOffset: 0,
+          trimRange: clampedUgcTrimRange,
+          cropBounds: clampedUgcCropBounds,
+          textOverlays: [],
+          onProgress: createMediaBunnyProgressMapper(onProgress, 0, 0.35),
+        })
+      : await copyVideoSamplesToSource({
+          input: ugcInput,
+          playbackRate: ugcPlaybackRate,
+          source: session.videoSource as VideoSampleSource,
+          timelineOffset: 0,
+          trimRange: clampedUgcTrimRange,
+          onProgress: createMediaBunnyProgressMapper(onProgress, 0, 0.35),
+        });
     const demoTimelineOffset = Math.max(ugcDuration, ugcVideo.endTimestamp);
-    const demoVideo = await copyVideoSamplesToSource({
-      input: demoInput,
-      playbackRate: demoPlaybackRate,
-      source: session.videoSource,
-      timelineOffset: demoTimelineOffset,
-      trimRange: clampedDemoTrimRange,
-      onProgress: createMediaBunnyProgressMapper(onProgress, 0.35, 0.35),
-    });
+    const demoVideo = renderContext
+      ? await copyTextOverlayVideoFramesToSource({
+          input: demoInput,
+          playbackRate: demoPlaybackRate,
+          source: session.videoSource as CanvasSource,
+          renderContext,
+          timelineOffset: demoTimelineOffset,
+          trimRange: clampedDemoTrimRange,
+          cropBounds: clampedDemoCropBounds,
+          textOverlays: [],
+          onProgress: createMediaBunnyProgressMapper(onProgress, 0.35, 0.35),
+        })
+      : await copyVideoSamplesToSource({
+          input: demoInput,
+          playbackRate: demoPlaybackRate,
+          source: session.videoSource as VideoSampleSource,
+          timelineOffset: demoTimelineOffset,
+          trimRange: clampedDemoTrimRange,
+          onProgress: createMediaBunnyProgressMapper(onProgress, 0.35, 0.35),
+        });
     let endTimestamp = Math.max(ugcVideo.endTimestamp, demoVideo.endTimestamp);
 
     if (audioBufferSource) {

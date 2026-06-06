@@ -216,6 +216,12 @@ function createSourceSettingsUpdate(): StitchSourceSettingsUpdate {
   return {
     demoClipId: "demo_2",
     demoClipName: "demo_2",
+    demoCropBounds: {
+      bottom: 0,
+      left: 0,
+      right: 0,
+      top: 0,
+    },
     demoPlaybackRate: 2,
     demoTrimRange: {
       end: 5,
@@ -225,6 +231,12 @@ function createSourceSettingsUpdate(): StitchSourceSettingsUpdate {
     name: "updated-stitch.mp4",
     ugcClipId: "ugc_2",
     ugcClipName: "ugc_2",
+    ugcCropBounds: {
+      bottom: 0,
+      left: 0,
+      right: 0,
+      top: 0,
+    },
     ugcPlaybackRate: 1,
     ugcTrimRange: {
       end: 3,

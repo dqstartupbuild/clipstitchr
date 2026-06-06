@@ -35,6 +35,7 @@ import {
   textOverlayValidator,
   textOverlaysValidator,
 } from "./validators/textOverlay";
+import { videoCropBoundsValidator } from "./validators/videoCropBounds";
 import { videoPlaybackRateValidator } from "./validators/videoPlaybackRate";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
@@ -74,6 +75,7 @@ export default defineSchema({
     height: v.number(),
     aspectRatio: v.number(),
     duration: v.number(),
+    defaultCropBounds: v.optional(videoCropBoundsValidator),
     defaultTrimRange: v.optional(videoTrimRangeValidator),
     hasAudio: v.boolean(),
     swaprMetadata: v.optional(swaprMetadataValidator),
@@ -172,6 +174,8 @@ export default defineSchema({
     demoClipId: v.string(),
     ugcClipName: v.string(),
     demoClipName: v.string(),
+    ugcCropBounds: v.optional(videoCropBoundsValidator),
+    demoCropBounds: v.optional(videoCropBoundsValidator),
     ugcTrimRange: v.optional(videoTrimRangeValidator),
     demoTrimRange: v.optional(videoTrimRangeValidator),
     sequenceSegments: v.optional(v.array(stitchSequenceSegmentValidator)),

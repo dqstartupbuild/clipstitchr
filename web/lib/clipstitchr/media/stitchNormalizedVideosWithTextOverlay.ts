@@ -20,7 +20,9 @@ import type { SourcePlaybackRateOptions } from "@/lib/clipstitchr/types/SourcePl
 import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSourceAudioOptions";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { clampVideoCropBounds } from "@/lib/clipstitchr/utils/clampVideoCropBounds";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
@@ -33,6 +35,8 @@ type StitchNormalizedVideosWithTextOverlayResult = {
 type StitchNormalizedVideosWithTextOverlayOptions = {
   ugcTrimRange: VideoTrimRange;
   demoTrimRange: VideoTrimRange;
+  ugcCropBounds?: VideoCropBounds;
+  demoCropBounds?: VideoCropBounds;
   textOverlay?: TextOverlay;
   textOverlays?: TextOverlay[];
   onProgress?: (progress: number) => void;
@@ -45,6 +49,8 @@ export async function stitchNormalizedVideosWithTextOverlay(
   {
     ugcTrimRange,
     demoTrimRange,
+    ugcCropBounds,
+    demoCropBounds,
     demoPlaybackRate = 1,
     includeDemoAudio = true,
     includeUgcAudio = true,
@@ -69,6 +75,22 @@ export async function stitchNormalizedVideosWithTextOverlay(
     const clampedDemoTrimRange = clampVideoTrimRange(
       demoTrimRange,
       demoClip.duration,
+    );
+    const clampedUgcCropBounds = clampVideoCropBounds(
+      ugcCropBounds ?? ugcClip.defaultCropBounds ?? {
+        bottom: 0,
+        left: 0,
+        right: 0,
+        top: 0,
+      },
+    );
+    const clampedDemoCropBounds = clampVideoCropBounds(
+      demoCropBounds ?? demoClip.defaultCropBounds ?? {
+        bottom: 0,
+        left: 0,
+        right: 0,
+        top: 0,
+      },
     );
     const ugcDuration = getPlaybackRateDuration(
       clampedUgcTrimRange,
@@ -125,6 +147,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
       renderContext,
       timelineOffset: 0,
       trimRange: clampedUgcTrimRange,
+      cropBounds: clampedUgcCropBounds,
       textOverlays: overlays,
       onProgress: createMediaBunnyProgressMapper(onProgress, 0, 0.35),
     });
@@ -136,6 +159,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
       renderContext,
       timelineOffset: demoTimelineOffset,
       trimRange: clampedDemoTrimRange,
+      cropBounds: clampedDemoCropBounds,
       textOverlays: overlays,
       onProgress: createMediaBunnyProgressMapper(onProgress, 0.35, 0.35),
     });

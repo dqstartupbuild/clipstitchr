@@ -1,10 +1,13 @@
 import { seekVideoToTime } from "@/lib/clipstitchr/media/seekVideoToTime";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
+import { getDefaultVideoCropBounds } from "@/lib/clipstitchr/utils/getDefaultVideoCropBounds";
 
 const VIDEO_METADATA_TIMEOUT_MS = 7000;
 
 type DrawVideoFrameToCanvasOptions = {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
+  cropBounds?: VideoCropBounds | null;
   time: number;
   videoBlob: Blob;
 };
@@ -12,6 +15,7 @@ type DrawVideoFrameToCanvasOptions = {
 export async function drawVideoFrameToCanvas({
   canvas,
   context,
+  cropBounds,
   time,
   videoBlob,
 }: DrawVideoFrameToCanvasOptions) {
@@ -53,16 +57,39 @@ export async function drawVideoFrameToCanvas({
 
     await seekVideoToTime(video, time);
 
-    const scale = Math.max(
-      canvas.width / video.videoWidth,
-      canvas.height / video.videoHeight,
+    const bounds = getDefaultVideoCropBounds({
+      defaultCropBounds: cropBounds ?? undefined,
+    });
+    const sourceX = bounds.left * video.videoWidth;
+    const sourceY = bounds.top * video.videoHeight;
+    const sourceWidth = Math.max(
+      1,
+      video.videoWidth * (1 - bounds.left - bounds.right),
     );
-    const width = video.videoWidth * scale;
-    const height = video.videoHeight * scale;
+    const sourceHeight = Math.max(
+      1,
+      video.videoHeight * (1 - bounds.top - bounds.bottom),
+    );
+    const scale = Math.max(
+      canvas.width / sourceWidth,
+      canvas.height / sourceHeight,
+    );
+    const width = sourceWidth * scale;
+    const height = sourceHeight * scale;
     const x = (canvas.width - width) / 2;
     const y = (canvas.height - height) / 2;
 
-    context.drawImage(video, x, y, width, height);
+    context.drawImage(
+      video,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
+      x,
+      y,
+      width,
+      height,
+    );
   } finally {
     video.removeAttribute("src");
     video.load();

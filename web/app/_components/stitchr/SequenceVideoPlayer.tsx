@@ -10,9 +10,11 @@ import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { useSequenceVideoPlayer } from "@/lib/clipstitchr/hooks/useSequenceVideoPlayer";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { getVideoCropPreviewStyle } from "@/lib/clipstitchr/utils/getVideoCropPreviewStyle";
 import { getTextOverlayIsInRange } from "@/lib/clipstitchr/utils/getTextOverlayIsInRange";
 import { getTextOverlayIsVisible } from "@/lib/clipstitchr/utils/getTextOverlayIsVisible";
 import { getTextOverlayId } from "@/lib/clipstitchr/utils/getTextOverlayId";
@@ -21,6 +23,8 @@ type SequenceVideoPlayerProps = {
   ugcClip: VideoClip;
   demoClip: VideoClip;
   demoPlaybackRate: VideoPlaybackRate;
+  ugcCropBounds?: VideoCropBounds | null;
+  demoCropBounds?: VideoCropBounds | null;
   ugcTrimRange: VideoTrimRange;
   demoTrimRange: VideoTrimRange;
   includeDemoAudio: boolean;
@@ -38,6 +42,8 @@ export function SequenceVideoPlayer({
   ugcClip,
   demoClip,
   demoPlaybackRate,
+  ugcCropBounds = null,
+  demoCropBounds = null,
   ugcTrimRange,
   demoTrimRange,
   includeDemoAudio,
@@ -112,9 +118,10 @@ export function SequenceVideoPlayer({
               ref={ugcVideoRef}
               aria-hidden={activeSegment !== "ugc"}
               className={[
-                "pointer-events-none absolute inset-0 h-full w-full object-contain",
+                "pointer-events-none max-w-none",
                 activeSegment === "ugc" ? "opacity-100" : "opacity-0",
               ].join(" ")}
+              style={getVideoCropPreviewStyle(ugcCropBounds)}
               playsInline
               muted={!includeUgcAudio}
               poster={ugcPosterUrl ?? undefined}
@@ -128,9 +135,10 @@ export function SequenceVideoPlayer({
               ref={demoVideoRef}
               aria-hidden={activeSegment !== "demo"}
               className={[
-                "pointer-events-none absolute inset-0 h-full w-full object-contain",
+                "pointer-events-none max-w-none",
                 activeSegment === "demo" ? "opacity-100" : "opacity-0",
               ].join(" ")}
+              style={getVideoCropPreviewStyle(demoCropBounds)}
               playsInline
               muted={!includeDemoAudio}
               poster={demoPosterUrl ?? undefined}

@@ -11,6 +11,7 @@ import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { getActiveTextOverlayId } from "@/lib/clipstitchr/utils/getActiveTextOverlayId";
@@ -24,9 +25,12 @@ type SequencePreviewPanelProps = {
   ugcClip: VideoClip | null;
   demoClip: VideoClip | null;
   sequenceClips?: VideoClip[];
+  sequenceCropBounds?: Array<VideoCropBounds | null | undefined>;
   sequenceIncludeAudioFlags?: boolean[];
   sequencePlaybackRates?: VideoPlaybackRate[];
   sequenceTrimRanges?: VideoTrimRange[];
+  ugcCropBounds?: VideoCropBounds | null;
+  demoCropBounds?: VideoCropBounds | null;
   ugcTrimRange: VideoTrimRange | null;
   demoTrimRange: VideoTrimRange | null;
   demoPlaybackRate: VideoPlaybackRate;
@@ -47,9 +51,12 @@ export function SequencePreviewPanel({
   ugcClip,
   demoClip,
   sequenceClips = [],
+  sequenceCropBounds = [],
   sequenceIncludeAudioFlags = [],
   sequencePlaybackRates = [],
   sequenceTrimRanges = [],
+  ugcCropBounds = null,
+  demoCropBounds = null,
   ugcTrimRange,
   demoTrimRange,
   demoPlaybackRate,
@@ -166,11 +173,13 @@ export function SequencePreviewPanel({
             key={sequenceClips
               .map((clip, index) => {
                 const trimRange = sequenceTrimRanges[index];
+                const cropBounds = sequenceCropBounds[index];
 
-                return `${clip.id}:${trimRange?.start}:${trimRange?.end}:${sequencePlaybackRates[index] ?? 1}`;
+                return `${clip.id}:${trimRange?.start}:${trimRange?.end}:${cropBounds?.top ?? 0}:${cropBounds?.bottom ?? 0}:${cropBounds?.left ?? 0}:${cropBounds?.right ?? 0}:${sequencePlaybackRates[index] ?? 1}`;
               })
               .join("|")}
             clips={sequenceClips}
+            cropBounds={sequenceCropBounds}
             includeAudioFlags={sequenceIncludeAudioFlags}
             playbackRates={sequencePlaybackRates}
             textOverlays={textOverlays}
@@ -203,10 +212,12 @@ export function SequencePreviewPanel({
           />
           <div {...swipeHandlers}>
             <SequenceVideoPlayer
-              key={`${ugcClip.id}:${ugcTrimRange.start}:${ugcTrimRange.end}:${ugcPlaybackRate}:${demoClip.id}:${demoTrimRange.start}:${demoTrimRange.end}:${demoPlaybackRate}`}
+              key={`${ugcClip.id}:${ugcTrimRange.start}:${ugcTrimRange.end}:${ugcCropBounds?.top ?? 0}:${ugcCropBounds?.bottom ?? 0}:${ugcCropBounds?.left ?? 0}:${ugcCropBounds?.right ?? 0}:${ugcPlaybackRate}:${demoClip.id}:${demoTrimRange.start}:${demoTrimRange.end}:${demoCropBounds?.top ?? 0}:${demoCropBounds?.bottom ?? 0}:${demoCropBounds?.left ?? 0}:${demoCropBounds?.right ?? 0}:${demoPlaybackRate}`}
               ugcClip={ugcClip}
               demoClip={demoClip}
               demoPlaybackRate={demoPlaybackRate}
+              ugcCropBounds={ugcCropBounds}
+              demoCropBounds={demoCropBounds}
               ugcTrimRange={ugcTrimRange}
               demoTrimRange={demoTrimRange}
               includeDemoAudio={includeDemoAudio}

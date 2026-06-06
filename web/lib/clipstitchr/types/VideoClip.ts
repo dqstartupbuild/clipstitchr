@@ -2,6 +2,7 @@ import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
 import type { CliprMetadata } from "@/lib/clipstitchr/types/CliprMetadata";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SwaprOutputMetadata } from "@/lib/clipstitchr/types/SwaprOutputMetadata";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 export type VideoClip = {
@@ -30,6 +31,7 @@ export type VideoClip = {
   height: number;
   aspectRatio: number;
   duration: number;
+  defaultCropBounds?: VideoCropBounds;
   defaultTrimRange?: VideoTrimRange;
   hasAudio: boolean;
   swaprMetadata?: SwaprOutputMetadata;

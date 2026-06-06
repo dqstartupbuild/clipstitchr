@@ -176,6 +176,7 @@ describe("dashboard shell sections", () => {
           onDelete={noop}
           onLoadClip={async () => null}
           onUpdateMetadata={noop}
+          onUpdateCrop={noop}
           onUpdateTrim={noop}
         />
       </>,
@@ -224,6 +225,7 @@ describe("dashboard shell sections", () => {
           onDelete={noop}
           onLoadClip={async () => null}
           onUpdateMetadata={noop}
+          onUpdateCrop={noop}
           onUpdateTrim={noop}
         />
       </>,

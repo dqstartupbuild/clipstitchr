@@ -8,7 +8,9 @@ import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { getDefaultVideoCropBounds } from "@/lib/clipstitchr/utils/getDefaultVideoCropBounds";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 
 type DemoClipSelectorProps = {
@@ -17,12 +19,15 @@ type DemoClipSelectorProps = {
   selectionMode?: "single" | "multiple";
   selectedId: string | null;
   selectedIds?: string[];
+  selectedCropBounds?: VideoCropBounds | null;
+  selectedCropBoundsByClipId?: Record<string, VideoCropBounds>;
   selectedTrimRange: VideoTrimRange | null;
   selectedTrimRangesByClipId?: Record<string, VideoTrimRange>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect: (id: string) => void;
   onUpdateTrim: (clip: VideoClipMetadata, trimRange: VideoTrimRange) => void;
+  onUpdateCrop: (clip: VideoClipMetadata, cropBounds: VideoCropBounds) => void;
 };
 
 export function DemoClipSelector({
@@ -31,12 +36,15 @@ export function DemoClipSelector({
   selectionMode = "single",
   selectedId,
   selectedIds = [],
+  selectedCropBounds,
+  selectedCropBoundsByClipId = {},
   selectedTrimRange,
   selectedTrimRangesByClipId = {},
   onLoadClip,
   onLoadPoster,
   onSelect,
   onUpdateTrim,
+  onUpdateCrop,
 }: DemoClipSelectorProps) {
   const productNamesById = useMemo(
     () => new Map(products.map((product) => [product.id, product.name])),
@@ -66,6 +74,14 @@ export function DemoClipSelector({
               <div key={clip.id} className="w-44 shrink-0">
                 <SelectableClipCard
                   clip={clip}
+                  cropBounds={
+                    selectionMode === "multiple"
+                      ? (selectedCropBoundsByClipId[clip.id] ??
+                        getDefaultVideoCropBounds(clip))
+                      : clip.id === selectedId && selectedCropBounds
+                        ? selectedCropBounds
+                        : getDefaultVideoCropBounds(clip)
+                  }
                   productName={
                     clip.productId
                       ? productNamesById.get(clip.productId)
@@ -88,6 +104,7 @@ export function DemoClipSelector({
                   onLoadPoster={onLoadPoster}
                   onSelect={onSelect}
                   onUpdateTrim={onUpdateTrim}
+                  onUpdateCrop={onUpdateCrop}
                 />
               </div>
             ))}

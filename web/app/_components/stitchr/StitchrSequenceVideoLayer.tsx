@@ -2,10 +2,13 @@
 
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
+import { getVideoCropPreviewStyle } from "@/lib/clipstitchr/utils/getVideoCropPreviewStyle";
 
 type StitchrSequenceVideoLayerProps = {
   clip: VideoClip;
+  cropBounds?: VideoCropBounds | null;
   isActive: boolean;
   isMuted: boolean;
   playbackRate: VideoPlaybackRate;
@@ -17,6 +20,7 @@ type StitchrSequenceVideoLayerProps = {
 
 export function StitchrSequenceVideoLayer({
   clip,
+  cropBounds = null,
   isActive,
   isMuted,
   playbackRate,
@@ -37,9 +41,10 @@ export function StitchrSequenceVideoLayer({
       ref={videoRef}
       aria-hidden={!isActive}
       className={[
-        "pointer-events-none absolute inset-0 h-full w-full object-contain",
+        "pointer-events-none max-w-none",
         isActive ? "opacity-100" : "opacity-0",
       ].join(" ")}
+      style={getVideoCropPreviewStyle(cropBounds)}
       muted={isMuted}
       onCanPlay={(event) => {
         event.currentTarget.playbackRate = playbackRate;

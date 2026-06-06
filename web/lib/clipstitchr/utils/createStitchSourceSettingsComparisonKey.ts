@@ -3,9 +3,11 @@ import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchS
 type StitchSourceSettingsComparisonInput = Pick<
   StitchSourceSettingsUpdate,
   | "demoClipId"
+  | "demoCropBounds"
   | "demoPlaybackRate"
   | "demoTrimRange"
   | "ugcClipId"
+  | "ugcCropBounds"
   | "ugcPlaybackRate"
   | "ugcTrimRange"
 >;

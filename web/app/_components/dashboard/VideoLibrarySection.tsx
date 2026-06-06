@@ -15,6 +15,7 @@ import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/Cre
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 type VideoLibrarySectionProps = {
@@ -49,6 +50,10 @@ type VideoLibrarySectionProps = {
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void | Promise<void>;
+  onUpdateCrop: (
+    clip: VideoClipMetadata,
+    cropBounds: VideoCropBounds,
+  ) => void | Promise<void>;
   onCreateAvatarFromClip?: (
     clip: VideoClipMetadata,
     options: CreateAvatarFromUgcClipOptions,
@@ -76,6 +81,7 @@ export function VideoLibrarySection({
   onUpdateCliprMusic,
   onUpdateMetadata,
   onUpdateTrim,
+  onUpdateCrop,
   onCreateAvatarFromClip,
 }: VideoLibrarySectionProps) {
   const productNamesById = useMemo(
@@ -149,6 +155,7 @@ export function VideoLibrarySection({
                 onUpdateCliprMusic={onUpdateCliprMusic}
                 onUpdateMetadata={onUpdateMetadata}
                 onUpdateTrim={onUpdateTrim}
+                onUpdateCrop={onUpdateCrop}
                 onCreateAvatarFromClip={onCreateAvatarFromClip}
               />
             ))}

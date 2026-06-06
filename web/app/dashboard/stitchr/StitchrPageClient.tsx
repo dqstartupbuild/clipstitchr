@@ -23,12 +23,15 @@ import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack"
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
+import { clampVideoCropBounds } from "@/lib/clipstitchr/utils/clampVideoCropBounds";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { createDefaultTextOverlay } from "@/lib/clipstitchr/utils/createDefaultTextOverlay";
 import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
+import { getDefaultVideoCropBounds } from "@/lib/clipstitchr/utils/getDefaultVideoCropBounds";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
@@ -66,8 +69,14 @@ export function StitchrPageClient() {
   const [ugcTrimRangesByClipId, setUgcTrimRangesByClipId] = useState<
     Record<string, VideoTrimRange>
   >({});
+  const [ugcCropBoundsByClipId, setUgcCropBoundsByClipId] = useState<
+    Record<string, VideoCropBounds>
+  >({});
   const [demoTrimRangesByClipId, setDemoTrimRangesByClipId] = useState<
     Record<string, VideoTrimRange>
+  >({});
+  const [demoCropBoundsByClipId, setDemoCropBoundsByClipId] = useState<
+    Record<string, VideoCropBounds>
   >({});
   const [loadedLongrClipsById, setLoadedLongrClipsById] = useState<
     Record<string, VideoClip>
@@ -270,6 +279,40 @@ export function StitchrPageClient() {
       ),
     [activeSelectedDemoIds, demoTrimRangesByClipId, visibleDemoClips],
   );
+  const selectedUgcCropBoundsByClipId = useMemo(
+    () =>
+      selectedUgcMetadata.reduce<Record<string, VideoCropBounds>>(
+        (cropBounds, clip) => ({
+          ...cropBounds,
+          [clip.id]: clampVideoCropBounds(
+            ugcCropBoundsByClipId[clip.id] ?? getDefaultVideoCropBounds(clip),
+          ),
+        }),
+        {},
+      ),
+    [selectedUgcMetadata, ugcCropBoundsByClipId],
+  );
+  const selectedDemoCropBoundsByClipId = useMemo(
+    () =>
+      activeSelectedDemoIds.reduce<Record<string, VideoCropBounds>>(
+        (cropBounds, id) => {
+          const clip = visibleDemoClips.find((demoClip) => demoClip.id === id);
+
+          if (!clip) {
+            return cropBounds;
+          }
+
+          return {
+            ...cropBounds,
+            [clip.id]: clampVideoCropBounds(
+              demoCropBoundsByClipId[clip.id] ?? getDefaultVideoCropBounds(clip),
+            ),
+          };
+        },
+        {},
+      ),
+    [activeSelectedDemoIds, demoCropBoundsByClipId, visibleDemoClips],
+  );
   const selectedUgcTrimRange = activeUgcMetadata
     ? (selectedUgcTrimRangesByClipId[activeUgcMetadata.id] ??
       clampVideoTrimRange(
@@ -278,11 +321,24 @@ export function StitchrPageClient() {
         activeUgcMetadata.duration,
       ))
     : null;
+  const selectedUgcCropBounds = activeUgcMetadata
+    ? (selectedUgcCropBoundsByClipId[activeUgcMetadata.id] ??
+      clampVideoCropBounds(
+        ugcCropBoundsByClipId[activeUgcMetadata.id] ??
+          getDefaultVideoCropBounds(activeUgcMetadata),
+      ))
+    : null;
   const selectedDemoTrimRange = selectedDemoMetadata
     ? clampVideoTrimRange(
         demoTrimRangesByClipId[selectedDemoMetadata.id] ??
           getDefaultVideoTrimRange(selectedDemoMetadata),
         selectedDemoMetadata.duration,
+      )
+    : null;
+  const selectedDemoCropBounds = selectedDemoMetadata
+    ? clampVideoCropBounds(
+        demoCropBoundsByClipId[selectedDemoMetadata.id] ??
+          getDefaultVideoCropBounds(selectedDemoMetadata),
       )
     : null;
   const selectedUgcDuration = selectedUgcTrimRange
@@ -371,6 +427,16 @@ export function StitchrPageClient() {
         templateStitch.textOverlays,
         templateStitch.textOverlay,
       ).map((textOverlay) => ({ ...textOverlay }));
+      const loadedSourceClipsById = new Map(
+        loadedSourceClips.map((clip) => [clip.id, clip]),
+      );
+      const getTemplateCropBounds = (
+        clipId: string,
+        cropBounds: VideoCropBounds | undefined,
+      ) =>
+        clampVideoCropBounds(
+          cropBounds ?? getDefaultVideoCropBounds(loadedSourceClipsById.get(clipId)),
+        );
 
       setTemplateUgcClips((currentClips) =>
         mergeVideoClipMetadataById([...loadedUgcClips, ...currentClips]),
@@ -426,6 +492,30 @@ export function StitchrPageClient() {
             }),
             {},
           );
+        const ugcCropBounds = orderedSegments
+          .filter((segment) => segment.clipType !== "demo")
+          .reduce<Record<string, VideoCropBounds>>(
+            (cropBounds, segment) => ({
+              ...cropBounds,
+              [segment.clipId]: getTemplateCropBounds(
+                segment.clipId,
+                segment.cropBounds,
+              ),
+            }),
+            {},
+          );
+        const demoCropBounds = orderedSegments
+          .filter((segment) => segment.clipType === "demo")
+          .reduce<Record<string, VideoCropBounds>>(
+            (cropBounds, segment) => ({
+              ...cropBounds,
+              [segment.clipId]: getTemplateCropBounds(
+                segment.clipId,
+                segment.cropBounds,
+              ),
+            }),
+            {},
+          );
         const firstUgcPlaybackRate = orderedSegments.find(
           (segment) => segment.clipType !== "demo" && segment.playbackRate,
         )?.playbackRate;
@@ -448,6 +538,14 @@ export function StitchrPageClient() {
         setDemoTrimRangesByClipId((trimRanges) => ({
           ...trimRanges,
           ...demoTrimRanges,
+        }));
+        setUgcCropBoundsByClipId((cropBounds) => ({
+          ...cropBounds,
+          ...ugcCropBounds,
+        }));
+        setDemoCropBoundsByClipId((cropBounds) => ({
+          ...cropBounds,
+          ...demoCropBounds,
         }));
         setUgcPlaybackRate(
           firstUgcPlaybackRate ?? templateStitch.ugcPlaybackRate ?? 1,
@@ -480,6 +578,20 @@ export function StitchrPageClient() {
         ...(templateStitch.demoTrimRange
           ? { [templateStitch.demoClipId]: templateStitch.demoTrimRange }
           : {}),
+      }));
+      setUgcCropBoundsByClipId((cropBounds) => ({
+        ...cropBounds,
+        [templateStitch.ugcClipId]: getTemplateCropBounds(
+          templateStitch.ugcClipId,
+          templateStitch.ugcCropBounds,
+        ),
+      }));
+      setDemoCropBoundsByClipId((cropBounds) => ({
+        ...cropBounds,
+        [templateStitch.demoClipId]: getTemplateCropBounds(
+          templateStitch.demoClipId,
+          templateStitch.demoCropBounds,
+        ),
       }));
       setTextOverlaysByUgcId({
         [templateStitch.ugcClipId]: templateTextOverlays,
@@ -606,6 +718,14 @@ export function StitchrPageClient() {
               [id]: getDefaultVideoTrimRange(clip),
           },
       );
+      setUgcCropBoundsByClipId((cropBounds) =>
+        cropBounds[id]
+          ? cropBounds
+          : {
+              ...cropBounds,
+              [id]: getDefaultVideoCropBounds(clip),
+            },
+      );
     },
     [activeSelectedUgcIds, activeUgcId, mode, ugcClips],
   );
@@ -639,6 +759,14 @@ export function StitchrPageClient() {
                   [id]: getDefaultVideoTrimRange(clip),
                 },
           );
+          setDemoCropBoundsByClipId((cropBounds) =>
+            cropBounds[id]
+              ? cropBounds
+              : {
+                  ...cropBounds,
+                  [id]: getDefaultVideoCropBounds(clip),
+                },
+          );
         }
 
         return;
@@ -665,6 +793,14 @@ export function StitchrPageClient() {
               [id]: getDefaultVideoTrimRange(clip),
             },
       );
+      setDemoCropBoundsByClipId((cropBounds) =>
+        cropBounds[id]
+          ? cropBounds
+          : {
+              ...cropBounds,
+              [id]: getDefaultVideoCropBounds(clip),
+            },
+      );
     },
     [activeSelectedDemoIds, mode, visibleDemoClips],
   );
@@ -684,6 +820,24 @@ export function StitchrPageClient() {
       setDemoTrimRangesByClipId((trimRanges) => ({
         ...trimRanges,
         [clip.id]: clampVideoTrimRange(trimRange, clip.duration),
+      }));
+    },
+    [],
+  );
+  const handleUpdateUgcCrop = useCallback(
+    (clip: VideoClipMetadata, cropBounds: VideoCropBounds) => {
+      setUgcCropBoundsByClipId((currentCropBounds) => ({
+        ...currentCropBounds,
+        [clip.id]: clampVideoCropBounds(cropBounds),
+      }));
+    },
+    [],
+  );
+  const handleUpdateDemoCrop = useCallback(
+    (clip: VideoClipMetadata, cropBounds: VideoCropBounds) => {
+      setDemoCropBoundsByClipId((currentCropBounds) => ({
+        ...currentCropBounds,
+        [clip.id]: clampVideoCropBounds(cropBounds),
       }));
     },
     [],
@@ -758,9 +912,16 @@ export function StitchrPageClient() {
                 getDefaultVideoTrimRange(clip))
               : (selectedUgcTrimRangesByClipId[clip.id] ??
                 getDefaultVideoTrimRange(clip));
+          const cropBounds =
+            clip.clipType === "demo"
+              ? (selectedDemoCropBoundsByClipId[clip.id] ??
+                getDefaultVideoCropBounds(clip))
+              : (selectedUgcCropBoundsByClipId[clip.id] ??
+                getDefaultVideoCropBounds(clip));
 
           return {
             clip,
+            cropBounds,
             playbackRate:
               clip.clipType === "demo" ? demoPlaybackRate : ugcPlaybackRate,
             trimRange,
@@ -792,6 +953,9 @@ export function StitchrPageClient() {
           const trimRange =
             selectedUgcTrimRangesByClipId[clip.id] ??
             getDefaultVideoTrimRange(clip);
+          const cropBounds =
+            selectedUgcCropBoundsByClipId[clip.id] ??
+            getDefaultVideoCropBounds(clip);
           const pairTextOverlays = textOverlaysByUgcId[clip.id] ?? [];
           const pairDuration =
             getPlaybackRateDuration(trimRange, ugcPlaybackRate) +
@@ -799,6 +963,7 @@ export function StitchrPageClient() {
 
           return {
             clip,
+            cropBounds,
             textOverlays: getNonEmptyTextOverlays(
               clampTextOverlays(pairTextOverlays, pairDuration),
             ),
@@ -814,6 +979,8 @@ export function StitchrPageClient() {
         null,
         {
           addMusic: addMusic && !selectedMusicTrack,
+          demoCropBounds:
+            selectedDemoCropBounds ?? getDefaultVideoCropBounds(selectedDemoMetadata),
           demoPlaybackRate,
           includeDemoAudio,
           includeUgcAudio,
@@ -1006,6 +1173,13 @@ export function StitchrPageClient() {
       : (selectedUgcTrimRangesByClipId[clip.id] ??
         getDefaultVideoTrimRange(clip)),
   );
+  const longrSequenceCropBounds = selectedLongrMetadata.map((clip) =>
+    clip.clipType === "demo"
+      ? (selectedDemoCropBoundsByClipId[clip.id] ??
+        getDefaultVideoCropBounds(clip))
+      : (selectedUgcCropBoundsByClipId[clip.id] ??
+        getDefaultVideoCropBounds(clip)),
+  );
   const longrSequencePlaybackRates = selectedLongrMetadata.map((clip) =>
     clip.clipType === "demo" ? demoPlaybackRate : ugcPlaybackRate,
   );
@@ -1051,7 +1225,10 @@ export function StitchrPageClient() {
                 selectedDemoTrimRangesByClipId={
                   selectedDemoTrimRangesByClipId
                 }
+                selectedUgcCropBoundsByClipId={selectedUgcCropBoundsByClipId}
+                selectedDemoCropBoundsByClipId={selectedDemoCropBoundsByClipId}
                 selectedDemoTrimRange={selectedDemoTrimRange}
+                selectedDemoCropBounds={selectedDemoCropBounds}
                 ugcPlaybackRate={ugcPlaybackRate}
                 onLoadClip={loadClip}
                 onLoadPoster={library.loadClipPoster}
@@ -1061,6 +1238,8 @@ export function StitchrPageClient() {
                 onModeChange={handleModeChange}
                 onUpdateUgcTrim={handleUpdateUgcTrim}
                 onUpdateDemoTrim={handleUpdateDemoTrim}
+                onUpdateUgcCrop={handleUpdateUgcCrop}
+                onUpdateDemoCrop={handleUpdateDemoCrop}
                 canStitch={canStitch}
                 isStitching={isStitching}
                 onAddMusicChange={(checked) => {
@@ -1117,10 +1296,13 @@ export function StitchrPageClient() {
                 ugcClip={selectedUgcClip}
                 demoClip={selectedDemoClip}
                 sequenceClips={loadedLongrSequenceClips}
+                sequenceCropBounds={longrSequenceCropBounds}
                 sequenceIncludeAudioFlags={longrSequenceIncludeAudioFlags}
                 sequencePlaybackRates={longrSequencePlaybackRates}
                 sequenceTrimRanges={longrSequenceTrimRanges}
+                ugcCropBounds={selectedUgcCropBounds}
                 ugcTrimRange={selectedUgcTrimRange}
+                demoCropBounds={selectedDemoCropBounds}
                 demoTrimRange={selectedDemoTrimRange}
                 demoPlaybackRate={demoPlaybackRate}
                 includeDemoAudio={includeDemoAudio}

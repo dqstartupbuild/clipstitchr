@@ -10,6 +10,7 @@ import { IconButton } from "@/app/_components/ui/IconButton";
 import { useLongrSequenceVideoPlayer } from "@/lib/clipstitchr/hooks/useLongrSequenceVideoPlayer";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
@@ -19,6 +20,7 @@ import { getTextOverlayId } from "@/lib/clipstitchr/utils/getTextOverlayId";
 
 type StitchrSequenceVideoPlayerProps = {
   clips: VideoClip[];
+  cropBounds?: Array<VideoCropBounds | null | undefined>;
   includeAudioFlags: boolean[];
   playbackRates: VideoPlaybackRate[];
   textOverlays: TextOverlay[];
@@ -32,6 +34,7 @@ type StitchrSequenceVideoPlayerProps = {
 
 export function StitchrSequenceVideoPlayer({
   clips,
+  cropBounds = [],
   includeAudioFlags,
   playbackRates,
   textOverlays,
@@ -93,6 +96,7 @@ export function StitchrSequenceVideoPlayer({
             <StitchrSequenceVideoLayer
               key={`${clip.id}-${index}`}
               clip={clip}
+              cropBounds={cropBounds[index]}
               isActive={activeIndex === index}
               isMuted={!includeAudioFlags[index]}
               playbackRate={playbackRates[index] ?? 1}

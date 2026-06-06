@@ -22,13 +22,16 @@ import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack"
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
+import { clampVideoCropBounds } from "@/lib/clipstitchr/utils/clampVideoCropBounds";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
 import { createStitchSequenceSegment } from "@/lib/clipstitchr/utils/createStitchSequenceSegment";
 import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName";
+import { getDefaultVideoCropBounds } from "@/lib/clipstitchr/utils/getDefaultVideoCropBounds";
 import { getLongrStitchFileName } from "@/lib/clipstitchr/utils/getLongrStitchFileName";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
@@ -41,7 +44,9 @@ type UseStitchrOptions = {
 
 type StitchrBuildOptions = {
   addMusic?: boolean;
+  demoCropBounds?: VideoCropBounds;
   musicTrack?: SharedMusicTrack | null;
+  ugcCropBounds?: VideoCropBounds;
 } & SourcePlaybackRateOptions &
   StitchSourceAudioOptions;
 
@@ -62,6 +67,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
       demoClip: VideoClipMetadata,
       ugcTrimRange: VideoTrimRange,
       demoTrimRange: VideoTrimRange,
+      ugcCropBounds: VideoCropBounds,
+      demoCropBounds: VideoCropBounds,
       textOverlays: TextOverlay[] = [],
       options: StitchrBuildOptions = {},
       onPairProgress?: (progress: number) => void,
@@ -74,6 +81,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         demoTrimRange,
         demoClip.duration,
       );
+      const clampedUgcCropBounds = clampVideoCropBounds(ugcCropBounds);
+      const clampedDemoCropBounds = clampVideoCropBounds(demoCropBounds);
       const ugcPlaybackRate = options.ugcPlaybackRate ?? 1;
       const demoPlaybackRate = options.demoPlaybackRate ?? 1;
       const duration =
@@ -95,12 +104,14 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
           if (loadedUgcClip && loadedDemoClip) {
             posterBlob = await createStitchPosterBlob({
               demoClip: loadedDemoClip,
+              demoCropBounds: clampedDemoCropBounds,
               demoPlaybackRate,
               demoTrimRange: clampedDemoTrimRange,
               duration,
               textOverlay: firstTextOverlay ?? null,
               textOverlays,
               ugcClip: loadedUgcClip,
+              ugcCropBounds: clampedUgcCropBounds,
               ugcPlaybackRate,
               ugcTrimRange: clampedUgcTrimRange,
             });
@@ -126,6 +137,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         demoClipId: demoClip.id,
         ugcClipName: ugcClip.name,
         demoClipName: demoClip.name,
+        ugcCropBounds: clampedUgcCropBounds,
+        demoCropBounds: clampedDemoCropBounds,
         ugcTrimRange: clampedUgcTrimRange,
         demoTrimRange: clampedDemoTrimRange,
         posterBlob,
@@ -151,6 +164,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         demoClipId: nextStitch.demoClipId,
         ugcClipName: nextStitch.ugcClipName,
         demoClipName: nextStitch.demoClipName,
+        ugcCropBounds: nextStitch.ugcCropBounds,
+        demoCropBounds: nextStitch.demoCropBounds,
         ugcTrimRange: nextStitch.ugcTrimRange,
         demoTrimRange: nextStitch.demoTrimRange,
         ...(nextStitch.posterObject
@@ -210,6 +225,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
       const segments = selections.map((selection, index) =>
         createStitchSequenceSegment({
           clip: selection.clip,
+          cropBounds:
+            selection.cropBounds ?? getDefaultVideoCropBounds(selection.clip),
           order: index,
           playbackRate: selection.playbackRate ?? 1,
           trimRange: selection.trimRange,
@@ -245,6 +262,14 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
           representativeDemo.trimRange,
           representativeDemo.clip.duration,
         ),
+        ugcCropBounds: clampVideoCropBounds(
+          representativeUgc.cropBounds ??
+            getDefaultVideoCropBounds(representativeUgc.clip),
+        ),
+        demoCropBounds: clampVideoCropBounds(
+          representativeDemo.cropBounds ??
+            getDefaultVideoCropBounds(representativeDemo.clip),
+        ),
         sequenceSegments: segments,
         posterBlob: selections[0]?.clip.posterBlob,
         width: TIKTOK_OUTPUT_WIDTH,
@@ -267,6 +292,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         demoClipId: nextStitch.demoClipId,
         ugcClipName: nextStitch.ugcClipName,
         demoClipName: nextStitch.demoClipName,
+        ugcCropBounds: nextStitch.ugcCropBounds,
+        demoCropBounds: nextStitch.demoCropBounds,
         ugcTrimRange: nextStitch.ugcTrimRange,
         demoTrimRange: nextStitch.demoTrimRange,
         sequenceSegments: nextStitch.sequenceSegments,
@@ -336,6 +363,9 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
           demoTrimRange,
           demoClip.duration,
         );
+        const clampedDemoCropBounds = clampVideoCropBounds(
+          options.demoCropBounds ?? getDefaultVideoCropBounds(demoClip),
+        );
         const demoDuration = getPlaybackRateDuration(
           clampedDemoTrimRange,
           options.demoPlaybackRate ?? 1,
@@ -348,6 +378,9 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
           const clampedUgcTrimRange = clampVideoTrimRange(
             ugcSelection.trimRange,
             ugcClip.duration,
+          );
+          const clampedUgcCropBounds = clampVideoCropBounds(
+            ugcSelection.cropBounds ?? getDefaultVideoCropBounds(ugcClip),
           );
           const ugcDuration = getPlaybackRateDuration(
             clampedUgcTrimRange,
@@ -376,6 +409,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
             demoClip,
             clampedUgcTrimRange,
             clampedDemoTrimRange,
+            clampedUgcCropBounds,
+            clampedDemoCropBounds,
             pairTextOverlays,
             options,
             (pairProgress) => {
@@ -487,13 +522,19 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         [
           {
             clip: ugcClip,
+            cropBounds:
+              options.ugcCropBounds ?? getDefaultVideoCropBounds(ugcClip),
             trimRange: ugcTrimRange,
           },
         ],
         demoClip,
         demoTrimRange,
         textOverlay,
-        options,
+        {
+          ...options,
+          demoCropBounds:
+            options.demoCropBounds ?? getDefaultVideoCropBounds(demoClip),
+        },
       );
 
       return nextStitch ?? null;

@@ -16,6 +16,7 @@ import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRat
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 
@@ -36,7 +37,10 @@ type ClipPickerPanelProps = {
   selectedDemoId: string | null;
   selectedDemoIds: string[];
   selectedLongrCount: number;
+  selectedUgcCropBoundsByClipId: Record<string, VideoCropBounds>;
   selectedUgcTrimRangesByClipId: Record<string, VideoTrimRange>;
+  selectedDemoCropBoundsByClipId: Record<string, VideoCropBounds>;
+  selectedDemoCropBounds: VideoCropBounds | null;
   selectedDemoTrimRangesByClipId: Record<string, VideoTrimRange>;
   selectedDemoTrimRange: VideoTrimRange | null;
   ugcPlaybackRate: VideoPlaybackRate;
@@ -50,9 +54,17 @@ type ClipPickerPanelProps = {
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void;
+  onUpdateUgcCrop: (
+    clip: VideoClipMetadata,
+    cropBounds: VideoCropBounds,
+  ) => void;
   onUpdateDemoTrim: (
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
+  ) => void;
+  onUpdateDemoCrop: (
+    clip: VideoClipMetadata,
+    cropBounds: VideoCropBounds,
   ) => void;
   canStitch: boolean;
   isStitching: boolean;
@@ -83,7 +95,10 @@ export function ClipPickerPanel({
   selectedDemoId,
   selectedDemoIds,
   selectedLongrCount,
+  selectedUgcCropBoundsByClipId,
   selectedUgcTrimRangesByClipId,
+  selectedDemoCropBoundsByClipId,
+  selectedDemoCropBounds,
   selectedDemoTrimRangesByClipId,
   selectedDemoTrimRange,
   ugcPlaybackRate,
@@ -94,7 +109,9 @@ export function ClipPickerPanel({
   onDemoProductFilterChange,
   onModeChange,
   onUpdateUgcTrim,
+  onUpdateUgcCrop,
   onUpdateDemoTrim,
+  onUpdateDemoCrop,
   canStitch,
   isStitching,
   onAddMusicChange,
@@ -148,11 +165,13 @@ export function ClipPickerPanel({
           key={`ugc-${searchQuery}`}
           clips={filteredUgcClips}
           selectedIds={selectedUgcIds}
+          selectedCropBoundsByClipId={selectedUgcCropBoundsByClipId}
           selectedTrimRangesByClipId={selectedUgcTrimRangesByClipId}
           onLoadClip={onLoadClip}
           onLoadPoster={onLoadPoster}
           onSelect={onSelectUgc}
           onUpdateTrim={onUpdateUgcTrim}
+          onUpdateCrop={onUpdateUgcCrop}
         />
         <DemoClipSelector
           key={`demo-${searchQuery}`}
@@ -161,12 +180,15 @@ export function ClipPickerPanel({
           selectionMode={mode === "longr" ? "multiple" : "single"}
           selectedId={selectedDemoId}
           selectedIds={selectedDemoIds}
+          selectedCropBounds={selectedDemoCropBounds}
+          selectedCropBoundsByClipId={selectedDemoCropBoundsByClipId}
           selectedTrimRange={selectedDemoTrimRange}
           selectedTrimRangesByClipId={selectedDemoTrimRangesByClipId}
           onLoadClip={onLoadClip}
           onLoadPoster={onLoadPoster}
           onSelect={onSelectDemo}
           onUpdateTrim={onUpdateDemoTrim}
+          onUpdateCrop={onUpdateDemoCrop}
         />
       </div>
       {hasMoreClips && onLoadMoreClips ? (

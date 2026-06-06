@@ -3,6 +3,7 @@ import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 import type { StitchSequenceSegment } from "@/lib/clipstitchr/types/StitchSequenceSegment";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
@@ -14,6 +15,8 @@ export type Stitch = {
   demoClipId: string;
   ugcClipName: string;
   demoClipName: string;
+  ugcCropBounds?: VideoCropBounds;
+  demoCropBounds?: VideoCropBounds;
   ugcTrimRange?: VideoTrimRange;
   demoTrimRange?: VideoTrimRange;
   sequenceSegments?: StitchSequenceSegment[];

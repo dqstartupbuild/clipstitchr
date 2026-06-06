@@ -16,6 +16,7 @@ import {
   textOverlayValidator,
   textOverlaysValidator,
 } from "./validators/textOverlay";
+import { videoCropBoundsValidator } from "./validators/videoCropBounds";
 import { videoPlaybackRateValidator } from "./validators/videoPlaybackRate";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
@@ -27,6 +28,8 @@ const saveArgs = {
   demoClipId: v.string(),
   ugcClipName: v.string(),
   demoClipName: v.string(),
+  ugcCropBounds: v.optional(videoCropBoundsValidator),
+  demoCropBounds: v.optional(videoCropBoundsValidator),
   ugcTrimRange: v.optional(videoTrimRangeValidator),
   demoTrimRange: v.optional(videoTrimRangeValidator),
   sequenceSegments: v.optional(v.array(stitchSequenceSegmentValidator)),
@@ -413,6 +416,8 @@ export const updateSourceSettings = mutation({
     demoClipId: v.string(),
     ugcClipName: v.string(),
     demoClipName: v.string(),
+    ugcCropBounds: videoCropBoundsValidator,
+    demoCropBounds: videoCropBoundsValidator,
     ugcTrimRange: videoTrimRangeValidator,
     demoTrimRange: videoTrimRangeValidator,
     duration: v.number(),
@@ -428,6 +433,8 @@ export const updateSourceSettings = mutation({
       name,
       ugcClipId,
       demoClipId,
+      ugcCropBounds,
+      demoCropBounds,
       ugcTrimRange,
       demoTrimRange,
       duration,
@@ -483,6 +490,7 @@ export const updateSourceSettings = mutation({
     await ctx.db.patch(stitch._id, {
       demoClipId,
       demoClipName: demoClip.name,
+      demoCropBounds,
       demoPlaybackRate,
       demoTrimRange,
       duration,
@@ -494,6 +502,7 @@ export const updateSourceSettings = mutation({
       stitchObject: undefined,
       ugcClipId,
       ugcClipName: ugcClip.name,
+      ugcCropBounds,
       ugcPlaybackRate,
       ugcTrimRange,
     });

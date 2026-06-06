@@ -458,6 +458,7 @@ export function UploadsPageClient() {
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
+              onUpdateCrop={library.updateClipCropBounds}
               onCreateAvatarFromClip={handleCreateAvatarFromClip}
             />
             <VideoLibrarySection
@@ -490,6 +491,7 @@ export function UploadsPageClient() {
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
+              onUpdateCrop={library.updateClipCropBounds}
             />
             <VideoLibrarySection
               key={`all-demo-${searchQuery}-${library.sortOrder}`}
@@ -521,6 +523,7 @@ export function UploadsPageClient() {
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
+              onUpdateCrop={library.updateClipCropBounds}
             />
             <VideoLibrarySection
               key={`all-swaps-${searchQuery}-${library.sortOrder}`}
@@ -552,6 +555,7 @@ export function UploadsPageClient() {
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
+              onUpdateCrop={library.updateClipCropBounds}
             />
             <StitchesSection
               key={`all-stitches-${searchQuery}-${library.sortOrder}`}
@@ -634,6 +638,7 @@ export function UploadsPageClient() {
             onUpdateCliprMusic={library.updateCliprMusic}
             onUpdateMetadata={library.updateClipMetadata}
             onUpdateTrim={library.updateClipTrimRange}
+            onUpdateCrop={library.updateClipCropBounds}
             onCreateAvatarFromClip={
               selectedTab === "ugc" ? handleCreateAvatarFromClip : undefined
             }

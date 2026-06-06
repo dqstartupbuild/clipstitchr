@@ -4,6 +4,7 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { useState } from "react";
 import { CliprMusicControls } from "@/app/_components/dashboard/CliprMusicControls";
 import { MediaActionButtonList } from "@/app/_components/dashboard/MediaActionButtonList";
+import { VideoCropEditor } from "@/app/_components/crop/VideoCropEditor";
 import { VideoClipMusicPreview } from "@/app/_components/dashboard/VideoClipMusicPreview";
 import { VideoTrimEditor } from "@/app/_components/trim/VideoTrimEditor";
 import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
@@ -13,11 +14,14 @@ import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActi
 import { useVideoClipDetailsMusic } from "@/lib/clipstitchr/hooks/useVideoClipDetailsMusic";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+import type { VideoCropBounds } from "@/lib/clipstitchr/types/VideoCropBounds";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { clampVideoCropBounds } from "@/lib/clipstitchr/utils/clampVideoCropBounds";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
+import { getDefaultVideoCropBounds } from "@/lib/clipstitchr/utils/getDefaultVideoCropBounds";
 import { getVideoClipBadgeLabel } from "@/lib/clipstitchr/utils/getVideoClipBadgeLabel";
 import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
 
@@ -28,9 +32,17 @@ type VideoClipDetailsTrimEditor = {
   onSave: (trimRange: VideoTrimRange) => void | Promise<void>;
 };
 
+type VideoClipDetailsCropEditor = {
+  initialCropBounds: VideoCropBounds;
+  saveLabel: string;
+  title: string;
+  onSave: (cropBounds: VideoCropBounds) => void | Promise<void>;
+};
+
 type VideoClipDetailsDialogProps = {
   actionItems?: MediaCardActionMenuItem[];
   clip: VideoClipMetadata;
+  cropEditor?: VideoClipDetailsCropEditor;
   productName?: string;
   initialControlsEditorOpen?: boolean;
   isLoading: boolean;
@@ -45,6 +57,7 @@ type VideoClipDetailsDialogProps = {
 export function VideoClipDetailsDialog({
   actionItems = [],
   clip,
+  cropEditor,
   productName,
   initialControlsEditorOpen = false,
   isLoading,
@@ -56,15 +69,23 @@ export function VideoClipDetailsDialog({
   onLoadPreview,
 }: VideoClipDetailsDialogProps) {
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
+  const defaultCropBounds = getDefaultVideoCropBounds(clip);
   const initialTrimRange = trimEditor?.initialTrimRange ?? defaultTrimRange;
+  const initialCropBounds = cropEditor?.initialCropBounds ?? defaultCropBounds;
   const [activeTrimRange, setActiveTrimRange] = useState(() =>
     clampVideoTrimRange(initialTrimRange, clip.duration),
   );
   const [savedTrimRange, setSavedTrimRange] = useState(() =>
     clampVideoTrimRange(initialTrimRange, clip.duration),
   );
+  const [activeCropBounds, setActiveCropBounds] = useState(() =>
+    clampVideoCropBounds(initialCropBounds),
+  );
+  const [savedCropBounds, setSavedCropBounds] = useState(() =>
+    clampVideoCropBounds(initialCropBounds),
+  );
   const [isControlsEditorOpen, setIsControlsEditorOpen] = useState(
-    Boolean((trimEditor || musicEditor) && initialControlsEditorOpen),
+    Boolean((trimEditor || cropEditor || musicEditor) && initialControlsEditorOpen),
   );
   const musicState = useVideoClipDetailsMusic({ clip, musicEditor });
   const displayDuration = getVideoTrimDisplayDuration(
@@ -102,6 +123,10 @@ export function VideoClipDetailsDialog({
     setActiveTrimRange(savedTrimRange);
   };
 
+  const handleCancelCrop = () => {
+    setActiveCropBounds(savedCropBounds);
+  };
+
   const handleSaveTrim = async (trimRange: VideoTrimRange) => {
     if (!trimEditor) {
       return;
@@ -113,8 +138,27 @@ export function VideoClipDetailsDialog({
     setActiveTrimRange(clampedTrimRange);
     setSavedTrimRange(clampedTrimRange);
   };
+
+  const handleSaveCrop = async (cropBounds: VideoCropBounds) => {
+    if (!cropEditor) {
+      return;
+    }
+
+    const clampedCropBounds = clampVideoCropBounds(cropBounds);
+
+    await cropEditor.onSave(clampedCropBounds);
+    setActiveCropBounds(clampedCropBounds);
+    setSavedCropBounds(clampedCropBounds);
+  };
+  const controls = [
+    trimEditor ? "Trim" : "",
+    cropEditor ? "Crop" : "",
+    musicEditor ? "Music" : "",
+  ].filter(Boolean);
   const controlsLabel =
-    trimEditor && musicEditor ? "Trim & music" : trimEditor ? "Trim" : "Music";
+    controls.length > 2
+      ? `${controls[0]}, ${controls[1]} & ${controls[2]}`
+      : controls.join(" & ");
 
   return (
     <div
@@ -159,9 +203,10 @@ export function VideoClipDetailsDialog({
             musicBlob={musicState.musicBlob}
             musicEnabled={musicState.musicEnabled}
             musicVolume={musicState.musicVolume}
-            trimRange={activeTrimRange}
-            onLoadPreview={onLoadPreview}
-          />
+              trimRange={activeTrimRange}
+              cropBounds={activeCropBounds}
+              onLoadPreview={onLoadPreview}
+            />
           <div className="flex min-w-0 flex-col gap-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -172,7 +217,7 @@ export function VideoClipDetailsDialog({
                   {clip.hasAudio ? "Audio" : "No audio"}
                 </span>
               </div>
-              {trimEditor || musicEditor ? (
+              {trimEditor || cropEditor || musicEditor ? (
                 <Button
                   type="button"
                   variant="secondary"
@@ -181,6 +226,7 @@ export function VideoClipDetailsDialog({
                   onClick={() => {
                     if (isControlsEditorOpen) {
                       handleCancelTrim();
+                      handleCancelCrop();
                     }
 
                     setIsControlsEditorOpen((isOpen) => !isOpen);
@@ -201,6 +247,16 @@ export function VideoClipDetailsDialog({
                     onCancel={handleCancelTrim}
                     onChange={setActiveTrimRange}
                     onSave={handleSaveTrim}
+                  />
+                ) : null}
+                {cropEditor ? (
+                  <VideoCropEditor
+                    title={cropEditor.title}
+                    saveLabel={cropEditor.saveLabel}
+                    value={activeCropBounds}
+                    onCancel={handleCancelCrop}
+                    onChange={setActiveCropBounds}
+                    onSave={handleSaveCrop}
                   />
                 ) : null}
                 {musicEditor ? (

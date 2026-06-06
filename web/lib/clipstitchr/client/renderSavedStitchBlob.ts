@@ -5,7 +5,9 @@ import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchrSequenceClip } from "@/lib/clipstitchr/types/StitchrSequenceClip";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
+import { clampVideoCropBounds } from "@/lib/clipstitchr/utils/clampVideoCropBounds";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { getDefaultVideoCropBounds } from "@/lib/clipstitchr/utils/getDefaultVideoCropBounds";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getOrderedStitchSequenceSegments } from "@/lib/clipstitchr/utils/getOrderedStitchSequenceSegments";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
@@ -38,6 +40,9 @@ export async function renderSavedStitchBlob({
     );
     const sequence: StitchrSequenceClip[] = segments.map((segment, index) => ({
       clip: loadedClips[index],
+      cropBounds: clampVideoCropBounds(
+        segment.cropBounds ?? getDefaultVideoCropBounds(loadedClips[index]),
+      ),
       includeAudio:
         segment.clipType === "demo"
           ? stitch.includeDemoAudio === true
@@ -90,6 +95,12 @@ export async function renderSavedStitchBlob({
     },
     demoClip.duration,
   );
+  const ugcCropBounds = clampVideoCropBounds(
+    stitch.ugcCropBounds ?? getDefaultVideoCropBounds(ugcClip),
+  );
+  const demoCropBounds = clampVideoCropBounds(
+    stitch.demoCropBounds ?? getDefaultVideoCropBounds(demoClip),
+  );
   const ugcPlaybackRate = stitch.ugcPlaybackRate ?? 1;
   const demoPlaybackRate = stitch.demoPlaybackRate ?? 1;
   const totalDuration =
@@ -103,12 +114,14 @@ export async function renderSavedStitchBlob({
   );
   const options = {
     demoTrimRange,
+    demoCropBounds,
     demoPlaybackRate,
     includeDemoAudio: stitch.includeDemoAudio,
     includeUgcAudio: stitch.includeUgcAudio,
     onProgress,
     ugcPlaybackRate,
     ugcTrimRange,
+    ugcCropBounds,
   };
 
   if (!textOverlays.length) {

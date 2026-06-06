@@ -119,6 +119,7 @@ export function DashboardPageClient() {
           onDelete={library.removeClip}
           onUpdateMetadata={library.updateClipMetadata}
           onUpdateTrim={library.updateClipTrimRange}
+          onUpdateCrop={library.updateClipCropBounds}
         />
         <RecentAvatarsSection
           avatars={photoLibrary.avatars}

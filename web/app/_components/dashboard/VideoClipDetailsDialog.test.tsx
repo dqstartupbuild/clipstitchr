@@ -208,6 +208,8 @@ describe("VideoClipDetailsDialog", () => {
     mocks.stateQueue = [
       { start: 1, end: 5 },
       { start: 1, end: 5 },
+      { bottom: 0, left: 0, right: 0, top: 0 },
+      { bottom: 0, left: 0, right: 0, top: 0 },
       true,
     ];
 
@@ -288,10 +290,16 @@ describe("VideoClipDetailsDialog", () => {
     (preview.props.onLoadPreview as () => void)();
     expect(onLoadPreview).toHaveBeenCalledOnce();
 
-    expect(controlsButton.props.children).toBe("Trim & music");
+    expect(controlsButton.props.children).toBe("Trim & Music");
     (controlsButton.props.onClick as () => void)();
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith({ start: 1, end: 5 });
-    expect(mocks.setStateCalls[2]).toHaveReturnedWith(false);
+    expect(mocks.setStateCalls[2]).toHaveBeenCalledWith({
+      bottom: 0,
+      left: 0,
+      right: 0,
+      top: 0,
+    });
+    expect(mocks.setStateCalls[4]).toHaveReturnedWith(false);
 
     (trimEditor.props.onCancel as () => void)();
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith({ start: 1, end: 5 });
@@ -373,6 +381,8 @@ describe("VideoClipDetailsDialog", () => {
     mocks.stateQueue = [
       { start: 0, end: 8 },
       { start: 0, end: 8 },
+      { bottom: 0, left: 0, right: 0, top: 0 },
+      { bottom: 0, left: 0, right: 0, top: 0 },
       false,
     ];
     const trimOnlyTree = VideoClipDetailsDialog({
@@ -401,6 +411,8 @@ describe("VideoClipDetailsDialog", () => {
     mocks.stateQueue = [
       { start: 0, end: 8 },
       { start: 0, end: 8 },
+      { bottom: 0, left: 0, right: 0, top: 0 },
+      { bottom: 0, left: 0, right: 0, top: 0 },
       false,
     ];
     const musicOnlyTree = VideoClipDetailsDialog({
@@ -436,6 +448,8 @@ describe("VideoClipDetailsDialog", () => {
     mocks.stateQueue = [
       { start: 0, end: 8 },
       { start: 0, end: 8 },
+      { bottom: 0, left: 0, right: 0, top: 0 },
+      { bottom: 0, left: 0, right: 0, top: 0 },
       false,
     ];
     const detailsOnlyTree = VideoClipDetailsDialog({
