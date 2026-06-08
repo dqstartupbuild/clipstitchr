@@ -81,11 +81,12 @@ type WorkerArgs = {
 };
 
 type ProviderWorkerConfig = {
+  automationTools: Set<ProviderTool>;
   convexUrl: string;
   lockMs: number;
   pollIntervalMs: number;
   providerWorkerSecret: string;
-  tools: Set<ProviderTool>;
+  providerTools: Set<ProviderTool>;
   workerId: string;
 };
 
@@ -294,7 +295,7 @@ function getEnabledTools() {
   const rawValue = process.env.PROVIDER_WORKER_TOOLS?.trim();
 
   if (!rawValue) {
-    return new Set<ProviderTool>(PROVIDER_TOOLS.filter(getIsAutomationToolEnabled));
+    return new Set<ProviderTool>(PROVIDER_TOOLS);
   }
 
   const requested = rawValue
@@ -303,7 +304,7 @@ function getEnabledTools() {
     .filter(Boolean);
   const tools = requested.filter((tool): tool is ProviderTool =>
     PROVIDER_TOOLS.includes(tool as ProviderTool),
-  ).filter(getIsAutomationToolEnabled);
+  );
 
   if (tools.length === 0) {
     throw new Error("PROVIDER_WORKER_TOOLS did not contain a supported tool.");
@@ -313,12 +314,17 @@ function getEnabledTools() {
 }
 
 function getConfig(): ProviderWorkerConfig {
+  const providerTools = getEnabledTools();
+
   return {
+    automationTools: new Set(
+      Array.from(providerTools).filter(getIsAutomationToolEnabled),
+    ),
     convexUrl: getRequiredEnv("NEXT_PUBLIC_CONVEX_URL"),
     lockMs: Number(process.env.PROVIDER_WORKER_LOCK_MS || LOCK_MS),
     pollIntervalMs: Number(process.env.PROVIDER_WORKER_POLL_INTERVAL_MS || 2000),
     providerWorkerSecret: getRequiredEnv("PROVIDER_WORKER_SECRET"),
-    tools: getEnabledTools(),
+    providerTools,
     workerId: process.env.PROVIDER_WORKER_ID || `provider-worker-${process.pid}`,
   };
 }
@@ -2524,7 +2530,7 @@ async function claimNextProviderJob({
   client: ConvexHttpClient;
   config: ProviderWorkerConfig;
 }) {
-  if (config.tools.has("swapr")) {
+  if (config.providerTools.has("swapr")) {
     const swaprFinalizationJob = await claimProviderJobByStage({
       client,
       config,
@@ -2545,7 +2551,7 @@ async function claimNextProviderJob({
   ] as const;
 
   for (const [jobType, tool] of supportedJobTypes) {
-    if (!config.tools.has(tool)) {
+    if (!config.providerTools.has(tool)) {
       continue;
     }
 
@@ -2593,7 +2599,7 @@ async function claimNextTask({
   client: ConvexHttpClient;
   config: ProviderWorkerConfig;
 }) {
-  if (config.tools.has("swapr")) {
+  if (config.automationTools.has("swapr")) {
     const swaprFinalizationTask = await claimTaskByStage({
       client,
       config,
@@ -2607,7 +2613,7 @@ async function claimNextTask({
   }
 
   for (const tool of PROVIDER_TOOLS) {
-    if (!config.tools.has(tool)) {
+    if (!config.automationTools.has(tool)) {
       continue;
     }
 
