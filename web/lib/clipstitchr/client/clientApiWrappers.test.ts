@@ -98,6 +98,9 @@ describe("client API wrappers", () => {
       createCliprJob({
         addMusic: true,
         avatarId: "avatar_1",
+        avatarSceneLocation: "gym mirror",
+        avatarSceneOutfit: "black workout set",
+        avatarScenePose: "taking a progress photo",
         durationSeconds: 30,
         jobId: "job_1",
         musicTrackId: "track_1",
@@ -162,9 +165,7 @@ describe("client API wrappers", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/clipr/jobs",
       expect.objectContaining({
-        body: expect.stringContaining(
-          '"scriptIdea":"Founder confession angle"',
-        ),
+        body: expect.stringContaining('"avatarSceneOutfit":"black workout set"'),
       }),
     );
     expect(fetchMock).toHaveBeenCalledWith(

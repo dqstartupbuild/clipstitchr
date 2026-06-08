@@ -3,6 +3,7 @@
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
+import { avatarSceneControlMaxLength } from "@/lib/clipstitchr/constants/avatarSceneControlMaxLength";
 import { avatarLightingOptions } from "@/lib/clipstitchr/constants/avatarLightingOptions";
 import { avatarStyleOptions } from "@/lib/clipstitchr/constants/avatarStyleOptions";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
@@ -18,6 +19,7 @@ type AvatarGenerationPanelProps = {
   isGenerating: boolean;
   lighting: AvatarLightingOption;
   location: string;
+  outfit: string;
   selectedAvatar?: Avatar;
   selectedPhoto?: PhotoAssetMetadata;
   style: AvatarStyleOption;
@@ -26,6 +28,7 @@ type AvatarGenerationPanelProps = {
   onGenerate: () => void;
   onLightingChange: (lighting: AvatarLightingOption) => void;
   onLocationChange: (location: string) => void;
+  onOutfitChange: (outfit: string) => void;
   onStyleChange: (style: AvatarStyleOption) => void;
 };
 
@@ -37,6 +40,7 @@ export function AvatarGenerationPanel({
   isGenerating,
   lighting,
   location,
+  outfit,
   selectedAvatar,
   selectedPhoto,
   style,
@@ -45,6 +49,7 @@ export function AvatarGenerationPanel({
   onGenerate,
   onLightingChange,
   onLocationChange,
+  onOutfitChange,
   onStyleChange,
 }: AvatarGenerationPanelProps) {
   const hasDescription = Boolean(selectedAvatar?.description?.trim());
@@ -79,14 +84,15 @@ export function AvatarGenerationPanel({
           </div>
         </div>
         {shouldShowControls ? (
-          <div className="grid gap-2 md:grid-cols-2 xl:w-[760px] xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.35fr)_132px_132px_108px_132px] xl:items-end">
-            <label className="md:col-span-2 xl:col-span-1">
+          <div className="grid gap-2 md:grid-cols-2 xl:w-[780px] xl:grid-cols-4 xl:items-end">
+            <label>
               <span className="text-sm font-semibold text-text-primary">
                 Background
               </span>
               <input
                 type="text"
                 value={location}
+                maxLength={avatarSceneControlMaxLength}
                 placeholder="Any"
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-white px-3 text-sm text-text-primary shadow-sm shadow-slate-200/50 outline-none transition-colors hover:border-accent/70 focus:border-accent focus:ring-2 focus:ring-accent/15"
                 onChange={(event) =>
@@ -94,16 +100,30 @@ export function AvatarGenerationPanel({
                 }
               />
             </label>
-            <label className="md:col-span-2 xl:col-span-1">
+            <label>
               <span className="text-sm font-semibold text-text-primary">
                 Pose or action
               </span>
               <input
                 type="text"
                 value={context}
+                maxLength={avatarSceneControlMaxLength}
                 placeholder="Any"
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-white px-3 text-sm text-text-primary shadow-sm shadow-slate-200/50 outline-none transition-colors hover:border-accent/70 focus:border-accent focus:ring-2 focus:ring-accent/15"
                 onChange={(event) => onContextChange(event.currentTarget.value)}
+              />
+            </label>
+            <label className="md:col-span-2 xl:col-span-1">
+              <span className="text-sm font-semibold text-text-primary">
+                Outfit
+              </span>
+              <input
+                type="text"
+                value={outfit}
+                maxLength={avatarSceneControlMaxLength}
+                placeholder="Auto"
+                className="mt-1 h-9 w-full rounded-lg border border-border bg-white px-3 text-sm text-text-primary shadow-sm shadow-slate-200/50 outline-none transition-colors hover:border-accent/70 focus:border-accent focus:ring-2 focus:ring-accent/15"
+                onChange={(event) => onOutfitChange(event.currentTarget.value)}
               />
             </label>
             <SelectInput

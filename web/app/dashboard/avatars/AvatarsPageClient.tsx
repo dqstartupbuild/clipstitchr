@@ -38,6 +38,7 @@ export function AvatarsPageClient() {
   const [lighting, setLighting] =
     useState<AvatarLightingOption>("any");
   const [location, setLocation] = useState("");
+  const [outfit, setOutfit] = useState("");
   const [style, setStyle] = useState<AvatarStyleOption>(
     DEFAULT_AVATAR_STYLE_OPTION,
   );
@@ -258,6 +259,7 @@ export function AvatarsPageClient() {
           isGenerating={generator.isGenerating || photoLibrary.isSaving}
           lighting={lighting}
           location={location}
+          outfit={outfit}
           selectedAvatar={selectedPhotoAvatar}
           selectedPhoto={selectedPhoto}
           style={style}
@@ -270,6 +272,7 @@ export function AvatarsPageClient() {
                 context,
                 lighting,
                 location,
+                outfit,
                 referencePhoto: selectedPhoto,
                 style,
               });
@@ -278,6 +281,7 @@ export function AvatarsPageClient() {
           onContextChange={setContext}
           onLightingChange={setLighting}
           onLocationChange={setLocation}
+          onOutfitChange={setOutfit}
           onStyleChange={setStyle}
         />
         <AvatarLibrarySection

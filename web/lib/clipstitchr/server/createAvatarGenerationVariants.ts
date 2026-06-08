@@ -34,6 +34,7 @@ export function createAvatarGenerationVariants({
   count,
   lighting,
   location,
+  outfit,
   style,
   wardrobeStyle = "any",
 }: {
@@ -41,6 +42,7 @@ export function createAvatarGenerationVariants({
   count: AvatarPhotoGenerationCount;
   lighting: AvatarLightingOption;
   location: string;
+  outfit?: string;
   style: AvatarStyleOption;
   wardrobeStyle?: AvatarWardrobeStyle;
 }): AvatarGenerationVariant[] {
@@ -48,6 +50,14 @@ export function createAvatarGenerationVariants({
   const locations = getShuffledItems(avatarGenerationLocationOptions);
   const trimmedContext = context.trim();
   const trimmedLocation = location.trim();
+  const trimmedOutfit = outfit?.trim();
+  const contextualOutfit =
+    trimmedOutfit ||
+    createContextualOutfitDescription({
+      context: trimmedContext,
+      location: trimmedLocation,
+      wardrobeStyle,
+    });
 
   return Array.from({ length: count }, (_, index) => {
     const locationOption = trimmedLocation
@@ -61,7 +71,7 @@ export function createAvatarGenerationVariants({
     );
 
     return {
-      outfitDescription: outfits[index % outfits.length],
+      outfitDescription: contextualOutfit || outfits[index % outfits.length],
       locationDescription: locationOption.description,
       poseDescription: trimmedContext || poses[index % poses.length],
       lighting:
@@ -69,4 +79,39 @@ export function createAvatarGenerationVariants({
       style,
     };
   });
+}
+
+function createContextualOutfitDescription({
+  context,
+  location,
+  wardrobeStyle,
+}: {
+  context: string;
+  location: string;
+  wardrobeStyle: AvatarWardrobeStyle;
+}) {
+  if (!context && !location) {
+    return "";
+  }
+
+  const scene = [
+    location ? `location: ${location}` : "",
+    context ? `pose/action: ${context}` : "",
+  ]
+    .filter(Boolean)
+    .join("; ");
+  const wardrobeFit =
+    wardrobeStyle === "male"
+      ? "with masculine or neutral styling"
+      : wardrobeStyle === "female"
+        ? "with feminine or neutral styling"
+        : "with styling that fits the avatar";
+
+  return [
+    `context-appropriate clothing for ${scene}`,
+    wardrobeFit,
+    "practical and believable for the activity and setting",
+    "use athletic/workout clothing for gym or fitness scenes",
+    "avoid formal, office, streetwear, or fashion outfits when they do not fit the activity",
+  ].join("; ");
 }

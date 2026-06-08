@@ -48,6 +48,9 @@ function createGenerateOptions() {
   return {
     addMusic: true,
     avatarId: "avatar_1",
+    avatarSceneLocation: "gym mirror",
+    avatarSceneOutfit: "black workout set",
+    avatarScenePose: "taking a progress photo",
     durationSeconds: 30,
     musicTrackId: "track_1",
     productId: "product_1",

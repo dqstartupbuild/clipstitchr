@@ -75,6 +75,7 @@ function createFormRequest(overrides: Record<string, string | Blob> = {}) {
   }));
   formData.set("lighting", "studio");
   formData.set("location", "bright office");
+  formData.set("outfit", "  navy workout set  ");
   formData.set("style", "editorial");
   formData.set("wardrobeStyle", "female");
 
@@ -159,6 +160,14 @@ describe("POST /api/avatars/photos/generate", () => {
         secret: "rate-limit-secret",
       }),
     );
+    const providerJobCreateCall = mocks.convex.mutation.mock.calls.find(
+      ([mutationId]) => mutationId === api.providerJobs.create,
+    );
+    const providerInput = JSON.parse(
+      providerJobCreateCall?.[1].inputSnapshotJson ?? "{}",
+    ) as { outfit?: string };
+
+    expect(providerInput.outfit).toBe("navy workout set");
     expect(mocks.capturePostHogServerEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         distinctId: "user_123",

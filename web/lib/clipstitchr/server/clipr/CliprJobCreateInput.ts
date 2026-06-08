@@ -3,6 +3,9 @@ import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDuration
 export type CliprJobCreateInput = {
   addMusic: boolean;
   avatarId: string;
+  avatarSceneLocation?: string;
+  avatarSceneOutfit?: string;
+  avatarScenePose?: string;
   durationSeconds: CliprDurationSeconds;
   jobId: string;
   musicTrackId: string;

@@ -51,6 +51,7 @@ describe("createAvatarPhotoGenerationPrompt", () => {
 
     expect(prompt).toContain("Background/location for this new photo");
     expect(prompt).toContain("Primary body pose/action");
+    expect(prompt).toContain("outfit must be coherent");
     expect(prompt).toContain("Do not let it override the primary body pose/action");
   });
 

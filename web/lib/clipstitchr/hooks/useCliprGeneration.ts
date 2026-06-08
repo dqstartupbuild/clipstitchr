@@ -10,6 +10,9 @@ import { createId } from "@/lib/clipstitchr/utils/createId";
 type GenerateCliprOptions = {
   addMusic: boolean;
   avatarId: string;
+  avatarSceneLocation?: string;
+  avatarSceneOutfit?: string;
+  avatarScenePose?: string;
   durationSeconds: CliprDurationSeconds;
   musicTrackId?: string;
   productId: string;

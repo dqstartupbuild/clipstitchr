@@ -76,6 +76,9 @@ function createRequest(body: Record<string, unknown> = {}) {
     body: JSON.stringify({
       addMusic: true,
       avatarId: " avatar_1 ",
+      avatarSceneLocation: " gym mirror ",
+      avatarSceneOutfit: " black workout set ",
+      avatarScenePose: " taking a progress photo ",
       durationSeconds: 30,
       jobId: " job_1 ",
       productId: " product_1 ",
@@ -260,7 +263,12 @@ describe("POST /api/clipr/jobs", () => {
     expect(providerJobCreateCall).toBeDefined();
     const providerJobInput = JSON.parse(
       providerJobCreateCall?.[1].inputSnapshotJson ?? "{}",
-    ) as { scriptIdea?: string };
+    ) as {
+      avatarSceneLocation?: string;
+      avatarSceneOutfit?: string;
+      avatarScenePose?: string;
+      scriptIdea?: string;
+    };
 
     expect(response.status).toBe(200);
     expect(createQueuedCall?.[1]).toEqual(
@@ -271,6 +279,9 @@ describe("POST /api/clipr/jobs", () => {
     expect(providerJobInput.scriptIdea).toBe(
       "Make this a story about a launch content mistake.",
     );
+    expect(providerJobInput.avatarSceneLocation).toBe("gym mirror");
+    expect(providerJobInput.avatarSceneOutfit).toBe("black workout set");
+    expect(providerJobInput.avatarScenePose).toBe("taking a progress photo");
   });
 
   it("uses a selected shared music track without consuming music generation", async () => {

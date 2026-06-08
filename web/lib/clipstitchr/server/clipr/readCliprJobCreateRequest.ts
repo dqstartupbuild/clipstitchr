@@ -2,11 +2,15 @@ import { createId } from "@/lib/clipstitchr/utils/createId";
 import { cliprScriptIdeaMaxLength } from "@/lib/clipstitchr/constants/cliprScriptIdeaMaxLength";
 import { getCliprDurationSeconds } from "@/lib/clipstitchr/utils/getCliprDurationSeconds";
 import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
+import { sanitizeAvatarSceneControl } from "@/lib/clipstitchr/utils/sanitizeAvatarSceneControl";
 import type { CliprJobCreateInput } from "@/lib/clipstitchr/server/clipr/CliprJobCreateInput";
 
 type CliprJobCreateRequestBody = {
   addMusic?: unknown;
   avatarId?: unknown;
+  avatarSceneLocation?: unknown;
+  avatarSceneOutfit?: unknown;
+  avatarScenePose?: unknown;
   durationSeconds?: unknown;
   jobId?: unknown;
   musicTrackId?: unknown;
@@ -29,6 +33,12 @@ export async function readCliprJobCreateRequest(
   return {
     addMusic: body.addMusic === true && !musicTrackId,
     avatarId: getStringValue(body.avatarId),
+    avatarSceneLocation:
+      sanitizeAvatarSceneControl(body.avatarSceneLocation) || undefined,
+    avatarSceneOutfit:
+      sanitizeAvatarSceneControl(body.avatarSceneOutfit) || undefined,
+    avatarScenePose:
+      sanitizeAvatarSceneControl(body.avatarScenePose) || undefined,
     durationSeconds: getCliprDurationSeconds(body.durationSeconds),
     jobId: requestedJobId ? requestedJobId.slice(0, 128) : createId(),
     musicTrackId,

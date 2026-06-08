@@ -30,6 +30,7 @@ type GenerateAvatarPhotosFromSelectionOptions = {
   count: AvatarPhotoGenerationCount;
   lighting: AvatarLightingOption;
   location: string;
+  outfit?: string;
   referencePhoto: PhotoAssetMetadata;
   style: AvatarStyleOption;
 };
@@ -48,6 +49,7 @@ export function useAvatarPhotoGeneration({
       count,
       lighting,
       location,
+      outfit,
       referencePhoto,
       style,
     }: GenerateAvatarPhotosFromSelectionOptions) => {
@@ -78,6 +80,7 @@ export function useAvatarPhotoGeneration({
           count,
           lighting,
           location,
+          outfit,
           style,
           wardrobeStyle: avatar.wardrobeStyle,
         });

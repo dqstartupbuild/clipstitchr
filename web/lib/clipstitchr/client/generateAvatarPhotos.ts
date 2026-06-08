@@ -19,6 +19,7 @@ type GenerateAvatarPhotosOptions = {
   identityMode?: AvatarIdentityMode;
   lighting: AvatarLightingOption;
   location: string;
+  outfit?: string;
   style: AvatarStyleOption;
   wardrobeStyle?: AvatarWardrobeStyle;
 };
@@ -41,6 +42,7 @@ export async function generateAvatarPhotos({
   identityMode = "same",
   lighting,
   location,
+  outfit = "",
   style,
   wardrobeStyle = "any",
 }: GenerateAvatarPhotosOptions) {
@@ -63,6 +65,7 @@ export async function generateAvatarPhotos({
   }
   formData.set("lighting", lighting);
   formData.set("location", location);
+  formData.set("outfit", outfit);
   formData.set("style", style);
   formData.set("wardrobeStyle", wardrobeStyle);
 

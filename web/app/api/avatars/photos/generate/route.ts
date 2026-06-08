@@ -19,6 +19,7 @@ import { createR2ObjectKey } from "@/lib/clipstitchr/server/r2/createR2ObjectKey
 import { putR2Object } from "@/lib/clipstitchr/server/r2/putR2Object";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getGenerationSpeedTier } from "@/lib/clipstitchr/utils/getGenerationSpeedTier";
+import { sanitizeAvatarSceneControl } from "@/lib/clipstitchr/utils/sanitizeAvatarSceneControl";
 
 export const runtime = "nodejs";
 
@@ -45,14 +46,21 @@ export async function POST(request: Request) {
     const count = getAvatarPhotoGenerationCount(
       getSwaprFormString(formData, "count"),
     );
-    const context = getSwaprFormString(formData, "context").trim();
+    const context = sanitizeAvatarSceneControl(
+      getSwaprFormString(formData, "context"),
+    );
     const identityMode = getAvatarIdentityMode(
       getSwaprFormString(formData, "identityMode"),
     );
     const lighting = getAvatarLightingOption(
       getSwaprFormString(formData, "lighting"),
     );
-    const location = getSwaprFormString(formData, "location").trim();
+    const location = sanitizeAvatarSceneControl(
+      getSwaprFormString(formData, "location"),
+    );
+    const outfit = sanitizeAvatarSceneControl(
+      getSwaprFormString(formData, "outfit"),
+    );
     const style = getAvatarStyleOption(getSwaprFormString(formData, "style"));
     const wardrobeStyle = getAvatarWardrobeStyle(
       getSwaprFormString(formData, "wardrobeStyle"),
@@ -112,6 +120,7 @@ export async function POST(request: Request) {
         identityMode,
         lighting,
         location,
+        outfit,
         sourceImageName: image.name || "avatar-reference.jpg",
         sourceImageObject,
         style,

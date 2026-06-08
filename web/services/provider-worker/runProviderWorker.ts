@@ -144,6 +144,9 @@ type ManualCliprProviderJobInput = {
   avatarName: string;
   avatarPhotoId: string;
   avatarPhotoObject: R2ObjectReference;
+  avatarSceneLocation?: string;
+  avatarSceneOutfit?: string;
+  avatarScenePose?: string;
   audienceDetails: string;
   durationSeconds: 30 | 60;
   inferredPainPoints: string[];
@@ -167,6 +170,7 @@ type ManualAvatarPhotoProviderJobInput = {
   identityMode: "same" | "similar";
   lighting: AvatarLightingOption;
   location: string;
+  outfit?: string;
   sourceImageName: string;
   sourceImageObject: R2ObjectReference;
   style: AvatarStyleOption;
@@ -648,6 +652,9 @@ function parseManualCliprProviderJobInput(
       input.avatarPhotoObject,
       "Clipr avatar photo",
     ),
+    avatarSceneLocation: getOptionalString(input.avatarSceneLocation),
+    avatarSceneOutfit: getOptionalString(input.avatarSceneOutfit),
+    avatarScenePose: getOptionalString(input.avatarScenePose),
     audienceDetails: getString(input.audienceDetails, "Clipr audience details"),
     durationSeconds,
     inferredPainPoints: getStringArray(input.inferredPainPoints),
@@ -701,6 +708,7 @@ function parseManualAvatarPhotoProviderJobInput(
         ? lighting
         : "any",
     location: getOptionalString(input.location) ?? "",
+    outfit: getOptionalString(input.outfit),
     sourceImageName: getString(input.sourceImageName, "source image name"),
     sourceImageObject: getR2ObjectReference(
       input.sourceImageObject,
@@ -1910,6 +1918,11 @@ async function processManualClipr({
     referenceImageUrl,
     replicate,
     scene: avatarSourceScene,
+    sceneControls: {
+      location: input.avatarSceneLocation,
+      outfit: input.avatarSceneOutfit,
+      pose: input.avatarScenePose,
+    },
   });
   const avatarImageObject = await saveCliprSceneImageObject({
     body: generatedAvatarImage.body,
@@ -2100,6 +2113,7 @@ async function processManualAvatarPhoto({
     count: input.count,
     lighting: input.lighting,
     location: input.location,
+    outfit: input.outfit,
     style: input.style,
     wardrobeStyle: input.wardrobeStyle ?? "any",
   });

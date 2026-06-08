@@ -31,6 +31,7 @@ function createGenerateInput(overrides: Record<string, unknown> = {}) {
     count: 3,
     lighting: "studio",
     location: "office",
+    outfit: "navy activewear",
     referencePhoto: { id: "photo_1" },
     style: "ugc",
     ...overrides,
@@ -92,6 +93,7 @@ describe("useAvatarPhotoGeneration", () => {
         avatarId: "avatar_1",
         avatarName: "Founder",
         avatarDescription: "Confident founder",
+        outfit: "navy activewear",
         wardrobeStyle: "female",
       }),
     );

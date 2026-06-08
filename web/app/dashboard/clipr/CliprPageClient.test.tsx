@@ -47,6 +47,7 @@ const mocks = vi.hoisted(() => ({
     error: null as string | null,
     products: [] as ProductProfile[],
   },
+  sceneControlsProps: null as Record<string, unknown> | null,
 }));
 
 vi.mock("@/app/_components/dashboard/DashboardShell", () => ({
@@ -88,6 +89,13 @@ vi.mock("@/app/_components/clipr/CliprMusicControl", () => ({
   CliprMusicControl: () => "CliprMusicControl",
 }));
 
+vi.mock("@/app/_components/clipr/CliprSceneControls", () => ({
+  CliprSceneControls: (props: Record<string, unknown>) => {
+    mocks.sceneControlsProps = props;
+    return "CliprSceneControls";
+  },
+}));
+
 vi.mock("@/app/_components/clipr/CliprVoiceSelect", () => ({
   CliprVoiceSelect: () => "CliprVoiceSelect",
 }));
@@ -125,6 +133,7 @@ describe("CliprPageClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.productPanelProps = null;
+    mocks.sceneControlsProps = null;
     mocks.productState.defaultProductId = "product_2";
     mocks.productState.products = [
       createProduct(),
@@ -139,6 +148,14 @@ describe("CliprPageClient", () => {
     const markup = renderToStaticMarkup(<CliprPageClient />);
 
     expect(markup).toContain("Header:Create engagement Clips");
+    expect(markup).toContain("CliprSceneControls");
     expect(mocks.productPanelProps?.selectedProductId).toBe("product_2");
+    expect(mocks.sceneControlsProps).toEqual(
+      expect.objectContaining({
+        location: "",
+        outfit: "",
+        pose: "",
+      }),
+    );
   });
 });

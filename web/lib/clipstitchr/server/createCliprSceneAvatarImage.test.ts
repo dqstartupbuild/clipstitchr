@@ -104,6 +104,11 @@ describe("createCliprSceneAvatarImage", () => {
         referenceImageUrl: "https://cdn.test/reference.jpg",
         replicate: replicate as never,
         scene: { visual: "Host points at the product." } as never,
+        sceneControls: {
+          location: "gym mirror",
+          outfit: "black workout set",
+          pose: "taking a progress photo",
+        },
       }),
     ).resolves.toEqual({
       body: new Uint8Array([1, 2, 3]).buffer,
@@ -120,6 +125,14 @@ describe("createCliprSceneAvatarImage", () => {
       modelId: "avatar-still-model",
       variant: "wide product shot",
     });
+    expect(mocks.createCliprAvatarStillVariant).toHaveBeenCalledWith(
+      { visual: "Host points at the product." },
+      {
+        location: "gym mirror",
+        outfit: "black workout set",
+        pose: "taking a progress photo",
+      },
+    );
     expect(mocks.getRemoteImageFile).toHaveBeenCalledWith(
       "https://cdn.test/reference.jpg",
       "clipr-avatar-reference.jpg",

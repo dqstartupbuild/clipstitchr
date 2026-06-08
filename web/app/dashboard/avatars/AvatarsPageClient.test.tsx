@@ -198,6 +198,7 @@ function queueAvatarState(
     lighting?: string;
     location?: string;
     newAvatarName?: string;
+    outfit?: string;
     pendingPhotoFiles?: File[];
     pendingPhotoShouldExpandWithAi?: boolean;
     searchQuery?: string;
@@ -218,6 +219,7 @@ function queueAvatarState(
     overrides.count ?? 3,
     overrides.lighting ?? "any",
     overrides.location ?? "",
+    overrides.outfit ?? "",
     overrides.style ?? "editorial",
   );
 }
@@ -328,6 +330,7 @@ describe("AvatarsPageClient", () => {
       count: 4,
       lighting: "studio",
       location: "Cafe",
+      outfit: "navy workout set",
       searchQuery: "studio",
       selectedPhotoId: "photo_1",
     });
@@ -388,6 +391,7 @@ describe("AvatarsPageClient", () => {
       expect.objectContaining({
         avatar: expect.objectContaining({ id: "avatar_1" }),
         count: 4,
+        outfit: "navy workout set",
         referencePhoto: expect.objectContaining({ id: "photo_1" }),
       }),
     );

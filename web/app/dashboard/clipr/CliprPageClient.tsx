@@ -9,6 +9,7 @@ import { CliprModeToggle } from "@/app/_components/clipr/CliprModeToggle";
 import { CliprMusicControl } from "@/app/_components/clipr/CliprMusicControl";
 import { CliprProductPanel } from "@/app/_components/clipr/CliprProductPanel";
 import { CliprScriptIdeaPanel } from "@/app/_components/clipr/CliprScriptIdeaPanel";
+import { CliprSceneControls } from "@/app/_components/clipr/CliprSceneControls";
 import { CliprVoiceSelect } from "@/app/_components/clipr/CliprVoiceSelect";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
@@ -32,6 +33,9 @@ export function CliprPageClient() {
   const [selectedAvatarId, setSelectedAvatarId] = useState("");
   const [mode, setMode] = useState<CliprMode>("normal");
   const [scriptIdea, setScriptIdea] = useState("");
+  const [avatarSceneLocation, setAvatarSceneLocation] = useState("");
+  const [avatarSceneOutfit, setAvatarSceneOutfit] = useState("");
+  const [avatarScenePose, setAvatarScenePose] = useState("");
   const [voiceOverride, setVoiceOverride] = useState<{
     avatarId: string;
     voiceId: string;
@@ -124,6 +128,14 @@ export function CliprPageClient() {
                   setVoiceOverride(null);
                 }}
               />
+              <CliprSceneControls
+                location={avatarSceneLocation}
+                outfit={avatarSceneOutfit}
+                pose={avatarScenePose}
+                onLocationChange={setAvatarSceneLocation}
+                onOutfitChange={setAvatarSceneOutfit}
+                onPoseChange={setAvatarScenePose}
+              />
               <CliprVoiceSelect
                 value={activeVoiceId}
                 onVoiceChange={(voiceId) =>
@@ -160,6 +172,9 @@ export function CliprPageClient() {
                   void generator.generate({
                     addMusic: addMusic && !selectedMusicTrack,
                     avatarId: activeAvatarId,
+                    avatarSceneLocation,
+                    avatarSceneOutfit,
+                    avatarScenePose,
                     durationSeconds: defaultCliprDurationSeconds,
                     musicTrackId: selectedMusicTrack?.id,
                     productId: activeProductId,

@@ -41,6 +41,7 @@ describe("generateAvatarPhotos", () => {
       identityMode: "similar",
       lighting: "studio",
       location: "office",
+      outfit: "navy activewear",
       style: "ugc",
       wardrobeStyle: "female",
     });
@@ -62,6 +63,7 @@ describe("generateAvatarPhotos", () => {
     expect((formData as FormData).get("identityMode")).toBe("similar");
     expect((formData as FormData).get("lighting")).toBe("studio");
     expect((formData as FormData).get("location")).toBe("office");
+    expect((formData as FormData).get("outfit")).toBe("navy activewear");
     expect((formData as FormData).get("style")).toBe("ugc");
     expect((formData as FormData).get("wardrobeStyle")).toBe("female");
     expect((formData as FormData).get("image")).toBeInstanceOf(File);
@@ -96,6 +98,7 @@ describe("generateAvatarPhotos", () => {
 
     expect((formData as FormData).get("identityMode")).toBe("same");
     expect((formData as FormData).get("generationSpeedTier")).toBeNull();
+    expect((formData as FormData).get("outfit")).toBe("");
     expect((formData as FormData).get("wardrobeStyle")).toBe("any");
     expect((formData as FormData).get("image")).toBeInstanceOf(File);
   });

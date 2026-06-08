@@ -113,4 +113,37 @@ describe("createAvatarGenerationVariants", () => {
       ),
     ).toBe(true);
   });
+
+  it("uses entered outfit controls when provided", () => {
+    const variants = createAvatarGenerationVariants({
+      context: "taking a gym progress mirror photo",
+      count: 3,
+      lighting: "natural",
+      location: "gym locker room",
+      outfit: "black compression shirt and gray training shorts",
+      style: "ugc",
+    });
+
+    expect(variants).toHaveLength(3);
+    expect(
+      variants.every(
+        (variant) =>
+          variant.outfitDescription ===
+          "black compression shirt and gray training shorts",
+      ),
+    ).toBe(true);
+  });
+
+  it("infers context-appropriate clothing for custom scenes without outfit controls", () => {
+    const [variant] = createAvatarGenerationVariants({
+      context: "taking a gym progress mirror photo",
+      count: 1,
+      lighting: "natural",
+      location: "gym locker room",
+      style: "ugc",
+    });
+
+    expect(variant?.outfitDescription).toContain("context-appropriate");
+    expect(variant?.outfitDescription).toContain("gym or fitness");
+  });
 });
