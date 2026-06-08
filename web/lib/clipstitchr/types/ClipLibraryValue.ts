@@ -57,6 +57,10 @@ export type ClipLibraryValue = {
     clip: VideoClipMetadata,
     defaultTrimRange: VideoTrimRange,
   ) => Promise<void>;
+  updateClipPostedStatus: (
+    clip: VideoClipMetadata,
+    isPosted: boolean,
+  ) => Promise<void>;
   generateStitchMusic: (
     stitch: Stitch,
   ) => Promise<StitchMusicMetadata | null>;

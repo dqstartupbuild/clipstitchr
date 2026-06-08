@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  CheckCircle2,
   Download,
   Edit3,
+  RotateCcw,
   Scissors,
   Shuffle,
   Trash2,
@@ -58,6 +60,10 @@ type VideoClipCardProps = {
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void | Promise<void>;
+  onUpdatePostedStatus?: (
+    clip: VideoClipMetadata,
+    isPosted: boolean,
+  ) => void | Promise<void>;
   onCreateAvatarFromClip?: (
     clip: VideoClipMetadata,
     options: CreateAvatarFromUgcClipOptions,
@@ -80,15 +86,21 @@ export function VideoClipCard({
   onUpdateCliprMusic,
   onUpdateMetadata,
   onUpdateTrim,
+  onUpdatePostedStatus,
   onCreateAvatarFromClip,
 }: VideoClipCardProps) {
   const [isAvatarCreatorOpen, setIsAvatarCreatorOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
   const [isSavingMusic, setIsSavingMusic] = useState(false);
+  const [isSavingPostedStatus, setIsSavingPostedStatus] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [musicError, setMusicError] = useState<string | null>(null);
+  const [postedStatusError, setPostedStatusError] = useState<string | null>(
+    null,
+  );
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
+  const isPosted = Boolean(clip.isPosted);
   const displayDuration = getVideoTrimDisplayDuration(
     clip.duration,
     defaultTrimRange,
@@ -182,6 +194,26 @@ export function VideoClipCard({
       setIsSavingMusic(false);
     }
   };
+  const handleUpdatePostedStatus = async (nextIsPosted: boolean) => {
+    if (!onUpdatePostedStatus) {
+      return;
+    }
+
+    setIsSavingPostedStatus(true);
+    setPostedStatusError(null);
+
+    try {
+      await onUpdatePostedStatus(clip, nextIsPosted);
+    } catch (nextError) {
+      setPostedStatusError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to update posted status.",
+      );
+    } finally {
+      setIsSavingPostedStatus(false);
+    }
+  };
 
   return (
     <>
@@ -248,6 +280,19 @@ export function VideoClipCard({
             },
           );
 
+          if (onUpdatePostedStatus) {
+            items.push({
+              label: isPosted ? "Mark as active" : "Mark as posted",
+              icon: isPosted ? (
+                <RotateCcw aria-hidden className="h-4 w-4" />
+              ) : (
+                <CheckCircle2 aria-hidden className="h-4 w-4" />
+              ),
+              disabled: isLoading || isSavingPostedStatus,
+              onClick: () => void handleUpdatePostedStatus(!isPosted),
+            });
+          }
+
           if (clip.clipType === "ugc" && onCreateAvatarFromClip) {
             items.push({
               label: "Create avatar from UGC",
@@ -273,10 +318,19 @@ export function VideoClipCard({
           return items;
         }}
         footer={() =>
-          downloadError ? (
-            <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
-              {downloadError}
-            </p>
+          downloadError || postedStatusError ? (
+            <div className="flex flex-col gap-2">
+              {downloadError ? (
+                <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+                  {downloadError}
+                </p>
+              ) : null}
+              {postedStatusError ? (
+                <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+                  {postedStatusError}
+                </p>
+              ) : null}
+            </div>
           ) : null
         }
       />

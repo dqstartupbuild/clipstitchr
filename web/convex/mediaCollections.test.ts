@@ -745,6 +745,38 @@ describe("convex media collections", () => {
       ),
     ).rejects.toThrow("Swipe product name is required.");
 
+    const postedStatusCtx = createCtx({
+      swipes: [
+        { unique: { _id: "swipe_doc", id: "swipe_1" } },
+        { unique: { _id: "swipe_doc", id: "swipe_1" } },
+      ],
+    });
+
+    await getHandler<Record<string, unknown>, unknown>(
+      swipes.updatePostedStatus,
+    )(postedStatusCtx, {
+      id: "swipe_1",
+      isPosted: true,
+    });
+    await getHandler<Record<string, unknown>, unknown>(
+      swipes.updatePostedStatus,
+    )(postedStatusCtx, {
+      id: "swipe_1",
+      isPosted: false,
+    });
+
+    expect(postedStatusCtx.db.patch).toHaveBeenCalledWith(
+      "swipe_doc",
+      expect.objectContaining({
+        isPosted: true,
+        postedAt: expect.any(String),
+      }),
+    );
+    expect(postedStatusCtx.db.patch).toHaveBeenCalledWith("swipe_doc", {
+      isPosted: undefined,
+      postedAt: undefined,
+    });
+
     const removeCtx = createCtx({
       swipes: [{ unique: null }, { unique: { _id: "swipe_doc", id: "swipe_1" } }],
     });

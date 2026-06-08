@@ -263,6 +263,35 @@ export const saveFromProvider = mutation({
   },
 });
 
+export const updatePostedStatus = mutation({
+  args: {
+    id: v.string(),
+    isPosted: v.boolean(),
+  },
+  handler: async (ctx, { id, isPosted }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const swipe = await ctx.db
+      .query("swipes")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!swipe) {
+      throw new Error("Swipe not found.");
+    }
+
+    await ctx.db.patch(swipe._id, {
+      isPosted: isPosted ? true : undefined,
+      postedAt: isPosted ? new Date().toISOString() : undefined,
+    });
+  },
+});
+
 export const remove = mutation({
   args: {
     id: v.string(),

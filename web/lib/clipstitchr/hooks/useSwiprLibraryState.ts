@@ -35,6 +35,9 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
   );
   const saveBackgroundMutation = useMutation(api.swiprBackgrounds.save);
   const saveSwipeMutation = useMutation(api.swipes.save);
+  const updateSwipePostedStatusMutation = useMutation(
+    api.swipes.updatePostedStatus,
+  );
   const removeSwipeMutation = useMutation(api.swipes.remove);
   const [backgrounds, setBackgrounds] = useState<
     SwiprLibraryValue["backgrounds"]
@@ -309,6 +312,28 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
     [refresh, removeSwipeMutation, swipeDocuments],
   );
 
+  const updateSwipePostedStatus = useCallback(
+    async (swipe: SwiprSwipe, isPosted: boolean) => {
+      setError(null);
+
+      try {
+        await updateSwipePostedStatusMutation({
+          id: swipe.id,
+          isPosted,
+        });
+        await refresh();
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to update Swipe posted status.",
+        );
+        throw nextError;
+      }
+    },
+    [refresh, updateSwipePostedStatusMutation],
+  );
+
   useEffect(() => {
     if (isAuthLoading || !isAuthenticated || !backgroundDocuments) {
       if (!isAuthLoading && !isAuthenticated) {
@@ -366,6 +391,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
     loadSwipePoster,
     saveBackground,
     saveSwipe,
+    updateSwipePostedStatus,
     removeSwipe,
   };
 }

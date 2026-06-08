@@ -23,6 +23,10 @@ type RecentUploadsSectionProps = {
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void | Promise<void>;
+  onUpdatePostedStatus?: (
+    clip: VideoClipMetadata,
+    isPosted: boolean,
+  ) => void | Promise<void>;
 };
 
 export function RecentUploadsSection({
@@ -33,6 +37,7 @@ export function RecentUploadsSection({
   onDelete,
   onUpdateMetadata,
   onUpdateTrim,
+  onUpdatePostedStatus,
 }: RecentUploadsSectionProps) {
   return (
     <section id="recent-uploads">
@@ -59,6 +64,7 @@ export function RecentUploadsSection({
               onDelete={onDelete}
               onUpdateMetadata={onUpdateMetadata}
               onUpdateTrim={onUpdateTrim}
+              onUpdatePostedStatus={onUpdatePostedStatus}
             />
           ))}
         </div>

@@ -14,6 +14,8 @@ export type SwiprSwipe = {
   posterObject?: R2ObjectReference;
   posterBlob?: Blob;
   posterVersion?: number;
+  isPosted?: boolean;
+  postedAt?: string;
   createdAt: string;
   updatedAt: string;
 };

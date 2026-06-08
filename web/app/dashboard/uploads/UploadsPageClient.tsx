@@ -458,6 +458,7 @@ export function UploadsPageClient() {
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
+              onUpdatePostedStatus={library.updateClipPostedStatus}
               onCreateAvatarFromClip={handleCreateAvatarFromClip}
             />
             <VideoLibrarySection
@@ -490,6 +491,7 @@ export function UploadsPageClient() {
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
+              onUpdatePostedStatus={library.updateClipPostedStatus}
             />
             <VideoLibrarySection
               key={`all-demo-${searchQuery}-${library.sortOrder}`}
@@ -521,6 +523,7 @@ export function UploadsPageClient() {
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
+              onUpdatePostedStatus={library.updateClipPostedStatus}
             />
             <VideoLibrarySection
               key={`all-swaps-${searchQuery}-${library.sortOrder}`}
@@ -552,6 +555,7 @@ export function UploadsPageClient() {
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
+              onUpdatePostedStatus={library.updateClipPostedStatus}
             />
             <StitchesSection
               key={`all-stitches-${searchQuery}-${library.sortOrder}`}
@@ -592,6 +596,7 @@ export function UploadsPageClient() {
               onLoadPoster={swiprLibrary.loadSwipePoster}
               onDelete={swiprLibrary.removeSwipe}
               onSave={swiprLibrary.saveSwipe}
+              onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
             />
           </div>
         ) : null}
@@ -634,6 +639,7 @@ export function UploadsPageClient() {
             onUpdateCliprMusic={library.updateCliprMusic}
             onUpdateMetadata={library.updateClipMetadata}
             onUpdateTrim={library.updateClipTrimRange}
+            onUpdatePostedStatus={library.updateClipPostedStatus}
             onCreateAvatarFromClip={
               selectedTab === "ugc" ? handleCreateAvatarFromClip : undefined
             }
@@ -696,6 +702,7 @@ export function UploadsPageClient() {
             onLoadPoster={swiprLibrary.loadSwipePoster}
             onDelete={swiprLibrary.removeSwipe}
             onSave={swiprLibrary.saveSwipe}
+            onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
           />
         ) : null}
       </div>

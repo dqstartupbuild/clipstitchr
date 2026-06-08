@@ -49,6 +49,10 @@ type VideoLibrarySectionProps = {
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void | Promise<void>;
+  onUpdatePostedStatus?: (
+    clip: VideoClipMetadata,
+    isPosted: boolean,
+  ) => void | Promise<void>;
   onCreateAvatarFromClip?: (
     clip: VideoClipMetadata,
     options: CreateAvatarFromUgcClipOptions,
@@ -76,6 +80,7 @@ export function VideoLibrarySection({
   onUpdateCliprMusic,
   onUpdateMetadata,
   onUpdateTrim,
+  onUpdatePostedStatus,
   onCreateAvatarFromClip,
 }: VideoLibrarySectionProps) {
   const productNamesById = useMemo(
@@ -149,6 +154,7 @@ export function VideoLibrarySection({
                 onUpdateCliprMusic={onUpdateCliprMusic}
                 onUpdateMetadata={onUpdateMetadata}
                 onUpdateTrim={onUpdateTrim}
+                onUpdatePostedStatus={onUpdatePostedStatus}
                 onCreateAvatarFromClip={onCreateAvatarFromClip}
               />
             ))}

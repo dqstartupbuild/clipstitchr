@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useSwiprLibraryState } from "@/lib/clipstitchr/hooks/useSwiprLibraryState";
 import type { SwiprSlide } from "@/lib/clipstitchr/types/SwiprSlide";
+import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 
 const mocks = vi.hoisted(() => {
   const mutationFns = new Map<string, ReturnType<typeof vi.fn>>();
@@ -69,6 +70,7 @@ vi.mock("@/convex/_generated/api", () => ({
       list: "swipes.list",
       remove: "swipes.remove",
       save: "swipes.save",
+      updatePostedStatus: "swipes.updatePostedStatus",
     },
     swiprBackgrounds: {
       list: "swiprBackgrounds.list",
@@ -429,6 +431,18 @@ describe("useSwiprLibraryState", () => {
     );
     expect(getMutation("swipes.remove")).toHaveBeenCalledWith({
       id: "swipe_new",
+    });
+  });
+
+  it("updates Swipe posted status", async () => {
+    const state = useSwiprLibraryState();
+    const swipe = createSwipeDocument() as unknown as SwiprSwipe;
+
+    await state.updateSwipePostedStatus(swipe, true);
+
+    expect(getMutation("swipes.updatePostedStatus")).toHaveBeenCalledWith({
+      id: "swipe_1",
+      isPosted: true,
     });
   });
 

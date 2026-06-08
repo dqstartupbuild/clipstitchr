@@ -11,7 +11,13 @@ export type SaveSwiprBackgroundOptions = {
 
 export type SaveSwiprSwipeInput = Omit<
   SwiprSwipe,
-  "createdAt" | "posterBlob" | "posterObject" | "posterVersion" | "updatedAt"
+  | "createdAt"
+  | "isPosted"
+  | "postedAt"
+  | "posterBlob"
+  | "posterObject"
+  | "posterVersion"
+  | "updatedAt"
 > & {
   createdAt?: string;
   updatedAt?: string;
@@ -31,5 +37,9 @@ export type SwiprLibraryValue = {
   loadBackgroundBlob: (id: string) => Promise<Blob>;
   loadSwipePoster: (id: string) => Promise<Blob | null>;
   saveSwipe: (input: SaveSwiprSwipeInput) => Promise<SwiprSwipe>;
+  updateSwipePostedStatus: (
+    swipe: SwiprSwipe,
+    isPosted: boolean,
+  ) => Promise<void>;
   removeSwipe: (id: string) => Promise<void>;
 };

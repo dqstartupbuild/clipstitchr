@@ -17,6 +17,8 @@ export function createSwiprSwipeFromConvexDocument(
     posterObject: swipe.posterObject,
     posterBlob,
     posterVersion: swipe.posterVersion,
+    isPosted: swipe.isPosted,
+    postedAt: swipe.postedAt,
     createdAt: swipe.createdAt,
     updatedAt: swipe.updatedAt,
   };

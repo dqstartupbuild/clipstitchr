@@ -7,6 +7,7 @@ import {
   save,
   updateCliprMusic,
   updateMetadata,
+  updatePostedStatus,
   updatePoster,
 } from "./videoClips";
 
@@ -300,5 +301,34 @@ describe("convex videoClips", () => {
       }),
     );
     expect(setup.ctx.db.delete).toHaveBeenCalledWith("doc_1");
+  });
+
+  it("updates posted status using Stitch active semantics", async () => {
+    const setup = createCtx([
+      { _id: "doc_1", id: "clip_1" },
+      { _id: "doc_1", id: "clip_1" },
+    ]);
+
+    await getHandler(updatePostedStatus)(setup.ctx, {
+      id: "clip_1",
+      isPosted: true,
+    });
+    await getHandler(updatePostedStatus)(setup.ctx, {
+      id: "clip_1",
+      isPosted: false,
+    });
+
+    expect(setup.ctx.db.patch).toHaveBeenCalledWith(
+      "doc_1",
+      expect.objectContaining({
+        isPosted: true,
+        postedAt: expect.any(String),
+      }),
+    );
+    expect(setup.ctx.db.patch).toHaveBeenCalledWith("doc_1", {
+      isPosted: undefined,
+      postedAt: undefined,
+    });
+    expect(mocks.videoClipCounts.replaceOrInsert).toHaveBeenCalledTimes(2);
   });
 });

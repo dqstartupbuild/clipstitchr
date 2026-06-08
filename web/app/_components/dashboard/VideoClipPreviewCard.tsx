@@ -187,7 +187,14 @@ export function VideoClipPreviewCard({
               </span>
             </span>
           </button>
-          <span className="pointer-events-none absolute left-2 top-2 max-w-[75%] truncate rounded-md border border-purple-200 bg-white/95 px-2 py-1 text-[11px] font-bold leading-none text-accent-dark shadow-sm shadow-slate-900/10">
+          <span
+            className={[
+              "pointer-events-none absolute left-2 top-2 max-w-[75%] truncate rounded-md border bg-white/95 px-2 py-1 text-[11px] font-bold leading-none shadow-sm shadow-slate-900/10",
+              clip.isPosted
+                ? "border-emerald-200 text-emerald-700"
+                : "border-purple-200 text-accent-dark",
+            ].join(" ")}
+          >
             {getVideoClipBadgeLabel(clip)}
           </span>
           {onSelect ? (

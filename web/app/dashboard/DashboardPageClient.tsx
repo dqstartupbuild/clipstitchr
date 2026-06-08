@@ -110,6 +110,7 @@ export function DashboardPageClient() {
           onLoadPoster={swiprLibrary.loadSwipePoster}
           onDelete={swiprLibrary.removeSwipe}
           onSave={swiprLibrary.saveSwipe}
+          onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
         />
         <RecentUploadsSection
           clips={recentUploads}
@@ -119,6 +120,7 @@ export function DashboardPageClient() {
           onDelete={library.removeClip}
           onUpdateMetadata={library.updateClipMetadata}
           onUpdateTrim={library.updateClipTrimRange}
+          onUpdatePostedStatus={library.updateClipPostedStatus}
         />
         <RecentAvatarsSection
           avatars={photoLibrary.avatars}

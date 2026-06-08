@@ -170,7 +170,7 @@ describe("SwiprSwipeCard", () => {
     const onDelete = vi.fn();
     const onLoadBackgroundBlob = vi.fn(async () => loadedBlob);
 
-    mocks.stateQueue = [false, false, null, null];
+    mocks.stateQueue = [false, false, false, null, null, null];
 
     const tree = SwiprSwipeCard({
       background: createBackground(),
@@ -191,7 +191,7 @@ describe("SwiprSwipeCard", () => {
     await Promise.resolve();
 
     expect(onLoadBackgroundBlob).toHaveBeenCalledWith("bg_1");
-    expect(mocks.setStateCalls[2]).toHaveBeenCalledWith({
+    expect(mocks.setStateCalls[3]).toHaveBeenCalledWith({
       blob: loadedBlob,
       id: "bg_1",
     });
@@ -238,15 +238,7 @@ describe("SwiprSwipeCard", () => {
       progress: 0.5,
       status: "rendering",
     };
-    mocks.stateQueue = [
-      true,
-      false,
-      null,
-      {
-        id: "bg_1",
-        message: "Load failed",
-      },
-    ];
+    mocks.stateQueue = [true, false, false, null, null, null];
 
     const tree = SwiprSwipeCard({
       background: createBackground({ blob: backgroundBlob }),
@@ -279,7 +271,7 @@ describe("SwiprSwipeCard", () => {
       .mockRejectedValueOnce(new Error("Load failed"))
       .mockRejectedValueOnce("Download failed");
 
-    mocks.stateQueue = [false, false, null, null];
+    mocks.stateQueue = [false, false, false, null, null, null];
 
     const tree = SwiprSwipeCard({
       background: createBackground(),
@@ -293,7 +285,7 @@ describe("SwiprSwipeCard", () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(mocks.setStateCalls[3]).toHaveBeenCalledWith({
+    expect(mocks.setStateCalls[4]).toHaveBeenCalledWith({
       id: "bg_1",
       message: "Load failed",
     });
@@ -303,9 +295,50 @@ describe("SwiprSwipeCard", () => {
     await Promise.resolve();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(mocks.setStateCalls[3]).toHaveBeenCalledWith({
+    expect(mocks.setStateCalls[4]).toHaveBeenCalledWith({
       id: "bg_1",
       message: "Unable to load this Swipe background.",
     });
+  });
+
+  it("marks Swipes as posted and active", async () => {
+    const onUpdatePostedStatus = vi.fn(async () => undefined);
+
+    mocks.stateQueue = [false, false, false, null, null, null];
+
+    const activeTree = SwiprSwipeCard({
+      background: createBackground({ blob: new Blob(["background"]) }),
+      backgrounds: [createBackground()],
+      onDelete: vi.fn(),
+      onLoadBackgroundBlob: vi.fn(),
+      onSave: async (input) => createSwipe(input),
+      onUpdatePostedStatus,
+      swipe: createSwipe(),
+    });
+
+    getActionItems(activeTree)
+      .find((item) => item.label === "Mark as posted")
+      ?.onClick?.();
+    await Promise.resolve();
+
+    expect(onUpdatePostedStatus).toHaveBeenCalledWith(createSwipe(), true);
+
+    const postedSwipe = createSwipe({ isPosted: true });
+    const postedTree = SwiprSwipeCard({
+      background: createBackground({ blob: new Blob(["background"]) }),
+      backgrounds: [createBackground()],
+      onDelete: vi.fn(),
+      onLoadBackgroundBlob: vi.fn(),
+      onSave: async (input) => createSwipe(input),
+      onUpdatePostedStatus,
+      swipe: postedSwipe,
+    });
+
+    getActionItems(postedTree)
+      .find((item) => item.label === "Mark as active")
+      ?.onClick?.();
+    await Promise.resolve();
+
+    expect(onUpdatePostedStatus).toHaveBeenCalledWith(postedSwipe, false);
   });
 });

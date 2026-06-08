@@ -10,6 +10,15 @@ describe("getVideoClipBadgeLabel", () => {
     expect(getVideoClipBadgeLabel({ clipType: "demo" })).toBe("DEMO");
   });
 
+  it("labels posted clips before source type", () => {
+    expect(
+      getVideoClipBadgeLabel({
+        clipType: "ugc",
+        isPosted: true,
+      }),
+    ).toBe("POSTED");
+  });
+
   it("labels Swapr outputs as swaps", () => {
     expect(
       getVideoClipBadgeLabel({

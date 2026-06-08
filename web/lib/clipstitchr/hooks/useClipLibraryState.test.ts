@@ -93,6 +93,7 @@ vi.mock("@/convex/_generated/api", () => ({
       remove: "videoClips.remove",
       updateCliprMusic: "videoClips.updateCliprMusic",
       updateMetadata: "videoClips.updateMetadata",
+      updatePostedStatus: "videoClips.updatePostedStatus",
     },
   },
 }));
@@ -459,6 +460,7 @@ describe("useClipLibraryState", () => {
       end: 40,
       start: -5,
     });
+    await state.updateClipPostedStatus(clip, true);
 
     expect(getMutation("videoClips.updateMetadata")).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -482,6 +484,10 @@ describe("useClipLibraryState", () => {
         id: "clip_1",
       }),
     );
+    expect(getMutation("videoClips.updatePostedStatus")).toHaveBeenCalledWith({
+      id: "clip_1",
+      isPosted: true,
+    });
   });
 
   it("updates clip metadata without optional description fields", async () => {

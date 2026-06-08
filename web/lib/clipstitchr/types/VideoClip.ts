@@ -34,6 +34,8 @@ export type VideoClip = {
   hasAudio: boolean;
   swaprMetadata?: SwaprOutputMetadata;
   cliprMetadata?: CliprMetadata;
+  isPosted?: boolean;
+  postedAt?: string;
   createdAt: string;
   updatedAt: string;
 };

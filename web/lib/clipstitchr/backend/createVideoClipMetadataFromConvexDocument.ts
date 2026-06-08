@@ -34,6 +34,8 @@ export function createVideoClipMetadataFromConvexDocument(
     hasAudio: clip.hasAudio,
     swaprMetadata: clip.swaprMetadata,
     cliprMetadata: clip.cliprMetadata,
+    isPosted: clip.isPosted,
+    postedAt: clip.postedAt,
     createdAt: clip.createdAt,
     updatedAt: clip.updatedAt,
   };

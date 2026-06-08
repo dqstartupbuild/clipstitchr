@@ -112,6 +112,9 @@ export function useClipLibraryState(): ClipLibraryValue {
   );
   const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
   const updateCliprMusicMutation = useMutation(api.videoClips.updateCliprMusic);
+  const updateClipPostedStatusMutation = useMutation(
+    api.videoClips.updatePostedStatus,
+  );
   const updateStitchMusicMutation = useMutation(api.stitches.updateMusic);
   const updateStitchSourceSettingsMutation = useMutation(
     api.stitches.updateSourceSettings,
@@ -493,6 +496,18 @@ export function useClipLibraryState(): ClipLibraryValue {
     [refresh, updateClipMetadataMutation],
   );
 
+  const updateClipPostedStatus = useCallback(
+    async (clip: VideoClipMetadata, isPosted: boolean) => {
+      await updateClipPostedStatusMutation({
+        id: clip.id,
+        isPosted,
+      });
+      clipCacheRef.current.delete(clip.id);
+      await refresh();
+    },
+    [refresh, updateClipPostedStatusMutation],
+  );
+
   const updateCliprMusic = useCallback(
     async (clip: VideoClipMetadata, music: CliprMusicMetadata | null) => {
       const previousMusicObject = clip.cliprMetadata?.music?.audioObject;
@@ -794,6 +809,7 @@ export function useClipLibraryState(): ClipLibraryValue {
     generateCliprMusic,
     updateCliprMusic,
     updateClipTrimRange,
+    updateClipPostedStatus,
     generateStitchMusic,
     updateStitchMusic,
     updateStitchSourceSettings,

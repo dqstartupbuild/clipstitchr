@@ -565,6 +565,40 @@ export const updateCliprMusic = mutation({
   },
 });
 
+export const updatePostedStatus = mutation({
+  args: {
+    id: v.string(),
+    isPosted: v.boolean(),
+  },
+  handler: async (ctx, { id, isPosted }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const clip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!clip) {
+      throw new Error("Video clip not found.");
+    }
+
+    await ctx.db.patch(clip._id, {
+      isPosted: isPosted ? true : undefined,
+      postedAt: isPosted ? new Date().toISOString() : undefined,
+    });
+    const updatedClip = await ctx.db.get(clip._id);
+
+    if (updatedClip) {
+      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+    }
+  },
+});
+
 export const remove = mutation({
   args: {
     id: v.string(),

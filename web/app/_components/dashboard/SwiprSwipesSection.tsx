@@ -24,6 +24,10 @@ type SwiprSwipesSectionProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
   onSave: (input: SaveSwiprSwipeInput) => Promise<SwiprSwipe>;
+  onUpdatePostedStatus?: (
+    swipe: SwiprSwipe,
+    isPosted: boolean,
+  ) => void | Promise<void>;
 };
 
 export function SwiprSwipesSection({
@@ -38,6 +42,7 @@ export function SwiprSwipesSection({
   onLoadPoster,
   onDelete,
   onSave,
+  onUpdatePostedStatus,
 }: SwiprSwipesSectionProps) {
   const backgroundsById = useMemo(
     () => new Map(backgrounds.map((background) => [background.id, background])),
@@ -115,6 +120,7 @@ export function SwiprSwipesSection({
                       : undefined
                   }
                   onSave={onSave}
+                  onUpdatePostedStatus={onUpdatePostedStatus}
                 />
               );
             })}

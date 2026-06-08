@@ -15,6 +15,10 @@ type RecentSwipesSectionProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
   onSave: (input: SaveSwiprSwipeInput) => Promise<SwiprSwipe>;
+  onUpdatePostedStatus?: (
+    swipe: SwiprSwipe,
+    isPosted: boolean,
+  ) => void | Promise<void>;
 };
 
 export function RecentSwipesSection({
@@ -25,6 +29,7 @@ export function RecentSwipesSection({
   onLoadPoster,
   onDelete,
   onSave,
+  onUpdatePostedStatus,
 }: RecentSwipesSectionProps) {
   const backgroundsById = new Map(
     backgrounds.map((background) => [background.id, background]),
@@ -64,6 +69,7 @@ export function RecentSwipesSection({
                 onLoadPoster={onLoadPoster}
                 onDelete={onDelete}
                 onSave={onSave}
+                onUpdatePostedStatus={onUpdatePostedStatus}
               />
             );
           })}

@@ -323,6 +323,48 @@ describe("VideoClipCard", () => {
     ]);
   });
 
+  it("marks video clips as posted and active", async () => {
+    const onUpdatePostedStatus = vi.fn(async () => undefined);
+
+    renderToStaticMarkup(
+      <VideoClipCard
+        clip={createClipMetadata()}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onUpdateMetadata={vi.fn()}
+        onUpdatePostedStatus={onUpdatePostedStatus}
+        onUpdateTrim={vi.fn()}
+      />,
+    );
+
+    mocks.actionItems
+      .find((item) => item.label === "Mark as posted")
+      ?.onClick?.();
+    await Promise.resolve();
+
+    expect(onUpdatePostedStatus).toHaveBeenCalledWith(createClipMetadata(), true);
+
+    const postedClip = createClipMetadata({ isPosted: true });
+
+    renderToStaticMarkup(
+      <VideoClipCard
+        clip={postedClip}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onUpdateMetadata={vi.fn()}
+        onUpdatePostedStatus={onUpdatePostedStatus}
+        onUpdateTrim={vi.fn()}
+      />,
+    );
+
+    mocks.actionItems
+      .find((item) => item.label === "Mark as active")
+      ?.onClick?.();
+    await Promise.resolve();
+
+    expect(onUpdatePostedStatus).toHaveBeenCalledWith(postedClip, false);
+  });
+
   it("skips clip download when the full clip cannot be loaded", async () => {
     mocks.loadFullClip.mockResolvedValueOnce(null);
 

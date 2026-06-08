@@ -1,6 +1,13 @@
 "use client";
 
-import { Download, Edit3, Eye, Trash2 } from "lucide-react";
+import {
+  CheckCircle2,
+  Download,
+  Edit3,
+  Eye,
+  RotateCcw,
+  Trash2,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { SwiprSwipeDetailsDialog } from "@/app/_components/dashboard/SwiprSwipeDetailsDialog";
 import { SwiprSwipeEditDialog } from "@/app/_components/dashboard/SwiprSwipeEditDialog";
@@ -32,6 +39,10 @@ type SwiprSwipeCardProps = {
   onDelete: (id: string) => void | Promise<void>;
   onSelect?: () => void;
   onSave: (input: SaveSwiprSwipeInput) => Promise<SwiprSwipe>;
+  onUpdatePostedStatus?: (
+    swipe: SwiprSwipe,
+    isPosted: boolean,
+  ) => void | Promise<void>;
 };
 
 export function SwiprSwipeCard({
@@ -46,9 +57,11 @@ export function SwiprSwipeCard({
   onDelete,
   onSelect,
   onSave,
+  onUpdatePostedStatus,
 }: SwiprSwipeCardProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isSavingPostedStatus, setIsSavingPostedStatus] = useState(false);
   const [loadedBackground, setLoadedBackground] = useState<{
     blob: Blob;
     id: string;
@@ -63,6 +76,10 @@ export function SwiprSwipeCard({
   const backgroundErrorMessage =
     backgroundError?.id === background.id ? backgroundError.message : null;
   const backgroundUrl = useObjectUrl(backgroundBlob);
+  const isPosted = Boolean(swipe.isPosted);
+  const [postedStatusError, setPostedStatusError] = useState<string | null>(
+    null,
+  );
   const loadPosterBlob = useCallback(
     () => onLoadPoster?.(swipe.id) ?? Promise.resolve(null),
     [onLoadPoster, swipe.id],
@@ -138,6 +155,26 @@ export function SwiprSwipeCard({
         });
       });
   };
+  const handleUpdatePostedStatus = async (nextIsPosted: boolean) => {
+    if (!onUpdatePostedStatus) {
+      return;
+    }
+
+    setIsSavingPostedStatus(true);
+    setPostedStatusError(null);
+
+    try {
+      await onUpdatePostedStatus(swipe, nextIsPosted);
+    } catch (error) {
+      setPostedStatusError(
+        error instanceof Error
+          ? error.message
+          : "Unable to update posted status.",
+      );
+    } finally {
+      setIsSavingPostedStatus(false);
+    }
+  };
   const actionItems: MediaCardActionMenuItem[] = [
     {
       label: "View Swipe details",
@@ -155,6 +192,20 @@ export function SwiprSwipeCard({
       icon: <Edit3 aria-hidden className="h-4 w-4" />,
       onClick: () => setIsEditOpen(true),
     },
+    ...(onUpdatePostedStatus
+      ? [
+          {
+            label: isPosted ? "Mark as active" : "Mark as posted",
+            icon: isPosted ? (
+              <RotateCcw aria-hidden className="h-4 w-4" />
+            ) : (
+              <CheckCircle2 aria-hidden className="h-4 w-4" />
+            ),
+            disabled: isSavingPostedStatus,
+            onClick: () => void handleUpdatePostedStatus(!isPosted),
+          },
+        ]
+      : []),
     {
       label: "Delete Swipe",
       variant: "danger",
@@ -220,7 +271,9 @@ export function SwiprSwipeCard({
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <Badge>SWIPE</Badge>
+              <Badge tone={isPosted ? "emerald" : "purple"}>
+                {isPosted ? "POSTED" : "SWIPE"}
+              </Badge>
               <MediaCardActionMenu
                 label={`Actions for ${swipe.name}`}
                 items={actionItems}
@@ -230,6 +283,11 @@ export function SwiprSwipeCard({
           {backgroundErrorMessage || exporter.error ? (
             <p className="mt-3 text-xs font-semibold text-red-600">
               {backgroundErrorMessage ?? exporter.error}
+            </p>
+          ) : null}
+          {postedStatusError ? (
+            <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+              {postedStatusError}
             </p>
           ) : null}
         </div>

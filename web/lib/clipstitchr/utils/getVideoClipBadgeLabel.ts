@@ -5,10 +5,15 @@ import type { SwaprOutputMetadata } from "@/lib/clipstitchr/types/SwaprOutputMet
 type VideoClipBadgeLabelInput = {
   clipType: ClipType;
   cliprMetadata?: CliprMetadata;
+  isPosted?: boolean;
   swaprMetadata?: SwaprOutputMetadata;
 };
 
 export function getVideoClipBadgeLabel(clip: VideoClipBadgeLabelInput) {
+  if (clip.isPosted) {
+    return "POSTED";
+  }
+
   if (clip.cliprMetadata) {
     return "CLIP";
   }
