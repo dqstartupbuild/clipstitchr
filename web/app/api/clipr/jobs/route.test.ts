@@ -244,6 +244,35 @@ describe("POST /api/clipr/jobs", () => {
     );
   });
 
+  it("trims script ideas before saving the job and provider snapshot", async () => {
+    const response = await POST(
+      createRequest({
+        scriptIdea: "  Make this a story about a launch content mistake.  ",
+      }),
+    );
+    const createQueuedCall = mocks.convex.mutation.mock.calls.find(
+      ([mutationId]) => mutationId === api.cliprJobs.createQueued,
+    );
+    const providerJobCreateCall = mocks.convex.mutation.mock.calls.find(
+      ([mutationId]) => mutationId === api.providerJobs.create,
+    );
+    expect(createQueuedCall).toBeDefined();
+    expect(providerJobCreateCall).toBeDefined();
+    const providerJobInput = JSON.parse(
+      providerJobCreateCall?.[1].inputSnapshotJson ?? "{}",
+    ) as { scriptIdea?: string };
+
+    expect(response.status).toBe(200);
+    expect(createQueuedCall?.[1]).toEqual(
+      expect.objectContaining({
+        scriptIdea: "Make this a story about a launch content mistake.",
+      }),
+    );
+    expect(providerJobInput.scriptIdea).toBe(
+      "Make this a story about a launch content mistake.",
+    );
+  });
+
   it("uses a selected shared music track without consuming music generation", async () => {
     mocks.convex.query.mockImplementation((queryId: string) => {
       if (queryId === "products.get") {

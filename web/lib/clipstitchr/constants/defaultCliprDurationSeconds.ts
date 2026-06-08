@@ -1,3 +1,3 @@
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 
-export const defaultCliprDurationSeconds: CliprDurationSeconds = 30;
+export const defaultCliprDurationSeconds: CliprDurationSeconds = 60;

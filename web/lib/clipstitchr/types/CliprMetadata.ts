@@ -8,6 +8,7 @@ export type CliprMetadata = {
   avatarId: string;
   avatarPhotoId: string;
   voiceId: string;
+  scriptIdea?: string;
   targetDurationSeconds: CliprDurationSeconds;
   hookStyleKey: string;
   hookTemplateId: string;

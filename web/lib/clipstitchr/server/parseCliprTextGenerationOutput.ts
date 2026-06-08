@@ -239,7 +239,7 @@ function normalizeScenePlan(
       ),
       estimatedDurationSeconds:
         typeof scene.estimatedDurationSeconds === "number"
-          ? Math.min(durationSeconds, Math.max(4, scene.estimatedDurationSeconds))
+          ? Math.max(4, scene.estimatedDurationSeconds)
           : durationSeconds,
     }));
 }
@@ -306,7 +306,6 @@ export function parseCliprTextGenerationOutput({
             index,
             sceneType: "avatar" as const,
             scriptText: finalScript,
-            estimatedDurationSeconds: durationSeconds,
           }))
         : [
             {

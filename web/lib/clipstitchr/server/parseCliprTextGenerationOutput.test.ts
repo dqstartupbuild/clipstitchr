@@ -61,7 +61,7 @@ describe("parseCliprTextGenerationOutput", () => {
       {
         sceneType: "avatar",
         scriptText: script,
-        estimatedDurationSeconds: 30,
+        estimatedDurationSeconds: 8,
       },
     ]);
   });

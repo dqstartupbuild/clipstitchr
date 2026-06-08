@@ -1,4 +1,5 @@
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { cliprScriptIdeaMaxLength } from "@/lib/clipstitchr/constants/cliprScriptIdeaMaxLength";
 import { getCliprDurationSeconds } from "@/lib/clipstitchr/utils/getCliprDurationSeconds";
 import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 import type { CliprJobCreateInput } from "@/lib/clipstitchr/server/clipr/CliprJobCreateInput";
@@ -10,6 +11,7 @@ type CliprJobCreateRequestBody = {
   jobId?: unknown;
   musicTrackId?: unknown;
   productId?: unknown;
+  scriptIdea?: unknown;
   voiceId?: unknown;
 };
 
@@ -31,6 +33,9 @@ export async function readCliprJobCreateRequest(
     jobId: requestedJobId ? requestedJobId.slice(0, 128) : createId(),
     musicTrackId,
     productId: getStringValue(body.productId),
+    scriptIdea:
+      getStringValue(body.scriptIdea).slice(0, cliprScriptIdeaMaxLength) ||
+      undefined,
     voiceId: getCliprVoiceId(body.voiceId),
   };
 }

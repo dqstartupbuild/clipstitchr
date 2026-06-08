@@ -3,11 +3,12 @@
 import { CirclePlay } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CliprAvatarPanel } from "@/app/_components/clipr/CliprAvatarPanel";
-import { CliprDurationControl } from "@/app/_components/clipr/CliprDurationControl";
 import { CliprGenerationProgress } from "@/app/_components/clipr/CliprGenerationProgress";
 import { CliprJobResult } from "@/app/_components/clipr/CliprJobResult";
+import { CliprModeToggle } from "@/app/_components/clipr/CliprModeToggle";
 import { CliprMusicControl } from "@/app/_components/clipr/CliprMusicControl";
 import { CliprProductPanel } from "@/app/_components/clipr/CliprProductPanel";
+import { CliprScriptIdeaPanel } from "@/app/_components/clipr/CliprScriptIdeaPanel";
 import { CliprVoiceSelect } from "@/app/_components/clipr/CliprVoiceSelect";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
@@ -19,7 +20,7 @@ import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useCliprGeneration } from "@/lib/clipstitchr/hooks/useCliprGeneration";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
-import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
+import type { CliprMode } from "@/lib/clipstitchr/types/CliprMode";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 
 export function CliprPageClient() {
@@ -29,9 +30,8 @@ export function CliprPageClient() {
   const generator = useCliprGeneration({ onCreated: library.refresh });
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedAvatarId, setSelectedAvatarId] = useState("");
-  const [durationSeconds, setDurationSeconds] = useState<CliprDurationSeconds>(
-    defaultCliprDurationSeconds,
-  );
+  const [mode, setMode] = useState<CliprMode>("normal");
+  const [scriptIdea, setScriptIdea] = useState("");
   const [voiceOverride, setVoiceOverride] = useState<{
     avatarId: string;
     voiceId: string;
@@ -67,10 +67,12 @@ export function CliprPageClient() {
         .length,
     [activeAvatarId, photoLibrary.photos],
   );
+  const activeScriptIdea = scriptIdea.trim();
   const canGenerate =
     Boolean(activeProductId) &&
     Boolean(activeAvatarId) &&
     selectedAvatarPhotoCount > 0 &&
+    (mode === "normal" || Boolean(activeScriptIdea)) &&
     !generator.isGenerating;
 
   const error = products.error ?? photoLibrary.error ?? library.error;
@@ -92,7 +94,22 @@ export function CliprPageClient() {
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
           <Panel className="p-4">
+            <div className="mb-4 flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-accent-dark">Clipr</p>
+                <h2 className="mt-0.5 text-base font-bold text-text-primary">
+                  {mode === "idea" ? "Generate from an idea" : "Generate a Clip"}
+                </h2>
+              </div>
+              <CliprModeToggle value={mode} onChange={setMode} />
+            </div>
             <div className="grid gap-5 lg:grid-cols-2">
+              {mode === "idea" ? (
+                <CliprScriptIdeaPanel
+                  value={scriptIdea}
+                  onChange={setScriptIdea}
+                />
+              ) : null}
               <CliprProductPanel
                 products={products.products}
                 selectedProductId={activeProductId}
@@ -106,10 +123,6 @@ export function CliprPageClient() {
                   setSelectedAvatarId(avatarId);
                   setVoiceOverride(null);
                 }}
-              />
-              <CliprDurationControl
-                value={durationSeconds}
-                onChange={setDurationSeconds}
               />
               <CliprVoiceSelect
                 value={activeVoiceId}
@@ -147,9 +160,11 @@ export function CliprPageClient() {
                   void generator.generate({
                     addMusic: addMusic && !selectedMusicTrack,
                     avatarId: activeAvatarId,
-                    durationSeconds,
+                    durationSeconds: defaultCliprDurationSeconds,
                     musicTrackId: selectedMusicTrack?.id,
                     productId: activeProductId,
+                    scriptIdea:
+                      mode === "idea" ? activeScriptIdea : undefined,
                     voiceId: activeVoiceId,
                   })
                 }

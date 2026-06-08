@@ -13,6 +13,7 @@ type GenerateCliprOptions = {
   durationSeconds: CliprDurationSeconds;
   musicTrackId?: string;
   productId: string;
+  scriptIdea?: string;
   voiceId: string;
 };
 

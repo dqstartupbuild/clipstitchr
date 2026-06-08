@@ -42,6 +42,25 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("The video should still make sense");
     expect(prompt).toContain("Audience and problem are the primary source");
     expect(prompt).toContain("Product proof bank, not the script spine");
+    expect(prompt).toContain("Script length: Write as much spoken script");
+    expect(prompt).not.toContain("Target duration: 30 seconds");
+  });
+
+  it("includes a user script idea as Clipr creative direction", () => {
+    const prompt = createCliprTextGenerationPrompt({
+      candidates: [candidate],
+      durationSeconds: 30,
+      fillers: { topic: ["launches"] },
+      product,
+      purpose: "clipr",
+      scriptIdea: "Open with a founder admitting their launch content was scattered.",
+      slideCount: 4,
+    });
+
+    expect(prompt).toContain("user script idea is provided");
+    expect(prompt).toContain(
+      "User script idea: Open with a founder admitting their launch content was scattered.",
+    );
   });
 
   it("uses the dedicated Stitchr emotional overlay framework", () => {
@@ -84,5 +103,6 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("middle slides must validate the bold claim");
     expect(prompt).toContain("middle slides must not mention the product name");
     expect(prompt).toContain("filledHook and middle slides must read like creator");
+    expect(prompt).toContain("Target duration: 30 seconds");
   });
 });

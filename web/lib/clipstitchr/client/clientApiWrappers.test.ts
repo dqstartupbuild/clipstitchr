@@ -102,6 +102,7 @@ describe("client API wrappers", () => {
         jobId: "job_1",
         musicTrackId: "track_1",
         productId: "product_1",
+        scriptIdea: "Founder confession angle",
         voiceId: "Zephyr (Female)",
       }),
     ).resolves.toEqual({ id: "job_1" });
@@ -158,6 +159,14 @@ describe("client API wrappers", () => {
       } as Parameters<typeof createSwaprPrediction>[0]),
     ).resolves.toEqual({ id: "swapr_job_1" });
 
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/clipr/jobs",
+      expect.objectContaining({
+        body: expect.stringContaining(
+          '"scriptIdea":"Founder confession angle"',
+        ),
+      }),
+    );
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/settings/products/product%2F1",
       expect.objectContaining({ method: "PATCH" }),

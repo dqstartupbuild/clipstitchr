@@ -51,6 +51,7 @@ function createGenerateOptions() {
     durationSeconds: 30,
     musicTrackId: "track_1",
     productId: "product_1",
+    scriptIdea: "Talk about the launch mistake nobody notices.",
     voiceId: "Zephyr (Female)",
   } as unknown as Parameters<
     ReturnType<typeof useCliprGeneration>["generate"]

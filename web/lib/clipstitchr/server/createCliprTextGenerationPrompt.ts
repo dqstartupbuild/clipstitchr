@@ -11,6 +11,7 @@ type CreateCliprTextGenerationPromptOptions = {
   fillers: CliprPlaceholderFillers;
   product: ProductProfile;
   purpose: CliprTextPurpose;
+  scriptIdea?: string;
   slideCount: number;
 };
 
@@ -35,6 +36,21 @@ const followThroughArcs = [
   "myth -> truth -> practical next step",
   "identity challenge -> emotional reason -> behavior change",
 ];
+
+function getLengthRule(
+  purpose: CliprTextPurpose,
+  durationSeconds: CliprDurationSeconds,
+) {
+  if (purpose === "clipr") {
+    return [
+      "Script length: Write as much spoken script as needed to fully explain",
+      "the idea. Do not pad, rush, or force the script into a fixed 30 or 60",
+      "second target.",
+    ].join(" ");
+  }
+
+  return `Target duration: ${durationSeconds} seconds`;
+}
 
 function getPurposeRules(purpose: CliprTextPurpose) {
   if (purpose === "clipr") {
@@ -74,6 +90,7 @@ export function createCliprTextGenerationPrompt({
   fillers,
   product,
   purpose,
+  scriptIdea,
   slideCount,
 }: CreateCliprTextGenerationPromptOptions) {
   if (purpose === "stitchr") {
@@ -87,7 +104,7 @@ export function createCliprTextGenerationPrompt({
   return [
     "Create short-form hook copy for ClipStitchr.",
     "Return only compact JSON with this exact shape:",
-    '{"templateId":"one candidate id","filledHook":"short hook","variablesUsed":{"placeholder":"value"},"overlayText":"short editable overlay","slides":["first slide hook","supporting point"],"script":"30 or 60 second spoken avatar script","scenePlan":[{"sceneType":"avatar","scriptText":"the same full spoken script","visualPrompt":"vertical avatar video prompt","estimatedDurationSeconds":30}]}',
+    '{"templateId":"one candidate id","filledHook":"short hook","variablesUsed":{"placeholder":"value"},"overlayText":"short editable overlay","slides":["first slide hook","supporting point"],"script":"spoken avatar script long enough to fully explain the idea","scenePlan":[{"sceneType":"avatar","scriptText":"the same full spoken script","visualPrompt":"vertical avatar video prompt","estimatedDurationSeconds":45}]}',
     "Rules:",
     "- Audience and problem are the primary source of truth. Product details are only a proof bank and should not become the main topic.",
     "- Silently choose one content angle and one follow-through arc before writing. Do not name the angle or arc in the JSON.",
@@ -100,13 +117,15 @@ export function createCliprTextGenerationPrompt({
     "- Do not invent fake stats, fake studies, fake quotes, or fake testimonials.",
     "- Keep the hook useful, specific, and under 18 words when possible.",
     "- If a candidate comes from a hook library, adapt the pattern to the product instead of copying it mechanically.",
+    "- If a user script idea is provided, use it as the primary creative direction while still following every purpose rule.",
+    "- When using a user script idea, preserve the intended topic, point of view, and concrete examples, but rewrite anything that is unclear, too promotional, or unsafe.",
     "- filledHook must be final human-readable copy, not a raw placeholder fill.",
     "- Rewrite filler values as needed so the sentence is grammatical. Change tense, article, plurality, or wording instead of pasting filler text verbatim.",
     "- Never return unresolved placeholders, placeholder labels, snake_case keys, or database-style labels in filledHook or slides.",
     "- Before returning JSON, silently reject any hook that reads like gibberish, has awkward duplicated words, or only makes sense if the reader sees the template.",
     ...getPurposeRules(purpose),
     `Purpose: ${purpose}`,
-    `Target duration: ${durationSeconds} seconds`,
+    getLengthRule(purpose, durationSeconds),
     `Slide count: ${slideCount}`,
     `Audience details: ${product.audienceDetails}`,
     `Inferred problem: ${product.inferredProblem ?? ""}`,
@@ -115,6 +134,7 @@ export function createCliprTextGenerationPrompt({
     `Follow-through arcs to choose from: ${followThroughArcs.join("; ")}`,
     `Product name, for final CTA or proof only when allowed: ${product.name}`,
     `Product proof bank, not the script spine: ${product.productDetails}`,
+    scriptIdea ? `User script idea: ${scriptIdea}` : "",
     `Placeholder fillers: ${JSON.stringify(fillers)}`,
     `Candidate templates: ${JSON.stringify(
       candidates.map((candidate) => ({

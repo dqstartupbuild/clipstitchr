@@ -76,10 +76,6 @@ vi.mock("@/app/_components/clipr/CliprAvatarPanel", () => ({
   CliprAvatarPanel: () => "CliprAvatarPanel",
 }));
 
-vi.mock("@/app/_components/clipr/CliprDurationControl", () => ({
-  CliprDurationControl: () => "CliprDurationControl",
-}));
-
 vi.mock("@/app/_components/clipr/CliprGenerationProgress", () => ({
   CliprGenerationProgress: () => "CliprGenerationProgress",
 }));

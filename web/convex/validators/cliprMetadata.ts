@@ -9,6 +9,7 @@ export const cliprMetadataValidator = v.object({
   avatarId: v.string(),
   avatarPhotoId: v.string(),
   voiceId: v.string(),
+  scriptIdea: v.optional(v.string()),
   targetDurationSeconds: cliprDurationSecondsValidator,
   hookStyleKey: v.string(),
   hookTemplateId: v.string(),

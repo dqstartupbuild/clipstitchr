@@ -29,6 +29,7 @@ export async function createQueuedCliprJobRecord({
     avatarName: documents.avatar.name,
     avatarPhotoId: documents.avatarPhoto.id,
     voiceId: input.voiceId,
+    ...(input.scriptIdea ? { scriptIdea: input.scriptIdea } : {}),
     targetDurationSeconds: input.durationSeconds,
     createdAt,
   });

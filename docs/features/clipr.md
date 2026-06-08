@@ -47,9 +47,9 @@ hook, and the remaining slides should pay it off with simple supporting points.
   fillers for template placeholders.
 - The UI should never expose hook style names, template IDs, risk labels, or
   placeholder mechanics to users.
-- Default video length is 30 seconds.
-- The user can choose 30 seconds or 60 seconds.
-- Generated videos can be up to 60 seconds.
+- Clipr does not expose a duration control.
+- Generated scripts should be as long as needed to express the full idea without
+  padding or forcing a fixed 30 or 60 second target.
 - The user selects an avatar to use as the character reference. They should not
   have to select a specific image; the system should automatically use that
   avatar's first uploaded photo for stable, repeatable character consistency.
@@ -59,8 +59,7 @@ hook, and the remaining slides should pay it off with simple supporting points.
   changing the avatar's saved voice.
 - Clipr should generate one full-script avatar video from the selected avatar
   and voice.
-- The generated avatar video should get as close as possible to the target
-  length of 30 or 60 seconds.
+- The generated avatar video should follow the full generated script length.
 - The user can opt into AI-generated background music. The checkbox is off by
   default.
 - Clipr music uses `stability-ai/stable-audio-2.5`, generates one 60 second
@@ -598,7 +597,7 @@ Rules:
 2. User selects a saved product profile from Settings.
 3. User selects an avatar. The system resolves that avatar's first uploaded
    photo as the hidden reference image.
-4. User chooses duration: `30 seconds` or `60 seconds`; default is `30 seconds`.
+4. User can use Normal mode or paste a script idea for Clipr to expand.
 5. The voice selector preloads the avatar's saved voice. User can select a
    different voice for this job only.
 6. User can optionally enable generated background music. The control is
@@ -658,7 +657,7 @@ Add environment overrides instead of hard-coding provider choices:
 Clipr scripts should:
 
 - start from one generated hook
-- stay in the selected duration target
+- be as long as needed to fully explain the idea
 - be written as one natural spoken avatar monologue
 - give the viewer a useful payoff
 - avoid direct product selling by default
@@ -700,7 +699,7 @@ The final job should preserve:
 - selected product ID and product snapshot
 - selected avatar ID, resolved avatar photo ID, and source image object
 - selected voice ID
-- selected duration target
+- generated script and scene duration estimate
 - selected hidden hook style/template IDs
 - filled hook
 - variables used
@@ -926,7 +925,7 @@ The durable job should track:
 
 - owner ID
 - product/avatar/voice selections
-- requested duration
+- generated script and scene duration estimate
 - hook/template choices
 - script
 - scene plan
@@ -1003,11 +1002,11 @@ After implementation:
 1. Run `npm run typecheck` from `web/`.
 2. Run `npm run lint` from `web/`.
 3. Run `npm test` from `web/`.
-4. Test Clipr with a saved product, selected avatar, default 30s duration, and a
-   selected voice.
+4. Test Clipr with a saved product, selected avatar, Normal mode, and a selected
+   voice.
 5. Test changing an avatar's saved voice updates the preloaded Clipr voice when
    that avatar is selected.
-6. Test 60s duration.
+6. Test Idea mode with a pasted script idea.
 7. Test generated avatar image and avatar video outputs save to R2 before final
    Clip save.
 8. Test the full generated script is passed to `prunaai/p-video-avatar`.

@@ -2,5 +2,5 @@ import { defaultCliprDurationSeconds } from "@/lib/clipstitchr/constants/default
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 
 export function getCliprDurationSeconds(value: unknown): CliprDurationSeconds {
-  return value === 60 ? 60 : defaultCliprDurationSeconds;
+  return value === 30 || value === 60 ? value : defaultCliprDurationSeconds;
 }

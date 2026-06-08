@@ -152,6 +152,7 @@ type ManualCliprProviderJobInput = {
   productDetails: string;
   productId: string;
   productName: string;
+  scriptIdea?: string;
   voiceId: string;
 };
 
@@ -650,6 +651,7 @@ function parseManualCliprProviderJobInput(
     productDetails: getString(input.productDetails, "Clipr product details"),
     productId: getString(input.productId, "Clipr product ID"),
     productName: getString(input.productName, "Clipr product name"),
+    scriptIdea: getOptionalString(input.scriptIdea),
     voiceId: getString(input.voiceId, "Clipr voice ID"),
   };
 }
@@ -1863,6 +1865,7 @@ async function processManualClipr({
     product,
     purpose: "clipr",
     replicate,
+    scriptIdea: input.scriptIdea,
     slideCount: 4,
   });
 

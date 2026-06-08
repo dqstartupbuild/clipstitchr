@@ -17,6 +17,7 @@ export type CliprClientJob = {
   avatarVideoProviderPredictionId?: string;
   music?: CliprMusicMetadata;
   voiceId: string;
+  scriptIdea?: string;
   targetDurationSeconds: CliprDurationSeconds;
   filledHook?: string;
   script?: string;

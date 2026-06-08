@@ -43,6 +43,7 @@ const clientJobFields = (job: {
   productId: string;
   productName: string;
   progress: number;
+  scriptIdea?: string;
   scenePlan: {
     estimatedDurationSeconds: number;
     generatedImageObject?: { contentType: string; key: string; size: number };
@@ -75,6 +76,7 @@ const clientJobFields = (job: {
   avatarVideoProviderPredictionId: job.avatarVideoProviderPredictionId,
   music: job.music,
   voiceId: job.voiceId,
+  scriptIdea: job.scriptIdea,
   targetDurationSeconds: job.targetDurationSeconds,
   filledHook: job.filledHook,
   script: job.script,
@@ -150,6 +152,7 @@ export const createQueued = mutation({
     avatarName: v.string(),
     avatarPhotoId: v.string(),
     voiceId: v.string(),
+    scriptIdea: v.optional(v.string()),
     targetDurationSeconds: cliprDurationSecondsValidator,
     createdAt: v.string(),
   },
@@ -198,6 +201,7 @@ export const createQueuedFromAutomation = mutation({
     avatarName: v.string(),
     avatarPhotoId: v.string(),
     voiceId: v.string(),
+    scriptIdea: v.optional(v.string()),
     targetDurationSeconds: cliprDurationSecondsValidator,
     createdAt: v.string(),
   },
@@ -250,6 +254,7 @@ export const createQueuedFromProvider = mutation({
     avatarName: v.string(),
     avatarPhotoId: v.string(),
     voiceId: v.string(),
+    scriptIdea: v.optional(v.string()),
     targetDurationSeconds: cliprDurationSecondsValidator,
     createdAt: v.string(),
   },
@@ -928,6 +933,7 @@ export const finalizeWithClip = mutation({
         avatarId: job.avatarId,
         avatarPhotoId: job.avatarPhotoId,
         voiceId: job.voiceId,
+        ...(job.scriptIdea ? { scriptIdea: job.scriptIdea } : {}),
         targetDurationSeconds: job.targetDurationSeconds,
         hookStyleKey: job.hookStyleKey,
         hookTemplateId: job.hookTemplateId,
@@ -1048,6 +1054,7 @@ export const finalizeWithClipFromMediaWorker = mutation({
         avatarId: job.avatarId,
         avatarPhotoId: job.avatarPhotoId,
         voiceId: job.voiceId,
+        ...(job.scriptIdea ? { scriptIdea: job.scriptIdea } : {}),
         targetDurationSeconds: job.targetDurationSeconds,
         hookStyleKey: job.hookStyleKey,
         hookTemplateId: job.hookTemplateId,

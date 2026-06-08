@@ -21,12 +21,13 @@ export const cliprDoc = {
     {
       title: "How Clipr works",
       body: [
-        "Clipr uses your saved product settings to understand the audience and topic. You choose the avatar, voice, length, and whether to generate music.",
+        "Clipr uses your saved product settings to understand the audience and topic. You choose the avatar, voice, and whether to generate music.",
       ],
       bullets: [
         "Choose a saved product.",
         "Choose an avatar to appear in the clip.",
-        "Choose a voice and a 30 or 60 second length.",
+        "Choose a voice.",
+        "Optionally paste a script idea for Clipr to turn into a full script.",
         "Optionally generate background music. This is off by default.",
         "Generate the avatar video.",
         "Save the result into the Content Library as a Clip.",

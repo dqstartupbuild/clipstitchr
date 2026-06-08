@@ -278,6 +278,7 @@ export default defineSchema({
     avatarName: v.string(),
     avatarPhotoId: v.string(),
     voiceId: v.string(),
+    scriptIdea: v.optional(v.string()),
     targetDurationSeconds: cliprDurationSecondsValidator,
     avatarImageObject: v.optional(r2ObjectValidator),
     avatarVideoObject: v.optional(r2ObjectValidator),

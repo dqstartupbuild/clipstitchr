@@ -2,12 +2,14 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CliprAvatarPanel } from "@/app/_components/clipr/CliprAvatarPanel";
-import { CliprDurationControl } from "@/app/_components/clipr/CliprDurationControl";
 import { CliprGenerationProgress } from "@/app/_components/clipr/CliprGenerationProgress";
 import { CliprJobResult } from "@/app/_components/clipr/CliprJobResult";
+import { CliprModeToggle } from "@/app/_components/clipr/CliprModeToggle";
 import { CliprMusicControl } from "@/app/_components/clipr/CliprMusicControl";
 import { CliprProductPanel } from "@/app/_components/clipr/CliprProductPanel";
+import { CliprScriptIdeaPanel } from "@/app/_components/clipr/CliprScriptIdeaPanel";
 import { CliprVoiceSelect } from "@/app/_components/clipr/CliprVoiceSelect";
+import { cliprScriptIdeaMaxLength } from "@/lib/clipstitchr/constants/cliprScriptIdeaMaxLength";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 import type { CliprClientJob } from "@/lib/clipstitchr/types/CliprClientJob";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
@@ -282,16 +284,11 @@ describe("Clipr components", () => {
     expect(emptyMarkup).toContain("Save a product in Settings");
   });
 
-  it("forwards duration, voice, and music control changes", () => {
-    const onDurationChange = vi.fn();
+  it("forwards voice and music control changes", () => {
     const onVoiceChange = vi.fn();
     const onMusicChange = vi.fn();
     const onClearTrack = vi.fn();
     const selectedTrack = createTrack();
-    const durationTree = CliprDurationControl({
-      onChange: onDurationChange,
-      value: 30,
-    });
     const voiceTree = CliprVoiceSelect({
       onVoiceChange,
       value: "Unknown voice",
@@ -303,13 +300,6 @@ describe("Clipr components", () => {
       onSelectTrack: vi.fn(),
       selectedTrack,
     });
-    const [durationButton] = findElements(
-      durationTree,
-      (element) =>
-        element.type === "button" &&
-        Array.isArray(element.props?.children) &&
-        element.props.children[0] === 60,
-    );
     const [voiceSelect] = findElements(
       voiceTree,
       (element) =>
@@ -327,7 +317,6 @@ describe("Clipr components", () => {
     const voiceMarkup = renderToStaticMarkup(voiceTree);
     const musicMarkup = renderToStaticMarkup(musicTree);
 
-    (durationButton.props.onClick as () => void)();
     (voiceSelect.props.onChange as (event: {
       target: { value: string };
     }) => void)({ target: { value: "Puck (Male)" } });
@@ -336,12 +325,51 @@ describe("Clipr components", () => {
     }) => void)({ currentTarget: { checked: false } });
     (clearButton.props.onClick as () => void)();
 
-    expect(onDurationChange).toHaveBeenCalledWith(60);
     expect(onVoiceChange).toHaveBeenCalledWith("Puck (Male)");
     expect(onMusicChange).toHaveBeenCalledWith(false);
     expect(onClearTrack).toHaveBeenCalledOnce();
     expect(voiceMarkup).toContain("Preview Zephyr");
     expect(musicMarkup).toContain("Bright Hook");
     expect(musicMarkup).toContain("Select music track_1");
+  });
+
+  it("forwards Clipr mode and script idea changes", () => {
+    const onModeChange = vi.fn();
+    const onScriptIdeaChange = vi.fn();
+    const modeTree = CliprModeToggle({
+      onChange: onModeChange,
+      value: "normal",
+    });
+    const scriptIdeaTree = CliprScriptIdeaPanel({
+      onChange: onScriptIdeaChange,
+      value: "Founder confession",
+    });
+    const [ideaButton] = findElements(
+      modeTree,
+      (element) =>
+        element.type === "button" && element.props?.children === "Idea",
+    );
+    const [textarea] = findElements(
+      scriptIdeaTree,
+      (element) => element.type === "textarea",
+    );
+    const markup = renderToStaticMarkup(
+      <>
+        {modeTree}
+        {scriptIdeaTree}
+      </>,
+    );
+
+    (ideaButton.props.onClick as () => void)();
+    (textarea.props.onChange as (event: {
+      currentTarget: { value: string };
+    }) => void)({ currentTarget: { value: "New idea" } });
+
+    expect(onModeChange).toHaveBeenCalledWith("idea");
+    expect(onScriptIdeaChange).toHaveBeenCalledWith("New idea");
+    expect(textarea.props.maxLength).toBe(cliprScriptIdeaMaxLength);
+    expect(markup).toContain("Normal");
+    expect(markup).toContain("Idea");
+    expect(markup).toContain("Founder confession");
   });
 });

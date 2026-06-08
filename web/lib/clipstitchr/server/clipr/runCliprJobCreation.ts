@@ -72,6 +72,7 @@ export async function runCliprJobCreation({
       productDetails: documents.product.productDetails,
       productId: documents.product.id,
       productName: documents.product.name,
+      scriptIdea: input.scriptIdea,
       voiceId: input.voiceId,
     }),
     createdAt,

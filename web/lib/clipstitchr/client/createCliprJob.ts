@@ -8,6 +8,7 @@ type CreateCliprJobOptions = {
   jobId: string;
   musicTrackId?: string;
   productId: string;
+  scriptIdea?: string;
   voiceId: string;
 };
 

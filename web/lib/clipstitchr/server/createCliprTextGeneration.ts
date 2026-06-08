@@ -18,12 +18,14 @@ export async function createCliprTextGeneration({
   product,
   purpose,
   replicate,
+  scriptIdea,
   slideCount,
 }: {
   durationSeconds: CliprDurationSeconds;
   product: ProductProfile;
   purpose: CliprTextPurpose;
   replicate: ReplicateClient;
+  scriptIdea?: string;
   slideCount: number;
 }) {
   const providerModel = getCliprHookModelId();
@@ -40,11 +42,12 @@ export async function createCliprTextGeneration({
         fillers: getCliprProductPlaceholderFillers(product),
         product,
         purpose,
+        scriptIdea,
         slideCount,
       }),
       system_prompt: getCliprTextSystemPrompt(purpose),
       temperature: 0.65,
-      max_completion_tokens: 1200,
+      max_completion_tokens: purpose === "clipr" ? 1800 : 1200,
     },
   });
   const outputText = await getCompletedReplicatePredictionOutputText({
@@ -55,13 +58,13 @@ export async function createCliprTextGeneration({
 
   return {
     ...parseCliprTextGenerationOutput({
-    candidates,
-    durationSeconds,
-    outputText,
-    providerModel,
-    product,
-    purpose,
-    slideCount,
+      candidates,
+      durationSeconds,
+      outputText,
+      providerModel,
+      product,
+      purpose,
+      slideCount,
     }),
     providerPredictionId: prediction.id,
   };
