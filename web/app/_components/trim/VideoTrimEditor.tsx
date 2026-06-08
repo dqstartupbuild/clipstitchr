@@ -43,7 +43,7 @@ export function VideoTrimEditor({
   };
 
   return (
-    <div className="rounded-lg border border-border bg-surface-elevated p-3">
+    <div className="min-w-0 max-w-full overflow-hidden rounded-lg border border-border bg-surface-elevated p-3">
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
           {title}
@@ -57,12 +57,12 @@ export function VideoTrimEditor({
           onChange={onChange}
         />
       </div>
-      <div className="mt-1 flex items-center justify-between gap-3 text-xs font-semibold text-text-tertiary">
+      <div className="mt-1 flex flex-wrap items-center justify-between gap-3 text-xs font-semibold text-text-tertiary">
         <span>Start {formatDuration(value.start)}</span>
         <span>End {formatDuration(value.end)}</span>
       </div>
       {showActions ? (
-        <div className="mt-3 flex justify-end gap-2">
+        <div className="mt-3 flex flex-wrap justify-end gap-2">
           <Button type="button" variant="subtle" size="sm" onClick={onCancel}>
             Cancel
           </Button>

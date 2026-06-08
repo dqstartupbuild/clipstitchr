@@ -128,6 +128,8 @@ describe("VideoClipMusicPreview", () => {
     );
 
     expect(root.props.className).toContain("aspect-[9/16]");
+    expect(root.props.className).toContain("min-w-0");
+    expect(root.props.className).toContain("max-w-full");
   });
 
   it("syncs music during active playback and ignores rejected audio play", async () => {

@@ -177,17 +177,17 @@ export function VideoClipEditDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/60 px-2 py-3 sm:items-center sm:px-4 sm:py-6"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="video-clip-edit-dialog-title"
-        className="max-h-full w-full max-w-5xl overflow-y-auto rounded-lg bg-white shadow-xl"
+        className="max-h-full w-full max-w-[calc(100vw-1rem)] min-w-0 overflow-x-hidden overflow-y-auto rounded-lg bg-white shadow-xl sm:max-w-5xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
+        <div className="flex min-w-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">Edit clip</p>
             <h2
@@ -216,8 +216,8 @@ export function VideoClipEditDialog({
             />
           </div>
         </div>
-        <div className="grid gap-5 p-5 lg:grid-cols-[300px_minmax(0,1fr)]">
-          <div className="flex flex-col gap-4">
+        <div className="grid min-w-0 max-w-full gap-4 p-4 sm:gap-5 sm:p-5 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">
+          <div className="flex min-w-0 flex-col gap-4">
             <VideoClipMusicPreview
               src={videoUrl}
               posterSrc={posterUrl}
@@ -231,7 +231,7 @@ export function VideoClipEditDialog({
               trimRange={activeTrimRange}
               onLoadPreview={onLoadPreview}
             />
-            <div className="rounded-lg border border-border bg-surface-elevated p-3">
+            <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface-elevated p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center rounded-md border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-semibold text-accent-dark">
                   {getVideoClipBadgeLabel(clip)}
@@ -240,27 +240,27 @@ export function VideoClipEditDialog({
                   {clip.hasAudio ? "Audio" : "No audio"}
                 </span>
               </div>
-              <p className="mt-3 text-sm font-semibold text-text-primary">
+              <p className="mt-3 break-words text-sm font-semibold text-text-primary [overflow-wrap:anywhere]">
                 {clip.width} x {clip.height} . {formatDuration(displayDuration)}
               </p>
               <p className="mt-1 text-xs text-text-tertiary">
                 {formatBytes(clip.size)}
               </p>
               {productName ? (
-                <p className="mt-2 text-xs font-semibold text-text-secondary">
+                <p className="mt-2 break-words text-xs font-semibold text-text-secondary [overflow-wrap:anywhere]">
                   {productName}
                 </p>
               ) : null}
             </div>
           </div>
-          <div className="flex flex-col gap-4">
-            <section className="rounded-lg border border-border p-4">
+          <div className="flex min-w-0 flex-col gap-4">
+            <section className="min-w-0 overflow-hidden rounded-lg border border-border p-4">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-sm font-bold text-text-primary">
                   Details
                 </h3>
               </div>
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div className="mt-4 grid min-w-0 gap-4 md:grid-cols-2">
                 <label className="block md:col-span-2">
                   <span className="text-sm font-semibold text-text-primary">
                     Title

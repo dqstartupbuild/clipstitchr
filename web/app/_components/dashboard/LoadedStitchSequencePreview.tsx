@@ -166,11 +166,11 @@ export function LoadedStitchSequencePreview({
   };
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-[280px] min-w-0">
       <div
         ref={stageRef}
         aria-label={isPlaying ? "Pause stitch preview" : "Play stitch preview"}
-        className="relative aspect-[9/16] overflow-hidden rounded-lg bg-slate-950"
+        className="relative aspect-[9/16] w-full overflow-hidden rounded-lg bg-slate-950"
         role="button"
         style={{ containerType: "size" }}
         tabIndex={0}
@@ -273,7 +273,7 @@ export function LoadedStitchSequencePreview({
           />
         </div>
       </div>
-      <div className="mt-3 flex items-center gap-3">
+      <div className="mt-3 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         <input
           type="range"
           aria-label="Preview time"
@@ -284,7 +284,7 @@ export function LoadedStitchSequencePreview({
           value={Math.min(currentTime, totalDuration)}
           onChange={(event) => seekTo(Number(event.target.value))}
         />
-        <p className="w-24 text-right text-xs font-semibold text-text-tertiary">
+        <p className="shrink-0 whitespace-nowrap text-right text-[11px] font-semibold text-text-tertiary sm:text-xs">
           {formatDuration(Math.min(currentTime, totalDuration))} /{" "}
           {formatDuration(totalDuration)}
         </p>

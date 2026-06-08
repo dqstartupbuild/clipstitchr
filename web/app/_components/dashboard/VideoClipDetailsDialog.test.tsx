@@ -359,6 +359,7 @@ describe("VideoClipDetailsDialog", () => {
     )[0];
 
     expect(dialog.props.className).toContain("overflow-x-hidden");
+    expect(dialog.props.className).toContain("max-w-[calc(100vw-1rem)]");
     expect(contentGrid.props.className).toContain("min-w-0");
     expect(titleText.props.className).toContain("break-words");
   });

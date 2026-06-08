@@ -43,7 +43,7 @@ export function AssetTagEditor({
   };
 
   return (
-    <div>
+    <div className="min-w-0">
       <label
         htmlFor="asset-tags-input"
         className="text-sm font-semibold text-text-primary"
@@ -51,11 +51,11 @@ export function AssetTagEditor({
         Tags
       </label>
       {normalizedTags.length ? (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex min-w-0 flex-wrap gap-2">
           {normalizedTags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-text-secondary"
+              className="inline-flex min-w-0 max-w-full items-center gap-1 break-all rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-text-secondary"
             >
               {tag}
               {tag === requiredTag ? null : (

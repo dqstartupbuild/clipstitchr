@@ -28,7 +28,7 @@ export function StitchSequencePreview({
   if (!ugcClip || !demoClip) {
     return (
       <div
-        className="aspect-[9/16] overflow-hidden rounded-lg bg-slate-950 bg-cover bg-center"
+        className="mx-auto aspect-[9/16] w-full max-w-[280px] min-w-0 overflow-hidden rounded-lg bg-slate-950 bg-cover bg-center"
         style={posterUrl ? { backgroundImage: `url(${posterUrl})` } : undefined}
       >
         <button

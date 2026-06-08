@@ -129,7 +129,7 @@ describe("POST /api/clipr/text", () => {
     });
     expect(mocks.createCliprTextGeneration).toHaveBeenCalledWith(
       expect.objectContaining({
-        durationSeconds: 30,
+        durationSeconds: 60,
         product: expect.objectContaining({ name: "Launch Kit" }),
         purpose: "swipr",
         replicate: { provider: "replicate" },

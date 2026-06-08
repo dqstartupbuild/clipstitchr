@@ -60,7 +60,7 @@ export function StitchSourceSettingsPanel({
   onUgcTrimChange,
 }: StitchSourceSettingsPanelProps) {
   return (
-    <section className="rounded-lg border border-border p-4">
+    <section className="min-w-0 overflow-hidden rounded-lg border border-border p-4">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-text-primary">Sources</h3>
@@ -74,7 +74,7 @@ export function StitchSourceSettingsPanel({
           {error}
         </div>
       ) : null}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2">
         <StitchSourceClipSelect
           clips={ugcClips}
           fallbackClip={ugcFallbackClip}
@@ -90,7 +90,7 @@ export function StitchSourceSettingsPanel({
           onChange={onDemoClipChange}
         />
       </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid min-w-0 gap-3 sm:grid-cols-2">
         <StitchSourceTrimControl
           duration={ugcTrimDuration}
           title="UGC trim"

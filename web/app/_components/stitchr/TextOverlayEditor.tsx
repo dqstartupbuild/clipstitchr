@@ -86,7 +86,7 @@ export function TextOverlayEditor({
 
   if (!textOverlays.length) {
     return (
-      <div className="mt-4 border-t border-border pt-4">
+      <div className="mt-4 min-w-0 border-t border-border pt-4">
         <Button
           type="button"
           variant="secondary"
@@ -101,8 +101,8 @@ export function TextOverlayEditor({
   }
 
   return (
-    <div className="mt-4 border-t border-border pt-4">
-      <div className="mb-3 flex items-start justify-between gap-2">
+    <div className="mt-4 min-w-0 border-t border-border pt-4">
+      <div className="mb-3 flex min-w-0 flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-1 flex-wrap gap-2">
           {textOverlays.map((textOverlay, index) => {
             const textOverlayId = getTextOverlayId(textOverlay, index);

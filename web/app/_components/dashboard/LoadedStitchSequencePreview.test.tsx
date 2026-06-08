@@ -167,6 +167,7 @@ describe("LoadedStitchSequencePreview", () => {
         name: "UGC",
       }),
     });
+    const root = tree as { props: Record<string, unknown> };
     const previewButton = findElements(
       tree,
       (element) => element.props?.role === "button",
@@ -182,9 +183,21 @@ describe("LoadedStitchSequencePreview", () => {
       tree,
       (element) => element.type === "input" && element.props?.type === "range",
     )[0];
+    const scrubberRow = findElements(
+      tree,
+      (element) =>
+        element.type === "div" &&
+        String(element.props?.className).includes(
+          "grid-cols-[minmax(0,1fr)_auto]",
+        ),
+    )[0];
     const preventDefault = vi.fn();
 
+    expect(root.props.className).toContain("max-w-[280px]");
+    expect(root.props.className).toContain("min-w-0");
     expect(previewButton.props["aria-label"]).toBe("Play stitch preview");
+    expect(previewButton.props.className).toContain("w-full");
+    expect(scrubberRow.props.className).toContain("min-w-0");
     expect(videos[0].props.muted).toBe(true);
     expect(videos[1].props.muted).toBe(true);
     expect(mocks.useSequenceVideoPlayer).toHaveBeenCalledWith({

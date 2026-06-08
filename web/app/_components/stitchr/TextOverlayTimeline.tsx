@@ -124,7 +124,7 @@ export function TextOverlayTimeline({
   );
 
   return (
-    <div>
+    <div className="min-w-0">
       <div className="mb-2 flex items-center justify-between text-xs font-semibold text-text-tertiary">
         <span>{formatDuration(textOverlay.startTime)}</span>
         <span>{formatDuration(textOverlay.endTime)}</span>

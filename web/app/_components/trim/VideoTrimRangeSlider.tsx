@@ -47,7 +47,7 @@ export function VideoTrimRangeSlider({
   };
 
   return (
-    <div className="relative h-11">
+    <div className="relative h-11 min-w-0 max-w-full">
       <div className="absolute left-0 right-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-slate-200" />
       <div
         aria-hidden

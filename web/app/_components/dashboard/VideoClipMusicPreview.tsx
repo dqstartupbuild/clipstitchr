@@ -177,7 +177,7 @@ export function VideoClipMusicPreview({
 
   return (
     <div
-      className="video-clip-preview-frame aspect-[9/16] overflow-hidden rounded-lg bg-slate-950"
+      className="video-clip-preview-frame aspect-[9/16] min-w-0 max-w-full overflow-hidden rounded-lg bg-slate-950"
       onBlur={() => setIsHovered(false)}
       onFocus={() => setIsHovered(true)}
       onMouseEnter={() => setIsHovered(true)}

@@ -45,8 +45,8 @@ export function CliprMusicControls({
     showSaveButton && (Boolean(music) || hasUnsavedChanges);
 
   return (
-    <div className="rounded-lg border border-border bg-surface-elevated p-3">
-      <div className="flex items-center justify-between gap-3">
+    <div className="min-w-0 max-w-full overflow-hidden rounded-lg border border-border bg-surface-elevated p-3">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
         <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
           Music
         </p>
@@ -65,18 +65,18 @@ export function CliprMusicControls({
 
       {music ? (
         <div className="mt-3 flex flex-col gap-3">
-          <label className="flex items-start gap-3 rounded-lg border border-border bg-white p-3">
+          <label className="flex min-w-0 items-start gap-3 rounded-lg border border-border bg-white p-3">
             <input
               type="checkbox"
               checked={enabled}
               className="mt-1 h-4 w-4 accent-accent"
               onChange={(event) => onEnabledChange(event.currentTarget.checked)}
             />
-            <span className="text-sm leading-6 text-text-secondary">
+            <span className="min-w-0 text-sm leading-6 text-text-secondary">
               Include music when exporting this Clip.
             </span>
           </label>
-          <label className="block rounded-lg border border-border bg-white p-3">
+          <label className="block min-w-0 rounded-lg border border-border bg-white p-3">
             <span className="text-sm font-semibold text-text-primary">
               Music volume
             </span>

@@ -94,6 +94,8 @@ describe("VideoTrimEditor", () => {
     await mocks.buttons[1]?.onClick?.();
 
     expect(markup).toContain("UGC trim");
+    expect(markup).toContain("min-w-0 max-w-full overflow-hidden");
+    expect(markup).toContain("flex flex-wrap");
     expect(markup).toContain("Start 00:00");
     expect(markup).toContain("End 00:12");
     expect(markup).toContain("Slider:trim-id");

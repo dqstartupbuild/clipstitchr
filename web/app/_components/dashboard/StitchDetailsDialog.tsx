@@ -75,17 +75,17 @@ export function StitchDetailsDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/60 px-2 py-3 sm:items-center sm:px-4 sm:py-6"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="stitch-details-dialog-title"
-        className="max-h-full w-full max-w-4xl overflow-y-auto rounded-lg bg-white shadow-xl"
+        className="max-h-full w-full max-w-[calc(100vw-1rem)] min-w-0 overflow-x-hidden overflow-y-auto rounded-lg bg-white shadow-xl sm:max-w-4xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
+        <div className="flex min-w-0 items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-accent-dark">
               Stitch details
@@ -105,8 +105,8 @@ export function StitchDetailsDialog({
             onClick={onClose}
           />
         </div>
-        <div className="grid gap-5 p-5 md:grid-cols-[280px_minmax(0,1fr)]">
-          <div className="grid gap-3">
+        <div className="grid min-w-0 max-w-full gap-4 p-4 sm:gap-5 sm:p-5 md:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
+          <div className="grid min-w-0 gap-3">
             <StitchSequencePreview
               demoClip={demoClip}
               isLoading={isLoadingPreview}
@@ -120,8 +120,8 @@ export function StitchDetailsDialog({
                 {previewError}
               </p>
             ) : null}
-            </div>
-          <div className="flex flex-col gap-5">
+          </div>
+          <div className="flex min-w-0 flex-col gap-5">
             <div className="flex flex-wrap items-center gap-2">
               <Badge>{stitch.isPosted ? "POSTED" : "STITCH"}</Badge>
               <span className="text-xs font-semibold text-text-tertiary">
@@ -132,16 +132,16 @@ export function StitchDetailsDialog({
               <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
                 Title
               </p>
-              <p className="mt-1 text-sm font-semibold text-text-primary">
+              <p className="mt-1 break-words text-sm font-semibold text-text-primary [overflow-wrap:anywhere]">
                 {stitch.name}
               </p>
             </div>
             {detailItems.map((item) => (
-              <div key={item.label}>
+              <div key={item.label} className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
                   {item.label}
                 </p>
-                <p className="mt-1 text-sm leading-6 text-text-secondary">
+                <p className="mt-1 break-words text-sm leading-6 text-text-secondary [overflow-wrap:anywhere]">
                   {item.value}
                 </p>
               </div>
@@ -150,7 +150,7 @@ export function StitchDetailsDialog({
               <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
                 File
               </p>
-              <p className="mt-1 text-sm text-text-secondary">
+              <p className="mt-1 break-words text-sm text-text-secondary [overflow-wrap:anywhere]">
                 {stitch.width} x {stitch.height} .{" "}
                 {formatDuration(stitch.duration)} total . {fileSizeLabel}
               </p>

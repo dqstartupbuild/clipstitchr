@@ -134,6 +134,8 @@ describe("StitchSourceSettingsPanel", () => {
     mocks.playbackRateControls?.onUgcPlaybackRateChange(1);
 
     expect(markup).toContain("Sources");
+    expect(markup).toContain("min-w-0 overflow-hidden");
+    expect(markup).toContain("grid min-w-0");
     expect(markup).toContain("Source save failed.");
     expect(onUgcClipChange).toHaveBeenCalledWith("ugc_2");
     expect(onDemoClipChange).toHaveBeenCalledWith("demo_2");

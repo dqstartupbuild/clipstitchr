@@ -20,11 +20,11 @@ export function SourcePlaybackRateControls({
   onUgcPlaybackRateChange,
 }: SourcePlaybackRateControlsProps) {
   return (
-    <section className="mt-4 border-t border-border pt-4">
+    <section className="mt-4 min-w-0 border-t border-border pt-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <h3 className="text-sm font-semibold text-accent-dark">Speed</h3>
-        <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-          <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-3 lg:justify-end">
+          <div className="flex min-w-0 items-center gap-2">
             <span className="text-xs font-bold uppercase text-text-tertiary">
               UGC
             </span>
@@ -52,7 +52,7 @@ export function SourcePlaybackRateControls({
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <span className="text-xs font-bold uppercase text-text-tertiary">
               Demo
             </span>
