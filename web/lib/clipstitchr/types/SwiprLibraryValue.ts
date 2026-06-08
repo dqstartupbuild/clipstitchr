@@ -25,6 +25,7 @@ export type SaveSwiprSwipeInput = Omit<
 
 export type SwiprLibraryValue = {
   backgrounds: SwiprBackgroundAsset[];
+  postedSwipes: SwiprSwipe[];
   swipes: SwiprSwipe[];
   isLoading: boolean;
   isSavingBackground: boolean;

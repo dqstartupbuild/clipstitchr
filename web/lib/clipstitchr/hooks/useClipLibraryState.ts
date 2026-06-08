@@ -68,7 +68,16 @@ export function useClipLibraryState(): ClipLibraryValue {
   );
   const cliprClipDocumentsQuery = usePaginatedQuery(
     api.videoClips.listByLibraryKind,
-    isAuthenticated ? { kind: "clipr", refreshNonce, sortOrder } : "skip",
+    isAuthenticated
+      ? { kind: "clipr", postedStatus: "active", refreshNonce, sortOrder }
+      : "skip",
+    { initialNumItems: libraryMetadataPageSize },
+  );
+  const postedCliprClipDocumentsQuery = usePaginatedQuery(
+    api.videoClips.listByLibraryKind,
+    isAuthenticated
+      ? { kind: "clipr", postedStatus: "posted", refreshNonce, sortOrder }
+      : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const demoClipDocumentsQuery = usePaginatedQuery(
@@ -102,6 +111,7 @@ export function useClipLibraryState(): ClipLibraryValue {
   const clipDocuments = clipDocumentsQuery.results;
   const ugcClipDocuments = ugcClipDocumentsQuery.results;
   const cliprClipDocuments = cliprClipDocumentsQuery.results;
+  const postedCliprClipDocuments = postedCliprClipDocumentsQuery.results;
   const demoClipDocuments = demoClipDocumentsQuery.results;
   const swapClipDocuments = swapClipDocumentsQuery.results;
   const stitchDocuments = stitchDocumentsQuery.results;
@@ -151,6 +161,13 @@ export function useClipLibraryState(): ClipLibraryValue {
         createVideoClipMetadataFromConvexDocument(clip),
       ),
     [cliprClipDocuments],
+  );
+  const postedCliprClips = useMemo(
+    () =>
+      postedCliprClipDocuments.map((clip) =>
+        createVideoClipMetadataFromConvexDocument(clip),
+      ),
+    [postedCliprClipDocuments],
   );
   const demoClips = useMemo(
     () =>
@@ -723,6 +740,11 @@ export function useClipLibraryState(): ClipLibraryValue {
       cliprClipDocumentsQuery.loadMore(libraryMetadataPageSize);
     }
   }, [cliprClipDocumentsQuery]);
+  const loadMorePostedCliprClips = useCallback(() => {
+    if (postedCliprClipDocumentsQuery.status === "CanLoadMore") {
+      postedCliprClipDocumentsQuery.loadMore(libraryMetadataPageSize);
+    }
+  }, [postedCliprClipDocumentsQuery]);
   const loadMoreDemoClips = useCallback(() => {
     if (demoClipDocumentsQuery.status === "CanLoadMore") {
       demoClipDocumentsQuery.loadMore(libraryMetadataPageSize);
@@ -748,6 +770,7 @@ export function useClipLibraryState(): ClipLibraryValue {
     (clipDocumentsQuery.status === "LoadingFirstPage" ||
       ugcClipDocumentsQuery.status === "LoadingFirstPage" ||
       cliprClipDocumentsQuery.status === "LoadingFirstPage" ||
+      postedCliprClipDocumentsQuery.status === "LoadingFirstPage" ||
       demoClipDocumentsQuery.status === "LoadingFirstPage" ||
       swapClipDocumentsQuery.status === "LoadingFirstPage" ||
       stitchDocumentsQuery.status === "LoadingFirstPage" ||
@@ -762,27 +785,45 @@ export function useClipLibraryState(): ClipLibraryValue {
     videoGroups: {
       clipr: {
         clips: cliprClips,
+        postedClips: postedCliprClips,
         hasMoreItems: cliprClipDocumentsQuery.status === "CanLoadMore",
+        hasMorePostedItems:
+          postedCliprClipDocumentsQuery.status === "CanLoadMore",
         isLoadingMoreItems: cliprClipDocumentsQuery.status === "LoadingMore",
+        isLoadingMorePostedItems:
+          postedCliprClipDocumentsQuery.status === "LoadingMore",
         loadMoreItems: loadMoreCliprClips,
+        loadMorePostedItems: loadMorePostedCliprClips,
       },
       demo: {
         clips: demoClips,
+        postedClips: [],
         hasMoreItems: demoClipDocumentsQuery.status === "CanLoadMore",
+        hasMorePostedItems: false,
         isLoadingMoreItems: demoClipDocumentsQuery.status === "LoadingMore",
+        isLoadingMorePostedItems: false,
         loadMoreItems: loadMoreDemoClips,
+        loadMorePostedItems: () => undefined,
       },
       swapr: {
         clips: swapClips,
+        postedClips: [],
         hasMoreItems: swapClipDocumentsQuery.status === "CanLoadMore",
+        hasMorePostedItems: false,
         isLoadingMoreItems: swapClipDocumentsQuery.status === "LoadingMore",
+        isLoadingMorePostedItems: false,
         loadMoreItems: loadMoreSwapClips,
+        loadMorePostedItems: () => undefined,
       },
       ugc: {
         clips: ugcClips,
+        postedClips: [],
         hasMoreItems: ugcClipDocumentsQuery.status === "CanLoadMore",
+        hasMorePostedItems: false,
         isLoadingMoreItems: ugcClipDocumentsQuery.status === "LoadingMore",
+        isLoadingMorePostedItems: false,
         loadMoreItems: loadMoreUgcClips,
+        loadMorePostedItems: () => undefined,
       },
     },
     isLoading: isAuthLoading || isLoadingFirstPage,

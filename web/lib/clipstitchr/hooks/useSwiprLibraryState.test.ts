@@ -195,12 +195,16 @@ describe("useSwiprLibraryState", () => {
       isAuthenticated: true,
       isLoading: false,
     });
-    mocks.useQuery.mockImplementation((queryId: string) => {
+    mocks.useQuery.mockImplementation((queryId: string, args) => {
       if (queryId === "swiprBackgrounds.list") {
         return [createBackgroundDocument()];
       }
 
       if (queryId === "swipes.list") {
+        if (args?.postedStatus === "posted") {
+          return [];
+        }
+
         return [createSwipeDocument()];
       }
 
@@ -254,9 +258,17 @@ describe("useSwiprLibraryState", () => {
     const state = useSwiprLibraryState();
 
     expect(state.swipes).toEqual([{ id: "swipe_1", name: "Mapped swipe" }]);
+    expect(state.postedSwipes).toEqual([]);
     expect(state.isLoading).toBe(false);
     expect(mocks.useQuery).toHaveBeenCalledWith("swiprBackgrounds.list", {});
-    expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", {});
+    expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", {
+      postedStatus: "active",
+      refreshNonce: 0,
+    });
+    expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", {
+      postedStatus: "posted",
+      refreshNonce: 0,
+    });
   });
 
   it("skips library queries while signed out", () => {

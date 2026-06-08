@@ -209,9 +209,13 @@ function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile 
 function createVideoGroup(clips: VideoClipMetadata[] = []) {
   return {
     clips,
+    postedClips: [],
     hasMoreItems: false,
+    hasMorePostedItems: false,
     isLoadingMoreItems: false,
+    isLoadingMorePostedItems: false,
     loadMoreItems: vi.fn(),
+    loadMorePostedItems: vi.fn(),
   };
 }
 

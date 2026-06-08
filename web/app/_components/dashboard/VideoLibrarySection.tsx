@@ -12,6 +12,7 @@ import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
+import type { LibraryPostedStatusFilter } from "@/lib/clipstitchr/types/LibraryPostedStatusFilter";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -29,6 +30,8 @@ type VideoLibrarySectionProps = {
   isCreatingAvatarFromClip?: boolean;
   isLoadingMoreItems?: boolean;
   loadMoreLabel?: string;
+  statusCounts?: Record<LibraryPostedStatusFilter, number>;
+  statusFilter?: LibraryPostedStatusFilter;
   totalCount?: number;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onDelete: (id: string) => void | Promise<void>;
@@ -41,6 +44,7 @@ type VideoLibrarySectionProps = {
   ) => Promise<CliprMusicMetadata | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadMoreItems?: () => void;
+  onStatusFilterChange?: (status: LibraryPostedStatusFilter) => void;
   onUpdateCliprMusic?: (
     clip: VideoClipMetadata,
     music: CliprMusicMetadata | null,
@@ -71,12 +75,15 @@ export function VideoLibrarySection({
   isCreatingAvatarFromClip = false,
   isLoadingMoreItems = false,
   loadMoreLabel = "Load more videos",
+  statusCounts,
+  statusFilter = "active",
   totalCount,
   onLoadClip,
   onLoadPoster,
   onDelete,
   onGenerateCliprMusic,
   onLoadMoreItems,
+  onStatusFilterChange,
   onUpdateCliprMusic,
   onUpdateMetadata,
   onUpdateTrim,
@@ -100,6 +107,14 @@ export function VideoLibrarySection({
     itemPluralName: "videos",
     onDelete,
   });
+  const statusFilterOptions: {
+    label: string;
+    value: LibraryPostedStatusFilter;
+  }[] = [
+    { label: "Active", value: "active" },
+    { label: "Posted", value: "posted" },
+    { label: "All", value: "all" },
+  ];
 
   return (
     <section id={id}>
@@ -110,22 +125,51 @@ export function VideoLibrarySection({
             {totalCount ?? clips.length}
           </span>
         </div>
-        {clips.length ? (
-          <LibraryBatchActionBar
-            areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
-            isDeletingSelected={batchDelete.isDeletingSelected}
-            isSelecting={batchDelete.isSelecting}
-            selectedCount={batchDelete.selectedCount}
-            visibleItemCount={batchDelete.visibleItemCount}
-            onClearSelection={batchDelete.clearSelection}
-            onDeleteSelected={() => {
-              void batchDelete.deleteSelectedItems();
-            }}
-            onSelectVisible={batchDelete.selectVisibleItems}
-            onStartSelecting={batchDelete.startSelecting}
-            onStopSelecting={batchDelete.stopSelecting}
-          />
-        ) : null}
+        <div className="flex flex-col gap-2 sm:items-end">
+          {onStatusFilterChange ? (
+            <div
+              className="inline-flex flex-wrap gap-1 rounded-lg border border-border bg-slate-100 p-1"
+              aria-label={`${title} status filter`}
+            >
+              {statusFilterOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => onStatusFilterChange(option.value)}
+                  className={[
+                    "h-8 rounded-md px-3 text-sm font-semibold transition-colors",
+                    statusFilter === option.value
+                      ? "bg-white text-accent shadow-sm"
+                      : "text-text-secondary hover:text-text-primary",
+                  ].join(" ")}
+                >
+                  {option.label}
+                  {statusCounts ? (
+                    <span className="ml-1 text-xs text-text-tertiary">
+                      {statusCounts[option.value]}
+                    </span>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          {clips.length ? (
+            <LibraryBatchActionBar
+              areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
+              isDeletingSelected={batchDelete.isDeletingSelected}
+              isSelecting={batchDelete.isSelecting}
+              selectedCount={batchDelete.selectedCount}
+              visibleItemCount={batchDelete.visibleItemCount}
+              onClearSelection={batchDelete.clearSelection}
+              onDeleteSelected={() => {
+                void batchDelete.deleteSelectedItems();
+              }}
+              onSelectVisible={batchDelete.selectVisibleItems}
+              onStartSelecting={batchDelete.startSelecting}
+              onStopSelecting={batchDelete.stopSelecting}
+            />
+          ) : null}
+        </div>
       </div>
       {clips.length ? (
         <>

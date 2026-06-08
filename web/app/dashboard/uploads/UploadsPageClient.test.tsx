@@ -239,6 +239,13 @@ describe("UploadsPageClient", () => {
       cliprMetadata: { prompt: "Hook" } as unknown as VideoClipMetadata["cliprMetadata"],
       name: "Clipr hook",
     });
+    const postedCliprClip = createClip("posted_clipr_1", "ugc", {
+      cliprMetadata: { prompt: "Posted Hook" } as unknown as VideoClipMetadata["cliprMetadata"],
+      createdAt: "2026-05-21T00:00:00.000Z",
+      isPosted: true,
+      name: "Posted Clipr hook",
+      postedAt: "2026-05-21T00:00:00.000Z",
+    });
     const demoClip = createClip("demo_1", "demo", {
       name: "Demo match",
       productId: "product_1",
@@ -308,27 +315,43 @@ describe("UploadsPageClient", () => {
       videoGroups: {
         clipr: {
           clips: [cliprClip],
+          postedClips: [postedCliprClip],
           hasMoreItems: true,
+          hasMorePostedItems: true,
           isLoadingMoreItems: false,
+          isLoadingMorePostedItems: false,
           loadMoreItems: vi.fn(),
+          loadMorePostedItems: vi.fn(),
         },
         demo: {
           clips: [demoClip],
+          postedClips: [],
           hasMoreItems: true,
+          hasMorePostedItems: false,
           isLoadingMoreItems: false,
+          isLoadingMorePostedItems: false,
           loadMoreItems: vi.fn(),
+          loadMorePostedItems: vi.fn(),
         },
         swapr: {
           clips: [swapClip],
+          postedClips: [],
           hasMoreItems: true,
+          hasMorePostedItems: false,
           isLoadingMoreItems: false,
+          isLoadingMorePostedItems: false,
           loadMoreItems: vi.fn(),
+          loadMorePostedItems: vi.fn(),
         },
         ugc: {
           clips: [ugcClip],
+          postedClips: [],
           hasMoreItems: true,
+          hasMorePostedItems: false,
           isLoadingMoreItems: false,
+          isLoadingMorePostedItems: false,
           loadMoreItems: vi.fn(),
+          loadMorePostedItems: vi.fn(),
         },
       },
     };
@@ -350,6 +373,22 @@ describe("UploadsPageClient", () => {
       loadBackgroundBlob: vi.fn(),
       loadSwipePoster: vi.fn(),
       removeSwipe: vi.fn(),
+      postedSwipes: [
+        {
+          backgroundId: "background_1",
+          createdAt: "2026-05-21T00:00:00.000Z",
+          id: "posted_swipe_1",
+          isPosted: true,
+          name: "Posted Swipe match",
+          postedAt: "2026-05-21T00:00:00.000Z",
+          productContext: "Context",
+          productName: "Launch Kit",
+          productSourceId: "product_1",
+          productSourceType: "saved-product",
+          slides: [],
+          updatedAt: "2026-05-21T00:00:00.000Z",
+        },
+      ],
       swipes: [
         {
           backgroundId: "background_1",
@@ -530,9 +569,13 @@ describe("UploadsPageClient", () => {
             }),
             defaultDemoClip,
           ],
+          postedClips: [],
           hasMoreItems: false,
+          hasMorePostedItems: false,
           isLoadingMoreItems: false,
+          isLoadingMorePostedItems: false,
           loadMoreItems: vi.fn(),
+          loadMorePostedItems: vi.fn(),
         },
       },
     };
@@ -584,7 +627,7 @@ describe("UploadsPageClient", () => {
 
   it("filters the Stitches tab to posted stitches", () => {
     const { elements } = renderUploadsPage({
-      stateValues: ["stitches", "posted", "all", "", "posted"],
+      stateValues: ["stitches", "posted", "all", "", "active", "posted"],
     });
     const section = findByProp(elements, "statusFilter", "posted");
 
@@ -608,6 +651,60 @@ describe("UploadsPageClient", () => {
 
     expect(mocks.library.loadMorePostedStitches).toHaveBeenCalledTimes(1);
     expect(mocks.library.loadMoreStitches).not.toHaveBeenCalled();
+  });
+
+  it("filters the Clips tab to posted Clipr clips", () => {
+    const { elements } = renderUploadsPage({
+      stateValues: ["clips", "", "all", "", "posted"],
+    });
+    const section = findByProp(elements, "id", "clips");
+    const cliprGroup = (mocks.library.videoGroups as Record<string, Record<string, unknown>>)
+      .clipr;
+
+    expect(section?.props).toEqual(
+      expect.objectContaining({
+        clips: [
+          expect.objectContaining({
+            id: "posted_clipr_1",
+          }),
+        ],
+        hasMoreItems: true,
+        statusCounts: {
+          active: 1,
+          all: 2,
+          posted: 1,
+        },
+        statusFilter: "posted",
+      }),
+    );
+
+    (section?.props?.onLoadMoreItems as () => void)();
+
+    expect(cliprGroup.loadMorePostedItems).toHaveBeenCalledTimes(1);
+    expect(cliprGroup.loadMoreItems).not.toHaveBeenCalled();
+  });
+
+  it("filters the Swipes tab to posted Swipes", () => {
+    const { elements } = renderUploadsPage({
+      stateValues: ["swipes", "", "all", "", "active", "active", "posted"],
+    });
+    const section = findByProp(elements, "statusFilter", "posted");
+
+    expect(section?.props).toEqual(
+      expect.objectContaining({
+        statusCounts: {
+          active: 1,
+          all: 2,
+          posted: 1,
+        },
+        statusFilter: "posted",
+        swipes: [
+          expect.objectContaining({
+            id: "posted_swipe_1",
+          }),
+        ],
+      }),
+    );
   });
 
   it("renders clip and swap tabs without upload controls", () => {

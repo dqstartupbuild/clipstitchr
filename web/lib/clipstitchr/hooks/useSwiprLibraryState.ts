@@ -25,13 +25,22 @@ import { createId } from "@/lib/clipstitchr/utils/createId";
 
 export function useSwiprLibraryState(): SwiprLibraryValue {
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
+  const [refreshNonce, setRefreshNonce] = useState(0);
   const backgroundDocuments = useQuery(
     api.swiprBackgrounds.list,
     isAuthenticated ? {} : "skip",
   );
   const swipeDocuments = useQuery(
     api.swipes.list,
-    isAuthenticated ? {} : "skip",
+    isAuthenticated
+      ? { postedStatus: "active", refreshNonce }
+      : "skip",
+  );
+  const postedSwipeDocuments = useQuery(
+    api.swipes.list,
+    isAuthenticated
+      ? { postedStatus: "posted", refreshNonce }
+      : "skip",
   );
   const saveBackgroundMutation = useMutation(api.swiprBackgrounds.save);
   const saveSwipeMutation = useMutation(api.swipes.save);
@@ -45,7 +54,6 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
   const [isSavingBackground, setIsSavingBackground] = useState(false);
   const [isSavingSwipe, setIsSavingSwipe] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [refreshNonce, setRefreshNonce] = useState(0);
   const backgroundBlobCacheRef = useRef(new Map<string, Blob>());
   const backgroundDownloadPromisesRef = useRef(new Map<string, Promise<Blob>>());
   const backgroundDownloadQueueRef = useRef(Promise.resolve());
@@ -56,6 +64,17 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
         createSwiprSwipeFromConvexDocument(swipe),
       ) ?? [],
     [swipeDocuments],
+  );
+  const postedSwipes = useMemo(
+    () =>
+      postedSwipeDocuments?.map((swipe) =>
+        createSwiprSwipeFromConvexDocument(swipe),
+      ) ?? [],
+    [postedSwipeDocuments],
+  );
+  const allSwipeDocuments = useMemo(
+    () => [...(swipeDocuments ?? []), ...(postedSwipeDocuments ?? [])],
+    [postedSwipeDocuments, swipeDocuments],
   );
 
   const refresh = useCallback(async () => {
@@ -130,11 +149,11 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
 
   const loadSwipePoster = useCallback(
     async (id: string) => {
-      const swipeDocument = swipeDocuments?.find((swipe) => swipe.id === id);
+      const swipeDocument = allSwipeDocuments.find((swipe) => swipe.id === id);
 
       return await loadSwipePosterBlob(swipeDocument?.posterObject);
     },
-    [loadSwipePosterBlob, swipeDocuments],
+    [allSwipeDocuments, loadSwipePosterBlob],
   );
 
   const saveBackground = useCallback(
@@ -291,7 +310,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
       setError(null);
 
       try {
-        const swipeDocument = swipeDocuments?.find((swipe) => swipe.id === id);
+        const swipeDocument = allSwipeDocuments.find((swipe) => swipe.id === id);
 
         if (swipeDocument?.posterObject) {
           await deleteObjectsFromR2([swipeDocument.posterObject]);
@@ -309,7 +328,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
         throw nextError;
       }
     },
-    [refresh, removeSwipeMutation, swipeDocuments],
+    [allSwipeDocuments, refresh, removeSwipeMutation],
   );
 
   const updateSwipePostedStatus = useCallback(
@@ -378,11 +397,14 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
 
   return {
     backgrounds,
+    postedSwipes,
     swipes,
     isLoading:
       isAuthLoading ||
       (isAuthenticated &&
-        (backgroundDocuments === undefined || swipeDocuments === undefined)),
+        (backgroundDocuments === undefined ||
+          swipeDocuments === undefined ||
+          postedSwipeDocuments === undefined)),
     isSavingBackground,
     isSavingSwipe,
     error,

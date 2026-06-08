@@ -112,7 +112,9 @@ vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({
     refresh: mocks.refresh,
     saveBackground: mocks.saveBackground,
     saveSwipe: mocks.saveSwipe,
+    postedSwipes: [],
     swipes: [],
+    updateSwipePostedStatus: vi.fn(),
   }),
 }));
 
@@ -190,27 +192,43 @@ vi.mock("@/lib/clipstitchr/hooks/useClipLibrary", () => ({
       videoGroups: {
         clipr: {
           clips: [],
+          postedClips: [],
           hasMoreItems: false,
+          hasMorePostedItems: false,
           isLoadingMoreItems: false,
+          isLoadingMorePostedItems: false,
           loadMoreItems: vi.fn(),
+          loadMorePostedItems: vi.fn(),
         },
         demo: {
           clips: [demoClip],
+          postedClips: [],
           hasMoreItems: false,
+          hasMorePostedItems: false,
           isLoadingMoreItems: false,
+          isLoadingMorePostedItems: false,
           loadMoreItems: vi.fn(),
+          loadMorePostedItems: vi.fn(),
         },
         swapr: {
           clips: [],
+          postedClips: [],
           hasMoreItems: false,
+          hasMorePostedItems: false,
           isLoadingMoreItems: false,
+          isLoadingMorePostedItems: false,
           loadMoreItems: vi.fn(),
+          loadMorePostedItems: vi.fn(),
         },
         ugc: {
           clips: [ugcClip],
+          postedClips: [],
           hasMoreItems: false,
+          hasMorePostedItems: false,
           isLoadingMoreItems: false,
+          isLoadingMorePostedItems: false,
           loadMoreItems: vi.fn(),
+          loadMorePostedItems: vi.fn(),
         },
       },
     };

@@ -2,7 +2,11 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 
 export type ClipLibraryVideoGroup = {
   clips: VideoClipMetadata[];
+  postedClips: VideoClipMetadata[];
   hasMoreItems: boolean;
+  hasMorePostedItems: boolean;
   isLoadingMoreItems: boolean;
+  isLoadingMorePostedItems: boolean;
   loadMoreItems: () => void;
+  loadMorePostedItems: () => void;
 };

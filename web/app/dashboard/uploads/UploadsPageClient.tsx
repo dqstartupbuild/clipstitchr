@@ -21,6 +21,7 @@ import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadCont
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
+import type { LibraryPostedStatusFilter } from "@/lib/clipstitchr/types/LibraryPostedStatusFilter";
 import type { StitchLibraryStatusFilter } from "@/lib/clipstitchr/types/StitchLibraryStatusFilter";
 import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -113,8 +114,12 @@ export function UploadsPageClient() {
     string | undefined
   >();
   const [demoUploadProductId, setDemoUploadProductId] = useState("");
+  const [cliprStatusFilter, setCliprStatusFilter] =
+    useState<LibraryPostedStatusFilter>("active");
   const [stitchStatusFilter, setStitchStatusFilter] =
     useState<StitchLibraryStatusFilter>("active");
+  const [swipeStatusFilter, setSwipeStatusFilter] =
+    useState<LibraryPostedStatusFilter>("active");
   const productIds = useMemo(
     () => new Set(products.products.map((product) => product.id)),
     [products.products],
@@ -133,10 +138,44 @@ export function UploadsPageClient() {
     () => filterClipsBySearchQuery(library.videoGroups.ugc.clips, searchQuery),
     [library.videoGroups.ugc.clips, searchQuery],
   );
-  const cliprClips = useMemo(
+  const activeCliprClips = useMemo(
     () =>
       filterClipsBySearchQuery(library.videoGroups.clipr.clips, searchQuery),
     [library.videoGroups.clipr.clips, searchQuery],
+  );
+  const postedCliprClips = useMemo(
+    () =>
+      filterClipsBySearchQuery(
+        library.videoGroups.clipr.postedClips,
+        searchQuery,
+      ),
+    [library.videoGroups.clipr.postedClips, searchQuery],
+  );
+  const allCliprClips = useMemo(
+    () =>
+      [...activeCliprClips, ...postedCliprClips].sort((left, right) => {
+        const leftTime = Date.parse(left.createdAt);
+        const rightTime = Date.parse(right.createdAt);
+
+        return library.sortOrder === "oldest"
+          ? leftTime - rightTime
+          : rightTime - leftTime;
+      }),
+    [activeCliprClips, library.sortOrder, postedCliprClips],
+  );
+  const selectedCliprClips =
+    cliprStatusFilter === "posted"
+      ? postedCliprClips
+      : cliprStatusFilter === "all"
+        ? allCliprClips
+        : activeCliprClips;
+  const cliprStatusCounts = useMemo(
+    () => ({
+      active: activeCliprClips.length,
+      all: allCliprClips.length,
+      posted: postedCliprClips.length,
+    }),
+    [activeCliprClips.length, allCliprClips.length, postedCliprClips.length],
   );
   const allDemoClips = useMemo(
     () => filterClipsBySearchQuery(library.videoGroups.demo.clips, searchQuery),
@@ -159,11 +198,11 @@ export function UploadsPageClient() {
     () =>
       getStitchrUgcSourceClips(
         library.videoGroups.ugc.clips,
-        library.videoGroups.clipr.clips,
+        activeCliprClips,
         library.videoGroups.swapr.clips,
       ),
     [
-      library.videoGroups.clipr.clips,
+      activeCliprClips,
       library.videoGroups.swapr.clips,
       library.videoGroups.ugc.clips,
     ],
@@ -202,7 +241,7 @@ export function UploadsPageClient() {
     }),
     [activeStitches.length, allStitches.length, postedStitches.length],
   );
-  const swipes = useMemo(() => {
+  const activeSwipes = useMemo(() => {
     const sortedSwipes = [...swiprLibrary.swipes].sort((left, right) => {
       const leftTime = Date.parse(left.createdAt);
       const rightTime = Date.parse(right.createdAt);
@@ -214,6 +253,44 @@ export function UploadsPageClient() {
 
     return filterSwipesBySearchQuery(sortedSwipes, searchQuery);
   }, [library.sortOrder, searchQuery, swiprLibrary.swipes]);
+  const postedSwipes = useMemo(() => {
+    const sortedSwipes = [...swiprLibrary.postedSwipes].sort((left, right) => {
+      const leftTime = Date.parse(left.createdAt);
+      const rightTime = Date.parse(right.createdAt);
+
+      return library.sortOrder === "oldest"
+        ? leftTime - rightTime
+        : rightTime - leftTime;
+    });
+
+    return filterSwipesBySearchQuery(sortedSwipes, searchQuery);
+  }, [library.sortOrder, searchQuery, swiprLibrary.postedSwipes]);
+  const allSwipes = useMemo(
+    () =>
+      [...activeSwipes, ...postedSwipes].sort((left, right) => {
+        const leftTime = Date.parse(left.createdAt);
+        const rightTime = Date.parse(right.createdAt);
+
+        return library.sortOrder === "oldest"
+          ? leftTime - rightTime
+          : rightTime - leftTime;
+      }),
+    [activeSwipes, library.sortOrder, postedSwipes],
+  );
+  const swipes =
+    swipeStatusFilter === "posted"
+      ? postedSwipes
+      : swipeStatusFilter === "all"
+        ? allSwipes
+        : activeSwipes;
+  const swipeStatusCounts = useMemo(
+    () => ({
+      active: activeSwipes.length,
+      all: allSwipes.length,
+      posted: postedSwipes.length,
+    }),
+    [activeSwipes.length, allSwipes.length, postedSwipes.length],
+  );
   const hasSearchQuery = searchQuery.trim().length > 0;
   const error = library.error ?? swiprLibrary.error ?? products.error;
   const hasDemoProductFilter =
@@ -225,7 +302,7 @@ export function UploadsPageClient() {
       : selectedTab === "ugc"
         ? library.counts.ugcClips
         : selectedTab === "clips"
-          ? library.counts.cliprClips
+          ? cliprStatusCounts[cliprStatusFilter]
           : selectedTab === "demo"
             ? library.counts.demoClips
             : selectedTab === "swaps"
@@ -245,9 +322,25 @@ export function UploadsPageClient() {
         }
       : selectedTab === "clips"
         ? {
-            clips: cliprClips,
+            clips: selectedCliprClips,
             content: videoLibraryContent.clips,
-            group: library.videoGroups.clipr,
+            group: {
+              ...library.videoGroups.clipr,
+              hasMoreItems:
+                cliprStatusFilter === "posted"
+                  ? library.videoGroups.clipr.hasMorePostedItems
+                  : cliprStatusFilter === "all"
+                    ? library.videoGroups.clipr.hasMoreItems ||
+                      library.videoGroups.clipr.hasMorePostedItems
+                    : library.videoGroups.clipr.hasMoreItems,
+              isLoadingMoreItems:
+                cliprStatusFilter === "posted"
+                  ? library.videoGroups.clipr.isLoadingMorePostedItems
+                  : cliprStatusFilter === "all"
+                    ? library.videoGroups.clipr.isLoadingMoreItems ||
+                      library.videoGroups.clipr.isLoadingMorePostedItems
+                    : library.videoGroups.clipr.isLoadingMoreItems,
+            },
           }
         : selectedTab === "demo"
           ? {
@@ -288,6 +381,20 @@ export function UploadsPageClient() {
 
     library.loadMoreStitches();
   }, [library, stitchStatusFilter]);
+  const handleLoadMoreSelectedCliprClips = useCallback(() => {
+    if (cliprStatusFilter === "posted") {
+      library.videoGroups.clipr.loadMorePostedItems();
+      return;
+    }
+
+    if (cliprStatusFilter === "all") {
+      library.videoGroups.clipr.loadMoreItems();
+      library.videoGroups.clipr.loadMorePostedItems();
+      return;
+    }
+
+    library.videoGroups.clipr.loadMoreItems();
+  }, [cliprStatusFilter, library.videoGroups.clipr]);
 
   const handleTabChange = useCallback((nextTab: UploadLibraryTab) => {
     setSelectedTab(nextTab);
@@ -465,7 +572,7 @@ export function UploadsPageClient() {
               key={`all-clips-${searchQuery}-${library.sortOrder}`}
               id={videoLibraryContent.clips.sectionId}
               title={videoLibraryContent.clips.title}
-              clips={cliprClips}
+              clips={activeCliprClips}
               totalCount={
                 canUseLibraryTotals ? library.counts.cliprClips : undefined
               }
@@ -585,7 +692,7 @@ export function UploadsPageClient() {
               key={`all-swipes-${searchQuery}-${library.sortOrder}`}
               backgrounds={swiprLibrary.backgrounds}
               isSaving={swiprLibrary.isSavingSwipe}
-              swipes={swipes}
+              swipes={activeSwipes}
               emptyTitle={hasSearchQuery ? "No matching Swipes" : undefined}
               emptyDescription={
                 hasSearchQuery
@@ -602,7 +709,9 @@ export function UploadsPageClient() {
         ) : null}
         {selectedVideoSection ? (
           <VideoLibrarySection
-            key={`${selectedTab}-${searchQuery}-${library.sortOrder}`}
+            key={`${selectedTab}-${searchQuery}-${library.sortOrder}-${
+              selectedTab === "clips" ? cliprStatusFilter : "all"
+            }`}
             id={selectedVideoSection.content.sectionId}
             title={selectedVideoSection.content.title}
             clips={selectedVideoSection.clips}
@@ -614,6 +723,10 @@ export function UploadsPageClient() {
             emptyTitle={
               hasSearchQuery
                 ? selectedVideoSection.content.searchEmptyTitle
+                : selectedTab === "clips" && cliprStatusFilter === "posted"
+                  ? "No posted Clips"
+                  : selectedTab === "clips" && cliprStatusFilter === "all"
+                    ? "No Clips yet"
                 : hasDemoProductFilter
                   ? "No demos for this product"
                 : selectedVideoSection.content.emptyTitle
@@ -621,6 +734,8 @@ export function UploadsPageClient() {
             emptyDescription={
               hasSearchQuery
                 ? selectedVideoSection.content.searchEmptyDescription
+                : selectedTab === "clips" && cliprStatusFilter === "posted"
+                  ? "Mark generated Clips as posted after they go live."
                 : hasDemoProductFilter
                   ? "No saved demo videos are linked to that product."
                 : selectedVideoSection.content.emptyDescription
@@ -630,7 +745,20 @@ export function UploadsPageClient() {
             loadMoreLabel="Load more videos"
             onLoadClip={library.loadClip}
             onLoadPoster={library.loadClipPoster}
-            onLoadMoreItems={selectedVideoSection.group.loadMoreItems}
+            onLoadMoreItems={
+              selectedTab === "clips"
+                ? handleLoadMoreSelectedCliprClips
+                : selectedVideoSection.group.loadMoreItems
+            }
+            statusCounts={
+              selectedTab === "clips" ? cliprStatusCounts : undefined
+            }
+            statusFilter={
+              selectedTab === "clips" ? cliprStatusFilter : undefined
+            }
+            onStatusFilterChange={
+              selectedTab === "clips" ? setCliprStatusFilter : undefined
+            }
             isCreatingAvatarFromClip={
               selectedTab === "ugc" && avatarCreator.isGenerating
             }
@@ -688,20 +816,33 @@ export function UploadsPageClient() {
         ) : null}
         {selectedTab === "swipes" ? (
           <SwiprSwipesSection
-            key={`swipes-${searchQuery}-${library.sortOrder}`}
+            key={`swipes-${searchQuery}-${library.sortOrder}-${swipeStatusFilter}`}
             backgrounds={swiprLibrary.backgrounds}
             isSaving={swiprLibrary.isSavingSwipe}
             swipes={swipes}
-            emptyTitle={hasSearchQuery ? "No matching Swipes" : undefined}
+            emptyTitle={
+              hasSearchQuery
+                ? "No matching Swipes"
+                : swipeStatusFilter === "posted"
+                  ? "No posted Swipes"
+                  : swipeStatusFilter === "all"
+                    ? "No Swipes yet"
+                    : undefined
+            }
             emptyDescription={
               hasSearchQuery
                 ? "No saved Swipes match that search."
+                : swipeStatusFilter === "posted"
+                  ? "Mark saved Swipes as posted after they go live."
                 : undefined
             }
+            statusCounts={swipeStatusCounts}
+            statusFilter={swipeStatusFilter}
             onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
             onLoadPoster={swiprLibrary.loadSwipePoster}
             onDelete={swiprLibrary.removeSwipe}
             onSave={swiprLibrary.saveSwipe}
+            onStatusFilterChange={setSwipeStatusFilter}
             onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
           />
         ) : null}

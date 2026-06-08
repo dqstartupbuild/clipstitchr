@@ -13,6 +13,12 @@ const SWIPE_NAME_MAX_LENGTH = 120;
 const SWIPE_PRODUCT_CONTEXT_MAX_LENGTH = 2000;
 const SWIPE_PRODUCT_NAME_MAX_LENGTH = 120;
 
+const postedStatusValidator = v.union(
+  v.literal("active"),
+  v.literal("all"),
+  v.literal("posted"),
+);
+
 function normalizeText(value: string, maxLength: number) {
   return value.trim().slice(0, maxLength);
 }
@@ -40,15 +46,30 @@ const saveFromAutomationArgs = {
 };
 
 export const list = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    postedStatus: v.optional(postedStatusValidator),
+    refreshNonce: v.optional(v.number()),
+  },
+  handler: async (ctx, { postedStatus = "all" }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-
-    return await ctx.db
+    const swipes = ctx.db
       .query("swipes")
       .withIndex("by_owner_updated", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .collect();
+      .order("desc");
+
+    if (postedStatus === "active") {
+      return await swipes
+        .filter((q) => q.eq(q.field("isPosted"), undefined))
+        .collect();
+    }
+
+    if (postedStatus === "posted") {
+      return await swipes
+        .filter((q) => q.eq(q.field("isPosted"), true))
+        .collect();
+    }
+
+    return await swipes.collect();
   },
 });
 

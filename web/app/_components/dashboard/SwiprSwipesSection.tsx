@@ -8,6 +8,7 @@ import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
+import type { LibraryPostedStatusFilter } from "@/lib/clipstitchr/types/LibraryPostedStatusFilter";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SaveSwiprSwipeInput } from "@/lib/clipstitchr/types/SwiprLibraryValue";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
@@ -18,12 +19,15 @@ type SwiprSwipesSectionProps = {
   emptyTitle?: string;
   id?: string;
   isSaving?: boolean;
+  statusCounts?: Record<LibraryPostedStatusFilter, number>;
+  statusFilter?: LibraryPostedStatusFilter;
   swipes: SwiprSwipe[];
   title?: string;
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
   onSave: (input: SaveSwiprSwipeInput) => Promise<SwiprSwipe>;
+  onStatusFilterChange?: (status: LibraryPostedStatusFilter) => void;
   onUpdatePostedStatus?: (
     swipe: SwiprSwipe,
     isPosted: boolean,
@@ -36,12 +40,15 @@ export function SwiprSwipesSection({
   emptyTitle = "No Swipes yet",
   id = "swipes",
   isSaving = false,
+  statusCounts,
+  statusFilter = "active",
   swipes,
   title = "Swipes",
   onLoadBackgroundBlob,
   onLoadPoster,
   onDelete,
   onSave,
+  onStatusFilterChange,
   onUpdatePostedStatus,
 }: SwiprSwipesSectionProps) {
   const backgroundsById = useMemo(
@@ -65,6 +72,14 @@ export function SwiprSwipesSection({
     itemPluralName: "Swipes",
     onDelete,
   });
+  const statusFilterOptions: {
+    label: string;
+    value: LibraryPostedStatusFilter;
+  }[] = [
+    { label: "Active", value: "active" },
+    { label: "Posted", value: "posted" },
+    { label: "All", value: "all" },
+  ];
 
   return (
     <section id={id}>
@@ -75,22 +90,51 @@ export function SwiprSwipesSection({
             {visibleSwipes.length}
           </span>
         </div>
-        {visibleSwipes.length ? (
-          <LibraryBatchActionBar
-            areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
-            isDeletingSelected={batchDelete.isDeletingSelected}
-            isSelecting={batchDelete.isSelecting}
-            selectedCount={batchDelete.selectedCount}
-            visibleItemCount={batchDelete.visibleItemCount}
-            onClearSelection={batchDelete.clearSelection}
-            onDeleteSelected={() => {
-              void batchDelete.deleteSelectedItems();
-            }}
-            onSelectVisible={batchDelete.selectVisibleItems}
-            onStartSelecting={batchDelete.startSelecting}
-            onStopSelecting={batchDelete.stopSelecting}
-          />
-        ) : null}
+        <div className="flex flex-col gap-2 sm:items-end">
+          {onStatusFilterChange ? (
+            <div
+              className="inline-flex flex-wrap gap-1 rounded-lg border border-border bg-slate-100 p-1"
+              aria-label={`${title} status filter`}
+            >
+              {statusFilterOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => onStatusFilterChange(option.value)}
+                  className={[
+                    "h-8 rounded-md px-3 text-sm font-semibold transition-colors",
+                    statusFilter === option.value
+                      ? "bg-white text-accent shadow-sm"
+                      : "text-text-secondary hover:text-text-primary",
+                  ].join(" ")}
+                >
+                  {option.label}
+                  {statusCounts ? (
+                    <span className="ml-1 text-xs text-text-tertiary">
+                      {statusCounts[option.value]}
+                    </span>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          {visibleSwipes.length ? (
+            <LibraryBatchActionBar
+              areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
+              isDeletingSelected={batchDelete.isDeletingSelected}
+              isSelecting={batchDelete.isSelecting}
+              selectedCount={batchDelete.selectedCount}
+              visibleItemCount={batchDelete.visibleItemCount}
+              onClearSelection={batchDelete.clearSelection}
+              onDeleteSelected={() => {
+                void batchDelete.deleteSelectedItems();
+              }}
+              onSelectVisible={batchDelete.selectVisibleItems}
+              onStartSelecting={batchDelete.startSelecting}
+              onStopSelecting={batchDelete.stopSelecting}
+            />
+          ) : null}
+        </div>
       </div>
       {visibleSwipes.length ? (
         <>

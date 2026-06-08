@@ -25,10 +25,12 @@ const mocks = vi.hoisted(() => ({
     isSavingSwipe: false,
     loadBackgroundBlob: vi.fn(),
     loadSwipePoster: vi.fn(),
+    postedSwipes: [] as SwiprSwipe[],
     refresh: vi.fn(),
     saveBackground: vi.fn(),
     saveSwipe: vi.fn(),
     swipes: [] as SwiprSwipe[],
+    updateSwipePostedStatus: vi.fn(),
   },
   swiprExportState: {
     error: null as string | null,

@@ -37,15 +37,19 @@ const mocks = vi.hoisted(() => ({
     videoGroups: {
       clipr: {
         clips: [],
+        postedClips: [],
       },
       demo: {
         clips: [],
+        postedClips: [],
       },
       swapr: {
         clips: [],
+        postedClips: [],
       },
       ugc: {
         clips: [],
+        postedClips: [],
       },
     },
   },
@@ -66,8 +70,10 @@ const mocks = vi.hoisted(() => ({
     error: null as string | null,
     loadBackgroundBlob: vi.fn(),
     loadSwipePoster: vi.fn(),
+    postedSwipes: [],
     removeSwipe: vi.fn(),
     swipes: [],
+    updateSwipePostedStatus: vi.fn(),
   },
 }));
 
@@ -163,15 +169,19 @@ describe("DashboardPageClient", () => {
     mocks.clipLibraryState.videoGroups = {
       clipr: {
         clips: [mocks.clipLibraryState.clips[2]],
+        postedClips: [],
       },
       demo: {
         clips: [mocks.clipLibraryState.clips[1]],
+        postedClips: [],
       },
       swapr: {
         clips: [],
+        postedClips: [],
       },
       ugc: {
         clips: [mocks.clipLibraryState.clips[0]],
+        postedClips: [],
       },
     } as never;
     mocks.clipLibraryState.error = null;

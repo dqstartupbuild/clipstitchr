@@ -64,20 +64,39 @@ const saveFromMediaWorkerArgs = {
   ...saveArgs,
 };
 
+const postedStatusValidator = v.union(
+  v.literal("active"),
+  v.literal("all"),
+  v.literal("posted"),
+);
+
 export const list = query({
   args: {
     paginationOpts: paginationOptsValidator,
+    postedStatus: v.optional(postedStatusValidator),
     refreshNonce: v.optional(v.number()),
     sortOrder: v.optional(librarySortOrderValidator),
   },
-  handler: async (ctx, { paginationOpts, sortOrder }) => {
+  handler: async (ctx, { paginationOpts, postedStatus = "all", sortOrder }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-
-    return await ctx.db
+    const clips = ctx.db
       .query("videoClips")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order(sortOrder === "oldest" ? "asc" : "desc")
-      .paginate(paginationOpts);
+      .order(sortOrder === "oldest" ? "asc" : "desc");
+
+    if (postedStatus === "active") {
+      return await clips
+        .filter((q) => q.eq(q.field("isPosted"), undefined))
+        .paginate(paginationOpts);
+    }
+
+    if (postedStatus === "posted") {
+      return await clips
+        .filter((q) => q.eq(q.field("isPosted"), true))
+        .paginate(paginationOpts);
+    }
+
+    return await clips.paginate(paginationOpts);
   },
 });
 
@@ -85,10 +104,14 @@ export const listByLibraryKind = query({
   args: {
     kind: videoClipLibraryKindValidator,
     paginationOpts: paginationOptsValidator,
+    postedStatus: v.optional(postedStatusValidator),
     refreshNonce: v.optional(v.number()),
     sortOrder: v.optional(librarySortOrderValidator),
   },
-  handler: async (ctx, { kind, paginationOpts, sortOrder }) => {
+  handler: async (
+    ctx,
+    { kind, paginationOpts, postedStatus = "all", sortOrder },
+  ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const clips = ctx.db
       .query("videoClips")
@@ -109,6 +132,18 @@ export const listByLibraryKind = query({
                   q.eq(q.field("swaprMetadata"), undefined),
                 ),
               );
+
+    if (postedStatus === "active") {
+      return await filteredClips
+        .filter((q) => q.eq(q.field("isPosted"), undefined))
+        .paginate(paginationOpts);
+    }
+
+    if (postedStatus === "posted") {
+      return await filteredClips
+        .filter((q) => q.eq(q.field("isPosted"), true))
+        .paginate(paginationOpts);
+    }
 
     return await filteredClips.paginate(paginationOpts);
   },
