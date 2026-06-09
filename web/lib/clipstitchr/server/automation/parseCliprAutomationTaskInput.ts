@@ -1,3 +1,4 @@
+import { defaultCliprDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprDurationSeconds";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
@@ -83,8 +84,8 @@ function getR2ObjectReference(
   };
 }
 
-function getCliprDurationSeconds(value: unknown): CliprDurationSeconds {
-  return value === 60 ? 60 : 30;
+function getAutomationCliprDurationSeconds(value: unknown): CliprDurationSeconds {
+  return value === 60 ? 60 : defaultCliprDurationSeconds;
 }
 
 export function parseCliprAutomationTaskInput(
@@ -135,7 +136,7 @@ export function parseCliprAutomationTaskInput(
       createdAt: productCreatedAt,
       updatedAt: productUpdatedAt,
     },
-    targetDurationSeconds: getCliprDurationSeconds(
+    targetDurationSeconds: getAutomationCliprDurationSeconds(
       input.targetDurationSeconds,
     ),
     voiceId: getString(input.voiceId, "voice ID"),

@@ -11,12 +11,18 @@ type QueryResult = {
 };
 
 const mocks = vi.hoisted(() => ({
+  assertMediaWorkerSecret: vi.fn(),
   assertRateLimitApiSecret: vi.fn(),
   getAuthenticatedOwnerId: vi.fn(),
   mutation: vi.fn((definition) => definition),
   query: vi.fn((definition) => definition),
   rateLimiter: {
     limit: vi.fn(),
+  },
+  videoClipCounts: {
+    deleteIfExists: vi.fn(),
+    insertIfDoesNotExist: vi.fn(),
+    replaceOrInsert: vi.fn(),
   },
 }));
 
@@ -29,12 +35,20 @@ vi.mock("./auth/assertRateLimitApiSecret", () => ({
   assertRateLimitApiSecret: mocks.assertRateLimitApiSecret,
 }));
 
+vi.mock("./auth/assertMediaWorkerSecret", () => ({
+  assertMediaWorkerSecret: mocks.assertMediaWorkerSecret,
+}));
+
 vi.mock("./auth/getAuthenticatedOwnerId", () => ({
   getAuthenticatedOwnerId: mocks.getAuthenticatedOwnerId,
 }));
 
 vi.mock("./rateLimiter", () => ({
   rateLimiter: mocks.rateLimiter,
+}));
+
+vi.mock("./aggregateCounts", () => ({
+  videoClipCounts: mocks.videoClipCounts,
 }));
 
 function getHandler<Args, Result>(convexFunction: unknown) {
@@ -71,6 +85,10 @@ function createCtx(resultsByTable: Record<string, QueryResult[]> = {}) {
   const queryChains: ReturnType<typeof createQueryChain>[] = [];
   const ctx = {
     db: {
+      get: vi.fn(async (_id: string): Promise<unknown> => ({
+        _id,
+        id: "clip_1",
+      })),
       insert: vi.fn(async () => "inserted_doc"),
       patch: vi.fn(async () => undefined),
       query: vi.fn((table: string) => {
@@ -217,9 +235,7 @@ describe("convex cliprJobs", () => {
 
   it("creates queued jobs behind the API secret and write limiter", async () => {
     const { ctx } = createCtx();
-    (ctx.db as typeof ctx.db & { get: ReturnType<typeof vi.fn> }).get = vi.fn(
-      async () => createJob(),
-    );
+    ctx.db.get.mockResolvedValue(createJob());
 
     await expect(
       getHandler<Record<string, unknown>, unknown>(cliprJobs.createQueued)(
@@ -471,6 +487,7 @@ describe("convex cliprJobs", () => {
           scriptIdea: "Founder story angle",
         }),
         id: "clip_1",
+        libraryKind: "clipr",
         ownerId: "owner_123",
         tags: ["ugc", "clipr"],
       }),
@@ -484,6 +501,58 @@ describe("convex cliprJobs", () => {
         stage: "finalized",
         status: "completed",
       }),
+    );
+  });
+
+  it("finalizes media worker jobs with Clipr library indexing", async () => {
+    const { ctx } = createCtx({
+      cliprJobs: [{ unique: createJob() }],
+      videoClips: [{ unique: null }],
+    });
+    const args = {
+      aspectRatio: 9 / 16,
+      clipId: "clip_1",
+      duration: 60,
+      hasAudio: true,
+      height: 1920,
+      id: "job_1",
+      mimeType: "video/mp4",
+      name: "Product Clipr",
+      originalSize: 200,
+      ownerId: "owner_123",
+      posterObject: imageObject,
+      posterVersion: 2,
+      secret: "media_secret",
+      size: 100,
+      sourceMimeType: "video/mp4",
+      updatedAt: now,
+      videoObject,
+      width: 1080,
+    };
+
+    await expect(
+      getHandler<typeof args, string>(
+        cliprJobs.finalizeWithClipFromMediaWorker,
+      )(ctx, args),
+    ).resolves.toBe("clip_1");
+
+    expect(mocks.assertMediaWorkerSecret).toHaveBeenCalledWith("media_secret");
+    expect(ctx.db.insert).toHaveBeenCalledWith(
+      "videoClips",
+      expect.objectContaining({
+        cliprMetadata: expect.objectContaining({
+          finalDurationSeconds: 60,
+          jobId: "job_1",
+          productId: "product_1",
+        }),
+        id: "clip_1",
+        libraryKind: "clipr",
+        ownerId: "owner_123",
+      }),
+    );
+    expect(mocks.videoClipCounts.insertIfDoesNotExist).toHaveBeenCalledWith(
+      ctx,
+      expect.objectContaining({ id: "clip_1" }),
     );
   });
 

@@ -261,13 +261,13 @@ describe("POST /api/automation/clipr/execute", () => {
       expect.objectContaining({
         ownerId: "owner_123",
         productId: "product_1",
-        targetDurationSeconds: 30,
+        targetDurationSeconds: 60,
         voiceId: "voice_1",
       }),
     );
     expect(mocks.createCliprTextGeneration).toHaveBeenCalledWith(
       expect.objectContaining({
-        durationSeconds: 30,
+        durationSeconds: 60,
         purpose: "clipr",
         slideCount: 4,
       }),
@@ -284,6 +284,7 @@ describe("POST /api/automation/clipr/execute", () => {
         jobId: "automation:clipr:owner_123:2026-05-31:1",
         lipSyncModelId: "pixverse/lipsync",
         script: "This serum keeps my skin camera ready.",
+        targetDurationSeconds: 60,
         ttsModelId: "elevenlabs/v3",
         userId: "owner_123",
         voiceId: "voice_1",

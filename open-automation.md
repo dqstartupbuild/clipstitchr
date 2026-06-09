@@ -87,13 +87,13 @@ a poster, and saves the result as an automated UGC-compatible Swapr clip.
 
 ## Clipr Defaults
 
-Automatic Clipr uses a 30 second target duration, the avatar's saved Clipr voice
+Automatic Clipr uses the shared 60 second Clipr target duration, the avatar's saved Clipr voice
 when present, the global automation fallback voice otherwise, and no generated
 music in the first executor pass.
 
-Reason: the manual Clipr page defaults to 30 seconds and music off, and keeping
-the automation pass voice/script/video-only avoids adding a second provider
-branch before the core durable finalization path is finished. The executor
-generates the script, avatar source image, and avatar video, then creates a
-`clipr-finalization` media job. The first media worker normalizes the video with
+Reason: the manual Clipr page defaults to 60 seconds and music off. Keeping the
+automation pass voice/script/video-only avoids adding a second provider branch
+before the core durable finalization path is finished. PixVerse lip sync runs as
+two 30 second segments and stitches the final avatar video before creating the
+`clipr-finalization` media job. The media worker normalizes the video with
 FFmpeg and saves it as an automated Clip draft.

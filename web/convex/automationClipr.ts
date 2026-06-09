@@ -9,10 +9,11 @@ import { defaultAutomationCliprVoiceId } from "./defaultAutomationCliprVoiceId";
 import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
+import { defaultCliprDurationSeconds } from "../lib/clipstitchr/constants/defaultCliprDurationSeconds";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 const AUTOMATION_CLIPR_ADD_MUSIC = false;
-const AUTOMATION_CLIPR_DURATION_SECONDS = 30;
+const AUTOMATION_CLIPR_DURATION_SECONDS = defaultCliprDurationSeconds;
 
 export const planDaily = mutation({
   args: {
@@ -98,7 +99,7 @@ export const planDaily = mutation({
     await consumeAutomationBudget(ctx, {
       ownerId,
       tool: "clipr",
-      providerCostUnits: 30,
+      providerCostUnits: AUTOMATION_CLIPR_DURATION_SECONDS,
     });
 
     const voiceId = avatar.cliprVoiceId ?? defaultAutomationCliprVoiceId;

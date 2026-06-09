@@ -140,10 +140,11 @@ Optional Replicate model overrides:
 - `CLIPR_TTS_MODEL_ID` defaults to `elevenlabs/v3` for Clipr speech generation.
   Set it to `none` to fall back to the avatar-video model's built-in voice path
   during local testing.
-- `CLIPR_LIP_SYNC_MODEL_ID` defaults to `pixverse/lipsync`. Supported values are `none`,
+- `CLIPR_LIP_SYNC_MODEL_ID` defaults to `pixverse/lipsync`. Supported values are
+  `none`,
   `bytedance/latentsync:637ce1919f807ca20da3a448ddc2743535d2853649574cd52a933120e9b9e293`,
-  and `pixverse/lipsync`. LatentSync runs as one pass. PixVerse uses 30 second
-  provider-worker ffmpeg segments for 60 second Clipr jobs.
+  and `pixverse/lipsync`. LatentSync runs as one pass. PixVerse uses two
+  30 second provider-worker ffmpeg segments for the default 60 second Clipr jobs.
 - `CLIPR_MUSIC_MODEL_ID` defaults to `stability-ai/stable-audio-2.5` for
   optional 60 second Clipr, Stitchr, and shared-library background music
   generation. Generated music is copied to the shared music library and, when
@@ -199,7 +200,7 @@ Firecrawl website import:
 | Media worker jobs | `mediaJobs.createUploadNormalization`, `mediaJobs.createCliprFinalizationFromProvider`, `mediaJobs.createSwaprFinalizationFromProvider`, `mediaJobs.createStitchrDraftFinalizationFromProvider`, existing automation media creators, and `npm run media-worker` | Media jobs are worker-secret controlled. Creating a media job schedules a coalesced Convex dispatch action that runs the Cloud Run media job immediately; the scheduler remains as recovery. The worker normalizes close-safe video uploads, creates upload posters, saves uploaded clips, creates upload-analysis provider jobs, saves editable Stitchr drafts, finalizes Swapr provider outputs, and finalizes Clipr outputs. Manual asset saves consume normal user-facing limits before job creation; automatic final asset saves consume automatic asset save buckets: 20 saved assets/day/user; global 2,000/day. |
 | Automatic Stitchr generation | Worker-only automation planner before provider work; provider worker generates Stitchr text overlay and creates the media worker job | 3 Stitchr outputs/day/user; global 300/day |
 | Automatic Swapr generation | Worker-only automation planner before provider work; provider worker claims one queued Swapr task for the default avatar before creating a Replicate prediction and later claims provider-created Swapr tasks before creating a media finalization job | 1 Swapr output/day/user; global 100/day |
-| Automatic Clipr generation | Worker-only automation planner before provider work; provider worker runs script, avatar-image, and avatar-video generation for the default avatar without consuming manual Clipr buckets | 1 Clipr output/day/user; global 100/day |
+| Automatic Clipr generation | Worker-only automation planner before provider work; provider worker runs script, avatar-image, and avatar-video generation for the default avatar without consuming manual Clipr buckets | 1 Clipr output/day/user; global 100/day; 60 automation provider cost units reserved before provider work so PixVerse can lip-sync and stitch both 30 second segments |
 | Automatic avatar photo generation | Worker-only automation planner before provider work; provider worker creates one generated avatar photo from the default avatar's latest source photo | Planner queues only the default avatar; rate bucket is 1 generated photo/day/avatar; global 500/day |
 | Automatic Swipr generation | Worker-only automation planner before provider work; provider worker creates the generated slide text and saves an editable Swipe draft | 1 Swipe/day/user; global 100/day |
 | Automatic provider cost guard | Worker-only automation planner before provider work | 10,000 provider cost units/day global |
