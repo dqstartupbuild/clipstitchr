@@ -42,6 +42,7 @@ import type * as getAutomationToolDisabledReason from "../getAutomationToolDisab
 import type * as getDefaultAvatarForOwner from "../getDefaultAvatarForOwner.js";
 import type * as getDefaultProductForOwner from "../getDefaultProductForOwner.js";
 import type * as getEnabledAutomationToolsForPreference from "../getEnabledAutomationToolsForPreference.js";
+import type * as getVideoClipLibraryKind from "../getVideoClipLibraryKind.js";
 import type * as isWithinAutomationGlobalWindow from "../isWithinAutomationGlobalWindow.js";
 import type * as libraryCounts from "../libraryCounts.js";
 import type * as mediaJobs from "../mediaJobs.js";
@@ -138,6 +139,7 @@ declare const fullApi: ApiFromModules<{
   getDefaultAvatarForOwner: typeof getDefaultAvatarForOwner;
   getDefaultProductForOwner: typeof getDefaultProductForOwner;
   getEnabledAutomationToolsForPreference: typeof getEnabledAutomationToolsForPreference;
+  getVideoClipLibraryKind: typeof getVideoClipLibraryKind;
   isWithinAutomationGlobalWindow: typeof isWithinAutomationGlobalWindow;
   libraryCounts: typeof libraryCounts;
   mediaJobs: typeof mediaJobs;

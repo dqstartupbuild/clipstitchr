@@ -27,6 +27,7 @@ const mocks = vi.hoisted(() => {
       mutationFns.set(mutationId, mutation);
       return mutation;
     }),
+    usePathname: vi.fn(),
     useQuery: vi.fn(),
     useStateSetter: vi.fn(),
   };
@@ -62,6 +63,10 @@ vi.mock("convex/react", () => ({
   useConvexAuth: mocks.useConvexAuth,
   useMutation: mocks.useMutation,
   useQuery: mocks.useQuery,
+}));
+
+vi.mock("next/navigation", () => ({
+  usePathname: mocks.usePathname,
 }));
 
 vi.mock("@/convex/_generated/api", () => ({
@@ -195,6 +200,7 @@ describe("useSwiprLibraryState", () => {
       isAuthenticated: true,
       isLoading: false,
     });
+    mocks.usePathname.mockReturnValue("/dashboard/uploads");
     mocks.useQuery.mockImplementation((queryId: string, args) => {
       if (queryId === "swiprBackgrounds.list") {
         return [createBackgroundDocument()];
@@ -263,11 +269,9 @@ describe("useSwiprLibraryState", () => {
     expect(mocks.useQuery).toHaveBeenCalledWith("swiprBackgrounds.list", {});
     expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", {
       postedStatus: "active",
-      refreshNonce: 0,
     });
     expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", {
       postedStatus: "posted",
-      refreshNonce: 0,
     });
   });
 

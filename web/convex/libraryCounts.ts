@@ -1,12 +1,9 @@
-import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { query } from "./_generated/server";
 import { stitchCounts, videoClipCounts } from "./aggregateCounts";
 
 export const get = query({
-  args: {
-    refreshNonce: v.optional(v.number()),
-  },
+  args: {},
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const [ugcClips, demoClips, cliprClips, swapClips, stitches] =

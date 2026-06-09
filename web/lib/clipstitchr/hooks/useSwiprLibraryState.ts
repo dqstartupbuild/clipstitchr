@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { usePathname } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { createSwiprBackgroundAssetFromConvexDocument } from "@/lib/clipstitchr/backend/createSwiprBackgroundAssetFromConvexDocument";
 import { createSwiprSwipeFromConvexDocument } from "@/lib/clipstitchr/backend/createSwiprSwipeFromConvexDocument";
@@ -24,23 +25,27 @@ import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 
 export function useSwiprLibraryState(): SwiprLibraryValue {
+  const pathname = usePathname() ?? "";
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
-  const [refreshNonce, setRefreshNonce] = useState(0);
+  const isDashboardHome = pathname === "/dashboard";
+  const isSwiprRoute = pathname.startsWith("/dashboard/swipr");
+  const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
+  const shouldLoadBackgrounds =
+    isAuthenticated && (isDashboardHome || isSwiprRoute || isUploadsRoute);
+  const shouldLoadSwipes =
+    isAuthenticated && (isDashboardHome || isSwiprRoute || isUploadsRoute);
+  const shouldLoadPostedSwipes = isAuthenticated && isUploadsRoute;
   const backgroundDocuments = useQuery(
     api.swiprBackgrounds.list,
-    isAuthenticated ? {} : "skip",
+    shouldLoadBackgrounds ? {} : "skip",
   );
   const swipeDocuments = useQuery(
     api.swipes.list,
-    isAuthenticated
-      ? { postedStatus: "active", refreshNonce }
-      : "skip",
+    shouldLoadSwipes ? { postedStatus: "active" } : "skip",
   );
   const postedSwipeDocuments = useQuery(
     api.swipes.list,
-    isAuthenticated
-      ? { postedStatus: "posted", refreshNonce }
-      : "skip",
+    shouldLoadPostedSwipes ? { postedStatus: "posted" } : "skip",
   );
   const saveBackgroundMutation = useMutation(api.swiprBackgrounds.save);
   const saveSwipeMutation = useMutation(api.swipes.save);
@@ -78,7 +83,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
   );
 
   const refresh = useCallback(async () => {
-    setRefreshNonce((currentNonce) => currentNonce + 1);
+    setError(null);
   }, []);
 
   const loadBackgroundBlob = useCallback(async (id: string) => {
@@ -354,6 +359,16 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
   );
 
   useEffect(() => {
+    if (!shouldLoadBackgrounds) {
+      void Promise.resolve().then(() => {
+        backgroundBlobCacheRef.current.clear();
+        backgroundDownloadPromisesRef.current.clear();
+        swipePosterBlobCacheRef.current.clear();
+        setBackgrounds([]);
+      });
+      return;
+    }
+
     if (isAuthLoading || !isAuthenticated || !backgroundDocuments) {
       if (!isAuthLoading && !isAuthenticated) {
         void Promise.resolve().then(() => {
@@ -392,7 +407,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
     backgroundDocuments,
     isAuthenticated,
     isAuthLoading,
-    refreshNonce,
+    shouldLoadBackgrounds,
   ]);
 
   return {
@@ -401,10 +416,9 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
     swipes,
     isLoading:
       isAuthLoading ||
-      (isAuthenticated &&
-        (backgroundDocuments === undefined ||
-          swipeDocuments === undefined ||
-          postedSwipeDocuments === undefined)),
+      (shouldLoadBackgrounds && backgroundDocuments === undefined) ||
+      (shouldLoadSwipes && swipeDocuments === undefined) ||
+      (shouldLoadPostedSwipes && postedSwipeDocuments === undefined),
     isSavingBackground,
     isSavingSwipe,
     error,

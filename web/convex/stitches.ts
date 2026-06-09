@@ -65,7 +65,6 @@ export const list = query({
   args: {
     paginationOpts: paginationOptsValidator,
     postedStatus: v.optional(postedStatusValidator),
-    refreshNonce: v.optional(v.number()),
     sortOrder: v.optional(librarySortOrderValidator),
   },
   handler: async (ctx, { paginationOpts, postedStatus = "all", sortOrder }) => {

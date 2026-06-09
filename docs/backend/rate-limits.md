@@ -218,6 +218,12 @@ read-only Convex queries backed by the Aggregate component. They do not create
 storage, bandwidth, provider, or external API cost, so they are not
 rate-limited.
 
+Operator-only maintenance backfills such as
+`aggregateBackfills.backfillVideoClipLibraryKinds` are guarded by
+`RATE_LIMIT_API_SECRET` and are not exposed through a user-triggered route. They
+are intentionally not rate-limited; run them in small paginated batches with the
+documented cursor workflow.
+
 Aggregate backfill mutations in `aggregateBackfills.ts` are operator-only
 maintenance functions gated by `RATE_LIMIT_API_SECRET`, paginated, and
 idempotent. They are intentionally not exposed in the UI and are not

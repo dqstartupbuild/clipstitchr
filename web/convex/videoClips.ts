@@ -6,6 +6,7 @@ import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { videoClipCounts } from "./aggregateCounts";
+import { getVideoClipLibraryKind } from "./getVideoClipLibraryKind";
 import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
@@ -74,29 +75,36 @@ export const list = query({
   args: {
     paginationOpts: paginationOptsValidator,
     postedStatus: v.optional(postedStatusValidator),
-    refreshNonce: v.optional(v.number()),
     sortOrder: v.optional(librarySortOrderValidator),
   },
   handler: async (ctx, { paginationOpts, postedStatus = "all", sortOrder }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const clips = ctx.db
-      .query("videoClips")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order(sortOrder === "oldest" ? "asc" : "desc");
 
     if (postedStatus === "active") {
-      return await clips
-        .filter((q) => q.eq(q.field("isPosted"), undefined))
+      return await ctx.db
+        .query("videoClips")
+        .withIndex("by_owner_is_posted_created", (q) =>
+          q.eq("ownerId", ownerId).eq("isPosted", undefined),
+        )
+        .order(sortOrder === "oldest" ? "asc" : "desc")
         .paginate(paginationOpts);
     }
 
     if (postedStatus === "posted") {
-      return await clips
-        .filter((q) => q.eq(q.field("isPosted"), true))
+      return await ctx.db
+        .query("videoClips")
+        .withIndex("by_owner_is_posted_created", (q) =>
+          q.eq("ownerId", ownerId).eq("isPosted", true),
+        )
+        .order(sortOrder === "oldest" ? "asc" : "desc")
         .paginate(paginationOpts);
     }
 
-    return await clips.paginate(paginationOpts);
+    return await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .order(sortOrder === "oldest" ? "asc" : "desc")
+      .paginate(paginationOpts);
   },
 });
 
@@ -105,7 +113,6 @@ export const listByLibraryKind = query({
     kind: videoClipLibraryKindValidator,
     paginationOpts: paginationOptsValidator,
     postedStatus: v.optional(postedStatusValidator),
-    refreshNonce: v.optional(v.number()),
     sortOrder: v.optional(librarySortOrderValidator),
   },
   handler: async (
@@ -113,39 +120,37 @@ export const listByLibraryKind = query({
     { kind, paginationOpts, postedStatus = "all", sortOrder },
   ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const clips = ctx.db
-      .query("videoClips")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order(sortOrder === "oldest" ? "asc" : "desc");
-
-    const filteredClips =
-      kind === "clipr"
-        ? clips.filter((q) => q.neq(q.field("cliprMetadata"), undefined))
-        : kind === "swapr"
-          ? clips.filter((q) => q.neq(q.field("swaprMetadata"), undefined))
-          : kind === "demo"
-            ? clips.filter((q) => q.eq(q.field("clipType"), "demo"))
-            : clips.filter((q) =>
-                q.and(
-                  q.eq(q.field("clipType"), "ugc"),
-                  q.eq(q.field("cliprMetadata"), undefined),
-                  q.eq(q.field("swaprMetadata"), undefined),
-                ),
-              );
 
     if (postedStatus === "active") {
-      return await filteredClips
-        .filter((q) => q.eq(q.field("isPosted"), undefined))
+      return await ctx.db
+        .query("videoClips")
+        .withIndex("by_owner_library_kind_is_posted_created", (q) =>
+          q
+            .eq("ownerId", ownerId)
+            .eq("libraryKind", kind)
+            .eq("isPosted", undefined),
+        )
+        .order(sortOrder === "oldest" ? "asc" : "desc")
         .paginate(paginationOpts);
     }
 
     if (postedStatus === "posted") {
-      return await filteredClips
-        .filter((q) => q.eq(q.field("isPosted"), true))
+      return await ctx.db
+        .query("videoClips")
+        .withIndex("by_owner_library_kind_is_posted_created", (q) =>
+          q.eq("ownerId", ownerId).eq("libraryKind", kind).eq("isPosted", true),
+        )
+        .order(sortOrder === "oldest" ? "asc" : "desc")
         .paginate(paginationOpts);
     }
 
-    return await filteredClips.paginate(paginationOpts);
+    return await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_library_kind_created", (q) =>
+        q.eq("ownerId", ownerId).eq("libraryKind", kind),
+      )
+      .order(sortOrder === "oldest" ? "asc" : "desc")
+      .paginate(paginationOpts);
   },
 });
 
@@ -209,6 +214,7 @@ export const save = mutation({
     const clip = {
       ownerId,
       ...clipArgs,
+      libraryKind: getVideoClipLibraryKind(clipArgs),
       ...(demoProductId ? { productId: demoProductId } : {}),
     };
 
@@ -265,6 +271,7 @@ export const saveFromAutomation = mutation({
       ownerId,
       ...args,
       automation,
+      libraryKind: getVideoClipLibraryKind(args),
     };
 
     if (existingClip) {
@@ -327,6 +334,7 @@ export const saveFromMediaWorker = mutation({
     const clip = {
       ownerId,
       ...args,
+      libraryKind: getVideoClipLibraryKind(args),
       ...(automation ? { automation } : {}),
     };
 
@@ -590,6 +598,7 @@ export const updateCliprMusic = mutation({
                 new Set([...cliprMetadata.providerModels, music.providerModel]),
               ),
             },
+      libraryKind: "clipr",
       updatedAt,
     });
     const updatedClip = await ctx.db.get(clip._id);

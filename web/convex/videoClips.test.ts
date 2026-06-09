@@ -154,7 +154,11 @@ describe("convex videoClips", () => {
       }),
     ).resolves.toBe(clips);
 
-    expect(chain.filter).toHaveBeenCalled();
+    expect(chain.withIndex).toHaveBeenCalledWith(
+      "by_owner_library_kind_created",
+      expect.any(Function),
+    );
+    expect(chain.filter).not.toHaveBeenCalled();
     expect(chain.order).toHaveBeenCalledWith("desc");
     expect(chain.paginate).toHaveBeenCalledWith({
       cursor: null,
@@ -190,6 +194,7 @@ describe("convex videoClips", () => {
     expect(setup.ctx.db.insert).toHaveBeenCalledWith(
       "videoClips",
       expect.objectContaining({
+        libraryKind: "demo",
         ownerId: "owner_123",
         productId: "product_1",
       }),
@@ -202,6 +207,7 @@ describe("convex videoClips", () => {
     expect(setup.ctx.db.patch).toHaveBeenCalledWith(
       "doc_existing",
       expect.objectContaining({
+        libraryKind: "ugc",
         ownerId: "owner_123",
       }),
     );
@@ -298,6 +304,7 @@ describe("convex videoClips", () => {
         cliprMetadata: expect.objectContaining({
           providerModels: ["old-model", "new-model"],
         }),
+        libraryKind: "clipr",
       }),
     );
     expect(setup.ctx.db.delete).toHaveBeenCalledWith("doc_1");

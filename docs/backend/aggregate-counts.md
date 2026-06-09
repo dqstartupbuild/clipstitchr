@@ -130,7 +130,7 @@ npx convex run aggregateBackfills:backfillVideoClipCounts \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
 npx convex run aggregateBackfills:backfillStitchCounts \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
-npx convex run aggregateBackfills:backfillLongrVideoCounts \
+npx convex run aggregateBackfills:backfillVideoClipLibraryKinds \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
 ```
 
@@ -144,7 +144,7 @@ npx convex run aggregateBackfills:backfillVideoClipCounts \
 npx convex run aggregateBackfills:backfillStitchCounts \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}' \
   --prod
-npx convex run aggregateBackfills:backfillLongrVideoCounts \
+npx convex run aggregateBackfills:backfillVideoClipLibraryKinds \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}' \
   --prod
 ```
@@ -194,7 +194,7 @@ rg "videoClipCounts|stitchCounts" convex/_generated/api.d.ts
 5. Query counts for a known Clerk user ID.
 
 ```bash
-npx convex run libraryCounts:get '{"refreshNonce":0}' \
+npx convex run libraryCounts:get '{}' \
   --identity '{"subject":"<clerk-user-id>"}'
 ```
 

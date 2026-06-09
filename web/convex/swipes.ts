@@ -48,7 +48,6 @@ const saveFromAutomationArgs = {
 export const list = query({
   args: {
     postedStatus: v.optional(postedStatusValidator),
-    refreshNonce: v.optional(v.number()),
   },
   handler: async (ctx, { postedStatus = "all" }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);

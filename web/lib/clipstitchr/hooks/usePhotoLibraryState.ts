@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useConvex, useConvexAuth, useMutation, useQuery } from "convex/react";
+import { usePathname } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { createAvatarFromConvexDocument } from "@/lib/clipstitchr/backend/createAvatarFromConvexDocument";
 import { createPhotoAssetFromConvexDocument } from "@/lib/clipstitchr/backend/createPhotoAssetFromConvexDocument";
@@ -60,22 +61,36 @@ type AvatarDeleteResponse = {
 
 export function usePhotoLibraryState(): PhotoLibraryValue {
   const convex = useConvex();
+  const pathname = usePathname() ?? "";
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
+  const isDashboardHome = pathname === "/dashboard";
+  const isAvatarsRoute = pathname.startsWith("/dashboard/avatars");
+  const isCliprRoute = pathname.startsWith("/dashboard/clipr");
+  const isSwaprRoute = pathname.startsWith("/dashboard/swapr");
+  const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
+  const shouldLoadPhotoDocuments =
+    isAuthenticated &&
+    (isDashboardHome || isAvatarsRoute || isCliprRoute || isSwaprRoute);
+  const shouldLoadAvatarDocuments =
+    isAuthenticated &&
+    (isDashboardHome || isAvatarsRoute || isCliprRoute || isSwaprRoute);
+  const shouldLoadPhotoPreferences =
+    isAuthenticated && (shouldLoadAvatarDocuments || isUploadsRoute);
   const photoDocuments = useQuery(
     api.photoAssets.list,
-    isAuthenticated ? {} : "skip",
+    shouldLoadPhotoDocuments ? {} : "skip",
   );
   const avatarDocuments = useQuery(
     api.avatars.list,
-    isAuthenticated ? {} : "skip",
+    shouldLoadAvatarDocuments ? {} : "skip",
   );
   const avatarPreferences = useQuery(
     api.avatarPreferences.get,
-    isAuthenticated ? {} : "skip",
+    shouldLoadPhotoPreferences ? {} : "skip",
   );
   const cliprPreferences = useQuery(
     api.cliprPreferences.get,
-    isAuthenticated ? {} : "skip",
+    shouldLoadPhotoPreferences ? {} : "skip",
   );
   const saveAvatar = useMutation(api.avatars.save);
   const updateAvatarMutation = useMutation(api.avatars.update);
@@ -92,18 +107,20 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
   const [isHydrating, setIsHydrating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [refreshNonce, setRefreshNonce] = useState(0);
   const photoCacheRef = useRef(new Map<string, PhotoAsset>());
   const avatars = useMemo(
-    () => avatarDocuments?.map(createAvatarFromConvexDocument) ?? [],
-    [avatarDocuments],
+    () =>
+      shouldLoadAvatarDocuments
+        ? avatarDocuments?.map(createAvatarFromConvexDocument) ?? []
+        : [],
+    [avatarDocuments, shouldLoadAvatarDocuments],
   );
   const resolvedDefaultCliprVoiceId = getCliprVoiceId(
     cliprPreferences?.defaultVoiceId ?? defaultCliprVoiceId,
   );
 
   const refresh = useCallback(async () => {
-    setRefreshNonce((currentNonce) => currentNonce + 1);
+    setError(null);
   }, []);
 
   const createAvatar = useCallback(
@@ -791,10 +808,19 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
   );
 
   useEffect(() => {
+    if (!shouldLoadPhotoDocuments) {
+      void Promise.resolve().then(() => {
+        setPhotos([]);
+        setIsHydrating(false);
+      });
+      return;
+    }
+
     if (isAuthLoading || !isAuthenticated || !photoDocuments) {
       if (!isAuthLoading && !isAuthenticated) {
         void Promise.resolve().then(() => {
           setPhotos([]);
+          setIsHydrating(false);
         });
       }
 
@@ -850,7 +876,12 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     return () => {
       isCancelled = true;
     };
-  }, [isAuthenticated, isAuthLoading, photoDocuments, refreshNonce]);
+  }, [
+    isAuthenticated,
+    isAuthLoading,
+    photoDocuments,
+    shouldLoadPhotoDocuments,
+  ]);
 
   return {
     avatars,
@@ -859,10 +890,10 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     photos,
     isLoading:
       isAuthLoading ||
-      (isAuthenticated && photoDocuments === undefined) ||
-      (isAuthenticated && avatarDocuments === undefined) ||
-      (isAuthenticated && avatarPreferences === undefined) ||
-      (isAuthenticated && cliprPreferences === undefined) ||
+      (shouldLoadPhotoDocuments && photoDocuments === undefined) ||
+      (shouldLoadAvatarDocuments && avatarDocuments === undefined) ||
+      (shouldLoadPhotoPreferences && avatarPreferences === undefined) ||
+      (shouldLoadPhotoPreferences && cliprPreferences === undefined) ||
       isHydrating,
     isSaving,
     error,

@@ -36,6 +36,7 @@ import {
   textOverlaysValidator,
 } from "./validators/textOverlay";
 import { videoPlaybackRateValidator } from "./validators/videoPlaybackRate";
+import { videoClipLibraryKindValidator } from "./validators/videoClipLibraryKind";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
 
 export default defineSchema({
@@ -63,6 +64,7 @@ export default defineSchema({
     productId: v.optional(v.string()),
     originalName: v.string(),
     clipType: clipTypeValidator,
+    libraryKind: v.optional(videoClipLibraryKindValidator),
     videoObject: r2ObjectValidator,
     posterObject: v.optional(r2ObjectValidator),
     posterVersion: v.optional(v.number()),
@@ -85,6 +87,18 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_is_posted_created", ["ownerId", "isPosted", "createdAt"])
+    .index("by_owner_library_kind_created", [
+      "ownerId",
+      "libraryKind",
+      "createdAt",
+    ])
+    .index("by_owner_library_kind_is_posted_created", [
+      "ownerId",
+      "libraryKind",
+      "isPosted",
+      "createdAt",
+    ])
     .index("by_owner_id", ["ownerId", "id"]),
   photoAssets: defineTable({
     ownerId: v.string(),

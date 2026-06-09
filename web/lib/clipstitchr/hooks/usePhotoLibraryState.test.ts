@@ -34,6 +34,7 @@ const mocks = vi.hoisted(() => {
       mutationFns.set(mutationId, mutation);
       return mutation;
     }),
+    usePathname: vi.fn(),
     useQuery: vi.fn(),
     stateQueue: [] as unknown[],
     useStateSetter: vi.fn(),
@@ -72,6 +73,10 @@ vi.mock("convex/react", () => ({
   useConvexAuth: mocks.useConvexAuth,
   useMutation: mocks.useMutation,
   useQuery: mocks.useQuery,
+}));
+
+vi.mock("next/navigation", () => ({
+  usePathname: mocks.usePathname,
 }));
 
 vi.mock("@/convex/_generated/api", () => ({
@@ -233,6 +238,7 @@ describe("usePhotoLibraryState", () => {
       isAuthenticated: true,
       isLoading: false,
     });
+    mocks.usePathname.mockReturnValue("/dashboard/avatars");
     mocks.useQuery.mockImplementation((queryId: string) => {
       if (queryId === "photoAssets.list") {
         return [];

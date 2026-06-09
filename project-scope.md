@@ -354,6 +354,10 @@ selected slides.
   Cache Storage using the R2 object key, content type, and size as the cache
   identity. Full video/audio blobs must stay lazy and should not be persisted
   in browser cache.
+- Dashboard media hooks must subscribe only to the metadata used by the active
+  dashboard route. Clip category lists use the stored Convex `libraryKind`
+  (`ugc`, `demo`, `clipr`, or `swapr`) plus owner/status indexes instead of
+  filtering through all media rows for the owner.
 - Poster generation is infrastructure for video previews. User-authored thumbnail generation, thumbnail selection, and thumbnail editing remain out of scope for the MVP.
 
 ### Media Bunny API Map (MVP)
@@ -451,6 +455,7 @@ interface VideoClip {
   id: string;
   name: string;
   type: 'ugc' | 'demo';
+  libraryKind?: 'ugc' | 'demo' | 'clipr' | 'swapr'; // indexed derived category for cheap library reads
   videoObject: R2ObjectReference; // normalized 9:16 clip in R2
   posterObject?: R2ObjectReference; // generated JPEG poster in R2
   posterVersion?: number; // capture algorithm version for backfilling stale posters

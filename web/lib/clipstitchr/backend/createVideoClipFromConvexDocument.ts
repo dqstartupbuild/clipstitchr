@@ -25,6 +25,7 @@ export function createVideoClipFromConvexDocument({
     productId: clip.productId,
     originalName: clip.originalName,
     clipType: clip.clipType,
+    libraryKind: clip.libraryKind,
     videoObject: clip.videoObject,
     blob,
     posterObject: clip.posterObject,

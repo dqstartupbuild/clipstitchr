@@ -17,6 +17,7 @@ export type VideoClip = {
   productId?: string;
   originalName: string;
   clipType: ClipType;
+  libraryKind?: "clipr" | "demo" | "swapr" | "ugc";
   videoObject: R2ObjectReference;
   blob: Blob;
   posterObject?: R2ObjectReference;

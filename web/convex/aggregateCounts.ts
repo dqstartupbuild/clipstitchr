@@ -1,25 +1,17 @@
 import { TableAggregate } from "@convex-dev/aggregate";
 import { components } from "./_generated/api";
+import {
+  getVideoClipLibraryKind,
+  type VideoClipLibraryKind,
+} from "./getVideoClipLibraryKind";
 import type { DataModel, Doc } from "./_generated/dataModel";
 
-export type VideoClipCountKey = "clipr" | "demo" | "swapr" | "ugc";
+export type VideoClipCountKey = VideoClipLibraryKind;
 
 export function getVideoClipCountKey(
   clip: Doc<"videoClips">,
 ): VideoClipCountKey {
-  if (clip.cliprMetadata) {
-    return "clipr";
-  }
-
-  if (clip.swaprMetadata?.source === "swapr") {
-    return "swapr";
-  }
-
-  if (clip.clipType === "demo") {
-    return "demo";
-  }
-
-  return "ugc";
+  return getVideoClipLibraryKind(clip);
 }
 
 export const videoClipCounts = new TableAggregate<{

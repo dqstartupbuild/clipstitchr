@@ -8,6 +8,7 @@ import {
   usePaginatedQuery,
   useQuery,
 } from "convex/react";
+import { usePathname } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { createStitchFromConvexDocument } from "@/lib/clipstitchr/backend/createStitchFromConvexDocument";
 import { createVideoClipFromConvexDocument } from "@/lib/clipstitchr/backend/createVideoClipFromConvexDocument";
@@ -51,62 +52,82 @@ type PendingPosterBlobLoad = {
 
 export function useClipLibraryState(): ClipLibraryValue {
   const convex = useConvex();
+  const pathname = usePathname() ?? "";
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const [error, setError] = useState<string | null>(null);
-  const [refreshNonce, setRefreshNonce] = useState(0);
   const [sortOrder, setSortOrder] =
     useState<ClipLibrarySortOrder>("newest");
+  const isDashboardHome = pathname === "/dashboard";
+  const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
+  const isStitchrRoute = pathname.startsWith("/dashboard/stitchr");
+  const isSwaprRoute = pathname.startsWith("/dashboard/swapr");
+  const shouldLoadAllClips =
+    isAuthenticated && (isDashboardHome || isSwaprRoute);
+  const shouldLoadUgcClips =
+    isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
+  const shouldLoadCliprClips =
+    isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
+  const shouldLoadPostedCliprClips = isAuthenticated && isUploadsRoute;
+  const shouldLoadDemoClips =
+    isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
+  const shouldLoadSwapClips =
+    isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
+  const shouldLoadStitches =
+    isAuthenticated && (isDashboardHome || isUploadsRoute || isSwaprRoute);
+  const shouldLoadPostedStitches = isAuthenticated && isUploadsRoute;
+  const shouldLoadCounts =
+    isAuthenticated && (isDashboardHome || isUploadsRoute);
   const clipDocumentsQuery = usePaginatedQuery(
     api.videoClips.list,
-    isAuthenticated ? { refreshNonce, sortOrder } : "skip",
+    shouldLoadAllClips ? { sortOrder } : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const ugcClipDocumentsQuery = usePaginatedQuery(
     api.videoClips.listByLibraryKind,
-    isAuthenticated ? { kind: "ugc", refreshNonce, sortOrder } : "skip",
+    shouldLoadUgcClips ? { kind: "ugc", sortOrder } : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const cliprClipDocumentsQuery = usePaginatedQuery(
     api.videoClips.listByLibraryKind,
-    isAuthenticated
-      ? { kind: "clipr", postedStatus: "active", refreshNonce, sortOrder }
+    shouldLoadCliprClips
+      ? { kind: "clipr", postedStatus: "active", sortOrder }
       : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const postedCliprClipDocumentsQuery = usePaginatedQuery(
     api.videoClips.listByLibraryKind,
-    isAuthenticated
-      ? { kind: "clipr", postedStatus: "posted", refreshNonce, sortOrder }
+    shouldLoadPostedCliprClips
+      ? { kind: "clipr", postedStatus: "posted", sortOrder }
       : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const demoClipDocumentsQuery = usePaginatedQuery(
     api.videoClips.listByLibraryKind,
-    isAuthenticated ? { kind: "demo", refreshNonce, sortOrder } : "skip",
+    shouldLoadDemoClips ? { kind: "demo", sortOrder } : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const swapClipDocumentsQuery = usePaginatedQuery(
     api.videoClips.listByLibraryKind,
-    isAuthenticated ? { kind: "swapr", refreshNonce, sortOrder } : "skip",
+    shouldLoadSwapClips ? { kind: "swapr", sortOrder } : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const stitchDocumentsQuery = usePaginatedQuery(
     api.stitches.list,
-    isAuthenticated
-      ? { postedStatus: "active", refreshNonce, sortOrder }
+    shouldLoadStitches
+      ? { postedStatus: "active", sortOrder }
       : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const postedStitchDocumentsQuery = usePaginatedQuery(
     api.stitches.list,
-    isAuthenticated
-      ? { postedStatus: "posted", refreshNonce, sortOrder }
+    shouldLoadPostedStitches
+      ? { postedStatus: "posted", sortOrder }
       : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const aggregateCounts = useQuery(
     api.libraryCounts.get,
-    isAuthenticated ? { refreshNonce } : "skip",
+    shouldLoadCounts ? {} : "skip",
   );
   const clipDocuments = clipDocumentsQuery.results;
   const ugcClipDocuments = ugcClipDocumentsQuery.results;
@@ -220,7 +241,6 @@ export function useClipLibraryState(): ClipLibraryValue {
 
   const refresh = useCallback(async () => {
     setError(null);
-    setRefreshNonce((currentNonce) => currentNonce + 1);
   }, []);
 
   const flushQueuedPosterBlobLoads = useCallback(() => {
@@ -767,14 +787,22 @@ export function useClipLibraryState(): ClipLibraryValue {
   }, [postedStitchDocumentsQuery]);
   const isLoadingFirstPage =
     isAuthenticated &&
-    (clipDocumentsQuery.status === "LoadingFirstPage" ||
-      ugcClipDocumentsQuery.status === "LoadingFirstPage" ||
-      cliprClipDocumentsQuery.status === "LoadingFirstPage" ||
-      postedCliprClipDocumentsQuery.status === "LoadingFirstPage" ||
-      demoClipDocumentsQuery.status === "LoadingFirstPage" ||
-      swapClipDocumentsQuery.status === "LoadingFirstPage" ||
-      stitchDocumentsQuery.status === "LoadingFirstPage" ||
-      postedStitchDocumentsQuery.status === "LoadingFirstPage");
+    ((shouldLoadAllClips &&
+      clipDocumentsQuery.status === "LoadingFirstPage") ||
+      (shouldLoadUgcClips &&
+        ugcClipDocumentsQuery.status === "LoadingFirstPage") ||
+      (shouldLoadCliprClips &&
+        cliprClipDocumentsQuery.status === "LoadingFirstPage") ||
+      (shouldLoadPostedCliprClips &&
+        postedCliprClipDocumentsQuery.status === "LoadingFirstPage") ||
+      (shouldLoadDemoClips &&
+        demoClipDocumentsQuery.status === "LoadingFirstPage") ||
+      (shouldLoadSwapClips &&
+        swapClipDocumentsQuery.status === "LoadingFirstPage") ||
+      (shouldLoadStitches &&
+        stitchDocumentsQuery.status === "LoadingFirstPage") ||
+      (shouldLoadPostedStitches &&
+        postedStitchDocumentsQuery.status === "LoadingFirstPage"));
 
   return {
     clips,

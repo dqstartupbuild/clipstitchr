@@ -32,6 +32,7 @@ const mocks = vi.hoisted(() => {
       return mutation;
     }),
     usePaginatedQuery: vi.fn(),
+    usePathname: vi.fn(),
     useQuery: vi.fn(),
     useStateSetter: vi.fn(),
     uploadBlobsToR2: vi.fn(),
@@ -69,6 +70,10 @@ vi.mock("convex/react", () => ({
   useMutation: mocks.useMutation,
   usePaginatedQuery: mocks.usePaginatedQuery,
   useQuery: mocks.useQuery,
+}));
+
+vi.mock("next/navigation", () => ({
+  usePathname: mocks.usePathname,
 }));
 
 vi.mock("@/convex/_generated/api", () => ({
@@ -209,6 +214,7 @@ describe("useClipLibraryState", () => {
       isAuthenticated: true,
       isLoading: false,
     });
+    mocks.usePathname.mockReturnValue("/dashboard");
     mocks.usePaginatedQuery.mockImplementation(() => {
       return {
         isLoading: false,
