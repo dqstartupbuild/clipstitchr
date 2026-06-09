@@ -23,6 +23,7 @@ import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import type { CliprMode } from "@/lib/clipstitchr/types/CliprMode";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
+import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 
 export function CliprPageClient() {
   const library = useClipLibrary();
@@ -60,7 +61,11 @@ export function CliprPageClient() {
     () => photoLibrary.avatars.find((avatar) => avatar.id === activeAvatarId),
     [activeAvatarId, photoLibrary.avatars],
   );
-  const avatarVoiceId = activeAvatar?.cliprVoiceId ?? defaultCliprVoiceId;
+  const avatarVoiceId = getCliprVoiceId(
+    activeAvatar?.cliprVoiceId ??
+      photoLibrary.defaultCliprVoiceId ??
+      defaultCliprVoiceId,
+  );
   const activeVoiceId =
     voiceOverride?.avatarId === activeAvatarId
       ? voiceOverride.voiceId

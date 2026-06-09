@@ -14,15 +14,17 @@ import { parseSwaprAutomationTaskInput } from "@/lib/clipstitchr/server/automati
 import { createAvatarGenerationVariants } from "@/lib/clipstitchr/server/createAvatarGenerationVariants";
 import { createAvatarPhotoGenerationInput } from "@/lib/clipstitchr/server/createAvatarPhotoGenerationInput";
 import { createAvatarPhotoGenerationPrompt } from "@/lib/clipstitchr/server/createAvatarPhotoGenerationPrompt";
-import { createCliprAvatarVideo } from "@/lib/clipstitchr/server/createCliprAvatarVideo";
 import { createCliprMusic } from "@/lib/clipstitchr/server/createCliprMusic";
 import { createCliprSceneAvatarImage } from "@/lib/clipstitchr/server/createCliprSceneAvatarImage";
+import { createCliprSyncedAvatarVideoOutput } from "@/lib/clipstitchr/server/createCliprSyncedAvatarVideoOutput";
 import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createUploadVideoAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadVideoAnalysisOutputText";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
 import { getAvatarPhotoGenerationModelId } from "@/lib/clipstitchr/server/getAvatarPhotoGenerationModelId";
 import { getCliprAvatarSourceScene } from "@/lib/clipstitchr/server/getCliprAvatarSourceScene";
+import { getCliprLipSyncModelId } from "@/lib/clipstitchr/server/getCliprLipSyncModelId";
+import { getCliprTtsModelId } from "@/lib/clipstitchr/server/getCliprTtsModelId";
 import { getRemoteImageFile } from "@/lib/clipstitchr/server/getRemoteImageFile";
 import { getReplicateOutputUrls } from "@/lib/clipstitchr/server/getReplicateOutputUrls";
 import { getReplicatePredictionModelReference } from "@/lib/clipstitchr/server/getReplicatePredictionModelReference";
@@ -33,11 +35,12 @@ import { createR2ObjectKey } from "@/lib/clipstitchr/server/r2/createR2ObjectKey
 import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl";
 import { putR2Object } from "@/lib/clipstitchr/server/r2/putR2Object";
 import { saveCliprMusicObject } from "@/lib/clipstitchr/server/saveCliprMusicObject";
-import { saveCliprAvatarVideoObject } from "@/lib/clipstitchr/server/saveCliprAvatarVideoObject";
 import { saveCliprSceneImageObject } from "@/lib/clipstitchr/server/saveCliprSceneImageObject";
 import { parseUploadAssetAnalysis } from "@/lib/clipstitchr/server/parseUploadAssetAnalysis";
 import { createCliprGeneratedMusicMetadata } from "@/lib/clipstitchr/server/clipr/createCliprGeneratedMusicMetadata";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { CliprLipSyncModelId } from "@/lib/clipstitchr/types/CliprLipSyncModelId";
+import type { CliprTtsModelId } from "@/lib/clipstitchr/types/CliprTtsModelId";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -152,11 +155,13 @@ type ManualCliprProviderJobInput = {
   inferredPainPoints: string[];
   inferredProblem?: string;
   jobId: string;
+  lipSyncModelId: CliprLipSyncModelId;
   musicTrack?: SharedMusicTrack | null;
   productDetails: string;
   productId: string;
   productName: string;
   scriptIdea?: string;
+  ttsModelId: CliprTtsModelId;
   voiceId: string;
 };
 
@@ -660,11 +665,13 @@ function parseManualCliprProviderJobInput(
     inferredPainPoints: getStringArray(input.inferredPainPoints),
     inferredProblem: getOptionalString(input.inferredProblem),
     jobId: getString(input.jobId, "Clipr job ID"),
+    lipSyncModelId: getCliprLipSyncModelId(input.lipSyncModelId),
     musicTrack: wardrobeMusicTrack,
     productDetails: getString(input.productDetails, "Clipr product details"),
     productId: getString(input.productId, "Clipr product ID"),
     productName: getString(input.productName, "Clipr product name"),
     scriptIdea: getOptionalString(input.scriptIdea),
+    ttsModelId: getCliprTtsModelId(input.ttsModelId),
     voiceId: getString(input.voiceId, "Clipr voice ID"),
   };
 }
@@ -1204,17 +1211,17 @@ async function processClipr({
     providerJobId: generatedAvatarImage.predictionId,
   });
 
-  const generatedAvatarVideo = await createCliprAvatarVideo({
-    imageUrl: generatedAvatarImage.outputUrl,
+  const avatarImageUrl = await getR2DownloadSignedUrl(avatarImageObject.key);
+  const avatarVideoOutput = await createCliprSyncedAvatarVideoOutput({
+    imageUrl: avatarImageUrl.url,
+    jobId: input.jobId,
+    lipSyncModelId: getCliprLipSyncModelId(),
     replicate,
     script: textGeneration.script,
-    voiceId: input.voiceId,
-  });
-  const avatarVideoObject = await saveCliprAvatarVideoObject({
-    body: generatedAvatarVideo.body,
-    contentType: generatedAvatarVideo.contentType,
-    jobId: input.jobId,
+    targetDurationSeconds: input.targetDurationSeconds,
+    ttsModelId: getCliprTtsModelId(),
     userId: task.ownerId,
+    voiceId: input.voiceId,
   });
   const mediaClipId = createId();
   const mediaJobId = `media:clipr-finalization:${input.jobId}`;
@@ -1224,9 +1231,10 @@ async function processClipr({
     secret: config.providerWorkerSecret,
     ownerId: task.ownerId,
     id: input.jobId,
-    avatarVideoObject,
-    avatarVideoProviderPredictionId: generatedAvatarVideo.predictionId,
-    providerModels: [generatedAvatarVideo.modelId],
+    avatarVideoObject: avatarVideoOutput.avatarVideoObject,
+    avatarVideoProviderPredictionId:
+      avatarVideoOutput.avatarVideoProviderPredictionId,
+    providerModels: avatarVideoOutput.providerModels,
     progress: 0.68,
     updatedAt: getNow(),
   });
@@ -1241,12 +1249,13 @@ async function processClipr({
         automationDate: input.automationDate,
         automationRunId: task.runId,
         automationTaskId: task.id,
-        avatarVideoProviderPredictionId: generatedAvatarVideo.predictionId,
+        avatarVideoProviderPredictionId:
+          avatarVideoOutput.avatarVideoProviderPredictionId,
         clipId: mediaClipId,
         clipName,
         cliprJobId: input.jobId,
         sourceSummary: `${input.product.name} with ${input.avatarName}`,
-        sourceVideoObject: avatarVideoObject,
+        sourceVideoObject: avatarVideoOutput.avatarVideoObject,
       }),
       createdAt: getNow(),
     },
@@ -1258,7 +1267,7 @@ async function processClipr({
     task,
     status: "running",
     stage: "awaiting-media-finalization",
-    providerJobId: generatedAvatarVideo.predictionId,
+    providerJobId: avatarVideoOutput.avatarVideoProviderPredictionId,
     mediaJobId: mediaJob.id,
     releaseLock: true,
   });
@@ -1952,19 +1961,19 @@ async function processManualClipr({
     progress: 0.45,
   });
 
-  const generatedAvatarVideo = await createCliprAvatarVideo({
-    imageUrl: generatedAvatarImage.outputUrl,
+  const avatarImageUrl = await getR2DownloadSignedUrl(avatarImageObject.key);
+  const avatarVideoOutput = await createCliprSyncedAvatarVideoOutput({
+    imageUrl: avatarImageUrl.url,
+    jobId: input.jobId,
+    lipSyncModelId: input.lipSyncModelId,
     replicate,
     script: textGeneration.script,
+    targetDurationSeconds: input.durationSeconds,
+    ttsModelId: input.ttsModelId,
+    userId: job.ownerId,
     voiceId: input.voiceId,
   });
-  const avatarVideoObject = await saveCliprAvatarVideoObject({
-    body: generatedAvatarVideo.body,
-    contentType: generatedAvatarVideo.contentType,
-    jobId: input.jobId,
-    userId: job.ownerId,
-  });
-  const providerModels = [generatedAvatarVideo.modelId];
+  const providerModels = [...avatarVideoOutput.providerModels];
   let music =
     input.musicTrack && !input.addMusic
       ? createCliprMusicMetadataFromSharedTrack(input.musicTrack)
@@ -1977,7 +1986,7 @@ async function processManualClipr({
       job,
       status: "running",
       stage: "music-provider",
-      providerJobId: generatedAvatarVideo.predictionId,
+      providerJobId: avatarVideoOutput.avatarVideoProviderPredictionId,
       progress: 0.58,
     });
 
@@ -2043,13 +2052,14 @@ async function processManualClipr({
       id: `media:clipr-finalization:${input.jobId}`,
       idempotencyKey: `${job.id}:clipr-finalization`,
       inputSnapshotJson: JSON.stringify({
-        avatarVideoProviderPredictionId: generatedAvatarVideo.predictionId,
+        avatarVideoProviderPredictionId:
+          avatarVideoOutput.avatarVideoProviderPredictionId,
         clipId: mediaClipId,
         clipName,
         cliprJobId: input.jobId,
         providerJobId: job.id,
         sourceSummary: `${input.productName} with ${input.avatarName}`,
-        sourceVideoObject: avatarVideoObject,
+        sourceVideoObject: avatarVideoOutput.avatarVideoObject,
       }),
       createdAt: getNow(),
     },
@@ -2059,8 +2069,9 @@ async function processManualClipr({
     secret: config.providerWorkerSecret,
     ownerId: job.ownerId,
     id: input.jobId,
-    avatarVideoObject,
-    avatarVideoProviderPredictionId: generatedAvatarVideo.predictionId,
+    avatarVideoObject: avatarVideoOutput.avatarVideoObject,
+    avatarVideoProviderPredictionId:
+      avatarVideoOutput.avatarVideoProviderPredictionId,
     music,
     providerModels,
     progress: 0.68,
@@ -2072,7 +2083,7 @@ async function processManualClipr({
     job,
     status: "running",
     stage: "awaiting-media-finalization",
-    providerJobId: generatedAvatarVideo.predictionId,
+    providerJobId: avatarVideoOutput.avatarVideoProviderPredictionId,
     mediaJobId: mediaJob.id,
     progress: 0.72,
     releaseLock: true,

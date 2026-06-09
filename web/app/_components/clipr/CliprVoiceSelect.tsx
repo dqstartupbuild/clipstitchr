@@ -1,6 +1,6 @@
 import { Mic2 } from "lucide-react";
-import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { CliprVoicePreviewButton } from "@/app/_components/clipr/CliprVoicePreviewButton";
+import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { cliprVoices } from "@/lib/clipstitchr/constants/cliprVoices";
 
 type CliprVoiceSelectProps = {
@@ -12,8 +12,10 @@ export function CliprVoiceSelect({
   value,
   onVoiceChange,
 }: CliprVoiceSelectProps) {
-  const selectedVoice =
-    cliprVoices.find((voice) => voice.id === value) ?? cliprVoices[0];
+  const activeValue = cliprVoices.some((voice) => voice.id === value)
+    ? value
+    : (cliprVoices[0]?.id ?? "");
+  const activeVoice = cliprVoices.find((voice) => voice.id === activeValue);
 
   return (
     <section>
@@ -28,21 +30,22 @@ export function CliprVoiceSelect({
           </h2>
         </div>
       </div>
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-        <SelectInput
-          label="Voice"
-          value={value}
-          options={cliprVoices.map((voice) => ({
-            label: `${voice.name} - ${voice.description}`,
-            value: voice.id,
-          }))}
-          onChange={(event) => onVoiceChange(event.target.value)}
-        />
-        <div className="flex flex-wrap gap-2 sm:justify-end">
+      <div className="grid gap-3">
+        <div className="flex items-end gap-2">
+          <SelectInput
+            label="Voice"
+            value={activeValue}
+            options={cliprVoices.map((voice) => ({
+              label: `${voice.name} - ${voice.description}`,
+              value: voice.id,
+            }))}
+            wrapperClassName="min-w-0 flex-1"
+            onChange={(event) => onVoiceChange(event.target.value)}
+          />
           <CliprVoicePreviewButton
-            key={selectedVoice.id}
-            src={selectedVoice.previewSrc}
-            voiceName={selectedVoice.name}
+            isCompact
+            src={activeVoice?.previewSrc}
+            voiceName={activeVoice?.name ?? "selected"}
           />
         </div>
       </div>

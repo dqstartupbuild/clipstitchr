@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createCliprAvatarVideo } from "@/lib/clipstitchr/server/createCliprAvatarVideo";
+import { createCliprSyncedAvatarVideoOutput } from "@/lib/clipstitchr/server/createCliprSyncedAvatarVideoOutput";
 import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
 import { createProductEnrichment } from "@/lib/clipstitchr/server/createProductEnrichment";
 import { createReplicateImageDataUrl } from "@/lib/clipstitchr/server/createReplicateImageDataUrl";
@@ -18,6 +19,7 @@ import { saveStitchMusicObject } from "@/lib/clipstitchr/server/saveStitchMusicO
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 
 const mocks = vi.hoisted(() => ({
+  getR2DownloadSignedUrl: vi.fn(),
   getCompletedReplicatePredictionOutputText: vi.fn(),
   parseCliprTextGenerationOutput: vi.fn(),
   putR2Object: vi.fn(),
@@ -37,6 +39,10 @@ vi.mock("@/lib/clipstitchr/server/parseCliprTextGenerationOutput", () => ({
 
 vi.mock("@/lib/clipstitchr/server/r2/putR2Object", () => ({
   putR2Object: mocks.putR2Object,
+}));
+
+vi.mock("@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl", () => ({
+  getR2DownloadSignedUrl: mocks.getR2DownloadSignedUrl,
 }));
 
 type ReplicateClient = Parameters<typeof createProductEnrichment>[0]["replicate"];
@@ -115,6 +121,10 @@ describe("server utility coverage", () => {
       hooks: ["Hook"],
       providerModel: "model",
     });
+    mocks.getR2DownloadSignedUrl.mockImplementation(async (key: string) => ({
+      expiresIn: 3600,
+      url: `https://r2.example.com/${key}`,
+    }));
   });
 
   afterEach(() => {
@@ -306,10 +316,11 @@ describe("server utility coverage", () => {
 
     await expect(
       createCliprAvatarVideo({
+        audioUrl: "https://example.com/speech.mp3",
         imageUrl: "https://example.com/avatar.jpg",
         replicate,
         script: "Try this workflow.",
-        voiceId: "Puck (Male)",
+        voiceId: "Drew",
       }),
     ).resolves.toEqual(
       expect.objectContaining({
@@ -320,8 +331,8 @@ describe("server utility coverage", () => {
     expect(predictionCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         input: expect.objectContaining({
+          audio: "https://example.com/speech.mp3",
           image: "https://example.com/avatar.jpg",
-          voice: "Puck (Male)",
         }),
       }),
     );
@@ -337,9 +348,59 @@ describe("server utility coverage", () => {
         imageUrl: "https://example.com/avatar.jpg",
         replicate,
         script: "Try this workflow.",
-        voiceId: "Puck (Male)",
+        voiceId: "Drew",
       }),
     ).rejects.toThrow("provider failed");
+  });
+
+  it("feeds saved ElevenLabs speech into the avatar video model", async () => {
+    const { predictionCreate, replicate } = createReplicate();
+    let fetchCount = 0;
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        fetchCount += 1;
+
+        return new Response(fetchCount === 1 ? "audio" : "video", {
+          headers: {
+            "content-type": fetchCount === 1 ? "audio/mpeg" : "video/mp4",
+          },
+        });
+      }),
+    );
+
+    await expect(
+      createCliprSyncedAvatarVideoOutput({
+        imageUrl: "https://r2.example.com/avatar-source.png",
+        jobId: "job_1",
+        lipSyncModelId: "none",
+        replicate,
+        script: "Try this workflow.",
+        targetDurationSeconds: 60,
+        ttsModelId: "elevenlabs/v3",
+        userId: "user_1",
+        voiceId: "Rachel",
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        avatarVideoProviderPredictionId: "prediction_2",
+      }),
+    );
+
+    expect(mocks.getR2DownloadSignedUrl).toHaveBeenCalledWith(
+      "users/user_1/clipr-speech/job_1/speech.mp3",
+    );
+    expect(predictionCreate).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        input: expect.objectContaining({
+          audio:
+            "https://r2.example.com/users/user_1/clipr-speech/job_1/speech.mp3",
+          image: "https://r2.example.com/avatar-source.png",
+        }),
+      }),
+    );
   });
 
   it("saves generated media objects under the expected R2 keys", async () => {

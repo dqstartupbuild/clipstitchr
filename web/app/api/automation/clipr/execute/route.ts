@@ -3,15 +3,16 @@ import { api } from "@/convex/_generated/api";
 import { getAutomationWorkerSecret } from "@/lib/clipstitchr/server/automation/getAutomationWorkerSecret";
 import { getIsAuthorizedAutomationRequest } from "@/lib/clipstitchr/server/automation/getIsAuthorizedAutomationRequest";
 import { parseCliprAutomationTaskInput } from "@/lib/clipstitchr/server/automation/parseCliprAutomationTaskInput";
-import { createCliprAvatarVideo } from "@/lib/clipstitchr/server/createCliprAvatarVideo";
 import { createCliprSceneAvatarImage } from "@/lib/clipstitchr/server/createCliprSceneAvatarImage";
+import { createCliprSyncedAvatarVideoOutput } from "@/lib/clipstitchr/server/createCliprSyncedAvatarVideoOutput";
 import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
 import { createConvexHttpClient } from "@/lib/clipstitchr/server/convex/createConvexHttpClient";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { getCliprAvatarSourceScene } from "@/lib/clipstitchr/server/getCliprAvatarSourceScene";
+import { getCliprLipSyncModelId } from "@/lib/clipstitchr/server/getCliprLipSyncModelId";
+import { getCliprTtsModelId } from "@/lib/clipstitchr/server/getCliprTtsModelId";
 import { assertR2ObjectKeyBelongsToUser } from "@/lib/clipstitchr/server/r2/assertR2ObjectKeyBelongsToUser";
 import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl";
-import { saveCliprAvatarVideoObject } from "@/lib/clipstitchr/server/saveCliprAvatarVideoObject";
 import { saveCliprSceneImageObject } from "@/lib/clipstitchr/server/saveCliprSceneImageObject";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getCliprFinalClipName } from "@/lib/clipstitchr/utils/getCliprFinalClipName";
@@ -207,17 +208,16 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
     });
 
-    const generatedAvatarVideo = await createCliprAvatarVideo({
+    const avatarVideoOutput = await createCliprSyncedAvatarVideoOutput({
       imageUrl: generatedAvatarImage.outputUrl,
+      jobId: input.jobId,
+      lipSyncModelId: getCliprLipSyncModelId(),
       replicate,
       script: textGeneration.script,
-      voiceId: input.voiceId,
-    });
-    const avatarVideoObject = await saveCliprAvatarVideoObject({
-      body: generatedAvatarVideo.body,
-      contentType: generatedAvatarVideo.contentType,
-      jobId: input.jobId,
+      targetDurationSeconds: input.targetDurationSeconds,
+      ttsModelId: getCliprTtsModelId(),
       userId: task.ownerId,
+      voiceId: input.voiceId,
     });
     const mediaClipId = createId();
     const mediaJobId = `media:clipr-finalization:${input.jobId}`;
@@ -228,9 +228,10 @@ export async function POST(request: Request) {
         secret,
         ownerId: task.ownerId,
         id: input.jobId,
-        avatarVideoObject,
-        avatarVideoProviderPredictionId: generatedAvatarVideo.predictionId,
-        providerModels: [generatedAvatarVideo.modelId],
+        avatarVideoObject: avatarVideoOutput.avatarVideoObject,
+        avatarVideoProviderPredictionId:
+          avatarVideoOutput.avatarVideoProviderPredictionId,
+        providerModels: avatarVideoOutput.providerModels,
         progress: 0.68,
         updatedAt: new Date().toISOString(),
       },
@@ -246,12 +247,13 @@ export async function POST(request: Request) {
           automationDate: input.automationDate,
           automationRunId: task.runId,
           automationTaskId: task.id,
-          avatarVideoProviderPredictionId: generatedAvatarVideo.predictionId,
+          avatarVideoProviderPredictionId:
+            avatarVideoOutput.avatarVideoProviderPredictionId,
           clipId: mediaClipId,
           clipName,
           cliprJobId: input.jobId,
           sourceSummary: `${input.product.name} with ${input.avatarName}`,
-          sourceVideoObject: avatarVideoObject,
+          sourceVideoObject: avatarVideoOutput.avatarVideoObject,
         }),
         createdAt: new Date().toISOString(),
       },
@@ -263,7 +265,7 @@ export async function POST(request: Request) {
       id: task.id,
       status: "running",
       stage: "awaiting-media-finalization",
-      providerJobId: generatedAvatarVideo.predictionId,
+      providerJobId: avatarVideoOutput.avatarVideoProviderPredictionId,
       mediaJobId: mediaJob.id,
       updatedAt: new Date().toISOString(),
     });

@@ -129,7 +129,7 @@ describe("product enrichment and avatar generation helpers", () => {
     const videoInput = createCliprAvatarVideoInput({
       imageUrl: "https://example.com/avatar.jpg",
       script: "Try this before editing another ad.",
-      voiceId: "Zephyr (Female)",
+      voiceId: "Rachel",
     });
 
     expect(stillVariant.locationDescription).toBe(

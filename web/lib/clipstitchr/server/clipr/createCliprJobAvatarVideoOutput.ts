@@ -1,8 +1,7 @@
 import { api } from "@/convex/_generated/api";
-import { createCliprAvatarVideo } from "@/lib/clipstitchr/server/createCliprAvatarVideo";
 import { createCliprMusic } from "@/lib/clipstitchr/server/createCliprMusic";
+import { createCliprSyncedAvatarVideoOutput } from "@/lib/clipstitchr/server/createCliprSyncedAvatarVideoOutput";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
-import { saveCliprAvatarVideoObject } from "@/lib/clipstitchr/server/saveCliprAvatarVideoObject";
 import { saveCliprMusicObject } from "@/lib/clipstitchr/server/saveCliprMusicObject";
 import { saveSharedMusicObject } from "@/lib/clipstitchr/server/saveSharedMusicObject";
 import { createCliprGeneratedMusicMetadata } from "@/lib/clipstitchr/server/clipr/createCliprGeneratedMusicMetadata";
@@ -36,11 +35,16 @@ export async function createCliprJobAvatarVideoOutput({
   textGeneration,
   userId,
 }: CreateCliprJobAvatarVideoOutputOptions) {
-  const [generatedAvatarVideo, generatedMusic] = await Promise.all([
-    createCliprAvatarVideo({
+  const [avatarVideoOutput, generatedMusic] = await Promise.all([
+    createCliprSyncedAvatarVideoOutput({
       imageUrl: avatarImageOutput.generatedAvatarImage.outputUrl,
+      jobId: input.jobId,
+      lipSyncModelId: input.lipSyncModelId,
       replicate,
       script: textGeneration.script,
+      targetDurationSeconds: input.durationSeconds,
+      ttsModelId: input.ttsModelId,
+      userId,
       voiceId: input.voiceId,
     }),
     input.addMusic
@@ -61,30 +65,23 @@ export async function createCliprJobAvatarVideoOutput({
   }
 
   const generatedMusicTrackId = generatedMusic ? createId() : "";
-  const [avatarVideoObject, musicObject, sharedMusicObject] =
-    await Promise.all([
-      saveCliprAvatarVideoObject({
-        body: generatedAvatarVideo.body,
-        contentType: generatedAvatarVideo.contentType,
-        jobId: input.jobId,
-        userId,
-      }),
-      generatedMusic
-        ? saveCliprMusicObject({
-            body: generatedMusic.body,
-            contentType: generatedMusic.contentType,
-            jobId: `${input.jobId}-${generatedMusicTrackId}`,
-            userId,
-          })
-        : Promise.resolve(null),
-      generatedMusic
-        ? saveSharedMusicObject({
-            body: generatedMusic.body,
-            contentType: generatedMusic.contentType,
-            trackId: generatedMusicTrackId,
-          })
-        : Promise.resolve(null),
-    ]);
+  const [musicObject, sharedMusicObject] = await Promise.all([
+    generatedMusic
+      ? saveCliprMusicObject({
+          body: generatedMusic.body,
+          contentType: generatedMusic.contentType,
+          jobId: `${input.jobId}-${generatedMusicTrackId}`,
+          userId,
+        })
+      : Promise.resolve(null),
+    generatedMusic
+      ? saveSharedMusicObject({
+          body: generatedMusic.body,
+          contentType: generatedMusic.contentType,
+          trackId: generatedMusicTrackId,
+        })
+      : Promise.resolve(null),
+  ]);
   const musicRecordedAt = new Date().toISOString();
   const generatedMusicMetadata =
     generatedMusic && musicObject
@@ -123,11 +120,12 @@ export async function createCliprJobAvatarVideoOutput({
   return await convex.mutation(api.cliprJobs.recordAvatarVideoOutput, {
     secret,
     id: input.jobId,
-    avatarVideoObject,
-    avatarVideoProviderPredictionId: generatedAvatarVideo.predictionId,
+    avatarVideoObject: avatarVideoOutput.avatarVideoObject,
+    avatarVideoProviderPredictionId:
+      avatarVideoOutput.avatarVideoProviderPredictionId,
     music: musicMetadata,
     providerModels: [
-      generatedAvatarVideo.modelId,
+      ...avatarVideoOutput.providerModels,
       ...(generatedMusic ? [generatedMusic.modelId] : []),
     ],
     progress: 0.68,

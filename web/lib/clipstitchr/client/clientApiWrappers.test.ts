@@ -106,7 +106,7 @@ describe("client API wrappers", () => {
         musicTrackId: "track_1",
         productId: "product_1",
         scriptIdea: "Founder confession angle",
-        voiceId: "Zephyr (Female)",
+        voiceId: "Rachel",
       }),
     ).resolves.toEqual({ id: "job_1" });
     await expect(
@@ -193,7 +193,7 @@ describe("client API wrappers", () => {
         durationSeconds: 30,
         jobId: "job_1",
         productId: "product_1",
-        voiceId: "Zephyr (Female)",
+        voiceId: "Rachel",
       }),
     ).rejects.toThrow("No Clipr");
     await expect(

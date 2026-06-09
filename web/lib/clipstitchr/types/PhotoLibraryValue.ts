@@ -8,6 +8,7 @@ import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetad
 export type PhotoLibraryValue = {
   avatars: Avatar[];
   defaultAvatarId?: string;
+  defaultCliprVoiceId: string;
   photos: PhotoAssetMetadata[];
   isLoading: boolean;
   isSaving: boolean;
@@ -47,6 +48,7 @@ export type PhotoLibraryValue = {
     cliprVoiceId: Avatar["cliprVoiceId"],
   ) => Promise<void>;
   setDefaultAvatar: (avatar: Avatar) => Promise<void>;
+  setDefaultCliprVoice: (cliprVoiceId: string) => Promise<void>;
   removeAvatar: (id: string) => Promise<void>;
   removePhoto: (id: string) => Promise<void>;
 };

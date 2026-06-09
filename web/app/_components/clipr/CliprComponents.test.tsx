@@ -24,12 +24,6 @@ vi.mock("@/app/_components/music/MusicSelectorButton", () => ({
   }) => <button type="button">Select music {selectedTrackId}</button>,
 }));
 
-vi.mock("@/app/_components/clipr/CliprVoicePreviewButton", () => ({
-  CliprVoicePreviewButton: ({ voiceName }: { voiceName: string }) => (
-    <button type="button">Preview {voiceName}</button>
-  ),
-}));
-
 function findElements(
   value: unknown,
   predicate: (element: {
@@ -60,7 +54,7 @@ function findElements(
 
 function createAvatar(overrides: Partial<Avatar> = {}): Avatar {
   return {
-    cliprVoiceId: "Zephyr (Female)",
+    cliprVoiceId: "Rachel",
     createdAt: "2026-05-20T00:00:00.000Z",
     id: "avatar_1",
     name: "Alex",
@@ -169,7 +163,7 @@ function createJob(overrides: Partial<CliprClientJob> = {}): CliprClientJob {
     status: "completed",
     targetDurationSeconds: 30,
     updatedAt: "2026-05-20T00:02:00.000Z",
-    voiceId: "Zephyr (Female)",
+    voiceId: "Rachel",
     ...overrides,
   };
 }
@@ -319,16 +313,16 @@ describe("Clipr components", () => {
 
     (voiceSelect.props.onChange as (event: {
       target: { value: string };
-    }) => void)({ target: { value: "Puck (Male)" } });
+    }) => void)({ target: { value: "Drew" } });
     (musicCheckbox.props.onChange as (event: {
       currentTarget: { checked: boolean };
     }) => void)({ currentTarget: { checked: false } });
     (clearButton.props.onClick as () => void)();
 
-    expect(onVoiceChange).toHaveBeenCalledWith("Puck (Male)");
+    expect(onVoiceChange).toHaveBeenCalledWith("Drew");
     expect(onMusicChange).toHaveBeenCalledWith(false);
     expect(onClearTrack).toHaveBeenCalledOnce();
-    expect(voiceMarkup).toContain("Preview Zephyr");
+    expect(voiceMarkup).toContain("Rachel - Balanced creator");
     expect(musicMarkup).toContain("Bright Hook");
     expect(musicMarkup).toContain("Select music track_1");
   });

@@ -274,13 +274,14 @@ vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
   usePhotoLibrary: () => ({
     avatars: [
       {
-        cliprVoiceId: "Zephyr (Female)",
+        cliprVoiceId: "Rachel",
         id: "avatar_1",
         name: "Avatar",
         wardrobeStyle: "any",
       },
     ],
     defaultAvatarId: "avatar_1",
+    defaultCliprVoiceId: "Rachel",
     error: null,
     isLoading: false,
     isSaving: false,
@@ -305,6 +306,7 @@ vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
     saveFiles: mocks.saveFiles,
     saveGeneratedPhotos: mocks.saveGeneratedPhotos,
     setDefaultAvatar: vi.fn(),
+    setDefaultCliprVoice: vi.fn(),
     updateAvatarCliprVoice: vi.fn(),
     updateAvatarWardrobeStyle: vi.fn(),
     updatePhotoMetadata: vi.fn(),

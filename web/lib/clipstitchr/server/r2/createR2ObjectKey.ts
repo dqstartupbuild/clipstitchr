@@ -61,6 +61,11 @@ const objectKindConfig: Record<
     baseName: "music",
     fallbackExtension: "mp3",
   },
+  "clipr-speech-audio": {
+    directory: "clipr-speech",
+    baseName: "speech",
+    fallbackExtension: "mp3",
+  },
   "clipr-avatar-video": {
     directory: "clipr-scenes",
     baseName: "avatar",

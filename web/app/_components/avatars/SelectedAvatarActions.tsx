@@ -9,10 +9,11 @@ import { avatarWardrobeStyleOptions } from "@/lib/clipstitchr/constants/avatarWa
 import { cliprVoices } from "@/lib/clipstitchr/constants/cliprVoices";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 import type { AvatarWardrobeStyle } from "@/lib/clipstitchr/types/AvatarWardrobeStyle";
-import { getCliprVoice } from "@/lib/clipstitchr/utils/getCliprVoice";
+import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 
 type SelectedAvatarActionsProps = {
   avatar?: Avatar;
+  favoriteVoiceId: string;
   isDefaultAvatar: boolean;
   isSaving: boolean;
   photoCount: number;
@@ -23,11 +24,13 @@ type SelectedAvatarActionsProps = {
     wardrobeStyle: AvatarWardrobeStyle,
   ) => Promise<void>;
   onVoiceChange: (avatar: Avatar, cliprVoiceId: string) => Promise<void>;
+  onFavoriteVoiceChange: (cliprVoiceId: string) => Promise<void>;
   onSetDefault: (avatar: Avatar) => Promise<void>;
 };
 
 export function SelectedAvatarActions({
   avatar,
+  favoriteVoiceId,
   isDefaultAvatar,
   isSaving,
   photoCount,
@@ -35,6 +38,7 @@ export function SelectedAvatarActions({
   onRename,
   onWardrobeStyleChange,
   onVoiceChange,
+  onFavoriteVoiceChange,
   onSetDefault,
 }: SelectedAvatarActionsProps) {
   const [isRenaming, setIsRenaming] = useState(false);
@@ -42,6 +46,7 @@ export function SelectedAvatarActions({
   const [isRenameSaving, setIsRenameSaving] = useState(false);
   const [isWardrobeSaving, setIsWardrobeSaving] = useState(false);
   const [isVoiceSaving, setIsVoiceSaving] = useState(false);
+  const [isFavoriteVoiceSaving, setIsFavoriteVoiceSaving] = useState(false);
   const [name, setName] = useState("");
   const [isDefaultSaving, setIsDefaultSaving] = useState(false);
 
@@ -57,15 +62,19 @@ export function SelectedAvatarActions({
     !isRenameSaving &&
     !isWardrobeSaving &&
     !isVoiceSaving &&
+    !isFavoriteVoiceSaving &&
     !isDefaultSaving;
   const photoLabel = photoCount === 1 ? "1 photo" : `${photoCount} photos`;
-  const voice = getCliprVoice(avatar.cliprVoiceId);
+  const activeVoiceId = getCliprVoiceId(avatar.cliprVoiceId);
+  const activeVoice = cliprVoices.find((voice) => voice.id === activeVoiceId);
+  const isFavoriteVoice = activeVoiceId === favoriteVoiceId;
   const isDisabled =
     isSaving ||
     isDeleting ||
     isRenameSaving ||
     isWardrobeSaving ||
     isVoiceSaving ||
+    isFavoriteVoiceSaving ||
     isDefaultSaving;
 
   const handleDelete = async () => {
@@ -167,41 +176,70 @@ export function SelectedAvatarActions({
           }
         }}
       />
-      <SelectInput
-        label="Voice"
-        value={avatar.cliprVoiceId}
-        options={cliprVoices.map((cliprVoice) => ({
-          label: cliprVoice.name,
-          value: cliprVoice.id,
-        }))}
-        wrapperClassName="w-36"
-        className="h-10"
-        disabled={isDisabled}
-        onChange={async (event) => {
-          const cliprVoiceId = event.currentTarget.value;
+      <div className="flex items-end gap-1">
+        <SelectInput
+          label="Voice"
+          value={activeVoiceId}
+          options={cliprVoices.map((cliprVoice) => ({
+            label: cliprVoice.name,
+            value: cliprVoice.id,
+          }))}
+          wrapperClassName="w-36"
+          className="h-10"
+          disabled={isDisabled}
+          onChange={async (event) => {
+            const cliprVoiceId = event.currentTarget.value;
 
-          if (cliprVoiceId === avatar.cliprVoiceId) {
-            return;
+            if (cliprVoiceId === activeVoiceId) {
+              return;
+            }
+
+            setIsVoiceSaving(true);
+
+            try {
+              await onVoiceChange(avatar, cliprVoiceId);
+            } catch {
+              // The parent hook surfaces the error.
+            } finally {
+              setIsVoiceSaving(false);
+            }
+          }}
+        />
+        <CliprVoicePreviewButton
+          isCompact
+          disabled={isDisabled}
+          src={activeVoice?.previewSrc}
+          voiceName={activeVoice?.name ?? "selected"}
+        />
+        <IconButton
+          type="button"
+          label={
+            isFavoriteVoice
+              ? `${activeVoice?.name ?? activeVoiceId} is the favorite Clipr voice`
+              : `Set ${activeVoice?.name ?? activeVoiceId} as favorite Clipr voice`
           }
-
-          setIsVoiceSaving(true);
-
-          try {
-            await onVoiceChange(avatar, cliprVoiceId);
-          } catch {
-            // The parent hook surfaces the error.
-          } finally {
-            setIsVoiceSaving(false);
+          className="h-10 w-10"
+          disabled={isDisabled || isFavoriteVoice}
+          icon={
+            <Star
+              aria-hidden
+              className="h-4 w-4"
+              fill={isFavoriteVoice ? "currentColor" : "none"}
+            />
           }
-        }}
-      />
-      <CliprVoicePreviewButton
-        key={voice.id}
-        disabled={isDisabled}
-        isCompact
-        src={voice.previewSrc}
-        voiceName={voice.name}
-      />
+          onClick={async () => {
+            setIsFavoriteVoiceSaving(true);
+
+            try {
+              await onFavoriteVoiceChange(activeVoiceId);
+            } catch {
+              // The parent hook surfaces the error.
+            } finally {
+              setIsFavoriteVoiceSaving(false);
+            }
+          }}
+        />
+      </div>
       <IconButton
         type="button"
         label={`Rename ${avatar.name}`}

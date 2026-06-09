@@ -9,6 +9,7 @@ export type R2ObjectKind =
   | "swapr-segment-video"
   | "library-music-audio"
   | "clipr-music-audio"
+  | "clipr-speech-audio"
   | "clipr-avatar-video"
   | "clipr-scene-image"
   | "stitch-music-audio"

@@ -85,6 +85,10 @@ vi.mock("@/convex/_generated/api", () => ({
       get: "avatarPreferences.get",
       setDefaultAvatar: "avatarPreferences.setDefaultAvatar",
     },
+    cliprPreferences: {
+      get: "cliprPreferences.get",
+      setDefaultVoice: "cliprPreferences.setDefaultVoice",
+    },
     photoAssets: {
       get: "photoAssets.get",
       list: "photoAssets.list",
@@ -204,7 +208,7 @@ function createPhotoDocument(overrides: Record<string, unknown> = {}) {
 
 function createAvatar(overrides: Record<string, unknown> = {}) {
   return {
-    cliprVoiceId: "Zephyr (Female)",
+    cliprVoiceId: "Rachel",
     createdAt: "2026-05-20T00:00:00.000Z",
     description: "Existing description",
     id: "avatar_1",
@@ -239,6 +243,10 @@ describe("usePhotoLibraryState", () => {
       }
 
       if (queryId === "avatarPreferences.get") {
+        return null;
+      }
+
+      if (queryId === "cliprPreferences.get") {
         return null;
       }
 
@@ -299,6 +307,8 @@ describe("usePhotoLibraryState", () => {
     expect(mocks.useQuery).toHaveBeenCalledWith("photoAssets.list", {});
     expect(mocks.useQuery).toHaveBeenCalledWith("avatars.list", {});
     expect(mocks.useQuery).toHaveBeenCalledWith("avatarPreferences.get", {});
+    expect(mocks.useQuery).toHaveBeenCalledWith("cliprPreferences.get", {});
+    expect(state.defaultCliprVoiceId).toBe("Rachel");
   });
 
   it("skips library queries while signed out", () => {
@@ -316,6 +326,7 @@ describe("usePhotoLibraryState", () => {
       "avatarPreferences.get",
       "skip",
     );
+    expect(mocks.useQuery).toHaveBeenCalledWith("cliprPreferences.get", "skip");
   });
 
   it("creates an avatar with trimmed text and normalized defaults", async () => {
@@ -328,7 +339,7 @@ describe("usePhotoLibraryState", () => {
       }),
     ).resolves.toEqual(
       expect.objectContaining({
-        cliprVoiceId: "Zephyr (Female)",
+        cliprVoiceId: "Rachel",
         description: "Ready for clips",
         id: "generated_1",
         name: "Creator",
@@ -342,6 +353,40 @@ describe("usePhotoLibraryState", () => {
         name: "Creator",
       }),
     );
+  });
+
+  it("uses the saved favorite Clipr voice when creating avatars", async () => {
+    mocks.useQuery.mockImplementation((queryId: string) => {
+      if (queryId === "photoAssets.list") {
+        return [];
+      }
+
+      if (queryId === "avatars.list") {
+        return [{ id: "avatar_doc_1" }];
+      }
+
+      if (queryId === "avatarPreferences.get") {
+        return null;
+      }
+
+      if (queryId === "cliprPreferences.get") {
+        return { defaultVoiceId: "Drew" };
+      }
+
+      return undefined;
+    });
+    const state = usePhotoLibraryState();
+
+    await expect(
+      state.createAvatar({
+        name: "Creator",
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        cliprVoiceId: "Drew",
+      }),
+    );
+    expect(state.defaultCliprVoiceId).toBe("Drew");
   });
 
   it("surfaces create-avatar persistence failures", async () => {
@@ -408,6 +453,10 @@ describe("usePhotoLibraryState", () => {
       }
 
       if (queryId === "avatarPreferences.get") {
+        return null;
+      }
+
+      if (queryId === "cliprPreferences.get") {
         return null;
       }
 
@@ -629,7 +678,7 @@ describe("usePhotoLibraryState", () => {
 
     await state.renameAvatar(avatar, " Updated Avatar ");
     await state.updateAvatarWardrobeStyle(avatar, "female");
-    await state.updateAvatarCliprVoice(avatar, "Puck (Male)");
+    await state.updateAvatarCliprVoice(avatar, "Drew");
 
     expect(getMutation("avatars.update")).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -645,7 +694,7 @@ describe("usePhotoLibraryState", () => {
     );
     expect(getMutation("avatars.update")).toHaveBeenCalledWith(
       expect.objectContaining({
-        cliprVoiceId: "Puck (Male)",
+        cliprVoiceId: "Drew",
         id: "avatar_1",
       }),
     );
@@ -665,6 +714,10 @@ describe("usePhotoLibraryState", () => {
         return { defaultAvatarId: "avatar_1" };
       }
 
+      if (queryId === "cliprPreferences.get") {
+        return null;
+      }
+
       return undefined;
     });
     const state = usePhotoLibraryState();
@@ -675,6 +728,38 @@ describe("usePhotoLibraryState", () => {
     expect(getMutation("avatarPreferences.setDefaultAvatar")).toHaveBeenCalledWith(
       expect.objectContaining({
         avatarId: "avatar_2",
+      }),
+    );
+  });
+
+  it("reads and updates the favorite Clipr voice preference", async () => {
+    mocks.useQuery.mockImplementation((queryId: string) => {
+      if (queryId === "photoAssets.list") {
+        return [];
+      }
+
+      if (queryId === "avatars.list") {
+        return [{ id: "avatar_doc_1" }];
+      }
+
+      if (queryId === "avatarPreferences.get") {
+        return null;
+      }
+
+      if (queryId === "cliprPreferences.get") {
+        return { defaultVoiceId: "Drew" };
+      }
+
+      return undefined;
+    });
+    const state = usePhotoLibraryState();
+
+    expect(state.defaultCliprVoiceId).toBe("Drew");
+    await state.setDefaultCliprVoice("Rachel");
+
+    expect(getMutation("cliprPreferences.setDefaultVoice")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        defaultVoiceId: "Rachel",
       }),
     );
   });
@@ -705,8 +790,15 @@ describe("usePhotoLibraryState", () => {
       new Error("voice failed"),
     );
     await expect(
-      state.updateAvatarCliprVoice(avatar, "Puck (Male)"),
+      state.updateAvatarCliprVoice(avatar, "Drew"),
     ).rejects.toThrow("voice failed");
+
+    getMutation("cliprPreferences.setDefaultVoice").mockRejectedValueOnce(
+      new Error("favorite failed"),
+    );
+    await expect(state.setDefaultCliprVoice("Rachel")).rejects.toThrow(
+      "favorite failed",
+    );
   });
 
   it("saves generated avatar photos", async () => {

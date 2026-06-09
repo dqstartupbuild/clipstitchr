@@ -73,10 +73,17 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     api.avatarPreferences.get,
     isAuthenticated ? {} : "skip",
   );
+  const cliprPreferences = useQuery(
+    api.cliprPreferences.get,
+    isAuthenticated ? {} : "skip",
+  );
   const saveAvatar = useMutation(api.avatars.save);
   const updateAvatarMutation = useMutation(api.avatars.update);
   const setDefaultAvatarMutation = useMutation(
     api.avatarPreferences.setDefaultAvatar,
+  );
+  const setDefaultVoiceMutation = useMutation(
+    api.cliprPreferences.setDefaultVoice,
   );
   const savePhotoAsset = useMutation(api.photoAssets.save);
   const updatePhotoMetadataMutation = useMutation(api.photoAssets.updateMetadata);
@@ -91,6 +98,9 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     () => avatarDocuments?.map(createAvatarFromConvexDocument) ?? [],
     [avatarDocuments],
   );
+  const resolvedDefaultCliprVoiceId = getCliprVoiceId(
+    cliprPreferences?.defaultVoiceId ?? defaultCliprVoiceId,
+  );
 
   const refresh = useCallback(async () => {
     setRefreshNonce((currentNonce) => currentNonce + 1);
@@ -98,7 +108,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
 
   const createAvatar = useCallback(
     async ({
-      cliprVoiceId = defaultCliprVoiceId,
+      cliprVoiceId,
       description,
       name,
       wardrobeStyle = "any",
@@ -121,7 +131,9 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
           name: trimmedName,
           description: trimmedDescription || undefined,
           wardrobeStyle,
-          cliprVoiceId: getCliprVoiceId(cliprVoiceId),
+          cliprVoiceId: getCliprVoiceId(
+            cliprVoiceId ?? resolvedDefaultCliprVoiceId,
+          ),
           createdAt: now,
           updatedAt: now,
         };
@@ -140,7 +152,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
         setIsSaving(false);
       }
     },
-    [refresh, saveAvatar],
+    [refresh, resolvedDefaultCliprVoiceId, saveAvatar],
   );
 
   const loadPhoto = useCallback(async (id: string) => {
@@ -281,7 +293,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
               name: trimmedAvatarName,
               description: analysis.avatarDescription,
               wardrobeStyle: "any",
-              cliprVoiceId: defaultCliprVoiceId,
+              cliprVoiceId: resolvedDefaultCliprVoiceId,
               createdAt: now,
               updatedAt: now,
             });
@@ -396,7 +408,14 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
         setIsSaving(false);
       }
     },
-    [avatars, refresh, saveAvatar, savePhotoAsset, updateAvatarMutation],
+    [
+      avatars,
+      refresh,
+      resolvedDefaultCliprVoiceId,
+      saveAvatar,
+      savePhotoAsset,
+      updateAvatarMutation,
+    ],
   );
 
   const updatePhotoMetadata = useCallback(
@@ -550,6 +569,31 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
       }
     },
     [refresh, setDefaultAvatarMutation],
+  );
+
+  const setDefaultCliprVoice = useCallback(
+    async (cliprVoiceId: string) => {
+      setIsSaving(true);
+      setError(null);
+
+      try {
+        await setDefaultVoiceMutation({
+          defaultVoiceId: getCliprVoiceId(cliprVoiceId),
+          updatedAt: new Date().toISOString(),
+        });
+        await refresh();
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to set this voice as the favorite.",
+        );
+        throw nextError;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [refresh, setDefaultVoiceMutation],
   );
 
   const removeAvatar = useCallback(
@@ -811,12 +855,14 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
   return {
     avatars,
     defaultAvatarId: avatarPreferences?.defaultAvatarId,
+    defaultCliprVoiceId: resolvedDefaultCliprVoiceId,
     photos,
     isLoading:
       isAuthLoading ||
       (isAuthenticated && photoDocuments === undefined) ||
       (isAuthenticated && avatarDocuments === undefined) ||
       (isAuthenticated && avatarPreferences === undefined) ||
+      (isAuthenticated && cliprPreferences === undefined) ||
       isHydrating,
     isSaving,
     error,
@@ -830,6 +876,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     updateAvatarWardrobeStyle,
     updateAvatarCliprVoice,
     setDefaultAvatar,
+    setDefaultCliprVoice,
     removeAvatar,
     removePhoto,
   };

@@ -7,7 +7,7 @@ import { Button } from "@/app/_components/ui/Button";
 type CliprVoicePreviewButtonProps = {
   disabled?: boolean;
   isCompact?: boolean;
-  src: string;
+  src?: string;
   voiceName: string;
 };
 
@@ -21,6 +21,11 @@ export function CliprVoicePreviewButton({
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
+    if (!src) {
+      audioRef.current = null;
+      return;
+    }
+
     const audio = new Audio(src);
 
     audio.preload = "none";
@@ -63,23 +68,28 @@ export function CliprVoicePreviewButton({
     }
   };
 
-  const label = isPlaying ? "Pause" : "Preview";
+  const isPreviewPlaying = Boolean(src) && isPlaying;
+  const label = isPreviewPlaying ? "Pause" : "Preview";
+  const isPreviewDisabled = disabled || !src;
+  const buttonLabel = src
+    ? `${label} ${voiceName} voice`
+    : `Preview unavailable for ${voiceName} voice`;
 
   return (
     <Button
       type="button"
       variant="secondary"
       className={isCompact ? "h-10 w-10 !px-0" : ""}
-      disabled={disabled}
+      disabled={isPreviewDisabled}
       icon={
-        isPlaying ? (
+        isPreviewPlaying ? (
           <Pause aria-hidden className="h-4 w-4" />
         ) : (
           <Play aria-hidden className="h-4 w-4" />
         )
       }
-      aria-label={`${label} ${voiceName} voice`}
-      title={`${label} ${voiceName} voice`}
+      aria-label={buttonLabel}
+      title={buttonLabel}
       onClick={handleClick}
     >
       {isCompact ? null : label}

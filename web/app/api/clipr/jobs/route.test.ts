@@ -82,7 +82,7 @@ function createRequest(body: Record<string, unknown> = {}) {
       durationSeconds: 30,
       jobId: " job_1 ",
       productId: " product_1 ",
-      voiceId: "Zephyr (Female)",
+      voiceId: "Rachel",
       ...body,
     }),
     method: "POST",
@@ -267,7 +267,9 @@ describe("POST /api/clipr/jobs", () => {
       avatarSceneLocation?: string;
       avatarSceneOutfit?: string;
       avatarScenePose?: string;
+      lipSyncModelId?: string;
       scriptIdea?: string;
+      ttsModelId?: string;
     };
 
     expect(response.status).toBe(200);
@@ -282,6 +284,8 @@ describe("POST /api/clipr/jobs", () => {
     expect(providerJobInput.avatarSceneLocation).toBe("gym mirror");
     expect(providerJobInput.avatarSceneOutfit).toBe("black workout set");
     expect(providerJobInput.avatarScenePose).toBe("taking a progress photo");
+    expect(providerJobInput.ttsModelId).toBe("elevenlabs/v3");
+    expect(providerJobInput.lipSyncModelId).toBe("pixverse/lipsync");
   });
 
   it("uses a selected shared music track without consuming music generation", async () => {

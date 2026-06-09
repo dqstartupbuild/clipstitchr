@@ -240,6 +240,7 @@ export function AvatarsPageClient() {
           <SelectedAvatarActions
             key={selectedFilterAvatar?.id ?? "all"}
             avatar={selectedFilterAvatar}
+            favoriteVoiceId={photoLibrary.defaultCliprVoiceId}
             isDefaultAvatar={
               Boolean(selectedFilterAvatar) &&
               selectedFilterAvatar?.id === photoLibrary.defaultAvatarId
@@ -250,6 +251,7 @@ export function AvatarsPageClient() {
             onRename={photoLibrary.renameAvatar}
             onSetDefault={photoLibrary.setDefaultAvatar}
             onWardrobeStyleChange={photoLibrary.updateAvatarWardrobeStyle}
+            onFavoriteVoiceChange={photoLibrary.setDefaultCliprVoice}
             onVoiceChange={photoLibrary.updateAvatarCliprVoice}
           />
         </div>

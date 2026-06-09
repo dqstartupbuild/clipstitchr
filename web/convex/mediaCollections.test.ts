@@ -204,7 +204,7 @@ function createSwipeArgs(overrides: Record<string, unknown> = {}) {
 
 function createAvatarArgs(overrides: Record<string, unknown> = {}) {
   return {
-    cliprVoiceId: "Zephyr (Female)",
+    cliprVoiceId: "Rachel",
     createdAt: now,
     description: "Creator",
     id: "avatar_1",
@@ -508,7 +508,7 @@ describe("convex media collections", () => {
     });
 
     await getHandler<Record<string, unknown>, void>(avatars.update)(updateCtx, {
-      cliprVoiceId: "Puck (Male)",
+      cliprVoiceId: "Drew",
       id: "avatar_1",
       name: "Updated Avatar",
       updatedAt: now,
@@ -516,7 +516,7 @@ describe("convex media collections", () => {
     expect(updateCtx.db.patch).toHaveBeenCalledWith(
       "avatar_doc",
       expect.objectContaining({
-        cliprVoiceId: "Puck (Male)",
+        cliprVoiceId: "Drew",
         name: "Updated Avatar",
       }),
     );

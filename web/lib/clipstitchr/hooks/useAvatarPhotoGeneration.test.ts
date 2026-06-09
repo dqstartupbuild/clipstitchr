@@ -19,7 +19,7 @@ vi.mock("@/lib/clipstitchr/client/generateAvatarPhotos", () => ({
 function createGenerateInput(overrides: Record<string, unknown> = {}) {
   return {
     avatar: {
-      cliprVoiceId: "Zephyr (Female)",
+      cliprVoiceId: "Rachel",
       createdAt: "2026-05-20T00:00:00.000Z",
       description: " Confident founder ",
       id: "avatar_1",

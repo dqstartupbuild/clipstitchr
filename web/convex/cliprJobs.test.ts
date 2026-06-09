@@ -139,7 +139,7 @@ function createJob(overrides: Record<string, unknown> = {}) {
     targetDurationSeconds: 30,
     updatedAt: now,
     variablesUsed: { product: "Product" },
-    voiceId: "Zephyr (Female)",
+    voiceId: "Rachel",
     ...overrides,
   };
 }
@@ -159,7 +159,7 @@ function createQueuedArgs(overrides: Record<string, unknown> = {}) {
     scriptIdea: "Founder story angle",
     secret: "secret",
     targetDurationSeconds: 30,
-    voiceId: "Zephyr (Female)",
+    voiceId: "Rachel",
     ...overrides,
   };
 }

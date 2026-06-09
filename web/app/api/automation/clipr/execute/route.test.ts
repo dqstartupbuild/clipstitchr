@@ -14,14 +14,13 @@ const mocks = vi.hoisted(() => {
 
   return {
     convex,
-    createCliprAvatarVideo: vi.fn(),
     createCliprSceneAvatarImage: vi.fn(),
+    createCliprSyncedAvatarVideoOutput: vi.fn(),
     createCliprTextGeneration: vi.fn(),
     createConvexHttpClient: vi.fn(() => convex),
     createReplicateClient: vi.fn(() => replicate),
     getR2DownloadSignedUrl: vi.fn(),
     replicate,
-    saveCliprAvatarVideoObject: vi.fn(),
     saveCliprSceneImageObject: vi.fn(),
   };
 });
@@ -53,8 +52,8 @@ vi.mock("@/lib/clipstitchr/server/convex/createConvexHttpClient", () => ({
   createConvexHttpClient: mocks.createConvexHttpClient,
 }));
 
-vi.mock("@/lib/clipstitchr/server/createCliprAvatarVideo", () => ({
-  createCliprAvatarVideo: mocks.createCliprAvatarVideo,
+vi.mock("@/lib/clipstitchr/server/createCliprSyncedAvatarVideoOutput", () => ({
+  createCliprSyncedAvatarVideoOutput: mocks.createCliprSyncedAvatarVideoOutput,
 }));
 
 vi.mock("@/lib/clipstitchr/server/createCliprSceneAvatarImage", () => ({
@@ -71,10 +70,6 @@ vi.mock("@/lib/clipstitchr/server/createReplicateClient", () => ({
 
 vi.mock("@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl", () => ({
   getR2DownloadSignedUrl: mocks.getR2DownloadSignedUrl,
-}));
-
-vi.mock("@/lib/clipstitchr/server/saveCliprAvatarVideoObject", () => ({
-  saveCliprAvatarVideoObject: mocks.saveCliprAvatarVideoObject,
 }));
 
 vi.mock("@/lib/clipstitchr/server/saveCliprSceneImageObject", () => ({
@@ -185,16 +180,14 @@ describe("POST /api/automation/clipr/execute", () => {
       key: "users/owner_123/clipr-scenes/job/image.jpg",
       size: 8,
     });
-    mocks.createCliprAvatarVideo.mockResolvedValue({
-      body: new ArrayBuffer(16),
-      contentType: "video/mp4",
-      modelId: "prunaai/p-video-avatar",
-      predictionId: "video_prediction_1",
-    });
-    mocks.saveCliprAvatarVideoObject.mockResolvedValue({
-      contentType: "video/mp4",
-      key: "users/owner_123/clipr-scenes/job/avatar.mp4",
-      size: 16,
+    mocks.createCliprSyncedAvatarVideoOutput.mockResolvedValue({
+      avatarVideoObject: {
+        contentType: "video/mp4",
+        key: "users/owner_123/clipr-scenes/job/avatar.mp4",
+        size: 16,
+      },
+      avatarVideoProviderPredictionId: "video_prediction_1",
+      providerModels: ["elevenlabs/v3", "prunaai/p-video-avatar"],
     });
   });
 
@@ -285,10 +278,14 @@ describe("POST /api/automation/clipr/execute", () => {
         referenceImageUrl: "https://r2.example/photo.jpg",
       }),
     );
-    expect(mocks.createCliprAvatarVideo).toHaveBeenCalledWith(
+    expect(mocks.createCliprSyncedAvatarVideoOutput).toHaveBeenCalledWith(
       expect.objectContaining({
         imageUrl: "https://replicate.example/avatar-source.jpg",
+        jobId: "automation:clipr:owner_123:2026-05-31:1",
+        lipSyncModelId: "pixverse/lipsync",
         script: "This serum keeps my skin camera ready.",
+        ttsModelId: "elevenlabs/v3",
+        userId: "owner_123",
         voiceId: "voice_1",
       }),
     );

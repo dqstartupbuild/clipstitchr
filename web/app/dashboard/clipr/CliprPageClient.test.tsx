@@ -26,12 +26,13 @@ const mocks = vi.hoisted(() => ({
   photoLibraryState: {
     avatars: [
       {
-        cliprVoiceId: "Zephyr (Female)",
+        cliprVoiceId: "Rachel",
         id: "avatar_1",
         name: "Nova",
       },
     ],
     defaultAvatarId: "avatar_1",
+    defaultCliprVoiceId: "Rachel",
     error: null as string | null,
     photos: [
       {

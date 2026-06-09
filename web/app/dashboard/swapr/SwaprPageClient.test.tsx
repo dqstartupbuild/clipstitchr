@@ -313,7 +313,7 @@ describe("SwaprPageClient", () => {
   it("applies the default avatar photo as the initial Swapr photo selection", () => {
     mocks.photoLibraryState.avatars = [
       {
-        cliprVoiceId: "Zephyr (Female)",
+        cliprVoiceId: "Rachel",
         createdAt: "2026-01-01T00:00:00.000Z",
         id: "avatar_1",
         name: "Avatar",

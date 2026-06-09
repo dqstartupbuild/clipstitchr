@@ -51,7 +51,7 @@ function createAudio(overrides: Partial<HTMLAudioElement> = {}) {
 function renderButton() {
   return CliprVoicePreviewButton({
     src: "/voice.mp3",
-    voiceName: "Zephyr",
+    voiceName: "Rachel",
   }) as {
     props: {
       onClick: () => Promise<void>;
@@ -71,10 +71,10 @@ describe("CliprVoicePreviewButton", () => {
 
   it("renders the full preview button label", () => {
     const markup = renderToStaticMarkup(
-      <CliprVoicePreviewButton src="/voice.mp3" voiceName="Zephyr" />,
+      <CliprVoicePreviewButton src="/voice.mp3" voiceName="Rachel" />,
     );
 
-    expect(markup).toContain('aria-label="Preview Zephyr voice"');
+    expect(markup).toContain('aria-label="Preview Rachel voice"');
     expect(markup).toContain("Preview");
   });
 
@@ -84,11 +84,11 @@ describe("CliprVoicePreviewButton", () => {
         disabled
         isCompact
         src="/voice.mp3"
-        voiceName="Zephyr"
+        voiceName="Rachel"
       />,
     );
 
-    expect(markup).toContain('aria-label="Preview Zephyr voice"');
+    expect(markup).toContain('aria-label="Preview Rachel voice"');
     expect(markup).toContain("disabled");
     expect(markup).not.toContain(">Preview<");
   });

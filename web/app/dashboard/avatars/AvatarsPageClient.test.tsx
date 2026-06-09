@@ -23,6 +23,7 @@ const mocks = vi.hoisted(() => ({
   photoLibraryState: {
     avatars: [] as Avatar[],
     defaultAvatarId: undefined as string | undefined,
+    defaultCliprVoiceId: "Rachel",
     error: null as string | null,
     isSaving: false,
     loadPhoto: vi.fn(),
@@ -34,6 +35,7 @@ const mocks = vi.hoisted(() => ({
     saveFiles: vi.fn(),
     saveGeneratedPhotos: vi.fn(),
     setDefaultAvatar: vi.fn(),
+    setDefaultCliprVoice: vi.fn(),
     updateAvatarCliprVoice: vi.fn(),
     updateAvatarWardrobeStyle: vi.fn(),
     updatePhotoMetadata: vi.fn(),
@@ -154,7 +156,7 @@ vi.mock("@/lib/clipstitchr/hooks/useAvatarPhotoGeneration", () => ({
 
 function createAvatar(overrides: Partial<Avatar> = {}): Avatar {
   return {
-    cliprVoiceId: "Zephyr (Female)",
+    cliprVoiceId: "Rachel",
     createdAt: "2026-01-01T00:00:00.000Z",
     description: "Studio avatar",
     id: "avatar_1",
@@ -229,6 +231,7 @@ describe("AvatarsPageClient", () => {
     vi.clearAllMocks();
     mocks.photoLibraryState.avatars = [createAvatar()];
     mocks.photoLibraryState.defaultAvatarId = undefined;
+    mocks.photoLibraryState.defaultCliprVoiceId = "Rachel";
     mocks.photoLibraryState.error = null;
     mocks.photoLibraryState.isSaving = false;
     mocks.photoLibraryState.photos = [createPhoto()];
@@ -239,6 +242,7 @@ describe("AvatarsPageClient", () => {
     mocks.photoLibraryState.saveFiles.mockResolvedValue(true);
     mocks.photoLibraryState.saveGeneratedPhotos.mockResolvedValue(undefined);
     mocks.photoLibraryState.setDefaultAvatar.mockResolvedValue(undefined);
+    mocks.photoLibraryState.setDefaultCliprVoice.mockResolvedValue(undefined);
     mocks.photoLibraryState.updateAvatarCliprVoice.mockResolvedValue(undefined);
     mocks.photoLibraryState.updateAvatarWardrobeStyle.mockResolvedValue(undefined);
     mocks.photoLibraryState.updatePhotoMetadata.mockResolvedValue(undefined);

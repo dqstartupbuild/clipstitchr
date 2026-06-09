@@ -1,1 +1,1 @@
-export const defaultCliprVoiceId = "Zephyr (Female)";
+export const defaultCliprVoiceId = "Rachel";

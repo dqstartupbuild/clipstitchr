@@ -168,9 +168,9 @@ describe("additional utility coverage", () => {
     expect(getAvatarStylePrompt("unknown" as AvatarStyleOption)).toContain(
       "selfie",
     );
-    expect(getCliprVoiceId("Puck (Male)")).toBe("Puck (Male)");
-    expect(getCliprVoiceId("missing")).toBe("Zephyr (Female)");
-    expect(getCliprVoiceId(null)).toBe("Zephyr (Female)");
+    expect(getCliprVoiceId("Drew")).toBe("Drew");
+    expect(getCliprVoiceId("missing")).toBe("Rachel");
+    expect(getCliprVoiceId(null)).toBe("Rachel");
     expect(
       getGeneratedAvatarPhotoName({
         index: 2,

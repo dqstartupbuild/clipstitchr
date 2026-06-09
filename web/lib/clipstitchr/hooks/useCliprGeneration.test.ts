@@ -39,7 +39,7 @@ function createCliprJob(overrides: Record<string, unknown> = {}) {
     status: "scripting",
     targetDurationSeconds: 30,
     updatedAt: "2026-05-20T00:00:00.000Z",
-    voiceId: "Zephyr (Female)",
+    voiceId: "Rachel",
     ...overrides,
   };
 }
@@ -55,7 +55,7 @@ function createGenerateOptions() {
     musicTrackId: "track_1",
     productId: "product_1",
     scriptIdea: "Talk about the launch mistake nobody notices.",
-    voiceId: "Zephyr (Female)",
+    voiceId: "Rachel",
   } as unknown as Parameters<
     ReturnType<typeof useCliprGeneration>["generate"]
   >[0];

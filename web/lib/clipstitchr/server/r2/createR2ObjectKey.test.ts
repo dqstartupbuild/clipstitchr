@@ -37,6 +37,17 @@ describe("createR2ObjectKey", () => {
     ).toBe("users/user_123/clipr-music/job_456/music.mp3");
   });
 
+  it("creates user-scoped keys for Clipr speech", () => {
+    expect(
+      createR2ObjectKey({
+        userId: "user_123",
+        kind: "clipr-speech-audio",
+        recordId: "job_456",
+        contentType: "audio/mpeg",
+      }),
+    ).toBe("users/user_123/clipr-speech/job_456/speech.mp3");
+  });
+
   it("creates user-scoped keys for personal library music", () => {
     expect(
       createR2ObjectKey({

@@ -106,7 +106,7 @@ describe("useCreateAvatarFromUgcClip", () => {
 
   it("creates an avatar from a poster and queues generated photos", async () => {
     const avatar = {
-      cliprVoiceId: "Zephyr (Female)",
+      cliprVoiceId: "Rachel",
       createdAt: "2026-05-20T00:00:00.000Z",
       description: "Confident founder",
       id: "avatar_1",
@@ -148,7 +148,7 @@ describe("useCreateAvatarFromUgcClip", () => {
 
   it("loads a full clip poster and surfaces generation failures", async () => {
     const avatar = {
-      cliprVoiceId: "Zephyr (Female)",
+      cliprVoiceId: "Rachel",
       createdAt: "2026-05-20T00:00:00.000Z",
       description: "Confident founder",
       id: "avatar_1",

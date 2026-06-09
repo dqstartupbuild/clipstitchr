@@ -51,9 +51,10 @@ background details.
 | Product enrichment | `PRODUCT_ENRICHMENT_MODEL_ID` | `openai/gpt-4.1` | Generates hidden product strategy metadata when saving Settings products. |
 | Clipr hook, script, Swipr auto-text, and Stitchr auto-text | `CLIPR_HOOK_MODEL_ID` | `openai/gpt-4.1` | Text generation returns structured JSON or short-form copy. |
 | Clipr avatar still image | `AVATAR_PHOTO_MODEL_ID` | `openai/gpt-image-2` | Uses the same avatar photo generation model, prompt builder, and input parameters as avatar photo generation, but creates one source still for the full-script avatar video. |
-| Clipr avatar video and voice | `CLIPR_AVATAR_VIDEO_MODEL_ID` | `prunaai/p-video-avatar` | Generates the full-script talking avatar video with the selected voice. |
+| Clipr avatar video | `CLIPR_AVATAR_VIDEO_MODEL_ID` | `prunaai/p-video-avatar` | Generates the full-script talking avatar video. When TTS is enabled, Clipr passes generated speech audio into this model. |
 | Clipr and Stitchr background music | `CLIPR_MUSIC_MODEL_ID` | `stability-ai/stable-audio-2.5` | Generates a 60 second instrumental music bed when the user opts in. The MP3 is copied to R2 as a separate editable asset and mixed into the clean video only during export/download. |
-| Clipr text-to-speech | `CLIPR_TTS_MODEL_ID` | `elevenlabs/v3` | Legacy/reserved; active Clipr voice generation is handled by `prunaai/p-video-avatar`. |
+| Clipr text-to-speech | `CLIPR_TTS_MODEL_ID` | `elevenlabs/v3` | Generates the Clipr narration track before avatar video generation. Set to `none` for the hidden p-video-avatar built-in fallback. |
+| Clipr lip sync | `CLIPR_LIP_SYNC_MODEL_ID` | `pixverse/lipsync` | Optional second pass after avatar video generation. Supported values are `none`, `bytedance/latentsync:637ce1919f807ca20da3a448ddc2743535d2853649574cd52a933120e9b9e293`, and `pixverse/lipsync`. LatentSync runs as one pass; PixVerse uses 30 second segments before stitching the lip-synced outputs. |
 | Swapr motion-transfer video | hard-coded in `app/api/swapr/jobs/route.ts` | `kwaivgi/kling-v3-motion-control` | Used for Swapr job creation and mirrored in the client optimistic job state. |
 | Swapr photo expansion | hard-coded in `app/api/swapr/photos/expand/route.ts` | `black-forest-labs/flux-fill-pro` | Used for optional 9:16 source-photo outpainting. |
 

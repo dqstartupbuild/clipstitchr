@@ -134,15 +134,21 @@ Optional Replicate model overrides:
   configuration and provider input path as avatar photo generation, but creates
   one source still before full-script avatar video generation.
 - `CLIPR_AVATAR_VIDEO_MODEL_ID` defaults to `prunaai/p-video-avatar` for Clipr
-  full-script avatar video and voice generation.
+  full-script avatar video generation. When `CLIPR_TTS_MODEL_ID` is enabled,
+  the provider worker passes generated speech audio into this avatar-video
+  model instead of relying on its built-in voice catalog.
+- `CLIPR_TTS_MODEL_ID` defaults to `elevenlabs/v3` for Clipr speech generation.
+  Set it to `none` to fall back to the avatar-video model's built-in voice path
+  during local testing.
+- `CLIPR_LIP_SYNC_MODEL_ID` defaults to `pixverse/lipsync`. Supported values are `none`,
+  `bytedance/latentsync:637ce1919f807ca20da3a448ddc2743535d2853649574cd52a933120e9b9e293`,
+  and `pixverse/lipsync`. LatentSync runs as one pass. PixVerse uses 30 second
+  provider-worker ffmpeg segments for 60 second Clipr jobs.
 - `CLIPR_MUSIC_MODEL_ID` defaults to `stability-ai/stable-audio-2.5` for
   optional 60 second Clipr, Stitchr, and shared-library background music
   generation. Generated music is copied to the shared music library and, when
   attached to a user's output or generated from the picker, to the user's
   personal R2 prefix.
-- `CLIPR_TTS_MODEL_ID` is legacy/reserved; Clipr voice selection is handled by
-  `prunaai/p-video-avatar`.
-
 Firecrawl website import:
 
 - `FIRECRAWL_API_KEY` is required in the Next.js runtime environment when users
@@ -182,7 +188,7 @@ Firecrawl website import:
 | Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; shared global provider bucket 10,000 units/hour, burst 2,000. The route creates a queued `cliprJobs` record and a durable `manual-clipr` provider job, then returns immediately. The UI no longer exposes a duration control; manual jobs consume the conservative 60 second estimate before provider work. |
 | Clipr hook/script generation | `POST /api/clipr/jobs` worker path and `POST /api/clipr/text` immediate suggestion path | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000 |
 | Clipr avatar still generation | `POST /api/clipr/jobs` before queued worker generation | 20 images/hour/user, burst 6; global provider bucket counted once per still. The provider worker creates the avatar still, then R2 upload byte limits are consumed before personal avatar-photo and thumbnail copies are saved. |
-| Clipr avatar video and voice generation | `POST /api/clipr/jobs` before queued worker generation | 600 estimated avatar seconds/hour/user, burst 180; global provider bucket counted by estimated seconds |
+| Clipr avatar video, speech, and lip-sync generation | `POST /api/clipr/jobs` before queued worker generation | 600 estimated avatar seconds/hour/user, burst 180; global provider bucket counted by estimated seconds. This bucket protects ElevenLabs v3 speech generation, `prunaai/p-video-avatar`, and optional second-pass lip-sync models before the provider job is queued. PixVerse lip-sync jobs create temporary provider-worker ffmpeg video/audio segments in R2 before stitching the lip-synced segment outputs. |
 | Clipr music generation | `POST /api/clipr/jobs` when music is selected and `POST /api/clipr/music` when regenerating music for an existing Clip | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. `POST /api/clipr/jobs` queues worker-owned music creation; `POST /api/clipr/music` remains an immediate editor-assist/regeneration route. |
 | Stitchr music generation | `POST /api/stitches/music` when creating or regenerating music for a saved stitch | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
 | Shared music generation | `POST /api/music/generate` from the shared music picker | 600 generated music seconds/hour/user, burst 180; 1,200 generated music seconds/day/user; shared global provider bucket counted by generated seconds. Each music file is fixed at 60 seconds. |
@@ -284,13 +290,15 @@ shared Convex record-save limit. Shared music objects are not user-deletable
 through the personal R2 delete route.
 
 Clipr final preparation is now worker-owned. `POST /api/clipr/jobs` consumes the
-job, script, avatar still, avatar video, optional music, and generated-seconds
-limits before creating the `manual-clipr` provider job. The provider worker
-copies generated still/video/music outputs into R2 and creates the media job; the
-media worker normalizes the avatar video, captures the poster, saves the final
-Clipr clip, and marks the provider job complete. Music is mixed into a fresh
-downloadable file only when the user exports/downloads. That export-time Media
-Bunny render is browser-local and is not separately rate-limited.
+job, script, avatar still, avatar video/speech/lip-sync, optional music, and
+generated-seconds limits before creating the `manual-clipr` provider job. The
+provider worker creates generated speech when enabled, passes it into
+`prunaai/p-video-avatar`, optionally runs a second lip-sync pass, copies
+generated still/video/speech/music outputs into R2, and creates the media job.
+The media worker normalizes the avatar video, captures the poster, saves the
+final Clipr clip, and marks the provider job complete. Music is mixed into a
+fresh downloadable file only when the user exports/downloads. That export-time
+Media Bunny render is browser-local and is not separately rate-limited.
 
 Saved Stitchr outputs use the existing export-time model: saving a stitch stores
 source clip references, trim ranges, text, source audio flags, and music

@@ -1,24 +1,22 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { cliprVoices } from "@/lib/clipstitchr/constants/cliprVoices";
 
 describe("cliprVoices", () => {
-  it("points every voice to a bundled audio preview", () => {
-    const previewSources = new Set<string>();
+  it("keeps the ElevenLabs voice IDs stable and unique", () => {
+    const voiceIds = new Set<string>();
 
     for (const voice of cliprVoices) {
-      const publicAssetPath = voice.previewSrc.replace(/^\//, "");
+      expect(voice.id).toBe(voice.name);
+      expect(voice.language).toBe("English (US)");
+      expect(voice.description.length).toBeGreaterThan(0);
+      expect(voice.prompt.length).toBeGreaterThan(0);
+      expect(voiceIds.has(voice.id)).toBe(false);
 
-      expect(voice.previewSrc).toMatch(/^\/audio\/clipr-voices\/.+\.m4a$/);
-      expect(previewSources.has(voice.previewSrc)).toBe(false);
-      expect(existsSync(join(process.cwd(), "public", publicAssetPath))).toBe(
-        true,
-      );
-
-      previewSources.add(voice.previewSrc);
+      voiceIds.add(voice.id);
     }
 
-    expect(previewSources.size).toBe(cliprVoices.length);
+    expect(voiceIds).toContain("Rachel");
+    expect(voiceIds).toContain("Drew");
+    expect(voiceIds.size).toBe(cliprVoices.length);
   });
 });

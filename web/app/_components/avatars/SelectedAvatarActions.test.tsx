@@ -30,14 +30,19 @@ vi.mock("react", async (importOriginal) => {
   };
 });
 
-vi.mock("@/app/_components/clipr/CliprVoicePreviewButton", () => ({
-  CliprVoicePreviewButton: ({ voiceName }: { voiceName: string }) =>
-    `VoicePreview:${voiceName}`,
-}));
-
 vi.mock("@/app/_components/ui/IconButton", () => ({
   IconButton: ({ disabled, label }: { disabled?: boolean; label: string }) =>
     `IconButton:${label}:${Boolean(disabled)}`,
+}));
+
+vi.mock("@/app/_components/clipr/CliprVoicePreviewButton", () => ({
+  CliprVoicePreviewButton: ({
+    disabled,
+    voiceName,
+  }: {
+    disabled?: boolean;
+    voiceName: string;
+  }) => `CliprVoicePreviewButton:${voiceName}:${Boolean(disabled)}`,
 }));
 
 vi.mock("@/app/_components/ui/SelectInput", () => ({
@@ -54,7 +59,7 @@ vi.mock("@/app/_components/ui/SelectInput", () => ({
 
 function createAvatar(): Avatar {
   return {
-    cliprVoiceId: "zephyr",
+    cliprVoiceId: "Rachel",
     createdAt: "2026-01-01T00:00:00.000Z",
     id: "avatar_1",
     name: "Nova",
@@ -66,9 +71,11 @@ function createAvatar(): Avatar {
 function createProps(overrides: Partial<Parameters<typeof SelectedAvatarActions>[0]> = {}) {
   return {
     avatar: createAvatar(),
+    favoriteVoiceId: "Rachel",
     isDefaultAvatar: false,
     isSaving: false,
     onDelete: vi.fn(),
+    onFavoriteVoiceChange: vi.fn(),
     onRename: vi.fn(),
     onSetDefault: vi.fn(),
     onVoiceChange: vi.fn(),
@@ -101,10 +108,12 @@ describe("SelectedAvatarActions", () => {
     expect(
       renderToStaticMarkup(
         <SelectedAvatarActions
+          favoriteVoiceId="Rachel"
           isSaving={false}
           isDefaultAvatar={false}
           photoCount={0}
           onDelete={vi.fn()}
+          onFavoriteVoiceChange={vi.fn()}
           onRename={vi.fn()}
           onSetDefault={vi.fn()}
           onVoiceChange={vi.fn()}
@@ -118,10 +127,12 @@ describe("SelectedAvatarActions", () => {
     const markup = renderToStaticMarkup(
       <SelectedAvatarActions
         avatar={createAvatar()}
+        favoriteVoiceId="Rachel"
         isDefaultAvatar={false}
         isSaving={false}
         photoCount={2}
         onDelete={vi.fn()}
+        onFavoriteVoiceChange={vi.fn()}
         onRename={vi.fn()}
         onSetDefault={vi.fn()}
         onVoiceChange={vi.fn()}
@@ -130,8 +141,11 @@ describe("SelectedAvatarActions", () => {
     );
 
     expect(markup).toContain("SelectInput:Outfits:female:false");
-    expect(markup).toContain("SelectInput:Voice:zephyr:false");
-    expect(markup).toContain("VoicePreview:");
+    expect(markup).toContain("SelectInput:Voice:Rachel:false");
+    expect(markup).toContain("CliprVoicePreviewButton:Rachel:false");
+    expect(markup).toContain(
+      "IconButton:Rachel is the favorite Clipr voice:true",
+    );
     expect(markup).toContain("IconButton:Rename Nova:false");
     expect(markup).toContain("IconButton:Delete Nova:false");
     expect(markup).toContain("IconButton:Set Nova as default avatar:false");
@@ -141,10 +155,12 @@ describe("SelectedAvatarActions", () => {
     const markup = renderToStaticMarkup(
       <SelectedAvatarActions
         avatar={createAvatar()}
+        favoriteVoiceId="Rachel"
         isDefaultAvatar={false}
         isSaving
         photoCount={1}
         onDelete={vi.fn()}
+        onFavoriteVoiceChange={vi.fn()}
         onRename={vi.fn()}
         onSetDefault={vi.fn()}
         onVoiceChange={vi.fn()}
@@ -153,6 +169,7 @@ describe("SelectedAvatarActions", () => {
     );
 
     expect(markup).toContain("SelectInput:Outfits:female:true");
+    expect(markup).toContain("CliprVoicePreviewButton:Rachel:true");
     expect(markup).toContain("IconButton:Delete Nova:true");
     expect(markup).toContain("IconButton:Set Nova as default avatar:true");
   });
@@ -169,21 +186,29 @@ describe("SelectedAvatarActions", () => {
     const outfitSelect = children[0] as React.ReactElement<{
       onChange: (event: React.ChangeEvent<HTMLSelectElement>) => Promise<void>;
     }>;
-    const voiceSelect = children[1] as React.ReactElement<{
+    const voiceGroup = children[1] as React.ReactElement<{
+      children: React.ReactNode;
+    }>;
+    const voiceChildren = React.Children.toArray(voiceGroup.props.children);
+    const voiceSelect = voiceChildren[0] as React.ReactElement<{
       onChange: (event: React.ChangeEvent<HTMLSelectElement>) => Promise<void>;
     }>;
-    const renameButton = children[3] as React.ReactElement<{
+    const favoriteVoiceButton = voiceChildren[2] as React.ReactElement<{
+      onClick: () => Promise<void>;
+    }>;
+    const renameButton = children[2] as React.ReactElement<{
       onClick: () => void;
     }>;
-    const deleteButton = children[4] as React.ReactElement<{
+    const deleteButton = children[3] as React.ReactElement<{
       onClick: () => void;
     }>;
-    const defaultButton = children[5] as React.ReactElement<{
+    const defaultButton = children[4] as React.ReactElement<{
       onClick: () => Promise<void>;
     }>;
 
     await outfitSelect.props.onChange(createSelectChangeEvent("male"));
-    await voiceSelect.props.onChange(createSelectChangeEvent("puck"));
+    await voiceSelect.props.onChange(createSelectChangeEvent("Drew"));
+    await favoriteVoiceButton.props.onClick();
     renameButton.props.onClick();
 
     vi.stubGlobal("window", {
@@ -204,10 +229,11 @@ describe("SelectedAvatarActions", () => {
       props.avatar,
       "male",
     );
-    expect(props.onVoiceChange).toHaveBeenCalledWith(props.avatar, "puck");
+    expect(props.onVoiceChange).toHaveBeenCalledWith(props.avatar, "Drew");
+    expect(props.onFavoriteVoiceChange).toHaveBeenCalledWith("Rachel");
     expect(props.onDelete).toHaveBeenCalledWith(props.avatar);
     expect(props.onSetDefault).toHaveBeenCalledWith(props.avatar);
-    expect(reactMocks.stateSetters[5]).toHaveBeenCalledWith("Nova");
+    expect(reactMocks.stateSetters[6]).toHaveBeenCalledWith("Nova");
     expect(reactMocks.stateSetters[0]).toHaveBeenCalledWith(true);
 
     vi.unstubAllGlobals();
@@ -225,12 +251,17 @@ describe("SelectedAvatarActions", () => {
     const outfitSelect = children[0] as React.ReactElement<{
       onChange: (event: React.ChangeEvent<HTMLSelectElement>) => Promise<void>;
     }>;
-    const voiceSelect = children[1] as React.ReactElement<{
+    const voiceGroup = children[1] as React.ReactElement<{
+      children: React.ReactNode;
+    }>;
+    const voiceSelect = React.Children.toArray(
+      voiceGroup.props.children,
+    )[0] as React.ReactElement<{
       onChange: (event: React.ChangeEvent<HTMLSelectElement>) => Promise<void>;
     }>;
 
     await outfitSelect.props.onChange(createSelectChangeEvent("female"));
-    await voiceSelect.props.onChange(createSelectChangeEvent("zephyr"));
+    await voiceSelect.props.onChange(createSelectChangeEvent("Rachel"));
 
     expect(props.onWardrobeStyleChange).not.toHaveBeenCalled();
     expect(props.onVoiceChange).not.toHaveBeenCalled();
@@ -240,10 +271,12 @@ describe("SelectedAvatarActions", () => {
     const markup = renderToStaticMarkup(
       <SelectedAvatarActions
         avatar={createAvatar()}
+        favoriteVoiceId="Rachel"
         isDefaultAvatar
         isSaving={false}
         photoCount={2}
         onDelete={vi.fn()}
+        onFavoriteVoiceChange={vi.fn()}
         onRename={vi.fn()}
         onSetDefault={vi.fn()}
         onVoiceChange={vi.fn()}
@@ -257,7 +290,16 @@ describe("SelectedAvatarActions", () => {
   it("handles rename form submission, cancellation, and failures", async () => {
     const props = createProps();
 
-    reactMocks.stateQueue.push(false, false, false, false, false, " Nova Prime ");
+    reactMocks.stateQueue.push(
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      " Nova Prime ",
+      false,
+    );
     const inactiveElement = SelectedAvatarActions(props);
 
     if (!React.isValidElement<{ children: React.ReactNode }>(inactiveElement)) {
@@ -274,7 +316,16 @@ describe("SelectedAvatarActions", () => {
       }>
     ).props.onChange(createSelectChangeEvent("female"));
 
-    reactMocks.stateQueue.push(true, false, false, false, false, " Nova Prime ");
+    reactMocks.stateQueue.push(
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      " Nova Prime ",
+      false,
+    );
     const formElement = SelectedAvatarActions(props);
 
     if (
@@ -302,7 +353,16 @@ describe("SelectedAvatarActions", () => {
 
     expect(props.onRename).toHaveBeenCalledWith(props.avatar, "Nova Prime");
 
-    reactMocks.stateQueue.push(true, false, false, false, false, " Broken ");
+    reactMocks.stateQueue.push(
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      " Broken ",
+      false,
+    );
     (props.onRename as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
       new Error("rename failed"),
     );
@@ -320,7 +380,16 @@ describe("SelectedAvatarActions", () => {
       preventDefault: vi.fn(),
     } as unknown as React.FormEvent<HTMLFormElement>);
 
-    reactMocks.stateQueue.push(true, false, false, false, false, "Nova");
+    reactMocks.stateQueue.push(
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      "Nova",
+      false,
+    );
     const unchangedFormElement = SelectedAvatarActions(props);
 
     if (
