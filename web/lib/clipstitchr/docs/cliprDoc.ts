@@ -9,7 +9,7 @@ export const cliprDoc = {
     "Make short avatar-led Clips, save them to the library, and reuse them in Stitchr.",
   category: "feature",
   order: 20,
-  updated: "2026-05-13",
+  updated: "2026-06-12",
   sections: [
     {
       title: "What Clipr is for",
@@ -21,16 +21,24 @@ export const cliprDoc = {
     {
       title: "How Clipr works",
       body: [
-        "Clipr uses your saved product settings to understand the audience and topic. You choose the avatar, voice, and whether to generate music.",
+        "Clipr uses your saved product settings to understand the audience and topic. You choose the style of Clip, the avatar, and the extra options that fit that style.",
       ],
       bullets: [
         "Choose a saved product.",
+        "Choose Any, Script, Reaction, or B-roll.",
         "Choose an avatar to appear in the clip.",
-        "Choose a voice.",
-        "Optionally paste a script idea for Clipr to turn into a full script.",
-        "Optionally generate background music. This is off by default.",
+        "For Script clips, choose a voice.",
+        "For Script clips, optionally paste an idea for Clipr to turn into a full script.",
+        "For Script clips, optionally generate background music. This is off by default.",
         "Generate the avatar video.",
         "Save the result into the Content Library as a Clip.",
+      ],
+    },
+    {
+      title: "Clip styles",
+      body: [
+        "Script clips are talking-avatar videos. Reaction clips are quick silent facial reactions. B-roll clips are short silent everyday shots that fit the product context.",
+        "Reaction and b-roll clips are single-shot videos, usually just a few seconds long.",
       ],
     },
     {

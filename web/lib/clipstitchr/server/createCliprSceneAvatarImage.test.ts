@@ -132,6 +132,7 @@ describe("createCliprSceneAvatarImage", () => {
         outfit: "black workout set",
         pose: "taking a progress photo",
       },
+      undefined,
     );
     expect(mocks.getRemoteImageFile).toHaveBeenCalledWith(
       "https://cdn.test/reference.jpg",

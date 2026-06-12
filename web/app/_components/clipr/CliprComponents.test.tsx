@@ -148,6 +148,10 @@ function createJob(overrides: Partial<CliprClientJob> = {}): CliprClientJob {
     productId: "product_1",
     productName: "Launch Kit",
     progress: 1,
+    requestedGenerationMode: "script",
+    generationMode: "script",
+    requestedVideoModelId: "prunaai/p-video-avatar",
+    videoModelId: "prunaai/p-video-avatar",
     scenePlan: [
       {
         estimatedDurationSeconds: 30,
@@ -237,7 +241,7 @@ describe("Clipr components", () => {
     expect(populatedMarkup).toContain("Music generated for export.");
     expect(populatedMarkup).toContain("Here is the generated avatar line.");
     expect(populatedMarkup).toContain("View Clip");
-    expect(fallbackTitleMarkup).toContain("Clipr script");
+    expect(fallbackTitleMarkup).toContain("Talking avatar clip");
   });
 
   it("renders avatar and product selectors with empty states", () => {
@@ -332,16 +336,16 @@ describe("Clipr components", () => {
     const onScriptIdeaChange = vi.fn();
     const modeTree = CliprModeToggle({
       onChange: onModeChange,
-      value: "normal",
+      value: "any",
     });
     const scriptIdeaTree = CliprScriptIdeaPanel({
       onChange: onScriptIdeaChange,
       value: "Founder confession",
     });
-    const [ideaButton] = findElements(
+    const [reactionButton] = findElements(
       modeTree,
       (element) =>
-        element.type === "button" && element.props?.children === "Idea",
+        element.type === "button" && element.props?.children === "Reaction",
     );
     const [textarea] = findElements(
       scriptIdeaTree,
@@ -354,16 +358,18 @@ describe("Clipr components", () => {
       </>,
     );
 
-    (ideaButton.props.onClick as () => void)();
+    (reactionButton.props.onClick as () => void)();
     (textarea.props.onChange as (event: {
       currentTarget: { value: string };
     }) => void)({ currentTarget: { value: "New idea" } });
 
-    expect(onModeChange).toHaveBeenCalledWith("idea");
+    expect(onModeChange).toHaveBeenCalledWith("reaction");
     expect(onScriptIdeaChange).toHaveBeenCalledWith("New idea");
     expect(textarea.props.maxLength).toBe(cliprScriptIdeaMaxLength);
-    expect(markup).toContain("Normal");
-    expect(markup).toContain("Idea");
+    expect(markup).toContain("Any");
+    expect(markup).toContain("Script");
+    expect(markup).toContain("Reaction");
+    expect(markup).toContain("B-roll");
     expect(markup).toContain("Founder confession");
   });
 });

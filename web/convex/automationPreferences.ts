@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
+import { defaultCliprGenerationMode } from "../lib/clipstitchr/constants/defaultCliprGenerationMode";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
@@ -10,6 +11,7 @@ import { rateLimiter } from "./rateLimiter";
 import { automationSelectionModeValidator } from "./validators/automationSelectionMode";
 import { automationStitchrTextStyleChoiceValidator } from "./validators/automationStitchrTextStyleChoice";
 import { automationToolValidator } from "./validators/automationTool";
+import { cliprGenerationModeValidator } from "./validators/cliprGenerationMode";
 import type { AutomationTool } from "../lib/clipstitchr/types/AutomationTool";
 
 function filterEnabledAutomationTools(tools: AutomationTool[]) {
@@ -30,6 +32,8 @@ export const get = query({
       ? {
           ...preferences,
           enabledTools: filterEnabledAutomationTools(preferences.enabledTools),
+          cliprGenerationMode:
+            preferences.cliprGenerationMode ?? defaultCliprGenerationMode,
           stitchrTextStyleChoice: getAutomationStitchrTextStyleChoice(
             preferences.stitchrTextStyleChoice,
           ),
@@ -48,6 +52,7 @@ export const save = mutation({
   args: {
     enabled: v.boolean(),
     enabledTools: v.array(automationToolValidator),
+    cliprGenerationMode: v.optional(cliprGenerationModeValidator),
     stitchrTextStyleChoice: v.optional(
       automationStitchrTextStyleChoiceValidator,
     ),
@@ -81,6 +86,8 @@ export const save = mutation({
       ownerId,
       enabled: args.enabled,
       enabledTools: filterEnabledAutomationTools(args.enabledTools),
+      cliprGenerationMode:
+        args.cliprGenerationMode ?? defaultCliprGenerationMode,
       stitchrTextStyleChoice:
         args.stitchrTextStyleChoice ?? defaultAutomationStitchrTextStyleChoice,
       stitchrTextColorChoice: getAutomationStitchrColorChoice(

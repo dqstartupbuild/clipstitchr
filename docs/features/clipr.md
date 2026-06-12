@@ -50,6 +50,17 @@ hook, and the remaining slides should pay it off with simple supporting points.
 - Clipr does not expose a duration control.
 - Generated scripts should be as long as needed to express the full idea without
   padding or forcing a fixed 30 or 60 second target.
+- Clipr supports four generation choices: `Any`, `Script`, `Reaction`, and
+  `B-roll`. `Any` is the default and resolves to one of the other three modes
+  per job.
+- Script mode keeps the existing talking-avatar script flow. Reaction and
+  b-roll modes create one silent 4-10 second single-shot clip.
+- Reaction mode uses internal source descriptions from
+  `web/lib/clipstitchr/resources/clipr/reaction-source-prompts.json` to vary facial expressions,
+  timing, and gesture references without exposing uploaded account media.
+- B-roll mode creates one day-in-the-life action that fits the saved product
+  context, such as exercise movement for a fitness product or job-site work for
+  a service business.
 - The user selects an avatar to use as the character reference. They should not
   have to select a specific image; the system should automatically use that
   avatar's first uploaded photo for stable, repeatable character consistency.
@@ -60,6 +71,8 @@ hook, and the remaining slides should pay it off with simple supporting points.
 - Clipr should generate one full-script avatar video from the selected avatar
   and voice.
 - The generated avatar video should follow the full generated script length.
+- Reaction and b-roll outputs do not use voice, speech, generated music, or
+  PixVerse lip sync.
 - The user can opt into AI-generated background music. The checkbox is off by
   default.
 - Clipr music uses `stability-ai/stable-audio-2.5`, generates one 60 second
@@ -597,36 +610,55 @@ Rules:
 2. User selects a saved product profile from Settings.
 3. User selects an avatar. The system resolves that avatar's first uploaded
    photo as the hidden reference image.
-4. User can use Normal mode or paste a script idea for Clipr to expand.
-5. The voice selector preloads the avatar's saved voice. User can select a
+4. User chooses `Any`, `Script`, `Reaction`, or `B-roll`. `Any` resolves to one
+   concrete mode when the job is created.
+5. In Script mode, the user can paste a script idea for Clipr to expand.
+6. The voice selector preloads the avatar's saved voice. User can select a
    different voice for this job only.
-6. User can optionally enable generated background music. The control is
-   unchecked by default.
-7. Server randomly selects a hidden hook style and 3-5 hidden templates from
+7. In Script mode, the user can optionally enable generated background music.
+   The control is unchecked by default.
+8. Server randomly selects a hidden hook style and 3-5 hidden templates from
    the product's eligible pool using product settings, inferred problem,
    inferred pain points, audience details, placeholder fillers, and safety
    rules.
-8. GPT-4.1 fills hook placeholders and selects the strongest hook.
-9. GPT-4.1 generates a Clipr script from the selected hook.
-10. GPT-4.1 returns one avatar scene plan for the full script.
-11. Clipr generates one UGC-style avatar still from the selected avatar
+9. GPT-4.1 fills hook placeholders and selects the strongest hook.
+10. GPT-4.1 generates a Clipr script from the selected hook.
+11. GPT-4.1 returns one avatar scene plan for the full script.
+12. Clipr generates one UGC-style avatar still from the selected avatar
     reference photo, avatar description, full script, and visual direction.
-12. The generated still, selected voice, and full script are sent to
+13. The generated still, selected voice, and full script are sent to
     `prunaai/p-video-avatar` to create one talking avatar video.
-13. If music is enabled, `stability-ai/stable-audio-2.5` generates one 60
+14. If music is enabled, `stability-ai/stable-audio-2.5` generates one 60
     second instrumental music bed concurrently with the avatar video generation.
-14. The generated avatar still, full-script avatar video, and optional music
+15. The generated avatar still, full-script avatar video, and optional music
     file are copied into R2. Music is stored as its own R2 object.
-15. The browser normalizes the full avatar video without baking in music.
-16. Clipr generates a poster image for the final output.
-17. Final video and poster are uploaded to R2.
-18. Convex saves the final output as a UGC-compatible video clip with Clipr
+16. The browser normalizes the full avatar video without baking in music.
+17. Clipr generates a poster image for the final output.
+18. Final video and poster are uploaded to R2.
+19. Convex saves the final output as a UGC-compatible video clip with Clipr
     provenance metadata.
-19. The output appears in the Content Library `Clips` tab and can be used in
+20. The output appears in the Content Library `Clips` tab and can be used in
     Stitchr.
-20. If music metadata is attached and enabled, download/export renders a fresh
+21. If music metadata is attached and enabled, download/export renders a fresh
     MP4 with Media Bunny using the clean video, the R2 music file, and the saved
     music volume.
+
+Reaction and b-roll modes share the same product/avatar/still-image start, then
+skip hook/script prompting, voice, music, and lip sync:
+
+1. The server creates one local visual plan instead of calling GPT-4.1 for a
+   spoken script.
+2. Reaction mode samples source descriptions from
+   `web/lib/clipstitchr/resources/clipr/reaction-source-prompts.json` and chooses an emotion such
+   as shock, sadness, disbelief, happiness, or confusion.
+3. B-roll mode creates one product-relevant day-in-the-life prompt from the
+   saved product and audience context.
+4. The avatar still prompt is adjusted for the selected mode before image
+   generation.
+5. The selected visual video model creates one 4-10 second vertical clip from
+   the still and prompt.
+6. The media worker strips audio during final normalization so visual-mode
+   outputs stay silent even when a provider emits incidental audio.
 
 ## AI Provider Notes
 
@@ -638,12 +670,22 @@ Planned model roles:
 - Hook selection and script generation: `openai/gpt-4.1`.
 - Avatar still generation: use the same model, prompt builder, and input
   parameters as avatar photo generation, with one generated source still for the
-  full-script avatar video.
+  selected mode.
 - Avatar video and voice generation: `prunaai/p-video-avatar`, using the
-  generated still, selected voice, voice prompt, and full script.
+  generated still, selected voice, voice prompt, and full script. This is Script
+  mode only.
+- Visual video generation for Reaction and B-roll modes:
+  `kwaivgi/kling-v3-video`, `bytedance/seedance-2.0`, `google/veo-3.1`,
+  `openai/sora-2`, and `openai/sora-2-pro`.
+- The temporary Clipr model selector can choose these visual models while model
+  quality is evaluated. Remove the selector after the supported model set is
+  narrowed.
 - Optional background music: `stability-ai/stable-audio-2.5`, using an
   instrumental-only prompt derived from the product context and Clipr script.
-  Inputs use `duration: 60`, `steps: 8`, and `cfg_scale: 1`.
+  Inputs use `duration: 60`, `steps: 8`, and `cfg_scale: 1`. This is Script
+  mode only.
+- PixVerse lip sync only runs for Script mode videos with speech audio. Silent
+  Reaction and B-roll outputs do not run PixVerse.
 
 Add environment overrides instead of hard-coding provider choices:
 
@@ -651,6 +693,9 @@ Add environment overrides instead of hard-coding provider choices:
 - `AVATAR_PHOTO_MODEL_ID` for avatar photo generation and Clipr avatar stills
 - `CLIPR_AVATAR_VIDEO_MODEL_ID`
 - `CLIPR_MUSIC_MODEL_ID`
+
+Visual-mode model selection is temporarily user-selectable in the Clipr UI
+instead of env-only while the supported Replicate models are being compared.
 
 ## Script Rules
 
@@ -730,7 +775,11 @@ type CliprMetadata = {
   avatarId: string;
   avatarPhotoId: string;
   voiceId: string;
-  targetDurationSeconds: 30 | 60;
+  requestedGenerationMode?: "any" | "script" | "reaction" | "broll";
+  generationMode?: "script" | "reaction" | "broll";
+  requestedVideoModelId?: string;
+  videoModelId?: string;
+  targetDurationSeconds: 4 | 5 | 6 | 7 | 8 | 9 | 10 | 30 | 60;
   hookStyleKey: string;
   hookTemplateId: string;
   filledHook: string;
@@ -776,6 +825,8 @@ Add:
 
 - `/dashboard/clipr`
   - Clipr generation studio.
+  - Mode picker for `Any`, `Script`, `Reaction`, and `B-roll`.
+  - Temporary video model selector for comparing visual generation models.
 - `POST /api/clipr/music`
   - Authenticated, rate-limited regeneration endpoint for existing Clipr music
     assets.
@@ -794,6 +845,8 @@ Update:
   exposing hidden style/template IDs. Keep those IDs in internal metadata only.
 - Settings product flow: ensure saved product context can be selected by Clipr,
   Swipr auto-text, and Stitchr auto-text.
+- Settings automation panel: allow automatic Clipr jobs to use `Any`, `Script`,
+  `Reaction`, or `B-roll`.
 
 ## Swipr Auto-Generated Text
 
@@ -881,6 +934,7 @@ New enforcement surfaces to document and implement:
 - Swipr and Stitchr auto-text through the same Clipr hook/script generation
   route. The expanded local template libraries do not add a new backend surface.
 - Clipr full-script avatar video and voice generation.
+- Clipr silent visual video generation for Reaction and B-roll.
 - Clipr music generation.
 - Clipr avatar still generation.
 - Clipr full job creation.
@@ -897,6 +951,7 @@ Required limits:
 - per-user generated seconds limits
 - per-user voice generation limits
 - per-user avatar video generation limits
+- per-user silent visual video generation limits
 - per-user 60 second music generation limits
 - global provider spend limits
 - polling limits
@@ -912,19 +967,21 @@ Provider calls must never start before the matching rate limit is consumed.
 Clipr cannot be a page-local state machine only. It is a multi-provider workflow
 and must be recoverable.
 
-The current implementation uses `cliprJobs` for user-facing job state and splits
-the `POST /api/clipr/jobs` server orchestration into focused helpers under
-`web/lib/clipstitchr/server/clipr/*`. That route-local split covers request
-parsing, quota consumption, Convex input loading, queued job persistence, script
-planning, avatar still generation, avatar video/music generation, shared music
-persistence, analytics, and failure cleanup. It improves the implementation
-shape, but it is not the final durable architecture because provider execution
-can still be interrupted by request/runtime failure.
+The current implementation uses `cliprJobs` for user-facing job state and
+`providerJobs` or automation tasks for durable provider execution. `POST
+/api/clipr/jobs` handles request parsing, quota consumption, Convex input
+loading, queued job persistence, provider job creation, analytics, and failure
+cleanup. The provider worker owns text planning, avatar still generation, video
+generation, optional Script-mode music, and media-job creation. The media worker
+normalizes the final video, strips audio for Reaction and B-roll, creates the
+poster, and saves the final library Clip.
 
 The durable job should track:
 
 - owner ID
 - product/avatar/voice selections
+- requested generation mode, resolved generation mode, requested model, and
+  resolved video model
 - generated script and scene duration estimate
 - hook/template choices
 - script
@@ -968,23 +1025,30 @@ Current and future code areas:
 - `web/convex/videoClips.ts`
   - accepts and updates Clipr metadata.
 - `web/lib/clipstitchr/types/*`
-  - Clipr metadata, job, scene, voice, and generation status types.
+  - Clipr metadata, job, scene, voice, mode, model, and generation status types.
 - `web/lib/clipstitchr/server/clipr/*`
   - request parsing, start quotas, Convex input loading, queued job persistence,
     script planning, avatar still generation, avatar video/music generation,
     shared music persistence, analytics, and failure cleanup.
 - `web/lib/clipstitchr/server/*`
   - shared prompt creation, response parsing, provider clients, model ID helpers,
-    product enrichment, and rate-limit helpers.
+    visual Clipr prompt builders, product enrichment, and rate-limit helpers.
+- `web/lib/clipstitchr/resources/clipr/reaction-source-prompts.json`
+  - sanitized source descriptions sampled for Reaction-mode visual prompts.
 - `web/app/api/clipr/*`
   - job create, text, music, cancellation, and any future provider helper routes.
 - `web/lib/clipstitchr/media/*`
   - reuse upload normalization and poster helpers for the generated avatar video.
   - export-time Clipr music mixing from clean video and separate R2 audio.
+- `web/services/provider-worker/runProviderWorker.ts`
+  - durable manual and automatic Clipr provider execution.
+- `web/services/media-worker/runMediaWorker.mjs`
+  - Clipr finalization, 9:16 normalization, poster capture, and visual-mode
+    audio stripping.
 - `web/app/dashboard/clipr/*`
   - Clipr page client and controls.
 - `web/app/_components/clipr/*`
-  - one component per file for product, avatar, duration, voice, progress,
+  - one component per file for product, avatar, mode, model, voice, progress,
     preview, and generated output controls.
 - `web/app/dashboard/uploads/UploadsPageClient.tsx`
   - Clips tab/filter behavior.
@@ -1002,11 +1066,11 @@ After implementation:
 1. Run `npm run typecheck` from `web/`.
 2. Run `npm run lint` from `web/`.
 3. Run `npm test` from `web/`.
-4. Test Clipr with a saved product, selected avatar, Normal mode, and a selected
+4. Test Clipr with a saved product, selected avatar, Script mode, and a selected
    voice.
 5. Test changing an avatar's saved voice updates the preloaded Clipr voice when
    that avatar is selected.
-6. Test Idea mode with a pasted script idea.
+6. Test Script mode with a pasted script idea.
 7. Test generated avatar image and avatar video outputs save to R2 before final
    Clip save.
 8. Test the full generated script is passed to `prunaai/p-video-avatar`.
@@ -1028,7 +1092,16 @@ After implementation:
     the remaining slides.
 19. Test Stitchr auto-text fills the single editable overlay.
 20. Test paid-provider routes return `429` before provider calls when limited.
-21. Review user-facing copy for non-technical language and no unwanted CTAs.
+21. Test Reaction mode creates a 4-10 second silent single-shot Clip and does
+    not call hook/script, voice, music, or PixVerse lip sync.
+22. Test B-roll mode creates a 4-10 second silent single-shot Clip with a
+    product-relevant day-in-the-life prompt.
+23. Test the temporary visual model selector maps to supported model inputs and
+    falls back safely when the selected model does not support the resolved
+    mode.
+24. Test Settings automation mode selection queues Script, Reaction, B-roll, or
+    deterministic Any-mode jobs with the correct target duration.
+25. Review user-facing copy for non-technical language and no unwanted CTAs.
 
 ## Approval Decisions
 
@@ -1046,6 +1119,9 @@ These are the assumptions this scope makes:
   mixed only during export/download. If provider output is capped below the
   requested script length, chunked avatar generation and a durable merge step
   should be added next.
+- Reaction and b-roll outputs are silent single-shot visual clips, so the media
+  worker strips provider audio during finalization and no PixVerse lip-sync step
+  is scheduled.
 - Exact provider model schemas will be verified immediately before
   implementation.
 

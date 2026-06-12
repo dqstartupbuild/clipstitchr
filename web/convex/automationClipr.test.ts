@@ -160,6 +160,7 @@ describe("automationClipr", () => {
           unique: {
             enabled: true,
             enabledTools: ["clipr"],
+            cliprGenerationMode: "script",
             preferenceVersion: 3,
             productSelectionMode: "default",
             selectedProductIds: [],
@@ -199,9 +200,19 @@ describe("automationClipr", () => {
 
     const taskInput = JSON.parse(
       createTaskCall?.[1].inputSnapshotJson,
-    ) as { targetDurationSeconds: number };
+    ) as {
+      generationMode: string;
+      requestedGenerationMode: string;
+      requestedVideoModelId: string;
+      targetDurationSeconds: number;
+      videoModelId: string;
+    };
 
+    expect(taskInput.requestedGenerationMode).toBe("script");
+    expect(taskInput.generationMode).toBe("script");
+    expect(taskInput.requestedVideoModelId).toBe("auto");
     expect(taskInput.targetDurationSeconds).toBe(60);
+    expect(taskInput.videoModelId).toBe("prunaai/p-video-avatar");
     expect(ctx.db.patch).toHaveBeenCalledWith(
       "run_doc",
       expect.objectContaining({
@@ -209,5 +220,55 @@ describe("automationClipr", () => {
         startedAt: now,
       }),
     );
+  });
+
+  it("queues automatic visual Clipr modes with short silent-video cost", async () => {
+    const ctx = createCtx({
+      automationPreferences: [
+        {
+          unique: {
+            enabled: true,
+            enabledTools: ["clipr"],
+            cliprGenerationMode: "broll",
+            preferenceVersion: 3,
+            productSelectionMode: "default",
+            selectedProductIds: [],
+          },
+        },
+      ],
+      photoAssets: [{ collect: [avatarPhoto] }],
+      products: [{ collect: [product] }],
+    });
+
+    await getHandler<Record<string, string>, unknown>(planDaily)(ctx, {
+      automationDate: "2026-06-01",
+      now,
+      ownerId: "owner_123",
+      secret: "automation_secret",
+    });
+
+    expect(mocks.consumeAutomationBudget).toHaveBeenCalledWith(
+      ctx,
+      expect.objectContaining({
+        ownerId: "owner_123",
+        providerCostUnits: 8,
+        tool: "clipr",
+      }),
+    );
+
+    const createTaskCall = mocks.createAutomationTask.mock.calls[0];
+    const taskInput = JSON.parse(
+      createTaskCall?.[1].inputSnapshotJson,
+    ) as {
+      generationMode: string;
+      requestedGenerationMode: string;
+      targetDurationSeconds: number;
+      videoModelId: string;
+    };
+
+    expect(taskInput.requestedGenerationMode).toBe("broll");
+    expect(taskInput.generationMode).toBe("broll");
+    expect(taskInput.targetDurationSeconds).toBe(8);
+    expect(taskInput.videoModelId).toBe("kwaivgi/kling-v3-video");
   });
 });

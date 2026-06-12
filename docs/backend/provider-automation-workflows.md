@@ -21,7 +21,8 @@ Core rule:
 
 This document covers:
 
-- Clipr script, avatar still, avatar video, voice, and music generation.
+- Clipr script, reaction, b-roll, avatar still, avatar video, voice, lip sync,
+  and music generation.
 - Swipr AI background generation and future automated Swipe creation.
 - Avatar photo generation.
 - Shared music generation.
@@ -193,23 +194,26 @@ fallback, not the preferred production path.
 
 Manual Clipr is now a server-owned workflow with recoverable steps:
 
-1. Create a `clipr` automation run with product/avatar/voice/duration/music
-   snapshots.
-2. Consume Clipr job, script, avatar still, avatar video, and music limits
-   before provider calls.
-3. Generate hook/script as a provider task and save the script plan.
+1. Create a `clipr` automation run with product/avatar/mode/model/voice/duration
+   and music snapshots.
+2. Consume Clipr job, avatar still, and video limits before provider calls.
+   Script mode also consumes hook/script and voice limits; music limits are
+   consumed only when Script mode generates music.
+3. Generate hook/script as a provider task for Script mode, or create a local
+   visual plan for Reaction and B-roll.
 4. Generate the avatar source still as a provider task and copy it to R2.
-5. Generate avatar video and optional music as provider tasks.
+5. Generate avatar video and optional Script-mode music as provider tasks.
 6. Copy provider outputs to R2 from a server-owned finalizer.
 7. Create a `clipr-finalization` media job.
 8. Mark the Clipr run complete only after the final `videoClips` record exists.
 
 `POST /api/clipr/jobs` now handles request parsing, ownership checks, quota
 consumption, Convex input loading, queued job persistence, and creation of one
-`manual-clipr` provider job. The provider worker owns script planning, avatar
-still generation, avatar video/music generation, shared music persistence, and
-creation of the `clipr-finalization` media job. The media worker saves the final
-Clipr clip and marks the provider job complete.
+`manual-clipr` provider job. The provider worker owns Script-mode planning,
+visual-mode local plan creation, avatar still generation, avatar video/music
+generation, shared music persistence, and creation of the `clipr-finalization`
+media job. The media worker saves the final Clipr clip, strips audio for
+Reaction and B-roll, and marks the provider job complete.
 
 ## Swipr Durable Target
 
@@ -287,8 +291,8 @@ mutations, and creates media finalization jobs only after provider output is
 ready.
 
 The provider worker owns automatic Stitchr text, Swapr provider create/finalize,
-Clipr script/avatar-image/avatar-video, avatar-photo generation, and Swipr draft
-text generation. Avatar-based automation uses
+Clipr script/reaction/b-roll/avatar-image/avatar-video, avatar-photo
+generation, and Swipr draft text generation. Avatar-based automation uses
 `avatarPreferences.defaultAvatarId`; automatic avatar-photo generation queues
 only that default avatar. It also owns manual Swapr, manual Clipr, manual
 avatar-photo generation, and upload-video analysis through durable
@@ -300,8 +304,9 @@ Scheduler trigger is only a recovery sweep.
 The first FFmpeg media worker lives at
 `web/services/media-worker/runMediaWorker.mjs`. It claims queued media jobs with
 `MEDIA_WORKER_SECRET`; for `clipr-finalization`, it normalizes the durable avatar
-video to 9:16 H.264/AAC, captures a poster, uploads both objects to R2, saves
-the final Clipr `videoClips` record, and marks the automation task/run complete.
+video to 9:16 H.264/AAC, strips audio when the input snapshot asks for silent
+visual output, captures a poster, uploads both objects to R2, saves the final
+Clipr `videoClips` record, and marks the automation task/run complete.
 For `swapr-finalization`, it downloads one or more allowlisted Replicate output
 URLs, normalizes/concatenates the video to the same saved-clip format, captures
 a poster, uploads both objects to R2, saves a UGC-compatible `videoClips` record
@@ -326,6 +331,7 @@ Before autopilot is exposed to users, add an explicit preferences model:
 
 - enabled/disabled;
 - tools enabled: Clipr, Swipr, later Stitchr/Longr;
+- Clipr mode preference: Any, Script, Reaction, or B-roll;
 - product selection mode;
 - avatar selection mode;
 - generation frequency;

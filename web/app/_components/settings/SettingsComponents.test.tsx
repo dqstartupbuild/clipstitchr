@@ -125,6 +125,7 @@ describe("settings components", () => {
           preferences={{
             enabled: false,
             enabledTools: ["stitchr", "swapr", "clipr", "avatar-photo", "swipr"],
+            cliprGenerationMode: "any",
             stitchrTextStyleChoice: "any",
             stitchrTextColorChoice: "any",
             stitchrTextBackgroundColorChoice: "any",
@@ -181,6 +182,7 @@ describe("settings components", () => {
     const preferences: AutomationPreferencesInput = {
       enabled: false,
       enabledTools: ["stitchr"],
+      cliprGenerationMode: "any",
       stitchrTextStyleChoice: "any",
       stitchrTextColorChoice: "any",
       stitchrTextBackgroundColorChoice: "any",
@@ -254,6 +256,7 @@ describe("settings components", () => {
     const preferences: AutomationPreferencesInput = {
       enabled: false,
       enabledTools: ["stitchr"],
+      cliprGenerationMode: "any",
       stitchrTextStyleChoice: "any",
       stitchrTextColorChoice: "any",
       stitchrTextBackgroundColorChoice: "any",

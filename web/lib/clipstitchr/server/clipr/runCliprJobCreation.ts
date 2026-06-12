@@ -26,14 +26,20 @@ export async function runCliprJobCreation({
   const createdAt = new Date().toISOString();
 
   await Promise.all([
-    convex.mutation(api.rateLimits.consumeCliprVoiceGeneration, {
+    convex.mutation(api.rateLimits.consumeCliprVideoGeneration, {
       estimatedSeconds: input.durationSeconds,
       secret,
     }),
+    input.generationMode === "script"
+      ? convex.mutation(api.rateLimits.consumeCliprVoiceGeneration, {
+          estimatedSeconds: input.durationSeconds,
+          secret,
+        })
+      : Promise.resolve(null),
     convex.mutation(api.rateLimits.consumeCliprAvatarStillGeneration, {
       secret,
     }),
-    input.addMusic
+    input.generationMode === "script" && input.addMusic
       ? convex.mutation(api.rateLimits.consumeCliprMusicGeneration, {
           generatedSeconds: cliprMusicGenerationDefaults.durationSeconds,
           secret,
@@ -68,6 +74,7 @@ export async function runCliprJobCreation({
       avatarScenePose: input.avatarScenePose,
       audienceDetails: documents.product.audienceDetails,
       durationSeconds: input.durationSeconds,
+      generationMode: input.generationMode,
       inferredPainPoints: documents.product.inferredPainPoints,
       inferredProblem: documents.product.inferredProblem,
       jobId: input.jobId,
@@ -76,8 +83,11 @@ export async function runCliprJobCreation({
       productDetails: documents.product.productDetails,
       productId: documents.product.id,
       productName: documents.product.name,
+      requestedGenerationMode: input.requestedGenerationMode,
+      requestedVideoModelId: input.requestedVideoModelId,
       scriptIdea: input.scriptIdea,
       ttsModelId: input.ttsModelId,
+      videoModelId: input.videoModelId,
       voiceId: input.voiceId,
     }),
     createdAt,

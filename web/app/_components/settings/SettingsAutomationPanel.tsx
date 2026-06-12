@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Bot, Clock } from "lucide-react";
+import { AutomationCliprModePicker } from "@/app/_components/settings/AutomationCliprModePicker";
 import { AutomationStitchrColorChoicePicker } from "@/app/_components/settings/AutomationStitchrColorChoicePicker";
 import { AutomationStitchrTextStylePicker } from "@/app/_components/settings/AutomationStitchrTextStylePicker";
 import { Button } from "@/app/_components/ui/Button";
@@ -12,6 +13,7 @@ import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/Autom
 import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import type { AutomationTool } from "@/lib/clipstitchr/types/AutomationTool";
+import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
 import { getCssColorHex } from "@/lib/clipstitchr/utils/getCssColorHex";
 
 type SettingsAutomationPanelProps = {
@@ -119,6 +121,12 @@ export function SettingsAutomationPanel({
       stitchrTextBackgroundColorChoice,
     });
   };
+  const handleCliprModeChange = (cliprGenerationMode: CliprGenerationMode) => {
+    updateDraftPreferences({
+      ...draftPreferences,
+      cliprGenerationMode,
+    });
+  };
   const handleSave = async () => {
     await onSave(draftPreferences);
   };
@@ -169,6 +177,14 @@ export function SettingsAutomationPanel({
               {tool.label}
             </label>
           ))}
+        </div>
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-semibold text-text-primary">Clipr mode</p>
+          <AutomationCliprModePicker
+            disabled={isLoading || isSaving}
+            value={draftPreferences.cliprGenerationMode}
+            onChange={handleCliprModeChange}
+          />
         </div>
         <div className="flex flex-col gap-2">
           <p className="text-sm font-semibold text-text-primary">

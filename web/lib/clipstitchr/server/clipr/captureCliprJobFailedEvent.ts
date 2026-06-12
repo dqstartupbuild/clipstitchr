@@ -21,6 +21,8 @@ export async function captureCliprJobFailedEvent({
       job_id: input.jobId,
       product_id: input.productId,
       avatar_id: input.avatarId,
+      generation_mode: input.generationMode,
+      video_model_id: input.videoModelId,
       error_name: error instanceof Error ? error.name : "UnknownError",
     },
     request,

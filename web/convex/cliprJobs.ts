@@ -9,8 +9,11 @@ import { videoClipCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { cliprDurationSecondsValidator } from "./validators/cliprDurationSeconds";
+import { cliprGenerationModeValidator } from "./validators/cliprGenerationMode";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
+import { cliprResolvedGenerationModeValidator } from "./validators/cliprResolvedGenerationMode";
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
+import { cliprVideoModelIdValidator } from "./validators/cliprVideoModelId";
 import { r2ObjectValidator } from "./validators/r2Object";
 
 const clientJobFields = (job: {
@@ -43,6 +46,24 @@ const clientJobFields = (job: {
   productId: string;
   productName: string;
   progress: number;
+  requestedGenerationMode?: "any" | "script" | "reaction" | "broll";
+  generationMode?: "script" | "reaction" | "broll";
+  requestedVideoModelId?:
+    | "auto"
+    | "prunaai/p-video-avatar"
+    | "kwaivgi/kling-v3-video"
+    | "bytedance/seedance-2.0"
+    | "google/veo-3.1"
+    | "openai/sora-2"
+    | "openai/sora-2-pro";
+  videoModelId?:
+    | "auto"
+    | "prunaai/p-video-avatar"
+    | "kwaivgi/kling-v3-video"
+    | "bytedance/seedance-2.0"
+    | "google/veo-3.1"
+    | "openai/sora-2"
+    | "openai/sora-2-pro";
   scriptIdea?: string;
   scenePlan: {
     estimatedDurationSeconds: number;
@@ -61,7 +82,7 @@ const clientJobFields = (job: {
   script?: string;
   stage: string;
   status: string;
-  targetDurationSeconds: 30 | 60;
+  targetDurationSeconds: 4 | 5 | 6 | 7 | 8 | 9 | 10 | 30 | 60;
   updatedAt: string;
   voiceId: string;
 }) => ({
@@ -76,6 +97,10 @@ const clientJobFields = (job: {
   avatarVideoProviderPredictionId: job.avatarVideoProviderPredictionId,
   music: job.music,
   voiceId: job.voiceId,
+  requestedGenerationMode: job.requestedGenerationMode ?? "script",
+  generationMode: job.generationMode ?? "script",
+  requestedVideoModelId: job.requestedVideoModelId ?? "prunaai/p-video-avatar",
+  videoModelId: job.videoModelId ?? "prunaai/p-video-avatar",
   scriptIdea: job.scriptIdea,
   targetDurationSeconds: job.targetDurationSeconds,
   filledHook: job.filledHook,
@@ -152,6 +177,10 @@ export const createQueued = mutation({
     avatarName: v.string(),
     avatarPhotoId: v.string(),
     voiceId: v.string(),
+    requestedGenerationMode: v.optional(cliprGenerationModeValidator),
+    generationMode: v.optional(cliprResolvedGenerationModeValidator),
+    requestedVideoModelId: v.optional(cliprVideoModelIdValidator),
+    videoModelId: v.optional(cliprVideoModelIdValidator),
     scriptIdea: v.optional(v.string()),
     targetDurationSeconds: cliprDurationSecondsValidator,
     createdAt: v.string(),
@@ -169,6 +198,10 @@ export const createQueued = mutation({
     const jobId = await ctx.db.insert("cliprJobs", {
       ownerId,
       ...job,
+      requestedGenerationMode: job.requestedGenerationMode ?? "script",
+      generationMode: job.generationMode ?? "script",
+      requestedVideoModelId: job.requestedVideoModelId ?? "prunaai/p-video-avatar",
+      videoModelId: job.videoModelId ?? "prunaai/p-video-avatar",
       scenePlan: [],
       providerModels: [],
       status: "scripting",
@@ -201,6 +234,10 @@ export const createQueuedFromAutomation = mutation({
     avatarName: v.string(),
     avatarPhotoId: v.string(),
     voiceId: v.string(),
+    requestedGenerationMode: v.optional(cliprGenerationModeValidator),
+    generationMode: v.optional(cliprResolvedGenerationModeValidator),
+    requestedVideoModelId: v.optional(cliprVideoModelIdValidator),
+    videoModelId: v.optional(cliprVideoModelIdValidator),
     scriptIdea: v.optional(v.string()),
     targetDurationSeconds: cliprDurationSecondsValidator,
     createdAt: v.string(),
@@ -222,6 +259,10 @@ export const createQueuedFromAutomation = mutation({
     const jobId = await ctx.db.insert("cliprJobs", {
       ownerId,
       ...job,
+      requestedGenerationMode: job.requestedGenerationMode ?? "script",
+      generationMode: job.generationMode ?? "script",
+      requestedVideoModelId: job.requestedVideoModelId ?? "prunaai/p-video-avatar",
+      videoModelId: job.videoModelId ?? "prunaai/p-video-avatar",
       scenePlan: [],
       providerModels: [],
       status: "scripting",
@@ -254,6 +295,10 @@ export const createQueuedFromProvider = mutation({
     avatarName: v.string(),
     avatarPhotoId: v.string(),
     voiceId: v.string(),
+    requestedGenerationMode: v.optional(cliprGenerationModeValidator),
+    generationMode: v.optional(cliprResolvedGenerationModeValidator),
+    requestedVideoModelId: v.optional(cliprVideoModelIdValidator),
+    videoModelId: v.optional(cliprVideoModelIdValidator),
     scriptIdea: v.optional(v.string()),
     targetDurationSeconds: cliprDurationSecondsValidator,
     createdAt: v.string(),
@@ -275,6 +320,10 @@ export const createQueuedFromProvider = mutation({
     const jobId = await ctx.db.insert("cliprJobs", {
       ownerId,
       ...job,
+      requestedGenerationMode: job.requestedGenerationMode ?? "script",
+      generationMode: job.generationMode ?? "script",
+      requestedVideoModelId: job.requestedVideoModelId ?? "prunaai/p-video-avatar",
+      videoModelId: job.videoModelId ?? "prunaai/p-video-avatar",
       scenePlan: [],
       providerModels: [],
       status: "scripting",
@@ -934,6 +983,11 @@ export const finalizeWithClip = mutation({
         avatarId: job.avatarId,
         avatarPhotoId: job.avatarPhotoId,
         voiceId: job.voiceId,
+        requestedGenerationMode: job.requestedGenerationMode ?? "script",
+        generationMode: job.generationMode ?? "script",
+        requestedVideoModelId:
+          job.requestedVideoModelId ?? "prunaai/p-video-avatar",
+        videoModelId: job.videoModelId ?? "prunaai/p-video-avatar",
         ...(job.scriptIdea ? { scriptIdea: job.scriptIdea } : {}),
         targetDurationSeconds: job.targetDurationSeconds,
         hookStyleKey: job.hookStyleKey,
@@ -1056,6 +1110,11 @@ export const finalizeWithClipFromMediaWorker = mutation({
         avatarId: job.avatarId,
         avatarPhotoId: job.avatarPhotoId,
         voiceId: job.voiceId,
+        requestedGenerationMode: job.requestedGenerationMode ?? "script",
+        generationMode: job.generationMode ?? "script",
+        requestedVideoModelId:
+          job.requestedVideoModelId ?? "prunaai/p-video-avatar",
+        videoModelId: job.videoModelId ?? "prunaai/p-video-avatar",
         ...(job.scriptIdea ? { scriptIdea: job.scriptIdea } : {}),
         targetDurationSeconds: job.targetDurationSeconds,
         hookStyleKey: job.hookStyleKey,

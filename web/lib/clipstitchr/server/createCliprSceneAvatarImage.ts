@@ -10,6 +10,7 @@ import { getRemoteImageFile } from "@/lib/clipstitchr/server/getRemoteImageFile"
 import { getReplicateOutputUrls } from "@/lib/clipstitchr/server/getReplicateOutputUrls";
 import { getReplicatePredictionModelReference } from "@/lib/clipstitchr/server/getReplicatePredictionModelReference";
 import type { AvatarSceneControls } from "@/lib/clipstitchr/types/AvatarSceneControls";
+import type { CliprResolvedGenerationMode } from "@/lib/clipstitchr/types/CliprResolvedGenerationMode";
 import type { CliprScenePlan } from "@/lib/clipstitchr/types/CliprScenePlan";
 import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
 
@@ -21,6 +22,7 @@ type CreateCliprSceneAvatarImageOptions = {
   replicate: ReplicateClient;
   scene: CliprScenePlan;
   sceneControls?: AvatarSceneControls;
+  generationMode?: CliprResolvedGenerationMode;
 };
 
 export async function createCliprSceneAvatarImage({
@@ -29,6 +31,7 @@ export async function createCliprSceneAvatarImage({
   replicate,
   scene,
   sceneControls,
+  generationMode,
 }: CreateCliprSceneAvatarImageOptions) {
   const modelId = getCliprAvatarStillModelId();
   const speedProfile = getGenerationSpeedTierProfile(
@@ -40,7 +43,11 @@ export async function createCliprSceneAvatarImage({
       "Use the visible person in the reference image as the avatar.",
     identityMode: "same",
     modelId,
-    variant: createCliprAvatarStillVariant(scene, sceneControls),
+    variant: createCliprAvatarStillVariant(
+      scene,
+      sceneControls,
+      generationMode,
+    ),
   });
   const referenceImage = await getRemoteImageFile(
     referenceImageUrl,

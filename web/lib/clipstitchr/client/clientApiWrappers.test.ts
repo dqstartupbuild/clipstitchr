@@ -102,10 +102,12 @@ describe("client API wrappers", () => {
         avatarSceneOutfit: "black workout set",
         avatarScenePose: "taking a progress photo",
         durationSeconds: 30,
+        generationMode: "script",
         jobId: "job_1",
         musicTrackId: "track_1",
         productId: "product_1",
         scriptIdea: "Founder confession angle",
+        videoModelId: "prunaai/p-video-avatar",
         voiceId: "Rachel",
       }),
     ).resolves.toEqual({ id: "job_1" });
@@ -191,8 +193,10 @@ describe("client API wrappers", () => {
         addMusic: false,
         avatarId: "avatar_1",
         durationSeconds: 30,
+        generationMode: "script",
         jobId: "job_1",
         productId: "product_1",
+        videoModelId: "prunaai/p-video-avatar",
         voiceId: "Rachel",
       }),
     ).rejects.toThrow("No Clipr");

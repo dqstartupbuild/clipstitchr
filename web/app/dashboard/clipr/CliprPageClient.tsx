@@ -10,18 +10,22 @@ import { CliprMusicControl } from "@/app/_components/clipr/CliprMusicControl";
 import { CliprProductPanel } from "@/app/_components/clipr/CliprProductPanel";
 import { CliprScriptIdeaPanel } from "@/app/_components/clipr/CliprScriptIdeaPanel";
 import { CliprSceneControls } from "@/app/_components/clipr/CliprSceneControls";
+import { CliprVideoModelSelect } from "@/app/_components/clipr/CliprVideoModelSelect";
 import { CliprVoiceSelect } from "@/app/_components/clipr/CliprVoiceSelect";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
+import { defaultCliprGenerationMode } from "@/lib/clipstitchr/constants/defaultCliprGenerationMode";
 import { defaultCliprDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprDurationSeconds";
+import { defaultCliprVisualDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprVisualDurationSeconds";
 import { defaultCliprVoiceId } from "@/lib/clipstitchr/constants/defaultCliprVoiceId";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useCliprGeneration } from "@/lib/clipstitchr/hooks/useCliprGeneration";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
-import type { CliprMode } from "@/lib/clipstitchr/types/CliprMode";
+import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
+import type { CliprVideoModelId } from "@/lib/clipstitchr/types/CliprVideoModelId";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 
@@ -32,7 +36,10 @@ export function CliprPageClient() {
   const generator = useCliprGeneration({ onCreated: library.refresh });
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedAvatarId, setSelectedAvatarId] = useState("");
-  const [mode, setMode] = useState<CliprMode>("normal");
+  const [mode, setMode] = useState<CliprGenerationMode>(
+    defaultCliprGenerationMode,
+  );
+  const [videoModelId, setVideoModelId] = useState<CliprVideoModelId>("auto");
   const [scriptIdea, setScriptIdea] = useState("");
   const [avatarSceneLocation, setAvatarSceneLocation] = useState("");
   const [avatarSceneOutfit, setAvatarSceneOutfit] = useState("");
@@ -77,11 +84,12 @@ export function CliprPageClient() {
     [activeAvatarId, photoLibrary.photos],
   );
   const activeScriptIdea = scriptIdea.trim();
+  const isScriptLikeMode = mode === "any" || mode === "script";
+  const allowsMusic = mode === "script";
   const canGenerate =
     Boolean(activeProductId) &&
     Boolean(activeAvatarId) &&
     selectedAvatarPhotoCount > 0 &&
-    (mode === "normal" || Boolean(activeScriptIdea)) &&
     !generator.isGenerating;
 
   const error = products.error ?? photoLibrary.error ?? library.error;
@@ -107,13 +115,17 @@ export function CliprPageClient() {
               <div>
                 <p className="text-sm font-semibold text-accent-dark">Clipr</p>
                 <h2 className="mt-0.5 text-base font-bold text-text-primary">
-                  {mode === "idea" ? "Generate from an idea" : "Generate a Clip"}
+                  {mode === "reaction"
+                    ? "Generate a reaction"
+                    : mode === "broll"
+                      ? "Generate b-roll"
+                      : "Generate a Clip"}
                 </h2>
               </div>
               <CliprModeToggle value={mode} onChange={setMode} />
             </div>
             <div className="grid gap-5 lg:grid-cols-2">
-              {mode === "idea" ? (
+              {mode === "script" ? (
                 <CliprScriptIdeaPanel
                   value={scriptIdea}
                   onChange={setScriptIdea}
@@ -141,28 +153,37 @@ export function CliprPageClient() {
                 onOutfitChange={setAvatarSceneOutfit}
                 onPoseChange={setAvatarScenePose}
               />
-              <CliprVoiceSelect
-                value={activeVoiceId}
-                onVoiceChange={(voiceId) =>
-                  setVoiceOverride({ avatarId: activeAvatarId, voiceId })
-                }
+              <CliprVideoModelSelect
+                mode={mode}
+                value={videoModelId}
+                onChange={setVideoModelId}
               />
-              <CliprMusicControl
-                checked={addMusic}
-                selectedTrack={selectedMusicTrack}
-                onChange={(checked) => {
-                  setAddMusic(checked);
-
-                  if (checked) {
-                    setSelectedMusicTrack(null);
+              {isScriptLikeMode ? (
+                <CliprVoiceSelect
+                  value={activeVoiceId}
+                  onVoiceChange={(voiceId) =>
+                    setVoiceOverride({ avatarId: activeAvatarId, voiceId })
                   }
-                }}
-                onClearTrack={() => setSelectedMusicTrack(null)}
-                onSelectTrack={(track) => {
-                  setSelectedMusicTrack(track);
-                  setAddMusic(false);
-                }}
-              />
+                />
+              ) : null}
+              {allowsMusic ? (
+                <CliprMusicControl
+                  checked={addMusic}
+                  selectedTrack={selectedMusicTrack}
+                  onChange={(checked) => {
+                    setAddMusic(checked);
+
+                    if (checked) {
+                      setSelectedMusicTrack(null);
+                    }
+                  }}
+                  onClearTrack={() => setSelectedMusicTrack(null)}
+                  onSelectTrack={(track) => {
+                    setSelectedMusicTrack(track);
+                    setAddMusic(false);
+                  }}
+                />
+              ) : null}
             </div>
             <div className="mt-5 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm leading-6 text-text-secondary">
@@ -175,16 +196,22 @@ export function CliprPageClient() {
                 disabled={!canGenerate}
                 onClick={() =>
                   void generator.generate({
-                    addMusic: addMusic && !selectedMusicTrack,
+                    addMusic:
+                      allowsMusic && addMusic && !selectedMusicTrack,
                     avatarId: activeAvatarId,
                     avatarSceneLocation,
                     avatarSceneOutfit,
                     avatarScenePose,
-                    durationSeconds: defaultCliprDurationSeconds,
-                    musicTrackId: selectedMusicTrack?.id,
+                    durationSeconds:
+                      mode === "reaction" || mode === "broll"
+                        ? defaultCliprVisualDurationSeconds
+                        : defaultCliprDurationSeconds,
+                    generationMode: mode,
+                    musicTrackId: allowsMusic ? selectedMusicTrack?.id : undefined,
                     productId: activeProductId,
                     scriptIdea:
-                      mode === "idea" ? activeScriptIdea : undefined,
+                      mode === "script" ? activeScriptIdea : undefined,
+                    videoModelId,
                     voiceId: activeVoiceId,
                   })
                 }

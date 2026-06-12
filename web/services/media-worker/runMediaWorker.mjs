@@ -261,6 +261,7 @@ function parseCliprFinalizationInput(inputSnapshotJson) {
         : undefined,
     sourceSummary:
       typeof input.sourceSummary === "string" ? input.sourceSummary : undefined,
+    stripAudio: input.stripAudio === true,
     sourceVideoObject: {
       key: getString(sourceVideoObject.key, "source video key"),
       contentType: getString(
@@ -571,15 +572,17 @@ async function assertFfmpegAvailable(config) {
   await runFfprobe(config, ["-version"]);
 }
 
-async function normalizeVideo({ config, inputPath, outputPath }) {
+async function normalizeVideo({ config, inputPath, outputPath, stripAudio = false }) {
+  const audioArgs = stripAudio
+    ? ["-an"]
+    : ["-map", "0:a?", "-c:a", "aac", "-b:a", "128k"];
+
   await runFfmpeg(config, [
     "-y",
     "-i",
     inputPath,
     "-map",
     "0:v:0",
-    "-map",
-    "0:a?",
     "-vf",
     "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1",
     "-r",
@@ -592,10 +595,7 @@ async function normalizeVideo({ config, inputPath, outputPath }) {
     "high",
     "-pix_fmt",
     "yuv420p",
-    "-c:a",
-    "aac",
-    "-b:a",
-    "128k",
+    ...audioArgs,
     "-movflags",
     "+faststart",
     outputPath,
@@ -688,7 +688,12 @@ async function processCliprFinalization({ client, config, job, r2 }) {
       stage: "normalizing",
       updatedAt: new Date().toISOString(),
     });
-    await normalizeVideo({ config, inputPath: sourcePath, outputPath });
+    await normalizeVideo({
+      config,
+      inputPath: sourcePath,
+      outputPath,
+      stripAudio: input.stripAudio,
+    });
     await createPoster({ config, inputPath: outputPath, outputPath: posterPath });
 
     const [videoBody, posterBody] = await Promise.all([

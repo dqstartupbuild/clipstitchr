@@ -17,13 +17,20 @@ export function CliprJobResult({ finalClipId, job }: CliprJobResultProps) {
     );
   }
 
+  const sceneTitle =
+    job.generationMode === "reaction"
+      ? "Silent reaction clip"
+      : job.generationMode === "broll"
+        ? "Silent b-roll clip"
+        : "Talking avatar clip";
+
   return (
     <section className="rounded-lg border border-border bg-white p-5">
       <p className="text-sm font-semibold text-accent-dark">
         {finalClipId ? "Generated Clip" : "Queued Clip"}
       </p>
       <h2 className="mt-1 text-lg font-bold text-text-primary">
-        {job.filledHook ?? "Clipr script"}
+        {job.filledHook ?? sceneTitle}
       </h2>
       {job.script ? (
         <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-text-secondary">
@@ -45,7 +52,7 @@ export function CliprJobResult({ finalClipId, job }: CliprJobResultProps) {
               Avatar video
             </p>
             <p className="mt-1 text-sm font-semibold text-text-primary">
-              Full-script avatar
+              {sceneTitle}
             </p>
             <p className="mt-2 text-sm leading-6 text-text-secondary">
               {scene.scriptText}

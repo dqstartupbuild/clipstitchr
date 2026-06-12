@@ -1,8 +1,11 @@
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
+import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
 import type { CliprJobStage } from "@/lib/clipstitchr/types/CliprJobStage";
 import type { CliprJobStatus } from "@/lib/clipstitchr/types/CliprJobStatus";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
+import type { CliprResolvedGenerationMode } from "@/lib/clipstitchr/types/CliprResolvedGenerationMode";
 import type { CliprScenePlan } from "@/lib/clipstitchr/types/CliprScenePlan";
+import type { CliprVideoModelId } from "@/lib/clipstitchr/types/CliprVideoModelId";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 
 export type CliprClientJob = {
@@ -17,6 +20,10 @@ export type CliprClientJob = {
   avatarVideoProviderPredictionId?: string;
   music?: CliprMusicMetadata;
   voiceId: string;
+  requestedGenerationMode: CliprGenerationMode;
+  generationMode: CliprResolvedGenerationMode;
+  requestedVideoModelId: CliprVideoModelId;
+  videoModelId: CliprVideoModelId;
   scriptIdea?: string;
   targetDurationSeconds: CliprDurationSeconds;
   filledHook?: string;

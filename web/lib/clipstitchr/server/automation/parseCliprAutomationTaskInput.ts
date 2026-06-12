@@ -1,5 +1,12 @@
 import { defaultCliprDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprDurationSeconds";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
+import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
+import type { CliprResolvedGenerationMode } from "@/lib/clipstitchr/types/CliprResolvedGenerationMode";
+import type { CliprVideoModelId } from "@/lib/clipstitchr/types/CliprVideoModelId";
+import { getCliprGenerationMode } from "@/lib/clipstitchr/utils/getCliprGenerationMode";
+import { getCliprResolvedGenerationMode } from "@/lib/clipstitchr/utils/getCliprResolvedGenerationMode";
+import { getCliprVideoModelId } from "@/lib/clipstitchr/utils/getCliprVideoModelId";
+import { getCliprDurationSeconds } from "@/lib/clipstitchr/utils/getCliprDurationSeconds";
 import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
@@ -12,9 +19,13 @@ export type CliprAutomationTaskInput = {
   avatarPhotoId: string;
   avatarPhotoObject: R2ObjectReference;
   automationDate: string;
+  requestedGenerationMode: CliprGenerationMode;
+  generationMode: CliprResolvedGenerationMode;
   jobId: string;
   product: ProductProfile;
   targetDurationSeconds: CliprDurationSeconds;
+  requestedVideoModelId: CliprVideoModelId;
+  videoModelId: Exclude<CliprVideoModelId, "auto">;
   voiceId: string;
 };
 
@@ -85,7 +96,7 @@ function getR2ObjectReference(
 }
 
 function getAutomationCliprDurationSeconds(value: unknown): CliprDurationSeconds {
-  return value === 60 ? 60 : defaultCliprDurationSeconds;
+  return getCliprDurationSeconds(value) ?? defaultCliprDurationSeconds;
 }
 
 export function parseCliprAutomationTaskInput(
@@ -99,6 +110,26 @@ export function parseCliprAutomationTaskInput(
   const productCreatedAt = getOptionalString(input.productCreatedAt) ?? "";
   const productUpdatedAt =
     getOptionalString(input.productUpdatedAt) ?? productCreatedAt;
+  const requestedGenerationMode = getCliprGenerationMode(
+    input.requestedGenerationMode,
+  );
+  const snapshotGenerationMode =
+    input.generationMode === "script" ||
+    input.generationMode === "reaction" ||
+    input.generationMode === "broll"
+      ? input.generationMode
+      : getCliprResolvedGenerationMode({
+          jobId: taskId,
+          mode: requestedGenerationMode,
+        });
+  const requestedVideoModelId = getCliprVideoModelId(input.requestedVideoModelId);
+  const parsedVideoModelId = getCliprVideoModelId(input.videoModelId);
+  const videoModelId =
+    parsedVideoModelId === "auto"
+      ? snapshotGenerationMode === "script"
+        ? "prunaai/p-video-avatar"
+        : "kwaivgi/kling-v3-video"
+      : parsedVideoModelId;
 
   return {
     addMusic: input.addMusic === true,
@@ -111,6 +142,8 @@ export function parseCliprAutomationTaskInput(
       "avatar photo object",
     ),
     automationDate: getString(input.automationDate, "automation date"),
+    requestedGenerationMode,
+    generationMode: snapshotGenerationMode,
     jobId: taskId,
     product: {
       id: getString(input.productId, "product ID"),
@@ -139,6 +172,8 @@ export function parseCliprAutomationTaskInput(
     targetDurationSeconds: getAutomationCliprDurationSeconds(
       input.targetDurationSeconds,
     ),
+    requestedVideoModelId,
+    videoModelId,
     voiceId: getString(input.voiceId, "voice ID"),
   };
 }

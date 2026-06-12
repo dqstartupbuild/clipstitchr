@@ -1,0 +1,1290 @@
+{
+  "source": "ClipStitchr production UGC reaction motion descriptions",
+  "sourceKind": "reaction-motion-reference-descriptions",
+  "exportedAt": "2026-06-12T22:15:39.234Z",
+  "promptCount": 320,
+  "prompts": [
+    {
+      "id": "ugc-reaction-001",
+      "description": "Motion reference: close-up selfie angle centered on the face. 0-2s: the avatar looks into the lens with a neutral expression. 2-4s: the eyes soften and the head tilts slightly. 4-6s: one hand rises near the face as the avatar holds eye contact with a quiet, thoughtful reaction."
+    },
+    {
+      "id": "ugc-reaction-002",
+      "description": "Motion reference: the avatar expresses sadness and cries directly into the camera. 0-3s: the avatar looks into the lens with watery eyes and a trembling mouth. 3-6s: the avatar brings one hand up to the face, wiping the mouth and chin. 6-9s: the avatar looks to the side, wipes the nose with one hand, and looks back at the camera."
+    },
+    {
+      "id": "ugc-reaction-003",
+      "description": "Close-up motion reference. The avatar expresses embarrassment and regret through facial expressions and gestures. 0-2s: the avatar looks at the camera with a surprised expression and covers the mouth with one hand. 2-4s: the avatar looks away to the side and brings a raised hand to the mouth in a nervous bite-like gesture. 4-6s: the avatar brings one hand to the forehead and closes the eyes, looking distressed."
+    },
+    {
+      "id": "ugc-reaction-004",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks directly at the camera with a neutral, slightly sad expression. 2-4s: the avatar shifts the gaze to the side and then looks down. 4-6s: the avatar brings one hand up to the neck while looking back toward the lens. 6-8s: the avatar maintains eye contact."
+    },
+    {
+      "id": "ugc-reaction-005",
+      "description": "Motion reference: the avatar reacts with genuine surprise and joy, moving from a shy smile to an open-mouthed expression of amazement. 0-1s: the avatar smiles while covering the mouth with one hand. 1-2s: the avatar lowers one hand to reveal a wide smile. 2-3s: the avatar opens the mouth in excitement and leans closer to the lens. 3-4s: the avatar laughs and brings one hand back up toward the face."
+    },
+    {
+      "id": "ugc-reaction-006",
+      "description": "Motion reference: the avatar reacts with genuine shock and amazement while looking at the camera. 1-3s: the avatar opens the mouth wide in shock and looks to the side. 3-7s: the avatar looks back at the camera and maintains a wide-eyed expression."
+    },
+    {
+      "id": "ugc-reaction-007",
+      "description": "Motion reference: the avatar looks up at the camera with a shocked and amazed expression, holding one hand to the face. 0-1s: the avatar starts looking down, then quickly looks up at the camera with wide eyes. 1-3s: the avatar opens the mouth in surprise and places the right hand on the cheek while briefly looking to the side. 3-7s: the avatar looks back at the camera, maintaining a surprised expression with one hand still on the face."
+    },
+    {
+      "id": "ugc-reaction-008",
+      "description": "Motion reference: the avatar looks into the camera and the avatar expresses surprise and amazement. 0-1s: the avatar smiles at the camera. 1-2s: the avatar puts one hand behind the head. 2-5s: the avatar opens the mouth wide in a shocked or amazed expression."
+    },
+    {
+      "id": "ugc-reaction-009",
+      "description": "Motion reference: the avatar looks directly into the camera, transitioning from a neutral expression to one of pure amazement and joy. 0-1s: the avatar stares at the camera with a calm, neutral face. 1-3s: the eyes widen and the avatar begins to smile, opening the mouth. 3-7s: the avatar maintains a wide-eyed, open-mouthed expression of shock and delight, laughing softly."
+    },
+    {
+      "id": "ugc-reaction-010",
+      "description": "Motion reference: the avatar reacts with a shocked expression to the camera, eventually placing one hand on the forehead in disbelief. 0-3s: the avatar leans in with a wide-mouthed, wide-eyed expression of surprise. 3-6s: the avatar closes the mouth and brings one hand up to the forehead while maintaining eye contact. 6-10s: the avatar continues to look at the camera with a stunned expression before turning the head to the side."
+    },
+    {
+      "id": "ugc-reaction-011",
+      "description": "Close-up motion reference: holds a centered face-forward pose. The avatar appears contemplative or thoughtful, with one hand gently touching the face."
+    },
+    {
+      "id": "ugc-reaction-012",
+      "description": "Close-up motion reference. The avatar shows a shocked reaction, followed by the avatar holding the temples while looking at the camera. 0-1s: the avatar looks directly at the camera with a wide-eyed, open-mouthed expression of surprise. 1-3s: the avatar brings both hands up to the temples, maintaining the shocked look. 3-6s: the avatar looks down briefly and then back up at the camera while still holding the head. 6-10s: the avatar continues to hold the temples and look into the lens with an intense expression."
+    },
+    {
+      "id": "ugc-reaction-013",
+      "description": "Motion reference: close-up portrait. Laughing and smiling while covering the mouth. 0-1s: the avatar smiles at the camera with one hand covering the mouth. 1-2s: the avatar continues to laugh, the eyes crinkling. 2-3s: the avatar lowers one hand to reveal a wide, joyful smile."
+    },
+    {
+      "id": "ugc-reaction-014",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar looks directly at the camera with a slight smile, the right hand resting on the back of the head. 1-2s: the avatar broadens the smile and then moves the head and the camera quickly, resulting in a blurred transition."
+    },
+    {
+      "id": "ugc-reaction-015",
+      "description": "Motion reference:, and then glances away. 0-1s: the avatar looks to screen right with a slight smile. 1-2s: the avatar turns the gaze to the camera and smiles broadly. 2-3s: the avatar looks back to screen right while maintaining a smile."
+    },
+    {
+      "id": "ugc-reaction-016",
+      "description": "Motion reference:, and covers the mouth with one hand. 0-2s: the avatar looks directly at the camera with a gentle smile. 2-3s: the avatar breaks into a wider smile and begins to laugh. 3s: the avatar raises one hand to the mouth while laughing."
+    },
+    {
+      "id": "ugc-reaction-017",
+      "description": "Close-up motion reference: holds a centered face-forward pose with subtle eye movement and a quiet expression."
+    },
+    {
+      "id": "ugc-reaction-018",
+      "description": "Motion reference: the avatar reacts with intense surprise and shock to something off-camera, eventually transitioning into a smile of disbelief. 0-3s: the avatar stares wide-eyed at the camera with one hand covering the open mouth in a classic shock pose. 3-7s: the avatar shifts one hand to the forehead, smoothing one hand near the temple while maintaining a look of amazed disbelief and starting to smile."
+    },
+    {
+      "id": "ugc-reaction-019",
+      "description": "Motion reference: the avatar smiles at the camera, touches the face, and gestures toward the face in a friendly, upbeat manner. 0-2s: the avatar looks directly at the camera with a wide smile and wide eyes. 2-4s: the avatar raises one hand to touch the avatar then rests one hand on the cheek. 4-7s: the avatar continues to smile and laugh, looking slightly away and then back at the camera."
+    },
+    {
+      "id": "ugc-reaction-020",
+      "description": "Motion reference: performs a series of surprised and shocked facial expressions for the camera. 0-2s: the avatar starts with an open-mouthed look of disbelief, flashes a quick smile, and then returns to a shocked expression. 2-5s: the avatar brings one hand to the cheek, widening the eyes to emphasize the surprise. 5-8s: the avatar holds the shocked pose while looking directly into the lens."
+    },
+    {
+      "id": "ugc-reaction-021",
+      "description": "Motion reference:, then smiles and adjusts the pose. 3-5s: the avatar smiles broadly and raises one hand to tuck one hand back near the ear. 5-9s: the avatar continues to smile and look at the camera while holding one hand near the temple."
+    },
+    {
+      "id": "ugc-reaction-022",
+      "description": "Motion reference: the avatar looks directly into the camera, transitioning from a neutral smile to a wide-eyed, open-mouthed expression of shock or amazement. 0-1s: the avatar looks off-camera with a slight smile. 1-3s: the avatar looks at the lens with wide eyes and a growing smile. 3-8s: the avatar opens the mouth in a surprised expression, looking slightly side to side. 8-9s: the avatar closes the mouth and eyes with a satisfied smile."
+    },
+    {
+      "id": "ugc-reaction-023",
+      "description": "Motion reference: close-up reaction. 0-3s: the avatar looks into the camera with an excited expression, mouth open, and hand near the head. 5-8s: the avatar smiles and rotating the raised hand slightly. 8-10s: the avatar continues to smile and look at the camera with wide, happy eyes."
+    },
+    {
+      "id": "ugc-reaction-024",
+      "description": "Motion reference: close-up reaction. 0-3s: the avatar smiles and tilts the head while looking at the camera. 3-7s: the avatar brushes one hand back along the side of the head and then brings one hand up to the face to hold the raised hand near the face. 7-11s: the avatar rests one hand on the shoulder and continues to smile warmly."
+    },
+    {
+      "id": "ugc-reaction-025",
+      "description": "Close-up motion reference. Appears emotional and crying while looking into the camera. 0-2s: the avatar looks at the camera with watery eyes and begins to wipe screen right eye with one hand. 2-4s: the avatar rests one hand against the face and then moves it away while exhaling. 4-6s: the avatar wipes the nose and mouth area, maintaining a sad expression."
+    },
+    {
+      "id": "ugc-reaction-026",
+      "description": "Close-up motion reference. Looking emotional and crying. 0-2s: the avatar looks directly into the camera with watery eyes and a tear on the cheek. 2-4s: the avatar raises one hand, raised, to the face and looks down. 4-7s: the avatar lowers one hand, looks back at the camera, and touches the jawline with the fingers."
+    },
+    {
+      "id": "ugc-reaction-027",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks into the camera with a surprised and happy expression, raising the fist. 2-5s: the avatar continues to pump the fist and silently silently mouths an excited phrase while smiling broadly."
+    },
+    {
+      "id": "ugc-reaction-028",
+      "description": "Motion reference: the avatar expresses excitement and celebration while looking directly into the camera. 0-2s: the avatar starts. 2-4s: the avatar breaks into a wide grin and looks away briefly before returning the gaze to the camera. 4-6s: the avatar pumps the fist in a celebratory gesture and leans in close to the lens."
+    },
+    {
+      "id": "ugc-reaction-029",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar turns the head from the side to face the camera. 1-3s: the avatar breaks into a wide, toothy grin. 3-5s: the eyes widen and the avatar opens the mouth in a shocked, happy expression. 5-7s: the avatar maintains a joyful look, nodding slightly while facing forward."
+    },
+    {
+      "id": "ugc-reaction-030",
+      "description": "Motion reference:, then turns to the lens, and pumps the fist in excitement. 0-1s: the avatar looks to the side with a slight smile. 1-2s: the avatar turns to face the camera directly, smiling broadly. 2-4s: the avatar runs one hand back along the side of the head and laughs. 4-6s: the avatar pumps the fist and continues to smile at the camera."
+    },
+    {
+      "id": "ugc-reaction-031",
+      "description": "Motion reference: displays a series of expressive reactions, starting with shock and transitioning into a playful smile while covering the mouth. 0-1s: the avatar looks at the camera with a wide-eyed, open-mouthed expression of surprise. 1-4s: the avatar covers the mouth with one hand while smiling and looking into the lens. 4-7s: the avatar rests one hand against the cheek and temple, smiling warmly and glancing to the side."
+    },
+    {
+      "id": "ugc-reaction-032",
+      "description": "Close-up motion reference. 0-1s: the avatar rests the chin on one hand and the avatar looks into the camera. 1-2s: the avatar shakes the head, causing the head to move around the face while the avatar smiles. 2-3s: the avatar returns to resting the chin on one hand with a soft smile. 3-4s: the avatar widens the eyes in a surprised look. 4-6s: the avatar covers the mouth with one hand while laughing."
+    },
+    {
+      "id": "ugc-reaction-033",
+      "description": "Motion reference: close-up selfie-style clip of Framing keeps attention on the face and expression."
+    },
+    {
+      "id": "ugc-reaction-034",
+      "description": "Motion reference: close-up reaction with steady eye-level framing. 0-2s: the avatar looks down with a tense expression. 2-4s: the avatar looks back up, blinks slowly, and presses the lips together. 4-6s: one hand touches the forehead before lowering as the avatar holds a drained, emotional look."
+    },
+    {
+      "id": "ugc-reaction-035",
+      "description": "Motion reference: close-up portrait. 0-1s: the avatar looks directly into the lens with a soft smile. 1-3s: the smile broadens into a joyful expression as the avatar slightly tilts the head and nods."
+    },
+    {
+      "id": "ugc-reaction-036",
+      "description": "Motion reference: the avatar looks upward before making eye contact with the camera and breaking into a warm smile. 0-1s: the avatar looks up with a playful expression. 1-2s: the avatar shifts the gaze to the camera and begins to smile. 2-3s: the avatar smiles broadly while leaning slightly toward the lens."
+    },
+    {
+      "id": "ugc-reaction-037",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar touches the face with the right hand while smiling. 1-2s: the avatar lowers one hand and tilts the head slightly. 2-3s: the avatar closes the eyes briefly and continues to smile. 3-4s: the avatar looks directly at the camera with a steady smile."
+    },
+    {
+      "id": "ugc-reaction-038",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar tilts the head to the side with a soft smile. 1-2s: the avatar begins to straighten the head and the smile grows. 2-3s: the avatar looks directly into the lens with a wide, toothy grin."
+    },
+    {
+      "id": "ugc-reaction-039",
+      "description": "Motion reference: laughs and poses playfully for the camera. 0-2s: the avatar laughs heartily before transitioning into a bright smile while holding one hand near the collarbone. 2-5s: the avatar tilts the head and maintains a soft, engaging gaze. 5-8s: the avatar adjusts the pose and poses with one hand under the chin."
+    },
+    {
+      "id": "ugc-reaction-040",
+      "description": "Motion reference: records a selfie-style reaction while smiling and laughing. 0-2s: the avatar looks at the camera with a wide smile and tilts the head. 2-4s: the avatar continues to smile and move the head slightly. 4-7s: the avatar laughs, brings one hand to the mouth, and the avatar looks directly into the lens."
+    },
+    {
+      "id": "ugc-reaction-041",
+      "description": "Motion reference: the avatar smiles and laughs while looking at the camera. 0-2s: the avatar starts with a shy smile, holding one hand near the mouth. 2-4s: the avatar laughs heartily, tossing the head back and shaking the head. 4-8s: the avatar rests one hand on the cheek and smiles warmly directly into the lens."
+    },
+    {
+      "id": "ugc-reaction-042",
+      "description": "Motion reference: the avatar expresses intense excitement and joy through various facial expressions and gestures in a close-up shot. 0-1s: the avatar starts with a wide-eyed, open-mouthed look of surprise. 1-3s: the avatar breaks into a big laugh, covering the mouth slightly with one hand. 3-5s: the avatar continues laughing and wipes the forehead in a gesture of relief or amazement. 5-8s: the avatar settles into a warm smile and brushes one hand back along the side of the head while looking directly at the camera."
+    },
+    {
+      "id": "ugc-reaction-043",
+      "description": "Motion reference: records a close-up selfie-style reaction while smiling and looking around. 0-2s: the avatar smiles directly at the camera with a slight head tilt. 2-4s: the avatar glances to the side and briefly adjusts the pose with one hand. 4-8s: the avatar looks back at the lens, then glances upward and around while maintaining a cheerful expression."
+    },
+    {
+      "id": "ugc-reaction-044",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks off-camera with an open mouth, then turns to the camera with a smile. 4-7s: the avatar smiles broadly, makes a small fist, and then touches the face. 7-9s: the avatar continues to smile and look at the camera before the video ends."
+    },
+    {
+      "id": "ugc-reaction-045",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks at the camera with wide eyes and then breaks into a smile. 2-5s: the avatar brings one hand up to the face, resting the chin on the fist while smiling. 5-8s: the avatar waves and then covers the mouth with one hand, holding one hand near the face. 8-10s: the avatar continues to smile and tilt the head as the video ends."
+    },
+    {
+      "id": "ugc-reaction-046",
+      "description": "Motion reference: close-up reaction. 0-4s: the avatar holds one hand over the mouth with wide eyes, looking surprised. 4-7s: the avatar lowers one hand, smiles broadly, and waves at the camera. 7-10s: the avatar places one hand on the upper chest, beaming with happiness."
+    },
+    {
+      "id": "ugc-reaction-047",
+      "description": "Close-up motion reference. 0-2s: the avatar starts by looking at the camera, then briefly looks away to screen left while smiling. 2-5s: the avatar turns back to face the camera directly, maintaining a warm smile throughout the rest of the clip."
+    },
+    {
+      "id": "ugc-reaction-048",
+      "description": "Motion reference:, looking into the camera and breaking into a warm smile. 0-2s: the avatar starts with a neutral expression and begins to smile. 2-5s: the avatar looks slightly to the side and then back at the camera with a growing smile. 5-8s: the avatar maintains a broad, friendly smile while looking directly at the lens."
+    },
+    {
+      "id": "ugc-reaction-049",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks to screen left, then turns the head to face the camera with a wide smile. 2-4s: the avatar maintains the smile, glancing away to screen left and back again. 4-6s: the avatar continues to smile warmly while looking away to screen left and back at the camera."
+    },
+    {
+      "id": "ugc-reaction-050",
+      "description": "Motion reference: the avatar looks into the camera with a warm smile that turns into a giggle. 0-2s: the avatar smiles softly at the camera while tilting the head slightly. 2-4s: the smile widens as the camera zooms in closer to the face. 4-6s: the avatar brings one hand to the mouth to cover a laugh while looking directly at the lens."
+    },
+    {
+      "id": "ugc-reaction-051",
+      "description": "Motion reference: close-up reaction. 0-3s: the avatar looks up and away before turning to the camera with a gentle smile. 3-6s: the avatar looks to screen right, then returns the gaze to the camera. 6-11s: the avatar looks to screen left, smiles broadly and maintains eye contact with the camera while nodding slightly."
+    },
+    {
+      "id": "ugc-reaction-052",
+      "description": "Motion reference: the avatar smiles and poses thoughtfully for a selfie-style video. 0-3s: the avatar looks directly into the camera with a gentle smile, tilting the head slightly. 4-8s: the avatar raises one hand to the chin, touching the lips with the index finger while looking off-camera with a dreamy expression."
+    },
+    {
+      "id": "ugc-reaction-053",
+      "description": "Close-up motion reference. 0-2s: the avatar looks directly into the camera with the chin resting on one hand. 2-4s: the avatar glances away to the side with a playful expression. 4-5s: the avatar returns the gaze to the camera and smiles warmly."
+    },
+    {
+      "id": "ugc-reaction-054",
+      "description": "Motion reference: rests the head on one hand while looking around and smiling warmly at the camera. 0-2s: the avatar looks upwards and away from the camera with a slight smile. 2-4s: the avatar turns the gaze to the lens, smiles, and then looks back up. 4-6s: the avatar looks directly into the camera again, offers pose a wider smile and a playful nose scrunch."
+    },
+    {
+      "id": "ugc-reaction-055",
+      "description": "Motion reference: poses for a close-up video, resting the chin on one hand while transitioning from a neutral expression to a bright smile and looking around. 0-2s: the avatar rests the chin on one hand with a neutral expression before breaking into a smile. 2-4s: the avatar looks upward and to the side while smiling. 4-6s: the avatar looks back at the camera, tilting the head slightly and maintaining a soft smile."
+    },
+    {
+      "id": "ugc-reaction-056",
+      "description": "Motion reference: close-up selfie-style clip of the avatar reclining. Framing centers on the face."
+    },
+    {
+      "id": "ugc-reaction-057",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks at the camera with a slight smile, tilting the head. 2-5s: the avatar breaks into a wider smile, Showing the avatar teeth, and shifts the upper body slightly. 5-8s: the avatar brings one hand up to the chin, resting it there while maintaining a soft smile and looking directly into the lens."
+    },
+    {
+      "id": "ugc-reaction-058",
+      "description": "Motion reference: the avatar smiles and poses for a selfie-style video. 0-2s: the avatar smiles at the camera, tilting the head slightly. 2-4s: the avatar brushes one hand back along the side of the head with one hand and continues to smile. 4-7s: the avatar laughs and shifts the avatar weight, looking away and then back at the camera."
+    },
+    {
+      "id": "ugc-reaction-059",
+      "description": "Motion reference: shows a joyful moment as the avatar moves forward forward, smiling and laughing at the camera. 0-2s: the avatar moves forward forward, holding the camera in a selfie style and smiling. 2-4s: the avatar continues moving forward, tilting the head and laughing. 4-5s: the avatar laughs more intensely, tilting the head back before the clip ends."
+    },
+    {
+      "id": "ugc-reaction-060",
+      "description": "Motion reference: the avatar smiles and poses for a selfie-style video while holding a steady seated posture. 0-2s: the avatar looks at the camera, tilts the head, and smiles. 2-5s: the avatar leans in closer with a wide grin. 5-8s: the avatar brings one hand to the face, partially covering the mouth with one hand while laughing."
+    },
+    {
+      "id": "ugc-reaction-061",
+      "description": "Motion reference: looks off-camera before turning to smile directly at the lens, eventually touching the face and posing playfully. 0-3s: the avatar looks to screen right with a soft expression before turning the gaze toward the camera. 3-6s: the avatar smiles warmly at the camera, briefly closing the eyes and tilting the head. 6-8s: the avatar brings the left hand up to the cheek, smiling broadly. 8-10s: the avatar lowers one hand and maintains a cheerful expression while looking at the camera."
+    },
+    {
+      "id": "ugc-reaction-062",
+      "description": "Motion reference: close-up reaction. 0-3s: the avatar starts by looking away to the right, then turns the face toward the camera with a gentle smile. 3-6s: the avatar looks directly at the lens, tilts the head, and glances up briefly. 6-9s: the avatar smiles more fully, closes the eyes momentarily, and finishes by looking straight into the camera."
+    },
+    {
+      "id": "ugc-reaction-063",
+      "description": "Motion reference: close-up portrait. Smiling and looking around before adjusting the pose. 0-2s: the avatar smiles at the camera and then playfully glances to the side. 2-5s: the avatar looks back at the camera with a warm grin and blinks. 5-8s: the avatar continues to smile directly at the lens. 8-10s: the avatar raises one hand to adjust the pose while maintaining eye contact."
+    },
+    {
+      "id": "ugc-reaction-064",
+      "description": "Motion reference: displays a series of embarrassed and shocked reactions in a close-up shot. 0-2s: the avatar covers the mouth with one hand, looking wide-eyed at the camera. 2-4s: the avatar drops one hand, opens the mouth. 4-6s: the avatar looks distressed and performs a facepalm gesture, closing the eyes."
+    },
+    {
+      "id": "ugc-reaction-065",
+      "description": "Motion reference: close-up selfie angle with slight handheld movement. 0-2s: the avatar looks into the camera with wide eyes. 2-4s: the mouth opens in disbelief and the head leans closer to the lens. 4-6s: one hand covers the mouth while the avatar keeps a shocked stare."
+    },
+    {
+      "id": "ugc-reaction-066",
+      "description": "Motion reference: close-up selfie angle centered on the face. 0-2s: the avatar looks into the lens with a neutral expression. 2-4s: the eyes soften and the head tilts slightly. 4-6s: one hand rises near the face as the avatar holds eye contact with a quiet, thoughtful reaction."
+    },
+    {
+      "id": "ugc-reaction-067",
+      "description": "Close-up motion reference. The avatar shows a stressed, overwhelmed reaction. 0-2s: the avatar rests the chin on one hand and looks upward. 2-4s: the avatar closes the eyes and takes a deep breath. 4-6s: the avatar covers the face with one hand, then rubs the temple while exhaling."
+    },
+    {
+      "id": "ugc-reaction-068",
+      "description": "Motion reference: rests the head on one hand with a bored expression, sighs deeply with the eyes closed, and then looks back at the camera. 0-2s: the avatar leans the head on the left hand, looking off-camera with a pouting expression. 2-5s: the avatar closes the eyes and takes a deep breath/sigh. 5-7s: the avatar opens the eyes, looks at the camera, and begins to move one hand."
+    },
+    {
+      "id": "ugc-reaction-069",
+      "description": "Motion reference: close-up portrait. 0-1s: the avatar looks off-camera to screen right before turning the gaze to the lens. 1-2s: the avatar blinks and briefly looks down. 2-4s: the avatar maintains eye contact with the camera with a slight pout."
+    },
+    {
+      "id": "ugc-reaction-070",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar stares directly at the lens, blinking once. 2-4s: the avatar tilts the head slightly while maintaining a steady gaze."
+    },
+    {
+      "id": "ugc-reaction-071",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar starts with the eyes looking down. 1-2s: the avatar looks directly at the camera. 2-4s: the avatar looks up and to the side with a neutral expression."
+    },
+    {
+      "id": "ugc-reaction-072",
+      "description": "Motion reference: close-up portrait. Who transitions from a neutral expression to rolling the eyes before looking back at the camera. 0-2s: the avatar stares directly into the lens with a slight pout. 2-3s: the avatar looks upward and rolls the eyes in a dismissive gesture. 3-4s: the avatar returns the gaze to the camera with a neutral, steady look."
+    },
+    {
+      "id": "ugc-reaction-073",
+      "description": "Motion reference: the avatar looks directly into the camera with a skeptical and confused expression, eventually looking upwards. 0-3s: the avatar looks up at the camera and squints with a furrowed brow. 3-6s: the avatar maintains a serious, questioning gaze while blinking. 6-8s: the avatar shifts the eyes upward away from the lens."
+    },
+    {
+      "id": "ugc-reaction-074",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks to screen right, then down, then shifts the gaze toward the camera. 2-5s: the avatar looks directly into the lens with a questioning expression, blinks, and looks down briefly. 5-8s: the avatar looks back at the camera with a slight head tilt and a serious, contemplative look."
+    },
+    {
+      "id": "ugc-reaction-075",
+      "description": "Motion reference: close-up reaction. 0-3s: the avatar tilts the head slightly while looking directly at the camera. 3-6s: the avatar shifts the gaze and head position, maintaining a calm expression. 6-8s: the avatar raises one hand toward the lens."
+    },
+    {
+      "id": "ugc-reaction-076",
+      "description": "Motion reference: looks at the camera with a confused expression, glances around, and then leans in very close to inspect something. 0-2s: the avatar stares into the camera with a furrowed brow and tilted head. 2-4s: the avatar look off-camera to the right and then back with a skeptical look. 4-7s: the avatar lean forward, eyes wide, and bring the avatar hand up to the avatar forehead to look closely at the lens."
+    },
+    {
+      "id": "ugc-reaction-077",
+      "description": "Motion reference: the avatar looks into the camera and the avatar reacts with a surprised, open-mouthed expression. 0-2s: the avatar starts by looking away and then turns to face the camera. 2-5s: the eyes widen and the mouth opens in a look of shock. 5-8s: the avatar shifts the gaze slightly while maintaining the surprised expression. 8-11s: the avatar continues to look surprised, glancing off-camera before returning the avatar focus to the lens."
+    },
+    {
+      "id": "ugc-reaction-078",
+      "description": "Motion reference: looks at the camera and repeatedly glances away with varying expressions of surprise and skepticism. 0-3s: the avatar looks directly at the camera before glancing to the side. 3-6s: the avatar looks back at the camera with wide eyes and then looks away again. 6-10s: the avatar returns the gaze to the camera with a confused expression and raises one hand to show the avatar raised fingers."
+    },
+    {
+      "id": "ugc-reaction-079",
+      "description": "Motion reference: the avatar looks into the camera, transitioning from a relaxed pose with closed eyes to a series of sad and pouting facial expressions. 0-2s: the avatar has the eyes closed and hand on the head, then opens the eyes. 2-5s: the avatar shifts the gaze and begins to pout, looking distressed. 5-8s: the avatar continues to make a sad face, furrowing the avatar brow while looking slightly off-camera. 8-10s: the avatar settles into a neutral but somber expression while looking at the lens."
+    },
+    {
+      "id": "ugc-reaction-080",
+      "description": "Motion reference: shows shocked reaction to something off-camera, transitioning through various expressions of surprise and concern. 0-2s: the avatar stares at the camera with the mouth wide open in shock. 2-5s: the avatar looks to the side with a worried expression, then back at the camera. 5-8s: the avatar lifts one hand to the forehead and gasps again. 8-11s: the avatar covers the mouth with one hand, holding one hand near the face, and then the avatar looks directly at the camera."
+    },
+    {
+      "id": "ugc-reaction-081",
+      "description": "Motion reference: the avatar expresses confusion and skepticism through facial expressions and gestures while looking into the camera. 0-3s: the avatar looks away and then back with a doubtful look. 3-5s: the avatar maintains a questioning gaze. 5-7s: the avatar gestures with one hand as if asking for an explanation. 7-10s: the avatar touches the temple and leans in before pulling back with a tight smile."
+    },
+    {
+      "id": "ugc-reaction-082",
+      "description": "Motion reference: poses for the camera, looking off-side before smiling and then touching the face thoughtfully. 0-3s: the avatar looks to the side with one hand behind the head, then smiles at the camera. 3-7s: the avatar looks away again, maintaining the avatar pose. 7-10s: the avatar brings one hand down to the mouth and the avatar looks directly at the lens. 10-12s: the avatar tilts the head slightly while looking into the camera."
+    },
+    {
+      "id": "ugc-reaction-083",
+      "description": "Motion reference: the avatar looks into the camera. 0-2s: the avatar stares directly at the camera with a pensive look. 2-4s: the avatar looks away to the side and then down. 4-6s: the avatar brings one hand up to adjust the pose and rests it near the neck. 6-8s: the avatar returns the gaze to the camera and blinks."
+    },
+    {
+      "id": "ugc-reaction-084",
+      "description": "Close-up motion reference. 0-2s: the avatar stares directly at the lens with a neutral to sad look. 2-4s: the avatar blinks and shifts the eyes slightly to the right before returning the gaze to the center. 4-6s: the avatar closes the eyes for a moment, looks down, and then looks back at the camera."
+    },
+    {
+      "id": "ugc-reaction-085",
+      "description": "Motion reference:, then shifts the gaze away before looking back with a skeptical expression. 0-2s: the avatar holds the chin and looks thoughtfully at the camera. 2-4s: the avatar looks up and to the side as if thinking, then returns the gaze. 4-5s: the avatar looks directly at the camera with a confused, questioning look."
+    },
+    {
+      "id": "ugc-reaction-086",
+      "description": "Close-up motion reference. 0-2s: the avatar looks off to screen left, then slowly turns the head toward the camera. 2-4s: the avatar looks directly at the lens with a neutral, questioning gaze. 4-6s: the avatar glances upward and then returns the avatar focus to the camera."
+    },
+    {
+      "id": "ugc-reaction-087",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar stares at the camera and looks briefly to screen right. 2-5s: the avatar maintains a neutral but questioning gaze, looking to screen left. 5-8s: the avatar looks to screen left again before returning the avatar focus to the camera."
+    },
+    {
+      "id": "ugc-reaction-088",
+      "description": "Motion reference: the avatar looks directly into the camera, cycling through several exaggerated facial expressions in a close-up shot. 0-1s: the avatar opens the mouth in a surprised shape. 1-3s: the avatar shifts to a pouting, sad expression with the lips pushed out. 3-4s: the avatar purses the lips as if blowing air or a kiss. 4-6s: the avatar breaks into a warm smile while looking at the lens."
+    },
+    {
+      "id": "ugc-reaction-089",
+      "description": "Motion reference: close-up selfie-style reaction of the avatar reacting to the camera with a surprised expression that turns into a gentle smile. 0-2s: the avatar looks at the camera with wide eyes and an open mouth, resting the chin on one hand. 2-4s: the avatar closes the mouth and begins to smile while maintaining eye contact. 4-6s: the avatar holds a soft smile and the avatar looks directly into the lens."
+    },
+    {
+      "id": "ugc-reaction-090",
+      "description": "Motion reference: the avatar looks directly into the camera, making a series of exaggerated facial expressions from surprise to a playful smirk. 0-2s: the avatar has the mouth open in a surprised expression, then widens the eyes and presses the lips together. 2-4s: the avatar leans closer to the camera, smiling slightly with the lips closed. 4-7s: the avatar covers the mouth with one hand, laughing or giggling while looking at the camera."
+    },
+    {
+      "id": "ugc-reaction-091",
+      "description": "Motion reference: the avatar reacts with genuine surprise before breaking into a laugh and covering the mouth. 0-2s: the avatar stares directly into the camera with a wide-eyed, open-mouthed expression of shock. 2-4s: the avatar brings one hand up to cover the mouth while beginning to giggle. 4-5s: the avatar lowers one hand and smiles broadly at the camera."
+    },
+    {
+      "id": "ugc-reaction-092",
+      "description": "Motion reference: the avatar looks directly into the camera, expressing shock followed by a happy smile. 0-1s: the avatar looks at the camera and opens the mouth in a wide, surprised expression. 1-3s: the avatar brings one hand up to the forehead while maintaining the surprised look. 3-8s: the avatar expression shifts to a broad smile as the avatar keeps one hand near the temple before eventually lowers it."
+    },
+    {
+      "id": "ugc-reaction-093",
+      "description": "Motion reference: the avatar expresses a range of emotions from shock to sadness and then back to wide-eyed surprise while looking directly at the camera. 0-2s: the avatar looks at the camera with a shocked expression, mouth open, and one hand raised. 2-4s: the avatar closes the eyes and looks down, Appears disappointed or sad. 4-5s: the avatar suddenly opens the eyes very wide and leans into the camera with a surprised look."
+    },
+    {
+      "id": "ugc-reaction-094",
+      "description": "Motion reference: the avatar looks into the camera with a surprised expression, covering the mouth with one hand before smiling. 0-3s: the avatar maintains a shocked expression with one hand over the mouth. 3-4s: the avatar lowers one hand and smiles warmly at the camera."
+    },
+    {
+      "id": "ugc-reaction-095",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar starts with a focused, slightly confused expression with silent mouth movement. 2-4s: the avatar opens the mouth in a wide expression of shock, looking upwards and then back to the center. 4-5s: the avatar blinks and opens the eyes wide in realization. 5-7s: the avatar covers the mouth with one hand in a surprised gesture before looking back at the camera with a slight smile."
+    },
+    {
+      "id": "ugc-reaction-096",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks to the side with one hand on the upper chest, then turns the gaze to the camera. 2-3s: the avatar maintains eye contact with the camera and smiles."
+    },
+    {
+      "id": "ugc-reaction-097",
+      "description": "Motion reference: the avatar looks into the camera, blows a kiss, and smiles warmly. 0-2s: the avatar brings one hand to the lips and blows a kiss toward the lens. 2-5s: the avatar lowers one hand to the chin, smiles and maintains eye contact with the camera."
+    },
+    {
+      "id": "ugc-reaction-098",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar starts with the eyes closed, then opens them and smiles gently at the lens. 1-2s: the avatar looks up and to screen right while maintaining a smile. 2-3s: the avatar looks back at the camera with a bright expression and a slight head tilt."
+    },
+    {
+      "id": "ugc-reaction-099",
+      "description": "Motion reference: looks off-camera thoughtfully before turning to face the lens with a bright smile and laugh. 0-1s: the avatar looks up and away from the camera. 1-3s: the avatar turns the head and eyes toward the camera, beginning to smile. 3-5s: the avatar smiles broadly and laughs directly at the camera."
+    },
+    {
+      "id": "ugc-reaction-100",
+      "description": "Motion reference: the avatar looks into the camera with a shocked expression, then puts one hand to the head in disbelief. 0-2s: the avatar stares at the camera with wide eyes and an open mouth, holding one hand up in a or gesture. 2-5s: the avatar gasps, the eyes widen further, and the avatar brings one hand up to the forehead, closing the eyes and sighing in frustration or disbelief. 5-7s: the avatar keeps one hand on the head, looking down and then back at the camera with a pained expression."
+    },
+    {
+      "id": "ugc-reaction-101",
+      "description": "Motion reference: the avatar looks into the camera, smiles, adjusts the pose, rests the face on one hand, and waves. 0-2s: the avatar looks at the camera with a surprised expression that transitions into a soft smile. 2-5s: the avatar raises one hand to smooth the avatar then rests the cheek against the avatar palm. 5-8s: the avatar smiles warmly at the camera and gives a small wave before the video ends."
+    },
+    {
+      "id": "ugc-reaction-102",
+      "description": "Motion reference: transitions from a skeptical look to a shocked expression while looking directly at the camera. 0-2s: the avatar stares at the camera with a questioning, slightly annoyed look. 2-5s: the avatar raises one hand to the ear, the avatar expression shifting to one of realization and surprise. 5-8s: the avatar gasps with wide eyes and covers the mouth with one hand in total shock."
+    },
+    {
+      "id": "ugc-reaction-103",
+      "description": "Motion reference: the avatar expresses surprise before breaking into a warm smile and touching the face and face. 0-2s: the avatar looks directly into the lens with a wide-eyed, surprised expression and open mouth. 2-8s: the avatar shifts into a bright smile, runs one hand through the avatar then rests one hand on the cheek while looking happily at the camera."
+    },
+    {
+      "id": "ugc-reaction-104",
+      "description": "Motion reference: the avatar holds a close-up reaction, looking around with a surprised expression before bringing one hand to the face in shock. 0-2s: the avatar looks off-camera to the left before snapping the gaze to the lens with wide eyes. 2-5s: the avatar glances to the right and back to the camera, maintaining a shocked look. 5-9s: the avatar brings one hand up to the face, covering the mouth as the avatar continues to look surprised."
+    },
+    {
+      "id": "ugc-reaction-105",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks off-camera with a shocked expression and open mouth. 2-5s: the avatar turns to the camera, smiles widely, and places one hand on the upper chest."
+    },
+    {
+      "id": "ugc-reaction-106",
+      "description": "Motion reference: the avatar looks directly into the camera, transitioning from a surprised, open-mouthed expression to one of confusion and skepticism. 0-3s: the avatar holds one hand to with the mouth open in a vocalizing or surprised pose. 4-6s: the avatar scrunches the face in a confused or disgusted expression while keeping the eyes wide. 7-10s: the avatar closes the mouth into a tight line, raises the avatar eyebrows, and gestures with one hand while looking at the camera."
+    },
+    {
+      "id": "ugc-reaction-107",
+      "description": "Motion reference: close-up reaction. 0-3s: the avatar starts with an open-mouthed look of shock, then transitions into a smile while looking off-camera. 3-7s: the avatar makes several playful expressions, widening the eyes and glancing around before smiling at the lens. 7-10s: the avatar raises one hand near the face and laughs while holding eye contact."
+    },
+    {
+      "id": "ugc-reaction-108",
+      "description": "Motion reference: the avatar reacts with shock, covering the mouth with one hand and looking off-camera before returning the gaze to the lens. 0-1s: the avatar begins to raise one hand toward the face. 1-3s: the avatar covers the mouth with one hand, eyes wide with a shocked expression. 3-5s: the avatar maintains the shocked pose while glancing to screen right. 5-6s: the avatar looks back at the camera with the same surprised look."
+    },
+    {
+      "id": "ugc-reaction-109",
+      "description": "Motion reference: the avatar expresses skepticism and judgment through facial expressions and hand gestures. 0-2s: the avatar holds one hand up near the face while looking directly at the camera. 2-4s: the avatar lowers one hand and tilts the head with a doubtful expression before bringing one hand to the forehead. 4-6s: the avatar rubs the temple and eyes, looking frustrated. 6-7s: the avatar looks back at the camera with a skeptical, pursed-lip expression."
+    },
+    {
+      "id": "ugc-reaction-110",
+      "description": "Motion reference: displays a shocked and surprised reaction directly to the camera in a close-up shot. 0-1s: the avatar looks into the camera with wide eyes. 1-2s: the avatar looks away briefly and then back with an open-mouthed expression of surprise. 2-5s: the avatar holds the shocked pose, looking directly at the lens."
+    },
+    {
+      "id": "ugc-reaction-111",
+      "description": "Motion reference: the avatar looks directly at the camera before reacting with a shocked expression, placing one hand on the head and looking away. 0-2s: the avatar stares into the camera with a neutral face. 2-4s: the avatar places one hand on the head and looks to the side with wide eyes. 4-6s: the avatar maintains a surprised expression while looking back and forth."
+    },
+    {
+      "id": "ugc-reaction-112",
+      "description": "Motion reference: sits, looking off-camera before turning to face the lens with a wide-eyed, shocked expression. 0-2s: the avatar is seen in profile looking to screen right. 2-4s: the avatar turns the head toward the camera with a look of intense surprise. 4-8s: the avatar continues to look at the camera with wide eyes, occasionally blinking and shifting the gaze slightly."
+    },
+    {
+      "id": "ugc-reaction-113",
+      "description": "Motion reference: the avatar expresses surprise and then blows a kiss to the camera in a repetitive sequence. 0-1s: the avatar starts with a neutral expression. 1-2s: the avatar shows a surprised face with wide eyes and one hand near the mouth. 2-4s: the avatar blows a kiss and smiles. 4-5s: the avatar resets to a neutral look. 5-7s: the avatar repeats the surprise and kiss sequence."
+    },
+    {
+      "id": "ugc-reaction-114",
+      "description": "Motion reference: displays a shocked expression before facing the camera with silent mouth movement. 0-2s: the avatar stares at the camera with wide eyes and a surprised look. 2-3s: the avatar covers the mouth with one hand in a gesture of shock. 3-5s: the avatar lowers one hand and keeps the reaction focused on the lens."
+    },
+    {
+      "id": "ugc-reaction-115",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar stands still, looking at the camera with a neutral expression while briefly touching the upper chest. 2-4s: the avatar suddenly widens the eyes and opens the mouth in a surprised expression. 4-5s: the avatar brings one hand up to cover the mouth while maintaining the wide-eyed look. 5-6s: the avatar lowers one hand and smiles gently at the camera."
+    },
+    {
+      "id": "ugc-reaction-116",
+      "description": "Motion reference: the avatar expresses shock and surprise through facial expressions and hand gestures. 0-2s: the avatar holds one hand to the head with wide eyes and an open mouth. 2-4s: the avatar moves one hand down and then covers the mouth. 4-7s: the avatar maintains a shocked expression with one hand over the mouth while looking directly at the camera."
+    },
+    {
+      "id": "ugc-reaction-117",
+      "description": "Motion reference: the avatar reacts with surprise to something off-camera before smiling and looking down. 0-1s: the avatar looks at the camera and then makes a surprised face with wide eyes and an open mouth. 1-2s: the avatar covers the mouth with one hand and begins to smile. 2-4s: the avatar looks directly at the camera with a soft smile before glancing down. 4-6s: the avatar looks up at the camera once more and then looks down again."
+    },
+    {
+      "id": "ugc-reaction-118",
+      "description": "Motion reference: the avatar expresses intense shock and surprise while holding a steady upright posture. 0-1s: the avatar looks at the camera with a neutral expression. 1-2s: the avatar suddenly the avatar reacts with wide eyes and an open mouth, touching the head. 2-3s: the avatar leans in close to the camera lens. 3-7s: the avatar pulls back and covers the mouth with one hand, maintaining a shocked look."
+    },
+    {
+      "id": "ugc-reaction-119",
+      "description": "Motion reference: looks away from the camera before turning back with a shocked expression, covering the mouth and waving one hand in disbelief. 0-2s: the avatar looks to the side, then turns to the camera with an open-mouthed, surprised look. 2-4s: the avatar covers the mouth with one hand and then waves it while maintaining a wide-eyed expression. 4-5s: the avatar settles into a soft smile while looking at the camera."
+    },
+    {
+      "id": "ugc-reaction-120",
+      "description": "Motion reference: close-up reaction from a steady seated posture. 0-1s: the avatar starts with the head resting on one hand, looking at the camera. 1-3s: the avatar moves one hand to the forehead, closes the eyes, and looks up. 3-5s: the avatar lowers one hand and looks back at the camera with a slight pout."
+    },
+    {
+      "id": "ugc-reaction-121",
+      "description": "Motion reference: displays a dramatic surprised reaction while looking directly into the camera. 0-1s: the avatar starts with a neutral, calm expression. 1-2s: the eyes widen significantly and the mouth opens in a gasp. 2-4s: the avatar brings one hand up to cover the mouth while maintaining a shocked look. 4-7s: the avatar lowers one hand and looks around briefly before returning the gaze to the camera with a lingers pose wide-eyed expression."
+    },
+    {
+      "id": "ugc-reaction-122",
+      "description": "Motion reference: the avatar expresses shock and surprise while looking directly at the camera. 0-1s: the avatar hand moves toward the face as the avatar opens the mouth in shock. 1-3s: the avatar maintains a surprised expression with wide eyes with silent mouth movement. 3-4s: the avatar covers the mouth with one hand, emphasizing the shock. 4-5s: the avatar lowers one hand and continues to look at the camera with a stunned look."
+    },
+    {
+      "id": "ugc-reaction-123",
+      "description": "Motion reference: the avatar looks into the camera with a neutral expression before reacting with wide-eyed shock and covering the mouth. 0-1s: the avatar looks directly at the camera with a calm expression. 1-3s: the eyes widen significantly in a surprised reaction. 3-5s: the avatar brings one hand up to cover the mouth while maintaining the shocked expression. 5-6s: the avatar leans slightly closer to the camera, still looking surprised."
+    },
+    {
+      "id": "ugc-reaction-124",
+      "description": "Motion reference: looks away from the camera before turning with a shocked expression and covering the mouth. 0-2s: the avatar looks to screen left with a neutral but attentive expression. 2-4s: the avatar turns the head to face the camera, the eyes widening significantly. 4-6s: the avatar brings one hand up to cover the mouth in a classic gesture of surprise."
+    },
+    {
+      "id": "ugc-reaction-125",
+      "description": "Motion reference: the avatar reacts with surprise before looking confidently at the camera. 0-1s: the avatar covers the mouth with one hand in a surprised expression. 1-3s: the avatar lowers one hand and begins to. 3-5s: the avatar holds a steady gaze with a slight head tilt and neutral expression."
+    },
+    {
+      "id": "ugc-reaction-126",
+      "description": "Motion reference: the avatar looks directly into the camera with a shocked expression, eyes wide and mouth open, before covering the mouth with one hand. 0-1s: the avatar looks at the camera. 1-3s: the avatar covers the mouth with one hand, maintaining a shocked expression with wide eyes. 3-6s: the avatar continues to hold one hand over the mouth, looking surprised and blinking occasionally."
+    },
+    {
+      "id": "ugc-reaction-127",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar stares at the camera with a wide-eyed, surprised look. 1-2s: the avatar gestures with one hand near the face with silent mouth movement. 2-4s: the avatar continues with animated facial expressions and subtle head movements."
+    },
+    {
+      "id": "ugc-reaction-128",
+      "description": "Motion reference: the avatar reacts with surprise with silent mouth movement. 0-2s: the avatar looks off-camera while adjusting the pose and silently moving the mouth. 2-4s: the avatar turns to the camera with a shocked expression. 4-6s: the avatar covers the mouth with one hand, eyes wide, before looking away again."
+    },
+    {
+      "id": "ugc-reaction-129",
+      "description": "Motion reference: transitions from a calm, eyes-closed state to a wide-eyed expression of shock, covering the mouth with one hand before returning to a neutral gaze. 0-1s: the avatar stands with the eyes closed and a peaceful expression. 1-2s: the avatar suddenly opens the eyes wide and drops the avatar jaw in surprise. 2-4s: the avatar brings one hand up to cover the mouth while leaning closer to the camera. 4-6s: the avatar lowers one hand and the avatar looks directly into the lens with a calm, neutral expression."
+    },
+    {
+      "id": "ugc-reaction-130",
+      "description": "Motion reference: the avatar reacts with wide-eyed surprise before covering the mouth and then relaxing into a neutral expression. 0-1s: the avatar stares into the camera with a shocked expression. 1-3s: the avatar raises one hand to cover the mouth while maintaining the surprised look. 3-6s: the avatar lowers one hand and transitions to a calm, neutral facial expression."
+    },
+    {
+      "id": "ugc-reaction-131",
+      "description": "Motion reference: displays a shocked reaction. 0-1s: the avatar looks at the camera with a neutral expression. 1-3s: the avatar suddenly appears shocked with wide eyes and places one hand on the temple. 3-4s: A close-up shot shows the avatar covering the mouth in disbelief. 4-7s: The camera returns to the original framing as the avatar continues to look surprised with one hand on the head."
+    },
+    {
+      "id": "ugc-reaction-132",
+      "description": "Motion reference: displays a dramatic reaction of shock and surprise, widening the eyes and covering the mouth with one hand. 0-1s: the avatar looks at the camera and suddenly widens the eyes in surprise. 1-3s: the avatar raises one hand to cover the mouth while maintaining a shocked expression. 3-7s: the avatar continues to hold one hand over the mouth, looking around slightly with wide eyes."
+    },
+    {
+      "id": "ugc-reaction-133",
+      "description": "Motion reference: the avatar expresses surprise and shock while looking directly into the camera. 0-1s: the avatar touches the face with one hand, the eyes wide and mouth slightly open in a surprised expression. 1-2s: the avatar quickly covers the mouth with one hand, maintaining a shocked look. 2-4s: the avatar lowers one hand and transitions into a subtle smile while keeping the eyes wide."
+    },
+    {
+      "id": "ugc-reaction-134",
+      "description": "Motion reference: the avatar expresses surprise and shock while looking directly at the camera. 0-2s: the avatar starts with a hand near the temple, eyes wide and mouth open in surprise. 2-6s: the avatar moves one hand to cover the mouth, maintaining a shocked expression as the camera zooms in slightly."
+    },
+    {
+      "id": "ugc-reaction-135",
+      "description": "Motion reference: the avatar expresses shock and surprise directly to the camera. 0-1s: the avatar starts with a neutral expression then quickly reacts with a wide-open mouth and hand to the head. 1-3s: the avatar leans in closer to the lens with a look of disbelief and wide eyes. 3-5s: the avatar covers the mouth with one hand while stares pose wide-eyed at the camera."
+    },
+    {
+      "id": "ugc-reaction-136",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar looks calmly at the camera. 1-2s: the eyes widen significantly in a surprised expression. 2-3s: the avatar blinks and maintains the shocked look. 3-4s: the avatar covers the mouth with one hand. 4-5s: the avatar leans the head and torso closer to the camera lens."
+    },
+    {
+      "id": "ugc-reaction-137",
+      "description": "Motion reference: the avatar reacts with shock and surprise while looking at the camera in a close-up shot. 0-1s: the avatar covers the mouth with one hand in a gesture of surprise. 1-3s: the avatar looks briefly to the side and then back at the camera with a wide-eyed expression. 3-4s: The camera zooms in quickly on the face as the avatar looks startled. 4-6s: the avatar covers the mouth again, maintaining a shocked look directly at the lens."
+    },
+    {
+      "id": "ugc-reaction-138",
+      "description": "Motion reference: the avatar reacts with shock and surprise while holding a steady upright posture. 0-1s: the avatar looks directly at the camera with a surprised expression. 1-3s: the avatar raises one hand to cover the mouth, widening the eyes in shock. 3-5s: the avatar holds the pose briefly before slowly lowers one hand while keeping the eyes wide."
+    },
+    {
+      "id": "ugc-reaction-139",
+      "description": "Motion reference: appears pensive and slightly frustrated while looking upwards and rubbing the eyes. 0-2s: the avatar rests the chin on one hand and the avatar looks up with a sad expression. 2-4s: the avatar closes the eyes and rubs the forehead and the bridge of the nose with one hand."
+    },
+    {
+      "id": "ugc-reaction-140",
+      "description": "Motion reference: displays a dramatic shocked reaction while looking directly into the camera. 0-1s: the avatar looks off-camera to screen right with a neutral but curious expression. 1-2s: the avatar turns the head to face the camera, the eyes widening and mouth opening in surprise. 2-5s: the avatar brings one hand up to cover the mouth, holding a wide-eyed, stunned expression. 5-7s: the avatar slowly lowers one hand while maintaining the surprised look."
+    },
+    {
+      "id": "ugc-reaction-141",
+      "description": "Motion reference: the avatar looks directly into the camera, transitioning from a neutral expression to one of extreme surprise. 0-1s: the avatar looks at the camera with a neutral expression. 1-2s: the eyes widen and the mouth opens in a surprised shape. 2-4s: the avatar brings one hand up to cover the mouth while maintaining the surprised look. 4-5s: the avatar lowers one hand and begins to."
+    },
+    {
+      "id": "ugc-reaction-142",
+      "description": "Motion reference: looks at the camera and the avatar reacts with a surprised expression, covering the mouth with one hand. 0-2s: the avatar starts by looking off-camera before turning to face the lens. 2-5s: the avatar widens the eyes and covers the mouth with one hand in a classic surprised gesture."
+    },
+    {
+      "id": "ugc-reaction-143",
+      "description": "Motion reference: the avatar looks into the camera with a shocked expression, covers the mouth with one hand, and leans in closer. 0-1s: the avatar stares at the camera with wide eyes and an open mouth. 1-3s: the avatar raises the right hand to cover the mouth, still looking surprised. 3-5s: the avatar leans slightly closer to the camera, maintaining the shocked pose."
+    },
+    {
+      "id": "ugc-reaction-144",
+      "description": "Motion reference: the avatar expresses shock and surprise while looking directly into the camera. 0-2s: the avatar starts. 2-7s: the avatar covers the mouth with one hand while maintaining a shocked expression and looking at the lens."
+    },
+    {
+      "id": "ugc-reaction-145",
+      "description": "Motion reference: the avatar looks into the camera. 0-2s: the avatar stares at the camera. 2-4s: the avatar continues to look surprised, leaning slightly closer to the lens. 4-6s: the avatar covers the mouth with one hand, maintaining a wide-eyed, shocked expression."
+    },
+    {
+      "id": "ugc-reaction-146",
+      "description": "Motion reference: the avatar looks into the camera, performs a surprised reaction by covering the mouth, and then returns to a neutral, smiling pose. 0-1s: the avatar looks directly at the camera with a neutral expression. 1-2s: the avatar raises one hand to the mouth and widens the eyes in surprise. 2-3s: A close-up shot emphasizes the shocked expression. 3-5s: the avatar lowers one hand and looks at the camera with a soft smile."
+    },
+    {
+      "id": "ugc-reaction-147",
+      "description": "Motion reference: the avatar expresses shock and surprise directly to the camera. 0-2s: the avatar stares wide-eyed with one hand on the face. 2-5s: the avatar blinks and covers the mouth with one hand while maintaining a stunned expression."
+    },
+    {
+      "id": "ugc-reaction-148",
+      "description": "Motion reference: the avatar expresses shock and surprise while holding a steady upright posture. 0-1s: the avatar looks directly at the camera with a neutral expression. 1-3s: the avatar suddenly widens the eyes and covers the mouth with one hand in a shocked gesture before waving. 3-4s: After a quick cut, the avatar is seen again with a calm expression. 4-6s: the avatar repeats the shocked expression with wide eyes and a hand over the mouth, followed by a wave."
+    },
+    {
+      "id": "ugc-reaction-149",
+      "description": "Motion reference: displays a series of shocked and surprised facial expressions directly to the camera. 0-1s: the avatar starts with a wide-eyed, open-mouthed look of disbelief. 1-2s: the avatar covers the mouth with one hand as the avatar leans in. 2-4s: the avatar pulls back and looks around before refocusing on the camera. 4-5s: the avatar places one hand on the head in a gesture of amazement."
+    },
+    {
+      "id": "ugc-reaction-150",
+      "description": "Motion reference: close-up selfie angle with slight handheld movement. 0-2s: the avatar looks into the camera with wide eyes. 2-4s: the mouth opens in disbelief and the head leans closer to the lens. 4-6s: one hand covers the mouth while the avatar keeps a shocked stare."
+    },
+    {
+      "id": "ugc-reaction-151",
+      "description": "Motion reference: close-up vertical shot of the avatar holding a steady upright posture near bookstore shelves. The frame centers on the avatar face and upper torso; books and shelving are visible in the."
+    },
+    {
+      "id": "ugc-reaction-152",
+      "description": "Motion reference: close-up selfie angle of the avatar making a playful pout while touching the avatar chin with a raised finger."
+    },
+    {
+      "id": "ugc-reaction-153",
+      "description": "Motion reference: tight selfie-style close-up of the avatar covering the avatar mouth with one hand, Showing expressive wide eyes and a surprised or playful expression."
+    },
+    {
+      "id": "ugc-reaction-154",
+      "description": "Motion reference: the avatar looks into the camera, bites the avatar lip, and then covers the mouth while laughing. 0-1s: the avatar looks up at the camera from a downward angle. 1-3s: the avatar pulls the camera back slightly, the avatar looks directly at it, and bites the avatar lip. 3-5s: the avatar covers the mouth with one hand and laughs with the eyes squeezed shut."
+    },
+    {
+      "id": "ugc-reaction-155",
+      "description": "Motion reference: the avatar looks into the camera, smiles, leans in for a close-up, and then breaks into laughter while covering the mouth. 0-1s: the avatar looks at the camera with a slight smile. 1-2s: the avatar leans forward for a close-up view of the face. 2-3s: the avatar pulls back and continues to smile. 3-5s: the avatar laughs, covering the mouth with one hand and looking down."
+    },
+    {
+      "id": "ugc-reaction-156",
+      "description": "Motion reference: poses playfully for the camera, resting the chin on one hand before breaking into a laugh. 0-2s: the avatar looks upward with a pouty expression, resting the chin on the avatar wrist. 2-4s: the avatar smiles at the camera and then looks away, shifting one hand position. 4-6s: the avatar laughs while looking up, placing the fingers near the mouth."
+    },
+    {
+      "id": "ugc-reaction-157",
+      "description": "Motion reference: displays a series of surprised and shocked facial expressions in a close-up shot. 0-1s: the avatar holds one hand to the forehead with wide eyes. 1-2s: The camera zooms in tight on the face as the avatar reacts. 2-4s: the avatar looks away and then back, Appears stunned. 4-6s: the avatar covers the mouth with one hand while looking directly at the camera."
+    },
+    {
+      "id": "ugc-reaction-158",
+      "description": "Close-up motion reference. Laughing while covering the mouth with one hand, feature pose vibrant orange. 0-1s: The video starts with an extreme close-up of the avatar eyes and one hand covering the mouth. 1-3s: The camera zooms out slightly as the avatar begins to laugh, looking off-camera to the right. 3-5s: the avatar continues laughing with one hand still partially obscures pose the face, Showing genuine amusement."
+    },
+    {
+      "id": "ugc-reaction-159",
+      "description": "Close-up motion reference. Looking thoughtful before smiling at the camera. 0-2s: the avatar looks upward and to the side with one hand on the chin. 2-4s: the avatar shifts the gaze to the camera and begins to smile. 4-5s: the avatar closes the eyes and smiles fully while maintaining the avatar pose."
+    },
+    {
+      "id": "ugc-reaction-160",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks up with a neutral expression and blinks. 2-4s: the avatar purses the lips and shifts the gaze from side to side. 4-7s: the avatar pouts the lips into a kiss face and then relaxes into a slight smile while looking around."
+    },
+    {
+      "id": "ugc-reaction-161",
+      "description": "Motion reference: close-up portrait. Resting the chin on one hand while making a series of playful facial expressions for the camera. 0-2s: the avatar looks at the camera with a pouting expression, resting the chin on the fist. 2-4s: the avatar winks and begins to smile while scrunching the nose. 4-7s: the avatar maintains a wide, playful smile and continues to look directly into the lens as the camera zooms in slightly."
+    },
+    {
+      "id": "ugc-reaction-162",
+      "description": "Motion reference: the avatar looks into the camera with a neutral expression before reacting with surprise and covering the mouth. 0-2s: the avatar stares at the camera with one hand on the head. 2-4s: the avatar blinks and quickly covers the mouth with one hand. 4-8s: the avatar maintains a surprised expression with one hand over the mouth as the camera zooms in."
+    },
+    {
+      "id": "ugc-reaction-163",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks up and then back at the camera while making a small finger-twirl gesture near the side of the head 2-5s: the avatar continues to make a small finger-twirl gesture near the side of the head, smiles, winks, and points the finger toward themselves."
+    },
+    {
+      "id": "ugc-reaction-164",
+      "description": "Motion reference: looks at the camera, glances around, and then playfully pulls a lock of the avatar long across the face. 0-2s: the avatar looks directly at the camera, then glances up and to screen right and left. 2-3s: the avatar looks back at the camera with a slight smile. 3-6s: the avatar reaches up, grabs a section of the avatar pulls it over the avatar lower face while smiling and squinting."
+    },
+    {
+      "id": "ugc-reaction-165",
+      "description": "Motion reference: displays a series of playful and surprised facial expressions directly to the camera in a close-up shot. 0-2s: the avatar starts with a wide-eyed, open-mouthed look of shock before covering the mouth and laughing. 2-4s: the avatar opens the mouth wide again in excitement, then transitions into a kissy face while holding up a peace sign. 4-6s: the avatar maintains the pouty expression and moves one hand across the face before the video ends."
+    },
+    {
+      "id": "ugc-reaction-166",
+      "description": "Close-up motion reference of a playful the avatar making a silly face before breaking into a bright smile. 0-2s: the avatar scrunches the nose and squints the eyes while holding a finger to the avatar lip. 2-4s: the avatar relaxes the avatar expression and smiles warmly while looking away. 4-6s: the avatar maintains a happy, laughing expression as the camera remains focused on the face."
+    },
+    {
+      "id": "ugc-reaction-167",
+      "description": "Motion reference: rests the chin on one hand while looking upwards before turning the gaze to the camera. 0-2s: the avatar looks up and away with a thoughtful expression while resting the chin on one hand. 2-4s: the avatar slowly shifts the eyes to look directly into the lens while maintaining the avatar pose."
+    },
+    {
+      "id": "ugc-reaction-168",
+      "description": "Motion reference: close-up selfie framing from the upper torso to above the head. 0-2s: the avatar starts with a soft smile. 2-4s: the smile grows, the head tilts, and the eyes brighten. 4-6s: the avatar glances away briefly, then looks back into the lens with a warm grin."
+    },
+    {
+      "id": "ugc-reaction-169",
+      "description": "Motion reference: close-up portrait. Resting the chin on one hand while smiling and winking at the camera. 0-2s: the avatar looks directly into the lens with a soft smile, the head resting on one hand. 2-4s: the smile broadens, causing the eyes to crinkle slightly. 4-5s: the avatar gives a playful wink with screen right eye while maintaining the smile."
+    },
+    {
+      "id": "ugc-reaction-170",
+      "description": "Motion reference: the avatar reacts with surprise and laughter before posing for the camera in a series of close-up shots. 0-1s: Extreme close-up of with the mouth open in surprise. 1-3s: the avatar laughs and covers the mouth with one hand. 3-6s: the avatar rests the chin on one hand and smiles warmly. 6-8s: the avatar looks away briefly before blowing a kiss to the camera."
+    },
+    {
+      "id": "ugc-reaction-171",
+      "description": "Motion reference: poses playfully for a close-up video, showcasing the avatar smiling at the camera. 0-2s: the avatar starts with a soft expression, hand near the face. 2-4s: the avatar tilts the head and smiles widely while touching the cheek. 4-7s: the avatar makes a funny face by scrunching the nose, then looks away and touches the face."
+    },
+    {
+      "id": "ugc-reaction-172",
+      "description": "Motion reference: the avatar reacts with extreme shock and surprise in a close-up selfie-style video. 0-2s: the avatar starts with a wide-eyed, open-mouthed expression, holding one hand to the head. 2-4s: the avatar shifts one hand to the cheek and looks away briefly before returning the gaze to the camera. 4-7s: the avatar maintains a wide-eyed, shocked look while stares pose directly into the lens."
+    },
+    {
+      "id": "ugc-reaction-173",
+      "description": "Motion reference: close-up selfie-style video of the avatar making various facial expressions and looking at the camera. 0-2s: the avatar looks from side to side and then pouts the lips while looking directly at the camera. 2-4s: the avatar transitions into a soft smile and tilts the head slightly. 4-6s: the avatar rests the chin on one hand and smiles warmly at the camera as the shot ends."
+    },
+    {
+      "id": "ugc-reaction-174",
+      "description": "Motion reference: rests with one hand on the forehead and eyes closed before opening them wide in surprise. 0-2s: the avatar has one hand over the forehead with the eyes closed. 2-4s: the avatar slowly opens the eyes and looks around. 4-5s: the avatar opens the eyes very wide and the avatar looks directly at the camera."
+    },
+    {
+      "id": "ugc-reaction-175",
+      "description": "Motion reference: looks away thoughtfully before turning to the camera with a bright smile. 0-2s: the avatar gazes off-camera with one hand resting on the cheek and the mouth slightly parted. 2-4s: the avatar turns the eyes toward the lens and breaks into a wide, cheerful smile."
+    },
+    {
+      "id": "ugc-reaction-176",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar begins with both hands raised near the shoulders, palms facing forward. 1-2s: the avatar brings both hands up to cup the avatar cheeks. 2-4s: the avatar holds the pose, looking directly at the camera and then slightly to the side with a subtle expression change."
+    },
+    {
+      "id": "ugc-reaction-177",
+      "description": "Close-up motion reference. Resting the face on one hand while looking at the camera. The avatar briefly glances away before looking back with a wide-eyed, surprised expression. 0-2s: the avatar looks directly at the camera with a neutral expression, resting the cheek on one hand. 2-3s: the avatar shifts the gaze to the side. 3-5s: the avatar looks back at the camera with wide eyes and a slightly open mouth."
+    },
+    {
+      "id": "ugc-reaction-178",
+      "description": "Motion reference: rests the face on one hand with a neutral expression before suddenly widening the eyes in surprise. 0-2s: the avatar looks into the camera with one hand on the cheek. 2-3s: the avatar blinks and begins to change the avatar expression. 3-4s: the avatar opens the eyes wide, looking startled or surprised."
+    },
+    {
+      "id": "ugc-reaction-179",
+      "description": "Motion reference: the avatar reacts with surprise and excitement while looking directly into the camera. 0-2s: the avatar holds one hand to the cheek with the mouth open in a surprised expression. 2-5s: the avatar breaks into a wide smile and continues to look at the camera with an enthusiastic expression."
+    },
+    {
+      "id": "ugc-reaction-180",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar faces the lens with silent, expressive mouth movement and a small smile. 2-4s: the avatar keeps the mouth moving silently, tilts the head slightly and maintains a friendly look into the camera."
+    },
+    {
+      "id": "ugc-reaction-181",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar faces the lens with a neutral to friendly expression and silent mouth movement. 1-2s: the avatar breaks into a wide smile. 2-3s: the avatar closes the eyes for a moment while continuing to smile. 3-4s: the avatar opens the eyes and maintains a soft, pleasant expression while looking at the lens."
+    },
+    {
+      "id": "ugc-reaction-182",
+      "description": "Motion reference: the avatar looks into the camera, waves, and then rests the face on one hand while Showing a surprised expression. 0-2s: the avatar waves at the camera with a smile. 2-5s: the avatar rests the cheek on one hand and widens the eyes in a surprised reaction."
+    },
+    {
+      "id": "ugc-reaction-183",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks off-camera then turns to face the lens with a smile. 2-5s: the avatar raises one hand to the cheek and opens the mouth in a surprised expression with silent mouth movement."
+    },
+    {
+      "id": "ugc-reaction-184",
+      "description": "Motion reference: rests one hand on the chin while looking off-camera and then directly into the lens. 0-2s: the avatar looks to the side with one hand resting against the cheek. 2-4s: the avatar shifts the gaze to look directly at the camera with a neutral, contemplative expression."
+    },
+    {
+      "id": "ugc-reaction-185",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar looks slightly off-camera then toward the lens. 1-3s: the avatar raises the right hand to the face, resting the avatar palm against the cheek while looking directly at the camera."
+    },
+    {
+      "id": "ugc-reaction-186",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks at the camera with a neutral expression and one hand on the cheek. 2-4s: the avatar opens the mouth wide in a surprised expression. 4-5s: the avatar softens the avatar expression into a slight smile while remaining close to the lens."
+    },
+    {
+      "id": "ugc-reaction-187",
+      "description": "Motion reference: waves at the camera and then smiles while resting one hand on the cheek. 0-2s: the avatar waves one hand toward the camera with a slight smile. 2-3s: the avatar transitions into a wide, toothy smile. 3-6s: the avatar rests the right hand against the cheek while maintaining a happy expression and looking directly at the lens."
+    },
+    {
+      "id": "ugc-reaction-188",
+      "description": "Motion reference: looks away, then turns to the camera with a surprised expression before breaking into a smile. 0-1s: the avatar looks off-camera and then turns to face the lens. 1-2s: the avatar maintains eye contact with a neutral face. 2-4s: the avatar widens the eyes significantly in a surprised look. 4-5s: the avatar smiles broadly at the camera."
+    },
+    {
+      "id": "ugc-reaction-189",
+      "description": "Motion reference: close-up selfie-style reaction of the avatar resting the face on one hand while looking into the camera and smiling. 0-2s: the avatar looks off-camera with one hand on the cheek before turning the gaze to the lens. 2-5s: the avatar opens the mouth slightly as if reacting, then breaks into a soft smile while maintaining eye contact."
+    },
+    {
+      "id": "ugc-reaction-190",
+      "description": "Motion reference:, looking away before turning the gaze directly into the camera lens. 0-1s: the avatar looks up and to screen right with one hand resting on the chin. 1-2s: the avatar shifts the gaze to look directly at the camera. 2-4s: the avatar holds a steady gaze at the camera as it zooms in slightly on the face."
+    },
+    {
+      "id": "ugc-reaction-191",
+      "description": "Motion reference: close-up selfie angle. Framed from the chest up, the avatar rests the avatar chin on fingers, Showing subtle and a neutral, relaxed expression."
+    },
+    {
+      "id": "ugc-reaction-192",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks off-camera with one hand on the cheek. 2-5s: the avatar widens the eyes and opens the mouth in a look of realization or shock."
+    },
+    {
+      "id": "ugc-reaction-193",
+      "description": "Motion reference: close-up portrait., looking into the camera with expressive facial movements and a bright smile. 0-2s: the avatar holds one hand to the chin and looks at the camera with wide eyes. 2-4s: the avatar transitions from a surprised expression to a wide smile. 4-7s: the avatar continues to smile and look directly at the camera as it zooms in slightly."
+    },
+    {
+      "id": "ugc-reaction-194",
+      "description": "Motion reference: displays a range of emotions from surprise to happiness while posing for the camera. 0-2s: the avatar holds one hand to the cheek with an open-mouthed expression of surprise. 2-4s: the avatar breaks into a wide, toothy smile while maintaining one hand position. 4-7s: the avatar closes the mouth and the avatar looks upward thoughtfully before returning the gaze to the camera. 7-9s: the avatar holds a gentle smile and the avatar looks directly into the lens."
+    },
+    {
+      "id": "ugc-reaction-195",
+      "description": "Close-up motion reference. Looking around before making eye contact with the camera and smiling. 0-2s: the avatar looks off-camera to screen left with a neutral expression. 2-4s: the avatar shifts the gaze to look directly at the camera. 4-7s: the avatar looks off-camera to screen right and then returns the gaze to the camera with a slight smile."
+    },
+    {
+      "id": "ugc-reaction-196",
+      "description": "Motion reference:, shifting from a smile to a wide-eyed surprised expression. 0-2s: the avatar looks to the side with silent mouth movement and then turns to the camera. 2-4s: the avatar smiles broadly before opening the mouth in a look of shock or surprise. 4-6s: the avatar continues the silent mouth movement while glancing away and back."
+    },
+    {
+      "id": "ugc-reaction-197",
+      "description": "Motion reference: close-up reaction shifting from calm to shocked. 0-2s: the avatar faces the lens with subtle silent mouth movement. 2-4s: the avatar widens the eyes and places one hand on the head. 4-7s: the avatar keeps the surprised expression, holds eye contact, then lowers one hand."
+    },
+    {
+      "id": "ugc-reaction-198",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks upward, then returns attention toward the lens with silent mouth movement. 2-5s: the avatar smiles broadly at the camera and nods slightly. 5-8s: the avatar maintains eye contact, gestures subtly with the head, and finishes with a steady smile."
+    },
+    {
+      "id": "ugc-reaction-199",
+      "description": "Motion reference:, transitioning from a thoughtful expression to one of joyful surprise and excitement. 0-3s: the avatar looks off-camera with one hand on the forehead before turning to face the lens. 3-6s: the avatar smiles widely and continues the silent mouth movement. 6-8s: the avatar reacts with an open-mouthed expression of excitement and moves one hand to the cheek."
+    },
+    {
+      "id": "ugc-reaction-200",
+      "description": "Motion reference: looks down thoughtfully before looking up at the camera with a wide-eyed, surprised expression. 0-2s: the avatar looks down with a neutral expression and slightly parted lips. 2-5s: the avatar slowly raises the gaze to the camera, widening the eyes in a look of surprise or realization."
+    },
+    {
+      "id": "ugc-reaction-201",
+      "description": "Motion reference: the avatar looks directly into the camera with a confused and skeptical expression. 0-1s: the avatar stares forward with a furrowed brow and slightly open mouth. 1-2s: the avatar tilts the head to the side while maintaining a questioning look."
+    },
+    {
+      "id": "ugc-reaction-202",
+      "description": "Motion reference: close-up reaction with shock and surprise. 0-2s: the avatar starts with silent mouth movement, then quickly widens the eyes into a shocked expression. 2-5s: the avatar places both hands on the cheeks and looks away in disbelief before covering the mouth. 5-8s: the avatar clasps both hands together and holds an amazed expression. 8-11s: the avatar brushes one hand back near the side of the head and finishes with a final surprised look."
+    },
+    {
+      "id": "ugc-reaction-203",
+      "description": "Motion reference: leans into the camera to closely inspect the forehead and temple as if using the lens as a mirror. 0-1s: the avatar looks at the camera with a curious expression and tilts the head. 1-3s: the avatar leans in closer, squinting the eyes to see better. 3-4s: the avatar raises one hand to touch the forehead while maintaining a focused gaze."
+    },
+    {
+      "id": "ugc-reaction-204",
+      "description": "Close-up motion reference. The avatar expresses deep sadness and crying. 0-1s: the avatar looks directly into the camera with a pained expression and watery eyes. 1-3s: the avatar closes the eyes and brings the right hand up to wipe the nose while Appears to sob. 3-4s: the avatar remains in a state of distress with one hand near the face."
+    },
+    {
+      "id": "ugc-reaction-205",
+      "description": "Motion reference: the avatar reacts with surprise and concern while looking closely into the camera lens as if checking the avatar reflection. 0-1s: the avatar holds one hand to the forehead with a shocked expression. 1-2s: the avatar moves one hand to the side of the head. 2-4s: the avatar rests the chin on one hand, looking thoughtfully and intently at the camera."
+    },
+    {
+      "id": "ugc-reaction-206",
+      "description": "Motion reference: the avatar looks into the camera with a neutral expression before breaking into a warm smile. 0-2s: the avatar stares directly into the lens with a soft, pensive look. 2-4s: the avatar smiles broadly, Showing the avatar teeth slightly, and looks happy."
+    },
+    {
+      "id": "ugc-reaction-207",
+      "description": "Motion reference: the avatar looks into the camera with an emotional, happy expression, transitioning from closed eyes to a warm smile. 0-1s: the avatar has the eyes closed and a slight smile. 1-3s: the avatar opens the eyes, the avatar looks directly at the lens, and smiles warmly while slightly tilting the head."
+    },
+    {
+      "id": "ugc-reaction-208",
+      "description": "Motion reference: the avatar looks directly into the camera, transitioning through several skeptical and serious facial expressions. 0-1s: the avatar stares at the camera with a furrowed brow and a slight pout. 1-2s: the avatar blinks and subtly shifts the head position. 2-3s: the avatar tilts the head slightly while maintaining a direct, serious gaze."
+    },
+    {
+      "id": "ugc-reaction-209",
+      "description": "Motion reference: playful close-up reaction with a forward point and pose. 0-1s: the avatar looks into the camera with a bright expression. 1-2s: the avatar points the index finger forward. 2-4s: the avatar brings one hand up near the upper chest and smiles while looking at the lens."
+    },
+    {
+      "id": "ugc-reaction-210",
+      "description": "Motion reference: stands. 0-1s: the avatar has the eyes closed and a neutral expression. 1-2s: the avatar opens the eyes and the avatar looks directly into the camera. 2-4s: the face contorts into a sad pout as the avatar appears to be on the verge of tears."
+    },
+    {
+      "id": "ugc-reaction-211",
+      "description": "Motion reference: the avatar smiles warmly at the camera in a short, casual selfie-style clip. 0-1s: the avatar looks directly into the lens with a soft smile. 1-2s: the avatar tilts the head slightly to the side, maintaining the smile as the video ends."
+    },
+    {
+      "id": "ugc-reaction-212",
+      "description": "Motion reference: the brief selfie-style video of the avatar smiling warmly at the camera. 0-1s: the avatar looks directly into the lens with a gentle smile. 1-2s: the avatar continues to smile, slightly shifting the head position while looking at the camera."
+    },
+    {
+      "id": "ugc-reaction-213",
+      "description": "Motion reference: the avatar smiles brightly at the camera and performs a small celebratory fist pump. 0-1s: the avatar looks at the camera with a wide smile. 1-2s: the avatar raises the right hand in a fist-pump gesture while continuing to smile."
+    },
+    {
+      "id": "ugc-reaction-214",
+      "description": "Motion reference: the avatar looks into the camera. 0-1s: the avatar holds the back of the head and stares intently at the camera. 1-2s: the avatar scrunches the face into a grimace of disgust or confusion."
+    },
+    {
+      "id": "ugc-reaction-215",
+      "description": "Motion reference: the avatar smiles warmly at the camera while tilting the head. 0-1s: the avatar tilts the head to screen right with a soft smile. 1-2s: the avatar tilts the head back toward the center and slightly to screen left while maintaining eye contact."
+    },
+    {
+      "id": "ugc-reaction-216",
+      "description": "Motion reference: close-up portrait. Looking into the camera with a deeply sad and emotional expression. 0-2s: the avatar stares directly at the lens with watery, glassy eyes. 2-4s: the avatar continues to look into the camera, the avatar expression remaining somber and pained."
+    },
+    {
+      "id": "ugc-reaction-217",
+      "description": "Close-up motion reference. Appears emotional and distressed while looking into the camera. 0-1s: the avatar looks directly at the lens with tears in the eyes and one hand on the upper chest. 1-3s: the avatar sighs and moves one hand up to touch the avatar forehead while maintaining eye contact."
+    },
+    {
+      "id": "ugc-reaction-218",
+      "description": "Motion reference: the avatar smiles warmly and the avatar looks directly into the camera. 0-1s: the avatar leans in close to the camera with a wide smile. 1-3s: the avatar maintains eye contact, nodding slightly while continuing to smile."
+    },
+    {
+      "id": "ugc-reaction-219",
+      "description": "Close-up motion reference. Looking into the camera with a sad and tearful expression. 0-2s: the avatar looks directly at the lens with watery eyes and a slight frown. 2-4s: the avatar continues to gaze sadly, blinking slowly as the eyes glisten."
+    },
+    {
+      "id": "ugc-reaction-220",
+      "description": "Close-up motion reference. Who is visibly emotional and crying, looking directly into the lens. 0-3s: the avatar stares into the camera with watery eyes and a sad expression. 3-5s: the avatar looks down and away briefly before returning the gaze to the lens. 5-9s: the avatar continues to look into the camera with a pained, tearful look, blinking slowly."
+    },
+    {
+      "id": "ugc-reaction-221",
+      "description": "Motion reference: the avatar smiles and laughs warmly while looking directly into the camera in a close-up shot. 0-2s: the avatar smiles broadly with one hand on the upper chest. 2-4s: the avatar laughs softly, looking down and then back at the lens. 4-5s: the avatar raises one hand to the forehead while continuing to smile."
+    },
+    {
+      "id": "ugc-reaction-222",
+      "description": "Motion reference: the avatar looks directly into the camera with a warm smile and a gentle nod. 0-1s: the avatar looks at the camera with a soft expression. 1-3s: the avatar breaks into a wider smile and nods the head slightly in affirmation."
+    },
+    {
+      "id": "ugc-reaction-223",
+      "description": "Motion reference: close-up, emotional video of the avatar crying while looking into the camera. 0-1s: the avatar has the eyes closed and head tilted, with tears streaming down the face. 1-4s: the avatar opens the eyes, the avatar looks directly at the camera with a sad expression, and sniffles."
+    },
+    {
+      "id": "ugc-reaction-224",
+      "description": "Motion reference: the avatar expresses deep emotion and sadness while looking directly into the camera, with visible tears on the face. 0-2s: the avatar touches the face and looks down with watery eyes. 2-4s: the avatar looks directly at the camera, blinking as tears roll down the avatar cheeks, and moves one hand away from the face."
+    },
+    {
+      "id": "ugc-reaction-225",
+      "description": "Motion reference: the avatar looks directly into the camera with a shocked and emotional expression, the eyes welling with tears. 0-2s: the avatar stares wide-eyed at the lens with the mouth slightly open. 2-5s: the avatar blinks and looks downward, the avatar expression shifting to deep sadness as the avatar appears to be crying."
+    },
+    {
+      "id": "ugc-reaction-226",
+      "description": "Motion reference: close-up portrait. Who transitions from a neutral look to a sad, pouting expression. 0-1s: the avatar looks into the camera with a neutral, slightly open-mouthed expression. 1-2s: the avatar closes the eyes and then reopens them while pulling the lips into a sad pout. 2-3s: the avatar maintains the pouting expression while looking directly at the camera."
+    },
+    {
+      "id": "ugc-reaction-227",
+      "description": "Motion reference: the avatar looks directly into the camera with a distressed and tearful expression, eventually wiping the face. 0-3s: the avatar stares at the camera with watery eyes and a pained expression, the face trembling slightly. 3-5s: the avatar continues to look distressed before raising one hand to wipe the nose and eyes as the avatar looks away."
+    },
+    {
+      "id": "ugc-reaction-228",
+      "description": "Motion reference: leans. 0-2s: the avatar stares intently at the lens, leaning forward. 2-4s: the avatar continues to examine the avatar reflection with a slight frown and furrowed brow."
+    },
+    {
+      "id": "ugc-reaction-229",
+      "description": "Motion reference: the avatar looks directly into the camera while crying, Showing visible distress and sadness. 0-2s: the avatar stares at the camera with tears in the eyes and a trembling mouth. 2-4s: the avatar places one hand over the avatar heart and exhales deeply while maintaining eye contact with the lens."
+    },
+    {
+      "id": "ugc-reaction-230",
+      "description": "Motion reference: the avatar looks directly into the camera lens and breaks into a genuine laugh before moving the device. 0-1s: the avatar looks at the camera with a slight smile. 1-3s: the avatar laughs widely, Showing the avatar teeth and squinting the eyes. 3-4s: the avatar continues laughing as the avatar tilts the camera downward and away."
+    },
+    {
+      "id": "ugc-reaction-231",
+      "description": "Motion reference: leans toward the camera with a wide, genuine smile and begins to laugh. 0-1s: the avatar leans in close to the lens, smiling broadly. 1-3s: the avatar continues to smile and starts laughing while looking directly at the camera."
+    },
+    {
+      "id": "ugc-reaction-232",
+      "description": "Motion reference: the avatar looks into the camera with watery eyes, Appears emotional before offers pose a slight smile. 0-1s: the avatar stares at the camera with a sad expression and watery eyes. 1-2s: the avatar closes the eyes and tilts the head slightly. 2-4s: the avatar opens the eyes, looks away briefly, and then looks back at the lens with a small smile."
+    },
+    {
+      "id": "ugc-reaction-233",
+      "description": "Motion reference: the avatar looks directly into the camera, transitioning from a soft smile to a joyful laugh. 0-1s: the avatar looks at the camera with a gentle smile. 1-3s: the avatar breaks into a wide, genuine laugh, tilting the head slightly as the avatar smiles."
+    },
+    {
+      "id": "ugc-reaction-234",
+      "description": "Close-up motion reference. Looking directly into the camera with a concerned expression while biting the avatar thumb. 0-2s: the avatar stares at the camera with wide eyes and the avatar thumb in the mouth. 2-4s: the avatar continues to bite the avatar thumb, looking slightly off-camera and back with a worried look. 4-6s: the avatar maintains eye contact with the camera, the avatar expression remaining pensive."
+    },
+    {
+      "id": "ugc-reaction-235",
+      "description": "Motion reference: the avatar looks into the camera, starting with a playful smirk before transitioning into a gentle smile. 0-1s: the avatar looks at the camera with a slight pout and smirk. 1-3s: the avatar relaxes the avatar expression into a soft smile while maintaining eye contact."
+    },
+    {
+      "id": "ugc-reaction-236",
+      "description": "Motion reference: close-up friendly reaction focused on a raised hand gesture. 0-1s: the avatar opens the eyes and smiles while holding up one hand near the face. 1-2s: the avatar holds the pose, looking directly into the lens with a friendly expression."
+    },
+    {
+      "id": "ugc-reaction-237",
+      "description": "Motion reference: the avatar looks directly into the camera with a neutral expression. 0-5s: the avatar stares steadily at the lens. 5-6s: the avatar blinks the eyes. 6-7s: the avatar maintains the gaze until the video ends."
+    },
+    {
+      "id": "ugc-reaction-238",
+      "description": "Motion reference: the avatar smiles and laughs while looking at the camera. 0-2s: the avatar waves and covers the mouth while laughing. 2-4s: the avatar smiles and adjusts the pose. 4-7s: the avatar looks away briefly before smiling back at the camera."
+    },
+    {
+      "id": "ugc-reaction-239",
+      "description": "Motion reference: the avatar looks directly into the camera with a neutral expression. 0-3s: the avatar maintains eye contact with the camera while slightly adjusting the head position. 3-6s: the avatar blinks naturally and continues to look forward until the video ends."
+    },
+    {
+      "id": "ugc-reaction-240",
+      "description": "Motion reference: 2-4s: the avatar reaches one hand forward, momentarily obscures pose the lens. 4-6s: the avatar points the finger at the camera while smiling. 6-7s: the avatar finishes with a friendly smile."
+    },
+    {
+      "id": "ugc-reaction-241",
+      "description": "Motion reference: the avatar looks directly into the camera, starting with the eyes closed and then opening them to reveal a gentle smile. 0-2s: the avatar opens the eyes and looks at the camera. 2-4s: the avatar looks down briefly and then back up with a soft smile. 4-6s: the avatar maintains eye contact with a warm expression as the camera zooms in slightly."
+    },
+    {
+      "id": "ugc-reaction-242",
+      "description": "Motion reference: transitions from a playful pout to an excited smile while raising both hands and reaching toward the camera. 0-2s: the avatar starts with a pout, then quickly smiles and raises both hands. 2-4s: the avatar expresses excitement with an open mouth and reaches both hands toward the lens. 4-5s: the avatar finishes with a bright smile directly at the camera."
+    },
+    {
+      "id": "ugc-reaction-243",
+      "description": "Motion reference: showcases a white digan with black bow details while holding a steady upright posture. 0-1s: the avatar stands facing the camera with the avatar arms at the avatar sides. 1-3s: the avatar places both hands on the avatar hips and looks slightly to screen right. 3-5s: the avatar looks back at the camera and maintains the avatar pose."
+    },
+    {
+      "id": "ugc-reaction-244",
+      "description": "Motion reference: the avatar looks directly into the camera while covering the mouth with one hand before lowers it to touch the avatar lip. 0-3s: the avatar stares at the camera with the right hand covering the mouth. 4-5s: the avatar lowers one hand and lightly touches the face bottom lip with the avatar thumb."
+    },
+    {
+      "id": "ugc-reaction-245",
+      "description": "Motion reference: shares a secret by whispers pose directly into the camera lens. 0-1s: the avatar looks away before turning to face the camera. 1-3s: the avatar leans in close, cups one hand to the mouth, and whispers a message. 3-4s: the avatar pulls back to the avatar original position and smiles."
+    },
+    {
+      "id": "ugc-reaction-246",
+      "description": "Motion reference: looks at the camera, holds up a small white object, places one hand on the forehead with a distressed expression, and then falls out of the frame. 0-1s: the avatar looks down and then directly at the camera. 1-2s: the avatar raises a small white object toward the face. 2-3s: the avatar presses one hand to the forehead and closes the eyes. 3-5s: the avatar leans back and falls out of view to the bottom right."
+    },
+    {
+      "id": "ugc-reaction-247",
+      "description": "Motion reference: the avatar expresses confusion and frustration while looking directly at the camera. 0-1s: the avatar stares at the camera with a furrowed brow. 2-3s: the avatar rubs one hand through the avatar looks slightly to the side."
+    },
+    {
+      "id": "ugc-reaction-248",
+      "description": "Motion reference: the avatar expresses intense frustration and anger through facial expressions and a clenched fist in a close-up shot. 0-1s: the avatar grimaces with a clenched fist and the avatar looks upward as if shouting in frustration. 1-3s: the avatar looks back down at the camera with a determined, intense expression, still holding the fist up."
+    },
+    {
+      "id": "ugc-reaction-249",
+      "description": "Motion reference: interacts with the camera by winking, pointing, and giving a thumbs up. 0-1s: the avatar looks at the camera and winks. 1-2s: the avatar points the index finger at the camera. 2-3s: the avatar gives a thumbs up and smiles."
+    },
+    {
+      "id": "ugc-reaction-250",
+      "description": "Motion reference: close-up confused reaction from a steady upright stance. 0-2s: the avatar stands back in the frame, looking directly at the camera with open palms as if asking a question. 2-5s: the avatar leans forward toward the camera, maintaining a puzzled look and continuing the open-hand gesture."
+    },
+    {
+      "id": "ugc-reaction-251",
+      "description": "Motion reference: close-up celebratory reaction from a steady upright posture. 0-2s: the avatar pumps both fists with an excited smile. 2-4s: the avatar leans closer to the camera with silent excited mouth movement, then leans back with a grin. 4-5s: the avatar reaches forward toward the lens to end the clip."
+    },
+    {
+      "id": "ugc-reaction-252",
+      "description": "Motion reference: stands. 0-1s: the avatar shrugs the shoulders while looking directly at the camera with a skeptical expression. 1-3s: the avatar looks down briefly, then looks back up with a growing smile. 3-4s: the avatar leans the head closer to the lens and smiles warmly."
+    },
+    {
+      "id": "ugc-reaction-253",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar stands centered, smiling and beginning to. 1-2s: the avatar leans forward toward the lens with a squinted, happy expression. 2-3s: the avatar moves back to the avatar original position and brings both hands together in front of the upper chest. 3-5s: the avatar lowers both hands and continues the silent mouth movement with an upbeat demeanor."
+    },
+    {
+      "id": "ugc-reaction-254",
+      "description": "Motion reference: close-up tired reaction from a steady upright stance. 0-1s: the avatar looks down with a slight frown. 1-2s: the avatar exhales a deep breath and lifts the gaze. 2-4s: the avatar looks into the lens with a neutral, calm expression."
+    },
+    {
+      "id": "ugc-reaction-255",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar starts with a neutral look, then winces and wrinkles the face in confusion. 2-4s: the avatar closes the eyes briefly before looking back at the camera with a slight smile. 4-6s: the avatar leans the head and shoulders closer to the lens with wide, surprised eyes."
+    },
+    {
+      "id": "ugc-reaction-256",
+      "description": "Motion reference: close-up reaction from a steady upright stance. 0-2s: the avatar starts farther from the camera, centered in frame and looking directly at the lens. 2-5s: the avatar leans forward, bringing the face closer to the lens with silent mouth movement. 5-8s: the avatar holds the closer angle with an intent, questioning look."
+    },
+    {
+      "id": "ugc-reaction-257",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar looks up at the camera with a neutral expression. 1-3s: the avatar leans forward, grimacing and shouting silently at the camera. 3-5s: the avatar pulls back, clenching the fists and shaking them with a strained facial expression. 5-7s: the avatar relaxes the face and returns to a calm, neutral expression."
+    },
+    {
+      "id": "ugc-reaction-258",
+      "description": "Motion reference: stands in front of a, giving a thumbs up and cycling through several facial expressions. 0-1s: the avatar smiles and holds a thumbs up close to the camera. 1-2s: the avatar lowers one hand, briefly grimaces, and then smiles broadly. 2-3s: the avatar opens the eyes wide and blows air out of the mouth in a gesture."
+    },
+    {
+      "id": "ugc-reaction-259",
+      "description": "Motion reference: stands in front of a with white curtains, looking confused and frustrated. The avatar squints at the camera, rubs one hand through the avatar then reaches out to stop the recording. 0-3s: the avatar looks directly at the camera with a confused and slightly annoyed facial expression, squinting the eyes. 3-5s: the avatar raises the left hand and rubs it through while maintaining a frustrated look. 5-6s: the avatar reaches the right hand toward the camera lens to end the video."
+    },
+    {
+      "id": "ugc-reaction-260",
+      "description": "Motion reference:, using hand gestures to emphasize the avatar points, including a thumbs up. 0-2s: the avatar points at the camera and then gives a thumbs up while smiling. 2-4s: the avatar gestures with an open hand while looking slightly off-camera and then back. 4-6s: the avatar continues to, looking around the before focusing back on the lens."
+    },
+    {
+      "id": "ugc-reaction-261",
+      "description": "Motion reference: interacts directly with the camera. 0-2s: the avatar starts close to the camera with a squinted expression, then leans in further. 2-4s: the avatar points the finger directly at the lens while making a focused face. 4-7s: the avatar pulls back, adjusts the pose posture and maintains eye contact with a neutral to serious expression until the end."
+    },
+    {
+      "id": "ugc-reaction-262",
+      "description": "Motion reference: the avatar expresses frustration and stress while looking into the camera. 0-1s: the avatar looks directly at the camera with a furrowed brow. 2-4s: the avatar covers the face with one hand, moving from the eyes to the mouth. 4-7s: the avatar looks back at the camera, runs a hand through the avatar holds the head in a stressed manner."
+    },
+    {
+      "id": "ugc-reaction-263",
+      "description": "Motion reference: the avatar expresses a range of emotions from stress to surprise while looking directly at the camera. 0-1s: the avatar starts with the eyes closed, then the avatar looks up. 1-2s: the avatar rubs the forehead, Appears frustrated. 2-5s: the avatar shakes the head and sighs while looking at the camera. 5-7s: the avatar covers one eye, then reveals it with a surprised expression."
+    },
+    {
+      "id": "ugc-reaction-264",
+      "description": "Motion reference: confident close-up pose reaction. 0-2s: the avatar starts close to the camera with one arm flexed and an intense facial expression. 2-4s: the avatar moves both hands near the face and then pulls back from the camera. 4-7s: the avatar steps back, shrugs, and finishes by crossing both arms confidently."
+    },
+    {
+      "id": "ugc-reaction-265",
+      "description": "Motion reference: stands in front of forward, smiling and nodding before leaning in with a questioning look. 0-2s: the avatar smiles warmly at the camera while nodding. 2-4s: the avatar maintains a friendly expression, tilting the head slightly. 4-7s: the avatar leans closer to the lens, squinting the eyes and reaching out one hand as if to touch the camera or adjust something."
+    },
+    {
+      "id": "ugc-reaction-266",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks at the camera with a furrowed brow and holds both hands up near the upper chest. 2-4s: the avatar continues to, gestures with open palms. 4-6s: the avatar leans closer to the lens while maintaining the avatar expressive gestures and frustrated facial expression."
+    },
+    {
+      "id": "ugc-reaction-267",
+      "description": "Motion reference: displays a range of confused and distressed emotions while looking directly into the camera. 0-2s: the avatar starts by looking down, then the avatar looks up with a furrowed brow and a confused expression. 2-4s: the avatar continues to look distressed, gestures with one hand and shaking the head. 4-7s: the avatar puffs out the avatar cheeks, looks teary-eyed, and eventually covers the mouth with one hand in a shocked or emotional reaction."
+    },
+    {
+      "id": "ugc-reaction-268",
+      "description": "Motion reference: close-up disgusted and confused reaction. 0-2s: the avatar looks at the camera with a grimace and silent mouth movement. 2-4s: the avatar squints and repeats the silent mouth movement with more emphasis. 4-7s: the avatar looks down, rubs the forehead, and stares back at the camera in disbelief."
+    },
+    {
+      "id": "ugc-reaction-269",
+      "description": "Motion reference: lighthearted close-up reaction with laughter and hand gestures. 0-2s: the avatar starts by laughing and looking away before turning to face the camera with a wide smile. 2-4s: the avatar silently mouths a phrase, waves one hand, and keeps an expressive smile. 4-7s: the avatar mixes laughter with a brief crying-face pose, gestures toward the face, and ends with a bright smile."
+    },
+    {
+      "id": "ugc-reaction-270",
+      "description": "Motion reference: the avatar looks directly into the camera with a series of skeptical and confused facial expressions. 0-3s: the avatar stares at the camera with a furrowed brow and squinted eyes. 3-5s: the avatar exhales a small puff of air while maintaining a questioning look. 5-8s: the avatar tilts the head and winces slightly, Showing a doubtful reaction."
+    },
+    {
+      "id": "ugc-reaction-271",
+      "description": "Motion reference: the avatar reacts emotionally to something off-camera, transitioning from skepticism to a tearful expression and then a more intense look. 0-2s: the avatar makes a skeptical face and winks while gesturing. 2-4s: the avatar appears to be crying or very emotional, looking away and back. 4-7s: the avatar smiles briefly, then leans in."
+    },
+    {
+      "id": "ugc-reaction-272",
+      "description": "Motion reference: displays a shocked expression before looking at the camera and smiling. 0-3s: the avatar looks off-camera with the mouth wide open in surprise. 4-6s: the avatar brings one hand to the face while maintaining a shocked look. 7-9s: the avatar looks directly into the lens, closes the mouth, and gives a subtle smile."
+    },
+    {
+      "id": "ugc-reaction-273",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks at the camera with a neutral expression. 2-3s: the avatar glances down and back up. 3-5s: the avatar opens the mouth in a surprised expression while looking off-center. 5-7s: the avatar smiles warmly at the camera."
+    },
+    {
+      "id": "ugc-reaction-274",
+      "description": "Motion reference: looks around and makes a series of expressive faces toward the camera. 0-2s: the avatar starts looking to the side before turning to the camera with a wide-eyed, surprised expression. 2-5s: the avatar looks down, then glances side to side with a playful smirk. 5-9s: the avatar settles into a soft smile while looking directly at the lens."
+    },
+    {
+      "id": "ugc-reaction-275",
+      "description": "Motion reference: looks at the camera and the avatar reacts with a surprised expression. 0-2s: the avatar looks at the camera with a neutral face and glances to the side. 2-4s: the avatar looks back at the camera with wide eyes and an open mouth. 4-9s: the avatar maintains the surprised look while glancing around and gestures slightly."
+    },
+    {
+      "id": "ugc-reaction-276",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar starts with a thoughtful pose, hand on the face, looking slightly away. 2-4s: the avatar looks directly at the camera with a surprised or questioning look, then smiles slightly. 4-7s: the avatar continues to move one hand near the face, looking around and then back at the camera with a playful expression. 7-10s: the avatar adjusts the pose and looks at the camera with a soft smile."
+    },
+    {
+      "id": "ugc-reaction-277",
+      "description": "Motion reference: close-up reaction. 0-4s: the avatar rests the chin on one hand, looking thoughtfully off-camera. 4-6s: the avatar makes eye contact with the camera with a knowing expression. 6-10s: the avatar sweeps one hand out to the side in a presenting motion."
+    },
+    {
+      "id": "ugc-reaction-278",
+      "description": "Motion reference: poses for the camera. 0-3s: the avatar holds up one hand with dark, looking at it and then at the camera. 3-6s: the avatar lowers one hand and looks off to the side before looking back at the lens. 6-11s: the avatar raises one hand to touch the avatar maintaining eye contact with the camera before looking away again."
+    },
+    {
+      "id": "ugc-reaction-279",
+      "description": "Motion reference: holds a contact lens on the finger with a skeptical expression before reacting with surprise and excitement. 0-4s: the avatar holds the index finger up with a contact lens on the tip, looking off-camera with a questioning look. 4-7s: the avatar lowers the finger and raises the avatar palm, the eyes widening in a look of realization. 7-10s: the avatar covers the mouth with one hand, smiling with the eyes in a surprised and impressed manner."
+    },
+    {
+      "id": "ugc-reaction-280",
+      "description": "Motion reference: the avatar looks directly at the camera before glancing away and returning with a series of exaggerated facial expressions including surprise and skepticism. 0-2s: the avatar looks at the camera with a neutral expression. 2-4s: the avatar looks off to the side thoughtfully. 4-6s: the avatar snaps the gaze back to the camera with wide eyes and raised brows. 6-8s: the avatar purses the lips and tilts the head in a skeptical or dismissive shrug."
+    },
+    {
+      "id": "ugc-reaction-281",
+      "description": "Motion reference:, then glances to the side with a playful expression before looking back. 0-2s: the avatar looks at the camera with a neutral expression. 2-4s: the avatar looks up and to screen right, then back to the camera. 4-7s: the avatar looks to screen right again with wide eyes and a slight smile, then raises one hand slightly. 7-9s: the avatar looks back at the camera and smiles."
+    },
+    {
+      "id": "ugc-reaction-282",
+      "description": "Motion reference: the avatar holds a close-up reaction, moving from a neutral, slightly dazed look to a state of high surprise. 0-2s: the avatar looks into the lens with a sleepy expression and slightly squinted eyes. 2-5s: the avatar expression shifts to shock as the mouth opens wide and the eyes enlarge. 5-10s: the avatar brings one hand up to the mouth, eyes wide, and smiles while looking off-camera."
+    },
+    {
+      "id": "ugc-reaction-283",
+      "description": "Motion reference: displays a range of emotions from skepticism to realization and joyful surprise in a close-up shot. 0-3s: the avatar looks skeptical and glances around with a furrowed brow. 3-6s: the eyes widen in realization and the avatar begins to smile. 6-10s: the avatar opens the mouth in shock, covers it with one hand, and ends with a bright smile."
+    },
+    {
+      "id": "ugc-reaction-284",
+      "description": "Motion reference: transitions from a skeptical, thoughtful expression to a surprised and happy one while gesturing toward the camera. 0-3s: the avatar looks off-camera with a furrowed brow and pursed lips, resting the head on one hand. 3-6s: the avatar turns to the camera with wide eyes and an open palm gesture. 6-9s: the avatar smiles warmly, closes the eyes briefly, and then looks back at the camera. 9-12s: the avatar adjusts the pose and maintains a playful, wide-eyed expression."
+    },
+    {
+      "id": "ugc-reaction-285",
+      "description": "Motion reference: records a selfie-style video expressing a sequence of surprised and excited reactions. 0-3s: the avatar looks at the camera with an open-mouthed, surprised expression. 3-6s: the avatar raises one hand to the mouth in shock, eyes widening. 6-9s: the avatar places one hand on the upper chest and smiles broadly. 9-11s: the avatar brings one hand back to the face, looking directly into the lens with a joyful, wide-eyed expression."
+    },
+    {
+      "id": "ugc-reaction-286",
+      "description": "Motion reference: the avatar looks into the camera, transitioning through several expressive facial reactions from skeptical squinting to wide-eyed surprise. 0-2s: the avatar looks at the camera. 2-5s: the avatar looks off to the side, then back at the camera with wide eyes and a surprised expression. 5-10s: the avatar maintains a wide-eyed, comical expression with pressed lips, looking directly into the lens."
+    },
+    {
+      "id": "ugc-reaction-287",
+      "description": "Motion reference: records a selfie-style video expressing a range of emotions from skepticism to genuine surprise and delight. 0-2s: the avatar gestures toward the camera with a questioning look. 2-4s: the avatar looks away and waves one hand dismissively. 4-7s: the avatar covers the mouth in shock with wide eyes and then begins to smile. 7-10s: the avatar smiles broadly and rests one hand on the upper chest while looking off-camera."
+    },
+    {
+      "id": "ugc-reaction-288",
+      "description": "Motion reference: close-up reaction that moves from neutral to surprised and happy. 0-3s: the avatar looks around with a neutral expression. 3-6s: the avatar makes a playful, wide-eyed face. 6-10s: the avatar gasps, covers the mouth, and raises one hand near the face while smiling."
+    },
+    {
+      "id": "ugc-reaction-289",
+      "description": "Motion reference: transitions from a thoughtful, questioning expression to a surprised realization, pointing to the side and then waving at the camera. 0-4s: the avatar holds the finger to the chin, looking around with a pensive expression. 4-7s: the eyes widen in surprise as the avatar points the finger to the right. 7-11s: the avatar looks directly at the camera with a slight smile and waves."
+    },
+    {
+      "id": "ugc-reaction-290",
+      "description": "Motion reference: transitions from a thoughtful, questioning look to a wide-eyed expression of surprise or realization. 0-4s: the avatar looks off-camera and back with a hand on the chin, Appears pensive. 5-9s: the avatar suddenly opens the mouth and widens the eyes in a dramatic reaction of surprise."
+    },
+    {
+      "id": "ugc-reaction-291",
+      "description": "Motion reference: close-up reaction. 0-4s: the avatar holds while looking off-camera with a pensive look. 4-6s: the avatar lowers one hand and the avatar looks directly at the camera. 6-10s: the avatar makes a sad, pouty face while glancing around."
+    },
+    {
+      "id": "ugc-reaction-292",
+      "description": "Motion reference: transitions from a pensive, thoughtful state to a sudden realization and shocked excitement. 0-2s: the avatar looks away thoughtfully with a finger to the chin. 2-4s: the avatar looks at the camera with a look of sudden underholding a steady upright posture. 4-9s: the avatar gasps and covers the mouth in surprise, maintaining a wide-eyed, excited expression."
+    },
+    {
+      "id": "ugc-reaction-293",
+      "description": "Motion reference: the avatar looks directly into the camera with a series of exaggerated surprised and skeptical facial expressions. 0-2s: the avatar starts by looking off-camera to screen right before turning to face the lens with wide, surprised eyes. 2-5s: the avatar maintains eye contact with the camera, slightly pursing the lips and shifting the gaze momentarily. 5-9s: the avatar leans closer to the camera, widening the eyes again in a mock-shocked expression before pursing the lips and looking away to screen left."
+    },
+    {
+      "id": "ugc-reaction-294",
+      "description": "Motion reference: the avatar looks directly into the camera and performs a series of exaggerated facial expressions, including surprise, sadness, and a slight smile. 0-2s: the avatar looks at the camera, glances to the side, and returns with wide eyes. 2-5s: the avatar looks up and away before transitioning into a pouting, sad expression. 5-8s: the avatar holds the pouting face while looking slightly off-camera and then back. 8-10s: the avatar glances to the side once more and ends with a subtle smile."
+    },
+    {
+      "id": "ugc-reaction-295",
+      "description": "Motion reference: the avatar expresses a range of thoughtful and skeptical emotions while looking at the camera, using hand gestures to emphasize the avatar points. 0-3s: the avatar holds a thinking pose with the finger on the cheek, looking away and then back to the camera. 3-7s: the avatar maintains the pensive expression, shifting the gaze and pouting slightly. 7-10s: the avatar gestures toward the camera with one hand while making a surprised face, then waves one hand dismissively. 10-12s: the avatar finishes with a wide-eyed, skeptical expression directed at the viewer."
+    },
+    {
+      "id": "ugc-reaction-296",
+      "description": "Motion reference: the avatar looks directly into the camera, cycling through various surprised and playful facial expressions while gesturing. 0-3s: the avatar touches the face and looks off-camera with wide eyes. 3-6s: the avatar returns the gaze to the camera with a surprised expression. 6-9s: the avatar smiles and places one hand behind the head while looking around. 9-11s: the avatar makes a playful face and waves one hand in front of the chin."
+    },
+    {
+      "id": "ugc-reaction-297",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks directly at the camera with an inquisitive, wide-eyed look while touching the chin. 2-4s: the avatar tilts the head and maintains the pose with a slight smirk. 4-5s: the avatar continues to pose, looking slightly off-camera and then back with a subtle smile."
+    },
+    {
+      "id": "ugc-reaction-298",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks at the camera with a pout, then glances to the side. 2-4s: the avatar continues to look off-camera with a skeptical expression. 4-6s: the avatar turns the gaze back to the camera, maintaining the avatar expression."
+    },
+    {
+      "id": "ugc-reaction-299",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks at the camera with a soft expression and then breaks into a wide smile. 2-4s: the avatar continues to smile and slightly adjusts the head position while looking into the lens."
+    },
+    {
+      "id": "ugc-reaction-300",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks directly at the camera before shifting the gaze to the side. 2-5s: the avatar looks upwards and around the, maintaining a pensive and slightly skeptical look."
+    },
+    {
+      "id": "ugc-reaction-301",
+      "description": "Motion reference: the avatar expresses intense surprise and excitement through exaggerated facial expressions and hand gestures in a close-up shot. 0-2s: the avatar covers the mouth with one hand, eyes wide in shock. 2-5s: the avatar moves one hand to the temple, looking around with an exaggerated surprised expression. 5-7s: the avatar continues to look around."
+    },
+    {
+      "id": "ugc-reaction-302",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks directly at the camera with one hand supporting the chin. 2-4s: the avatar glances away to the side before looking back at the camera while maintaining the avatar pose."
+    },
+    {
+      "id": "ugc-reaction-303",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar stares at the camera with wide eyes and a slight smirk. 1-2s: the avatar gasps, opens the mouth, and covers it with one hand in shock. 2-5s: the avatar looks around with an exaggerated surprised expression, eyes wide and mouth open."
+    },
+    {
+      "id": "ugc-reaction-304",
+      "description": "Motion reference: stands, looking into the camera and making a series of playful facial expressions. 0-2s: the avatar looks at the camera with a slight smirk and then the avatar looks up to screen right. 2-5s: the avatar smiles broadly, Showing the avatar teeth, then returns to a neutral but pleasant expression while looking around."
+    },
+    {
+      "id": "ugc-reaction-305",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks up and away from the camera, then turns the gaze toward the lens with a pout. 2-4s: the avatar maintains a sad expression, looking down briefly before looking back up. 4-5s: the avatar brings one hand up to the cheek, resting the head on it while looking upwards."
+    },
+    {
+      "id": "ugc-reaction-306",
+      "description": "Motion reference:, and then looks back. 0-1s: the avatar looks directly at the camera with a neutral expression. 1-3s: the avatar looks up and to the side, Appears to think or react skeptically. 3-4s: the avatar returns the gaze to the camera with a slight smirk."
+    },
+    {
+      "id": "ugc-reaction-307",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar holds one hand in while stares pose wide-eyed at the lens. 1-2s: the avatar drops one hand and looks quickly to screen right. 2-4s: the avatar looks up and to screen left before returning the gaze to the camera with an exaggerated surprised look."
+    },
+    {
+      "id": "ugc-reaction-308",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar smiles broadly and opens the mouth in a surprised expression. 1-3s: the avatar transitions into a broad smile while slightly tilting the head and looking into the lens."
+    },
+    {
+      "id": "ugc-reaction-309",
+      "description": "Motion reference: looks off-camera before turning to the lens with a wide-eyed, shocked expression. 0-1s: the avatar looks up and to the side with a neutral expression. 1-2s: the avatar quickly turns the head to face the camera with a surprised, open-mouthed look. 2-4s: the avatar maintains the shocked expression for a moment before looking away again."
+    },
+    {
+      "id": "ugc-reaction-310",
+      "description": "Motion reference: close-up reaction. 0-1s: the avatar looks directly at the camera with a slight smile. 1-3s: the avatar brings one hand to the face, resting the chin on one hand while looking away. 3-4s: the avatar turns the gaze back to the camera."
+    },
+    {
+      "id": "ugc-reaction-311",
+      "description": "Motion reference: displays a range of facial expressions, starting with wide-eyed surprise and transitioning into a bright smile as the avatar looks around. 0-1s: the avatar looks off-camera with a surprised, wide-eyed expression. 1-4s: the avatar turns the gaze toward the camera and then upwards, breaking into a wide smile."
+    },
+    {
+      "id": "ugc-reaction-312",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar starts by looking away and then turns the gaze to the camera. 2-4s: the avatar looks up and then down, shifting the eyes while keeping the head mostly still. 4-5s: the avatar holds a steady gaze at the camera with a slight head tilt."
+    },
+    {
+      "id": "ugc-reaction-313",
+      "description": "Motion reference: the avatar expresses shock and then breaks into a bright smile while looking at the camera. 0-1s: the avatar looks directly at the lens with a wide-eyed, open-mouthed expression of surprise. 1-2s: the avatar brings one hand up to the mouth in a shocked gesture. 2-4s: the avatar lowers one hand and smiles widely while glancing around."
+    },
+    {
+      "id": "ugc-reaction-314",
+      "description": "Motion reference: close-up reaction. 0-2s: the avatar looks directly at the lens, slightly tilting the head. 2-4s: the avatar shifts the eyes and head to the right, maintaining a soft expression."
+    },
+    {
+      "id": "ugc-reaction-315",
+      "description": "Motion reference: transitions from a pensive look to a shocked expression and then a joyful smile in a close-up shot. 0-1s: the avatar looks down with a neutral expression. 1-3s: the avatar looks up at the camera with wide eyes and covers the mouth in surprise. 3-4s: the avatar lowers one hand and smiles brightly."
+    },
+    {
+      "id": "ugc-reaction-316",
+      "description": "Motion reference: stands in front of a plain white and flexes the avatar biceps for the camera. 0-1s: the avatar starts close to the camera and steps back. 1-3s: the avatar stands still, looking at the camera. 3-5s: the avatar raises the avatar arms and flexes the avatar biceps. 5-7s: the avatar turns the upper body slightly to show the avatar profile while continuing to flex. 7-9s: the avatar relaxes the avatar pose and moves back toward the camera."
+    },
+    {
+      "id": "ugc-reaction-317",
+      "description": "Motion reference: energetic close-up body-pose reaction. 0-2s: the avatar holds a flexed-arm pose with a confident expression. 2-4s: the avatar lowers both arms to the sides, stands straight, then turns the upper body to the side. 4-5s: the avatar clasps both hands together and smiles while holding the pose."
+    },
+    {
+      "id": "ugc-reaction-318",
+      "description": "Motion reference: demonstrates the avatar balance by performing a handstand. 0-1s: the avatar kicks up into a handstand. 1-2s: the avatar stabilizes in a vertical handstand. 2-4s: the avatar bends the avatar knees while maintaining the handstand balance."
+    },
+    {
+      "id": "ugc-reaction-319",
+      "description": "Motion reference: close-up portrait. Who transitions from a wide-eyed surprised smile to a genuine laugh. 0-2s: the avatar looks directly into the lens with wide eyes and a broad smile. 2-4s: the avatar scrunches the nose and laughs, the eyes narrowing slightly as the avatar expression becomes more natural."
+    },
+    {
+      "id": "ugc-reaction-320",
+      "description": "Close-up motion reference. Reacting with genuine surprise and excitement. 0-1s: the avatar covers the mouth with one hand while looking at the camera with wide eyes. 1-2s: the avatar lowers one hand and breaks into a large smile, opening the mouth in a gasp. 2-4s: the avatar leans slightly forward, laughing and looking delighted, then brings one hand back up to the chin."
+    }
+  ],
+  "sanitizedAt": "2026-06-12T22:53:47.397Z",
+  "sanitizationNotes": "Descriptions preserve reaction timing, camera angle, gaze, expression, and gesture details while removing person identity, wardrobe, environment, product, and object-specific details."
+}

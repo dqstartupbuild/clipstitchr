@@ -1,6 +1,9 @@
 import { v } from "convex/values";
 import { cliprDurationSecondsValidator } from "./cliprDurationSeconds";
+import { cliprGenerationModeValidator } from "./cliprGenerationMode";
 import { cliprMusicMetadataValidator } from "./cliprMusicMetadata";
+import { cliprResolvedGenerationModeValidator } from "./cliprResolvedGenerationMode";
+import { cliprVideoModelIdValidator } from "./cliprVideoModelId";
 
 export const cliprMetadataValidator = v.object({
   jobId: v.string(),
@@ -9,6 +12,10 @@ export const cliprMetadataValidator = v.object({
   avatarId: v.string(),
   avatarPhotoId: v.string(),
   voiceId: v.string(),
+  requestedGenerationMode: v.optional(cliprGenerationModeValidator),
+  generationMode: v.optional(cliprResolvedGenerationModeValidator),
+  requestedVideoModelId: v.optional(cliprVideoModelIdValidator),
+  videoModelId: v.optional(cliprVideoModelIdValidator),
   scriptIdea: v.optional(v.string()),
   targetDurationSeconds: cliprDurationSecondsValidator,
   hookStyleKey: v.string(),

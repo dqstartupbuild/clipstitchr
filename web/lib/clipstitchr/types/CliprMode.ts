@@ -1,1 +1,1 @@
-export type CliprMode = "normal" | "idea";
+export type { CliprGenerationMode as CliprMode } from "@/lib/clipstitchr/types/CliprGenerationMode";

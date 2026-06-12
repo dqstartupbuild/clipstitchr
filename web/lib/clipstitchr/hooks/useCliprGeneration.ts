@@ -4,6 +4,8 @@ import { useCallback, useState } from "react";
 import { createCliprJob } from "@/lib/clipstitchr/client/createCliprJob";
 import type { CliprClientJob } from "@/lib/clipstitchr/types/CliprClientJob";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
+import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
+import type { CliprVideoModelId } from "@/lib/clipstitchr/types/CliprVideoModelId";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 
@@ -14,9 +16,11 @@ type GenerateCliprOptions = {
   avatarSceneOutfit?: string;
   avatarScenePose?: string;
   durationSeconds: CliprDurationSeconds;
+  generationMode: CliprGenerationMode;
   musicTrackId?: string;
   productId: string;
   scriptIdea?: string;
+  videoModelId: CliprVideoModelId;
   voiceId: string;
 };
 

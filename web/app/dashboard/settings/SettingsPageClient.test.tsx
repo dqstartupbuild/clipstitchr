@@ -101,6 +101,7 @@ function createAutomationState(
     preferences: {
       enabled: false,
       enabledTools: ["stitchr", "swapr", "clipr", "avatar-photo", "swipr"],
+      cliprGenerationMode: "any",
       stitchrTextStyleChoice: "any",
       stitchrTextColorChoice: "any",
       stitchrTextBackgroundColorChoice: "any",

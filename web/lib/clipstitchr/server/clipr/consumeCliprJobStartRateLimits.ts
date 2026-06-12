@@ -15,5 +15,8 @@ export async function consumeCliprJobStartRateLimits({
     estimatedSeconds: input.durationSeconds,
     secret,
   });
-  await convex.mutation(api.rateLimits.consumeCliprHookScript, { secret });
+
+  if (input.generationMode === "script") {
+    await convex.mutation(api.rateLimits.consumeCliprHookScript, { secret });
+  }
 }

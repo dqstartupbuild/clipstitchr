@@ -56,8 +56,8 @@ Server-side product events:
 | Event | Trigger | Notes |
 | --- | --- | --- |
 | `upload_url_requested` | R2 signed upload URL issued | Tracks kind, content type, and size. |
-| `clipr_job_created` | Clipr generation job is created | Tracks job/product/avatar IDs and options. |
-| `clipr_job_failed` | Clipr job creation fails after starting | Tracks job/product/avatar IDs and error name only. |
+| `clipr_job_created` | Clipr generation job is created | Tracks job/product/avatar IDs, duration, requested/resolved mode, requested/resolved video model, voice ID, and music flag. |
+| `clipr_job_failed` | Clipr job creation fails after starting | Tracks job/product/avatar IDs, resolved mode/model, and error name only. |
 | `swapr_job_created` | Swapr job is created | Tracks prediction ID and generation options. |
 | `avatar_photos_generation_requested` | Avatar photo generation API starts | Tracks count, style, lighting, speed tier, and model. |
 | `library_music_generated` | Music track generation succeeds | Tracks track ID, source, style, and duration. |

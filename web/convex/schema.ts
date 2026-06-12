@@ -10,11 +10,14 @@ import { automationTaskTypeValidator } from "./validators/automationTaskType";
 import { automationToolValidator } from "./validators/automationTool";
 import { avatarWardrobeStyleValidator } from "./validators/avatarWardrobeStyle";
 import { cliprDurationSecondsValidator } from "./validators/cliprDurationSeconds";
+import { cliprGenerationModeValidator } from "./validators/cliprGenerationMode";
 import { cliprJobStageValidator } from "./validators/cliprJobStage";
 import { cliprJobStatusValidator } from "./validators/cliprJobStatus";
 import { cliprMetadataValidator } from "./validators/cliprMetadata";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
+import { cliprResolvedGenerationModeValidator } from "./validators/cliprResolvedGenerationMode";
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
+import { cliprVideoModelIdValidator } from "./validators/cliprVideoModelId";
 import { clipTypeValidator } from "./validators/clipType";
 import { mediaJobStatusValidator } from "./validators/mediaJobStatus";
 import { mediaJobTypeValidator } from "./validators/mediaJobType";
@@ -296,6 +299,10 @@ export default defineSchema({
     avatarName: v.string(),
     avatarPhotoId: v.string(),
     voiceId: v.string(),
+    requestedGenerationMode: v.optional(cliprGenerationModeValidator),
+    generationMode: v.optional(cliprResolvedGenerationModeValidator),
+    requestedVideoModelId: v.optional(cliprVideoModelIdValidator),
+    videoModelId: v.optional(cliprVideoModelIdValidator),
     scriptIdea: v.optional(v.string()),
     targetDurationSeconds: cliprDurationSecondsValidator,
     avatarImageObject: v.optional(r2ObjectValidator),
@@ -382,6 +389,7 @@ export default defineSchema({
     ownerId: v.string(),
     enabled: v.boolean(),
     enabledTools: v.array(automationToolValidator),
+    cliprGenerationMode: v.optional(cliprGenerationModeValidator),
     stitchrTextStyleChoice: v.optional(
       automationStitchrTextStyleChoiceValidator,
     ),

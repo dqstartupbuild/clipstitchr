@@ -1,3 +1,8 @@
-export function getCliprAvatarVideoModelId() {
-  return process.env.CLIPR_AVATAR_VIDEO_MODEL_ID ?? "prunaai/p-video-avatar";
+import type { CliprVideoModelId } from "@/lib/clipstitchr/types/CliprVideoModelId";
+
+export function getCliprAvatarVideoModelId(): Exclude<
+  CliprVideoModelId,
+  "auto"
+> {
+  return "prunaai/p-video-avatar";
 }

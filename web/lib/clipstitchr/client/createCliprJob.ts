@@ -1,5 +1,7 @@
 import type { CliprClientJob } from "@/lib/clipstitchr/types/CliprClientJob";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
+import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
+import type { CliprVideoModelId } from "@/lib/clipstitchr/types/CliprVideoModelId";
 
 type CreateCliprJobOptions = {
   addMusic: boolean;
@@ -8,10 +10,12 @@ type CreateCliprJobOptions = {
   avatarSceneOutfit?: string;
   avatarScenePose?: string;
   durationSeconds: CliprDurationSeconds;
+  generationMode: CliprGenerationMode;
   jobId: string;
   musicTrackId?: string;
   productId: string;
   scriptIdea?: string;
+  videoModelId: CliprVideoModelId;
   voiceId: string;
 };
 

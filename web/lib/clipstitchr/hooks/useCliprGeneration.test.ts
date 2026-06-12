@@ -34,6 +34,10 @@ function createCliprJob(overrides: Record<string, unknown> = {}) {
     productId: "product_1",
     productName: "Product",
     progress: 0.08,
+    requestedGenerationMode: "script",
+    generationMode: "script",
+    requestedVideoModelId: "prunaai/p-video-avatar",
+    videoModelId: "prunaai/p-video-avatar",
     scenePlan: [],
     stage: "hook-script",
     status: "scripting",
@@ -52,9 +56,11 @@ function createGenerateOptions() {
     avatarSceneOutfit: "black workout set",
     avatarScenePose: "taking a progress photo",
     durationSeconds: 30,
+    generationMode: "script",
     musicTrackId: "track_1",
     productId: "product_1",
     scriptIdea: "Talk about the launch mistake nobody notices.",
+    videoModelId: "prunaai/p-video-avatar",
     voiceId: "Rachel",
   } as unknown as Parameters<
     ReturnType<typeof useCliprGeneration>["generate"]

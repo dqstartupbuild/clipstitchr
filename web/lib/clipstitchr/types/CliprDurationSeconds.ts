@@ -1,1 +1,1 @@
-export type CliprDurationSeconds = 30 | 60;
+export type CliprDurationSeconds = 4 | 5 | 6 | 7 | 8 | 9 | 10 | 30 | 60;

@@ -38,8 +38,10 @@ vi.mock("@/convex/_generated/api", () => ({
     rateLimits: {
       consumeCliprAvatarStillGeneration:
         "rateLimits.consumeCliprAvatarStillGeneration",
+      consumeCliprHookScript: "rateLimits.consumeCliprHookScript",
       consumeCliprJobCreate: "rateLimits.consumeCliprJobCreate",
       consumeCliprMusicGeneration: "rateLimits.consumeCliprMusicGeneration",
+      consumeCliprVideoGeneration: "rateLimits.consumeCliprVideoGeneration",
       consumeCliprVoiceGeneration: "rateLimits.consumeCliprVoiceGeneration",
     },
     sharedMusicTracks: {
@@ -213,6 +215,13 @@ describe("POST /api/clipr/jobs", () => {
       },
     );
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.rateLimits.consumeCliprVideoGeneration,
+      {
+        estimatedSeconds: 30,
+        secret: "rate-limit-secret",
+      },
+    );
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.rateLimits.consumeCliprAvatarStillGeneration,
       {
         secret: "rate-limit-secret",
@@ -226,9 +235,13 @@ describe("POST /api/clipr/jobs", () => {
       api.cliprJobs.createQueued,
       expect.objectContaining({
         avatarId: "avatar_1",
+        generationMode: "script",
         id: "job_1",
         productId: "product_1",
         productName: "Launch Kit",
+        requestedGenerationMode: "any",
+        requestedVideoModelId: "auto",
+        videoModelId: "prunaai/p-video-avatar",
       }),
     );
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
@@ -268,8 +281,10 @@ describe("POST /api/clipr/jobs", () => {
       avatarSceneOutfit?: string;
       avatarScenePose?: string;
       lipSyncModelId?: string;
+      generationMode?: string;
       scriptIdea?: string;
       ttsModelId?: string;
+      videoModelId?: string;
     };
 
     expect(response.status).toBe(200);
@@ -286,6 +301,60 @@ describe("POST /api/clipr/jobs", () => {
     expect(providerJobInput.avatarScenePose).toBe("taking a progress photo");
     expect(providerJobInput.ttsModelId).toBe("elevenlabs/v3");
     expect(providerJobInput.lipSyncModelId).toBe("pixverse/lipsync");
+    expect(providerJobInput.generationMode).toBe("script");
+    expect(providerJobInput.videoModelId).toBe("prunaai/p-video-avatar");
+  });
+
+  it("creates a silent reaction job without voice or music generation", async () => {
+    const response = await POST(
+      createRequest({
+        addMusic: true,
+        durationSeconds: 10,
+        generationMode: "reaction",
+        videoModelId: "google/veo-3.1",
+      }),
+    );
+    const providerJobCreateCall = mocks.convex.mutation.mock.calls.find(
+      ([mutationId]) => mutationId === api.providerJobs.create,
+    );
+    const providerJobInput = JSON.parse(
+      providerJobCreateCall?.[1].inputSnapshotJson ?? "{}",
+    ) as {
+      addMusic?: boolean;
+      durationSeconds?: number;
+      generationMode?: string;
+      musicTrack?: unknown;
+      videoModelId?: string;
+    };
+
+    expect(response.status).toBe(200);
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.rateLimits.consumeCliprJobCreate,
+      {
+        estimatedSeconds: 10,
+        secret: "rate-limit-secret",
+      },
+    );
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.rateLimits.consumeCliprVideoGeneration,
+      {
+        estimatedSeconds: 10,
+        secret: "rate-limit-secret",
+      },
+    );
+    expect(mocks.convex.mutation).not.toHaveBeenCalledWith(
+      api.rateLimits.consumeCliprVoiceGeneration,
+      expect.anything(),
+    );
+    expect(mocks.convex.mutation).not.toHaveBeenCalledWith(
+      api.rateLimits.consumeCliprMusicGeneration,
+      expect.anything(),
+    );
+    expect(providerJobInput.addMusic).toBe(false);
+    expect(providerJobInput.durationSeconds).toBe(10);
+    expect(providerJobInput.generationMode).toBe("reaction");
+    expect(providerJobInput.musicTrack).toBeNull();
+    expect(providerJobInput.videoModelId).toBe("google/veo-3.1");
   });
 
   it("uses a selected shared music track without consuming music generation", async () => {

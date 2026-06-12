@@ -15,8 +15,8 @@ const mocks = vi.hoisted(() => {
   return {
     convex,
     createCliprSceneAvatarImage: vi.fn(),
-    createCliprSyncedAvatarVideoOutput: vi.fn(),
-    createCliprTextGeneration: vi.fn(),
+    createCliprJobTextGeneration: vi.fn(),
+    createCliprJobVideoOutput: vi.fn(),
     createConvexHttpClient: vi.fn(() => convex),
     createReplicateClient: vi.fn(() => replicate),
     getR2DownloadSignedUrl: vi.fn(),
@@ -52,16 +52,16 @@ vi.mock("@/lib/clipstitchr/server/convex/createConvexHttpClient", () => ({
   createConvexHttpClient: mocks.createConvexHttpClient,
 }));
 
-vi.mock("@/lib/clipstitchr/server/createCliprSyncedAvatarVideoOutput", () => ({
-  createCliprSyncedAvatarVideoOutput: mocks.createCliprSyncedAvatarVideoOutput,
+vi.mock("@/lib/clipstitchr/server/createCliprJobVideoOutput", () => ({
+  createCliprJobVideoOutput: mocks.createCliprJobVideoOutput,
 }));
 
 vi.mock("@/lib/clipstitchr/server/createCliprSceneAvatarImage", () => ({
   createCliprSceneAvatarImage: mocks.createCliprSceneAvatarImage,
 }));
 
-vi.mock("@/lib/clipstitchr/server/createCliprTextGeneration", () => ({
-  createCliprTextGeneration: mocks.createCliprTextGeneration,
+vi.mock("@/lib/clipstitchr/server/createCliprJobTextGeneration", () => ({
+  createCliprJobTextGeneration: mocks.createCliprJobTextGeneration,
 }));
 
 vi.mock("@/lib/clipstitchr/server/createReplicateClient", () => ({
@@ -110,8 +110,12 @@ function createTask(overrides: Record<string, unknown> = {}) {
         key: "users/owner_123/photos/photo_1.jpg",
         size: 100,
       },
+      requestedGenerationMode: "any",
+      generationMode: "script",
+      requestedVideoModelId: "auto",
+      videoModelId: "prunaai/p-video-avatar",
       voiceId: "voice_1",
-      targetDurationSeconds: 30,
+      targetDurationSeconds: 60,
     }),
     ownerId: "owner_123",
     runId: "automation:clipr:owner_123:2026-05-31",
@@ -156,7 +160,7 @@ describe("POST /api/automation/clipr/execute", () => {
 
       return null;
     });
-    mocks.createCliprTextGeneration.mockResolvedValue({
+    mocks.createCliprJobTextGeneration.mockResolvedValue({
       filledHook: "Camera-ready skin in one step",
       hookStyleKey: "direct",
       hookTemplateId: "template_1",
@@ -180,7 +184,7 @@ describe("POST /api/automation/clipr/execute", () => {
       key: "users/owner_123/clipr-scenes/job/image.jpg",
       size: 8,
     });
-    mocks.createCliprSyncedAvatarVideoOutput.mockResolvedValue({
+    mocks.createCliprJobVideoOutput.mockResolvedValue({
       avatarVideoObject: {
         contentType: "video/mp4",
         key: "users/owner_123/clipr-scenes/job/avatar.mp4",
@@ -214,7 +218,7 @@ describe("POST /api/automation/clipr/execute", () => {
         tool: "clipr",
       }),
     );
-    expect(mocks.createCliprTextGeneration).not.toHaveBeenCalled();
+    expect(mocks.createCliprJobTextGeneration).not.toHaveBeenCalled();
   });
 
   it("runs the Clipr provider steps and leaves the task ready for media finalization", async () => {
@@ -261,32 +265,38 @@ describe("POST /api/automation/clipr/execute", () => {
       expect.objectContaining({
         ownerId: "owner_123",
         productId: "product_1",
+        requestedGenerationMode: "any",
+        generationMode: "script",
+        requestedVideoModelId: "auto",
         targetDurationSeconds: 60,
+        videoModelId: "prunaai/p-video-avatar",
         voiceId: "voice_1",
       }),
     );
-    expect(mocks.createCliprTextGeneration).toHaveBeenCalledWith(
+    expect(mocks.createCliprJobTextGeneration).toHaveBeenCalledWith(
       expect.objectContaining({
         durationSeconds: 60,
-        purpose: "clipr",
-        slideCount: 4,
+        generationMode: "script",
+        jobId: "automation:clipr:owner_123:2026-05-31:1",
       }),
     );
     expect(mocks.createCliprSceneAvatarImage).toHaveBeenCalledWith(
       expect.objectContaining({
         avatarDescription: "Warm approachable creator",
+        generationMode: "script",
         referenceImageUrl: "https://r2.example/photo.jpg",
       }),
     );
-    expect(mocks.createCliprSyncedAvatarVideoOutput).toHaveBeenCalledWith(
+    expect(mocks.createCliprJobVideoOutput).toHaveBeenCalledWith(
       expect.objectContaining({
-        imageUrl: "https://replicate.example/avatar-source.jpg",
+        durationSeconds: 60,
+        generationMode: "script",
         jobId: "automation:clipr:owner_123:2026-05-31:1",
         lipSyncModelId: "pixverse/lipsync",
         script: "This serum keeps my skin camera ready.",
-        targetDurationSeconds: 60,
         ttsModelId: "elevenlabs/v3",
         userId: "owner_123",
+        videoModelId: "prunaai/p-video-avatar",
         voiceId: "voice_1",
       }),
     );
@@ -315,7 +325,7 @@ describe("POST /api/automation/clipr/execute", () => {
   });
 
   it("marks the task and Clipr job failed when provider generation fails", async () => {
-    mocks.createCliprTextGeneration.mockRejectedValueOnce(
+    mocks.createCliprJobTextGeneration.mockRejectedValueOnce(
       new Error("provider unavailable"),
     );
 

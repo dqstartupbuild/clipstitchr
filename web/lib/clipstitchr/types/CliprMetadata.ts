@@ -1,5 +1,8 @@
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
+import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
+import type { CliprResolvedGenerationMode } from "@/lib/clipstitchr/types/CliprResolvedGenerationMode";
+import type { CliprVideoModelId } from "@/lib/clipstitchr/types/CliprVideoModelId";
 
 export type CliprMetadata = {
   jobId: string;
@@ -8,6 +11,10 @@ export type CliprMetadata = {
   avatarId: string;
   avatarPhotoId: string;
   voiceId: string;
+  requestedGenerationMode?: CliprGenerationMode;
+  generationMode?: CliprResolvedGenerationMode;
+  requestedVideoModelId?: CliprVideoModelId;
+  videoModelId?: CliprVideoModelId;
   scriptIdea?: string;
   targetDurationSeconds: CliprDurationSeconds;
   hookStyleKey: string;

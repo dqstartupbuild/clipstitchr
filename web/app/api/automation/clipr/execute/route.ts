@@ -3,9 +3,9 @@ import { api } from "@/convex/_generated/api";
 import { getAutomationWorkerSecret } from "@/lib/clipstitchr/server/automation/getAutomationWorkerSecret";
 import { getIsAuthorizedAutomationRequest } from "@/lib/clipstitchr/server/automation/getIsAuthorizedAutomationRequest";
 import { parseCliprAutomationTaskInput } from "@/lib/clipstitchr/server/automation/parseCliprAutomationTaskInput";
+import { createCliprJobTextGeneration } from "@/lib/clipstitchr/server/createCliprJobTextGeneration";
+import { createCliprJobVideoOutput } from "@/lib/clipstitchr/server/createCliprJobVideoOutput";
 import { createCliprSceneAvatarImage } from "@/lib/clipstitchr/server/createCliprSceneAvatarImage";
-import { createCliprSyncedAvatarVideoOutput } from "@/lib/clipstitchr/server/createCliprSyncedAvatarVideoOutput";
-import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
 import { createConvexHttpClient } from "@/lib/clipstitchr/server/convex/createConvexHttpClient";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { getCliprAvatarSourceScene } from "@/lib/clipstitchr/server/getCliprAvatarSourceScene";
@@ -124,6 +124,10 @@ export async function POST(request: Request) {
       avatarName: input.avatarName,
       avatarPhotoId: input.avatarPhotoId,
       voiceId: input.voiceId,
+      requestedGenerationMode: input.requestedGenerationMode,
+      generationMode: input.generationMode,
+      requestedVideoModelId: input.requestedVideoModelId,
+      videoModelId: input.videoModelId,
       targetDurationSeconds: input.targetDurationSeconds,
       createdAt: now,
     });
@@ -137,12 +141,12 @@ export async function POST(request: Request) {
     });
 
     const replicate = createReplicateClient();
-    const textGeneration = await createCliprTextGeneration({
+    const textGeneration = await createCliprJobTextGeneration({
       durationSeconds: input.targetDurationSeconds,
+      generationMode: input.generationMode,
+      jobId: input.jobId,
       product: input.product,
-      purpose: "clipr",
       replicate,
-      slideCount: 4,
     });
 
     await convex.mutation(api.cliprJobs.applyScriptPlanFromAutomation, {
@@ -176,6 +180,7 @@ export async function POST(request: Request) {
     );
     const generatedAvatarImage = await createCliprSceneAvatarImage({
       avatarDescription: input.avatarDescription,
+      generationMode: input.generationMode,
       referenceImageUrl,
       replicate,
       scene: avatarSourceScene,
@@ -208,15 +213,19 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
     });
 
-    const avatarVideoOutput = await createCliprSyncedAvatarVideoOutput({
-      imageUrl: generatedAvatarImage.outputUrl,
+    const avatarImageUrl = await getR2DownloadSignedUrl(avatarImageObject.key);
+    const avatarVideoOutput = await createCliprJobVideoOutput({
+      durationSeconds: input.targetDurationSeconds,
+      generationMode: input.generationMode,
+      imageUrl: avatarImageUrl.url,
       jobId: input.jobId,
       lipSyncModelId: getCliprLipSyncModelId(),
+      prompt: avatarSourceScene.visualPrompt,
       replicate,
       script: textGeneration.script,
-      targetDurationSeconds: input.targetDurationSeconds,
       ttsModelId: getCliprTtsModelId(),
       userId: task.ownerId,
+      videoModelId: input.videoModelId,
       voiceId: input.voiceId,
     });
     const mediaClipId = createId();
@@ -253,6 +262,7 @@ export async function POST(request: Request) {
           clipName,
           cliprJobId: input.jobId,
           sourceSummary: `${input.product.name} with ${input.avatarName}`,
+          stripAudio: input.generationMode !== "script",
           sourceVideoObject: avatarVideoOutput.avatarVideoObject,
         }),
         createdAt: new Date().toISOString(),

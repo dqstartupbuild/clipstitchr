@@ -10,10 +10,14 @@ import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { defaultCliprDurationSeconds } from "../lib/clipstitchr/constants/defaultCliprDurationSeconds";
+import { defaultCliprGenerationMode } from "../lib/clipstitchr/constants/defaultCliprGenerationMode";
+import { defaultCliprVisualDurationSeconds } from "../lib/clipstitchr/constants/defaultCliprVisualDurationSeconds";
+import { getCliprResolvedGenerationMode } from "../lib/clipstitchr/utils/getCliprResolvedGenerationMode";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 const AUTOMATION_CLIPR_ADD_MUSIC = false;
 const AUTOMATION_CLIPR_DURATION_SECONDS = defaultCliprDurationSeconds;
+const AUTOMATION_CLIPR_VISUAL_MODEL_ID = "kwaivgi/kling-v3-video";
 
 export const planDaily = mutation({
   args: {
@@ -96,16 +100,32 @@ export const planDaily = mutation({
       return { runId, status: "skipped", taskIds: [] };
     }
 
+    const requestedGenerationMode =
+      preferences.cliprGenerationMode ?? defaultCliprGenerationMode;
+    const taskId = `${runId}:1`;
+    const generationMode = getCliprResolvedGenerationMode({
+      jobId: taskId,
+      mode: requestedGenerationMode,
+    });
+    const targetDurationSeconds =
+      generationMode === "script"
+        ? AUTOMATION_CLIPR_DURATION_SECONDS
+        : defaultCliprVisualDurationSeconds;
+    const videoModelId =
+      generationMode === "script"
+        ? "prunaai/p-video-avatar"
+        : AUTOMATION_CLIPR_VISUAL_MODEL_ID;
+
     await consumeAutomationBudget(ctx, {
       ownerId,
       tool: "clipr",
-      providerCostUnits: AUTOMATION_CLIPR_DURATION_SECONDS,
+      providerCostUnits: targetDurationSeconds,
     });
 
     const voiceId = avatar.cliprVoiceId ?? defaultAutomationCliprVoiceId;
     const task = await createAutomationTask(ctx, {
       ownerId,
-      id: `${runId}:1`,
+      id: taskId,
       runId,
       tool: "clipr",
       taskType: "clipr-video",
@@ -114,6 +134,10 @@ export const planDaily = mutation({
       inputSnapshotJson: JSON.stringify({
         addMusic: AUTOMATION_CLIPR_ADD_MUSIC,
         automationDate,
+        requestedGenerationMode,
+        generationMode,
+        requestedVideoModelId: "auto",
+        videoModelId,
         productId: product.id,
         productName: product.name,
         productDetails: product.productDetails,
@@ -132,7 +156,7 @@ export const planDaily = mutation({
         avatarPhotoId: avatarPhoto.id,
         avatarPhotoObject: avatarPhoto.photoObject,
         voiceId,
-        targetDurationSeconds: AUTOMATION_CLIPR_DURATION_SECONDS,
+        targetDurationSeconds,
       }),
       createdAt: now,
     });
