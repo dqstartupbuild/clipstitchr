@@ -76,10 +76,15 @@ selected music only when the user downloads the stitch.
 Saved stitches are reusable templates. The saved stitch card can launch Stitchr
 with the original source clips, trims, source-audio flags, playback rates, and
 text overlays already selected, letting users create a new stitch by changing
-only the parts that should differ. Reuse does not overwrite the existing stitch.
-Posted status is also non-destructive metadata: marking or unmarking a stitch as
-posted only changes library organization and does not change source clips,
-stored stitch settings, music, posters, or downloadable output.
+only the parts that should differ. In normal Stitchr mode, reused text becomes a
+session template for selected UGC clips that do not have their own text yet. The
+user can deselect the original UGC, move through picker pages, select different
+UGC clips, and keep the same reused text on the new outputs. If a specific UGC
+gets its own text edit or an empty text list, that UGC-specific choice wins over
+the reused template text. Reuse does not overwrite the existing stitch. Posted
+status is also non-destructive metadata: marking or unmarking a stitch as posted
+only changes library organization and does not change source clips, stored
+stitch settings, music, posters, or downloadable output.
 
 ## Product Principles
 

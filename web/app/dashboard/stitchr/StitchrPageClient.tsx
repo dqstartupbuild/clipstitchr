@@ -27,12 +27,14 @@ import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRat
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { cloneTextOverlays } from "@/lib/clipstitchr/utils/cloneTextOverlays";
 import { createDefaultTextOverlay } from "@/lib/clipstitchr/utils/createDefaultTextOverlay";
 import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
+import { getStitchrTextOverlaysForUgcId } from "@/lib/clipstitchr/utils/getStitchrTextOverlaysForUgcId";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoClipMetadataById";
 import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchrUgcSelection";
@@ -56,6 +58,9 @@ export function StitchrPageClient() {
   const [textOverlaysByUgcId, setTextOverlaysByUgcId] = useState<
     Record<string, TextOverlay[]>
   >({});
+  const [reusedTextOverlays, setReusedTextOverlays] = useState<
+    TextOverlay[] | null
+  >(null);
   const [longrTextOverlays, setLongrTextOverlays] = useState<TextOverlay[]>([]);
   const [selectedAutoTextProductId, setSelectedAutoTextProductId] = useState("");
   const [demoProductFilterId, setDemoProductFilterId] = useState<
@@ -326,9 +331,17 @@ export function StitchrPageClient() {
     mode === "longr"
       ? selectedLongrDuration
       : selectedUgcDuration + selectedDemoDuration;
-  const activeTextOverlays = activeUgcMetadata
-    ? (textOverlaysByUgcId[activeUgcMetadata.id] ?? [])
-    : [];
+  const activeTextOverlays = useMemo(
+    () =>
+      activeUgcMetadata
+        ? getStitchrTextOverlaysForUgcId({
+            fallbackTextOverlays: reusedTextOverlays,
+            textOverlaysByUgcId,
+            ugcId: activeUgcMetadata.id,
+          })
+        : [],
+    [activeUgcMetadata, reusedTextOverlays, textOverlaysByUgcId],
+  );
   const previewTextOverlays =
     mode === "longr" ? longrTextOverlays : activeTextOverlays;
   const clampedTextOverlays = clampTextOverlays(
@@ -370,7 +383,7 @@ export function StitchrPageClient() {
       const templateTextOverlays = getTextOverlayList(
         templateStitch.textOverlays,
         templateStitch.textOverlay,
-      ).map((textOverlay) => ({ ...textOverlay }));
+      );
 
       setTemplateUgcClips((currentClips) =>
         mergeVideoClipMetadataById([...loadedUgcClips, ...currentClips]),
@@ -456,7 +469,8 @@ export function StitchrPageClient() {
           firstDemoPlaybackRate ?? templateStitch.demoPlaybackRate ?? 1,
         );
         setTextOverlaysByUgcId({});
-        setLongrTextOverlays(templateTextOverlays);
+        setReusedTextOverlays(null);
+        setLongrTextOverlays(cloneTextOverlays(templateTextOverlays));
         return;
       }
 
@@ -481,9 +495,8 @@ export function StitchrPageClient() {
           ? { [templateStitch.demoClipId]: templateStitch.demoTrimRange }
           : {}),
       }));
-      setTextOverlaysByUgcId({
-        [templateStitch.ugcClipId]: templateTextOverlays,
-      });
+      setTextOverlaysByUgcId({});
+      setReusedTextOverlays(cloneTextOverlays(templateTextOverlays));
       setLongrTextOverlays([]);
     },
     [library, loadClip],
@@ -499,6 +512,8 @@ export function StitchrPageClient() {
         void applyTemplateStitch(templateStitchId);
         return;
       }
+
+      setReusedTextOverlays(null);
 
       if (!initialUgcId && !initialDemoId) {
         return;
@@ -606,8 +621,44 @@ export function StitchrPageClient() {
               [id]: getDefaultVideoTrimRange(clip),
           },
       );
+
+      if (
+        mode !== "longr" &&
+        !isCurrentlySelected &&
+        canSelectUgc &&
+        reusedTextOverlays !== null
+      ) {
+        const ugcTrimRange =
+          ugcTrimRangesByClipId[id] ?? getDefaultVideoTrimRange(clip);
+        const clipDuration =
+          getPlaybackRateDuration(ugcTrimRange, ugcPlaybackRate) +
+          selectedDemoDuration;
+
+        setTextOverlaysByUgcId((overlays) => {
+          if (Object.prototype.hasOwnProperty.call(overlays, id)) {
+            return overlays;
+          }
+
+          return {
+            ...overlays,
+            [id]: clampTextOverlays(
+              cloneTextOverlays(reusedTextOverlays),
+              clipDuration,
+            ),
+          };
+        });
+      }
     },
-    [activeSelectedUgcIds, activeUgcId, mode, ugcClips],
+    [
+      activeSelectedUgcIds,
+      activeUgcId,
+      mode,
+      reusedTextOverlays,
+      selectedDemoDuration,
+      ugcClips,
+      ugcPlaybackRate,
+      ugcTrimRangesByClipId,
+    ],
   );
 
   const handleSelectDemo = useCallback(
@@ -705,12 +756,29 @@ export function StitchrPageClient() {
         return;
       }
 
+      if (
+        reusedTextOverlays !== null &&
+        !Object.prototype.hasOwnProperty.call(
+          textOverlaysByUgcId,
+          activeUgcMetadata.id,
+        )
+      ) {
+        setReusedTextOverlays(nextClampedTextOverlays);
+        return;
+      }
+
       setTextOverlaysByUgcId((overlays) => ({
         ...overlays,
         [activeUgcMetadata.id]: nextClampedTextOverlays,
       }));
     },
-    [activeUgcMetadata, mode, totalDuration],
+    [
+      activeUgcMetadata,
+      mode,
+      reusedTextOverlays,
+      textOverlaysByUgcId,
+      totalDuration,
+    ],
   );
 
   const handleCopyTextOverlayToAll = useCallback(() => {
@@ -718,10 +786,14 @@ export function StitchrPageClient() {
       return;
     }
 
+    const sourceTextOverlays = activeTextOverlays;
+
+    if (reusedTextOverlays !== null) {
+      setReusedTextOverlays(cloneTextOverlays(sourceTextOverlays));
+    }
     setTextOverlaysByUgcId((overlays) =>
       selectedUgcMetadata.reduce<Record<string, TextOverlay[]>>(
         (nextOverlays, clip) => {
-          const sourceTextOverlays = overlays[activeUgcMetadata.id] ?? [];
           const ugcTrimRange =
             selectedUgcTrimRangesByClipId[clip.id] ??
             getDefaultVideoTrimRange(clip);
@@ -732,7 +804,7 @@ export function StitchrPageClient() {
           return {
             ...nextOverlays,
             [clip.id]: clampTextOverlays(
-              sourceTextOverlays.map((textOverlay) => ({ ...textOverlay })),
+              cloneTextOverlays(sourceTextOverlays),
               clipDuration,
             ),
           };
@@ -742,6 +814,8 @@ export function StitchrPageClient() {
     );
   }, [
     activeUgcMetadata,
+    activeTextOverlays,
+    reusedTextOverlays,
     selectedDemoDuration,
     selectedUgcMetadata,
     selectedUgcTrimRangesByClipId,
@@ -792,7 +866,11 @@ export function StitchrPageClient() {
           const trimRange =
             selectedUgcTrimRangesByClipId[clip.id] ??
             getDefaultVideoTrimRange(clip);
-          const pairTextOverlays = textOverlaysByUgcId[clip.id] ?? [];
+          const pairTextOverlays = getStitchrTextOverlaysForUgcId({
+            fallbackTextOverlays: reusedTextOverlays,
+            textOverlaysByUgcId,
+            ugcId: clip.id,
+          });
           const pairDuration =
             getPlaybackRateDuration(trimRange, ugcPlaybackRate) +
             selectedDemoDuration;
@@ -872,6 +950,18 @@ export function StitchrPageClient() {
           return;
         }
 
+        if (
+          reusedTextOverlays !== null &&
+          !Object.prototype.hasOwnProperty.call(
+            textOverlaysByUgcId,
+            activeUgcMetadata.id,
+          )
+        ) {
+          setReusedTextOverlays(nextTextOverlays);
+          setAutoTextMessage("Text generated.");
+          return;
+        }
+
         setTextOverlaysByUgcId((overlays) => ({
           ...overlays,
           [activeUgcMetadata.id]: nextTextOverlays,
@@ -889,6 +979,8 @@ export function StitchrPageClient() {
     activeUgcMetadata,
     mode,
     previewTextOverlays,
+    reusedTextOverlays,
+    textOverlaysByUgcId,
     totalDuration,
   ]);
 

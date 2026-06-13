@@ -258,6 +258,7 @@ function queueStitchrState(
     selectedDemoIds?: string[];
     selectedMusicTrack?: SharedMusicTrack | null;
     selectedUgcIds?: string[];
+    reusedTextOverlays?: TextOverlay[] | null;
     textOverlaysByUgcId?: Record<string, TextOverlay[]>;
     ugcPlaybackRate?: 1 | 2;
     ugcTrimRangesByClipId?: Record<string, { start: number; end: number }>;
@@ -272,6 +273,7 @@ function queueStitchrState(
     overrides.ugcPlaybackRate ?? 1,
     overrides.selectedMusicTrack ?? null,
     overrides.textOverlaysByUgcId ?? {},
+    overrides.reusedTextOverlays ?? null,
     overrides.longrTextOverlays ?? [],
     overrides.selectedAutoTextProductId ?? "",
     overrides.demoProductFilterId,
@@ -638,14 +640,13 @@ describe("StitchrPageClient", () => {
     );
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("ugc_2");
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[18]).toHaveBeenCalledWith(["ugc_2"]);
-    expect(mocks.stateSetters[19]).toHaveBeenCalledWith("ugc_2");
-    expect(mocks.stateSetters[20]).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[21]).toHaveBeenCalledWith(["demo_2"]);
-    expect(mocks.stateSetters[22]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
-    expect(mocks.stateSetters[7]).toHaveBeenCalledWith({
-      ugc_2: [textOverlay],
-    });
+    expect(mocks.stateSetters[19]).toHaveBeenCalledWith(["ugc_2"]);
+    expect(mocks.stateSetters[20]).toHaveBeenCalledWith("ugc_2");
+    expect(mocks.stateSetters[21]).toHaveBeenCalledWith("demo_2");
+    expect(mocks.stateSetters[22]).toHaveBeenCalledWith(["demo_2"]);
+    expect(mocks.stateSetters[23]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
+    expect(mocks.stateSetters[7]).toHaveBeenCalledWith({});
+    expect(mocks.stateSetters[8]).toHaveBeenCalledWith([textOverlay]);
 
     vi.unstubAllGlobals();
   });
@@ -779,6 +780,52 @@ describe("StitchrPageClient", () => {
         musicTrack,
         ugcPlaybackRate: 1,
       }),
+    );
+  });
+
+  it("uses reused template text for UGC without its own overlay", () => {
+    const textOverlay = {
+      backgroundColor: "#000000",
+      color: "#ffffff",
+      endTime: 3,
+      fontSize: 48,
+      startTime: 0,
+      styleId: "hook",
+      text: "Reuse hook",
+      width: 0.8,
+      x: 0.5,
+      y: 0.5,
+    } satisfies TextOverlay;
+
+    setClipLibraryVideoGroups({
+      demo: [createClip("demo_1", "demo")],
+      ugc: [createClip("ugc_new", "ugc")],
+    });
+    queueStitchrState({
+      activePreviewUgcId: "ugc_new",
+      reusedTextOverlays: [textOverlay],
+      selectedUgcIds: ["ugc_new"],
+    });
+    renderToStaticMarkup(<StitchrPageClient />);
+
+    (mocks.clipPickerPanelProps as { onStitch: () => void }).onStitch();
+
+    expect(mocks.stitchrState.stitchVideos).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          clip: expect.objectContaining({ id: "ugc_new" }),
+          textOverlays: [
+            expect.objectContaining({
+              backgroundColor: textOverlay.backgroundColor,
+              text: textOverlay.text,
+            }),
+          ],
+        }),
+      ],
+      expect.objectContaining({ id: "demo_1" }),
+      expect.any(Object),
+      null,
+      expect.any(Object),
     );
   });
 });
