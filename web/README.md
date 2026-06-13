@@ -34,6 +34,7 @@ AVATAR_PHOTO_MODEL_ID=openai/gpt-image-2
 SWIPR_BACKGROUND_MODEL_ID=openai/gpt-image-2
 REPLICATE_UPLOAD_ANALYSIS_MODEL_ID=openai/gpt-4.1-mini
 REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID=google/gemini-3-flash
+TEXT_WRITING_MODEL_ID=anthropic/claude-sonnet-4.6
 ```
 
 ## Commands

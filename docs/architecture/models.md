@@ -41,6 +41,24 @@ matching preset when the UI does not supply one, and records the selected scene,
 lighting, camera angle, surface, palette, and composition in the hidden
 background details.
 
+## Text And Script Writing
+
+Environment variable: `TEXT_WRITING_MODEL_ID`
+
+Legacy fallback variable: `CLIPR_HOOK_MODEL_ID`
+
+Default: `anthropic/claude-sonnet-4.6`
+
+| Model ID | Status | Workflow |
+| --- | --- | --- |
+| `anthropic/claude-sonnet-4.6` | Default | Sends `prompt`, `system_prompt`, and `max_tokens` to Replicate for Clipr hook/script generation, Swipr auto-text, Stitchr auto-text, provider-worker Clipr script jobs, and automation text drafts. |
+| `anthropic/claude-opus-4.6` | Supported | Uses the same Replicate input schema as Sonnet 4.6 for higher-cost writing tests. |
+
+Claude text models on Replicate use `max_tokens`, while the older OpenAI text
+path used `max_completion_tokens`. Keep new writing calls on the shared
+`createTextWritingPredictionInput` helper so future tools inherit the correct
+provider input shape.
+
 ## Other AI Usage
 
 | Usage | Configuration | Default or Current Model | Notes |
@@ -49,7 +67,7 @@ background details.
 | Swipr background metadata analysis | `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID` | `openai/gpt-4.1-mini` | Shares the upload image analysis model with a background-specific prompt. |
 | Upload video action analysis | `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` | `google/gemini-3-flash` | Used for full-video UGC/demo action analysis before falling back to poster analysis when needed. |
 | Product enrichment | `PRODUCT_ENRICHMENT_MODEL_ID` | `openai/gpt-4.1` | Generates hidden product strategy metadata when saving Settings products. |
-| Clipr hook, script, Swipr auto-text, and Stitchr auto-text | `CLIPR_HOOK_MODEL_ID` | `openai/gpt-4.1` | Text generation returns structured JSON or short-form copy. |
+| Clipr hook, script, Swipr auto-text, and Stitchr auto-text | `TEXT_WRITING_MODEL_ID`; legacy `CLIPR_HOOK_MODEL_ID` fallback | `anthropic/claude-sonnet-4.6` | Text generation returns structured JSON or short-form copy. `anthropic/claude-opus-4.6` is also supported for higher-cost writing tests. |
 | Clipr avatar still image | `AVATAR_PHOTO_MODEL_ID` | `openai/gpt-image-2` | Uses the same avatar photo generation model, prompt builder, and input parameters as avatar photo generation, but creates one source still for the full-script avatar video. |
 | Clipr avatar video | `CLIPR_AVATAR_VIDEO_MODEL_ID` | `prunaai/p-video-avatar` | Generates the full-script talking avatar video. When TTS is enabled, Clipr passes generated speech audio into this model. |
 | Clipr visual video | `CLIPR_VISUAL_VIDEO_MODEL_ID` | `kwaivgi/kling-v3-video` | Generates silent Reaction and B-roll clips. `google/veo-3.1` is supported as an override. Unsupported or stale model values fall back to Kling. |

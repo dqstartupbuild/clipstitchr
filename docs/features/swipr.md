@@ -21,7 +21,10 @@ or remove images, and download the latest saved version at any time.
    hook-template engine. The first slide uses the generated hook, and the
    remaining slides pay it off with supporting points. Swipr auto-text can draw
    from the product/ad hook library as well as non-promotional engagement
-   templates, but the source names and template IDs stay hidden.
+   templates, but the source names and template IDs stay hidden. The backend
+   writing call uses `TEXT_WRITING_MODEL_ID`, which defaults to
+   `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` is supported for
+   higher-cost writing tests.
 7. The user saves the editable Swipe.
 8. The saved Swipe appears in the Content Library under the Swipes tab.
 9. From the library, the user can open the Swipe detail view, swipe through its

@@ -128,8 +128,11 @@ Optional Replicate model overrides:
   `prunaai/p-image`, and `prunaai/wan-2.2-image`.
 - `PRODUCT_ENRICHMENT_MODEL_ID` defaults to `openai/gpt-4.1` for hidden product
   strategy enrichment when saving products in Settings.
-- `CLIPR_HOOK_MODEL_ID` defaults to `openai/gpt-4.1` for Clipr hook, script,
-  Swipr auto-text, and Stitchr auto-text generation.
+- `TEXT_WRITING_MODEL_ID` defaults to `anthropic/claude-sonnet-4.6` for Clipr
+  hook, script, Swipr auto-text, and Stitchr auto-text generation. The legacy
+  `CLIPR_HOOK_MODEL_ID` fallback is still read when the general writing model
+  variable is unset. `anthropic/claude-opus-4.6` is supported for higher-cost
+  writing tests.
 - Clipr avatar still generation uses `AVATAR_PHOTO_MODEL_ID`, the same model
   configuration and provider input path as avatar photo generation, but creates
   one source still before full-script avatar video generation.
@@ -193,7 +196,7 @@ Firecrawl website import:
 | IndexNow sitemap submission | `POST /api/indexnow` with `INDEXNOW_SUBMIT_SECRET` | Submits all public sitemap URLs only, excludes authenticated dashboard/API routes, requires a public `NEXT_PUBLIC_SITE_URL`, consumes 500 submitted URLs/hour/client fingerprint, burst 100; shared global bucket 5,000 submitted URLs/hour, burst 500 |
 | Product enrichment and website import | `POST /api/settings/products`, `PATCH /api/settings/products/{id}` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour. The route consumes this limit before Firecrawl website scraping and before the Replicate product enrichment call. Product edits only re-scrape Firecrawl when the saved website URL changes. |
 | Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; shared global provider bucket 10,000 units/hour, burst 2,000. The route resolves the requested mode, creates a queued `cliprJobs` record and a durable `manual-clipr` provider job, then returns immediately. Script jobs consume the 60 second estimate; Reaction, B-roll, and Demo jobs consume the 4-10 second visual estimate. |
-| Clipr hook/script generation | `POST /api/clipr/jobs` worker path and `POST /api/clipr/text` immediate suggestion path | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000. Manual Clipr job creation consumes this only for Script mode. Reaction, B-roll, and Demo use a local visual plan and do not consume hook/script quota. |
+| Clipr hook/script generation | `POST /api/clipr/jobs` worker path and `POST /api/clipr/text` immediate suggestion path | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000. Manual Clipr job creation consumes this only for Script mode. Reaction, B-roll, and Demo use a local visual plan and do not consume hook/script quota. The default writing provider is `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` can be enabled through `TEXT_WRITING_MODEL_ID` for higher-cost tests. |
 | Clipr avatar still generation | `POST /api/clipr/jobs` before queued worker generation | 20 images/hour/user, burst 6; global provider bucket counted once per still. The provider worker creates the avatar still for Script, Reaction, and B-roll modes, then R2 upload byte limits are consumed before personal avatar-photo and thumbnail copies are saved. Demo mode skips avatar-still generation. |
 | Clipr voice and Script-mode lip-sync generation | `POST /api/clipr/jobs` before queued worker generation | 600 estimated voice seconds/hour/user, burst 180; global provider bucket counted by estimated seconds. Manual Clipr job creation consumes this only for Script mode. It protects ElevenLabs v3 speech generation and optional second-pass lip-sync models before the provider job is queued. PixVerse lip-sync jobs create temporary provider-worker ffmpeg video/audio segments in R2 before stitching the lip-synced segment outputs. |
 | Clipr video generation | `POST /api/clipr/jobs` before queued worker generation | 600 estimated video seconds/hour/user, burst 180; global provider bucket counted by estimated seconds. Script mode uses `prunaai/p-video-avatar`; Reaction and B-roll use the selected visual model; Demo mode uses Seedance with the selected Demo clip as a reference video. Reaction, B-roll, and Demo skip voice, music, and PixVerse. |

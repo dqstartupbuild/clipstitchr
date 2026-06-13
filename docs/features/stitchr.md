@@ -58,7 +58,10 @@ social proof first, product proof immediately after.
 9. Optionally generate an overlay from the hidden Clipr hook-template
    engine using saved product context. Stitchr auto-text can draw from
    product/ad hook-library templates, but source names and template IDs stay
-   hidden. The generated overlay stays editable.
+   hidden. The generated overlay stays editable. The backend writing call uses
+   `TEXT_WRITING_MODEL_ID`, which defaults to
+   `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` is supported for
+   higher-cost writing tests.
 10. Optionally generate separate 60 second music for each stitch.
 11. Create one stitched output per selected UGC clip.
 12. Save and download the finished ad variants.

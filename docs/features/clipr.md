@@ -621,9 +621,12 @@ Rules:
    the product's eligible pool using product settings, inferred problem,
    inferred pain points, audience details, placeholder fillers, and safety
    rules.
-9. GPT-4.1 fills hook placeholders and selects the strongest hook.
-10. GPT-4.1 generates a Clipr script from the selected hook.
-11. GPT-4.1 returns one avatar scene plan for the full script.
+9. The shared Claude writing model fills hook placeholders and selects the
+   strongest hook.
+10. The shared Claude writing model generates a Clipr script from the selected
+    hook.
+11. The shared Claude writing model returns one avatar scene plan for the full
+    script.
 12. Clipr generates one UGC-style avatar still from the selected avatar
     reference photo, avatar description, full script, and visual direction.
 13. The generated still, selected voice, and full script are sent to
@@ -646,8 +649,8 @@ Rules:
 Reaction and b-roll modes share the same product/avatar/still-image start, then
 skip hook/script prompting, voice, music, and lip sync:
 
-1. The server creates one local visual plan instead of calling GPT-4.1 for a
-   spoken script.
+1. The server creates one local visual plan instead of calling the shared
+   writing model for a spoken script.
 2. Reaction mode samples source descriptions from
    `web/lib/clipstitchr/resources/clipr/reaction-source-prompts.json` and chooses an emotion such
    as shock, sadness, disbelief, happiness, or confusion.
@@ -666,7 +669,8 @@ Demo mode is a manual-only Seedance test path:
 1. The user selects one saved Demo clip.
 2. The server validates the Demo clip through Convex and passes its R2 video
    object to the provider worker.
-3. The provider worker creates a local Demo plan instead of calling GPT-4.1.
+3. The provider worker creates a local Demo plan instead of calling the shared
+   writing model.
 4. Seedance receives the selected Demo clip through `reference_videos` as
    `[Video1]` and is prompted to place the demo on a phone in someone's hand.
 5. The media worker finalizes the silent 4-10 second output as a Demo library
@@ -679,7 +683,9 @@ model input keys from memory.
 
 Planned model roles:
 
-- Hook selection and script generation: `openai/gpt-4.1`.
+- Hook selection and script generation: `anthropic/claude-sonnet-4.6` by
+  default through `TEXT_WRITING_MODEL_ID`. `anthropic/claude-opus-4.6` is
+  supported for higher-cost writing tests.
 - Avatar still generation: use the same model, prompt builder, and input
   parameters as avatar photo generation, with one generated source still for the
   selected mode.
@@ -700,7 +706,9 @@ Planned model roles:
 
 Add environment overrides instead of hard-coding provider choices:
 
-- `CLIPR_HOOK_MODEL_ID`
+- `TEXT_WRITING_MODEL_ID` for Clipr hook/script, Swipr auto-text, and Stitchr
+  auto-text. `CLIPR_HOOK_MODEL_ID` remains a legacy fallback when the general
+  writing variable is unset.
 - `AVATAR_PHOTO_MODEL_ID` for avatar photo generation and Clipr avatar stills
 - `CLIPR_AVATAR_VIDEO_MODEL_ID`
 - `CLIPR_VISUAL_VIDEO_MODEL_ID`
@@ -865,7 +873,7 @@ Rules:
 - The user selects a saved product profile.
 - Hidden hook style/template selection is random within the product's eligible
   pool and may include app-promo hook-library templates.
-- GPT-4.1 fills the hook and generates slide text.
+- The shared Claude writing model fills the hook and generates slide text.
 - The first slide receives the hook.
 - The remaining slides receive editable supporting points that answer or satisfy
   the hook.
@@ -896,7 +904,7 @@ Rules:
   product metadata can be used as context when available.
 - Hidden hook style/template selection is random within the product's eligible
   pool and may include app-promo hook-library templates.
-- GPT-4.1 fills one short overlay hook.
+- The shared Claude writing model fills one short overlay hook.
 - The generated overlay is editable.
 - The existing one-overlay-per-stitch rule remains unchanged.
 - The active overlay can be copied to all selected UGC + Demo outputs in the batch.

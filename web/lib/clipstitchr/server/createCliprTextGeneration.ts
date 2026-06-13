@@ -1,5 +1,6 @@
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createCliprTextGenerationPrompt } from "@/lib/clipstitchr/server/createCliprTextGenerationPrompt";
+import { createTextWritingPredictionInput } from "@/lib/clipstitchr/server/createTextWritingPredictionInput";
 import { getCliprEligibleHookTemplates } from "@/lib/clipstitchr/server/getCliprEligibleHookTemplates";
 import { getCliprHookModelId } from "@/lib/clipstitchr/server/getCliprHookModelId";
 import { getCliprProductPlaceholderFillers } from "@/lib/clipstitchr/server/getCliprProductPlaceholderFillers";
@@ -35,7 +36,9 @@ export async function createCliprTextGeneration({
   );
   const prediction = await replicate.predictions.create({
     model: providerModel,
-    input: {
+    input: createTextWritingPredictionInput({
+      maxCompletionTokens: purpose === "clipr" ? 1800 : 1200,
+      modelId: providerModel,
       prompt: createCliprTextGenerationPrompt({
         candidates,
         durationSeconds,
@@ -45,10 +48,8 @@ export async function createCliprTextGeneration({
         scriptIdea,
         slideCount,
       }),
-      system_prompt: getCliprTextSystemPrompt(purpose),
-      temperature: 0.65,
-      max_completion_tokens: purpose === "clipr" ? 1800 : 1200,
-    },
+      systemPrompt: getCliprTextSystemPrompt(purpose),
+    }),
   });
   const outputText = await getCompletedReplicatePredictionOutputText({
     failureMessage: "Replicate did not complete Clipr text generation.",
