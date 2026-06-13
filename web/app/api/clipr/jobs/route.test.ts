@@ -143,6 +143,7 @@ function createDemoClipDocument() {
 describe("POST /api/clipr/jobs", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    delete process.env.CLIPR_VISUAL_VIDEO_MODEL_ID;
     mocks.getAuthenticatedUserId.mockResolvedValue("user_123");
     mocks.getAuthenticatedConvexToken.mockResolvedValue("convex-token");
     mocks.convex.query.mockImplementation((queryId: string) => {
@@ -375,7 +376,7 @@ describe("POST /api/clipr/jobs", () => {
     expect(providerJobInput.durationSeconds).toBe(10);
     expect(providerJobInput.generationMode).toBe("reaction");
     expect(providerJobInput.musicTrack).toBeNull();
-    expect(providerJobInput.videoModelId).toBe("google/veo-3.1");
+    expect(providerJobInput.videoModelId).toBe("kwaivgi/kling-v3-video");
   });
 
   it("creates a demo remix job from a selected demo video", async () => {

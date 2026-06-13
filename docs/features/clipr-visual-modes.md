@@ -23,9 +23,8 @@ Manual Clipr shows a mode picker with `Any`, `Script`, `Reaction`, and
 `B-roll`. Script mode shows the script idea, voice, and music controls.
 Reaction and b-roll hide voice and music because those outputs are silent.
 
-Manual Clipr also has a temporary video model selector while visual model
-quality is being tested. `Auto` picks the default supported model for the
-resolved mode.
+Reaction and B-roll use Kling v3 by default. `CLIPR_VISUAL_VIDEO_MODEL_ID` can
+override the visual model to another supported option, currently Veo 3.1.
 
 The automation settings panel has the same Clipr mode choices. Automated Script
 jobs reserve the normal 60 second target. Automated Reaction and B-roll jobs
@@ -79,8 +78,8 @@ Script mode uses:
 
 Reaction and b-roll can use:
 
-- `kwaivgi/kling-v3-video`
-- `google/veo-3.1`
+- `kwaivgi/kling-v3-video` by default
+- `google/veo-3.1` through `CLIPR_VISUAL_VIDEO_MODEL_ID`
 
 For visual modes, providers that support audio controls receive
 `generate_audio: false`. The media worker strips audio during finalization so
@@ -108,7 +107,7 @@ Manual and automated jobs use the same durable worker shape:
 7. Generate the avatar or demo remix video using the resolved model.
 8. Create a `clipr-finalization` media job.
 9. The media worker normalizes to 9:16, strips audio for visual modes, captures
-   a poster, and saves the final Clip.
+   a poster, and saves the final Clip or Demo with prompt-derived detail fields.
 
 ## File Tree
 
@@ -117,11 +116,12 @@ Key implementation files:
 ```text
 web/lib/clipstitchr/resources/clipr/reaction-source-prompts.json
 web/app/_components/clipr/CliprModeToggle.tsx
-web/app/_components/clipr/CliprVideoModelSelect.tsx
 web/app/_components/settings/AutomationCliprModePicker.tsx
 web/app/dashboard/clipr/CliprPageClient.tsx
 web/convex/automationClipr.ts
 web/convex/cliprJobs.ts
+web/convex/getCliprGeneratedClipStorageFields.ts
+web/convex/getVideoClipLibraryKind.ts
 web/convex/rateLimits.ts
 web/lib/clipstitchr/constants/cliprGenerationModeOptions.ts
 web/lib/clipstitchr/constants/cliprVideoModelOptions.ts
@@ -132,6 +132,7 @@ web/lib/clipstitchr/server/createCliprReactionVisualPrompt.ts
 web/lib/clipstitchr/server/createCliprVisualTextGeneration.ts
 web/lib/clipstitchr/server/createCliprVisualVideoInput.ts
 web/lib/clipstitchr/server/getCliprReactionSourcePrompts.ts
+web/lib/clipstitchr/server/getCliprVisualVideoModelId.ts
 web/lib/clipstitchr/utils/getCliprResolvedGenerationMode.ts
 web/lib/clipstitchr/utils/getResolvedCliprVideoModelId.ts
 web/services/provider-worker/runProviderWorker.ts
@@ -140,9 +141,8 @@ web/services/media-worker/runMediaWorker.mjs
 
 ## Maintenance Notes
 
-The temporary model selector should be removed once the winning visual providers
-are chosen. When that happens, keep the mode selector and replace the manual
-model choice with the final default model mapping.
+Keep the manual mode selector and automation mode picker. Visual model choice is
+now a backend setting so UI tests should not expect a model selector.
 
 If new visual models are added, verify the current Replicate input schema before
 editing code. Add the model to `cliprVideoModelOptions`, update

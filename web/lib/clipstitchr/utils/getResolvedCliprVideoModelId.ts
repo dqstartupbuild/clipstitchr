@@ -2,12 +2,8 @@ import type { CliprResolvedGenerationMode } from "@/lib/clipstitchr/types/CliprR
 import type { CliprVideoModelId } from "@/lib/clipstitchr/types/CliprVideoModelId";
 import { cliprDemoVideoModelId } from "@/lib/clipstitchr/constants/cliprDemoVideoModelId";
 import { getCliprAvatarVideoModelId } from "@/lib/clipstitchr/server/getCliprAvatarVideoModelId";
+import { getCliprVisualVideoModelId } from "@/lib/clipstitchr/server/getCliprVisualVideoModelId";
 import { getCliprVideoModelSupportsMode } from "@/lib/clipstitchr/utils/getCliprVideoModelSupportsMode";
-
-const defaultVisualModelId: Exclude<
-  CliprVideoModelId,
-  "auto" | "prunaai/p-video-avatar"
-> = "kwaivgi/kling-v3-video";
 
 export function getResolvedCliprVideoModelId({
   mode,
@@ -18,6 +14,10 @@ export function getResolvedCliprVideoModelId({
 }): Exclude<CliprVideoModelId, "auto"> {
   if (mode === "demo") {
     return cliprDemoVideoModelId;
+  }
+
+  if (mode === "reaction" || mode === "broll") {
+    return getCliprVisualVideoModelId(mode);
   }
 
   if (
@@ -31,5 +31,5 @@ export function getResolvedCliprVideoModelId({
     return getCliprAvatarVideoModelId();
   }
 
-  return defaultVisualModelId;
+  return getCliprVisualVideoModelId("reaction");
 }

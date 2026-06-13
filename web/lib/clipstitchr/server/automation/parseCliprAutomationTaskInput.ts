@@ -7,6 +7,7 @@ import { getCliprGenerationMode } from "@/lib/clipstitchr/utils/getCliprGenerati
 import { getCliprResolvedGenerationMode } from "@/lib/clipstitchr/utils/getCliprResolvedGenerationMode";
 import { getCliprVideoModelId } from "@/lib/clipstitchr/utils/getCliprVideoModelId";
 import { getCliprDurationSeconds } from "@/lib/clipstitchr/utils/getCliprDurationSeconds";
+import { getResolvedCliprVideoModelId } from "@/lib/clipstitchr/utils/getResolvedCliprVideoModelId";
 import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
@@ -126,12 +127,11 @@ export function parseCliprAutomationTaskInput(
     resolvedGenerationMode === "demo" ? "reaction" : resolvedGenerationMode;
   const requestedVideoModelId = getCliprVideoModelId(input.requestedVideoModelId);
   const parsedVideoModelId = getCliprVideoModelId(input.videoModelId);
-  const videoModelId =
-    parsedVideoModelId === "auto"
-      ? snapshotGenerationMode === "script"
-        ? "prunaai/p-video-avatar"
-        : "kwaivgi/kling-v3-video"
-      : parsedVideoModelId;
+  const videoModelId = getResolvedCliprVideoModelId({
+    mode: snapshotGenerationMode,
+    requestedModelId:
+      parsedVideoModelId === "auto" ? requestedVideoModelId : parsedVideoModelId,
+  });
 
   return {
     addMusic: input.addMusic === true,

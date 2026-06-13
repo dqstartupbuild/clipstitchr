@@ -60,7 +60,6 @@ function createGenerateOptions() {
     musicTrackId: "track_1",
     productId: "product_1",
     scriptIdea: "Talk about the launch mistake nobody notices.",
-    videoModelId: "prunaai/p-video-avatar",
     voiceId: "Rachel",
   } as unknown as Parameters<
     ReturnType<typeof useCliprGeneration>["generate"]

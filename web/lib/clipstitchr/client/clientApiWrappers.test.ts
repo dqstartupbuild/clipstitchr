@@ -107,7 +107,6 @@ describe("client API wrappers", () => {
         musicTrackId: "track_1",
         productId: "product_1",
         scriptIdea: "Founder confession angle",
-        videoModelId: "prunaai/p-video-avatar",
         voiceId: "Rachel",
       }),
     ).resolves.toEqual({ id: "job_1" });

@@ -598,7 +598,7 @@ export const updateCliprMusic = mutation({
                 new Set([...cliprMetadata.providerModels, music.providerModel]),
               ),
             },
-      libraryKind: "clipr",
+      libraryKind: getVideoClipLibraryKind(clip),
       updatedAt,
     });
     const updatedClip = await ctx.db.get(clip._id);

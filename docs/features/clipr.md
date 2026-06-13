@@ -655,8 +655,9 @@ skip hook/script prompting, voice, music, and lip sync:
    saved product and audience context.
 4. The avatar still prompt is adjusted for the selected mode before image
    generation.
-5. The selected visual video model creates one 4-10 second vertical clip from
-   the still and prompt.
+5. The resolved visual video model creates one 4-10 second vertical clip from
+   the still and prompt. Kling v3 is the default for Reaction and B-roll unless
+   `CLIPR_VISUAL_VIDEO_MODEL_ID` names another supported visual model.
 6. The media worker strips audio during final normalization so visual-mode
    outputs stay silent even when a provider emits incidental audio.
 
@@ -668,8 +669,8 @@ Demo mode is a manual-only Seedance test path:
 3. The provider worker creates a local Demo plan instead of calling GPT-4.1.
 4. Seedance receives the selected Demo clip through `reference_videos` as
    `[Video1]` and is prompted to place the demo on a phone in someone's hand.
-5. The media worker finalizes the silent 4-10 second output like other Clipr
-   visual clips.
+5. The media worker finalizes the silent 4-10 second output as a Demo library
+   item with Clipr metadata.
 
 ## AI Provider Notes
 
@@ -686,12 +687,10 @@ Planned model roles:
   generated still, selected voice, voice prompt, and full script. This is Script
   mode only.
 - Visual video generation for Reaction and B-roll modes:
-  `kwaivgi/kling-v3-video` and `google/veo-3.1`.
+  `kwaivgi/kling-v3-video` by default, with `google/veo-3.1` available through
+  `CLIPR_VISUAL_VIDEO_MODEL_ID`.
 - Demo mode uses `bytedance/seedance-2.0` internally with `reference_videos` to
   test whether existing Demo clips can be remixed into phone-in-hand shots.
-- The temporary Clipr model selector can choose active visual models while model
-  quality is evaluated. Remove the selector after the supported model set is
-  narrowed.
 - Optional background music: `stability-ai/stable-audio-2.5`, using an
   instrumental-only prompt derived from the product context and Clipr script.
   Inputs use `duration: 60`, `steps: 8`, and `cfg_scale: 1`. This is Script
@@ -704,10 +703,8 @@ Add environment overrides instead of hard-coding provider choices:
 - `CLIPR_HOOK_MODEL_ID`
 - `AVATAR_PHOTO_MODEL_ID` for avatar photo generation and Clipr avatar stills
 - `CLIPR_AVATAR_VIDEO_MODEL_ID`
+- `CLIPR_VISUAL_VIDEO_MODEL_ID`
 - `CLIPR_MUSIC_MODEL_ID`
-
-Visual-mode model selection is temporarily user-selectable in the Clipr UI
-instead of env-only while the supported Replicate models are being compared.
 
 ## Script Rules
 
@@ -838,7 +835,6 @@ Add:
 - `/dashboard/clipr`
   - Clipr generation studio.
   - Mode picker for `Any`, `Script`, `Reaction`, and `B-roll`.
-  - Temporary video model selector for comparing visual generation models.
 - `POST /api/clipr/music`
   - Authenticated, rate-limited regeneration endpoint for existing Clipr music
     assets.
@@ -1108,12 +1104,9 @@ After implementation:
     not call hook/script, voice, music, or PixVerse lip sync.
 22. Test B-roll mode creates a 4-10 second silent single-shot Clip with a
     product-relevant day-in-the-life prompt.
-23. Test the temporary visual model selector maps to supported model inputs and
-    falls back safely when the selected model does not support the resolved
-    mode.
-24. Test Settings automation mode selection queues Script, Reaction, B-roll, or
+23. Test Settings automation mode selection queues Script, Reaction, B-roll, or
     deterministic Any-mode jobs with the correct target duration.
-25. Review user-facing copy for non-technical language and no unwanted CTAs.
+24. Review user-facing copy for non-technical language and no unwanted CTAs.
 
 ## Approval Decisions
 
@@ -1124,8 +1117,9 @@ These are the assumptions this scope makes:
 - Clipr style/template selection should be random within each product's eligible
   pool and hidden from users.
 - Exact recreation should use saved job metadata, not a new random selection.
-- Clipr outputs should save as UGC-compatible video clips with Clipr provenance
-  instead of adding a third `clipType`.
+- Script, Reaction, and B-roll outputs should save as UGC-compatible video clips
+  with Clipr provenance. Demo remixes should save as Demo clips with Clipr
+  provenance.
 - The simplified MVP saves one full-script avatar video directly as the final
   clean Clipr Clip. Optional music remains a separate R2-backed asset and is
   mixed only during export/download. If provider output is capped below the

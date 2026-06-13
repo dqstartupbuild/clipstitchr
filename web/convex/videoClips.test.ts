@@ -186,6 +186,9 @@ describe("convex videoClips", () => {
         setup.ctx,
         createSaveArgs({
           clipType: "demo",
+          cliprMetadata: {
+            jobId: "job_1",
+          },
           productId: " product_1 ",
           tags: ["demo"],
         }),

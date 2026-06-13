@@ -11,7 +11,6 @@ import { CliprMusicControl } from "@/app/_components/clipr/CliprMusicControl";
 import { CliprProductPanel } from "@/app/_components/clipr/CliprProductPanel";
 import { CliprScriptIdeaPanel } from "@/app/_components/clipr/CliprScriptIdeaPanel";
 import { CliprSceneControls } from "@/app/_components/clipr/CliprSceneControls";
-import { CliprVideoModelSelect } from "@/app/_components/clipr/CliprVideoModelSelect";
 import { CliprVoiceSelect } from "@/app/_components/clipr/CliprVoiceSelect";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
@@ -26,7 +25,6 @@ import { useCliprGeneration } from "@/lib/clipstitchr/hooks/useCliprGeneration";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
-import type { CliprVideoModelId } from "@/lib/clipstitchr/types/CliprVideoModelId";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 
@@ -41,7 +39,6 @@ export function CliprPageClient() {
   const [mode, setMode] = useState<CliprGenerationMode>(
     defaultCliprGenerationMode,
   );
-  const [videoModelId, setVideoModelId] = useState<CliprVideoModelId>("auto");
   const [scriptIdea, setScriptIdea] = useState("");
   const [avatarSceneLocation, setAvatarSceneLocation] = useState("");
   const [avatarSceneOutfit, setAvatarSceneOutfit] = useState("");
@@ -170,11 +167,6 @@ export function CliprPageClient() {
                     onOutfitChange={setAvatarSceneOutfit}
                     onPoseChange={setAvatarScenePose}
                   />
-                  <CliprVideoModelSelect
-                    mode={mode}
-                    value={videoModelId}
-                    onChange={setVideoModelId}
-                  />
                 </>
               )}
               {isScriptLikeMode ? (
@@ -206,7 +198,9 @@ export function CliprPageClient() {
             </div>
             <div className="mt-5 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm leading-6 text-text-secondary">
-                Clipr saves finished clips into the Content Library as Clips.
+                {isDemoMode
+                  ? "Clipr saves finished remixed demos into the Demo library."
+                  : "Clipr saves finished clips into the Content Library as Clips."}
               </p>
               <Button
                 type="button"
@@ -231,12 +225,11 @@ export function CliprPageClient() {
                     productId: activeProductId,
                     scriptIdea:
                       mode === "script" ? activeScriptIdea : undefined,
-                    videoModelId,
                     voiceId: activeVoiceId,
                   })
                 }
               >
-                Generate Clip
+                {isDemoMode ? "Generate Demo" : "Generate Clip"}
               </Button>
             </div>
           </Panel>

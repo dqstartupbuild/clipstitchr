@@ -11,16 +11,16 @@ type VideoClipLibraryKindInput = {
 export function getVideoClipLibraryKind(
   clip: VideoClipLibraryKindInput,
 ): VideoClipLibraryKind {
+  if (clip.clipType === "demo") {
+    return "demo";
+  }
+
   if (clip.cliprMetadata) {
     return "clipr";
   }
 
   if (clip.swaprMetadata?.source === "swapr") {
     return "swapr";
-  }
-
-  if (clip.clipType === "demo") {
-    return "demo";
   }
 
   return "ugc";

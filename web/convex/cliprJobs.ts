@@ -6,6 +6,7 @@ import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { videoClipCounts } from "./aggregateCounts";
+import { getCliprGeneratedClipStorageFields } from "./getCliprGeneratedClipStorageFields";
 import { rateLimiter } from "./rateLimiter";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { cliprDurationSecondsValidator } from "./validators/cliprDurationSeconds";
@@ -966,14 +967,14 @@ export const finalizeWithClip = mutation({
       throws: true,
     });
 
+    const clipStorageFields = getCliprGeneratedClipStorageFields(job);
+
     await ctx.db.insert("videoClips", {
       ownerId,
       id: args.clipId,
       name: args.name,
-      tags: ["ugc", "clipr"],
       originalName: `${args.name}.mp4`,
-      clipType: "ugc",
-      libraryKind: "clipr",
+      ...clipStorageFields,
       videoObject: args.videoObject,
       posterObject: args.posterObject,
       posterVersion: args.posterVersion,
@@ -1095,14 +1096,13 @@ export const finalizeWithClipFromMediaWorker = mutation({
         q.eq("ownerId", ownerId).eq("id", args.clipId),
       )
       .unique();
+    const clipStorageFields = getCliprGeneratedClipStorageFields(job);
     const clip = {
       ownerId,
       id: args.clipId,
       name: args.name,
-      tags: ["ugc", "clipr"],
       originalName: `${args.name}.mp4`,
-      clipType: "ugc" as const,
-      libraryKind: "clipr" as const,
+      ...clipStorageFields,
       videoObject: args.videoObject,
       posterObject: args.posterObject,
       posterVersion: args.posterVersion,

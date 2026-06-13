@@ -14,8 +14,11 @@ phone-in-hand UGC-style product shot.
   `reference_videos: [url]`.
 - The prompt references the source as `[Video1]` and asks for one continuous
   vertical phone-in-hand shot.
-- The output is finalized by the media worker, saved as a Clipr clip, and kept
-  silent.
+- The output is finalized by the media worker, saved in the Demo library, and
+  kept silent.
+- The saved Demo keeps `cliprMetadata`, `tags: ["demo", "clipr"]`, and
+  prompt-derived detail fields so the library can still show that Clipr created
+  it.
 
 Demo mode is not included in the Any-mode random pool and is not available to
 Clipr automation yet because it needs a specific Demo source clip.
@@ -27,8 +30,9 @@ short reference videos as supported multimodal inputs, but this is still an
 experimental path. Long Demo videos, real-person moderation, product UI
 fidelity, and provider policy checks can still cause failures.
 
-Reaction and B-roll do not use Seedance anymore. Their active visual model
-choices are Kling v3 and Veo 3.1.
+Reaction and B-roll do not use Seedance anymore. Their default visual model is
+Kling v3, with `CLIPR_VISUAL_VIDEO_MODEL_ID` available for a supported
+environment override such as Veo 3.1.
 
 ## File Tree
 
@@ -46,6 +50,14 @@ choices are Kling v3 and Veo 3.1.
   - Builds the Seedance `reference_videos` payload.
 - `web/lib/clipstitchr/server/createCliprDemoVideoOutput.ts`
   - Saves the generated provider output into R2.
+- `web/convex/cliprJobs.ts`
+  - Finalizes the Demo remix as a Demo library clip with Clipr metadata and
+    generated detail fields.
+- `web/convex/getCliprGeneratedClipStorageFields.ts`
+  - Converts the Clipr job plan into library type, tags, and detail fields.
+- `web/convex/getVideoClipLibraryKind.ts`
+  - Keeps `clipType: "demo"` clips in the Demo library even when they have
+    Clipr metadata.
 - `web/services/provider-worker/runProviderWorker.ts`
   - Runs the Demo branch and queues media finalization.
 

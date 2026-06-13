@@ -39,6 +39,7 @@ import type * as cliprPreferences from "../cliprPreferences.js";
 import type * as crons from "../crons.js";
 import type * as defaultAutomationCliprVoiceId from "../defaultAutomationCliprVoiceId.js";
 import type * as getAutomationToolDisabledReason from "../getAutomationToolDisabledReason.js";
+import type * as getCliprGeneratedClipStorageFields from "../getCliprGeneratedClipStorageFields.js";
 import type * as getDefaultAvatarForOwner from "../getDefaultAvatarForOwner.js";
 import type * as getDefaultProductForOwner from "../getDefaultProductForOwner.js";
 import type * as getEnabledAutomationToolsForPreference from "../getEnabledAutomationToolsForPreference.js";
@@ -140,6 +141,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   defaultAutomationCliprVoiceId: typeof defaultAutomationCliprVoiceId;
   getAutomationToolDisabledReason: typeof getAutomationToolDisabledReason;
+  getCliprGeneratedClipStorageFields: typeof getCliprGeneratedClipStorageFields;
   getDefaultAvatarForOwner: typeof getDefaultAvatarForOwner;
   getDefaultProductForOwner: typeof getDefaultProductForOwner;
   getEnabledAutomationToolsForPreference: typeof getEnabledAutomationToolsForPreference;

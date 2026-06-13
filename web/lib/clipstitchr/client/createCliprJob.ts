@@ -16,7 +16,7 @@ type CreateCliprJobOptions = {
   musicTrackId?: string;
   productId: string;
   scriptIdea?: string;
-  videoModelId: CliprVideoModelId;
+  videoModelId?: CliprVideoModelId;
   voiceId: string;
 };
 
