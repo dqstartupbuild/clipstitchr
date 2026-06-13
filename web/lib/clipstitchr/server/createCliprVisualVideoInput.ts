@@ -31,21 +31,6 @@ export function createCliprVisualVideoInput({
     };
   }
 
-  if (modelId === "bytedance/seedance-2.0") {
-    return {
-      prompt: [
-        "Use the avatar in [Image1] as the visual identity reference.",
-        "Create a new continuous shot from the instructions below.",
-        prompt,
-      ].join("\n\n"),
-      reference_images: [imageUrl],
-      duration,
-      resolution: "720p",
-      aspect_ratio: "9:16",
-      generate_audio: false,
-    };
-  }
-
   if (modelId === "google/veo-3.1") {
     return {
       prompt,
@@ -58,18 +43,5 @@ export function createCliprVisualVideoInput({
     };
   }
 
-  if (modelId === "openai/sora-2-pro") {
-    return {
-      prompt,
-      seconds: duration,
-      aspect_ratio: "portrait",
-      resolution: "standard",
-    };
-  }
-
-  return {
-    prompt,
-    seconds: duration,
-    aspect_ratio: "portrait",
-  };
+  throw new Error("Unsupported Clipr visual video model.");
 }

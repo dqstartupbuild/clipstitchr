@@ -22,7 +22,9 @@ export function CliprJobResult({ finalClipId, job }: CliprJobResultProps) {
       ? "Silent reaction clip"
       : job.generationMode === "broll"
         ? "Silent b-roll clip"
-        : "Talking avatar clip";
+        : job.generationMode === "demo"
+          ? "Demo remix clip"
+          : "Talking avatar clip";
 
   return (
     <section className="rounded-lg border border-border bg-white p-5">
@@ -49,7 +51,7 @@ export function CliprJobResult({ finalClipId, job }: CliprJobResultProps) {
             className="rounded-lg border border-border bg-surface-muted p-3"
           >
             <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
-              Avatar video
+              {scene.sceneType === "demo" ? "Demo remix" : "Avatar video"}
             </p>
             <p className="mt-1 text-sm font-semibold text-text-primary">
               {sceneTitle}

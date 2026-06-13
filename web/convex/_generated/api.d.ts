@@ -58,6 +58,7 @@ import type * as stitches from "../stitches.js";
 import type * as swipes from "../swipes.js";
 import type * as swiprBackgrounds from "../swiprBackgrounds.js";
 import type * as validators_assetTags from "../validators/assetTags.js";
+import type * as validators_automationCliprGenerationMode from "../validators/automationCliprGenerationMode.js";
 import type * as validators_automationProvenance from "../validators/automationProvenance.js";
 import type * as validators_automationRunStatus from "../validators/automationRunStatus.js";
 import type * as validators_automationSelectionMode from "../validators/automationSelectionMode.js";
@@ -158,6 +159,7 @@ declare const fullApi: ApiFromModules<{
   swipes: typeof swipes;
   swiprBackgrounds: typeof swiprBackgrounds;
   "validators/assetTags": typeof validators_assetTags;
+  "validators/automationCliprGenerationMode": typeof validators_automationCliprGenerationMode;
   "validators/automationProvenance": typeof validators_automationProvenance;
   "validators/automationRunStatus": typeof validators_automationRunStatus;
   "validators/automationSelectionMode": typeof validators_automationSelectionMode;

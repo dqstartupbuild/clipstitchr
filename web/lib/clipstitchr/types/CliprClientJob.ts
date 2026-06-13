@@ -14,6 +14,8 @@ export type CliprClientJob = {
   productName: string;
   avatarId: string;
   avatarPhotoId: string;
+  demoClipId?: string;
+  demoClipName?: string;
   avatarImageObject?: R2ObjectReference;
   avatarVideoObject?: R2ObjectReference;
   avatarImageProviderPredictionId?: string;

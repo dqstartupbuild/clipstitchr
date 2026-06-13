@@ -3,6 +3,7 @@
 import { CirclePlay } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CliprAvatarPanel } from "@/app/_components/clipr/CliprAvatarPanel";
+import { CliprDemoClipPanel } from "@/app/_components/clipr/CliprDemoClipPanel";
 import { CliprGenerationProgress } from "@/app/_components/clipr/CliprGenerationProgress";
 import { CliprJobResult } from "@/app/_components/clipr/CliprJobResult";
 import { CliprModeToggle } from "@/app/_components/clipr/CliprModeToggle";
@@ -36,6 +37,7 @@ export function CliprPageClient() {
   const generator = useCliprGeneration({ onCreated: library.refresh });
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedAvatarId, setSelectedAvatarId] = useState("");
+  const [selectedDemoClipId, setSelectedDemoClipId] = useState("");
   const [mode, setMode] = useState<CliprGenerationMode>(
     defaultCliprGenerationMode,
   );
@@ -64,6 +66,9 @@ export function CliprPageClient() {
   );
   const activeAvatarId =
     selectedAvatarId || defaultAvatar?.id || photoLibrary.avatars[0]?.id || "";
+  const demoClips = library.videoGroups?.demo?.clips ?? [];
+  const activeDemoClipId =
+    selectedDemoClipId || demoClips[0]?.id || "";
   const activeAvatar = useMemo(
     () => photoLibrary.avatars.find((avatar) => avatar.id === activeAvatarId),
     [activeAvatarId, photoLibrary.avatars],
@@ -85,12 +90,14 @@ export function CliprPageClient() {
   );
   const activeScriptIdea = scriptIdea.trim();
   const isScriptLikeMode = mode === "any" || mode === "script";
+  const isDemoMode = mode === "demo";
   const allowsMusic = mode === "script";
   const canGenerate =
     Boolean(activeProductId) &&
-    Boolean(activeAvatarId) &&
-    selectedAvatarPhotoCount > 0 &&
-    !generator.isGenerating;
+    !generator.isGenerating &&
+    (isDemoMode
+      ? Boolean(activeDemoClipId)
+      : Boolean(activeAvatarId) && selectedAvatarPhotoCount > 0);
 
   const error = products.error ?? photoLibrary.error ?? library.error;
 
@@ -119,7 +126,9 @@ export function CliprPageClient() {
                     ? "Generate a reaction"
                     : mode === "broll"
                       ? "Generate b-roll"
-                      : "Generate a Clip"}
+                      : mode === "demo"
+                        ? "Remix a demo"
+                        : "Generate a Clip"}
                 </h2>
               </div>
               <CliprModeToggle value={mode} onChange={setMode} />
@@ -136,28 +145,38 @@ export function CliprPageClient() {
                 selectedProductId={activeProductId}
                 onChange={setSelectedProductId}
               />
-              <CliprAvatarPanel
-                avatars={photoLibrary.avatars}
-                photos={photoLibrary.photos}
-                selectedAvatarId={activeAvatarId}
-                onChange={(avatarId) => {
-                  setSelectedAvatarId(avatarId);
-                  setVoiceOverride(null);
-                }}
-              />
-              <CliprSceneControls
-                location={avatarSceneLocation}
-                outfit={avatarSceneOutfit}
-                pose={avatarScenePose}
-                onLocationChange={setAvatarSceneLocation}
-                onOutfitChange={setAvatarSceneOutfit}
-                onPoseChange={setAvatarScenePose}
-              />
-              <CliprVideoModelSelect
-                mode={mode}
-                value={videoModelId}
-                onChange={setVideoModelId}
-              />
+              {isDemoMode ? (
+                <CliprDemoClipPanel
+                  clips={demoClips}
+                  selectedClipId={activeDemoClipId}
+                  onChange={setSelectedDemoClipId}
+                />
+              ) : (
+                <>
+                  <CliprAvatarPanel
+                    avatars={photoLibrary.avatars}
+                    photos={photoLibrary.photos}
+                    selectedAvatarId={activeAvatarId}
+                    onChange={(avatarId) => {
+                      setSelectedAvatarId(avatarId);
+                      setVoiceOverride(null);
+                    }}
+                  />
+                  <CliprSceneControls
+                    location={avatarSceneLocation}
+                    outfit={avatarSceneOutfit}
+                    pose={avatarScenePose}
+                    onLocationChange={setAvatarSceneLocation}
+                    onOutfitChange={setAvatarSceneOutfit}
+                    onPoseChange={setAvatarScenePose}
+                  />
+                  <CliprVideoModelSelect
+                    mode={mode}
+                    value={videoModelId}
+                    onChange={setVideoModelId}
+                  />
+                </>
+              )}
               {isScriptLikeMode ? (
                 <CliprVoiceSelect
                   value={activeVoiceId}
@@ -202,8 +221,9 @@ export function CliprPageClient() {
                     avatarSceneLocation,
                     avatarSceneOutfit,
                     avatarScenePose,
+                    demoClipId: isDemoMode ? activeDemoClipId : undefined,
                     durationSeconds:
-                      mode === "reaction" || mode === "broll"
+                      mode === "reaction" || mode === "broll" || mode === "demo"
                         ? defaultCliprVisualDurationSeconds
                         : defaultCliprDurationSeconds,
                     generationMode: mode,

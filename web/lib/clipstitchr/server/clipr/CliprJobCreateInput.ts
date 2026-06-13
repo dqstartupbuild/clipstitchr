@@ -12,6 +12,7 @@ export type CliprJobCreateInput = {
   avatarSceneOutfit?: string;
   avatarScenePose?: string;
   durationSeconds: CliprDurationSeconds;
+  demoClipId?: string;
   generationMode: CliprResolvedGenerationMode;
   jobId: string;
   lipSyncModelId: CliprLipSyncModelId;

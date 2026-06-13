@@ -19,6 +19,7 @@ import { createCliprJobVideoOutput } from "@/lib/clipstitchr/server/createCliprJ
 import { createCliprMusic } from "@/lib/clipstitchr/server/createCliprMusic";
 import { createCliprSceneAvatarImage } from "@/lib/clipstitchr/server/createCliprSceneAvatarImage";
 import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
+import { processManualCliprDemo } from "./processManualCliprDemo";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createUploadVideoAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadVideoAnalysisOutputText";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
@@ -156,11 +157,15 @@ type ManualCliprProviderJobInput = {
   avatarId: string;
   avatarName: string;
   avatarPhotoId: string;
-  avatarPhotoObject: R2ObjectReference;
+  avatarPhotoObject?: R2ObjectReference;
   avatarSceneLocation?: string;
   avatarSceneOutfit?: string;
   avatarScenePose?: string;
   audienceDetails: string;
+  demoClipId?: string;
+  demoClipName?: string;
+  demoVideoDescription?: string;
+  demoVideoObject?: R2ObjectReference;
   durationSeconds: CliprDurationSeconds;
   generationMode: CliprResolvedGenerationMode;
   inferredPainPoints: string[];
@@ -658,7 +663,8 @@ function parseManualCliprProviderJobInput(
   const generationMode =
     input.generationMode === "script" ||
     input.generationMode === "reaction" ||
-    input.generationMode === "broll"
+    input.generationMode === "broll" ||
+    input.generationMode === "demo"
       ? input.generationMode
       : getCliprResolvedGenerationMode({
           jobId: getString(input.jobId, "Clipr job ID"),
@@ -685,17 +691,24 @@ function parseManualCliprProviderJobInput(
   return {
     addMusic: input.addMusic === true,
     avatarDescription: getOptionalString(input.avatarDescription),
-    avatarId: getString(input.avatarId, "Clipr avatar ID"),
-    avatarName: getString(input.avatarName, "Clipr avatar name"),
-    avatarPhotoId: getString(input.avatarPhotoId, "Clipr avatar photo ID"),
-    avatarPhotoObject: getR2ObjectReference(
-      input.avatarPhotoObject,
-      "Clipr avatar photo",
-    ),
+    avatarId: getOptionalString(input.avatarId) ?? "",
+    avatarName: getOptionalString(input.avatarName) ?? "",
+    avatarPhotoId: getOptionalString(input.avatarPhotoId) ?? "",
+    avatarPhotoObject:
+      generationMode === "demo"
+        ? undefined
+        : getR2ObjectReference(input.avatarPhotoObject, "Clipr avatar photo"),
     avatarSceneLocation: getOptionalString(input.avatarSceneLocation),
     avatarSceneOutfit: getOptionalString(input.avatarSceneOutfit),
     avatarScenePose: getOptionalString(input.avatarScenePose),
     audienceDetails: getString(input.audienceDetails, "Clipr audience details"),
+    demoClipId: getOptionalString(input.demoClipId),
+    demoClipName: getOptionalString(input.demoClipName),
+    demoVideoDescription: getOptionalString(input.demoVideoDescription),
+    demoVideoObject:
+      generationMode === "demo"
+        ? getR2ObjectReference(input.demoVideoObject, "Clipr demo video")
+        : undefined,
     durationSeconds,
     generationMode,
     inferredPainPoints: getStringArray(input.inferredPainPoints),
@@ -1902,6 +1915,22 @@ async function processManualClipr({
   job: ProviderJob;
 }) {
   const input = parseManualCliprProviderJobInput(job.inputSnapshotJson);
+
+  if (input.generationMode === "demo") {
+    await processManualCliprDemo({
+      client,
+      config,
+      getNow,
+      input,
+      job,
+      markProviderJobStatus,
+    });
+    return;
+  }
+
+  if (!input.avatarPhotoObject) {
+    throw new Error("Clipr avatar photo is required.");
+  }
 
   assertR2ObjectKeyBelongsToUser(input.avatarPhotoObject.key, job.ownerId);
 

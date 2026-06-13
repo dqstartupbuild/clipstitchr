@@ -11,7 +11,7 @@ type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
 type CreateCliprJobVideoOutputOptions = {
   durationSeconds: CliprDurationSeconds;
-  generationMode: CliprResolvedGenerationMode;
+  generationMode: Exclude<CliprResolvedGenerationMode, "demo">;
   imageUrl: string;
   jobId: string;
   lipSyncModelId: CliprLipSyncModelId;

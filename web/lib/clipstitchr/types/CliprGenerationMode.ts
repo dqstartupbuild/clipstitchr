@@ -1,1 +1,6 @@
-export type CliprGenerationMode = "any" | "script" | "reaction" | "broll";
+export type CliprGenerationMode =
+  | "any"
+  | "script"
+  | "reaction"
+  | "broll"
+  | "demo";

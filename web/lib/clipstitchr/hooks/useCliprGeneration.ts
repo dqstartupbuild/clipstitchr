@@ -15,6 +15,7 @@ type GenerateCliprOptions = {
   avatarSceneLocation?: string;
   avatarSceneOutfit?: string;
   avatarScenePose?: string;
+  demoClipId?: string;
   durationSeconds: CliprDurationSeconds;
   generationMode: CliprGenerationMode;
   musicTrackId?: string;

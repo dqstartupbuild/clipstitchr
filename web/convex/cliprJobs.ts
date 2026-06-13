@@ -45,9 +45,11 @@ const clientJobFields = (job: {
   };
   productId: string;
   productName: string;
+  demoClipId?: string;
+  demoClipName?: string;
   progress: number;
-  requestedGenerationMode?: "any" | "script" | "reaction" | "broll";
-  generationMode?: "script" | "reaction" | "broll";
+  requestedGenerationMode?: "any" | "script" | "reaction" | "broll" | "demo";
+  generationMode?: "script" | "reaction" | "broll" | "demo";
   requestedVideoModelId?:
     | "auto"
     | "prunaai/p-video-avatar"
@@ -74,7 +76,7 @@ const clientJobFields = (job: {
     photoScript?: string;
     providerImagePredictionId?: string;
     providerPredictionId?: string;
-    sceneType: "avatar";
+    sceneType: "avatar" | "demo";
     scriptText: string;
     visualPrompt: string;
     voiceAudioObject?: { contentType: string; key: string; size: number };
@@ -91,6 +93,8 @@ const clientJobFields = (job: {
   productName: job.productName,
   avatarId: job.avatarId,
   avatarPhotoId: job.avatarPhotoId,
+  demoClipId: job.demoClipId,
+  demoClipName: job.demoClipName,
   avatarImageObject: job.avatarImageObject,
   avatarVideoObject: job.avatarVideoObject,
   avatarImageProviderPredictionId: job.avatarImageProviderPredictionId,
@@ -176,6 +180,8 @@ export const createQueued = mutation({
     avatarId: v.string(),
     avatarName: v.string(),
     avatarPhotoId: v.string(),
+    demoClipId: v.optional(v.string()),
+    demoClipName: v.optional(v.string()),
     voiceId: v.string(),
     requestedGenerationMode: v.optional(cliprGenerationModeValidator),
     generationMode: v.optional(cliprResolvedGenerationModeValidator),
@@ -233,6 +239,8 @@ export const createQueuedFromAutomation = mutation({
     avatarId: v.string(),
     avatarName: v.string(),
     avatarPhotoId: v.string(),
+    demoClipId: v.optional(v.string()),
+    demoClipName: v.optional(v.string()),
     voiceId: v.string(),
     requestedGenerationMode: v.optional(cliprGenerationModeValidator),
     generationMode: v.optional(cliprResolvedGenerationModeValidator),
@@ -294,6 +302,8 @@ export const createQueuedFromProvider = mutation({
     avatarId: v.string(),
     avatarName: v.string(),
     avatarPhotoId: v.string(),
+    demoClipId: v.optional(v.string()),
+    demoClipName: v.optional(v.string()),
     voiceId: v.string(),
     requestedGenerationMode: v.optional(cliprGenerationModeValidator),
     generationMode: v.optional(cliprResolvedGenerationModeValidator),
@@ -982,6 +992,8 @@ export const finalizeWithClip = mutation({
         productName: job.productName,
         avatarId: job.avatarId,
         avatarPhotoId: job.avatarPhotoId,
+        ...(job.demoClipId ? { demoClipId: job.demoClipId } : {}),
+        ...(job.demoClipName ? { demoClipName: job.demoClipName } : {}),
         voiceId: job.voiceId,
         requestedGenerationMode: job.requestedGenerationMode ?? "script",
         generationMode: job.generationMode ?? "script",
@@ -1109,6 +1121,8 @@ export const finalizeWithClipFromMediaWorker = mutation({
         productName: job.productName,
         avatarId: job.avatarId,
         avatarPhotoId: job.avatarPhotoId,
+        ...(job.demoClipId ? { demoClipId: job.demoClipId } : {}),
+        ...(job.demoClipName ? { demoClipName: job.demoClipName } : {}),
         voiceId: job.voiceId,
         requestedGenerationMode: job.requestedGenerationMode ?? "script",
         generationMode: job.generationMode ?? "script",

@@ -660,6 +660,17 @@ skip hook/script prompting, voice, music, and lip sync:
 6. The media worker strips audio during final normalization so visual-mode
    outputs stay silent even when a provider emits incidental audio.
 
+Demo mode is a manual-only Seedance test path:
+
+1. The user selects one saved Demo clip.
+2. The server validates the Demo clip through Convex and passes its R2 video
+   object to the provider worker.
+3. The provider worker creates a local Demo plan instead of calling GPT-4.1.
+4. Seedance receives the selected Demo clip through `reference_videos` as
+   `[Video1]` and is prompted to place the demo on a phone in someone's hand.
+5. The media worker finalizes the silent 4-10 second output like other Clipr
+   visual clips.
+
 ## AI Provider Notes
 
 The exact provider schemas must be verified before implementation. Do not assume
@@ -675,9 +686,10 @@ Planned model roles:
   generated still, selected voice, voice prompt, and full script. This is Script
   mode only.
 - Visual video generation for Reaction and B-roll modes:
-  `kwaivgi/kling-v3-video`, `bytedance/seedance-2.0`, `google/veo-3.1`,
-  `openai/sora-2`, and `openai/sora-2-pro`.
-- The temporary Clipr model selector can choose these visual models while model
+  `kwaivgi/kling-v3-video` and `google/veo-3.1`.
+- Demo mode uses `bytedance/seedance-2.0` internally with `reference_videos` to
+  test whether existing Demo clips can be remixed into phone-in-hand shots.
+- The temporary Clipr model selector can choose active visual models while model
   quality is evaluated. Remove the selector after the supported model set is
   narrowed.
 - Optional background music: `stability-ai/stable-audio-2.5`, using an
@@ -685,7 +697,7 @@ Planned model roles:
   Inputs use `duration: 60`, `steps: 8`, and `cfg_scale: 1`. This is Script
   mode only.
 - PixVerse lip sync only runs for Script mode videos with speech audio. Silent
-  Reaction and B-roll outputs do not run PixVerse.
+  Reaction, B-roll, and Demo outputs do not run PixVerse.
 
 Add environment overrides instead of hard-coding provider choices:
 

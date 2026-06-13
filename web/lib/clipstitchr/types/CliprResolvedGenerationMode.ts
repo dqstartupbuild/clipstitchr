@@ -1,1 +1,5 @@
-export type CliprResolvedGenerationMode = "script" | "reaction" | "broll";
+export type CliprResolvedGenerationMode =
+  | "script"
+  | "reaction"
+  | "broll"
+  | "demo";

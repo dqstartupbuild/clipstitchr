@@ -36,9 +36,11 @@ export async function runCliprJobCreation({
           secret,
         })
       : Promise.resolve(null),
-    convex.mutation(api.rateLimits.consumeCliprAvatarStillGeneration, {
-      secret,
-    }),
+    input.generationMode === "demo"
+      ? Promise.resolve(null)
+      : convex.mutation(api.rateLimits.consumeCliprAvatarStillGeneration, {
+          secret,
+        }),
     input.generationMode === "script" && input.addMusic
       ? convex.mutation(api.rateLimits.consumeCliprMusicGeneration, {
           generatedSeconds: cliprMusicGenerationDefaults.durationSeconds,
@@ -64,15 +66,19 @@ export async function runCliprJobCreation({
     idempotencyKey: `${userId}:manual-clipr:${input.jobId}`,
     inputSnapshotJson: JSON.stringify({
       addMusic: input.addMusic,
-      avatarDescription: documents.avatar.description,
-      avatarId: documents.avatar.id,
-      avatarName: documents.avatar.name,
-      avatarPhotoId: documents.avatarPhoto.id,
-      avatarPhotoObject: documents.avatarPhoto.photoObject,
+      avatarDescription: documents.avatar?.description,
+      avatarId: documents.avatar?.id ?? "",
+      avatarName: documents.avatar?.name ?? "",
+      avatarPhotoId: documents.avatarPhoto?.id ?? "",
+      avatarPhotoObject: documents.avatarPhoto?.photoObject,
       avatarSceneLocation: input.avatarSceneLocation,
       avatarSceneOutfit: input.avatarSceneOutfit,
       avatarScenePose: input.avatarScenePose,
       audienceDetails: documents.product.audienceDetails,
+      demoClipId: documents.demoClip?.id,
+      demoClipName: documents.demoClip?.name,
+      demoVideoDescription: documents.demoClip?.videoDescription,
+      demoVideoObject: documents.demoClip?.videoObject,
       durationSeconds: input.durationSeconds,
       generationMode: input.generationMode,
       inferredPainPoints: documents.product.inferredPainPoints,

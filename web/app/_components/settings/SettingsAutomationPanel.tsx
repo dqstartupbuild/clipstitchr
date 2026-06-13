@@ -11,9 +11,11 @@ import { automationToolOptions } from "@/lib/clipstitchr/constants/automationToo
 import { TEXT_OVERLAY_STYLES } from "@/lib/clipstitchr/constants/textOverlayStyles";
 import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
 import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
-import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
+import type {
+  AutomationCliprGenerationMode,
+  AutomationPreferencesInput,
+} from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import type { AutomationTool } from "@/lib/clipstitchr/types/AutomationTool";
-import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
 import { getCssColorHex } from "@/lib/clipstitchr/utils/getCssColorHex";
 
 type SettingsAutomationPanelProps = {
@@ -121,7 +123,9 @@ export function SettingsAutomationPanel({
       stitchrTextBackgroundColorChoice,
     });
   };
-  const handleCliprModeChange = (cliprGenerationMode: CliprGenerationMode) => {
+  const handleCliprModeChange = (
+    cliprGenerationMode: AutomationCliprGenerationMode,
+  ) => {
     updateDraftPreferences({
       ...draftPreferences,
       cliprGenerationMode,

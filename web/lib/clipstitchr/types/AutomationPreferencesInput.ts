@@ -3,10 +3,15 @@ import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/Autom
 import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
 import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
 
+export type AutomationCliprGenerationMode = Exclude<
+  CliprGenerationMode,
+  "demo"
+>;
+
 export type AutomationPreferencesInput = {
   enabled: boolean;
   enabledTools: AutomationTool[];
-  cliprGenerationMode: CliprGenerationMode;
+  cliprGenerationMode: AutomationCliprGenerationMode;
   stitchrTextStyleChoice: AutomationStitchrTextStyleChoice;
   stitchrTextColorChoice: AutomationStitchrColorChoice;
   stitchrTextBackgroundColorChoice: AutomationStitchrColorChoice;

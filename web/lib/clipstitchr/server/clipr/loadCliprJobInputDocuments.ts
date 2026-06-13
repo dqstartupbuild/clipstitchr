@@ -12,13 +12,20 @@ export async function loadCliprJobInputDocuments({
   convex,
   input,
 }: LoadCliprJobInputDocumentsOptions): Promise<CliprJobInputDocuments> {
-  const [productDocument, avatarDocument, avatarPhotoDocument] =
+  const [productDocument, avatarDocument, avatarPhotoDocument, demoClipDocument] =
     await Promise.all([
       convex.query(api.products.get, { id: input.productId }),
-      convex.query(api.avatars.get, { id: input.avatarId }),
-      convex.query(api.photoAssets.getFirstForAvatar, {
-        avatarId: input.avatarId,
-      }),
+      input.generationMode === "demo"
+        ? Promise.resolve(null)
+        : convex.query(api.avatars.get, { id: input.avatarId }),
+      input.generationMode === "demo"
+        ? Promise.resolve(null)
+        : convex.query(api.photoAssets.getFirstForAvatar, {
+            avatarId: input.avatarId,
+          }),
+      input.generationMode === "demo" && input.demoClipId
+        ? convex.query(api.videoClips.get, { id: input.demoClipId })
+        : Promise.resolve(null),
     ]);
   const selectedMusicTrack = input.musicTrackId
     ? await convex.query(api.sharedMusicTracks.get, { id: input.musicTrackId })
@@ -28,12 +35,24 @@ export async function loadCliprJobInputDocuments({
     throw new Error("Saved product not found.");
   }
 
-  if (!avatarDocument) {
+  if (input.generationMode !== "demo" && !avatarDocument) {
     throw new Error("Avatar not found.");
   }
 
-  if (!avatarPhotoDocument) {
+  if (input.generationMode !== "demo" && !avatarPhotoDocument) {
     throw new Error("Upload at least one photo for this avatar.");
+  }
+
+  if (input.generationMode === "demo" && !demoClipDocument) {
+    throw new Error("Selected demo video was not found.");
+  }
+
+  if (
+    input.generationMode === "demo" &&
+    demoClipDocument &&
+    demoClipDocument.clipType !== "demo"
+  ) {
+    throw new Error("Choose a saved demo video.");
   }
 
   if (input.musicTrackId && !selectedMusicTrack) {
@@ -43,6 +62,7 @@ export async function loadCliprJobInputDocuments({
   return {
     avatar: avatarDocument,
     avatarPhoto: avatarPhotoDocument,
+    demoClip: demoClipDocument,
     product: createProductProfileFromConvexDocument(productDocument),
     selectedMusicTrack,
   };

@@ -25,9 +25,15 @@ export async function createQueuedCliprJobRecord({
     audienceDetails: documents.product.audienceDetails,
     productInferredProblem: documents.product.inferredProblem,
     productInferredPainPoints: documents.product.inferredPainPoints,
-    avatarId: documents.avatar.id,
-    avatarName: documents.avatar.name,
-    avatarPhotoId: documents.avatarPhoto.id,
+    avatarId: documents.avatar?.id ?? "",
+    avatarName: documents.avatar?.name ?? "",
+    avatarPhotoId: documents.avatarPhoto?.id ?? "",
+    ...(documents.demoClip
+      ? {
+          demoClipId: documents.demoClip.id,
+          demoClipName: documents.demoClip.name,
+        }
+      : {}),
     voiceId: input.voiceId,
     requestedGenerationMode: input.requestedGenerationMode,
     generationMode: input.generationMode,

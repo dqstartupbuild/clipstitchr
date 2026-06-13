@@ -10,6 +10,8 @@ export type CliprMetadata = {
   productName: string;
   avatarId: string;
   avatarPhotoId: string;
+  demoClipId?: string;
+  demoClipName?: string;
   voiceId: string;
   requestedGenerationMode?: CliprGenerationMode;
   generationMode?: CliprResolvedGenerationMode;

@@ -2,6 +2,12 @@
 
 Reviewed: 2026-06-08
 
+Current implementation note, 2026-06-13: Seedance and both Sora models were
+removed from active Reaction/B-roll model selection after repeated provider
+failures. Reaction and B-roll now expose Kling v3 and Veo 3.1. Seedance remains
+only as an experimental manual Demo mode path using `reference_videos` so saved
+Demo clips can be tested as phone-in-hand remix references.
+
 ## Summary
 
 Clipr should not try to match Arcads or MakeUGC quality by swapping

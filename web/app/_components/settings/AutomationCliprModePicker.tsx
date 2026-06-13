@@ -1,12 +1,12 @@
 "use client";
 
-import { cliprGenerationModeOptions } from "@/lib/clipstitchr/constants/cliprGenerationModeOptions";
-import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
+import { automationCliprGenerationModeOptions } from "@/lib/clipstitchr/constants/automationCliprGenerationModeOptions";
+import type { AutomationCliprGenerationMode } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 
 type AutomationCliprModePickerProps = {
   disabled?: boolean;
-  value: CliprGenerationMode;
-  onChange: (value: CliprGenerationMode) => void;
+  value: AutomationCliprGenerationMode;
+  onChange: (value: AutomationCliprGenerationMode) => void;
 };
 
 export function AutomationCliprModePicker({
@@ -20,7 +20,7 @@ export function AutomationCliprModePicker({
       className="inline-flex flex-wrap rounded-lg border border-border bg-slate-100 p-1"
       role="group"
     >
-      {cliprGenerationModeOptions.map((option) => (
+      {automationCliprGenerationModeOptions.map((option) => (
         <button
           key={option.value}
           type="button"

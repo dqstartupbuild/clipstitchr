@@ -18,6 +18,7 @@ type CliprJobCreateRequestBody = {
   avatarSceneLocation?: unknown;
   avatarSceneOutfit?: unknown;
   avatarScenePose?: unknown;
+  demoClipId?: unknown;
   durationSeconds?: unknown;
   generationMode?: unknown;
   jobId?: unknown;
@@ -59,6 +60,8 @@ export async function readCliprJobCreateRequest(
       sanitizeAvatarSceneControl(body.avatarSceneOutfit) || undefined,
     avatarScenePose:
       sanitizeAvatarSceneControl(body.avatarScenePose) || undefined,
+    demoClipId:
+      generationMode === "demo" ? getStringValue(body.demoClipId) : undefined,
     durationSeconds,
     generationMode,
     jobId,

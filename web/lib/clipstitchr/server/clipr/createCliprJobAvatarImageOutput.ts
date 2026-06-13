@@ -41,6 +41,10 @@ export async function createCliprJobAvatarImageOutput({
   textGeneration,
   userId,
 }: CreateCliprJobAvatarImageOutputOptions): Promise<CliprJobAvatarImageOutput> {
+  if (!documents.avatar || !documents.avatarPhoto) {
+    throw new Error("Clipr avatar and source photo are required.");
+  }
+
   const referenceImageUrl = (
     await getR2DownloadSignedUrl(documents.avatarPhoto.photoObject.key)
   ).url;

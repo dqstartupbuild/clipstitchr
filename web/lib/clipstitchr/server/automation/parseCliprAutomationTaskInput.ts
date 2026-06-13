@@ -20,7 +20,7 @@ export type CliprAutomationTaskInput = {
   avatarPhotoObject: R2ObjectReference;
   automationDate: string;
   requestedGenerationMode: CliprGenerationMode;
-  generationMode: CliprResolvedGenerationMode;
+  generationMode: Exclude<CliprResolvedGenerationMode, "demo">;
   jobId: string;
   product: ProductProfile;
   targetDurationSeconds: CliprDurationSeconds;
@@ -113,7 +113,7 @@ export function parseCliprAutomationTaskInput(
   const requestedGenerationMode = getCliprGenerationMode(
     input.requestedGenerationMode,
   );
-  const snapshotGenerationMode =
+  const resolvedGenerationMode: CliprResolvedGenerationMode =
     input.generationMode === "script" ||
     input.generationMode === "reaction" ||
     input.generationMode === "broll"
@@ -122,6 +122,8 @@ export function parseCliprAutomationTaskInput(
           jobId: taskId,
           mode: requestedGenerationMode,
         });
+  const snapshotGenerationMode =
+    resolvedGenerationMode === "demo" ? "reaction" : resolvedGenerationMode;
   const requestedVideoModelId = getCliprVideoModelId(input.requestedVideoModelId);
   const parsedVideoModelId = getCliprVideoModelId(input.videoModelId);
   const videoModelId =

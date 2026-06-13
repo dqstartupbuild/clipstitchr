@@ -4,7 +4,6 @@ import { useCallback, useMemo, useState } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { automationToolOptions } from "@/lib/clipstitchr/constants/automationToolOptions";
-import { defaultCliprGenerationMode } from "@/lib/clipstitchr/constants/defaultCliprGenerationMode";
 import { defaultAutomationStitchrColorChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
@@ -15,7 +14,7 @@ import { getAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/utils/get
 const defaultPreferences: AutomationPreferencesInput = {
   enabled: false,
   enabledTools: automationToolOptions.map((tool) => tool.id),
-  cliprGenerationMode: defaultCliprGenerationMode,
+  cliprGenerationMode: "any",
   stitchrTextStyleChoice: defaultAutomationStitchrTextStyleChoice,
   stitchrTextColorChoice: defaultAutomationStitchrColorChoice,
   stitchrTextBackgroundColorChoice: defaultAutomationStitchrColorChoice,
@@ -43,8 +42,7 @@ export function useAutomationPreferences() {
               preferencesDocument.enabledTools,
             ),
             cliprGenerationMode:
-              preferencesDocument.cliprGenerationMode ??
-              defaultCliprGenerationMode,
+              preferencesDocument.cliprGenerationMode ?? "any",
             stitchrTextStyleChoice: getAutomationStitchrTextStyleChoice(
               preferencesDocument.stitchrTextStyleChoice,
             ),

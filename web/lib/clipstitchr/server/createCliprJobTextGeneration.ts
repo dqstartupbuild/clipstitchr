@@ -9,7 +9,7 @@ type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
 type CreateCliprJobTextGenerationOptions = {
   durationSeconds: CliprDurationSeconds;
-  generationMode: CliprResolvedGenerationMode;
+  generationMode: Exclude<CliprResolvedGenerationMode, "demo">;
   jobId: string;
   product: ProductProfile;
   replicate: ReplicateClient;

@@ -8,6 +8,7 @@ import { automationStitchrTextStyleChoiceValidator } from "./validators/automati
 import { automationTaskStatusValidator } from "./validators/automationTaskStatus";
 import { automationTaskTypeValidator } from "./validators/automationTaskType";
 import { automationToolValidator } from "./validators/automationTool";
+import { automationCliprGenerationModeValidator } from "./validators/automationCliprGenerationMode";
 import { avatarWardrobeStyleValidator } from "./validators/avatarWardrobeStyle";
 import { cliprDurationSecondsValidator } from "./validators/cliprDurationSeconds";
 import { cliprGenerationModeValidator } from "./validators/cliprGenerationMode";
@@ -298,6 +299,8 @@ export default defineSchema({
     avatarId: v.string(),
     avatarName: v.string(),
     avatarPhotoId: v.string(),
+    demoClipId: v.optional(v.string()),
+    demoClipName: v.optional(v.string()),
     voiceId: v.string(),
     requestedGenerationMode: v.optional(cliprGenerationModeValidator),
     generationMode: v.optional(cliprResolvedGenerationModeValidator),
@@ -389,7 +392,7 @@ export default defineSchema({
     ownerId: v.string(),
     enabled: v.boolean(),
     enabledTools: v.array(automationToolValidator),
-    cliprGenerationMode: v.optional(cliprGenerationModeValidator),
+    cliprGenerationMode: v.optional(automationCliprGenerationModeValidator),
     stitchrTextStyleChoice: v.optional(
       automationStitchrTextStyleChoiceValidator,
     ),

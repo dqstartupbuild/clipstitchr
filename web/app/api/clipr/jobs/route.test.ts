@@ -47,6 +47,9 @@ vi.mock("@/convex/_generated/api", () => ({
     sharedMusicTracks: {
       get: "sharedMusicTracks.get",
     },
+    videoClips: {
+      get: "videoClips.get",
+    },
   },
 }));
 
@@ -123,6 +126,20 @@ function createPhotoDocument() {
   };
 }
 
+function createDemoClipDocument() {
+  return {
+    clipType: "demo",
+    id: "demo_1",
+    name: "Phone screen demo",
+    videoDescription: "A short screen recording of the onboarding flow.",
+    videoObject: {
+      contentType: "video/mp4",
+      key: "users/user_123/demos/demo_1.mp4",
+      size: 200,
+    },
+  };
+}
+
 describe("POST /api/clipr/jobs", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -143,6 +160,10 @@ describe("POST /api/clipr/jobs", () => {
 
       if (queryId === "sharedMusicTracks.get") {
         return Promise.resolve(null);
+      }
+
+      if (queryId === "videoClips.get") {
+        return Promise.resolve(createDemoClipDocument());
       }
 
       return Promise.resolve(null);
@@ -355,6 +376,68 @@ describe("POST /api/clipr/jobs", () => {
     expect(providerJobInput.generationMode).toBe("reaction");
     expect(providerJobInput.musicTrack).toBeNull();
     expect(providerJobInput.videoModelId).toBe("google/veo-3.1");
+  });
+
+  it("creates a demo remix job from a selected demo video", async () => {
+    const response = await POST(
+      createRequest({
+        addMusic: true,
+        avatarId: "",
+        demoClipId: " demo_1 ",
+        durationSeconds: 8,
+        generationMode: "demo",
+      }),
+    );
+    const providerJobCreateCall = mocks.convex.mutation.mock.calls.find(
+      ([mutationId]) => mutationId === api.providerJobs.create,
+    );
+    const providerJobInput = JSON.parse(
+      providerJobCreateCall?.[1].inputSnapshotJson ?? "{}",
+    ) as {
+      avatarPhotoObject?: unknown;
+      demoClipId?: string;
+      demoClipName?: string;
+      demoVideoObject?: { key?: string };
+      durationSeconds?: number;
+      generationMode?: string;
+      videoModelId?: string;
+    };
+
+    expect(response.status).toBe(200);
+    expect(mocks.convex.query).toHaveBeenCalledWith(api.videoClips.get, {
+      id: "demo_1",
+    });
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.cliprJobs.createQueued,
+      expect.objectContaining({
+        avatarId: "",
+        demoClipId: "demo_1",
+        demoClipName: "Phone screen demo",
+        generationMode: "demo",
+        videoModelId: "bytedance/seedance-2.0",
+      }),
+    );
+    expect(mocks.convex.mutation).not.toHaveBeenCalledWith(
+      api.rateLimits.consumeCliprAvatarStillGeneration,
+      expect.anything(),
+    );
+    expect(mocks.convex.mutation).not.toHaveBeenCalledWith(
+      api.rateLimits.consumeCliprVoiceGeneration,
+      expect.anything(),
+    );
+    expect(mocks.convex.mutation).not.toHaveBeenCalledWith(
+      api.rateLimits.consumeCliprMusicGeneration,
+      expect.anything(),
+    );
+    expect(providerJobInput.avatarPhotoObject).toBeUndefined();
+    expect(providerJobInput.demoClipId).toBe("demo_1");
+    expect(providerJobInput.demoClipName).toBe("Phone screen demo");
+    expect(providerJobInput.demoVideoObject?.key).toBe(
+      "users/user_123/demos/demo_1.mp4",
+    );
+    expect(providerJobInput.durationSeconds).toBe(8);
+    expect(providerJobInput.generationMode).toBe("demo");
+    expect(providerJobInput.videoModelId).toBe("bytedance/seedance-2.0");
   });
 
   it("uses a selected shared music track without consuming music generation", async () => {

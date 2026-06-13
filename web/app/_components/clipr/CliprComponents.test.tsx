@@ -2,6 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CliprAvatarPanel } from "@/app/_components/clipr/CliprAvatarPanel";
+import { CliprDemoClipPanel } from "@/app/_components/clipr/CliprDemoClipPanel";
 import { CliprGenerationProgress } from "@/app/_components/clipr/CliprGenerationProgress";
 import { CliprJobResult } from "@/app/_components/clipr/CliprJobResult";
 import { CliprModeToggle } from "@/app/_components/clipr/CliprModeToggle";
@@ -15,6 +16,7 @@ import type { CliprClientJob } from "@/lib/clipstitchr/types/CliprClientJob";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
+import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
 vi.mock("@/app/_components/music/MusicSelectorButton", () => ({
   MusicSelectorButton: ({
@@ -117,6 +119,35 @@ function createTrack(overrides: Partial<SharedMusicTrack> = {}): SharedMusicTrac
     tags: ["bright"],
     title: "Bright Hook",
     uploadedByOwnerId: "user_123",
+    ...overrides,
+  };
+}
+
+function createDemoClip(
+  overrides: Partial<VideoClipMetadata> = {},
+): VideoClipMetadata {
+  return {
+    aspectRatio: 9 / 16,
+    clipType: "demo",
+    createdAt: "2026-05-20T00:00:00.000Z",
+    duration: 8,
+    hasAudio: false,
+    height: 1280,
+    id: "demo_1",
+    libraryKind: "demo",
+    mimeType: "video/mp4",
+    name: "Phone demo",
+    originalName: "phone-demo.mp4",
+    originalSize: 1234,
+    size: 1234,
+    sourceMimeType: "video/mp4",
+    updatedAt: "2026-05-20T00:00:00.000Z",
+    videoObject: {
+      contentType: "video/mp4",
+      key: "users/user_123/demos/phone-demo.mp4",
+      size: 1234,
+    },
+    width: 720,
     ...overrides,
   };
 }
@@ -282,6 +313,23 @@ describe("Clipr components", () => {
     expect(emptyMarkup).toContain("Save a product in Settings");
   });
 
+  it("renders demo source selector with empty state", () => {
+    const populatedMarkup = renderToStaticMarkup(
+      <CliprDemoClipPanel
+        clips={[createDemoClip()]}
+        selectedClipId="demo_1"
+        onChange={vi.fn()}
+      />,
+    );
+    const emptyMarkup = renderToStaticMarkup(
+      <CliprDemoClipPanel clips={[]} selectedClipId="" onChange={vi.fn()} />,
+    );
+
+    expect(populatedMarkup).toContain("Phone demo");
+    expect(emptyMarkup).toContain("Add a demo video");
+  });
+
+
   it("forwards voice and music control changes", () => {
     const onVoiceChange = vi.fn();
     const onMusicChange = vi.fn();
@@ -370,6 +418,7 @@ describe("Clipr components", () => {
     expect(markup).toContain("Script");
     expect(markup).toContain("Reaction");
     expect(markup).toContain("B-roll");
+    expect(markup).toContain("Demo");
     expect(markup).toContain("Founder confession");
   });
 });

@@ -60,6 +60,17 @@ job-site work for a plumbing company.
 B-roll prompts explicitly avoid montages, scene cuts, tutorials, talking-head
 delivery, product UI shots, captions, logos, and on-screen text.
 
+## Demo Prompting
+
+Demo mode remixes one saved Demo video into a silent 4-10 second vertical shot.
+It uses the selected Demo clip as a reference video and asks Seedance to place
+the demo naturally on a phone screen held in someone's hand while preserving the
+important screen flow as much as possible.
+
+Demo mode is manual-only while it is being tested. It is not part of Clipr
+automation or the Any mode random pool because it needs an explicit Demo source
+clip.
+
 ## Provider Models
 
 Script mode uses:
@@ -69,33 +80,32 @@ Script mode uses:
 Reaction and b-roll can use:
 
 - `kwaivgi/kling-v3-video`
-- `bytedance/seedance-2.0`
 - `google/veo-3.1`
-- `openai/sora-2`
-- `openai/sora-2-pro`
 
 For visual modes, providers that support audio controls receive
-`generate_audio: false`. Sora models are prompted for silence and the media
-worker strips audio during finalization so saved visual clips stay silent.
+`generate_audio: false`. The media worker strips audio during finalization so
+saved visual clips stay silent.
 
-Seedance uses `reference_images` with `[Image1]` prompt language instead of the
-first-frame `image` input. ByteDance-backed Seedance providers can reject
-first-frame inputs containing real human faces, so this is an experimental path
-for testing whether reference-image mode is less brittle for avatar clips.
+Demo mode uses `bytedance/seedance-2.0` internally with `reference_videos` and
+`[Video1]` prompt language. Seedance reference videos are limited by the model's
+short-reference constraints, so Demo mode is an experimental test path for
+turning existing Demo clips into phone-in-hand b-roll.
 
 ## Worker Flow
 
 Manual and automated jobs use the same durable worker shape:
 
 1. Save the requested mode/model and resolved mode/model on the Clipr job.
-2. Consume job-create, avatar-still, and video-generation limits before the
-   provider job is queued.
+2. Consume job-create and video-generation limits before the provider job is
+   queued. Script, Reaction, and B-roll also consume avatar-still limits; Demo
+   mode skips avatar-still generation.
 3. Consume hook/script and voice limits only for Script mode.
 4. Consume music limits only for Script mode when music is generated.
 5. Create a Clipr text plan. Script mode calls the hook/script model; visual
    modes create a local single-scene visual plan.
-6. Generate the avatar still with mode-specific still-image instructions.
-7. Generate the avatar video using the resolved model.
+6. Generate the avatar still with mode-specific still-image instructions unless
+   the job is Demo mode.
+7. Generate the avatar or demo remix video using the resolved model.
 8. Create a `clipr-finalization` media job.
 9. The media worker normalizes to 9:16, strips audio for visual modes, captures
    a poster, and saves the final Clip.

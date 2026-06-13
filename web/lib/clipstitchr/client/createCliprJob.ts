@@ -9,6 +9,7 @@ type CreateCliprJobOptions = {
   avatarSceneLocation?: string;
   avatarSceneOutfit?: string;
   avatarScenePose?: string;
+  demoClipId?: string;
   durationSeconds: CliprDurationSeconds;
   generationMode: CliprGenerationMode;
   jobId: string;

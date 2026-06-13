@@ -11,6 +11,8 @@ export const cliprMetadataValidator = v.object({
   productName: v.string(),
   avatarId: v.string(),
   avatarPhotoId: v.string(),
+  demoClipId: v.optional(v.string()),
+  demoClipName: v.optional(v.string()),
   voiceId: v.string(),
   requestedGenerationMode: v.optional(cliprGenerationModeValidator),
   generationMode: v.optional(cliprResolvedGenerationModeValidator),

@@ -5,6 +5,7 @@ export function getCliprGenerationMode(value: unknown): CliprGenerationMode {
   return value === "script" ||
     value === "reaction" ||
     value === "broll" ||
+    value === "demo" ||
     value === "any"
     ? value
     : defaultCliprGenerationMode;
