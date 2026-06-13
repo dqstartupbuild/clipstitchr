@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Copy, X } from "lucide-react";
 import { MediaActionButtonList } from "@/app/_components/dashboard/MediaActionButtonList";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
@@ -42,6 +42,7 @@ export function StitchDetailsDialog({
       : "Attached but disabled"
     : undefined;
   const textOverlayText = stitch.textOverlay?.text.trim();
+  const socialCaption = stitch.socialCaption?.trim();
   const fileSizeLabel = stitch.size
     ? formatBytes(stitch.size)
     : "Ready to download";
@@ -62,17 +63,29 @@ export function StitchDetailsDialog({
     { label: "Demo speed", value: `${stitch.demoPlaybackRate ?? 1}x` },
     { label: "Music", value: musicLabel },
     { label: "Text overlay", value: textOverlayText },
-    { label: "Caption and hashtags", value: stitch.socialCaption },
+    {
+      isCopyable: true,
+      label: "Caption and hashtags",
+      value: socialCaption,
+    },
   ].flatMap((item) =>
     item.value?.trim()
       ? [
           {
+            isCopyable: item.isCopyable === true,
             label: item.label,
             value: item.value.trim(),
           },
         ]
       : [],
   );
+  const handleCopySocialCaption = () => {
+    if (!socialCaption || !navigator.clipboard) {
+      return;
+    }
+
+    void navigator.clipboard.writeText(socialCaption);
+  };
 
   return (
     <div
@@ -139,9 +152,19 @@ export function StitchDetailsDialog({
             </div>
             {detailItems.map((item) => (
               <div key={item.label} className="min-w-0">
-                <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
-                  {item.label}
-                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
+                    {item.label}
+                  </p>
+                  {item.isCopyable ? (
+                    <IconButton
+                      type="button"
+                      label="Copy caption and hashtags"
+                      icon={<Copy aria-hidden className="h-4 w-4" />}
+                      onClick={handleCopySocialCaption}
+                    />
+                  ) : null}
+                </div>
                 <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-text-secondary [overflow-wrap:anywhere]">
                   {item.value}
                 </p>

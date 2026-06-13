@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { StitchDetailsDialog } from "@/app/_components/dashboard/StitchDetailsDialog";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 
@@ -63,6 +63,10 @@ function createStitch(overrides: Partial<Stitch> = {}): Stitch {
 }
 
 describe("StitchDetailsDialog", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("shows the saved caption and hashtags in the detail view", () => {
     const socialCaption = "That demo changed the whole vibe\n\n#ugc #demo #win";
     const tree = StitchDetailsDialog({
@@ -90,6 +94,33 @@ describe("StitchDetailsDialog", () => {
     expect(captionLabel).toBeDefined();
     expect(captionText).toBeDefined();
     expect(captionText.props.className).toContain("whitespace-pre-wrap");
+  });
+
+  it("copies the saved caption and hashtags from the detail view", () => {
+    const socialCaption = "That demo changed the whole vibe\n\n#ugc #demo #win";
+    const writeText = vi.fn().mockResolvedValue(undefined);
+
+    vi.stubGlobal("navigator", { clipboard: { writeText } });
+
+    const tree = StitchDetailsDialog({
+      demoClip: null,
+      isLoadingPreview: false,
+      onClose: vi.fn(),
+      onLoadPreview: vi.fn(),
+      posterUrl: "poster.jpg",
+      previewError: null,
+      stitch: createStitch({ socialCaption }),
+      ugcClip: null,
+    });
+    const copyButton = findElements(
+      tree,
+      (element) =>
+        element.props?.label === "Copy caption and hashtags",
+    )[0];
+
+    (copyButton.props.onClick as () => void)();
+
+    expect(writeText).toHaveBeenCalledWith(socialCaption);
   });
 
   it("keeps long stitch metadata inside the mobile dialog width", () => {

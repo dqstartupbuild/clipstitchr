@@ -22,7 +22,8 @@ demo clips.
 2. Generate text from the Stitchr auto-text panel.
 3. Review or edit the caption and hashtags in the single caption field.
 4. Create the stitch.
-5. Open the saved stitch details later to read the same caption and hashtags.
+5. Open the saved stitch details later to read or copy the same caption and
+   hashtags.
 6. Open the saved stitch editor later to edit or copy the same field.
 
 For reused stitches and templates, normal Stitchr mode treats the saved caption
@@ -67,7 +68,7 @@ The reusable caption field is
 `web/app/_components/stitches/StitchSocialCaptionField.tsx`. Stitchr uses it
 inside `web/app/_components/stitchr/StitchrSocialCaptionPanel.tsx`; saved
 stitches use it inside `web/app/_components/dashboard/StitchEditDialog.tsx`.
-The read-only detail view renders the same saved text in
+The read-only detail view renders and copies the same saved text in
 `web/app/_components/dashboard/StitchDetailsDialog.tsx`.
 
 ## Abuse Protection
