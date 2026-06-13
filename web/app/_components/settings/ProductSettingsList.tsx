@@ -37,7 +37,7 @@ export function ProductSettingsList({
             Saved products
           </p>
           <h2 className="mt-1 text-lg font-bold text-text-primary">
-            Swipr sources
+            Your Products
           </h2>
         </div>
         <span className="text-sm font-semibold text-text-tertiary">
