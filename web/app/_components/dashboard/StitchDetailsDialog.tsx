@@ -62,6 +62,7 @@ export function StitchDetailsDialog({
     { label: "Demo speed", value: `${stitch.demoPlaybackRate ?? 1}x` },
     { label: "Music", value: musicLabel },
     { label: "Text overlay", value: textOverlayText },
+    { label: "Caption and hashtags", value: stitch.socialCaption },
   ].flatMap((item) =>
     item.value?.trim()
       ? [
@@ -141,7 +142,7 @@ export function StitchDetailsDialog({
                 <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
                   {item.label}
                 </p>
-                <p className="mt-1 break-words text-sm leading-6 text-text-secondary [overflow-wrap:anywhere]">
+                <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-text-secondary [overflow-wrap:anywhere]">
                   {item.value}
                 </p>
               </div>

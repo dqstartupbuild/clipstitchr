@@ -63,6 +63,35 @@ function createStitch(overrides: Partial<Stitch> = {}): Stitch {
 }
 
 describe("StitchDetailsDialog", () => {
+  it("shows the saved caption and hashtags in the detail view", () => {
+    const socialCaption = "That demo changed the whole vibe\n\n#ugc #demo #win";
+    const tree = StitchDetailsDialog({
+      demoClip: null,
+      isLoadingPreview: false,
+      onClose: vi.fn(),
+      onLoadPreview: vi.fn(),
+      posterUrl: "poster.jpg",
+      previewError: null,
+      stitch: createStitch({ socialCaption }),
+      ugcClip: null,
+    });
+    const captionLabel = findElements(
+      tree,
+      (element) =>
+        element.type === "p" &&
+        element.props?.children === "Caption and hashtags",
+    )[0];
+    const captionText = findElements(
+      tree,
+      (element) =>
+        element.type === "p" && element.props?.children === socialCaption,
+    )[0];
+
+    expect(captionLabel).toBeDefined();
+    expect(captionText).toBeDefined();
+    expect(captionText.props.className).toContain("whitespace-pre-wrap");
+  });
+
   it("keeps long stitch metadata inside the mobile dialog width", () => {
     const longToken = "stitch-output-" + "x".repeat(180);
     const onClose = vi.fn();
