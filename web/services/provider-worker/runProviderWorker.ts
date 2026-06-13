@@ -53,6 +53,7 @@ import type { CliprTtsModelId } from "@/lib/clipstitchr/types/CliprTtsModelId";
 import type { CliprVideoModelId } from "@/lib/clipstitchr/types/CliprVideoModelId";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
+import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { TextOverlayStyleId } from "@/lib/clipstitchr/types/TextOverlayStyleId";
 import { createCliprMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createCliprMusicMetadataFromSharedTrack";
@@ -217,7 +218,15 @@ type StitchrAutomationTaskInput = {
   demoClipName: string;
   demoDuration: number;
   demoHasAudio: boolean;
+  demoLibraryKind?: StitchrTextGenerationClipContext["libraryKind"];
+  demoLocationDescription?: string;
+  demoMainPersonDescription?: string;
+  demoOutfitDescription?: string;
+  demoPoseDescription?: string;
+  demoProductDescription?: string;
+  demoTags: string[];
   demoTrimRange: { start: number; end: number };
+  demoVideoDescription?: string;
   demoVideoObject: R2ObjectReference;
   product: ProductProfile;
   stitchrTextBackgroundColor?: string;
@@ -227,7 +236,15 @@ type StitchrAutomationTaskInput = {
   ugcClipName: string;
   ugcDuration: number;
   ugcHasAudio: boolean;
+  ugcLibraryKind?: StitchrTextGenerationClipContext["libraryKind"];
+  ugcLocationDescription?: string;
+  ugcMainPersonDescription?: string;
+  ugcOutfitDescription?: string;
+  ugcPoseDescription?: string;
+  ugcProductDescription?: string;
+  ugcTags: string[];
   ugcTrimRange: { start: number; end: number };
+  ugcVideoDescription?: string;
   ugcVideoObject: R2ObjectReference;
 };
 
@@ -517,7 +534,23 @@ function parseStitchrAutomationTaskInput(
     demoClipName: getString(input.demoClipName, "Stitchr Demo name"),
     demoDuration,
     demoHasAudio: input.demoHasAudio === true,
+    demoLibraryKind:
+      input.demoLibraryKind === "clipr" ||
+      input.demoLibraryKind === "demo" ||
+      input.demoLibraryKind === "swapr" ||
+      input.demoLibraryKind === "ugc"
+        ? input.demoLibraryKind
+        : undefined,
+    demoLocationDescription: getOptionalString(input.demoLocationDescription),
+    demoMainPersonDescription: getOptionalString(
+      input.demoMainPersonDescription,
+    ),
+    demoOutfitDescription: getOptionalString(input.demoOutfitDescription),
+    demoPoseDescription: getOptionalString(input.demoPoseDescription),
+    demoProductDescription: getOptionalString(input.demoProductDescription),
+    demoTags: getStringArray(input.demoTags),
     demoTrimRange: getTrimRange(input.demoTrimRange, demoDuration),
+    demoVideoDescription: getOptionalString(input.demoVideoDescription),
     demoVideoObject: getR2ObjectReference(
       input.demoVideoObject,
       "Stitchr Demo object",
@@ -532,7 +565,21 @@ function parseStitchrAutomationTaskInput(
     ugcClipName: getString(input.ugcClipName, "Stitchr UGC name"),
     ugcDuration,
     ugcHasAudio: input.ugcHasAudio === true,
+    ugcLibraryKind:
+      input.ugcLibraryKind === "clipr" ||
+      input.ugcLibraryKind === "demo" ||
+      input.ugcLibraryKind === "swapr" ||
+      input.ugcLibraryKind === "ugc"
+        ? input.ugcLibraryKind
+        : undefined,
+    ugcLocationDescription: getOptionalString(input.ugcLocationDescription),
+    ugcMainPersonDescription: getOptionalString(input.ugcMainPersonDescription),
+    ugcOutfitDescription: getOptionalString(input.ugcOutfitDescription),
+    ugcPoseDescription: getOptionalString(input.ugcPoseDescription),
+    ugcProductDescription: getOptionalString(input.ugcProductDescription),
+    ugcTags: getStringArray(input.ugcTags),
     ugcTrimRange: getTrimRange(input.ugcTrimRange, ugcDuration),
+    ugcVideoDescription: getOptionalString(input.ugcVideoDescription),
     ugcVideoObject: getR2ObjectReference(
       input.ugcVideoObject,
       "Stitchr UGC object",
@@ -1348,6 +1395,34 @@ async function processStitchr({
   }
 
   const input = parseStitchrAutomationTaskInput(task.inputSnapshotJson);
+  const stitchrClipContexts: StitchrTextGenerationClipContext[] = [
+    {
+      id: input.ugcClipId,
+      libraryKind: input.ugcLibraryKind,
+      locationDescription: input.ugcLocationDescription,
+      mainPersonDescription: input.ugcMainPersonDescription,
+      name: input.ugcClipName,
+      outfitDescription: input.ugcOutfitDescription,
+      poseDescription: input.ugcPoseDescription,
+      productDescription: input.ugcProductDescription,
+      role: "ugc",
+      tags: input.ugcTags,
+      videoDescription: input.ugcVideoDescription,
+    },
+    {
+      id: input.demoClipId,
+      libraryKind: input.demoLibraryKind,
+      locationDescription: input.demoLocationDescription,
+      mainPersonDescription: input.demoMainPersonDescription,
+      name: input.demoClipName,
+      outfitDescription: input.demoOutfitDescription,
+      poseDescription: input.demoPoseDescription,
+      productDescription: input.demoProductDescription,
+      role: "demo",
+      tags: input.demoTags,
+      videoDescription: input.demoVideoDescription,
+    },
+  ];
   const replicate = createReplicateClient();
   const textGeneration = await createCliprTextGeneration({
     durationSeconds: 30,
@@ -1355,6 +1430,7 @@ async function processStitchr({
     purpose: "stitchr",
     replicate,
     slideCount: 1,
+    stitchrClipContexts,
   });
   const duration =
     getTrimDuration(input.ugcTrimRange) + getTrimDuration(input.demoTrimRange);
@@ -1388,6 +1464,7 @@ async function processStitchr({
         sourceSummary: `${input.ugcClipName} + ${input.demoClipName}`,
         stitchId: `${task.id}:stitch`,
         stitchName: `${input.ugcClipName} + ${input.demoClipName}`,
+        socialCaption: textGeneration.socialCaption,
         textOverlay,
         ugcClipId: input.ugcClipId,
         ugcClipName: input.ugcClipName,

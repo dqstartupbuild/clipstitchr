@@ -290,9 +290,9 @@ Replicate predictions, writes provider state back through provider-only Convex
 mutations, and creates media finalization jobs only after provider output is
 ready.
 
-The provider worker owns automatic Stitchr text, Swapr provider create/finalize,
-Clipr script/reaction/b-roll/avatar-image/avatar-video, avatar-photo
-generation, and Swipr draft text generation. Avatar-based automation uses
+The provider worker owns automatic Stitchr overlay/caption/hashtag text, Swapr
+provider create/finalize, Clipr script/reaction/b-roll/avatar-image/avatar-video,
+avatar-photo generation, and Swipr draft text generation. Avatar-based automation uses
 `avatarPreferences.defaultAvatarId`; automatic avatar-photo generation queues
 only that default avatar. It also owns manual Swapr, manual Clipr, manual
 avatar-photo generation, and upload-video analysis through durable

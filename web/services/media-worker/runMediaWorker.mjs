@@ -314,6 +314,10 @@ function parseStitchrDraftFinalizationInput(inputSnapshotJson) {
     includeUgcAudio: input.includeUgcAudio === true,
     sourceSummary:
       typeof input.sourceSummary === "string" ? input.sourceSummary : undefined,
+    socialCaption:
+      typeof input.socialCaption === "string" && input.socialCaption.trim()
+        ? input.socialCaption.trim()
+        : undefined,
     stitchId: getString(input.stitchId, "stitch ID"),
     stitchName: getString(input.stitchName, "stitch name"),
     textOverlay: getOptionalTextOverlay(input.textOverlay),
@@ -979,6 +983,7 @@ async function processStitchrDraftFinalization({ client, config, job }) {
     includeUgcAudio: input.includeUgcAudio,
     demoPlaybackRate: input.demoPlaybackRate,
     ugcPlaybackRate: input.ugcPlaybackRate,
+    ...(input.socialCaption ? { socialCaption: input.socialCaption } : {}),
     ...(input.textOverlay ? { textOverlay: input.textOverlay } : {}),
     createdAt: updatedAt,
   });

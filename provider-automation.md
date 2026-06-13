@@ -79,8 +79,8 @@ web/services/provider-worker/Dockerfile
 
 The worker now handles automated provider work for:
 
-- Stitchr: generates a text overlay first, then creates the media-worker draft
-  finalization job.
+- Stitchr: generates text overlay plus caption/hashtag copy first, then creates
+  the media-worker draft finalization job.
 - Swapr: starts Replicate predictions and later finalizes succeeded provider
   outputs into media jobs.
 - Clipr: runs script generation, avatar still generation, avatar video

@@ -44,6 +44,13 @@ uses clip context from:
 context to `POST /api/clipr/text`, stores generated captions by UGC id, and
 passes each caption into `useStitchr` when the output is created.
 
+Automated Stitchr generation uses the same writing contract through the
+provider worker. `web/convex/automationStitchr.ts` snapshots UGC/Demo clip
+descriptions and tags, `web/services/provider-worker/runProviderWorker.ts`
+passes that context into `createCliprTextGeneration`, and
+`web/services/media-worker/runMediaWorker.mjs` persists the generated caption
+when it saves the editable Stitchr draft.
+
 The prompt and parser live in:
 
 - `web/lib/clipstitchr/server/createStitchrHookGenerationPrompt.ts`
@@ -72,3 +79,8 @@ the Convex mutation `stitches.updateSocialCaption`, protected by the shared
 Do not split captions and hashtags into separate user-facing fields unless the
 product workflow changes. The current goal is one text block users can edit,
 copy, paste, and keep with the saved stitch.
+
+Because automated Stitchr captions run in the provider and media workers,
+deploying Convex alone is not enough after changing this path. Redeploy both
+worker images so queued automation can generate and save the caption/hashtag
+field.
