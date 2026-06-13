@@ -2,6 +2,7 @@
 
 import { Edit3, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { ProductSettingsDetailsDialog } from "@/app/_components/settings/ProductSettingsDetailsDialog";
 import { ProductSettingsEditDialog } from "@/app/_components/settings/ProductSettingsEditDialog";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
@@ -35,6 +36,7 @@ export function ProductSettingsCard({
   onUpdate,
 }: ProductSettingsCardProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isViewingDetails, setIsViewingDetails] = useState(false);
   const summary =
     product.productDetails ||
     product.emotionalNarrative ||
@@ -59,25 +61,39 @@ export function ProductSettingsCard({
 
   return (
     <>
-      <div className="rounded-lg border border-border bg-surface-elevated p-3">
+      <div
+        className="cursor-pointer rounded-lg border border-border bg-surface-elevated p-3 transition-colors hover:border-accent focus-within:border-accent"
+        onClick={() => setIsViewingDetails(true)}
+      >
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-bold text-text-primary">
+          <button
+            type="button"
+            title={`Open ${product.name} details`}
+            className="min-w-0 flex-1 rounded-md text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            onClick={(event) => {
+              event.stopPropagation();
+              setIsViewingDetails(true);
+            }}
+          >
+            <span className="block truncate text-sm font-bold text-text-primary">
               {product.name}
-            </p>
-            <p className="mt-1 line-clamp-2 text-xs leading-5 text-text-secondary">
+            </span>
+            <span className="mt-1 line-clamp-2 block text-xs leading-5 text-text-secondary">
               {summary}
-            </p>
-            <p className="mt-1 text-xs font-semibold text-text-tertiary">
+            </span>
+            <span className="mt-1 block text-xs font-semibold text-text-tertiary">
               Hook style: {hookStyleName}
-            </p>
+            </span>
             {isDefault ? (
-              <p className="mt-1 text-xs font-bold text-accent-dark">
+              <span className="mt-1 block text-xs font-bold text-accent-dark">
                 Default product
-              </p>
+              </span>
             ) : null}
-          </div>
-          <div className="flex shrink-0 gap-2">
+          </button>
+          <div
+            className="flex shrink-0 gap-2"
+            onClick={(event) => event.stopPropagation()}
+          >
             <IconButton
               label={
                 isDefault
@@ -112,6 +128,12 @@ export function ProductSettingsCard({
           </div>
         </div>
       </div>
+      {isViewingDetails ? (
+        <ProductSettingsDetailsDialog
+          product={product}
+          onClose={() => setIsViewingDetails(false)}
+        />
+      ) : null}
       {isEditing ? (
         <ProductSettingsEditDialog
           product={product}

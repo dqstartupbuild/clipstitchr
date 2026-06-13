@@ -443,4 +443,48 @@ describe("settings components", () => {
     });
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(false);
   });
+
+  it("opens product details from the saved product card", () => {
+    mocks.stateQueue = [false, true];
+
+    const tree = ProductSettingsCard({
+      isDefault: false,
+      isDefaulting: false,
+      isDeleting: false,
+      isDisabled: false,
+      isSaving: false,
+      onDelete: vi.fn(),
+      onSetDefault: vi.fn(),
+      onUpdate: vi.fn(),
+      product: createProduct({
+        emotionalNarrative: "Founders want launch day to feel calm.",
+      }),
+    });
+    const [detailsButton] = findElements(
+      tree,
+      (element) =>
+        element.type === "button" &&
+        element.props?.title === "Open Launch Kit details",
+    );
+    const [dialog] = findElements(
+      tree,
+      (element) =>
+        typeof element.type === "function" &&
+        element.type.name === "ProductSettingsDetailsDialog",
+    );
+
+    const openDetails = detailsButton.props.onClick as (event: {
+      stopPropagation: () => void;
+    }) => void;
+
+    openDetails({ stopPropagation: vi.fn() });
+
+    expect(mocks.setStateCalls[1]).toHaveBeenCalledWith(true);
+    expect(dialog.props.product).toEqual(
+      expect.objectContaining({
+        emotionalNarrative: "Founders want launch day to feel calm.",
+        id: "product_1",
+      }),
+    );
+  });
 });
