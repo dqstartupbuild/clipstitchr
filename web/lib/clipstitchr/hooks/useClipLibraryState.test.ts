@@ -312,6 +312,18 @@ describe("useClipLibraryState", () => {
     expect(mocks.useQuery).toHaveBeenCalledWith("libraryCounts.get", "skip");
   });
 
+  it("loads demo clip metadata on the Clipr route", () => {
+    mocks.usePathname.mockReturnValue("/dashboard/clipr");
+
+    useClipLibraryState();
+
+    expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
+      "videoClips.listByLibraryKind",
+      { kind: "demo", sortOrder: "newest" },
+      { initialNumItems: 48 },
+    );
+  });
+
   it("loads a clip from Convex and R2 once, then reuses the cache", async () => {
     const state = useClipLibraryState();
 

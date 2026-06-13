@@ -61,6 +61,7 @@ export function useClipLibraryState(): ClipLibraryValue {
   const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
   const isStitchrRoute = pathname.startsWith("/dashboard/stitchr");
   const isSwaprRoute = pathname.startsWith("/dashboard/swapr");
+  const isCliprRoute = pathname.startsWith("/dashboard/clipr");
   const shouldLoadAllClips =
     isAuthenticated && (isDashboardHome || isSwaprRoute);
   const shouldLoadUgcClips =
@@ -69,7 +70,8 @@ export function useClipLibraryState(): ClipLibraryValue {
     isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
   const shouldLoadPostedCliprClips = isAuthenticated && isUploadsRoute;
   const shouldLoadDemoClips =
-    isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
+    isAuthenticated &&
+    (isDashboardHome || isUploadsRoute || isStitchrRoute || isCliprRoute);
   const shouldLoadSwapClips =
     isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
   const shouldLoadStitches =
