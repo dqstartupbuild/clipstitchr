@@ -65,6 +65,17 @@ const mocks = vi.hoisted(() => ({
     error: null as string | null,
     products: [],
   },
+  stitchTemplateState: {
+    createTemplateFromStitch: vi.fn(),
+    deleteTemplate: vi.fn(),
+    deletingTemplateId: null as string | null,
+    error: null as string | null,
+    isLoading: false,
+    renameTemplate: vi.fn(),
+    savingStitchId: null as string | null,
+    savingTemplateId: null as string | null,
+    templates: [],
+  },
   swiprLibraryState: {
     backgrounds: [],
     error: null as string | null,
@@ -129,6 +140,10 @@ vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
 
 vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
   useProducts: () => mocks.productState,
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useStitchTemplates", () => ({
+  useStitchTemplates: () => mocks.stitchTemplateState,
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({

@@ -36,6 +36,17 @@ const mocks = vi.hoisted(() => ({
   products: {} as Record<string, unknown>,
   stateSetter: vi.fn(),
   stateValues: [] as unknown[],
+  stitchTemplates: {
+    createTemplateFromStitch: vi.fn(),
+    deleteTemplate: vi.fn(),
+    deletingTemplateId: null as string | null,
+    error: null as string | null,
+    isLoading: false,
+    renameTemplate: vi.fn(),
+    savingStitchId: null as string | null,
+    savingTemplateId: null as string | null,
+    templates: [],
+  },
   swiprLibrary: {} as Record<string, unknown>,
   useClipLibrary: vi.fn(),
   useCreateAvatarFromUgcClip: vi.fn(),
@@ -87,6 +98,10 @@ vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
 
 vi.mock("@/lib/clipstitchr/hooks/useShowUploadControls", () => ({
   useShowUploadControls: mocks.useShowUploadControls,
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useStitchTemplates", () => ({
+  useStitchTemplates: () => mocks.stitchTemplates,
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({

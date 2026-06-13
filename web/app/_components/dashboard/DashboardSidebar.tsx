@@ -4,6 +4,7 @@ import { UserButton } from "@clerk/nextjs";
 import {
   Home,
   Images,
+  LayoutTemplate,
   Library,
   CirclePlay,
   Menu,
@@ -21,6 +22,7 @@ import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/dashboard/uploads", label: "Library", icon: Library },
+  { href: "/dashboard/templates", label: "Templates", icon: LayoutTemplate },
   { href: "/dashboard/avatars", label: "Avatars", icon: UserRound },
   { href: "/dashboard/stitchr", label: "Stitchr", icon: Scissors },
   { href: "/dashboard/clipr", label: "Clipr", icon: CirclePlay },

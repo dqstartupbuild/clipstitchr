@@ -67,6 +67,17 @@ const mocks = vi.hoisted(() => ({
     stitches: [],
     totalCount: 0,
   },
+  stitchTemplateState: {
+    createTemplateFromStitch: vi.fn(),
+    deleteTemplate: vi.fn(),
+    deletingTemplateId: null as string | null,
+    error: null as string | null,
+    isLoading: false,
+    renameTemplate: vi.fn(),
+    savingStitchId: null as string | null,
+    savingTemplateId: null as string | null,
+    templates: [],
+  },
   autoTextPanelProps: null as Record<string, unknown> | null,
   clipPickerPanelProps: null as Record<string, unknown> | null,
   generateCliprText: vi.fn(),
@@ -163,6 +174,10 @@ vi.mock("@/lib/clipstitchr/hooks/useStitchr", () => ({
   useStitchr: () => mocks.stitchrState,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useStitchTemplates", () => ({
+  useStitchTemplates: () => mocks.stitchTemplateState,
+}));
+
 vi.mock("@/lib/clipstitchr/client/generateCliprText", () => ({
   generateCliprText: mocks.generateCliprText,
 }));
@@ -253,10 +268,12 @@ function queueStitchrState(
     longrTextOverlays?: TextOverlay[];
     longrTimelineClipIds?: string[];
     mode?: "normal" | "longr";
+    appliedTemplateId?: string;
     selectedAutoTextProductId?: string;
     selectedDemoId?: string | null;
     selectedDemoIds?: string[];
     selectedMusicTrack?: SharedMusicTrack | null;
+    selectedTemplateId?: string;
     selectedUgcIds?: string[];
     reusedTextOverlays?: TextOverlay[] | null;
     textOverlaysByUgcId?: Record<string, TextOverlay[]>;
@@ -272,6 +289,8 @@ function queueStitchrState(
     overrides.demoPlaybackRate ?? 1,
     overrides.ugcPlaybackRate ?? 1,
     overrides.selectedMusicTrack ?? null,
+    overrides.selectedTemplateId ?? "",
+    overrides.appliedTemplateId ?? "",
     overrides.textOverlaysByUgcId ?? {},
     overrides.reusedTextOverlays ?? null,
     overrides.longrTextOverlays ?? [],
@@ -640,13 +659,13 @@ describe("StitchrPageClient", () => {
     );
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("ugc_2");
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[19]).toHaveBeenCalledWith(["ugc_2"]);
-    expect(mocks.stateSetters[20]).toHaveBeenCalledWith("ugc_2");
-    expect(mocks.stateSetters[21]).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[22]).toHaveBeenCalledWith(["demo_2"]);
-    expect(mocks.stateSetters[23]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
-    expect(mocks.stateSetters[7]).toHaveBeenCalledWith({});
-    expect(mocks.stateSetters[8]).toHaveBeenCalledWith([textOverlay]);
+    expect(mocks.stateSetters[21]).toHaveBeenCalledWith(["ugc_2"]);
+    expect(mocks.stateSetters[22]).toHaveBeenCalledWith("ugc_2");
+    expect(mocks.stateSetters[23]).toHaveBeenCalledWith("demo_2");
+    expect(mocks.stateSetters[24]).toHaveBeenCalledWith(["demo_2"]);
+    expect(mocks.stateSetters[25]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
+    expect(mocks.stateSetters[9]).toHaveBeenCalledWith({});
+    expect(mocks.stateSetters[10]).toHaveBeenCalledWith([textOverlay]);
 
     vi.unstubAllGlobals();
   });

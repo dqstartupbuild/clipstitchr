@@ -10,16 +10,19 @@ import { DownloadStitchesPanel } from "@/app/_components/stitchr/DownloadStitche
 import { SequencePreviewPanel } from "@/app/_components/stitchr/SequencePreviewPanel";
 import { StitchrAutoTextPanel } from "@/app/_components/stitchr/StitchrAutoTextPanel";
 import { StitchrLongrTimelineStrip } from "@/app/_components/stitchr/StitchrLongrTimelineStrip";
+import { StitchTemplatePicker } from "@/app/_components/stitchr/StitchTemplatePicker";
 import { maxStitchrUgcSelectionCount } from "@/lib/clipstitchr/constants/maxStitchrUgcSelectionCount";
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useLoadedVideoClip } from "@/lib/clipstitchr/hooks/useLoadedVideoClip";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
+import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useStitchr } from "@/lib/clipstitchr/hooks/useStitchr";
 import type { StitchrLongrSelection } from "@/lib/clipstitchr/types/StitchrLongrSelection";
 import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
+import type { StitchTemplate } from "@/lib/clipstitchr/types/StitchTemplate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -42,6 +45,7 @@ import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchr
 export function StitchrPageClient() {
   const library = useClipLibrary();
   const products = useProducts();
+  const stitchTemplates = useStitchTemplates();
   const stitchrState = useStitchr({
     loadClip: library.loadClip,
     onCreated: library.refresh,
@@ -55,6 +59,10 @@ export function StitchrPageClient() {
   const [ugcPlaybackRate, setUgcPlaybackRate] = useState<VideoPlaybackRate>(1);
   const [selectedMusicTrack, setSelectedMusicTrack] =
     useState<SharedMusicTrack | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState(
+    () => getSearchParamValue("templateId") ?? "",
+  );
+  const [appliedTemplateId, setAppliedTemplateId] = useState("");
   const [textOverlaysByUgcId, setTextOverlaysByUgcId] = useState<
     Record<string, TextOverlay[]>
   >({});
@@ -501,18 +509,164 @@ export function StitchrPageClient() {
     },
     [library, loadClip],
   );
+  const applyStitchTemplate = useCallback(
+    async (template: StitchTemplate) => {
+      const sourceIds = [
+        ...new Set(
+          template.mode === "longr" && template.sequenceSegments?.length
+            ? template.sequenceSegments.map((segment) => segment.clipId)
+            : [template.ugcClipId, template.demoClipId],
+        ),
+      ];
+      const loadedSourceClips = (
+        await Promise.all(sourceIds.map((id) => loadClip(id)))
+      ).filter((clip): clip is VideoClip => Boolean(clip));
+      const loadedUgcClips = loadedSourceClips.filter(
+        (clip) => clip.clipType !== "demo",
+      );
+      const loadedDemoClips = loadedSourceClips.filter(
+        (clip) => clip.clipType === "demo",
+      );
+      const templateTextOverlays = getTextOverlayList(
+        template.textOverlays,
+        template.textOverlay,
+      );
+
+      if (loadedSourceClips.length !== sourceIds.length) {
+        setAutoTextMessage("Some clips from that template are missing.");
+      }
+
+      setTemplateUgcClips((currentClips) =>
+        mergeVideoClipMetadataById([...loadedUgcClips, ...currentClips]),
+      );
+      setTemplateDemoClips((currentClips) =>
+        mergeVideoClipMetadataById([...loadedDemoClips, ...currentClips]),
+      );
+      setLoadedLongrClipsById((currentClips) => {
+        const nextClips = { ...currentClips };
+
+        for (const clip of loadedSourceClips) {
+          nextClips[clip.id] = clip;
+        }
+
+        return nextClips;
+      });
+      setAddMusic(false);
+      setSelectedMusicTrack(null);
+      setIncludeDemoAudio(template.includeDemoAudio ?? false);
+      setIncludeUgcAudio(template.includeUgcAudio ?? false);
+      setDemoPlaybackRate(template.demoPlaybackRate ?? 1);
+      setUgcPlaybackRate(template.ugcPlaybackRate ?? 1);
+      setDemoProductFilterId("all");
+
+      if (template.mode === "longr" && template.sequenceSegments?.length) {
+        const orderedSegments = [...template.sequenceSegments].sort(
+          (left, right) => left.order - right.order,
+        );
+        const ugcIds = orderedSegments
+          .filter((segment) => segment.clipType !== "demo")
+          .map((segment) => segment.clipId);
+        const demoIds = orderedSegments
+          .filter((segment) => segment.clipType === "demo")
+          .map((segment) => segment.clipId);
+        const ugcTrimRanges = orderedSegments
+          .filter((segment) => segment.clipType !== "demo")
+          .reduce<Record<string, VideoTrimRange>>(
+            (trimRanges, segment) => ({
+              ...trimRanges,
+              [segment.clipId]: segment.trimRange,
+            }),
+            {},
+          );
+        const demoTrimRanges = orderedSegments
+          .filter((segment) => segment.clipType === "demo")
+          .reduce<Record<string, VideoTrimRange>>(
+            (trimRanges, segment) => ({
+              ...trimRanges,
+              [segment.clipId]: segment.trimRange,
+            }),
+            {},
+          );
+        const firstUgcPlaybackRate = orderedSegments.find(
+          (segment) => segment.clipType !== "demo" && segment.playbackRate,
+        )?.playbackRate;
+        const firstDemoPlaybackRate = orderedSegments.find(
+          (segment) => segment.clipType === "demo" && segment.playbackRate,
+        )?.playbackRate;
+
+        setMode("longr");
+        setSelectedUgcIds(ugcIds.slice(0, maxStitchrUgcSelectionCount));
+        setActivePreviewUgcId(ugcIds[0]);
+        setSelectedDemoId(demoIds[0] ?? null);
+        setSelectedDemoIds(demoIds);
+        setLongrTimelineClipIds(
+          orderedSegments.map((segment) => segment.clipId),
+        );
+        setUgcTrimRangesByClipId((trimRanges) => ({
+          ...trimRanges,
+          ...ugcTrimRanges,
+        }));
+        setDemoTrimRangesByClipId((trimRanges) => ({
+          ...trimRanges,
+          ...demoTrimRanges,
+        }));
+        setUgcPlaybackRate(firstUgcPlaybackRate ?? template.ugcPlaybackRate ?? 1);
+        setDemoPlaybackRate(
+          firstDemoPlaybackRate ?? template.demoPlaybackRate ?? 1,
+        );
+        setTextOverlaysByUgcId({});
+        setReusedTextOverlays(null);
+        setLongrTextOverlays(cloneTextOverlays(templateTextOverlays));
+        return;
+      }
+
+      setMode("normal");
+      setSelectedUgcIds([template.ugcClipId]);
+      setActivePreviewUgcId(template.ugcClipId);
+      setSelectedDemoId(template.demoClipId);
+      setSelectedDemoIds([template.demoClipId]);
+      setLongrTimelineClipIds([template.ugcClipId, template.demoClipId]);
+      setUgcTrimRangesByClipId((trimRanges) => ({
+        ...trimRanges,
+        ...(template.ugcTrimRange
+          ? { [template.ugcClipId]: template.ugcTrimRange }
+          : {}),
+      }));
+      setDemoTrimRangesByClipId((trimRanges) => ({
+        ...trimRanges,
+        ...(template.demoTrimRange
+          ? { [template.demoClipId]: template.demoTrimRange }
+          : {}),
+      }));
+      setTextOverlaysByUgcId({});
+      setReusedTextOverlays(cloneTextOverlays(templateTextOverlays));
+      setLongrTextOverlays([]);
+    },
+    [loadClip],
+  );
 
   useEffect(() => {
     const syncSelectionFromUrl = () => {
       const templateStitchId = getSearchParamValue("templateStitchId");
+      const templateId = getSearchParamValue("templateId");
       const initialUgcId = getSearchParamValue("ugcId");
       const initialDemoId = getSearchParamValue("demoId");
 
       if (templateStitchId) {
+        setSelectedTemplateId("");
+        setAppliedTemplateId("");
         void applyTemplateStitch(templateStitchId);
         return;
       }
 
+      if (templateId) {
+        setSelectedTemplateId(templateId);
+        setAppliedTemplateId("");
+        return;
+      }
+
+      setSelectedTemplateId("");
+      setAppliedTemplateId("");
       setReusedTextOverlays(null);
 
       if (!initialUgcId && !initialDemoId) {
@@ -537,6 +691,44 @@ export function StitchrPageClient() {
       window.removeEventListener("popstate", syncSelectionFromUrl);
     };
   }, [applyTemplateStitch]);
+
+  useEffect(() => {
+    if (
+      !selectedTemplateId ||
+      selectedTemplateId === appliedTemplateId ||
+      stitchTemplates.isLoading
+    ) {
+      return;
+    }
+
+    const selectedTemplate = stitchTemplates.templates.find(
+      (template) => template.id === selectedTemplateId,
+    );
+
+    if (!selectedTemplate) {
+      void Promise.resolve().then(() => {
+        setAutoTextMessage("Unable to find that template.");
+        setAppliedTemplateId(selectedTemplateId);
+      });
+      return;
+    }
+
+    const applyTimeoutId = window.setTimeout(() => {
+      void applyStitchTemplate(selectedTemplate).then(() => {
+        setAppliedTemplateId(selectedTemplate.id);
+      });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(applyTimeoutId);
+    };
+  }, [
+    appliedTemplateId,
+    applyStitchTemplate,
+    selectedTemplateId,
+    stitchTemplates.isLoading,
+    stitchTemplates.templates,
+  ]);
 
   useEffect(() => {
     if (mode !== "longr" || !selectedLongrMetadata.length) {
@@ -987,6 +1179,10 @@ export function StitchrPageClient() {
   const handleActiveUgcChange = useCallback((id: string) => {
     setActivePreviewUgcId(id);
   }, []);
+  const handleTemplateChange = useCallback((templateId: string) => {
+    setSelectedTemplateId(templateId);
+    setAppliedTemplateId("");
+  }, []);
   const handleDemoProductFilterChange = useCallback((productId: string) => {
     setDemoProductFilterId(productId);
     setSelectedDemoId(undefined);
@@ -1114,6 +1310,12 @@ export function StitchrPageClient() {
     <StitchrShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <StitchrHeader />
+        <StitchTemplatePicker
+          isLoading={stitchTemplates.isLoading}
+          selectedTemplateId={selectedTemplateId}
+          templates={stitchTemplates.templates}
+          onTemplateChange={handleTemplateChange}
+        />
         {library.error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {library.error}

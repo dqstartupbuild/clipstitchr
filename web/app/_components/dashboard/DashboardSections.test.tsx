@@ -107,6 +107,7 @@ describe("dashboard shell sections", () => {
     expect(customHeaderMarkup).toContain("Custom action");
     expect(shellMarkup).toContain("Workspace child");
     expect(sidebarMarkup).toContain("Stitchr");
+    expect(sidebarMarkup).toContain("Templates");
     expect(sidebarMarkup).toContain("Settings");
     expect(statsMarkup).toContain("Demo Videos");
     expect(statsMarkup).toContain("4");

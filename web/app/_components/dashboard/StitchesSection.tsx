@@ -25,6 +25,7 @@ type StitchesSectionProps = {
   hasMoreItems?: boolean;
   id?: string;
   isLoadingMoreItems?: boolean;
+  savingTemplateStitchId?: string | null;
   statusCounts?: Record<StitchLibraryStatusFilter, number>;
   statusFilter?: StitchLibraryStatusFilter;
   title?: string;
@@ -34,6 +35,7 @@ type StitchesSectionProps = {
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadMoreItems?: () => void;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
+  onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
   onStatusFilterChange?: (status: StitchLibraryStatusFilter) => void;
   onUpdateMusic: (
     stitch: Stitch,
@@ -62,6 +64,7 @@ export function StitchesSection({
   hasMoreItems = false,
   id = "stitches",
   isLoadingMoreItems = false,
+  savingTemplateStitchId = null,
   statusCounts,
   statusFilter = "active",
   title = "Stitches",
@@ -71,6 +74,7 @@ export function StitchesSection({
   onLoadClip,
   onLoadMoreItems,
   onLoadPoster,
+  onSaveTemplate,
   onStatusFilterChange,
   onUpdateMusic,
   onUpdatePostedStatus,
@@ -165,10 +169,12 @@ export function StitchesSection({
                 demoClips={demoClips}
                 isSelected={batchDelete.selectedIds.has(stitch.id)}
                 isSelectionDisabled={batchDelete.isDeletingSelected}
+                isSavingTemplate={savingTemplateStitchId === stitch.id}
                 onDelete={onDelete}
                 onGenerateMusic={onGenerateMusic}
                 onLoadClip={onLoadClip}
                 onLoadPoster={onLoadPoster}
+                onSaveTemplate={onSaveTemplate}
                 onSelect={
                   batchDelete.isSelecting
                     ? () => batchDelete.toggleItemSelection(stitch.id)

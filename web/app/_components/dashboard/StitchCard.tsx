@@ -2,6 +2,7 @@
 
 import {
   CheckCircle2,
+  BookmarkPlus,
   Download,
   Edit3,
   Play,
@@ -43,11 +44,13 @@ type StitchCardProps = {
   demoClips?: VideoClipMetadata[];
   isSelected?: boolean;
   isSelectionDisabled?: boolean;
+  isSavingTemplate?: boolean;
   onDelete: (id: string) => void | Promise<void>;
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect?: () => void;
+  onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
@@ -72,11 +75,13 @@ export function StitchCard({
   demoClips = [],
   isSelected = false,
   isSelectionDisabled = false,
+  isSavingTemplate = false,
   onDelete,
   onGenerateMusic,
   onLoadClip,
   onLoadPoster,
   onSelect,
+  onSaveTemplate,
   onUpdateMusic,
   onUpdatePostedStatus,
   onUpdateSourceSettings,
@@ -133,6 +138,7 @@ export function StitchCard({
   const [postedStatusError, setPostedStatusError] = useState<string | null>(
     null,
   );
+  const [templateError, setTemplateError] = useState<string | null>(null);
   const [textError, setTextError] = useState<string | null>(null);
   const [sourceSettingsError, setSourceSettingsError] = useState<string | null>(
     null,
@@ -343,12 +349,46 @@ export function StitchCard({
       setIsSavingPostedStatus(false);
     }
   };
+  const handleSaveTemplate = async () => {
+    if (!onSaveTemplate) {
+      return;
+    }
+
+    setTemplateError(null);
+
+    try {
+      await onSaveTemplate(stitch);
+      trackPostHogEvent("stitch_template_saved", {
+        stitch_id: stitch.id,
+      });
+    } catch (nextError) {
+      capturePostHogException(nextError, {
+        feature: "stitch_template_save",
+        stitch_id: stitch.id,
+      });
+      setTemplateError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Could not save that template.",
+      );
+    }
+  };
   const actionItems: MediaCardActionMenuItem[] = [
     {
       label: "Reuse in Stitchr",
       href: getReuseStitchHref(stitch),
       icon: <RefreshCw aria-hidden className="h-4 w-4" />,
     },
+    ...(onSaveTemplate
+      ? [
+          {
+            label: "Save as Template",
+            icon: <BookmarkPlus aria-hidden className="h-4 w-4" />,
+            disabled: isSavingTemplate,
+            onClick: () => void handleSaveTemplate(),
+          },
+        ]
+      : []),
     {
       label: "Download stitch",
       icon: <Download aria-hidden className="h-4 w-4" />,
@@ -469,6 +509,11 @@ export function StitchCard({
         {postedStatusError ? (
           <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
             {postedStatusError}
+          </p>
+        ) : null}
+        {templateError ? (
+          <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+            {templateError}
           </p>
         ) : null}
       </div>

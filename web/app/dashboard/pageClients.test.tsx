@@ -81,6 +81,20 @@ vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
   }),
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useStitchTemplates", () => ({
+  useStitchTemplates: () => ({
+    createTemplateFromStitch: vi.fn(),
+    deleteTemplate: vi.fn(),
+    deletingTemplateId: null,
+    error: null,
+    isLoading: false,
+    renameTemplate: vi.fn(),
+    savingStitchId: null,
+    savingTemplateId: null,
+    templates: [],
+  }),
+}));
+
 vi.mock("@/lib/clipstitchr/hooks/useSwiprExport", () => ({
   useSwiprExport: () => ({
     error: null,

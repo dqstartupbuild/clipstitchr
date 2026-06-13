@@ -86,6 +86,12 @@ status is also non-destructive metadata: marking or unmarking a stitch as posted
 only changes library organization and does not change source clips, stored
 stitch settings, music, posters, or downloadable output.
 
+Dedicated Stitchr templates are saved setup records created from finished stitch
+cards with **Save as Template**. They can be selected from the Template picker on
+the Stitchr page, where **None** is the default, or managed from the Templates
+sidebar page. See `docs/features/stitchr-templates.md` for the data model,
+routes, CRUD behavior, rate limits, and maintenance notes.
+
 ## Product Principles
 
 - Prioritize speed over full editor flexibility.

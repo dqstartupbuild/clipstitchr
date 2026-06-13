@@ -1,0 +1,31 @@
+import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
+import type { StitchSequenceSegment } from "@/lib/clipstitchr/types/StitchSequenceSegment";
+import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
+import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
+import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+
+export type StitchTemplate = {
+  id: string;
+  name: string;
+  sourceStitchId: string;
+  sourceStitchName: string;
+  mode?: StitchrMode;
+  ugcClipId: string;
+  demoClipId: string;
+  ugcClipName: string;
+  demoClipName: string;
+  ugcTrimRange?: VideoTrimRange;
+  demoTrimRange?: VideoTrimRange;
+  sequenceSegments?: StitchSequenceSegment[];
+  width: number;
+  height: number;
+  duration: number;
+  includeDemoAudio?: boolean;
+  includeUgcAudio?: boolean;
+  demoPlaybackRate?: VideoPlaybackRate;
+  ugcPlaybackRate?: VideoPlaybackRate;
+  textOverlay?: TextOverlay;
+  textOverlays?: TextOverlay[];
+  createdAt: string;
+  updatedAt: string;
+};

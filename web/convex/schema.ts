@@ -218,6 +218,34 @@ export default defineSchema({
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_is_posted_created", ["ownerId", "isPosted", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
+  stitchTemplates: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    name: v.string(),
+    sourceStitchId: v.string(),
+    sourceStitchName: v.string(),
+    mode: v.optional(stitchrModeValidator),
+    ugcClipId: v.string(),
+    demoClipId: v.string(),
+    ugcClipName: v.string(),
+    demoClipName: v.string(),
+    ugcTrimRange: v.optional(videoTrimRangeValidator),
+    demoTrimRange: v.optional(videoTrimRangeValidator),
+    sequenceSegments: v.optional(v.array(stitchSequenceSegmentValidator)),
+    width: v.number(),
+    height: v.number(),
+    duration: v.number(),
+    includeDemoAudio: v.optional(v.boolean()),
+    includeUgcAudio: v.optional(v.boolean()),
+    demoPlaybackRate: v.optional(videoPlaybackRateValidator),
+    ugcPlaybackRate: v.optional(videoPlaybackRateValidator),
+    textOverlay: v.optional(textOverlayValidator),
+    textOverlays: v.optional(textOverlaysValidator),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"]),
   sharedMusicTracks: defineTable({
     id: v.string(),
     uploadedByOwnerId: v.string(),

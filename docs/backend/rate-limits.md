@@ -217,10 +217,10 @@ Firecrawl website import:
 | Automatic provider cost guard | Worker-only automation planner before provider work | 10,000 provider cost units/day global |
 | Automatic asset final saves | Worker-only finalizers for automated Stitches, video clips, avatar photos, and Swipes | 20 saved assets/day/user; global 2,000/day |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
-| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
-| Convex metadata updates | `avatars.update`, `avatarPreferences.setDefaultAvatar`, `productPreferences.setDefaultProduct`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `stitches.updateMusic`, `stitches.updatePostedStatus`, `stitches.updateSourceSettings`, `stitches.updateTextOverlay`, `stitches.updateRenderedVideo`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
+| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `stitchTemplates.createFromStitch`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
+| Convex metadata updates | `avatars.update`, `avatarPreferences.setDefaultAvatar`, `productPreferences.setDefaultProduct`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `stitches.updateMusic`, `stitches.updatePostedStatus`, `stitches.updateSourceSettings`, `stitches.updateTextOverlay`, `stitches.updateRenderedVideo`, `stitchTemplates.updateName`, `products.update`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
 | Convex poster updates | `updatePoster` mutations | 1,000/hour/user, burst 300 |
-| Convex record deletes | `remove` mutations | 2,000/hour/user, burst 500 |
+| Convex record deletes | `remove` mutations, including `stitchTemplates.remove` | 2,000/hour/user, burst 500 |
 | Convex Clipr job writes | `cliprJobs.createQueued`, `cliprJobs.applyScriptPlan`, `cliprJobs.recordAvatarImageOutput`, `cliprJobs.recordAvatarVideoOutput`, `cliprJobs.markBrowserSaving`, `cliprJobs.finalizeWithClip` | 3,000/hour/user, burst 500 |
 
 ## Intentionally Not Rate-Limited

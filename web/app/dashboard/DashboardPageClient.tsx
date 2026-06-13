@@ -12,6 +12,7 @@ import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsS
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
+import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import { getRecentAvatarPhotos } from "@/lib/clipstitchr/utils/getRecentAvatarPhotos";
 import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
@@ -25,6 +26,7 @@ export function DashboardPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
   const products = useProducts();
+  const stitchTemplates = useStitchTemplates();
   const swiprLibrary = useSwiprLibrary();
   const recentUploads = useMemo(
     () => getRecentVideoClips(library.clips, RECENT_DASHBOARD_ITEM_LIMIT),
@@ -72,7 +74,11 @@ export function DashboardPageClient() {
     [photoLibrary.photos],
   );
   const error =
-    library.error ?? photoLibrary.error ?? swiprLibrary.error ?? products.error;
+    library.error ??
+    photoLibrary.error ??
+    swiprLibrary.error ??
+    products.error ??
+    stitchTemplates.error;
 
   return (
     <DashboardShell>
@@ -91,11 +97,13 @@ export function DashboardPageClient() {
         />
         <RecentStitchesSection
           demoClips={library.videoGroups.demo.clips}
+          savingTemplateStitchId={stitchTemplates.savingStitchId}
           stitches={recentStitches}
           onDelete={library.removeStitch}
           onGenerateMusic={library.generateStitchMusic}
           onLoadClip={library.loadClip}
           onLoadPoster={library.loadStitchPoster}
+          onSaveTemplate={stitchTemplates.createTemplateFromStitch}
           onUpdateMusic={library.updateStitchMusic}
           onUpdatePostedStatus={library.updateStitchPostedStatus}
           onUpdateSourceSettings={library.updateStitchSourceSettings}

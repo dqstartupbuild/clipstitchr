@@ -12,11 +12,13 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 
 type RecentStitchesSectionProps = {
   demoClips: VideoClipMetadata[];
+  savingTemplateStitchId?: string | null;
   stitches: Stitch[];
   onDelete: (id: string) => void | Promise<void>;
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
+  onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
@@ -38,11 +40,13 @@ type RecentStitchesSectionProps = {
 
 export function RecentStitchesSection({
   demoClips,
+  savingTemplateStitchId = null,
   stitches,
   onDelete,
   onGenerateMusic,
   onLoadClip,
   onLoadPoster,
+  onSaveTemplate,
   onUpdateMusic,
   onUpdatePostedStatus,
   onUpdateSourceSettings,
@@ -69,10 +73,12 @@ export function RecentStitchesSection({
               key={stitch.id}
               stitch={stitch}
               demoClips={demoClips}
+              isSavingTemplate={savingTemplateStitchId === stitch.id}
               onDelete={onDelete}
               onGenerateMusic={onGenerateMusic}
               onLoadClip={onLoadClip}
               onLoadPoster={onLoadPoster}
+              onSaveTemplate={onSaveTemplate}
               onUpdateMusic={onUpdateMusic}
               onUpdatePostedStatus={onUpdatePostedStatus}
               onUpdateSourceSettings={onUpdateSourceSettings}
