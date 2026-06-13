@@ -24,32 +24,94 @@ describe("scrapeProductWebsiteDetails", () => {
     vi.unstubAllEnvs();
   });
 
-  it("scrapes markdown product context with Firecrawl", async () => {
-    fetchMock.mockResolvedValue(
-      createJsonResponse({
-        success: true,
-        data: {
-          markdown: "# LaunchKit\n\nPlan launches faster.",
-          metadata: {
-            description: "Launch planning for founders.",
-            sourceURL: "https://launchkit.example.com/",
-            title: "LaunchKit",
-          },
-        },
-      }),
+  it("crawls up to 15 website pages with Firecrawl", async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        createJsonResponse({
+          success: true,
+          id: "crawl_123",
+        }),
+      )
+      .mockResolvedValueOnce(
+        createJsonResponse({
+          status: "completed",
+          data: [
+            {
+              links: ["https://launchkit.example.com/pricing"],
+              markdown: "# LaunchKit\n\nPlan launches faster.",
+              metadata: {
+                description: "Launch planning for founders.",
+                sourceURL: "https://launchkit.example.com/",
+                title: "LaunchKit",
+              },
+              summary: "LaunchKit helps founders plan launches.",
+            },
+            {
+              markdown: "# Pricing\n\nSimple launch planning pricing.",
+              metadata: {
+                sourceURL: "https://launchkit.example.com/pricing",
+                title: "Pricing",
+              },
+            },
+          ],
+        }),
+      );
+
+    const details = await scrapeProductWebsiteDetails(
+      "https://launchkit.example.com/",
     );
 
-    await expect(
-      scrapeProductWebsiteDetails("https://launchkit.example.com/"),
-    ).resolves.toContain("Plan launches faster.");
-    expect(fetchMock).toHaveBeenCalledWith(
-      "https://api.firecrawl.dev/v2/scrape",
+    expect(details).toContain("Plan launches faster.");
+    expect(details).toContain("Simple launch planning pricing.");
+  });
+
+  it("starts the product website crawl with a landing-page cap", async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        createJsonResponse({
+          success: true,
+          id: "crawl_123",
+        }),
+      )
+      .mockResolvedValueOnce(
+        createJsonResponse({
+          status: "completed",
+          data: [
+            {
+              markdown: "# LaunchKit\n\nPlan launches faster.",
+            },
+          ],
+        }),
+      );
+
+    await scrapeProductWebsiteDetails("https://launchkit.example.com/");
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "https://api.firecrawl.dev/v2/crawl",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({
           authorization: "Bearer firecrawl-key",
         }),
-        body: expect.stringContaining('"formats":["markdown"]'),
+      }),
+    );
+    const requestOptions = fetchMock.mock.calls[0][1] as RequestInit;
+
+    expect(JSON.parse(requestOptions.body as string)).toMatchObject({
+      allowExternalLinks: false,
+      crawlEntireDomain: true,
+      limit: 15,
+      scrapeOptions: {
+        formats: ["markdown", "summary", "links"],
+        onlyMainContent: true,
+      },
+    });
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "https://api.firecrawl.dev/v2/crawl/crawl_123",
+      expect.objectContaining({
+        method: "GET",
       }),
     );
   });

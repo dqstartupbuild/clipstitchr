@@ -6,13 +6,16 @@ describe("parseProductEnrichmentOutputText", () => {
     expect(
       parseProductEnrichmentOutputText(
         JSON.stringify({
+          audienceDetails: "Solo founders making their first launch.",
           emotionalNarrative:
             "The audience feels stuck and wants visible proof they are improving.",
           inferredProblem: "Teams do not publish enough clips.",
           inferredPainPoints: ["Editing takes too long", "Assets are scattered"],
+          productDetails: "A planning tool for product launch content.",
         }),
       ),
     ).toEqual({
+      audienceDetails: "Solo founders making their first launch.",
       cliprPlaceholderFillers: {},
       eligibleCliprHookStyleKeys: [],
       eligibleCliprHookTemplateIds: [],
@@ -20,6 +23,7 @@ describe("parseProductEnrichmentOutputText", () => {
         "The audience feels stuck and wants visible proof they are improving.",
       inferredProblem: "Teams do not publish enough clips.",
       inferredPainPoints: ["Editing takes too long", "Assets are scattered"],
+      productDetails: "A planning tool for product launch content.",
     });
   });
 
@@ -60,12 +64,14 @@ describe("parseProductEnrichmentOutputText", () => {
         '{"inferredProblem":"Teams publish slowly","inferredPainPoints":["Editing',
       ),
     ).toEqual({
+      audienceDetails: undefined,
       cliprPlaceholderFillers: {},
       eligibleCliprHookStyleKeys: [],
       eligibleCliprHookTemplateIds: [],
       emotionalNarrative: undefined,
       inferredProblem: undefined,
       inferredPainPoints: [],
+      productDetails: undefined,
     });
   });
 

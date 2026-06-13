@@ -1,43 +1,24 @@
-type FirecrawlScrapeData = {
-  markdown?: unknown;
-  metadata?: {
-    description?: unknown;
-    sourceURL?: unknown;
-    title?: unknown;
-    url?: unknown;
-  };
-  summary?: unknown;
-};
-
-const PRODUCT_WEBSITE_MARKDOWN_MAX_LENGTH = 5000;
-
-function normalizeFirecrawlText(value: unknown) {
-  return typeof value === "string" ? value.trim().replace(/\n{3,}/g, "\n\n") : "";
-}
+import { productWebsiteDetailsMaxLength } from "@/lib/clipstitchr/constants/productWebsiteDetailsMaxLength";
+import { createProductWebsitePageDetailsText } from "@/lib/clipstitchr/server/createProductWebsitePageDetailsText";
+import type { FirecrawlScrapeData } from "@/lib/clipstitchr/types/FirecrawlScrapeData";
 
 export function createProductWebsiteDetailsText(
-  data: FirecrawlScrapeData,
+  data: FirecrawlScrapeData | FirecrawlScrapeData[],
   requestedUrl: string,
 ) {
-  const title = normalizeFirecrawlText(data.metadata?.title);
-  const description = normalizeFirecrawlText(data.metadata?.description);
-  const sourceUrl = normalizeFirecrawlText(
-    data.metadata?.sourceURL || data.metadata?.url,
-  );
-  const summary = normalizeFirecrawlText(data.summary);
-  const markdown = normalizeFirecrawlText(data.markdown).slice(
-    0,
-    PRODUCT_WEBSITE_MARKDOWN_MAX_LENGTH,
-  );
+  const pages = Array.isArray(data) ? data : [data];
 
-  return [
-    `Website URL: ${sourceUrl || requestedUrl}`,
-    title ? `Page title: ${title}` : "",
-    description ? `Page description: ${description}` : "",
-    summary ? `Page summary: ${summary}` : "",
-    markdown ? `Page content:\n${markdown}` : "",
-  ]
+  return pages
+    .map((page, index) =>
+      [
+        `Website page ${index + 1} of ${pages.length}`,
+        createProductWebsitePageDetailsText(page, requestedUrl),
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    )
     .filter(Boolean)
-    .join("\n\n")
+    .join("\n\n---\n\n")
+    .slice(0, productWebsiteDetailsMaxLength)
     .trim();
 }

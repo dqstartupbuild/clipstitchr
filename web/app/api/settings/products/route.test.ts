@@ -166,6 +166,48 @@ describe("POST /api/settings/products", () => {
     );
   });
 
+  it("prefills blank product details and audience details from enrichment", async () => {
+    mocks.readProductProfileInput.mockReturnValueOnce({
+      audienceDetails: "",
+      name: "Launch Kit",
+      productDetails: "",
+      websiteUrl: "https://launchkit.example.com/",
+    });
+    mocks.createProductProfileInputWithWebsiteDetails.mockResolvedValueOnce({
+      audienceDetails: "",
+      name: "Launch Kit",
+      productDetails: "",
+      websiteDetails: "Page content",
+      websiteUrl: "https://launchkit.example.com/",
+    });
+    mocks.createProductEnrichment.mockResolvedValueOnce({
+      audienceDetails: "Solo founders getting ready to launch.",
+      emotionalNarrative: "Founders want launch day to feel calm.",
+      inferredPainPoints: ["slow launch"],
+      inferredProblem: "campaigns take too long",
+      productDetails: "A launch planning workspace for small teams.",
+    });
+
+    const response = await POST(createRequest());
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.product).toEqual(
+      expect.objectContaining({
+        audienceDetails: "Solo founders getting ready to launch.",
+        emotionalNarrative: "Founders want launch day to feel calm.",
+        productDetails: "A launch planning workspace for small teams.",
+      }),
+    );
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.products.create,
+      expect.objectContaining({
+        audienceDetails: "Solo founders getting ready to launch.",
+        productDetails: "A launch planning workspace for small teams.",
+      }),
+    );
+  });
+
   it("returns rate-limit and validation errors", async () => {
     mocks.convex.mutation.mockRejectedValueOnce({
       data: {

@@ -75,12 +75,14 @@ describe("product enrichment and avatar generation helpers", () => {
 
   it("returns an empty enrichment object for invalid output", () => {
     expect(parseProductEnrichmentOutputText("not json")).toEqual({
+      audienceDetails: undefined,
       cliprPlaceholderFillers: {},
       eligibleCliprHookStyleKeys: [],
       eligibleCliprHookTemplateIds: [],
       emotionalNarrative: undefined,
       inferredPainPoints: [],
       inferredProblem: undefined,
+      productDetails: undefined,
     });
   });
 

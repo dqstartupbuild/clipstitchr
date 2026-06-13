@@ -3,10 +3,10 @@ import { api } from "@/convex/_generated/api";
 import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
-import { createFallbackProductEmotionalNarrative } from "@/lib/clipstitchr/server/createFallbackProductEmotionalNarrative";
 import { createProductEnrichment } from "@/lib/clipstitchr/server/createProductEnrichment";
 import { createProductProfileInputWithWebsiteDetails } from "@/lib/clipstitchr/server/createProductProfileInputWithWebsiteDetails";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
+import { createResolvedProductEnrichmentFields } from "@/lib/clipstitchr/server/createResolvedProductEnrichmentFields";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
@@ -46,16 +46,16 @@ export async function POST(request: Request) {
       product: productInput,
       replicate,
     });
-    const emotionalNarrative =
-      input.emotionalNarrative ||
-      enrichment.emotionalNarrative ||
-      createFallbackProductEmotionalNarrative(input);
+    const resolvedFields = createResolvedProductEnrichmentFields({
+      enrichment,
+      input,
+    });
     const now = new Date().toISOString();
     const product = {
       id: createId(),
       ...input,
       ...enrichment,
-      emotionalNarrative,
+      ...resolvedFields,
       createdAt: now,
       updatedAt: now,
     };

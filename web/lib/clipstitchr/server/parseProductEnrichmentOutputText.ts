@@ -57,12 +57,14 @@ function normalizePlaceholderFillers(value: unknown) {
 
 function getEmptyProductEnrichment(): ProductEnrichment {
   return {
+    audienceDetails: undefined,
     cliprPlaceholderFillers: {},
     eligibleCliprHookStyleKeys: [],
     eligibleCliprHookTemplateIds: [],
     emotionalNarrative: undefined,
     inferredProblem: undefined,
     inferredPainPoints: [],
+    productDetails: undefined,
   };
 }
 
@@ -71,11 +73,13 @@ export function parseProductEnrichmentOutputText(
 ): ProductEnrichment {
   let parsed: {
     cliprPlaceholderFillers?: unknown;
+    audienceDetails?: unknown;
     eligibleCliprHookStyleKeys?: unknown;
     eligibleCliprHookTemplateIds?: unknown;
     emotionalNarrative?: unknown;
     inferredPainPoints?: unknown;
     inferredProblem?: unknown;
+    productDetails?: unknown;
     problemSolved?: unknown;
   };
 
@@ -101,6 +105,7 @@ export function parseProductEnrichmentOutputText(
   );
 
   return {
+    audienceDetails: normalizeString(parsed.audienceDetails, 2000) || undefined,
     cliprPlaceholderFillers: normalizePlaceholderFillers(
       parsed.cliprPlaceholderFillers,
     ),
@@ -120,5 +125,6 @@ export function parseProductEnrichmentOutputText(
       normalizeString(parsed.emotionalNarrative, 1500) || undefined,
     inferredProblem,
     inferredPainPoints,
+    productDetails: normalizeString(parsed.productDetails, 2000) || undefined,
   };
 }
