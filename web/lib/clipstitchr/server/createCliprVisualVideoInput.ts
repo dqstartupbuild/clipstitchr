@@ -33,8 +33,12 @@ export function createCliprVisualVideoInput({
 
   if (modelId === "bytedance/seedance-2.0") {
     return {
-      prompt,
-      image: imageUrl,
+      prompt: [
+        "Use the avatar in [Image1] as the visual identity reference.",
+        "Create a new continuous shot from the instructions below.",
+        prompt,
+      ].join("\n\n"),
+      reference_images: [imageUrl],
       duration,
       resolution: "720p",
       aspect_ratio: "9:16",

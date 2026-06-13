@@ -78,6 +78,11 @@ For visual modes, providers that support audio controls receive
 `generate_audio: false`. Sora models are prompted for silence and the media
 worker strips audio during finalization so saved visual clips stay silent.
 
+Seedance uses `reference_images` with `[Image1]` prompt language instead of the
+first-frame `image` input. ByteDance-backed Seedance providers can reject
+first-frame inputs containing real human faces, so this is an experimental path
+for testing whether reference-image mode is less brittle for avatar clips.
+
 ## Worker Flow
 
 Manual and automated jobs use the same durable worker shape:
