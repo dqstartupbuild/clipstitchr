@@ -82,6 +82,7 @@ const mocks = vi.hoisted(() => ({
   clipPickerPanelProps: null as Record<string, unknown> | null,
   generateCliprText: vi.fn(),
   sequencePreviewPanelProps: null as Record<string, unknown> | null,
+  socialCaptionPanelProps: null as Record<string, unknown> | null,
   stateQueue: [] as unknown[],
   stateSetters: [] as ReturnType<typeof vi.fn>[],
   useEffect: vi.fn(),
@@ -136,6 +137,13 @@ vi.mock("@/app/_components/stitchr/StitchrAutoTextPanel", () => ({
   StitchrAutoTextPanel: (props: Record<string, unknown>) => {
     mocks.autoTextPanelProps = props;
     return "StitchrAutoTextPanel";
+  },
+}));
+
+vi.mock("@/app/_components/stitchr/StitchrSocialCaptionPanel", () => ({
+  StitchrSocialCaptionPanel: (props: Record<string, unknown>) => {
+    mocks.socialCaptionPanelProps = props;
+    return "StitchrSocialCaptionPanel";
   },
 }));
 
@@ -266,6 +274,7 @@ function queueStitchrState(
     isGeneratingAutoText?: boolean;
     loadedLongrClipsById?: Record<string, unknown>;
     longrTextOverlays?: TextOverlay[];
+    longrSocialCaption?: string;
     longrTimelineClipIds?: string[];
     mode?: "normal" | "longr";
     appliedTemplateId?: string;
@@ -275,7 +284,9 @@ function queueStitchrState(
     selectedMusicTrack?: SharedMusicTrack | null;
     selectedTemplateId?: string;
     selectedUgcIds?: string[];
+    reusedSocialCaption?: string | null;
     reusedTextOverlays?: TextOverlay[] | null;
+    socialCaptionByUgcId?: Record<string, string>;
     textOverlaysByUgcId?: Record<string, TextOverlay[]>;
     ugcPlaybackRate?: 1 | 2;
     ugcTrimRangesByClipId?: Record<string, { start: number; end: number }>;
@@ -294,6 +305,9 @@ function queueStitchrState(
     overrides.textOverlaysByUgcId ?? {},
     overrides.reusedTextOverlays ?? null,
     overrides.longrTextOverlays ?? [],
+    overrides.socialCaptionByUgcId ?? {},
+    overrides.reusedSocialCaption ?? null,
+    overrides.longrSocialCaption ?? "",
     overrides.selectedAutoTextProductId ?? "",
     overrides.demoProductFilterId,
     overrides.isGeneratingAutoText ?? false,
@@ -327,12 +341,18 @@ describe("StitchrPageClient", () => {
     mocks.stitchrState.stitchLongrSequence.mockResolvedValue(undefined);
     mocks.stitchrState.stitchVideos.mockResolvedValue(undefined);
     mocks.generateCliprText.mockResolvedValue({
+      caption: "Generated caption",
+      hashtags: ["#launchkit", "#ugc", "#demo"],
       hook: "Generated hook",
       overlayText: "Generated overlay",
+      script: "",
+      slides: ["Generated overlay"],
+      socialCaption: "Generated caption\n\n#launchkit #ugc #demo",
     });
     mocks.autoTextPanelProps = null;
     mocks.clipPickerPanelProps = null;
     mocks.sequencePreviewPanelProps = null;
+    mocks.socialCaptionPanelProps = null;
     mocks.stateQueue.length = 0;
     mocks.stateSetters.length = 0;
     mocks.useEffect.mockReset();
@@ -344,6 +364,7 @@ describe("StitchrPageClient", () => {
     expect(markup).toContain("StitchrHeader");
     expect(markup).toContain("ClipPickerPanel");
     expect(markup).toContain("StitchrAutoTextPanel");
+    expect(markup).not.toContain("StitchrSocialCaptionPanel");
     expect(markup).toContain("StitchrProgressPanel");
     expect(markup).toContain("DownloadStitchesPanel");
     expect(markup).toContain("SequencePreviewPanel");
@@ -548,12 +569,23 @@ describe("StitchrPageClient", () => {
       expect.objectContaining({
         productId: "product_1",
         purpose: "stitchr",
+        stitchrClipContexts: [
+          expect.objectContaining({
+            id: "ugc_1",
+            role: "ugc",
+          }),
+          expect.objectContaining({
+            id: "demo_1",
+            role: "demo",
+          }),
+        ],
       }),
     );
     expect(mocks.stitchrState.stitchVideos).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({
           clip: expect.objectContaining({ id: "ugc_1" }),
+          socialCaption: "",
         }),
       ]),
       expect.objectContaining({ id: "demo_1" }),
@@ -561,10 +593,10 @@ describe("StitchrPageClient", () => {
       null,
       expect.objectContaining({
         demoPlaybackRate: 1,
-        includeDemoAudio: false,
-        includeUgcAudio: false,
-        ugcPlaybackRate: 1,
-      }),
+          includeDemoAudio: false,
+          includeUgcAudio: false,
+          ugcPlaybackRate: 1,
+        }),
     );
   });
 
@@ -629,6 +661,7 @@ describe("StitchrPageClient", () => {
       includeUgcAudio: true,
       mode: "normal",
       name: "Reusable stitch",
+      socialCaption: "Reuse this caption\n\n#ugc #demo #launch",
       textOverlays: [textOverlay],
       ugcClipId: "ugc_2",
       ugcClipName: "UGC 2",
@@ -659,13 +692,17 @@ describe("StitchrPageClient", () => {
     );
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("ugc_2");
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[21]).toHaveBeenCalledWith(["ugc_2"]);
-    expect(mocks.stateSetters[22]).toHaveBeenCalledWith("ugc_2");
-    expect(mocks.stateSetters[23]).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[24]).toHaveBeenCalledWith(["demo_2"]);
-    expect(mocks.stateSetters[25]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
+    expect(mocks.stateSetters[24]).toHaveBeenCalledWith(["ugc_2"]);
+    expect(mocks.stateSetters[25]).toHaveBeenCalledWith("ugc_2");
+    expect(mocks.stateSetters[26]).toHaveBeenCalledWith("demo_2");
+    expect(mocks.stateSetters[27]).toHaveBeenCalledWith(["demo_2"]);
+    expect(mocks.stateSetters[28]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
     expect(mocks.stateSetters[9]).toHaveBeenCalledWith({});
     expect(mocks.stateSetters[10]).toHaveBeenCalledWith([textOverlay]);
+    expect(mocks.stateSetters[12]).toHaveBeenCalledWith({});
+    expect(mocks.stateSetters[13]).toHaveBeenCalledWith(
+      "Reuse this caption\n\n#ugc #demo #launch",
+    );
 
     vi.unstubAllGlobals();
   });
@@ -822,6 +859,7 @@ describe("StitchrPageClient", () => {
     });
     queueStitchrState({
       activePreviewUgcId: "ugc_new",
+      reusedSocialCaption: "Reuse caption\n\n#ugc #demo #launch",
       reusedTextOverlays: [textOverlay],
       selectedUgcIds: ["ugc_new"],
     });
@@ -833,6 +871,7 @@ describe("StitchrPageClient", () => {
       [
         expect.objectContaining({
           clip: expect.objectContaining({ id: "ugc_new" }),
+          socialCaption: "Reuse caption\n\n#ugc #demo #launch",
           textOverlays: [
             expect.objectContaining({
               backgroundColor: textOverlay.backgroundColor,

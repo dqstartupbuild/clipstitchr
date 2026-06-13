@@ -689,6 +689,7 @@ export function UploadsPageClient() {
               onSaveTemplate={stitchTemplates.createTemplateFromStitch}
               onUpdateMusic={library.updateStitchMusic}
               onUpdatePostedStatus={library.updateStitchPostedStatus}
+              onUpdateSocialCaption={library.updateStitchSocialCaption}
               onUpdateSourceSettings={library.updateStitchSourceSettings}
               onUpdateTextOverlay={library.updateStitchTextOverlay}
               ugcClips={stitchrUgcClips}
@@ -816,6 +817,7 @@ export function UploadsPageClient() {
             onStatusFilterChange={setStitchStatusFilter}
             onUpdateMusic={library.updateStitchMusic}
             onUpdatePostedStatus={library.updateStitchPostedStatus}
+            onUpdateSocialCaption={library.updateStitchSocialCaption}
             onUpdateSourceSettings={library.updateStitchSourceSettings}
             onUpdateTextOverlay={library.updateStitchTextOverlay}
             ugcClips={stitchrUgcClips}

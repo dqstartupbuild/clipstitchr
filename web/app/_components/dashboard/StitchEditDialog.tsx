@@ -2,6 +2,7 @@
 
 import { Music2, Save, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { StitchSocialCaptionField } from "@/app/_components/stitches/StitchSocialCaptionField";
 import { StitchSourceSettingsPanel } from "@/app/_components/dashboard/StitchSourceSettingsPanel";
 import { StitchSequencePreview } from "@/app/_components/dashboard/StitchSequencePreview";
 import { TextOverlayEditor } from "@/app/_components/stitchr/TextOverlayEditor";
@@ -41,6 +42,7 @@ type StitchEditDialogProps = {
   isGeneratingMusic: boolean;
   isLoadingPreview: boolean;
   isSavingMusic: boolean;
+  isSavingSocialCaption: boolean;
   isSavingSourceSettings: boolean;
   isSavingText: boolean;
   musicError: string | null;
@@ -48,6 +50,7 @@ type StitchEditDialogProps = {
   previewErrorState: StitchPreviewErrorState | null;
   previewSources: StitchPreviewSources | null;
   sourceSettingsError: string | null;
+  socialCaptionError: string | null;
   stitch: Stitch;
   textError: string | null;
   ugcClips: VideoClipMetadata[];
@@ -56,6 +59,10 @@ type StitchEditDialogProps = {
   onLoadPreview: (ugcClipId?: string, demoClipId?: string) => void;
   onRemoveMusic: () => Promise<void>;
   onSaveMusic: (music: StitchMusicMetadata) => Promise<void>;
+  onSaveSocialCaption: (
+    socialCaption: string | null,
+    stitchOverride?: Stitch,
+  ) => Promise<void>;
   onSaveSourceSettings: (
     update: StitchSourceSettingsUpdate,
     stitchOverride?: Stitch,
@@ -71,6 +78,7 @@ export function StitchEditDialog({
   isGeneratingMusic,
   isLoadingPreview,
   isSavingMusic,
+  isSavingSocialCaption,
   isSavingSourceSettings,
   isSavingText,
   musicError,
@@ -78,6 +86,7 @@ export function StitchEditDialog({
   previewErrorState,
   previewSources,
   sourceSettingsError,
+  socialCaptionError,
   stitch,
   textError,
   ugcClips,
@@ -86,6 +95,7 @@ export function StitchEditDialog({
   onLoadPreview,
   onRemoveMusic,
   onSaveMusic,
+  onSaveSocialCaption,
   onSaveSourceSettings,
   onSaveTextOverlay,
 }: StitchEditDialogProps) {
@@ -158,6 +168,10 @@ export function StitchEditDialog({
   const [music, setMusic] = useState<StitchMusicMetadata | null>(
     stitch.music ?? null,
   );
+  const [socialCaption, setSocialCaption] = useState(
+    () => stitch.socialCaption ?? "",
+  );
+  const [copyMessage, setCopyMessage] = useState<string | null>(null);
   const [enabled, setEnabled] = useState(music?.enabled ?? true);
   const [volume, setVolume] = useState(music?.volume ?? 1);
   const [selectedUgcClipId, setSelectedUgcClipId] = useState(
@@ -182,6 +196,9 @@ export function StitchEditDialog({
   );
   const [savedMusicKey, setSavedMusicKey] = useState(() =>
     createMusicMetadataComparisonKey(stitch.music ?? null),
+  );
+  const [savedSocialCaption, setSavedSocialCaption] = useState(
+    () => stitch.socialCaption ?? "",
   );
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const selectedUgcClip = findVideoClipMetadataById(
@@ -226,6 +243,7 @@ export function StitchEditDialog({
     demoTrimRange: clampedDemoTrimRange,
     duration: sourceDuration || stitch.duration,
     music: music ?? undefined,
+    socialCaption: socialCaption.trim() || undefined,
     textOverlay: textOverlays[0],
     textOverlays: textOverlays.length ? textOverlays : undefined,
     ugcClipId: selectedUgcClipId,
@@ -257,13 +275,24 @@ export function StitchEditDialog({
       }
     : null;
   const currentMusicKey = createMusicMetadataComparisonKey(currentMusic);
+  const currentSocialCaption = socialCaption.trim();
   const hasSourceChanges =
     !isLongrStitch && currentSourceSettingsKey !== savedSourceSettingsKey;
   const hasTextChanges = currentTextOverlaysKey !== savedTextOverlaysKey;
   const hasMusicChanges = currentMusicKey !== savedMusicKey;
-  const hasChanges = hasSourceChanges || hasTextChanges || hasMusicChanges;
+  const hasSocialCaptionChanges =
+    currentSocialCaption !== savedSocialCaption.trim();
+  const hasChanges =
+    hasSourceChanges ||
+    hasTextChanges ||
+    hasMusicChanges ||
+    hasSocialCaptionChanges;
   const isSavingAny =
-    isSavingChanges || isSavingMusic || isSavingSourceSettings || isSavingText;
+    isSavingChanges ||
+    isSavingMusic ||
+    isSavingSocialCaption ||
+    isSavingSourceSettings ||
+    isSavingText;
   const canSaveChanges =
     hasChanges &&
     !isSavingAny &&
@@ -307,6 +336,7 @@ export function StitchEditDialog({
     const stitchDraftForSave: Stitch = {
       ...draftStitch,
       music: nextMusic ?? undefined,
+      socialCaption: currentSocialCaption || undefined,
       textOverlay: nextTextOverlays[0],
       textOverlays: nextTextOverlays.length ? nextTextOverlays : undefined,
     };
@@ -339,6 +369,15 @@ export function StitchEditDialog({
 
         setMusic(nextMusic);
         setSavedMusicKey(createMusicMetadataComparisonKey(nextMusic));
+      }
+
+      if (hasSocialCaptionChanges) {
+        await onSaveSocialCaption(
+          currentSocialCaption || null,
+          stitchDraftForSave,
+        );
+        setSocialCaption(currentSocialCaption);
+        setSavedSocialCaption(currentSocialCaption);
       }
     } catch {
       return;
@@ -386,6 +425,16 @@ export function StitchEditDialog({
   };
   const handleRemoveMusic = () => {
     setMusic(null);
+  };
+  const handleCopySocialCaption = () => {
+    if (!socialCaption.trim()) {
+      return;
+    }
+
+    void navigator.clipboard
+      .writeText(socialCaption)
+      .then(() => setCopyMessage("Copied."))
+      .catch(() => setCopyMessage("Could not copy that caption."));
   };
 
   return (
@@ -510,6 +559,27 @@ export function StitchEditDialog({
                 activeTextOverlayId={activeTextOverlayId}
                 onActiveTextOverlayIdChange={setActiveTextOverlayId}
                 onChange={setTextOverlays}
+              />
+            </section>
+            <section className="min-w-0 overflow-hidden rounded-lg border border-border p-4">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h3 className="text-sm font-bold text-text-primary">
+                  Caption
+                </h3>
+              </div>
+              {socialCaptionError ? (
+                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  {socialCaptionError}
+                </div>
+              ) : null}
+              <StitchSocialCaptionField
+                copyMessage={copyMessage}
+                socialCaption={socialCaption}
+                onChange={(nextSocialCaption) => {
+                  setCopyMessage(null);
+                  setSocialCaption(nextSocialCaption);
+                }}
+                onCopy={handleCopySocialCaption}
               />
             </section>
             <section className="min-w-0 overflow-hidden rounded-lg border border-border p-4">

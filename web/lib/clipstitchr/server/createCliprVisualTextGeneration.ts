@@ -39,7 +39,9 @@ export function createCliprVisualTextGeneration({
       : "Silent product-relevant day-in-the-life b-roll shot.";
 
   return {
+    caption: "",
     filledHook: label,
+    hashtags: [],
     hookStyleKey: mode === "reaction" ? "reaction_source" : "broll_source",
     hookTemplateId: mode === "reaction" ? "REACTION-001" : "BROLL-001",
     overlayText: label,
@@ -56,6 +58,7 @@ export function createCliprVisualTextGeneration({
     ],
     script,
     slides: [label],
+    socialCaption: "",
     variablesUsed:
       mode === "reaction"
         ? {

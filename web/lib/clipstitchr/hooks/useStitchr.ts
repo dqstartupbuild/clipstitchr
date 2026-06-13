@@ -42,6 +42,7 @@ type UseStitchrOptions = {
 type StitchrBuildOptions = {
   addMusic?: boolean;
   musicTrack?: SharedMusicTrack | null;
+  socialCaption?: string;
 } & SourcePlaybackRateOptions &
   StitchSourceAudioOptions;
 
@@ -140,6 +141,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         ugcPlaybackRate,
         textOverlay: firstTextOverlay,
         textOverlays: textOverlays.length ? textOverlays : undefined,
+        socialCaption: options.socialCaption?.trim() || undefined,
         createdAt: now,
       };
 
@@ -168,6 +170,9 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         ugcPlaybackRate: nextStitch.ugcPlaybackRate,
         textOverlay: nextStitch.textOverlay,
         textOverlays: nextStitch.textOverlays,
+        ...(nextStitch.socialCaption
+          ? { socialCaption: nextStitch.socialCaption }
+          : {}),
         createdAt: nextStitch.createdAt,
       });
 
@@ -256,6 +261,7 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         ugcPlaybackRate: options.ugcPlaybackRate ?? 1,
         textOverlay: firstTextOverlay,
         textOverlays: textOverlays.length ? textOverlays : undefined,
+        socialCaption: options.socialCaption?.trim() || undefined,
         createdAt: now,
       };
 
@@ -279,6 +285,9 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         ugcPlaybackRate: nextStitch.ugcPlaybackRate,
         textOverlay: nextStitch.textOverlay,
         textOverlays: nextStitch.textOverlays,
+        ...(nextStitch.socialCaption
+          ? { socialCaption: nextStitch.socialCaption }
+          : {}),
         createdAt: nextStitch.createdAt,
       });
 
@@ -368,6 +377,10 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
               ugcDuration + demoDuration,
             ),
           );
+          const selectionSocialCaption =
+            "socialCaption" in ugcSelection
+              ? ugcSelection.socialCaption
+              : options.socialCaption;
 
           setStatus("saving");
 
@@ -377,7 +390,10 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
             clampedUgcTrimRange,
             clampedDemoTrimRange,
             pairTextOverlays,
-            options,
+            {
+              ...options,
+              socialCaption: selectionSocialCaption,
+            },
             (pairProgress) => {
               setProgress((index + pairProgress) / ugcSelections.length);
             },

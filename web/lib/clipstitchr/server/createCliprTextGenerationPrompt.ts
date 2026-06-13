@@ -3,6 +3,7 @@ import type { CliprHookTemplate } from "@/lib/clipstitchr/types/CliprHookTemplat
 import type { CliprPlaceholderFillers } from "@/lib/clipstitchr/types/CliprPlaceholderFillers";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
 import { createStitchrHookGenerationPrompt } from "@/lib/clipstitchr/server/createStitchrHookGenerationPrompt";
 
 type CreateCliprTextGenerationPromptOptions = {
@@ -13,6 +14,7 @@ type CreateCliprTextGenerationPromptOptions = {
   purpose: CliprTextPurpose;
   scriptIdea?: string;
   slideCount: number;
+  stitchrClipContexts?: StitchrTextGenerationClipContext[];
 };
 
 const contentAngles = [
@@ -92,12 +94,14 @@ export function createCliprTextGenerationPrompt({
   purpose,
   scriptIdea,
   slideCount,
+  stitchrClipContexts = [],
 }: CreateCliprTextGenerationPromptOptions) {
   if (purpose === "stitchr") {
     return createStitchrHookGenerationPrompt({
       durationSeconds,
       fillers,
       product,
+      stitchrClipContexts,
     });
   }
 

@@ -1,11 +1,13 @@
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
+import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
 
 type GenerateCliprTextOptions = {
   durationSeconds?: CliprDurationSeconds;
   productId: string;
   purpose: CliprTextPurpose;
   slideCount?: number;
+  stitchrClipContexts?: StitchrTextGenerationClipContext[];
 };
 
 export async function generateCliprText(options: GenerateCliprTextOptions) {
@@ -26,9 +28,12 @@ export async function generateCliprText(options: GenerateCliprTextOptions) {
   }
 
   return (await response.json()) as {
+    caption: string;
+    hashtags: string[];
     hook: string;
     overlayText: string;
     script: string;
     slides: string[];
+    socialCaption: string;
   };
 }

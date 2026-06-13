@@ -26,6 +26,7 @@ export type StitchTemplate = {
   ugcPlaybackRate?: VideoPlaybackRate;
   textOverlay?: TextOverlay;
   textOverlays?: TextOverlay[];
+  socialCaption?: string;
   createdAt: string;
   updatedAt: string;
 };

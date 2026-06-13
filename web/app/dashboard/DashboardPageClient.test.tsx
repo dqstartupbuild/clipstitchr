@@ -32,6 +32,7 @@ const mocks = vi.hoisted(() => ({
     updateClipTrimRange: vi.fn(),
     updateStitchMusic: vi.fn(),
     updateStitchPostedStatus: vi.fn(),
+    updateStitchSocialCaption: vi.fn(),
     updateStitchSourceSettings: vi.fn(),
     updateStitchTextOverlay: vi.fn(),
     videoGroups: {

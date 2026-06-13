@@ -45,6 +45,7 @@ const saveArgs = {
   music: v.optional(stitchMusicMetadataValidator),
   textOverlay: v.optional(textOverlayValidator),
   textOverlays: v.optional(textOverlaysValidator),
+  socialCaption: v.optional(v.string()),
   createdAt: v.string(),
 };
 
@@ -542,6 +543,34 @@ export const updateTextOverlay = mutation({
     if (updatedStitch) {
       await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
     }
+  },
+});
+
+export const updateSocialCaption = mutation({
+  args: {
+    id: v.string(),
+    socialCaption: v.optional(v.union(v.string(), v.null())),
+  },
+  handler: async (ctx, { id, socialCaption }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    await ctx.db.patch(stitch._id, {
+      socialCaption: socialCaption?.trim() || undefined,
+    });
   },
 });
 

@@ -106,6 +106,7 @@ export function DashboardPageClient() {
           onSaveTemplate={stitchTemplates.createTemplateFromStitch}
           onUpdateMusic={library.updateStitchMusic}
           onUpdatePostedStatus={library.updateStitchPostedStatus}
+          onUpdateSocialCaption={library.updateStitchSocialCaption}
           onUpdateSourceSettings={library.updateStitchSourceSettings}
           onUpdateTextOverlay={library.updateStitchTextOverlay}
           ugcClips={stitchrUgcClips}

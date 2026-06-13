@@ -5,6 +5,7 @@ import type { CliprTextGeneration } from "@/lib/clipstitchr/types/CliprTextGener
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { createStitchSocialCaption } from "@/lib/clipstitchr/utils/createStitchSocialCaption";
 import { getCliprTextHasForbiddenCta } from "@/lib/clipstitchr/utils/getCliprTextHasForbiddenCta";
 import { sanitizeCliprGeneratedText } from "@/lib/clipstitchr/utils/sanitizeCliprGeneratedText";
 import { getCliprJsonText } from "@/lib/clipstitchr/server/getCliprJsonText";
@@ -83,6 +84,40 @@ function createFallbackHook(product: ProductProfile, purpose: CliprTextPurpose) 
   }
 
   return "I was not expecting that";
+}
+
+function normalizeHashtag(value: unknown) {
+  const text =
+    typeof value === "string"
+      ? value
+          .trim()
+          .replace(/^#+/g, "")
+          .replace(/[^a-z0-9]/gi, "")
+          .toLowerCase()
+      : "";
+
+  return text ? `#${text}` : "";
+}
+
+function createProductHashtag(product: ProductProfile) {
+  return normalizeHashtag(product.name) || "#productdemo";
+}
+
+function normalizeHashtags(value: unknown, product: ProductProfile) {
+  const rawHashtags = Array.isArray(value) ? value : [];
+  const fallbackHashtags = [
+    createProductHashtag(product),
+    "#ugc",
+    "#productdemo",
+    "#adcreative",
+    "#creatorsoftiktok",
+  ];
+  const hashtags = [
+    ...rawHashtags.map(normalizeHashtag),
+    ...fallbackHashtags,
+  ].filter(Boolean);
+
+  return [...new Set(hashtags)].slice(0, 5);
 }
 
 function normalizeScriptString(value: unknown, fallback: string) {
@@ -262,7 +297,9 @@ export function parseCliprTextGenerationOutput({
   slideCount: number;
 }): CliprTextGeneration {
   const parsed = JSON.parse(getCliprJsonText(outputText)) as {
+    caption?: unknown;
     filledHook?: unknown;
+    hashtags?: unknown;
     overlayText?: unknown;
     scenePlan?: unknown;
     script?: unknown;
@@ -280,6 +317,12 @@ export function parseCliprTextGenerationOutput({
   )
     ? candidateFilledHook
     : createFallbackHook(product, purpose);
+  const caption =
+    purpose === "stitchr"
+      ? normalizeString(parsed.caption, filledHook)
+      : "";
+  const hashtags =
+    purpose === "stitchr" ? normalizeHashtags(parsed.hashtags, product) : [];
   const script =
     purpose === "stitchr" ? "" : normalizeScriptString(parsed.script, "");
   const scenePlan =
@@ -321,6 +364,8 @@ export function parseCliprTextGenerationOutput({
 
   return {
     filledHook,
+    caption,
+    hashtags,
     hookStyleKey: selectedTemplate.styleKey,
     hookTemplateId: selectedTemplate.id,
     overlayText: normalizeString(parsed.overlayText, filledHook),
@@ -334,6 +379,10 @@ export function parseCliprTextGenerationOutput({
       slideCount,
       value: parsed.slides,
     }),
+    socialCaption:
+      purpose === "stitchr"
+        ? createStitchSocialCaption({ caption, hashtags })
+        : "",
     variablesUsed: normalizeVariables(parsed.variablesUsed),
   };
 }

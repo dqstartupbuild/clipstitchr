@@ -210,6 +210,7 @@ export default defineSchema({
     music: v.optional(stitchMusicMetadataValidator),
     textOverlay: v.optional(textOverlayValidator),
     textOverlays: v.optional(textOverlaysValidator),
+    socialCaption: v.optional(v.string()),
     isPosted: v.optional(v.boolean()),
     postedAt: v.optional(v.string()),
     automation: v.optional(automationProvenanceValidator),
@@ -241,6 +242,7 @@ export default defineSchema({
     ugcPlaybackRate: v.optional(videoPlaybackRateValidator),
     textOverlay: v.optional(textOverlayValidator),
     textOverlays: v.optional(textOverlaysValidator),
+    socialCaption: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
   })

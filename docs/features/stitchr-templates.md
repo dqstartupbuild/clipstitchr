@@ -13,6 +13,7 @@ A saved template keeps the editable Stitchr setup:
 - source-audio flags
 - playback rates
 - shared text overlay data
+- shared caption and hashtag copy
 - source stitch name and id for context
 
 Templates do not store rendered stitch video files, posters, generated music, or
@@ -25,10 +26,11 @@ downloaded media blobs. They are setup records only.
 3. The app creates a template from that stitch's current setup.
 4. Open Stitchr.
 5. Use the Template picker. **None** is the default.
-6. Pick a template to load its clips, trims, audio settings, playback rates, and
-   text.
-7. Select different UGC clips if needed. The reused text stays available for new
-   UGC clips unless the user gives a specific clip its own text.
+6. Pick a template to load its clips, trims, audio settings, playback rates,
+   text, and caption copy.
+7. Select different UGC clips if needed. The reused text and caption stay
+   available for new UGC clips unless the user gives a specific clip its own
+   edit.
 
 The **Templates** sidebar item opens `/dashboard/templates`, where users can see
 templates, rename them, delete them, and send one back into Stitchr.
@@ -79,6 +81,6 @@ storage, bandwidth, provider, or third-party API cost.
 
 Template application intentionally mirrors the existing "Reuse in Stitchr"
 behavior. Normal Stitchr templates place copied text into the reusable text
-state instead of tying it to the original UGC clip. That means a user can
-deselect the original UGC, move through picker pages, choose new UGC clips, and
-still keep the same text on the new stitch outputs.
+and caption state instead of tying it to the original UGC clip. That means a
+user can deselect the original UGC, move through picker pages, choose new UGC
+clips, and still keep the same text and caption on the new stitch outputs.

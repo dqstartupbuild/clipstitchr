@@ -10,6 +10,7 @@ import { DownloadStitchesPanel } from "@/app/_components/stitchr/DownloadStitche
 import { SequencePreviewPanel } from "@/app/_components/stitchr/SequencePreviewPanel";
 import { StitchrAutoTextPanel } from "@/app/_components/stitchr/StitchrAutoTextPanel";
 import { StitchrLongrTimelineStrip } from "@/app/_components/stitchr/StitchrLongrTimelineStrip";
+import { StitchrSocialCaptionPanel } from "@/app/_components/stitchr/StitchrSocialCaptionPanel";
 import { StitchTemplatePicker } from "@/app/_components/stitchr/StitchTemplatePicker";
 import { maxStitchrUgcSelectionCount } from "@/lib/clipstitchr/constants/maxStitchrUgcSelectionCount";
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
@@ -32,11 +33,13 @@ import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { cloneTextOverlays } from "@/lib/clipstitchr/utils/cloneTextOverlays";
 import { createDefaultTextOverlay } from "@/lib/clipstitchr/utils/createDefaultTextOverlay";
+import { createStitchrTextGenerationClipContext } from "@/lib/clipstitchr/utils/createStitchrTextGenerationClipContext";
 import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
+import { getStitchrSocialCaptionForUgcId } from "@/lib/clipstitchr/utils/getStitchrSocialCaptionForUgcId";
 import { getStitchrTextOverlaysForUgcId } from "@/lib/clipstitchr/utils/getStitchrTextOverlaysForUgcId";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoClipMetadataById";
@@ -70,6 +73,13 @@ export function StitchrPageClient() {
     TextOverlay[] | null
   >(null);
   const [longrTextOverlays, setLongrTextOverlays] = useState<TextOverlay[]>([]);
+  const [socialCaptionByUgcId, setSocialCaptionByUgcId] = useState<
+    Record<string, string>
+  >({});
+  const [reusedSocialCaption, setReusedSocialCaption] = useState<string | null>(
+    null,
+  );
+  const [longrSocialCaption, setLongrSocialCaption] = useState("");
   const [selectedAutoTextProductId, setSelectedAutoTextProductId] = useState("");
   const [demoProductFilterId, setDemoProductFilterId] = useState<
     string | undefined
@@ -352,6 +362,16 @@ export function StitchrPageClient() {
   );
   const previewTextOverlays =
     mode === "longr" ? longrTextOverlays : activeTextOverlays;
+  const activeSocialCaption =
+    mode === "longr"
+      ? longrSocialCaption
+      : activeUgcMetadata
+        ? getStitchrSocialCaptionForUgcId({
+            fallbackSocialCaption: reusedSocialCaption,
+            socialCaptionByUgcId,
+            ugcId: activeUgcMetadata.id,
+          })
+        : "";
   const clampedTextOverlays = clampTextOverlays(
     previewTextOverlays,
     totalDuration,
@@ -479,6 +499,9 @@ export function StitchrPageClient() {
         setTextOverlaysByUgcId({});
         setReusedTextOverlays(null);
         setLongrTextOverlays(cloneTextOverlays(templateTextOverlays));
+        setSocialCaptionByUgcId({});
+        setReusedSocialCaption(null);
+        setLongrSocialCaption(templateStitch.socialCaption ?? "");
         return;
       }
 
@@ -506,6 +529,9 @@ export function StitchrPageClient() {
       setTextOverlaysByUgcId({});
       setReusedTextOverlays(cloneTextOverlays(templateTextOverlays));
       setLongrTextOverlays([]);
+      setSocialCaptionByUgcId({});
+      setReusedSocialCaption(templateStitch.socialCaption ?? null);
+      setLongrSocialCaption("");
     },
     [library, loadClip],
   );
@@ -617,6 +643,9 @@ export function StitchrPageClient() {
         setTextOverlaysByUgcId({});
         setReusedTextOverlays(null);
         setLongrTextOverlays(cloneTextOverlays(templateTextOverlays));
+        setSocialCaptionByUgcId({});
+        setReusedSocialCaption(null);
+        setLongrSocialCaption(template.socialCaption ?? "");
         return;
       }
 
@@ -641,6 +670,9 @@ export function StitchrPageClient() {
       setTextOverlaysByUgcId({});
       setReusedTextOverlays(cloneTextOverlays(templateTextOverlays));
       setLongrTextOverlays([]);
+      setSocialCaptionByUgcId({});
+      setReusedSocialCaption(template.socialCaption ?? null);
+      setLongrSocialCaption("");
     },
     [loadClip],
   );
@@ -668,6 +700,7 @@ export function StitchrPageClient() {
       setSelectedTemplateId("");
       setAppliedTemplateId("");
       setReusedTextOverlays(null);
+      setReusedSocialCaption(null);
 
       if (!initialUgcId && !initialDemoId) {
         return;
@@ -1014,6 +1047,36 @@ export function StitchrPageClient() {
     ugcPlaybackRate,
   ]);
 
+  const handleSocialCaptionChange = useCallback(
+    (nextSocialCaption: string) => {
+      if (mode === "longr") {
+        setLongrSocialCaption(nextSocialCaption);
+        return;
+      }
+
+      if (!activeUgcMetadata) {
+        return;
+      }
+
+      if (
+        reusedSocialCaption !== null &&
+        !Object.prototype.hasOwnProperty.call(
+          socialCaptionByUgcId,
+          activeUgcMetadata.id,
+        )
+      ) {
+        setReusedSocialCaption(nextSocialCaption);
+        return;
+      }
+
+      setSocialCaptionByUgcId((captions) => ({
+        ...captions,
+        [activeUgcMetadata.id]: nextSocialCaption,
+      }));
+    },
+    [activeUgcMetadata, mode, reusedSocialCaption, socialCaptionByUgcId],
+  );
+
   const handleStitch = () => {
     if (mode === "longr") {
       const selections: StitchrLongrSelection[] = selectedLongrMetadata.map(
@@ -1043,6 +1106,7 @@ export function StitchrPageClient() {
         includeDemoAudio,
         includeUgcAudio,
         musicTrack: selectedMusicTrack,
+        socialCaption: longrSocialCaption,
         ugcPlaybackRate,
       });
       return;
@@ -1069,6 +1133,11 @@ export function StitchrPageClient() {
 
           return {
             clip,
+            socialCaption: getStitchrSocialCaptionForUgcId({
+              fallbackSocialCaption: reusedSocialCaption,
+              socialCaptionByUgcId,
+              ugcId: clip.id,
+            }),
             textOverlays: getNonEmptyTextOverlays(
               clampTextOverlays(pairTextOverlays, pairDuration),
             ),
@@ -1113,10 +1182,19 @@ export function StitchrPageClient() {
     setIsGeneratingAutoText(true);
     setAutoTextMessage(null);
 
+    const stitchrClipContexts =
+      mode === "longr"
+        ? selectedLongrMetadata.map(createStitchrTextGenerationClipContext)
+        : [
+            ...(activeUgcMetadata ? [activeUgcMetadata] : []),
+            ...(selectedDemoMetadata ? [selectedDemoMetadata] : []),
+          ].map(createStitchrTextGenerationClipContext);
+
     void generateCliprText({
       durationSeconds: totalDuration > 30 ? 60 : 30,
       productId: activeAutoTextProductId,
       purpose: "stitchr",
+      stitchrClipContexts,
     })
       .then((text) => {
         const baseOverlay =
@@ -1134,7 +1212,8 @@ export function StitchrPageClient() {
 
         if (mode === "longr") {
           setLongrTextOverlays(nextTextOverlays);
-          setAutoTextMessage("Text generated.");
+          setLongrSocialCaption(text.socialCaption || "");
+          setAutoTextMessage("Text and caption generated.");
           return;
         }
 
@@ -1150,7 +1229,8 @@ export function StitchrPageClient() {
           )
         ) {
           setReusedTextOverlays(nextTextOverlays);
-          setAutoTextMessage("Text generated.");
+          setReusedSocialCaption(text.socialCaption || "");
+          setAutoTextMessage("Text and caption generated.");
           return;
         }
 
@@ -1158,7 +1238,11 @@ export function StitchrPageClient() {
           ...overlays,
           [activeUgcMetadata.id]: nextTextOverlays,
         }));
-        setAutoTextMessage("Text generated.");
+        setSocialCaptionByUgcId((captions) => ({
+          ...captions,
+          [activeUgcMetadata.id]: text.socialCaption || "",
+        }));
+        setAutoTextMessage("Text and caption generated.");
       })
       .catch((error) => {
         setAutoTextMessage(
@@ -1172,6 +1256,8 @@ export function StitchrPageClient() {
     mode,
     previewTextOverlays,
     reusedTextOverlays,
+    selectedDemoMetadata,
+    selectedLongrMetadata,
     textOverlaysByUgcId,
     totalDuration,
   ]);
@@ -1391,6 +1477,12 @@ export function StitchrPageClient() {
                 onProductChange={setSelectedAutoTextProductId}
                 onGenerate={handleGenerateAutoText}
               />
+              {mode === "longr" || activeUgcMetadata ? (
+                <StitchrSocialCaptionPanel
+                  socialCaption={activeSocialCaption}
+                  onChange={handleSocialCaptionChange}
+                />
+              ) : null}
               <StitchrProgressPanel
                 status={stitchrState.status}
                 progress={stitchrState.progress}

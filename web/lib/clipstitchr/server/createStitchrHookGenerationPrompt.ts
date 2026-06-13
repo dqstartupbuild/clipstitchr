@@ -1,11 +1,14 @@
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprPlaceholderFillers } from "@/lib/clipstitchr/types/CliprPlaceholderFillers";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
+import { formatStitchrTextGenerationClipContext } from "@/lib/clipstitchr/server/formatStitchrTextGenerationClipContext";
 
 type CreateStitchrHookGenerationPromptOptions = {
   durationSeconds: CliprDurationSeconds;
   fillers: CliprPlaceholderFillers;
   product: ProductProfile;
+  stitchrClipContexts?: StitchrTextGenerationClipContext[];
 };
 
 const emotionalAngles = [
@@ -51,16 +54,27 @@ export function createStitchrHookGenerationPrompt({
   durationSeconds,
   fillers,
   product,
+  stitchrClipContexts = [],
 }: CreateStitchrHookGenerationPromptOptions) {
+  const sourceContext = stitchrClipContexts.length
+    ? stitchrClipContexts
+        .map(formatStitchrTextGenerationClipContext)
+        .join("\n")
+    : "No source clip context was provided. Use product/audience context only.";
+
   return [
-    "Create Stitchr visual overlay hook copy for a reaction-based stitched video.",
+    "Create Stitchr visual overlay hook copy and posting caption copy for a reaction-based stitched video.",
     "Stitchr combines a short emotional UGC reaction clip followed by a short app or product demo.",
     "There is no voiceover, no spoken explanation, and no script. The overlay hook only needs to earn attention long enough for the viewer to watch the demo.",
+    "The posting caption is a second hook for the feed caption. It should relate to the overlay hook and the source clips without repeating the exact same wording.",
     "Return only compact JSON with this exact shape:",
-    '{"templateId":"stitchr-emotional-narrative","filledHook":"short visual overlay hook","variablesUsed":{"placeholder":"value"},"overlayText":"same short visual overlay hook","slides":["same short visual overlay hook"],"script":"","scenePlan":[]}',
+    '{"templateId":"stitchr-emotional-narrative","filledHook":"short visual overlay hook","variablesUsed":{"placeholder":"value"},"overlayText":"same short visual overlay hook","caption":"short caption hook related to the overlay and clips","hashtags":["#tagone","#tagtwo","#tagthree"],"slides":["same short visual overlay hook"],"script":"","scenePlan":[]}',
     "Rules:",
-    "- Generate one hook, not a script hook, caption set, carousel, CTA, lesson, or marketing argument.",
+    "- Generate one overlay hook and one posting caption, not a script hook, carousel, CTA, lesson, or marketing argument.",
     "- filledHook and overlayText must be the same final human-readable hook.",
+    "- caption must be one short natural sentence or fragment that hooks the viewer in another way.",
+    "- caption must be relevant to the overlay hook and what appears to happen in the selected UGC and demo context.",
+    "- hashtags must contain 3-5 hashtags, all lowercase, no spaces, each starting with #.",
     "- slides must contain exactly one item, matching filledHook.",
     "- script must be an empty string and scenePlan must be an empty array.",
     "- Most hooks should be 3-9 words. Only go longer when the line still feels natural and readable on a vertical video.",
@@ -68,6 +82,7 @@ export function createStitchrHookGenerationPrompt({
     "- Do not explain the product, teach a lesson, list a benefit, or describe what the demo shows.",
     "- Avoid hooks that feel like SaaS ads, productivity advice, generic marketing copy, or direct feature explanations.",
     "- Do not mention the product name, product features, app screens, dashboards, plans, scans, uploads, exports, or onboarding steps.",
+    "- The caption may lightly hint at the product outcome, but it still must feel like a creator caption, not ad copy.",
     "- Do not ask viewers to try, download, save, comment, follow, buy, book, subscribe, or sign up.",
     "- Do not make every hook contrarian. Use the emotional setup that feels most human for the audience and context.",
     "- Do not copy example-style lines mechanically. Create a fresh line that sounds like a real person reacting.",
@@ -85,6 +100,7 @@ export function createStitchrHookGenerationPrompt({
     `Pain point context, for emotional stakes only: ${product.inferredPainPoints.join("; ")}`,
     `Product name, background only and not for the hook: ${product.name}`,
     `Product details, background only and not for the hook: ${product.productDetails}`,
+    `Selected Stitchr source context:\n${sourceContext}`,
     `Audience language hints: ${JSON.stringify(fillers)}`,
   ].join("\n");
 }

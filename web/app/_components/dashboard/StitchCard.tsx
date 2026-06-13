@@ -55,6 +55,10 @@ type StitchCardProps = {
     stitch: Stitch,
     music: StitchMusicMetadata | null,
   ) => void | Promise<void>;
+  onUpdateSocialCaption: (
+    stitch: Stitch,
+    socialCaption: string | null,
+  ) => void | Promise<void>;
   onUpdateSourceSettings: (
     stitch: Stitch,
     update: StitchSourceSettingsUpdate,
@@ -84,6 +88,7 @@ export function StitchCard({
   onSaveTemplate,
   onUpdateMusic,
   onUpdatePostedStatus,
+  onUpdateSocialCaption,
   onUpdateSourceSettings,
   onUpdateTextOverlay,
   ugcClips = [],
@@ -131,11 +136,15 @@ export function StitchCard({
   const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
   const [isSavingMusic, setIsSavingMusic] = useState(false);
   const [isSavingPostedStatus, setIsSavingPostedStatus] = useState(false);
+  const [isSavingSocialCaption, setIsSavingSocialCaption] = useState(false);
   const [isSavingText, setIsSavingText] = useState(false);
   const [isSavingSourceSettings, setIsSavingSourceSettings] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [musicError, setMusicError] = useState<string | null>(null);
   const [postedStatusError, setPostedStatusError] = useState<string | null>(
+    null,
+  );
+  const [socialCaptionError, setSocialCaptionError] = useState<string | null>(
     null,
   );
   const [templateError, setTemplateError] = useState<string | null>(null);
@@ -302,6 +311,26 @@ export function StitchCard({
       throw nextError;
     } finally {
       setIsSavingText(false);
+    }
+  };
+  const handleUpdateSocialCaption = async (
+    socialCaption: string | null,
+    stitchOverride = stitch,
+  ) => {
+    setIsSavingSocialCaption(true);
+    setSocialCaptionError(null);
+
+    try {
+      await onUpdateSocialCaption(stitchOverride, socialCaption);
+    } catch (nextError) {
+      setSocialCaptionError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to update stitch caption.",
+      );
+      throw nextError;
+    } finally {
+      setIsSavingSocialCaption(false);
     }
   };
   const handleUpdateSourceSettings = async (
@@ -516,6 +545,11 @@ export function StitchCard({
             {templateError}
           </p>
         ) : null}
+        {socialCaptionError ? (
+          <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+            {socialCaptionError}
+          </p>
+        ) : null}
       </div>
       {isDetailsOpen ? (
         <StitchDetailsDialog
@@ -538,6 +572,7 @@ export function StitchCard({
           isGeneratingMusic={isGeneratingMusic}
           isLoadingPreview={isLoadingPreview}
           isSavingMusic={isSavingMusic}
+          isSavingSocialCaption={isSavingSocialCaption}
           isSavingSourceSettings={isSavingSourceSettings}
           isSavingText={isSavingText}
           musicError={musicError}
@@ -545,6 +580,7 @@ export function StitchCard({
           previewErrorState={previewErrorState}
           previewSources={previewState}
           sourceSettingsError={sourceSettingsError}
+          socialCaptionError={socialCaptionError}
           stitch={stitch}
           textError={textError}
           ugcClips={ugcClips}
@@ -555,6 +591,7 @@ export function StitchCard({
           }}
           onRemoveMusic={() => handleUpdateMusic(null)}
           onSaveMusic={handleUpdateMusic}
+          onSaveSocialCaption={handleUpdateSocialCaption}
           onSaveSourceSettings={handleUpdateSourceSettings}
           onSaveTextOverlay={handleUpdateTextOverlay}
         />

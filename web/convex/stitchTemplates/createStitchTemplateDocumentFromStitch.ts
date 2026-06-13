@@ -34,6 +34,7 @@ export function createStitchTemplateDocumentFromStitch({
     sourceStitchName: stitch.name,
     textOverlay: stitch.textOverlay,
     textOverlays: stitch.textOverlays,
+    socialCaption: stitch.socialCaption,
     ugcClipId: stitch.ugcClipId,
     ugcClipName: stitch.ugcClipName,
     ugcPlaybackRate: stitch.ugcPlaybackRate,

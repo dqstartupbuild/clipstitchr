@@ -161,6 +161,7 @@ describe("dashboard shell sections", () => {
           onLoadClip={async () => null}
           onUpdateMusic={noop}
           onUpdatePostedStatus={noop}
+          onUpdateSocialCaption={noop}
           onUpdateSourceSettings={noop}
           onUpdateTextOverlay={noop}
           ugcClips={[]}
@@ -206,6 +207,7 @@ describe("dashboard shell sections", () => {
           onLoadClip={async () => null}
           onUpdateMusic={noop}
           onUpdatePostedStatus={noop}
+          onUpdateSocialCaption={noop}
           onUpdateSourceSettings={noop}
           onUpdateTextOverlay={noop}
           ugcClips={[]}

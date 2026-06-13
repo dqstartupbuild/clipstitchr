@@ -71,17 +71,39 @@ describe("createCliprTextGenerationPrompt", () => {
       product,
       purpose: "stitchr",
       slideCount: 4,
+      stitchrClipContexts: [
+        {
+          id: "ugc_1",
+          name: "Creator surprised by messy launch work",
+          role: "ugc",
+          tags: ["reaction"],
+          videoDescription: "A founder looks frustrated at scattered files.",
+        },
+        {
+          id: "demo_1",
+          name: "LaunchKit demo",
+          productDescription: "The demo shows launch assets getting organized.",
+          role: "demo",
+        },
+      ],
     });
 
     expect(prompt).toContain("Create Stitchr visual overlay hook copy");
+    expect(prompt).toContain("posting caption copy");
     expect(prompt).toContain("Stitchr combines a short emotional UGC reaction clip");
     expect(prompt).toContain("There is no voiceover, no spoken explanation");
+    expect(prompt).toContain('"caption":"short caption hook related to the overlay and clips"');
+    expect(prompt).toContain('"hashtags":["#tagone","#tagtwo","#tagthree"]');
     expect(prompt).toContain("Emotional Narrative Hooks");
     expect(prompt).toContain(
       "Product emotional narrative: Founders want to stop looking scattered and feel proud.",
     );
     expect(prompt).toContain("Reaction-Matched Hooks");
     expect(prompt).toContain("Most hooks should be 3-9 words");
+    expect(prompt).toContain("hashtags must contain 3-5 hashtags");
+    expect(prompt).toContain("Creator surprised by messy launch work");
+    expect(prompt).toContain("A founder looks frustrated at scattered files.");
+    expect(prompt).toContain("The demo shows launch assets getting organized.");
     expect(prompt).toContain("script must be an empty string");
     expect(prompt).not.toContain("Content angles to choose from");
     expect(prompt).not.toContain("Follow-through arcs to choose from");

@@ -23,6 +23,10 @@ type RecentStitchesSectionProps = {
     stitch: Stitch,
     music: StitchMusicMetadata | null,
   ) => void | Promise<void>;
+  onUpdateSocialCaption: (
+    stitch: Stitch,
+    socialCaption: string | null,
+  ) => void | Promise<void>;
   onUpdatePostedStatus: (
     stitch: Stitch,
     isPosted: boolean,
@@ -49,6 +53,7 @@ export function RecentStitchesSection({
   onSaveTemplate,
   onUpdateMusic,
   onUpdatePostedStatus,
+  onUpdateSocialCaption,
   onUpdateSourceSettings,
   onUpdateTextOverlay,
   ugcClips,
@@ -81,6 +86,7 @@ export function RecentStitchesSection({
               onSaveTemplate={onSaveTemplate}
               onUpdateMusic={onUpdateMusic}
               onUpdatePostedStatus={onUpdatePostedStatus}
+              onUpdateSocialCaption={onUpdateSocialCaption}
               onUpdateSourceSettings={onUpdateSourceSettings}
               onUpdateTextOverlay={onUpdateTextOverlay}
               ugcClips={ugcClips}

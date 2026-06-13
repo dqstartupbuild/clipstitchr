@@ -24,6 +24,10 @@ const mocks = vi.hoisted(() => ({
     onLoadPreview: () => void;
     onRemoveMusic: () => Promise<void>;
     onSaveMusic: (music: StitchMusicMetadata) => Promise<void>;
+    onSaveSocialCaption: (
+      socialCaption: string | null,
+      stitchOverride?: Stitch,
+    ) => Promise<void>;
     onSaveSourceSettings: (
       update: StitchSourceSettingsUpdate,
       stitchOverride?: Stitch,
@@ -282,6 +286,7 @@ describe("StitchCard", () => {
         onLoadClip={vi.fn()}
         onUpdateMusic={vi.fn()}
         onUpdatePostedStatus={vi.fn()}
+        onUpdateSocialCaption={vi.fn()}
         onUpdateSourceSettings={vi.fn()}
         onUpdateTextOverlay={vi.fn()}
       />,
@@ -310,6 +315,7 @@ describe("StitchCard", () => {
         onLoadPoster,
         onUpdateMusic: vi.fn(),
         onUpdatePostedStatus: vi.fn(),
+        onUpdateSocialCaption: vi.fn(),
         onUpdateSourceSettings: vi.fn(),
         onUpdateTextOverlay: vi.fn(),
       }),
@@ -337,6 +343,7 @@ describe("StitchCard", () => {
     const onLoadClip = vi.fn(async (id: string) => createClip(id));
     const onUpdateMusic = vi.fn(async () => undefined);
     const onUpdatePostedStatus = vi.fn(async () => undefined);
+    const onUpdateSocialCaption = vi.fn(async () => undefined);
     const onUpdateSourceSettings = vi.fn(async () => undefined);
     const onUpdateTextOverlay = vi.fn(async () => undefined);
 
@@ -371,6 +378,7 @@ describe("StitchCard", () => {
         onLoadClip={onLoadClip}
         onUpdateMusic={onUpdateMusic}
         onUpdatePostedStatus={onUpdatePostedStatus}
+        onUpdateSocialCaption={onUpdateSocialCaption}
         onUpdateSourceSettings={onUpdateSourceSettings}
         onUpdateTextOverlay={onUpdateTextOverlay}
       />,
@@ -382,6 +390,7 @@ describe("StitchCard", () => {
     await mocks.editProps?.onGenerateMusic();
     await mocks.editProps?.onSaveMusic(createStitchMusic());
     await mocks.editProps?.onRemoveMusic();
+    await mocks.editProps?.onSaveSocialCaption("Caption\n\n#ugc #demo #launch");
     await mocks.editProps?.onSaveSourceSettings(createSourceSettingsUpdate());
     await mocks.editProps?.onSaveTextOverlay(null);
     mocks.editProps?.onClose();
@@ -401,6 +410,10 @@ describe("StitchCard", () => {
     expect(onUpdateSourceSettings).toHaveBeenCalledWith(
       createStitch(),
       createSourceSettingsUpdate(),
+    );
+    expect(onUpdateSocialCaption).toHaveBeenCalledWith(
+      createStitch(),
+      "Caption\n\n#ugc #demo #launch",
     );
     expect(onUpdateTextOverlay).toHaveBeenCalledWith(createStitch(), null);
     expect(mocks.createStitchExportBlob).toHaveBeenCalled();
@@ -449,6 +462,7 @@ describe("StitchCard", () => {
         onLoadClip={vi.fn()}
         onUpdateMusic={vi.fn()}
         onUpdatePostedStatus={vi.fn()}
+        onUpdateSocialCaption={vi.fn()}
         onUpdateSourceSettings={vi.fn()}
         onUpdateTextOverlay={vi.fn()}
       />,
@@ -476,6 +490,9 @@ describe("StitchCard", () => {
     });
     const onUpdateSourceSettings = vi.fn(async () => {
       throw new Error("source update failed");
+    });
+    const onUpdateSocialCaption = vi.fn(async () => {
+      throw new Error("caption update failed");
     });
     const onUpdateTextOverlay = vi.fn(async () => {
       throw new Error("text update failed");
@@ -508,6 +525,7 @@ describe("StitchCard", () => {
         onLoadClip={onLoadClip}
         onUpdateMusic={onUpdateMusic}
         onUpdatePostedStatus={vi.fn()}
+        onUpdateSocialCaption={onUpdateSocialCaption}
         onUpdateSourceSettings={onUpdateSourceSettings}
         onUpdateTextOverlay={onUpdateTextOverlay}
       />,
@@ -523,11 +541,15 @@ describe("StitchCard", () => {
     await expect(mocks.editProps?.onSaveTextOverlay(null)).rejects.toThrow(
       "text update failed",
     );
+    await expect(
+      mocks.editProps?.onSaveSocialCaption("Caption"),
+    ).rejects.toThrow("caption update failed");
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(onLoadClip).toHaveBeenCalledWith("ugc_1");
     expect(onUpdateMusic).toHaveBeenCalled();
     expect(onUpdateSourceSettings).toHaveBeenCalled();
+    expect(onUpdateSocialCaption).toHaveBeenCalled();
     expect(onUpdateTextOverlay).toHaveBeenCalled();
   });
 });

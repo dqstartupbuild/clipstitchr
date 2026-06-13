@@ -34,6 +34,7 @@ export type Stitch = {
   music?: StitchMusicMetadata;
   textOverlay?: TextOverlay;
   textOverlays?: TextOverlay[];
+  socialCaption?: string;
   isPosted?: boolean;
   postedAt?: string;
   createdAt: string;

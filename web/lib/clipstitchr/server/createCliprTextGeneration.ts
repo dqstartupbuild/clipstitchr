@@ -11,6 +11,7 @@ import { selectCliprHookCandidates } from "@/lib/clipstitchr/server/selectCliprH
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
 
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
@@ -21,6 +22,7 @@ export async function createCliprTextGeneration({
   replicate,
   scriptIdea,
   slideCount,
+  stitchrClipContexts = [],
 }: {
   durationSeconds: CliprDurationSeconds;
   product: ProductProfile;
@@ -28,6 +30,7 @@ export async function createCliprTextGeneration({
   replicate: ReplicateClient;
   scriptIdea?: string;
   slideCount: number;
+  stitchrClipContexts?: StitchrTextGenerationClipContext[];
 }) {
   const providerModel = getCliprHookModelId();
   const candidates = selectCliprHookCandidates(
@@ -47,6 +50,7 @@ export async function createCliprTextGeneration({
         purpose,
         scriptIdea,
         slideCount,
+        stitchrClipContexts,
       }),
       systemPrompt: getCliprTextSystemPrompt(purpose),
     }),

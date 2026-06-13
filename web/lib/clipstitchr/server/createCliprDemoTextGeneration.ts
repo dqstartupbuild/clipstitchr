@@ -26,7 +26,9 @@ export function createCliprDemoTextGeneration({
   const script = `Silent demo remix using ${demoClipName}.`;
 
   return {
+    caption: "",
     filledHook: "Demo remix",
+    hashtags: [],
     hookStyleKey: "demo_remix_source",
     hookTemplateId: "DEMO-001",
     overlayText: "Demo remix",
@@ -43,6 +45,7 @@ export function createCliprDemoTextGeneration({
     ],
     script,
     slides: ["Demo remix"],
+    socialCaption: "",
     variablesUsed: {
       demoClipId,
     },

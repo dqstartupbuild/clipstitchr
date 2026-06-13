@@ -40,6 +40,7 @@ export function createStitchFromConvexDocument({
     music: stitch.music,
     textOverlay: stitch.textOverlay,
     textOverlays: stitch.textOverlays,
+    socialCaption: stitch.socialCaption,
     isPosted: stitch.isPosted,
     postedAt: stitch.postedAt,
     createdAt: stitch.createdAt,

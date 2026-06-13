@@ -122,7 +122,9 @@ describe("parseCliprTextGenerationOutput", () => {
       durationSeconds: 30,
       outputText: JSON.stringify({
         templateId: "missing-template",
+        caption: "That reaction tells you everything",
         filledHook: "product_details: {{topic}}",
+        hashtags: ["Launch Kit", "#Creator Tips", "ugc"],
         overlayText: "",
         scenePlan: [
           {
@@ -149,9 +151,39 @@ describe("parseCliprTextGenerationOutput", () => {
     expect(generation.script).toBe("");
     expect(generation.scenePlan).toEqual([]);
     expect(generation.slides).toEqual([generation.filledHook]);
+    expect(generation.caption).toBe("That reaction tells you everything");
+    expect(generation.hashtags).toEqual([
+      "#launchkit",
+      "#creatortips",
+      "#ugc",
+      "#productdemo",
+      "#adcreative",
+    ]);
+    expect(generation.socialCaption).toBe(
+      "That reaction tells you everything\n\n#launchkit #creatortips #ugc #productdemo #adcreative",
+    );
     expect(generation.variablesUsed).toEqual({
       topic: "launch ops",
     });
+  });
+
+  it("falls back Stitchr captions and hashtags when the model omits them", () => {
+    const generation = parseCliprTextGenerationOutput({
+      candidates,
+      durationSeconds: 30,
+      outputText: JSON.stringify({
+        filledHook: "I was not expecting that",
+      }),
+      providerModel: "openai/gpt-4.1",
+      product,
+      purpose: "stitchr",
+      slideCount: 2,
+    });
+
+    expect(generation.caption).toBe("I was not expecting that");
+    expect(generation.hashtags.length).toBeGreaterThanOrEqual(3);
+    expect(generation.hashtags.length).toBeLessThanOrEqual(5);
+    expect(generation.socialCaption).toContain("I was not expecting that");
   });
 
   it("fills sparse Swipr slide decks with support and CTA fallbacks", () => {

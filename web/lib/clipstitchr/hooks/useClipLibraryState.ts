@@ -155,6 +155,9 @@ export function useClipLibraryState(): ClipLibraryValue {
   const updateStitchTextOverlayMutation = useMutation(
     api.stitches.updateTextOverlay,
   );
+  const updateStitchSocialCaptionMutation = useMutation(
+    api.stitches.updateSocialCaption,
+  );
   const updateStitchPostedStatusMutation = useMutation(
     api.stitches.updatePostedStatus,
   );
@@ -701,6 +704,18 @@ export function useClipLibraryState(): ClipLibraryValue {
     [refresh, updateStitchTextOverlayMutation],
   );
 
+  const updateStitchSocialCaption = useCallback(
+    async (stitch: Stitch, socialCaption: string | null) => {
+      await updateStitchSocialCaptionMutation({
+        id: stitch.id,
+        socialCaption,
+      });
+
+      await refresh();
+    },
+    [refresh, updateStitchSocialCaptionMutation],
+  );
+
   const updateStitchPostedStatus = useCallback(
     async (stitch: Stitch, isPosted: boolean) => {
       await updateStitchPostedStatusMutation({
@@ -885,6 +900,7 @@ export function useClipLibraryState(): ClipLibraryValue {
     updateStitchMusic,
     updateStitchSourceSettings,
     updateStitchTextOverlay,
+    updateStitchSocialCaption,
     updateStitchPostedStatus,
     removeStitch,
   };

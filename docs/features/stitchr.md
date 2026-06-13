@@ -53,13 +53,14 @@ social proof first, product proof immediately after.
    product filter when the library contains demos for multiple products.
 6. Copy clip default trims into the Stitchr session.
 7. Tap or swipe through each exact UGC-then-demo preview.
-8. Optionally configure one text overlay per output or copy one overlay across
-   the batch.
-9. Optionally generate an overlay from the hidden Clipr hook-template
-   engine using saved product context. Stitchr auto-text can draw from
+8. Optionally configure one text overlay and one caption/hashtag field per
+   output or copy one overlay across the batch.
+9. Optionally generate an overlay hook, a caption hook, and 3-5 hashtags from
+   the hidden Clipr hook-template engine using saved product context and the
+   selected UGC/demo clip descriptions. Stitchr auto-text can draw from
    product/ad hook-library templates, but source names and template IDs stay
-   hidden. The generated overlay stays editable. The backend writing call uses
-   `TEXT_WRITING_MODEL_ID`, which defaults to
+   hidden. The generated overlay and caption field stay editable. The backend
+   writing call uses `TEXT_WRITING_MODEL_ID`, which defaults to
    `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` is supported for
    higher-cost writing tests.
 10. Optionally generate separate 60 second music for each stitch.
@@ -69,28 +70,34 @@ social proof first, product proof immediately after.
     separate reusable drafts from already-published assets.
 
 Saved stitch music is stored separately from the stitch. Users can edit text,
-remove music, regenerate it, enable or disable it, or change volume later from
-the saved stitch card. Media Bunny renders the UGC-then-demo video and mixes the
-selected music only when the user downloads the stitch.
+edit or copy the caption/hashtag field, remove music, regenerate it, enable or
+disable it, or change volume later from the saved stitch card. Media Bunny
+renders the UGC-then-demo video and mixes the selected music only when the user
+downloads the stitch.
 
 Saved stitches are reusable templates. The saved stitch card can launch Stitchr
 with the original source clips, trims, source-audio flags, playback rates, and
-text overlays already selected, letting users create a new stitch by changing
-only the parts that should differ. In normal Stitchr mode, reused text becomes a
-session template for selected UGC clips that do not have their own text yet. The
-user can deselect the original UGC, move through picker pages, select different
-UGC clips, and keep the same reused text on the new outputs. If a specific UGC
-gets its own text edit or an empty text list, that UGC-specific choice wins over
-the reused template text. Reuse does not overwrite the existing stitch. Posted
-status is also non-destructive metadata: marking or unmarking a stitch as posted
-only changes library organization and does not change source clips, stored
-stitch settings, music, posters, or downloadable output.
+text overlays and caption field already selected, letting users create a new
+stitch by changing only the parts that should differ. In normal Stitchr mode,
+reused text and reused caption copy become session templates for selected UGC
+clips that do not have their own edits yet. The user can deselect the original
+UGC, move through picker pages, select different UGC clips, and keep the same
+reused text and caption on the new outputs. If a specific UGC gets its own text
+edit, caption edit, empty text list, or empty caption field, that UGC-specific
+choice wins over the reused template content. Reuse does not overwrite the
+existing stitch. Posted status is also non-destructive metadata: marking or
+unmarking a stitch as posted only changes library organization and does not
+change source clips, stored stitch settings, music, posters, captions, or
+downloadable output.
 
 Dedicated Stitchr templates are saved setup records created from finished stitch
 cards with **Save as Template**. They can be selected from the Template picker on
 the Stitchr page, where **None** is the default, or managed from the Templates
 sidebar page. See `docs/features/stitchr-templates.md` for the data model,
 routes, CRUD behavior, rate limits, and maintenance notes.
+
+Stitchr social captions are documented separately in
+`docs/features/stitchr-social-captions.md`.
 
 ## Product Principles
 
@@ -104,7 +111,8 @@ routes, CRUD behavior, rate limits, and maintenance notes.
   clips, and one editable overlay per output.
 - Keep AI-generated Clips and Swaps as UGC-compatible clips that can flow into
   Stitchr.
-- Keep generated overlay text editable and hide hook style/template mechanics.
+- Keep generated overlay text and caption copy editable while hiding hook
+  style/template mechanics.
 - Keep generated music editable and separate from the saved stitch.
 - Keep saved stitches usable as templates even after they are marked posted.
 

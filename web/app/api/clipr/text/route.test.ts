@@ -84,10 +84,13 @@ describe("POST /api/clipr/text", () => {
     mocks.convex.query.mockResolvedValue(createProduct());
     mocks.convex.mutation.mockResolvedValue(null);
     mocks.createCliprTextGeneration.mockResolvedValue({
+      caption: "This is where the launch changes",
       filledHook: "Stop wasting launch time",
+      hashtags: ["#launchkit", "#ugc", "#demo"],
       overlayText: "Launch faster",
       script: "Full script",
       slides: [{ text: "Slide one" }],
+      socialCaption: "This is where the launch changes\n\n#launchkit #ugc #demo",
     });
   });
 
@@ -110,14 +113,26 @@ describe("POST /api/clipr/text", () => {
         productId: " product_1 ",
         purpose: "swipr",
         slideCount: 99,
+        stitchrClipContexts: [
+          {
+            id: "ugc_1",
+            name: "Creator reaction",
+            role: "ugc",
+            tags: ["reaction"],
+            videoDescription: "The creator looks surprised.",
+          },
+        ],
       }),
     );
 
     await expect(response.json()).resolves.toEqual({
+      caption: "This is where the launch changes",
+      hashtags: ["#launchkit", "#ugc", "#demo"],
       hook: "Stop wasting launch time",
       overlayText: "Launch faster",
       script: "Full script",
       slides: [{ text: "Slide one" }],
+      socialCaption: "This is where the launch changes\n\n#launchkit #ugc #demo",
     });
     expect(response.status).toBe(200);
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
@@ -134,6 +149,15 @@ describe("POST /api/clipr/text", () => {
         purpose: "swipr",
         replicate: { provider: "replicate" },
         slideCount: 8,
+        stitchrClipContexts: [
+          expect.objectContaining({
+            id: "ugc_1",
+            name: "Creator reaction",
+            role: "ugc",
+            tags: ["reaction"],
+            videoDescription: "The creator looks surprised.",
+          }),
+        ],
       }),
     );
   });
@@ -151,6 +175,7 @@ describe("POST /api/clipr/text", () => {
       expect.objectContaining({
         purpose: "clipr",
         slideCount: 4,
+        stitchrClipContexts: [],
       }),
     );
   });

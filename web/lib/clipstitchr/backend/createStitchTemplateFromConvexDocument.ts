@@ -22,6 +22,7 @@ export function createStitchTemplateFromConvexDocument(
     sourceStitchName: template.sourceStitchName,
     textOverlay: template.textOverlay,
     textOverlays: template.textOverlays,
+    socialCaption: template.socialCaption,
     ugcClipId: template.ugcClipId,
     ugcClipName: template.ugcClipName,
     ugcPlaybackRate: template.ugcPlaybackRate,

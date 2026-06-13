@@ -9,6 +9,7 @@ import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateC
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
+import { readStitchrTextGenerationClipContexts } from "@/lib/clipstitchr/server/readStitchrTextGenerationClipContexts";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import { getCliprDurationSeconds } from "@/lib/clipstitchr/utils/getCliprDurationSeconds";
 
@@ -19,6 +20,7 @@ type CliprTextRequestBody = {
   productId?: unknown;
   purpose?: unknown;
   slideCount?: unknown;
+  stitchrClipContexts?: unknown;
 };
 
 function getCliprTextPurpose(value: unknown): CliprTextPurpose {
@@ -69,13 +71,19 @@ export async function POST(request: Request) {
         typeof body.slideCount === "number"
           ? Math.max(1, Math.min(8, Math.round(body.slideCount)))
           : 4,
+      stitchrClipContexts: readStitchrTextGenerationClipContexts(
+        body.stitchrClipContexts,
+      ),
     });
 
     return NextResponse.json({
+      caption: generation.caption,
+      hashtags: generation.hashtags,
       hook: generation.filledHook,
       overlayText: generation.overlayText,
       script: generation.script,
       slides: generation.slides,
+      socialCaption: generation.socialCaption,
     });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

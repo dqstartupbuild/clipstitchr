@@ -76,6 +76,10 @@ export type ClipLibraryValue = {
     stitch: Stitch,
     textOverlay: TextOverlay | TextOverlay[] | null,
   ) => Promise<void>;
+  updateStitchSocialCaption: (
+    stitch: Stitch,
+    socialCaption: string | null,
+  ) => Promise<void>;
   updateStitchPostedStatus: (
     stitch: Stitch,
     isPosted: boolean,
