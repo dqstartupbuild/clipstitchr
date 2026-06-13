@@ -14,16 +14,6 @@ export function StitchrSocialCaptionPanel({
   onChange,
 }: StitchrSocialCaptionPanelProps) {
   const [copyMessage, setCopyMessage] = useState<string | null>(null);
-  const handleCopy = () => {
-    if (!socialCaption.trim()) {
-      return;
-    }
-
-    void navigator.clipboard
-      .writeText(socialCaption)
-      .then(() => setCopyMessage("Copied."))
-      .catch(() => setCopyMessage("Could not copy that caption."));
-  };
 
   return (
     <Panel className="p-4">
@@ -37,7 +27,8 @@ export function StitchrSocialCaptionPanel({
           setCopyMessage(null);
           onChange(nextSocialCaption);
         }}
-        onCopy={handleCopy}
+        onCopyError={() => setCopyMessage("Could not copy that caption.")}
+        onCopySuccess={() => setCopyMessage("Copied.")}
       />
     </Panel>
   );

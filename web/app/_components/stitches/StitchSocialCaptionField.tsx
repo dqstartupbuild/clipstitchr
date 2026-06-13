@@ -1,20 +1,21 @@
 "use client";
 
-import { Copy } from "lucide-react";
-import { Button } from "@/app/_components/ui/Button";
+import { StitchSocialCaptionCopyButton } from "@/app/_components/stitches/StitchSocialCaptionCopyButton";
 
 type StitchSocialCaptionFieldProps = {
   copyMessage: string | null;
   socialCaption: string;
   onChange: (socialCaption: string) => void;
-  onCopy: () => void;
+  onCopyError: () => void;
+  onCopySuccess: () => void;
 };
 
 export function StitchSocialCaptionField({
   copyMessage,
   socialCaption,
   onChange,
-  onCopy,
+  onCopyError,
+  onCopySuccess,
 }: StitchSocialCaptionFieldProps) {
   return (
     <div className="grid gap-3">
@@ -31,16 +32,11 @@ export function StitchSocialCaptionField({
         />
       </label>
       <div className="flex justify-end">
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          icon={<Copy aria-hidden className="h-4 w-4" />}
-          disabled={!socialCaption.trim()}
-          onClick={onCopy}
-        >
-          Copy
-        </Button>
+        <StitchSocialCaptionCopyButton
+          socialCaption={socialCaption}
+          onCopyError={onCopyError}
+          onCopySuccess={onCopySuccess}
+        />
       </div>
       {copyMessage ? (
         <p className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">

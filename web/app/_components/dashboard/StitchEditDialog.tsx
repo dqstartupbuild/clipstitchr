@@ -426,17 +426,6 @@ export function StitchEditDialog({
   const handleRemoveMusic = () => {
     setMusic(null);
   };
-  const handleCopySocialCaption = () => {
-    if (!socialCaption.trim()) {
-      return;
-    }
-
-    void navigator.clipboard
-      .writeText(socialCaption)
-      .then(() => setCopyMessage("Copied."))
-      .catch(() => setCopyMessage("Could not copy that caption."));
-  };
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/60 px-2 py-3 sm:items-center sm:px-4 sm:py-6"
@@ -579,7 +568,8 @@ export function StitchEditDialog({
                   setCopyMessage(null);
                   setSocialCaption(nextSocialCaption);
                 }}
-                onCopy={handleCopySocialCaption}
+                onCopyError={() => setCopyMessage("Could not copy that caption.")}
+                onCopySuccess={() => setCopyMessage("Copied.")}
               />
             </section>
             <section className="min-w-0 overflow-hidden rounded-lg border border-border p-4">

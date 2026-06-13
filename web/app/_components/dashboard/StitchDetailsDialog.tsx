@@ -1,9 +1,10 @@
 "use client";
 
-import { Copy, X } from "lucide-react";
+import { X } from "lucide-react";
 import { MediaActionButtonList } from "@/app/_components/dashboard/MediaActionButtonList";
 import { Badge } from "@/app/_components/ui/Badge";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { StitchSocialCaptionCopyButton } from "@/app/_components/stitches/StitchSocialCaptionCopyButton";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import { StitchSequencePreview } from "@/app/_components/dashboard/StitchSequencePreview";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
@@ -79,13 +80,6 @@ export function StitchDetailsDialog({
         ]
       : [],
   );
-  const handleCopySocialCaption = () => {
-    if (!socialCaption || !navigator.clipboard) {
-      return;
-    }
-
-    void navigator.clipboard.writeText(socialCaption);
-  };
 
   return (
     <div
@@ -157,11 +151,9 @@ export function StitchDetailsDialog({
                     {item.label}
                   </p>
                   {item.isCopyable ? (
-                    <IconButton
-                      type="button"
-                      label="Copy caption and hashtags"
-                      icon={<Copy aria-hidden className="h-4 w-4" />}
-                      onClick={handleCopySocialCaption}
+                    <StitchSocialCaptionCopyButton
+                      socialCaption={item.value}
+                      variant="icon"
                     />
                   ) : null}
                 </div>

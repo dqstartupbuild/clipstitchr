@@ -16,6 +16,9 @@ The caption is meant to be another hook for TikTok, Reels, or Shorts. It should
 feel connected to the overlay hook and to what appears in the selected UGC and
 demo clips.
 
+Copy buttons for this field temporarily swap from the copy icon to a checkmark
+after the clipboard write succeeds.
+
 ## User Flow
 
 1. Select Stitchr source clips.
