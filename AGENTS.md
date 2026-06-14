@@ -34,6 +34,103 @@ npm run typecheck
 npm test
 ```
 
+## Google Cloud Run Worker Redeploys
+
+Provider and media workers run as Google Cloud Run Jobs, not inside Vercel or
+Convex. When worker code or shared backend code used by a worker changes,
+redeploy both jobs from `web/` unless the change clearly affects only one
+worker.
+
+Default production values:
+
+```bash
+PROJECT_ID=clipstitchr
+REGION=us-central1
+TAG="<short-feature-name>-$(git rev-parse --short HEAD)"
+REPOSITORY="$REGION-docker.pkg.dev/$PROJECT_ID/clipstitchr"
+```
+
+Build and push the provider worker:
+
+```bash
+cd web
+
+docker build --platform linux/amd64 \
+  -f services/provider-worker/Dockerfile \
+  -t "$REPOSITORY/provider-worker:$TAG" \
+  .
+
+docker push "$REPOSITORY/provider-worker:$TAG"
+```
+
+Deploy the provider job with the existing production shape:
+
+```bash
+gcloud run jobs deploy clipstitchr-provider-worker \
+  --project "$PROJECT_ID" \
+  --region "$REGION" \
+  --image "$REPOSITORY/provider-worker:$TAG" \
+  --tasks 1 \
+  --max-retries 1 \
+  --cpu 2 \
+  --memory 4Gi \
+  --task-timeout 30m \
+  --execution-environment gen2 \
+  --service-account "140346842368-compute@developer.gserviceaccount.com" \
+  --set-env-vars NEXT_PUBLIC_CONVEX_URL="https://whimsical-ptarmigan-764.convex.cloud",PROVIDER_WORKER_TOOLS="stitchr,swapr,clipr,avatar-photo,swipr",CLIPR_TTS_MODEL_ID="elevenlabs/v3",CLIPR_LIP_SYNC_MODEL_ID="pixverse/lipsync",TEXT_WRITING_MODEL_ID="anthropic/claude-sonnet-4.6" \
+  --set-secrets PROVIDER_WORKER_SECRET=provider-worker-secret:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest
+```
+
+Build and push the media worker:
+
+```bash
+docker build --platform linux/amd64 \
+  -f services/media-worker/Dockerfile \
+  -t "$REPOSITORY/media-worker:$TAG" \
+  .
+
+docker push "$REPOSITORY/media-worker:$TAG"
+```
+
+Deploy the media job with the existing production shape:
+
+```bash
+gcloud run jobs deploy clipstitchr-media-worker \
+  --project "$PROJECT_ID" \
+  --region "$REGION" \
+  --image "$REPOSITORY/media-worker:$TAG" \
+  --tasks 1 \
+  --max-retries 1 \
+  --cpu 2 \
+  --memory 4Gi \
+  --task-timeout 30m \
+  --execution-environment gen2 \
+  --service-account "140346842368-compute@developer.gserviceaccount.com" \
+  --set-env-vars NEXT_PUBLIC_CONVEX_URL="https://whimsical-ptarmigan-764.convex.cloud" \
+  --set-secrets MEDIA_WORKER_SECRET=clipstitchr-media-worker-secret:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest
+```
+
+Smoke-check the deployed images with one-off executions before calling the
+redeploy complete:
+
+```bash
+gcloud run jobs execute clipstitchr-provider-worker \
+  --project "$PROJECT_ID" \
+  --region "$REGION" \
+  --args=--check \
+  --wait
+
+gcloud run jobs execute clipstitchr-media-worker \
+  --project "$PROJECT_ID" \
+  --region "$REGION" \
+  --args=--check \
+  --wait
+```
+
+If the job shape changes, update this section and the matching deployment docs
+in the same change. Do not commit secret values; keep secrets in Google Secret
+Manager and reference them with `--set-secrets`.
+
 ## Coding Style & Naming Conventions
 
 Follow `coding-guidelines.md`. This project requires one file, one purpose:
