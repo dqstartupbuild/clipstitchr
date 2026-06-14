@@ -1,4 +1,4 @@
-const DEFAULT_UPLOAD_ANALYSIS_MODEL_ID = "openai/gpt-4.1-mini";
+const DEFAULT_UPLOAD_ANALYSIS_MODEL_ID = "openai/gpt-5-mini";
 
 export function getUploadAnalysisModelId() {
   return (

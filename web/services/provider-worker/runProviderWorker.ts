@@ -2511,6 +2511,7 @@ async function processUploadVideoAnalysis({
     outfitDescription: analysis.outfitDescription,
     locationDescription: analysis.locationDescription,
     poseDescription: analysis.poseDescription,
+    performanceScore: analysis.performanceScore,
     productDescription: analysis.productDescription,
     productId: input.productId,
     updatedAt,

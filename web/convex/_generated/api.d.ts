@@ -74,6 +74,7 @@ import type * as validators_automationTaskStatus from "../validators/automationT
 import type * as validators_automationTaskType from "../validators/automationTaskType.js";
 import type * as validators_automationTool from "../validators/automationTool.js";
 import type * as validators_avatarWardrobeStyle from "../validators/avatarWardrobeStyle.js";
+import type * as validators_clipPerformanceScore from "../validators/clipPerformanceScore.js";
 import type * as validators_clipType from "../validators/clipType.js";
 import type * as validators_cliprDurationSeconds from "../validators/cliprDurationSeconds.js";
 import type * as validators_cliprGenerationMode from "../validators/cliprGenerationMode.js";
@@ -182,6 +183,7 @@ declare const fullApi: ApiFromModules<{
   "validators/automationTaskType": typeof validators_automationTaskType;
   "validators/automationTool": typeof validators_automationTool;
   "validators/avatarWardrobeStyle": typeof validators_avatarWardrobeStyle;
+  "validators/clipPerformanceScore": typeof validators_clipPerformanceScore;
   "validators/clipType": typeof validators_clipType;
   "validators/cliprDurationSeconds": typeof validators_cliprDurationSeconds;
   "validators/cliprGenerationMode": typeof validators_cliprGenerationMode;

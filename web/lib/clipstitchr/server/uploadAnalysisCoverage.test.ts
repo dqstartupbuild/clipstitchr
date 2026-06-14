@@ -133,7 +133,7 @@ describe("upload analysis helpers", () => {
   });
 
   it("reads upload analysis model IDs from defaults and environment", () => {
-    expect(getUploadAnalysisModelId()).toBe("openai/gpt-4.1-mini");
+    expect(getUploadAnalysisModelId()).toBe("openai/gpt-5-mini");
     expect(getUploadVideoAnalysisModelId()).toBe("google/gemini-3-flash");
 
     process.env.REPLICATE_UPLOAD_ANALYSIS_MODEL_ID = "custom/image-model";
@@ -172,7 +172,7 @@ describe("upload analysis helpers", () => {
           max_completion_tokens: 400,
           prompt: expect.stringContaining("avatar photo"),
         }),
-        model: "openai/gpt-4.1-mini",
+        model: "openai/gpt-5-mini",
       }),
     );
 
@@ -192,6 +192,15 @@ describe("upload analysis helpers", () => {
         }),
       }),
     );
+    expect(
+      String(
+        (
+          predictionCreate.mock.calls.at(-1)?.[0] as {
+            input?: { prompt?: string };
+          }
+        ).input?.prompt,
+      ),
+    ).toContain("performanceScore");
   });
 
   it("creates Swipr background analysis predictions", async () => {

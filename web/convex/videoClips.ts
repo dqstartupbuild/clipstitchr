@@ -12,6 +12,7 @@ import { assetTagsValidator } from "./validators/assetTags";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { cliprMetadataValidator } from "./validators/cliprMetadata";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
+import { clipPerformanceScoreValidator } from "./validators/clipPerformanceScore";
 import { clipTypeValidator } from "./validators/clipType";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { r2ObjectValidator } from "./validators/r2Object";
@@ -28,6 +29,7 @@ const saveArgs = {
   outfitDescription: v.optional(v.string()),
   locationDescription: v.optional(v.string()),
   poseDescription: v.optional(v.string()),
+  performanceScore: v.optional(clipPerformanceScoreValidator),
   productDescription: v.optional(v.string()),
   productId: v.optional(v.string()),
   originalName: v.string(),
@@ -372,6 +374,7 @@ export const updateMetadataFromProvider = mutation({
     outfitDescription: v.optional(v.string()),
     locationDescription: v.optional(v.string()),
     poseDescription: v.optional(v.string()),
+    performanceScore: v.optional(clipPerformanceScoreValidator),
     productDescription: v.optional(v.string()),
     productId: v.optional(v.string()),
     updatedAt: v.string(),
@@ -389,6 +392,7 @@ export const updateMetadataFromProvider = mutation({
       outfitDescription,
       locationDescription,
       poseDescription,
+      performanceScore,
       productDescription,
       productId,
       updatedAt,
@@ -420,6 +424,7 @@ export const updateMetadataFromProvider = mutation({
       ...(outfitDescription === undefined ? {} : { outfitDescription }),
       ...(locationDescription === undefined ? {} : { locationDescription }),
       ...(poseDescription === undefined ? {} : { poseDescription }),
+      ...(performanceScore === undefined ? {} : { performanceScore }),
       ...(productDescription === undefined ? {} : { productDescription }),
       ...(productId === undefined ? {} : { productId }),
       updatedAt,

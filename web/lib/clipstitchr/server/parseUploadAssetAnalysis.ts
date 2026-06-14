@@ -2,6 +2,7 @@ import type { UploadAssetAnalysis } from "@/lib/clipstitchr/types/UploadAssetAna
 import { splitAvatarDescriptionPoseDetails } from "@/lib/clipstitchr/server/splitAvatarDescriptionPoseDetails";
 import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
 import { normalizeAssetTags } from "@/lib/clipstitchr/utils/normalizeAssetTags";
+import { parseClipPerformanceScore } from "@/lib/clipstitchr/utils/parseClipPerformanceScore";
 
 export function parseUploadAssetAnalysis(
   text: string,
@@ -24,6 +25,7 @@ export function parseUploadAssetAnalysis(
       outfitDescription?: unknown;
       locationDescription?: unknown;
       poseDescription?: unknown;
+      performanceScore?: unknown;
       productDescription?: unknown;
       videoDescription?: unknown;
       name?: unknown;
@@ -63,6 +65,9 @@ export function parseUploadAssetAnalysis(
       typeof parsed.productDescription === "string"
         ? parsed.productDescription.trim().slice(0, 1200)
         : undefined;
+    const performanceScore = parseClipPerformanceScore(
+      parsed.performanceScore,
+    );
     const videoDescription =
       typeof parsed.videoDescription === "string"
         ? parsed.videoDescription.trim().slice(0, 5000)
@@ -90,6 +95,7 @@ export function parseUploadAssetAnalysis(
       ...(outfitDescription ? { outfitDescription } : {}),
       ...(locationDescription ? { locationDescription } : {}),
       ...(poseDescription ? { poseDescription } : {}),
+      ...(performanceScore ? { performanceScore } : {}),
       ...(productDescription ? { productDescription } : {}),
       ...(videoDescription ? { videoDescription } : {}),
       name,

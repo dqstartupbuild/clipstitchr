@@ -16,6 +16,7 @@ import { cliprJobStageValidator } from "./validators/cliprJobStage";
 import { cliprJobStatusValidator } from "./validators/cliprJobStatus";
 import { cliprMetadataValidator } from "./validators/cliprMetadata";
 import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
+import { clipPerformanceScoreValidator } from "./validators/clipPerformanceScore";
 import { cliprResolvedGenerationModeValidator } from "./validators/cliprResolvedGenerationMode";
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { cliprVideoModelIdValidator } from "./validators/cliprVideoModelId";
@@ -64,6 +65,7 @@ export default defineSchema({
     outfitDescription: v.optional(v.string()),
     locationDescription: v.optional(v.string()),
     poseDescription: v.optional(v.string()),
+    performanceScore: v.optional(clipPerformanceScoreValidator),
     productDescription: v.optional(v.string()),
     productId: v.optional(v.string()),
     originalName: v.string(),

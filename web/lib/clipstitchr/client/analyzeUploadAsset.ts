@@ -5,6 +5,7 @@ import type { UploadAssetAnalysisKind } from "@/lib/clipstitchr/types/UploadAsse
 import { getBlobFileExtension } from "@/lib/clipstitchr/utils/getBlobFileExtension";
 import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
 import { normalizeAssetTags } from "@/lib/clipstitchr/utils/normalizeAssetTags";
+import { parseClipPerformanceScore } from "@/lib/clipstitchr/utils/parseClipPerformanceScore";
 
 type AnalyzeUploadAssetOptions = {
   blob?: Blob;
@@ -82,6 +83,7 @@ export async function analyzeUploadAsset({
       typeof body.poseDescription === "string"
         ? body.poseDescription.trim()
         : undefined,
+    performanceScore: parseClipPerformanceScore(body.performanceScore),
     productDescription:
       typeof body.productDescription === "string"
         ? body.productDescription.trim()

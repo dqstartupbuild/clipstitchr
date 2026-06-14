@@ -21,6 +21,7 @@ export function createVideoClipFromConvexDocument({
     outfitDescription: clip.outfitDescription,
     locationDescription: clip.locationDescription,
     poseDescription: clip.poseDescription,
+    performanceScore: clip.performanceScore,
     productDescription: clip.productDescription,
     productId: clip.productId,
     originalName: clip.originalName,

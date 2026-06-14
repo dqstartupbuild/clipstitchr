@@ -119,10 +119,11 @@ Optional Replicate model overrides:
 - `AVATAR_PHOTO_MODEL_ID` defaults to `openai/gpt-image-2` for avatar photo
   generation. Supported workflows include `openai/gpt-image-2` and
   `minimax/image-01`.
-- `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID` defaults to `openai/gpt-4.1-mini` for
-  avatar/photo image analysis and video poster fallback analysis.
+- `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID` defaults to `openai/gpt-5-mini` for
+  avatar/photo image analysis, video poster fallback analysis, and clip score
+  fallback analysis.
 - `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` defaults to
-  `google/gemini-3-flash` for full-video UGC/demo action analysis.
+  `google/gemini-3-flash` for full-video UGC/demo action and score analysis.
 - `SWIPR_BACKGROUND_MODEL_ID` defaults to `openai/gpt-image-2` for Swipr AI
   background generation. Supported workflows include `openai/gpt-image-2`,
   `prunaai/p-image`, and `prunaai/wan-2.2-image`.
@@ -182,7 +183,7 @@ Firecrawl website import:
 | Shared Swipr background R2 download signed URL | `POST /api/swipr/backgrounds/download-url` | Uses the R2 download signed URL limit after validating the shared background exists |
 | Shared music R2 download signed URL | `POST /api/music/download-url` | Uses the R2 download signed URL limit after validating the shared music track exists |
 | Upload image metadata analysis | `POST /api/uploads/analyze` for avatar/photo images and video fallback posters | 300/hour/user, burst 100; 10,000/30 days/user; global 6,000/hour |
-| Swipr background metadata analysis | `POST /api/swipr/backgrounds/analyze` | Uses the upload image metadata analysis limits before calling GPT-4.1 mini through Replicate |
+| Swipr background metadata analysis | `POST /api/swipr/backgrounds/analyze` | Uses the upload image metadata analysis limits before calling the configured upload image analysis model through Replicate |
 | Upload video action analysis | `POST /api/uploads/jobs` for close-safe video uploads and `POST /api/uploads/analyze` for legacy/fallback video analysis | 60/hour/user, burst 20; 1,500/30 days/user; global 1,000/hour. The worker path consumes this before creating the durable upload media job; after normalization, the media worker creates an `upload-video-analysis` provider job. Gemini full-video analysis runs first for videos up to 100 MB; OpenAI poster analysis is the fallback when Gemini fails or the video exceeds the analysis size cap. |
 | Swapr photo expansion | `POST /api/swapr/photos/expand` | 10/hour/user, burst 5; 20/day/user; 375/30 days/user; global 300/hour |
 | Swapr video job create | `POST /api/swapr/generations` for the close-safe worker path; legacy `POST /api/swapr/jobs` for direct prediction creation | 2 Swapr batches/hour/user, burst 2; 5 Swapr batches/day/user; 500 estimated output seconds/30 days/user; technical provider segment guard 60 segments/hour/user and 180 segments/day/user; global 300 provider segments/hour. The worker route accepts saved R2 media references only, validates every segment before queuing, consumes the job/seconds/segment limits and R2 download limit before creating one durable `manual-swapr` provider job. The provider worker starts and polls segment predictions, and the media worker normalizes/stitches the final saved Swapr clip. |
@@ -386,9 +387,11 @@ objects before it creates an `upload-video-analysis` provider job. The provider
 worker signs short-lived R2 read URLs for the stored video/poster and consumes
 the already-authorized analysis work without requiring the browser to stay open.
 If Gemini fails, or if the normalized video is larger than 100 MB, the provider
-worker falls back to the existing OpenAI image-analysis path using the generated
-poster image when one is available. `POST /api/uploads/analyze` remains for
-image analysis and legacy/fallback upload analysis paths.
+worker falls back to the OpenAI image-analysis path using the generated poster
+image when one is available. The default poster-analysis model is
+`openai/gpt-5-mini`; full-video scoring stays on Gemini because OpenAI's GPT-5
+mini model lists video input as unsupported. `POST /api/uploads/analyze`
+remains for image analysis and legacy/fallback upload analysis paths.
 
 Swapr video generation is rate-limited both by job count and by estimated output
 seconds before the worker job is created. `POST /api/swapr/generations` uses
