@@ -2,6 +2,7 @@
 
 import { SlidersHorizontal, X } from "lucide-react";
 import { useState } from "react";
+import { ClipPerformanceScoreDetails } from "@/app/_components/dashboard/ClipPerformanceScoreDetails";
 import { CliprMusicControls } from "@/app/_components/dashboard/CliprMusicControls";
 import { MediaActionButtonList } from "@/app/_components/dashboard/MediaActionButtonList";
 import { VideoClipMusicPreview } from "@/app/_components/dashboard/VideoClipMusicPreview";
@@ -251,6 +252,7 @@ export function VideoClipDetailsDialog({
                 requiredTag={clip.clipType}
               />
             </div>
+            <ClipPerformanceScoreDetails score={clip.performanceScore} />
             {detailItems.map((item) => (
               <div key={item.label} className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">

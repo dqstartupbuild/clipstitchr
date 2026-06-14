@@ -22,6 +22,7 @@ export const stitchrDoc = {
       title: "Make a batch",
       body: [
         "Choose up to 20 UGC and one product demo. Stitchr makes one finished ad for each UGC selection and reuses the same demo for the batch.",
+        "When a clip has a score, use it as a quick clue for which UGC or demo is worth trying first.",
       ],
       bullets: [
         "Choose UGC and Demo clips from the library.",

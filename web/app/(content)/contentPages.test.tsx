@@ -118,6 +118,7 @@ describe("content pages", () => {
     }));
     expect(indexMarkup).toContain("Find the guide");
     expect(indexMarkup).toContain(firstDoc.title);
+    expect(indexMarkup).toContain("Clip Scores");
     expect(articleMarkup).toContain(firstDoc.title);
     expect(articleMarkup).toContain("Back to docs");
   });

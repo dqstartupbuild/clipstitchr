@@ -32,9 +32,9 @@ export function LandingHero() {
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-text-secondary">
             Upload creator clips and product demos once. Pick a UGC hook, pair
-            it with a demo, and create vertical ad variants without opening a
-            timeline editor. Sequence multiple clips into a Long when you need a
-            longer vertical video.
+            it with a demo, see which clips are worth using, and create
+            vertical ad variants without opening a timeline editor. Sequence
+            multiple clips into a Long when you need a longer vertical video.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <TrackedButtonLink
@@ -47,13 +47,13 @@ export function LandingHero() {
               Go to Dashboard
             </TrackedButtonLink>
             <TrackedButtonLink
-              href="#features"
+              href="#scores"
               className={secondaryButtonClassName}
               contentCategory="Landing page"
-              contentId="hero_workflow_button"
-              contentName="Hero workflow"
+              contentId="hero_scores_button"
+              contentName="Hero scores"
             >
-              See workflow
+              See scores
             </TrackedButtonLink>
           </div>
         </div>

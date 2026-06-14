@@ -50,7 +50,9 @@ social proof first, product proof immediately after.
 3. Save generated posters so clips are recognizable at a glance.
 4. Store non-destructive default trims on each clip.
 5. Select up to 20 UGC clips and one demo clip inside Stitchr, using the
-   product filter when the library contains demos for multiple products.
+   product filter when the library contains demos for multiple products. When
+   upload analysis has scored a clip, show that score in the picker so the user
+   can spot clips worth using before building the batch.
 6. Copy clip default trims into the Stitchr session.
 7. Tap or swipe through each exact UGC-then-demo preview.
 8. Optionally configure one text overlay and one caption/hashtag field per
@@ -115,6 +117,8 @@ Stitchr social captions are documented separately in
   style/template mechanics.
 - Keep generated music editable and separate from the saved stitch.
 - Keep saved stitches usable as templates even after they are marked posted.
+- Use clip scores as guidance for selection, not as a hard gate that blocks the
+  user's creative judgment.
 
 ## Non-Goals
 

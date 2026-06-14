@@ -2,6 +2,7 @@ import {
   Download,
   FolderSearch,
   CirclePlay,
+  Gauge,
   Images,
   Ratio,
   Scissors,
@@ -24,6 +25,12 @@ const features = [
     description:
       "Prepare your videos for vertical ads so UGC and demos work together cleanly.",
     icon: Ratio,
+  },
+  {
+    title: "Score clips before posting",
+    description:
+      "See which clips are worth using and what to fix before you build the next ad.",
+    icon: Gauge,
   },
   {
     title: "Organize your library",

@@ -3,6 +3,7 @@
 import { Play } from "lucide-react";
 import type { ReactNode } from "react";
 import { useCallback, useState } from "react";
+import { ClipPerformanceScoreBadge } from "@/app/_components/dashboard/ClipPerformanceScoreBadge";
 import { VideoClipDetailsDialog } from "@/app/_components/dashboard/VideoClipDetailsDialog";
 import { VideoClipEditDialog } from "@/app/_components/dashboard/VideoClipEditDialog";
 import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
@@ -219,6 +220,11 @@ export function VideoClipPreviewCard({
             <p className="mt-1 text-xs text-text-tertiary">
               {formatDuration(visibleDuration)} . {formatBytes(clip.size)}
             </p>
+            {clip.performanceScore ? (
+              <span className="mt-2 flex min-w-0">
+                <ClipPerformanceScoreBadge score={clip.performanceScore} />
+              </span>
+            ) : null}
           </button>
           {actionItems.length ? (
             <MediaCardActionMenu

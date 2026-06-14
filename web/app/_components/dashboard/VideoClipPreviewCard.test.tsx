@@ -143,6 +143,13 @@ function createClipMetadata(
     name: "UGC Clip",
     originalName: "clip.mp4",
     originalSize: 100,
+    performanceScore: {
+      bestUse: "Use it as the first UGC clip.",
+      fixes: ["Trim the pause at the start."],
+      overall: 88,
+      strengths: ["Clear face and product moment."],
+      summary: "The first second gives people a reason to stay.",
+    },
     posterObject: {
       contentType: "image/jpeg",
       key: "poster.jpg",
@@ -260,6 +267,8 @@ describe("VideoClipPreviewCard", () => {
 
     expect(markup).toContain("blob:poster");
     expect(markup).toContain("Footer");
+    expect(markup).toContain("Worth using");
+    expect(markup).toContain("88");
     expect(mocks.menuProps?.items).toHaveLength(1);
     expect(mocks.selectionProps).toEqual(
       expect.objectContaining({

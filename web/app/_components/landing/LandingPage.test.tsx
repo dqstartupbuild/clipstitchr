@@ -52,6 +52,9 @@ describe("LandingPage", () => {
     const markup = renderToStaticMarkup(<Home />);
 
     expect(markup).toContain("Turn your UGC into");
+    expect(markup).toContain(
+      "Know which clips are worth using before you waste time posting",
+    );
     expect(markup).toContain("One reusable ad library");
     expect(markup).toContain("/example-outputs/clipstitchr-example-01.webm");
     expect(markup).toContain("/example-outputs/clipstitchr-example-21.webm");
@@ -70,8 +73,10 @@ describe("LandingPage", () => {
     );
 
     expect(landingMarkup).toContain("Features");
+    expect(landingMarkup).toContain("Scores");
     expect(landingMarkup).toContain("How it Works");
     expect(landingMarkup).toContain("Examples");
+    expect(landingMarkup).not.toContain("Pricing");
     expect(landingMarkup).not.toContain("Real Stitchr output");
     expect(landingMarkup).not.toContain("Real output reel");
     expect(

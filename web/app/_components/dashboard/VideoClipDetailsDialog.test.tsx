@@ -138,6 +138,19 @@ function createClip(overrides: Partial<VideoClipMetadata> = {}): VideoClipMetada
     originalName: "clip.mp4",
     originalSize: 100,
     outfitDescription: "Blue jacket",
+    performanceScore: {
+      bestUse: "Use it as the first UGC clip.",
+      cameraPresence: 82,
+      clarity: 80,
+      fixes: ["Trim the pause at the start."],
+      hook: 88,
+      overall: 88,
+      pacing: 76,
+      platformFit: 84,
+      stitchFit: 90,
+      strengths: ["Clear face and product moment."],
+      summary: "The first second gives people a reason to stay.",
+    },
     poseDescription: "Holding product",
     productDescription: "Reusable launch kit",
     size: 100,
@@ -274,6 +287,12 @@ describe("VideoClipDetailsDialog", () => {
         typeof element.type === "function" &&
         element.type.name === "CliprMusicControls",
     )[0];
+    const scoreDetails = findElements(
+      tree,
+      (element) =>
+        typeof element.type === "function" &&
+        element.type.name === "ClipPerformanceScoreDetails",
+    )[0];
     const stopPropagation = vi.fn();
 
     (root.props.onClick as () => void)();
@@ -285,6 +304,9 @@ describe("VideoClipDetailsDialog", () => {
     expect(stopPropagation).toHaveBeenCalledOnce();
 
     expect(preview.props.trimRange).toEqual({ start: 1, end: 5 });
+    expect(scoreDetails.props.score).toEqual(
+      expect.objectContaining({ overall: 88 }),
+    );
     (preview.props.onLoadPreview as () => void)();
     expect(onLoadPreview).toHaveBeenCalledOnce();
 

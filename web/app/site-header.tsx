@@ -37,6 +37,12 @@ export function SiteHeader({
               Features
             </a>
             <a
+              href="#scores"
+              className="font-semibold transition-colors hover:text-text-primary"
+            >
+              Scores
+            </a>
+            <a
               href="#workflow"
               className="font-semibold transition-colors hover:text-text-primary"
             >
@@ -53,12 +59,6 @@ export function SiteHeader({
               className="font-semibold transition-colors hover:text-text-primary"
             >
               Examples
-            </Link>
-            <Link
-              href="/sign-up"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Pricing
             </Link>
           </>
         ) : (
