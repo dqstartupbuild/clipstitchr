@@ -60,6 +60,8 @@ describe("LandingPage", () => {
     expect(markup).toContain("/example-outputs/clipstitchr-example-21.webm");
     expect(markup).not.toContain("/examples/stitchr-fitness-score-reaction");
     expect(markup).toContain("Stitch first, generate when needed");
+    expect(markup).toContain("Save the ad setup that worked");
+    expect(markup).toContain("Let ClipStitchr make daily drafts");
     expect(markup).toContain("Stop collecting clips you never use");
     expect(markup).toContain("Five ways to turn your library");
     expect(markup).toContain("Turn your clip library into the next ad batch");
@@ -74,6 +76,8 @@ describe("LandingPage", () => {
 
     expect(landingMarkup).toContain("Features");
     expect(landingMarkup).toContain("Scores");
+    expect(landingMarkup).toContain("Templates");
+    expect(landingMarkup).toContain("Automation");
     expect(landingMarkup).toContain("How it Works");
     expect(landingMarkup).toContain("Examples");
     expect(landingMarkup).not.toContain("Pricing");

@@ -33,7 +33,7 @@ const workflows = [
 
 export function LandingWorkflow() {
   return (
-    <section id="workflow" className="px-6 py-16">
+    <section id="workflow" className="scroll-mt-24 px-6 py-16">
       <div className="mx-auto max-w-6xl">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">

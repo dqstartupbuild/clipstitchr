@@ -119,6 +119,8 @@ describe("content pages", () => {
     expect(indexMarkup).toContain("Find the guide");
     expect(indexMarkup).toContain(firstDoc.title);
     expect(indexMarkup).toContain("Clip Scores");
+    expect(indexMarkup).toContain("Templates");
+    expect(indexMarkup).toContain("Automation");
     expect(articleMarkup).toContain(firstDoc.title);
     expect(articleMarkup).toContain("Back to docs");
   });

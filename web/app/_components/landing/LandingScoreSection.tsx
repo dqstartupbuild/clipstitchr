@@ -31,7 +31,7 @@ const scorePreviewMetrics = [
 
 export function LandingScoreSection() {
   return (
-    <section id="scores" className="bg-surface-muted px-6 py-16">
+    <section id="scores" className="scroll-mt-24 bg-surface-muted px-6 py-16">
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
@@ -41,8 +41,8 @@ export function LandingScoreSection() {
             Know which clips are worth using before you waste time posting.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Upload a UGC clip or demo and ClipStitchr gives it a simple score,
-            a plain-English reason, and quick fixes you can use before it goes
+            Upload a UGC clip or demo and ClipStitchr gives it a simple score
+            and quick fixes you can use before it goes
             into an ad.
           </p>
         </div>

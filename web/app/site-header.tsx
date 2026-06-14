@@ -27,7 +27,7 @@ export function SiteHeader({
     >
       <BrandMark />
 
-      <div className="hidden sm:flex items-center gap-6 text-sm text-text-secondary">
+      <div className="hidden items-center gap-6 text-sm text-text-secondary lg:flex">
         {isLanding ? (
           <>
             <a
@@ -41,6 +41,18 @@ export function SiteHeader({
               className="font-semibold transition-colors hover:text-text-primary"
             >
               Scores
+            </a>
+            <a
+              href="#templates"
+              className="font-semibold transition-colors hover:text-text-primary"
+            >
+              Templates
+            </a>
+            <a
+              href="#automation"
+              className="font-semibold transition-colors hover:text-text-primary"
+            >
+              Automation
             </a>
             <a
               href="#workflow"
@@ -92,7 +104,7 @@ export function SiteHeader({
         <HeaderAuthActions />
       </div>
 
-      <div className="sm:hidden">
+      <div className="lg:hidden">
         <HeaderAuthActions variant="mobile" />
       </div>
     </nav>

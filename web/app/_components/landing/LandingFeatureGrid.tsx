@@ -1,9 +1,11 @@
 import {
+  Bot,
   Download,
   FolderSearch,
   CirclePlay,
   Gauge,
   Images,
+  LayoutTemplate,
   Ratio,
   Scissors,
   Shuffle,
@@ -57,6 +59,18 @@ const features = [
     icon: Scissors,
   },
   {
+    title: "Reuse saved templates",
+    description:
+      "Save a finished Stitch setup and start the next ad from a ready structure.",
+    icon: LayoutTemplate,
+  },
+  {
+    title: "Prepare daily drafts",
+    description:
+      "Choose what automation can make, then review the drafts before you use them.",
+    icon: Bot,
+  },
+  {
     title: "Save avatar photos",
     description:
       "Create an avatar and add/generate different photos of them as needed.",
@@ -84,7 +98,7 @@ const features = [
 
 export function LandingFeatureGrid() {
   return (
-    <section id="features" className="bg-white px-6 py-16">
+    <section id="features" className="scroll-mt-24 bg-white px-6 py-16">
       <div className="mx-auto max-w-6xl">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
