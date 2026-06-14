@@ -55,13 +55,17 @@ The read query lives in `web/convex/libraryCounts.ts`. It returns:
 
 ```ts
 {
-  cliprClips: number;
+  cliprClips: number; // kept for compatibility; visible UI folds this into UGC
   demoClips: number;
   stitches: number;
   swapClips: number;
   ugcClips: number;
 }
 ```
+
+Generated non-demo Clipr output now counts as UGC. Legacy aggregate rows with
+`libraryKind: "clipr"` are added into the returned `ugcClips` count and
+`cliprClips` is returned as `0` for visible dashboard/library surfaces.
 
 The client reads this query in `useClipLibraryState`. Display counts use the
 larger value between the aggregate and the currently loaded page count so a
@@ -199,8 +203,9 @@ npx convex run libraryCounts:get '{}' \
 ```
 
 6. Open the dashboard and content library. The dashboard stats and unfiltered
-   library section counters should show total UGC, demo, Clipr, Swapr, Stitch,
-   and Long counts before pressing "Load more".
+   library section counters should show total UGC, demo, Swapr, Stitch, and Long
+   counts before pressing "Load more". Generated Clipr UGC should be included
+   in UGC.
 
 7. Press "Load more". The visible cards should increase, but the section total
    should remain the same unless new content is created or deleted.

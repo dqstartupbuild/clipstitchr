@@ -225,21 +225,18 @@ describe("POST /api/clipr/jobs", () => {
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.rateLimits.consumeCliprJobCreate,
       {
-        estimatedSeconds: 30,
+        estimatedSeconds: 8,
         secret: "rate-limit-secret",
       },
     );
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+    expect(mocks.convex.mutation).not.toHaveBeenCalledWith(
       api.rateLimits.consumeCliprVoiceGeneration,
-      {
-        estimatedSeconds: 30,
-        secret: "rate-limit-secret",
-      },
+      expect.anything(),
     );
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.rateLimits.consumeCliprVideoGeneration,
       {
-        estimatedSeconds: 30,
+        estimatedSeconds: 8,
         secret: "rate-limit-secret",
       },
     );
@@ -249,21 +246,21 @@ describe("POST /api/clipr/jobs", () => {
         secret: "rate-limit-secret",
       },
     );
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+    expect(mocks.convex.mutation).not.toHaveBeenCalledWith(
       api.rateLimits.consumeCliprMusicGeneration,
-      expect.objectContaining({ secret: "rate-limit-secret" }),
+      expect.anything(),
     );
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.cliprJobs.createQueued,
       expect.objectContaining({
         avatarId: "avatar_1",
-        generationMode: "script",
+        generationMode: "reaction",
         id: "job_1",
         productId: "product_1",
         productName: "Launch Kit",
-        requestedGenerationMode: "any",
+        requestedGenerationMode: "reaction",
         requestedVideoModelId: "auto",
-        videoModelId: "prunaai/p-video-avatar",
+        videoModelId: "kwaivgi/kling-v3-video",
       }),
     );
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
@@ -282,9 +279,10 @@ describe("POST /api/clipr/jobs", () => {
     );
   });
 
-  it("trims script ideas before saving the job and provider snapshot", async () => {
+  it("ignores script-only fields while script mode is hidden", async () => {
     const response = await POST(
       createRequest({
+        generationMode: "script",
         scriptIdea: "  Make this a story about a launch content mistake.  ",
       }),
     );
@@ -304,6 +302,7 @@ describe("POST /api/clipr/jobs", () => {
       avatarScenePose?: string;
       lipSyncModelId?: string;
       generationMode?: string;
+      requestedGenerationMode?: string;
       scriptIdea?: string;
       ttsModelId?: string;
       videoModelId?: string;
@@ -312,19 +311,20 @@ describe("POST /api/clipr/jobs", () => {
     expect(response.status).toBe(200);
     expect(createQueuedCall?.[1]).toEqual(
       expect.objectContaining({
-        scriptIdea: "Make this a story about a launch content mistake.",
+        generationMode: "reaction",
+        requestedGenerationMode: "script",
       }),
     );
-    expect(providerJobInput.scriptIdea).toBe(
-      "Make this a story about a launch content mistake.",
-    );
+    expect(createQueuedCall?.[1].scriptIdea).toBeUndefined();
+    expect(providerJobInput.requestedGenerationMode).toBe("script");
+    expect(providerJobInput.scriptIdea).toBeUndefined();
     expect(providerJobInput.avatarSceneLocation).toBe("gym mirror");
     expect(providerJobInput.avatarSceneOutfit).toBe("black workout set");
     expect(providerJobInput.avatarScenePose).toBe("taking a progress photo");
     expect(providerJobInput.ttsModelId).toBe("elevenlabs/v3");
     expect(providerJobInput.lipSyncModelId).toBe("pixverse/lipsync");
-    expect(providerJobInput.generationMode).toBe("script");
-    expect(providerJobInput.videoModelId).toBe("prunaai/p-video-avatar");
+    expect(providerJobInput.generationMode).toBe("reaction");
+    expect(providerJobInput.videoModelId).toBe("kwaivgi/kling-v3-video");
   });
 
   it("creates a silent reaction job without voice or music generation", async () => {
@@ -441,7 +441,7 @@ describe("POST /api/clipr/jobs", () => {
     expect(providerJobInput.videoModelId).toBe("bytedance/seedance-2.0");
   });
 
-  it("uses a selected shared music track without consuming music generation", async () => {
+  it("ignores a selected shared music track while script mode is hidden", async () => {
     mocks.convex.query.mockImplementation((queryId: string) => {
       if (queryId === "products.get") {
         return Promise.resolve(createProductDocument());
@@ -486,7 +486,7 @@ describe("POST /api/clipr/jobs", () => {
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.providerJobs.create,
       expect.objectContaining({
-        inputSnapshotJson: expect.stringContaining("track_1"),
+        inputSnapshotJson: expect.not.stringContaining("track_1"),
       }),
     );
   });

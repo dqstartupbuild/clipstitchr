@@ -276,12 +276,12 @@ describe("UploadsPageClient", () => {
       clips: [ugcClip, cliprClip, demoClip, swapClip],
       counts: {
         activeStitches: 50,
-        cliprClips: 20,
+        cliprClips: 0,
         demoClips: 30,
         postedStitches: 1,
         stitches: 50,
         swapClips: 40,
-        ugcClips: 10,
+        ugcClips: 30,
       },
       error: "Library error",
       generateCliprMusic: vi.fn(),
@@ -360,7 +360,7 @@ describe("UploadsPageClient", () => {
           loadMorePostedItems: vi.fn(),
         },
         ugc: {
-          clips: [ugcClip],
+          clips: [ugcClip, cliprClip, postedCliprClip],
           postedClips: [],
           hasMoreItems: true,
           hasMorePostedItems: false,
@@ -449,9 +449,14 @@ describe("UploadsPageClient", () => {
     );
     expect(
       (elements.filter((element) => element.props?.loadMoreLabel) ?? []).length,
-    ).toBe(4);
-    expect(ugcSection?.props?.totalCount).toBe(10);
-    expect(findByProp(elements, "id", "clips")?.props?.totalCount).toBe(20);
+    ).toBe(3);
+    expect(ugcSection?.props?.totalCount).toBe(30);
+    expect(ugcSection?.props?.clips).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "clipr_1" }),
+      ]),
+    );
+    expect(findByProp(elements, "id", "clips")).toBeUndefined();
     expect(findByProp(elements, "id", "demo-videos")?.props?.totalCount).toBe(30);
     expect(findByProp(elements, "id", "swaps")?.props?.totalCount).toBe(40);
 
@@ -643,7 +648,7 @@ describe("UploadsPageClient", () => {
 
   it("filters the Stitches tab to posted stitches", () => {
     const { elements } = renderUploadsPage({
-      stateValues: ["stitches", "posted", "all", "", "active", "posted"],
+      stateValues: ["stitches", "posted", "all", "", "posted"],
     });
     const section = findByProp(elements, "statusFilter", "posted");
 
@@ -669,40 +674,27 @@ describe("UploadsPageClient", () => {
     expect(mocks.library.loadMoreStitches).not.toHaveBeenCalled();
   });
 
-  it("filters the Clips tab to posted Clipr clips", () => {
+  it("maps old Clips tab links to UGC", () => {
     const { elements } = renderUploadsPage({
-      stateValues: ["clips", "", "all", "", "posted"],
+      search: "?tab=clips",
     });
-    const section = findByProp(elements, "id", "clips");
-    const cliprGroup = (mocks.library.videoGroups as Record<string, Record<string, unknown>>)
-      .clipr;
+    const section = findByProp(elements, "id", "ugc-clips");
 
     expect(section?.props).toEqual(
       expect.objectContaining({
-        clips: [
+        clips: expect.arrayContaining([
           expect.objectContaining({
-            id: "posted_clipr_1",
+            id: "clipr_1",
           }),
-        ],
-        hasMoreItems: true,
-        statusCounts: {
-          active: 1,
-          all: 2,
-          posted: 1,
-        },
-        statusFilter: "posted",
+        ]),
+        title: "UGC",
       }),
     );
-
-    (section?.props?.onLoadMoreItems as () => void)();
-
-    expect(cliprGroup.loadMorePostedItems).toHaveBeenCalledTimes(1);
-    expect(cliprGroup.loadMoreItems).not.toHaveBeenCalled();
   });
 
   it("filters the Swipes tab to posted Swipes", () => {
     const { elements } = renderUploadsPage({
-      stateValues: ["swipes", "", "all", "", "active", "active", "posted"],
+      stateValues: ["swipes", "", "all", "", "active", "posted"],
     });
     const section = findByProp(elements, "statusFilter", "posted");
 
@@ -723,20 +715,20 @@ describe("UploadsPageClient", () => {
     );
   });
 
-  it("renders clip and swap tabs without upload controls", () => {
+  it("renders UGC and swap tabs without upload controls", () => {
     mocks.useShowUploadControls.mockReturnValue(false);
 
-    const clips = renderUploadsPage({
-      stateValues: ["clips", "", "all", ""],
+    const ugc = renderUploadsPage({
+      stateValues: ["ugc", "", "all", ""],
     }).elements;
     const swaps = renderUploadsPage({
       stateValues: ["swaps", "", "all", ""],
     }).elements;
 
-    expect(findByProp(clips, "id", "clips")?.props?.title).toBe("Clips");
+    expect(findByProp(ugc, "id", "ugc-clips")?.props?.title).toBe("UGC");
     expect(findByProp(swaps, "id", "swaps")?.props?.title).toBe("Swaps");
     expect(
-      clips.some((element) => Array.isArray(element.props?.allowedAssetTypes)),
+      ugc.some((element) => Array.isArray(element.props?.allowedAssetTypes)),
     ).toBe(false);
   });
 

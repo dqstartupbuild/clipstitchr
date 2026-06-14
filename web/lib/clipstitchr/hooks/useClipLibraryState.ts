@@ -44,6 +44,7 @@ import { getClipLibraryDisplayCounts } from "@/lib/clipstitchr/utils/getClipLibr
 import { getDeletableMusicAudioObject } from "@/lib/clipstitchr/utils/getDeletableMusicAudioObject";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
+import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoClipMetadataById";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
 type PendingPosterBlobLoad = {
@@ -70,7 +71,7 @@ export function useClipLibraryState(): ClipLibraryValue {
     isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
   const shouldLoadCliprClips =
     isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
-  const shouldLoadPostedCliprClips = isAuthenticated && isUploadsRoute;
+  const shouldLoadPostedCliprClips = false;
   const shouldLoadDemoClips =
     isAuthenticated &&
     (isDashboardHome || isUploadsRoute || isStitchrRoute || isCliprRoute);
@@ -94,7 +95,7 @@ export function useClipLibraryState(): ClipLibraryValue {
   const cliprClipDocumentsQuery = usePaginatedQuery(
     api.videoClips.listByLibraryKind,
     shouldLoadCliprClips
-      ? { kind: "clipr", postedStatus: "active", sortOrder }
+      ? { kind: "clipr", sortOrder }
       : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
@@ -197,6 +198,10 @@ export function useClipLibraryState(): ClipLibraryValue {
       ),
     [postedCliprClipDocuments],
   );
+  const visibleUgcClips = useMemo(
+    () => mergeVideoClipMetadataById([...ugcClips, ...cliprClips]),
+    [cliprClips, ugcClips],
+  );
   const demoClips = useMemo(
     () =>
       demoClipDocuments.map((clip) =>
@@ -228,7 +233,7 @@ export function useClipLibraryState(): ClipLibraryValue {
   const loadedCounts = useMemo<ClipLibraryCounts>(
     () => ({
       activeStitches: stitches.length,
-      cliprClips: clips.filter((clip) => Boolean(clip.cliprMetadata)).length,
+      cliprClips: 0,
       demoClips: clips.filter((clip) => clip.clipType === "demo").length,
       postedStitches: postedStitches.length,
       stitches: stitches.length + postedStitches.length,
@@ -238,7 +243,6 @@ export function useClipLibraryState(): ClipLibraryValue {
       ugcClips: clips.filter(
         (clip) =>
           clip.clipType === "ugc" &&
-          !clip.cliprMetadata &&
           clip.swaprMetadata?.source !== "swapr",
       ).length,
     }),
@@ -794,7 +798,11 @@ export function useClipLibraryState(): ClipLibraryValue {
     if (ugcClipDocumentsQuery.status === "CanLoadMore") {
       ugcClipDocumentsQuery.loadMore(libraryMetadataPageSize);
     }
-  }, [ugcClipDocumentsQuery]);
+
+    if (cliprClipDocumentsQuery.status === "CanLoadMore") {
+      cliprClipDocumentsQuery.loadMore(libraryMetadataPageSize);
+    }
+  }, [cliprClipDocumentsQuery, ugcClipDocumentsQuery]);
   const loadMoreCliprClips = useCallback(() => {
     if (cliprClipDocumentsQuery.status === "CanLoadMore") {
       cliprClipDocumentsQuery.loadMore(libraryMetadataPageSize);
@@ -884,11 +892,15 @@ export function useClipLibraryState(): ClipLibraryValue {
         loadMorePostedItems: () => undefined,
       },
       ugc: {
-        clips: ugcClips,
+        clips: visibleUgcClips,
         postedClips: [],
-        hasMoreItems: ugcClipDocumentsQuery.status === "CanLoadMore",
+        hasMoreItems:
+          ugcClipDocumentsQuery.status === "CanLoadMore" ||
+          cliprClipDocumentsQuery.status === "CanLoadMore",
         hasMorePostedItems: false,
-        isLoadingMoreItems: ugcClipDocumentsQuery.status === "LoadingMore",
+        isLoadingMoreItems:
+          ugcClipDocumentsQuery.status === "LoadingMore" ||
+          cliprClipDocumentsQuery.status === "LoadingMore",
         isLoadingMorePostedItems: false,
         loadMoreItems: loadMoreUgcClips,
         loadMorePostedItems: () => undefined,

@@ -267,11 +267,11 @@ describe("Clipr components", () => {
       />,
     );
 
-    expect(emptyMarkup).toContain("Queued Clips will appear");
+    expect(emptyMarkup).toContain("Queued UGC will appear");
     expect(populatedMarkup).toContain("Stop losing demo viewers");
     expect(populatedMarkup).toContain("Music generated for export.");
     expect(populatedMarkup).toContain("Here is the generated avatar line.");
-    expect(populatedMarkup).toContain("View Clip");
+    expect(populatedMarkup).toContain("View UGC");
     expect(fallbackTitleMarkup).toContain("Talking avatar clip");
   });
 
@@ -384,7 +384,7 @@ describe("Clipr components", () => {
     const onScriptIdeaChange = vi.fn();
     const modeTree = CliprModeToggle({
       onChange: onModeChange,
-      value: "any",
+      value: "reaction",
     });
     const scriptIdeaTree = CliprScriptIdeaPanel({
       onChange: onScriptIdeaChange,
@@ -405,6 +405,7 @@ describe("Clipr components", () => {
         {scriptIdeaTree}
       </>,
     );
+    const modeMarkup = renderToStaticMarkup(modeTree);
 
     (reactionButton.props.onClick as () => void)();
     (textarea.props.onChange as (event: {
@@ -414,11 +415,11 @@ describe("Clipr components", () => {
     expect(onModeChange).toHaveBeenCalledWith("reaction");
     expect(onScriptIdeaChange).toHaveBeenCalledWith("New idea");
     expect(textarea.props.maxLength).toBe(cliprScriptIdeaMaxLength);
-    expect(markup).toContain("Any");
-    expect(markup).toContain("Script");
-    expect(markup).toContain("Reaction");
-    expect(markup).toContain("B-roll");
-    expect(markup).toContain("Demo");
+    expect(modeMarkup).toContain("Reaction");
+    expect(modeMarkup).toContain("B-roll");
+    expect(modeMarkup).not.toContain("Any");
+    expect(modeMarkup).not.toContain("Script");
+    expect(modeMarkup).not.toContain("Demo");
     expect(markup).toContain("Founder confession");
   });
 });

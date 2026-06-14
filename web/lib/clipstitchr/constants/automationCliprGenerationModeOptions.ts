@@ -1,10 +1,10 @@
-import { cliprGenerationModeOptions } from "@/lib/clipstitchr/constants/cliprGenerationModeOptions";
-import type { AutomationCliprGenerationMode } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
+import { cliprGenerationModeOptions } from "./cliprGenerationModeOptions";
+import type { AutomationCliprGenerationMode } from "../types/AutomationPreferencesInput";
 
 export const automationCliprGenerationModeOptions =
   cliprGenerationModeOptions.filter(
     (option): option is {
       label: string;
       value: AutomationCliprGenerationMode;
-    } => option.value !== "demo",
+    } => option.value !== "any" && option.value !== "demo",
   );

@@ -49,7 +49,7 @@ export function LandingAutomationSection() {
                 New drafts, ready to review.
               </h3>
               <p className="mt-2 text-sm leading-6 text-text-secondary">
-                Automation can prepare Stitchr drafts, new Clips, and Swipes
+                Automation can prepare Stitchr drafts, new UGC, and Swipes
                 based on the tools you choose.
               </p>
             </div>

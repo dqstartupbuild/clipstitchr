@@ -92,7 +92,6 @@ export function DashboardPageClient() {
         <DashboardStats
           ugcCount={library.counts.ugcClips}
           demoCount={library.counts.demoClips}
-          clipsCount={library.counts.cliprClips}
           stitchesCount={library.counts.stitches}
         />
         <RecentStitchesSection

@@ -6,7 +6,7 @@ export const get = query({
   args: {},
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const [ugcClips, demoClips, cliprClips, swapClips, stitches] =
+    const [ugcClips, demoClips, legacyCliprClips, swapClips, stitches] =
       await Promise.all([
       videoClipCounts.count(ctx, {
         bounds: { eq: "ugc" },
@@ -29,12 +29,12 @@ export const get = query({
 
     return {
       activeStitches: 0,
-      cliprClips,
+      cliprClips: 0,
       demoClips,
       postedStitches: 0,
       stitches,
       swapClips,
-      ugcClips,
+      ugcClips: ugcClips + legacyCliprClips,
     };
   },
 });

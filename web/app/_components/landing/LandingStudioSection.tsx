@@ -12,10 +12,10 @@ const studios = [
   },
   {
     eyebrow: "Clipr",
-    title: "Generate engagement Clips for the library.",
+    title: "Generate reaction and b-roll UGC.",
     description:
-      "Choose a product and avatar, generate a short engagement clip, and save it as source footage for Stitchr.",
-    caption: "We call these 'Clips'.",
+      "Choose a product and avatar, generate a short clip, and save it as source footage for Stitchr.",
+    caption: "These save into UGC.",
     icon: CirclePlay,
   },
   {

@@ -7,6 +7,7 @@ import { automationToolOptions } from "@/lib/clipstitchr/constants/automationToo
 import { defaultAutomationStitchrColorChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
+import { getAutomationCliprGenerationMode } from "@/lib/clipstitchr/utils/getAutomationCliprGenerationMode";
 import { filterEnabledAutomationTools } from "@/lib/clipstitchr/utils/filterEnabledAutomationTools";
 import { getAutomationStitchrColorChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
@@ -14,7 +15,7 @@ import { getAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/utils/get
 const defaultPreferences: AutomationPreferencesInput = {
   enabled: false,
   enabledTools: automationToolOptions.map((tool) => tool.id),
-  cliprGenerationMode: "any",
+  cliprGenerationMode: "reaction",
   stitchrTextStyleChoice: defaultAutomationStitchrTextStyleChoice,
   stitchrTextColorChoice: defaultAutomationStitchrColorChoice,
   stitchrTextBackgroundColorChoice: defaultAutomationStitchrColorChoice,
@@ -42,7 +43,9 @@ export function useAutomationPreferences() {
               preferencesDocument.enabledTools,
             ),
             cliprGenerationMode:
-              preferencesDocument.cliprGenerationMode ?? "any",
+              getAutomationCliprGenerationMode(
+                preferencesDocument.cliprGenerationMode,
+              ),
             stitchrTextStyleChoice: getAutomationStitchrTextStyleChoice(
               preferencesDocument.stitchrTextStyleChoice,
             ),
@@ -71,7 +74,9 @@ export function useAutomationPreferences() {
           enabledTools: filterEnabledAutomationTools(
             nextPreferences.enabledTools,
           ),
-          cliprGenerationMode: nextPreferences.cliprGenerationMode,
+          cliprGenerationMode: getAutomationCliprGenerationMode(
+            nextPreferences.cliprGenerationMode,
+          ),
           stitchrTextStyleChoice: getAutomationStitchrTextStyleChoice(
             nextPreferences.stitchrTextStyleChoice,
           ),

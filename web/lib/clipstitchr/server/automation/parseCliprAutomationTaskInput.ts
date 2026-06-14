@@ -7,6 +7,7 @@ import { getCliprGenerationMode } from "@/lib/clipstitchr/utils/getCliprGenerati
 import { getCliprResolvedGenerationMode } from "@/lib/clipstitchr/utils/getCliprResolvedGenerationMode";
 import { getCliprVideoModelId } from "@/lib/clipstitchr/utils/getCliprVideoModelId";
 import { getCliprDurationSeconds } from "@/lib/clipstitchr/utils/getCliprDurationSeconds";
+import { getCliprVisualDurationSeconds } from "@/lib/clipstitchr/utils/getCliprVisualDurationSeconds";
 import { getResolvedCliprVideoModelId } from "@/lib/clipstitchr/utils/getResolvedCliprVideoModelId";
 import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
@@ -114,14 +115,18 @@ export function parseCliprAutomationTaskInput(
   const requestedGenerationMode = getCliprGenerationMode(
     input.requestedGenerationMode,
   );
-  const resolvedGenerationMode: CliprResolvedGenerationMode =
+  const snapshotRequestedGenerationMode: CliprGenerationMode =
     input.generationMode === "script" ||
     input.generationMode === "reaction" ||
     input.generationMode === "broll"
       ? input.generationMode
+      : requestedGenerationMode;
+  const resolvedGenerationMode: CliprResolvedGenerationMode =
+    input.generationMode === "reaction" || input.generationMode === "broll"
+      ? input.generationMode
       : getCliprResolvedGenerationMode({
           jobId: taskId,
-          mode: requestedGenerationMode,
+          mode: snapshotRequestedGenerationMode,
         });
   const snapshotGenerationMode =
     resolvedGenerationMode === "demo" ? "reaction" : resolvedGenerationMode;
@@ -171,9 +176,10 @@ export function parseCliprAutomationTaskInput(
       createdAt: productCreatedAt,
       updatedAt: productUpdatedAt,
     },
-    targetDurationSeconds: getAutomationCliprDurationSeconds(
-      input.targetDurationSeconds,
-    ),
+    targetDurationSeconds:
+      snapshotGenerationMode === "script"
+        ? getAutomationCliprDurationSeconds(input.targetDurationSeconds)
+        : getCliprVisualDurationSeconds(input.targetDurationSeconds),
     requestedVideoModelId,
     videoModelId,
     voiceId: getString(input.voiceId, "voice ID"),

@@ -11,7 +11,7 @@ export function CliprJobResult({ finalClipId, job }: CliprJobResultProps) {
   if (!job) {
     return (
       <section className="rounded-lg border border-dashed border-border bg-slate-50 p-5 text-sm font-semibold text-text-tertiary">
-        Queued Clips will appear in the library when background processing
+        Queued UGC will appear in the library when background processing
         finishes.
       </section>
     );
@@ -64,11 +64,11 @@ export function CliprJobResult({ finalClipId, job }: CliprJobResultProps) {
       </div>
       {finalClipId ? (
         <Link
-          href="/dashboard/uploads?tab=clips"
+          href="/dashboard/uploads?tab=ugc"
           className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
         >
           <CirclePlay aria-hidden className="h-4 w-4" />
-          View Clip
+          View UGC
         </Link>
       ) : null}
     </section>

@@ -18,15 +18,20 @@ way UGC clips are used.
 
 The implementation must also extend the hook system to Swipr slide text and
 Stitchr text overlays so selected product settings can drive auto-generated
-copy across Clips, Swipes, and Stitches. The first Swipr slide should use the
+copy across generated UGC, Swipes, and Stitches. The first Swipr slide should use the
 hook, and the remaining slides should pay it off with simple supporting points.
 
 ## Product Rules
 
 - Product name: `Clipr`.
-- Output name in the library: `Clips`.
-- Clipr outputs are UGC-compatible source clips, but they have separate Clipr
-  provenance and appear in a new Content Library `Clips` tab.
+- Current visible modes: `Reaction` and `B-roll`.
+- Script mode exists behind `web/lib/clipstitchr/constants/isCliprScriptModeEnabled.ts`.
+  Set that flag to `true` to show Script mode again in manual and automation UI.
+- Non-demo Clipr outputs are UGC-compatible source clips with separate Clipr
+  provenance. They appear in the Content Library `UGC` tab, count toward UGC,
+  and remain selectable in Stitchr.
+- Clipr Demo remixes remain supported in backend/finalization paths and save as
+  Demo clips, but Demo mode is not shown in the current Clipr mode picker.
 - Clipr clips must not promote ClipStitchr.
 - Clipr clips must not directly promote the user's product. All content is for
   audience engagement in a non-promotional way.
@@ -50,11 +55,12 @@ hook, and the remaining slides should pay it off with simple supporting points.
 - Clipr does not expose a duration control.
 - Generated scripts should be as long as needed to express the full idea without
   padding or forcing a fixed 30 or 60 second target.
-- Clipr supports four generation choices: `Any`, `Script`, `Reaction`, and
-  `B-roll`. `Any` is the default and resolves to one of the other three modes
-  per job.
-- Script mode keeps the existing talking-avatar script flow. Reaction and
-  b-roll modes create one silent 4-10 second single-shot clip.
+- Clipr currently supports two visible generation choices: `Reaction` and
+  `B-roll`.
+- Script mode keeps the existing talking-avatar script flow when the feature
+  flag is enabled. While the flag is disabled, direct or saved Script requests
+  resolve to Reaction or B-roll before provider work.
+- Reaction and b-roll modes create one silent 4-10 second single-shot clip.
 - Reaction mode uses internal source descriptions from
   `web/lib/clipstitchr/resources/clipr/reaction-source-prompts.json` to vary facial expressions,
   timing, and gesture references without exposing uploaded account media.
@@ -64,23 +70,24 @@ hook, and the remaining slides should pay it off with simple supporting points.
 - The user selects an avatar to use as the character reference. They should not
   have to select a specific image; the system should automatically use that
   avatar's first uploaded photo for stable, repeatable character consistency.
-- Each avatar has a saved default voice.
-- The Clipr voice selector should preload the selected avatar's saved voice.
-- The user can still choose a different voice for a single Clipr job without
+- Each avatar has a saved default voice for Script mode when Script mode is
+  enabled.
+- When Script mode is enabled, the Clipr voice selector should preload the
+  selected avatar's saved voice and allow a one-off voice change without
   changing the avatar's saved voice.
-- Clipr should generate one full-script avatar video from the selected avatar
-  and voice.
-- The generated avatar video should follow the full generated script length.
+- When Script mode is enabled, Clipr should generate one full-script avatar
+  video from the selected avatar and voice.
+- The generated Script avatar video should follow the full generated script length.
 - Reaction and b-roll outputs do not use voice, speech, generated music, or
   PixVerse lip sync.
-- The user can opt into AI-generated background music. The checkbox is off by
-  default.
+- Script mode can opt into AI-generated background music when Script mode is
+  enabled. The checkbox is off by default.
 - Clipr music uses `stability-ai/stable-audio-2.5`, generates one 60 second
   instrumental audio file, and stores that file in R2 separately from the video.
 - Clipr does not bake music into the saved library video. The user can remove
   music, regenerate music, or change music volume later. Media Bunny mixes the
   saved clean video and selected music only when the user exports/downloads.
-- Final Clipr outputs should be saved in the content library and organized into a "Clips" tab.
+- Final non-demo Clipr outputs should be saved in the content library as UGC.
 
 ## Documentation Coverage
 
@@ -610,13 +617,13 @@ Rules:
 2. User selects a saved product profile from Settings.
 3. User selects an avatar. The system resolves that avatar's first uploaded
    photo as the hidden reference image.
-4. User chooses `Any`, `Script`, `Reaction`, or `B-roll`. `Any` resolves to one
-   concrete mode when the job is created.
-5. In Script mode, the user can paste a script idea for Clipr to expand.
-6. The voice selector preloads the avatar's saved voice. User can select a
-   different voice for this job only.
-7. In Script mode, the user can optionally enable generated background music.
-   The control is unchecked by default.
+4. User chooses `Reaction` or `B-roll`.
+5. If `isCliprScriptModeEnabled` is `true`, Script mode is also visible. In
+   Script mode, the user can paste a script idea for Clipr to expand.
+6. If Script mode is visible, the voice selector preloads the avatar's saved
+   voice and the user can select a different voice for this job only.
+7. If Script mode is visible, the user can optionally enable generated
+   background music. The control is unchecked by default.
 8. Server randomly selects a hidden hook style and 3-5 hidden templates from
    the product's eligible pool using product settings, inferred problem,
    inferred pain points, audience details, placeholder fillers, and safety
@@ -640,7 +647,7 @@ Rules:
 18. Final video and poster are uploaded to R2.
 19. Convex saves the final output as a UGC-compatible video clip with Clipr
     provenance metadata.
-20. The output appears in the Content Library `Clips` tab and can be used in
+20. The output appears in the Content Library `UGC` tab and can be used in
     Stitchr.
 21. If music metadata is attached and enabled, download/export renders a fresh
     MP4 with Media Bunny using the clean video, the R2 music file, and the saved
@@ -824,12 +831,15 @@ type CliprMusicMetadata = {
 
 Content Library behavior:
 
-- Add a `Clips` tab.
-- `Clips` shows video clips with `cliprMetadata`.
-- `UGC` should show uploaded/non-Clipr/non-Swapr UGC clips.
+- There is no visible `Clips` tab.
+- `UGC` should show uploaded UGC plus non-demo Clipr outputs with
+  `cliprMetadata`.
+- Legacy records with `libraryKind: "clipr"` should be folded into visible UGC
+  lists and counts for compatibility.
+- `Demo` should show uploaded demos plus Clipr Demo remixes.
 - `Swaps` should continue to show Swapr outputs.
-- `All` should include UGC, Demo, Clips, Swaps, Swipes, and Stitches.
-- Clipr clips should have `Use in Stitchr`, preview, metadata edit, music
+- `All` should include UGC, Demo, Swaps, Swipes, and Stitches.
+- Clipr videos should have `Use in Stitchr`, preview, metadata edit, music
   settings, download/export, and delete behavior consistent with other saved
   video clips.
 - Music settings should let the user disable/remove music, regenerate music, and
@@ -842,27 +852,27 @@ Add:
 
 - `/dashboard/clipr`
   - Clipr generation studio.
-  - Mode picker for `Any`, `Script`, `Reaction`, and `B-roll`.
+  - Mode picker for `Reaction` and `B-roll`.
+  - Script mode appears only when `isCliprScriptModeEnabled` is `true`.
 - `POST /api/clipr/music`
   - Authenticated, rate-limited regeneration endpoint for existing Clipr music
     assets.
-- `/dashboard/uploads?tab=clips`
-  - Content Library Clips tab.
+- `/dashboard/uploads?tab=ugc`
+  - Generated non-demo Clipr output appears with UGC.
 
 Update:
 
 - Dashboard sidebar: add `Clipr`.
 - Dashboard page: add Clipr entry point.
-- Content Library tabs: add `Clips`.
+- Content Library tabs: remove the old visible `Clips` tab.
 - Stitchr UGC selector: include Clipr outputs as UGC-compatible.
-- Upload/library filters: exclude Clipr outputs from plain UGC tab unless the
-  All tab is selected.
+- Upload/library filters: include Clipr outputs in UGC.
 - Video details dialog: show Clipr provenance in a user-friendly way without
   exposing hidden style/template IDs. Keep those IDs in internal metadata only.
 - Settings product flow: ensure saved product context can be selected by Clipr,
   Swipr auto-text, and Stitchr auto-text.
-- Settings automation panel: allow automatic Clipr jobs to use `Any`, `Script`,
-  `Reaction`, or `B-roll`.
+- Settings automation panel: allow automatic Clipr jobs to use `Reaction` or
+  `B-roll`. Script appears only when `isCliprScriptModeEnabled` is `true`.
 
 ## Swipr Auto-Generated Text
 
@@ -930,14 +940,13 @@ Landing page touchpoints:
 - `web/app/_components/landing/LandingStudioSection.tsx`
   - Add Clipr as a studio card.
 - `web/app/_components/landing/LandingFeatureGrid.tsx`
-  - Add a feature for generating reusable Clips.
+  - Add a feature for generating reusable UGC with Clipr.
   - Adjust existing AI clip copy so Swapr and Clipr are distinct.
 - `web/app/_components/landing/LandingWorkflow.tsx`
   - Add a Clipr workflow.
 - Any new UI copy:
-  - buttons: `Generate Clip`, `Choose Voice`, `Use in Stitchr`
-  - labels: `Duration`, `Voice`, `Avatar`, `Product`, `30 seconds`,
-    `60 seconds`
+  - buttons: `Generate UGC`, `Use in Stitchr`
+  - labels: `Avatar`, `Product`, `Reaction`, `B-roll`
 
 ## Backend And Rate Limits
 
@@ -1067,7 +1076,7 @@ Current and future code areas:
   - one component per file for product, avatar, mode, model, voice, progress,
     preview, and generated output controls.
 - `web/app/dashboard/uploads/UploadsPageClient.tsx`
-  - Clips tab/filter behavior.
+  - UGC tab/filter behavior for uploaded and generated UGC.
 - `web/lib/clipstitchr/utils/*`
   - Clipr filters and library-tab helpers.
 - `web/app/_components/dashboard/DashboardSidebar.tsx`
@@ -1082,11 +1091,12 @@ After implementation:
 1. Run `npm run typecheck` from `web/`.
 2. Run `npm run lint` from `web/`.
 3. Run `npm test` from `web/`.
-4. Test Clipr with a saved product, selected avatar, Script mode, and a selected
-   voice.
+4. Test Clipr with a saved product, selected avatar, Reaction mode, and B-roll
+   mode.
 5. Test changing an avatar's saved voice updates the preloaded Clipr voice when
-   that avatar is selected.
-6. Test Script mode with a pasted script idea.
+   that avatar is selected when Script mode is enabled.
+6. If `isCliprScriptModeEnabled` is `true`, test Script mode with a pasted
+   script idea.
 7. Test generated avatar image and avatar video outputs save to R2 before final
    Clip save.
 8. Test the full generated script is passed to `prunaai/p-video-avatar`.
@@ -1100,9 +1110,9 @@ After implementation:
     leaves the saved clean video unchanged.
 13. Test progress updates through script, image, avatar video, normalization,
     poster, and save steps.
-14. Test final output appears in the `Clips` tab.
+14. Test final output appears in the `UGC` tab.
 15. Test Clipr output is selectable in Stitchr.
-16. Test UGC tab does not mix uploaded UGC with Clipr outputs.
+16. Test UGC tab includes uploaded UGC and generated Clipr UGC together.
 17. Test All tab includes Clipr outputs.
 18. Test Swipr auto-text puts the hook on the first slide and supporting text on
     the remaining slides.
@@ -1112,8 +1122,8 @@ After implementation:
     not call hook/script, voice, music, or PixVerse lip sync.
 22. Test B-roll mode creates a 4-10 second silent single-shot Clip with a
     product-relevant day-in-the-life prompt.
-23. Test Settings automation mode selection queues Script, Reaction, B-roll, or
-    deterministic Any-mode jobs with the correct target duration.
+23. Test Settings automation mode selection queues Reaction or B-roll jobs with
+    the correct target duration. If Script mode is enabled, test Script jobs too.
 24. Review user-facing copy for non-technical language and no unwanted CTAs.
 
 ## Approval Decisions

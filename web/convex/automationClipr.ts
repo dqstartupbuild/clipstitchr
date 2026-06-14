@@ -12,6 +12,7 @@ import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automat
 import { defaultCliprDurationSeconds } from "../lib/clipstitchr/constants/defaultCliprDurationSeconds";
 import { defaultCliprGenerationMode } from "../lib/clipstitchr/constants/defaultCliprGenerationMode";
 import { defaultCliprVisualDurationSeconds } from "../lib/clipstitchr/constants/defaultCliprVisualDurationSeconds";
+import { getAutomationCliprGenerationMode } from "../lib/clipstitchr/utils/getAutomationCliprGenerationMode";
 import { getCliprResolvedGenerationMode } from "../lib/clipstitchr/utils/getCliprResolvedGenerationMode";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
@@ -100,8 +101,9 @@ export const planDaily = mutation({
       return { runId, status: "skipped", taskIds: [] };
     }
 
-    const requestedGenerationMode =
-      preferences.cliprGenerationMode ?? defaultCliprGenerationMode;
+    const requestedGenerationMode = getAutomationCliprGenerationMode(
+      preferences.cliprGenerationMode ?? defaultCliprGenerationMode,
+    );
     const taskId = `${runId}:1`;
     const generationMode = getCliprResolvedGenerationMode({
       jobId: taskId,

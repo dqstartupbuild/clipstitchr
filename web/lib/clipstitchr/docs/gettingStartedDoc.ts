@@ -54,7 +54,7 @@ export const gettingStartedDoc = {
     {
       title: "How the library stays organized",
       body: [
-        "The Content Library keeps your clips, demos, generated footage, carousels, and finished ads in one place. Use the tabs when you need to find UGC, Demos, Clips, Swaps, Swipes, or Stitches.",
+        "The Content Library keeps your UGC, demos, generated footage, carousels, and finished ads in one place. Use the tabs when you need to find UGC, Demos, Swaps, Swipes, or Stitches.",
         "ClipStitchr prepares uploads for vertical social posts before they enter the library, so you do not have to fix the same clip every time you use it.",
       ],
     },

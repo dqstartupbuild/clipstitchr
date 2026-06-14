@@ -1,7 +1,7 @@
-import type { AutomationTool } from "@/lib/clipstitchr/types/AutomationTool";
-import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
-import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
-import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
+import type { AutomationStitchrColorChoice } from "./AutomationStitchrColorChoice";
+import type { AutomationStitchrTextStyleChoice } from "./AutomationStitchrTextStyleChoice";
+import type { AutomationTool } from "./AutomationTool";
+import type { CliprGenerationMode } from "./CliprGenerationMode";
 
 export type AutomationCliprGenerationMode = Exclude<
   CliprGenerationMode,

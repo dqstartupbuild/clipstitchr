@@ -5,15 +5,22 @@ export function getClipLibraryDisplayCounts(
   loadedCounts: ClipLibraryCounts,
 ): ClipLibraryCounts {
   if (!aggregateCounts) {
-    return loadedCounts;
+    return {
+      ...loadedCounts,
+      cliprClips: 0,
+      ugcClips: loadedCounts.ugcClips + loadedCounts.cliprClips,
+    };
   }
+
+  const aggregateUgcClips = aggregateCounts.ugcClips + aggregateCounts.cliprClips;
+  const loadedUgcClips = loadedCounts.ugcClips + loadedCounts.cliprClips;
 
   return {
     activeStitches: Math.max(
       aggregateCounts.activeStitches ?? 0,
       loadedCounts.activeStitches,
     ),
-    cliprClips: Math.max(aggregateCounts.cliprClips, loadedCounts.cliprClips),
+    cliprClips: 0,
     demoClips: Math.max(aggregateCounts.demoClips, loadedCounts.demoClips),
     postedStitches: Math.max(
       aggregateCounts.postedStitches ?? 0,
@@ -21,6 +28,6 @@ export function getClipLibraryDisplayCounts(
     ),
     stitches: Math.max(aggregateCounts.stitches, loadedCounts.stitches),
     swapClips: Math.max(aggregateCounts.swapClips, loadedCounts.swapClips),
-    ugcClips: Math.max(aggregateCounts.ugcClips, loadedCounts.ugcClips),
+    ugcClips: Math.max(aggregateUgcClips, loadedUgcClips),
   };
 }

@@ -96,7 +96,7 @@ Deployment choices and where those variables live are documented in
 | `upload-normalization` | Implemented original video uploaded to R2 as `upload-source-video` | Normalized 9:16 video, poster image, final `videoClips` record, and follow-on `upload-video-analysis` provider job |
 | `stitchr-draft-finalization` | Implemented saved UGC clips, one saved Demo clip, copied trims, and audio settings | Editable `stitches` draft records; automation does not render or persist final Stitchr MP4 clips |
 | `stitchr-longr-export` | Planned saved sequence clips, copied trims, output metadata | One finished Stitch from the ordered Longr-mode sequence, poster image, final `stitches` record |
-| `clipr-finalization` | Implemented provider-generated avatar video already copied to R2 and referenced by a Clipr job/provider job | Normalized final Clip video, poster image, final `videoClips` record |
+| `clipr-finalization` | Implemented provider-generated avatar video already copied to R2 and referenced by a Clipr job/provider job | Normalized final Clipr UGC video, poster image, final `videoClips` record |
 | `swapr-finalization` | Implemented provider output URL(s) and Swapr metadata already recorded server-side | Normalized/concatenated UGC clip, poster image, final `videoClips` record |
 
 Manual and automatic Clipr now have provider-side executors and media-worker

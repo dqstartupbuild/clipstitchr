@@ -99,16 +99,14 @@ vi.mock("@/app/_components/dashboard/DashboardHeader", () => ({
 
 vi.mock("@/app/_components/dashboard/DashboardStats", () => ({
   DashboardStats: ({
-    clipsCount,
     demoCount,
     stitchesCount,
     ugcCount,
   }: {
-    clipsCount: number;
     demoCount: number;
     stitchesCount: number;
     ugcCount: number;
-  }) => `DashboardStats:${ugcCount}:${demoCount}:${clipsCount}:${stitchesCount}`,
+  }) => `DashboardStats:${ugcCount}:${demoCount}:${stitchesCount}`,
 }));
 
 vi.mock("@/app/_components/dashboard/RecentStitchesSection", () => ({
@@ -167,12 +165,12 @@ describe("DashboardPageClient", () => {
     vi.clearAllMocks();
     mocks.clipLibraryState.counts = {
       activeStitches: 40,
-      cliprClips: 10,
+      cliprClips: 0,
       demoClips: 20,
       postedStitches: 0,
       stitches: 40,
       swapClips: 0,
-      ugcClips: 30,
+      ugcClips: 40,
     };
     mocks.clipLibraryState.clips = [
       createClip("ugc_1", "ugc"),
@@ -243,7 +241,7 @@ describe("DashboardPageClient", () => {
     const markup = renderToStaticMarkup(<DashboardPageClient />);
 
     expect(markup).toContain("DashboardHeader");
-    expect(markup).toContain("DashboardStats:30:20:10:40");
+    expect(markup).toContain("DashboardStats:40:20:40");
     expect(markup).toContain("RecentStitchesSection");
     expect(markup).toContain("RecentSwipesSection");
     expect(markup).toContain("RecentUploadsSection");

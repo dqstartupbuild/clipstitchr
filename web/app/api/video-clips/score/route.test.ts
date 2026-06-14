@@ -218,11 +218,11 @@ describe("POST /api/video-clips/score", () => {
     expect(response.status).toBe(404);
   });
 
-  it("rejects generated Clips before quota or provider work", async () => {
+  it("rejects swaps before quota or provider work", async () => {
     mocks.convex.query.mockResolvedValueOnce(
       createClip({
-        cliprMetadata: { jobId: "job_1" },
-        libraryKind: "clipr",
+        libraryKind: "swapr",
+        swaprMetadata: { source: "swapr" },
       }),
     );
 

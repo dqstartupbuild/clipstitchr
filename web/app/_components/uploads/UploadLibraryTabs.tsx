@@ -10,7 +10,6 @@ type UploadLibraryTabsProps = {
 const tabs: { label: string; value: UploadLibraryTab }[] = [
   { label: "All", value: "all" },
   { label: "UGC", value: "ugc" },
-  { label: "Clips", value: "clips" },
   { label: "Demo", value: "demo" },
   { label: "Swaps", value: "swaps" },
   { label: "Swipes", value: "swipes" },

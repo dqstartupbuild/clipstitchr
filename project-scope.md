@@ -47,7 +47,7 @@ See `docs/product/positioning.md`, `docs/product/copywriting-guide.md`, and
 ```
 ┌─────────────┐     ┌─────────────┐
 │  Upload UGC │     │ Upload Demo │
-│   Clips     │     │   Videos    │
+│   Videos    │     │   Videos    │
 └──────┬──────┘     └──────┬──────┘
        │                   │
        ▼                   ▼
@@ -161,7 +161,7 @@ shared text.
 | 7 | Avatar photos store a detailed non-sensitive visual description of the person for scenario generation | ✅ | ✅ |
 | 8 | Users can generate 1, 3, or 5 new avatar scenario photos from a selected Replicate image model | ✅ | ✅ |
 | 9 | Swapr-generated outputs appear in the Content Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
-| 10 | Clipr-generated outputs appear in the Content Library Clips tab and remain reusable as UGC-style clips | ✅ | ✅ |
+| 10 | Clipr-generated reaction and b-roll outputs appear in the Content Library UGC tab and remain reusable in Stitchr | ✅ | ✅ |
 | 11 | Stitches appear in the Content Library Stitches tab with Active, Posted, and All status filters; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
 | 12 | The Content Library includes an All tab so users can view every saved video output type at once | ✅ | ✅ |
 | 13 | The dashboard header upload action opens an upload selector for UGC, Demo, or Photo, then routes to the relevant page/tab with controls revealed | ✅ | ✅ |
@@ -179,15 +179,15 @@ main product promise.
 | 2 | Avatar photo generation creates additional reusable source photos | ✅ | ✅ |
 | 3 | Swapr generates UGC-style video clips that can be saved back into the UGC library | ✅ | ✅ |
 | 4 | AI features use rate limits, credit budgeting, and speed profiles because they create external provider cost | ✅ | ✅ |
-| 5 | Clipr generates non-promotional short engagement Clips from saved product and avatar context, including script, reaction, and product-relevant b-roll modes | ✅ | ✅ |
+| 5 | Clipr generates non-promotional reaction and product-relevant b-roll UGC from saved product and avatar context; script mode stays hidden behind the Clipr script flag until re-enabled | ✅ | ✅ |
 | 6 | Clipr can select reusable shared-library music or generate a separate 60 second background music asset for export-time mixing | ✅ | ✅ |
 
 Clipr uses hidden non-promotional hook templates only. Broader internal hook
 assets can support Swipr and Stitchr auto-text, but direct product/ad hook
 patterns must not leak into Clipr outputs.
 
-Clipr `Any` mode resolves to Script, Reaction, or B-roll for each job. Script
-mode creates the existing talking-avatar video. Reaction and B-roll create one
+Clipr currently shows Reaction and B-roll modes. Script mode stays hidden behind
+the Clipr script flag until re-enabled. Reaction and B-roll create one
 silent 4-10 second single-shot visual clip from the selected avatar and saved
 product context.
 
@@ -268,7 +268,7 @@ selected slides.
 /dashboard/swipr → Authenticated TikTok carousel image generator
 /dashboard/swapr → Authenticated AI motion-transfer studio using saved photos with UGC clips or finished stitches
 /dashboard/avatars → Authenticated avatar photo library with hidden-until-requested photo upload controls, avatar assignment, descriptions, and AI scenario photo generation
-/dashboard/uploads → Authenticated Content Library with All, UGC, Clips, Demo, Swaps, Swipes, and Stitches tabs; UGC/Demo upload controls open from the header upload selector
+/dashboard/uploads → Authenticated Content Library with All, UGC, Demo, Swaps, Swipes, and Stitches tabs; UGC/Demo upload controls open from the header upload selector
 /dashboard/stitches → Compatibility redirect to `/dashboard/uploads?tab=stitches`
 ```
 

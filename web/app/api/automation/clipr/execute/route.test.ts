@@ -266,37 +266,37 @@ describe("POST /api/automation/clipr/execute", () => {
         ownerId: "owner_123",
         productId: "product_1",
         requestedGenerationMode: "any",
-        generationMode: "script",
+        generationMode: "reaction",
         requestedVideoModelId: "auto",
-        targetDurationSeconds: 60,
-        videoModelId: "prunaai/p-video-avatar",
+        targetDurationSeconds: 8,
+        videoModelId: "kwaivgi/kling-v3-video",
         voiceId: "voice_1",
       }),
     );
     expect(mocks.createCliprJobTextGeneration).toHaveBeenCalledWith(
       expect.objectContaining({
-        durationSeconds: 60,
-        generationMode: "script",
+        durationSeconds: 8,
+        generationMode: "reaction",
         jobId: "automation:clipr:owner_123:2026-05-31:1",
       }),
     );
     expect(mocks.createCliprSceneAvatarImage).toHaveBeenCalledWith(
       expect.objectContaining({
         avatarDescription: "Warm approachable creator",
-        generationMode: "script",
+        generationMode: "reaction",
         referenceImageUrl: "https://r2.example/photo.jpg",
       }),
     );
     expect(mocks.createCliprJobVideoOutput).toHaveBeenCalledWith(
       expect.objectContaining({
-        durationSeconds: 60,
-        generationMode: "script",
+        durationSeconds: 8,
+        generationMode: "reaction",
         jobId: "automation:clipr:owner_123:2026-05-31:1",
         lipSyncModelId: "pixverse/lipsync",
         script: "This serum keeps my skin camera ready.",
         ttsModelId: "elevenlabs/v3",
         userId: "owner_123",
-        videoModelId: "prunaai/p-video-avatar",
+        videoModelId: "kwaivgi/kling-v3-video",
         voiceId: "voice_1",
       }),
     );

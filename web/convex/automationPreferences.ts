@@ -4,6 +4,7 @@ import { mutation, query } from "./_generated/server";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
+import { getAutomationCliprGenerationMode } from "../lib/clipstitchr/utils/getAutomationCliprGenerationMode";
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { rateLimiter } from "./rateLimiter";
@@ -31,8 +32,9 @@ export const get = query({
       ? {
           ...preferences,
           enabledTools: filterEnabledAutomationTools(preferences.enabledTools),
-          cliprGenerationMode:
-            preferences.cliprGenerationMode ?? "any",
+          cliprGenerationMode: getAutomationCliprGenerationMode(
+            preferences.cliprGenerationMode,
+          ),
           stitchrTextStyleChoice: getAutomationStitchrTextStyleChoice(
             preferences.stitchrTextStyleChoice,
           ),
@@ -85,7 +87,9 @@ export const save = mutation({
       ownerId,
       enabled: args.enabled,
       enabledTools: filterEnabledAutomationTools(args.enabledTools),
-      cliprGenerationMode: args.cliprGenerationMode ?? "any",
+      cliprGenerationMode: getAutomationCliprGenerationMode(
+        args.cliprGenerationMode,
+      ),
       stitchrTextStyleChoice:
         args.stitchrTextStyleChoice ?? defaultAutomationStitchrTextStyleChoice,
       stitchrTextColorChoice: getAutomationStitchrColorChoice(

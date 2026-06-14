@@ -37,13 +37,13 @@ const features = [
   {
     title: "Organize your library",
     description:
-      "Keep UGC, demos, Clips, Swaps, Swipes, and Stitches in one place.",
+      "Keep UGC, demos, Swaps, Swipes, and Stitches in one place.",
     icon: FolderSearch,
   },
   {
-    title: "Generate reusable Clips",
+    title: "Generate reusable UGC",
     description:
-      "Use Clipr to create short engagement clips when your library needs fresh source footage.",
+      "Use Clipr to create reaction and b-roll clips when your library needs fresh source footage.",
     icon: CirclePlay,
   },
   {

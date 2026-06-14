@@ -116,8 +116,8 @@ Saved Stitch scoring is documented separately in `docs/features/stitch-score.md`
 - Make outputs easy to recognize later with names, posters, and metadata.
 - Keep batch creation predictable: one selected demo, up to 20 selected UGC
   clips, and one editable overlay per output.
-- Keep AI-generated Clips and Swaps as UGC-compatible clips that can flow into
-  Stitchr.
+- Keep AI-generated Clipr UGC and Swaps as UGC-compatible clips that can flow
+  into Stitchr.
 - Keep generated overlay text and caption copy editable while hiding hook
   style/template mechanics.
 - Keep generated music editable and separate from the saved stitch.

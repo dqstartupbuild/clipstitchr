@@ -20,6 +20,7 @@ import { defaultCliprGenerationMode } from "@/lib/clipstitchr/constants/defaultC
 import { defaultCliprDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprDurationSeconds";
 import { defaultCliprVisualDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprVisualDurationSeconds";
 import { defaultCliprVoiceId } from "@/lib/clipstitchr/constants/defaultCliprVoiceId";
+import { isCliprScriptModeEnabled } from "@/lib/clipstitchr/constants/isCliprScriptModeEnabled";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useCliprGeneration } from "@/lib/clipstitchr/hooks/useCliprGeneration";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
@@ -103,8 +104,12 @@ export function CliprPageClient() {
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <DashboardPageHeader
           eyebrow="Clip generator"
-          title="Create engagement Clips"
-          description="Generate reusable UGC-style Clips for the library, then use them in Stitchr."
+          title="Create more UGC"
+          description={
+            isCliprScriptModeEnabled
+              ? "Generate reactions, b-roll, or quick talking clips when you need more footage for Stitchr."
+              : "Generate reactions or b-roll when you need more footage for Stitchr."
+          }
         />
 
         {error ? (
@@ -123,6 +128,8 @@ export function CliprPageClient() {
                     ? "Generate a reaction"
                     : mode === "broll"
                       ? "Generate b-roll"
+                      : mode === "script"
+                        ? "Generate a talking clip"
                       : mode === "demo"
                         ? "Remix a demo"
                         : "Generate a Clip"}
@@ -200,7 +207,7 @@ export function CliprPageClient() {
               <p className="text-sm leading-6 text-text-secondary">
                 {isDemoMode
                   ? "Clipr saves finished remixed demos into the Demo library."
-                  : "Clipr saves finished clips into the Content Library as Clips."}
+                  : "Clipr saves finished reactions and b-roll into UGC."}
               </p>
               <Button
                 type="button"
@@ -229,7 +236,7 @@ export function CliprPageClient() {
                   })
                 }
               >
-                {isDemoMode ? "Generate Demo" : "Generate Clip"}
+                {isDemoMode ? "Generate Demo" : "Generate UGC"}
               </Button>
             </div>
           </Panel>

@@ -391,12 +391,7 @@ describe("VideoClipCard", () => {
       />,
     );
 
-    expect(mocks.actionItems.map((item) => item.label)).not.toContain(
-      "Score clip",
-    );
-    expect(mocks.actionItems.map((item) => item.label)).not.toContain(
-      "Rescore clip",
-    );
+    expect(mocks.actionItems.map((item) => item.label)).toContain("Score clip");
   });
 
   it("marks video clips as posted and active", async () => {

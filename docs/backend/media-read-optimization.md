@@ -26,8 +26,10 @@ reads across every mounted subscription.
 - `useSwiprLibraryState` subscribes only on Dashboard, Swipr, and Uploads.
 - Clip category queries use `videoClips.libraryKind` with owner/status indexes
   instead of filtering through all clips owned by the user.
-- Posted Clipr, posted Stitch, and posted Swipe subscriptions are loaded only on
-  the Content Library route where posted filters are available.
+- Legacy Clipr category rows are loaded only as a compatibility source and
+  folded into visible UGC lists. Posted Stitch and posted Swipe subscriptions
+  are loaded only on the Content Library route where posted filters are
+  available.
 
 ## Backfill Runbook
 

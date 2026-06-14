@@ -138,17 +138,18 @@ Optional Replicate model overrides:
   writing tests.
 - Clipr avatar still generation uses `AVATAR_PHOTO_MODEL_ID`, the same model
   configuration and provider input path as avatar photo generation, but creates
-  one source still before full-script avatar video generation.
+  one source still before the final avatar video generation.
 - Clipr Script mode uses `prunaai/p-video-avatar` for full-script avatar video
-  generation. When `CLIPR_TTS_MODEL_ID` is enabled, the provider worker passes
-  generated speech audio into this avatar-video model instead of relying on its
-  built-in voice catalog.
-- Clipr Reaction and B-roll modes temporarily expose visual model selection in
-  the UI while model quality is compared. Supported visual models are
-  `kwaivgi/kling-v3-video` and `google/veo-3.1`.
-- Clipr Demo mode is a manual-only Seedance test path that sends one selected
-  Demo clip as a `reference_videos` input and skips avatar still, voice, music,
-  and lip-sync generation.
+  generation when `isCliprScriptModeEnabled` is `true`. When
+  `CLIPR_TTS_MODEL_ID` is enabled, the provider worker passes generated speech
+  audio into this avatar-video model instead of relying on its built-in voice
+  catalog.
+- Clipr Reaction and B-roll modes use `kwaivgi/kling-v3-video` by default.
+  `CLIPR_VISUAL_VIDEO_MODEL_ID` can override to another supported model such as
+  `google/veo-3.1`.
+- Clipr Demo mode remains a backend-supported Seedance test path for generated
+  demos. It sends one selected Demo clip as a `reference_videos` input and
+  skips avatar still, voice, music, and lip-sync generation.
 - `CLIPR_TTS_MODEL_ID` defaults to `elevenlabs/v3` for Clipr speech generation.
   Set it to `none` to fall back to the avatar-video model's built-in voice path
   during local testing.
@@ -200,7 +201,7 @@ Firecrawl website import:
 | TikTok Events API forwarding | `POST /api/analytics/tiktok/events` after marketing-cookie consent | 120/hour/client fingerprint, burst 30; shared global bucket 5,000/hour, burst 1,000 |
 | IndexNow sitemap submission | `POST /api/indexnow` with `INDEXNOW_SUBMIT_SECRET` | Submits all public sitemap URLs only, excludes authenticated dashboard/API routes, requires a public `NEXT_PUBLIC_SITE_URL`, consumes 500 submitted URLs/hour/client fingerprint, burst 100; shared global bucket 5,000 submitted URLs/hour, burst 500 |
 | Product enrichment and website import | `POST /api/settings/products`, `PATCH /api/settings/products/{id}` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour. The route consumes this limit before Firecrawl website crawling and before the Replicate product enrichment call. Website import is capped at 15 Firecrawl pages per create/update. Product edits only re-crawl Firecrawl when the saved website URL changes. |
-| Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; shared global provider bucket 10,000 units/hour, burst 2,000. The route resolves the requested mode, creates a queued `cliprJobs` record and a durable `manual-clipr` provider job, then returns immediately. Script jobs consume the 60 second estimate; Reaction, B-roll, and Demo jobs consume the 4-10 second visual estimate. |
+| Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; shared global provider bucket 10,000 units/hour, burst 2,000. The route resolves the requested mode, creates a queued `cliprJobs` record and a durable `manual-clipr` provider job, then returns immediately. Current visible Reaction and B-roll jobs consume the 4-10 second visual estimate. Script jobs consume the 60 second estimate only when `isCliprScriptModeEnabled` is `true`; hidden Script requests resolve to a visual mode before quota/provider work. |
 | Clipr hook/script generation | `POST /api/clipr/jobs` worker path and `POST /api/clipr/text` immediate suggestion path | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000. Manual Clipr job creation consumes this only for Script mode. Reaction, B-roll, and Demo use a local visual plan and do not consume hook/script quota. Stitchr requests can include selected UGC/demo context and return overlay text plus caption/hashtag copy under this same limit. The default writing provider is `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` can be enabled through `TEXT_WRITING_MODEL_ID` for higher-cost tests. |
 | Clipr avatar still generation | `POST /api/clipr/jobs` before queued worker generation | 20 images/hour/user, burst 6; global provider bucket counted once per still. The provider worker creates the avatar still for Script, Reaction, and B-roll modes, then R2 upload byte limits are consumed before personal avatar-photo and thumbnail copies are saved. Demo mode skips avatar-still generation. |
 | Clipr voice and Script-mode lip-sync generation | `POST /api/clipr/jobs` before queued worker generation | 600 estimated voice seconds/hour/user, burst 180; global provider bucket counted by estimated seconds. Manual Clipr job creation consumes this only for Script mode. It protects ElevenLabs v3 speech generation and optional second-pass lip-sync models before the provider job is queued. PixVerse lip-sync jobs create temporary provider-worker ffmpeg video/audio segments in R2 before stitching the lip-synced segment outputs. |
@@ -215,7 +216,7 @@ Firecrawl website import:
 | Media worker jobs | `mediaJobs.createUploadNormalization`, `mediaJobs.createCliprFinalizationFromProvider`, `mediaJobs.createSwaprFinalizationFromProvider`, `mediaJobs.createStitchrDraftFinalizationFromProvider`, existing automation media creators, and `npm run media-worker` | Media jobs are worker-secret controlled. Creating a media job schedules a coalesced Convex dispatch action that runs the Cloud Run media job immediately; the scheduler remains as recovery. The worker normalizes close-safe video uploads, creates upload posters, saves uploaded clips, creates upload-analysis provider jobs, saves editable Stitchr drafts with generated captions, finalizes Swapr provider outputs, and finalizes Clipr outputs. Manual asset saves consume normal user-facing limits before job creation; automatic final asset saves consume automatic asset save buckets: 20 saved assets/day/user; global 2,000/day. |
 | Automatic Stitchr generation | Worker-only automation planner before provider work; provider worker generates Stitchr overlay text plus caption/hashtag copy and creates the media worker job | 3 Stitchr outputs/day/user; global 300/day |
 | Automatic Swapr generation | Worker-only automation planner before provider work; provider worker claims one queued Swapr task for the default avatar before creating a Replicate prediction and later claims provider-created Swapr tasks before creating a media finalization job | 1 Swapr output/day/user; global 100/day |
-| Automatic Clipr generation | Worker-only automation planner before provider work; provider worker runs the selected Clipr mode, avatar-image, and avatar-video generation for the default avatar without consuming manual Clipr buckets | 1 Clipr output/day/user; global 100/day; Script mode reserves 60 automation provider cost units before provider work; Reaction and B-roll reserve the 8 second visual estimate and skip voice, music, and PixVerse |
+| Automatic Clipr generation | Worker-only automation planner before provider work; provider worker runs the selected Clipr mode, avatar-image, and avatar-video generation for the default avatar without consuming manual Clipr buckets | 1 Clipr output/day/user; global 100/day; Reaction and B-roll reserve the 8 second visual estimate and skip voice, music, and PixVerse. Script mode reserves 60 automation provider cost units only when `isCliprScriptModeEnabled` is `true`; saved hidden Script preferences are normalized to Reaction. |
 | Automatic avatar photo generation | Worker-only automation planner before provider work; provider worker creates one generated avatar photo from the default avatar's latest source photo | Planner queues only the default avatar; rate bucket is 1 generated photo/day/avatar; global 500/day |
 | Automatic Swipr generation | Worker-only automation planner before provider work; provider worker creates the generated slide text and saves an editable Swipe draft | 1 Swipe/day/user; global 100/day |
 | Automatic provider cost guard | Worker-only automation planner before provider work | 10,000 provider cost units/day global |
@@ -394,8 +395,9 @@ worker falls back to the OpenAI image-analysis path using the generated poster
 image when one is available. The default poster-analysis model is
 `openai/gpt-5-mini`; full-video scoring stays on Gemini because OpenAI's GPT-5
 mini model lists video input as unsupported. `POST /api/video-clips/score`
-uses this same quota for saved UGC/demo clips and rejects generated Clips or
-Swaps before quota or provider work. `POST /api/uploads/analyze` remains for
+uses this same quota for saved UGC/demo clips and rejects Swaps before quota or
+provider work. Generated Clipr reaction and b-roll videos are treated as UGC for
+scoring. `POST /api/uploads/analyze` remains for
 image analysis and legacy/fallback upload analysis paths.
 
 Swapr video generation is rate-limited both by job count and by estimated output

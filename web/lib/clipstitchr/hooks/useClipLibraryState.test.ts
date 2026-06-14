@@ -912,12 +912,12 @@ describe("useClipLibraryState", () => {
     expect(state.clips).toHaveLength(1);
     expect(state.counts).toEqual({
       activeStitches: 1,
-      cliprClips: 1,
+      cliprClips: 0,
       demoClips: 0,
       postedStitches: 0,
       stitches: 1,
       swapClips: 0,
-      ugcClips: 0,
+      ugcClips: 1,
     });
     expect(state.stitches).toEqual([{ id: "stitch_1" }]);
     expect(mocks.downloadBlobFromR2).not.toHaveBeenCalled();
@@ -962,12 +962,12 @@ describe("useClipLibraryState", () => {
 
     expect(state.counts).toEqual({
       activeStitches: 0,
-      cliprClips: 10,
+      cliprClips: 0,
       demoClips: 20,
       postedStitches: 0,
       stitches: 40,
       swapClips: 50,
-      ugcClips: 60,
+      ugcClips: 70,
     });
   });
 

@@ -10,10 +10,10 @@ const workflows = [
   },
   {
     eyebrow: "Clipr",
-    title: "Generate a new Clip when the library feels thin.",
+    title: "Generate new UGC when the library feels thin.",
     description:
-      "Choose a product and avatar, generate a short engagement clip, then save it to the library for Stitchr.",
-    steps: ["Pick Product", "Pick Avatar", "Choose Voice", "Generate", "Save"],
+      "Choose a product and avatar, make a reaction or b-roll clip, then save it with UGC for Stitchr.",
+    steps: ["Pick Product", "Pick Avatar", "Pick Style", "Generate", "Save"],
   },
   {
     eyebrow: "Swapr",

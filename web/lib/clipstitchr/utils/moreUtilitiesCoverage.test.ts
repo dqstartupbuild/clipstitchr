@@ -203,6 +203,9 @@ describe("additional utility coverage", () => {
       "ugc",
     );
     expect(
+      getUploadLibraryTabFromSearchParams(new URLSearchParams("tab=clips")),
+    ).toBe("ugc");
+    expect(
       getUploadLibraryTabFromSearchParams(new URLSearchParams("tab=missing")),
     ).toBe("all");
   });

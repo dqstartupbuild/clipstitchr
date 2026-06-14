@@ -489,7 +489,7 @@ describe("convex cliprJobs", () => {
           scriptIdea: "Founder story angle",
         }),
         id: "clip_1",
-        libraryKind: "clipr",
+        libraryKind: "ugc",
         clipType: "ugc",
         locationDescription: "Creator in studio",
         mainPersonDescription:
@@ -517,7 +517,7 @@ describe("convex cliprJobs", () => {
     );
   });
 
-  it("finalizes media worker jobs with Clipr library indexing", async () => {
+  it("finalizes media worker jobs with UGC library indexing", async () => {
     const { ctx } = createCtx({
       cliprJobs: [{ unique: createJob() }],
       videoClips: [{ unique: null }],
@@ -559,7 +559,7 @@ describe("convex cliprJobs", () => {
           productId: "product_1",
         }),
         id: "clip_1",
-        libraryKind: "clipr",
+        libraryKind: "ugc",
         ownerId: "owner_123",
       }),
     );

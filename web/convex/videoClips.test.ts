@@ -339,7 +339,7 @@ describe("convex videoClips", () => {
         cliprMetadata: expect.objectContaining({
           providerModels: ["old-model", "new-model"],
         }),
-        libraryKind: "clipr",
+        libraryKind: "ugc",
       }),
     );
     expect(setup.ctx.db.delete).toHaveBeenCalledWith("doc_1");

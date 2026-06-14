@@ -1,34 +1,37 @@
 # Clipr Visual Modes
 
 > Status: implemented
-> Last updated: 2026-06-12
+> Last updated: 2026-06-14
 
 ## Summary
 
-Clipr now supports three concrete generation modes:
+Clipr supports these concrete generation modes:
 
-- `Script`: the existing talking-avatar Clipr flow with hook/script generation,
-  voice, optional music, and lip sync.
 - `Reaction`: one silent 4-10 second reaction shot from the selected avatar.
 - `B-roll`: one silent 4-10 second day-in-the-life shot related to the saved
   product.
+- `Script`: the existing talking-avatar Clipr flow with hook/script generation,
+  voice, optional music, and lip sync. This mode is hidden while
+  `web/lib/clipstitchr/constants/isCliprScriptModeEnabled.ts` is `false`.
 
-The UI and automation settings also support `Any`, which resolves to one of the
-three concrete modes per job. `Any` is deterministic from the job ID so retries
-keep the same mode.
+The backend still accepts legacy `Any` and `Script` values. While Script mode is
+hidden, both manual and automated Script requests resolve to Reaction or B-roll
+before provider work.
 
 ## User Experience
 
-Manual Clipr shows a mode picker with `Any`, `Script`, `Reaction`, and
-`B-roll`. Script mode shows the script idea, voice, and music controls.
-Reaction and b-roll hide voice and music because those outputs are silent.
+Manual Clipr currently shows a mode picker with `Reaction` and `B-roll`. If
+`isCliprScriptModeEnabled` is flipped to `true`, Script mode appears again and
+shows the script idea, voice, and music controls. Reaction and b-roll hide voice
+and music because those outputs are silent.
 
 Reaction and B-roll use Kling v3 by default. `CLIPR_VISUAL_VIDEO_MODEL_ID` can
 override the visual model to another supported option, currently Veo 3.1.
 
-The automation settings panel has the same Clipr mode choices. Automated Script
-jobs reserve the normal 60 second target. Automated Reaction and B-roll jobs
-reserve the 8 second visual target.
+The automation settings panel has the same visible Clipr mode choices.
+Automated Reaction and B-roll jobs reserve the 8 second visual target. Script
+appears in automation only when `isCliprScriptModeEnabled` is `true`; Script
+jobs reserve the normal 60 second target.
 
 ## Reaction Source Prompts
 
@@ -66,9 +69,9 @@ It uses the selected Demo clip as a reference video and asks Seedance to place
 the demo naturally on a phone screen held in someone's hand while preserving the
 important screen flow as much as possible.
 
-Demo mode is manual-only while it is being tested. It is not part of Clipr
-automation or the Any mode random pool because it needs an explicit Demo source
-clip.
+Demo mode is supported by the backend/finalization path for existing generated
+demos, but it is not shown in the current mode picker and is not part of Clipr
+automation because it needs an explicit Demo source clip.
 
 ## Provider Models
 
@@ -107,7 +110,8 @@ Manual and automated jobs use the same durable worker shape:
 7. Generate the avatar or demo remix video using the resolved model.
 8. Create a `clipr-finalization` media job.
 9. The media worker normalizes to 9:16, strips audio for visual modes, captures
-   a poster, and saves the final Clip or Demo with prompt-derived detail fields.
+   a poster, and saves non-demo Clipr output as UGC. Demo remixes save as Demo
+   clips.
 
 ## File Tree
 
@@ -124,6 +128,7 @@ web/convex/getCliprGeneratedClipStorageFields.ts
 web/convex/getVideoClipLibraryKind.ts
 web/convex/rateLimits.ts
 web/lib/clipstitchr/constants/cliprGenerationModeOptions.ts
+web/lib/clipstitchr/constants/isCliprScriptModeEnabled.ts
 web/lib/clipstitchr/constants/cliprVideoModelOptions.ts
 web/lib/clipstitchr/server/createCliprBrollVisualPrompt.ts
 web/lib/clipstitchr/server/createCliprJobTextGeneration.ts
@@ -141,8 +146,9 @@ web/services/media-worker/runMediaWorker.mjs
 
 ## Maintenance Notes
 
-Keep the manual mode selector and automation mode picker. Visual model choice is
-now a backend setting so UI tests should not expect a model selector.
+Keep the manual mode selector and automation mode picker aligned with
+`isCliprScriptModeEnabled`. Visual model choice is now a backend setting so UI
+tests should not expect a model selector.
 
 If new visual models are added, verify the current Replicate input schema before
 editing code. Add the model to `cliprVideoModelOptions`, update

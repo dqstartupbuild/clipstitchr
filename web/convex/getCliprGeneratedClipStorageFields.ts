@@ -73,7 +73,7 @@ export function getCliprGeneratedClipStorageFields(
 
   return {
     clipType: isDemo ? ("demo" as const) : ("ugc" as const),
-    libraryKind: isDemo ? ("demo" as const) : ("clipr" as const),
+    libraryKind: isDemo ? ("demo" as const) : ("ugc" as const),
     tags: isDemo ? ["demo", "clipr"] : ["ugc", "clipr"],
     ...(isDemo ? { productId: job.productId } : {}),
     ...(videoDescription ? { videoDescription } : {}),

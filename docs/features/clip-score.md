@@ -11,7 +11,7 @@ Stitch Score feature.
 
 ## Product Angle
 
-ClipStitchr already turns a library of UGC, demos, Clips, Swaps, Swipes, and
+ClipStitchr already turns a library of UGC, demos, Swaps, Swipes, and
 Stitches into finished content. The scoring feature makes the library easier to
 act on before editing starts.
 
@@ -108,7 +108,8 @@ Manual scoring uses the same score shape:
    when a saved score already exists.
 3. `POST /api/video-clips/score` verifies the user and clip owner through
    Convex.
-4. The route rejects generated Clips and Swaps before consuming quota.
+4. The route rejects Swaps before consuming quota. Generated Clipr reaction and
+   b-roll videos are UGC, so they can be scored and rescored.
 5. The route consumes the upload video analysis limit before signing the saved
    R2 video URL or calling the provider.
 6. The route sends the saved video to the current full-video analysis model and

@@ -4,9 +4,14 @@ Clipr Demo mode creates one short silent clip from an existing saved Demo video.
 It is meant for testing whether Seedance can remix a screen recording into a
 phone-in-hand UGC-style product shot.
 
+> Current status: the backend and finalization path remain supported for
+> existing/generated Demo remixes, but Demo mode is not shown in the current
+> Clipr mode picker.
+
 ## Behavior
 
-- The user chooses Demo mode manually on the Clipr page.
+- When Demo mode is re-enabled in the UI, the user chooses Demo mode manually on
+  the Clipr page.
 - The user selects one saved Demo clip from the content library.
 - Clipr validates the selected Demo clip on the server before queuing provider
   work.
@@ -20,8 +25,8 @@ phone-in-hand UGC-style product shot.
   prompt-derived detail fields so the library can still show that Clipr created
   it.
 
-Demo mode is not included in the Any-mode random pool and is not available to
-Clipr automation yet because it needs a specific Demo source clip.
+Demo mode is not shown in the current mode picker and is not available to Clipr
+automation because it needs a specific Demo source clip.
 
 ## Provider Notes
 
@@ -37,9 +42,10 @@ environment override such as Veo 3.1.
 ## File Tree
 
 - `web/app/_components/clipr/CliprDemoClipPanel.tsx`
-  - Manual Demo source selector.
+  - Manual Demo source selector used when Demo mode is re-enabled.
 - `web/app/dashboard/clipr/CliprPageClient.tsx`
-  - Shows Demo mode controls and sends `demoClipId`.
+  - Keeps the Demo controls branch available, but current mode options do not
+    expose Demo mode.
 - `web/lib/clipstitchr/server/clipr/readCliprJobCreateRequest.ts`
   - Reads `demoClipId` only for Demo mode.
 - `web/lib/clipstitchr/server/clipr/loadCliprJobInputDocuments.ts`

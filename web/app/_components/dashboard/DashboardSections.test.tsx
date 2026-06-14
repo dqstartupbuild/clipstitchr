@@ -100,7 +100,7 @@ describe("dashboard shell sections", () => {
     );
     const sidebarMarkup = renderToStaticMarkup(<DashboardSidebar />);
     const statsMarkup = renderToStaticMarkup(
-      <DashboardStats ugcCount={1} demoCount={2} clipsCount={3} stitchesCount={4} />,
+      <DashboardStats ugcCount={1} demoCount={2} stitchesCount={4} />,
     );
 
     expect(headerMarkup).toContain("Welcome to ClipStitchr");

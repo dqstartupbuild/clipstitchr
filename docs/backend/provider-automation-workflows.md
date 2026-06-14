@@ -21,8 +21,9 @@ Core rule:
 
 This document covers:
 
-- Clipr script, reaction, b-roll, avatar still, avatar video, voice, lip sync,
-  and music generation.
+- Clipr reaction, b-roll, avatar still, avatar video, and music generation.
+  Script, voice, and lip sync generation are covered when the Clipr script flag
+  is enabled.
 - Swipr AI background generation and future automated Swipe creation.
 - Avatar photo generation.
 - Shared music generation.
@@ -198,7 +199,8 @@ Manual Clipr is now a server-owned workflow with recoverable steps:
    and music snapshots.
 2. Consume Clipr job, avatar still, and video limits before provider calls.
    Script mode also consumes hook/script and voice limits; music limits are
-   consumed only when Script mode generates music.
+   consumed only when Script mode generates music. Script mode is currently
+   hidden unless `isCliprScriptModeEnabled` is `true`.
 3. Generate hook/script as a provider task for Script mode, or create a local
    visual plan for Reaction and B-roll.
 4. Generate the avatar source still as a provider task and copy it to R2.
@@ -209,11 +211,11 @@ Manual Clipr is now a server-owned workflow with recoverable steps:
 
 `POST /api/clipr/jobs` now handles request parsing, ownership checks, quota
 consumption, Convex input loading, queued job persistence, and creation of one
-`manual-clipr` provider job. The provider worker owns Script-mode planning,
-visual-mode local plan creation, avatar still generation, avatar video/music
-generation, shared music persistence, and creation of the `clipr-finalization`
-media job. The media worker saves the final Clipr clip, strips audio for
-Reaction and B-roll, and marks the provider job complete.
+`manual-clipr` provider job. The provider worker owns Script-mode planning when
+enabled, visual-mode local plan creation, avatar still generation, avatar
+video/music generation, shared music persistence, and creation of the
+`clipr-finalization` media job. The media worker saves non-demo Clipr output as
+UGC, strips audio for Reaction and B-roll, and marks the provider job complete.
 
 ## Swipr Durable Target
 
@@ -306,7 +308,7 @@ The first FFmpeg media worker lives at
 `MEDIA_WORKER_SECRET`; for `clipr-finalization`, it normalizes the durable avatar
 video to 9:16 H.264/AAC, strips audio when the input snapshot asks for silent
 visual output, captures a poster, uploads both objects to R2, saves the final
-Clipr `videoClips` record, and marks the automation task/run complete.
+Clipr `videoClips` record as UGC, and marks the automation task/run complete.
 For `swapr-finalization`, it downloads one or more allowlisted Replicate output
 URLs, normalizes/concatenates the video to the same saved-clip format, captures
 a poster, uploads both objects to R2, saves a UGC-compatible `videoClips` record
@@ -331,7 +333,8 @@ Before autopilot is exposed to users, add an explicit preferences model:
 
 - enabled/disabled;
 - tools enabled: Clipr, Swipr, later Stitchr/Longr;
-- Clipr mode preference: Any, Script, Reaction, or B-roll;
+- Clipr mode preference: Reaction or B-roll; Script appears only when
+  `isCliprScriptModeEnabled` is `true`;
 - product selection mode;
 - avatar selection mode;
 - generation frequency;

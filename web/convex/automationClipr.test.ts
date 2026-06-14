@@ -153,7 +153,7 @@ describe("automationClipr", () => {
     mocks.getDefaultAvatarForOwner.mockResolvedValue(avatar);
   });
 
-  it("queues automatic Clipr with the shared 60 second duration and matching provider cost", async () => {
+  it("coerces hidden Script preferences to automatic Reaction clips", async () => {
     const ctx = createCtx({
       automationPreferences: [
         {
@@ -189,7 +189,7 @@ describe("automationClipr", () => {
       ctx,
       expect.objectContaining({
         ownerId: "owner_123",
-        providerCostUnits: 60,
+        providerCostUnits: 8,
         tool: "clipr",
       }),
     );
@@ -208,11 +208,11 @@ describe("automationClipr", () => {
       videoModelId: string;
     };
 
-    expect(taskInput.requestedGenerationMode).toBe("script");
-    expect(taskInput.generationMode).toBe("script");
+    expect(taskInput.requestedGenerationMode).toBe("reaction");
+    expect(taskInput.generationMode).toBe("reaction");
     expect(taskInput.requestedVideoModelId).toBe("auto");
-    expect(taskInput.targetDurationSeconds).toBe(60);
-    expect(taskInput.videoModelId).toBe("prunaai/p-video-avatar");
+    expect(taskInput.targetDurationSeconds).toBe(8);
+    expect(taskInput.videoModelId).toBe("kwaivgi/kling-v3-video");
     expect(ctx.db.patch).toHaveBeenCalledWith(
       "run_doc",
       expect.objectContaining({

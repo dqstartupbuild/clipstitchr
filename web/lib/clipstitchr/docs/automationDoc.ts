@@ -26,7 +26,7 @@ export const automationDoc = {
       bullets: [
         "Enable or pause daily drafts.",
         "Choose Stitchr, Clipr, or Swipr.",
-        "Pick the Clipr mode you want for generated Clips.",
+        "Pick Reaction or B-roll for generated UGC.",
         "Choose the default text style and colors for Stitchr drafts.",
         "Save your changes.",
       ],
@@ -45,7 +45,7 @@ export const automationDoc = {
       ],
       bullets: [
         "Preview Stitchr drafts before exporting.",
-        "Edit generated Clips or use them as source footage.",
+        "Edit generated UGC or use it as source footage.",
         "Open saved Swipes and change the text before downloading.",
       ],
     },

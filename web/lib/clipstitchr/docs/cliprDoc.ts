@@ -1,4 +1,21 @@
 import type { CustomerDocPage } from "@/lib/clipstitchr/docs/CustomerDocPage";
+import { isCliprScriptModeEnabled } from "@/lib/clipstitchr/constants/isCliprScriptModeEnabled";
+
+const cliprModeBullets = [
+  "Choose Reaction or B-roll.",
+  ...(isCliprScriptModeEnabled
+    ? [
+        "Choose Script when you want a quick talking-avatar clip.",
+        "For Script clips, choose a voice.",
+        "For Script clips, optionally paste an idea for Clipr to turn into a full script.",
+        "For Script clips, optionally generate background music. This is off by default.",
+      ]
+    : []),
+];
+
+const cliprStyleDescription = isCliprScriptModeEnabled
+  ? "Reaction clips are quick silent facial reactions. B-roll clips are short silent everyday shots that fit the product context. Script clips are talking-avatar videos."
+  : "Reaction clips are quick silent facial reactions. B-roll clips are short silent everyday shots that fit the product context.";
 
 export const cliprDoc = {
   slug: "clipr",
@@ -6,38 +23,35 @@ export const cliprDoc = {
   description:
     "Create reusable engagement clips when your library needs more footage.",
   summary:
-    "Make short avatar-led Clips, save them to the library, and reuse them in Stitchr.",
+    "Make short reaction and b-roll clips, save them as UGC, and reuse them in Stitchr.",
   category: "feature",
   order: 20,
-  updated: "2026-06-12",
+  updated: "2026-06-14",
   sections: [
     {
       title: "What Clipr is for",
       body: [
-        "Use Clipr when you need more material, but do not want to shoot another clip from scratch. It creates short avatar-led Clips for education, opinions, stories, tests, and problem-aware content.",
-        "Clipr is not for direct product pitches. A Clip should feel useful, not like a sales script.",
+        "Use Clipr when you need more material, but do not want to shoot another clip from scratch. It creates short reaction and b-roll clips you can use before a demo.",
+        "Clipr is not for direct product pitches. The clip should feel useful, not like a sales script.",
       ],
     },
     {
       title: "How Clipr works",
       body: [
-        "Clipr uses your saved product settings to understand the audience and topic. You choose the style of Clip, the avatar, and the extra options that fit that style.",
+        "Clipr uses your saved product settings to understand the audience and topic. You choose the style, the avatar, and the simple scene details.",
       ],
       bullets: [
         "Choose a saved product.",
-        "Choose Any, Script, Reaction, or B-roll.",
+        ...cliprModeBullets,
         "Choose an avatar to appear in the clip.",
-        "For Script clips, choose a voice.",
-        "For Script clips, optionally paste an idea for Clipr to turn into a full script.",
-        "For Script clips, optionally generate background music. This is off by default.",
         "Generate the avatar video.",
-        "Save the result into the Content Library as a Clip.",
+        "Save the result into UGC.",
       ],
     },
     {
       title: "Clip styles",
       body: [
-        "Script clips are talking-avatar videos. Reaction clips are quick silent facial reactions. B-roll clips are short silent everyday shots that fit the product context.",
+        cliprStyleDescription,
         "Reaction and b-roll clips are single-shot videos, usually just a few seconds long.",
       ],
     },
@@ -49,9 +63,9 @@ export const cliprDoc = {
       ],
     },
     {
-      title: "Where Clips appear",
+      title: "Where Clipr videos appear",
       body: [
-        "Generated Clips appear in the Content Library under Clips. Use them like UGC: preview them, download them, or select them in Stitchr.",
+        "Generated reaction and b-roll clips appear in the Content Library under UGC. Preview them, download them, or select them in Stitchr.",
       ],
     },
     {

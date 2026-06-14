@@ -7,12 +7,13 @@ export function getUploadLibraryTabFromSearchParams(
 
   switch (tab) {
     case "ugc":
-    case "clips":
     case "demo":
     case "swaps":
     case "swipes":
     case "stitches":
       return tab;
+    case "clips":
+      return "ugc";
     default:
       return "all";
   }

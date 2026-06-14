@@ -7,7 +7,11 @@ export function getClipCanBeScored(
   >,
 ) {
   if (clip.libraryKind) {
-    return clip.libraryKind === "demo" || clip.libraryKind === "ugc";
+    return (
+      clip.libraryKind === "clipr" ||
+      clip.libraryKind === "demo" ||
+      clip.libraryKind === "ugc"
+    );
   }
 
   if (clip.clipType === "demo") {
@@ -16,7 +20,6 @@ export function getClipCanBeScored(
 
   return (
     clip.clipType === "ugc" &&
-    !clip.cliprMetadata &&
     clip.swaprMetadata?.source !== "swapr"
   );
 }

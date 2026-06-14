@@ -79,7 +79,7 @@ Write feature copy around user outcomes:
 | Content Library | Keep UGC, demos, swaps, and stitches in one searchable place. |
 | Stitchr | Pair up to 20 UGC with one product demo and create finished ads. |
 | Swipr | Create carousel posts, save the draft, and come back to revise or download it later. |
-| Clipr | Generate reusable engagement Clips when the library needs fresh source footage. |
+| Clipr | Generate reusable reaction and b-roll UGC when the library needs fresh source footage. |
 | Trim ranges | Cut dead space without damaging the original clip. |
 | Posters | Recognize clips quickly without opening every file. |
 | AI avatar photos | Create more source material when you need it. |
@@ -95,7 +95,7 @@ Use:
 - "Create more source material when your library is thin."
 - "Use AI to fill gaps in your content library."
 - "Generate optional UGC-style inputs, then stitch them into ads."
-- "Generate short engagement Clips when your library needs fresh material."
+- "Generate reaction and b-roll UGC when your library needs fresh material."
 
 Avoid:
 
@@ -148,8 +148,8 @@ more finished creative so they can test faster.
   one-demo-to-many-UGC relationship stays clear.
 - For Swipr flows, say "carousel posts," "slides," "looks," and "ready to
   publish" before naming implementation details.
-- For Clipr flows, say "Clips," "engagement clips," "avatar," "voice,"
-  "music," and "Use in Stitchr."
+- For Clipr flows, say "UGC," "reaction," "b-roll," "avatar," and "Use in
+  Stitchr." Mention script mode only when the Clipr script flag is enabled.
 - Do not mention hidden hook styles, template IDs, risk labels, provider names,
   or placeholder mechanics in user-facing Clipr copy.
 - Do not mention internal hook source names such as app hook library or
@@ -158,7 +158,7 @@ more finished creative so they can test faster.
   "follow," "buy," "book," "download it," or "sign up."
 - Describe Swipr as a way to create, save, edit, and download carousels.
 - Avoid naming internal storage or setup choices in marketing copy.
-- Keep buttons action-oriented: `Upload Clips`, `Create Stitch`, `Save Trim`.
+- Keep buttons action-oriented: `Upload UGC`, `Create Stitch`, `Save Trim`.
 - Avoid making users feel judged for having messy files or inconsistent posting.
 - Avoid over-explaining AI in primary workflows.
 

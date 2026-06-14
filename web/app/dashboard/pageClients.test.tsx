@@ -437,7 +437,7 @@ describe("dashboard page clients", () => {
   it("renders the Clipr generator with product and avatar selectors", () => {
     const markup = renderToStaticMarkup(<CliprPageClient />);
 
-    expect(markup).toContain("Create engagement Clips");
+    expect(markup).toContain("Create more UGC");
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Avatar");
   });

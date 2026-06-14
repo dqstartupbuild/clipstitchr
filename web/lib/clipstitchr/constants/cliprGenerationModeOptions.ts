@@ -1,12 +1,16 @@
-import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
+import { isCliprScriptModeEnabled } from "./isCliprScriptModeEnabled";
+import type { CliprGenerationMode } from "../types/CliprGenerationMode";
+
+const cliprScriptGenerationModeOption: {
+  label: string;
+  value: CliprGenerationMode;
+} = { label: "Script", value: "script" };
 
 export const cliprGenerationModeOptions: {
   label: string;
   value: CliprGenerationMode;
 }[] = [
-  { label: "Any", value: "any" },
-  { label: "Script", value: "script" },
+  ...(isCliprScriptModeEnabled ? [cliprScriptGenerationModeOption] : []),
   { label: "Reaction", value: "reaction" },
   { label: "B-roll", value: "broll" },
-  { label: "Demo", value: "demo" },
 ];
