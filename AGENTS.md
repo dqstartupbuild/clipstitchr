@@ -77,7 +77,7 @@ gcloud run jobs deploy clipstitchr-provider-worker \
   --task-timeout 30m \
   --execution-environment gen2 \
   --service-account "140346842368-compute@developer.gserviceaccount.com" \
-  --set-env-vars NEXT_PUBLIC_CONVEX_URL="https://whimsical-ptarmigan-764.convex.cloud",PROVIDER_WORKER_TOOLS="stitchr,swapr,clipr,avatar-photo,swipr",CLIPR_TTS_MODEL_ID="elevenlabs/v3",CLIPR_LIP_SYNC_MODEL_ID="pixverse/lipsync",TEXT_WRITING_MODEL_ID="anthropic/claude-sonnet-4.6" \
+  --set-env-vars '^@^NEXT_PUBLIC_CONVEX_URL=https://whimsical-ptarmigan-764.convex.cloud@PROVIDER_WORKER_TOOLS=stitchr,swapr,clipr,avatar-photo,swipr@CLIPR_TTS_MODEL_ID=elevenlabs/v3@CLIPR_LIP_SYNC_MODEL_ID=pixverse/lipsync@TEXT_WRITING_MODEL_ID=anthropic/claude-sonnet-4.6' \
   --set-secrets PROVIDER_WORKER_SECRET=provider-worker-secret:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest
 ```
 
