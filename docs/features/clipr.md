@@ -871,8 +871,10 @@ Update:
   exposing hidden style/template IDs. Keep those IDs in internal metadata only.
 - Settings product flow: ensure saved product context can be selected by Clipr,
   Swipr auto-text, and Stitchr auto-text.
-- Settings automation panel: allow automatic Clipr jobs to use `Reaction` or
-  `B-roll`. Script appears only when `isCliprScriptModeEnabled` is `true`.
+- Settings automation panel: allow automatic Clipr jobs to use `Any`,
+  `Reaction`, or `B-roll`. Script appears only when
+  `isCliprScriptModeEnabled` is `true`. While Script is hidden, `Any` resolves
+  to Reaction or B-roll before provider work.
 
 ## Swipr Auto-Generated Text
 
@@ -1122,8 +1124,9 @@ After implementation:
     not call hook/script, voice, music, or PixVerse lip sync.
 22. Test B-roll mode creates a 4-10 second silent single-shot Clip with a
     product-relevant day-in-the-life prompt.
-23. Test Settings automation mode selection queues Reaction or B-roll jobs with
-    the correct target duration. If Script mode is enabled, test Script jobs too.
+23. Test Settings automation mode selection defaults to Any and queues Reaction
+    or B-roll jobs with the correct target duration. If Script mode is enabled,
+    test Script jobs too.
 24. Review user-facing copy for non-technical language and no unwanted CTAs.
 
 ## Approval Decisions

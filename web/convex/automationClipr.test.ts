@@ -153,7 +153,7 @@ describe("automationClipr", () => {
     mocks.getDefaultAvatarForOwner.mockResolvedValue(avatar);
   });
 
-  it("coerces hidden Script preferences to automatic Reaction clips", async () => {
+  it("coerces hidden Script preferences to automatic Any visual clips", async () => {
     const ctx = createCtx({
       automationPreferences: [
         {
@@ -208,7 +208,7 @@ describe("automationClipr", () => {
       videoModelId: string;
     };
 
-    expect(taskInput.requestedGenerationMode).toBe("reaction");
+    expect(taskInput.requestedGenerationMode).toBe("any");
     expect(taskInput.generationMode).toBe("reaction");
     expect(taskInput.requestedVideoModelId).toBe("auto");
     expect(taskInput.targetDurationSeconds).toBe(8);

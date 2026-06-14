@@ -333,8 +333,9 @@ Before autopilot is exposed to users, add an explicit preferences model:
 
 - enabled/disabled;
 - tools enabled: Clipr, Swipr, later Stitchr/Longr;
-- Clipr mode preference: Reaction or B-roll; Script appears only when
-  `isCliprScriptModeEnabled` is `true`;
+- Clipr mode preference: Any, Reaction, or B-roll; Script appears only when
+  `isCliprScriptModeEnabled` is `true`; Any resolves to one enabled visual mode
+  before provider work while Script is hidden;
 - product selection mode;
 - avatar selection mode;
 - generation frequency;

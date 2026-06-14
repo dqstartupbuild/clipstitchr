@@ -8,9 +8,9 @@ import { mutation } from "./_generated/server";
 import { defaultAutomationCliprVoiceId } from "./defaultAutomationCliprVoiceId";
 import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
+import { defaultAutomationCliprGenerationMode } from "../lib/clipstitchr/constants/defaultAutomationCliprGenerationMode";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { defaultCliprDurationSeconds } from "../lib/clipstitchr/constants/defaultCliprDurationSeconds";
-import { defaultCliprGenerationMode } from "../lib/clipstitchr/constants/defaultCliprGenerationMode";
 import { defaultCliprVisualDurationSeconds } from "../lib/clipstitchr/constants/defaultCliprVisualDurationSeconds";
 import { getAutomationCliprGenerationMode } from "../lib/clipstitchr/utils/getAutomationCliprGenerationMode";
 import { getCliprResolvedGenerationMode } from "../lib/clipstitchr/utils/getCliprResolvedGenerationMode";
@@ -102,7 +102,7 @@ export const planDaily = mutation({
     }
 
     const requestedGenerationMode = getAutomationCliprGenerationMode(
-      preferences.cliprGenerationMode ?? defaultCliprGenerationMode,
+      preferences.cliprGenerationMode ?? defaultAutomationCliprGenerationMode,
     );
     const taskId = `${runId}:1`;
     const generationMode = getCliprResolvedGenerationMode({

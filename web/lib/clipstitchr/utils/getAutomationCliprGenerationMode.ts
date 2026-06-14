@@ -1,4 +1,5 @@
 import { automationCliprGenerationModeOptions } from "../constants/automationCliprGenerationModeOptions";
+import { defaultAutomationCliprGenerationMode } from "../constants/defaultAutomationCliprGenerationMode";
 import type { AutomationCliprGenerationMode } from "../types/AutomationPreferencesInput";
 
 const availableAutomationCliprGenerationModes =
@@ -13,5 +14,5 @@ export function getAutomationCliprGenerationMode(
     value as AutomationCliprGenerationMode,
   )
     ? (value as AutomationCliprGenerationMode)
-    : "reaction";
+    : defaultAutomationCliprGenerationMode;
 }

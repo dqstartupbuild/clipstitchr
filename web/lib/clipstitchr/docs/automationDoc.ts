@@ -26,7 +26,7 @@ export const automationDoc = {
       bullets: [
         "Enable or pause daily drafts.",
         "Choose Stitchr, Clipr, or Swipr.",
-        "Pick Reaction or B-roll for generated UGC.",
+        "Pick Any, Reaction, or B-roll for generated UGC.",
         "Choose the default text style and colors for Stitchr drafts.",
         "Save your changes.",
       ],

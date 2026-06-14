@@ -147,8 +147,10 @@ web/services/media-worker/runMediaWorker.mjs
 ## Maintenance Notes
 
 Keep the manual mode selector and automation mode picker aligned with
-`isCliprScriptModeEnabled`. Visual model choice is now a backend setting so UI
-tests should not expect a model selector.
+`isCliprScriptModeEnabled`, but do not mirror the lists exactly: manual Clipr
+shows Reaction and B-roll while automation also keeps Any as the default.
+Visual model choice is now a backend setting so UI tests should not expect a
+model selector.
 
 If new visual models are added, verify the current Replicate input schema before
 editing code. Add the model to `cliprVideoModelOptions`, update

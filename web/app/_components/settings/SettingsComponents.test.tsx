@@ -6,6 +6,7 @@ import { ProductSettingsCard } from "@/app/_components/settings/ProductSettingsC
 import { ProductSettingsForm } from "@/app/_components/settings/ProductSettingsForm";
 import { ProductSettingsList } from "@/app/_components/settings/ProductSettingsList";
 import { SettingsAppearancePanel } from "@/app/_components/settings/SettingsAppearancePanel";
+import { AutomationCliprModePicker } from "@/app/_components/settings/AutomationCliprModePicker";
 import { SettingsAutomationPanel } from "@/app/_components/settings/SettingsAutomationPanel";
 import { SettingsSubscriptionPanel } from "@/app/_components/settings/SettingsSubscriptionPanel";
 import { SettingsSupportPanel } from "@/app/_components/settings/SettingsSupportPanel";
@@ -175,6 +176,17 @@ describe("settings components", () => {
     expect(emptyMarkup).toContain("Saved products will appear");
     expect(populatedMarkup).toContain("Launch Kit");
     expect(populatedMarkup).toContain("Default product");
+  });
+
+  it("shows Any in the Clipr automation mode picker", () => {
+    const markup = renderToStaticMarkup(
+      <AutomationCliprModePicker value="any" onChange={() => undefined} />,
+    );
+
+    expect(markup).toContain("Any");
+    expect(markup).toContain("Reaction");
+    expect(markup).toContain("B-roll");
+    expect(markup).not.toContain("Script");
   });
 
   it("drafts automation setting changes without saving", () => {
