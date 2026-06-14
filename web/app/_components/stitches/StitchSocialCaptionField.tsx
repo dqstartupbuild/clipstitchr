@@ -39,7 +39,7 @@ export function StitchSocialCaptionField({
         />
       </div>
       {copyMessage ? (
-        <p className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
+        <p className="rounded-md border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-semibold text-accent-dark">
           {copyMessage}
         </p>
       ) : null}

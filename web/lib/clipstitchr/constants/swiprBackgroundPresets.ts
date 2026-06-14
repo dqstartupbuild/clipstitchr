@@ -12,14 +12,14 @@ export const SWIPR_BACKGROUND_PRESETS: SwiprBackgroundPreset[] = [
     id: "countertop",
     label: "Countertop",
     baseColor: "#eef2f7",
-    accentColor: "#0f766e",
+    accentColor: "#7c3aed",
     secondaryColor: "#dc2626",
   },
   {
     id: "outdoor",
     label: "Outdoor",
     baseColor: "#ecfeff",
-    accentColor: "#16a34a",
+    accentColor: "#9333ea",
     secondaryColor: "#0284c7",
   },
   {
@@ -34,6 +34,6 @@ export const SWIPR_BACKGROUND_PRESETS: SwiprBackgroundPreset[] = [
     label: "Minimal",
     baseColor: "#f9fafb",
     accentColor: "#334155",
-    secondaryColor: "#0891b2",
+    secondaryColor: "#2563eb",
   },
 ];

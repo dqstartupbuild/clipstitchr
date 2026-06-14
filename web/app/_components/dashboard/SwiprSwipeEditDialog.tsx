@@ -230,7 +230,7 @@ export function SwiprSwipeEditDialog({
             ) : null}
             <div className="rounded-lg border border-border bg-surface-elevated p-3">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge tone={swipe.isPosted ? "emerald" : "purple"}>
+                <Badge>
                   {swipe.isPosted ? "POSTED" : "SWIPE"}
                 </Badge>
                 <span className="text-xs font-semibold text-text-tertiary">

@@ -26,10 +26,10 @@ export function ClipPerformanceScoreDetails({
   );
 
   return (
-    <section className="min-w-0 rounded-lg border border-emerald-200 bg-emerald-50/70 p-4">
+    <section className="min-w-0 rounded-lg border border-purple-200 bg-purple-50/70 p-4">
       <div className="flex min-w-0 items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-emerald-700">
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-accent-dark">
             <Gauge aria-hidden className="h-4 w-4" />
             Clip score
           </p>
@@ -43,10 +43,10 @@ export function ClipPerformanceScoreDetails({
           ) : null}
         </div>
         <div className="shrink-0 text-right">
-          <p className="text-3xl font-bold leading-none text-emerald-700">
+          <p className="text-3xl font-bold leading-none text-accent-dark">
             {score.overall}
           </p>
-          <p className="mt-1 text-xs font-semibold text-emerald-700">
+          <p className="mt-1 text-xs font-semibold text-accent-dark">
             out of 100
           </p>
         </div>
@@ -66,7 +66,7 @@ export function ClipPerformanceScoreDetails({
               </div>
               <div className="mt-1 h-2 overflow-hidden rounded-full bg-white">
                 <div
-                  className="h-full rounded-full bg-emerald-500"
+                  className="h-full rounded-full bg-accent"
                   style={{ width: `${item.value}%` }}
                 />
               </div>

@@ -51,9 +51,9 @@ const variationPacks: Record<
     ],
     palettes: [
       "tomato red, cream, charcoal, and warm wood",
-      "olive green, soft white, amber, and stone gray",
+      "plum, soft white, amber, and stone gray",
       "deep red, black, parchment, and brushed steel",
-      "sunlit beige, basil green, terracotta, and off-white",
+      "sunlit beige, dusty violet, terracotta, and off-white",
     ],
     compositions: [
       "large open space across the upper center",
@@ -90,8 +90,8 @@ const variationPacks: Record<
     ],
     palettes: [
       "charcoal, steel, electric blue, and clean white",
-      "forest green, concrete gray, black, and daylight blue",
-      "warm tan, black, muted green, and off-white",
+      "deep violet, concrete gray, black, and daylight blue",
+      "warm tan, black, muted blue, and off-white",
       "deep navy, graphite, silver, and soft sky blue",
     ],
     compositions: [
@@ -129,7 +129,7 @@ const variationPacks: Record<
     ],
     palettes: [
       "cream, blush, warm gray, and muted gold",
-      "sage, ivory, clay, and soft white",
+      "lavender, ivory, clay, and soft white",
       "charcoal, pearl, pale pink, and chrome",
       "lavender, stone, off-white, and gentle amber",
     ],
@@ -167,9 +167,9 @@ const variationPacks: Record<
       "neutral woven fabric",
     ],
     palettes: [
-      "warm white, oak, sage, and slate",
+      "warm white, oak, lavender, and slate",
       "soft gray, cream, walnut, and muted blue",
-      "terracotta, ivory, olive, and stone",
+      "terracotta, ivory, mauve, and stone",
       "black, white, warm wood, and linen",
     ],
     compositions: [
@@ -208,7 +208,7 @@ const variationPacks: Record<
     palettes: [
       "white, graphite, cobalt, and pale gray",
       "warm ivory, black, sky blue, and silver",
-      "slate, off-white, mint, and chrome",
+      "slate, off-white, periwinkle, and chrome",
       "charcoal, light wood, cream, and soft blue",
     ],
     compositions: [
@@ -246,9 +246,9 @@ const variationPacks: Record<
     ],
     palettes: [
       "cream, charcoal, slate, and muted blue",
-      "warm white, sage, tan, and black",
+      "warm white, lilac, tan, and black",
       "soft gray, ivory, amber, and steel",
-      "deep green, stone, off-white, and graphite",
+      "deep violet, stone, off-white, and graphite",
     ],
     compositions: [
       "large open center",

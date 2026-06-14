@@ -166,14 +166,7 @@ export function VideoClipDetailsDialog({
           <div className="flex min-w-0 flex-col gap-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span
-                  className={[
-                    "inline-flex items-center rounded-md border px-2 py-1 text-xs font-semibold",
-                    clip.isPosted
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "border-purple-200 bg-purple-50 text-accent-dark",
-                  ].join(" ")}
-                >
+                <span className="inline-flex items-center rounded-md border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-semibold text-accent-dark">
                   {getVideoClipBadgeLabel(clip)}
                 </span>
                 <span className="text-xs font-semibold text-text-tertiary">

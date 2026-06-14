@@ -6,7 +6,6 @@ type BadgeProps = {
 };
 
 const toneClasses = {
-  emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
   purple: "border-purple-200 bg-purple-50 text-accent-dark",
 };
 

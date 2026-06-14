@@ -17,7 +17,7 @@ describe("createSwiprBackgroundGenerationPrompt", () => {
     const prompt = createSwiprBackgroundGenerationPrompt({
       productContext: "A compact espresso machine for busy founders",
       presetId: "studio",
-      userPrompt: "matte green tile with morning light",
+      userPrompt: "matte purple tile with morning light",
       variation,
     });
 
@@ -25,7 +25,7 @@ describe("createSwiprBackgroundGenerationPrompt", () => {
     expect(prompt).toContain("cropped to 9:16");
     expect(prompt).toContain("Do not include any visible words");
     expect(prompt).toContain("compact espresso machine");
-    expect(prompt).toContain("matte green tile");
+    expect(prompt).toContain("matte purple tile");
     expect(prompt).toContain("Variation scene");
     expect(prompt).toContain(variation.scene);
     expect(prompt).toContain(variation.palette);

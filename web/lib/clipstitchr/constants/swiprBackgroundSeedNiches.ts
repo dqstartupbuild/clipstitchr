@@ -24,7 +24,7 @@ export const swiprBackgroundSeedNiches = [
     settings: [
       "quiet yoga studio floor with rolled mats along one side and a calm blank wall",
       "sunlit pilates reformer room with neutral wall space and soft equipment shapes",
-      "outdoor deck beside greenery with woven mat texture and airy daylight",
+      "outdoor deck beside a woven privacy screen with mat texture and airy daylight",
       "meditation nook with floor cushions, linen curtain, and open wall space",
       "barre studio rail with pale wood floor and gentle window light",
     ],
@@ -344,7 +344,7 @@ export const swiprBackgroundSeedNiches = [
     tags: ["outdoor", "camping", "hiking", "adventure", "sports"],
     productFit: "outdoor gear, tours, recreation programs, apparel, and local adventures",
     settings: [
-      "trailhead bench with backpack shape, forest detail, and open sky space",
+      "trailhead bench with backpack shape, woodland detail, and open sky space",
       "campground table with enamel cup, canvas texture, and warm morning light",
       "lakeside dock with water reflection, railing edge, and clean horizon",
       "mountain overlook path with rocks at the lower edge and wide negative space",

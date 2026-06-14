@@ -49,7 +49,7 @@ export function LandingScoreSection() {
         <div className="rounded-lg border border-border bg-white p-5 shadow-sm shadow-slate-200/60">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="inline-flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700">
+              <p className="inline-flex items-center gap-2 rounded-md border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-bold text-accent-dark">
                 <Gauge aria-hidden className="h-4 w-4" />
                 Worth using - 84
               </p>
@@ -61,7 +61,7 @@ export function LandingScoreSection() {
                 product moment lands fast.
               </p>
             </div>
-            <p className="shrink-0 text-4xl font-bold text-emerald-700">84</p>
+            <p className="shrink-0 text-4xl font-bold text-accent-dark">84</p>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {scorePreviewMetrics.map((metric) => (
@@ -72,7 +72,7 @@ export function LandingScoreSection() {
                 </div>
                 <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200">
                   <div
-                    className="h-full rounded-full bg-emerald-500"
+                    className="h-full rounded-full bg-accent"
                     style={{ width: `${metric.value}%` }}
                   />
                 </div>

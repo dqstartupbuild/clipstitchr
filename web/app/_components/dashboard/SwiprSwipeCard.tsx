@@ -271,7 +271,7 @@ export function SwiprSwipeCard({
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <Badge tone={isPosted ? "emerald" : "purple"}>
+              <Badge>
                 {isPosted ? "POSTED" : "SWIPE"}
               </Badge>
               <MediaCardActionMenu
