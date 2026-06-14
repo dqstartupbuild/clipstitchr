@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { VideoClipCard } from "@/app/_components/dashboard/VideoClipCard";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
+import type { ClipPerformanceScore } from "@/lib/clipstitchr/types/ClipPerformanceScore";
 import type { CliprMetadata } from "@/lib/clipstitchr/types/CliprMetadata";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -195,6 +196,16 @@ function createClipMetadata(
   };
 }
 
+function createPerformanceScore(): ClipPerformanceScore {
+  return {
+    bestUse: "Use as the opener",
+    fixes: ["Trim the pause"],
+    overall: 84,
+    strengths: ["Clear hook"],
+    summary: "Strong opener.",
+  };
+}
+
 describe("VideoClipCard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -321,6 +332,71 @@ describe("VideoClipCard", () => {
       "Edit clip",
       "Delete clip",
     ]);
+  });
+
+  it("scores and rescores UGC and demo clips from the action menu", async () => {
+    const onScore = vi.fn(async () => createPerformanceScore());
+    const ugcClip = createClipMetadata({
+      cliprMetadata: undefined,
+      libraryKind: "ugc",
+    });
+
+    renderToStaticMarkup(
+      <VideoClipCard
+        clip={ugcClip}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onScore={onScore}
+        onUpdateMetadata={vi.fn()}
+        onUpdateTrim={vi.fn()}
+      />,
+    );
+
+    expect(mocks.actionItems.map((item) => item.label)).toContain("Score clip");
+    mocks.actionItems.find((item) => item.label === "Score clip")?.onClick?.();
+    await Promise.resolve();
+
+    expect(onScore).toHaveBeenCalledWith(ugcClip);
+
+    const demoClip = createClipMetadata({
+      clipType: "demo",
+      cliprMetadata: undefined,
+      libraryKind: "demo",
+      performanceScore: createPerformanceScore(),
+    });
+
+    renderToStaticMarkup(
+      <VideoClipCard
+        clip={demoClip}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onScore={onScore}
+        onUpdateMetadata={vi.fn()}
+        onUpdateTrim={vi.fn()}
+      />,
+    );
+
+    expect(mocks.actionItems.map((item) => item.label)).toContain(
+      "Rescore clip",
+    );
+
+    renderToStaticMarkup(
+      <VideoClipCard
+        clip={createClipMetadata({ libraryKind: "clipr" })}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onScore={onScore}
+        onUpdateMetadata={vi.fn()}
+        onUpdateTrim={vi.fn()}
+      />,
+    );
+
+    expect(mocks.actionItems.map((item) => item.label)).not.toContain(
+      "Score clip",
+    );
+    expect(mocks.actionItems.map((item) => item.label)).not.toContain(
+      "Rescore clip",
+    );
   });
 
   it("marks video clips as posted and active", async () => {

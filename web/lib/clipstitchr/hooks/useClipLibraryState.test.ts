@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => {
     downloadBlobFromR2: vi.fn(),
     generateCliprMusic: vi.fn(),
     generateStitchMusic: vi.fn(),
+    scoreVideoClip: vi.fn(),
     mutationFns,
     useConvex: vi.fn(),
     useConvexAuth: vi.fn(),
@@ -141,6 +142,10 @@ vi.mock("@/lib/clipstitchr/client/generateCliprMusic", () => ({
 
 vi.mock("@/lib/clipstitchr/client/generateStitchMusic", () => ({
   generateStitchMusic: mocks.generateStitchMusic,
+}));
+
+vi.mock("@/lib/clipstitchr/client/scoreVideoClip", () => ({
+  scoreVideoClip: mocks.scoreVideoClip,
 }));
 
 vi.mock("@/lib/clipstitchr/media/createStitchPosterBlob", () => ({
@@ -282,6 +287,13 @@ describe("useClipLibraryState", () => {
     mocks.generateStitchMusic.mockResolvedValue({
       audioObject: { key: "users/user_123/music/new-stitch.mp3" },
       title: "Stitch Music",
+    });
+    mocks.scoreVideoClip.mockResolvedValue({
+      bestUse: "Use as the opener",
+      fixes: ["Trim the pause"],
+      overall: 82,
+      strengths: ["Clear hook"],
+      summary: "Strong start.",
     });
   });
 
@@ -645,6 +657,22 @@ describe("useClipLibraryState", () => {
       state.generateCliprMusic(createClipMetadata({ cliprMetadata: undefined })),
     ).resolves.toBeNull();
     expect(mocks.generateCliprMusic).not.toHaveBeenCalled();
+  });
+
+  it("scores clips and clears the cached full clip", async () => {
+    const state = useClipLibraryState();
+    const clip = createClipMetadata();
+
+    await state.loadClip("clip_1");
+    await expect(state.scoreClip(clip)).resolves.toEqual(
+      expect.objectContaining({
+        overall: 82,
+      }),
+    );
+    await state.loadClip("clip_1");
+
+    expect(mocks.scoreVideoClip).toHaveBeenCalledWith("clip_1");
+    expect(mocks.downloadBlobFromR2).toHaveBeenCalledTimes(2);
   });
 
   it("generates stitch music drafts and updates music and text overlays without poster work", async () => {

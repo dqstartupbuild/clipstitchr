@@ -7,6 +7,7 @@ import {
   save,
   updateCliprMusic,
   updateMetadata,
+  updatePerformanceScore,
   updatePostedStatus,
   updatePoster,
 } from "./videoClips";
@@ -251,6 +252,37 @@ describe("convex videoClips", () => {
         videoDescription: "Demo",
       }),
     );
+  });
+
+  it("updates performance score metadata", async () => {
+    const setup = createCtx([{ _id: "doc_1", id: "clip_1" }]);
+
+    await getHandler(updatePerformanceScore)(setup.ctx, {
+      id: "clip_1",
+      performanceScore: {
+        bestUse: "Use as the opener",
+        fixes: ["Trim the pause"],
+        overall: 84,
+        strengths: ["Clear hook"],
+        summary: "Strong opener.",
+      },
+      updatedAt: "2026-05-20T00:00:00.000Z",
+    });
+
+    expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
+      setup.ctx,
+      "convexMetadataUpdate",
+      {
+        key: "owner_123",
+        throws: true,
+      },
+    );
+    expect(setup.ctx.db.patch).toHaveBeenCalledWith("doc_1", {
+      performanceScore: expect.objectContaining({
+        overall: 84,
+      }),
+      updatedAt: "2026-05-20T00:00:00.000Z",
+    });
   });
 
   it("updates poster and Clipr music, then removes clips", async () => {

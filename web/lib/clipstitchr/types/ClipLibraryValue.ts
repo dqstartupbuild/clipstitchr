@@ -1,4 +1,5 @@
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { ClipPerformanceScore } from "@/lib/clipstitchr/types/ClipPerformanceScore";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { ClipLibraryCounts } from "@/lib/clipstitchr/types/ClipLibraryCounts";
 import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
@@ -50,6 +51,7 @@ export type ClipLibraryValue = {
   generateCliprMusic: (
     clip: VideoClipMetadata,
   ) => Promise<CliprMusicMetadata | null>;
+  scoreClip: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
   updateCliprMusic: (
     clip: VideoClipMetadata,
     music: CliprMusicMetadata | null,

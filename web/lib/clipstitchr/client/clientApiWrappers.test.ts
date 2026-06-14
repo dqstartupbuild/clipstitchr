@@ -7,6 +7,7 @@ import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
 import { generateSharedMusicTrack } from "@/lib/clipstitchr/client/generateSharedMusicTrack";
 import { generateStitchMusic } from "@/lib/clipstitchr/client/generateStitchMusic";
 import { generateSwiprBackgroundWithAi } from "@/lib/clipstitchr/client/generateSwiprBackgroundWithAi";
+import { scoreVideoClip } from "@/lib/clipstitchr/client/scoreVideoClip";
 import { seedSwiprBackgroundLibrary } from "@/lib/clipstitchr/client/seedSwiprBackgroundLibrary";
 import { updateProductProfile } from "@/lib/clipstitchr/client/updateProductProfile";
 import { createR2DownloadUrl } from "@/lib/clipstitchr/client/r2/createR2DownloadUrl";
@@ -172,6 +173,33 @@ describe("client API wrappers", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/settings/products/product%2F1",
       expect.objectContaining({ method: "PATCH" }),
+    );
+  });
+
+  it("scores saved video clips", async () => {
+    fetchMock.mockResolvedValueOnce(
+      createJsonResponse({
+        performanceScore: {
+          bestUse: "Use as the opener",
+          fixes: ["Trim the pause"],
+          overall: 88,
+          strengths: ["Clear hook"],
+          summary: "Strong opener.",
+        },
+      }),
+    );
+
+    await expect(scoreVideoClip("clip_1")).resolves.toEqual(
+      expect.objectContaining({
+        overall: 88,
+      }),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/video-clips/score",
+      expect.objectContaining({
+        body: JSON.stringify({ clipId: "clip_1" }),
+        method: "POST",
+      }),
     );
   });
 

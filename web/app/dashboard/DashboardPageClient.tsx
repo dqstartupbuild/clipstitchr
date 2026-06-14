@@ -128,6 +128,7 @@ export function DashboardPageClient() {
           onLoadClip={library.loadClip}
           onLoadPoster={library.loadClipPoster}
           onDelete={library.removeClip}
+          onScoreClip={library.scoreClip}
           onUpdateMetadata={library.updateClipMetadata}
           onUpdateTrim={library.updateClipTrimRange}
           onUpdatePostedStatus={library.updateClipPostedStatus}

@@ -29,6 +29,7 @@ export const clipScoreDoc = {
         "Wait for ClipStitchr to finish describing the clip.",
         "Look for the simple score badge on the clip card.",
         "Open the clip details to see the reason, best use, strengths, and quick fixes.",
+        "Use Score clip or Rescore clip from the clip menu when you want a fresh read.",
       ],
     },
     {

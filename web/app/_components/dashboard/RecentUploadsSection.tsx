@@ -4,6 +4,7 @@ import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyS
 import { VideoClipCard } from "@/app/_components/dashboard/VideoClipCard";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { ClipPerformanceScore } from "@/lib/clipstitchr/types/ClipPerformanceScore";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -23,6 +24,7 @@ type RecentUploadsSectionProps = {
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void | Promise<void>;
+  onScoreClip?: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
   onUpdatePostedStatus?: (
     clip: VideoClipMetadata,
     isPosted: boolean,
@@ -37,6 +39,7 @@ export function RecentUploadsSection({
   onDelete,
   onUpdateMetadata,
   onUpdateTrim,
+  onScoreClip,
   onUpdatePostedStatus,
 }: RecentUploadsSectionProps) {
   return (
@@ -62,6 +65,7 @@ export function RecentUploadsSection({
               onLoadClip={onLoadClip}
               onLoadPoster={onLoadPoster}
               onDelete={onDelete}
+              onScore={onScoreClip}
               onUpdateMetadata={onUpdateMetadata}
               onUpdateTrim={onUpdateTrim}
               onUpdatePostedStatus={onUpdatePostedStatus}

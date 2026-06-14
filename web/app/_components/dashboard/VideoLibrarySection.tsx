@@ -10,6 +10,7 @@ import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibrary
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { ClipPerformanceScore } from "@/lib/clipstitchr/types/ClipPerformanceScore";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { LibraryPostedStatusFilter } from "@/lib/clipstitchr/types/LibraryPostedStatusFilter";
@@ -42,6 +43,7 @@ type VideoLibrarySectionProps = {
   onGenerateCliprMusic?: (
     clip: VideoClipMetadata,
   ) => Promise<CliprMusicMetadata | null>;
+  onScoreClip?: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadMoreItems?: () => void;
   onStatusFilterChange?: (status: LibraryPostedStatusFilter) => void;
@@ -82,6 +84,7 @@ export function VideoLibrarySection({
   onLoadPoster,
   onDelete,
   onGenerateCliprMusic,
+  onScoreClip,
   onLoadMoreItems,
   onStatusFilterChange,
   onUpdateCliprMusic,
@@ -195,6 +198,7 @@ export function VideoLibrarySection({
                     : undefined
                 }
                 onGenerateCliprMusic={onGenerateCliprMusic}
+                onScore={onScoreClip}
                 onUpdateCliprMusic={onUpdateCliprMusic}
                 onUpdateMetadata={onUpdateMetadata}
                 onUpdateTrim={onUpdateTrim}

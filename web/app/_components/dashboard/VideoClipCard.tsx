@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Download,
   Edit3,
+  Gauge,
   RotateCcw,
   Scissors,
   Shuffle,
@@ -16,6 +17,7 @@ import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPrevi
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import { downloadMusicBlob } from "@/lib/clipstitchr/client/r2/downloadMusicBlob";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
+import type { ClipPerformanceScore } from "@/lib/clipstitchr/types/ClipPerformanceScore";
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
@@ -26,6 +28,7 @@ import { createVideoBlobWithPosterMetadata } from "@/lib/clipstitchr/media/creat
 import { renderCliprVideoWithMusic } from "@/lib/clipstitchr/media/renderCliprVideoWithMusic";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
+import { getClipCanBeScored } from "@/lib/clipstitchr/utils/getClipCanBeScored";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getClipCanUseInSwapr } from "@/lib/clipstitchr/utils/getClipCanUseInSwapr";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
@@ -52,6 +55,7 @@ type VideoClipCardProps = {
   onGenerateCliprMusic?: (
     clip: VideoClipMetadata,
   ) => Promise<CliprMusicMetadata | null>;
+  onScore?: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
   onUpdateCliprMusic?: (
     clip: VideoClipMetadata,
     music: CliprMusicMetadata | null,
@@ -83,6 +87,7 @@ export function VideoClipCard({
   onDelete,
   onSelect,
   onGenerateCliprMusic,
+  onScore,
   onUpdateCliprMusic,
   onUpdateMetadata,
   onUpdateTrim,
@@ -94,11 +99,13 @@ export function VideoClipCard({
   const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
   const [isSavingMusic, setIsSavingMusic] = useState(false);
   const [isSavingPostedStatus, setIsSavingPostedStatus] = useState(false);
+  const [isScoring, setIsScoring] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [musicError, setMusicError] = useState<string | null>(null);
   const [postedStatusError, setPostedStatusError] = useState<string | null>(
     null,
   );
+  const [scoreError, setScoreError] = useState<string | null>(null);
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
   const isPosted = Boolean(clip.isPosted);
   const displayDuration = getVideoTrimDisplayDuration(
@@ -214,6 +221,26 @@ export function VideoClipCard({
       setIsSavingPostedStatus(false);
     }
   };
+  const handleScore = async () => {
+    if (!onScore) {
+      return;
+    }
+
+    setIsScoring(true);
+    setScoreError(null);
+
+    try {
+      await onScore(clip);
+    } catch (nextError) {
+      setScoreError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to score this clip.",
+      );
+    } finally {
+      setIsScoring(false);
+    }
+  };
 
   return (
     <>
@@ -293,6 +320,15 @@ export function VideoClipCard({
             });
           }
 
+          if (onScore && getClipCanBeScored(clip)) {
+            items.push({
+              label: clip.performanceScore ? "Rescore clip" : "Score clip",
+              icon: <Gauge aria-hidden className="h-4 w-4" />,
+              disabled: isLoading || isScoring,
+              onClick: () => void handleScore(),
+            });
+          }
+
           if (clip.clipType === "ugc" && onCreateAvatarFromClip) {
             items.push({
               label: "Create avatar from UGC",
@@ -318,7 +354,7 @@ export function VideoClipCard({
           return items;
         }}
         footer={() =>
-          downloadError || postedStatusError ? (
+          downloadError || postedStatusError || scoreError ? (
             <div className="flex flex-col gap-2">
               {downloadError ? (
                 <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
@@ -328,6 +364,11 @@ export function VideoClipCard({
               {postedStatusError ? (
                 <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
                   {postedStatusError}
+                </p>
+              ) : null}
+              {scoreError ? (
+                <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+                  {scoreError}
                 </p>
               ) : null}
             </div>

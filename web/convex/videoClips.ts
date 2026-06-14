@@ -528,6 +528,36 @@ export const updateMetadata = mutation({
   },
 });
 
+export const updatePerformanceScore = mutation({
+  args: {
+    id: v.string(),
+    performanceScore: clipPerformanceScoreValidator,
+    updatedAt: v.string(),
+  },
+  handler: async (ctx, { id, performanceScore, updatedAt }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const clip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!clip) {
+      throw new Error("Video clip not found.");
+    }
+
+    await ctx.db.patch(clip._id, {
+      performanceScore,
+      updatedAt,
+    });
+  },
+});
+
 export const updatePoster = mutation({
   args: {
     id: v.string(),

@@ -21,6 +21,7 @@ import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { generateCliprMusic as requestCliprMusicGeneration } from "@/lib/clipstitchr/client/generateCliprMusic";
 import { generateStitchMusic as requestStitchMusicGeneration } from "@/lib/clipstitchr/client/generateStitchMusic";
 import { scoreStitch as requestStitchScore } from "@/lib/clipstitchr/client/scoreStitch";
+import { scoreVideoClip as requestVideoClipScore } from "@/lib/clipstitchr/client/scoreVideoClip";
 import { libraryMetadataPageSize } from "@/lib/clipstitchr/constants/libraryMetadataPageSize";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createStitchPosterBlob } from "@/lib/clipstitchr/media/createStitchPosterBlob";
@@ -593,6 +594,17 @@ export function useClipLibraryState(): ClipLibraryValue {
     [],
   );
 
+  const scoreClip = useCallback(
+    async (clip: VideoClipMetadata) => {
+      const performanceScore = await requestVideoClipScore(clip.id);
+
+      clipCacheRef.current.delete(clip.id);
+      await refresh();
+      return performanceScore;
+    },
+    [refresh],
+  );
+
   const updateStitchMusic = useCallback(
     async (stitch: Stitch, music: StitchMusicMetadata | null) => {
       const previousMusicObject = stitch.music?.audioObject;
@@ -904,6 +916,7 @@ export function useClipLibraryState(): ClipLibraryValue {
     renameClip,
     updateClipMetadata,
     generateCliprMusic,
+    scoreClip,
     updateCliprMusic,
     updateClipTrimRange,
     updateClipPostedStatus,

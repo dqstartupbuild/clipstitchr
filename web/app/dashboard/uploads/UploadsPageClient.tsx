@@ -565,6 +565,7 @@ export function UploadsPageClient() {
               isCreatingAvatarFromClip={avatarCreator.isGenerating}
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
+              onScoreClip={library.scoreClip}
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
@@ -598,6 +599,7 @@ export function UploadsPageClient() {
               onLoadMoreItems={library.videoGroups.clipr.loadMoreItems}
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
+              onScoreClip={library.scoreClip}
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
@@ -630,6 +632,7 @@ export function UploadsPageClient() {
               onLoadMoreItems={library.videoGroups.demo.loadMoreItems}
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
+              onScoreClip={library.scoreClip}
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
@@ -662,6 +665,7 @@ export function UploadsPageClient() {
               onLoadMoreItems={library.videoGroups.swapr.loadMoreItems}
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
+              onScoreClip={library.scoreClip}
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
@@ -771,6 +775,7 @@ export function UploadsPageClient() {
             }
             onDelete={library.removeClip}
             onGenerateCliprMusic={library.generateCliprMusic}
+            onScoreClip={library.scoreClip}
             onUpdateCliprMusic={library.updateCliprMusic}
             onUpdateMetadata={library.updateClipMetadata}
             onUpdateTrim={library.updateClipTrimRange}
