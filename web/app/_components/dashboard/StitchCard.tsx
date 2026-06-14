@@ -5,6 +5,7 @@ import {
   BookmarkPlus,
   Download,
   Edit3,
+  Gauge,
   Play,
   RefreshCw,
   RotateCcw,
@@ -13,6 +14,7 @@ import {
 import { useCallback, useState } from "react";
 import { StitchDetailsDialog } from "@/app/_components/dashboard/StitchDetailsDialog";
 import { StitchEditDialog } from "@/app/_components/dashboard/StitchEditDialog";
+import { StitchScoreBadge } from "@/app/_components/dashboard/StitchScoreBadge";
 import {
   MediaCardActionMenu,
   type MediaCardActionMenuItem,
@@ -24,6 +26,7 @@ import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchPreviewErrorState } from "@/lib/clipstitchr/types/StitchPreviewErrorState";
 import type { StitchPreviewSources } from "@/lib/clipstitchr/types/StitchPreviewSources";
+import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
 import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -49,6 +52,7 @@ type StitchCardProps = {
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
+  onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onSelect?: () => void;
   onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
   onUpdateMusic: (
@@ -84,6 +88,7 @@ export function StitchCard({
   onGenerateMusic,
   onLoadClip,
   onLoadPoster,
+  onScore,
   onSelect,
   onSaveTemplate,
   onUpdateMusic,
@@ -134,6 +139,7 @@ export function StitchCard({
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
+  const [isScoring, setIsScoring] = useState(false);
   const [isSavingMusic, setIsSavingMusic] = useState(false);
   const [isSavingPostedStatus, setIsSavingPostedStatus] = useState(false);
   const [isSavingSocialCaption, setIsSavingSocialCaption] = useState(false);
@@ -144,6 +150,7 @@ export function StitchCard({
   const [postedStatusError, setPostedStatusError] = useState<string | null>(
     null,
   );
+  const [scoreError, setScoreError] = useState<string | null>(null);
   const [socialCaptionError, setSocialCaptionError] = useState<string | null>(
     null,
   );
@@ -274,6 +281,36 @@ export function StitchCard({
       return null;
     } finally {
       setIsGeneratingMusic(false);
+    }
+  };
+  const handleScore = async () => {
+    if (!onScore) {
+      return;
+    }
+
+    setIsScoring(true);
+    setScoreError(null);
+
+    try {
+      const stitchScore = await onScore(stitch);
+
+      trackPostHogEvent("stitch_scored", {
+        hook_to_demo_flow: stitchScore.hookToDemoFlow,
+        retention_estimate: stitchScore.overallRetentionEstimate,
+        stitch_id: stitch.id,
+      });
+    } catch (nextError) {
+      capturePostHogException(nextError, {
+        feature: "stitch_score",
+        stitch_id: stitch.id,
+      });
+      setScoreError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to score this stitch.",
+      );
+    } finally {
+      setIsScoring(false);
     }
   };
   const handleUpdateMusic = async (music: StitchMusicMetadata | null) => {
@@ -418,6 +455,16 @@ export function StitchCard({
           },
         ]
       : []),
+    ...(onScore
+      ? [
+          {
+            label: stitch.stitchScore ? "Rescore stitch" : "Score stitch",
+            icon: <Gauge aria-hidden className="h-4 w-4" />,
+            disabled: isScoring,
+            onClick: () => void handleScore(),
+          },
+        ]
+      : []),
     {
       label: "Download stitch",
       icon: <Download aria-hidden className="h-4 w-4" />,
@@ -517,6 +564,11 @@ export function StitchCard({
             <p className="mt-2 text-xs text-text-secondary">
               {formatDate(stitch.createdAt)}
             </p>
+            {stitch.stitchScore ? (
+              <span className="mt-2 block min-w-0">
+                <StitchScoreBadge score={stitch.stitchScore} />
+              </span>
+            ) : null}
           </button>
           <MediaCardActionMenu
             label={`Actions for ${stitch.name}`}
@@ -531,6 +583,11 @@ export function StitchCard({
         {postedStatusError ? (
           <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
             {postedStatusError}
+          </p>
+        ) : null}
+        {scoreError ? (
+          <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+            {scoreError}
           </p>
         ) : null}
         {templateError ? (

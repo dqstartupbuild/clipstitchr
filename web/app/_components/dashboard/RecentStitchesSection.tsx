@@ -5,6 +5,7 @@ import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
 import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -19,6 +20,7 @@ type RecentStitchesSectionProps = {
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
+  onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
@@ -51,6 +53,7 @@ export function RecentStitchesSection({
   onLoadClip,
   onLoadPoster,
   onSaveTemplate,
+  onScore,
   onUpdateMusic,
   onUpdatePostedStatus,
   onUpdateSocialCaption,
@@ -84,6 +87,7 @@ export function RecentStitchesSection({
               onLoadClip={onLoadClip}
               onLoadPoster={onLoadPoster}
               onSaveTemplate={onSaveTemplate}
+              onScore={onScore}
               onUpdateMusic={onUpdateMusic}
               onUpdatePostedStatus={onUpdatePostedStatus}
               onUpdateSocialCaption={onUpdateSocialCaption}

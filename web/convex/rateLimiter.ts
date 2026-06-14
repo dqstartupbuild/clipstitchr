@@ -73,6 +73,25 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 200,
     shards: 5,
   },
+  stitchScoreAnalyze: {
+    kind: "token bucket",
+    rate: 60,
+    period: HOUR,
+    capacity: 20,
+  },
+  stitchScoreAnalyzeMonthly: {
+    kind: "token bucket",
+    rate: 1500,
+    period: MONTH,
+    capacity: 1500,
+  },
+  stitchScoreAnalyzeGlobal: {
+    kind: "token bucket",
+    rate: 1000,
+    period: HOUR,
+    capacity: 200,
+    shards: 5,
+  },
   replicateSwaprPhotoExpand: {
     kind: "token bucket",
     rate: 10,

@@ -15,9 +15,9 @@ const scoreBenefits = [
     icon: Scissors,
   },
   {
-    title: "Make better pairings",
+    title: "Check finished stitches",
     description:
-      "Use the best UGC and demo clips together instead of guessing from file names.",
+      "Score a saved Stitch and see where to trim, what text to try, and whether the demo lands fast enough.",
     icon: WandSparkles,
   },
 ];
@@ -35,15 +35,15 @@ export function LandingScoreSection() {
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
-            Clip scores
+            Clip and Stitch scores
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
             Know which clips are worth using before you waste time posting.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Upload a UGC clip or demo and ClipStitchr gives it a simple score
-            and quick fixes you can use before it goes
-            into an ad.
+            Upload a UGC clip or demo to score the source. Score a finished
+            Stitch when you want to see if the hook, demo, and text are ready
+            before posting.
           </p>
         </div>
         <div className="rounded-lg border border-border bg-white p-5 shadow-sm shadow-slate-200/60">
@@ -80,7 +80,8 @@ export function LandingScoreSection() {
             ))}
           </div>
           <div className="mt-5 rounded-md bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary">
-            Quick fix: Cut the first pause and start on the product line.
+            Quick fix: Cut the pause before the demo and try a shorter first
+            line.
           </div>
         </div>
         <div className="grid gap-4 lg:col-span-2 md:grid-cols-3">

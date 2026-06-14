@@ -70,6 +70,9 @@ social proof first, product proof immediately after.
 12. Save and download the finished ad variants.
 13. Mark saved stitches as posted after they go live so the Stitches library can
     separate reusable drafts from already-published assets.
+14. Score a saved stitch when the user wants a quick retention estimate,
+    hook-to-demo flow read, drop-off risks, trim ideas, overlay ideas, and a
+    stronger opening line before posting.
 
 Saved stitch music is stored separately from the stitch. Users can edit text,
 edit or copy the caption/hashtag field, remove music, regenerate it, enable or
@@ -101,6 +104,8 @@ routes, CRUD behavior, rate limits, and maintenance notes.
 Stitchr social captions are documented separately in
 `docs/features/stitchr-social-captions.md`.
 
+Saved Stitch scoring is documented separately in `docs/features/stitch-score.md`.
+
 ## Product Principles
 
 - Prioritize speed over full editor flexibility.
@@ -119,6 +124,8 @@ Stitchr social captions are documented separately in
 - Keep saved stitches usable as templates even after they are marked posted.
 - Use clip scores as guidance for selection, not as a hard gate that blocks the
   user's creative judgment.
+- Use Stitch scores as quick editing guidance for finished stitches, not as a
+  promise of real post performance.
 
 ## Non-Goals
 

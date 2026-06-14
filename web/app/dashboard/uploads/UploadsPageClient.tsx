@@ -687,6 +687,7 @@ export function UploadsPageClient() {
               onLoadMoreItems={library.loadMoreStitches}
               onLoadPoster={library.loadStitchPoster}
               onSaveTemplate={stitchTemplates.createTemplateFromStitch}
+              onScore={library.scoreStitch}
               onUpdateMusic={library.updateStitchMusic}
               onUpdatePostedStatus={library.updateStitchPostedStatus}
               onUpdateSocialCaption={library.updateStitchSocialCaption}
@@ -812,6 +813,7 @@ export function UploadsPageClient() {
             onLoadMoreItems={handleLoadMoreSelectedStitches}
             onLoadPoster={library.loadStitchPoster}
             onSaveTemplate={stitchTemplates.createTemplateFromStitch}
+            onScore={library.scoreStitch}
             statusCounts={stitchStatusCounts}
             statusFilter={stitchStatusFilter}
             onStatusFilterChange={setStitchStatusFilter}

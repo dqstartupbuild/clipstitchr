@@ -95,6 +95,7 @@ import type * as validators_r2Object from "../validators/r2Object.js";
 import type * as validators_replicateJobPurpose from "../validators/replicateJobPurpose.js";
 import type * as validators_replicatePredictionStatus from "../validators/replicatePredictionStatus.js";
 import type * as validators_stitchMusicMetadata from "../validators/stitchMusicMetadata.js";
+import type * as validators_stitchScore from "../validators/stitchScore.js";
 import type * as validators_stitchSequenceSegment from "../validators/stitchSequenceSegment.js";
 import type * as validators_stitchrMode from "../validators/stitchrMode.js";
 import type * as validators_swaprMetadata from "../validators/swaprMetadata.js";
@@ -204,6 +205,7 @@ declare const fullApi: ApiFromModules<{
   "validators/replicateJobPurpose": typeof validators_replicateJobPurpose;
   "validators/replicatePredictionStatus": typeof validators_replicatePredictionStatus;
   "validators/stitchMusicMetadata": typeof validators_stitchMusicMetadata;
+  "validators/stitchScore": typeof validators_stitchScore;
   "validators/stitchSequenceSegment": typeof validators_stitchSequenceSegment;
   "validators/stitchrMode": typeof validators_stitchrMode;
   "validators/swaprMetadata": typeof validators_swaprMetadata;

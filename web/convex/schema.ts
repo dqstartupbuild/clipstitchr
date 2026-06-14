@@ -29,6 +29,7 @@ import { providerJobTypeValidator } from "./validators/providerJobType";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
 import { replicatePredictionStatusValidator } from "./validators/replicatePredictionStatus";
+import { stitchScoreValidator } from "./validators/stitchScore";
 import { stitchrModeValidator } from "./validators/stitchrMode";
 import { stitchSequenceSegmentValidator } from "./validators/stitchSequenceSegment";
 import { swiprBackgroundSourceValidator } from "./validators/swiprBackgroundSource";
@@ -213,6 +214,7 @@ export default defineSchema({
     textOverlay: v.optional(textOverlayValidator),
     textOverlays: v.optional(textOverlaysValidator),
     socialCaption: v.optional(v.string()),
+    stitchScore: v.optional(stitchScoreValidator),
     isPosted: v.optional(v.boolean()),
     postedAt: v.optional(v.string()),
     automation: v.optional(automationProvenanceValidator),

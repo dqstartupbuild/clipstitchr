@@ -182,6 +182,29 @@ export const consumeUploadVideoAnalysis = mutation({
   },
 });
 
+export const consumeStitchScoreAnalysis = mutation({
+  args: {
+    secret: v.string(),
+  },
+  handler: async (ctx, { secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "stitchScoreAnalyze", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "stitchScoreAnalyzeMonthly", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "stitchScoreAnalyzeGlobal", {
+      throws: true,
+    });
+  },
+});
+
 export const consumeSwiprBackgroundAnalyze = mutation({
   args: {
     secret: v.string(),

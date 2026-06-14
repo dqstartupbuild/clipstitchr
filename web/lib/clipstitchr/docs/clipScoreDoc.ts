@@ -21,7 +21,7 @@ export const clipScoreDoc = {
     {
       title: "Where scores appear",
       body: [
-        "When a clip has been analyzed, its score can appear on the clip card and inside the clip details view. You can use it while organizing uploads or while choosing clips for Stitchr.",
+        "When a clip has been analyzed, its score can appear on the clip card and inside the clip details view. You can use it while organizing uploads or while choosing clips for Stitchr. Finished Stitches have their own Stitch Score after you score them from the Stitch menu.",
       ],
       bullets: [
         "Open the Content Library.",

@@ -9,7 +9,7 @@ export const stitchrDoc = {
     "Choose UGC, pick one demo, preview each ad, and export finished variants.",
   category: "feature",
   order: 10,
-  updated: "2026-05-22",
+  updated: "2026-06-14",
   sections: [
     {
       title: "What Stitchr does",
@@ -50,7 +50,7 @@ export const stitchrDoc = {
       title: "Saved outputs",
       body: [
         "Finished stitches appear in the Content Library under Stitches. Your original UGC and demo clips stay unchanged, so you can reuse them in the next batch.",
-        "If a saved Stitch has a setup you want again, save it as a Template and load it in Stitchr later.",
+        "Open the Stitch menu to score a saved Stitch before posting, save the setup as a Template, or load it in Stitchr later.",
       ],
     },
   ],

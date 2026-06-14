@@ -29,9 +29,9 @@ const features = [
     icon: Ratio,
   },
   {
-    title: "Score clips before posting",
+    title: "Score clips and Stitches",
     description:
-      "See which clips are worth using and what to fix before you build the next ad.",
+      "See what is worth using, where people may drop off, and what to fix before you post.",
     icon: Gauge,
   },
   {

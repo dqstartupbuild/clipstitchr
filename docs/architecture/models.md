@@ -66,6 +66,7 @@ provider input shape.
 | Upload image metadata analysis | `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID` | `openai/gpt-4.1-mini` | Used for avatar/photo images and video poster fallback analysis. |
 | Swipr background metadata analysis | `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID` | `openai/gpt-4.1-mini` | Shares the upload image analysis model with a background-specific prompt. |
 | Upload video action analysis | `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` | `google/gemini-3-flash` | Used for full-video UGC/demo action analysis before falling back to poster analysis when needed. |
+| Stitch score analysis | `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` | `google/gemini-3-flash` | Scores saved Stitches from the rendered MP4 when available, or from source videos in stitch order plus saved trim, playback, audio, overlay, and source clip context. |
 | Product enrichment | `PRODUCT_ENRICHMENT_MODEL_ID` | `openai/gpt-4.1` | Generates hidden product strategy metadata when saving Settings products. |
 | Clipr hook, script, Swipr auto-text, and Stitchr auto-text | `TEXT_WRITING_MODEL_ID`; legacy `CLIPR_HOOK_MODEL_ID` fallback | `anthropic/claude-sonnet-4.6` | Text generation returns structured JSON or short-form copy. `anthropic/claude-opus-4.6` is also supported for higher-cost writing tests. |
 | Clipr avatar still image | `AVATAR_PHOTO_MODEL_ID` | `openai/gpt-image-2` | Uses the same avatar photo generation model, prompt builder, and input parameters as avatar photo generation, but creates one source still for the full-script avatar video. |

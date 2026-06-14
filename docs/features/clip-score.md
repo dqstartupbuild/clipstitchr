@@ -5,7 +5,8 @@ Clip scores help ClipStitchr users answer one practical question:
 > Know which clips are worth using before you waste time posting.
 
 The MVP adds scoring to uploaded UGC and Demo clip analysis. It does not add
-pricing, practice drills, A/B rescoring, or predicted retention claims yet.
+pricing, practice drills, or A/B rescoring yet. Finished Stitch scoring now
+lives in the dedicated Stitch Score feature.
 
 ## Product Angle
 
@@ -157,7 +158,7 @@ The original idea has good follow-on directions, but they should be separate
 features:
 
 - Rescore a trimmed clip and show before/after score movement.
-- Score a finished UGC-to-demo Stitch, not only source clips.
+- Use real post-performance history to improve score calibration.
 - Show a cautious "predicted lift" only after there is a real internal basis
   for the estimate.
 - Generate daily 3-minute practice drills for creator clips.

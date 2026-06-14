@@ -20,6 +20,7 @@ import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFrom
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { generateCliprMusic as requestCliprMusicGeneration } from "@/lib/clipstitchr/client/generateCliprMusic";
 import { generateStitchMusic as requestStitchMusicGeneration } from "@/lib/clipstitchr/client/generateStitchMusic";
+import { scoreStitch as requestStitchScore } from "@/lib/clipstitchr/client/scoreStitch";
 import { libraryMetadataPageSize } from "@/lib/clipstitchr/constants/libraryMetadataPageSize";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createStitchPosterBlob } from "@/lib/clipstitchr/media/createStitchPosterBlob";
@@ -736,6 +737,16 @@ export function useClipLibraryState(): ClipLibraryValue {
     [],
   );
 
+  const scoreStitch = useCallback(
+    async (stitch: Stitch) => {
+      const stitchScore = await requestStitchScore(stitch.id);
+
+      await refresh();
+      return stitchScore;
+    },
+    [refresh],
+  );
+
   const removeStitch = useCallback(
     async (id: string) => {
       const stitchDocument =
@@ -897,6 +908,7 @@ export function useClipLibraryState(): ClipLibraryValue {
     updateClipTrimRange,
     updateClipPostedStatus,
     generateStitchMusic,
+    scoreStitch,
     updateStitchMusic,
     updateStitchSourceSettings,
     updateStitchTextOverlay,

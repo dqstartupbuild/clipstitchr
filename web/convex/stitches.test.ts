@@ -8,6 +8,7 @@ import {
   updatePostedStatus,
   updatePoster,
   updateRenderedVideo,
+  updateScore,
   updateSourceSettings,
   updateTextOverlay,
 } from "./stitches";
@@ -164,7 +165,7 @@ describe("convex stitches", () => {
     );
   });
 
-  it("updates poster, rendered video, source settings, music, text, and posted status", async () => {
+  it("updates poster, rendered video, source settings, music, score, text, and posted status", async () => {
     const setup = createCtx([
       { _id: "doc_1", id: "stitch_1" },
       { _id: "doc_1", id: "stitch_1" },
@@ -172,6 +173,7 @@ describe("convex stitches", () => {
       { _id: "doc_1", id: "stitch_1" },
       { id: "ugc_2", clipType: "ugc", name: "UGC 2" },
       { id: "demo_2", clipType: "demo", name: "Demo 2" },
+      { _id: "doc_1", id: "stitch_1" },
       { _id: "doc_1", id: "stitch_1" },
       { _id: "doc_1", id: "stitch_1" },
     ]);
@@ -215,6 +217,18 @@ describe("convex stitches", () => {
       id: "stitch_1",
       textOverlay: null,
     });
+    await getHandler(updateScore)(setup.ctx, {
+      id: "stitch_1",
+      stitchScore: {
+        dropOffRiskPoints: ["Demo starts late"],
+        hookToDemoFlow: 81,
+        overallRetentionEstimate: 78,
+        suggestedOpeningLine: "Wait for the demo",
+        suggestedOverlayText: ["Wait for the demo"],
+        suggestedTrims: ["Cut the first pause"],
+        summary: "The hook is clear but the handoff can move faster.",
+      },
+    });
     await getHandler(updatePostedStatus)(setup.ctx, {
       id: "stitch_1",
       isPosted: true,
@@ -239,14 +253,24 @@ describe("convex stitches", () => {
         mimeType: undefined,
         posterObject: undefined,
         size: undefined,
+        stitchScore: undefined,
         stitchObject: undefined,
         ugcClipId: "ugc_2",
         ugcPlaybackRate: 1,
       }),
     );
     expect(setup.ctx.db.patch).toHaveBeenCalledWith("doc_1", {
+      stitchScore: undefined,
       textOverlay: undefined,
     });
+    expect(setup.ctx.db.patch).toHaveBeenCalledWith(
+      "doc_1",
+      expect.objectContaining({
+        stitchScore: expect.objectContaining({
+          overallRetentionEstimate: 78,
+        }),
+      }),
+    );
     expect(setup.ctx.db.patch).toHaveBeenCalledWith(
       "doc_1",
       expect.objectContaining({

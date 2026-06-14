@@ -104,6 +104,7 @@ export function DashboardPageClient() {
           onLoadClip={library.loadClip}
           onLoadPoster={library.loadStitchPoster}
           onSaveTemplate={stitchTemplates.createTemplateFromStitch}
+          onScore={library.scoreStitch}
           onUpdateMusic={library.updateStitchMusic}
           onUpdatePostedStatus={library.updateStitchPostedStatus}
           onUpdateSocialCaption={library.updateStitchSocialCaption}

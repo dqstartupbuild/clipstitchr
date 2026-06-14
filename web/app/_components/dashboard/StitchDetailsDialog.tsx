@@ -7,6 +7,7 @@ import { IconButton } from "@/app/_components/ui/IconButton";
 import { StitchSocialCaptionCopyButton } from "@/app/_components/stitches/StitchSocialCaptionCopyButton";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import { StitchSequencePreview } from "@/app/_components/dashboard/StitchSequencePreview";
+import { StitchScoreDetails } from "@/app/_components/dashboard/StitchScoreDetails";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
@@ -136,6 +137,7 @@ export function StitchDetailsDialog({
                 {formatDuration(stitch.duration)}
               </span>
             </div>
+            <StitchScoreDetails score={stitch.stitchScore} />
             <div>
               <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
                 Title

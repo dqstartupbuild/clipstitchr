@@ -12,6 +12,7 @@ import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchLibraryStatusFilter } from "@/lib/clipstitchr/types/StitchLibraryStatusFilter";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
 import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -36,6 +37,7 @@ type StitchesSectionProps = {
   onLoadMoreItems?: () => void;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
+  onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onStatusFilterChange?: (status: StitchLibraryStatusFilter) => void;
   onUpdateMusic: (
     stitch: Stitch,
@@ -79,6 +81,7 @@ export function StitchesSection({
   onLoadMoreItems,
   onLoadPoster,
   onSaveTemplate,
+  onScore,
   onStatusFilterChange,
   onUpdateMusic,
   onUpdatePostedStatus,
@@ -180,6 +183,7 @@ export function StitchesSection({
                 onLoadClip={onLoadClip}
                 onLoadPoster={onLoadPoster}
                 onSaveTemplate={onSaveTemplate}
+                onScore={onScore}
                 onSelect={
                   batchDelete.isSelecting
                     ? () => batchDelete.toggleItemSelection(stitch.id)

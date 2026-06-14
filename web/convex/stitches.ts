@@ -9,6 +9,7 @@ import { rateLimiter } from "./rateLimiter";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { r2ObjectValidator } from "./validators/r2Object";
+import { stitchScoreValidator } from "./validators/stitchScore";
 import { stitchrModeValidator } from "./validators/stitchrMode";
 import { stitchSequenceSegmentValidator } from "./validators/stitchSequenceSegment";
 import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
@@ -491,6 +492,7 @@ export const updateSourceSettings = mutation({
       posterObject: posterObject ?? undefined,
       posterVersion: posterObject ? posterVersion : undefined,
       size: undefined,
+      stitchScore: undefined,
       stitchObject: undefined,
       ugcClipId,
       ugcClipName: ugcClip.name,
@@ -533,10 +535,44 @@ export const updateTextOverlay = mutation({
       (textOverlay && textOverlay.text.trim().length > 0 ? [textOverlay] : []);
 
     await ctx.db.patch(stitch._id, {
+      stitchScore: undefined,
       textOverlay: normalizedTextOverlays[0],
       textOverlays: normalizedTextOverlays.length
         ? normalizedTextOverlays
         : undefined,
+    });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+    }
+  },
+});
+
+export const updateScore = mutation({
+  args: {
+    id: v.string(),
+    stitchScore: stitchScoreValidator,
+  },
+  handler: async (ctx, { id, stitchScore }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    await ctx.db.patch(stitch._id, {
+      stitchScore,
     });
     const updatedStitch = await ctx.db.get(stitch._id);
 

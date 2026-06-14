@@ -5,6 +5,7 @@ import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySo
 import type { ClipLibraryVideoGroup } from "@/lib/clipstitchr/types/ClipLibraryVideoGroup";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
+import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
 import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -64,6 +65,7 @@ export type ClipLibraryValue = {
   generateStitchMusic: (
     stitch: Stitch,
   ) => Promise<StitchMusicMetadata | null>;
+  scoreStitch: (stitch: Stitch) => Promise<StitchScore>;
   updateStitchMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
