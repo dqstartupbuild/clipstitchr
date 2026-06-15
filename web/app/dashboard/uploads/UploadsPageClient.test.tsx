@@ -53,6 +53,7 @@ const mocks = vi.hoisted(() => ({
   usePhotoLibrary: vi.fn(),
   useProducts: vi.fn(),
   useShowUploadControls: vi.fn(),
+  useStitchTemplateActions: vi.fn(),
   useSwiprLibrary: vi.fn(),
 }));
 
@@ -100,8 +101,8 @@ vi.mock("@/lib/clipstitchr/hooks/useShowUploadControls", () => ({
   useShowUploadControls: mocks.useShowUploadControls,
 }));
 
-vi.mock("@/lib/clipstitchr/hooks/useStitchTemplates", () => ({
-  useStitchTemplates: () => mocks.stitchTemplates,
+vi.mock("@/lib/clipstitchr/hooks/useStitchTemplateActions", () => ({
+  useStitchTemplateActions: mocks.useStitchTemplateActions,
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({
@@ -425,6 +426,7 @@ describe("UploadsPageClient", () => {
     mocks.usePhotoLibrary.mockReturnValue(mocks.photoLibrary);
     mocks.useProducts.mockReturnValue(mocks.products);
     mocks.useShowUploadControls.mockReturnValue(true);
+    mocks.useStitchTemplateActions.mockReturnValue(mocks.stitchTemplates);
     mocks.useSwiprLibrary.mockReturnValue(mocks.swiprLibrary);
   });
 

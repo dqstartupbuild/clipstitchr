@@ -54,9 +54,11 @@ export function SwaprPageClient() {
   const [isPreparingSource, setIsPreparingSource] = useState(false);
   const [assetLoadError, setAssetLoadError] = useState<string | null>(null);
   const generator = useSwaprGeneration(library.refresh);
+  const swaprSourceClipCandidates =
+    library.videoGroups?.ugc?.clips ?? library.clips;
   const sourceUgcClips = useMemo(
-    () => filterSwaprSourceClips(library.clips),
-    [library.clips],
+    () => filterSwaprSourceClips(swaprSourceClipCandidates),
+    [swaprSourceClipCandidates],
   );
   const sourceStitchClips = useMemo(
     () => library.stitches.map(createVideoClipMetadataFromStitch),

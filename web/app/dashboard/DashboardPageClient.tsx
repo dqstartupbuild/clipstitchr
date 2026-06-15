@@ -9,66 +9,45 @@ import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitche
 import { RecentSwipesSection } from "@/app/_components/dashboard/RecentSwipesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
-import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
+import { useDashboardSummary } from "@/lib/clipstitchr/hooks/useDashboardSummary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
-import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
+import { useStitchTemplateActions } from "@/lib/clipstitchr/hooks/useStitchTemplateActions";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
-import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
-import { getRecentSwiprSwipes } from "@/lib/clipstitchr/utils/getRecentSwiprSwipes";
-import { getRecentVideoClips } from "@/lib/clipstitchr/utils/getRecentVideoClips";
 import { getStitchrUgcSourceClips } from "@/lib/clipstitchr/utils/getStitchrUgcSourceClips";
-
-const RECENT_DASHBOARD_ITEM_LIMIT = 4;
 
 export function DashboardPageClient() {
   const library = useClipLibrary();
-  const photoLibrary = usePhotoLibrary();
+  const dashboardSummary = useDashboardSummary();
   const products = useProducts();
-  const stitchTemplates = useStitchTemplates();
+  const stitchTemplateActions = useStitchTemplateActions();
   const swiprLibrary = useSwiprLibrary();
-  const recentUploads = useMemo(
-    () => getRecentVideoClips(library.clips, RECENT_DASHBOARD_ITEM_LIMIT),
-    [library.clips],
-  );
-  const recentStitches = useMemo(
+  const stitchSourceDemoClips = useMemo(
     () =>
-      getRecentStitches(
-        library.stitches,
-        RECENT_DASHBOARD_ITEM_LIMIT,
-    ),
-    [library.stitches],
+      dashboardSummary.stitchSourceClips.filter(
+        (clip) => clip.clipType === "demo",
+      ),
+    [dashboardSummary.stitchSourceClips],
   );
   const stitchrUgcClips = useMemo(
     () =>
       getStitchrUgcSourceClips(
-        library.videoGroups.ugc.clips,
-        library.videoGroups.clipr.clips,
-        library.videoGroups.swapr.clips,
+        dashboardSummary.stitchSourceClips.filter(
+          (clip) => clip.libraryKind === "ugc",
+        ),
+        dashboardSummary.stitchSourceClips.filter(
+          (clip) => clip.libraryKind === "clipr",
+        ),
+        dashboardSummary.stitchSourceClips.filter(
+          (clip) => clip.libraryKind === "swapr",
+        ),
       ),
-    [
-      library.videoGroups.clipr.clips,
-      library.videoGroups.swapr.clips,
-      library.videoGroups.ugc.clips,
-    ],
+    [dashboardSummary.stitchSourceClips],
   );
-  const recentSwipes = useMemo(() => {
-    const backgroundIds = new Set(
-      swiprLibrary.backgrounds.map((background) => background.id),
-    );
-
-    return getRecentSwiprSwipes(
-      swiprLibrary.swipes.filter((swipe) =>
-        backgroundIds.has(swipe.backgroundId),
-      ),
-      RECENT_DASHBOARD_ITEM_LIMIT,
-    );
-  }, [swiprLibrary.backgrounds, swiprLibrary.swipes]);
   const error =
     library.error ??
-    photoLibrary.error ??
     swiprLibrary.error ??
     products.error ??
-    stitchTemplates.error;
+    stitchTemplateActions.error;
 
   return (
     <DashboardShell>
@@ -80,12 +59,12 @@ export function DashboardPageClient() {
           </div>
         ) : null}
         <DashboardStats
-          ugcCount={library.counts.ugcClips}
-          demoCount={library.counts.demoClips}
-          stitchesCount={library.counts.stitches}
+          ugcCount={dashboardSummary.counts.ugcClips}
+          demoCount={dashboardSummary.counts.demoClips}
+          stitchesCount={dashboardSummary.counts.stitches}
         />
         <RecentUploadsSection
-          clips={recentUploads}
+          clips={dashboardSummary.recentUploads}
           products={products.products}
           onLoadClip={library.loadClip}
           onLoadPoster={library.loadClipPoster}
@@ -96,15 +75,15 @@ export function DashboardPageClient() {
           onUpdatePostedStatus={library.updateClipPostedStatus}
         />
         <RecentStitchesSection
-          demoClips={library.videoGroups.demo.clips}
-          savingTemplateStitchId={stitchTemplates.savingStitchId}
-          stitches={recentStitches}
+          demoClips={stitchSourceDemoClips}
+          savingTemplateStitchId={stitchTemplateActions.savingStitchId}
+          stitches={dashboardSummary.recentStitches}
           onDelete={library.removeStitch}
           onGenerateMusic={library.generateStitchMusic}
           onLoadClip={library.loadClip}
           onLoadPoster={library.loadStitchPoster}
           onLoadVideo={library.loadStitchVideo}
-          onSaveTemplate={stitchTemplates.createTemplateFromStitch}
+          onSaveTemplate={stitchTemplateActions.createTemplateFromStitch}
           onScore={library.scoreStitch}
           onUpdateMusic={library.updateStitchMusic}
           onUpdatePostedStatus={library.updateStitchPostedStatus}
@@ -114,9 +93,9 @@ export function DashboardPageClient() {
           ugcClips={stitchrUgcClips}
         />
         <RecentSwipesSection
-          backgrounds={swiprLibrary.backgrounds}
+          backgrounds={dashboardSummary.recentSwipeBackgrounds}
           isSaving={swiprLibrary.isSavingSwipe}
-          swipes={recentSwipes}
+          swipes={dashboardSummary.recentSwipes}
           onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
           onLoadPoster={swiprLibrary.loadSwipePoster}
           onDelete={swiprLibrary.removeSwipe}

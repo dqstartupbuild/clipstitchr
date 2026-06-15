@@ -63,17 +63,14 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
   const convex = useConvex();
   const pathname = usePathname() ?? "";
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
-  const isDashboardHome = pathname === "/dashboard";
   const isAvatarsRoute = pathname.startsWith("/dashboard/avatars");
   const isCliprRoute = pathname.startsWith("/dashboard/clipr");
   const isSwaprRoute = pathname.startsWith("/dashboard/swapr");
   const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
   const shouldLoadPhotoDocuments =
-    isAuthenticated &&
-    (isDashboardHome || isAvatarsRoute || isCliprRoute || isSwaprRoute);
+    isAuthenticated && (isAvatarsRoute || isCliprRoute || isSwaprRoute);
   const shouldLoadAvatarDocuments =
-    isAuthenticated &&
-    (isDashboardHome || isAvatarsRoute || isCliprRoute || isSwaprRoute);
+    isAuthenticated && (isAvatarsRoute || isCliprRoute || isSwaprRoute);
   const shouldLoadPhotoPreferences =
     isAuthenticated && (shouldLoadAvatarDocuments || isUploadsRoute);
   const photoDocuments = useQuery(

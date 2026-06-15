@@ -18,7 +18,7 @@ import { useCreateAvatarFromUgcClip } from "@/lib/clipstitchr/hooks/useCreateAva
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
-import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
+import { useStitchTemplateActions } from "@/lib/clipstitchr/hooks/useStitchTemplateActions";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
@@ -90,7 +90,7 @@ export function UploadsPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
   const products = useProducts();
-  const stitchTemplates = useStitchTemplates();
+  const stitchTemplateActions = useStitchTemplateActions();
   const swiprLibrary = useSwiprLibrary();
   const showUploadControls = useShowUploadControls();
   const avatarCreator = useCreateAvatarFromUgcClip({
@@ -244,7 +244,10 @@ export function UploadsPageClient() {
   );
   const hasSearchQuery = searchQuery.trim().length > 0;
   const error =
-    library.error ?? swiprLibrary.error ?? products.error ?? stitchTemplates.error;
+    library.error ??
+    swiprLibrary.error ??
+    products.error ??
+    stitchTemplateActions.error;
   const hasDemoProductFilter =
     selectedTab === "demo" && activeDemoProductFilterId !== "all";
   const canUseLibraryTotals = !hasSearchQuery;
@@ -551,7 +554,7 @@ export function UploadsPageClient() {
             <StitchesSection
               key={`all-stitches-${searchQuery}-${library.sortOrder}`}
               demoClips={library.videoGroups.demo.clips}
-              savingTemplateStitchId={stitchTemplates.savingStitchId}
+              savingTemplateStitchId={stitchTemplateActions.savingStitchId}
               stitches={activeStitches}
               totalCount={hasSearchQuery ? undefined : activeStitches.length}
               emptyTitle={hasSearchQuery ? "No matching stitches" : undefined}
@@ -568,7 +571,7 @@ export function UploadsPageClient() {
               onLoadMoreItems={library.loadMoreStitches}
               onLoadPoster={library.loadStitchPoster}
               onLoadVideo={library.loadStitchVideo}
-              onSaveTemplate={stitchTemplates.createTemplateFromStitch}
+              onSaveTemplate={stitchTemplateActions.createTemplateFromStitch}
               onScore={library.scoreStitch}
               onUpdateMusic={library.updateStitchMusic}
               onUpdatePostedStatus={library.updateStitchPostedStatus}
@@ -646,7 +649,7 @@ export function UploadsPageClient() {
           <StitchesSection
             key={`stitches-${searchQuery}-${library.sortOrder}`}
             demoClips={library.videoGroups.demo.clips}
-            savingTemplateStitchId={stitchTemplates.savingStitchId}
+            savingTemplateStitchId={stitchTemplateActions.savingStitchId}
             stitches={stitches}
             totalCount={
               hasSearchQuery ? undefined : stitchStatusCounts[stitchStatusFilter]
@@ -675,7 +678,7 @@ export function UploadsPageClient() {
             onLoadMoreItems={handleLoadMoreSelectedStitches}
             onLoadPoster={library.loadStitchPoster}
             onLoadVideo={library.loadStitchVideo}
-            onSaveTemplate={stitchTemplates.createTemplateFromStitch}
+            onSaveTemplate={stitchTemplateActions.createTemplateFromStitch}
             onScore={library.scoreStitch}
             statusCounts={stitchStatusCounts}
             statusFilter={stitchStatusFilter}

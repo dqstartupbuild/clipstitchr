@@ -54,13 +54,22 @@ const mocks = vi.hoisted(() => ({
       },
     },
   },
-  photoLibraryState: {
-    avatars: [],
-    error: null as string | null,
-    loadPhoto: vi.fn(),
-    photos: [],
-    removePhoto: vi.fn(),
-    updatePhotoMetadata: vi.fn(),
+  dashboardSummary: {
+    counts: {
+      activeStitches: 0,
+      cliprClips: 0,
+      demoClips: 0,
+      postedStitches: 0,
+      stitches: 0,
+      swapClips: 0,
+      ugcClips: 0,
+    },
+    isLoading: false,
+    recentStitches: [],
+    recentSwipeBackgrounds: [],
+    recentSwipes: [],
+    recentUploads: [],
+    stitchSourceClips: [],
   },
   productState: {
     error: null as string | null,
@@ -129,16 +138,16 @@ vi.mock("@/lib/clipstitchr/hooks/useClipLibrary", () => ({
   useClipLibrary: () => mocks.clipLibraryState,
 }));
 
-vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
-  usePhotoLibrary: () => mocks.photoLibraryState,
+vi.mock("@/lib/clipstitchr/hooks/useDashboardSummary", () => ({
+  useDashboardSummary: () => mocks.dashboardSummary,
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
   useProducts: () => mocks.productState,
 }));
 
-vi.mock("@/lib/clipstitchr/hooks/useStitchTemplates", () => ({
-  useStitchTemplates: () => mocks.stitchTemplateState,
+vi.mock("@/lib/clipstitchr/hooks/useStitchTemplateActions", () => ({
+  useStitchTemplateActions: () => mocks.stitchTemplateState,
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({
@@ -159,7 +168,7 @@ function createClip(id: string, clipType: "ugc" | "demo") {
 describe("DashboardPageClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.clipLibraryState.counts = {
+    mocks.dashboardSummary.counts = {
       activeStitches: 40,
       cliprClips: 0,
       demoClips: 20,
@@ -168,7 +177,7 @@ describe("DashboardPageClient", () => {
       swapClips: 0,
       ugcClips: 40,
     };
-    mocks.clipLibraryState.clips = [
+    mocks.dashboardSummary.recentUploads = [
       createClip("ugc_1", "ugc"),
       createClip("demo_1", "demo"),
       {
@@ -176,26 +185,13 @@ describe("DashboardPageClient", () => {
         cliprMetadata: {},
       },
     ] as never;
-    mocks.clipLibraryState.videoGroups = {
-      clipr: {
-        clips: [mocks.clipLibraryState.clips[2]],
-        postedClips: [],
-      },
-      demo: {
-        clips: [mocks.clipLibraryState.clips[1]],
-        postedClips: [],
-      },
-      swapr: {
-        clips: [],
-        postedClips: [],
-      },
-      ugc: {
-        clips: [mocks.clipLibraryState.clips[0]],
-        postedClips: [],
-      },
-    } as never;
+    mocks.dashboardSummary.stitchSourceClips = [
+      mocks.dashboardSummary.recentUploads[0],
+      mocks.dashboardSummary.recentUploads[1],
+      mocks.dashboardSummary.recentUploads[2],
+    ] as never;
     mocks.clipLibraryState.error = null;
-    mocks.clipLibraryState.stitches = [
+    mocks.dashboardSummary.recentStitches = [
       {
         backgroundId: "background_1",
         createdAt: "2026-05-20T00:00:00.000Z",
@@ -203,23 +199,15 @@ describe("DashboardPageClient", () => {
         updatedAt: "2026-05-20T00:00:00.000Z",
       },
     ] as never;
-    mocks.photoLibraryState.error = null;
-    mocks.photoLibraryState.photos = [
-      {
-        avatarId: "avatar_1",
-        createdAt: "2026-05-20T00:00:00.000Z",
-        id: "photo_1",
-      },
-    ] as never;
     mocks.productState.error = null;
     mocks.productState.products = [];
     mocks.swiprLibraryState.error = null;
-    mocks.swiprLibraryState.backgrounds = [
+    mocks.dashboardSummary.recentSwipeBackgrounds = [
       {
         id: "background_1",
       },
     ] as never;
-    mocks.swiprLibraryState.swipes = [
+    mocks.dashboardSummary.recentSwipes = [
       {
         backgroundId: "background_1",
         createdAt: "2026-05-20T00:00:00.000Z",
@@ -245,13 +233,13 @@ describe("DashboardPageClient", () => {
   });
 
   it("surfaces the first available library error", () => {
-    mocks.photoLibraryState.error = "Photos unavailable.";
+    mocks.clipLibraryState.error = "Library unavailable.";
 
     expect(renderToStaticMarkup(<DashboardPageClient />)).toContain(
-      "Photos unavailable.",
+      "Library unavailable.",
     );
 
-    mocks.photoLibraryState.error = null;
+    mocks.clipLibraryState.error = null;
     mocks.productState.error = "Products unavailable.";
 
     expect(renderToStaticMarkup(<DashboardPageClient />)).toContain(

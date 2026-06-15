@@ -29,6 +29,7 @@ const mocks = vi.hoisted(() => {
     }),
     usePathname: vi.fn(),
     useQuery: vi.fn(),
+    useSearchParams: vi.fn(),
     useStateSetter: vi.fn(),
   };
 });
@@ -67,6 +68,7 @@ vi.mock("convex/react", () => ({
 
 vi.mock("next/navigation", () => ({
   usePathname: mocks.usePathname,
+  useSearchParams: mocks.useSearchParams,
 }));
 
 vi.mock("@/convex/_generated/api", () => ({
@@ -201,6 +203,7 @@ describe("useSwiprLibraryState", () => {
       isLoading: false,
     });
     mocks.usePathname.mockReturnValue("/dashboard/uploads");
+    mocks.useSearchParams.mockReturnValue(new URLSearchParams("?tab=swipes"));
     mocks.useQuery.mockImplementation((queryId: string, args) => {
       if (queryId === "swiprBackgrounds.list") {
         return [createBackgroundDocument()];
