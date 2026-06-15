@@ -2490,15 +2490,6 @@ async function processUploadVideoAnalysis({
   });
 
   const outputText = await createUploadVideoAnalysisOutputText({
-    diagnostics: {
-      featurePath: "upload-analysis",
-      inputMode: "signed-url",
-      objectContentType: input.videoObject.contentType,
-      objectKey: input.videoObject.key,
-      objectSize: input.videoObject.size,
-      signedUrlExpiresSeconds: videoUrl.expiresIn,
-      sourceUrl: videoUrl.url,
-    },
     fallbackImageFile,
     mediaKind: input.clipType === "ugc" ? "ugc-video" : "demo-video",
     originalName: input.originalName,

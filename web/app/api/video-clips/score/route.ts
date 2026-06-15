@@ -55,8 +55,7 @@ export async function POST(request: Request) {
 
     assertR2ObjectKeyBelongsToUser(clip.videoObject.key, userId);
 
-    const signedVideo = await getR2DownloadSignedUrl(clip.videoObject.key);
-    const sourceUrl = signedVideo.url;
+    const sourceUrl = (await getR2DownloadSignedUrl(clip.videoObject.key)).url;
     const fallbackImageFile = clip.posterObject
       ? await createFileFromR2Object({
           fallbackFileName: "clip-score-poster.jpg",
@@ -65,15 +64,6 @@ export async function POST(request: Request) {
         }).catch(() => undefined)
       : undefined;
     const outputText = await createUploadVideoAnalysisOutputText({
-      diagnostics: {
-        featurePath: "clip-score",
-        inputMode: "signed-url",
-        objectContentType: clip.videoObject.contentType,
-        objectKey: clip.videoObject.key,
-        objectSize: clip.videoObject.size,
-        signedUrlExpiresSeconds: signedVideo.expiresIn,
-        sourceUrl,
-      },
       fallbackImageFile,
       mediaKind: clip.clipType === "demo" ? "demo-video" : "ugc-video",
       originalName: clip.originalName,
