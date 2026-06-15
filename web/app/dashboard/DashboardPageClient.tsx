@@ -94,6 +94,17 @@ export function DashboardPageClient() {
           demoCount={library.counts.demoClips}
           stitchesCount={library.counts.stitches}
         />
+        <RecentUploadsSection
+          clips={recentUploads}
+          products={products.products}
+          onLoadClip={library.loadClip}
+          onLoadPoster={library.loadClipPoster}
+          onDelete={library.removeClip}
+          onScoreClip={library.scoreClip}
+          onUpdateMetadata={library.updateClipMetadata}
+          onUpdateTrim={library.updateClipTrimRange}
+          onUpdatePostedStatus={library.updateClipPostedStatus}
+        />
         <RecentStitchesSection
           demoClips={library.videoGroups.demo.clips}
           savingTemplateStitchId={stitchTemplates.savingStitchId}
@@ -120,17 +131,6 @@ export function DashboardPageClient() {
           onDelete={swiprLibrary.removeSwipe}
           onSave={swiprLibrary.saveSwipe}
           onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
-        />
-        <RecentUploadsSection
-          clips={recentUploads}
-          products={products.products}
-          onLoadClip={library.loadClip}
-          onLoadPoster={library.loadClipPoster}
-          onDelete={library.removeClip}
-          onScoreClip={library.scoreClip}
-          onUpdateMetadata={library.updateClipMetadata}
-          onUpdateTrim={library.updateClipTrimRange}
-          onUpdatePostedStatus={library.updateClipPostedStatus}
         />
         <RecentAvatarsSection
           avatars={photoLibrary.avatars}
