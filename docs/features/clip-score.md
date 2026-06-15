@@ -62,9 +62,6 @@ support the needed analysis.
 The implementation follows that for poster/image upload analysis:
 
 - `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID` defaults to `openai/gpt-5-mini`.
-- `REPLICATE_UPLOAD_ANALYSIS_BACKUP_MODEL_ID` defaults to
-  `openai/gpt-4.1-mini` and is tried once when the primary poster/image
-  prediction fails. Set it to `none` to disable the backup call.
 - The value can be overridden to another Replicate model ID.
 
 Full-video analysis still defaults to Gemini:

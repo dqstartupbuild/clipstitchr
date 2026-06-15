@@ -2,7 +2,8 @@ import type { Doc } from "@/convex/_generated/dataModel";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createReplicateInputFile } from "@/lib/clipstitchr/server/createReplicateInputFile";
 import { createStitchScorePrompt } from "@/lib/clipstitchr/server/createStitchScorePrompt";
-import { createUploadAnalysisPredictionOutputText } from "@/lib/clipstitchr/server/createUploadAnalysisPredictionOutputText";
+import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
+import { getUploadAnalysisModelId } from "@/lib/clipstitchr/server/getUploadAnalysisModelId";
 
 const STITCH_SCORE_FALLBACK_SYSTEM_PROMPT =
   "You review short-form stitched ad videos from a poster frame, saved settings, and source notes. Give simple, grounded editing guidance.";
@@ -27,18 +28,26 @@ export async function createStitchScoreFallbackOutputText({
         mimeType: "image/jpeg",
       })
     : undefined;
-  return await createUploadAnalysisPredictionOutputText({
+  const prediction = await replicate.predictions.create({
+    model: getUploadAnalysisModelId(),
+    input: {
+      ...(posterInput ? { image_input: [posterInput] } : {}),
+      prompt: createStitchScorePrompt({
+        sourceClips,
+        stitch,
+        videoInputDescription: posterInput
+          ? "Video analysis was unavailable. Use the rendered stitch poster plus saved stitch settings and source clip notes."
+          : "Video analysis was unavailable. Use saved stitch settings and source clip notes only.",
+      }),
+      system_prompt: STITCH_SCORE_FALLBACK_SYSTEM_PROMPT,
+      temperature: 0.2,
+      max_completion_tokens: 1400,
+    },
+  });
+
+  return await getCompletedReplicatePredictionOutputText({
     failureMessage: "Replicate did not complete stitch score fallback analysis.",
-    imageInput: posterInput,
-    maxCompletionTokens: 1400,
-    prompt: createStitchScorePrompt({
-      sourceClips,
-      stitch,
-      videoInputDescription: posterInput
-        ? "Video analysis was unavailable. Use the rendered stitch poster plus saved stitch settings and source clip notes."
-        : "Video analysis was unavailable. Use saved stitch settings and source clip notes only.",
-    }),
+    prediction,
     replicate,
-    systemPrompt: STITCH_SCORE_FALLBACK_SYSTEM_PROMPT,
   });
 }

@@ -122,10 +122,6 @@ Optional Replicate model overrides:
 - `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID` defaults to `openai/gpt-5-mini` for
   avatar/photo image analysis, video poster fallback analysis, and clip score
   fallback analysis.
-- `REPLICATE_UPLOAD_ANALYSIS_BACKUP_MODEL_ID` defaults to
-  `openai/gpt-4.1-mini` for the same image-analysis paths and is tried once
-  only when the primary image-analysis prediction fails. Set it to `none` to
-  disable the backup call.
 - `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` defaults to
   `google/gemini-3-flash` for full-video UGC/demo action and score analysis.
   Finished Stitch scoring uses this same full-video analysis lane when scoring
@@ -400,10 +396,8 @@ the already-authorized analysis work without requiring the browser to stay open.
 If Gemini fails, or if the normalized video is larger than 100 MB, the provider
 worker falls back to the OpenAI image-analysis path using the generated poster
 image when one is available. The default poster-analysis model is
-`openai/gpt-5-mini` with `openai/gpt-4.1-mini` as a one-attempt backup when
-the primary poster-analysis model fails; full-video scoring stays on Gemini
-because OpenAI's GPT-5 mini model lists video input as unsupported.
-`POST /api/video-clips/score`
+`openai/gpt-5-mini`; full-video scoring stays on Gemini because OpenAI's GPT-5
+mini model lists video input as unsupported. `POST /api/video-clips/score`
 uses this same quota for saved UGC/demo clips and rejects Swaps before quota or
 provider work. Generated Clipr reaction and b-roll videos are treated as UGC for
 scoring. `POST /api/uploads/analyze` remains for

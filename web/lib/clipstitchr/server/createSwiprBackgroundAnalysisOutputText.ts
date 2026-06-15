@@ -1,7 +1,8 @@
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createReplicateInputFile } from "@/lib/clipstitchr/server/createReplicateInputFile";
 import { createSwiprBackgroundAnalysisPrompt } from "@/lib/clipstitchr/server/createSwiprBackgroundAnalysisPrompt";
-import { createUploadAnalysisPredictionOutputText } from "@/lib/clipstitchr/server/createUploadAnalysisPredictionOutputText";
+import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
+import { getUploadAnalysisModelId } from "@/lib/clipstitchr/server/getUploadAnalysisModelId";
 
 const SWIPR_BACKGROUND_ANALYSIS_SYSTEM_PROMPT =
   "You create concise, searchable metadata for shared carousel backgrounds.";
@@ -22,13 +23,20 @@ export async function createSwiprBackgroundAnalysisOutputText({
     file,
     mimeType: "image/jpeg",
   });
+  const prediction = await replicate.predictions.create({
+    model: getUploadAnalysisModelId(),
+    input: {
+      image_input: [imageFile],
+      prompt: createSwiprBackgroundAnalysisPrompt(originalName),
+      system_prompt: SWIPR_BACKGROUND_ANALYSIS_SYSTEM_PROMPT,
+      temperature: 0.2,
+      max_completion_tokens: 700,
+    },
+  });
 
-  return await createUploadAnalysisPredictionOutputText({
+  return await getCompletedReplicatePredictionOutputText({
     failureMessage: "Replicate did not complete Swipr background analysis.",
-    imageInput: imageFile,
-    maxCompletionTokens: 700,
-    prompt: createSwiprBackgroundAnalysisPrompt(originalName),
+    prediction,
     replicate,
-    systemPrompt: SWIPR_BACKGROUND_ANALYSIS_SYSTEM_PROMPT,
   });
 }
