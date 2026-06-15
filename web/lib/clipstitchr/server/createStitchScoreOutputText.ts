@@ -6,6 +6,8 @@ import { createStitchScorePosterFile } from "@/lib/clipstitchr/server/createStit
 import { createStitchScoreVideoInputs } from "@/lib/clipstitchr/server/createStitchScoreVideoInputs";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { getUploadVideoAnalysisModelId } from "@/lib/clipstitchr/server/getUploadVideoAnalysisModelId";
+import { logGeminiVideoAnalysisInputDiagnostics } from "@/lib/clipstitchr/server/logGeminiVideoAnalysisInputDiagnostics";
+import { logGeminiVideoAnalysisPredictionDiagnostics } from "@/lib/clipstitchr/server/logGeminiVideoAnalysisPredictionDiagnostics";
 
 const STITCH_SCORE_SYSTEM_INSTRUCTION =
   "You review short-form stitched ad videos and give simple, grounded editing guidance.";
@@ -38,9 +40,21 @@ export async function createStitchScoreOutputText({
     });
   }
 
+  const modelId = getUploadVideoAnalysisModelId();
+  let prediction:
+    | Awaited<ReturnType<ReplicateClient["predictions"]["create"]>>
+    | undefined;
+
   try {
-    const prediction = await replicate.predictions.create({
-      model: getUploadVideoAnalysisModelId(),
+    if (videoInputs.diagnostics) {
+      await logGeminiVideoAnalysisInputDiagnostics({
+        diagnostics: videoInputs.diagnostics,
+        modelId,
+      });
+    }
+
+    prediction = await replicate.predictions.create({
+      model: modelId,
       input: {
         ...(videoInputs.videos.length ? { videos: videoInputs.videos } : {}),
         prompt: createStitchScorePrompt({
@@ -58,9 +72,25 @@ export async function createStitchScoreOutputText({
     return await getCompletedReplicatePredictionOutputText({
       failureMessage: "Replicate did not complete stitch score analysis.",
       prediction,
+      predictionDiagnostics: videoInputs.diagnostics
+        ? {
+            featurePath: videoInputs.diagnostics.featurePath,
+            modelId,
+          }
+        : undefined,
       replicate,
     });
-  } catch {
+  } catch (error) {
+    if (videoInputs.diagnostics && !prediction) {
+      logGeminiVideoAnalysisPredictionDiagnostics({
+        diagnostics: {
+          featurePath: videoInputs.diagnostics.featurePath,
+          modelId,
+        },
+        error,
+      });
+    }
+
     return await createStitchScoreFallbackOutputText({
       posterFile: await createStitchScorePosterFile({ stitch, userId }),
       replicate,

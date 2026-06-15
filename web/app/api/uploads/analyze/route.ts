@@ -63,6 +63,13 @@ export async function POST(request: Request) {
     const replicate = createReplicateClient();
     const outputText = isVideoAnalysis
       ? await createUploadVideoAnalysisOutputText({
+          diagnostics: {
+            featurePath: "upload-analysis",
+            inputMode: sourceUrl ? "signed-url" : "file",
+            objectContentType: file?.type,
+            objectSize: sourceSizeBytes ?? file?.size,
+            sourceUrl: sourceUrl || undefined,
+          },
           fallbackImageFile,
           file,
           mediaKind,

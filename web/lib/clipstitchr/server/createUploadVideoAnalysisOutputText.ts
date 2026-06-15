@@ -5,6 +5,9 @@ import { createUploadImageAnalysisOutputText } from "@/lib/clipstitchr/server/cr
 import { createUploadVideoAnalysisPrompt } from "@/lib/clipstitchr/server/createUploadVideoAnalysisPrompt";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { getUploadVideoAnalysisModelId } from "@/lib/clipstitchr/server/getUploadVideoAnalysisModelId";
+import { logGeminiVideoAnalysisInputDiagnostics } from "@/lib/clipstitchr/server/logGeminiVideoAnalysisInputDiagnostics";
+import { logGeminiVideoAnalysisPredictionDiagnostics } from "@/lib/clipstitchr/server/logGeminiVideoAnalysisPredictionDiagnostics";
+import type { GeminiVideoAnalysisInputDiagnostics } from "@/lib/clipstitchr/types/GeminiVideoAnalysisInputDiagnostics";
 import type { UploadAssetAnalysisKind } from "@/lib/clipstitchr/types/UploadAssetAnalysisKind";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 
@@ -14,6 +17,7 @@ const UPLOAD_VIDEO_ANALYSIS_SYSTEM_INSTRUCTION =
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
 export async function createUploadVideoAnalysisOutputText({
+  diagnostics,
   fallbackImageFile,
   file,
   mediaKind,
@@ -22,6 +26,7 @@ export async function createUploadVideoAnalysisOutputText({
   sourceSizeBytes,
   sourceUrl,
 }: {
+  diagnostics?: GeminiVideoAnalysisInputDiagnostics;
   fallbackImageFile?: File;
   file?: File;
   mediaKind: UploadAssetAnalysisKind;
@@ -42,9 +47,21 @@ export async function createUploadVideoAnalysisOutputText({
   const videoSizeBytes = sourceSizeBytes ?? file?.size ?? 0;
 
   if (videoInput && videoSizeBytes <= MAX_UPLOAD_VIDEO_ANALYSIS_SIZE_BYTES) {
+    const modelId = getUploadVideoAnalysisModelId();
+    let prediction:
+      | Awaited<ReturnType<ReplicateClient["predictions"]["create"]>>
+      | undefined;
+
     try {
-      const prediction = await replicate.predictions.create({
-        model: getUploadVideoAnalysisModelId(),
+      if (diagnostics) {
+        await logGeminiVideoAnalysisInputDiagnostics({
+          diagnostics,
+          modelId,
+        });
+      }
+
+      prediction = await replicate.predictions.create({
+        model: modelId,
         input: {
           videos: [videoInput],
           prompt: createUploadVideoAnalysisPrompt({ mediaKind, originalName }),
@@ -58,9 +75,25 @@ export async function createUploadVideoAnalysisOutputText({
       return await getCompletedReplicatePredictionOutputText({
         failureMessage: "Replicate did not complete video upload analysis.",
         prediction,
+        predictionDiagnostics: diagnostics
+          ? {
+              featurePath: diagnostics.featurePath,
+              modelId,
+            }
+          : undefined,
         replicate,
       });
     } catch (error) {
+      if (diagnostics && !prediction) {
+        logGeminiVideoAnalysisPredictionDiagnostics({
+          diagnostics: {
+            featurePath: diagnostics.featurePath,
+            modelId,
+          },
+          error,
+        });
+      }
+
       if (!fallbackImageFile) {
         throw error;
       }
