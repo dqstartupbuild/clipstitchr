@@ -88,6 +88,9 @@ When full-video scoring fails, Stitch Score falls back to the poster/image lane:
 
 - Environment variable: `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID`
 - Default: `openai/gpt-5-mini`
+- Backup environment variable: `REPLICATE_UPLOAD_ANALYSIS_BACKUP_MODEL_ID`
+- Backup default: `openai/gpt-4.1-mini`, tried once when the primary
+  poster/context prediction fails.
 
 ## Abuse Protection
 

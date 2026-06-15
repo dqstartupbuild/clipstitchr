@@ -6,6 +6,7 @@ import { createUploadImageAnalysisOutputText } from "@/lib/clipstitchr/server/cr
 import { createUploadVideoAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadVideoAnalysisOutputText";
 import { createUploadVideoAnalysisPrompt } from "@/lib/clipstitchr/server/createUploadVideoAnalysisPrompt";
 import { getUploadAnalysisModelId } from "@/lib/clipstitchr/server/getUploadAnalysisModelId";
+import { getUploadAnalysisModelIds } from "@/lib/clipstitchr/server/getUploadAnalysisModelIds";
 import { getUploadAnalysisOutputText } from "@/lib/clipstitchr/server/getUploadAnalysisOutputText";
 import { getUploadVideoAnalysisModelId } from "@/lib/clipstitchr/server/getUploadVideoAnalysisModelId";
 import type { UploadAssetAnalysisKind } from "@/lib/clipstitchr/types/UploadAssetAnalysisKind";
@@ -60,12 +61,15 @@ function createFile(name: string, type: string) {
 
 describe("upload analysis helpers", () => {
   const originalAnalysisModelId = process.env.REPLICATE_UPLOAD_ANALYSIS_MODEL_ID;
+  const originalAnalysisBackupModelId =
+    process.env.REPLICATE_UPLOAD_ANALYSIS_BACKUP_MODEL_ID;
   const originalVideoAnalysisModelId =
     process.env.REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID;
 
   beforeEach(() => {
     vi.clearAllMocks();
     delete process.env.REPLICATE_UPLOAD_ANALYSIS_MODEL_ID;
+    delete process.env.REPLICATE_UPLOAD_ANALYSIS_BACKUP_MODEL_ID;
     delete process.env.REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID;
   });
 
@@ -81,6 +85,13 @@ describe("upload analysis helpers", () => {
     } else {
       process.env.REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID =
         originalVideoAnalysisModelId;
+    }
+
+    if (originalAnalysisBackupModelId === undefined) {
+      delete process.env.REPLICATE_UPLOAD_ANALYSIS_BACKUP_MODEL_ID;
+    } else {
+      process.env.REPLICATE_UPLOAD_ANALYSIS_BACKUP_MODEL_ID =
+        originalAnalysisBackupModelId;
     }
   });
 
@@ -134,14 +145,28 @@ describe("upload analysis helpers", () => {
 
   it("reads upload analysis model IDs from defaults and environment", () => {
     expect(getUploadAnalysisModelId()).toBe("openai/gpt-5-mini");
+    expect(getUploadAnalysisModelIds()).toEqual([
+      "openai/gpt-5-mini",
+      "openai/gpt-4.1-mini",
+    ]);
     expect(getUploadVideoAnalysisModelId()).toBe("google/gemini-3-flash");
 
     process.env.REPLICATE_UPLOAD_ANALYSIS_MODEL_ID = "custom/image-model";
+    process.env.REPLICATE_UPLOAD_ANALYSIS_BACKUP_MODEL_ID =
+      "custom/backup-model";
     process.env.REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID =
       "custom/video-model";
 
     expect(getUploadAnalysisModelId()).toBe("custom/image-model");
+    expect(getUploadAnalysisModelIds()).toEqual([
+      "custom/image-model",
+      "custom/backup-model",
+    ]);
     expect(getUploadVideoAnalysisModelId()).toBe("custom/video-model");
+
+    process.env.REPLICATE_UPLOAD_ANALYSIS_BACKUP_MODEL_ID = "none";
+
+    expect(getUploadAnalysisModelIds()).toEqual(["custom/image-model"]);
   });
 
   it("normalizes Replicate upload analysis output values", () => {
@@ -201,6 +226,40 @@ describe("upload analysis helpers", () => {
         ).input?.prompt,
       ),
     ).toContain("performanceScore");
+  });
+
+  it("tries the backup upload image analysis model when the primary model fails", async () => {
+    const { predictionCreate, replicate } = createReplicate();
+
+    mocks.getCompletedReplicatePredictionOutputText
+      .mockRejectedValueOnce(new Error("primary failed"))
+      .mockResolvedValueOnce("completed:prediction_2");
+
+    await expect(
+      createUploadImageAnalysisOutputText({
+        file: createFile("creator.jpg", "image/jpeg"),
+        mediaKind: "ugc-video",
+        originalName: "creator.mov",
+        replicate,
+      }),
+    ).resolves.toBe("completed:prediction_2");
+    expect(predictionCreate).toHaveBeenCalledTimes(2);
+    expect(predictionCreate).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        model: "openai/gpt-5-mini",
+      }),
+    );
+    expect(predictionCreate).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        model: "openai/gpt-4.1-mini",
+        input: expect.objectContaining({
+          image_input: [expect.objectContaining({ kind: "replicate-file" })],
+          prompt: expect.stringContaining("uploaded UGC video"),
+        }),
+      }),
+    );
   });
 
   it("creates Swipr background analysis predictions", async () => {

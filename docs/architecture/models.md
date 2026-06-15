@@ -63,8 +63,8 @@ provider input shape.
 
 | Usage | Configuration | Default or Current Model | Notes |
 | --- | --- | --- | --- |
-| Upload image metadata analysis | `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID` | `openai/gpt-5-mini` | Used for avatar/photo images and video poster fallback analysis. |
-| Swipr background metadata analysis | `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID` | `openai/gpt-5-mini` | Shares the upload image analysis model with a background-specific prompt. |
+| Upload image metadata analysis | `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID`; backup `REPLICATE_UPLOAD_ANALYSIS_BACKUP_MODEL_ID` | `openai/gpt-5-mini`; backup `openai/gpt-4.1-mini` | Used for avatar/photo images and video poster fallback analysis. The backup model is tried once only when the primary image-analysis prediction fails. Set the backup variable to `none` to disable it. |
+| Swipr background metadata analysis | `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID`; backup `REPLICATE_UPLOAD_ANALYSIS_BACKUP_MODEL_ID` | `openai/gpt-5-mini`; backup `openai/gpt-4.1-mini` | Shares the upload image analysis model with a background-specific prompt. The backup model is tried once only when the primary image-analysis prediction fails. |
 | Upload video action analysis | `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` | `google/gemini-3-flash` | Used for full-video UGC/demo action analysis, including manual saved-clip scoring, before falling back to poster analysis when needed. |
 | Stitch score analysis | `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` | `google/gemini-3-flash` | Scores saved Stitches from the rendered MP4 when available. If no rendered MP4 is saved, Stitch Score uses poster/context fallback instead of sending raw source videos. |
 | Product enrichment | `PRODUCT_ENRICHMENT_MODEL_ID` | `openai/gpt-4.1` | Generates hidden product strategy metadata when saving Settings products. |

@@ -1,8 +1,7 @@
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createReplicateInputFile } from "@/lib/clipstitchr/server/createReplicateInputFile";
 import { createUploadAnalysisPrompt } from "@/lib/clipstitchr/server/createUploadAnalysisPrompt";
-import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
-import { getUploadAnalysisModelId } from "@/lib/clipstitchr/server/getUploadAnalysisModelId";
+import { createUploadAnalysisPredictionOutputText } from "@/lib/clipstitchr/server/createUploadAnalysisPredictionOutputText";
 import type { UploadAssetAnalysisKind } from "@/lib/clipstitchr/types/UploadAssetAnalysisKind";
 
 const UPLOAD_ANALYSIS_SYSTEM_PROMPT =
@@ -26,21 +25,14 @@ export async function createUploadImageAnalysisOutputText({
     file,
     mimeType: "image/jpeg",
   });
-  const prediction = await replicate.predictions.create({
-    model: getUploadAnalysisModelId(),
-    input: {
-      image_input: [imageFile],
-      prompt: createUploadAnalysisPrompt({ mediaKind, originalName }),
-      system_prompt: UPLOAD_ANALYSIS_SYSTEM_PROMPT,
-      temperature: 0.2,
-      max_completion_tokens:
-        mediaKind === "demo-video" || mediaKind === "ugc-video" ? 700 : 400,
-    },
-  });
 
-  return await getCompletedReplicatePredictionOutputText({
+  return await createUploadAnalysisPredictionOutputText({
     failureMessage: "Replicate did not complete upload analysis.",
-    prediction,
+    imageInput: imageFile,
+    maxCompletionTokens:
+      mediaKind === "demo-video" || mediaKind === "ugc-video" ? 700 : 400,
+    prompt: createUploadAnalysisPrompt({ mediaKind, originalName }),
     replicate,
+    systemPrompt: UPLOAD_ANALYSIS_SYSTEM_PROMPT,
   });
 }
