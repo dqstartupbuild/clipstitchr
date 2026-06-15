@@ -37,7 +37,7 @@ import { createStitchrTextGenerationClipContext } from "@/lib/clipstitchr/utils/
 import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
-import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
 import { getStitchrSocialCaptionForUgcId } from "@/lib/clipstitchr/utils/getStitchrSocialCaptionForUgcId";
 import { getStitchrTextOverlaysForUgcId } from "@/lib/clipstitchr/utils/getStitchrTextOverlaysForUgcId";
@@ -309,10 +309,20 @@ export function StitchrPageClient() {
       )
     : null;
   const selectedUgcDuration = selectedUgcTrimRange
-    ? getPlaybackRateDuration(selectedUgcTrimRange, ugcPlaybackRate)
+    ? getQuickEditPlaybackDuration(
+        selectedUgcTrimRange,
+        activeUgcMetadata?.duration ?? selectedUgcTrimRange.end,
+        activeUgcMetadata?.quickEdit?.removeRanges,
+        ugcPlaybackRate,
+      )
     : 0;
   const selectedDemoDuration = selectedDemoTrimRange
-    ? getPlaybackRateDuration(selectedDemoTrimRange, demoPlaybackRate)
+    ? getQuickEditPlaybackDuration(
+        selectedDemoTrimRange,
+        selectedDemoMetadata?.duration ?? selectedDemoTrimRange.end,
+        selectedDemoMetadata?.quickEdit?.removeRanges,
+        demoPlaybackRate,
+      )
     : 0;
   const selectedLongrDuration = useMemo(
     () =>
@@ -326,7 +336,15 @@ export function StitchrPageClient() {
         const playbackRate =
           clip.clipType === "demo" ? demoPlaybackRate : ugcPlaybackRate;
 
-        return duration + getPlaybackRateDuration(trimRange, playbackRate);
+        return (
+          duration +
+          getQuickEditPlaybackDuration(
+            trimRange,
+            clip.duration,
+            clip.quickEdit?.removeRanges,
+            playbackRate,
+          )
+        );
       }, 0),
     [
       demoPlaybackRate,
@@ -856,7 +874,12 @@ export function StitchrPageClient() {
         const ugcTrimRange =
           ugcTrimRangesByClipId[id] ?? getDefaultVideoTrimRange(clip);
         const clipDuration =
-          getPlaybackRateDuration(ugcTrimRange, ugcPlaybackRate) +
+          getQuickEditPlaybackDuration(
+            ugcTrimRange,
+            clip.duration,
+            clip.quickEdit?.removeRanges,
+            ugcPlaybackRate,
+          ) +
           selectedDemoDuration;
 
         setTextOverlaysByUgcId((overlays) => {
@@ -1023,7 +1046,12 @@ export function StitchrPageClient() {
             selectedUgcTrimRangesByClipId[clip.id] ??
             getDefaultVideoTrimRange(clip);
           const clipDuration =
-            getPlaybackRateDuration(ugcTrimRange, ugcPlaybackRate) +
+            getQuickEditPlaybackDuration(
+              ugcTrimRange,
+              clip.duration,
+              clip.quickEdit?.removeRanges,
+              ugcPlaybackRate,
+            ) +
             selectedDemoDuration;
 
           return {
@@ -1128,7 +1156,12 @@ export function StitchrPageClient() {
             ugcId: clip.id,
           });
           const pairDuration =
-            getPlaybackRateDuration(trimRange, ugcPlaybackRate) +
+            getQuickEditPlaybackDuration(
+              trimRange,
+              clip.duration,
+              clip.quickEdit?.removeRanges,
+              ugcPlaybackRate,
+            ) +
             selectedDemoDuration;
 
           return {

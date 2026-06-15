@@ -6,6 +6,8 @@ import { promisify } from "node:util";
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { ConvexHttpClient } from "convex/browser";
 import { anyApi } from "convex/server";
+import { getQuickEditPlaybackDuration } from "./getQuickEditPlaybackDuration.mjs";
+import { readQuickEditSuggestions } from "./readQuickEditSuggestions.mjs";
 
 const execFileAsync = promisify(execFile);
 const api = anyApi;
@@ -308,6 +310,7 @@ function parseStitchrDraftFinalizationInput(inputSnapshotJson) {
     demoDuration: getPositiveNumber(input.demoDuration, "Demo duration"),
     demoHasAudio: input.demoHasAudio === true,
     demoPlaybackRate: getPlaybackRate(input.demoPlaybackRate),
+    demoQuickEdit: readQuickEditSuggestions(input.demoQuickEdit),
     demoTrimRange: getTrimRange(input.demoTrimRange, input.demoDuration),
     demoVideoObject: getR2Object(input.demoVideoObject, "Demo video object"),
     includeDemoAudio: input.includeDemoAudio === true,
@@ -326,6 +329,7 @@ function parseStitchrDraftFinalizationInput(inputSnapshotJson) {
     ugcDuration: getPositiveNumber(input.ugcDuration, "UGC duration"),
     ugcHasAudio: input.ugcHasAudio === true,
     ugcPlaybackRate: getPlaybackRate(input.ugcPlaybackRate),
+    ugcQuickEdit: readQuickEditSuggestions(input.ugcQuickEdit),
     ugcTrimRange: getTrimRange(input.ugcTrimRange, input.ugcDuration),
     ugcVideoObject: getR2Object(input.ugcVideoObject, "UGC video object"),
   };
@@ -551,10 +555,6 @@ function getTrimRange(value, fallbackDuration) {
   );
 
   return { start, end };
-}
-
-function getTrimDuration(trimRange, playbackRate = 1) {
-  return Math.max(0, trimRange.end - trimRange.start) / playbackRate;
 }
 
 async function runFfmpeg(config, args) {
@@ -945,8 +945,18 @@ async function processStitchrDraftFinalization({ client, config, job }) {
   const input = parseStitchrDraftFinalizationInput(job.inputSnapshotJson);
   const updatedAt = new Date().toISOString();
   const duration =
-    getTrimDuration(input.ugcTrimRange, input.ugcPlaybackRate) +
-    getTrimDuration(input.demoTrimRange, input.demoPlaybackRate);
+    getQuickEditPlaybackDuration({
+      duration: input.ugcDuration,
+      playbackRate: input.ugcPlaybackRate,
+      removeRanges: input.ugcQuickEdit?.removeRanges,
+      trimRange: input.ugcTrimRange,
+    }) +
+    getQuickEditPlaybackDuration({
+      duration: input.demoDuration,
+      playbackRate: input.demoPlaybackRate,
+      removeRanges: input.demoQuickEdit?.removeRanges,
+      trimRange: input.demoTrimRange,
+    });
 
   await client.mutation(api.mediaJobs.markStatus, {
     secret: config.mediaWorkerSecret,
@@ -983,8 +993,10 @@ async function processStitchrDraftFinalization({ client, config, job }) {
     includeUgcAudio: input.includeUgcAudio,
     demoPlaybackRate: input.demoPlaybackRate,
     ugcPlaybackRate: input.ugcPlaybackRate,
+    ...(input.demoQuickEdit ? { demoQuickEdit: input.demoQuickEdit } : {}),
     ...(input.socialCaption ? { socialCaption: input.socialCaption } : {}),
     ...(input.textOverlay ? { textOverlay: input.textOverlay } : {}),
+    ...(input.ugcQuickEdit ? { ugcQuickEdit: input.ugcQuickEdit } : {}),
     createdAt: updatedAt,
   });
   await client.mutation(api.automationStitchr.recordOutputFromMediaWorker, {

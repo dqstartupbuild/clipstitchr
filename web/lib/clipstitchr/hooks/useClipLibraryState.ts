@@ -41,8 +41,11 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { createStitchQuickEditUpdate } from "@/lib/clipstitchr/utils/createStitchQuickEditUpdate";
 import { getClipLibraryDisplayCounts } from "@/lib/clipstitchr/utils/getClipLibraryDisplayCounts";
+import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getDeletableMusicAudioObject } from "@/lib/clipstitchr/utils/getDeletableMusicAudioObject";
+import { getQuickEditSuggestedTrimRange } from "@/lib/clipstitchr/utils/getQuickEditSuggestedTrimRange";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoClipMetadataById";
@@ -148,11 +151,15 @@ export function useClipLibraryState(): ClipLibraryValue {
     [postedStitchDocuments, stitchDocuments],
   );
   const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
+  const applyClipQuickEditMutation = useMutation(api.videoClips.applyQuickEdit);
+  const resetClipQuickEditMutation = useMutation(api.videoClips.resetQuickEdit);
   const updateCliprMusicMutation = useMutation(api.videoClips.updateCliprMusic);
   const updateClipPostedStatusMutation = useMutation(
     api.videoClips.updatePostedStatus,
   );
   const updateStitchMusicMutation = useMutation(api.stitches.updateMusic);
+  const applyStitchQuickEditMutation = useMutation(api.stitches.applyQuickEdit);
+  const resetStitchQuickEditMutation = useMutation(api.stitches.resetQuickEdit);
   const updateRenderedStitchVideoMutation = useMutation(
     api.stitches.updateRenderedVideo,
   );
@@ -652,6 +659,42 @@ export function useClipLibraryState(): ClipLibraryValue {
     [refresh],
   );
 
+  const applyClipQuickEdit = useCallback(
+    async (clip: VideoClipMetadata) => {
+      const quickEdit = clip.performanceScore?.quickEditSuggestions;
+
+      if (!quickEdit) {
+        throw new Error("Score this clip first, then try Improve.");
+      }
+
+      await applyClipQuickEditMutation({
+        id: clip.id,
+        defaultTrimRange: getQuickEditSuggestedTrimRange({
+          currentTrimRange: getDefaultVideoTrimRange(clip),
+          duration: clip.duration,
+          suggestions: quickEdit,
+        }),
+        quickEdit,
+        updatedAt: new Date().toISOString(),
+      });
+      clipCacheRef.current.delete(clip.id);
+      await refresh();
+    },
+    [applyClipQuickEditMutation, refresh],
+  );
+
+  const resetClipQuickEdit = useCallback(
+    async (clip: VideoClipMetadata) => {
+      await resetClipQuickEditMutation({
+        id: clip.id,
+        updatedAt: new Date().toISOString(),
+      });
+      clipCacheRef.current.delete(clip.id);
+      await refresh();
+    },
+    [refresh, resetClipQuickEditMutation],
+  );
+
   const updateStitchMusic = useCallback(
     async (stitch: Stitch, music: StitchMusicMetadata | null) => {
       const previousMusicObject = stitch.music?.audioObject;
@@ -829,6 +872,62 @@ export function useClipLibraryState(): ClipLibraryValue {
     [loadStitchVideo, refresh],
   );
 
+  const applyStitchQuickEdit = useCallback(
+    async (stitch: Stitch) => {
+      const quickEdit = stitch.stitchScore?.quickEditSuggestions;
+
+      if (!quickEdit) {
+        throw new Error("Score this stitch first, then try Improve.");
+      }
+
+      const [ugcClip, demoClip] = await Promise.all([
+        loadClip(stitch.ugcClipId),
+        loadClip(stitch.demoClipId),
+      ]);
+
+      if (!ugcClip || !demoClip) {
+        throw new Error("Unable to load the source videos for this stitch.");
+      }
+
+      const previousStitchObject = stitch.stitchObject;
+      const update = createStitchQuickEditUpdate({
+        demoClip,
+        quickEdit,
+        stitch,
+        ugcClip,
+      });
+
+      await applyStitchQuickEditMutation({
+        id: stitch.id,
+        ...update,
+      });
+
+      if (previousStitchObject) {
+        await deleteObjectsFromR2([previousStitchObject]).catch(() => null);
+        stitchBlobCacheRef.current.delete(previousStitchObject.key);
+      }
+
+      await refresh();
+    },
+    [applyStitchQuickEditMutation, loadClip, refresh],
+  );
+
+  const resetStitchQuickEdit = useCallback(
+    async (stitch: Stitch) => {
+      const previousStitchObject = stitch.stitchObject;
+
+      await resetStitchQuickEditMutation({ id: stitch.id });
+
+      if (previousStitchObject) {
+        await deleteObjectsFromR2([previousStitchObject]).catch(() => null);
+        stitchBlobCacheRef.current.delete(previousStitchObject.key);
+      }
+
+      await refresh();
+    },
+    [refresh, resetStitchQuickEditMutation],
+  );
+
   const removeStitch = useCallback(
     async (id: string) => {
       const stitchDocument =
@@ -996,11 +1095,15 @@ export function useClipLibraryState(): ClipLibraryValue {
     updateClipMetadata,
     generateCliprMusic,
     scoreClip,
+    applyClipQuickEdit,
+    resetClipQuickEdit,
     updateCliprMusic,
     updateClipTrimRange,
     updateClipPostedStatus,
     generateStitchMusic,
     scoreStitch,
+    applyStitchQuickEdit,
+    resetStitchQuickEdit,
     updateStitchMusic,
     updateStitchSourceSettings,
     updateStitchTextOverlay,

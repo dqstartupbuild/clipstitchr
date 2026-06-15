@@ -1,26 +1,38 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { VideoSequenceSegment } from "@/lib/clipstitchr/types/VideoSequenceSegment";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clamp } from "@/lib/clipstitchr/utils/clamp";
-import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getNextQuickEditSourceTime } from "@/lib/clipstitchr/utils/getNextQuickEditSourceTime";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
+import { getQuickEditPlaybackTimeForSourceTime } from "@/lib/clipstitchr/utils/getQuickEditPlaybackTimeForSourceTime";
+import { getQuickEditSourceTimeForPlaybackTime } from "@/lib/clipstitchr/utils/getQuickEditSourceTimeForPlaybackTime";
 
 type UseSequenceVideoPlayerOptions = {
   demoPlaybackRate?: VideoPlaybackRate;
+  demoQuickEdit?: QuickEditSuggestions;
+  demoSourceDuration?: number;
   ugcTrimRange: VideoTrimRange;
   demoTrimRange: VideoTrimRange;
+  ugcQuickEdit?: QuickEditSuggestions;
   ugcPlaybackRate?: VideoPlaybackRate;
+  ugcSourceDuration?: number;
 };
 
 const SEQUENCE_TRANSITION_EPSILON_SECONDS = 0.03;
 
 export function useSequenceVideoPlayer({
   demoPlaybackRate = 1,
+  demoQuickEdit,
+  demoSourceDuration,
   ugcTrimRange,
   demoTrimRange,
+  ugcQuickEdit,
   ugcPlaybackRate = 1,
+  ugcSourceDuration,
 }: UseSequenceVideoPlayerOptions) {
   const ugcVideoRef = useRef<HTMLVideoElement | null>(null);
   const demoVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -31,9 +43,18 @@ export function useSequenceVideoPlayer({
     useState<VideoSequenceSegment>("ugc");
   const [currentTime, setCurrentTimeState] = useState(0);
   const [isPlaying, setIsPlayingState] = useState(false);
-  const ugcDuration = getPlaybackRateDuration(ugcTrimRange, ugcPlaybackRate);
-  const demoDuration = getPlaybackRateDuration(
+  const safeUgcSourceDuration = ugcSourceDuration ?? ugcTrimRange.end;
+  const safeDemoSourceDuration = demoSourceDuration ?? demoTrimRange.end;
+  const ugcDuration = getQuickEditPlaybackDuration(
+    ugcTrimRange,
+    safeUgcSourceDuration,
+    ugcQuickEdit?.removeRanges,
+    ugcPlaybackRate,
+  );
+  const demoDuration = getQuickEditPlaybackDuration(
     demoTrimRange,
+    safeDemoSourceDuration,
+    demoQuickEdit?.removeRanges,
     demoPlaybackRate,
   );
   const totalDuration = ugcDuration + demoDuration;
@@ -67,16 +88,32 @@ export function useSequenceVideoPlayer({
       segment === "ugc" ? ugcPlaybackRate : demoPlaybackRate,
     [demoPlaybackRate, ugcPlaybackRate],
   );
+  const getActiveQuickEdit = useCallback(
+    (segment: VideoSequenceSegment) =>
+      segment === "ugc" ? ugcQuickEdit : demoQuickEdit,
+    [demoQuickEdit, ugcQuickEdit],
+  );
+  const getActiveSourceDuration = useCallback(
+    (segment: VideoSequenceSegment) =>
+      segment === "ugc" ? safeUgcSourceDuration : safeDemoSourceDuration,
+    [safeDemoSourceDuration, safeUgcSourceDuration],
+  );
 
   const updateCurrentTime = useCallback(
     (segment: VideoSequenceSegment = activeSegmentRef.current) => {
       const video = getSegmentVideo(segment);
       const trimRange = getActiveTrimRange(segment);
       const playbackRate = getActivePlaybackRate(segment);
+      const quickEdit = getActiveQuickEdit(segment);
+      const sourceDuration = getActiveSourceDuration(segment);
       const segmentDuration = segment === "ugc" ? ugcDuration : demoDuration;
-      const rawSegmentTime =
-        ((video?.currentTime ?? trimRange.start) - trimRange.start) /
-        playbackRate;
+      const rawSegmentTime = getQuickEditPlaybackTimeForSourceTime(
+        video?.currentTime ?? trimRange.start,
+        trimRange,
+        sourceDuration,
+        quickEdit?.removeRanges,
+        playbackRate,
+      );
       const segmentTime = clamp(rawSegmentTime, 0, segmentDuration);
 
       setCurrentTime(
@@ -90,6 +127,8 @@ export function useSequenceVideoPlayer({
     [
       demoDuration,
       getActivePlaybackRate,
+      getActiveQuickEdit,
+      getActiveSourceDuration,
       getActiveTrimRange,
       getSegmentVideo,
       setCurrentTime,
@@ -110,6 +149,8 @@ export function useSequenceVideoPlayer({
     const video = getSegmentVideo(segment);
     const trimRange = getActiveTrimRange(segment);
     const playbackRate = getActivePlaybackRate(segment);
+    const quickEdit = getActiveQuickEdit(segment);
+    const sourceDuration = getActiveSourceDuration(segment);
 
     if (!video) {
       setIsPlaying(false);
@@ -120,7 +161,23 @@ export function useSequenceVideoPlayer({
       video.currentTime < trimRange.start ||
       video.currentTime >= trimRange.end
     ) {
-      video.currentTime = trimRange.start;
+      video.currentTime = getNextQuickEditSourceTime(
+        trimRange.start,
+        trimRange,
+        sourceDuration,
+        quickEdit?.removeRanges,
+      );
+    } else {
+      const nextSourceTime = getNextQuickEditSourceTime(
+        video.currentTime,
+        trimRange,
+        sourceDuration,
+        quickEdit?.removeRanges,
+      );
+
+      if (nextSourceTime > video.currentTime + 0.01) {
+        video.currentTime = nextSourceTime;
+      }
     }
 
     video.playbackRate = playbackRate;
@@ -128,7 +185,14 @@ export function useSequenceVideoPlayer({
     void video.play().catch(() => {
       setIsPlaying(false);
     });
-  }, [getActivePlaybackRate, getActiveTrimRange, getSegmentVideo, setIsPlaying]);
+  }, [
+    getActivePlaybackRate,
+    getActiveQuickEdit,
+    getActiveSourceDuration,
+    getActiveTrimRange,
+    getSegmentVideo,
+    setIsPlaying,
+  ]);
 
   const completeSequence = useCallback(() => {
     pauseSegment("ugc");
@@ -169,7 +233,12 @@ export function useSequenceVideoPlayer({
       return;
     }
 
-    demoVideo.currentTime = demoTrimRange.start;
+    demoVideo.currentTime = getNextQuickEditSourceTime(
+      demoTrimRange.start,
+      demoTrimRange,
+      safeDemoSourceDuration,
+      demoQuickEdit?.removeRanges,
+    );
     demoVideo.playbackRate = demoPlaybackRate;
 
     if (shouldKeepPlaying) {
@@ -182,7 +251,9 @@ export function useSequenceVideoPlayer({
     completeSequence,
     demoDuration,
     demoPlaybackRate,
-    demoTrimRange.start,
+    demoQuickEdit?.removeRanges,
+    safeDemoSourceDuration,
+    demoTrimRange,
     setActiveSegment,
     setCurrentTime,
     setIsPlaying,
@@ -194,14 +265,31 @@ export function useSequenceVideoPlayer({
     const segment = activeSegmentRef.current;
     const video = getSegmentVideo(segment);
     const trimRange = getActiveTrimRange(segment);
+    const quickEdit = getActiveQuickEdit(segment);
+    const sourceDuration = getActiveSourceDuration(segment);
 
     updateCurrentTime(segment);
 
+    if (!video) {
+      return;
+    }
+
+    const nextSourceTime = getNextQuickEditSourceTime(
+      video.currentTime,
+      trimRange,
+      sourceDuration,
+      quickEdit?.removeRanges,
+    );
+
     if (
-      !video ||
-      video.currentTime <
-        trimRange.end - SEQUENCE_TRANSITION_EPSILON_SECONDS
+      nextSourceTime > video.currentTime + SEQUENCE_TRANSITION_EPSILON_SECONDS &&
+      nextSourceTime < trimRange.end
     ) {
+      video.currentTime = nextSourceTime;
+      return;
+    }
+
+    if (video.currentTime < trimRange.end - SEQUENCE_TRANSITION_EPSILON_SECONDS) {
       return;
     }
 
@@ -213,6 +301,8 @@ export function useSequenceVideoPlayer({
     completeSequence();
   }, [
     completeSequence,
+    getActiveQuickEdit,
+    getActiveSourceDuration,
     getActiveTrimRange,
     getSegmentVideo,
     transitionToDemo,
@@ -246,6 +336,8 @@ export function useSequenceVideoPlayer({
       const video = getSegmentVideo(segment);
       const trimRange = getActiveTrimRange(segment);
       const playbackRate = getActivePlaybackRate(segment);
+      const quickEdit = getActiveQuickEdit(segment);
+      const sourceDuration = getActiveSourceDuration(segment);
 
       if (!video) {
         return;
@@ -255,7 +347,12 @@ export function useSequenceVideoPlayer({
         video.currentTime < trimRange.start ||
         video.currentTime >= trimRange.end
       ) {
-        video.currentTime = trimRange.start;
+        video.currentTime = getNextQuickEditSourceTime(
+          trimRange.start,
+          trimRange,
+          sourceDuration,
+          quickEdit?.removeRanges,
+        );
       }
 
       video.playbackRate = playbackRate;
@@ -266,6 +363,8 @@ export function useSequenceVideoPlayer({
     },
     [
       getActivePlaybackRate,
+      getActiveQuickEdit,
+      getActiveSourceDuration,
       getActiveTrimRange,
       getSegmentVideo,
       updateCurrentTime,
@@ -276,6 +375,8 @@ export function useSequenceVideoPlayer({
     (segment: VideoSequenceSegment) => {
       const video = getSegmentVideo(segment);
       const trimRange = getActiveTrimRange(segment);
+      const quickEdit = getActiveQuickEdit(segment);
+      const sourceDuration = getActiveSourceDuration(segment);
 
       if (segment !== activeSegmentRef.current) {
         return;
@@ -283,7 +384,23 @@ export function useSequenceVideoPlayer({
 
       updateCurrentTime(segment);
 
-      if (!video || video.currentTime < trimRange.end) {
+      if (!video) {
+        return;
+      }
+
+      const nextSourceTime = getNextQuickEditSourceTime(
+        video.currentTime,
+        trimRange,
+        sourceDuration,
+        quickEdit?.removeRanges,
+      );
+
+      if (nextSourceTime > video.currentTime + 0.01 && nextSourceTime < trimRange.end) {
+        video.currentTime = nextSourceTime;
+        return;
+      }
+
+      if (video.currentTime < trimRange.end) {
         return;
       }
 
@@ -296,6 +413,8 @@ export function useSequenceVideoPlayer({
     },
     [
       completeSequence,
+      getActiveQuickEdit,
+      getActiveSourceDuration,
       getActiveTrimRange,
       getSegmentVideo,
       transitionToDemo,
@@ -335,10 +454,14 @@ export function useSequenceVideoPlayer({
       const nextSegmentTime =
         nextSegment === "ugc" ? nextTime : nextTime - ugcDuration;
       const nextPlaybackRate = getActivePlaybackRate(nextSegment);
-      const nextVideoTime = clamp(
-        nextTrimRange.start + nextSegmentTime * nextPlaybackRate,
-        nextTrimRange.start,
-        nextTrimRange.end,
+      const nextQuickEdit = getActiveQuickEdit(nextSegment);
+      const nextSourceDuration = getActiveSourceDuration(nextSegment);
+      const nextVideoTime = getQuickEditSourceTimeForPlaybackTime(
+        nextSegmentTime,
+        nextTrimRange,
+        nextSourceDuration,
+        nextQuickEdit?.removeRanges,
+        nextPlaybackRate,
       );
       const nextVideo = getSegmentVideo(nextSegment);
       const otherSegment = nextSegment === "ugc" ? "demo" : "ugc";
@@ -366,6 +489,8 @@ export function useSequenceVideoPlayer({
       completeSequence,
       demoDuration,
       getActivePlaybackRate,
+      getActiveQuickEdit,
+      getActiveSourceDuration,
       getActiveTrimRange,
       getSegmentVideo,
       pauseSegment,
@@ -400,24 +525,38 @@ export function useSequenceVideoPlayer({
     setCurrentTime(0);
 
     if (ugcVideoRef.current) {
-      ugcVideoRef.current.currentTime = ugcTrimRange.start;
+      ugcVideoRef.current.currentTime = getNextQuickEditSourceTime(
+        ugcTrimRange.start,
+        ugcTrimRange,
+        safeUgcSourceDuration,
+        ugcQuickEdit?.removeRanges,
+      );
       ugcVideoRef.current.playbackRate = ugcPlaybackRate;
     }
 
     if (demoVideoRef.current) {
-      demoVideoRef.current.currentTime = demoTrimRange.start;
+      demoVideoRef.current.currentTime = getNextQuickEditSourceTime(
+        demoTrimRange.start,
+        demoTrimRange,
+        safeDemoSourceDuration,
+        demoQuickEdit?.removeRanges,
+      );
       demoVideoRef.current.playbackRate = demoPlaybackRate;
     }
 
     playActiveSegment();
   }, [
-    demoTrimRange.start,
+    demoQuickEdit?.removeRanges,
+    safeDemoSourceDuration,
+    demoTrimRange,
     demoPlaybackRate,
     pauseSegment,
     playActiveSegment,
     setActiveSegment,
     setCurrentTime,
-    ugcTrimRange.start,
+    ugcTrimRange,
+    ugcQuickEdit?.removeRanges,
+    safeUgcSourceDuration,
     ugcPlaybackRate,
   ]);
 

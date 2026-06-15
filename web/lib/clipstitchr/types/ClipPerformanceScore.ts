@@ -1,3 +1,5 @@
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
+
 export type ClipPerformanceScore = {
   overall: number;
   hook?: number;
@@ -10,4 +12,5 @@ export type ClipPerformanceScore = {
   bestUse: string;
   strengths: string[];
   fixes: string[];
+  quickEditSuggestions?: QuickEditSuggestions;
 };

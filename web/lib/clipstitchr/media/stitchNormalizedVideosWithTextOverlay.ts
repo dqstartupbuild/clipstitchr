@@ -16,13 +16,14 @@ import { createTikTokCanvasSource } from "@/lib/clipstitchr/media/createTikTokCa
 import { finalizeMediaBunnyExportSession } from "@/lib/clipstitchr/media/finalizeMediaBunnyExportSession";
 import { getInputAudioParameters } from "@/lib/clipstitchr/media/getInputAudioParameters";
 import { resolveMediaBunnyOutputCodecs } from "@/lib/clipstitchr/media/resolveMediaBunnyOutputCodecs";
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { SourcePlaybackRateOptions } from "@/lib/clipstitchr/types/SourcePlaybackRateOptions";
 import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSourceAudioOptions";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
-import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 
 type StitchNormalizedVideosWithTextOverlayResult = {
   blob: Blob;
@@ -33,9 +34,11 @@ type StitchNormalizedVideosWithTextOverlayResult = {
 type StitchNormalizedVideosWithTextOverlayOptions = {
   ugcTrimRange: VideoTrimRange;
   demoTrimRange: VideoTrimRange;
+  demoQuickEdit?: QuickEditSuggestions;
   textOverlay?: TextOverlay;
   textOverlays?: TextOverlay[];
   onProgress?: (progress: number) => void;
+  ugcQuickEdit?: QuickEditSuggestions;
 } & SourcePlaybackRateOptions &
   StitchSourceAudioOptions;
 
@@ -45,12 +48,14 @@ export async function stitchNormalizedVideosWithTextOverlay(
   {
     ugcTrimRange,
     demoTrimRange,
+    demoQuickEdit,
     demoPlaybackRate = 1,
     includeDemoAudio = true,
     includeUgcAudio = true,
     textOverlay,
     textOverlays,
     onProgress,
+    ugcQuickEdit,
     ugcPlaybackRate = 1,
   }: StitchNormalizedVideosWithTextOverlayOptions,
 ): Promise<StitchNormalizedVideosWithTextOverlayResult> {
@@ -70,12 +75,16 @@ export async function stitchNormalizedVideosWithTextOverlay(
       demoTrimRange,
       demoClip.duration,
     );
-    const ugcDuration = getPlaybackRateDuration(
+    const ugcDuration = getQuickEditPlaybackDuration(
       clampedUgcTrimRange,
+      ugcClip.duration,
+      ugcQuickEdit?.removeRanges,
       ugcPlaybackRate,
     );
-    const demoDuration = getPlaybackRateDuration(
+    const demoDuration = getQuickEditPlaybackDuration(
       clampedDemoTrimRange,
+      demoClip.duration,
+      demoQuickEdit?.removeRanges,
       demoPlaybackRate,
     );
     const includeAudio = Boolean(ugcAudioParameters || demoAudioParameters);
@@ -125,6 +134,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
       renderContext,
       timelineOffset: 0,
       trimRange: clampedUgcTrimRange,
+      removeRanges: ugcQuickEdit?.removeRanges,
       textOverlays: overlays,
       onProgress: createMediaBunnyProgressMapper(onProgress, 0, 0.35),
     });
@@ -136,6 +146,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
       renderContext,
       timelineOffset: demoTimelineOffset,
       trimRange: clampedDemoTrimRange,
+      removeRanges: demoQuickEdit?.removeRanges,
       textOverlays: overlays,
       onProgress: createMediaBunnyProgressMapper(onProgress, 0.35, 0.35),
     });
@@ -151,12 +162,14 @@ export async function stitchNormalizedVideosWithTextOverlay(
         demoInput,
         demoPlaybackRate,
         demoTimelineOffset,
+        demoQuickEdit,
         demoTrimRange: clampedDemoTrimRange,
         includeDemoAudio,
         includeUgcAudio,
         outputDuration,
         ugcInput,
         ugcPlaybackRate,
+        ugcQuickEdit,
         ugcTrimRange: clampedUgcTrimRange,
       });
 
@@ -170,6 +183,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
             source: audioSampleSource,
             timelineOffset: 0,
             trimRange: clampedUgcTrimRange,
+            removeRanges: ugcQuickEdit?.removeRanges,
             onProgress: createMediaBunnyProgressMapper(
               onProgress,
               0.7,
@@ -183,6 +197,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
             source: audioSampleSource,
             timelineOffset: demoTimelineOffset,
             trimRange: clampedDemoTrimRange,
+            removeRanges: demoQuickEdit?.removeRanges,
             onProgress: createMediaBunnyProgressMapper(
               onProgress,
               0.85,

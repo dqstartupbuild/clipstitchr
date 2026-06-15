@@ -1,8 +1,10 @@
 import { VideoSampleSink, type Input, type VideoSampleSource } from "mediabunny";
 import { createRetimedVideoSample } from "@/lib/clipstitchr/media/createRetimedVideoSample";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { getQuickEditPlayableRanges } from "@/lib/clipstitchr/utils/getQuickEditPlayableRanges";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
@@ -12,6 +14,7 @@ type CopyVideoSamplesOptions = {
   source: VideoSampleSource;
   timelineOffset: number;
   trimRange: VideoTrimRange;
+  removeRanges?: QuickEditRemoveRange[];
   onProgress?: (progress: number) => void;
 };
 
@@ -25,6 +28,7 @@ export async function copyVideoSamplesToSource({
   source,
   timelineOffset,
   trimRange,
+  removeRanges = [],
   onProgress,
 }: CopyVideoSamplesOptions): Promise<CopyVideoSamplesResult> {
   const track = await input.getPrimaryVideoTrack();
@@ -37,63 +41,79 @@ export async function copyVideoSamplesToSource({
   const sourceOffset = await track.getFirstTimestamp();
   const duration = await track.computeDuration();
   const clampedTrimRange = clampVideoTrimRange(trimRange, duration);
-  const trimDuration = getVideoTrimRangeDuration(clampedTrimRange);
-  const outputDuration = getPlaybackRateDuration(
+  const playableRanges = getQuickEditPlayableRanges(
     clampedTrimRange,
-    playbackRate,
+    duration,
+    removeRanges,
   );
-  const sourceStartTimestamp = sourceOffset + clampedTrimRange.start;
-  const sourceEndTimestamp = sourceOffset + clampedTrimRange.end;
-  const outputEndTimestamp = timelineOffset + outputDuration;
+  const trimDuration = playableRanges.reduce(
+    (total, range) => total + getVideoTrimRangeDuration(range),
+    0,
+  );
   let isFirstSample = true;
   let endTimestamp = timelineOffset;
+  let outputOffset = timelineOffset;
+  let sourceProgressDuration = 0;
 
-  for await (const sample of sink.samples(
-    sourceStartTimestamp,
-    sourceEndTimestamp,
-  )) {
-    const sourceTimestamp = sample.timestamp;
-    const retimedSample = createRetimedVideoSample(
-      sample,
-      timelineOffset,
+  for (const playableRange of playableRanges) {
+    const sourceStartTimestamp = sourceOffset + playableRange.start;
+    const sourceEndTimestamp = sourceOffset + playableRange.end;
+    const outputDuration = getPlaybackRateDuration(playableRange, playbackRate);
+    const outputEndTimestamp = outputOffset + outputDuration;
+
+    for await (const sample of sink.samples(
       sourceStartTimestamp,
-      playbackRate,
-    );
+      sourceEndTimestamp,
+    )) {
+      const sourceTimestamp = sample.timestamp;
+      const retimedSample = createRetimedVideoSample(
+        sample,
+        outputOffset,
+        sourceStartTimestamp,
+        playbackRate,
+      );
 
-    try {
-      const remainingDuration = outputEndTimestamp - retimedSample.timestamp;
+      try {
+        const remainingDuration = outputEndTimestamp - retimedSample.timestamp;
 
-      if (remainingDuration <= 0) {
-        continue;
+        if (remainingDuration <= 0) {
+          continue;
+        }
+
+        if (retimedSample.duration > remainingDuration) {
+          retimedSample.setDuration(remainingDuration);
+        }
+
+        await source.add(
+          retimedSample,
+          isFirstSample ? { keyFrame: true } : undefined,
+        );
+        isFirstSample = false;
+        endTimestamp = Math.max(
+          endTimestamp,
+          retimedSample.timestamp + retimedSample.duration,
+        );
+        onProgress?.(
+          trimDuration > 0
+            ? Math.min(
+                1,
+                Math.max(
+                  0,
+                  (sourceProgressDuration +
+                    sourceTimestamp -
+                    sourceStartTimestamp) /
+                    trimDuration,
+                ),
+              )
+            : 1,
+        );
+      } finally {
+        retimedSample.close();
       }
-
-      if (retimedSample.duration > remainingDuration) {
-        retimedSample.setDuration(remainingDuration);
-      }
-
-      await source.add(
-        retimedSample,
-        isFirstSample ? { keyFrame: true } : undefined,
-      );
-      isFirstSample = false;
-      endTimestamp = Math.max(
-        endTimestamp,
-        retimedSample.timestamp + retimedSample.duration,
-      );
-      onProgress?.(
-        trimDuration > 0
-          ? Math.min(
-              1,
-              Math.max(
-                0,
-                (sourceTimestamp - sourceStartTimestamp) / trimDuration,
-              ),
-            )
-          : 1,
-      );
-    } finally {
-      retimedSample.close();
     }
+
+    sourceProgressDuration += getVideoTrimRangeDuration(playableRange);
+    outputOffset = outputEndTimestamp;
   }
 
   onProgress?.(1);

@@ -22,6 +22,8 @@ type RecentStitchesSectionProps = {
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
   onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
+  onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
+  onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
   onUpdateMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,
@@ -56,6 +58,8 @@ export function RecentStitchesSection({
   onLoadVideo,
   onSaveTemplate,
   onScore,
+  onApplyQuickEdit,
+  onResetQuickEdit,
   onUpdateMusic,
   onUpdatePostedStatus,
   onUpdateSocialCaption,
@@ -91,6 +95,8 @@ export function RecentStitchesSection({
               onLoadVideo={onLoadVideo}
               onSaveTemplate={onSaveTemplate}
               onScore={onScore}
+              onApplyQuickEdit={onApplyQuickEdit}
+              onResetQuickEdit={onResetQuickEdit}
               onUpdateMusic={onUpdateMusic}
               onUpdatePostedStatus={onUpdatePostedStatus}
               onUpdateSocialCaption={onUpdateSocialCaption}

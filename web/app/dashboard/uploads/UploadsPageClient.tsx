@@ -476,6 +476,8 @@ export function UploadsPageClient() {
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
               onScoreClip={library.scoreClip}
+              onApplyQuickEdit={library.applyClipQuickEdit}
+              onResetQuickEdit={library.resetClipQuickEdit}
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
@@ -510,6 +512,8 @@ export function UploadsPageClient() {
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
               onScoreClip={library.scoreClip}
+              onApplyQuickEdit={library.applyClipQuickEdit}
+              onResetQuickEdit={library.resetClipQuickEdit}
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
@@ -543,6 +547,8 @@ export function UploadsPageClient() {
               onDelete={library.removeClip}
               onGenerateCliprMusic={library.generateCliprMusic}
               onScoreClip={library.scoreClip}
+              onApplyQuickEdit={library.applyClipQuickEdit}
+              onResetQuickEdit={library.resetClipQuickEdit}
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
               onUpdateTrim={library.updateClipTrimRange}
@@ -570,6 +576,8 @@ export function UploadsPageClient() {
               onLoadVideo={library.loadStitchVideo}
               onSaveTemplate={stitchTemplates.createTemplateFromStitch}
               onScore={library.scoreStitch}
+              onApplyQuickEdit={library.applyStitchQuickEdit}
+              onResetQuickEdit={library.resetStitchQuickEdit}
               onUpdateMusic={library.updateStitchMusic}
               onUpdatePostedStatus={library.updateStitchPostedStatus}
               onUpdateSocialCaption={library.updateStitchSocialCaption}
@@ -633,6 +641,8 @@ export function UploadsPageClient() {
             onDelete={library.removeClip}
             onGenerateCliprMusic={library.generateCliprMusic}
             onScoreClip={library.scoreClip}
+            onApplyQuickEdit={library.applyClipQuickEdit}
+            onResetQuickEdit={library.resetClipQuickEdit}
             onUpdateCliprMusic={library.updateCliprMusic}
             onUpdateMetadata={library.updateClipMetadata}
             onUpdateTrim={library.updateClipTrimRange}
@@ -677,6 +687,8 @@ export function UploadsPageClient() {
             onLoadVideo={library.loadStitchVideo}
             onSaveTemplate={stitchTemplates.createTemplateFromStitch}
             onScore={library.scoreStitch}
+            onApplyQuickEdit={library.applyStitchQuickEdit}
+            onResetQuickEdit={library.resetStitchQuickEdit}
             statusCounts={stitchStatusCounts}
             statusFilter={stitchStatusFilter}
             onStatusFilterChange={setStitchStatusFilter}

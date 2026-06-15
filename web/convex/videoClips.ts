@@ -15,6 +15,7 @@ import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { clipPerformanceScoreValidator } from "./validators/clipPerformanceScore";
 import { clipTypeValidator } from "./validators/clipType";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
+import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
 import { videoClipLibraryKindValidator } from "./validators/videoClipLibraryKind";
@@ -555,6 +556,85 @@ export const updatePerformanceScore = mutation({
       performanceScore,
       updatedAt,
     });
+  },
+});
+
+export const applyQuickEdit = mutation({
+  args: {
+    id: v.string(),
+    defaultTrimRange: videoTrimRangeValidator,
+    quickEdit: quickEditSuggestionsValidator,
+    updatedAt: v.string(),
+  },
+  handler: async (ctx, { id, defaultTrimRange, quickEdit, updatedAt }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const clip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!clip) {
+      throw new Error("Video clip not found.");
+    }
+
+    await ctx.db.patch(clip._id, {
+      defaultTrimRange,
+      quickEdit: {
+        ...quickEdit,
+        appliedAt: updatedAt,
+        baseline: clip.defaultTrimRange
+          ? { defaultTrimRange: clip.defaultTrimRange }
+          : {},
+        source: "ai-score",
+      },
+      updatedAt,
+    });
+    const updatedClip = await ctx.db.get(clip._id);
+
+    if (updatedClip) {
+      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+    }
+  },
+});
+
+export const resetQuickEdit = mutation({
+  args: {
+    id: v.string(),
+    updatedAt: v.string(),
+  },
+  handler: async (ctx, { id, updatedAt }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const clip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!clip) {
+      throw new Error("Video clip not found.");
+    }
+
+    await ctx.db.patch(clip._id, {
+      defaultTrimRange: clip.quickEdit?.baseline?.defaultTrimRange,
+      quickEdit: undefined,
+      updatedAt,
+    });
+    const updatedClip = await ctx.db.get(clip._id);
+
+    if (updatedClip) {
+      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+    }
   },
 });
 

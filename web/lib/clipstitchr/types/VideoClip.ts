@@ -1,6 +1,7 @@
 import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
 import type { CliprMetadata } from "@/lib/clipstitchr/types/CliprMetadata";
 import type { ClipPerformanceScore } from "@/lib/clipstitchr/types/ClipPerformanceScore";
+import type { QuickEditMetadata } from "@/lib/clipstitchr/types/QuickEditMetadata";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SwaprOutputMetadata } from "@/lib/clipstitchr/types/SwaprOutputMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -15,6 +16,7 @@ export type VideoClip = {
   locationDescription?: string;
   poseDescription?: string;
   performanceScore?: ClipPerformanceScore;
+  quickEdit?: QuickEditMetadata;
   productDescription?: string;
   productId?: string;
   originalName: string;

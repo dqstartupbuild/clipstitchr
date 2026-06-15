@@ -9,13 +9,15 @@ import { createTikTokVideoSampleSource } from "@/lib/clipstitchr/media/createTik
 import { finalizeMediaBunnyExportSession } from "@/lib/clipstitchr/media/finalizeMediaBunnyExportSession";
 import { getInputAudioParameters } from "@/lib/clipstitchr/media/getInputAudioParameters";
 import { resolveMediaBunnyOutputCodecs } from "@/lib/clipstitchr/media/resolveMediaBunnyOutputCodecs";
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
-import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 
 type CreateVideoSegmentBlobOptions = {
   onProgress?: (progress: number) => void;
+  quickEdit?: QuickEditSuggestions;
   trimRange: VideoTrimRange;
 };
 
@@ -27,13 +29,17 @@ type CreateVideoSegmentBlobResult = {
 
 export async function createVideoSegmentBlob(
   clip: VideoClip,
-  { onProgress, trimRange }: CreateVideoSegmentBlobOptions,
+  { onProgress, quickEdit, trimRange }: CreateVideoSegmentBlobOptions,
 ): Promise<CreateVideoSegmentBlobResult> {
   const input = createMediaInput(clip.blob);
 
   try {
     const clampedTrimRange = clampVideoTrimRange(trimRange, clip.duration);
-    const trimDuration = getVideoTrimRangeDuration(clampedTrimRange);
+    const trimDuration = getQuickEditPlaybackDuration(
+      clampedTrimRange,
+      clip.duration,
+      quickEdit?.removeRanges,
+    );
     const audioParameters = await getInputAudioParameters(input);
     const includeAudio = Boolean(audioParameters);
 
@@ -60,6 +66,7 @@ export async function createVideoSegmentBlob(
       source: session.videoSource,
       timelineOffset: 0,
       trimRange: clampedTrimRange,
+      removeRanges: quickEdit?.removeRanges,
       onProgress: createMediaBunnyProgressMapper(onProgress, 0, 0.7),
     });
     const audio = session.audioSource
@@ -68,6 +75,7 @@ export async function createVideoSegmentBlob(
           source: session.audioSource,
           timelineOffset: 0,
           trimRange: clampedTrimRange,
+          removeRanges: quickEdit?.removeRanges,
           onProgress: createMediaBunnyProgressMapper(onProgress, 0.7, 0.25),
         })
       : { endTimestamp: 0 };

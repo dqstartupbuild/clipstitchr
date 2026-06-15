@@ -12,6 +12,7 @@ import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { createQuickEditSuggestionsFromMetadata } from "@/lib/clipstitchr/utils/createQuickEditSuggestionsFromMetadata";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getTextOverlayIsInRange } from "@/lib/clipstitchr/utils/getTextOverlayIsInRange";
 import { getTextOverlayIsVisible } from "@/lib/clipstitchr/utils/getTextOverlayIsVisible";
@@ -56,6 +57,10 @@ export function SequenceVideoPlayer({
   const demoUrl = useObjectUrl(demoClip.blob);
   const ugcPosterUrl = useObjectUrl(ugcClip.posterBlob);
   const demoPosterUrl = useObjectUrl(demoClip.posterBlob);
+  const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(ugcClip.quickEdit);
+  const demoQuickEdit = createQuickEditSuggestionsFromMetadata(
+    demoClip.quickEdit,
+  );
   const {
     activeSegment,
     currentTime,
@@ -70,9 +75,13 @@ export function SequenceVideoPlayer({
     ugcVideoRef,
   } = useSequenceVideoPlayer({
     demoPlaybackRate,
+    demoQuickEdit,
+    demoSourceDuration: demoClip.duration,
     ugcTrimRange,
     demoTrimRange,
+    ugcQuickEdit,
     ugcPlaybackRate,
+    ugcSourceDuration: ugcClip.duration,
   });
   const progressValue = Math.min(currentTime, totalDuration);
   const renderedTextOverlays = textOverlays

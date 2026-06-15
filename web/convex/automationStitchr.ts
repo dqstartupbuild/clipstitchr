@@ -11,6 +11,8 @@ import type { Id } from "./_generated/dataModel";
 import { mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
+import { createQuickEditSuggestionsFromMetadata } from "./createQuickEditSuggestionsFromMetadata";
+import { getQuickEditOverlayText } from "./getQuickEditOverlayText";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
@@ -356,6 +358,16 @@ export const planDaily = mutation({
             `${ownerId}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:background`,
           )
         : undefined;
+      const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(ugc.quickEdit);
+      const demoQuickEdit = createQuickEditSuggestionsFromMetadata(demo.quickEdit);
+      const ugcOverlayText = getQuickEditOverlayText({
+        performanceScore: ugc.performanceScore,
+        quickEdit: ugc.quickEdit,
+      });
+      const demoOverlayText = getQuickEditOverlayText({
+        performanceScore: demo.performanceScore,
+        quickEdit: demo.quickEdit,
+      });
 
       await ctx.db.insert("automationTasks", {
         ownerId,
@@ -388,6 +400,12 @@ export const planDaily = mutation({
           demoPoseDescription: demo.poseDescription,
           ugcProductDescription: ugc.productDescription,
           demoProductDescription: demo.productDescription,
+          ugcQuickEdit,
+          demoQuickEdit,
+          ugcQuickEditOverlayTextHint: ugcOverlayText?.replaceWith,
+          demoQuickEditOverlayTextHint: demoOverlayText?.replaceWith,
+          ugcQuickEditOverlayTextReason: ugcOverlayText?.reason,
+          demoQuickEditOverlayTextReason: demoOverlayText?.reason,
           ugcDuration: ugc.duration,
           demoDuration: demo.duration,
           ugcHasAudio: ugc.hasAudio,

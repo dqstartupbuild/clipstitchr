@@ -91,6 +91,8 @@ export function DashboardPageClient() {
           onLoadPoster={library.loadClipPoster}
           onDelete={library.removeClip}
           onScoreClip={library.scoreClip}
+          onApplyQuickEdit={library.applyClipQuickEdit}
+          onResetQuickEdit={library.resetClipQuickEdit}
           onUpdateMetadata={library.updateClipMetadata}
           onUpdateTrim={library.updateClipTrimRange}
           onUpdatePostedStatus={library.updateClipPostedStatus}
@@ -106,6 +108,8 @@ export function DashboardPageClient() {
           onLoadVideo={library.loadStitchVideo}
           onSaveTemplate={stitchTemplates.createTemplateFromStitch}
           onScore={library.scoreStitch}
+          onApplyQuickEdit={library.applyStitchQuickEdit}
+          onResetQuickEdit={library.resetStitchQuickEdit}
           onUpdateMusic={library.updateStitchMusic}
           onUpdatePostedStatus={library.updateStitchPostedStatus}
           onUpdateSocialCaption={library.updateStitchSocialCaption}

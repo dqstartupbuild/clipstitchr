@@ -19,7 +19,7 @@ import { resolveMediaBunnyOutputCodecs } from "@/lib/clipstitchr/media/resolveMe
 import type { StitchrSequenceClip } from "@/lib/clipstitchr/types/StitchrSequenceClip";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
-import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 
 type StitchStitchrSequenceOptions = {
   onProgress?: (progress: number) => void;
@@ -95,7 +95,12 @@ export async function stitchStitchrSequence(
       const input = inputs[index];
       const trimRange = trimRanges[index];
       const playbackRate = playbackRates[index] ?? 1;
-      const trimDuration = getPlaybackRateDuration(trimRange, playbackRate);
+      const trimDuration = getQuickEditPlaybackDuration(
+        trimRange,
+        sequence[index].clip.duration,
+        sequence[index].quickEdit?.removeRanges,
+        playbackRate,
+      );
       const segmentOffset = Math.max(timelineOffset, endTimestamp);
       const progressStart = (index / sequence.length) * 0.7;
       const progressSpan = 0.7 / sequence.length;
@@ -109,6 +114,7 @@ export async function stitchStitchrSequence(
               textOverlays: overlays,
               timelineOffset: segmentOffset,
               trimRange,
+              removeRanges: sequence[index].quickEdit?.removeRanges,
               onProgress: (progress) =>
                 onProgress?.(progressStart + progress * progressSpan),
             })
@@ -118,6 +124,7 @@ export async function stitchStitchrSequence(
               source: session.videoSource as VideoSampleSource,
               timelineOffset: segmentOffset,
               trimRange,
+              removeRanges: sequence[index].quickEdit?.removeRanges,
               onProgress: (progress) =>
                 onProgress?.(progressStart + progress * progressSpan),
             });
@@ -134,6 +141,7 @@ export async function stitchStitchrSequence(
         inputs,
         outputDuration,
         playbackRates,
+        quickEdits: sequence.map((clip) => clip.quickEdit),
         timelineOffsets,
         trimRanges,
       });

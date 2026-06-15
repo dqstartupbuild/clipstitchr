@@ -10,4 +10,6 @@ export type StitchrTextGenerationClipContext = {
   locationDescription?: string;
   poseDescription?: string;
   productDescription?: string;
+  quickEditOverlayTextHint?: string;
+  quickEditOverlayTextReason?: string;
 };

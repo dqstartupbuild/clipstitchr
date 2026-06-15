@@ -17,6 +17,7 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { areVideoTrimRangesEqual } from "@/lib/clipstitchr/utils/areVideoTrimRangesEqual";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { createQuickEditSuggestionsFromMetadata } from "@/lib/clipstitchr/utils/createQuickEditSuggestionsFromMetadata";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
@@ -59,6 +60,7 @@ export function VideoClipEditDialog({
   onSaveMetadata,
 }: VideoClipEditDialogProps) {
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
+  const quickEdit = createQuickEditSuggestionsFromMetadata(clip.quickEdit);
   const initialTrimRange = trimEditor?.initialTrimRange ?? defaultTrimRange;
   const [activeTrimRange, setActiveTrimRange] = useState(() =>
     clampVideoTrimRange(initialTrimRange, clip.duration),
@@ -228,6 +230,8 @@ export function VideoClipEditDialog({
               musicBlob={musicState.musicBlob}
               musicEnabled={musicState.musicEnabled}
               musicVolume={musicState.musicVolume}
+              quickEdit={quickEdit}
+              sourceDuration={clip.duration}
               trimRange={activeTrimRange}
               onLoadPreview={onLoadPreview}
             />

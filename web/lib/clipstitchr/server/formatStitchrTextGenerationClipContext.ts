@@ -16,6 +16,12 @@ export function formatStitchrTextGenerationClipContext(
     context.productDescription
       ? `product shown: ${context.productDescription}`
       : "",
+    context.quickEditOverlayTextHint
+      ? `AI hook hint: ${context.quickEditOverlayTextHint}`
+      : "",
+    context.quickEditOverlayTextReason
+      ? `AI hook hint reason: ${context.quickEditOverlayTextReason}`
+      : "",
     context.tags?.length ? `tags: ${context.tags.join(", ")}` : "",
   ].filter(Boolean);
 

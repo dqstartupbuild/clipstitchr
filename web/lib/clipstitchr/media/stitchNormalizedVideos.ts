@@ -11,12 +11,13 @@ import { createTikTokVideoSampleSource } from "@/lib/clipstitchr/media/createTik
 import { finalizeMediaBunnyExportSession } from "@/lib/clipstitchr/media/finalizeMediaBunnyExportSession";
 import { getInputAudioParameters } from "@/lib/clipstitchr/media/getInputAudioParameters";
 import { resolveMediaBunnyOutputCodecs } from "@/lib/clipstitchr/media/resolveMediaBunnyOutputCodecs";
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { SourcePlaybackRateOptions } from "@/lib/clipstitchr/types/SourcePlaybackRateOptions";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { StitchSourceAudioOptions } from "@/lib/clipstitchr/types/StitchSourceAudioOptions";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
-import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 
 type StitchNormalizedVideosResult = {
   blob: Blob;
@@ -27,7 +28,9 @@ type StitchNormalizedVideosResult = {
 type StitchNormalizedVideosOptions = {
   ugcTrimRange: VideoTrimRange;
   demoTrimRange: VideoTrimRange;
+  demoQuickEdit?: QuickEditSuggestions;
   onProgress?: (progress: number) => void;
+  ugcQuickEdit?: QuickEditSuggestions;
 } & SourcePlaybackRateOptions &
   StitchSourceAudioOptions;
 
@@ -37,10 +40,12 @@ export async function stitchNormalizedVideos(
   {
     ugcTrimRange,
     demoTrimRange,
+    demoQuickEdit,
     demoPlaybackRate = 1,
     includeDemoAudio = true,
     includeUgcAudio = true,
     onProgress,
+    ugcQuickEdit,
     ugcPlaybackRate = 1,
   }: StitchNormalizedVideosOptions,
 ): Promise<StitchNormalizedVideosResult> {
@@ -60,12 +65,16 @@ export async function stitchNormalizedVideos(
       demoTrimRange,
       demoClip.duration,
     );
-    const ugcDuration = getPlaybackRateDuration(
+    const ugcDuration = getQuickEditPlaybackDuration(
       clampedUgcTrimRange,
+      ugcClip.duration,
+      ugcQuickEdit?.removeRanges,
       ugcPlaybackRate,
     );
-    const demoDuration = getPlaybackRateDuration(
+    const demoDuration = getQuickEditPlaybackDuration(
       clampedDemoTrimRange,
+      demoClip.duration,
+      demoQuickEdit?.removeRanges,
       demoPlaybackRate,
     );
     const includeAudio = Boolean(ugcAudioParameters || demoAudioParameters);
@@ -106,6 +115,7 @@ export async function stitchNormalizedVideos(
       source: session.videoSource,
       timelineOffset: 0,
       trimRange: clampedUgcTrimRange,
+      removeRanges: ugcQuickEdit?.removeRanges,
       onProgress: createMediaBunnyProgressMapper(onProgress, 0, 0.35),
     });
     const demoTimelineOffset = Math.max(ugcDuration, ugcVideo.endTimestamp);
@@ -115,6 +125,7 @@ export async function stitchNormalizedVideos(
       source: session.videoSource,
       timelineOffset: demoTimelineOffset,
       trimRange: clampedDemoTrimRange,
+      removeRanges: demoQuickEdit?.removeRanges,
       onProgress: createMediaBunnyProgressMapper(onProgress, 0.35, 0.35),
     });
     let endTimestamp = Math.max(ugcVideo.endTimestamp, demoVideo.endTimestamp);
@@ -129,12 +140,14 @@ export async function stitchNormalizedVideos(
         demoInput,
         demoPlaybackRate,
         demoTimelineOffset,
+        demoQuickEdit,
         demoTrimRange: clampedDemoTrimRange,
         includeDemoAudio,
         includeUgcAudio,
         outputDuration,
         ugcInput,
         ugcPlaybackRate,
+        ugcQuickEdit,
         ugcTrimRange: clampedUgcTrimRange,
       });
 
@@ -148,6 +161,7 @@ export async function stitchNormalizedVideos(
             source: audioSampleSource,
             timelineOffset: 0,
             trimRange: clampedUgcTrimRange,
+            removeRanges: ugcQuickEdit?.removeRanges,
             onProgress: createMediaBunnyProgressMapper(
               onProgress,
               0.7,
@@ -161,6 +175,7 @@ export async function stitchNormalizedVideos(
             source: audioSampleSource,
             timelineOffset: demoTimelineOffset,
             trimRange: clampedDemoTrimRange,
+            removeRanges: demoQuickEdit?.removeRanges,
             onProgress: createMediaBunnyProgressMapper(
               onProgress,
               0.85,

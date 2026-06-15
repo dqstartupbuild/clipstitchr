@@ -4,14 +4,18 @@ import {
   OUTPUT_AUDIO_SAMPLE_RATE,
 } from "@/lib/clipstitchr/constants/audioOutputParameters";
 import { schedulePlaybackRateAudioBuffer } from "@/lib/clipstitchr/media/schedulePlaybackRateAudioBuffer";
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { getQuickEditPlayableRanges } from "@/lib/clipstitchr/utils/getQuickEditPlayableRanges";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type CreateStitchrSequenceAudioBufferOptions = {
   includeAudioFlags: boolean[];
   inputs: Input[];
   outputDuration: number;
   playbackRates: VideoPlaybackRate[];
+  quickEdits?: (QuickEditSuggestions | undefined)[];
   timelineOffsets: number[];
   trimRanges: VideoTrimRange[];
 };
@@ -21,6 +25,7 @@ export async function createStitchrSequenceAudioBuffer({
   inputs,
   outputDuration,
   playbackRates,
+  quickEdits = [],
   timelineOffsets,
   trimRanges,
 }: CreateStitchrSequenceAudioBufferOptions) {
@@ -48,27 +53,38 @@ export async function createStitchrSequenceAudioBuffer({
     const sink = new AudioBufferSink(audioTrack);
     const trimRange = trimRanges[index];
     const sourceOffset = await audioTrack.getFirstTimestamp();
-    const sourceStartTimestamp = sourceOffset + trimRange.start;
-    const sourceEndTimestamp = sourceOffset + trimRange.end;
-    const timelineOffset = timelineOffsets[index] ?? 0;
+    const trackDuration = await audioTrack.computeDuration();
+    const playableRanges = getQuickEditPlayableRanges(
+      trimRange,
+      trackDuration,
+      quickEdits[index]?.removeRanges,
+    );
+    let timelineOffset = timelineOffsets[index] ?? 0;
     const playbackRate = playbackRates[index] ?? 1;
 
-    for await (const {
-      buffer,
-      duration,
-      timestamp,
-    } of sink.buffers(sourceStartTimestamp, sourceEndTimestamp)) {
-      schedulePlaybackRateAudioBuffer({
+    for (const playableRange of playableRanges) {
+      const sourceStartTimestamp = sourceOffset + playableRange.start;
+      const sourceEndTimestamp = sourceOffset + playableRange.end;
+
+      for await (const {
         buffer,
-        context,
         duration,
-        outputDuration,
-        playbackRate,
-        sourceEndTimestamp,
-        sourceStartTimestamp,
-        timelineOffset,
         timestamp,
-      });
+      } of sink.buffers(sourceStartTimestamp, sourceEndTimestamp)) {
+        schedulePlaybackRateAudioBuffer({
+          buffer,
+          context,
+          duration,
+          outputDuration,
+          playbackRate,
+          sourceEndTimestamp,
+          sourceStartTimestamp,
+          timelineOffset,
+          timestamp,
+        });
+      }
+
+      timelineOffset += getPlaybackRateDuration(playableRange, playbackRate);
     }
   }
 

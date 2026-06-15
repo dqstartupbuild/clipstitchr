@@ -17,7 +17,7 @@ import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getActiveTextOverlayId } from "@/lib/clipstitchr/utils/getActiveTextOverlayId";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
-import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getTextOverlayId } from "@/lib/clipstitchr/utils/getTextOverlayId";
 import { getTextOverlayIsInRange } from "@/lib/clipstitchr/utils/getTextOverlayIsInRange";
 import { getTextOverlayIsVisible } from "@/lib/clipstitchr/utils/getTextOverlayIsVisible";
@@ -76,9 +76,28 @@ export function LoadedStitchSequencePreview({
   );
   const totalDuration = useMemo(
     () =>
-      getPlaybackRateDuration(ugcTrimRange, ugcPlaybackRate) +
-      getPlaybackRateDuration(demoTrimRange, demoPlaybackRate),
-    [demoPlaybackRate, demoTrimRange, ugcPlaybackRate, ugcTrimRange],
+      getQuickEditPlaybackDuration(
+        ugcTrimRange,
+        ugcClip.duration,
+        stitch.ugcQuickEdit?.removeRanges,
+        ugcPlaybackRate,
+      ) +
+      getQuickEditPlaybackDuration(
+        demoTrimRange,
+        demoClip.duration,
+        stitch.demoQuickEdit?.removeRanges,
+        demoPlaybackRate,
+      ),
+    [
+      demoClip.duration,
+      demoPlaybackRate,
+      demoTrimRange,
+      stitch.demoQuickEdit?.removeRanges,
+      stitch.ugcQuickEdit?.removeRanges,
+      ugcClip.duration,
+      ugcPlaybackRate,
+      ugcTrimRange,
+    ],
   );
   const textOverlays = useMemo(() => {
     const nextTextOverlays = clampTextOverlays(
@@ -112,8 +131,20 @@ export function LoadedStitchSequencePreview({
     ugcVideoRef,
   } = useSequenceVideoPlayer({
     demoPlaybackRate,
+    ...(stitch.demoQuickEdit
+      ? {
+          demoQuickEdit: stitch.demoQuickEdit,
+          demoSourceDuration: demoClip.duration,
+        }
+      : {}),
     ugcTrimRange,
     demoTrimRange,
+    ...(stitch.ugcQuickEdit
+      ? {
+          ugcQuickEdit: stitch.ugcQuickEdit,
+          ugcSourceDuration: ugcClip.duration,
+        }
+      : {}),
     ugcPlaybackRate,
   });
   const renderedTextOverlays = textOverlays

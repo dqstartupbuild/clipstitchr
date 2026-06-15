@@ -27,13 +27,14 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
+import { createQuickEditSuggestionsFromMetadata } from "@/lib/clipstitchr/utils/createQuickEditSuggestionsFromMetadata";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
 import { createStitchSequenceSegment } from "@/lib/clipstitchr/utils/createStitchSequenceSegment";
 import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getLongrStitchFileName } from "@/lib/clipstitchr/utils/getLongrStitchFileName";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
-import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 
 type UseStitchrOptions = {
@@ -80,9 +81,25 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
       );
       const ugcPlaybackRate = options.ugcPlaybackRate ?? 1;
       const demoPlaybackRate = options.demoPlaybackRate ?? 1;
+      const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(
+        ugcClip.quickEdit,
+      );
+      const demoQuickEdit = createQuickEditSuggestionsFromMetadata(
+        demoClip.quickEdit,
+      );
       const duration =
-        getPlaybackRateDuration(clampedUgcTrimRange, ugcPlaybackRate) +
-        getPlaybackRateDuration(clampedDemoTrimRange, demoPlaybackRate);
+        getQuickEditPlaybackDuration(
+          clampedUgcTrimRange,
+          ugcClip.duration,
+          ugcQuickEdit?.removeRanges,
+          ugcPlaybackRate,
+        ) +
+        getQuickEditPlaybackDuration(
+          clampedDemoTrimRange,
+          demoClip.duration,
+          demoQuickEdit?.removeRanges,
+          demoPlaybackRate,
+        );
       const now = new Date().toISOString();
       const stitchId = createId();
       const firstTextOverlay = textOverlays[0];
@@ -135,6 +152,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         demoClipName: demoClip.name,
         ugcTrimRange: clampedUgcTrimRange,
         demoTrimRange: clampedDemoTrimRange,
+        demoQuickEdit,
+        ugcQuickEdit,
         posterBlob,
         posterObject,
         posterVersion: posterObject ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
@@ -186,6 +205,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         demoClipName: nextStitch.demoClipName,
         ugcTrimRange: nextStitch.ugcTrimRange,
         demoTrimRange: nextStitch.demoTrimRange,
+        demoQuickEdit: nextStitch.demoQuickEdit,
+        ugcQuickEdit: nextStitch.ugcQuickEdit,
         ...(nextStitch.posterObject
           ? {
               posterObject: nextStitch.posterObject,
@@ -338,6 +359,8 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         ugcTrimRange: nextStitch.ugcTrimRange,
         demoTrimRange: nextStitch.demoTrimRange,
         sequenceSegments: nextStitch.sequenceSegments,
+        demoQuickEdit: nextStitch.demoQuickEdit,
+        ugcQuickEdit: nextStitch.ugcQuickEdit,
         width: nextStitch.width,
         height: nextStitch.height,
         duration: nextStitch.duration,
@@ -420,8 +443,13 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
           demoTrimRange,
           demoClip.duration,
         );
-        const demoDuration = getPlaybackRateDuration(
+        const demoQuickEdit = createQuickEditSuggestionsFromMetadata(
+          demoClip.quickEdit,
+        );
+        const demoDuration = getQuickEditPlaybackDuration(
           clampedDemoTrimRange,
+          demoClip.duration,
+          demoQuickEdit?.removeRanges,
           options.demoPlaybackRate ?? 1,
         );
 
@@ -433,8 +461,13 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
             ugcSelection.trimRange,
             ugcClip.duration,
           );
-          const ugcDuration = getPlaybackRateDuration(
+          const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(
+            ugcClip.quickEdit,
+          );
+          const ugcDuration = getQuickEditPlaybackDuration(
             clampedUgcTrimRange,
+            ugcClip.duration,
+            ugcQuickEdit?.removeRanges,
             options.ugcPlaybackRate ?? 1,
           );
           const selectionTextOverlay =
@@ -524,8 +557,10 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         const totalDuration = selections.reduce(
           (total, selection) =>
             total +
-            getPlaybackRateDuration(
+            getQuickEditPlaybackDuration(
               clampVideoTrimRange(selection.trimRange, selection.clip.duration),
+              selection.clip.duration,
+              selection.clip.quickEdit?.removeRanges,
               selection.playbackRate ?? 1,
             ),
           0,

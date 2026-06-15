@@ -4,11 +4,15 @@ import {
   OUTPUT_AUDIO_SAMPLE_RATE,
 } from "@/lib/clipstitchr/constants/audioOutputParameters";
 import { schedulePlaybackRateAudioBuffer } from "@/lib/clipstitchr/media/schedulePlaybackRateAudioBuffer";
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { getQuickEditPlayableRanges } from "@/lib/clipstitchr/utils/getQuickEditPlayableRanges";
+import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 
 type CreateStitchSourceAudioBufferOptions = {
   demoInput: Input;
+  demoQuickEdit?: QuickEditSuggestions;
   demoPlaybackRate?: VideoPlaybackRate;
   demoTimelineOffset: number;
   demoTrimRange: VideoTrimRange;
@@ -16,12 +20,14 @@ type CreateStitchSourceAudioBufferOptions = {
   includeUgcAudio: boolean;
   outputDuration: number;
   ugcInput: Input;
+  ugcQuickEdit?: QuickEditSuggestions;
   ugcPlaybackRate?: VideoPlaybackRate;
   ugcTrimRange: VideoTrimRange;
 };
 
 export async function createStitchSourceAudioBuffer({
   demoInput,
+  demoQuickEdit,
   demoPlaybackRate = 1,
   demoTimelineOffset,
   demoTrimRange,
@@ -29,6 +35,7 @@ export async function createStitchSourceAudioBuffer({
   includeUgcAudio,
   outputDuration,
   ugcInput,
+  ugcQuickEdit,
   ugcPlaybackRate = 1,
   ugcTrimRange,
 }: CreateStitchSourceAudioBufferOptions) {
@@ -46,6 +53,7 @@ export async function createStitchSourceAudioBuffer({
       includeAudio: includeUgcAudio,
       input: ugcInput,
       playbackRate: ugcPlaybackRate,
+      quickEdit: ugcQuickEdit,
       timelineOffset: 0,
       trimRange: ugcTrimRange,
     },
@@ -53,6 +61,7 @@ export async function createStitchSourceAudioBuffer({
       includeAudio: includeDemoAudio,
       input: demoInput,
       playbackRate: demoPlaybackRate,
+      quickEdit: demoQuickEdit,
       timelineOffset: demoTimelineOffset,
       trimRange: demoTrimRange,
     },
@@ -71,25 +80,40 @@ export async function createStitchSourceAudioBuffer({
 
     const sink = new AudioBufferSink(audioTrack);
     const sourceOffset = await audioTrack.getFirstTimestamp();
-    const sourceStartTimestamp = sourceOffset + segment.trimRange.start;
-    const sourceEndTimestamp = sourceOffset + segment.trimRange.end;
+    const trackDuration = await audioTrack.computeDuration();
+    const playableRanges = getQuickEditPlayableRanges(
+      segment.trimRange,
+      trackDuration,
+      segment.quickEdit?.removeRanges,
+    );
+    let timelineOffset = segment.timelineOffset;
 
-    for await (const {
-      buffer,
-      duration,
-      timestamp,
-    } of sink.buffers(sourceStartTimestamp, sourceEndTimestamp)) {
-      schedulePlaybackRateAudioBuffer({
+    for (const playableRange of playableRanges) {
+      const sourceStartTimestamp = sourceOffset + playableRange.start;
+      const sourceEndTimestamp = sourceOffset + playableRange.end;
+
+      for await (const {
         buffer,
-        context,
         duration,
-        outputDuration,
-        playbackRate: segment.playbackRate,
-        sourceEndTimestamp,
-        sourceStartTimestamp,
-        timelineOffset: segment.timelineOffset,
         timestamp,
-      });
+      } of sink.buffers(sourceStartTimestamp, sourceEndTimestamp)) {
+        schedulePlaybackRateAudioBuffer({
+          buffer,
+          context,
+          duration,
+          outputDuration,
+          playbackRate: segment.playbackRate,
+          sourceEndTimestamp,
+          sourceStartTimestamp,
+          timelineOffset,
+          timestamp,
+        });
+      }
+
+      timelineOffset += getPlaybackRateDuration(
+        playableRange,
+        segment.playbackRate,
+      );
     }
   }
 

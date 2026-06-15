@@ -3,7 +3,8 @@ import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRat
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
-import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { createQuickEditSuggestionsFromMetadata } from "@/lib/clipstitchr/utils/createQuickEditSuggestionsFromMetadata";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 
 type CreateStitchSequenceSegmentOptions = {
   clip: VideoClipMetadata;
@@ -19,14 +20,21 @@ export function createStitchSequenceSegment({
   trimRange,
 }: CreateStitchSequenceSegmentOptions): StitchSequenceSegment {
   const clampedTrimRange = clampVideoTrimRange(trimRange, clip.duration);
+  const quickEdit = createQuickEditSuggestionsFromMetadata(clip.quickEdit);
 
   return {
     clipId: clip.id,
     clipName: clip.name,
     clipType: clip.clipType,
-    duration: getPlaybackRateDuration(clampedTrimRange, playbackRate),
+    duration: getQuickEditPlaybackDuration(
+      clampedTrimRange,
+      clip.duration,
+      quickEdit?.removeRanges,
+      playbackRate,
+    ),
     order,
     playbackRate,
+    ...(quickEdit ? { quickEdit } : {}),
     trimRange: clampedTrimRange,
   };
 }

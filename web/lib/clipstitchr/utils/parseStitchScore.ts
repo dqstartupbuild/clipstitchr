@@ -1,4 +1,5 @@
 import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
+import { parseQuickEditSuggestions } from "@/lib/clipstitchr/utils/parseQuickEditSuggestions";
 
 function parseScore(value: unknown) {
   const score = Number(value);
@@ -63,6 +64,9 @@ export function parseStitchScore(value: unknown): StitchScore | undefined {
 
   const hookToDemoFlow =
     parseScore(source.hookToDemoFlow) ?? overallRetentionEstimate;
+  const quickEditSuggestions = parseQuickEditSuggestions(
+    source.quickEditSuggestions,
+  );
 
   return {
     overallRetentionEstimate,
@@ -72,5 +76,6 @@ export function parseStitchScore(value: unknown): StitchScore | undefined {
     suggestedTrims: parseTextList(source.suggestedTrims, 4, 180),
     suggestedOverlayText: parseTextList(source.suggestedOverlayText, 3, 120),
     suggestedOpeningLine: parseText(source.suggestedOpeningLine, 140),
+    ...(quickEditSuggestions ? { quickEditSuggestions } : {}),
   };
 }

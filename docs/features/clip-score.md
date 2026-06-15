@@ -45,6 +45,7 @@ Stored fields:
 - `bestUse`: where this clip fits best
 - `strengths`: up to 3 short strengths
 - `fixes`: up to 3 short fixes
+- `quickEditSuggestions`: optional structured non-destructive edit suggestions
 
 The UI turns `overall` into simple labels:
 
@@ -126,6 +127,11 @@ Manual scoring uses the same score shape:
 This is analysis metadata, not user-editable metadata. User clip metadata edits
 do not overwrite the score.
 
+When the provider returns `quickEditSuggestions`, UGC and Demo cards can show
+**Improve clip**. Applying it stores non-destructive clip edit metadata and a
+new default trim for future uses. Existing saved Stitches keep their own saved
+trim and Quick Edit metadata and are not rewritten by later source clip changes.
+
 ## Abuse and Rate Limits
 
 The feature uses the existing upload analysis surfaces:
@@ -156,6 +162,7 @@ Analysis prompts, parsing, and types:
 
 - `web/lib/clipstitchr/client/scoreVideoClip.ts`
 - `web/lib/clipstitchr/types/ClipPerformanceScore.ts`
+- `web/lib/clipstitchr/types/QuickEditSuggestions.ts`
 - `web/lib/clipstitchr/types/UploadAssetAnalysis.ts`
 - `web/lib/clipstitchr/types/VideoClip.ts`
 - `web/lib/clipstitchr/server/readVideoClipScoreRequest.ts`
@@ -168,6 +175,7 @@ Analysis prompts, parsing, and types:
 - `web/lib/clipstitchr/client/analyzeUploadAsset.ts`
 - `web/lib/clipstitchr/utils/getClipCanBeScored.ts`
 - `web/lib/clipstitchr/utils/parseClipPerformanceScore.ts`
+- `web/lib/clipstitchr/utils/parseQuickEditSuggestions.ts`
 
 UI:
 
@@ -175,6 +183,7 @@ UI:
 - `web/app/_components/dashboard/ClipPerformanceScoreDetails.tsx`
 - `web/app/_components/dashboard/VideoClipPreviewCard.tsx`
 - `web/app/_components/dashboard/VideoClipDetailsDialog.tsx`
+- `web/app/_components/dashboard/VideoClipCard.tsx`
 - `web/app/_components/landing/LandingScoreSection.tsx`
 - `web/app/_components/landing/LandingHero.tsx`
 - `web/app/_components/landing/LandingFeatureGrid.tsx`
@@ -186,6 +195,7 @@ Docs:
 - `docs/features/clip-score.md`
 - `docs/backend/rate-limits.md`
 - `docs/features/stitchr.md`
+- `docs/features/quick-edit.md`
 
 ## Future Phases
 

@@ -8,7 +8,7 @@ import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getOrderedStitchSequenceSegments } from "@/lib/clipstitchr/utils/getOrderedStitchSequenceSegments";
-import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 
@@ -43,6 +43,7 @@ export async function renderSavedStitchBlob({
           ? stitch.includeDemoAudio === true
           : stitch.includeUgcAudio === true,
       playbackRate: segment.playbackRate ?? 1,
+      quickEdit: segment.quickEdit,
       trimRange: clampVideoTrimRange(
         segment.trimRange,
         loadedClips[index].duration,
@@ -93,8 +94,18 @@ export async function renderSavedStitchBlob({
   const ugcPlaybackRate = stitch.ugcPlaybackRate ?? 1;
   const demoPlaybackRate = stitch.demoPlaybackRate ?? 1;
   const totalDuration =
-    getPlaybackRateDuration(ugcTrimRange, ugcPlaybackRate) +
-    getPlaybackRateDuration(demoTrimRange, demoPlaybackRate);
+    getQuickEditPlaybackDuration(
+      ugcTrimRange,
+      ugcClip.duration,
+      stitch.ugcQuickEdit?.removeRanges,
+      ugcPlaybackRate,
+    ) +
+    getQuickEditPlaybackDuration(
+      demoTrimRange,
+      demoClip.duration,
+      stitch.demoQuickEdit?.removeRanges,
+      demoPlaybackRate,
+    );
   const textOverlays = getNonEmptyTextOverlays(
     clampTextOverlays(
       getTextOverlayList(stitch.textOverlays, stitch.textOverlay),
@@ -104,9 +115,11 @@ export async function renderSavedStitchBlob({
   const options = {
     demoTrimRange,
     demoPlaybackRate,
+    demoQuickEdit: stitch.demoQuickEdit,
     includeDemoAudio: stitch.includeDemoAudio,
     includeUgcAudio: stitch.includeUgcAudio,
     onProgress,
+    ugcQuickEdit: stitch.ugcQuickEdit,
     ugcPlaybackRate,
     ugcTrimRange,
   };

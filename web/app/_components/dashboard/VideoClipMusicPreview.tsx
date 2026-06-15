@@ -5,7 +5,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { CLIPR_MUSIC_AD_GAIN } from "@/lib/clipstitchr/constants/cliprMusicMix";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { getCliprMusicGain } from "@/lib/clipstitchr/media/getCliprMusicGain";
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { getNextQuickEditSourceTime } from "@/lib/clipstitchr/utils/getNextQuickEditSourceTime";
+import { getQuickEditPlaybackTimeForSourceTime } from "@/lib/clipstitchr/utils/getQuickEditPlaybackTimeForSourceTime";
 
 type VideoClipMusicPreviewProps = {
   src: string | null;
@@ -18,6 +21,8 @@ type VideoClipMusicPreviewProps = {
   musicBlob: Blob | null;
   musicEnabled: boolean;
   musicVolume: number;
+  quickEdit?: QuickEditSuggestions | null;
+  sourceDuration?: number;
   trimRange?: VideoTrimRange | null;
   onLoadPreview?: () => void;
 };
@@ -33,6 +38,8 @@ export function VideoClipMusicPreview({
   musicBlob,
   musicEnabled,
   musicVolume,
+  quickEdit = null,
+  sourceDuration,
   trimRange = null,
   onLoadPreview,
 }: VideoClipMusicPreviewProps) {
@@ -47,6 +54,7 @@ export function VideoClipMusicPreview({
     : 0;
   const shouldShowVideoControls = controls && (!isPlaying || isHovered);
   const trimStart = trimRange?.start;
+  const safeSourceDuration = sourceDuration ?? trimRange?.end ?? 0;
 
   const syncMusicToVideo = useCallback(() => {
     const video = videoRef.current;
@@ -57,7 +65,12 @@ export function VideoClipMusicPreview({
     }
 
     const sequenceTime = trimRange
-      ? Math.max(0, video.currentTime - trimRange.start)
+      ? getQuickEditPlaybackTimeForSourceTime(
+          video.currentTime,
+          trimRange,
+          safeSourceDuration,
+          quickEdit?.removeRanges,
+        )
       : Math.max(0, video.currentTime);
     const audioDuration =
       Number.isFinite(audio.duration) && audio.duration > 0
@@ -73,7 +86,7 @@ export function VideoClipMusicPreview({
     ) {
       audio.currentTime = targetTime;
     }
-  }, [shouldPlayMusic, trimRange]);
+  }, [quickEdit?.removeRanges, safeSourceDuration, shouldPlayMusic, trimRange]);
 
   const pauseMusic = useCallback(() => {
     audioRef.current?.pause();
@@ -127,14 +140,48 @@ export function VideoClipMusicPreview({
       return;
     }
 
-    video.currentTime = trimStart;
+    video.currentTime = trimRange
+      ? getNextQuickEditSourceTime(
+          trimStart,
+          trimRange,
+          safeSourceDuration,
+          quickEdit?.removeRanges,
+        )
+      : trimStart;
     syncMusicToVideo();
-  }, [src, syncMusicToVideo, trimStart]);
+  }, [
+    quickEdit?.removeRanges,
+    safeSourceDuration,
+    src,
+    syncMusicToVideo,
+    trimRange,
+    trimStart,
+  ]);
 
   const keepPlaybackInsideTrim = () => {
     const video = videoRef.current;
 
-    if (!video || !trimRange || video.currentTime < trimRange.end) {
+    if (!video || !trimRange) {
+      return;
+    }
+
+    const nextSourceTime = getNextQuickEditSourceTime(
+      video.currentTime,
+      trimRange,
+      safeSourceDuration,
+      quickEdit?.removeRanges,
+    );
+
+    if (
+      nextSourceTime > video.currentTime + 0.01 &&
+      nextSourceTime < trimRange.end
+    ) {
+      video.currentTime = nextSourceTime;
+      syncMusicToVideo();
+      return;
+    }
+
+    if (video.currentTime < trimRange.end) {
       return;
     }
 
@@ -144,7 +191,12 @@ export function VideoClipMusicPreview({
 
   const handleLoadedMetadata = () => {
     if (videoRef.current && trimRange) {
-      videoRef.current.currentTime = trimRange.start;
+      videoRef.current.currentTime = getNextQuickEditSourceTime(
+        trimRange.start,
+        trimRange,
+        safeSourceDuration,
+        quickEdit?.removeRanges,
+      );
     }
 
     syncMusicToVideo();
@@ -158,7 +210,12 @@ export function VideoClipMusicPreview({
       trimRange &&
       (video.currentTime < trimRange.start || video.currentTime >= trimRange.end)
     ) {
-      video.currentTime = trimRange.start;
+      video.currentTime = getNextQuickEditSourceTime(
+        trimRange.start,
+        trimRange,
+        safeSourceDuration,
+        quickEdit?.removeRanges,
+      );
     }
 
     setIsPlaying(true);

@@ -47,6 +47,7 @@ import { createCliprGeneratedMusicMetadata } from "@/lib/clipstitchr/server/clip
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { CliprLipSyncModelId } from "@/lib/clipstitchr/types/CliprLipSyncModelId";
 import type { CliprResolvedGenerationMode } from "@/lib/clipstitchr/types/CliprResolvedGenerationMode";
 import type { CliprTtsModelId } from "@/lib/clipstitchr/types/CliprTtsModelId";
@@ -65,6 +66,7 @@ import { getCliprFinalClipName } from "@/lib/clipstitchr/utils/getCliprFinalClip
 import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenerationSpeedTierProfile";
 import { getImageNeedsSwaprOutpaint } from "@/lib/clipstitchr/utils/getImageNeedsSwaprOutpaint";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getSwaprPredictionOutputUrl } from "@/lib/clipstitchr/utils/getSwaprPredictionOutputUrl";
 import { getSwaprSegmentDurationLimit } from "@/lib/clipstitchr/utils/getSwaprSegmentDurationLimit";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
@@ -224,6 +226,9 @@ type StitchrAutomationTaskInput = {
   demoOutfitDescription?: string;
   demoPoseDescription?: string;
   demoProductDescription?: string;
+  demoQuickEdit?: QuickEditSuggestions;
+  demoQuickEditOverlayTextHint?: string;
+  demoQuickEditOverlayTextReason?: string;
   demoTags: string[];
   demoTrimRange: { start: number; end: number };
   demoVideoDescription?: string;
@@ -242,6 +247,9 @@ type StitchrAutomationTaskInput = {
   ugcOutfitDescription?: string;
   ugcPoseDescription?: string;
   ugcProductDescription?: string;
+  ugcQuickEdit?: QuickEditSuggestions;
+  ugcQuickEditOverlayTextHint?: string;
+  ugcQuickEditOverlayTextReason?: string;
   ugcTags: string[];
   ugcTrimRange: { start: number; end: number };
   ugcVideoDescription?: string;
@@ -461,8 +469,117 @@ function getTrimRange(value: unknown, fallbackDuration: number) {
   return { start, end };
 }
 
-function getTrimDuration(trimRange: { start: number; end: number }) {
-  return Math.max(0, trimRange.end - trimRange.start);
+function getOptionalQuickEditSuggestions(
+  value: unknown,
+): QuickEditSuggestions | undefined {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  const source = value as Record<string, unknown>;
+  const removeRanges = Array.isArray(source.removeRanges)
+    ? source.removeRanges.flatMap((range) => {
+        if (!range || typeof range !== "object") {
+          return [];
+        }
+
+        const removeRange = range as Record<string, unknown>;
+        const start = removeRange.start;
+        const end = removeRange.end;
+
+        if (
+          typeof start !== "number" ||
+          typeof end !== "number" ||
+          !Number.isFinite(start) ||
+          !Number.isFinite(end) ||
+          end <= start
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            start,
+            end,
+            ...(getOptionalString(removeRange.reason)
+              ? { reason: getOptionalString(removeRange.reason) }
+              : {}),
+          },
+        ];
+      })
+    : [];
+  const overlaySource =
+    source.overlayText && typeof source.overlayText === "object"
+      ? (source.overlayText as Record<string, unknown>)
+      : undefined;
+  const overlayReplaceWith = getOptionalString(overlaySource?.replaceWith);
+  const overlayReason = getOptionalString(overlaySource?.reason);
+  const cropSource =
+    source.crop && typeof source.crop === "object"
+      ? (source.crop as Record<string, unknown>)
+      : undefined;
+  const crop =
+    cropSource?.mode === "smart-9x16"
+      ? {
+          mode: "smart-9x16" as const,
+          ...(typeof cropSource.removeBlackBars === "boolean"
+            ? { removeBlackBars: cropSource.removeBlackBars }
+            : {}),
+          ...(typeof cropSource.positionX === "number" &&
+          Number.isFinite(cropSource.positionX)
+            ? { positionX: cropSource.positionX }
+            : {}),
+          ...(typeof cropSource.positionY === "number" &&
+          Number.isFinite(cropSource.positionY)
+            ? { positionY: cropSource.positionY }
+            : {}),
+          ...(typeof cropSource.scale === "number" &&
+          Number.isFinite(cropSource.scale)
+            ? { scale: cropSource.scale }
+            : {}),
+          ...(getOptionalString(cropSource.reason)
+            ? { reason: getOptionalString(cropSource.reason) }
+            : {}),
+        }
+      : undefined;
+  const trimStart =
+    typeof source.trimStart === "number" && Number.isFinite(source.trimStart)
+      ? source.trimStart
+      : undefined;
+  const trimEnd =
+    source.trimEnd === null
+      ? null
+      : typeof source.trimEnd === "number" && Number.isFinite(source.trimEnd)
+        ? source.trimEnd
+        : undefined;
+  const summary = getOptionalString(source.summary);
+
+  if (
+    trimStart === undefined &&
+    trimEnd === undefined &&
+    !removeRanges.length &&
+    !overlayReplaceWith &&
+    !crop &&
+    !summary
+  ) {
+    return undefined;
+  }
+
+  return {
+    ...(trimStart === undefined ? {} : { trimStart }),
+    ...(trimEnd === undefined ? {} : { trimEnd }),
+    removeRanges,
+    ...(overlayReplaceWith
+      ? {
+          overlayText: {
+            replaceWith: overlayReplaceWith,
+            ...(overlayReason ? { reason: overlayReason } : {}),
+          },
+        }
+      : {}),
+    ...(crop ? { crop } : {}),
+    ...(summary ? { summary } : {}),
+  };
 }
 
 function getFallbackProduct(input: {
@@ -548,6 +665,13 @@ function parseStitchrAutomationTaskInput(
     demoOutfitDescription: getOptionalString(input.demoOutfitDescription),
     demoPoseDescription: getOptionalString(input.demoPoseDescription),
     demoProductDescription: getOptionalString(input.demoProductDescription),
+    demoQuickEdit: getOptionalQuickEditSuggestions(input.demoQuickEdit),
+    demoQuickEditOverlayTextHint: getOptionalString(
+      input.demoQuickEditOverlayTextHint,
+    ),
+    demoQuickEditOverlayTextReason: getOptionalString(
+      input.demoQuickEditOverlayTextReason,
+    ),
     demoTags: getStringArray(input.demoTags),
     demoTrimRange: getTrimRange(input.demoTrimRange, demoDuration),
     demoVideoDescription: getOptionalString(input.demoVideoDescription),
@@ -577,6 +701,13 @@ function parseStitchrAutomationTaskInput(
     ugcOutfitDescription: getOptionalString(input.ugcOutfitDescription),
     ugcPoseDescription: getOptionalString(input.ugcPoseDescription),
     ugcProductDescription: getOptionalString(input.ugcProductDescription),
+    ugcQuickEdit: getOptionalQuickEditSuggestions(input.ugcQuickEdit),
+    ugcQuickEditOverlayTextHint: getOptionalString(
+      input.ugcQuickEditOverlayTextHint,
+    ),
+    ugcQuickEditOverlayTextReason: getOptionalString(
+      input.ugcQuickEditOverlayTextReason,
+    ),
     ugcTags: getStringArray(input.ugcTags),
     ugcTrimRange: getTrimRange(input.ugcTrimRange, ugcDuration),
     ugcVideoDescription: getOptionalString(input.ugcVideoDescription),
@@ -1405,6 +1536,8 @@ async function processStitchr({
       outfitDescription: input.ugcOutfitDescription,
       poseDescription: input.ugcPoseDescription,
       productDescription: input.ugcProductDescription,
+      quickEditOverlayTextHint: input.ugcQuickEditOverlayTextHint,
+      quickEditOverlayTextReason: input.ugcQuickEditOverlayTextReason,
       role: "ugc",
       tags: input.ugcTags,
       videoDescription: input.ugcVideoDescription,
@@ -1418,6 +1551,8 @@ async function processStitchr({
       outfitDescription: input.demoOutfitDescription,
       poseDescription: input.demoPoseDescription,
       productDescription: input.demoProductDescription,
+      quickEditOverlayTextHint: input.demoQuickEditOverlayTextHint,
+      quickEditOverlayTextReason: input.demoQuickEditOverlayTextReason,
       role: "demo",
       tags: input.demoTags,
       videoDescription: input.demoVideoDescription,
@@ -1433,7 +1568,16 @@ async function processStitchr({
     stitchrClipContexts,
   });
   const duration =
-    getTrimDuration(input.ugcTrimRange) + getTrimDuration(input.demoTrimRange);
+    getQuickEditPlaybackDuration(
+      input.ugcTrimRange,
+      input.ugcDuration,
+      input.ugcQuickEdit?.removeRanges,
+    ) +
+    getQuickEditPlaybackDuration(
+      input.demoTrimRange,
+      input.demoDuration,
+      input.demoQuickEdit?.removeRanges,
+    );
   const textOverlay = createStitchrTextOverlay(
     textGeneration.overlayText || textGeneration.filledHook,
     duration,
@@ -1457,6 +1601,7 @@ async function processStitchr({
         demoDuration: input.demoDuration,
         demoHasAudio: input.demoHasAudio,
         demoPlaybackRate: 1,
+        demoQuickEdit: input.demoQuickEdit,
         demoTrimRange: input.demoTrimRange,
         demoVideoObject: input.demoVideoObject,
         includeDemoAudio: false,
@@ -1471,6 +1616,7 @@ async function processStitchr({
         ugcDuration: input.ugcDuration,
         ugcHasAudio: input.ugcHasAudio,
         ugcPlaybackRate: 1,
+        ugcQuickEdit: input.ugcQuickEdit,
         ugcTrimRange: input.ugcTrimRange,
         ugcVideoObject: input.ugcVideoObject,
       }),

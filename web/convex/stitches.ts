@@ -8,6 +8,7 @@ import { stitchCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
+import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchScoreValidator } from "./validators/stitchScore";
 import { stitchrModeValidator } from "./validators/stitchrMode";
@@ -30,6 +31,8 @@ const saveArgs = {
   demoClipName: v.string(),
   ugcTrimRange: v.optional(videoTrimRangeValidator),
   demoTrimRange: v.optional(videoTrimRangeValidator),
+  demoQuickEdit: v.optional(quickEditSuggestionsValidator),
+  ugcQuickEdit: v.optional(quickEditSuggestionsValidator),
   sequenceSegments: v.optional(v.array(stitchSequenceSegmentValidator)),
   stitchObject: v.optional(r2ObjectValidator),
   posterObject: v.optional(r2ObjectValidator),
@@ -398,6 +401,7 @@ export const updateMusic = mutation({
     await ctx.db.patch(stitch._id, {
       music: music ?? undefined,
       mimeType: undefined,
+      quickEdit: undefined,
       size: undefined,
       stitchObject: undefined,
       stitchScore: undefined,
@@ -495,6 +499,7 @@ export const updateSourceSettings = mutation({
       name,
       posterObject: posterObject ?? undefined,
       posterVersion: posterObject ? posterVersion : undefined,
+      quickEdit: undefined,
       size: undefined,
       stitchScore: undefined,
       stitchObject: undefined,
@@ -540,6 +545,7 @@ export const updateTextOverlay = mutation({
 
     await ctx.db.patch(stitch._id, {
       mimeType: undefined,
+      quickEdit: undefined,
       size: undefined,
       stitchScore: undefined,
       stitchObject: undefined,
@@ -580,6 +586,139 @@ export const updateScore = mutation({
 
     await ctx.db.patch(stitch._id, {
       stitchScore,
+    });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+    }
+  },
+});
+
+export const applyQuickEdit = mutation({
+  args: {
+    id: v.string(),
+    demoQuickEdit: v.optional(quickEditSuggestionsValidator),
+    demoTrimRange: videoTrimRangeValidator,
+    duration: v.number(),
+    quickEdit: quickEditSuggestionsValidator,
+    textOverlay: v.optional(v.union(textOverlayValidator, v.null())),
+    textOverlays: v.optional(textOverlaysValidator),
+    ugcQuickEdit: v.optional(quickEditSuggestionsValidator),
+    ugcTrimRange: videoTrimRangeValidator,
+  },
+  handler: async (
+    ctx,
+    {
+      id,
+      demoQuickEdit,
+      demoTrimRange,
+      duration,
+      quickEdit,
+      textOverlay,
+      textOverlays,
+      ugcQuickEdit,
+      ugcTrimRange,
+    },
+  ) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    const normalizedTextOverlays =
+      textOverlays ??
+      (textOverlay && textOverlay.text.trim().length > 0 ? [textOverlay] : []);
+    const appliedAt = new Date().toISOString();
+
+    await ctx.db.patch(stitch._id, {
+      demoQuickEdit,
+      demoTrimRange,
+      duration,
+      mimeType: undefined,
+      quickEdit: {
+        ...quickEdit,
+        appliedAt,
+        baseline: {
+          ...(stitch.demoQuickEdit
+            ? { demoQuickEdit: stitch.demoQuickEdit }
+            : {}),
+          ...(stitch.demoTrimRange
+            ? { demoTrimRange: stitch.demoTrimRange }
+            : {}),
+          duration: stitch.duration,
+          ...(stitch.textOverlay ? { textOverlay: stitch.textOverlay } : {}),
+          ...(stitch.textOverlays ? { textOverlays: stitch.textOverlays } : {}),
+          ...(stitch.ugcQuickEdit ? { ugcQuickEdit: stitch.ugcQuickEdit } : {}),
+          ...(stitch.ugcTrimRange ? { ugcTrimRange: stitch.ugcTrimRange } : {}),
+        },
+        source: "ai-score",
+      },
+      size: undefined,
+      stitchObject: undefined,
+      stitchScore: undefined,
+      textOverlay: normalizedTextOverlays[0],
+      textOverlays: normalizedTextOverlays.length
+        ? normalizedTextOverlays
+        : undefined,
+      ugcQuickEdit,
+      ugcTrimRange,
+    });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+    }
+  },
+});
+
+export const resetQuickEdit = mutation({
+  args: {
+    id: v.string(),
+  },
+  handler: async (ctx, { id }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    const baseline = stitch.quickEdit?.baseline;
+
+    await ctx.db.patch(stitch._id, {
+      demoQuickEdit: baseline?.demoQuickEdit,
+      demoTrimRange: baseline?.demoTrimRange,
+      duration: baseline?.duration ?? stitch.duration,
+      mimeType: undefined,
+      quickEdit: undefined,
+      size: undefined,
+      stitchObject: undefined,
+      stitchScore: undefined,
+      textOverlay: baseline?.textOverlay,
+      textOverlays: baseline?.textOverlays,
+      ugcQuickEdit: baseline?.ugcQuickEdit,
+      ugcTrimRange: baseline?.ugcTrimRange,
     });
     const updatedStitch = await ctx.db.get(stitch._id);
 

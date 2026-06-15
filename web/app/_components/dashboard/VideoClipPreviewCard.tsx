@@ -21,6 +21,7 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
+import { createQuickEditSuggestionsFromMetadata } from "@/lib/clipstitchr/utils/createQuickEditSuggestionsFromMetadata";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getVideoClipBadgeLabel } from "@/lib/clipstitchr/utils/getVideoClipBadgeLabel";
 import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
@@ -115,6 +116,7 @@ export function VideoClipPreviewCard({
   const visibleDuration =
     displayDuration ??
     getVideoTrimDisplayDuration(clip.duration, getDefaultVideoTrimRange(clip));
+  const quickEdit = createQuickEditSuggestionsFromMetadata(clip.quickEdit);
   const loadFullClip = async () => {
     if (loadedClip) {
       return loadedClip;
@@ -237,6 +239,7 @@ export function VideoClipPreviewCard({
           isLoading={isClipLoading}
           musicEditor={detailsMode === "controls" ? cliprMusicEditor : undefined}
           posterUrl={posterUrl}
+          quickEdit={quickEdit}
           trimEditor={detailsMode === "controls" ? trimEditor : undefined}
           videoUrl={videoUrl}
           onClose={() => setDetailsMode(null)}

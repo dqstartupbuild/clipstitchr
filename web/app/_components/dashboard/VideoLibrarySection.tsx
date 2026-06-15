@@ -44,6 +44,8 @@ type VideoLibrarySectionProps = {
     clip: VideoClipMetadata,
   ) => Promise<CliprMusicMetadata | null>;
   onScoreClip?: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
+  onApplyQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
+  onResetQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadMoreItems?: () => void;
   onStatusFilterChange?: (status: LibraryPostedStatusFilter) => void;
@@ -85,6 +87,8 @@ export function VideoLibrarySection({
   onDelete,
   onGenerateCliprMusic,
   onScoreClip,
+  onApplyQuickEdit,
+  onResetQuickEdit,
   onLoadMoreItems,
   onStatusFilterChange,
   onUpdateCliprMusic,
@@ -199,6 +203,8 @@ export function VideoLibrarySection({
                 }
                 onGenerateCliprMusic={onGenerateCliprMusic}
                 onScore={onScoreClip}
+                onApplyQuickEdit={onApplyQuickEdit}
+                onResetQuickEdit={onResetQuickEdit}
                 onUpdateCliprMusic={onUpdateCliprMusic}
                 onUpdateMetadata={onUpdateMetadata}
                 onUpdateTrim={onUpdateTrim}

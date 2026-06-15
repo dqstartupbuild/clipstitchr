@@ -75,6 +75,8 @@ describe("createCliprTextGenerationPrompt", () => {
         {
           id: "ugc_1",
           name: "Creator surprised by messy launch work",
+          quickEditOverlayTextHint: "The moment I stopped pretending launch chaos was normal",
+          quickEditOverlayTextReason: "Matches the visible frustration.",
           role: "ugc",
           tags: ["reaction"],
           videoDescription: "A founder looks frustrated at scattered files.",
@@ -103,6 +105,13 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("hashtags must contain 3-5 hashtags");
     expect(prompt).toContain("Creator surprised by messy launch work");
     expect(prompt).toContain("A founder looks frustrated at scattered files.");
+    expect(prompt).toContain(
+      "AI hook hint: The moment I stopped pretending launch chaos was normal",
+    );
+    expect(prompt).toContain("AI hook hint reason: Matches the visible frustration.");
+    expect(prompt).toContain(
+      "Treat AI hook hints from source score analysis as useful direction, not required copy.",
+    );
     expect(prompt).toContain("The demo shows launch assets getting organized.");
     expect(prompt).toContain("script must be an empty string");
     expect(prompt).not.toContain("Content angles to choose from");

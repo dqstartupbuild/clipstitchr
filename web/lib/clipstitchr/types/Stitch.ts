@@ -1,4 +1,6 @@
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
+import type { QuickEditMetadata } from "@/lib/clipstitchr/types/QuickEditMetadata";
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
 import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 import type { StitchSequenceSegment } from "@/lib/clipstitchr/types/StitchSequenceSegment";
@@ -17,6 +19,9 @@ export type Stitch = {
   demoClipName: string;
   ugcTrimRange?: VideoTrimRange;
   demoTrimRange?: VideoTrimRange;
+  demoQuickEdit?: QuickEditSuggestions;
+  quickEdit?: QuickEditMetadata;
+  ugcQuickEdit?: QuickEditSuggestions;
   sequenceSegments?: StitchSequenceSegment[];
   stitchObject?: R2ObjectReference;
   blob?: Blob;

@@ -26,6 +26,8 @@ import { mediaJobTypeValidator } from "./validators/mediaJobType";
 import { musicTrackSourceValidator } from "./validators/musicTrackSource";
 import { providerJobStatusValidator } from "./validators/providerJobStatus";
 import { providerJobTypeValidator } from "./validators/providerJobType";
+import { quickEditMetadataValidator } from "./validators/quickEditMetadata";
+import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
 import { replicatePredictionStatusValidator } from "./validators/replicatePredictionStatus";
@@ -67,6 +69,7 @@ export default defineSchema({
     locationDescription: v.optional(v.string()),
     poseDescription: v.optional(v.string()),
     performanceScore: v.optional(clipPerformanceScoreValidator),
+    quickEdit: v.optional(quickEditMetadataValidator),
     productDescription: v.optional(v.string()),
     productId: v.optional(v.string()),
     originalName: v.string(),
@@ -197,6 +200,9 @@ export default defineSchema({
     demoClipName: v.string(),
     ugcTrimRange: v.optional(videoTrimRangeValidator),
     demoTrimRange: v.optional(videoTrimRangeValidator),
+    demoQuickEdit: v.optional(quickEditSuggestionsValidator),
+    quickEdit: v.optional(quickEditMetadataValidator),
+    ugcQuickEdit: v.optional(quickEditSuggestionsValidator),
     sequenceSegments: v.optional(v.array(stitchSequenceSegmentValidator)),
     stitchObject: v.optional(r2ObjectValidator),
     posterObject: v.optional(r2ObjectValidator),

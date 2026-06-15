@@ -33,6 +33,7 @@ ClipStitchr clears the saved render when an edit changes the finished video:
 - trim changes
 - playback speed changes
 - text overlay changes
+- Quick Edit apply/reset
 - music is added, removed, enabled, disabled, or volume-changed
 
 The next preview, download, or score regenerates and saves a fresh render.
@@ -70,7 +71,8 @@ Library flow:
 Server state:
 
 - `stitches.updateRenderedVideo` stores `stitchObject`, `mimeType`, and `size`.
-- `stitches.updateSourceSettings`, `stitches.updateTextOverlay`, and
+- `stitches.updateSourceSettings`, `stitches.updateTextOverlay`,
+  `stitches.applyQuickEdit`, `stitches.resetQuickEdit`, and
   `stitches.updateMusic` clear `stitchObject`, `mimeType`, `size`, and any saved
   Stitch Score when the final video changes.
 

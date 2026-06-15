@@ -12,6 +12,7 @@ import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import { useVideoClipDetailsMusic } from "@/lib/clipstitchr/hooks/useVideoClipDetailsMusic";
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -37,6 +38,7 @@ type VideoClipDetailsDialogProps = {
   isLoading: boolean;
   musicEditor?: VideoClipDetailsMusicEditor;
   posterUrl: string | null;
+  quickEdit?: QuickEditSuggestions | null;
   trimEditor?: VideoClipDetailsTrimEditor;
   videoUrl: string | null;
   onClose: () => void;
@@ -51,6 +53,7 @@ export function VideoClipDetailsDialog({
   isLoading,
   musicEditor,
   posterUrl,
+  quickEdit = null,
   trimEditor,
   videoUrl,
   onClose,
@@ -160,6 +163,8 @@ export function VideoClipDetailsDialog({
             musicBlob={musicState.musicBlob}
             musicEnabled={musicState.musicEnabled}
             musicVolume={musicState.musicVolume}
+            quickEdit={quickEdit}
+            sourceDuration={clip.duration}
             trimRange={activeTrimRange}
             onLoadPreview={onLoadPreview}
           />

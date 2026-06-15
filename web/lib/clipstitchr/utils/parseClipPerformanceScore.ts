@@ -1,4 +1,5 @@
 import type { ClipPerformanceScore } from "@/lib/clipstitchr/types/ClipPerformanceScore";
+import { parseQuickEditSuggestions } from "@/lib/clipstitchr/utils/parseQuickEditSuggestions";
 
 function parseScore(value: unknown) {
   const score = Number(value);
@@ -44,6 +45,9 @@ export function parseClipPerformanceScore(
   const clarity = parseScore(source.clarity);
   const platformFit = parseScore(source.platformFit);
   const stitchFit = parseScore(source.stitchFit);
+  const quickEditSuggestions = parseQuickEditSuggestions(
+    source.quickEditSuggestions,
+  );
 
   return {
     overall,
@@ -57,5 +61,6 @@ export function parseClipPerformanceScore(
     bestUse: parseText(source.bestUse, 180),
     strengths: parseTextList(source.strengths, 3, 120),
     fixes: parseTextList(source.fixes, 3, 140),
+    ...(quickEditSuggestions ? { quickEditSuggestions } : {}),
   };
 }

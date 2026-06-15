@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { quickEditSuggestionsValidator } from "./quickEditSuggestions";
 
 export const clipPerformanceScoreValidator = v.object({
   overall: v.number(),
@@ -12,4 +13,5 @@ export const clipPerformanceScoreValidator = v.object({
   bestUse: v.string(),
   strengths: v.array(v.string()),
   fixes: v.array(v.string()),
+  quickEditSuggestions: v.optional(quickEditSuggestionsValidator),
 });

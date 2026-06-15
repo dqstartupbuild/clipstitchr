@@ -12,6 +12,7 @@ import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { createQuickEditSuggestionsFromMetadata } from "@/lib/clipstitchr/utils/createQuickEditSuggestionsFromMetadata";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getTextOverlayIsInRange } from "@/lib/clipstitchr/utils/getTextOverlayIsInRange";
 import { getTextOverlayIsVisible } from "@/lib/clipstitchr/utils/getTextOverlayIsVisible";
@@ -55,7 +56,14 @@ export function StitchrSequenceVideoPlayer({
     seekTo,
     setVideoRef,
     togglePlayback,
-  } = useLongrSequenceVideoPlayer({ playbackRates, trimRanges });
+  } = useLongrSequenceVideoPlayer({
+    playbackRates,
+    quickEdits: clips.map((clip) =>
+      createQuickEditSuggestionsFromMetadata(clip.quickEdit),
+    ),
+    sourceDurations: clips.map((clip) => clip.duration),
+    trimRanges,
+  });
   const progressValue = Math.min(currentTime, totalDuration);
   const renderedTextOverlays = textOverlays
     .map((textOverlay, index) => {

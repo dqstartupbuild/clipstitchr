@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { clipTypeValidator } from "./clipType";
+import { quickEditSuggestionsValidator } from "./quickEditSuggestions";
 import { videoPlaybackRateValidator } from "./videoPlaybackRate";
 import { videoTrimRangeValidator } from "./videoTrimRange";
 
@@ -10,5 +11,6 @@ export const stitchSequenceSegmentValidator = v.object({
   duration: v.number(),
   order: v.number(),
   playbackRate: v.optional(videoPlaybackRateValidator),
+  quickEdit: v.optional(quickEditSuggestionsValidator),
   trimRange: videoTrimRangeValidator,
 });

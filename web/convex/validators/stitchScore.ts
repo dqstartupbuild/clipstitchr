@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { quickEditSuggestionsValidator } from "./quickEditSuggestions";
 
 export const stitchScoreValidator = v.object({
   overallRetentionEstimate: v.number(),
@@ -8,4 +9,5 @@ export const stitchScoreValidator = v.object({
   suggestedTrims: v.array(v.string()),
   suggestedOverlayText: v.array(v.string()),
   suggestedOpeningLine: v.string(),
+  quickEditSuggestions: v.optional(quickEditSuggestionsValidator),
 });

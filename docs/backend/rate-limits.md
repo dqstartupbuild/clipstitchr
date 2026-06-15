@@ -186,6 +186,7 @@ Firecrawl website import:
 | R2 upload bytes | `POST /api/r2/upload-url` | 10 GB/day/user; 500 GB/30 days/user |
 | R2 download signed URL | `POST /api/r2/download-url` | 5,000/hour/user, burst 1,000 |
 | Saved Stitch render creation | Browser Stitchr creation and render-on-demand from saved stitch cards | Uses R2 upload signed URL and byte limits for the saved MP4, R2 download signed URL limits for source media and saved render reads, and `convexMetadataUpdate` when saving or clearing `stitchObject`, `mimeType`, and `size`. Rendering itself is browser-side Media Bunny work, not provider work. |
+| Quick Edit apply/reset | Clip and saved normal Stitch card actions after scoring | Uses `convexMetadataUpdate` before writing non-destructive edit metadata. No provider call, music generation, R2 signed URL, or media upload is created by apply/reset itself. Scoring that produces `quickEditSuggestions` is covered by the clip and Stitch score limits. |
 | R2 batch image download signed URLs | `POST /api/r2/download-urls` | Uses the R2 download signed URL limit once per authenticated batch after validating every key belongs to the user and is a cacheable `poster.*` or `thumbnail.*` image. Requests are capped at 48 keys. |
 | R2 deletes | `POST /api/r2/delete-objects` | 2,000 objects/hour/user, burst 500 |
 | Shared Swipr background R2 upload signed URL | `POST /api/swipr/backgrounds/upload-url` | Uses the R2 upload signed URL and byte limits before creating a shared-background PUT URL |

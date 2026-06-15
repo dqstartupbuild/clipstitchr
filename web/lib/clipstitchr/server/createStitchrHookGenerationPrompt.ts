@@ -86,6 +86,7 @@ export function createStitchrHookGenerationPrompt({
     "- Do not ask viewers to try, download, save, comment, follow, buy, book, subscribe, or sign up.",
     "- Do not make every hook contrarian. Use the emotional setup that feels most human for the audience and context.",
     "- Do not copy example-style lines mechanically. Create a fresh line that sounds like a real person reacting.",
+    "- Treat AI hook hints from source score analysis as useful direction, not required copy. Use or improve the hint only when it fits the clips and product context.",
     "- Never return unresolved placeholders, placeholder labels, snake_case keys, or database-style labels.",
     "- Silently reject any hook that reads like advice, a product value proposition, a tutorial title, or a generic ad claim.",
     "- Use the product emotional narrative as the primary Stitchr context when it is available.",

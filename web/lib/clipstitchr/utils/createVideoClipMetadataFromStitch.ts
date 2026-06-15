@@ -33,6 +33,7 @@ export function createVideoClipMetadataFromStitch(
     height: stitch.height,
     aspectRatio: stitch.height > 0 ? stitch.width / stitch.height : 0,
     duration: stitch.duration,
+    quickEdit: stitch.quickEdit,
     defaultTrimRange: {
       start: 0,
       end: stitch.duration,

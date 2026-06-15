@@ -1,3 +1,5 @@
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
+
 export type StitchScore = {
   overallRetentionEstimate: number;
   hookToDemoFlow: number;
@@ -6,4 +8,5 @@ export type StitchScore = {
   suggestedTrims: string[];
   suggestedOverlayText: string[];
   suggestedOpeningLine: string;
+  quickEditSuggestions?: QuickEditSuggestions;
 };

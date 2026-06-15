@@ -10,6 +10,7 @@ import {
   Shuffle,
   Trash2,
   UserRound,
+  WandSparkles,
 } from "lucide-react";
 import { useState } from "react";
 import { CreateAvatarFromClipDialog } from "@/app/_components/dashboard/CreateAvatarFromClipDialog";
@@ -25,16 +26,18 @@ import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { createVideoBlobWithPosterMetadata } from "@/lib/clipstitchr/media/createVideoBlobWithPosterMetadata";
+import { createVideoSegmentBlob } from "@/lib/clipstitchr/media/createVideoSegmentBlob";
 import { renderCliprVideoWithMusic } from "@/lib/clipstitchr/media/renderCliprVideoWithMusic";
+import { createQuickEditSuggestionsFromMetadata } from "@/lib/clipstitchr/utils/createQuickEditSuggestionsFromMetadata";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
 import { getClipCanBeScored } from "@/lib/clipstitchr/utils/getClipCanBeScored";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getClipCanUseInSwapr } from "@/lib/clipstitchr/utils/getClipCanUseInSwapr";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getUseInStitchrHref } from "@/lib/clipstitchr/utils/getUseInStitchrHref";
 import { getUseInSwaprClipHref } from "@/lib/clipstitchr/utils/getUseInSwaprClipHref";
-import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
 
 type VideoClipCardProps = {
   clip: VideoClipMetadata;
@@ -56,6 +59,8 @@ type VideoClipCardProps = {
     clip: VideoClipMetadata,
   ) => Promise<CliprMusicMetadata | null>;
   onScore?: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
+  onApplyQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
+  onResetQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
   onUpdateCliprMusic?: (
     clip: VideoClipMetadata,
     music: CliprMusicMetadata | null,
@@ -88,6 +93,8 @@ export function VideoClipCard({
   onSelect,
   onGenerateCliprMusic,
   onScore,
+  onApplyQuickEdit,
+  onResetQuickEdit,
   onUpdateCliprMusic,
   onUpdateMetadata,
   onUpdateTrim,
@@ -100,17 +107,22 @@ export function VideoClipCard({
   const [isSavingMusic, setIsSavingMusic] = useState(false);
   const [isSavingPostedStatus, setIsSavingPostedStatus] = useState(false);
   const [isScoring, setIsScoring] = useState(false);
+  const [isApplyingQuickEdit, setIsApplyingQuickEdit] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [musicError, setMusicError] = useState<string | null>(null);
   const [postedStatusError, setPostedStatusError] = useState<string | null>(
     null,
   );
   const [scoreError, setScoreError] = useState<string | null>(null);
+  const [quickEditError, setQuickEditError] = useState<string | null>(null);
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
+  const quickEdit = createQuickEditSuggestionsFromMetadata(clip.quickEdit);
+  const quickEditSuggestions = clip.performanceScore?.quickEditSuggestions;
   const isPosted = Boolean(clip.isPosted);
-  const displayDuration = getVideoTrimDisplayDuration(
-    clip.duration,
+  const displayDuration = getQuickEditPlaybackDuration(
     defaultTrimRange,
+    clip.duration,
+    quickEdit?.removeRanges,
   );
   const handleDownload = async (
     loadFullClip: () => Promise<VideoClip | null>,
@@ -126,16 +138,27 @@ export function VideoClipCard({
 
     try {
       const music = nextClip.cliprMetadata?.music;
+      const activeQuickEdit = createQuickEditSuggestionsFromMetadata(
+        nextClip.quickEdit ?? clip.quickEdit,
+      );
+      const activeVideoBlob = activeQuickEdit
+        ? (
+            await createVideoSegmentBlob(nextClip, {
+              quickEdit: activeQuickEdit,
+              trimRange: getDefaultVideoTrimRange(nextClip),
+            })
+          ).blob
+        : nextClip.blob;
       const renderedBlob =
         music?.enabled && music.audioObject
           ? (
               await renderCliprVideoWithMusic({
                 musicBlob: await downloadMusicBlob(music),
-                videoBlob: nextClip.blob,
+                videoBlob: activeVideoBlob,
                 volume: music.volume,
               })
             ).blob
-          : nextClip.blob;
+          : activeVideoBlob;
       const exportBlob = await createVideoBlobWithPosterMetadata({
         posterBlob: nextClip.posterBlob ?? clip.posterBlob,
         title: clip.name,
@@ -241,6 +264,46 @@ export function VideoClipCard({
       setIsScoring(false);
     }
   };
+  const handleApplyQuickEdit = async () => {
+    if (!onApplyQuickEdit) {
+      return;
+    }
+
+    setIsApplyingQuickEdit(true);
+    setQuickEditError(null);
+
+    try {
+      await onApplyQuickEdit(clip);
+    } catch (nextError) {
+      setQuickEditError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to improve this clip.",
+      );
+    } finally {
+      setIsApplyingQuickEdit(false);
+    }
+  };
+  const handleResetQuickEdit = async () => {
+    if (!onResetQuickEdit) {
+      return;
+    }
+
+    setIsApplyingQuickEdit(true);
+    setQuickEditError(null);
+
+    try {
+      await onResetQuickEdit(clip);
+    } catch (nextError) {
+      setQuickEditError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to reset this clip.",
+      );
+    } finally {
+      setIsApplyingQuickEdit(false);
+    }
+  };
 
   return (
     <>
@@ -329,6 +392,22 @@ export function VideoClipCard({
             });
           }
 
+          if (clip.quickEdit && onResetQuickEdit) {
+            items.push({
+              label: "Reset AI fixes",
+              icon: <RotateCcw aria-hidden className="h-4 w-4" />,
+              disabled: isLoading || isApplyingQuickEdit,
+              onClick: () => void handleResetQuickEdit(),
+            });
+          } else if (quickEditSuggestions && onApplyQuickEdit) {
+            items.push({
+              label: "Improve clip",
+              icon: <WandSparkles aria-hidden className="h-4 w-4" />,
+              disabled: isLoading || isApplyingQuickEdit,
+              onClick: () => void handleApplyQuickEdit(),
+            });
+          }
+
           if (clip.clipType === "ugc" && onCreateAvatarFromClip) {
             items.push({
               label: "Create avatar from UGC",
@@ -354,7 +433,7 @@ export function VideoClipCard({
           return items;
         }}
         footer={() =>
-          downloadError || postedStatusError || scoreError ? (
+          downloadError || postedStatusError || scoreError || quickEditError ? (
             <div className="flex flex-col gap-2">
               {downloadError ? (
                 <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
@@ -369,6 +448,11 @@ export function VideoClipCard({
               {scoreError ? (
                 <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
                   {scoreError}
+                </p>
+              ) : null}
+              {quickEditError ? (
+                <p className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+                  {quickEditError}
                 </p>
               ) : null}
             </div>

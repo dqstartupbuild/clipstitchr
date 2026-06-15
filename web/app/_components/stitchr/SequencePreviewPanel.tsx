@@ -13,8 +13,9 @@ import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { createQuickEditSuggestionsFromMetadata } from "@/lib/clipstitchr/utils/createQuickEditSuggestionsFromMetadata";
 import { getActiveTextOverlayId } from "@/lib/clipstitchr/utils/getActiveTextOverlayId";
-import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { replaceTextOverlayById } from "@/lib/clipstitchr/utils/replaceTextOverlayById";
 
 type SequencePreviewPanelProps = {
@@ -71,11 +72,27 @@ export function SequencePreviewPanel({
     previewUgcClips.findIndex((clip) => clip.id === activeUgcId),
   );
   const activePreviewClip = previewUgcClips[activePreviewIndex] ?? null;
+  const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(
+    ugcClip?.quickEdit,
+  );
+  const demoQuickEdit = createQuickEditSuggestionsFromMetadata(
+    demoClip?.quickEdit,
+  );
   const ugcDuration = ugcTrimRange
-    ? getPlaybackRateDuration(ugcTrimRange, ugcPlaybackRate)
+    ? getQuickEditPlaybackDuration(
+        ugcTrimRange,
+        ugcClip?.duration ?? ugcTrimRange.end,
+        ugcQuickEdit?.removeRanges,
+        ugcPlaybackRate,
+      )
     : 0;
   const demoDuration = demoTrimRange
-    ? getPlaybackRateDuration(demoTrimRange, demoPlaybackRate)
+    ? getQuickEditPlaybackDuration(
+        demoTrimRange,
+        demoClip?.duration ?? demoTrimRange.end,
+        demoQuickEdit?.removeRanges,
+        demoPlaybackRate,
+      )
     : 0;
   const totalDuration = useMemo(
     () =>
@@ -83,8 +100,10 @@ export function SequencePreviewPanel({
         ? sequenceTrimRanges.reduce(
             (duration, trimRange, index) =>
               duration +
-              getPlaybackRateDuration(
+              getQuickEditPlaybackDuration(
                 trimRange,
+                sequenceClips[index]?.duration ?? trimRange.end,
+                sequenceClips[index]?.quickEdit?.removeRanges,
                 sequencePlaybackRates[index] ?? 1,
               ),
             0,
@@ -93,6 +112,7 @@ export function SequencePreviewPanel({
     [
       demoDuration,
       mode,
+      sequenceClips,
       sequencePlaybackRates,
       sequenceTrimRanges,
       ugcDuration,

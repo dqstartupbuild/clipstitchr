@@ -10,6 +10,7 @@ import {
   RefreshCw,
   RotateCcw,
   Trash2,
+  WandSparkles,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { StitchDetailsDialog } from "@/app/_components/dashboard/StitchDetailsDialog";
@@ -40,6 +41,7 @@ import { createStitchPreviewCacheKey } from "@/lib/clipstitchr/utils/createStitc
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { getReuseStitchHref } from "@/lib/clipstitchr/utils/getReuseStitchHref";
+import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
 import { capturePostHogException } from "@/lib/clipstitchr/analytics/capturePostHogException";
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 
@@ -55,6 +57,8 @@ type StitchCardProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
+  onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
+  onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
   onSelect?: () => void;
   onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
   onUpdateMusic: (
@@ -92,6 +96,8 @@ export function StitchCard({
   onLoadPoster,
   onLoadVideo,
   onScore,
+  onApplyQuickEdit,
+  onResetQuickEdit,
   onSelect,
   onSaveTemplate,
   onUpdateMusic,
@@ -146,6 +152,7 @@ export function StitchCard({
   const [isDownloading, setIsDownloading] = useState(false);
   const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
   const [isScoring, setIsScoring] = useState(false);
+  const [isApplyingQuickEdit, setIsApplyingQuickEdit] = useState(false);
   const [isSavingMusic, setIsSavingMusic] = useState(false);
   const [isSavingPostedStatus, setIsSavingPostedStatus] = useState(false);
   const [isSavingSocialCaption, setIsSavingSocialCaption] = useState(false);
@@ -157,6 +164,7 @@ export function StitchCard({
     null,
   );
   const [scoreError, setScoreError] = useState<string | null>(null);
+  const [quickEditError, setQuickEditError] = useState<string | null>(null);
   const [socialCaptionError, setSocialCaptionError] = useState<string | null>(
     null,
   );
@@ -169,6 +177,7 @@ export function StitchCard({
     ? formatBytes(stitch.size)
     : "Ready to download";
   const isPosted = Boolean(stitch.isPosted);
+  const canUseQuickEdit = !getStitchIsLongr(stitch);
 
   const loadRenderedPreview = async () => {
     if (stitchVideoBlob || isLoadingPreview) {
@@ -359,6 +368,50 @@ export function StitchCard({
       setIsScoring(false);
     }
   };
+  const handleApplyQuickEdit = async () => {
+    if (!onApplyQuickEdit) {
+      return;
+    }
+
+    setIsApplyingQuickEdit(true);
+    setQuickEditError(null);
+
+    try {
+      await onApplyQuickEdit(stitch);
+      setStitchVideoBlob(null);
+      setPreviewState(null);
+    } catch (nextError) {
+      setQuickEditError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to improve this stitch.",
+      );
+    } finally {
+      setIsApplyingQuickEdit(false);
+    }
+  };
+  const handleResetQuickEdit = async () => {
+    if (!onResetQuickEdit) {
+      return;
+    }
+
+    setIsApplyingQuickEdit(true);
+    setQuickEditError(null);
+
+    try {
+      await onResetQuickEdit(stitch);
+      setStitchVideoBlob(null);
+      setPreviewState(null);
+    } catch (nextError) {
+      setQuickEditError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to reset this stitch.",
+      );
+    } finally {
+      setIsApplyingQuickEdit(false);
+    }
+  };
   const handleUpdateMusic = async (music: StitchMusicMetadata | null) => {
     setIsSavingMusic(true);
     setMusicError(null);
@@ -511,6 +564,27 @@ export function StitchCard({
           },
         ]
       : []),
+    ...(canUseQuickEdit && stitch.quickEdit && onResetQuickEdit
+      ? [
+          {
+            label: "Reset AI fixes",
+            icon: <RotateCcw aria-hidden className="h-4 w-4" />,
+            disabled: isApplyingQuickEdit,
+            onClick: () => void handleResetQuickEdit(),
+          },
+        ]
+      : canUseQuickEdit &&
+          stitch.stitchScore?.quickEditSuggestions &&
+          onApplyQuickEdit
+        ? [
+            {
+              label: "Improve stitch",
+              icon: <WandSparkles aria-hidden className="h-4 w-4" />,
+              disabled: isApplyingQuickEdit,
+              onClick: () => void handleApplyQuickEdit(),
+            },
+          ]
+        : []),
     {
       label: "Download stitch",
       icon: <Download aria-hidden className="h-4 w-4" />,
@@ -634,6 +708,11 @@ export function StitchCard({
         {scoreError ? (
           <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
             {scoreError}
+          </p>
+        ) : null}
+        {quickEditError ? (
+          <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+            {quickEditError}
           </p>
         ) : null}
         {templateError ? (

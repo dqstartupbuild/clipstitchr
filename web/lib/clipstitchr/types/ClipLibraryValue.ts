@@ -53,6 +53,8 @@ export type ClipLibraryValue = {
     clip: VideoClipMetadata,
   ) => Promise<CliprMusicMetadata | null>;
   scoreClip: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
+  applyClipQuickEdit: (clip: VideoClipMetadata) => Promise<void>;
+  resetClipQuickEdit: (clip: VideoClipMetadata) => Promise<void>;
   updateCliprMusic: (
     clip: VideoClipMetadata,
     music: CliprMusicMetadata | null,
@@ -69,6 +71,8 @@ export type ClipLibraryValue = {
     stitch: Stitch,
   ) => Promise<StitchMusicMetadata | null>;
   scoreStitch: (stitch: Stitch) => Promise<StitchScore>;
+  applyStitchQuickEdit: (stitch: Stitch) => Promise<void>;
+  resetStitchQuickEdit: (stitch: Stitch) => Promise<void>;
   updateStitchMusic: (
     stitch: Stitch,
     music: StitchMusicMetadata | null,

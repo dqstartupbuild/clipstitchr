@@ -25,6 +25,8 @@ type RecentUploadsSectionProps = {
     trimRange: VideoTrimRange,
   ) => void | Promise<void>;
   onScoreClip?: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
+  onApplyQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
+  onResetQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
   onUpdatePostedStatus?: (
     clip: VideoClipMetadata,
     isPosted: boolean,
@@ -40,6 +42,8 @@ export function RecentUploadsSection({
   onUpdateMetadata,
   onUpdateTrim,
   onScoreClip,
+  onApplyQuickEdit,
+  onResetQuickEdit,
   onUpdatePostedStatus,
 }: RecentUploadsSectionProps) {
   return (
@@ -66,6 +70,8 @@ export function RecentUploadsSection({
               onLoadPoster={onLoadPoster}
               onDelete={onDelete}
               onScore={onScoreClip}
+              onApplyQuickEdit={onApplyQuickEdit}
+              onResetQuickEdit={onResetQuickEdit}
               onUpdateMetadata={onUpdateMetadata}
               onUpdateTrim={onUpdateTrim}
               onUpdatePostedStatus={onUpdatePostedStatus}

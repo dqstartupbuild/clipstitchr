@@ -39,6 +39,8 @@ type StitchesSectionProps = {
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
   onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
+  onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
+  onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
   onStatusFilterChange?: (status: StitchLibraryStatusFilter) => void;
   onUpdateMusic: (
     stitch: Stitch,
@@ -84,6 +86,8 @@ export function StitchesSection({
   onLoadVideo,
   onSaveTemplate,
   onScore,
+  onApplyQuickEdit,
+  onResetQuickEdit,
   onStatusFilterChange,
   onUpdateMusic,
   onUpdatePostedStatus,
@@ -187,6 +191,8 @@ export function StitchesSection({
                 onLoadVideo={onLoadVideo}
                 onSaveTemplate={onSaveTemplate}
                 onScore={onScore}
+                onApplyQuickEdit={onApplyQuickEdit}
+                onResetQuickEdit={onResetQuickEdit}
                 onSelect={
                   batchDelete.isSelecting
                     ? () => batchDelete.toggleItemSelection(stitch.id)

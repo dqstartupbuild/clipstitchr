@@ -18,6 +18,7 @@ reviews the saved stitch and returns:
 - suggested trims
 - suggested overlay text
 - a stronger opening line
+- optional structured Quick Edit suggestions
 
 The score is guidance, not a performance guarantee. It helps the user decide
 what to trim, rewrite, or post first.
@@ -45,6 +46,12 @@ plus the saved stitch settings and source clip notes.
 Stitch scores are cleared when source settings, overlay text, or music changes,
 because those edits can change the finished video and the score.
 
+When a normal saved Stitch score includes `quickEditSuggestions`, the Stitch
+card can show **Improve stitch**. Applying it updates only that saved Stitch's
+trim, internal cut, overlay text, and Quick Edit metadata. Reset restores the
+saved Stitch baseline from before the action and does not pull the latest UGC
+or Demo clip defaults.
+
 ## Data Shape
 
 Stored fields:
@@ -56,6 +63,7 @@ Stored fields:
 - `suggestedTrims`: up to 4 specific trim notes
 - `suggestedOverlayText`: up to 3 short overlay ideas
 - `suggestedOpeningLine`: one stronger first line
+- `quickEditSuggestions`: optional non-destructive edit instructions
 
 ## Backend Flow
 
@@ -127,9 +135,11 @@ API, prompt, parsing, and client call:
 - `web/lib/clipstitchr/server/formatStitchScoreSourceClipContext.ts`
 - `web/lib/clipstitchr/server/readStitchScoreRequest.ts`
 - `web/lib/clipstitchr/types/StitchScore.ts`
+- `web/lib/clipstitchr/types/QuickEditSuggestions.ts`
 - `web/lib/clipstitchr/utils/getStitchScoreLabel.ts`
 - `web/lib/clipstitchr/utils/getStitchScoreSourceClipIds.ts`
 - `web/lib/clipstitchr/utils/parseStitchScore.ts`
+- `web/lib/clipstitchr/utils/parseQuickEditSuggestions.ts`
 
 UI:
 
@@ -139,6 +149,7 @@ UI:
 - `web/app/_components/dashboard/StitchDetailsDialog.tsx`
 - `web/app/_components/dashboard/StitchesSection.tsx`
 - `web/app/_components/dashboard/RecentStitchesSection.tsx`
+- `web/app/_components/dashboard/LoadedStitchSequencePreview.tsx`
 
 Docs:
 
@@ -146,3 +157,4 @@ Docs:
 - `docs/features/clip-score.md`
 - `docs/backend/rate-limits.md`
 - `docs/architecture/models.md`
+- `docs/features/quick-edit.md`
