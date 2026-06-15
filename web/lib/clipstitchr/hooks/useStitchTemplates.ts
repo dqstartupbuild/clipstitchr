@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { createStitchTemplateFromConvexDocument } from "@/lib/clipstitchr/backend/createStitchTemplateFromConvexDocument";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
@@ -9,9 +9,11 @@ import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getStitchTemplateDefaultName } from "@/lib/clipstitchr/utils/getStitchTemplateDefaultName";
 
 export function useStitchTemplates() {
-  const documents = useQuery(api.stitchTemplates.list.list, {
-    sortOrder: "newest",
-  });
+  const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
+  const documents = useQuery(
+    api.stitchTemplates.list.list,
+    isAuthenticated ? { sortOrder: "newest" } : "skip",
+  );
   const createFromStitchMutation = useMutation(
     api.stitchTemplates.createFromStitch.createFromStitch,
   );
@@ -100,7 +102,7 @@ export function useStitchTemplates() {
   return {
     deletingTemplateId,
     error,
-    isLoading: documents === undefined,
+    isLoading: isAuthLoading || (isAuthenticated && documents === undefined),
     savingStitchId,
     savingTemplateId,
     templates,
