@@ -121,10 +121,6 @@ vi.mock("@/app/_components/dashboard/RecentUploadsSection", () => ({
   RecentUploadsSection: () => "RecentUploadsSection",
 }));
 
-vi.mock("@/app/_components/dashboard/RecentAvatarsSection", () => ({
-  RecentAvatarsSection: () => "RecentAvatarsSection",
-}));
-
 vi.mock("@/app/_components/dashboard/StitchrCallout", () => ({
   StitchrCallout: () => "StitchrCallout",
 }));
@@ -242,10 +238,9 @@ describe("DashboardPageClient", () => {
 
     expect(markup).toContain("DashboardHeader");
     expect(markup).toContain("DashboardStats:40:20:40");
+    expect(markup).toContain("RecentUploadsSection");
     expect(markup).toContain("RecentStitchesSection");
     expect(markup).toContain("RecentSwipesSection");
-    expect(markup).toContain("RecentUploadsSection");
-    expect(markup).toContain("RecentAvatarsSection");
     expect(markup).toContain("StitchrCallout");
   });
 

@@ -7,7 +7,6 @@ import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHe
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardSidebar } from "@/app/_components/dashboard/DashboardSidebar";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
-import { RecentAvatarsSection } from "@/app/_components/dashboard/RecentAvatarsSection";
 import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitchesSection";
 import { RecentSwipesSection } from "@/app/_components/dashboard/RecentSwipesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
@@ -146,13 +145,6 @@ describe("dashboard shell sections", () => {
   it("renders empty states for recent dashboard sections", () => {
     const markup = renderToStaticMarkup(
       <>
-        <RecentAvatarsSection
-          avatars={[]}
-          photos={[]}
-          onDelete={noop}
-          onLoadPhoto={async () => null}
-          onUpdateMetadata={noop}
-        />
         <RecentStitchesSection
           demoClips={[]}
           stitches={[]}
@@ -192,13 +184,6 @@ describe("dashboard shell sections", () => {
   it("renders populated recent dashboard cards and filters missing swipe backgrounds", () => {
     const markup = renderToStaticMarkup(
       <>
-        <RecentAvatarsSection
-          avatars={[{ id: "avatar_1", name: "Ava" } as Avatar]}
-          photos={[{ avatarId: "avatar_1", id: "photo_1" } as PhotoAssetMetadata]}
-          onDelete={noop}
-          onLoadPhoto={async () => null}
-          onUpdateMetadata={noop}
-        />
         <RecentStitchesSection
           demoClips={[]}
           stitches={[{ id: "stitch_1" } as Stitch]}

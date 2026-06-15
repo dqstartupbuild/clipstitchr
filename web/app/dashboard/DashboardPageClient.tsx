@@ -5,7 +5,6 @@ import { StitchrCallout } from "@/app/_components/dashboard/StitchrCallout";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
-import { RecentAvatarsSection } from "@/app/_components/dashboard/RecentAvatarsSection";
 import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitchesSection";
 import { RecentSwipesSection } from "@/app/_components/dashboard/RecentSwipesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
@@ -131,13 +130,6 @@ export function DashboardPageClient() {
           onDelete={swiprLibrary.removeSwipe}
           onSave={swiprLibrary.saveSwipe}
           onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
-        />
-        <RecentAvatarsSection
-          avatars={photoLibrary.avatars}
-          photos={recentAvatarPhotos}
-          onLoadPhoto={photoLibrary.loadPhoto}
-          onDelete={photoLibrary.removePhoto}
-          onUpdateMetadata={photoLibrary.updatePhotoMetadata}
         />
         <StitchrCallout />
       </div>
