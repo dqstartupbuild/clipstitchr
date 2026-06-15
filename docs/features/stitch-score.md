@@ -37,6 +37,10 @@ URLs in stitch order when they are small enough, plus the saved trim, playback,
 audio, overlay, and source clip analysis context. If no video is small enough to
 send, the score falls back to saved stitch and source metadata.
 
+If the full-video model fails during processing, Stitch Score retries through
+the poster/image analysis path using the saved stitch poster when one exists,
+plus the saved stitch settings and source clip notes.
+
 Stitch scores are cleared when the stitch source settings or overlay text
 change, because those edits can change the score.
 
@@ -62,9 +66,12 @@ Stored fields:
    rendered stitch or eligible source videos.
 5. `createStitchScoreOutputText` sends the prompt and video inputs to the
    configured full-video analysis model.
-6. `parseStitchScore` validates and clamps the provider response.
-7. `stitches.updateScore` saves the score on the stitch.
-8. The dashboard library refreshes and shows the score badge/details.
+6. If that video analysis fails, `createStitchScoreFallbackOutputText` sends the
+   same scoring prompt through the poster/image analysis model with the saved
+   stitch poster when available.
+7. `parseStitchScore` validates and clamps the provider response.
+8. `stitches.updateScore` saves the score on the stitch.
+9. The dashboard library refreshes and shows the score badge/details.
 
 ## Model Decision
 
@@ -76,6 +83,11 @@ Stitch Score uses the same full-video analysis lane as upload video analysis:
 This keeps finished-stitch scoring on the video-capable model path. If a
 Replicate-hosted OpenAI model later supports the same video input shape, it can
 be tested by overriding `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID`.
+
+When full-video scoring fails, Stitch Score falls back to the poster/image lane:
+
+- Environment variable: `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID`
+- Default: `openai/gpt-5-mini`
 
 ## Abuse Protection
 
@@ -102,6 +114,7 @@ API, prompt, parsing, and client call:
 
 - `web/app/api/stitches/score/route.ts`
 - `web/lib/clipstitchr/client/scoreStitch.ts`
+- `web/lib/clipstitchr/server/createStitchScoreFallbackOutputText.ts`
 - `web/lib/clipstitchr/server/createStitchScoreOutputText.ts`
 - `web/lib/clipstitchr/server/createStitchScorePrompt.ts`
 - `web/lib/clipstitchr/server/createStitchScoreVideoInputs.ts`
