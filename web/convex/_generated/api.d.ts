@@ -37,7 +37,6 @@ import type * as avatars from "../avatars.js";
 import type * as cliprJobs from "../cliprJobs.js";
 import type * as cliprPreferences from "../cliprPreferences.js";
 import type * as crons from "../crons.js";
-import type * as dashboardSummary from "../dashboardSummary.js";
 import type * as defaultAutomationCliprVoiceId from "../defaultAutomationCliprVoiceId.js";
 import type * as getAutomationToolDisabledReason from "../getAutomationToolDisabledReason.js";
 import type * as getCliprGeneratedClipStorageFields from "../getCliprGeneratedClipStorageFields.js";
@@ -148,7 +147,6 @@ declare const fullApi: ApiFromModules<{
   cliprJobs: typeof cliprJobs;
   cliprPreferences: typeof cliprPreferences;
   crons: typeof crons;
-  dashboardSummary: typeof dashboardSummary;
   defaultAutomationCliprVoiceId: typeof defaultAutomationCliprVoiceId;
   getAutomationToolDisabledReason: typeof getAutomationToolDisabledReason;
   getCliprGeneratedClipStorageFields: typeof getCliprGeneratedClipStorageFields;

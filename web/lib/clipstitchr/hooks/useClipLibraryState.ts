@@ -8,7 +8,7 @@ import {
   usePaginatedQuery,
   useQuery,
 } from "convex/react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { createStitchFromConvexDocument } from "@/lib/clipstitchr/backend/createStitchFromConvexDocument";
 import { createVideoClipFromConvexDocument } from "@/lib/clipstitchr/backend/createVideoClipFromConvexDocument";
@@ -45,7 +45,6 @@ import { getClipLibraryDisplayCounts } from "@/lib/clipstitchr/utils/getClipLibr
 import { getDeletableMusicAudioObject } from "@/lib/clipstitchr/utils/getDeletableMusicAudioObject";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
-import { getUploadLibraryTabFromSearchParams } from "@/lib/clipstitchr/utils/getUploadLibraryTabFromSearchParams";
 import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoClipMetadataById";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
@@ -58,60 +57,32 @@ type PendingPosterBlobLoad = {
 export function useClipLibraryState(): ClipLibraryValue {
   const convex = useConvex();
   const pathname = usePathname() ?? "";
-  const searchParams = useSearchParams();
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const [error, setError] = useState<string | null>(null);
   const [sortOrder, setSortOrder] =
     useState<ClipLibrarySortOrder>("newest");
+  const isDashboardHome = pathname === "/dashboard";
   const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
-  const uploadTab = isUploadsRoute
-    ? getUploadLibraryTabFromSearchParams(
-        new URLSearchParams(searchParams.toString()),
-      )
-    : "all";
   const isStitchrRoute = pathname.startsWith("/dashboard/stitchr");
   const isSwaprRoute = pathname.startsWith("/dashboard/swapr");
   const isCliprRoute = pathname.startsWith("/dashboard/clipr");
-  const shouldLoadAllClips = false;
+  const shouldLoadAllClips =
+    isAuthenticated && (isDashboardHome || isSwaprRoute);
   const shouldLoadUgcClips =
-    isAuthenticated &&
-    (isStitchrRoute ||
-      isSwaprRoute ||
-      (isUploadsRoute &&
-        (uploadTab === "all" ||
-          uploadTab === "ugc" ||
-          uploadTab === "stitches")));
+    isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
   const shouldLoadCliprClips =
-    isAuthenticated &&
-    (isStitchrRoute ||
-      (isUploadsRoute &&
-        (uploadTab === "all" ||
-          uploadTab === "ugc" ||
-          uploadTab === "stitches")));
+    isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
   const shouldLoadPostedCliprClips = false;
   const shouldLoadDemoClips =
     isAuthenticated &&
-    (isStitchrRoute ||
-      isCliprRoute ||
-      (isUploadsRoute &&
-        (uploadTab === "all" ||
-          uploadTab === "demo" ||
-          uploadTab === "stitches")));
+    (isDashboardHome || isUploadsRoute || isStitchrRoute || isCliprRoute);
   const shouldLoadSwapClips =
-    isAuthenticated &&
-    (isStitchrRoute ||
-      (isUploadsRoute &&
-        (uploadTab === "all" ||
-          uploadTab === "swaps" ||
-          uploadTab === "stitches")));
+    isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
   const shouldLoadStitches =
-    isAuthenticated &&
-    (isSwaprRoute ||
-      (isUploadsRoute &&
-        (uploadTab === "all" || uploadTab === "stitches")));
-  const shouldLoadPostedStitches =
-    isAuthenticated && isUploadsRoute && uploadTab === "stitches";
-  const shouldLoadCounts = isAuthenticated && isUploadsRoute;
+    isAuthenticated && (isDashboardHome || isUploadsRoute || isSwaprRoute);
+  const shouldLoadPostedStitches = isAuthenticated && isUploadsRoute;
+  const shouldLoadCounts =
+    isAuthenticated && (isDashboardHome || isUploadsRoute);
   const clipDocumentsQuery = usePaginatedQuery(
     api.videoClips.list,
     shouldLoadAllClips ? { sortOrder } : "skip",

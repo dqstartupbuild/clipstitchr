@@ -37,7 +37,6 @@ const mocks = vi.hoisted(() => {
     usePaginatedQuery: vi.fn(),
     usePathname: vi.fn(),
     useQuery: vi.fn(),
-    useSearchParams: vi.fn(),
     useStateSetter: vi.fn(),
     uploadBlobsToR2: vi.fn(),
   };
@@ -78,7 +77,6 @@ vi.mock("convex/react", () => ({
 
 vi.mock("next/navigation", () => ({
   usePathname: mocks.usePathname,
-  useSearchParams: mocks.useSearchParams,
 }));
 
 vi.mock("@/convex/_generated/api", () => ({
@@ -232,8 +230,7 @@ describe("useClipLibraryState", () => {
       isAuthenticated: true,
       isLoading: false,
     });
-    mocks.usePathname.mockReturnValue("/dashboard/uploads");
-    mocks.useSearchParams.mockReturnValue(new URLSearchParams(""));
+    mocks.usePathname.mockReturnValue("/dashboard");
     mocks.usePaginatedQuery.mockImplementation(() => {
       return {
         isLoading: false,
@@ -353,29 +350,6 @@ describe("useClipLibraryState", () => {
       "stitches.list",
       "skip",
       { initialNumItems: 48 },
-    );
-    expect(mocks.useQuery).toHaveBeenCalledWith("libraryCounts.get", "skip");
-  });
-
-  it("skips dashboard home library lists for the summary query", () => {
-    mocks.usePathname.mockReturnValue("/dashboard");
-
-    useClipLibraryState();
-
-    expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
-      "videoClips.list",
-      "skip",
-      expect.any(Object),
-    );
-    expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
-      "videoClips.listByLibraryKind",
-      "skip",
-      expect.any(Object),
-    );
-    expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
-      "stitches.list",
-      "skip",
-      expect.any(Object),
     );
     expect(mocks.useQuery).toHaveBeenCalledWith("libraryCounts.get", "skip");
   });
@@ -1081,11 +1055,9 @@ describe("useClipLibraryState", () => {
       loadMore: vi.fn(),
       results: [],
       status:
-        queryId === "videoClips.listByLibraryKind"
+        queryId === "videoClips.list"
           ? "LoadingFirstPage"
-          : queryId === "stitches.list"
-            ? "LoadingMore"
-            : "Exhausted",
+          : "LoadingMore",
     }));
 
     const state = useClipLibraryState();

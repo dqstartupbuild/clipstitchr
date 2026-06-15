@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { createSwiprBackgroundAssetFromConvexDocument } from "@/lib/clipstitchr/backend/createSwiprBackgroundAssetFromConvexDocument";
 import { createSwiprSwipeFromConvexDocument } from "@/lib/clipstitchr/backend/createSwiprSwipeFromConvexDocument";
@@ -15,7 +15,6 @@ import { SWIPR_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/swiprP
 import { uploadSwiprBackgroundBlobToR2 } from "@/lib/clipstitchr/client/r2/uploadSwiprBackgroundBlobToR2";
 import { getImageDimensions } from "@/lib/clipstitchr/media/getImageDimensions";
 import { renderSwiprSlideBlob } from "@/lib/clipstitchr/media/renderSwiprSlideBlob";
-import { getUploadLibraryTabFromSearchParams } from "@/lib/clipstitchr/utils/getUploadLibraryTabFromSearchParams";
 import type {
   SaveSwiprBackgroundOptions,
   SaveSwiprSwipeInput,
@@ -27,26 +26,15 @@ import { createId } from "@/lib/clipstitchr/utils/createId";
 
 export function useSwiprLibraryState(): SwiprLibraryValue {
   const pathname = usePathname() ?? "";
-  const searchParams = useSearchParams();
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
+  const isDashboardHome = pathname === "/dashboard";
   const isSwiprRoute = pathname.startsWith("/dashboard/swipr");
   const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
-  const uploadTab = isUploadsRoute
-    ? getUploadLibraryTabFromSearchParams(
-        new URLSearchParams(searchParams.toString()),
-      )
-    : "all";
-  const editingSwipeId = searchParams.get("swipe");
   const shouldLoadBackgrounds =
-    isAuthenticated &&
-    (isSwiprRoute ||
-      (isUploadsRoute && (uploadTab === "all" || uploadTab === "swipes")));
+    isAuthenticated && (isDashboardHome || isSwiprRoute || isUploadsRoute);
   const shouldLoadSwipes =
-    isAuthenticated &&
-    ((isUploadsRoute && (uploadTab === "all" || uploadTab === "swipes")) ||
-      (isSwiprRoute && !!editingSwipeId));
-  const shouldLoadPostedSwipes =
-    isAuthenticated && isUploadsRoute && uploadTab === "swipes";
+    isAuthenticated && (isDashboardHome || isSwiprRoute || isUploadsRoute);
+  const shouldLoadPostedSwipes = isAuthenticated && isUploadsRoute;
   const backgroundDocuments = useQuery(
     api.swiprBackgrounds.list,
     shouldLoadBackgrounds ? {} : "skip",
