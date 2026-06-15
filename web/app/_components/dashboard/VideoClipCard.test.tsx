@@ -394,7 +394,7 @@ describe("VideoClipCard", () => {
     expect(mocks.actionItems.map((item) => item.label)).toContain("Score clip");
   });
 
-  it("marks video clips as posted and active", async () => {
+  it("marks script clips as posted and active", async () => {
     const onUpdatePostedStatus = vi.fn(async () => undefined);
 
     renderToStaticMarkup(
@@ -434,6 +434,55 @@ describe("VideoClipCard", () => {
     await Promise.resolve();
 
     expect(onUpdatePostedStatus).toHaveBeenCalledWith(postedClip, false);
+  });
+
+  it("omits posted actions for UGC, Demo, Swapr, and non-script Clipr clips", () => {
+    const onUpdatePostedStatus = vi.fn(async () => undefined);
+
+    for (const clip of [
+      createClipMetadata({
+        cliprMetadata: undefined,
+        libraryKind: "ugc",
+      }),
+      createClipMetadata({
+        clipType: "demo",
+        cliprMetadata: undefined,
+        libraryKind: "demo",
+      }),
+      createClipMetadata({
+        cliprMetadata: undefined,
+        libraryKind: "swapr",
+        swaprMetadata: {
+          characterOrientation: "video",
+          keepOriginalSound: false,
+          mode: "std",
+          modelId: "swapr-model",
+          referenceUgcClipId: "ugc_1",
+          replicatePredictionId: "prediction_1",
+          source: "swapr",
+          sourcePhotoId: "photo_1",
+        },
+      }),
+      createClipMetadata({
+        cliprMetadata: createCliprMetadata({ generationMode: "reaction" }),
+        libraryKind: "clipr",
+      }),
+    ]) {
+      renderToStaticMarkup(
+        <VideoClipCard
+          clip={clip}
+          onDelete={vi.fn()}
+          onLoadClip={vi.fn()}
+          onUpdateMetadata={vi.fn()}
+          onUpdatePostedStatus={onUpdatePostedStatus}
+          onUpdateTrim={vi.fn()}
+        />,
+      );
+
+      expect(mocks.actionItems.map((item) => item.label)).not.toContain(
+        "Mark as posted",
+      );
+    }
   });
 
   it("skips clip download when the full clip cannot be loaded", async () => {

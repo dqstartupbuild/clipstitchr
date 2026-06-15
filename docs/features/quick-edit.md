@@ -54,11 +54,13 @@ to a scored Stitch:
 - updates the saved UGC/Demo trim ranges for that Stitch only
 - replaces the first saved text overlay when the AI suggests stronger overlay
   text
-- clears stale saved render fields and Stitch Score so the next preview,
-  download, or score uses the updated video
+- clears stale saved render fields so the next preview or download uses the
+  updated video
+- keeps the existing Stitch Score visible until the user chooses to rescore
 
 Resetting a saved Stitch restores the saved baseline snapshot from before
-Quick Edit was applied. It does not read the latest source clip defaults.
+Quick Edit was applied. It does not read the latest source clip defaults, and it
+does not clear the saved score.
 
 Longr exports inherit source clip Quick Edit metadata through sequence segments,
 but the one-click scored-Stitch remap is intentionally limited to normal

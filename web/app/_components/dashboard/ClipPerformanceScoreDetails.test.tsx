@@ -31,6 +31,9 @@ describe("ClipPerformanceScoreDetails", () => {
     expect(markup).toContain("What works");
     expect(markup).toContain("Quick fixes");
     expect(markup).toContain("Cut the first pause.");
+    expect(markup).toContain("bg-surface-elevated");
+    expect(markup).not.toContain("bg-purple-50/70");
+    expect(markup).not.toContain("bg-white/80");
   });
 
   it("renders nothing until a score exists", () => {

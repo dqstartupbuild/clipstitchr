@@ -667,7 +667,6 @@ export const applyQuickEdit = mutation({
       },
       size: undefined,
       stitchObject: undefined,
-      stitchScore: undefined,
       textOverlay: normalizedTextOverlays[0],
       textOverlays: normalizedTextOverlays.length
         ? normalizedTextOverlays
@@ -714,7 +713,6 @@ export const resetQuickEdit = mutation({
       quickEdit: undefined,
       size: undefined,
       stitchObject: undefined,
-      stitchScore: undefined,
       textOverlay: baseline?.textOverlay,
       textOverlays: baseline?.textOverlays,
       ugcQuickEdit: baseline?.ugcQuickEdit,

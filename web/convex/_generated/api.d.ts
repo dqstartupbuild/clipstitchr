@@ -45,6 +45,7 @@ import type * as getDefaultAvatarForOwner from "../getDefaultAvatarForOwner.js";
 import type * as getDefaultProductForOwner from "../getDefaultProductForOwner.js";
 import type * as getEnabledAutomationToolsForPreference from "../getEnabledAutomationToolsForPreference.js";
 import type * as getQuickEditOverlayText from "../getQuickEditOverlayText.js";
+import type * as getVideoClipCanBePosted from "../getVideoClipCanBePosted.js";
 import type * as getVideoClipLibraryKind from "../getVideoClipLibraryKind.js";
 import type * as isWithinAutomationGlobalWindow from "../isWithinAutomationGlobalWindow.js";
 import type * as libraryCounts from "../libraryCounts.js";
@@ -163,6 +164,7 @@ declare const fullApi: ApiFromModules<{
   getDefaultProductForOwner: typeof getDefaultProductForOwner;
   getEnabledAutomationToolsForPreference: typeof getEnabledAutomationToolsForPreference;
   getQuickEditOverlayText: typeof getQuickEditOverlayText;
+  getVideoClipCanBePosted: typeof getVideoClipCanBePosted;
   getVideoClipLibraryKind: typeof getVideoClipLibraryKind;
   isWithinAutomationGlobalWindow: typeof isWithinAutomationGlobalWindow;
   libraryCounts: typeof libraryCounts;

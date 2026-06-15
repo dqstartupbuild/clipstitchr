@@ -26,7 +26,7 @@ export function ClipPerformanceScoreDetails({
   );
 
   return (
-    <section className="min-w-0 rounded-lg border border-purple-200 bg-purple-50/70 p-4">
+    <section className="min-w-0 rounded-lg border border-border bg-surface-elevated p-4">
       <div className="flex min-w-0 items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-accent-dark">
@@ -52,7 +52,7 @@ export function ClipPerformanceScoreDetails({
         </div>
       </div>
       {score.bestUse ? (
-        <p className="mt-3 rounded-md bg-white/80 px-3 py-2 text-sm font-semibold text-text-primary">
+        <p className="mt-3 rounded-md border border-border bg-surface px-3 py-2 text-sm font-semibold text-text-primary">
           Best use: {score.bestUse}
         </p>
       ) : null}
@@ -64,7 +64,7 @@ export function ClipPerformanceScoreDetails({
                 <span>{item.label}</span>
                 <span>{item.value}</span>
               </div>
-              <div className="mt-1 h-2 overflow-hidden rounded-full bg-white">
+              <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200">
                 <div
                   className="h-full rounded-full bg-accent"
                   style={{ width: `${item.value}%` }}

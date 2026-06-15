@@ -10,7 +10,12 @@ type VideoClipBadgeLabelInput = {
 };
 
 export function getVideoClipBadgeLabel(clip: VideoClipBadgeLabelInput) {
-  if (clip.isPosted) {
+  if (
+    clip.isPosted &&
+    clip.cliprMetadata &&
+    (!clip.cliprMetadata.generationMode ||
+      clip.cliprMetadata.generationMode === "script")
+  ) {
     return "POSTED";
   }
 

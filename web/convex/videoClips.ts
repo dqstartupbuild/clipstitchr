@@ -6,6 +6,7 @@ import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { videoClipCounts } from "./aggregateCounts";
+import { getVideoClipCanBePosted } from "./getVideoClipCanBePosted";
 import { getVideoClipLibraryKind } from "./getVideoClipLibraryKind";
 import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
@@ -744,6 +745,10 @@ export const updatePostedStatus = mutation({
 
     if (!clip) {
       throw new Error("Video clip not found.");
+    }
+
+    if (!getVideoClipCanBePosted(clip)) {
+      throw new Error("Only script clips can be marked posted.");
     }
 
     await ctx.db.patch(clip._id, {

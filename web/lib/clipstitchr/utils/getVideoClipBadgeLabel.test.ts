@@ -10,13 +10,40 @@ describe("getVideoClipBadgeLabel", () => {
     expect(getVideoClipBadgeLabel({ clipType: "demo" })).toBe("DEMO");
   });
 
-  it("labels posted clips before source type", () => {
+  it("labels posted script clips before source type", () => {
+    expect(
+      getVideoClipBadgeLabel({
+        cliprMetadata: {
+          avatarId: "avatar-1",
+          avatarPhotoId: "photo-1",
+          createdAt: "2026-05-11T00:00:00.000Z",
+          filledHook: "The useful thing nobody tells you",
+          finalDurationSeconds: 30,
+          hookStyleKey: "mystery_gap",
+          hookTemplateId: "MG-001",
+          jobId: "job-1",
+          productId: "product-1",
+          productName: "Product",
+          providerModels: ["model"],
+          sceneCount: 2,
+          script: "Script",
+          targetDurationSeconds: 30,
+          variablesUsed: {},
+          voiceId: "Rachel",
+        },
+        clipType: "ugc",
+        isPosted: true,
+      }),
+    ).toBe("POSTED");
+  });
+
+  it("ignores stale posted metadata on non-script clips", () => {
     expect(
       getVideoClipBadgeLabel({
         clipType: "ugc",
         isPosted: true,
       }),
-    ).toBe("POSTED");
+    ).toBe("UGC");
   });
 
   it("labels Swapr outputs as swaps", () => {

@@ -347,7 +347,8 @@ describe("convex videoClips", () => {
 
   it("updates posted status using Stitch active semantics", async () => {
     const setup = createCtx([
-      { _id: "doc_1", id: "clip_1" },
+      { _id: "doc_1", cliprMetadata: {}, id: "clip_1" },
+      { _id: "doc_1", cliprMetadata: {}, id: "clip_1" },
       { _id: "doc_1", id: "clip_1" },
     ]);
 
@@ -372,5 +373,12 @@ describe("convex videoClips", () => {
       postedAt: undefined,
     });
     expect(mocks.videoClipCounts.replaceOrInsert).toHaveBeenCalledTimes(2);
+
+    await expect(
+      getHandler(updatePostedStatus)(setup.ctx, {
+        id: "clip_1",
+        isPosted: true,
+      }),
+    ).rejects.toThrow("Only script clips can be marked posted.");
   });
 });

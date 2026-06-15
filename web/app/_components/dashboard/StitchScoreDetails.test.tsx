@@ -23,6 +23,9 @@ describe("StitchScoreDetails", () => {
     expect(markup).toContain("Drop-off risks");
     expect(markup).toContain("Cut the quiet pause");
     expect(markup).toContain("Stronger opening");
+    expect(markup).toContain("bg-surface-elevated");
+    expect(markup).not.toContain("bg-purple-50/70");
+    expect(markup).not.toContain("bg-white/80");
   });
 
   it("renders nothing without a score", () => {

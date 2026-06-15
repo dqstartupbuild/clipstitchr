@@ -31,6 +31,7 @@ import { renderCliprVideoWithMusic } from "@/lib/clipstitchr/media/renderCliprVi
 import { createQuickEditSuggestionsFromMetadata } from "@/lib/clipstitchr/utils/createQuickEditSuggestionsFromMetadata";
 import { downloadBlob } from "@/lib/clipstitchr/utils/downloadBlob";
 import { getAssetDownloadFileName } from "@/lib/clipstitchr/utils/getAssetDownloadFileName";
+import { getVideoClipCanBePosted } from "@/lib/clipstitchr/utils/getVideoClipCanBePosted";
 import { getClipCanBeScored } from "@/lib/clipstitchr/utils/getClipCanBeScored";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getClipCanUseInSwapr } from "@/lib/clipstitchr/utils/getClipCanUseInSwapr";
@@ -119,6 +120,7 @@ export function VideoClipCard({
   const quickEdit = createQuickEditSuggestionsFromMetadata(clip.quickEdit);
   const quickEditSuggestions = clip.performanceScore?.quickEditSuggestions;
   const isPosted = Boolean(clip.isPosted);
+  const canUpdatePostedStatus = getVideoClipCanBePosted(clip);
   const displayDuration = getQuickEditPlaybackDuration(
     defaultTrimRange,
     clip.duration,
@@ -370,7 +372,7 @@ export function VideoClipCard({
             },
           );
 
-          if (onUpdatePostedStatus) {
+          if (onUpdatePostedStatus && canUpdatePostedStatus) {
             items.push({
               label: isPosted ? "Mark as active" : "Mark as posted",
               icon: isPosted ? (

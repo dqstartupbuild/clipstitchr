@@ -340,13 +340,15 @@ browser-local and are not separately rate-limited. `POST /api/stitches/music`
 consumes the Stitchr music limits before Replicate, then R2 upload limits for
 both personal and shared copies.
 
-Marking a saved stitch as posted or active is metadata-only. The
-`stitches.updatePostedStatus` mutation authenticates the owner, consumes the
-shared Convex metadata-update limit before patching the record, and does not
-touch R2 objects, source clips, posters, music assets, or provider APIs. Reusing
-a saved stitch as a Stitchr template is client-side state hydration from the
-owner-scoped stitch and source clip metadata; it creates no backend cost until
-the user saves or exports a new stitch.
+Marking a saved stitch, script Clipr clip, or Swipe as posted or active is
+metadata-only. The matching posted-status mutation authenticates the owner,
+consumes the shared Convex metadata-update limit before patching the record, and
+does not touch R2 objects, source clips, posters, music assets, or provider
+APIs. UGC clips, Demo clips, Swapr outputs, and non-script Clipr visual clips do
+not expose posted actions. Reusing a saved stitch as a Stitchr template is
+client-side state hydration from the owner-scoped stitch and source clip
+metadata; it creates no backend cost until the user saves or exports a new
+stitch.
 
 The expanded hook libraries are local prompt resources, not new backend
 operations. Swipr and Stitchr auto-text continue to use `POST /api/clipr/text`

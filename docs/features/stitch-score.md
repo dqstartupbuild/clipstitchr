@@ -50,7 +50,8 @@ When a normal saved Stitch score includes `quickEditSuggestions`, the Stitch
 card can show **Improve stitch**. Applying it updates only that saved Stitch's
 trim, internal cut, overlay text, and Quick Edit metadata. Reset restores the
 saved Stitch baseline from before the action and does not pull the latest UGC
-or Demo clip defaults.
+or Demo clip defaults. Applying or resetting Quick Edit keeps the visible score
+until the user chooses to rescore.
 
 ## Data Shape
 

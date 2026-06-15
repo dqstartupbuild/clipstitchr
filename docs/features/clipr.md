@@ -88,6 +88,9 @@ hook, and the remaining slides should pay it off with simple supporting points.
   music, regenerate music, or change music volume later. Media Bunny mixes the
   saved clean video and selected music only when the user exports/downloads.
 - Final non-demo Clipr outputs should be saved in the content library as UGC.
+- Only Script Clipr clips can be marked posted or active from the library.
+  Reaction, B-roll, Demo remixes, uploaded UGC, uploaded Demo, and Swapr assets
+  do not show clip posted actions.
 
 ## Documentation Coverage
 
@@ -842,6 +845,9 @@ Content Library behavior:
 - Clipr videos should have `Use in Stitchr`, preview, metadata edit, music
   settings, download/export, and delete behavior consistent with other saved
   video clips.
+- Script Clipr clips may also be marked posted or active. Reaction, B-roll, and
+  Demo remix clips do not show posted actions even though they remain usable in
+  the library.
 - Music settings should let the user disable/remove music, regenerate music, and
   change the export volume. These changes update metadata and the R2 music
   object, not the saved clean video.

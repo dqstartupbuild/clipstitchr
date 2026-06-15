@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  applyQuickEdit,
   get,
   list,
   remove,
+  resetQuickEdit,
   save,
   updateMusic,
   updatePostedStatus,
@@ -297,5 +299,76 @@ describe("convex stitches", () => {
     );
     await expect(getHandler(remove)(setup.ctx, { id: "missing" })).resolves.toBeNull();
     expect(setup.ctx.db.delete).toHaveBeenCalledWith("doc_1");
+  });
+
+  it("preserves Stitch score when applying and resetting Quick Edit", async () => {
+    const setup = createCtx([
+      {
+        _id: "doc_1",
+        demoTrimRange: { start: 0, end: 8 },
+        duration: 12,
+        id: "stitch_1",
+        stitchScore: {
+          dropOffRiskPoints: ["Slow handoff"],
+          hookToDemoFlow: 81,
+          overallRetentionEstimate: 78,
+          suggestedOverlayText: ["Better hook"],
+          suggestedTrims: ["Cut the first pause"],
+          summary: "Good but can be tighter.",
+        },
+        ugcTrimRange: { start: 0, end: 4 },
+      },
+      {
+        _id: "doc_1",
+        duration: 10,
+        id: "stitch_1",
+        quickEdit: {
+          appliedAt: "2026-05-20T00:00:00.000Z",
+          baseline: {
+            demoTrimRange: { start: 0, end: 8 },
+            duration: 12,
+            ugcTrimRange: { start: 0, end: 4 },
+          },
+          removeRanges: [],
+          source: "ai-score",
+        },
+        stitchScore: {
+          dropOffRiskPoints: ["Slow handoff"],
+          hookToDemoFlow: 81,
+          overallRetentionEstimate: 78,
+          suggestedOverlayText: ["Better hook"],
+          suggestedTrims: ["Cut the first pause"],
+          summary: "Good but can be tighter.",
+        },
+      },
+    ]);
+
+    await getHandler(applyQuickEdit)(setup.ctx, {
+      id: "stitch_1",
+      demoTrimRange: { start: 0, end: 6 },
+      duration: 10,
+      quickEdit: {
+        removeRanges: [{ start: 4, end: 6, reason: "Slow section" }],
+        summary: "Tighter edit.",
+      },
+      textOverlay: null,
+      ugcTrimRange: { start: 0, end: 4 },
+    });
+    await getHandler(resetQuickEdit)(setup.ctx, { id: "stitch_1" });
+
+    expect(setup.ctx.db.patch).toHaveBeenNthCalledWith(
+      1,
+      "doc_1",
+      expect.not.objectContaining({
+        stitchScore: undefined,
+      }),
+    );
+    expect(setup.ctx.db.patch).toHaveBeenNthCalledWith(
+      2,
+      "doc_1",
+      expect.not.objectContaining({
+        stitchScore: undefined,
+      }),
+    );
   });
 });

@@ -78,11 +78,14 @@ The Swipes tab shows saved Swipe cards with:
 - Background preview.
 - Last updated date.
 - Download action for the current saved version.
+- Mark posted or active action.
 - Detail action.
 - Continue editing action.
 - Delete action for the saved Swipe record.
 
-The All tab includes Swipes with the other saved content types.
+The All tab includes Swipes with the other saved content types. Swipe posted
+status is stored on the saved Swipe record and is separate from video clip
+posted status.
 
 The Swipe detail view lets the user swipe or step through the saved carousel
 images. The detail view renders previews from the saved editable data and the
