@@ -17,9 +17,27 @@ export async function getCompletedReplicatePredictionOutputText({
   predictionDiagnostics?: GeminiVideoAnalysisPredictionDiagnostics;
   replicate: ReplicateClient;
 }) {
-  const completedPrediction = await replicate.wait(prediction, {
-    interval: 1000,
-  });
+  let completedPrediction: Prediction;
+
+  try {
+    completedPrediction = await replicate.wait(prediction, {
+      interval: 1000,
+    });
+  } catch (error) {
+    if (predictionDiagnostics) {
+      const latestPrediction = await replicate.predictions
+        .get(prediction.id)
+        .catch(() => undefined);
+
+      logGeminiVideoAnalysisPredictionDiagnostics({
+        diagnostics: predictionDiagnostics,
+        error,
+        prediction: latestPrediction ?? prediction,
+      });
+    }
+
+    throw error;
+  }
 
   if (predictionDiagnostics) {
     logGeminiVideoAnalysisPredictionDiagnostics({

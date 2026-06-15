@@ -18,7 +18,7 @@ Gemini video analysis can fail inside Replicate before ClipStitchr receives usab
 - server-side HEAD status and `content-type`, `content-length`, `accept-ranges`
 - tiny range request status and range response headers
 
-`gemini-video-analysis-prediction` is logged after Replicate completes or when prediction creation fails before an id is available. It includes:
+`gemini-video-analysis-prediction` is logged after Replicate completes, when prediction creation fails before an id is available, or when waiting for an existing prediction throws. Wait failures fetch the latest Replicate prediction first so the log can include the provider status and redacted error. It includes:
 
 - `featurePath`
 - `modelId`
