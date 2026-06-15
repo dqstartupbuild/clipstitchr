@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { Suspense } from "react";
+import { DashboardLayoutFallback } from "@/app/_components/dashboard/DashboardLayoutFallback";
 import { DashboardLibraryProvider } from "@/app/dashboard/DashboardLibraryProvider";
 
 type DashboardLayoutProps = {
@@ -6,5 +8,9 @@ type DashboardLayoutProps = {
 };
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  return <DashboardLibraryProvider>{children}</DashboardLibraryProvider>;
+  return (
+    <Suspense fallback={<DashboardLayoutFallback />}>
+      <DashboardLibraryProvider>{children}</DashboardLibraryProvider>
+    </Suspense>
+  );
 }
