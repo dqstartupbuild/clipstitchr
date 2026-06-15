@@ -124,10 +124,13 @@ Optional Replicate model overrides:
   fallback analysis.
 - `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` defaults to
   `google/gemini-3-flash` for full-video UGC/demo action and score analysis.
-  Finished Stitch scoring uses this same full-video analysis lane when scoring
-  rendered stitch videos. When no rendered Stitch video is available, Stitch
-  Score uses the OpenAI poster/context fallback instead of sending raw source
-  videos.
+  `REPLICATE_UPLOAD_VIDEO_FALLBACK_MODEL_ID` defaults to
+  `lucataco/qwen2-vl-7b-instruct:bf57361c75677fc33d480d0c5f02926e621b2caa2000347cb74aeae9d2ca07ee`
+  and is tried only after the primary full-video model fails. Finished Stitch
+  scoring uses this same full-video analysis lane when scoring rendered stitch
+  videos. When both video models fail, or when no rendered Stitch video is
+  available, Stitch Score uses the OpenAI poster/context fallback instead of
+  sending raw source videos.
 - `SWIPR_BACKGROUND_MODEL_ID` defaults to `openai/gpt-image-2` for Swipr AI
   background generation. Supported workflows include `openai/gpt-image-2`,
   `prunaai/p-image`, and `prunaai/wan-2.2-image`.

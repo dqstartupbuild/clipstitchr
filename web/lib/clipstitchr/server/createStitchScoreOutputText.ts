@@ -3,6 +3,7 @@ import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateC
 import { createStitchScoreFallbackOutputText } from "@/lib/clipstitchr/server/createStitchScoreFallbackOutputText";
 import { createStitchScorePrompt } from "@/lib/clipstitchr/server/createStitchScorePrompt";
 import { createStitchScorePosterFile } from "@/lib/clipstitchr/server/createStitchScorePosterFile";
+import { createStitchScoreVideoFallbackOutputText } from "@/lib/clipstitchr/server/createStitchScoreVideoFallbackOutputText";
 import { createStitchScoreVideoInputs } from "@/lib/clipstitchr/server/createStitchScoreVideoInputs";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { getUploadVideoAnalysisModelId } from "@/lib/clipstitchr/server/getUploadVideoAnalysisModelId";
@@ -61,6 +62,18 @@ export async function createStitchScoreOutputText({
       replicate,
     });
   } catch {
+    try {
+      return await createStitchScoreVideoFallbackOutputText({
+        replicate,
+        sourceClips,
+        stitch,
+        videoInput: videoInputs.videos[0],
+        videoInputDescription: videoInputs.videoInputDescription,
+      });
+    } catch {
+      // Continue to poster fallback below when the backup video model is unavailable.
+    }
+
     return await createStitchScoreFallbackOutputText({
       posterFile: await createStitchScorePosterFile({ stitch, userId }),
       replicate,

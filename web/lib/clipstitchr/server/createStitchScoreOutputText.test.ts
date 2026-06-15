@@ -24,12 +24,15 @@ vi.mock("@/lib/clipstitchr/server/r2/createFileFromR2Object", () => ({
 }));
 
 function createReplicate() {
+  let predictionCount = 0;
+
   return {
     predictions: {
-      create: vi
-        .fn()
-        .mockResolvedValueOnce({ id: "video_prediction" })
-        .mockResolvedValueOnce({ id: "fallback_prediction" }),
+      create: vi.fn(async () => {
+        predictionCount += 1;
+
+        return { id: `prediction_${predictionCount}` };
+      }),
     },
     wait: vi.fn(),
   };
@@ -61,10 +64,13 @@ const sourceClips = [
 describe("createStitchScoreOutputText", () => {
   const previousUploadAnalysisModelId =
     process.env.REPLICATE_UPLOAD_ANALYSIS_MODEL_ID;
+  const previousVideoFallbackAnalysisModelId =
+    process.env.REPLICATE_UPLOAD_VIDEO_FALLBACK_MODEL_ID;
 
   beforeEach(() => {
     vi.clearAllMocks();
     delete process.env.REPLICATE_UPLOAD_ANALYSIS_MODEL_ID;
+    delete process.env.REPLICATE_UPLOAD_VIDEO_FALLBACK_MODEL_ID;
     mocks.createStitchScoreVideoInputs.mockResolvedValue({
       videoInputDescription: "Rendered stitch video.",
       videos: ["https://r2.example/stitch.mp4"],
@@ -77,14 +83,73 @@ describe("createStitchScoreOutputText", () => {
   afterEach(() => {
     if (previousUploadAnalysisModelId === undefined) {
       delete process.env.REPLICATE_UPLOAD_ANALYSIS_MODEL_ID;
-      return;
+    } else {
+      process.env.REPLICATE_UPLOAD_ANALYSIS_MODEL_ID =
+        previousUploadAnalysisModelId;
     }
 
-    process.env.REPLICATE_UPLOAD_ANALYSIS_MODEL_ID =
-      previousUploadAnalysisModelId;
+    if (previousVideoFallbackAnalysisModelId === undefined) {
+      delete process.env.REPLICATE_UPLOAD_VIDEO_FALLBACK_MODEL_ID;
+    } else {
+      process.env.REPLICATE_UPLOAD_VIDEO_FALLBACK_MODEL_ID =
+        previousVideoFallbackAnalysisModelId;
+    }
   });
 
-  it("falls back to poster scoring when Gemini video scoring fails", async () => {
+  it("falls back to Qwen video scoring when Gemini video scoring fails", async () => {
+    const replicate = createReplicate();
+    const qwenScore = JSON.stringify({
+      overallRetentionEstimate: 74,
+      hookToDemoFlow: 70,
+      summary: "The opener has emotion, but the demo needs a faster payoff.",
+      dropOffRiskPoints: ["Demo arrives a little late."],
+      suggestedTrims: ["Start closer to the reaction."],
+      suggestedOverlayText: ["Wait for the demo"],
+      suggestedOpeningLine: "I did not expect this result.",
+    });
+
+    mocks.getCompletedReplicatePredictionOutputText
+      .mockRejectedValueOnce(
+        new Error(
+          "Prediction failed: Async prediction failed: ModelError: E001",
+        ),
+      )
+      .mockResolvedValueOnce(qwenScore);
+
+    await expect(
+      createStitchScoreOutputText({
+        replicate: replicate as never,
+        sourceClips: sourceClips as never,
+        stitch: stitch as never,
+        userId: "user_123",
+      }),
+    ).resolves.toBe(qwenScore);
+
+    expect(replicate.predictions.create).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        model: "google/gemini-3-flash",
+        input: expect.objectContaining({
+          videos: ["https://r2.example/stitch.mp4"],
+        }),
+      }),
+    );
+    expect(replicate.predictions.create).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        input: expect.objectContaining({
+          max_new_tokens: 512,
+          media: "https://r2.example/stitch.mp4",
+          prompt: expect.stringContaining("Score this finished ClipStitchr"),
+        }),
+        version:
+          "bf57361c75677fc33d480d0c5f02926e621b2caa2000347cb74aeae9d2ca07ee",
+      }),
+    );
+    expect(mocks.createFileFromR2Object).not.toHaveBeenCalled();
+  });
+
+  it("falls back to poster scoring when both video scoring models fail", async () => {
     const replicate = createReplicate();
 
     mocks.getCompletedReplicatePredictionOutputText
@@ -93,6 +158,7 @@ describe("createStitchScoreOutputText", () => {
           "Prediction failed: Async prediction failed: ModelError: E001",
         ),
       )
+      .mockResolvedValueOnce("not json")
       .mockResolvedValueOnce("fallback score");
 
     await expect(
@@ -105,12 +171,10 @@ describe("createStitchScoreOutputText", () => {
     ).resolves.toBe("fallback score");
 
     expect(replicate.predictions.create).toHaveBeenNthCalledWith(
-      1,
+      2,
       expect.objectContaining({
-        model: "google/gemini-3-flash",
-        input: expect.objectContaining({
-          videos: ["https://r2.example/stitch.mp4"],
-        }),
+        version:
+          "bf57361c75677fc33d480d0c5f02926e621b2caa2000347cb74aeae9d2ca07ee",
       }),
     );
     expect(mocks.createFileFromR2Object).toHaveBeenCalledWith({
@@ -119,7 +183,7 @@ describe("createStitchScoreOutputText", () => {
       userId: "user_123",
     });
     expect(replicate.predictions.create).toHaveBeenNthCalledWith(
-      2,
+      3,
       expect.objectContaining({
         model: "openai/gpt-5-mini",
         input: expect.objectContaining({

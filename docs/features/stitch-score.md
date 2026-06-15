@@ -37,7 +37,8 @@ If no rendered video is available to the server, Stitch Score uses the
 poster/image fallback with saved stitch settings and source clip notes instead
 of sending raw source videos.
 
-If the full-video model fails during processing, Stitch Score retries through
+If the primary full-video model fails during processing, Stitch Score retries
+with the configured video fallback model. If that also fails, it retries through
 the poster/image analysis path using the saved stitch poster when one exists,
 plus the saved stitch settings and source clip notes.
 
@@ -79,12 +80,15 @@ Stitch Score uses the same full-video analysis lane as upload video analysis:
 
 - Environment variable: `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID`
 - Default: `google/gemini-3-flash`
+- Backup environment variable: `REPLICATE_UPLOAD_VIDEO_FALLBACK_MODEL_ID`
+- Backup default: `lucataco/qwen2-vl-7b-instruct:bf57361c75677fc33d480d0c5f02926e621b2caa2000347cb74aeae9d2ca07ee`
 
 This keeps finished-stitch scoring on the video-capable model path. If a
 Replicate-hosted OpenAI model later supports the same video input shape, it can
 be tested by overriding `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID`.
 
-When full-video scoring fails, Stitch Score falls back to the poster/image lane:
+When both full-video scoring models fail, Stitch Score falls back to the
+poster/image lane:
 
 - Environment variable: `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID`
 - Default: `openai/gpt-5-mini`

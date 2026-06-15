@@ -68,6 +68,8 @@ Full-video analysis still defaults to Gemini:
 
 - `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` defaults to
   `google/gemini-3-flash`.
+- `REPLICATE_UPLOAD_VIDEO_FALLBACK_MODEL_ID` defaults to
+  `lucataco/qwen2-vl-7b-instruct:bf57361c75677fc33d480d0c5f02926e621b2caa2000347cb74aeae9d2ca07ee`.
 - This path is used when ClipStitchr sends the actual video, not just a poster
   image.
 
@@ -76,7 +78,9 @@ lists text and image input, but not video input. The OpenAI vision guide also
 documents image inputs for analysis. Replicate's `openai/gpt-5-mini` page
 likewise presents it as a text/image model, while Replicate's
 `google/gemini-3-flash` page lists video support. Because true clip scoring
-needs full-video understanding, Gemini remains the full-video fallback.
+needs full-video understanding, Gemini remains the primary full-video model.
+If Gemini fails, ClipStitchr tries Qwen2-VL on the same video before using the
+poster/image fallback.
 
 Source references:
 
@@ -90,6 +94,8 @@ Source references:
   `https://replicate.com/openai/gpt-5-mini`
 - Replicate Google Gemini 3 Flash:
   `https://replicate.com/google/gemini-3-flash`
+- Replicate Qwen2-VL 7B Instruct:
+  `https://replicate.com/lucataco/qwen2-vl-7b-instruct`
 
 ## Backend Flow
 
@@ -112,8 +118,9 @@ Manual scoring uses the same score shape:
    b-roll videos are UGC, so they can be scored and rescored.
 5. The route consumes the upload video analysis limit before signing the saved
    R2 video URL or calling the provider.
-6. The route sends the saved video to the current full-video analysis model and
-   uses the saved poster image as fallback when needed.
+6. The route sends the saved video to the current full-video analysis model,
+   tries the configured video fallback model if the primary model fails, and
+   uses the saved poster image as the final fallback when needed.
 7. The parsed score is saved through `videoClips.updatePerformanceScore`.
 
 This is analysis metadata, not user-editable metadata. User clip metadata edits
@@ -125,6 +132,8 @@ The feature uses the existing upload analysis surfaces:
 
 - poster/image analysis limits for `REPLICATE_UPLOAD_ANALYSIS_MODEL_ID`
 - full-video analysis limits for `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID`
+- backup full-video analysis through `REPLICATE_UPLOAD_VIDEO_FALLBACK_MODEL_ID`
+  inside the same consumed full-video quota
 - provider-worker rate gates before paid provider calls
 - `POST /api/video-clips/score` consumes the same full-video analysis quota as
   upload video analysis before signed R2 reads or provider work

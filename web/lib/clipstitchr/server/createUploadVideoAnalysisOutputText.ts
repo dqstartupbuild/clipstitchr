@@ -2,6 +2,7 @@ import { MAX_UPLOAD_VIDEO_ANALYSIS_SIZE_BYTES } from "@/lib/clipstitchr/constant
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createReplicateInputFile } from "@/lib/clipstitchr/server/createReplicateInputFile";
 import { createUploadImageAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadImageAnalysisOutputText";
+import { createUploadVideoFallbackAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadVideoFallbackAnalysisOutputText";
 import { createUploadVideoAnalysisPrompt } from "@/lib/clipstitchr/server/createUploadVideoAnalysisPrompt";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { getUploadVideoAnalysisModelId } from "@/lib/clipstitchr/server/getUploadVideoAnalysisModelId";
@@ -61,6 +62,17 @@ export async function createUploadVideoAnalysisOutputText({
         replicate,
       });
     } catch (error) {
+      try {
+        return await createUploadVideoFallbackAnalysisOutputText({
+          mediaKind,
+          originalName,
+          replicate,
+          videoInput,
+        });
+      } catch {
+        // Continue to poster fallback below when the backup video model is unavailable.
+      }
+
       if (!fallbackImageFile) {
         throw error;
       }

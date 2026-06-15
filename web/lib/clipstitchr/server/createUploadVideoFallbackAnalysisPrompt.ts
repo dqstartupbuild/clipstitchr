@@ -1,0 +1,35 @@
+import type { UploadAssetAnalysisKind } from "@/lib/clipstitchr/types/UploadAssetAnalysisKind";
+
+export function createUploadVideoFallbackAnalysisPrompt({
+  mediaKind,
+  originalName,
+}: {
+  mediaKind: UploadAssetAnalysisKind;
+  originalName: string;
+}) {
+  const fileName = originalName || "unknown";
+
+  if (mediaKind === "demo-video" || mediaKind === "video") {
+    return [
+      "Analyze the uploaded product demo video for a local marketing asset library.",
+      `Original file name: ${fileName}.`,
+      "Return compact JSON only with this shape:",
+      '{"name":"short title","tags":["tag"],"videoDescription":"summary plus short timestamped play-by-play","productDescription":"visible product, interface, packaging, or service only","locationDescription":"visible setting only","poseDescription":"visible action or demo steps in order","performanceScore":{"overall":0,"hook":0,"cameraPresence":0,"pacing":0,"clarity":0,"platformFit":0,"stitchFit":0,"summary":"short reason","bestUse":"best use","strengths":["short strength"],"fixes":["short fix"]}}',
+      "Keep every field short enough to fit under 512 output tokens.",
+      "Use lowercase tags. Do not guess private identity, demographics, brands, pricing, or claims.",
+      "Every score is 0 to 100, not 0 to 10. Use 50 to 75 for an average usable clip and only use very low scores for unusable clips.",
+      "Base the score only on visible short-form posting usefulness.",
+    ].join("\n");
+  }
+
+  return [
+    "Analyze the uploaded UGC video for a local marketing asset library.",
+    `Original file name: ${fileName}.`,
+    "Return compact JSON only with this shape:",
+    '{"name":"short title","tags":["tag"],"videoDescription":"summary plus short timestamped play-by-play","mainPersonDescription":"non-sensitive visual description of the main visible person only","outfitDescription":"visible clothing and accessories only","locationDescription":"visible setting only","poseDescription":"visible action sequence in order","performanceScore":{"overall":0,"hook":0,"cameraPresence":0,"pacing":0,"clarity":0,"platformFit":0,"stitchFit":0,"summary":"short reason","bestUse":"best use","strengths":["short strength"],"fixes":["short fix"]}}',
+    "Keep every field short enough to fit under 512 output tokens.",
+    "Do not guess private identity, race, ethnicity, nationality, religion, gender identity, health, disability, or other sensitive traits.",
+    "Every score is 0 to 100, not 0 to 10. Use 50 to 75 for an average usable clip and only use very low scores for unusable clips.",
+    "Base the score only on visible short-form posting usefulness.",
+  ].join("\n");
+}
