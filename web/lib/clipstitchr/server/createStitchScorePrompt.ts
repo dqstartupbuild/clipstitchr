@@ -30,7 +30,7 @@ export function createStitchScorePrompt({
     "A Stitch usually starts with a UGC or reaction clip, then moves into a demo or proof clip.",
     `Video input: ${videoInputDescription}`,
     "If a rendered stitch video is provided, score the rendered video first.",
-    "If source videos are provided instead, mentally apply the saved trim, playback, audio, and overlay settings before scoring.",
+    "If no rendered stitch video is provided, use the saved trim, playback, audio, overlay, caption, and source clip notes before scoring.",
     "Return compact JSON only with this exact shape:",
     '{"overallRetentionEstimate":0,"hookToDemoFlow":0,"summary":"one short reason for the score","dropOffRiskPoints":["timestamp or moment: why viewers may leave"],"suggestedTrims":["specific trim to try"],"suggestedOverlayText":["short overlay line"],"suggestedOpeningLine":"one stronger first line"}',
     "Rules:",

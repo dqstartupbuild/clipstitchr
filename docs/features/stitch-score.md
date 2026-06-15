@@ -31,18 +31,18 @@ New stitches also start unscored so large batches do not automatically spend
 provider quota. The user can score or rescore any saved stitch from the card
 menu.
 
-If a stitch has a rendered MP4 saved in R2, the model receives that finished
-video. If the stitch only has the saved recipe, the model receives source video
-URLs in stitch order when they are small enough, plus the saved trim, playback,
-audio, overlay, and source clip analysis context. If no video is small enough to
-send, the score falls back to saved stitch and source metadata.
+Before scoring, the client makes sure the Stitch has a saved rendered MP4 when
+the browser can create one. The full-video model receives that finished video.
+If no rendered video is available to the server, Stitch Score uses the
+poster/image fallback with saved stitch settings and source clip notes instead
+of sending raw source videos.
 
 If the full-video model fails during processing, Stitch Score retries through
 the poster/image analysis path using the saved stitch poster when one exists,
 plus the saved stitch settings and source clip notes.
 
-Stitch scores are cleared when the stitch source settings or overlay text
-change, because those edits can change the score.
+Stitch scores are cleared when source settings, overlay text, or music changes,
+because those edits can change the finished video and the score.
 
 ## Data Shape
 
@@ -62,13 +62,13 @@ Stored fields:
 2. The route loads the owned stitch from Convex.
 3. The route consumes the dedicated stitch score rate limit before provider
    work.
-4. The route loads source clip records and creates signed R2 URLs for the
-   rendered stitch or eligible source videos.
+4. The route loads source clip records and creates a signed R2 URL for the
+   rendered stitch when one exists.
 5. `createStitchScoreOutputText` sends the prompt and video inputs to the
    configured full-video analysis model.
-6. If that video analysis fails, `createStitchScoreFallbackOutputText` sends the
-   same scoring prompt through the poster/image analysis model with the saved
-   stitch poster when available.
+6. If there is no rendered stitch video, or if video analysis fails,
+   `createStitchScoreFallbackOutputText` sends the same scoring prompt through
+   the poster/image analysis model with the saved stitch poster when available.
 7. `parseStitchScore` validates and clamps the provider response.
 8. `stitches.updateScore` saves the score on the stitch.
 9. The dashboard library refreshes and shows the score badge/details.
@@ -114,8 +114,10 @@ API, prompt, parsing, and client call:
 
 - `web/app/api/stitches/score/route.ts`
 - `web/lib/clipstitchr/client/scoreStitch.ts`
+- `web/lib/clipstitchr/client/saveRenderedStitchVideo.ts`
 - `web/lib/clipstitchr/server/createStitchScoreFallbackOutputText.ts`
 - `web/lib/clipstitchr/server/createStitchScoreOutputText.ts`
+- `web/lib/clipstitchr/server/createStitchScorePosterFile.ts`
 - `web/lib/clipstitchr/server/createStitchScorePrompt.ts`
 - `web/lib/clipstitchr/server/createStitchScoreVideoInputs.ts`
 - `web/lib/clipstitchr/server/formatStitchScoreSourceClipContext.ts`

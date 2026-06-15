@@ -125,7 +125,9 @@ Optional Replicate model overrides:
 - `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID` defaults to
   `google/gemini-3-flash` for full-video UGC/demo action and score analysis.
   Finished Stitch scoring uses this same full-video analysis lane when scoring
-  rendered stitch videos or source videos in stitch order.
+  rendered stitch videos. When no rendered Stitch video is available, Stitch
+  Score uses the OpenAI poster/context fallback instead of sending raw source
+  videos.
 - `SWIPR_BACKGROUND_MODEL_ID` defaults to `openai/gpt-image-2` for Swipr AI
   background generation. Supported workflows include `openai/gpt-image-2`,
   `prunaai/p-image`, and `prunaai/wan-2.2-image`.
@@ -180,6 +182,7 @@ Firecrawl website import:
 | R2 upload signed URL | `POST /api/r2/upload-url` | 2,000/hour/user, burst 500 |
 | R2 upload bytes | `POST /api/r2/upload-url` | 10 GB/day/user; 500 GB/30 days/user |
 | R2 download signed URL | `POST /api/r2/download-url` | 5,000/hour/user, burst 1,000 |
+| Saved Stitch render creation | Browser Stitchr creation and render-on-demand from saved stitch cards | Uses R2 upload signed URL and byte limits for the saved MP4, R2 download signed URL limits for source media and saved render reads, and `convexMetadataUpdate` when saving or clearing `stitchObject`, `mimeType`, and `size`. Rendering itself is browser-side Media Bunny work, not provider work. |
 | R2 batch image download signed URLs | `POST /api/r2/download-urls` | Uses the R2 download signed URL limit once per authenticated batch after validating every key belongs to the user and is a cacheable `poster.*` or `thumbnail.*` image. Requests are capped at 48 keys. |
 | R2 deletes | `POST /api/r2/delete-objects` | 2,000 objects/hour/user, burst 500 |
 | Shared Swipr background R2 upload signed URL | `POST /api/swipr/backgrounds/upload-url` | Uses the R2 upload signed URL and byte limits before creating a shared-background PUT URL |
@@ -188,7 +191,7 @@ Firecrawl website import:
 | Upload image metadata analysis | `POST /api/uploads/analyze` for avatar/photo images and video fallback posters | 300/hour/user, burst 100; 10,000/30 days/user; global 6,000/hour |
 | Swipr background metadata analysis | `POST /api/swipr/backgrounds/analyze` | Uses the upload image metadata analysis limits before calling the configured upload image analysis model through Replicate |
 | Upload video action analysis | `POST /api/uploads/jobs` for close-safe video uploads, `POST /api/uploads/analyze` for legacy/fallback video analysis, and `POST /api/video-clips/score` for saved UGC/demo clip scoring | 60/hour/user, burst 20; 1,500/30 days/user; global 1,000/hour. The worker path consumes this before creating the durable upload media job; after normalization, the media worker creates an `upload-video-analysis` provider job. Manual clip scoring consumes this before signing saved R2 media or calling the provider. Gemini full-video analysis runs first for videos up to 100 MB; OpenAI poster analysis is the fallback when Gemini fails or the video exceeds the analysis size cap. |
-| Stitch score analysis | `POST /api/stitches/score` from saved stitch cards | 60/hour/user, burst 20; 1,500/30 days/user; global 1,000/hour, burst 200. The route consumes this before provider work. It scores the rendered stitch MP4 when present, otherwise it sends eligible source videos in stitch order plus saved trim, playback, audio, and overlay settings. If Gemini full-video analysis fails, it falls back to the OpenAI poster/image analysis path using the saved stitch poster when available plus saved source metadata. |
+| Stitch score analysis | `POST /api/stitches/score` from saved stitch cards | 60/hour/user, burst 20; 1,500/30 days/user; global 1,000/hour, burst 200. The route consumes this before provider work. The client makes sure a saved render exists when possible, and the route scores that rendered stitch MP4. If no rendered video is available, or if Gemini full-video analysis fails, it falls back to the OpenAI poster/image analysis path using the saved stitch poster when available plus saved stitch settings and source metadata. Raw source videos are not sent as the Stitch Score fallback. |
 | Swapr photo expansion | `POST /api/swapr/photos/expand` | 10/hour/user, burst 5; 20/day/user; 375/30 days/user; global 300/hour |
 | Swapr video job create | `POST /api/swapr/generations` for the close-safe worker path; legacy `POST /api/swapr/jobs` for direct prediction creation | 2 Swapr batches/hour/user, burst 2; 5 Swapr batches/day/user; 500 estimated output seconds/30 days/user; technical provider segment guard 60 segments/hour/user and 180 segments/day/user; global 300 provider segments/hour. The worker route accepts saved R2 media references only, validates every segment before queuing, consumes the job/seconds/segment limits and R2 download limit before creating one durable `manual-swapr` provider job. The provider worker starts and polls segment predictions, and the media worker normalizes/stitches the final saved Swapr clip. |
 | Swapr job polling | `GET /api/swapr/jobs/{id}` | 600/minute/user, burst 150 |

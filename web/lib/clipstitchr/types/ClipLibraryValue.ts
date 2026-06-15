@@ -38,6 +38,7 @@ export type ClipLibraryValue = {
   loadClip: (id: string) => Promise<VideoClip | null>;
   loadClipPoster: (id: string) => Promise<Blob | null>;
   loadStitch: (id: string) => Promise<Stitch | null>;
+  loadStitchVideo: (stitch: Stitch) => Promise<Blob>;
   loadMoreClips: () => void;
   loadMorePostedStitches: () => void;
   loadMoreStitches: () => void;

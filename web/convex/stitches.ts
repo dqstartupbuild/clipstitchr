@@ -397,6 +397,10 @@ export const updateMusic = mutation({
 
     await ctx.db.patch(stitch._id, {
       music: music ?? undefined,
+      mimeType: undefined,
+      size: undefined,
+      stitchObject: undefined,
+      stitchScore: undefined,
     });
     const updatedStitch = await ctx.db.get(stitch._id);
 
@@ -535,7 +539,10 @@ export const updateTextOverlay = mutation({
       (textOverlay && textOverlay.text.trim().length > 0 ? [textOverlay] : []);
 
     await ctx.db.patch(stitch._id, {
+      mimeType: undefined,
+      size: undefined,
       stitchScore: undefined,
+      stitchObject: undefined,
       textOverlay: normalizedTextOverlays[0],
       textOverlays: normalizedTextOverlays.length
         ? normalizedTextOverlays

@@ -10,8 +10,6 @@ import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
 import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitchesSection";
 import { RecentSwipesSection } from "@/app/_components/dashboard/RecentSwipesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
-import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
-import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
@@ -35,20 +33,6 @@ vi.mock("@/app/_components/dashboard/UploadDestinationMenuButton", () => ({
 
 vi.mock("@/lib/clipstitchr/analytics/trackPostHogEvent", () => ({
   trackPostHogEvent: vi.fn(),
-}));
-
-vi.mock("@/app/_components/swapr/PhotoAssetCard", () => ({
-  PhotoAssetCard: ({
-    avatarName,
-    photo,
-  }: {
-    avatarName?: string;
-    photo: PhotoAssetMetadata;
-  }) => (
-    <article>
-      Photo {photo.id} {avatarName}
-    </article>
-  ),
 }));
 
 vi.mock("@/app/_components/dashboard/StitchCard", () => ({
@@ -175,7 +159,6 @@ describe("dashboard shell sections", () => {
       </>,
     );
 
-    expect(markup).toContain("No avatars yet");
     expect(markup).toContain("No stitches yet");
     expect(markup).toContain("No Swipes yet");
     expect(markup).toContain("No uploads yet");
@@ -217,7 +200,6 @@ describe("dashboard shell sections", () => {
       </>,
     );
 
-    expect(markup).toContain("Photo photo_1 Ava");
     expect(markup).toContain("Stitch stitch_1");
     expect(markup).toContain("Swipe swipe_1");
     expect(markup).not.toContain("Swipe swipe_2");

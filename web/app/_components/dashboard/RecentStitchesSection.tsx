@@ -19,6 +19,7 @@ type RecentStitchesSectionProps = {
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
+  onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
   onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onUpdateMusic: (
@@ -52,6 +53,7 @@ export function RecentStitchesSection({
   onGenerateMusic,
   onLoadClip,
   onLoadPoster,
+  onLoadVideo,
   onSaveTemplate,
   onScore,
   onUpdateMusic,
@@ -86,6 +88,7 @@ export function RecentStitchesSection({
               onGenerateMusic={onGenerateMusic}
               onLoadClip={onLoadClip}
               onLoadPoster={onLoadPoster}
+              onLoadVideo={onLoadVideo}
               onSaveTemplate={onSaveTemplate}
               onScore={onScore}
               onUpdateMusic={onUpdateMusic}

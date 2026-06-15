@@ -2,10 +2,10 @@ import type { Doc } from "@/convex/_generated/dataModel";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createStitchScoreFallbackOutputText } from "@/lib/clipstitchr/server/createStitchScoreFallbackOutputText";
 import { createStitchScorePrompt } from "@/lib/clipstitchr/server/createStitchScorePrompt";
+import { createStitchScorePosterFile } from "@/lib/clipstitchr/server/createStitchScorePosterFile";
 import { createStitchScoreVideoInputs } from "@/lib/clipstitchr/server/createStitchScoreVideoInputs";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { getUploadVideoAnalysisModelId } from "@/lib/clipstitchr/server/getUploadVideoAnalysisModelId";
-import { createFileFromR2Object } from "@/lib/clipstitchr/server/r2/createFileFromR2Object";
 
 const STITCH_SCORE_SYSTEM_INSTRUCTION =
   "You review short-form stitched ad videos and give simple, grounded editing guidance.";
@@ -28,6 +28,15 @@ export async function createStitchScoreOutputText({
     stitch,
     userId,
   });
+
+  if (!videoInputs.videos.length) {
+    return await createStitchScoreFallbackOutputText({
+      posterFile: await createStitchScorePosterFile({ stitch, userId }),
+      replicate,
+      sourceClips,
+      stitch,
+    });
+  }
 
   try {
     const prediction = await replicate.predictions.create({
@@ -52,16 +61,8 @@ export async function createStitchScoreOutputText({
       replicate,
     });
   } catch {
-    const posterFile = stitch.posterObject
-      ? await createFileFromR2Object({
-          fallbackFileName: "stitch-score-poster.jpg",
-          object: stitch.posterObject,
-          userId,
-        }).catch(() => undefined)
-      : undefined;
-
     return await createStitchScoreFallbackOutputText({
-      posterFile,
+      posterFile: await createStitchScorePosterFile({ stitch, userId }),
       replicate,
       sourceClips,
       stitch,

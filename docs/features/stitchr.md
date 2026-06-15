@@ -33,7 +33,7 @@ Every Stitchr output follows the same basic ad structure:
 
 1. UGC clip first.
 2. Product demo second.
-3. Single normalized 9:16 output at export time.
+3. Single normalized 9:16 output saved as the finished Stitch video.
 
 When multiple UGC clips are selected, Stitchr creates one output per selected
 UGC clip while reusing the same selected product demo. Each output can keep its
@@ -67,18 +67,22 @@ social proof first, product proof immediately after.
    higher-cost writing tests.
 10. Optionally generate separate 60 second music for each stitch.
 11. Create one stitched output per selected UGC clip.
-12. Save and download the finished ad variants.
-13. Mark saved stitches as posted after they go live so the Stitches library can
+12. Render and save each finished Stitch video.
+13. Download the finished ad variants whenever needed.
+14. Mark saved stitches as posted after they go live so the Stitches library can
     separate reusable drafts from already-published assets.
-14. Score a saved stitch when the user wants a quick retention estimate,
+15. Score a saved stitch when the user wants a quick retention estimate,
     hook-to-demo flow read, drop-off risks, trim ideas, overlay ideas, and a
     stronger opening line before posting.
 
-Saved stitch music is stored separately from the stitch. Users can edit text,
-edit or copy the caption/hashtag field, remove music, regenerate it, enable or
-disable it, or change volume later from the saved stitch card. Media Bunny
-renders the UGC-then-demo video and mixes the selected music only when the user
-downloads the stitch.
+Saved stitch music is stored separately from the stitch so it can still be
+edited later. The saved finished video includes the current music choice when
+music is enabled. If the user changes text, music, source clips, trims, or
+playback speed, ClipStitchr clears the old render and saves a fresh one the next
+time the user previews, downloads, or scores the Stitch.
+
+Saved Stitch renders are documented separately in
+`docs/features/saved-stitch-renders.md`.
 
 Saved stitches are reusable templates. The saved stitch card can launch Stitchr
 with the original source clips, trims, source-audio flags, playback rates, and

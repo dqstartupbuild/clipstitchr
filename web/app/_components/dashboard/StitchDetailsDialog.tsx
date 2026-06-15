@@ -22,6 +22,7 @@ type StitchDetailsDialogProps = {
   posterUrl: string | null;
   previewError: string | null;
   stitch: Stitch;
+  stitchVideoBlob?: Blob | null;
   ugcClip: VideoClip | null;
   onClose: () => void;
   onLoadPreview: () => void;
@@ -34,6 +35,7 @@ export function StitchDetailsDialog({
   posterUrl,
   previewError,
   stitch,
+  stitchVideoBlob = null,
   ugcClip,
   onClose,
   onLoadPreview,
@@ -121,6 +123,7 @@ export function StitchDetailsDialog({
               isLoading={isLoadingPreview}
               posterUrl={posterUrl}
               stitch={stitch}
+              stitchVideoBlob={stitchVideoBlob}
               ugcClip={ugcClip}
               onLoadPreview={onLoadPreview}
             />

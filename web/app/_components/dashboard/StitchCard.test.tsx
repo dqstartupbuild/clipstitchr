@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   actionItems: [] as MediaCardActionMenuItem[],
   capturePostHogException: vi.fn(),
   createStitchExportBlob: vi.fn(),
+  createVideoBlobWithPosterMetadata: vi.fn(),
   detailsProps: null as null | {
     onClose: () => void;
     onLoadPreview: () => void;
@@ -126,6 +127,10 @@ vi.mock("@/lib/clipstitchr/hooks/useLazyBlobObjectUrl", () => ({
 
 vi.mock("@/lib/clipstitchr/client/createStitchExportBlob", () => ({
   createStitchExportBlob: mocks.createStitchExportBlob,
+}));
+
+vi.mock("@/lib/clipstitchr/media/createVideoBlobWithPosterMetadata", () => ({
+  createVideoBlobWithPosterMetadata: mocks.createVideoBlobWithPosterMetadata,
 }));
 
 vi.mock("@/lib/clipstitchr/utils/downloadBlob", () => ({
@@ -275,6 +280,9 @@ describe("StitchCard", () => {
     mocks.createStitchExportBlob.mockResolvedValue(
       new Blob(["stitch"], { type: "video/mp4" }),
     );
+    mocks.createVideoBlobWithPosterMetadata.mockResolvedValue(
+      new Blob(["export"], { type: "video/mp4" }),
+    );
   });
 
   it("renders stitch metadata and action menu items", () => {
@@ -348,6 +356,7 @@ describe("StitchCard", () => {
     const onUpdateTextOverlay = vi.fn(async () => undefined);
 
     mocks.stateQueue = [
+      null,
       null,
       null,
       true,
@@ -438,6 +447,7 @@ describe("StitchCard", () => {
     mocks.stateQueue = [
       null,
       null,
+      null,
       false,
       true,
       false,
@@ -501,6 +511,7 @@ describe("StitchCard", () => {
     mocks.stateQueue = [
       null,
       null,
+      null,
       true,
       true,
       false,
@@ -532,6 +543,7 @@ describe("StitchCard", () => {
     );
 
     mocks.detailsProps?.onLoadPreview();
+    mocks.editProps?.onLoadPreview();
     await expect(mocks.editProps?.onSaveMusic(createStitchMusic())).rejects.toThrow(
       "music update failed",
     );

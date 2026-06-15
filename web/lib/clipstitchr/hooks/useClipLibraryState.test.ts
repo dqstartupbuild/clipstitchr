@@ -22,7 +22,9 @@ const mocks = vi.hoisted(() => {
     downloadBlobFromR2: vi.fn(),
     generateCliprMusic: vi.fn(),
     generateStitchMusic: vi.fn(),
+    saveRenderedStitchVideo: vi.fn(),
     scoreVideoClip: vi.fn(),
+    scoreStitch: vi.fn(),
     mutationFns,
     useConvex: vi.fn(),
     useConvexAuth: vi.fn(),
@@ -89,6 +91,7 @@ vi.mock("@/convex/_generated/api", () => ({
       updateMusic: "stitches.updateMusic",
       updatePostedStatus: "stitches.updatePostedStatus",
       updatePoster: "stitches.updatePoster",
+      updateRenderedVideo: "stitches.updateRenderedVideo",
       updateSourceSettings: "stitches.updateSourceSettings",
       updateTextOverlay: "stitches.updateTextOverlay",
     },
@@ -142,6 +145,14 @@ vi.mock("@/lib/clipstitchr/client/generateCliprMusic", () => ({
 
 vi.mock("@/lib/clipstitchr/client/generateStitchMusic", () => ({
   generateStitchMusic: mocks.generateStitchMusic,
+}));
+
+vi.mock("@/lib/clipstitchr/client/saveRenderedStitchVideo", () => ({
+  saveRenderedStitchVideo: mocks.saveRenderedStitchVideo,
+}));
+
+vi.mock("@/lib/clipstitchr/client/scoreStitch", () => ({
+  scoreStitch: mocks.scoreStitch,
 }));
 
 vi.mock("@/lib/clipstitchr/client/scoreVideoClip", () => ({
@@ -287,6 +298,25 @@ describe("useClipLibraryState", () => {
     mocks.generateStitchMusic.mockResolvedValue({
       audioObject: { key: "users/user_123/music/new-stitch.mp3" },
       title: "Stitch Music",
+    });
+    mocks.saveRenderedStitchVideo.mockResolvedValue({
+      blob: new Blob(["rendered"], { type: "video/mp4" }),
+      mimeType: "video/mp4",
+      size: 123,
+      stitchObject: {
+        contentType: "video/mp4",
+        key: "users/user_123/stitches/stitch_1/rendered.mp4",
+        size: 123,
+      },
+    });
+    mocks.scoreStitch.mockResolvedValue({
+      dropOffRiskPoints: ["The switch may feel slow."],
+      hookToDemoFlow: 78,
+      overallRetentionEstimate: 80,
+      suggestedOpeningLine: "This is the part I did not expect.",
+      suggestedOverlayText: ["Wait for the switch"],
+      suggestedTrims: ["Cut the first pause."],
+      summary: "Good flow.",
     });
     mocks.scoreVideoClip.mockResolvedValue({
       bestUse: "Use as the opener",

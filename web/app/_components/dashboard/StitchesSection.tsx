@@ -36,6 +36,7 @@ type StitchesSectionProps = {
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadMoreItems?: () => void;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
+  onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
   onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onStatusFilterChange?: (status: StitchLibraryStatusFilter) => void;
@@ -80,6 +81,7 @@ export function StitchesSection({
   onLoadClip,
   onLoadMoreItems,
   onLoadPoster,
+  onLoadVideo,
   onSaveTemplate,
   onScore,
   onStatusFilterChange,
@@ -182,6 +184,7 @@ export function StitchesSection({
                 onGenerateMusic={onGenerateMusic}
                 onLoadClip={onLoadClip}
                 onLoadPoster={onLoadPoster}
+                onLoadVideo={onLoadVideo}
                 onSaveTemplate={onSaveTemplate}
                 onScore={onScore}
                 onSelect={

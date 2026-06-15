@@ -8,8 +8,10 @@ import {
   TIKTOK_OUTPUT_WIDTH,
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
+import { createRenderedStitchVideoUpload } from "@/lib/clipstitchr/client/createRenderedStitchVideoUpload";
 import { generateStitchMusic as requestStitchMusicGeneration } from "@/lib/clipstitchr/client/generateStitchMusic";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
+import { saveRenderedStitchVideo } from "@/lib/clipstitchr/client/saveRenderedStitchVideo";
 import { createStitchPosterBlob } from "@/lib/clipstitchr/media/createStitchPosterBlob";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
@@ -49,6 +51,7 @@ type StitchrBuildOptions = {
 export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
   const saveStitch = useMutation(api.stitches.save);
   const updateStitchMusic = useMutation(api.stitches.updateMusic);
+  const updateRenderedVideo = useMutation(api.stitches.updateRenderedVideo);
   const [status, setStatus] = useState<ProcessingStatus>("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +88,9 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
       const firstTextOverlay = textOverlays[0];
       let posterBlob = ugcClip.posterBlob;
       let posterObject: R2ObjectReference | undefined;
+      const selectedMusic = options.musicTrack
+        ? createStitchMusicMetadataFromSharedTrack(options.musicTrack)
+        : null;
 
       if (textOverlays.length && loadClip) {
         try {
@@ -139,11 +145,36 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         includeUgcAudio: options.includeUgcAudio ?? false,
         demoPlaybackRate,
         ugcPlaybackRate,
+        music: selectedMusic ?? undefined,
         textOverlay: firstTextOverlay,
         textOverlays: textOverlays.length ? textOverlays : undefined,
         socialCaption: options.socialCaption?.trim() || undefined,
         createdAt: now,
       };
+      const renderLoadClip = async (id: string) => {
+        if (id === ugcClip.id && "blob" in ugcClip) {
+          return ugcClip as VideoClip;
+        }
+
+        if (id === demoClip.id && "blob" in demoClip) {
+          return demoClip as VideoClip;
+        }
+
+        return (await loadClip?.(id)) ?? null;
+      };
+
+      if (!options.addMusic) {
+        const renderedVideo = await createRenderedStitchVideoUpload({
+          loadClip: renderLoadClip,
+          onProgress: (progress) => onPairProgress?.(progress * 0.9),
+          stitch: nextStitch,
+        });
+
+        nextStitch.blob = renderedVideo.blob;
+        nextStitch.mimeType = renderedVideo.mimeType;
+        nextStitch.size = renderedVideo.size;
+        nextStitch.stitchObject = renderedVideo.stitchObject;
+      }
 
       await saveStitch({
         id: nextStitch.id,
@@ -168,6 +199,14 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         includeUgcAudio: nextStitch.includeUgcAudio,
         demoPlaybackRate: nextStitch.demoPlaybackRate,
         ugcPlaybackRate: nextStitch.ugcPlaybackRate,
+        ...(nextStitch.stitchObject
+          ? {
+              mimeType: nextStitch.mimeType,
+              size: nextStitch.size,
+              stitchObject: nextStitch.stitchObject,
+            }
+          : {}),
+        ...(nextStitch.music ? { music: nextStitch.music } : {}),
         textOverlay: nextStitch.textOverlay,
         textOverlays: nextStitch.textOverlays,
         ...(nextStitch.socialCaption
@@ -176,29 +215,34 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         createdAt: nextStitch.createdAt,
       });
 
-      const selectedMusic = options.musicTrack
-        ? createStitchMusicMetadataFromSharedTrack(options.musicTrack)
-        : null;
-
-      if (selectedMusic || options.addMusic) {
-        const music =
-          selectedMusic ??
-          (await requestStitchMusicGeneration({
-            stitchId: nextStitch.id,
-          }));
+      if (options.addMusic) {
+        const music = await requestStitchMusicGeneration({
+          stitchId: nextStitch.id,
+        });
 
         await updateStitchMusic({
           id: nextStitch.id,
           music,
         });
         nextStitch.music = music;
+        const renderedVideo = await saveRenderedStitchVideo({
+          loadClip: renderLoadClip,
+          onProgress: (progress) => onPairProgress?.(progress * 0.9),
+          stitch: nextStitch,
+          updateRenderedVideo,
+        });
+
+        nextStitch.blob = renderedVideo.blob;
+        nextStitch.mimeType = renderedVideo.mimeType;
+        nextStitch.size = renderedVideo.size;
+        nextStitch.stitchObject = renderedVideo.stitchObject;
       }
 
       onPairProgress?.(1);
 
       return nextStitch;
     },
-    [loadClip, saveStitch, updateStitchMusic],
+    [loadClip, saveStitch, updateRenderedVideo, updateStitchMusic],
   );
 
   const createLongrStitch = useCallback(
@@ -234,6 +278,9 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
       const now = new Date().toISOString();
       const stitchId = createId();
       const firstTextOverlay = textOverlays[0];
+      const selectedMusic = options.musicTrack
+        ? createStitchMusicMetadataFromSharedTrack(options.musicTrack)
+        : null;
       const nextStitch: Stitch = {
         id: stitchId,
         mode: "longr",
@@ -259,11 +306,26 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         includeUgcAudio: options.includeUgcAudio ?? false,
         demoPlaybackRate: options.demoPlaybackRate ?? 1,
         ugcPlaybackRate: options.ugcPlaybackRate ?? 1,
+        music: selectedMusic ?? undefined,
         textOverlay: firstTextOverlay,
         textOverlays: textOverlays.length ? textOverlays : undefined,
         socialCaption: options.socialCaption?.trim() || undefined,
         createdAt: now,
       };
+      const renderLoadClip = async (id: string) => (await loadClip?.(id)) ?? null;
+
+      if (!options.addMusic) {
+        const renderedVideo = await createRenderedStitchVideoUpload({
+          loadClip: renderLoadClip,
+          onProgress: (progress) => onPairProgress?.(progress * 0.9),
+          stitch: nextStitch,
+        });
+
+        nextStitch.blob = renderedVideo.blob;
+        nextStitch.mimeType = renderedVideo.mimeType;
+        nextStitch.size = renderedVideo.size;
+        nextStitch.stitchObject = renderedVideo.stitchObject;
+      }
 
       await saveStitch({
         id: nextStitch.id,
@@ -283,6 +345,14 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         includeUgcAudio: nextStitch.includeUgcAudio,
         demoPlaybackRate: nextStitch.demoPlaybackRate,
         ugcPlaybackRate: nextStitch.ugcPlaybackRate,
+        ...(nextStitch.stitchObject
+          ? {
+              mimeType: nextStitch.mimeType,
+              size: nextStitch.size,
+              stitchObject: nextStitch.stitchObject,
+            }
+          : {}),
+        ...(nextStitch.music ? { music: nextStitch.music } : {}),
         textOverlay: nextStitch.textOverlay,
         textOverlays: nextStitch.textOverlays,
         ...(nextStitch.socialCaption
@@ -291,29 +361,34 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         createdAt: nextStitch.createdAt,
       });
 
-      const selectedMusic = options.musicTrack
-        ? createStitchMusicMetadataFromSharedTrack(options.musicTrack)
-        : null;
-
-      if (selectedMusic || options.addMusic) {
-        const music =
-          selectedMusic ??
-          (await requestStitchMusicGeneration({
-            stitchId: nextStitch.id,
-          }));
+      if (options.addMusic) {
+        const music = await requestStitchMusicGeneration({
+          stitchId: nextStitch.id,
+        });
 
         await updateStitchMusic({
           id: nextStitch.id,
           music,
         });
         nextStitch.music = music;
+        const renderedVideo = await saveRenderedStitchVideo({
+          loadClip: renderLoadClip,
+          onProgress: (progress) => onPairProgress?.(progress * 0.9),
+          stitch: nextStitch,
+          updateRenderedVideo,
+        });
+
+        nextStitch.blob = renderedVideo.blob;
+        nextStitch.mimeType = renderedVideo.mimeType;
+        nextStitch.size = renderedVideo.size;
+        nextStitch.stitchObject = renderedVideo.stitchObject;
       }
 
       onPairProgress?.(1);
 
       return nextStitch;
     },
-    [saveStitch, updateStitchMusic],
+    [loadClip, saveStitch, updateRenderedVideo, updateStitchMusic],
   );
 
   const stitchVideos = useCallback(

@@ -567,6 +567,7 @@ export function UploadsPageClient() {
               onLoadClip={library.loadClip}
               onLoadMoreItems={library.loadMoreStitches}
               onLoadPoster={library.loadStitchPoster}
+              onLoadVideo={library.loadStitchVideo}
               onSaveTemplate={stitchTemplates.createTemplateFromStitch}
               onScore={library.scoreStitch}
               onUpdateMusic={library.updateStitchMusic}
@@ -673,6 +674,7 @@ export function UploadsPageClient() {
             onLoadClip={library.loadClip}
             onLoadMoreItems={handleLoadMoreSelectedStitches}
             onLoadPoster={library.loadStitchPoster}
+            onLoadVideo={library.loadStitchVideo}
             onSaveTemplate={stitchTemplates.createTemplateFromStitch}
             onScore={library.scoreStitch}
             statusCounts={stitchStatusCounts}

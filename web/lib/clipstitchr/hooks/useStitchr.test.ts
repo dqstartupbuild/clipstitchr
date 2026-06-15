@@ -6,9 +6,11 @@ const mocks = vi.hoisted(() => {
   const mutationFns = new Map<string, ReturnType<typeof vi.fn>>();
 
   return {
+    createRenderedStitchVideoUpload: vi.fn(),
     createId: vi.fn(),
     generateStitchMusic: vi.fn(),
     mutationFns,
+    saveRenderedStitchVideo: vi.fn(),
     useMutation: vi.fn((mutationId: string) => {
       const mutation = mutationFns.get(mutationId) ?? vi.fn();
 
@@ -37,6 +39,7 @@ vi.mock("@/convex/_generated/api", () => ({
   api: {
     stitches: {
       save: "stitches.save",
+      updateRenderedVideo: "stitches.updateRenderedVideo",
       updateMusic: "stitches.updateMusic",
     },
   },
@@ -44,6 +47,14 @@ vi.mock("@/convex/_generated/api", () => ({
 
 vi.mock("@/lib/clipstitchr/client/generateStitchMusic", () => ({
   generateStitchMusic: mocks.generateStitchMusic,
+}));
+
+vi.mock("@/lib/clipstitchr/client/createRenderedStitchVideoUpload", () => ({
+  createRenderedStitchVideoUpload: mocks.createRenderedStitchVideoUpload,
+}));
+
+vi.mock("@/lib/clipstitchr/client/saveRenderedStitchVideo", () => ({
+  saveRenderedStitchVideo: mocks.saveRenderedStitchVideo,
 }));
 
 vi.mock("@/lib/clipstitchr/utils/createId", () => ({
@@ -134,6 +145,26 @@ describe("useStitchr", () => {
       audioObject: { key: "users/user_123/music/generated.mp3" },
       title: "Generated music",
     });
+    mocks.createRenderedStitchVideoUpload.mockResolvedValue({
+      blob: new Blob(["rendered"], { type: "video/mp4" }),
+      mimeType: "video/mp4",
+      size: 123,
+      stitchObject: {
+        contentType: "video/mp4",
+        key: "users/user_123/stitches/rendered.mp4",
+        size: 123,
+      },
+    });
+    mocks.saveRenderedStitchVideo.mockResolvedValue({
+      blob: new Blob(["rendered-with-music"], { type: "video/mp4" }),
+      mimeType: "video/mp4",
+      size: 234,
+      stitchObject: {
+        contentType: "video/mp4",
+        key: "users/user_123/stitches/rendered-with-music.mp4",
+        size: 234,
+      },
+    });
   });
 
   it("rejects empty UGC selections before saving", async () => {
@@ -186,6 +217,15 @@ describe("useStitchr", () => {
         id: "stitch_1",
         includeDemoAudio: false,
         includeUgcAudio: true,
+        mimeType: "video/mp4",
+        music: expect.objectContaining({
+          sharedTrackId: "track_1",
+          title: "Upbeat",
+        }),
+        size: 123,
+        stitchObject: expect.objectContaining({
+          key: "users/user_123/stitches/rendered.mp4",
+        }),
         textOverlay: expect.objectContaining({
           endTime: 26,
           fontSize: 0.09,
@@ -198,15 +238,8 @@ describe("useStitchr", () => {
         ugcPlaybackRate: 1,
       }),
     );
-    expect(getMutation("stitches.updateMusic")).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "stitch_1",
-        music: expect.objectContaining({
-          sharedTrackId: "track_1",
-          title: "Upbeat",
-        }),
-      }),
-    );
+    expect(getMutation("stitches.updateMusic")).not.toHaveBeenCalled();
+    expect(mocks.createRenderedStitchVideoUpload).toHaveBeenCalledTimes(2);
     expect(onCreated).toHaveBeenCalledTimes(1);
     expect(mocks.useStateSetter).toHaveBeenCalledWith("complete");
   });
@@ -283,6 +316,14 @@ describe("useStitchr", () => {
         title: "Generated music",
       }),
     });
+    expect(mocks.saveRenderedStitchVideo).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stitch: expect.objectContaining({
+          id: "stitch_1",
+          music: expect.objectContaining({ title: "Generated music" }),
+        }),
+      }),
+    );
   });
 
   it("returns partial results when a later save fails", async () => {

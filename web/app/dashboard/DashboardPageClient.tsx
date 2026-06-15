@@ -13,7 +13,6 @@ import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
-import { getRecentAvatarPhotos } from "@/lib/clipstitchr/utils/getRecentAvatarPhotos";
 import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
 import { getRecentSwiprSwipes } from "@/lib/clipstitchr/utils/getRecentSwiprSwipes";
 import { getRecentVideoClips } from "@/lib/clipstitchr/utils/getRecentVideoClips";
@@ -64,14 +63,6 @@ export function DashboardPageClient() {
       RECENT_DASHBOARD_ITEM_LIMIT,
     );
   }, [swiprLibrary.backgrounds, swiprLibrary.swipes]);
-  const recentAvatarPhotos = useMemo(
-    () =>
-      getRecentAvatarPhotos(
-        photoLibrary.photos,
-        RECENT_DASHBOARD_ITEM_LIMIT,
-    ),
-    [photoLibrary.photos],
-  );
   const error =
     library.error ??
     photoLibrary.error ??
@@ -112,6 +103,7 @@ export function DashboardPageClient() {
           onGenerateMusic={library.generateStitchMusic}
           onLoadClip={library.loadClip}
           onLoadPoster={library.loadStitchPoster}
+          onLoadVideo={library.loadStitchVideo}
           onSaveTemplate={stitchTemplates.createTemplateFromStitch}
           onScore={library.scoreStitch}
           onUpdateMusic={library.updateStitchMusic}

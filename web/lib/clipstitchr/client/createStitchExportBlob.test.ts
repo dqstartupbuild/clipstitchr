@@ -159,6 +159,41 @@ describe("createStitchExportBlob", () => {
     });
   });
 
+  it("does not apply music again when a final stitch render is already saved", async () => {
+    const storedBlob = new Blob(["stored"], { type: "video/mp4" });
+
+    await expect(
+      createStitchExportBlob(
+        createStitch({
+          blob: storedBlob,
+          music: createStitchMusic(),
+        }),
+        {
+          includePosterMetadata: false,
+        },
+      ),
+    ).resolves.toBe(storedBlob);
+
+    await expect(
+      createStitchExportBlob(
+        createStitch({
+          music: createStitchMusic(),
+          stitchObject: {
+            contentType: "video/mp4",
+            key: "stitches/stitch_1.mp4",
+            size: 100,
+          },
+        }),
+        {
+          includePosterMetadata: false,
+        },
+      ),
+    ).resolves.toEqual(expect.any(Blob));
+
+    expect(mocks.downloadMusicBlob).not.toHaveBeenCalled();
+    expect(mocks.renderCliprVideoWithMusic).not.toHaveBeenCalled();
+  });
+
   it("throws when no export source is available", async () => {
     mocks.renderSavedStitchBlob.mockRejectedValue(new Error("Missing source"));
 

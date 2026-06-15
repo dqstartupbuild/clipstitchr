@@ -22,6 +22,7 @@ import {
 import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
 import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExportBlob";
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
+import { createVideoBlobWithPosterMetadata } from "@/lib/clipstitchr/media/createVideoBlobWithPosterMetadata";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchPreviewErrorState } from "@/lib/clipstitchr/types/StitchPreviewErrorState";
@@ -52,6 +53,7 @@ type StitchCardProps = {
   onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
+  onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onSelect?: () => void;
   onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
@@ -88,6 +90,7 @@ export function StitchCard({
   onGenerateMusic,
   onLoadClip,
   onLoadPoster,
+  onLoadVideo,
   onScore,
   onSelect,
   onSaveTemplate,
@@ -100,6 +103,9 @@ export function StitchCard({
 }: StitchCardProps) {
   const [previewState, setPreviewState] = useState<StitchPreviewSources | null>(
     null,
+  );
+  const [stitchVideoBlob, setStitchVideoBlob] = useState<Blob | null>(
+    stitch.blob ?? null,
   );
   const [previewErrorState, setPreviewErrorState] =
     useState<StitchPreviewErrorState | null>(null);
@@ -164,7 +170,36 @@ export function StitchCard({
     : "Ready to download";
   const isPosted = Boolean(stitch.isPosted);
 
-  const loadPreview = async (
+  const loadRenderedPreview = async () => {
+    if (stitchVideoBlob || isLoadingPreview) {
+      return;
+    }
+
+    setIsLoadingPreview(true);
+    setPreviewErrorState(null);
+
+    try {
+      const blob =
+        (await onLoadVideo?.(stitch)) ??
+        (await createStitchExportBlob(stitch, {
+          includePosterMetadata: false,
+          loadClip: onLoadClip,
+        }));
+
+      setStitchVideoBlob(blob);
+    } catch (nextError) {
+      setPreviewErrorState({
+        cacheKey: previewCacheKey,
+        message:
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to preview this stitch.",
+      });
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  };
+  const loadSourcePreview = async (
     ugcClipId = stitch.ugcClipId,
     demoClipId = stitch.demoClipId,
   ) => {
@@ -218,29 +253,40 @@ export function StitchCard({
     });
 
     if (shouldLoadPreview) {
-      void loadPreview();
+      void loadRenderedPreview();
     }
   };
   const openEdit = () => {
     setIsDetailsOpen(false);
     setIsEditOpen(true);
-    void loadPreview();
+    void loadSourcePreview();
   };
   const handleDownload = async () => {
     setIsDownloading(true);
     setDownloadError(null);
 
     try {
-      downloadBlob(
-        await createStitchExportBlob(stitch, { loadClip: onLoadClip }),
-        stitch.name,
-      );
+      const renderedBlob =
+        (await onLoadVideo?.(stitch)) ??
+        (await createStitchExportBlob(stitch, {
+          includePosterMetadata: false,
+          loadClip: onLoadClip,
+        }));
+      const posterBlob = stitch.posterBlob ?? (await loadPosterBlob());
+      const exportBlob = await createVideoBlobWithPosterMetadata({
+        posterBlob: posterBlob ?? undefined,
+        title: stitch.name,
+        videoBlob: renderedBlob,
+      });
+
+      setStitchVideoBlob(renderedBlob);
+      downloadBlob(exportBlob, stitch.name);
       trackPostHogEvent("stitch_downloaded", {
         stitch_id: stitch.id,
         duration_seconds: stitch.duration,
         has_music: Boolean(stitch.music),
         has_text_overlay: hasTextOverlay,
-        size_bytes: stitch.size,
+        size_bytes: renderedBlob.size,
       });
     } catch (nextError) {
       capturePostHogException(nextError, {
@@ -609,10 +655,11 @@ export function StitchCard({
           posterUrl={posterUrl}
           previewError={previewError}
           stitch={stitch}
+          stitchVideoBlob={stitchVideoBlob}
           ugcClip={previewSources?.ugcClip ?? null}
           onClose={() => setIsDetailsOpen(false)}
           onLoadPreview={() => {
-            void loadPreview();
+            void loadRenderedPreview();
           }}
         />
       ) : null}
@@ -637,7 +684,7 @@ export function StitchCard({
           onClose={() => setIsEditOpen(false)}
           onGenerateMusic={handleGenerateMusic}
           onLoadPreview={(ugcClipId, demoClipId) => {
-            void loadPreview(ugcClipId, demoClipId);
+            void loadSourcePreview(ugcClipId, demoClipId);
           }}
           onRemoveMusic={() => handleUpdateMusic(null)}
           onSaveMusic={handleUpdateMusic}

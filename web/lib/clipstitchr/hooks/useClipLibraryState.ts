@@ -22,6 +22,7 @@ import { generateCliprMusic as requestCliprMusicGeneration } from "@/lib/clipsti
 import { generateStitchMusic as requestStitchMusicGeneration } from "@/lib/clipstitchr/client/generateStitchMusic";
 import { scoreStitch as requestStitchScore } from "@/lib/clipstitchr/client/scoreStitch";
 import { scoreVideoClip as requestVideoClipScore } from "@/lib/clipstitchr/client/scoreVideoClip";
+import { saveRenderedStitchVideo } from "@/lib/clipstitchr/client/saveRenderedStitchVideo";
 import { libraryMetadataPageSize } from "@/lib/clipstitchr/constants/libraryMetadataPageSize";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createStitchPosterBlob } from "@/lib/clipstitchr/media/createStitchPosterBlob";
@@ -152,6 +153,9 @@ export function useClipLibraryState(): ClipLibraryValue {
     api.videoClips.updatePostedStatus,
   );
   const updateStitchMusicMutation = useMutation(api.stitches.updateMusic);
+  const updateRenderedStitchVideoMutation = useMutation(
+    api.stitches.updateRenderedVideo,
+  );
   const updateStitchSourceSettingsMutation = useMutation(
     api.stitches.updateSourceSettings,
   );
@@ -167,6 +171,7 @@ export function useClipLibraryState(): ClipLibraryValue {
   const removeClipMutation = useMutation(api.videoClips.remove);
   const removeStitchMutation = useMutation(api.stitches.remove);
   const clipCacheRef = useRef(new Map<string, VideoClip>());
+  const stitchBlobCacheRef = useRef(new Map<string, Blob>());
   const posterBlobCacheRef = useRef(new Map<string, Blob>());
   const pendingPosterBlobLoadsRef = useRef(
     new Map<string, PendingPosterBlobLoad>(),
@@ -428,6 +433,44 @@ export function useClipLibraryState(): ClipLibraryValue {
     return await loadPosterBlob(ugcClipDocument?.posterObject);
   }, [allStitchDocuments, clipDocuments, convex, loadPosterBlob]);
 
+  const loadStitchVideo = useCallback(
+    async (stitch: Stitch) => {
+      if (stitch.blob) {
+        return stitch.blob;
+      }
+
+      if (stitch.stitchObject) {
+        const cachedBlob = stitchBlobCacheRef.current.get(
+          stitch.stitchObject.key,
+        );
+
+        if (cachedBlob) {
+          return cachedBlob;
+        }
+
+        const blob = await downloadBlobFromR2(stitch.stitchObject);
+
+        stitchBlobCacheRef.current.set(stitch.stitchObject.key, blob);
+        return blob;
+      }
+
+      const renderedVideo = await saveRenderedStitchVideo({
+        loadClip,
+        stitch,
+        updateRenderedVideo: updateRenderedStitchVideoMutation,
+      });
+
+      stitchBlobCacheRef.current.set(
+        renderedVideo.stitchObject.key,
+        renderedVideo.blob,
+      );
+      await refresh();
+
+      return renderedVideo.blob;
+    },
+    [loadClip, refresh, updateRenderedStitchVideoMutation],
+  );
+
   const removeClip = useCallback(
     async (id: string) => {
       const clipDocument =
@@ -612,6 +655,7 @@ export function useClipLibraryState(): ClipLibraryValue {
   const updateStitchMusic = useCallback(
     async (stitch: Stitch, music: StitchMusicMetadata | null) => {
       const previousMusicObject = stitch.music?.audioObject;
+      const previousStitchObject = stitch.stitchObject;
       const nextUpdatedAt = new Date().toISOString();
 
       await updateStitchMusicMutation({
@@ -625,12 +669,21 @@ export function useClipLibraryState(): ClipLibraryValue {
               },
       });
 
-      if (
-        previousMusicObject &&
+      const objectsToDelete = [
+        ...(previousMusicObject &&
         previousMusicObject.key.startsWith("users/") &&
         (!music || previousMusicObject.key !== music.audioObject.key)
-      ) {
-        await deleteObjectsFromR2([previousMusicObject]).catch(() => null);
+          ? [previousMusicObject]
+          : []),
+        ...(previousStitchObject ? [previousStitchObject] : []),
+      ];
+
+      if (objectsToDelete.length) {
+        await deleteObjectsFromR2(objectsToDelete).catch(() => null);
+      }
+
+      if (previousStitchObject) {
+        stitchBlobCacheRef.current.delete(previousStitchObject.key);
       }
 
       await refresh();
@@ -640,6 +693,7 @@ export function useClipLibraryState(): ClipLibraryValue {
 
   const updateStitchSourceSettings = useCallback(
     async (stitch: Stitch, update: StitchSourceSettingsUpdate) => {
+      const previousStitchObject = stitch.stitchObject;
       let posterObject: R2ObjectReference | null = null;
       const nextTextOverlays = getNonEmptyTextOverlays(
         clampTextOverlays(
@@ -690,6 +744,11 @@ export function useClipLibraryState(): ClipLibraryValue {
         posterBlobCacheRef.current.delete(posterObject.key);
       }
 
+      if (previousStitchObject) {
+        await deleteObjectsFromR2([previousStitchObject]).catch(() => null);
+        stitchBlobCacheRef.current.delete(previousStitchObject.key);
+      }
+
       await refresh();
     },
     [loadClip, refresh, updateStitchSourceSettingsMutation],
@@ -715,6 +774,11 @@ export function useClipLibraryState(): ClipLibraryValue {
         textOverlay: firstTextOverlay,
         textOverlays: nextTextOverlays,
       });
+
+      if (stitch.stitchObject) {
+        await deleteObjectsFromR2([stitch.stitchObject]).catch(() => null);
+        stitchBlobCacheRef.current.delete(stitch.stitchObject.key);
+      }
 
       await refresh();
     },
@@ -755,12 +819,14 @@ export function useClipLibraryState(): ClipLibraryValue {
 
   const scoreStitch = useCallback(
     async (stitch: Stitch) => {
+      await loadStitchVideo(stitch);
+
       const stitchScore = await requestStitchScore(stitch.id);
 
       await refresh();
       return stitchScore;
     },
-    [refresh],
+    [loadStitchVideo, refresh],
   );
 
   const removeStitch = useCallback(
@@ -920,6 +986,7 @@ export function useClipLibraryState(): ClipLibraryValue {
     loadClip,
     loadClipPoster,
     loadStitch,
+    loadStitchVideo,
     loadMoreClips,
     loadMorePostedStitches,
     loadMoreStitches,

@@ -12,26 +12,34 @@ type CreateStitchExportBlobOptions = {
   onProgress?: (progress: number) => void;
 };
 
+type BaseStitchExportBlob = {
+  blob: Blob;
+  isFinalRender: boolean;
+};
+
 async function createBaseStitchExportBlob(
   stitch: Stitch,
   { loadClip, onProgress }: CreateStitchExportBlobOptions,
-) {
-  if (loadClip) {
-    try {
-      return await renderSavedStitchBlob({ loadClip, onProgress, stitch });
-    } catch (error) {
-      if (!stitch.blob && !stitch.stitchObject) {
-        throw error;
-      }
-    }
-  }
-
+): Promise<BaseStitchExportBlob> {
   if (stitch.blob) {
-    return stitch.blob;
+    return {
+      blob: stitch.blob,
+      isFinalRender: true,
+    };
   }
 
   if (stitch.stitchObject) {
-    return await downloadBlobFromR2(stitch.stitchObject);
+    return {
+      blob: await downloadBlobFromR2(stitch.stitchObject),
+      isFinalRender: true,
+    };
+  }
+
+  if (loadClip) {
+    return {
+      blob: await renderSavedStitchBlob({ loadClip, onProgress, stitch }),
+      isFinalRender: false,
+    };
   }
 
   throw new Error("Unable to load the source videos for this stitch.");
@@ -42,13 +50,13 @@ export async function createStitchExportBlob(
   { includePosterMetadata = true, ...options }: CreateStitchExportBlobOptions = {},
 ) {
   const music = stitch.music;
-  const baseBlob = await createBaseStitchExportBlob(stitch, options);
-  const exportBlob = !music?.enabled
-    ? baseBlob
+  const baseVideo = await createBaseStitchExportBlob(stitch, options);
+  const exportBlob = !music?.enabled || baseVideo.isFinalRender
+    ? baseVideo.blob
     : (
         await renderCliprVideoWithMusic({
           musicBlob: await downloadMusicBlob(music),
-          videoBlob: baseBlob,
+          videoBlob: baseVideo.blob,
           volume: music.volume,
         })
       ).blob;

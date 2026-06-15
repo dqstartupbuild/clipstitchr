@@ -2,6 +2,7 @@
 
 import { Loader2, Play } from "lucide-react";
 import { LoadedStitchSequencePreview } from "@/app/_components/dashboard/LoadedStitchSequencePreview";
+import { SavedStitchVideoPreview } from "@/app/_components/dashboard/SavedStitchVideoPreview";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -11,6 +12,7 @@ type StitchSequencePreviewProps = {
   isLoading: boolean;
   posterUrl: string | null;
   stitch: Stitch;
+  stitchVideoBlob?: Blob | null;
   ugcClip: VideoClip | null;
   onLoadPreview: () => void;
   onTextOverlayChange?: (textOverlays: TextOverlay[]) => void;
@@ -21,10 +23,21 @@ export function StitchSequencePreview({
   isLoading,
   posterUrl,
   stitch,
+  stitchVideoBlob,
   ugcClip,
   onLoadPreview,
   onTextOverlayChange,
 }: StitchSequencePreviewProps) {
+  if (stitchVideoBlob) {
+    return (
+      <SavedStitchVideoPreview
+        posterUrl={posterUrl}
+        stitch={stitch}
+        videoBlob={stitchVideoBlob}
+      />
+    );
+  }
+
   if (!ugcClip || !demoClip) {
     return (
       <div
