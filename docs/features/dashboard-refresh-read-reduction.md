@@ -32,12 +32,6 @@ The shared library hooks now use route and search-param gates:
   loads upload Swipes only for the All or Swipes tab, and loads Swipr-page
   saved Swipes only when a `swipe` URL param is present.
 
-Because those gates read dashboard URL search params from shared dashboard
-state, `web/app/dashboard/layout.tsx` wraps `DashboardLibraryProvider` in a
-Suspense boundary. That lets Next prerender dashboard routes like
-`/dashboard/avatars` without failing when the shared provider reads query
-params during client hydration.
-
 ## Use Cases
 
 - Refreshing `/dashboard` should show the same overview without hydrating every
@@ -59,8 +53,6 @@ web/lib/clipstitchr/hooks/useDashboardSummary.test.ts
 web/lib/clipstitchr/hooks/useStitchTemplateActions.ts
 web/lib/clipstitchr/hooks/useStitchTemplates.ts
 web/lib/clipstitchr/types/DashboardSummary.ts
-web/app/_components/dashboard/DashboardLayoutFallback.tsx
-web/app/dashboard/layout.tsx
 web/app/dashboard/DashboardPageClient.tsx
 web/app/dashboard/uploads/UploadsPageClient.tsx
 web/app/dashboard/swapr/SwaprPageClient.tsx
