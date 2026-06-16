@@ -21,12 +21,12 @@ Core rule:
 
 This document covers:
 
-- Clipr reaction, b-roll, avatar still, avatar video, and music generation.
+- Clipr reaction, b-roll, avatar still, and avatar video generation.
   Script, voice, and lip sync generation are covered when the Clipr script flag
   is enabled.
 - Swipr AI background generation and future automated Swipe creation.
 - Avatar photo generation.
-- Shared music generation.
+- Shared music upload and selection.
 - Swapr provider prediction finalization.
 - Upload video/image analysis handoffs when provider calls are used.
 - Daily autopilot runs for eligible users.
@@ -196,15 +196,14 @@ fallback, not the preferred production path.
 Manual Clipr is now a server-owned workflow with recoverable steps:
 
 1. Create a `clipr` automation run with product/avatar/mode/model/voice/duration
-   and music snapshots.
+   and selected shared music snapshots.
 2. Consume Clipr job, avatar still, and video limits before provider calls.
-   Script mode also consumes hook/script and voice limits; music limits are
-   consumed only when Script mode generates music. Script mode is currently
-   hidden unless `isCliprScriptModeEnabled` is `true`.
+   Script mode also consumes hook/script and voice limits. Script mode is
+   currently hidden unless `isCliprScriptModeEnabled` is `true`.
 3. Generate hook/script as a provider task for Script mode, or create a local
    visual plan for Reaction and B-roll.
 4. Generate the avatar source still as a provider task and copy it to R2.
-5. Generate avatar video and optional Script-mode music as provider tasks.
+5. Generate avatar video as a provider task.
 6. Copy provider outputs to R2 from a server-owned finalizer.
 7. Create a `clipr-finalization` media job.
 8. Mark the Clipr run complete only after the final `videoClips` record exists.
@@ -213,7 +212,7 @@ Manual Clipr is now a server-owned workflow with recoverable steps:
 consumption, Convex input loading, queued job persistence, and creation of one
 `manual-clipr` provider job. The provider worker owns Script-mode planning when
 enabled, visual-mode local plan creation, avatar still generation, avatar
-video/music generation, shared music persistence, and creation of the
+video generation, shared music metadata handling, and creation of the
 `clipr-finalization` media job. The media worker saves non-demo Clipr output as
 UGC, strips audio for Reaction and B-roll, and marks the provider job complete.
 
@@ -308,12 +307,17 @@ The first FFmpeg media worker lives at
 `MEDIA_WORKER_SECRET`; for `clipr-finalization`, it normalizes the durable avatar
 video to 9:16 H.264/AAC, strips audio when the input snapshot asks for silent
 visual output, captures a poster, uploads both objects to R2, saves the final
-Clipr `videoClips` record as UGC, and marks the automation task/run complete.
+Clipr `videoClips` record as UGC, creates an `upload-video-analysis` provider
+job for automatic naming/details/scoring, and marks the automation task/run
+complete.
 For `swapr-finalization`, it downloads one or more allowlisted Replicate output
 URLs, normalizes/concatenates the video to the same saved-clip format, captures
 a poster, uploads both objects to R2, saves a UGC-compatible `videoClips` record
-with `swaprMetadata`, and marks either the automation task/run or the manual
-provider job complete. For `upload-normalization`, it downloads the raw uploaded
+with `swaprMetadata`, creates an `upload-video-analysis` provider job for
+automatic naming/details/scoring, and marks either the automation task/run or
+the manual provider job complete. Automated Stitchr draft finalization saves the
+editable Stitch and creates a `stitch-score-analysis` provider job so the saved
+Stitch receives an automatic score. For `upload-normalization`, it downloads the raw uploaded
 source from R2, normalizes it, captures the poster, saves the `videoClips`
 record, and creates the follow-on `upload-video-analysis` provider job.
 

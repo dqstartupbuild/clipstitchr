@@ -5,6 +5,7 @@ export const providerJobTypeValidator = v.union(
   v.literal("manual-clipr"),
   v.literal("avatar-photo-generation"),
   v.literal("upload-video-analysis"),
+  v.literal("stitch-score-analysis"),
   v.literal("swipr-background-generation"),
   v.literal("swipr-background-analysis"),
   v.literal("clipr-text"),

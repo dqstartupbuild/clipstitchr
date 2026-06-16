@@ -9,6 +9,7 @@ import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
+import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchLibraryStatusFilter } from "@/lib/clipstitchr/types/StitchLibraryStatusFilter";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
@@ -32,7 +33,6 @@ type StitchesSectionProps = {
   title?: string;
   totalCount?: number;
   onDelete: (id: string) => void | Promise<void>;
-  onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadMoreItems?: () => void;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
@@ -58,6 +58,11 @@ type StitchesSectionProps = {
     stitch: Stitch,
     update: StitchSourceSettingsUpdate,
   ) => void | Promise<void>;
+  onUpdateSourceCrop?: (
+    stitch: Stitch,
+    source: "ugc" | "demo",
+    crop: QuickEditCrop | null,
+  ) => void | Promise<void>;
   onUpdateTextOverlay: (
     stitch: Stitch,
     textOverlay: TextOverlay | TextOverlay[] | null,
@@ -79,7 +84,6 @@ export function StitchesSection({
   title = "Stitches",
   totalCount,
   onDelete,
-  onGenerateMusic,
   onLoadClip,
   onLoadMoreItems,
   onLoadPoster,
@@ -92,6 +96,7 @@ export function StitchesSection({
   onUpdateMusic,
   onUpdatePostedStatus,
   onUpdateSocialCaption,
+  onUpdateSourceCrop,
   onUpdateSourceSettings,
   onUpdateTextOverlay,
   ugcClips,
@@ -185,7 +190,6 @@ export function StitchesSection({
                 isSelectionDisabled={batchDelete.isDeletingSelected}
                 isSavingTemplate={savingTemplateStitchId === stitch.id}
                 onDelete={onDelete}
-                onGenerateMusic={onGenerateMusic}
                 onLoadClip={onLoadClip}
                 onLoadPoster={onLoadPoster}
                 onLoadVideo={onLoadVideo}
@@ -201,6 +205,7 @@ export function StitchesSection({
                 onUpdateMusic={onUpdateMusic}
                 onUpdatePostedStatus={onUpdatePostedStatus}
                 onUpdateSocialCaption={onUpdateSocialCaption}
+                onUpdateSourceCrop={onUpdateSourceCrop}
                 onUpdateSourceSettings={onUpdateSourceSettings}
                 onUpdateTextOverlay={onUpdateTextOverlay}
                 ugcClips={ugcClips}

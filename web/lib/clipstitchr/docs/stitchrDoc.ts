@@ -9,7 +9,7 @@ export const stitchrDoc = {
     "Choose UGC, pick one demo, preview each ad, and export finished variants.",
   category: "feature",
   order: 10,
-  updated: "2026-06-14",
+  updated: "2026-06-16",
   sections: [
     {
       title: "What Stitchr does",
@@ -35,8 +35,8 @@ export const stitchrDoc = {
     {
       title: "Music",
       body: [
-        "You can add generated music when creating stitches or later from a saved stitch card. Music is stored separately from the clean stitched video.",
-        "When you download a stitch with music enabled, ClipStitchr renders a fresh export with the current music settings. You can remove music, generate new music, or change volume later.",
+        "You can add a shared music track when creating stitches or later from a saved stitch card. Uploads are added to the shared music pool, so only upload tracks you have the rights to share and use.",
+        "When you download a stitch with music enabled, ClipStitchr renders a fresh export with the current music settings. You can remove music, choose another track, or change volume later.",
       ],
     },
     {

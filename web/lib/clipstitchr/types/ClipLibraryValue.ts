@@ -4,6 +4,7 @@ import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetad
 import type { ClipLibraryCounts } from "@/lib/clipstitchr/types/ClipLibraryCounts";
 import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
 import type { ClipLibraryVideoGroup } from "@/lib/clipstitchr/types/ClipLibraryVideoGroup";
+import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
@@ -49,10 +50,11 @@ export type ClipLibraryValue = {
     clip: VideoClipMetadata,
     metadata: AssetMetadataUpdate,
   ) => Promise<void>;
-  generateCliprMusic: (
-    clip: VideoClipMetadata,
-  ) => Promise<CliprMusicMetadata | null>;
   scoreClip: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
+  updateClipCrop: (
+    clip: VideoClipMetadata,
+    crop: QuickEditCrop | null,
+  ) => Promise<void>;
   applyClipQuickEdit: (clip: VideoClipMetadata) => Promise<void>;
   resetClipQuickEdit: (clip: VideoClipMetadata) => Promise<void>;
   updateCliprMusic: (
@@ -67,9 +69,6 @@ export type ClipLibraryValue = {
     clip: VideoClipMetadata,
     isPosted: boolean,
   ) => Promise<void>;
-  generateStitchMusic: (
-    stitch: Stitch,
-  ) => Promise<StitchMusicMetadata | null>;
   scoreStitch: (stitch: Stitch) => Promise<StitchScore>;
   applyStitchQuickEdit: (stitch: Stitch) => Promise<void>;
   resetStitchQuickEdit: (stitch: Stitch) => Promise<void>;
@@ -80,6 +79,11 @@ export type ClipLibraryValue = {
   updateStitchSourceSettings: (
     stitch: Stitch,
     update: StitchSourceSettingsUpdate,
+  ) => Promise<void>;
+  updateStitchSourceCrop: (
+    stitch: Stitch,
+    source: "ugc" | "demo",
+    crop: QuickEditCrop | null,
   ) => Promise<void>;
   updateStitchTextOverlay: (
     stitch: Stitch,

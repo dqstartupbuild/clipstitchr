@@ -15,6 +15,7 @@ import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetad
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { LibraryPostedStatusFilter } from "@/lib/clipstitchr/types/LibraryPostedStatusFilter";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -40,9 +41,10 @@ type VideoLibrarySectionProps = {
     clip: VideoClipMetadata,
     metadata: AssetMetadataUpdate,
   ) => void | Promise<void>;
-  onGenerateCliprMusic?: (
+  onUpdateCrop?: (
     clip: VideoClipMetadata,
-  ) => Promise<CliprMusicMetadata | null>;
+    crop: QuickEditCrop | null,
+  ) => void | Promise<void>;
   onScoreClip?: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
   onApplyQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
   onResetQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
@@ -85,13 +87,13 @@ export function VideoLibrarySection({
   onLoadClip,
   onLoadPoster,
   onDelete,
-  onGenerateCliprMusic,
   onScoreClip,
   onApplyQuickEdit,
   onResetQuickEdit,
   onLoadMoreItems,
   onStatusFilterChange,
   onUpdateCliprMusic,
+  onUpdateCrop,
   onUpdateMetadata,
   onUpdateTrim,
   onUpdatePostedStatus,
@@ -201,11 +203,11 @@ export function VideoLibrarySection({
                     ? () => batchDelete.toggleItemSelection(clip.id)
                     : undefined
                 }
-                onGenerateCliprMusic={onGenerateCliprMusic}
                 onScore={onScoreClip}
                 onApplyQuickEdit={onApplyQuickEdit}
                 onResetQuickEdit={onResetQuickEdit}
                 onUpdateCliprMusic={onUpdateCliprMusic}
+                onUpdateCrop={onUpdateCrop}
                 onUpdateMetadata={onUpdateMetadata}
                 onUpdateTrim={onUpdateTrim}
                 onUpdatePostedStatus={onUpdatePostedStatus}

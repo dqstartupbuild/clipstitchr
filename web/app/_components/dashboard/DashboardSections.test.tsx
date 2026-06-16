@@ -133,7 +133,6 @@ describe("dashboard shell sections", () => {
           demoClips={[]}
           stitches={[]}
           onDelete={noop}
-          onGenerateMusic={async () => null}
           onLoadClip={async () => null}
           onUpdateMusic={noop}
           onUpdatePostedStatus={noop}
@@ -171,7 +170,6 @@ describe("dashboard shell sections", () => {
           demoClips={[]}
           stitches={[{ id: "stitch_1" } as Stitch]}
           onDelete={noop}
-          onGenerateMusic={async () => null}
           onLoadClip={async () => null}
           onUpdateMusic={noop}
           onUpdatePostedStatus={noop}

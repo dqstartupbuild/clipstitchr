@@ -36,6 +36,7 @@ export function createUploadAnalysisPrompt({
       "For mainPersonDescription, describe the visible person as specifically as possible using stable, non-sensitive visual traits: face shape, hair style and color, facial hair when visible, eyes, brows, nose, lips, skin tone as visually apparent, build, and distinctive non-sensitive features.",
       "The mainPersonDescription must include zero information about clothing, accessories, background, location, pose, posture, gesture, body position, scene, camera setting, or activity.",
       "Put clothing and accessories only in outfitDescription. Put the background, location, environment, and scene context only in locationDescription. Put pose, posture, gesture, body position, and activity only in poseDescription.",
+      "If a field does not fit the visible frame, return an empty string for that field. Do not fill person, outfit, location, or pose fields with unrelated details.",
       "Do not guess private identity, race, ethnicity, nationality, religion, gender identity, health, disability, or other sensitive traits.",
       "If a person is not clearly visible, set mainPersonDescription to an empty string.",
       ...createClipPerformanceScorePromptLines(mediaKind),
@@ -53,6 +54,7 @@ export function createUploadAnalysisPrompt({
       "For videoDescription, describe the demo moment: what the viewer sees, what is being shown, how it is framed, and what part of the product or workflow is happening.",
       "For productDescription, describe the visible product or demonstrated offering in detail: shape, color, packaging, screen/UI state, labels only if clearly legible, product category, components, and any visible before/after or result.",
       "Put visible surroundings only in locationDescription. Put motion, user interaction, screen step, hand action, or product use only in poseDescription.",
+      "If a field does not fit the visible frame, return an empty string for that field. Do not put product details into locationDescription just to fill it.",
       "Do not guess private identity, demographics, brands, pricing, claims, or sensitive traits.",
       ...createClipPerformanceScorePromptLines(mediaKind),
     ].join("\n");

@@ -6,6 +6,7 @@ import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { ClipPerformanceScore } from "@/lib/clipstitchr/types/ClipPerformanceScore";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -24,6 +25,10 @@ type RecentUploadsSectionProps = {
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void | Promise<void>;
+  onUpdateCrop?: (
+    clip: VideoClipMetadata,
+    crop: QuickEditCrop | null,
+  ) => void | Promise<void>;
   onScoreClip?: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
   onApplyQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
   onResetQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
@@ -40,6 +45,7 @@ export function RecentUploadsSection({
   onLoadPoster,
   onDelete,
   onUpdateMetadata,
+  onUpdateCrop,
   onUpdateTrim,
   onScoreClip,
   onApplyQuickEdit,
@@ -72,6 +78,7 @@ export function RecentUploadsSection({
               onScore={onScoreClip}
               onApplyQuickEdit={onApplyQuickEdit}
               onResetQuickEdit={onResetQuickEdit}
+              onUpdateCrop={onUpdateCrop}
               onUpdateMetadata={onUpdateMetadata}
               onUpdateTrim={onUpdateTrim}
               onUpdatePostedStatus={onUpdatePostedStatus}

@@ -53,7 +53,6 @@ export function StitchrPageClient() {
     loadClip: library.loadClip,
     onCreated: library.refresh,
   });
-  const [addMusic, setAddMusic] = useState(false);
   const [mode, setMode] = useState<StitchrMode>("normal");
   const [includeDemoAudio, setIncludeDemoAudio] = useState(false);
   const [includeUgcAudio, setIncludeUgcAudio] = useState(false);
@@ -446,7 +445,6 @@ export function StitchrPageClient() {
 
         return nextClips;
       });
-      setAddMusic(false);
       setSelectedMusicTrack(null);
       setIncludeDemoAudio(templateStitch.includeDemoAudio ?? false);
       setIncludeUgcAudio(templateStitch.includeUgcAudio ?? false);
@@ -595,7 +593,6 @@ export function StitchrPageClient() {
 
         return nextClips;
       });
-      setAddMusic(false);
       setSelectedMusicTrack(null);
       setIncludeDemoAudio(template.includeDemoAudio ?? false);
       setIncludeUgcAudio(template.includeUgcAudio ?? false);
@@ -1129,7 +1126,6 @@ export function StitchrPageClient() {
       );
 
       void stitchrState.stitchLongrSequence(selections, textOverlays, {
-        addMusic: addMusic && !selectedMusicTrack,
         demoPlaybackRate,
         includeDemoAudio,
         includeUgcAudio,
@@ -1185,7 +1181,6 @@ export function StitchrPageClient() {
         selectedDemoTrimRange,
         null,
         {
-          addMusic: addMusic && !selectedMusicTrack,
           demoPlaybackRate,
           includeDemoAudio,
           includeUgcAudio,
@@ -1444,7 +1439,6 @@ export function StitchrPageClient() {
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
             <div className="flex min-w-0 flex-col gap-5">
               <ClipPickerPanel
-                addMusic={addMusic}
                 mode={mode}
                 demoPlaybackRate={demoPlaybackRate}
                 includeDemoAudio={includeDemoAudio}
@@ -1476,20 +1470,12 @@ export function StitchrPageClient() {
                 onUpdateDemoTrim={handleUpdateDemoTrim}
                 canStitch={canStitch}
                 isStitching={isStitching}
-                onAddMusicChange={(checked) => {
-                  setAddMusic(checked);
-
-                  if (checked) {
-                    setSelectedMusicTrack(null);
-                  }
-                }}
                 onDemoPlaybackRateChange={setDemoPlaybackRate}
                 onIncludeDemoAudioChange={setIncludeDemoAudio}
                 onIncludeUgcAudioChange={setIncludeUgcAudio}
                 onLoadMoreClips={handleLoadMoreStitchrClips}
                 onSelectMusicTrack={(track) => {
                   setSelectedMusicTrack(track);
-                  setAddMusic(false);
                 }}
                 onStitch={handleStitch}
                 onUgcPlaybackRateChange={setUgcPlaybackRate}

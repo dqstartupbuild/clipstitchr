@@ -9,7 +9,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function TermsPage() {
-  const lastUpdated = "May 8, 2026";
+  const lastUpdated = "June 16, 2026";
 
   return (
     <article className="px-6 py-20 md:py-28">
@@ -81,6 +81,12 @@ export default function TermsPage() {
               and download. You must have the rights and permissions needed to
               use any UGC, product demos, audio, trademarks, or other
               content included in those files.
+            </p>
+            <p>
+              Music uploads are added to the shared music pool and may be used
+              by other ClipStitchr users. Only upload music if you own it or
+              have all rights, licenses, and permissions needed to share it and
+              use it in finished videos.
             </p>
           </section>
 

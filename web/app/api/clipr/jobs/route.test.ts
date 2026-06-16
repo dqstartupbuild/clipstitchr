@@ -372,7 +372,6 @@ describe("POST /api/clipr/jobs", () => {
       api.rateLimits.consumeCliprMusicGeneration,
       expect.anything(),
     );
-    expect(providerJobInput.addMusic).toBe(false);
     expect(providerJobInput.durationSeconds).toBe(10);
     expect(providerJobInput.generationMode).toBe("reaction");
     expect(providerJobInput.musicTrack).toBeNull();

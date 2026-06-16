@@ -4,17 +4,13 @@ import { IconButton } from "@/app/_components/ui/IconButton";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 
 type CliprMusicControlProps = {
-  checked: boolean;
   selectedTrack: SharedMusicTrack | null;
-  onChange: (checked: boolean) => void;
   onClearTrack: () => void;
   onSelectTrack: (track: SharedMusicTrack) => void | Promise<void>;
 };
 
 export function CliprMusicControl({
-  checked,
   selectedTrack,
-  onChange,
   onClearTrack,
   onSelectTrack,
 }: CliprMusicControlProps) {
@@ -31,20 +27,13 @@ export function CliprMusicControl({
           </h2>
         </div>
       </div>
-      <label className="flex items-start gap-3 rounded-lg border border-border bg-surface-elevated p-3">
-        <input
-          type="checkbox"
-          checked={checked}
-          className="mt-1 h-4 w-4 accent-accent"
-          onChange={(event) => onChange(event.currentTarget.checked)}
-        />
-        <span className="text-sm leading-6 text-text-secondary">
-          Generate background music for this Clip. Music stays editable and is
-          mixed only when you export.
-        </span>
-      </label>
+      <div className="rounded-lg border border-border bg-surface-elevated p-3 text-sm leading-6 text-text-secondary">
+        Choose a shared track or upload one you have permission to use. Music
+        stays editable and is mixed only when you export.
+      </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <MusicSelectorButton
+          label={selectedTrack ? "Change music" : "Add music"}
           source="clipr"
           selectedTrackId={selectedTrack?.id}
           onSelectTrack={onSelectTrack}

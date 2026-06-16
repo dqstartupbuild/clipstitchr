@@ -16,7 +16,7 @@ A saved template keeps the editable Stitchr setup:
 - shared caption and hashtag copy
 - source stitch name and id for context
 
-Templates do not store rendered stitch video files, posters, generated music, or
+Templates do not store rendered stitch video files, posters, music assets, or
 downloaded media blobs. They are setup records only.
 
 ## User Flow

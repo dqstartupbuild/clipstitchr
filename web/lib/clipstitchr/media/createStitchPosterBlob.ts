@@ -107,6 +107,7 @@ export async function createStitchPosterBlob({
   await drawVideoFrameToCanvas({
     canvas,
     context,
+    crop: posterSource.quickEdit?.crop,
     time: sourceTime,
     videoBlob: posterSource.clip.blob,
   });

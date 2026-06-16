@@ -17,13 +17,19 @@ function normalizeText(value: string, maxLength: number) {
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    await getAuthenticatedOwnerId(ctx);
+    const ownerId = await getAuthenticatedOwnerId(ctx);
 
-    return await ctx.db
+    const backgrounds = await ctx.db
       .query("swiprBackgrounds")
       .withIndex("by_created")
       .order("desc")
       .collect();
+
+    return backgrounds.filter(
+      (background) =>
+        background.source !== "avatar-photo" ||
+        background.uploadedByOwnerId === ownerId,
+    );
   },
 });
 

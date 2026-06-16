@@ -1,7 +1,8 @@
 "use client";
 
-import { Save, X } from "lucide-react";
+import { Crop, Save, X } from "lucide-react";
 import { useState } from "react";
+import { VideoCropEditor } from "@/app/_components/crop/VideoCropEditor";
 import { CliprMusicControls } from "@/app/_components/dashboard/CliprMusicControls";
 import { VideoClipMusicPreview } from "@/app/_components/dashboard/VideoClipMusicPreview";
 import { VideoTrimEditor } from "@/app/_components/trim/VideoTrimEditor";
@@ -12,6 +13,7 @@ import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { useVideoClipDetailsMusic } from "@/lib/clipstitchr/hooks/useVideoClipDetailsMusic";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -21,6 +23,7 @@ import { createQuickEditSuggestionsFromMetadata } from "@/lib/clipstitchr/utils/
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
+import { getManualCropForSave } from "@/lib/clipstitchr/utils/getManualCropForSave";
 import { getVideoClipBadgeLabel } from "@/lib/clipstitchr/utils/getVideoClipBadgeLabel";
 import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
@@ -43,6 +46,7 @@ type VideoClipEditDialogProps = {
   videoUrl: string | null;
   onClose: () => void;
   onLoadPreview: () => void;
+  onSaveCrop?: (crop: QuickEditCrop | null) => void | Promise<void>;
   onSaveMetadata: (metadata: AssetMetadataUpdate) => void | Promise<void>;
 };
 
@@ -57,6 +61,7 @@ export function VideoClipEditDialog({
   videoUrl,
   onClose,
   onLoadPreview,
+  onSaveCrop,
   onSaveMetadata,
 }: VideoClipEditDialogProps) {
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
@@ -65,8 +70,18 @@ export function VideoClipEditDialog({
   const [activeTrimRange, setActiveTrimRange] = useState(() =>
     clampVideoTrimRange(initialTrimRange, clip.duration),
   );
+  const [isCropEditorOpen, setIsCropEditorOpen] = useState(false);
+  const [crop, setCrop] = useState<QuickEditCrop>(() => ({
+    mode: "smart-9x16",
+    positionX: quickEdit?.crop?.positionX ?? 0,
+    positionY: quickEdit?.crop?.positionY ?? 0,
+    scale: quickEdit?.crop?.scale ?? 1,
+  }));
   const [savedTrimRange, setSavedTrimRange] = useState(() =>
     clampVideoTrimRange(initialTrimRange, clip.duration),
+  );
+  const [savedCropKey, setSavedCropKey] = useState(() =>
+    JSON.stringify(quickEdit?.crop ?? null),
   );
   const [name, setName] = useState(clip.name);
   const [tags, setTags] = useState(() =>
@@ -127,8 +142,13 @@ export function VideoClipEditDialog({
   const hasMetadataChanges = currentMetadataKey !== savedMetadataKey;
   const hasTrimChanges =
     Boolean(trimEditor) && !areVideoTrimRangesEqual(activeTrimRange, savedTrimRange);
+  const currentCropKey = JSON.stringify(getManualCropForSave(crop));
+  const hasCropChanges = Boolean(onSaveCrop) && currentCropKey !== savedCropKey;
   const hasChanges =
-    hasMetadataChanges || hasTrimChanges || musicState.hasUnsavedChanges;
+    hasMetadataChanges ||
+    hasTrimChanges ||
+    hasCropChanges ||
+    musicState.hasUnsavedChanges;
   const canSaveChanges =
     canSaveMetadata && hasChanges && !isSavingChanges && !musicState.isSaving;
   const displayDuration = getVideoTrimDisplayDuration(
@@ -167,6 +187,13 @@ export function VideoClipEditDialog({
 
       if (trimEditor && hasTrimChanges) {
         await handleSaveTrim(activeTrimRange);
+      }
+
+      if (onSaveCrop && hasCropChanges) {
+        const nextCrop = getManualCropForSave(crop);
+
+        await onSaveCrop(nextCrop);
+        setSavedCropKey(JSON.stringify(nextCrop));
       }
 
       if (musicState.hasUnsavedChanges) {
@@ -235,6 +262,36 @@ export function VideoClipEditDialog({
               trimRange={activeTrimRange}
               onLoadPreview={onLoadPreview}
             />
+            {onSaveCrop ? (
+              <div className="grid gap-3">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  icon={<Crop aria-hidden className="h-4 w-4" />}
+                  onClick={() => setIsCropEditorOpen((isOpen) => !isOpen)}
+                >
+                  Crop
+                </Button>
+                {isCropEditorOpen ? (
+                  <VideoCropEditor
+                    crop={crop}
+                    label={`Crop ${clip.name}`}
+                    mediaSrc={videoUrl}
+                    posterSrc={posterUrl}
+                    onChange={setCrop}
+                    onReset={() =>
+                      setCrop({
+                        mode: "smart-9x16",
+                        positionX: 0,
+                        positionY: 0,
+                        scale: 1,
+                      })
+                    }
+                  />
+                ) : null}
+              </div>
+            ) : null}
             <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface-elevated p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center rounded-md border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-semibold text-accent-dark">
@@ -406,14 +463,12 @@ export function VideoClipEditDialog({
                 enabled={musicState.musicEnabled}
                 error={musicState.error}
                 hasUnsavedChanges={musicState.hasUnsavedChanges}
-                isGenerating={musicState.isGenerating}
                 isLoadingPreview={musicState.isMusicLoading}
                 isSaving={musicState.isSaving}
                 music={musicState.music}
                 showSaveButton={false}
                 volume={musicState.musicVolume}
                 onEnabledChange={musicState.setMusicEnabled}
-                onGenerate={() => void musicState.generateMusic()}
                 onRemove={() => void musicState.removeMusic()}
                 onSave={() => void musicState.saveMusic()}
                 onSelectTrack={(track) => void musicState.selectMusicTrack(track)}

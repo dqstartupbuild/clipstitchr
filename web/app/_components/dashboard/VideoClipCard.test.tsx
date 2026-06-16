@@ -35,7 +35,6 @@ const mocks = vi.hoisted(() => ({
     onSave: (trimRange: { start: number; end: number }) => void | Promise<void>;
   },
   cliprMusicEditor: null as null | {
-    onGenerate: () => Promise<CliprMusicMetadata | null>;
     onRemove: () => void | Promise<void>;
     onSave: (music: CliprMusicMetadata | null) => void | Promise<void>;
   },
@@ -237,16 +236,6 @@ describe("VideoClipCard", () => {
   it("builds clip action items and invokes download, edit, trim, music, avatar, and delete callbacks", async () => {
     const onCreateAvatarFromClip = vi.fn(async () => true);
     const onDelete = vi.fn();
-    const onGenerateCliprMusic = vi.fn(async () =>
-      createCliprMusic({
-        audioObject: {
-          contentType: "audio/mpeg",
-          key: "new-music.mp3",
-          size: 100,
-        },
-        title: "New music",
-      }),
-    );
     const onUpdateCliprMusic = vi.fn(async () => undefined);
     const onUpdateMetadata = vi.fn(async () => undefined);
     const onUpdateTrim = vi.fn(async () => undefined);
@@ -258,7 +247,6 @@ describe("VideoClipCard", () => {
         productName="Launch Kit"
         onCreateAvatarFromClip={onCreateAvatarFromClip}
         onDelete={onDelete}
-        onGenerateCliprMusic={onGenerateCliprMusic}
         onLoadClip={vi.fn()}
         onUpdateCliprMusic={onUpdateCliprMusic}
         onUpdateMetadata={onUpdateMetadata}
@@ -283,7 +271,6 @@ describe("VideoClipCard", () => {
       ?.onClick?.();
     mocks.actionItems.find((item) => item.label === "Delete clip")?.onClick?.();
     await mocks.trimEditor?.onSave({ start: 1, end: 3 });
-    await mocks.cliprMusicEditor?.onGenerate();
     await mocks.cliprMusicEditor?.onSave(createCliprMusic());
     await mocks.cliprMusicEditor?.onRemove();
 
@@ -308,7 +295,6 @@ describe("VideoClipCard", () => {
       start: 1,
       end: 3,
     });
-    expect(onGenerateCliprMusic).toHaveBeenCalledWith(createClipMetadata());
     expect(onUpdateCliprMusic).toHaveBeenCalled();
   });
 
@@ -540,10 +526,7 @@ describe("VideoClipCard", () => {
     );
   });
 
-  it("reports download and music failures from card actions", async () => {
-    const onGenerateCliprMusic = vi
-      .fn()
-      .mockRejectedValueOnce(new Error("Generation failed"));
+  it("reports download and music save failures from card actions", async () => {
     const onUpdateCliprMusic = vi
       .fn()
       .mockRejectedValueOnce(new Error("Save failed"));
@@ -556,7 +539,6 @@ describe("VideoClipCard", () => {
       <VideoClipCard
         clip={createClipMetadata()}
         onDelete={vi.fn()}
-        onGenerateCliprMusic={onGenerateCliprMusic}
         onLoadClip={vi.fn()}
         onUpdateCliprMusic={onUpdateCliprMusic}
         onUpdateMetadata={vi.fn()}
@@ -565,7 +547,6 @@ describe("VideoClipCard", () => {
     );
 
     mocks.actionItems.find((item) => item.label === "Download clip")?.onClick?.();
-    await mocks.cliprMusicEditor?.onGenerate();
     await expect(
       mocks.cliprMusicEditor?.onSave(createCliprMusic()),
     ).rejects.toThrow("Save failed");
@@ -575,12 +556,10 @@ describe("VideoClipCard", () => {
     }
 
     expect(mocks.setState).toHaveBeenCalledWith("Export failed");
-    expect(mocks.setState).toHaveBeenCalledWith("Generation failed");
     expect(mocks.setState).toHaveBeenCalledWith("Save failed");
   });
 
   it("uses fallback failure messages for non-Error download and music failures", async () => {
-    const onGenerateCliprMusic = vi.fn().mockRejectedValueOnce("no music");
     const onUpdateCliprMusic = vi.fn().mockRejectedValueOnce("no save");
 
     mocks.createVideoBlobWithPosterMetadata.mockRejectedValueOnce("no export");
@@ -589,7 +568,6 @@ describe("VideoClipCard", () => {
       <VideoClipCard
         clip={createClipMetadata()}
         onDelete={vi.fn()}
-        onGenerateCliprMusic={onGenerateCliprMusic}
         onLoadClip={vi.fn()}
         onUpdateCliprMusic={onUpdateCliprMusic}
         onUpdateMetadata={vi.fn()}
@@ -598,7 +576,6 @@ describe("VideoClipCard", () => {
     );
 
     mocks.actionItems.find((item) => item.label === "Download clip")?.onClick?.();
-    await mocks.cliprMusicEditor?.onGenerate();
     await expect(mocks.cliprMusicEditor?.onSave(null)).rejects.toBe("no save");
 
     for (let index = 0; index < 4; index += 1) {
@@ -606,9 +583,6 @@ describe("VideoClipCard", () => {
     }
 
     expect(mocks.setState).toHaveBeenCalledWith("Unable to export this Clip.");
-    expect(mocks.setState).toHaveBeenCalledWith(
-      "Unable to generate music for this Clip.",
-    );
     expect(mocks.setState).toHaveBeenCalledWith(
       "Unable to update music for this Clip.",
     );

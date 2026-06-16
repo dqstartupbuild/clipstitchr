@@ -34,7 +34,7 @@ the current backend direction than the Agent component.
 
 The best use is not the current browser-local Stitchr or Longr export path.
 The best use is provider orchestration and finalization: Clipr provider steps,
-Swipr background generation, avatar photo generation, shared music generation,
+Swipr background generation, avatar photo generation, shared music uploads,
 Swapr finalization, provider recovery jobs, and future autopilot tasks.
 
 Workpool should be treated as queue and concurrency infrastructure. It should
@@ -97,7 +97,7 @@ Good candidates:
 
 Clipr currently performs multiple provider steps in one request-owned flow:
 hook/script generation, avatar still generation, avatar video generation, and
-optional music generation. Workpool can split those into idempotent actions
+optional shared music selection. Workpool can split those into idempotent actions
 with bounded provider concurrency.
 
 This would reduce the chance that a burst of Clipr jobs overwhelms Replicate or

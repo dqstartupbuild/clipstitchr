@@ -1,6 +1,6 @@
 "use client";
 
-import { Music2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useState } from "react";
 import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
 import { Button } from "@/app/_components/ui/Button";
@@ -12,10 +12,8 @@ import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/util
 
 type StitchMusicSettingsDialogProps = {
   error: string | null;
-  isGenerating: boolean;
   isSaving: boolean;
   onClose: () => void;
-  onGenerate: () => Promise<StitchMusicMetadata | null>;
   onRemove: () => Promise<void>;
   onSave: (music: StitchMusicMetadata) => Promise<void>;
   stitch: Stitch;
@@ -23,10 +21,8 @@ type StitchMusicSettingsDialogProps = {
 
 export function StitchMusicSettingsDialog({
   error,
-  isGenerating,
   isSaving,
   onClose,
-  onGenerate,
   onRemove,
   onSave,
   stitch,
@@ -37,15 +33,6 @@ export function StitchMusicSettingsDialog({
   const [enabled, setEnabled] = useState(music?.enabled ?? true);
   const [volume, setVolume] = useState(music?.volume ?? 1);
 
-  const handleGenerate = async () => {
-    const nextMusic = await onGenerate();
-
-    if (nextMusic) {
-      setMusic(nextMusic);
-      setEnabled(nextMusic.enabled);
-      setVolume(nextMusic.volume);
-    }
-  };
   const handleSelectTrack = async (track: SharedMusicTrack) => {
     const nextMusic = createStitchMusicMetadataFromSharedTrack(track);
 
@@ -181,15 +168,8 @@ export function StitchMusicSettingsDialog({
                 </Button>
               </>
             ) : null}
-            <Button
-              type="button"
-              icon={<Music2 aria-hidden className="h-4 w-4" />}
-              isLoading={isGenerating}
-              onClick={() => void handleGenerate()}
-            >
-              {music ? "Generate new music" : "Generate music"}
-            </Button>
             <MusicSelectorButton
+              label={music ? "Change music" : "Add music"}
               source="stitchr"
               selectedTrackId={music?.sharedTrackId}
               onSelectTrack={handleSelectTrack}

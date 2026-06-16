@@ -68,7 +68,7 @@ social proof first, product proof immediately after.
    backend writing call uses `TEXT_WRITING_MODEL_ID`, which defaults to
    `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` is supported for
    higher-cost writing tests.
-10. Optionally generate separate 60 second music for each stitch.
+10. Optionally attach selected shared music to each stitch.
 11. Create one stitched output per selected UGC clip.
 12. Render and save each finished Stitch video.
 13. Download the finished ad variants whenever needed.
@@ -136,7 +136,7 @@ Stitch.
   into Stitchr.
 - Keep generated overlay text and caption copy editable while hiding hook
   style/template mechanics.
-- Keep generated music editable and separate from the saved stitch.
+- Keep selected or uploaded shared music editable and separate from the saved stitch.
 - Keep saved stitches usable as templates even after they are marked posted.
 - Use clip scores as guidance for selection, not as a hard gate that blocks the
   user's creative judgment.

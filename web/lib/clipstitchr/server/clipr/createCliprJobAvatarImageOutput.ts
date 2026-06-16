@@ -5,7 +5,6 @@ import { getCliprAvatarSourceScene } from "@/lib/clipstitchr/server/getCliprAvat
 import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl";
 import { saveCliprGeneratedAvatarPhoto } from "@/lib/clipstitchr/server/saveCliprGeneratedAvatarPhoto";
 import { saveCliprSceneImageObject } from "@/lib/clipstitchr/server/saveCliprSceneImageObject";
-import { cliprMusicGenerationDefaults } from "@/lib/clipstitchr/constants/cliprMusicGenerationDefaults";
 import type { CliprJobCreateInput } from "@/lib/clipstitchr/server/clipr/CliprJobCreateInput";
 import type { CliprJobInputDocuments } from "@/lib/clipstitchr/server/clipr/CliprJobInputDocuments";
 import type { CliprJobServerContext } from "@/lib/clipstitchr/server/clipr/CliprJobServerContext";
@@ -57,13 +56,6 @@ export async function createCliprJobAvatarImageOutput({
     estimatedSeconds: input.durationSeconds,
     secret,
   });
-
-  if (input.addMusic) {
-    await convex.mutation(api.rateLimits.consumeCliprMusicGeneration, {
-      generatedSeconds: cliprMusicGenerationDefaults.durationSeconds,
-      secret,
-    });
-  }
 
   await convex.mutation(api.rateLimits.consumeCliprAvatarStillGeneration, {
     secret,

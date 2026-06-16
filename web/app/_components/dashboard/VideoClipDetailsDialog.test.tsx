@@ -7,9 +7,7 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 const mocks = vi.hoisted(() => ({
   musicState: {
     error: null as string | null,
-    generateMusic: vi.fn(),
     hasUnsavedChanges: false,
-    isGenerating: false,
     isMusicLoading: false,
     isSaving: false,
     music: null as CliprMusicMetadata | null,
@@ -193,9 +191,7 @@ describe("VideoClipDetailsDialog", () => {
     vi.clearAllMocks();
     mocks.musicState = {
       error: null,
-      generateMusic: vi.fn(async () => undefined),
       hasUnsavedChanges: false,
-      isGenerating: false,
       isMusicLoading: false,
       isSaving: false,
       music: createMusic(),
@@ -230,9 +226,7 @@ describe("VideoClipDetailsDialog", () => {
       isLoading: false,
       musicEditor: {
         error: null,
-        isGenerating: false,
         isSaving: false,
-        onGenerate: vi.fn(async () => createMusic()),
         onRemove: vi.fn(async () => undefined),
         onSave: vi.fn(async () => undefined),
       },
@@ -332,7 +326,6 @@ describe("VideoClipDetailsDialog", () => {
 
     (musicControls.props.onEnabledChange as (enabled: boolean) => void)(false);
     (musicControls.props.onVolumeChange as (volume: number) => void)(0.25);
-    (musicControls.props.onGenerate as () => void)();
     (musicControls.props.onRemove as () => void)();
     (musicControls.props.onSave as () => void)();
     (musicControls.props.onSelectTrack as (track: SharedMusicTrack) => void)(
@@ -342,7 +335,6 @@ describe("VideoClipDetailsDialog", () => {
 
     expect(mocks.musicState.setMusicEnabled).toHaveBeenCalledWith(false);
     expect(mocks.musicState.setMusicVolume).toHaveBeenCalledWith(0.25);
-    expect(mocks.musicState.generateMusic).toHaveBeenCalledOnce();
     expect(mocks.musicState.removeMusic).toHaveBeenCalledOnce();
     expect(mocks.musicState.saveMusic).toHaveBeenCalledOnce();
     expect(mocks.musicState.selectMusicTrack).toHaveBeenCalledWith(createTrack());
@@ -431,9 +423,7 @@ describe("VideoClipDetailsDialog", () => {
       isLoading: false,
       musicEditor: {
         error: "Music error",
-        isGenerating: true,
         isSaving: true,
-        onGenerate: vi.fn(async () => null),
         onRemove: vi.fn(async () => undefined),
         onSave: vi.fn(async () => undefined),
       },

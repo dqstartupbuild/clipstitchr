@@ -110,17 +110,6 @@ describe("StitchMusicSettingsDialog", () => {
 
   it("renders existing music controls and invokes music callbacks", async () => {
     const onClose = vi.fn();
-    const onGenerate = vi.fn(async () =>
-      createStitchMusic({
-        audioObject: {
-          contentType: "audio/mpeg",
-          key: "generated.mp3",
-          size: 100,
-        },
-        title: "Generated",
-        volume: 0.5,
-      }),
-    );
     const onRemove = vi.fn(async () => undefined);
     const onSave = vi.fn(async () => undefined);
     const markup = renderToStaticMarkup(
@@ -129,10 +118,8 @@ describe("StitchMusicSettingsDialog", () => {
           music: createStitchMusic(),
         })}
         error="Music unavailable."
-        isGenerating={false}
         isSaving={false}
         onClose={onClose}
-        onGenerate={onGenerate}
         onRemove={onRemove}
         onSave={onSave}
       />,
@@ -147,14 +134,11 @@ describe("StitchMusicSettingsDialog", () => {
       ?.onClick?.();
     await mocks.buttons.find((button) => button.label === "Save settings")
       ?.onClick?.();
-    await mocks.buttons.find((button) => button.label === "Generate new music")
-      ?.onClick?.();
     await mocks.musicSelectorProps?.onSelectTrack(createTrack());
 
     expect(onClose).toHaveBeenCalled();
     expect(onRemove).toHaveBeenCalled();
     expect(onSave).toHaveBeenCalled();
-    expect(onGenerate).toHaveBeenCalled();
   });
 
   it("renders the empty state when no music is attached", () => {
@@ -162,16 +146,14 @@ describe("StitchMusicSettingsDialog", () => {
       <StitchMusicSettingsDialog
         stitch={createStitch()}
         error={null}
-        isGenerating={false}
         isSaving={false}
         onClose={vi.fn()}
-        onGenerate={vi.fn(async () => null)}
         onRemove={vi.fn(async () => undefined)}
         onSave={vi.fn(async () => undefined)}
       />,
     );
 
     expect(markup).toContain("No music is attached to this stitch.");
-    expect(markup).toContain("Generate music");
+    expect(markup).toContain("MusicSelectorButton");
   });
 });

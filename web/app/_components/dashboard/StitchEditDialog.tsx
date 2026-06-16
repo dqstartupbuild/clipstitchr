@@ -1,15 +1,18 @@
 "use client";
 
-import { Music2, Save, X } from "lucide-react";
+import { Crop, Save, X } from "lucide-react";
 import { useMemo, useState } from "react";
-import { StitchSocialCaptionField } from "@/app/_components/stitches/StitchSocialCaptionField";
+import { VideoCropEditor } from "@/app/_components/crop/VideoCropEditor";
 import { StitchSourceSettingsPanel } from "@/app/_components/dashboard/StitchSourceSettingsPanel";
 import { StitchSequencePreview } from "@/app/_components/dashboard/StitchSequencePreview";
-import { TextOverlayEditor } from "@/app/_components/stitchr/TextOverlayEditor";
 import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
+import { StitchSocialCaptionField } from "@/app/_components/stitches/StitchSocialCaptionField";
+import { TextOverlayEditor } from "@/app/_components/stitchr/TextOverlayEditor";
 import { Badge } from "@/app/_components/ui/Badge";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
+import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
@@ -31,15 +34,16 @@ import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName";
+import { getManualCropForSave } from "@/lib/clipstitchr/utils/getManualCropForSave";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getQuickEditSuggestionsWithCrop } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsWithCrop";
 import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
 import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 
 type StitchEditDialogProps = {
   demoClips: VideoClipMetadata[];
-  isGeneratingMusic: boolean;
   isLoadingPreview: boolean;
   isSavingMusic: boolean;
   isSavingSocialCaption: boolean;
@@ -55,7 +59,6 @@ type StitchEditDialogProps = {
   textError: string | null;
   ugcClips: VideoClipMetadata[];
   onClose: () => void;
-  onGenerateMusic: () => Promise<StitchMusicMetadata | null>;
   onLoadPreview: (ugcClipId?: string, demoClipId?: string) => void;
   onRemoveMusic: () => Promise<void>;
   onSaveMusic: (music: StitchMusicMetadata) => Promise<void>;
@@ -67,6 +70,11 @@ type StitchEditDialogProps = {
     update: StitchSourceSettingsUpdate,
     stitchOverride?: Stitch,
   ) => Promise<void>;
+  onSaveSourceCrop?: (
+    source: "ugc" | "demo",
+    crop: QuickEditCrop | null,
+    stitchOverride?: Stitch,
+  ) => Promise<void>;
   onSaveTextOverlay: (
     textOverlay: TextOverlay | TextOverlay[] | null,
     stitchOverride?: Stitch,
@@ -75,7 +83,6 @@ type StitchEditDialogProps = {
 
 export function StitchEditDialog({
   demoClips,
-  isGeneratingMusic,
   isLoadingPreview,
   isSavingMusic,
   isSavingSocialCaption,
@@ -91,12 +98,12 @@ export function StitchEditDialog({
   textError,
   ugcClips,
   onClose,
-  onGenerateMusic,
   onLoadPreview,
   onRemoveMusic,
   onSaveMusic,
   onSaveSocialCaption,
   onSaveSourceSettings,
+  onSaveSourceCrop,
   onSaveTextOverlay,
 }: StitchEditDialogProps) {
   const isLongrStitch = getStitchIsLongr(stitch);
@@ -182,6 +189,20 @@ export function StitchEditDialog({
   );
   const [ugcTrimRange, setUgcTrimRange] = useState(() => initialUgcTrimRange);
   const [demoTrimRange, setDemoTrimRange] = useState(() => initialDemoTrimRange);
+  const [isUgcCropOpen, setIsUgcCropOpen] = useState(false);
+  const [isDemoCropOpen, setIsDemoCropOpen] = useState(false);
+  const [ugcCrop, setUgcCrop] = useState<QuickEditCrop>(() => ({
+    mode: "smart-9x16",
+    positionX: stitch.ugcQuickEdit?.crop?.positionX ?? 0,
+    positionY: stitch.ugcQuickEdit?.crop?.positionY ?? 0,
+    scale: stitch.ugcQuickEdit?.crop?.scale ?? 1,
+  }));
+  const [demoCrop, setDemoCrop] = useState<QuickEditCrop>(() => ({
+    mode: "smart-9x16",
+    positionX: stitch.demoQuickEdit?.crop?.positionX ?? 0,
+    positionY: stitch.demoQuickEdit?.crop?.positionY ?? 0,
+    scale: stitch.demoQuickEdit?.crop?.scale ?? 1,
+  }));
   const [ugcPlaybackRate, setUgcPlaybackRate] = useState<VideoPlaybackRate>(
     stitch.ugcPlaybackRate ?? 1,
   );
@@ -193,6 +214,12 @@ export function StitchEditDialog({
   );
   const [savedTextOverlaysKey, setSavedTextOverlaysKey] = useState(
     () => initialTextOverlaysKey,
+  );
+  const [savedUgcCropKey, setSavedUgcCropKey] = useState(() =>
+    JSON.stringify(stitch.ugcQuickEdit?.crop ?? null),
+  );
+  const [savedDemoCropKey, setSavedDemoCropKey] = useState(() =>
+    JSON.stringify(stitch.demoQuickEdit?.crop ?? null),
   );
   const [savedMusicKey, setSavedMusicKey] = useState(() =>
     createMusicMetadataComparisonKey(stitch.music ?? null),
@@ -231,6 +258,8 @@ export function StitchEditDialog({
     previewSources?.cacheKey === selectedPreviewCacheKey
       ? previewSources
       : null;
+  const ugcCropVideoUrl = useObjectUrl(selectedPreviewSources?.ugcClip.blob);
+  const demoCropVideoUrl = useObjectUrl(selectedPreviewSources?.demoClip.blob);
   const selectedPreviewError =
     previewErrorState?.cacheKey === selectedPreviewCacheKey
       ? previewErrorState.message
@@ -279,12 +308,23 @@ export function StitchEditDialog({
   const hasSourceChanges =
     !isLongrStitch && currentSourceSettingsKey !== savedSourceSettingsKey;
   const hasTextChanges = currentTextOverlaysKey !== savedTextOverlaysKey;
+  const currentUgcCrop = getManualCropForSave(ugcCrop);
+  const currentDemoCrop = getManualCropForSave(demoCrop);
+  const currentUgcCropKey = JSON.stringify(currentUgcCrop);
+  const currentDemoCropKey = JSON.stringify(currentDemoCrop);
+  const canEditSourceCrop = !isLongrStitch && Boolean(onSaveSourceCrop);
+  const hasUgcCropChanges =
+    canEditSourceCrop && currentUgcCropKey !== savedUgcCropKey;
+  const hasDemoCropChanges =
+    canEditSourceCrop && currentDemoCropKey !== savedDemoCropKey;
   const hasMusicChanges = currentMusicKey !== savedMusicKey;
   const hasSocialCaptionChanges =
     currentSocialCaption !== savedSocialCaption.trim();
   const hasChanges =
     hasSourceChanges ||
     hasTextChanges ||
+    hasUgcCropChanges ||
+    hasDemoCropChanges ||
     hasMusicChanges ||
     hasSocialCaptionChanges;
   const isSavingAny =
@@ -335,10 +375,18 @@ export function StitchEditDialog({
       : null;
     const stitchDraftForSave: Stitch = {
       ...draftStitch,
+      demoQuickEdit: getQuickEditSuggestionsWithCrop(
+        draftStitch.demoQuickEdit,
+        currentDemoCrop,
+      ),
       music: nextMusic ?? undefined,
       socialCaption: currentSocialCaption || undefined,
       textOverlay: nextTextOverlays[0],
       textOverlays: nextTextOverlays.length ? nextTextOverlays : undefined,
+      ugcQuickEdit: getQuickEditSuggestionsWithCrop(
+        draftStitch.ugcQuickEdit,
+        currentUgcCrop,
+      ),
     };
 
     setIsSavingChanges(true);
@@ -358,6 +406,16 @@ export function StitchEditDialog({
         );
         setTextOverlays(nextTextOverlays);
         setSavedTextOverlaysKey(currentTextOverlaysKey);
+      }
+
+      if (onSaveSourceCrop && hasUgcCropChanges) {
+        await onSaveSourceCrop("ugc", currentUgcCrop, stitchDraftForSave);
+        setSavedUgcCropKey(currentUgcCropKey);
+      }
+
+      if (onSaveSourceCrop && hasDemoCropChanges) {
+        await onSaveSourceCrop("demo", currentDemoCrop, stitchDraftForSave);
+        setSavedDemoCropKey(currentDemoCropKey);
       }
 
       if (hasMusicChanges) {
@@ -394,6 +452,12 @@ export function StitchEditDialog({
       setUgcTrimRange(getDefaultVideoTrimRange(nextClip));
     }
 
+    setUgcCrop({
+      mode: "smart-9x16",
+      positionX: 0,
+      positionY: 0,
+      scale: 1,
+    });
     onLoadPreview(clipId, selectedDemoClipId);
   };
   const handleSelectDemoClip = (clipId: string) => {
@@ -405,16 +469,13 @@ export function StitchEditDialog({
       setDemoTrimRange(getDefaultVideoTrimRange(nextClip));
     }
 
+    setDemoCrop({
+      mode: "smart-9x16",
+      positionX: 0,
+      positionY: 0,
+      scale: 1,
+    });
     onLoadPreview(selectedUgcClipId, clipId);
-  };
-  const handleGenerateMusic = async () => {
-    const nextMusic = await onGenerateMusic();
-
-    if (nextMusic) {
-      setMusic(nextMusic);
-      setEnabled(nextMusic.enabled);
-      setVolume(nextMusic.volume);
-    }
   };
   const handleSelectTrack = (track: SharedMusicTrack) => {
     const nextMusic = createStitchMusicMetadataFromSharedTrack(track);
@@ -486,6 +547,74 @@ export function StitchEditDialog({
               <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
                 {selectedPreviewError}
               </p>
+            ) : null}
+            {canEditSourceCrop ? (
+              <div className="grid gap-3 rounded-lg border border-border p-3">
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={isUgcCropOpen ? "primary" : "secondary"}
+                    icon={<Crop aria-hidden className="h-4 w-4" />}
+                    onClick={() => {
+                      setIsUgcCropOpen((isOpen) => !isOpen);
+                      if (!selectedPreviewSources) {
+                        onLoadPreview(selectedUgcClipId, selectedDemoClipId);
+                      }
+                    }}
+                  >
+                    Crop UGC
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={isDemoCropOpen ? "primary" : "secondary"}
+                    icon={<Crop aria-hidden className="h-4 w-4" />}
+                    onClick={() => {
+                      setIsDemoCropOpen((isOpen) => !isOpen);
+                      if (!selectedPreviewSources) {
+                        onLoadPreview(selectedUgcClipId, selectedDemoClipId);
+                      }
+                    }}
+                  >
+                    Crop demo
+                  </Button>
+                </div>
+                {isUgcCropOpen ? (
+                  <VideoCropEditor
+                    crop={ugcCrop}
+                    label="Crop UGC source"
+                    mediaSrc={ugcCropVideoUrl}
+                    posterSrc={posterUrl}
+                    onChange={setUgcCrop}
+                    onReset={() =>
+                      setUgcCrop({
+                        mode: "smart-9x16",
+                        positionX: 0,
+                        positionY: 0,
+                        scale: 1,
+                      })
+                    }
+                  />
+                ) : null}
+                {isDemoCropOpen ? (
+                  <VideoCropEditor
+                    crop={demoCrop}
+                    label="Crop demo source"
+                    mediaSrc={demoCropVideoUrl}
+                    posterSrc={posterUrl}
+                    onChange={setDemoCrop}
+                    onReset={() =>
+                      setDemoCrop({
+                        mode: "smart-9x16",
+                        positionX: 0,
+                        positionY: 0,
+                        scale: 1,
+                      })
+                    }
+                  />
+                ) : null}
+              </div>
             ) : null}
             <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface-elevated p-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -576,15 +705,6 @@ export function StitchEditDialog({
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <h3 className="text-sm font-bold text-text-primary">Music</h3>
                 <div className="flex flex-wrap justify-end gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    icon={<Music2 aria-hidden className="h-4 w-4" />}
-                    isLoading={isGeneratingMusic}
-                    onClick={() => void handleGenerateMusic()}
-                  >
-                    {music ? "Generate new" : "Generate"}
-                  </Button>
                   <MusicSelectorButton
                     source="stitchr"
                     selectedTrackId={music?.sharedTrackId}

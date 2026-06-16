@@ -356,9 +356,7 @@ describe("VideoClipPreviewCard", () => {
         clip={createClipMetadata()}
         cliprMusicEditor={{
           error: null,
-          isGenerating: false,
           isSaving: false,
-          onGenerate: vi.fn(),
           onRemove: vi.fn(),
           onSave: vi.fn(),
         }}

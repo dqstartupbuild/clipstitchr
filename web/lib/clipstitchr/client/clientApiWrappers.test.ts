@@ -2,10 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createCliprJob } from "@/lib/clipstitchr/client/createCliprJob";
 import { createProductProfile } from "@/lib/clipstitchr/client/createProductProfile";
 import { createSwaprPrediction } from "@/lib/clipstitchr/client/createSwaprPrediction";
-import { generateCliprMusic } from "@/lib/clipstitchr/client/generateCliprMusic";
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
-import { generateSharedMusicTrack } from "@/lib/clipstitchr/client/generateSharedMusicTrack";
-import { generateStitchMusic } from "@/lib/clipstitchr/client/generateStitchMusic";
 import { generateSwiprBackgroundWithAi } from "@/lib/clipstitchr/client/generateSwiprBackgroundWithAi";
 import { scoreVideoClip } from "@/lib/clipstitchr/client/scoreVideoClip";
 import { seedSwiprBackgroundLibrary } from "@/lib/clipstitchr/client/seedSwiprBackgroundLibrary";
@@ -80,15 +77,6 @@ describe("client API wrappers", () => {
           slides: ["Slide"],
         }),
       )
-      .mockResolvedValueOnce(
-        createJsonResponse({ music: { title: "Clipr music" } }),
-      )
-      .mockResolvedValueOnce(
-        createJsonResponse({ track: { id: "track_1", title: "Shared" } }),
-      )
-      .mockResolvedValueOnce(
-        createJsonResponse({ music: { title: "Stitch music" } }),
-      )
       .mockResolvedValueOnce(createJsonResponse({ product }))
       .mockResolvedValueOnce(
         createJsonResponse({ product: { ...product, name: "Updated" } }),
@@ -97,7 +85,6 @@ describe("client API wrappers", () => {
 
     await expect(
       createCliprJob({
-        addMusic: true,
         avatarId: "avatar_1",
         avatarSceneLocation: "gym mirror",
         avatarSceneOutfit: "black workout set",
@@ -123,15 +110,6 @@ describe("client API wrappers", () => {
       script: "Script",
       slides: ["Slide"],
     });
-    await expect(generateCliprMusic({ clipId: "clip_1" })).resolves.toEqual({
-      title: "Clipr music",
-    });
-    await expect(
-      generateSharedMusicTrack({ source: "clipr", style: "lofi" }),
-    ).resolves.toEqual({ id: "track_1", title: "Shared" });
-    await expect(generateStitchMusic({ stitchId: "stitch_1" })).resolves.toEqual(
-      { title: "Stitch music" },
-    );
     await expect(
       createProductProfile({
         audienceDetails: "Creators",
@@ -207,17 +185,11 @@ describe("client API wrappers", () => {
     fetchMock
       .mockResolvedValueOnce(createJsonResponse({ message: "No Clipr" }, 400))
       .mockResolvedValueOnce(new Response("not-json", { status: 500 }))
-      .mockResolvedValueOnce(createJsonResponse({ message: "No music" }, 400))
-      .mockResolvedValueOnce(new Response("not-json", { status: 500 }))
-      .mockResolvedValueOnce(
-        createJsonResponse({ message: "No stitch music" }, 400),
-      )
       .mockResolvedValueOnce(createJsonResponse({ message: "No product" }, 400))
       .mockResolvedValueOnce(createJsonResponse({}, 200));
 
     await expect(
       createCliprJob({
-        addMusic: false,
         avatarId: "avatar_1",
         durationSeconds: 30,
         generationMode: "script",
@@ -230,15 +202,6 @@ describe("client API wrappers", () => {
     await expect(
       generateCliprText({ productId: "product_1", purpose: "clipr" }),
     ).rejects.toThrow("Unable to generate Clipr text.");
-    await expect(generateCliprMusic({ clipId: "clip_1" })).rejects.toThrow(
-      "No music",
-    );
-    await expect(
-      generateSharedMusicTrack({ source: "stitchr" }),
-    ).rejects.toThrow("Unable to generate music.");
-    await expect(generateStitchMusic({ stitchId: "stitch_1" })).rejects.toThrow(
-      "No stitch music",
-    );
     await expect(
       createProductProfile({
         audienceDetails: "",

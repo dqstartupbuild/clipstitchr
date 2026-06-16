@@ -129,11 +129,10 @@ describe("createCliprTextGenerationPrompt", () => {
       slideCount: 4,
     });
 
-    expect(prompt).toContain("slides[0] must exactly match filledHook");
-    expect(prompt).toContain("final slide must plug the product");
-    expect(prompt).toContain("middle slides must validate the bold claim");
-    expect(prompt).toContain("middle slides must not mention the product name");
-    expect(prompt).toContain("filledHook and middle slides must read like creator");
-    expect(prompt).toContain("Target duration: 30 seconds");
+    expect(prompt).toContain("You write short-form social media carousel slideshows");
+    expect(prompt).toContain("Write one distinct slideshow with exactly 4 slides");
+    expect(prompt).toContain("the hook again as slide 1");
+    expect(prompt).toContain("last is a simple CTA like Save this");
+    expect(prompt).toContain("Return only the JSON object");
   });
 });

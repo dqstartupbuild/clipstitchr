@@ -16,11 +16,11 @@ import { createAvatarPhotoGenerationInput } from "@/lib/clipstitchr/server/creat
 import { createAvatarPhotoGenerationPrompt } from "@/lib/clipstitchr/server/createAvatarPhotoGenerationPrompt";
 import { createCliprJobTextGeneration } from "@/lib/clipstitchr/server/createCliprJobTextGeneration";
 import { createCliprJobVideoOutput } from "@/lib/clipstitchr/server/createCliprJobVideoOutput";
-import { createCliprMusic } from "@/lib/clipstitchr/server/createCliprMusic";
 import { createCliprSceneAvatarImage } from "@/lib/clipstitchr/server/createCliprSceneAvatarImage";
 import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
 import { processManualCliprDemo } from "./processManualCliprDemo";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
+import { createStitchScoreOutputText } from "@/lib/clipstitchr/server/createStitchScoreOutputText";
 import { createUploadVideoAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadVideoAnalysisOutputText";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
 import { getAvatarPhotoGenerationModelId } from "@/lib/clipstitchr/server/getAvatarPhotoGenerationModelId";
@@ -40,10 +40,8 @@ import { assertR2ObjectKeyBelongsToUser } from "@/lib/clipstitchr/server/r2/asse
 import { createR2ObjectKey } from "@/lib/clipstitchr/server/r2/createR2ObjectKey";
 import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl";
 import { putR2Object } from "@/lib/clipstitchr/server/r2/putR2Object";
-import { saveCliprMusicObject } from "@/lib/clipstitchr/server/saveCliprMusicObject";
 import { saveCliprSceneImageObject } from "@/lib/clipstitchr/server/saveCliprSceneImageObject";
 import { parseUploadAssetAnalysis } from "@/lib/clipstitchr/server/parseUploadAssetAnalysis";
-import { createCliprGeneratedMusicMetadata } from "@/lib/clipstitchr/server/clipr/createCliprGeneratedMusicMetadata";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
@@ -67,9 +65,11 @@ import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenera
 import { getImageNeedsSwaprOutpaint } from "@/lib/clipstitchr/utils/getImageNeedsSwaprOutpaint";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
+import { getStitchScoreSourceClipIds } from "@/lib/clipstitchr/utils/getStitchScoreSourceClipIds";
 import { getSwaprPredictionOutputUrl } from "@/lib/clipstitchr/utils/getSwaprPredictionOutputUrl";
 import { getSwaprSegmentDurationLimit } from "@/lib/clipstitchr/utils/getSwaprSegmentDurationLimit";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
+import { parseStitchScore } from "@/lib/clipstitchr/utils/parseStitchScore";
 import { getResolvedCliprVideoModelId } from "@/lib/clipstitchr/utils/getResolvedCliprVideoModelId";
 import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
 import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
@@ -212,6 +212,10 @@ type UploadVideoAnalysisProviderJobInput = {
   productId?: string;
   sourceSizeBytes: number;
   videoObject: R2ObjectReference;
+};
+
+type StitchScoreAnalysisProviderJobInput = {
+  stitchId: string;
 };
 
 type StitchrAutomationTaskInput = {
@@ -867,7 +871,7 @@ function parseManualCliprProviderJobInput(
       : null;
 
   return {
-    addMusic: input.addMusic === true,
+    addMusic: false,
     avatarDescription: getOptionalString(input.avatarDescription),
     avatarId: getOptionalString(input.avatarId) ?? "",
     avatarName: getOptionalString(input.avatarName) ?? "",
@@ -987,6 +991,19 @@ function parseUploadVideoAnalysisProviderJobInput(
     productId: getOptionalString(input.productId),
     sourceSizeBytes: getNumber(input.sourceSizeBytes, "upload source size"),
     videoObject: getR2ObjectReference(input.videoObject, "upload video object"),
+  };
+}
+
+function parseStitchScoreAnalysisProviderJobInput(
+  inputSnapshotJson: string,
+): StitchScoreAnalysisProviderJobInput {
+  const input = getObject(
+    JSON.parse(inputSnapshotJson) as unknown,
+    "stitch score analysis input",
+  );
+
+  return {
+    stitchId: getString(input.stitchId, "stitch ID"),
   };
 }
 
@@ -2278,73 +2295,10 @@ async function processManualClipr({
     voiceId: input.voiceId,
   });
   const providerModels: string[] = [...avatarVideoOutput.providerModels];
-  let music =
-    input.generationMode === "script" && input.musicTrack && !input.addMusic
+  const music =
+    input.generationMode === "script" && input.musicTrack
       ? createCliprMusicMetadataFromSharedTrack(input.musicTrack)
       : undefined;
-
-  if (input.generationMode === "script" && input.addMusic) {
-    await markProviderJobStatus({
-      client,
-      config,
-      job,
-      status: "running",
-      stage: "music-provider",
-      providerJobId: avatarVideoOutput.avatarVideoProviderPredictionId,
-      progress: 0.58,
-    });
-
-    const generatedMusic = await createCliprMusic({
-      audienceDetails: input.audienceDetails,
-      productName: input.productName,
-      replicate,
-      script: textGeneration.script,
-    });
-    const musicObject = await saveCliprMusicObject({
-      body: generatedMusic.body,
-      contentType: generatedMusic.contentType,
-      jobId: input.jobId,
-      userId: job.ownerId,
-    });
-    const musicRecordedAt = getNow();
-    const generatedMusicTrackId = createId();
-
-    providerModels.push(generatedMusic.modelId);
-    music = createCliprGeneratedMusicMetadata({
-      generatedMusic,
-      generatedMusicTrackId,
-      musicObject,
-      productName: input.productName,
-      recordedAt: musicRecordedAt,
-    });
-    await client.mutation(api.sharedMusicTracks.saveFromProvider, {
-      secret: config.providerWorkerSecret,
-      ownerId: job.ownerId,
-      id: generatedMusicTrackId,
-      title: music.title ?? "",
-      tags: music.tags ?? [],
-      style: input.productName,
-      durationSeconds: generatedMusic.durationSeconds,
-      audioObject: musicObject,
-      ownerAudioObject: musicObject,
-      mimeType: generatedMusic.contentType,
-      size: generatedMusic.body.byteLength,
-      prompt: generatedMusic.prompt,
-      providerModel: generatedMusic.modelId,
-      providerPredictionId: generatedMusic.predictionId,
-      source: "clipr",
-      createdAt: musicRecordedAt,
-    });
-    await markProviderJobStatus({
-      client,
-      config,
-      job,
-      status: "running",
-      stage: "avatar-video-provider",
-      providerJobId: generatedMusic.predictionId,
-      progress: 0.62,
-    });
-  }
 
   const clipName = getCliprFinalClipName(input.productName, getNow());
   const mediaClipId = createId();
@@ -2673,6 +2627,77 @@ async function processUploadVideoAnalysis({
   });
 }
 
+async function processStitchScoreAnalysis({
+  client,
+  config,
+  job,
+}: {
+  client: ConvexHttpClient;
+  config: ProviderWorkerConfig;
+  job: ProviderJob;
+}) {
+  const input = parseStitchScoreAnalysisProviderJobInput(job.inputSnapshotJson);
+  const stitch = await client.query(api.stitches.getForProvider, {
+    secret: config.providerWorkerSecret,
+    ownerId: job.ownerId,
+    id: input.stitchId,
+  });
+
+  if (!stitch) {
+    throw new Error("Stitch not found for provider scoring.");
+  }
+
+  await markProviderJobStatus({
+    client,
+    config,
+    job,
+    status: "running",
+    stage: "analysis-provider",
+    progress: 0.3,
+  });
+
+  const sourceClipIds = getStitchScoreSourceClipIds(stitch);
+  const sourceClips = (
+    await Promise.all(
+      sourceClipIds.map((id) =>
+        client.query(api.videoClips.getForProvider, {
+          secret: config.providerWorkerSecret,
+          ownerId: job.ownerId,
+          id,
+        }),
+      ),
+    )
+  ).filter(Boolean);
+  const outputText = await createStitchScoreOutputText({
+    replicate: createReplicateClient(),
+    sourceClips,
+    stitch,
+    userId: job.ownerId,
+  });
+  const stitchScore = parseStitchScore(outputText);
+
+  if (!stitchScore) {
+    throw new Error("The stitch score came back empty.");
+  }
+
+  await client.mutation(api.stitches.updateScoreFromProvider, {
+    secret: config.providerWorkerSecret,
+    ownerId: job.ownerId,
+    id: input.stitchId,
+    stitchScore,
+  });
+
+  await markProviderJobStatus({
+    client,
+    config,
+    job,
+    status: "completed",
+    stage: "completed",
+    outputAssetId: input.stitchId,
+    progress: 1,
+  });
+}
+
 async function processProviderJob({
   client,
   config,
@@ -2704,6 +2729,11 @@ async function processProviderJob({
 
   if (job.jobType === "upload-video-analysis") {
     await processUploadVideoAnalysis({ client, config, job });
+    return;
+  }
+
+  if (job.jobType === "stitch-score-analysis") {
+    await processStitchScoreAnalysis({ client, config, job });
     return;
   }
 

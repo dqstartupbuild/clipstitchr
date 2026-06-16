@@ -4,24 +4,20 @@ import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 
 type ClipAudioControlsProps = {
-  addMusic: boolean;
   includeDemoAudio: boolean;
   includeUgcAudio: boolean;
   isStitching: boolean;
   selectedMusicTrack: SharedMusicTrack | null;
-  onAddMusicChange: (addMusic: boolean) => void;
   onIncludeDemoAudioChange: (includeDemoAudio: boolean) => void;
   onIncludeUgcAudioChange: (includeUgcAudio: boolean) => void;
   onSelectMusicTrack: (track: SharedMusicTrack) => void | Promise<void>;
 };
 
 export function ClipAudioControls({
-  addMusic,
   includeDemoAudio,
   includeUgcAudio,
   isStitching,
   selectedMusicTrack,
-  onAddMusicChange,
   onIncludeDemoAudioChange,
   onIncludeUgcAudioChange,
   onSelectMusicTrack,
@@ -55,17 +51,8 @@ export function ClipAudioControls({
             />
             Demo audio
           </label>
-          <label className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-secondary">
-            <input
-              type="checkbox"
-              checked={addMusic}
-              className="h-4 w-4 accent-accent"
-              disabled={isStitching}
-              onChange={(event) => onAddMusicChange(event.currentTarget.checked)}
-            />
-            Music
-          </label>
           <MusicSelectorButton
+            label={selectedMusicTrack ? "Change music" : "Add music"}
             disabled={isStitching}
             source="stitchr"
             selectedTrackId={selectedMusicTrack?.id}

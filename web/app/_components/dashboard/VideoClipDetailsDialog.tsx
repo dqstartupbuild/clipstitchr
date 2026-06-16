@@ -214,13 +214,11 @@ export function VideoClipDetailsDialog({
                     enabled={musicState.musicEnabled}
                     error={musicState.error}
                     hasUnsavedChanges={musicState.hasUnsavedChanges}
-                    isGenerating={musicState.isGenerating}
                     isLoadingPreview={musicState.isMusicLoading}
                     isSaving={musicState.isSaving}
                     music={musicState.music}
                     volume={musicState.musicVolume}
                     onEnabledChange={musicState.setMusicEnabled}
-                    onGenerate={() => void musicState.generateMusic()}
                     onRemove={() => void musicState.removeMusic()}
                     onSave={() => void musicState.saveMusic()}
                     onSelectTrack={(track) =>

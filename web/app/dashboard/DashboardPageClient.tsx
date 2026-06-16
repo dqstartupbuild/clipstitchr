@@ -94,6 +94,7 @@ export function DashboardPageClient() {
           onApplyQuickEdit={library.applyClipQuickEdit}
           onResetQuickEdit={library.resetClipQuickEdit}
           onUpdateMetadata={library.updateClipMetadata}
+          onUpdateCrop={library.updateClipCrop}
           onUpdateTrim={library.updateClipTrimRange}
           onUpdatePostedStatus={library.updateClipPostedStatus}
         />
@@ -102,7 +103,6 @@ export function DashboardPageClient() {
           savingTemplateStitchId={stitchTemplates.savingStitchId}
           stitches={recentStitches}
           onDelete={library.removeStitch}
-          onGenerateMusic={library.generateStitchMusic}
           onLoadClip={library.loadClip}
           onLoadPoster={library.loadStitchPoster}
           onLoadVideo={library.loadStitchVideo}
@@ -113,6 +113,7 @@ export function DashboardPageClient() {
           onUpdateMusic={library.updateStitchMusic}
           onUpdatePostedStatus={library.updateStitchPostedStatus}
           onUpdateSocialCaption={library.updateStitchSocialCaption}
+          onUpdateSourceCrop={library.updateStitchSourceCrop}
           onUpdateSourceSettings={library.updateStitchSourceSettings}
           onUpdateTextOverlay={library.updateStitchTextOverlay}
           ugcClips={stitchrUgcClips}

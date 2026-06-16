@@ -20,7 +20,6 @@ import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 
 type ClipPickerPanelProps = {
-  addMusic: boolean;
   selectedMusicTrack: SharedMusicTrack | null;
   mode: StitchrMode;
   demoPlaybackRate: VideoPlaybackRate;
@@ -56,7 +55,6 @@ type ClipPickerPanelProps = {
   ) => void;
   canStitch: boolean;
   isStitching: boolean;
-  onAddMusicChange: (addMusic: boolean) => void;
   onDemoPlaybackRateChange: (playbackRate: VideoPlaybackRate) => void;
   onIncludeDemoAudioChange: (includeDemoAudio: boolean) => void;
   onIncludeUgcAudioChange: (includeUgcAudio: boolean) => void;
@@ -67,7 +65,6 @@ type ClipPickerPanelProps = {
 };
 
 export function ClipPickerPanel({
-  addMusic,
   selectedMusicTrack,
   mode,
   demoPlaybackRate,
@@ -97,7 +94,6 @@ export function ClipPickerPanel({
   onUpdateDemoTrim,
   canStitch,
   isStitching,
-  onAddMusicChange,
   onDemoPlaybackRateChange,
   onIncludeDemoAudioChange,
   onIncludeUgcAudioChange,
@@ -182,12 +178,10 @@ export function ClipPickerPanel({
         </div>
       ) : null}
       <ClipAudioControls
-        addMusic={addMusic}
         includeDemoAudio={includeDemoAudio}
         includeUgcAudio={includeUgcAudio}
         isStitching={isStitching}
         selectedMusicTrack={selectedMusicTrack}
-        onAddMusicChange={onAddMusicChange}
         onIncludeDemoAudioChange={onIncludeDemoAudioChange}
         onIncludeUgcAudioChange={onIncludeUgcAudioChange}
         onSelectMusicTrack={onSelectMusicTrack}

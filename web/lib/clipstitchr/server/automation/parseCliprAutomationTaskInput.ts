@@ -139,7 +139,7 @@ export function parseCliprAutomationTaskInput(
   });
 
   return {
-    addMusic: input.addMusic === true,
+    addMusic: false,
     avatarDescription: getOptionalString(input.avatarDescription),
     avatarId: getString(input.avatarId, "avatar ID"),
     avatarName: getString(input.avatarName, "avatar name"),

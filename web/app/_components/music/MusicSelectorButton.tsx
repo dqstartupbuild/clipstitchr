@@ -4,10 +4,12 @@ import { Music2 } from "lucide-react";
 import { useState } from "react";
 import { MusicSelectorDialog } from "@/app/_components/music/MusicSelectorDialog";
 import { Button } from "@/app/_components/ui/Button";
-import { generateSharedMusicTrack } from "@/lib/clipstitchr/client/generateSharedMusicTrack";
+import { getAudioBlobDuration } from "@/lib/clipstitchr/client/getAudioBlobDuration";
+import { uploadSharedMusicTrack } from "@/lib/clipstitchr/client/uploadSharedMusicTrack";
 import { useSharedMusicTracks } from "@/lib/clipstitchr/hooks/useSharedMusicTracks";
 import type { MusicTrackSource } from "@/lib/clipstitchr/types/MusicTrackSource";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
+import { getMusicUploadTitle } from "@/lib/clipstitchr/utils/getMusicUploadTitle";
 
 type MusicSelectorButtonProps = {
   disabled?: boolean;
@@ -26,7 +28,7 @@ export function MusicSelectorButton({
 }: MusicSelectorButtonProps) {
   const library = useSharedMusicTracks();
   const [isOpen, setIsOpen] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSelect = async (track: SharedMusicTrack) => {
@@ -41,12 +43,18 @@ export function MusicSelectorButton({
       );
     }
   };
-  const handleGenerate = async (style: string) => {
-    setIsGenerating(true);
+  const handleUpload = async (file: File, title: string) => {
+    setIsUploading(true);
     setError(null);
 
     try {
-      const track = await generateSharedMusicTrack({ source, style });
+      const durationSeconds = await getAudioBlobDuration(file);
+      const track = await uploadSharedMusicTrack({
+        durationSeconds,
+        file,
+        source,
+        title: title.trim() || getMusicUploadTitle(file.name),
+      });
 
       await onSelectTrack(track);
       setIsOpen(false);
@@ -54,10 +62,10 @@ export function MusicSelectorButton({
       setError(
         nextError instanceof Error
           ? nextError.message
-          : "Unable to generate music.",
+          : "Unable to upload music.",
       );
     } finally {
-      setIsGenerating(false);
+      setIsUploading(false);
     }
   };
 
@@ -76,13 +84,13 @@ export function MusicSelectorButton({
       {isOpen ? (
         <MusicSelectorDialog
           error={error}
-          isGenerating={isGenerating}
           isLoading={library.isLoading}
+          isUploading={isUploading}
           selectedTrackId={selectedTrackId}
           tracks={library.tracks}
           onClose={() => setIsOpen(false)}
-          onGenerate={handleGenerate}
           onSelect={handleSelect}
+          onUpload={handleUpload}
         />
       ) : null}
     </>

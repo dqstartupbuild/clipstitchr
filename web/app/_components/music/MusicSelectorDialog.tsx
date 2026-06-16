@@ -1,36 +1,38 @@
 "use client";
 
-import { Music2, X } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { MusicTrackListItem } from "@/app/_components/music/MusicTrackListItem";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
+import { ACCEPTED_MUSIC_TYPES } from "@/lib/clipstitchr/constants/acceptedMusicTypes";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 
 type MusicSelectorDialogProps = {
   error: string | null;
-  isGenerating: boolean;
   isLoading: boolean;
+  isUploading: boolean;
   selectedTrackId?: string;
   tracks: SharedMusicTrack[];
   onClose: () => void;
-  onGenerate: (style: string) => void | Promise<void>;
   onSelect: (track: SharedMusicTrack) => void | Promise<void>;
+  onUpload: (file: File, title: string) => void | Promise<void>;
 };
 
 export function MusicSelectorDialog({
   error,
-  isGenerating,
   isLoading,
+  isUploading,
   selectedTrackId,
   tracks,
   onClose,
-  onGenerate,
   onSelect,
+  onUpload,
 }: MusicSelectorDialogProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [style, setStyle] = useState("");
+  const [uploadTitle, setUploadTitle] = useState("");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
   const filteredTracks = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
@@ -89,26 +91,59 @@ export function MusicSelectorDialog({
             onChange={setSearchQuery}
             placeholder="Search tracks or tags"
           />
-          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="grid gap-2 rounded-lg border border-dashed border-border bg-surface-elevated p-3">
             <label className="block">
-              <span className="sr-only">Music style</span>
+              <span className="text-sm font-semibold text-text-primary">
+                Add music everyone can use
+              </span>
               <input
                 type="text"
-                value={style}
+                value={uploadTitle}
                 className="h-10 w-full rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-primary outline-none transition focus:border-accent"
-                placeholder="Mood or style"
-                onChange={(event) => setStyle(event.currentTarget.value)}
+                placeholder="Track title"
+                onChange={(event) => setUploadTitle(event.currentTarget.value)}
               />
             </label>
-            <Button
-              type="button"
-              variant="secondary"
-              icon={<Music2 aria-hidden className="h-4 w-4" />}
-              isLoading={isGenerating}
-              onClick={() => void onGenerate(style)}
-            >
-              Generate
-            </Button>
+            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+              <label
+                className={[
+                  "inline-flex h-10 min-w-0 items-center gap-2 rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-primary transition-colors hover:border-accent",
+                  isUploading ? "cursor-not-allowed opacity-60" : "cursor-pointer",
+                ].join(" ")}
+              >
+                <Upload aria-hidden className="h-4 w-4 shrink-0" />
+                <span className="truncate">
+                  {uploadFile ? uploadFile.name : "Choose audio"}
+                </span>
+                <input
+                  type="file"
+                  accept={ACCEPTED_MUSIC_TYPES.join(",")}
+                  className="sr-only"
+                  disabled={isUploading}
+                  onChange={(event) => {
+                    setUploadFile(event.currentTarget.files?.[0] ?? null);
+                  }}
+                />
+              </label>
+              <Button
+                type="button"
+                variant="secondary"
+                icon={<Upload aria-hidden className="h-4 w-4" />}
+                isLoading={isUploading}
+                disabled={!uploadFile}
+                onClick={() => {
+                  if (uploadFile) {
+                    void onUpload(uploadFile, uploadTitle);
+                  }
+                }}
+              >
+                Upload
+              </Button>
+            </div>
+            <p className="text-xs font-semibold text-text-tertiary">
+              Music you upload is added to the shared music pool. Only upload
+              tracks you have the rights to use.
+            </p>
           </div>
           {error ? (
             <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">

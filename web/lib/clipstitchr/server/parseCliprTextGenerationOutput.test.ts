@@ -112,8 +112,7 @@ describe("parseCliprTextGenerationOutput", () => {
     expect(generation.slides.slice(1, -1).join(" ")).not.toContain(
       "LaunchKit",
     );
-    expect(generation.slides.at(-1)).toContain("LaunchKit");
-    expect(generation.slides.at(-1)).toMatch(/\bUse\b/);
+    expect(generation.slides.at(-1)).toBe("Save this for later");
   });
 
   it("keeps Stitchr fallback text emotional and scriptless", () => {
@@ -209,7 +208,7 @@ describe("parseCliprTextGenerationOutput", () => {
       "The launch mistake nobody talks about",
       "The real issue is launch work gets scattered",
       "Most people notice it after the workflow is already messy",
-      "Use LaunchKit when launch work gets scattered starts slowing you down",
+      "Save this for later",
     ]);
   });
 

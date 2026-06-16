@@ -74,7 +74,10 @@ export async function stitchStitchrSequence(
       "No supported audio encoder found for this export.",
     );
     const overlays = textOverlays ?? (textOverlay ? [textOverlay] : []);
-    const renderContext = overlays.length
+    const shouldRenderWithCanvas = Boolean(
+      overlays.length || sequence.some((item) => item.quickEdit?.crop),
+    );
+    const renderContext = shouldRenderWithCanvas
       ? createTextOverlayRenderContext(TIKTOK_OUTPUT_WIDTH, TIKTOK_OUTPUT_HEIGHT)
       : null;
     const audioSource = createOutputAudioBufferSource(
@@ -107,6 +110,7 @@ export async function stitchStitchrSequence(
       const segmentVideo =
         renderContext
           ? await copyTextOverlayVideoFramesToSource({
+              crop: sequence[index].quickEdit?.crop,
               input,
               playbackRate,
               renderContext,

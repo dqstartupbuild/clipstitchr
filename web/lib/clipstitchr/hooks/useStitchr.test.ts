@@ -8,7 +8,6 @@ const mocks = vi.hoisted(() => {
   return {
     createRenderedStitchVideoUpload: vi.fn(),
     createId: vi.fn(),
-    generateStitchMusic: vi.fn(),
     mutationFns,
     saveRenderedStitchVideo: vi.fn(),
     useMutation: vi.fn((mutationId: string) => {
@@ -43,10 +42,6 @@ vi.mock("@/convex/_generated/api", () => ({
       updateMusic: "stitches.updateMusic",
     },
   },
-}));
-
-vi.mock("@/lib/clipstitchr/client/generateStitchMusic", () => ({
-  generateStitchMusic: mocks.generateStitchMusic,
 }));
 
 vi.mock("@/lib/clipstitchr/client/createRenderedStitchVideoUpload", () => ({
@@ -141,10 +136,6 @@ describe("useStitchr", () => {
       .mockReturnValueOnce("stitch_1")
       .mockReturnValueOnce("stitch_2")
       .mockReturnValue("stitch_next");
-    mocks.generateStitchMusic.mockResolvedValue({
-      audioObject: { key: "users/user_123/music/generated.mp3" },
-      title: "Generated music",
-    });
     mocks.createRenderedStitchVideoUpload.mockResolvedValue({
       blob: new Blob(["rendered"], { type: "video/mp4" }),
       mimeType: "video/mp4",
@@ -238,7 +229,6 @@ describe("useStitchr", () => {
         ugcPlaybackRate: 1,
       }),
     );
-    expect(getMutation("stitches.updateMusic")).not.toHaveBeenCalled();
     expect(mocks.createRenderedStitchVideoUpload).toHaveBeenCalledTimes(2);
     expect(onCreated).toHaveBeenCalledTimes(1);
     expect(mocks.useStateSetter).toHaveBeenCalledWith("complete");
@@ -289,39 +279,6 @@ describe("useStitchr", () => {
       expect.objectContaining({
         id: "stitch_2",
         textOverlay: expect.objectContaining({ text: "Second hook" }),
-      }),
-    );
-  });
-
-  it("generates stitch music when requested without a selected track", async () => {
-    const state = useStitchr({});
-
-    await expect(
-      state.stitchVideo(
-        createClip("ugc_1", "UGC"),
-        createClip("demo_1", "Demo"),
-        { end: 4, start: 0 },
-        { end: 5, start: 1 },
-        null,
-        { addMusic: true },
-      ),
-    ).resolves.toEqual(expect.objectContaining({ id: "stitch_1" }));
-
-    expect(mocks.generateStitchMusic).toHaveBeenCalledWith({
-      stitchId: "stitch_1",
-    });
-    expect(getMutation("stitches.updateMusic")).toHaveBeenCalledWith({
-      id: "stitch_1",
-      music: expect.objectContaining({
-        title: "Generated music",
-      }),
-    });
-    expect(mocks.saveRenderedStitchVideo).toHaveBeenCalledWith(
-      expect.objectContaining({
-        stitch: expect.objectContaining({
-          id: "stitch_1",
-          music: expect.objectContaining({ title: "Generated music" }),
-        }),
       }),
     );
   });

@@ -38,8 +38,8 @@ describe("MusicSelectorDialog", () => {
     const markup = renderToStaticMarkup(
       <MusicSelectorDialog
         error={null}
-        isGenerating={false}
         isLoading={false}
+        isUploading={false}
         selectedTrackId="track_1"
         tracks={[
           createTrack(),
@@ -51,8 +51,8 @@ describe("MusicSelectorDialog", () => {
           }),
         ]}
         onClose={vi.fn()}
-        onGenerate={vi.fn()}
         onSelect={vi.fn()}
+        onUpload={vi.fn()}
       />,
     );
 
@@ -67,28 +67,28 @@ describe("MusicSelectorDialog", () => {
     const loadingMarkup = renderToStaticMarkup(
       <MusicSelectorDialog
         error={null}
-        isGenerating={true}
         isLoading={true}
+        isUploading={true}
         tracks={[]}
         onClose={vi.fn()}
-        onGenerate={vi.fn()}
         onSelect={vi.fn()}
+        onUpload={vi.fn()}
       />,
     );
     const emptyMarkup = renderToStaticMarkup(
       <MusicSelectorDialog
-        error="Unable to generate music."
-        isGenerating={false}
+        error="Unable to upload music."
         isLoading={false}
+        isUploading={false}
         tracks={[]}
         onClose={vi.fn()}
-        onGenerate={vi.fn()}
         onSelect={vi.fn()}
+        onUpload={vi.fn()}
       />,
     );
 
     expect(loadingMarkup).toContain("Loading music");
-    expect(emptyMarkup).toContain("Unable to generate music.");
+    expect(emptyMarkup).toContain("Unable to upload music.");
     expect(emptyMarkup).toContain("No tracks found");
   });
 });

@@ -17,6 +17,7 @@ export function createUploadVideoFallbackAnalysisPrompt({
       '{"name":"short title","tags":["tag"],"videoDescription":"summary plus short timestamped play-by-play","productDescription":"visible product, interface, packaging, or service only","locationDescription":"visible setting only","poseDescription":"visible action or demo steps in order","performanceScore":{"overall":0,"hook":0,"cameraPresence":0,"pacing":0,"clarity":0,"platformFit":0,"stitchFit":0,"summary":"short reason","bestUse":"best use","strengths":["short strength"],"fixes":["short fix"],"quickEditSuggestions":{"trimStart":0,"trimEnd":null,"removeRanges":[{"start":3.5,"end":6.2,"reason":"Nothing changes visually."}],"overlayText":{"replaceWith":"short stronger hook","reason":"Clearer first idea."},"crop":{"mode":"smart-9x16","removeBlackBars":true,"reason":"Better vertical framing."},"summary":"Tighten the slow parts."}}}',
       "Keep every field short enough to fit under 512 output tokens.",
       "Use lowercase tags. Do not guess private identity, demographics, brands, pricing, or claims.",
+      "Return an empty string for product, location, or action fields that do not fit the visible demo. Do not fill fields with unrelated details.",
       "Every score is 0 to 100, not 0 to 10. Use 50 to 75 for an average usable clip and only use very low scores for unusable clips.",
       "Base the score only on visible short-form posting usefulness.",
     ].join("\n");
@@ -29,6 +30,7 @@ export function createUploadVideoFallbackAnalysisPrompt({
     '{"name":"short title","tags":["tag"],"videoDescription":"summary plus short timestamped play-by-play","mainPersonDescription":"non-sensitive visual description of the main visible person only","outfitDescription":"visible clothing and accessories only","locationDescription":"visible setting only","poseDescription":"visible action sequence in order","performanceScore":{"overall":0,"hook":0,"cameraPresence":0,"pacing":0,"clarity":0,"platformFit":0,"stitchFit":0,"summary":"short reason","bestUse":"best use","strengths":["short strength"],"fixes":["short fix"],"quickEditSuggestions":{"trimStart":0,"trimEnd":null,"removeRanges":[{"start":3.5,"end":6.2,"reason":"Nothing changes visually."}],"overlayText":{"replaceWith":"short stronger hook","reason":"Clearer first idea."},"crop":{"mode":"smart-9x16","removeBlackBars":true,"reason":"Better vertical framing."},"summary":"Tighten the slow parts."}}}',
     "Keep every field short enough to fit under 512 output tokens.",
     "Do not guess private identity, race, ethnicity, nationality, religion, gender identity, health, disability, or other sensitive traits.",
+    "Return an empty string for person, outfit, location, or action fields that do not fit the visible UGC. Do not fill fields with unrelated details.",
     "Every score is 0 to 100, not 0 to 10. Use 50 to 75 for an average usable clip and only use very low scores for unusable clips.",
     "Base the score only on visible short-form posting usefulness.",
   ].join("\n");

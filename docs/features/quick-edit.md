@@ -201,6 +201,6 @@ UI:
 
 Quick Edit apply/reset operations are Convex metadata updates and use the
 existing `convexMetadataUpdate` limiter before writes. The feature does not
-create a new provider call, signed URL route, or music generation surface.
+create a new provider call, signed URL route, or music upload surface.
 Scoring still uses the existing clip and Stitch score rate limits before the AI
 returns suggestions.

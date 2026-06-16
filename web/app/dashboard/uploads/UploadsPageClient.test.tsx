@@ -284,8 +284,6 @@ describe("UploadsPageClient", () => {
         ugcClips: 30,
       },
       error: "Library error",
-      generateCliprMusic: vi.fn(),
-      generateStitchMusic: vi.fn(),
       hasMoreClips: true,
       hasMorePostedStitches: true,
       hasMoreStitches: true,

@@ -21,7 +21,6 @@ const mocks = vi.hoisted(() => ({
   downloadBlob: vi.fn(),
   editProps: null as null | {
     onClose: () => void;
-    onGenerateMusic: () => Promise<StitchMusicMetadata | null>;
     onLoadPreview: () => void;
     onRemoveMusic: () => Promise<void>;
     onSaveMusic: (music: StitchMusicMetadata) => Promise<void>;
@@ -290,7 +289,6 @@ describe("StitchCard", () => {
       <StitchCard
         stitch={createStitch()}
         onDelete={vi.fn()}
-        onGenerateMusic={vi.fn()}
         onLoadClip={vi.fn()}
         onUpdateMusic={vi.fn()}
         onUpdatePostedStatus={vi.fn()}
@@ -318,7 +316,6 @@ describe("StitchCard", () => {
       StitchCard({
         stitch: createStitch(),
         onDelete: vi.fn(),
-        onGenerateMusic: vi.fn(),
         onLoadClip: vi.fn(),
         onLoadPoster,
         onUpdateMusic: vi.fn(),
@@ -347,7 +344,6 @@ describe("StitchCard", () => {
 
   it("invokes preview, download, music, text, and delete flows", async () => {
     const onDelete = vi.fn();
-    const onGenerateMusic = vi.fn(async () => createStitchMusic());
     const onLoadClip = vi.fn(async (id: string) => createClip(id));
     const onUpdateMusic = vi.fn(async () => undefined);
     const onUpdatePostedStatus = vi.fn(async () => undefined);
@@ -383,7 +379,6 @@ describe("StitchCard", () => {
       <StitchCard
         stitch={createStitch()}
         onDelete={onDelete}
-        onGenerateMusic={onGenerateMusic}
         onLoadClip={onLoadClip}
         onUpdateMusic={onUpdateMusic}
         onUpdatePostedStatus={onUpdatePostedStatus}
@@ -396,7 +391,6 @@ describe("StitchCard", () => {
     mocks.detailsProps?.onLoadPreview();
     mocks.detailsProps?.onClose();
     mocks.actionItems.find((item) => item.label === "Edit stitch")?.onClick?.();
-    await mocks.editProps?.onGenerateMusic();
     await mocks.editProps?.onSaveMusic(createStitchMusic());
     await mocks.editProps?.onRemoveMusic();
     await mocks.editProps?.onSaveSocialCaption("Caption\n\n#ugc #demo #launch");
@@ -413,7 +407,6 @@ describe("StitchCard", () => {
 
     expect(onLoadClip).toHaveBeenCalledWith("ugc_1");
     expect(onLoadClip).toHaveBeenCalledWith("demo_1");
-    expect(onGenerateMusic).toHaveBeenCalled();
     expect(onUpdateMusic).toHaveBeenCalled();
     expect(onUpdatePostedStatus).toHaveBeenCalledWith(createStitch(), true);
     expect(onUpdateSourceSettings).toHaveBeenCalledWith(
@@ -439,11 +432,8 @@ describe("StitchCard", () => {
     );
   });
 
-  it("captures download and generation errors", async () => {
+  it("captures download errors", async () => {
     mocks.createStitchExportBlob.mockRejectedValueOnce(new Error("Export failed"));
-    const onGenerateMusic = vi.fn(async () => {
-      throw new Error("Music failed");
-    });
     mocks.stateQueue = [
       null,
       null,
@@ -468,7 +458,6 @@ describe("StitchCard", () => {
       <StitchCard
         stitch={createStitch()}
         onDelete={vi.fn()}
-        onGenerateMusic={onGenerateMusic}
         onLoadClip={vi.fn()}
         onUpdateMusic={vi.fn()}
         onUpdatePostedStatus={vi.fn()}
@@ -478,7 +467,6 @@ describe("StitchCard", () => {
       />,
     );
 
-    await mocks.editProps?.onGenerateMusic();
     mocks.actionItems.find((item) => item.label === "Download stitch")?.onClick?.();
 
     for (let index = 0; index < 5; index += 1) {
@@ -532,7 +520,6 @@ describe("StitchCard", () => {
       <StitchCard
         stitch={createStitch()}
         onDelete={vi.fn()}
-        onGenerateMusic={vi.fn()}
         onLoadClip={onLoadClip}
         onUpdateMusic={onUpdateMusic}
         onUpdatePostedStatus={vi.fn()}

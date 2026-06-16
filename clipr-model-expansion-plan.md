@@ -47,8 +47,8 @@ Relevant local files reviewed:
 
 Current implementation shape:
 
-- `POST /api/clipr/jobs` validates input, consumes job/script/still/video/music
-  limits, creates a queued `cliprJobs` record, and creates one durable
+- `POST /api/clipr/jobs` validates input, consumes job/script/still/video
+  limits, snapshots any selected shared music, creates a queued `cliprJobs` record, and creates one durable
   `manual-clipr` provider job.
 - The provider worker generates script text, generates one avatar still, runs
   `CLIPR_AVATAR_VIDEO_MODEL_ID` defaulting to `prunaai/p-video-avatar`, saves

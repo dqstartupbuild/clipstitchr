@@ -229,6 +229,57 @@ function createVideoClipObjectKey({ clipId, kind, ownerId }) {
   ].join("/");
 }
 
+async function createVideoAnalysisProviderJob({
+  client,
+  clipId,
+  clipType,
+  config,
+  originalName,
+  ownerId,
+  posterObject,
+  productId,
+  updatedAt,
+  videoObject,
+}) {
+  await client.mutation(api.providerJobs.createFromMediaWorker, {
+    secret: config.mediaWorkerSecret,
+    ownerId,
+    id: `provider:upload-analysis:${clipId}`,
+    jobType: "upload-video-analysis",
+    stage: "awaiting-analysis-provider",
+    idempotencyKey: `${clipId}:upload-video-analysis`,
+    inputSnapshotJson: JSON.stringify({
+      clipId,
+      clipType,
+      originalName,
+      posterObject,
+      productId,
+      sourceSizeBytes: videoObject.size,
+      videoObject,
+    }),
+    createdAt: updatedAt,
+  });
+}
+
+async function createStitchScoreProviderJob({
+  client,
+  config,
+  ownerId,
+  stitchId,
+  updatedAt,
+}) {
+  await client.mutation(api.providerJobs.createFromMediaWorker, {
+    secret: config.mediaWorkerSecret,
+    ownerId,
+    id: `provider:stitch-score:${stitchId}`,
+    jobType: "stitch-score-analysis",
+    stage: "awaiting-analysis-provider",
+    idempotencyKey: `${stitchId}:stitch-score-analysis`,
+    inputSnapshotJson: JSON.stringify({ stitchId }),
+    createdAt: updatedAt,
+  });
+}
+
 function getUploadFallbackName(originalName) {
   const withoutExtension = originalName.replace(/\.[^.]+$/, "");
   const normalizedName = withoutExtension
@@ -766,6 +817,18 @@ async function processCliprFinalization({ client, config, job, r2 }) {
       },
     );
 
+    await createVideoAnalysisProviderJob({
+      client,
+      clipId: input.clipId,
+      clipType: "ugc",
+      config,
+      originalName: `${input.clipName}.mp4`,
+      ownerId: job.ownerId,
+      posterObject,
+      updatedAt,
+      videoObject,
+    });
+
     if (input.automation) {
       await client.mutation(api.automationTasks.markMediaStatus, {
         secret: config.mediaWorkerSecret,
@@ -908,23 +971,17 @@ async function processUploadNormalization({ client, config, job, r2 }) {
       updatedAt,
     });
 
-    await client.mutation(api.providerJobs.createFromMediaWorker, {
-      secret: config.mediaWorkerSecret,
+    await createVideoAnalysisProviderJob({
+      client,
+      clipId: input.clipId,
+      clipType: input.clipType,
+      config,
+      originalName: input.originalName,
       ownerId: job.ownerId,
-      id: `provider:upload-analysis:${input.clipId}`,
-      jobType: "upload-video-analysis",
-      stage: "awaiting-analysis-provider",
-      idempotencyKey: `${input.clipId}:upload-video-analysis`,
-      inputSnapshotJson: JSON.stringify({
-        clipId: input.clipId,
-        clipType: input.clipType,
-        originalName: input.originalName,
-        posterObject,
-        productId: input.productId,
-        sourceSizeBytes: input.sourceVideoObject.size,
-        videoObject,
-      }),
-      createdAt: updatedAt,
+      posterObject,
+      productId: input.productId,
+      updatedAt,
+      videoObject,
     });
 
     await client.mutation(api.mediaJobs.markStatus, {
@@ -998,6 +1055,13 @@ async function processStitchrDraftFinalization({ client, config, job }) {
     ...(input.textOverlay ? { textOverlay: input.textOverlay } : {}),
     ...(input.ugcQuickEdit ? { ugcQuickEdit: input.ugcQuickEdit } : {}),
     createdAt: updatedAt,
+  });
+  await createStitchScoreProviderJob({
+    client,
+    config,
+    ownerId: job.ownerId,
+    stitchId: input.stitchId,
+    updatedAt,
   });
   await client.mutation(api.automationStitchr.recordOutputFromMediaWorker, {
     secret: config.mediaWorkerSecret,
@@ -1194,6 +1258,17 @@ async function processSwaprFinalization({ client, config, job, r2 }) {
       },
       createdAt: updatedAt,
       updatedAt,
+    });
+    await createVideoAnalysisProviderJob({
+      client,
+      clipId: input.clipId,
+      clipType: "ugc",
+      config,
+      originalName: `${input.clipName}.mp4`,
+      ownerId: job.ownerId,
+      posterObject,
+      updatedAt,
+      videoObject,
     });
     if (input.automation) {
       await client.mutation(api.automationTasks.markMediaStatus, {

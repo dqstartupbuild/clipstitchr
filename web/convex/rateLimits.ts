@@ -136,6 +136,25 @@ export const consumeIndexNowSubmit = mutation({
   },
 });
 
+export const consumePexelsSearch = mutation({
+  args: {
+    secret: v.string(),
+  },
+  handler: async (ctx, { secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "pexelsSearch", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "pexelsSearchGlobal", {
+      throws: true,
+    });
+  },
+});
+
 export const consumeUploadAnalysis = mutation({
   args: {
     secret: v.string(),

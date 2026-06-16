@@ -157,18 +157,10 @@ describe("useVideoClipDetailsMusic", () => {
     expect(mocks.useStateSetter).toHaveBeenCalledWith(false);
   });
 
-  it("generates, removes, and selects music as local draft changes", async () => {
+  it("removes and selects music as local draft changes", async () => {
     const editor = {
       error: "editor error",
-      isGenerating: true,
       isSaving: true,
-      onGenerate: vi.fn(async () =>
-        createMusic({
-          enabled: false,
-          title: "Generated",
-          volume: 0.4,
-        }),
-      ),
       onRemove: vi.fn(async () => undefined),
       onSave: vi.fn(async () => undefined),
     };
@@ -177,22 +169,14 @@ describe("useVideoClipDetailsMusic", () => {
       musicEditor: editor,
     });
 
-    await state.generateMusic();
     await state.saveMusic();
     await state.removeMusic();
     await state.selectMusicTrack(createSharedTrack());
 
     expect(state.error).toBe("editor error");
-    expect(state.isGenerating).toBe(true);
     expect(state.isSaving).toBe(true);
-    expect(editor.onGenerate).toHaveBeenCalledTimes(1);
     expect(editor.onRemove).not.toHaveBeenCalled();
     expect(editor.onSave).not.toHaveBeenCalled();
-    expect(mocks.useStateSetter).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: "Generated",
-      }),
-    );
     expect(mocks.useStateSetter).toHaveBeenCalledWith(null);
     expect(mocks.useStateSetter).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -211,7 +195,6 @@ describe("useVideoClipDetailsMusic", () => {
       clip: createClip(),
     });
 
-    await stateWithoutEditor.generateMusic();
     await stateWithoutEditor.removeMusic();
     await stateWithoutEditor.saveMusic();
     await stateWithoutEditor.selectMusicTrack(createSharedTrack());

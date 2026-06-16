@@ -78,8 +78,8 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
   - Full video/audio/blob downloads still use the single-object path and are not persisted in browser cache.
 - Split the oversized Clipr job orchestration route:
   - `web/app/api/clipr/jobs/route.ts` now owns auth, request-scoped setup, response formatting, and error mapping.
-  - Request parsing, start quotas, Convex input loading, queued job persistence, script planning, avatar image generation, avatar video/music generation, shared music persistence, analytics, and failure cleanup now live in focused `web/lib/clipstitchr/server/clipr/*` modules.
-  - Existing Clipr route coverage continues to cover auth, validation, rate-limit, selected-music, generated-music, provider, R2, Convex persistence, analytics, and failure behavior.
+  - Request parsing, start quotas, Convex input loading, queued job persistence, script planning, avatar image generation, avatar video generation, shared music metadata handling, analytics, and failure cleanup now live in focused `web/lib/clipstitchr/server/clipr/*` modules.
+  - Existing Clipr route coverage continues to cover auth, validation, rate-limit, selected music, provider, R2, Convex persistence, analytics, and failure behavior.
 - Added the 80% coverage completion batch for:
   - static RSS and `llms.txt` route responses.
   - content/blog/docs route rendering, MDX component mapping, and landing/app route wrapper coverage.

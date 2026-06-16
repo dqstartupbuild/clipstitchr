@@ -279,7 +279,7 @@ continue editing:
 
 - Swipr background generation and analysis;
 - standalone Clipr/Swipr/Stitchr text suggestion route;
-- regenerate music for an existing Clip/Stitch and shared music picker tracks;
+- shared music upload, selection, and picker tracks;
 - product enrichment while creating/updating products;
 - Swapr photo outpainting before saving a source photo;
 - legacy image-upload analysis for photo/avatar uploads.

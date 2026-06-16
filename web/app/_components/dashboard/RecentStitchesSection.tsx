@@ -3,6 +3,7 @@
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
+import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
@@ -16,7 +17,6 @@ type RecentStitchesSectionProps = {
   savingTemplateStitchId?: string | null;
   stitches: Stitch[];
   onDelete: (id: string) => void | Promise<void>;
-  onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
@@ -40,6 +40,11 @@ type RecentStitchesSectionProps = {
     stitch: Stitch,
     update: StitchSourceSettingsUpdate,
   ) => void | Promise<void>;
+  onUpdateSourceCrop?: (
+    stitch: Stitch,
+    source: "ugc" | "demo",
+    crop: QuickEditCrop | null,
+  ) => void | Promise<void>;
   onUpdateTextOverlay: (
     stitch: Stitch,
     textOverlay: TextOverlay | TextOverlay[] | null,
@@ -52,7 +57,6 @@ export function RecentStitchesSection({
   savingTemplateStitchId = null,
   stitches,
   onDelete,
-  onGenerateMusic,
   onLoadClip,
   onLoadPoster,
   onLoadVideo,
@@ -63,6 +67,7 @@ export function RecentStitchesSection({
   onUpdateMusic,
   onUpdatePostedStatus,
   onUpdateSocialCaption,
+  onUpdateSourceCrop,
   onUpdateSourceSettings,
   onUpdateTextOverlay,
   ugcClips,
@@ -89,7 +94,6 @@ export function RecentStitchesSection({
               demoClips={demoClips}
               isSavingTemplate={savingTemplateStitchId === stitch.id}
               onDelete={onDelete}
-              onGenerateMusic={onGenerateMusic}
               onLoadClip={onLoadClip}
               onLoadPoster={onLoadPoster}
               onLoadVideo={onLoadVideo}
@@ -100,6 +104,7 @@ export function RecentStitchesSection({
               onUpdateMusic={onUpdateMusic}
               onUpdatePostedStatus={onUpdatePostedStatus}
               onUpdateSocialCaption={onUpdateSocialCaption}
+              onUpdateSourceCrop={onUpdateSourceCrop}
               onUpdateSourceSettings={onUpdateSourceSettings}
               onUpdateTextOverlay={onUpdateTextOverlay}
               ugcClips={ugcClips}

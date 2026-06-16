@@ -4,7 +4,6 @@ import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGeneratio
 import type { CliprVideoModelId } from "@/lib/clipstitchr/types/CliprVideoModelId";
 
 type CreateCliprJobOptions = {
-  addMusic: boolean;
   avatarId: string;
   avatarSceneLocation?: string;
   avatarSceneOutfit?: string;

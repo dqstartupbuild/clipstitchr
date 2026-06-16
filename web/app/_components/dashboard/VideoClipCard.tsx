@@ -22,6 +22,7 @@ import type { ClipPerformanceScore } from "@/lib/clipstitchr/types/ClipPerforman
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -56,9 +57,10 @@ type VideoClipCardProps = {
     clip: VideoClipMetadata,
     metadata: AssetMetadataUpdate,
   ) => void | Promise<void>;
-  onGenerateCliprMusic?: (
+  onUpdateCrop?: (
     clip: VideoClipMetadata,
-  ) => Promise<CliprMusicMetadata | null>;
+    crop: QuickEditCrop | null,
+  ) => void | Promise<void>;
   onScore?: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
   onApplyQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
   onResetQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
@@ -92,11 +94,11 @@ export function VideoClipCard({
   onLoadPoster,
   onDelete,
   onSelect,
-  onGenerateCliprMusic,
   onScore,
   onApplyQuickEdit,
   onResetQuickEdit,
   onUpdateCliprMusic,
+  onUpdateCrop,
   onUpdateMetadata,
   onUpdateTrim,
   onUpdatePostedStatus,
@@ -104,7 +106,6 @@ export function VideoClipCard({
 }: VideoClipCardProps) {
   const [isAvatarCreatorOpen, setIsAvatarCreatorOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
   const [isSavingMusic, setIsSavingMusic] = useState(false);
   const [isSavingPostedStatus, setIsSavingPostedStatus] = useState(false);
   const [isScoring, setIsScoring] = useState(false);
@@ -182,27 +183,6 @@ export function VideoClipCard({
       );
     } finally {
       setIsDownloading(false);
-    }
-  };
-  const handleGenerateCliprMusic = async () => {
-    if (!onGenerateCliprMusic) {
-      return null;
-    }
-
-    setIsGeneratingMusic(true);
-    setMusicError(null);
-
-    try {
-      return await onGenerateCliprMusic(clip);
-    } catch (nextError) {
-      setMusicError(
-        nextError instanceof Error
-          ? nextError.message
-          : "Unable to generate music for this Clip.",
-      );
-      return null;
-    } finally {
-      setIsGeneratingMusic(false);
     }
   };
   const handleUpdateCliprMusic = async (music: CliprMusicMetadata | null) => {
@@ -325,12 +305,10 @@ export function VideoClipCard({
           onSave: (trimRange) => onUpdateTrim(clip, trimRange),
         }}
         cliprMusicEditor={
-          clip.cliprMetadata && onGenerateCliprMusic && onUpdateCliprMusic
+          clip.cliprMetadata && onUpdateCliprMusic
             ? {
                 error: musicError,
-                isGenerating: isGeneratingMusic,
                 isSaving: isSavingMusic,
-                onGenerate: handleGenerateCliprMusic,
                 onRemove: () => handleUpdateCliprMusic(null),
                 onSave: handleUpdateCliprMusic,
               }
@@ -338,6 +316,9 @@ export function VideoClipCard({
         }
         metadataEditor={{
           products,
+          onSaveCrop: onUpdateCrop
+            ? (crop) => onUpdateCrop(clip, crop)
+            : undefined,
           onSave: (metadata) => onUpdateMetadata(clip, metadata),
         }}
         actions={({ closeDetails, isLoading, loadFullClip, openDetails }) => {

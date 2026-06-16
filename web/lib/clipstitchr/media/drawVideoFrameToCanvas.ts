@@ -1,10 +1,13 @@
 import { seekVideoToTime } from "@/lib/clipstitchr/media/seekVideoToTime";
+import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
+import { getQuickEditCropDrawRect } from "@/lib/clipstitchr/utils/getQuickEditCropDrawRect";
 
 const VIDEO_METADATA_TIMEOUT_MS = 7000;
 
 type DrawVideoFrameToCanvasOptions = {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
+  crop?: QuickEditCrop;
   time: number;
   videoBlob: Blob;
 };
@@ -12,6 +15,7 @@ type DrawVideoFrameToCanvasOptions = {
 export async function drawVideoFrameToCanvas({
   canvas,
   context,
+  crop,
   time,
   videoBlob,
 }: DrawVideoFrameToCanvasOptions) {
@@ -62,7 +66,27 @@ export async function drawVideoFrameToCanvas({
     const x = (canvas.width - width) / 2;
     const y = (canvas.height - height) / 2;
 
-    context.drawImage(video, x, y, width, height);
+    if (crop) {
+      const cropRect = getQuickEditCropDrawRect({
+        crop,
+        height: canvas.height,
+        width: canvas.width,
+      });
+
+      context.save();
+      context.rect(0, 0, canvas.width, canvas.height);
+      context.clip();
+      context.drawImage(
+        video,
+        x + cropRect.x,
+        y + cropRect.y,
+        width * (cropRect.width / canvas.width),
+        height * (cropRect.height / canvas.height),
+      );
+      context.restore();
+    } else {
+      context.drawImage(video, x, y, width, height);
+    }
   } finally {
     video.removeAttribute("src");
     video.load();

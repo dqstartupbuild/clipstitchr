@@ -114,21 +114,6 @@ export function useVideoClipDetailsMusic({
     };
   }, [music, musicBlobState?.key, musicObject, musicObjectKey]);
 
-  const generateMusic = useCallback(async () => {
-    if (!musicEditor) {
-      return;
-    }
-
-    const nextMusic = await musicEditor.onGenerate();
-
-    if (nextMusic) {
-      setMusic(nextMusic);
-      setMusicEnabled(nextMusic.enabled);
-      setMusicVolume(nextMusic.volume);
-      setMusicBlobState(null);
-    }
-  }, [musicEditor]);
-
   const removeMusic = useCallback(async () => {
     setMusic(null);
     setMusicBlobState(null);
@@ -180,8 +165,6 @@ export function useVideoClipDetailsMusic({
 
   return {
     error: musicEditor?.error ?? musicLoadError,
-    generateMusic,
-    isGenerating: musicEditor?.isGenerating ?? false,
     isMusicLoading,
     isSaving: musicEditor?.isSaving ?? false,
     hasUnsavedChanges,

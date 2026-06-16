@@ -67,13 +67,22 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
   const isAvatarsRoute = pathname.startsWith("/dashboard/avatars");
   const isCliprRoute = pathname.startsWith("/dashboard/clipr");
   const isSwaprRoute = pathname.startsWith("/dashboard/swapr");
+  const isSwiprRoute = pathname.startsWith("/dashboard/swipr");
   const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
   const shouldLoadPhotoDocuments =
     isAuthenticated &&
-    (isDashboardHome || isAvatarsRoute || isCliprRoute || isSwaprRoute);
+    (isDashboardHome ||
+      isAvatarsRoute ||
+      isCliprRoute ||
+      isSwaprRoute ||
+      isSwiprRoute);
   const shouldLoadAvatarDocuments =
     isAuthenticated &&
-    (isDashboardHome || isAvatarsRoute || isCliprRoute || isSwaprRoute);
+    (isDashboardHome ||
+      isAvatarsRoute ||
+      isCliprRoute ||
+      isSwaprRoute ||
+      isSwiprRoute);
   const shouldLoadPhotoPreferences =
     isAuthenticated && (shouldLoadAvatarDocuments || isUploadsRoute);
   const photoDocuments = useQuery(

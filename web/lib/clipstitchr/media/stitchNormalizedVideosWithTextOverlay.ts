@@ -128,6 +128,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
     });
 
     const ugcVideo = await copyTextOverlayVideoFramesToSource({
+      crop: ugcQuickEdit?.crop,
       input: ugcInput,
       playbackRate: ugcPlaybackRate,
       source: session.videoSource,
@@ -140,6 +141,7 @@ export async function stitchNormalizedVideosWithTextOverlay(
     });
     const demoTimelineOffset = Math.max(ugcDuration, ugcVideo.endTimestamp);
     const demoVideo = await copyTextOverlayVideoFramesToSource({
+      crop: demoQuickEdit?.crop,
       input: demoInput,
       playbackRate: demoPlaybackRate,
       source: session.videoSource,

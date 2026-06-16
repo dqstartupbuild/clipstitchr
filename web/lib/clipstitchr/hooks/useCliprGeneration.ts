@@ -9,7 +9,6 @@ import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus"
 import { createId } from "@/lib/clipstitchr/utils/createId";
 
 type GenerateCliprOptions = {
-  addMusic: boolean;
   avatarId: string;
   avatarSceneLocation?: string;
   avatarSceneOutfit?: string;

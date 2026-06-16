@@ -52,7 +52,7 @@ export async function readCliprJobCreateRequest(
       : getCliprVisualDurationSeconds(body.durationSeconds);
 
   return {
-    addMusic: generationMode === "script" && body.addMusic === true && !musicTrackId,
+    addMusic: false,
     avatarId: getStringValue(body.avatarId),
     avatarSceneLocation:
       sanitizeAvatarSceneControl(body.avatarSceneLocation) || undefined,

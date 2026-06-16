@@ -78,15 +78,15 @@ hook, and the remaining slides should pay it off with simple supporting points.
 - When Script mode is enabled, Clipr should generate one full-script avatar
   video from the selected avatar and voice.
 - The generated Script avatar video should follow the full generated script length.
-- Reaction and b-roll outputs do not use voice, speech, generated music, or
+- Reaction and b-roll outputs do not use voice, speech, music generation, or
   PixVerse lip sync.
-- Script mode can opt into AI-generated background music when Script mode is
-  enabled. The checkbox is off by default.
-- Clipr music uses `stability-ai/stable-audio-2.5`, generates one 60 second
-  instrumental audio file, and stores that file in R2 separately from the video.
+- Script mode can attach an existing shared music track or a newly uploaded
+  shared music track when Script mode is enabled.
+- Clipr music uploads are stored in R2 separately from the video and added to
+  the shared music pool for reuse.
 - Clipr does not bake music into the saved library video. The user can remove
-  music, regenerate music, or change music volume later. Media Bunny mixes the
-  saved clean video and selected music only when the user exports/downloads.
+  music, choose another track, or change music volume later. Media Bunny mixes
+  the saved clean video and selected music only when the user exports/downloads.
 - Final non-demo Clipr outputs should be saved in the content library as UGC.
 - Only Script Clipr clips can be marked posted or active from the library.
   Reaction, B-roll, Demo remixes, uploaded UGC, uploaded Demo, and Swapr assets
@@ -641,10 +641,10 @@ Rules:
     reference photo, avatar description, full script, and visual direction.
 13. The generated still, selected voice, and full script are sent to
     `prunaai/p-video-avatar` to create one talking avatar video.
-14. If music is enabled, `stability-ai/stable-audio-2.5` generates one 60
-    second instrumental music bed concurrently with the avatar video generation.
-15. The generated avatar still, full-script avatar video, and optional music
-    file are copied into R2. Music is stored as its own R2 object.
+14. If music is selected, Clipr keeps the shared music metadata separate from
+    the clean generated video.
+15. The generated avatar still and full-script avatar video are copied into R2.
+    Uploaded music files are already stored as their own shared R2 objects.
 16. The browser normalizes the full avatar video without baking in music.
 17. Clipr generates a poster image for the final output.
 18. Final video and poster are uploaded to R2.
@@ -707,10 +707,8 @@ Planned model roles:
   `CLIPR_VISUAL_VIDEO_MODEL_ID`.
 - Demo mode uses `bytedance/seedance-2.0` internally with `reference_videos` to
   test whether existing Demo clips can be remixed into phone-in-hand shots.
-- Optional background music: `stability-ai/stable-audio-2.5`, using an
-  instrumental-only prompt derived from the product context and Clipr script.
-  Inputs use `duration: 60`, `steps: 8`, and `cfg_scale: 1`. This is Script
-  mode only.
+- Optional background music comes from an existing shared track or a new shared
+  music upload. Music generation is not available.
 - PixVerse lip sync only runs for Script mode videos with speech audio. Silent
   Reaction, B-roll, and Demo outputs do not run PixVerse.
 
@@ -722,7 +720,6 @@ Add environment overrides instead of hard-coding provider choices:
 - `AVATAR_PHOTO_MODEL_ID` for avatar photo generation and Clipr avatar stills
 - `CLIPR_AVATAR_VIDEO_MODEL_ID`
 - `CLIPR_VISUAL_VIDEO_MODEL_ID`
-- `CLIPR_MUSIC_MODEL_ID`
 
 ## Script Rules
 
@@ -848,7 +845,8 @@ Content Library behavior:
 - Script Clipr clips may also be marked posted or active. Reaction, B-roll, and
   Demo remix clips do not show posted actions even though they remain usable in
   the library.
-- Music settings should let the user disable/remove music, regenerate music, and
+- Music settings should let the user disable/remove music, choose uploaded or
+  shared music, and
   change the export volume. These changes update metadata and the R2 music
   object, not the saved clean video.
 
@@ -860,9 +858,9 @@ Add:
   - Clipr generation studio.
   - Mode picker for `Reaction` and `B-roll`.
   - Script mode appears only when `isCliprScriptModeEnabled` is `true`.
-- `POST /api/clipr/music`
-  - Authenticated, rate-limited regeneration endpoint for existing Clipr music
-    assets.
+- `POST /api/music/upload`
+  - Authenticated, rate-limited shared music upload endpoint used by Clipr,
+    Stitchr, and the shared music picker.
 - `/dashboard/uploads?tab=ugc`
   - Generated non-demo Clipr output appears with UGC.
 
@@ -968,7 +966,7 @@ New enforcement surfaces to document and implement:
   route. The expanded local template libraries do not add a new backend surface.
 - Clipr full-script avatar video and voice generation.
 - Clipr silent visual video generation for Reaction and B-roll.
-- Clipr music generation.
+- Shared music upload and selection.
 - Clipr avatar still generation.
 - Clipr full job creation.
 - Clipr job polling.
@@ -985,7 +983,7 @@ Required limits:
 - per-user voice generation limits
 - per-user avatar video generation limits
 - per-user silent visual video generation limits
-- per-user 60 second music generation limits
+- shared music upload byte limits
 - global provider spend limits
 - polling limits
 - R2 upload/download limits reused from existing routes
@@ -1005,9 +1003,9 @@ The current implementation uses `cliprJobs` for user-facing job state and
 /api/clipr/jobs` handles request parsing, quota consumption, Convex input
 loading, queued job persistence, provider job creation, analytics, and failure
 cleanup. The provider worker owns text planning, avatar still generation, video
-generation, optional Script-mode music, and media-job creation. The media worker
-normalizes the final video, strips audio for Reaction and B-roll, creates the
-poster, and saves the final library Clip.
+generation, and media-job creation. The media worker normalizes the final video,
+strips audio for Reaction and B-roll, attaches any selected shared music, creates
+the poster, and saves the final library Clip.
 
 The durable job should track:
 
@@ -1035,9 +1033,8 @@ Provider outputs should be copied into R2 as soon as they are available.
 
 For the simplified MVP path, the browser only downloads the generated avatar
 video, normalizes it to the app's 9:16 clip format, creates a poster, uploads
-the final objects, and saves the Clip metadata. Optional generated music is
-copied to R2 before the final Clip is saved, but remains a separate editable
-asset. If chunked avatar generation is added later for provider duration caps,
+the final objects, and saves the Clip metadata. Optional selected or uploaded
+music remains a separate editable asset. If chunked avatar generation is added later for provider duration caps,
 those chunk outputs should be copied to R2 before any Media Bunny merge step
 starts.
 
@@ -1061,8 +1058,8 @@ Current and future code areas:
   - Clipr metadata, job, scene, voice, mode, model, and generation status types.
 - `web/lib/clipstitchr/server/clipr/*`
   - request parsing, start quotas, Convex input loading, queued job persistence,
-    script planning, avatar still generation, avatar video/music generation,
-    shared music persistence, analytics, and failure cleanup.
+    script planning, avatar still generation, avatar video generation, selected
+    music metadata, analytics, and failure cleanup.
 - `web/lib/clipstitchr/server/*`
   - shared prompt creation, response parsing, provider clients, model ID helpers,
     visual Clipr prompt builders, product enrichment, and rate-limit helpers.

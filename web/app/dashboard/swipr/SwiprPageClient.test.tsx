@@ -18,6 +18,11 @@ const mocks = vi.hoisted(() => ({
     error: null as string | null,
     products: [] as ProductProfile[],
   },
+  photoLibraryState: {
+    error: null as string | null,
+    loadPhoto: vi.fn(),
+    photos: [],
+  },
   swiprLibraryState: {
     backgrounds: [] as SwiprBackgroundAsset[],
     error: null as string | null,
@@ -107,6 +112,14 @@ vi.mock("@/app/_components/swipr/SwiprBackgroundPanel", () => ({
   },
 }));
 
+vi.mock("@/app/_components/swipr/SwiprAvatarPhotoPanel", () => ({
+  SwiprAvatarPhotoPanel: () => "SwiprAvatarPhotoPanel",
+}));
+
+vi.mock("@/app/_components/swipr/SwiprPexelsPanel", () => ({
+  SwiprPexelsPanel: () => "SwiprPexelsPanel",
+}));
+
 vi.mock("@/app/_components/swipr/SwiprSlideStrip", () => ({
   SwiprSlideStrip: (props: Record<string, unknown>) => {
     mocks.slideStripProps = props;
@@ -130,6 +143,10 @@ vi.mock("@/app/_components/swipr/SwiprPreviewPanel", () => ({
 
 vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
   useProducts: () => mocks.productState,
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
+  usePhotoLibrary: () => mocks.photoLibraryState,
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({
@@ -212,8 +229,13 @@ function queueSwiprState(
     generationPrompt?: string;
     isGeneratingAiBackground?: boolean;
     isGeneratingAutoText?: boolean;
+    isImportingBackground?: boolean;
+    isSearchingPexels?: boolean;
     isSeedingDevBackgrounds?: boolean;
     loadedSwipeId?: string | null;
+    pexelsError?: string | null;
+    pexelsPhotos?: unknown[];
+    pexelsQuery?: string;
     saveMessage?: string | null;
     savedSwipeSnapshot?: SwiprSwipe | null;
     selectedProductId?: string;
@@ -231,8 +253,13 @@ function queueSwiprState(
     overrides.background ?? null,
     "",
     overrides.generationPrompt ?? "",
+    overrides.pexelsQuery ?? "",
+    overrides.pexelsPhotos ?? [],
     overrides.backgroundError ?? null,
+    overrides.pexelsError ?? null,
     overrides.isGeneratingAiBackground ?? false,
+    overrides.isImportingBackground ?? false,
+    overrides.isSearchingPexels ?? false,
     overrides.isSeedingDevBackgrounds ?? false,
     overrides.isGeneratingAutoText ?? false,
     overrides.editingSwipeId ?? null,
@@ -249,6 +276,9 @@ describe("SwiprPageClient", () => {
     mocks.productState.defaultProductId = undefined;
     mocks.productState.error = null;
     mocks.productState.products = [createProduct()];
+    mocks.photoLibraryState.error = null;
+    mocks.photoLibraryState.photos = [];
+    mocks.photoLibraryState.loadPhoto.mockResolvedValue(null);
     mocks.swiprLibraryState.backgrounds = [createBackground()];
     mocks.swiprLibraryState.error = null;
     mocks.swiprLibraryState.swipes = [];

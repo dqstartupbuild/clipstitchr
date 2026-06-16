@@ -21,7 +21,7 @@ type SwiprBackgroundPanelProps = {
   isGeneratingAi: boolean;
   isAiDisabled: boolean;
   isSeedingDevBackgrounds?: boolean;
-  slideCount: number;
+  activeSlideIndex: number;
   onBackgroundSearchChange: (query: string) => void;
   onGenerationPromptChange: (prompt: string) => void;
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
@@ -40,7 +40,7 @@ export function SwiprBackgroundPanel({
   isGeneratingAi,
   isAiDisabled,
   isSeedingDevBackgrounds = false,
-  slideCount,
+  activeSlideIndex,
   onBackgroundSearchChange,
   onGenerationPromptChange,
   onLoadBackgroundBlob,
@@ -124,7 +124,7 @@ export function SwiprBackgroundPanel({
               disabled={isSaving || isSeedingDevBackgrounds || isAiDisabled}
               onClick={onGenerateAiBackground}
             >
-              Generate {slideCount}
+              Generate slide {activeSlideIndex + 1}
             </Button>
             {onSeedBackgroundLibrary ? (
               <Button

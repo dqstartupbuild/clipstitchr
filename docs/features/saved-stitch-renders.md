@@ -32,11 +32,14 @@ ClipStitchr clears the saved render when an edit changes the finished video:
 - source UGC or demo clip changes
 - trim changes
 - playback speed changes
+- source crop changes
 - text overlay changes
 - Quick Edit apply/reset
 - music is added, removed, enabled, disabled, or volume-changed
 
-The next preview, download, or score regenerates and saves a fresh render.
+The next preview, download, or score regenerates and saves a fresh render. The
+saved Stitch Score is kept across edits so users do not lose the previous
+analysis while they make small adjustments.
 
 ## Implementation
 
@@ -50,6 +53,9 @@ Render helpers:
 - `web/lib/clipstitchr/client/createStitchExportBlob.ts` now prefers an
   existing `stitch.blob` or `stitch.stitchObject` before rendering from source
   clips.
+- `web/lib/clipstitchr/client/r2/uploadStitchPosterBlob.ts` uploads regenerated
+  stitch posters with unique object keys so the library does not reuse a stale
+  cached poster after quick edits or manual edits.
 
 Create flow:
 
@@ -57,8 +63,6 @@ Create flow:
   during creation.
 - If selected shared music is already known, it is included before the first
   save and the saved render includes it.
-- If generated music is requested, the editable Stitch is saved first, music is
-  generated and attached, then the final render is saved.
 
 Library flow:
 
@@ -72,9 +76,10 @@ Server state:
 
 - `stitches.updateRenderedVideo` stores `stitchObject`, `mimeType`, and `size`.
 - `stitches.updateSourceSettings`, `stitches.updateTextOverlay`,
-  `stitches.applyQuickEdit`, `stitches.resetQuickEdit`, and
-  `stitches.updateMusic` clear `stitchObject`, `mimeType`, `size`, and any saved
-  Stitch Score when the final video changes.
+  `stitches.updateSourceCrop`, `stitches.applyQuickEdit`,
+  `stitches.resetQuickEdit`, and `stitches.updateMusic` clear `stitchObject`,
+  `mimeType`, and `size` when the final video changes. Edits no longer clear
+  `stitchScore`.
 
 ## Abuse Protection
 

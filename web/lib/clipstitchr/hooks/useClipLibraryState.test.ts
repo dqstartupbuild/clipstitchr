@@ -20,8 +20,6 @@ const mocks = vi.hoisted(() => {
     deleteObjectsFromR2: vi.fn(),
     downloadCachedR2ImageBlobs: vi.fn(),
     downloadBlobFromR2: vi.fn(),
-    generateCliprMusic: vi.fn(),
-    generateStitchMusic: vi.fn(),
     saveRenderedStitchVideo: vi.fn(),
     scoreVideoClip: vi.fn(),
     scoreStitch: vi.fn(),
@@ -137,14 +135,6 @@ vi.mock("@/lib/clipstitchr/client/r2/downloadBlobFromR2", () => ({
 
 vi.mock("@/lib/clipstitchr/client/r2/uploadBlobsToR2", () => ({
   uploadBlobsToR2: mocks.uploadBlobsToR2,
-}));
-
-vi.mock("@/lib/clipstitchr/client/generateCliprMusic", () => ({
-  generateCliprMusic: mocks.generateCliprMusic,
-}));
-
-vi.mock("@/lib/clipstitchr/client/generateStitchMusic", () => ({
-  generateStitchMusic: mocks.generateStitchMusic,
 }));
 
 vi.mock("@/lib/clipstitchr/client/saveRenderedStitchVideo", () => ({
@@ -290,14 +280,6 @@ describe("useClipLibraryState", () => {
     );
     mocks.createStitchFromConvexDocument.mockReturnValue({
       id: "stitch_1",
-    });
-    mocks.generateCliprMusic.mockResolvedValue({
-      audioObject: { key: "users/user_123/music/new-clipr.mp3" },
-      title: "Clipr Music",
-    });
-    mocks.generateStitchMusic.mockResolvedValue({
-      audioObject: { key: "users/user_123/music/new-stitch.mp3" },
-      title: "Stitch Music",
     });
     mocks.saveRenderedStitchVideo.mockResolvedValue({
       blob: new Blob(["rendered"], { type: "video/mp4" }),
@@ -596,7 +578,7 @@ describe("useClipLibraryState", () => {
     );
   });
 
-  it("generates Clipr music drafts and saves replacements with owned-audio cleanup", async () => {
+  it("saves Clipr music replacements with owned-audio cleanup", async () => {
     const state = useClipLibraryState();
     const clip = createClipMetadata();
     const replacementMusic = {
@@ -604,14 +586,9 @@ describe("useClipLibraryState", () => {
       title: "Replacement",
     } as unknown as CliprMusicMetadata;
 
-    await expect(state.generateCliprMusic(clip)).resolves.toEqual({
-      audioObject: { key: "users/user_123/music/new-clipr.mp3" },
-      title: "Clipr Music",
-    });
     await state.updateCliprMusic(clip, replacementMusic);
     await state.updateCliprMusic(clip, null);
 
-    expect(mocks.generateCliprMusic).toHaveBeenCalledWith({ clipId: "clip_1" });
     expect(getMutation("videoClips.updateCliprMusic")).not.toHaveBeenCalledWith(
       expect.objectContaining({
         music: expect.objectContaining({
@@ -680,15 +657,6 @@ describe("useClipLibraryState", () => {
     await expect(state.updateStitchMusic(stitch, null)).resolves.toBeUndefined();
   });
 
-  it("returns null when a clip has no Clipr metadata to generate against", async () => {
-    const state = useClipLibraryState();
-
-    await expect(
-      state.generateCliprMusic(createClipMetadata({ cliprMetadata: undefined })),
-    ).resolves.toBeNull();
-    expect(mocks.generateCliprMusic).not.toHaveBeenCalled();
-  });
-
   it("scores clips and clears the cached full clip", async () => {
     const state = useClipLibraryState();
     const clip = createClipMetadata();
@@ -705,7 +673,7 @@ describe("useClipLibraryState", () => {
     expect(mocks.downloadBlobFromR2).toHaveBeenCalledTimes(2);
   });
 
-  it("generates stitch music drafts and updates music and text overlays without poster work", async () => {
+  it("updates stitch music and text overlays without poster work", async () => {
     const state = useClipLibraryState();
     const stitch = createStitch();
     const textOverlay = {
@@ -721,18 +689,11 @@ describe("useClipLibraryState", () => {
       y: 0.5,
     } satisfies TextOverlay;
 
-    await expect(state.generateStitchMusic(stitch)).resolves.toEqual({
-      audioObject: { key: "users/user_123/music/new-stitch.mp3" },
-      title: "Stitch Music",
-    });
     await state.updateStitchMusic(stitch, null);
     await state.updateStitchTextOverlay(stitch, textOverlay);
     await state.updateStitchPostedStatus(stitch, true);
     await state.removeStitch("stitch_1");
 
-    expect(mocks.generateStitchMusic).toHaveBeenCalledWith({
-      stitchId: "stitch_1",
-    });
     expect(getMutation("stitches.updateMusic")).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "stitch_1",
@@ -810,9 +771,9 @@ describe("useClipLibraryState", () => {
         demoPlaybackRate: 2,
         demoTrimRange: update.demoTrimRange,
         duration: 9,
-        demoQuickEdit: stitch.demoQuickEdit,
+        demoQuickEdit: undefined,
         ugcPlaybackRate: 1,
-        ugcQuickEdit: stitch.ugcQuickEdit,
+        ugcQuickEdit: undefined,
         ugcTrimRange: update.ugcTrimRange,
       }),
     );

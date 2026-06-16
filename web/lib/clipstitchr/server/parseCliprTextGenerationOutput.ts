@@ -147,16 +147,19 @@ function getSwiprFallbackSupportSlide(
   return fallbackSlides[(slideIndex - 1) % fallbackSlides.length];
 }
 
-function createSwiprCtaSlide(product: ProductProfile) {
-  const problem = getProductProblemPhrase(product);
-
-  return `Use ${product.name} when ${problem} starts slowing you down`;
+function createSwiprCtaSlide() {
+  return "Save this for later";
 }
 
 function getSwiprSlideIsCta(slide: string, product: ProductProfile) {
   return (
-    slide.toLowerCase().includes(product.name.toLowerCase()) &&
-    /\b(use|make|start|turn|keep|bring|build|create|choose|get)\b/i.test(slide)
+    /\b(save|share|send|remember|try this|use this|come back|keep this)\b/i.test(
+      slide,
+    ) ||
+    (slide.toLowerCase().includes(product.name.toLowerCase()) &&
+      /\b(use|make|start|turn|keep|bring|build|create|choose|get)\b/i.test(
+        slide,
+      ))
   );
 }
 
@@ -230,7 +233,7 @@ function normalizeSlides({
   }
 
   if (slideCount > 1) {
-    nextSlides.push(generatedCtaSlide || createSwiprCtaSlide(product));
+    nextSlides.push(generatedCtaSlide || createSwiprCtaSlide());
   }
 
   return nextSlides.slice(0, slideCount);
@@ -318,11 +321,13 @@ export function parseCliprTextGenerationOutput({
     ? candidateFilledHook
     : createFallbackHook(product, purpose);
   const caption =
-    purpose === "stitchr"
+    purpose === "stitchr" || purpose === "swipr"
       ? normalizeString(parsed.caption, filledHook)
       : "";
   const hashtags =
-    purpose === "stitchr" ? normalizeHashtags(parsed.hashtags, product) : [];
+    purpose === "stitchr" || purpose === "swipr"
+      ? normalizeHashtags(parsed.hashtags, product)
+      : [];
   const script =
     purpose === "stitchr" ? "" : normalizeScriptString(parsed.script, "");
   const scenePlan =
@@ -380,7 +385,7 @@ export function parseCliprTextGenerationOutput({
       value: parsed.slides,
     }),
     socialCaption:
-      purpose === "stitchr"
+      purpose === "stitchr" || purpose === "swipr"
         ? createStitchSocialCaption({ caption, hashtags })
         : "",
     variablesUsed: normalizeVariables(parsed.variablesUsed),

@@ -1,5 +1,4 @@
 import { api } from "@/convex/_generated/api";
-import { cliprMusicGenerationDefaults } from "@/lib/clipstitchr/constants/cliprMusicGenerationDefaults";
 import { assertCliprJobCreateInput } from "@/lib/clipstitchr/server/clipr/assertCliprJobCreateInput";
 import { consumeCliprJobStartRateLimits } from "@/lib/clipstitchr/server/clipr/consumeCliprJobStartRateLimits";
 import { createQueuedCliprJobRecord } from "@/lib/clipstitchr/server/clipr/createQueuedCliprJobRecord";
@@ -41,12 +40,6 @@ export async function runCliprJobCreation({
       : convex.mutation(api.rateLimits.consumeCliprAvatarStillGeneration, {
           secret,
         }),
-    input.generationMode === "script" && input.addMusic
-      ? convex.mutation(api.rateLimits.consumeCliprMusicGeneration, {
-          generatedSeconds: cliprMusicGenerationDefaults.durationSeconds,
-          secret,
-        })
-      : Promise.resolve(null),
   ]);
 
   const job = await createQueuedCliprJobRecord({
@@ -65,7 +58,6 @@ export async function runCliprJobCreation({
     stage: "awaiting-script-provider",
     idempotencyKey: `${userId}:manual-clipr:${input.jobId}`,
     inputSnapshotJson: JSON.stringify({
-      addMusic: input.addMusic,
       avatarDescription: documents.avatar?.description,
       avatarId: documents.avatar?.id ?? "",
       avatarName: documents.avatar?.name ?? "",

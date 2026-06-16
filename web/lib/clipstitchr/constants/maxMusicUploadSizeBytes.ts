@@ -1,0 +1,1 @@
+export const MAX_MUSIC_UPLOAD_SIZE_BYTES = 30 * 1024 * 1024;

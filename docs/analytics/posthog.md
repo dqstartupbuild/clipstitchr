@@ -46,7 +46,6 @@ Core browser tracking:
 | `upload_destination_selected` | Upload type chosen | Tracks asset type and destination. |
 | `stitch_preview_viewed` | Stitch details/preview opened | Tracks stitch ID and non-content metadata. |
 | `stitch_downloaded` | Stitch export download succeeds | Tracks stitch ID, duration, size, and option flags. |
-| `stitch_music_generated` | Stitch music generation succeeds | Tracks stitch ID. |
 | `stitch_deleted` | Stitch deletion is requested | Tracks stitch ID and non-content metadata. |
 | `avatar_photos_generate_clicked` | Avatar photo generation button clicked | Tracks avatar ID, count, style, and lighting. |
 | `avatar_created_from_clip` | Clip-to-avatar creation succeeds | Tracks clip ID and generation options. |
@@ -60,7 +59,7 @@ Server-side product events:
 | `clipr_job_failed` | Clipr job creation fails after starting | Tracks job/product/avatar IDs, resolved mode/model, and error name only. |
 | `swapr_job_created` | Swapr job is created | Tracks prediction ID and generation options. |
 | `avatar_photos_generation_requested` | Avatar photo generation API starts | Tracks count, style, lighting, speed tier, and model. |
-| `library_music_generated` | Music track generation succeeds | Tracks track ID, source, style, and duration. |
+| `music_uploaded` | Shared music upload succeeds | Tracks source, content type, and size. |
 
 ## Data Rules
 

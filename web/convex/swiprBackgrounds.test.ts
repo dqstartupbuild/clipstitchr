@@ -104,7 +104,7 @@ describe("convex swiprBackgrounds", () => {
       },
     };
 
-    await expect(getHandler(list)(ctx, {})).resolves.toBe(backgrounds);
+    await expect(getHandler(list)(ctx, {})).resolves.toStrictEqual(backgrounds);
     await expect(getHandler(get)(ctx, { id: "background_1" })).resolves.toEqual(
       createBackground(),
     );

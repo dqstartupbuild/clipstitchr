@@ -15,6 +15,7 @@ import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectU
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -47,6 +48,7 @@ type VideoClipPreviewCardTrimEditor = {
 
 type VideoClipPreviewCardMetadataEditor = {
   products?: ProductProfile[];
+  onSaveCrop?: (crop: QuickEditCrop | null) => void | Promise<void>;
   onSave: (metadata: AssetMetadataUpdate) => void | Promise<void>;
 };
 
@@ -262,6 +264,7 @@ export function VideoClipPreviewCard({
           onLoadPreview={() => {
             void loadFullClip();
           }}
+          onSaveCrop={metadataEditor.onSaveCrop}
           onSaveMetadata={metadataEditor.onSave}
         />
       ) : null}

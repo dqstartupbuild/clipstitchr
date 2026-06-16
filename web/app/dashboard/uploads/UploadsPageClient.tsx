@@ -474,12 +474,12 @@ export function UploadsPageClient() {
               onLoadMoreItems={library.videoGroups.ugc.loadMoreItems}
               isCreatingAvatarFromClip={avatarCreator.isGenerating}
               onDelete={library.removeClip}
-              onGenerateCliprMusic={library.generateCliprMusic}
               onScoreClip={library.scoreClip}
               onApplyQuickEdit={library.applyClipQuickEdit}
               onResetQuickEdit={library.resetClipQuickEdit}
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
+              onUpdateCrop={library.updateClipCrop}
               onUpdateTrim={library.updateClipTrimRange}
               onUpdatePostedStatus={library.updateClipPostedStatus}
               onCreateAvatarFromClip={handleCreateAvatarFromClip}
@@ -510,12 +510,12 @@ export function UploadsPageClient() {
               onLoadPoster={library.loadClipPoster}
               onLoadMoreItems={library.videoGroups.demo.loadMoreItems}
               onDelete={library.removeClip}
-              onGenerateCliprMusic={library.generateCliprMusic}
               onScoreClip={library.scoreClip}
               onApplyQuickEdit={library.applyClipQuickEdit}
               onResetQuickEdit={library.resetClipQuickEdit}
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
+              onUpdateCrop={library.updateClipCrop}
               onUpdateTrim={library.updateClipTrimRange}
               onUpdatePostedStatus={library.updateClipPostedStatus}
             />
@@ -545,12 +545,12 @@ export function UploadsPageClient() {
               onLoadPoster={library.loadClipPoster}
               onLoadMoreItems={library.videoGroups.swapr.loadMoreItems}
               onDelete={library.removeClip}
-              onGenerateCliprMusic={library.generateCliprMusic}
               onScoreClip={library.scoreClip}
               onApplyQuickEdit={library.applyClipQuickEdit}
               onResetQuickEdit={library.resetClipQuickEdit}
               onUpdateCliprMusic={library.updateCliprMusic}
               onUpdateMetadata={library.updateClipMetadata}
+              onUpdateCrop={library.updateClipCrop}
               onUpdateTrim={library.updateClipTrimRange}
               onUpdatePostedStatus={library.updateClipPostedStatus}
             />
@@ -569,7 +569,6 @@ export function UploadsPageClient() {
               hasMoreItems={library.hasMoreStitches}
               isLoadingMoreItems={library.isLoadingMoreStitches}
               onDelete={library.removeStitch}
-              onGenerateMusic={library.generateStitchMusic}
               onLoadClip={library.loadClip}
               onLoadMoreItems={library.loadMoreStitches}
               onLoadPoster={library.loadStitchPoster}
@@ -581,6 +580,7 @@ export function UploadsPageClient() {
               onUpdateMusic={library.updateStitchMusic}
               onUpdatePostedStatus={library.updateStitchPostedStatus}
               onUpdateSocialCaption={library.updateStitchSocialCaption}
+              onUpdateSourceCrop={library.updateStitchSourceCrop}
               onUpdateSourceSettings={library.updateStitchSourceSettings}
               onUpdateTextOverlay={library.updateStitchTextOverlay}
               ugcClips={stitchrUgcClips}
@@ -639,12 +639,12 @@ export function UploadsPageClient() {
               selectedTab === "ugc" && avatarCreator.isGenerating
             }
             onDelete={library.removeClip}
-            onGenerateCliprMusic={library.generateCliprMusic}
             onScoreClip={library.scoreClip}
             onApplyQuickEdit={library.applyClipQuickEdit}
             onResetQuickEdit={library.resetClipQuickEdit}
             onUpdateCliprMusic={library.updateCliprMusic}
             onUpdateMetadata={library.updateClipMetadata}
+            onUpdateCrop={library.updateClipCrop}
             onUpdateTrim={library.updateClipTrimRange}
             onUpdatePostedStatus={library.updateClipPostedStatus}
             onCreateAvatarFromClip={
@@ -680,7 +680,6 @@ export function UploadsPageClient() {
             hasMoreItems={selectedStitchHasMoreItems}
             isLoadingMoreItems={selectedStitchIsLoadingMoreItems}
             onDelete={library.removeStitch}
-            onGenerateMusic={library.generateStitchMusic}
             onLoadClip={library.loadClip}
             onLoadMoreItems={handleLoadMoreSelectedStitches}
             onLoadPoster={library.loadStitchPoster}
@@ -695,6 +694,7 @@ export function UploadsPageClient() {
             onUpdateMusic={library.updateStitchMusic}
             onUpdatePostedStatus={library.updateStitchPostedStatus}
             onUpdateSocialCaption={library.updateStitchSocialCaption}
+            onUpdateSourceCrop={library.updateStitchSourceCrop}
             onUpdateSourceSettings={library.updateStitchSourceSettings}
             onUpdateTextOverlay={library.updateStitchTextOverlay}
             ugcClips={stitchrUgcClips}

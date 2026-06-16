@@ -170,8 +170,6 @@ vi.mock("@/lib/clipstitchr/hooks/useClipLibrary", () => ({
       loadStitch: vi.fn(),
       loadMorePostedStitches: vi.fn(),
       loadMoreStitches: vi.fn(),
-      generateCliprMusic: vi.fn(),
-      generateStitchMusic: vi.fn(),
       postedStitches: [],
       removeClip: mocks.remove,
       removeStitch: mocks.remove,

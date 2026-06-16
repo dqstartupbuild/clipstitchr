@@ -5,6 +5,7 @@ import {
 } from "@/lib/clipstitchr/constants/tiktokOutputSize";
 import { drawTextOverlays } from "@/lib/clipstitchr/media/drawTextOverlays";
 import type { TextOverlayRenderContext } from "@/lib/clipstitchr/media/createTextOverlayRenderContext";
+import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
@@ -12,9 +13,11 @@ import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { getQuickEditPlayableRanges } from "@/lib/clipstitchr/utils/getQuickEditPlayableRanges";
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getQuickEditCropDrawRect } from "@/lib/clipstitchr/utils/getQuickEditCropDrawRect";
 import { getVideoTrimRangeDuration } from "@/lib/clipstitchr/utils/getVideoTrimRangeDuration";
 
 type CopyTextOverlayVideoFramesOptions = {
+  crop?: QuickEditCrop;
   input: Input;
   playbackRate?: VideoPlaybackRate;
   source: CanvasSource;
@@ -33,6 +36,7 @@ type CopyTextOverlayVideoFramesResult = {
 
 export async function copyTextOverlayVideoFramesToSource({
   input,
+  crop,
   playbackRate = 1,
   source,
   renderContext,
@@ -103,13 +107,29 @@ export async function copyTextOverlayVideoFramesToSource({
         TIKTOK_OUTPUT_WIDTH,
         TIKTOK_OUTPUT_HEIGHT,
       );
-      renderContext.context.drawImage(
-        frame.canvas,
-        0,
-        0,
-        TIKTOK_OUTPUT_WIDTH,
-        TIKTOK_OUTPUT_HEIGHT,
-      );
+      if (crop) {
+        const cropRect = getQuickEditCropDrawRect({
+          crop,
+          height: TIKTOK_OUTPUT_HEIGHT,
+          width: TIKTOK_OUTPUT_WIDTH,
+        });
+
+        renderContext.context.drawImage(
+          frame.canvas,
+          cropRect.x,
+          cropRect.y,
+          cropRect.width,
+          cropRect.height,
+        );
+      } else {
+        renderContext.context.drawImage(
+          frame.canvas,
+          0,
+          0,
+          TIKTOK_OUTPUT_WIDTH,
+          TIKTOK_OUTPUT_HEIGHT,
+        );
+      }
       drawTextOverlays(renderContext.context, overlays, outputTimestamp);
 
       await source.add(

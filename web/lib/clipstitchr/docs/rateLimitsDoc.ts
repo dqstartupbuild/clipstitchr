@@ -129,9 +129,9 @@ export const rateLimitsDoc = {
           limit: "600 estimated avatar seconds per hour",
         },
         {
-          action: "Clipr or Stitchr music",
-          limit: "600 generated music seconds per hour and 1,200 per day",
-          note: "Each generated music track is 60 seconds.",
+          action: "Music uploads",
+          limit: "30 MB per track plus normal upload limits",
+          note: "Uploaded music is shared with the whole music pool.",
         },
       ],
     },

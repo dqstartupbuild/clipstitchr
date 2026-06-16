@@ -330,9 +330,8 @@ describe("Clipr components", () => {
   });
 
 
-  it("forwards voice and music control changes", () => {
+  it("forwards voice and music clear controls", () => {
     const onVoiceChange = vi.fn();
-    const onMusicChange = vi.fn();
     const onClearTrack = vi.fn();
     const selectedTrack = createTrack();
     const voiceTree = CliprVoiceSelect({
@@ -340,8 +339,6 @@ describe("Clipr components", () => {
       value: "Unknown voice",
     });
     const musicTree = CliprMusicControl({
-      checked: true,
-      onChange: onMusicChange,
       onClearTrack,
       onSelectTrack: vi.fn(),
       selectedTrack,
@@ -350,10 +347,6 @@ describe("Clipr components", () => {
       voiceTree,
       (element) =>
         typeof element.type === "function" && element.type.name === "SelectInput",
-    );
-    const [musicCheckbox] = findElements(
-      musicTree,
-      (element) => element.type === "input",
     );
     const [clearButton] = findElements(
       musicTree,
@@ -366,13 +359,9 @@ describe("Clipr components", () => {
     (voiceSelect.props.onChange as (event: {
       target: { value: string };
     }) => void)({ target: { value: "Drew" } });
-    (musicCheckbox.props.onChange as (event: {
-      currentTarget: { checked: boolean };
-    }) => void)({ currentTarget: { checked: false } });
     (clearButton.props.onClick as () => void)();
 
     expect(onVoiceChange).toHaveBeenCalledWith("Drew");
-    expect(onMusicChange).toHaveBeenCalledWith(false);
     expect(onClearTrack).toHaveBeenCalledOnce();
     expect(voiceMarkup).toContain("Rachel - Balanced creator");
     expect(musicMarkup).toContain("Bright Hook");

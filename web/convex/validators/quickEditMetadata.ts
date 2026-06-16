@@ -13,5 +13,5 @@ export const quickEditMetadataValidator = v.object({
   summary: v.optional(v.string()),
   appliedAt: v.string(),
   baseline: v.optional(quickEditBaselineValidator),
-  source: v.literal("ai-score"),
+  source: v.union(v.literal("ai-score"), v.literal("manual-crop")),
 });

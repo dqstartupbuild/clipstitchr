@@ -24,6 +24,7 @@ import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxB
 import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExportBlob";
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { createVideoBlobWithPosterMetadata } from "@/lib/clipstitchr/media/createVideoBlobWithPosterMetadata";
+import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchPreviewErrorState } from "@/lib/clipstitchr/types/StitchPreviewErrorState";
@@ -52,7 +53,6 @@ type StitchCardProps = {
   isSelectionDisabled?: boolean;
   isSavingTemplate?: boolean;
   onDelete: (id: string) => void | Promise<void>;
-  onGenerateMusic: (stitch: Stitch) => Promise<StitchMusicMetadata | null>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
@@ -73,6 +73,11 @@ type StitchCardProps = {
     stitch: Stitch,
     update: StitchSourceSettingsUpdate,
   ) => void | Promise<void>;
+  onUpdateSourceCrop?: (
+    stitch: Stitch,
+    source: "ugc" | "demo",
+    crop: QuickEditCrop | null,
+  ) => void | Promise<void>;
   onUpdateTextOverlay: (
     stitch: Stitch,
     textOverlay: TextOverlay | TextOverlay[] | null,
@@ -91,7 +96,6 @@ export function StitchCard({
   isSelectionDisabled = false,
   isSavingTemplate = false,
   onDelete,
-  onGenerateMusic,
   onLoadClip,
   onLoadPoster,
   onLoadVideo,
@@ -103,6 +107,7 @@ export function StitchCard({
   onUpdateMusic,
   onUpdatePostedStatus,
   onUpdateSocialCaption,
+  onUpdateSourceCrop,
   onUpdateSourceSettings,
   onUpdateTextOverlay,
   ugcClips = [],
@@ -150,7 +155,6 @@ export function StitchCard({
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
   const [isScoring, setIsScoring] = useState(false);
   const [isApplyingQuickEdit, setIsApplyingQuickEdit] = useState(false);
   const [isSavingMusic, setIsSavingMusic] = useState(false);
@@ -158,6 +162,7 @@ export function StitchCard({
   const [isSavingSocialCaption, setIsSavingSocialCaption] = useState(false);
   const [isSavingText, setIsSavingText] = useState(false);
   const [isSavingSourceSettings, setIsSavingSourceSettings] = useState(false);
+  const [isSavingSourceCrop, setIsSavingSourceCrop] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [musicError, setMusicError] = useState<string | null>(null);
   const [postedStatusError, setPostedStatusError] = useState<string | null>(
@@ -311,33 +316,6 @@ export function StitchCard({
       setIsDownloading(false);
     }
   };
-  const handleGenerateMusic = async () => {
-    setIsGeneratingMusic(true);
-    setMusicError(null);
-
-    try {
-      const result = await onGenerateMusic(stitch);
-      if (result) {
-        trackPostHogEvent("stitch_music_generated", {
-          stitch_id: stitch.id,
-        });
-      }
-      return result;
-    } catch (nextError) {
-      capturePostHogException(nextError, {
-        feature: "stitch_music_generation",
-        stitch_id: stitch.id,
-      });
-      setMusicError(
-        nextError instanceof Error
-          ? nextError.message
-          : "Unable to generate stitch music.",
-      );
-      return null;
-    } finally {
-      setIsGeneratingMusic(false);
-    }
-  };
   const handleScore = async () => {
     if (!onScore) {
       return;
@@ -487,6 +465,33 @@ export function StitchCard({
       throw nextError;
     } finally {
       setIsSavingSourceSettings(false);
+    }
+  };
+  const handleUpdateSourceCrop = async (
+    source: "ugc" | "demo",
+    crop: QuickEditCrop | null,
+    stitchOverride = stitch,
+  ) => {
+    if (!onUpdateSourceCrop) {
+      return;
+    }
+
+    setIsSavingSourceCrop(true);
+    setSourceSettingsError(null);
+
+    try {
+      await onUpdateSourceCrop(stitchOverride, source, crop);
+      setStitchVideoBlob(null);
+      setPreviewState(null);
+    } catch (nextError) {
+      setSourceSettingsError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to update stitch crop.",
+      );
+      throw nextError;
+    } finally {
+      setIsSavingSourceCrop(false);
     }
   };
   const handleUpdatePostedStatus = async (nextIsPosted: boolean) => {
@@ -745,11 +750,10 @@ export function StitchCard({
       {isEditOpen ? (
         <StitchEditDialog
           demoClips={demoClips}
-          isGeneratingMusic={isGeneratingMusic}
           isLoadingPreview={isLoadingPreview}
           isSavingMusic={isSavingMusic}
           isSavingSocialCaption={isSavingSocialCaption}
-          isSavingSourceSettings={isSavingSourceSettings}
+          isSavingSourceSettings={isSavingSourceSettings || isSavingSourceCrop}
           isSavingText={isSavingText}
           musicError={musicError}
           posterUrl={posterUrl}
@@ -761,13 +765,15 @@ export function StitchCard({
           textError={textError}
           ugcClips={ugcClips}
           onClose={() => setIsEditOpen(false)}
-          onGenerateMusic={handleGenerateMusic}
           onLoadPreview={(ugcClipId, demoClipId) => {
             void loadSourcePreview(ugcClipId, demoClipId);
           }}
           onRemoveMusic={() => handleUpdateMusic(null)}
           onSaveMusic={handleUpdateMusic}
           onSaveSocialCaption={handleUpdateSocialCaption}
+          onSaveSourceCrop={
+            onUpdateSourceCrop ? handleUpdateSourceCrop : undefined
+          }
           onSaveSourceSettings={handleUpdateSourceSettings}
           onSaveTextOverlay={handleUpdateTextOverlay}
         />

@@ -21,6 +21,7 @@ export function createUploadVideoAnalysisPrompt({
       "For mainPersonDescription, describe the main visible person as specifically as possible using stable, non-sensitive visual traits: face shape, hair style and color, facial hair when visible, eyes, brows, nose, lips, skin tone as visually apparent, build, and distinctive non-sensitive features.",
       "The mainPersonDescription must include zero information about clothing, accessories, background, location, pose, posture, gesture, body position, scene, camera setting, or activity.",
       "Put clothing and accessories only in outfitDescription. Put the background, location, environment, and scene context only in locationDescription.",
+      "If a field does not fit the visible content, return an empty string for that field. Do not fill location, outfit, pose, or person fields with unrelated details.",
       "Do not guess private identity, race, ethnicity, nationality, religion, gender identity, health, disability, or other sensitive traits.",
       "If a person is not clearly visible, set mainPersonDescription to an empty string.",
       ...createClipPerformanceScorePromptLines(mediaKind),
@@ -38,6 +39,7 @@ export function createUploadVideoAnalysisPrompt({
     "For productDescription, describe the visible product or demonstrated offering in detail: shape, color, packaging, screen/UI state, labels only if clearly legible, product category, components, and any visible before/after or result.",
     "For poseDescription, describe the demo sequence only: user interactions, screen steps, hand actions, product use, scene cuts, camera movement, and result beats in chronological order.",
     "Put visible surroundings only in locationDescription.",
+    "If a field does not fit the demo, return an empty string for that field. Do not put product details in locationDescription or generic movement in productDescription.",
     "Do not guess private identity, demographics, brands, pricing, claims, or sensitive traits.",
     ...createClipPerformanceScorePromptLines(mediaKind),
   ].join("\n");

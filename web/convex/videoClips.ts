@@ -16,6 +16,7 @@ import { cliprMusicMetadataValidator } from "./validators/cliprMusicMetadata";
 import { clipPerformanceScoreValidator } from "./validators/clipPerformanceScore";
 import { clipTypeValidator } from "./validators/clipType";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
+import { quickEditCropValidator } from "./validators/quickEditCrop";
 import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
@@ -164,6 +165,22 @@ export const get = query({
   },
   handler: async (ctx, { id }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    return await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+  },
+});
+
+export const getForProvider = query({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+  },
+  handler: async (ctx, { secret, ownerId, id }) => {
+    assertProviderWorkerSecret(secret);
 
     return await ctx.db
       .query("videoClips")
@@ -557,6 +574,74 @@ export const updatePerformanceScore = mutation({
       performanceScore,
       updatedAt,
     });
+  },
+});
+
+export const updateCrop = mutation({
+  args: {
+    id: v.string(),
+    crop: v.union(quickEditCropValidator, v.null()),
+    updatedAt: v.string(),
+  },
+  handler: async (ctx, { id, crop, updatedAt }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const clip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!clip) {
+      throw new Error("Video clip not found.");
+    }
+
+    const currentQuickEdit = clip.quickEdit;
+    const nextQuickEdit = (() => {
+      if (crop) {
+        return {
+          ...currentQuickEdit,
+          appliedAt: updatedAt,
+          crop,
+          removeRanges: currentQuickEdit?.removeRanges ?? [],
+          source: currentQuickEdit?.source ?? "manual-crop",
+        };
+      }
+
+      if (
+        !currentQuickEdit ||
+        (!currentQuickEdit.removeRanges.length &&
+          !currentQuickEdit.overlayText &&
+          !currentQuickEdit.summary &&
+          currentQuickEdit.trimStart === undefined &&
+          currentQuickEdit.trimEnd === undefined)
+      ) {
+        return undefined;
+      }
+
+      const { crop: _crop, ...rest } = currentQuickEdit;
+
+      void _crop;
+
+      return {
+        ...rest,
+        appliedAt: updatedAt,
+      };
+    })();
+
+    await ctx.db.patch(clip._id, {
+      quickEdit: nextQuickEdit,
+      updatedAt,
+    });
+    const updatedClip = await ctx.db.get(clip._id);
+
+    if (updatedClip) {
+      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+    }
   },
 });
 

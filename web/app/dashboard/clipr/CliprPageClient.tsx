@@ -48,7 +48,6 @@ export function CliprPageClient() {
     avatarId: string;
     voiceId: string;
   } | null>(null);
-  const [addMusic, setAddMusic] = useState(false);
   const [selectedMusicTrack, setSelectedMusicTrack] =
     useState<SharedMusicTrack | null>(null);
   const activeProductId =
@@ -186,19 +185,10 @@ export function CliprPageClient() {
               ) : null}
               {allowsMusic ? (
                 <CliprMusicControl
-                  checked={addMusic}
                   selectedTrack={selectedMusicTrack}
-                  onChange={(checked) => {
-                    setAddMusic(checked);
-
-                    if (checked) {
-                      setSelectedMusicTrack(null);
-                    }
-                  }}
                   onClearTrack={() => setSelectedMusicTrack(null)}
                   onSelectTrack={(track) => {
                     setSelectedMusicTrack(track);
-                    setAddMusic(false);
                   }}
                 />
               ) : null}
@@ -216,8 +206,6 @@ export function CliprPageClient() {
                 disabled={!canGenerate}
                 onClick={() =>
                   void generator.generate({
-                    addMusic:
-                      allowsMusic && addMusic && !selectedMusicTrack,
                     avatarId: activeAvatarId,
                     avatarSceneLocation,
                     avatarSceneOutfit,

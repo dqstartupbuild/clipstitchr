@@ -2,12 +2,14 @@ import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
+import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { stitchCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
+import { quickEditCropValidator } from "./validators/quickEditCrop";
 import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchScoreValidator } from "./validators/stitchScore";
@@ -109,6 +111,22 @@ export const get = query({
   },
   handler: async (ctx, { id }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    return await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+  },
+});
+
+export const getForProvider = query({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+  },
+  handler: async (ctx, { secret, ownerId, id }) => {
+    assertProviderWorkerSecret(secret);
 
     return await ctx.db
       .query("stitches")
@@ -404,7 +422,6 @@ export const updateMusic = mutation({
       quickEdit: undefined,
       size: undefined,
       stitchObject: undefined,
-      stitchScore: undefined,
     });
     const updatedStitch = await ctx.db.get(stitch._id);
 
@@ -493,6 +510,8 @@ export const updateSourceSettings = mutation({
       demoClipId,
       demoClipName: demoClip.name,
       demoPlaybackRate,
+      demoQuickEdit:
+        stitch.demoClipId === demoClipId ? stitch.demoQuickEdit : undefined,
       demoTrimRange,
       duration,
       mimeType: undefined,
@@ -501,12 +520,116 @@ export const updateSourceSettings = mutation({
       posterVersion: posterObject ? posterVersion : undefined,
       quickEdit: undefined,
       size: undefined,
-      stitchScore: undefined,
       stitchObject: undefined,
       ugcClipId,
       ugcClipName: ugcClip.name,
       ugcPlaybackRate,
+      ugcQuickEdit:
+        stitch.ugcClipId === ugcClipId ? stitch.ugcQuickEdit : undefined,
       ugcTrimRange,
+    });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+    }
+  },
+});
+
+function getQuickEditWithCrop(
+  quickEdit:
+    | {
+        trimStart?: number;
+        trimEnd?: number | null;
+        removeRanges: Array<{ start: number; end: number; reason?: string }>;
+        overlayText?: { replaceWith: string; reason?: string };
+        crop?: {
+          mode: "smart-9x16";
+          removeBlackBars?: boolean;
+          positionX?: number;
+          positionY?: number;
+          scale?: number;
+          reason?: string;
+        };
+        summary?: string;
+      }
+    | undefined,
+  crop:
+    | {
+        mode: "smart-9x16";
+        removeBlackBars?: boolean;
+        positionX?: number;
+        positionY?: number;
+        scale?: number;
+        reason?: string;
+      }
+    | null,
+) {
+  if (crop) {
+    return {
+      ...quickEdit,
+      crop,
+      removeRanges: quickEdit?.removeRanges ?? [],
+    };
+  }
+
+  if (
+    !quickEdit ||
+    (!quickEdit.removeRanges.length &&
+      !quickEdit.overlayText &&
+      !quickEdit.summary &&
+      quickEdit.trimStart === undefined &&
+      quickEdit.trimEnd === undefined)
+  ) {
+    return undefined;
+  }
+
+  const { crop: _crop, ...rest } = quickEdit;
+
+  void _crop;
+
+  return rest;
+}
+
+export const updateSourceCrop = mutation({
+  args: {
+    id: v.string(),
+    crop: v.union(quickEditCropValidator, v.null()),
+    posterObject: v.optional(v.union(r2ObjectValidator, v.null())),
+    posterVersion: v.optional(v.number()),
+    source: v.union(v.literal("ugc"), v.literal("demo")),
+  },
+  handler: async (ctx, { id, crop, posterObject, posterVersion, source }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    await ctx.db.patch(stitch._id, {
+      ...(source === "ugc"
+        ? { ugcQuickEdit: getQuickEditWithCrop(stitch.ugcQuickEdit, crop) }
+        : { demoQuickEdit: getQuickEditWithCrop(stitch.demoQuickEdit, crop) }),
+      mimeType: undefined,
+      ...(posterObject === undefined
+        ? {}
+        : {
+            posterObject: posterObject ?? undefined,
+            posterVersion: posterObject ? posterVersion : undefined,
+          }),
+      quickEdit: undefined,
+      size: undefined,
+      stitchObject: undefined,
     });
     const updatedStitch = await ctx.db.get(stitch._id);
 
@@ -519,10 +642,12 @@ export const updateSourceSettings = mutation({
 export const updateTextOverlay = mutation({
   args: {
     id: v.string(),
+    posterObject: v.optional(v.union(r2ObjectValidator, v.null())),
+    posterVersion: v.optional(v.number()),
     textOverlay: v.optional(v.union(textOverlayValidator, v.null())),
     textOverlays: v.optional(textOverlaysValidator),
   },
-  handler: async (ctx, { id, textOverlay, textOverlays }) => {
+  handler: async (ctx, { id, posterObject, posterVersion, textOverlay, textOverlays }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
@@ -545,9 +670,14 @@ export const updateTextOverlay = mutation({
 
     await ctx.db.patch(stitch._id, {
       mimeType: undefined,
+      ...(posterObject === undefined
+        ? {}
+        : {
+            posterObject: posterObject ?? undefined,
+            posterVersion: posterObject ? posterVersion : undefined,
+          }),
       quickEdit: undefined,
       size: undefined,
-      stitchScore: undefined,
       stitchObject: undefined,
       textOverlay: normalizedTextOverlays[0],
       textOverlays: normalizedTextOverlays.length
@@ -569,6 +699,41 @@ export const updateScore = mutation({
   },
   handler: async (ctx, { id, stitchScore }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    await ctx.db.patch(stitch._id, {
+      stitchScore,
+    });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+    }
+  },
+});
+
+export const updateScoreFromProvider = mutation({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    id: v.string(),
+    stitchScore: stitchScoreValidator,
+  },
+  handler: async (ctx, { secret, ownerId, id, stitchScore }) => {
+    assertProviderWorkerSecret(secret);
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
       key: ownerId,

@@ -44,7 +44,7 @@ conversational or agentic product surface, such as:
 It should not be installed just to replace today's route-based generation
 helpers. The current app mostly uses structured, form-driven, single-purpose AI
 operations: product enrichment, upload analysis, text generation, avatar photo
-generation, background generation, music generation, and Swapr/Clipr provider
+generation, background generation, shared music upload, and Swapr/Clipr provider
 jobs. Those flows already have explicit inputs, deterministic ownership checks,
 rate limits, and typed persistence. Wrapping them in an agent abstraction would
 add thread/message state without solving the main reliability problem: durable
@@ -190,7 +190,7 @@ Do not use the Agent component now for:
 - avatar photo generation execution
 - Swipr background generation execution
 - Clipr provider orchestration as currently implemented
-- shared music generation execution
+- shared music upload and selection
 - product enrichment as a single-turn form submit
 - upload metadata analysis
 
@@ -245,7 +245,7 @@ If adopted later, the component would require:
 The current app uses the `replicate` SDK directly for most provider calls. Using
 the Agent component would introduce AI SDK model configuration alongside the
 existing Replicate wrappers. That is acceptable for a support assistant, but it
-is not a drop-in replacement for the existing Replicate image/video/music paths.
+is not a drop-in replacement for the existing Replicate image/video paths.
 
 ## Rate Limit And Abuse Requirements
 
@@ -389,4 +389,3 @@ For the current MVP, the component would not materially improve the core
 Stitchr, Swipr, Clipr, Swapr, upload, or media-rendering workflows. The app's
 near-term backend work should focus on semantic retrieval, repeat-call caching,
 rate limits, credit accounting, and durable provider/media finalization.
-

@@ -244,9 +244,13 @@ describe("convex stitches", () => {
       "doc_1",
       expect.objectContaining({ mimeType: "video/mp4" }),
     );
-    expect(setup.ctx.db.patch).toHaveBeenCalledWith("doc_1", {
-      music: undefined,
-    });
+    expect(setup.ctx.db.patch).toHaveBeenCalledWith(
+      "doc_1",
+      expect.objectContaining({
+        music: undefined,
+        stitchObject: undefined,
+      }),
+    );
     expect(setup.ctx.db.patch).toHaveBeenCalledWith(
       "doc_1",
       expect.objectContaining({
@@ -255,16 +259,18 @@ describe("convex stitches", () => {
         mimeType: undefined,
         posterObject: undefined,
         size: undefined,
-        stitchScore: undefined,
         stitchObject: undefined,
         ugcClipId: "ugc_2",
         ugcPlaybackRate: 1,
       }),
     );
-    expect(setup.ctx.db.patch).toHaveBeenCalledWith("doc_1", {
-      stitchScore: undefined,
-      textOverlay: undefined,
-    });
+    expect(setup.ctx.db.patch).toHaveBeenCalledWith(
+      "doc_1",
+      expect.objectContaining({
+        stitchObject: undefined,
+        textOverlay: undefined,
+      }),
+    );
     expect(setup.ctx.db.patch).toHaveBeenCalledWith(
       "doc_1",
       expect.objectContaining({

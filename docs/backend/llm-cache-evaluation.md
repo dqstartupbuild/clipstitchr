@@ -13,7 +13,7 @@ metadata generation that already runs through Convex-gated backend workflows:
 
 It should not be used as a blanket cache for all AI features. Avatar photo
 generation, Swipr background image generation, Swapr video generation, Clipr
-avatar video generation, and music generation are user-facing creative outputs
+and avatar video generation are user-facing creative outputs
 where repeated prompts can reasonably be expected to produce new media. Caching
 those outputs would also complicate credit accounting, R2 persistence, and
 provider job audit trails.
@@ -173,7 +173,7 @@ Do not cache these by default:
 - Swipr background image generation
 - Swapr video jobs
 - Clipr avatar still/video generation
-- Clipr, Stitchr, Longr, and shared-library music generation
+- Clipr, Stitchr, Longr, and shared-library music upload metadata
 
 Reasons:
 
@@ -323,4 +323,3 @@ Suggested first implementation:
 
 This keeps the blast radius small while proving whether the cache saves real
 money for ClipStitchr's actual usage.
-

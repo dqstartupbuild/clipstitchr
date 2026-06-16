@@ -5,6 +5,7 @@ import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose"
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
 import { createStitchrHookGenerationPrompt } from "@/lib/clipstitchr/server/createStitchrHookGenerationPrompt";
+import { createSwiprTextGenerationPrompt } from "@/lib/clipstitchr/server/createSwiprTextGenerationPrompt";
 
 type CreateCliprTextGenerationPromptOptions = {
   candidates: CliprHookTemplate[];
@@ -102,6 +103,16 @@ export function createCliprTextGenerationPrompt({
       fillers,
       product,
       stitchrClipContexts,
+    });
+  }
+
+  if (purpose === "swipr") {
+    return createSwiprTextGenerationPrompt({
+      candidates,
+      fillers,
+      product,
+      scriptIdea,
+      slideCount,
     });
   }
 

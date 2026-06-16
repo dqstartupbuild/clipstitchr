@@ -10,7 +10,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function PrivacyPage() {
-  const lastUpdated = "May 16, 2026";
+  const lastUpdated = "June 16, 2026";
 
   return (
     <article className="px-6 py-20 md:py-28">
@@ -51,6 +51,11 @@ export default function PrivacyPage() {
               Your browser may cache generated poster and thumbnail preview
               images to make library pages load faster. Clearing browser or site
               data removes that local preview cache.
+            </p>
+            <p>
+              Music you upload is saved to the shared music pool so other
+              ClipStitchr users can find and use it in their own clips, swipes,
+              and stitches. Do not upload music if you do not want it shared.
             </p>
             <p>
               You can delete clips, photos, and stitches in the dashboard. Those

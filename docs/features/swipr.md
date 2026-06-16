@@ -14,8 +14,10 @@ or remove images, and download the latest saved version at any time.
 4. The user chooses one photo for each carousel image:
    - A saved background from the shared Background Library.
    - Uploaded background images.
-   - AI-generated background images from product context and an optional user
-     prompt.
+   - A saved avatar photo.
+   - A Pexels photo from the built-in search panel.
+   - One AI-generated background image for the selected carousel image, using
+     product context and an optional user prompt.
 5. The user edits text independently on each carousel image.
 6. The user can generate editable slide text from the shared hidden Clipr
    hook-template engine. The first slide uses the generated hook, and the
@@ -194,10 +196,36 @@ outside `NODE_ENV=development`. Each click imports the next five missing seed
 plans, skips seed IDs already saved in Convex, generates the image, uploads it
 to the shared Swipr R2 prefix, and saves the prefilled seed metadata directly.
 
-The Swipr creation page can upload multiple photos in one selection and
-generate one AI photo per current carousel image. Each generated image consumes
-the existing Swipr AI background generation limit, then follows the existing
-analysis, R2 upload, and `swiprBackgrounds.save` path.
+The Swipr creation page can upload multiple photos in one selection. Uploaded
+photos are assigned across the current carousel images. AI generation is
+intentionally single-slide only: the selected slide receives one generated
+photo, and a user who wants AI photos on every slide must select each slide and
+tap Generate.
+
+Avatar photos can also be added to the selected slide. Avatar-photo Swipr
+background records are saved with source `avatar-photo` and remain visible only
+to the owner who imported them, so personal avatar images do not become shared
+library assets.
+
+## Pexels Search
+
+Swipr can search Pexels through `POST /api/swipr/pexels/search`. The route:
+
+- Requires an authenticated user.
+- Consumes the `pexelsSearch` per-user and `pexelsSearchGlobal` shared limits
+  before calling Pexels.
+- Reads `PEXELS_API_KEY` server-side and sends it in the Pexels
+  `Authorization` header.
+- Calls `GET https://api.pexels.com/v1/search` with `orientation=portrait`.
+- Returns only the photo fields needed by the client: ID, dimensions, Pexels
+  URL, photographer credit/link, alt text, and source URLs.
+
+When a user adds a Pexels photo, the client downloads the selected portrait
+image, saves it through the existing Swipr background analysis/R2/Convex path,
+and assigns it to the selected slide. Pexels imports use source `pexels`, are
+part of the shared Swipr background library, and keep the Pexels URL and
+photographer in hidden background details for maintenance. The UI shows
+“Photos provided by Pexels” and displays photographer credit on each result.
 
 ## Abuse Protection
 
@@ -206,6 +234,7 @@ Swipr persistence adds new cost surfaces:
 - R2 signed upload URLs for background uploads and generated background saves.
 - R2 signed download URLs for shared background previews and exports.
 - GPT-4.1 mini background analysis.
+- Pexels API search requests.
 - Convex record saves for shared backgrounds.
 - Any future admin seed runner that generates and imports the 1,000-image
   background catalog.
@@ -217,6 +246,7 @@ Required protections:
   creation.
 - Background analysis is rate-limited before calling Replicate.
 - AI background generation remains rate-limited before calling Replicate.
+- Pexels search is rate-limited before calling Pexels.
 - Seed catalog generation/import must be admin-only, batch-capped,
   checkpointed, and must not run through user-triggered background routes.
 - Convex saves and updates consume existing record-save or metadata-update
@@ -237,4 +267,4 @@ Required protections:
 - Hook style names, template IDs, risk labels, and placeholder mechanics are
   hidden from users when Swipr auto-text is generated.
 - Backgrounds are shared globally and cannot be deleted by users.
-- Pinterest or stock background provider integration remains future scope.
+- Pexels images added through search become shared Swipr backgrounds.

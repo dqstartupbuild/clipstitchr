@@ -8,7 +8,7 @@ const cliprModeBullets = [
         "Choose Script when you want a quick talking-avatar clip.",
         "For Script clips, choose a voice.",
         "For Script clips, optionally paste an idea for Clipr to turn into a full script.",
-        "For Script clips, optionally generate background music. This is off by default.",
+        "For Script clips, optionally choose a shared music track. This is off by default.",
       ]
     : []),
 ];
@@ -26,7 +26,7 @@ export const cliprDoc = {
     "Make short reaction and b-roll clips, save them as UGC, and reuse them in Stitchr.",
   category: "feature",
   order: 20,
-  updated: "2026-06-14",
+  updated: "2026-06-16",
   sections: [
     {
       title: "What Clipr is for",
@@ -58,7 +58,8 @@ export const cliprDoc = {
     {
       title: "Music",
       body: [
-        "Clipr music is saved separately from the video. You can remove it, generate a new track, or change the music volume later.",
+        "Clipr music is saved separately from the video. You can remove it, choose another shared track, or change the music volume later.",
+        "Music uploads are added to the shared music pool, so only upload tracks you have the rights to share and use.",
         "When you download a Clip with music enabled, ClipStitchr renders a fresh export with the current music settings. The saved library video stays clean.",
       ],
     },

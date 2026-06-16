@@ -3,11 +3,12 @@ import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 
 const mocks = vi.hoisted(() => ({
-  generatedTrack: null as SharedMusicTrack | null,
-  generateSharedMusicTrack: vi.fn(),
+  getAudioBlobDuration: vi.fn(),
   setStateCalls: [] as Array<ReturnType<typeof vi.fn>>,
   stateQueue: [] as unknown[],
   tracks: [] as SharedMusicTrack[],
+  uploadedTrack: null as SharedMusicTrack | null,
+  uploadSharedMusicTrack: vi.fn(),
 }));
 
 vi.mock("react", async (importOriginal) => {
@@ -35,8 +36,12 @@ vi.mock("@/lib/clipstitchr/hooks/useSharedMusicTracks", () => ({
   }),
 }));
 
-vi.mock("@/lib/clipstitchr/client/generateSharedMusicTrack", () => ({
-  generateSharedMusicTrack: mocks.generateSharedMusicTrack,
+vi.mock("@/lib/clipstitchr/client/getAudioBlobDuration", () => ({
+  getAudioBlobDuration: mocks.getAudioBlobDuration,
+}));
+
+vi.mock("@/lib/clipstitchr/client/uploadSharedMusicTrack", () => ({
+  uploadSharedMusicTrack: mocks.uploadSharedMusicTrack,
 }));
 
 function findElements(
@@ -91,8 +96,9 @@ function createTrack(overrides: Partial<SharedMusicTrack> = {}): SharedMusicTrac
 describe("MusicSelectorButton", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.generatedTrack = createTrack({ id: "generated_track" });
-    mocks.generateSharedMusicTrack.mockResolvedValue(mocks.generatedTrack);
+    mocks.uploadedTrack = createTrack({ id: "uploaded_track" });
+    mocks.getAudioBlobDuration.mockResolvedValue(32);
+    mocks.uploadSharedMusicTrack.mockResolvedValue(mocks.uploadedTrack);
     mocks.setStateCalls = [];
     mocks.stateQueue = [];
     mocks.tracks = [createTrack()];
@@ -116,8 +122,9 @@ describe("MusicSelectorButton", () => {
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(true);
   });
 
-  it("selects existing and generated tracks from the dialog", async () => {
+  it("selects existing and uploaded tracks from the dialog", async () => {
     const onSelectTrack = vi.fn();
+    const uploadFile = new File(["audio"], "hook.mp3", { type: "audio/mpeg" });
 
     mocks.stateQueue = [true, false, null];
 
@@ -136,14 +143,20 @@ describe("MusicSelectorButton", () => {
     await (dialog.props.onSelect as (track: SharedMusicTrack) => Promise<void>)(
       mocks.tracks[0],
     );
-    await (dialog.props.onGenerate as (style: string) => Promise<void>)("lofi");
+    await (dialog.props.onUpload as (file: File, title: string) => Promise<void>)(
+      uploadFile,
+      "Uploaded Hook",
+    );
 
     expect(onSelectTrack).toHaveBeenCalledWith(mocks.tracks[0]);
-    expect(mocks.generateSharedMusicTrack).toHaveBeenCalledWith({
+    expect(mocks.getAudioBlobDuration).toHaveBeenCalledWith(uploadFile);
+    expect(mocks.uploadSharedMusicTrack).toHaveBeenCalledWith({
+      durationSeconds: 32,
+      file: uploadFile,
       source: "stitchr",
-      style: "lofi",
+      title: "Uploaded Hook",
     });
-    expect(onSelectTrack).toHaveBeenCalledWith(mocks.generatedTrack);
+    expect(onSelectTrack).toHaveBeenCalledWith(mocks.uploadedTrack);
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(false);
     expect(mocks.setStateCalls[1]).toHaveBeenCalledWith(true);
     expect(mocks.setStateCalls[1]).toHaveBeenCalledWith(false);

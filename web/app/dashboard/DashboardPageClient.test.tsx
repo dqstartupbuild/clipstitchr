@@ -20,7 +20,6 @@ const mocks = vi.hoisted(() => ({
       ugcClips: 0,
     },
     error: null as string | null,
-    generateStitchMusic: vi.fn(),
     loadClip: vi.fn(),
     loadStitch: vi.fn(),
     loadStitchPoster: vi.fn(),
