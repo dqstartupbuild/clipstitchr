@@ -24,6 +24,12 @@ function normalizeString(value: unknown, fallback: string) {
   );
 }
 
+function normalizeSwiprSlideString(value: unknown) {
+  return typeof value === "string"
+    ? value.trim().replace(/\s+/g, " ").slice(0, 120)
+    : "";
+}
+
 function getGeneratedHookIsReadable(
   hook: string,
   template: CliprHookTemplate,
@@ -73,14 +79,12 @@ function getProductProblemPhrase(product: ProductProfile) {
 }
 
 function createFallbackHook(product: ProductProfile, purpose: CliprTextPurpose) {
-  const problem = getProductProblemPhrase(product);
-
   if (purpose === "clipr") {
     return "The small workflow mistake most people miss";
   }
 
   if (purpose === "swipr") {
-    return `Most people notice ${problem} too late`;
+    return "This is why it feels harder than it should";
   }
 
   return "I was not expecting that";
@@ -136,24 +140,26 @@ function getSwiprFallbackSupportSlide(
 ) {
   const problem = getProductProblemPhrase(product);
   const fallbackSlides = [
-    `The real issue is ${problem}`,
-    "Most people notice it after the workflow is already messy",
-    "That tiny bit of friction turns into another unfinished post",
-    "The better move is making the next step obvious",
-    "The payoff is fewer loose ends before you publish",
-    "Simple systems win because you can actually repeat them",
+    `It usually starts as ${problem}`,
+    "Then the workaround becomes the routine",
+    "That is why the next step matters",
+    "Make the obvious path easier to take",
+    "Less friction means more follow-through",
+    "Small systems work when they feel repeatable",
   ];
 
   return fallbackSlides[(slideIndex - 1) % fallbackSlides.length];
 }
 
-function createSwiprCtaSlide() {
-  return "Save this for later";
+function createSwiprCtaSlide(product: ProductProfile) {
+  return product.websiteUrl
+    ? "Visit the site when you're ready"
+    : "Follow for more like this";
 }
 
 function getSwiprSlideIsCta(slide: string, product: ProductProfile) {
   return (
-    /\b(save|share|send|remember|try this|use this|come back|keep this)\b/i.test(
+    /\b(save|share|send|remember|try this|use this|come back|keep this|follow|comment|like|visit|download|check it out|learn more|when you're ready)\b/i.test(
       slide,
     ) ||
     (slide.toLowerCase().includes(product.name.toLowerCase()) &&
@@ -190,7 +196,11 @@ function normalizeSlides({
 }) {
   const rawSlides = Array.isArray(value) ? value : [];
   const slides = rawSlides
-    .map((slide) => normalizeString(slide, ""))
+    .map((slide) =>
+      purpose === "swipr"
+        ? normalizeSwiprSlideString(slide)
+        : normalizeString(slide, ""),
+    )
     .filter(Boolean)
     .slice(0, slideCount);
 
@@ -233,7 +243,7 @@ function normalizeSlides({
   }
 
   if (slideCount > 1) {
-    nextSlides.push(generatedCtaSlide || createSwiprCtaSlide());
+    nextSlides.push(generatedCtaSlide || createSwiprCtaSlide(product));
   }
 
   return nextSlides.slice(0, slideCount);

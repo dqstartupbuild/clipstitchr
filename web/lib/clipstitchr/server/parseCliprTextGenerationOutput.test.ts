@@ -87,7 +87,7 @@ describe("parseCliprTextGenerationOutput", () => {
     expect(generation.slides[0]).toBe(generation.filledHook);
   });
 
-  it("forces Swipr slides into a hook, payoff, and product CTA arc", () => {
+  it("forces Swipr slides into a hook, payoff, and soft CTA arc", () => {
     const generation = parseCliprTextGenerationOutput({
       candidates,
       durationSeconds: 30,
@@ -98,7 +98,7 @@ describe("parseCliprTextGenerationOutput", () => {
           "The launch mistake nobody talks about",
           "Your files are spread across too many places",
           "LaunchKit keeps the next step clearer",
-          "Another hook that does not close the loop",
+          "Follow for more launch fixes",
         ],
       }),
       providerModel: "openai/gpt-4.1",
@@ -112,7 +112,7 @@ describe("parseCliprTextGenerationOutput", () => {
     expect(generation.slides.slice(1, -1).join(" ")).not.toContain(
       "LaunchKit",
     );
-    expect(generation.slides.at(-1)).toBe("Save this for later");
+    expect(generation.slides.at(-1)).toBe("Follow for more launch fixes");
   });
 
   it("keeps Stitchr fallback text emotional and scriptless", () => {
@@ -206,9 +206,9 @@ describe("parseCliprTextGenerationOutput", () => {
 
     expect(generation.slides).toEqual([
       "The launch mistake nobody talks about",
-      "The real issue is launch work gets scattered",
-      "Most people notice it after the workflow is already messy",
-      "Save this for later",
+      "It usually starts as launch work gets scattered",
+      "Then the workaround becomes the routine",
+      "Follow for more like this",
     ]);
   });
 
@@ -226,10 +226,10 @@ describe("parseCliprTextGenerationOutput", () => {
     });
 
     expect(generation.filledHook).toBe(
-      "Most people notice launch content gets scattered too late",
+      "This is why it feels harder than it should",
     );
     expect(generation.slides).toEqual([
-      "Most people notice launch content gets scattered too late",
+      "This is why it feels harder than it should",
     ]);
   });
 });

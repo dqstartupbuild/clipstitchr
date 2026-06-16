@@ -8,6 +8,7 @@ import { getCliprMusicGain } from "@/lib/clipstitchr/media/getCliprMusicGain";
 import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 import { getNextQuickEditSourceTime } from "@/lib/clipstitchr/utils/getNextQuickEditSourceTime";
+import { getQuickEditCropTransform } from "@/lib/clipstitchr/utils/getQuickEditCropTransform";
 import { getQuickEditPlaybackTimeForSourceTime } from "@/lib/clipstitchr/utils/getQuickEditPlaybackTimeForSourceTime";
 
 type VideoClipMusicPreviewProps = {
@@ -55,6 +56,7 @@ export function VideoClipMusicPreview({
   const shouldShowVideoControls = controls && (!isPlaying || isHovered);
   const trimStart = trimRange?.start;
   const safeSourceDuration = sourceDuration ?? trimRange?.end ?? 0;
+  const cropTransform = getQuickEditCropTransform(quickEdit?.crop);
 
   const syncMusicToVideo = useCallback(() => {
     const video = videoRef.current;
@@ -247,7 +249,10 @@ export function VideoClipMusicPreview({
             key={`${src}:${posterSrc ?? "no-poster"}`}
             aria-label={label}
             autoPlay={autoPlay}
-            className="h-full w-full object-contain"
+            className={[
+              "h-full w-full",
+              cropTransform ? "object-cover" : "object-contain",
+            ].join(" ")}
             controls={shouldShowVideoControls}
             loop={!trimRange}
             muted={!shouldPlayMusic}
@@ -261,6 +266,14 @@ export function VideoClipMusicPreview({
             poster={posterSrc ?? undefined}
             preload="metadata"
             src={src}
+            style={
+              cropTransform
+                ? {
+                    transform: cropTransform,
+                    transformOrigin: "center",
+                  }
+                : undefined
+            }
           />
           {musicUrl ? (
             <audio

@@ -18,12 +18,14 @@ import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFr
 import { downloadCachedR2ImageBlobs } from "@/lib/clipstitchr/client/r2/downloadCachedR2ImageBlobs";
 import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
 import { uploadStitchPosterBlob } from "@/lib/clipstitchr/client/r2/uploadStitchPosterBlob";
+import { uploadVideoClipPosterBlob } from "@/lib/clipstitchr/client/r2/uploadVideoClipPosterBlob";
 import { scoreStitch as requestStitchScore } from "@/lib/clipstitchr/client/scoreStitch";
 import { scoreVideoClip as requestVideoClipScore } from "@/lib/clipstitchr/client/scoreVideoClip";
 import { saveRenderedStitchVideo } from "@/lib/clipstitchr/client/saveRenderedStitchVideo";
 import { libraryMetadataPageSize } from "@/lib/clipstitchr/constants/libraryMetadataPageSize";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createStitchPosterBlob } from "@/lib/clipstitchr/media/createStitchPosterBlob";
+import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { ClipLibraryCounts } from "@/lib/clipstitchr/types/ClipLibraryCounts";
 import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
@@ -152,6 +154,7 @@ export function useClipLibraryState(): ClipLibraryValue {
   );
   const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
   const updateClipCropMutation = useMutation(api.videoClips.updateCrop);
+  const updateClipPosterMutation = useMutation(api.videoClips.updatePoster);
   const applyClipQuickEditMutation = useMutation(api.videoClips.applyQuickEdit);
   const resetClipQuickEditMutation = useMutation(api.videoClips.resetQuickEdit);
   const updateCliprMusicMutation = useMutation(api.videoClips.updateCliprMusic);
@@ -654,15 +657,55 @@ export function useClipLibraryState(): ClipLibraryValue {
 
   const updateClipCrop = useCallback(
     async (clip: VideoClipMetadata, crop: QuickEditCrop | null) => {
+      const previousPosterObject = clip.posterObject;
+      const nextUpdatedAt = new Date().toISOString();
+      const loadedClip = await loadClip(clip.id);
+      let posterObject: R2ObjectReference | null = null;
+
+      try {
+        if (loadedClip) {
+          const posterBlob = await createVideoPosterBlob(loadedClip.blob, {
+            crop,
+          });
+
+          posterObject = await uploadVideoClipPosterBlob({
+            blob: posterBlob,
+            clipId: clip.id,
+          });
+          posterBlobCacheRef.current.set(posterObject.key, posterBlob);
+        }
+      } catch {
+        posterObject = null;
+      }
+
       await updateClipCropMutation({
         id: clip.id,
         crop,
-        updatedAt: new Date().toISOString(),
+        updatedAt: nextUpdatedAt,
       });
+
+      if (posterObject) {
+        await updateClipPosterMutation({
+          id: clip.id,
+          posterObject,
+          posterVersion: VIDEO_POSTER_CAPTURE_VERSION,
+          updatedAt: nextUpdatedAt,
+        });
+      }
+
+      if (
+        posterObject &&
+        previousPosterObject &&
+        previousPosterObject.key !== posterObject.key
+      ) {
+        await deleteObjectsFromR2([previousPosterObject]).catch(() => null);
+        posterBlobCacheRef.current.delete(previousPosterObject.key);
+      }
+
       clipCacheRef.current.delete(clip.id);
       await refresh();
     },
-    [refresh, updateClipCropMutation],
+    [loadClip, refresh, updateClipCropMutation, updateClipPosterMutation],
   );
 
   const applyClipQuickEdit = useCallback(

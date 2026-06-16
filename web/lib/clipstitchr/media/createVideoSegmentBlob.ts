@@ -1,10 +1,18 @@
 import { assertNormalizedAudioParameters } from "@/lib/clipstitchr/media/assertNormalizedAudioParameters";
+import type { CanvasSource, VideoSampleSource } from "mediabunny";
 import { copyAudioSamplesToSource } from "@/lib/clipstitchr/media/copyAudioSamplesToSource";
+import { copyTextOverlayVideoFramesToSource } from "@/lib/clipstitchr/media/copyTextOverlayVideoFramesToSource";
 import { copyVideoSamplesToSource } from "@/lib/clipstitchr/media/copyVideoSamplesToSource";
+import {
+  TIKTOK_OUTPUT_HEIGHT,
+  TIKTOK_OUTPUT_WIDTH,
+} from "@/lib/clipstitchr/constants/tiktokOutputSize";
 import { createMediaBunnyExportSession } from "@/lib/clipstitchr/media/createMediaBunnyExportSession";
 import { createMediaBunnyProgressMapper } from "@/lib/clipstitchr/media/createMediaBunnyProgressMapper";
 import { createMediaInput } from "@/lib/clipstitchr/media/createMediaInput";
 import { createOutputAudioSampleSource } from "@/lib/clipstitchr/media/createOutputAudioSampleSource";
+import { createTextOverlayRenderContext } from "@/lib/clipstitchr/media/createTextOverlayRenderContext";
+import { createTikTokCanvasSource } from "@/lib/clipstitchr/media/createTikTokCanvasSource";
 import { createTikTokVideoSampleSource } from "@/lib/clipstitchr/media/createTikTokVideoSampleSource";
 import { finalizeMediaBunnyExportSession } from "@/lib/clipstitchr/media/finalizeMediaBunnyExportSession";
 import { getInputAudioParameters } from "@/lib/clipstitchr/media/getInputAudioParameters";
@@ -53,22 +61,38 @@ export async function createVideoSegmentBlob(
       includeAudio,
       "No supported audio encoder found for this segment.",
     );
+    const renderContext = quickEdit?.crop
+      ? createTextOverlayRenderContext(TIKTOK_OUTPUT_WIDTH, TIKTOK_OUTPUT_HEIGHT)
+      : null;
     const session = await createMediaBunnyExportSession({
       audioSource: createOutputAudioSampleSource(
         includeAudio,
         codecs.audioCodec,
       ),
-      videoSource: createTikTokVideoSampleSource(codecs.videoCodec),
+      videoSource: renderContext
+        ? createTikTokCanvasSource(renderContext.canvas, codecs.videoCodec)
+        : createTikTokVideoSampleSource(codecs.videoCodec),
     });
 
-    const video = await copyVideoSamplesToSource({
-      input,
-      source: session.videoSource,
-      timelineOffset: 0,
-      trimRange: clampedTrimRange,
-      removeRanges: quickEdit?.removeRanges,
-      onProgress: createMediaBunnyProgressMapper(onProgress, 0, 0.7),
-    });
+    const video = renderContext
+      ? await copyTextOverlayVideoFramesToSource({
+          crop: quickEdit?.crop,
+          input,
+          renderContext,
+          source: session.videoSource as CanvasSource,
+          timelineOffset: 0,
+          trimRange: clampedTrimRange,
+          removeRanges: quickEdit?.removeRanges,
+          onProgress: createMediaBunnyProgressMapper(onProgress, 0, 0.7),
+        })
+      : await copyVideoSamplesToSource({
+          input,
+          source: session.videoSource as VideoSampleSource,
+          timelineOffset: 0,
+          trimRange: clampedTrimRange,
+          removeRanges: quickEdit?.removeRanges,
+          onProgress: createMediaBunnyProgressMapper(onProgress, 0, 0.7),
+        });
     const audio = session.audioSource
       ? await copyAudioSamplesToSource({
           input,

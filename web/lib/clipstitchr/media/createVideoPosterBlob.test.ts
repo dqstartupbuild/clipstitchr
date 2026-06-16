@@ -63,8 +63,11 @@ function createVideo(width = 1080, height = 1920): MockVideo {
 }
 
 function createCanvas() {
+  const context = { drawImage: vi.fn() };
+
   return {
-    getContext: vi.fn(() => ({ drawImage: vi.fn() })),
+    context,
+    getContext: vi.fn(() => context),
     height: 0,
     width: 0,
   };
@@ -113,6 +116,33 @@ describe("createVideoPosterBlob", () => {
     expect(video.removeAttribute).toHaveBeenCalledWith("src");
     expect(video.load).toHaveBeenCalled();
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:video");
+  });
+
+  it("draws cropped poster frames with the saved crop transform", async () => {
+    const video = createVideo();
+    const canvas = createCanvas();
+    vi.stubGlobal("document", {
+      createElement: vi.fn((tagName: string) =>
+        tagName === "video" ? video : canvas,
+      ),
+    });
+
+    await createVideoPosterBlob(new Blob(["video"]), {
+      crop: {
+        mode: "smart-9x16",
+        positionX: 0.5,
+        positionY: -0.25,
+        scale: 2,
+      },
+    });
+
+    expect(canvas.context.drawImage).toHaveBeenCalledWith(
+      video,
+      expect.any(Number),
+      expect.any(Number),
+      2160,
+      3840,
+    );
   });
 
   it("falls back to the best candidate if no frame crosses the visibility threshold", async () => {

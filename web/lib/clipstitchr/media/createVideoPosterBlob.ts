@@ -2,11 +2,51 @@ import { createVideoPosterCandidateTimes } from "@/lib/clipstitchr/media/createV
 import { encodeCanvasAsPosterBlob } from "@/lib/clipstitchr/media/encodeCanvasAsPosterBlob";
 import { getCanvasVisiblePixelRatio } from "@/lib/clipstitchr/media/getCanvasVisiblePixelRatio";
 import { seekVideoToTime } from "@/lib/clipstitchr/media/seekVideoToTime";
+import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
+import { getQuickEditCropDrawRect } from "@/lib/clipstitchr/utils/getQuickEditCropDrawRect";
 
 const MIN_VISIBLE_PIXEL_RATIO = 0.03;
 const VIDEO_METADATA_TIMEOUT_MS = 7000;
 
-export async function createVideoPosterBlob(videoBlob: Blob): Promise<Blob> {
+type CreateVideoPosterBlobOptions = {
+  crop?: QuickEditCrop | null;
+};
+
+function drawPosterFrame({
+  canvas,
+  context,
+  crop,
+  video,
+}: {
+  canvas: HTMLCanvasElement;
+  context: CanvasRenderingContext2D;
+  crop?: QuickEditCrop | null;
+  video: HTMLVideoElement;
+}) {
+  if (!crop) {
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    return;
+  }
+
+  const cropRect = getQuickEditCropDrawRect({
+    crop,
+    height: canvas.height,
+    width: canvas.width,
+  });
+
+  context.drawImage(
+    video,
+    cropRect.x,
+    cropRect.y,
+    cropRect.width,
+    cropRect.height,
+  );
+}
+
+export async function createVideoPosterBlob(
+  videoBlob: Blob,
+  { crop }: CreateVideoPosterBlobOptions = {},
+): Promise<Blob> {
   const videoUrl = URL.createObjectURL(videoBlob);
   const video = document.createElement("video");
 
@@ -58,7 +98,7 @@ export async function createVideoPosterBlob(videoBlob: Blob): Promise<Blob> {
 
     for (const candidateTime of createVideoPosterCandidateTimes(video.duration)) {
       await seekVideoToTime(video, candidateTime);
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      drawPosterFrame({ canvas, context, crop, video });
 
       const visiblePixelRatio = getCanvasVisiblePixelRatio(
         context,
@@ -77,7 +117,7 @@ export async function createVideoPosterBlob(videoBlob: Blob): Promise<Blob> {
     }
 
     await seekVideoToTime(video, bestTime);
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    drawPosterFrame({ canvas, context, crop, video });
 
     return encodeCanvasAsPosterBlob(canvas);
   } finally {

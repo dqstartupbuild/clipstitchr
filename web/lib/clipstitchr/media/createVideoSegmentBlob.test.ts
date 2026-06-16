@@ -4,10 +4,13 @@ import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 
 const mocks = vi.hoisted(() => ({
   audioSourceClose: vi.fn(),
+  canvasSourceClose: vi.fn(),
   copyAudioSamplesToSource: vi.fn(),
+  copyTextOverlayVideoFramesToSource: vi.fn(),
   copyVideoSamplesToSource: vi.fn(),
   createMediaInput: vi.fn(),
   createMp4Output: vi.fn(),
+  createTextOverlayRenderContext: vi.fn(),
   createVideoBlobFromBuffer: vi.fn(),
   getInputAudioParameters: vi.fn(),
   getSupportedOutputCodecs: vi.fn(),
@@ -20,6 +23,9 @@ vi.mock("mediabunny", () => ({
   AudioSampleSource: vi.fn(function AudioSampleSource() {
     return { close: mocks.audioSourceClose };
   }),
+  CanvasSource: vi.fn(function CanvasSource() {
+    return { close: mocks.canvasSourceClose };
+  }),
   VideoSampleSource: vi.fn(function VideoSampleSource() {
     return { close: mocks.videoSourceClose };
   }),
@@ -27,6 +33,10 @@ vi.mock("mediabunny", () => ({
 
 vi.mock("@/lib/clipstitchr/media/copyAudioSamplesToSource", () => ({
   copyAudioSamplesToSource: mocks.copyAudioSamplesToSource,
+}));
+
+vi.mock("@/lib/clipstitchr/media/copyTextOverlayVideoFramesToSource", () => ({
+  copyTextOverlayVideoFramesToSource: mocks.copyTextOverlayVideoFramesToSource,
 }));
 
 vi.mock("@/lib/clipstitchr/media/copyVideoSamplesToSource", () => ({
@@ -39,6 +49,10 @@ vi.mock("@/lib/clipstitchr/media/createMediaInput", () => ({
 
 vi.mock("@/lib/clipstitchr/media/createMp4Output", () => ({
   createMp4Output: mocks.createMp4Output,
+}));
+
+vi.mock("@/lib/clipstitchr/media/createTextOverlayRenderContext", () => ({
+  createTextOverlayRenderContext: mocks.createTextOverlayRenderContext,
 }));
 
 vi.mock("@/lib/clipstitchr/media/createVideoBlobFromBuffer", () => ({
@@ -110,7 +124,14 @@ describe("createVideoSegmentBlob", () => {
       warnings: [],
     });
     mocks.copyVideoSamplesToSource.mockResolvedValue({ endTimestamp: 4 });
+    mocks.copyTextOverlayVideoFramesToSource.mockResolvedValue({
+      endTimestamp: 4,
+    });
     mocks.copyAudioSamplesToSource.mockResolvedValue({ endTimestamp: 5 });
+    mocks.createTextOverlayRenderContext.mockReturnValue({
+      canvas: {},
+      context: {},
+    });
     mocks.getVideoMimeType.mockResolvedValue("video/mp4");
     mocks.createVideoBlobFromBuffer.mockReturnValue(
       new Blob(["encoded"], { type: "video/mp4" }),
@@ -154,6 +175,32 @@ describe("createVideoSegmentBlob", () => {
     expect(mocks.registerAacEncoderIfNeeded).not.toHaveBeenCalled();
     expect(mocks.getSupportedOutputCodecs).toHaveBeenCalledWith(false);
     expect(mocks.copyAudioSamplesToSource).not.toHaveBeenCalled();
+  });
+
+  it("renders cropped segments through a canvas source", async () => {
+    const crop = {
+      mode: "smart-9x16" as const,
+      positionX: 0.25,
+      scale: 1.8,
+    };
+
+    await createVideoSegmentBlob(createClip(), {
+      quickEdit: {
+        crop,
+        removeRanges: [],
+      },
+      trimRange: { start: 0, end: 3 },
+    });
+
+    expect(mocks.copyVideoSamplesToSource).not.toHaveBeenCalled();
+    expect(mocks.copyTextOverlayVideoFramesToSource).toHaveBeenCalledWith(
+      expect.objectContaining({
+        crop,
+        timelineOffset: 0,
+        trimRange: { start: 0, end: 3 },
+      }),
+    );
+    expect(mocks.canvasSourceClose).toHaveBeenCalled();
   });
 
   it("rejects unsupported source audio and missing codecs", async () => {

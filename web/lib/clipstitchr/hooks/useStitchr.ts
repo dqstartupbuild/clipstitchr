@@ -104,7 +104,10 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
         ? createStitchMusicMetadataFromSharedTrack(options.musicTrack)
         : null;
 
-      if (textOverlays.length && loadClip) {
+      if (
+        (textOverlays.length || ugcQuickEdit?.crop || demoQuickEdit?.crop) &&
+        loadClip
+      ) {
         try {
           const [loadedUgcClip, loadedDemoClip] = await Promise.all([
             loadClip(ugcClip.id),

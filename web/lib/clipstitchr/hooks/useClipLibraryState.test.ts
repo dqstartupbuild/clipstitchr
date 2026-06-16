@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => {
     },
     createStitchFromConvexDocument: vi.fn(),
     createStitchPosterBlob: vi.fn(),
+    createVideoPosterBlob: vi.fn(),
     createVideoClipFromConvexDocument: vi.fn(),
     createVideoClipMetadataFromConvexDocument: vi.fn(),
     deleteObjectsFromR2: vi.fn(),
@@ -24,6 +25,7 @@ const mocks = vi.hoisted(() => {
     scoreVideoClip: vi.fn(),
     scoreStitch: vi.fn(),
     mutationFns,
+    uploadVideoClipPosterBlob: vi.fn(),
     useConvex: vi.fn(),
     useConvexAuth: vi.fn(),
     useMutation: vi.fn((mutationId: string) => {
@@ -99,8 +101,10 @@ vi.mock("@/convex/_generated/api", () => ({
       listByLibraryKind: "videoClips.listByLibraryKind",
       remove: "videoClips.remove",
       updateCliprMusic: "videoClips.updateCliprMusic",
+      updateCrop: "videoClips.updateCrop",
       updateMetadata: "videoClips.updateMetadata",
       updatePostedStatus: "videoClips.updatePostedStatus",
+      updatePoster: "videoClips.updatePoster",
     },
   },
 }));
@@ -137,6 +141,10 @@ vi.mock("@/lib/clipstitchr/client/r2/uploadBlobsToR2", () => ({
   uploadBlobsToR2: mocks.uploadBlobsToR2,
 }));
 
+vi.mock("@/lib/clipstitchr/client/r2/uploadVideoClipPosterBlob", () => ({
+  uploadVideoClipPosterBlob: mocks.uploadVideoClipPosterBlob,
+}));
+
 vi.mock("@/lib/clipstitchr/client/saveRenderedStitchVideo", () => ({
   saveRenderedStitchVideo: mocks.saveRenderedStitchVideo,
 }));
@@ -151,6 +159,10 @@ vi.mock("@/lib/clipstitchr/client/scoreVideoClip", () => ({
 
 vi.mock("@/lib/clipstitchr/media/createStitchPosterBlob", () => ({
   createStitchPosterBlob: mocks.createStitchPosterBlob,
+}));
+
+vi.mock("@/lib/clipstitchr/media/createVideoPosterBlob", () => ({
+  createVideoPosterBlob: mocks.createVideoPosterBlob,
 }));
 
 function getMutation(id: string) {
@@ -264,6 +276,14 @@ describe("useClipLibraryState", () => {
     mocks.createStitchPosterBlob.mockResolvedValue(
       new Blob(["stitch-poster"], { type: "image/jpeg" }),
     );
+    mocks.createVideoPosterBlob.mockResolvedValue(
+      new Blob(["clip-poster"], { type: "image/jpeg" }),
+    );
+    mocks.uploadVideoClipPosterBlob.mockResolvedValue({
+      contentType: "image/jpeg",
+      key: "users/user_123/clips/clip_1/new-poster.jpg",
+      size: 10,
+    });
     mocks.uploadBlobsToR2.mockResolvedValue([
       {
         contentType: "image/jpeg",
@@ -576,6 +596,59 @@ describe("useClipLibraryState", () => {
         videoDescription: "Walkthrough",
       }),
     );
+  });
+
+  it("updates clip crop and replaces the poster preview", async () => {
+    const state = useClipLibraryState();
+    const sourceBlob = new Blob(["video"], { type: "video/mp4" });
+    const oldPosterObject = {
+      contentType: "image/jpeg",
+      key: "users/user_123/clips/clip_1/old-poster.jpg",
+      size: 8,
+    };
+    const newPosterObject = {
+      contentType: "image/jpeg",
+      key: "users/user_123/clips/clip_1/new-poster.jpg",
+      size: 10,
+    };
+    const crop = {
+      mode: "smart-9x16" as const,
+      positionX: 0.2,
+      positionY: -0.1,
+      scale: 1.5,
+    };
+
+    mocks.createVideoClipFromConvexDocument.mockReturnValue({
+      blob: sourceBlob,
+      id: "clip_1",
+      name: "Loaded clip",
+    });
+    mocks.uploadVideoClipPosterBlob.mockResolvedValueOnce(newPosterObject);
+
+    await state.updateClipCrop(
+      createClipMetadata({ posterObject: oldPosterObject }),
+      crop,
+    );
+
+    expect(mocks.createVideoPosterBlob).toHaveBeenCalledWith(sourceBlob, {
+      crop,
+    });
+    expect(mocks.uploadVideoClipPosterBlob).toHaveBeenCalledWith({
+      blob: expect.any(Blob),
+      clipId: "clip_1",
+    });
+    expect(getMutation("videoClips.updateCrop")).toHaveBeenCalledWith({
+      crop,
+      id: "clip_1",
+      updatedAt: expect.any(String),
+    });
+    expect(getMutation("videoClips.updatePoster")).toHaveBeenCalledWith({
+      id: "clip_1",
+      posterObject: newPosterObject,
+      posterVersion: expect.any(Number),
+      updatedAt: expect.any(String),
+    });
+    expect(mocks.deleteObjectsFromR2).toHaveBeenCalledWith([oldPosterObject]);
   });
 
   it("saves Clipr music replacements with owned-audio cleanup", async () => {

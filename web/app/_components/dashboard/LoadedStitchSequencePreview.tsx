@@ -17,6 +17,7 @@ import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getActiveTextOverlayId } from "@/lib/clipstitchr/utils/getActiveTextOverlayId";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
+import { getQuickEditCropTransform } from "@/lib/clipstitchr/utils/getQuickEditCropTransform";
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getTextOverlayId } from "@/lib/clipstitchr/utils/getTextOverlayId";
 import { getTextOverlayIsInRange } from "@/lib/clipstitchr/utils/getTextOverlayIsInRange";
@@ -46,6 +47,10 @@ export function LoadedStitchSequencePreview({
   const demoUrl = useObjectUrl(demoClip.blob);
   const ugcPosterUrl = useObjectUrl(ugcClip.posterBlob);
   const demoPosterUrl = useObjectUrl(demoClip.posterBlob);
+  const ugcCropTransform = getQuickEditCropTransform(stitch.ugcQuickEdit?.crop);
+  const demoCropTransform = getQuickEditCropTransform(
+    stitch.demoQuickEdit?.crop,
+  );
   const ugcTrimStart = stitch.ugcTrimRange?.start;
   const ugcTrimEnd = stitch.ugcTrimRange?.end;
   const demoTrimStart = stitch.demoTrimRange?.start;
@@ -214,7 +219,8 @@ export function LoadedStitchSequencePreview({
               ref={ugcVideoRef}
               aria-hidden={activeSegment !== "ugc"}
               className={[
-                "pointer-events-none absolute inset-0 h-full w-full object-contain",
+                "pointer-events-none absolute inset-0 h-full w-full",
+                ugcCropTransform ? "object-cover" : "object-contain",
                 activeSegment === "ugc" ? "opacity-100" : "opacity-0",
               ].join(" ")}
               muted={stitch.includeUgcAudio === false}
@@ -225,12 +231,21 @@ export function LoadedStitchSequencePreview({
               poster={ugcPosterUrl ?? undefined}
               preload="metadata"
               src={ugcUrl}
+              style={
+                ugcCropTransform
+                  ? {
+                      transform: ugcCropTransform,
+                      transformOrigin: "center",
+                    }
+                  : undefined
+              }
             />
             <video
               ref={demoVideoRef}
               aria-hidden={activeSegment !== "demo"}
               className={[
-                "pointer-events-none absolute inset-0 h-full w-full object-contain",
+                "pointer-events-none absolute inset-0 h-full w-full",
+                demoCropTransform ? "object-cover" : "object-contain",
                 activeSegment === "demo" ? "opacity-100" : "opacity-0",
               ].join(" ")}
               muted={stitch.includeDemoAudio === false}
@@ -241,6 +256,14 @@ export function LoadedStitchSequencePreview({
               poster={demoPosterUrl ?? undefined}
               preload="metadata"
               src={demoUrl}
+              style={
+                demoCropTransform
+                  ? {
+                      transform: demoCropTransform,
+                      transformOrigin: "center",
+                    }
+                  : undefined
+              }
             />
             {renderedTextOverlays.map(({ id, isActive, textOverlay }) => {
               if (!onTextOverlayChange) {

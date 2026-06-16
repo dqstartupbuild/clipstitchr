@@ -4,6 +4,7 @@ import { RotateCcw } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button } from "@/app/_components/ui/Button";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
+import { getQuickEditCropTransform } from "@/lib/clipstitchr/utils/getQuickEditCropTransform";
 
 type VideoCropEditorProps = {
   crop: QuickEditCrop;
@@ -37,6 +38,7 @@ export function VideoCropEditor({
   const positionX = crop.positionX ?? 0;
   const positionY = crop.positionY ?? 0;
   const scale = crop.scale ?? 1;
+  const cropTransform = getQuickEditCropTransform(crop);
 
   return (
     <div className="grid gap-3 rounded-lg border border-border bg-surface-elevated p-3">
@@ -94,7 +96,7 @@ export function VideoCropEditor({
             poster={posterSrc ?? undefined}
             src={mediaSrc}
             style={{
-              transform: `translate(${positionX * 50}%, ${positionY * 50}%) scale(${scale})`,
+              transform: cropTransform,
               transformOrigin: "center",
             }}
             autoPlay

@@ -119,7 +119,7 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).not.toContain("Candidate templates");
   });
 
-  it("defines Swipr as a hook payoff carousel with a final CTA", () => {
+  it("defines Swipr as an audience-first hook payoff carousel with a soft CTA", () => {
     const prompt = createCliprTextGenerationPrompt({
       candidates: [candidate],
       durationSeconds: 30,
@@ -131,8 +131,12 @@ describe("createCliprTextGenerationPrompt", () => {
 
     expect(prompt).toContain("You write short-form social media carousel slideshows");
     expect(prompt).toContain("Write one distinct slideshow with exactly 4 slides");
+    expect(prompt).toContain("Write for the viewer first");
+    expect(prompt).toContain("The product is context, not the main character");
+    expect(prompt).toContain("hook, why it happens, what it costs");
     expect(prompt).toContain("the hook again as slide 1");
-    expect(prompt).toContain("last is a simple CTA like Save this");
+    expect(prompt).toContain("last is a soft CTA");
+    expect(prompt).toContain("Do not default to a bookmark-style CTA");
     expect(prompt).toContain("Return only the JSON object");
   });
 });
