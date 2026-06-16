@@ -5,6 +5,7 @@ import {
 import { drawTextOverlays } from "@/lib/clipstitchr/media/drawTextOverlays";
 import { drawVideoFrameToCanvas } from "@/lib/clipstitchr/media/drawVideoFrameToCanvas";
 import { encodeCanvasAsPosterBlob } from "@/lib/clipstitchr/media/encodeCanvasAsPosterBlob";
+import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
@@ -13,28 +14,33 @@ import { clampTextOverlay } from "@/lib/clipstitchr/utils/clampTextOverlay";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
-import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
+import { getQuickEditSourceTimeForPlaybackTime } from "@/lib/clipstitchr/utils/getQuickEditSourceTimeForPlaybackTime";
 
 type CreateStitchPosterBlobOptions = {
   demoClip: VideoClip;
+  demoQuickEdit?: QuickEditSuggestions;
   demoPlaybackRate?: VideoPlaybackRate;
   demoTrimRange: VideoTrimRange;
   duration: number;
   textOverlay: TextOverlay | null;
   textOverlays?: TextOverlay[];
   ugcClip: VideoClip;
+  ugcQuickEdit?: QuickEditSuggestions;
   ugcPlaybackRate?: VideoPlaybackRate;
   ugcTrimRange: VideoTrimRange;
 };
 
 export async function createStitchPosterBlob({
   demoClip,
+  demoQuickEdit,
   demoPlaybackRate = 1,
   demoTrimRange,
   duration,
   textOverlay,
   textOverlays,
   ugcClip,
+  ugcQuickEdit,
   ugcPlaybackRate = 1,
   ugcTrimRange,
 }: CreateStitchPosterBlobOptions): Promise<Blob> {
@@ -46,8 +52,10 @@ export async function createStitchPosterBlob({
     demoTrimRange,
     demoClip.duration,
   );
-  const ugcDuration = getPlaybackRateDuration(
+  const ugcDuration = getQuickEditPlaybackDuration(
     clampedUgcTrimRange,
+    ugcClip.duration,
+    ugcQuickEdit?.removeRanges,
     ugcPlaybackRate,
   );
   const visibleTextOverlays = getNonEmptyTextOverlays(
@@ -68,23 +76,23 @@ export async function createStitchPosterBlob({
       ? {
           clip: ugcClip,
           playbackRate: ugcPlaybackRate,
+          quickEdit: ugcQuickEdit,
           timelineOffset: 0,
           trimRange: clampedUgcTrimRange,
         }
       : {
           clip: demoClip,
           playbackRate: demoPlaybackRate,
+          quickEdit: demoQuickEdit,
           timelineOffset: ugcDuration,
           trimRange: clampedDemoTrimRange,
         };
-  const sourceOffset = Math.max(
-    0,
-    (posterTimelineTime - posterSource.timelineOffset) *
-      posterSource.playbackRate,
-  );
-  const sourceTime = Math.min(
-    posterSource.trimRange.end,
-    posterSource.trimRange.start + sourceOffset,
+  const sourceTime = getQuickEditSourceTimeForPlaybackTime(
+    posterTimelineTime - posterSource.timelineOffset,
+    posterSource.trimRange,
+    posterSource.clip.duration,
+    posterSource.quickEdit?.removeRanges,
+    posterSource.playbackRate,
   );
   const canvas = document.createElement("canvas");
   canvas.width = TIKTOK_OUTPUT_WIDTH;

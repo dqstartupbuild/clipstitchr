@@ -601,6 +601,8 @@ export const applyQuickEdit = mutation({
     demoQuickEdit: v.optional(quickEditSuggestionsValidator),
     demoTrimRange: videoTrimRangeValidator,
     duration: v.number(),
+    posterObject: v.optional(v.union(r2ObjectValidator, v.null())),
+    posterVersion: v.optional(v.number()),
     quickEdit: quickEditSuggestionsValidator,
     textOverlay: v.optional(v.union(textOverlayValidator, v.null())),
     textOverlays: v.optional(textOverlaysValidator),
@@ -614,6 +616,8 @@ export const applyQuickEdit = mutation({
       demoQuickEdit,
       demoTrimRange,
       duration,
+      posterObject,
+      posterVersion,
       quickEdit,
       textOverlay,
       textOverlays,
@@ -647,6 +651,12 @@ export const applyQuickEdit = mutation({
       demoTrimRange,
       duration,
       mimeType: undefined,
+      ...(posterObject === undefined
+        ? {}
+        : {
+            posterObject: posterObject ?? undefined,
+            posterVersion: posterObject ? posterVersion : undefined,
+          }),
       quickEdit: {
         ...quickEdit,
         appliedAt,
@@ -685,8 +695,10 @@ export const applyQuickEdit = mutation({
 export const resetQuickEdit = mutation({
   args: {
     id: v.string(),
+    posterObject: v.optional(v.union(r2ObjectValidator, v.null())),
+    posterVersion: v.optional(v.number()),
   },
-  handler: async (ctx, { id }) => {
+  handler: async (ctx, { id, posterObject, posterVersion }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
@@ -710,6 +722,12 @@ export const resetQuickEdit = mutation({
       demoTrimRange: baseline?.demoTrimRange,
       duration: baseline?.duration ?? stitch.duration,
       mimeType: undefined,
+      ...(posterObject === undefined
+        ? {}
+        : {
+            posterObject: posterObject ?? undefined,
+            posterVersion: posterObject ? posterVersion : undefined,
+          }),
       quickEdit: undefined,
       size: undefined,
       stitchObject: undefined,

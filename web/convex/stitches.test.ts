@@ -347,6 +347,12 @@ describe("convex stitches", () => {
       id: "stitch_1",
       demoTrimRange: { start: 0, end: 6 },
       duration: 10,
+      posterObject: {
+        contentType: "image/jpeg",
+        key: "poster-quick-edit.jpg",
+        size: 10,
+      },
+      posterVersion: 2,
       quickEdit: {
         removeRanges: [{ start: 4, end: 6, reason: "Slow section" }],
         summary: "Tighter edit.",
@@ -354,7 +360,10 @@ describe("convex stitches", () => {
       textOverlay: null,
       ugcTrimRange: { start: 0, end: 4 },
     });
-    await getHandler(resetQuickEdit)(setup.ctx, { id: "stitch_1" });
+    await getHandler(resetQuickEdit)(setup.ctx, {
+      id: "stitch_1",
+      posterObject: null,
+    });
 
     expect(setup.ctx.db.patch).toHaveBeenNthCalledWith(
       1,
@@ -364,10 +373,30 @@ describe("convex stitches", () => {
       }),
     );
     expect(setup.ctx.db.patch).toHaveBeenNthCalledWith(
+      1,
+      "doc_1",
+      expect.objectContaining({
+        posterObject: {
+          contentType: "image/jpeg",
+          key: "poster-quick-edit.jpg",
+          size: 10,
+        },
+        posterVersion: 2,
+      }),
+    );
+    expect(setup.ctx.db.patch).toHaveBeenNthCalledWith(
       2,
       "doc_1",
       expect.not.objectContaining({
         stitchScore: undefined,
+      }),
+    );
+    expect(setup.ctx.db.patch).toHaveBeenNthCalledWith(
+      2,
+      "doc_1",
+      expect.objectContaining({
+        posterObject: undefined,
+        posterVersion: undefined,
       }),
     );
   });

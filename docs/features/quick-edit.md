@@ -98,6 +98,13 @@ The same range metadata is used for:
 - saved Stitch render/export
 - Stitchr-created Stitches after source clip Quick Edit defaults are copied
 
+Poster generation uses the same edited playback ranges. When source UGC or Demo
+clips have active Quick Edit metadata, Stitch poster capture maps the chosen
+edited timeline moment back to the correct original source timestamp before
+drawing the video frame and text. Applying or resetting Quick Edit on a saved
+Stitch tries to regenerate the poster with the updated ranges; if capture fails,
+the app clears the stale poster reference instead of keeping an incorrect frame.
+
 Crop suggestions are stored as metadata with `mode: "smart-9x16"`. The current
 MVP keeps the existing normalized 9:16 render path and does not add OpenCV or
 MediaPipe.

@@ -120,12 +120,14 @@ export function useStitchr({ loadClip, onCreated }: UseStitchrOptions) {
             posterBlob = await createStitchPosterBlob({
               demoClip: loadedDemoClip,
               demoPlaybackRate,
+              demoQuickEdit,
               demoTrimRange: clampedDemoTrimRange,
               duration,
               textOverlay: firstTextOverlay ?? null,
               textOverlays,
               ugcClip: loadedUgcClip,
               ugcPlaybackRate,
+              ugcQuickEdit,
               ugcTrimRange: clampedUgcTrimRange,
             });
             [posterObject] = await uploadBlobsToR2([

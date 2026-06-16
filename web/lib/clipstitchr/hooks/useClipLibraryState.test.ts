@@ -766,6 +766,9 @@ describe("useClipLibraryState", () => {
   it("updates stitch source settings with a regenerated poster", async () => {
     const state = useClipLibraryState();
     const stitch = createStitch({
+      demoQuickEdit: {
+        removeRanges: [{ start: 2, end: 3, reason: "Demo pause" }],
+      },
       duration: 12,
       textOverlay: {
         endTime: 8,
@@ -776,6 +779,9 @@ describe("useClipLibraryState", () => {
         width: 0.8,
         x: 0.5,
         y: 0.5,
+      },
+      ugcQuickEdit: {
+        removeRanges: [{ start: 1, end: 2, reason: "UGC pause" }],
       },
     });
     const update = {
@@ -804,7 +810,9 @@ describe("useClipLibraryState", () => {
         demoPlaybackRate: 2,
         demoTrimRange: update.demoTrimRange,
         duration: 9,
+        demoQuickEdit: stitch.demoQuickEdit,
         ugcPlaybackRate: 1,
+        ugcQuickEdit: stitch.ugcQuickEdit,
         ugcTrimRange: update.ugcTrimRange,
       }),
     );

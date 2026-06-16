@@ -755,12 +755,14 @@ export function useClipLibraryState(): ClipLibraryValue {
           const posterBlob = await createStitchPosterBlob({
             demoClip,
             demoPlaybackRate: update.demoPlaybackRate,
+            demoQuickEdit: stitch.demoQuickEdit,
             demoTrimRange: update.demoTrimRange,
             duration: update.duration,
             textOverlay: nextTextOverlays[0] ?? null,
             textOverlays: nextTextOverlays,
             ugcClip,
             ugcPlaybackRate: update.ugcPlaybackRate,
+            ugcQuickEdit: stitch.ugcQuickEdit,
             ugcTrimRange: update.ugcTrimRange,
           });
 
@@ -896,10 +898,40 @@ export function useClipLibraryState(): ClipLibraryValue {
         stitch,
         ugcClip,
       });
+      let posterObject: R2ObjectReference | null = null;
+
+      try {
+        const posterBlob = await createStitchPosterBlob({
+          demoClip,
+          demoPlaybackRate: stitch.demoPlaybackRate ?? 1,
+          demoQuickEdit: update.demoQuickEdit,
+          demoTrimRange: update.demoTrimRange,
+          duration: update.duration,
+          textOverlay: update.textOverlay,
+          textOverlays: update.textOverlays,
+          ugcClip,
+          ugcPlaybackRate: stitch.ugcPlaybackRate ?? 1,
+          ugcQuickEdit: update.ugcQuickEdit,
+          ugcTrimRange: update.ugcTrimRange,
+        });
+
+        const [uploadedPosterObject] = await uploadBlobsToR2([
+          {
+            blob: posterBlob,
+            kind: "stitch-poster",
+            recordId: stitch.id,
+          },
+        ]);
+        posterObject = uploadedPosterObject ?? null;
+      } catch {
+        posterObject = null;
+      }
 
       await applyStitchQuickEditMutation({
         id: stitch.id,
         ...update,
+        posterObject,
+        posterVersion: posterObject ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
       });
 
       if (previousStitchObject) {
@@ -915,8 +947,54 @@ export function useClipLibraryState(): ClipLibraryValue {
   const resetStitchQuickEdit = useCallback(
     async (stitch: Stitch) => {
       const previousStitchObject = stitch.stitchObject;
+      const baseline = stitch.quickEdit?.baseline;
+      let posterObject: R2ObjectReference | null = null;
 
-      await resetStitchQuickEditMutation({ id: stitch.id });
+      try {
+        const [ugcClip, demoClip] = await Promise.all([
+          loadClip(stitch.ugcClipId),
+          loadClip(stitch.demoClipId),
+        ]);
+
+        if (ugcClip && demoClip) {
+          const posterBlob = await createStitchPosterBlob({
+            demoClip,
+            demoPlaybackRate: stitch.demoPlaybackRate ?? 1,
+            demoQuickEdit: baseline?.demoQuickEdit,
+            demoTrimRange:
+              baseline?.demoTrimRange ??
+              stitch.demoTrimRange ??
+              getDefaultVideoTrimRange(demoClip),
+            duration: baseline?.duration ?? stitch.duration,
+            textOverlay: baseline?.textOverlay ?? null,
+            textOverlays: baseline?.textOverlays,
+            ugcClip,
+            ugcPlaybackRate: stitch.ugcPlaybackRate ?? 1,
+            ugcQuickEdit: baseline?.ugcQuickEdit,
+            ugcTrimRange:
+              baseline?.ugcTrimRange ??
+              stitch.ugcTrimRange ??
+              getDefaultVideoTrimRange(ugcClip),
+          });
+
+          const [uploadedPosterObject] = await uploadBlobsToR2([
+            {
+              blob: posterBlob,
+              kind: "stitch-poster",
+              recordId: stitch.id,
+            },
+          ]);
+          posterObject = uploadedPosterObject ?? null;
+        }
+      } catch {
+        posterObject = null;
+      }
+
+      await resetStitchQuickEditMutation({
+        id: stitch.id,
+        posterObject,
+        posterVersion: posterObject ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
+      });
 
       if (previousStitchObject) {
         await deleteObjectsFromR2([previousStitchObject]).catch(() => null);
@@ -925,7 +1003,7 @@ export function useClipLibraryState(): ClipLibraryValue {
 
       await refresh();
     },
-    [refresh, resetStitchQuickEditMutation],
+    [loadClip, refresh, resetStitchQuickEditMutation],
   );
 
   const removeStitch = useCallback(
