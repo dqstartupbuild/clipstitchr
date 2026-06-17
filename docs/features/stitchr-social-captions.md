@@ -16,6 +16,13 @@ The caption is meant to be another hook for TikTok, Reels, or Shorts. It should
 feel connected to the overlay hook and to what appears in the selected UGC and
 demo clips.
 
+The Stitchr writing prompt intentionally follows the simpler Swipr-style
+prompt shape: account context, source context, a compact JSON contract, and
+short viewer-first copy rules. Selected UGC/demo descriptions and hook hints
+are used when they add real context, but the prompt avoids heavy internal hook
+framework lists and falls back to product/audience context when source details
+are thin.
+
 Copy buttons for this field temporarily swap from the copy icon to a checkmark
 after the clipboard write succeeds.
 

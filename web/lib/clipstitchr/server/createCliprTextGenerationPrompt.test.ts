@@ -63,7 +63,7 @@ describe("createCliprTextGenerationPrompt", () => {
     );
   });
 
-  it("uses the dedicated Stitchr emotional overlay framework", () => {
+  it("uses a simplified source-aware Stitchr hook framework", () => {
     const prompt = createCliprTextGenerationPrompt({
       candidates: [candidate],
       durationSeconds: 30,
@@ -90,17 +90,18 @@ describe("createCliprTextGenerationPrompt", () => {
       ],
     });
 
-    expect(prompt).toContain("Create Stitchr visual overlay hook copy");
-    expect(prompt).toContain("posting caption copy");
-    expect(prompt).toContain("Stitchr combines a short emotional UGC reaction clip");
-    expect(prompt).toContain("There is no voiceover, no spoken explanation");
+    expect(prompt).toContain("You write short-form social hooks and captions");
+    expect(prompt).toContain("Account context:");
+    expect(prompt).toContain("What's working for this account");
+    expect(prompt).toContain("Stitchr source context:");
+    expect(prompt).toContain("There is no script or voiceover.");
     expect(prompt).toContain('"caption":"short caption hook related to the overlay and clips"');
     expect(prompt).toContain('"hashtags":["#tagone","#tagtwo","#tagthree"]');
-    expect(prompt).toContain("Emotional Narrative Hooks");
     expect(prompt).toContain(
-      "Product emotional narrative: Founders want to stop looking scattered and feel proud.",
+      "Founders want to stop looking scattered and feel proud.",
     );
-    expect(prompt).toContain("Reaction-Matched Hooks");
+    expect(prompt).toContain("Write for the viewer first");
+    expect(prompt).toContain("The product is context, not the main character");
     expect(prompt).toContain("Most hooks should be 3-9 words");
     expect(prompt).toContain("hashtags must contain 3-5 hashtags");
     expect(prompt).toContain("Creator surprised by messy launch work");
@@ -110,10 +111,14 @@ describe("createCliprTextGenerationPrompt", () => {
     );
     expect(prompt).toContain("AI hook hint reason: Matches the visible frustration.");
     expect(prompt).toContain(
-      "Treat AI hook hints from source score analysis as useful direction, not required copy.",
+      "Use the source context when it gives you a real visual detail",
     );
     expect(prompt).toContain("The demo shows launch assets getting organized.");
     expect(prompt).toContain("script must be an empty string");
+    expect(prompt).toContain("Return only the JSON object");
+    expect(prompt).not.toContain("Emotional Narrative Hooks");
+    expect(prompt).not.toContain("Reaction-Matched Hooks");
+    expect(prompt).not.toContain("Use one Stitchr emotional angle");
     expect(prompt).not.toContain("Content angles to choose from");
     expect(prompt).not.toContain("Follow-through arcs to choose from");
     expect(prompt).not.toContain("Candidate templates");

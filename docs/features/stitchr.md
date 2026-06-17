@@ -136,6 +136,9 @@ Stitch.
   into Stitchr.
 - Keep generated overlay text and caption copy editable while hiding hook
   style/template mechanics.
+- Keep Stitchr hook and caption generation simple and viewer-first, matching
+  the Swipr prompt style while still using selected source context when it is
+  helpful.
 - Keep selected or uploaded shared music editable and separate from the saved stitch.
 - Keep saved stitches usable as templates even after they are marked posted.
 - Use clip scores as guidance for selection, not as a hard gate that blocks the

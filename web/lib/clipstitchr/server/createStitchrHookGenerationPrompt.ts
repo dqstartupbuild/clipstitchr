@@ -1,57 +1,15 @@
-import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprPlaceholderFillers } from "@/lib/clipstitchr/types/CliprPlaceholderFillers";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
 import { formatStitchrTextGenerationClipContext } from "@/lib/clipstitchr/server/formatStitchrTextGenerationClipContext";
 
 type CreateStitchrHookGenerationPromptOptions = {
-  durationSeconds: CliprDurationSeconds;
   fillers: CliprPlaceholderFillers;
   product: ProductProfile;
   stitchrClipContexts?: StitchrTextGenerationClipContext[];
 };
 
-const emotionalAngles = [
-  "doubt",
-  "regret",
-  "surprise",
-  "embarrassment",
-  "pride",
-  "validation",
-  "attraction",
-  "disappointment",
-  "curiosity",
-  "relief",
-];
-
-const hookFrameworks = [
-  "Emotional Narrative Hooks: a first-person or third-person setup that implies something happened, something changed, or someone is about to be proven right or wrong.",
-  "Relationship Hooks: romance, friendship, dating, partners, crushes, or social judgment framed through another person's opinion, attraction, approval, disappointment, or surprise.",
-  "Validation Hooks: status, approval, or social meaning that makes the viewer feel seen, rewarded, or called out.",
-  "Doubt-to-Proof Hooks: someone doubts the outcome, method, person, product, or transformation, and the demo becomes the proof.",
-  "Before/After Emotional Hooks: a personal change in confidence, appearance, ability, attraction, discipline, or identity.",
-  "Humor / Roast Hooks: playful teasing, mild insult, meme logic, or exaggerated social judgment.",
-  "Reaction-Matched Hooks: match shock with disbelief, sadness with regret, happiness with pride, confusion with curiosity, laughter with roasts, and impressed reactions with proof or validation.",
-  "Discovery Hooks: make the viewer feel like they are seeing something useful, surprising, or previously unknown.",
-  "Easier Way Hooks: relief from frustration, confusion, or unnecessary effort without describing a feature.",
-  "Contrarian Reframe Hooks: a surprising personal realization, not a preachy accusation.",
-];
-
-const bannedMarketingPhrases = [
-  "unlock your potential",
-  "reach your goals",
-  "maximize results",
-  "save time and effort",
-  "level up your journey",
-  "optimize your routine",
-  "game changer",
-  "transform your workflow",
-  "built for",
-  "powerful solution",
-];
-
 export function createStitchrHookGenerationPrompt({
-  durationSeconds,
   fillers,
   product,
   stitchrClipContexts = [],
@@ -63,45 +21,48 @@ export function createStitchrHookGenerationPrompt({
     : "No source clip context was provided. Use product/audience context only.";
 
   return [
-    "Create Stitchr visual overlay hook copy and posting caption copy for a reaction-based stitched video.",
-    "Stitchr combines a short emotional UGC reaction clip followed by a short app or product demo.",
-    "There is no voiceover, no spoken explanation, and no script. The overlay hook only needs to earn attention long enough for the viewer to watch the demo.",
-    "The posting caption is a second hook for the feed caption. It should relate to the overlay hook and the source clips without repeating the exact same wording.",
-    "Return only compact JSON with this exact shape:",
+    "You write short-form social hooks and captions for TikTok, Reels, and Shorts.",
+    "",
+    "Account context:",
+    `- App / brand: ${product.name} - ${product.productDetails}`,
+    `- Audience: ${product.audienceDetails || "(unspecified)"}`,
+    `- Niche / problem: ${product.inferredProblem || "(unspecified)"}`,
+    "",
+    "What's working for this account. Respect this closely:",
+    product.emotionalNarrative ||
+      product.inferredProblem ||
+      "(none yet - use proven short-form patterns)",
+    "",
+    "Stitchr source context:",
+    sourceContext,
+    "",
+    "Write one visual overlay hook and one feed caption for a stitched video.",
+    "The video has a short UGC reaction followed by a product or demo clip. There is no script or voiceover.",
+    "Use the source context when it gives you a real visual detail, reaction, or demo payoff. If the source context is thin, use the account context instead and do not invent details.",
+    "",
+    "Respond with a JSON object of this exact shape:",
     '{"templateId":"stitchr-emotional-narrative","filledHook":"short visual overlay hook","variablesUsed":{"placeholder":"value"},"overlayText":"same short visual overlay hook","caption":"short caption hook related to the overlay and clips","hashtags":["#tagone","#tagtwo","#tagthree"],"slides":["same short visual overlay hook"],"script":"","scenePlan":[]}',
+    "",
+    "Creative standard:",
+    "- Write for the viewer first. The product is context, not the main character.",
+    "- The hook should make the viewer feel seen, curious, surprised, or slightly called out.",
+    "- The hook should fit what appears to happen in the selected UGC/demo clips when that context is useful.",
+    "- Do not open with the product name unless the source context makes that feel natural.",
+    "- Use product facts only as quiet background proof. Do not explain features or write a product pitch.",
+    "- The caption should be a second simple hook for the feed caption, not a repeat of the overlay.",
+    "- Keep the caption natural and short. It can include 1-2 emoji when it fits.",
+    "- Avoid generic creator advice like work smarter, unlock growth, level up, or game changer.",
     "Rules:",
-    "- Generate one overlay hook and one posting caption, not a script hook, carousel, CTA, lesson, or marketing argument.",
+    "- Keep the hook and caption on-brand, simple, and genuinely good.",
+    "- Do not write generic filler or vague hype.",
     "- filledHook and overlayText must be the same final human-readable hook.",
-    "- caption must be one short natural sentence or fragment that hooks the viewer in another way.",
-    "- caption must be relevant to the overlay hook and what appears to happen in the selected UGC and demo context.",
+    "- Most hooks should be 3-9 words and readable on a vertical video.",
+    "- Do not invent fake stats, fake studies, fake quotes, fake testimonials, or visual details not present in the context.",
     "- hashtags must contain 3-5 hashtags, all lowercase, no spaces, each starting with #.",
     "- slides must contain exactly one item, matching filledHook.",
     "- script must be an empty string and scenePlan must be an empty array.",
-    "- Most hooks should be 3-9 words. Only go longer when the line still feels natural and readable on a vertical video.",
-    "- Prioritize emotion over explanation. The hook should create curiosity, surprise, validation, attraction, doubt, humor, or suspense.",
-    "- Do not explain the product, teach a lesson, list a benefit, or describe what the demo shows.",
-    "- Avoid hooks that feel like SaaS ads, productivity advice, generic marketing copy, or direct feature explanations.",
-    "- Do not mention the product name, product features, app screens, dashboards, plans, scans, uploads, exports, or onboarding steps.",
-    "- The caption may lightly hint at the product outcome, but it still must feel like a creator caption, not ad copy.",
-    "- Do not ask viewers to try, download, save, comment, follow, buy, book, subscribe, or sign up.",
-    "- Do not make every hook contrarian. Use the emotional setup that feels most human for the audience and context.",
-    "- Do not copy example-style lines mechanically. Create a fresh line that sounds like a real person reacting.",
-    "- Treat AI hook hints from source score analysis as useful direction, not required copy. Use or improve the hint only when it fits the clips and product context.",
     "- Never return unresolved placeholders, placeholder labels, snake_case keys, or database-style labels.",
-    "- Silently reject any hook that reads like advice, a product value proposition, a tutorial title, or a generic ad claim.",
-    "- Use the product emotional narrative as the primary Stitchr context when it is available.",
-    `Use one Stitchr emotional angle: ${emotionalAngles.join("; ")}`,
-    `Use one Stitchr framework: ${hookFrameworks.join(" | ")}`,
-    `Avoid these marketing phrases and close variants: ${bannedMarketingPhrases.join("; ")}`,
-    `Purpose: stitchr`,
-    `Target stitched video duration: ${durationSeconds} seconds`,
-    `Audience context: ${product.audienceDetails}`,
-    `Product emotional narrative: ${product.emotionalNarrative ?? ""}`,
-    `Audience problem context, for emotional stakes only: ${product.inferredProblem ?? ""}`,
-    `Pain point context, for emotional stakes only: ${product.inferredPainPoints.join("; ")}`,
-    `Product name, background only and not for the hook: ${product.name}`,
-    `Product details, background only and not for the hook: ${product.productDetails}`,
-    `Selected Stitchr source context:\n${sourceContext}`,
+    "- Return only the JSON object.",
     `Audience language hints: ${JSON.stringify(fillers)}`,
   ].join("\n");
 }
