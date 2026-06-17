@@ -1,31 +1,55 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Download, Search } from "lucide-react";
 import { PexelsPhotoCard } from "@/app/_components/swipr/PexelsPhotoCard";
+import { SwiprLibraryPackPicker } from "@/app/_components/swipr/SwiprLibraryPackPicker";
+import { SwiprLibraryPhotoCard } from "@/app/_components/swipr/SwiprLibraryPhotoCard";
 import { Button } from "@/app/_components/ui/Button";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import type { PexelsPhotoResult } from "@/lib/clipstitchr/types/PexelsPhotoResult";
+import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
+import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
 
 type SwiprPexelsPanelProps = {
   error: string | null;
+  importCount: number;
+  isImportingLibrary: boolean;
   isSaving: boolean;
   isSearching: boolean;
+  libraryBackgrounds: SwiprBackgroundAsset[];
+  libraryPacks: SwiprLibraryPack[];
   photos: PexelsPhotoResult[];
   query: string;
+  selectedLibraryQueries: string[];
+  onImportCountChange: (count: number) => void;
+  onImportQuery: () => void;
+  onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onQueryChange: (query: string) => void;
   onSearch: () => void;
+  onSelectSavedBackground: (background: SwiprBackgroundAsset) => void;
   onSelectPhoto: (photo: PexelsPhotoResult) => void;
+  onSelectedLibraryQueriesChange: (queries: string[]) => void;
 };
 
 export function SwiprPexelsPanel({
   error,
+  importCount,
+  isImportingLibrary,
   isSaving,
   isSearching,
+  libraryBackgrounds,
+  libraryPacks,
   photos,
   query,
+  selectedLibraryQueries,
+  onImportCountChange,
+  onImportQuery,
+  onLoadBackgroundBlob,
   onQueryChange,
   onSearch,
+  onSelectSavedBackground,
   onSelectPhoto,
+  onSelectedLibraryQueriesChange,
 }: SwiprPexelsPanelProps) {
   return (
     <section className="min-w-0 border-t border-border pt-4">
@@ -40,7 +64,7 @@ export function SwiprPexelsPanel({
           </h2>
         </div>
       </div>
-      <div className="grid gap-3">
+      <div className="grid gap-4">
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
           <SearchInput
             label="Search Pexels photos"
@@ -59,6 +83,38 @@ export function SwiprPexelsPanel({
             Search
           </Button>
         </div>
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_6rem_auto] sm:items-end">
+          <p className="text-sm font-semibold text-text-secondary">
+            Save a search as a reusable photo pack for batch drafts.
+          </p>
+          <label className="grid gap-1 text-xs font-semibold text-text-secondary">
+            Max
+            <input
+              type="number"
+              min={1}
+              max={40}
+              value={importCount}
+              className="h-9 rounded-lg border border-border bg-surface px-3 text-sm font-semibold text-text-primary outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/20"
+              disabled={isSaving || isImportingLibrary}
+              onChange={(event) =>
+                onImportCountChange(
+                  Math.max(1, Math.min(40, Number(event.target.value) || 1)),
+                )
+              }
+            />
+          </label>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            icon={<Download aria-hidden className="h-4 w-4" />}
+            isLoading={isImportingLibrary}
+            disabled={isSaving || !query.trim()}
+            onClick={onImportQuery}
+          >
+            Import
+          </Button>
+        </div>
         <p className="text-xs font-semibold text-text-tertiary">
           Photos provided by Pexels.
         </p>
@@ -75,6 +131,25 @@ export function SwiprPexelsPanel({
                 isSaving={isSaving}
                 photo={photo}
                 onSelect={onSelectPhoto}
+              />
+            ))}
+          </div>
+        ) : null}
+        <SwiprLibraryPackPicker
+          packs={libraryPacks}
+          selectedPackNames={selectedLibraryQueries}
+          onLoadBackgroundBlob={onLoadBackgroundBlob}
+          onSelectedPackNamesChange={onSelectedLibraryQueriesChange}
+        />
+        {libraryBackgrounds.length ? (
+          <div className="flex max-w-full gap-2 overflow-x-auto pb-1">
+            {libraryBackgrounds.slice(0, 24).map((background) => (
+              <SwiprLibraryPhotoCard
+                key={background.id}
+                background={background}
+                isSaving={isSaving}
+                onLoadBackgroundBlob={onLoadBackgroundBlob}
+                onSelect={onSelectSavedBackground}
               />
             ))}
           </div>

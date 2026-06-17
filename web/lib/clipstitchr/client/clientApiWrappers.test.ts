@@ -4,6 +4,8 @@ import { createProductProfile } from "@/lib/clipstitchr/client/createProductProf
 import { createSwaprPrediction } from "@/lib/clipstitchr/client/createSwaprPrediction";
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
 import { generateSwiprBackgroundWithAi } from "@/lib/clipstitchr/client/generateSwiprBackgroundWithAi";
+import { generateSwiprDrafts } from "@/lib/clipstitchr/client/generateSwiprDrafts";
+import { importPexelsPhotosToSwiprLibrary } from "@/lib/clipstitchr/client/importPexelsPhotosToSwiprLibrary";
 import { scoreVideoClip } from "@/lib/clipstitchr/client/scoreVideoClip";
 import { updateProductProfile } from "@/lib/clipstitchr/client/updateProductProfile";
 import { createR2DownloadUrl } from "@/lib/clipstitchr/client/r2/createR2DownloadUrl";
@@ -251,6 +253,84 @@ describe("client API wrappers", () => {
           prompt: "sunlit counter",
           presetId: "studio",
         }),
+      }),
+    );
+  });
+
+  it("wraps Swipr Pexels import and draft generation endpoints", async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        createJsonResponse({
+          ids: ["background_1"],
+          imported: 1,
+          query: "desk setup",
+          searched: 1,
+        }),
+      )
+      .mockResolvedValueOnce(
+        createJsonResponse({
+          count: 2,
+          ids: ["swipe_1", "swipe_2"],
+          providerModel: "text-model",
+          providerPredictionId: "prediction_1",
+        }),
+      )
+      .mockResolvedValueOnce(createJsonResponse({ message: "Import failed" }, 400))
+      .mockResolvedValueOnce(createJsonResponse({}, 500));
+
+    await expect(
+      importPexelsPhotosToSwiprLibrary({
+        count: 12,
+        query: "desk setup",
+      }),
+    ).resolves.toEqual({
+      ids: ["background_1"],
+      imported: 1,
+      query: "desk setup",
+      searched: 1,
+    });
+    await expect(
+      generateSwiprDrafts({
+        count: 2,
+        productId: "product_1",
+        selectedLibraryQueries: ["desk setup"],
+        slideCount: 8,
+      }),
+    ).resolves.toEqual({
+      count: 2,
+      ids: ["swipe_1", "swipe_2"],
+      providerModel: "text-model",
+      providerPredictionId: "prediction_1",
+    });
+    await expect(
+      importPexelsPhotosToSwiprLibrary({ count: 1, query: "bad" }),
+    ).rejects.toThrow("Import failed");
+    await expect(
+      generateSwiprDrafts({
+        count: 1,
+        productId: "product_1",
+        selectedLibraryQueries: [],
+        slideCount: 8,
+      }),
+    ).rejects.toThrow("Unable to generate draft Swipes.");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/swipr/pexels/import",
+      expect.objectContaining({
+        body: JSON.stringify({ count: 12, query: "desk setup" }),
+        method: "POST",
+      }),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/swipr/drafts/generate",
+      expect.objectContaining({
+        body: JSON.stringify({
+          count: 2,
+          productId: "product_1",
+          selectedLibraryQueries: ["desk setup"],
+          slideCount: 8,
+        }),
+        method: "POST",
       }),
     );
   });

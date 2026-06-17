@@ -7,6 +7,7 @@ export type SwiprBackgroundAsset = {
   tags: string[];
   description?: string;
   details?: string;
+  libraryQuery?: string;
   source: SwiprBackgroundSource;
   imageObject: R2ObjectReference;
   blob?: Blob;

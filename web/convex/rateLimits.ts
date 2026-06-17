@@ -155,6 +155,29 @@ export const consumePexelsSearch = mutation({
   },
 });
 
+export const consumePexelsImport = mutation({
+  args: {
+    count: v.number(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { count, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const imageCount = getPositiveCount(count, "Image count");
+
+    await rateLimiter.limit(ctx, "pexelsImportImages", {
+      count: imageCount,
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "pexelsImportImagesGlobal", {
+      count: imageCount,
+      throws: true,
+    });
+  },
+});
+
 export const consumeUploadAnalysis = mutation({
   args: {
     secret: v.string(),
@@ -357,18 +380,23 @@ export const consumeCliprJobCreate = mutation({
 
 export const consumeCliprHookScript = mutation({
   args: {
+    count: v.optional(v.number()),
     secret: v.string(),
   },
-  handler: async (ctx, { secret }) => {
+  handler: async (ctx, { count, secret }) => {
     assertRateLimitApiSecret(secret);
 
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const generationCount =
+      count === undefined ? undefined : getPositiveCount(count, "Generation count");
 
     await rateLimiter.limit(ctx, "cliprHookScriptGenerate", {
+      ...(generationCount ? { count: generationCount } : {}),
       key: ownerId,
       throws: true,
     });
     await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      ...(generationCount ? { count: generationCount } : {}),
       throws: true,
     });
   },

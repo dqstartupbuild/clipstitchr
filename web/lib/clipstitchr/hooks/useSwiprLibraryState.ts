@@ -167,6 +167,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
     async ({
       blob,
       generationDetails,
+      libraryQuery,
       originalName,
       source,
     }: SaveSwiprBackgroundOptions) => {
@@ -202,6 +203,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
           tags: analysis.tags,
           description: analysis.description,
           details: details || undefined,
+          libraryQuery,
           source,
           imageObject,
           mimeType: imageObject.contentType,
@@ -217,6 +219,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
           tags: analysis.tags,
           description: analysis.description,
           details: details || undefined,
+          libraryQuery,
           source,
           imageObject,
           blob,

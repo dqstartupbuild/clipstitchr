@@ -27,8 +27,6 @@ function getSwiprStyleMemory(product: ProductProfile) {
 }
 
 export function createSwiprTextGenerationPrompt({
-  candidates,
-  fillers,
   product,
   scriptIdea,
   slideCount,
@@ -41,12 +39,12 @@ export function createSwiprTextGenerationPrompt({
     "You write short-form social media carousel slideshows for TikTok and Instagram.",
     "",
     "Account context:",
-    `- App / brand: ${product.name} — ${product.productDetails}`,
+    `- App / brand: ${product.name} - ${product.productDetails}`,
     `- Audience: ${product.audienceDetails || "(unspecified)"}`,
     `- Niche / problem: ${product.inferredProblem || "(unspecified)"}`,
     "",
     "What's working for this account. Respect this closely:",
-    getSwiprStyleMemory(product) || "(none yet — use proven short-form patterns)",
+    getSwiprStyleMemory(product) || "(none yet - use proven short-form patterns)",
     "",
     isSelectedSlideGeneration
       ? `Write only slide ${swiprSelectedSlideTextContext?.slideNumber} of ${swiprSelectedSlideTextContext?.totalSlides}.`
@@ -64,7 +62,7 @@ export function createSwiprTextGenerationPrompt({
     "- Do not default to a bookmark-style CTA.",
     "- Avoid generic creator advice like work smarter, unlock growth, level up, or game changer.",
     "Respond with a JSON object of this exact shape:",
-    '{ "templateId": "one candidate id", "filledHook": "the first slide — a scroll-stopping viewer-first line, max ~8 words", "slides": ["the hook again as slide 1", "why it happens", "what it costs", "the simple reframe", "...same count requested, each max ~8 words, last is a soft CTA"], "caption": "the post caption with 1-2 emoji", "hashtags": ["three", "relevant", "hashtags"], "rationale": "one sentence on why this should perform, tied to the style memory", "overlayText": "same as filledHook", "script": "", "scenePlan": [], "variablesUsed": {"placeholder":"value"} }',
+    '{ "templateId": "swipr-freeform", "filledHook": "the first slide - a scroll-stopping viewer-first line, max ~8 words", "slides": ["the hook again as slide 1", "slide 2", "...same count requested, each max ~8 words, last is a soft CTA"], "caption": "the post caption with 1-2 emoji", "hashtags": ["three", "relevant", "hashtags"], "rationale": "one sentence on why this should perform, tied to the style memory", "overlayText": "same as filledHook", "script": "", "scenePlan": [], "variablesUsed": {} }',
     "",
     "Rules:",
     "- Keep the slideshow on-brand, varied, and genuinely good.",
@@ -75,7 +73,6 @@ export function createSwiprTextGenerationPrompt({
     "- Use simple human language. Avoid technical or robotic copy.",
     "- Do not invent fake stats, fake studies, fake quotes, or fake testimonials.",
     "- Product details are context, not a sales script.",
-    "- Keep product mentions out of middle slides unless the user specifically requested product-heavy copy.",
     isSelectedSlideGeneration
       ? "- Return exactly one item in slides. It must fit naturally between the previous and next slide text."
       : "",
@@ -91,15 +88,6 @@ export function createSwiprTextGenerationPrompt({
       : "",
     scriptIdea ? `User creative direction: ${scriptIdea}` : "",
     `Requested slides in JSON: ${requestedSlideCount}`,
-    `Placeholder fillers: ${JSON.stringify(fillers)}`,
-    `Candidate templates: ${JSON.stringify(
-      candidates.map((candidate) => ({
-        templateId: candidate.id,
-        template: candidate.template,
-        requiredVariables: candidate.requiredVariables,
-        source: candidate.source,
-      })),
-    )}`,
   ]
     .filter(Boolean)
     .join("\n");

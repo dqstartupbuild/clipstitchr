@@ -352,6 +352,7 @@ describe("useSwiprLibraryState", () => {
       state.saveBackground({
         blob,
         generationDetails: "Prompt: studio wall",
+        libraryQuery: "desk setup",
         originalName: "wall.jpg",
         source: "ai",
       }),
@@ -380,6 +381,7 @@ describe("useSwiprLibraryState", () => {
         imageObject: expect.objectContaining({
           key: "users/user_123/swipr/background_new.jpg",
         }),
+        libraryQuery: "desk setup",
         mimeType: "image/jpeg",
         size: 123,
         width: 1080,

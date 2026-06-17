@@ -10,6 +10,7 @@ import { swiprBackgroundSourceValidator } from "./validators/swiprBackgroundSour
 const BACKGROUND_NAME_MAX_LENGTH = 120;
 const BACKGROUND_DESCRIPTION_MAX_LENGTH = 1200;
 const BACKGROUND_DETAILS_MAX_LENGTH = 3000;
+const BACKGROUND_LIBRARY_QUERY_MAX_LENGTH = 120;
 
 function normalizeText(value: string, maxLength: number) {
   return value.trim().slice(0, maxLength);
@@ -57,6 +58,7 @@ const saveArgs = {
   tags: assetTagsValidator,
   description: v.optional(v.string()),
   details: v.optional(v.string()),
+  libraryQuery: v.optional(v.string()),
   source: swiprBackgroundSourceValidator,
   imageObject: r2ObjectValidator,
   mimeType: v.string(),
@@ -121,6 +123,9 @@ export const save = mutation({
       details: args.details
         ? normalizeText(args.details, BACKGROUND_DETAILS_MAX_LENGTH)
         : undefined,
+      libraryQuery: args.libraryQuery
+        ? normalizeText(args.libraryQuery, BACKGROUND_LIBRARY_QUERY_MAX_LENGTH)
+        : undefined,
     });
   },
 });
@@ -165,6 +170,9 @@ export const saveFromProvider = mutation({
         : undefined,
       details: args.details
         ? normalizeText(args.details, BACKGROUND_DETAILS_MAX_LENGTH)
+        : undefined,
+      libraryQuery: args.libraryQuery
+        ? normalizeText(args.libraryQuery, BACKGROUND_LIBRARY_QUERY_MAX_LENGTH)
         : undefined,
     });
   },

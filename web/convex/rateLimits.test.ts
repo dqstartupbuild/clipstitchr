@@ -153,6 +153,27 @@ describe("convex rateLimits", () => {
     {
       args: { secret: "secret" },
       expected: [
+        { key: "owner_123", name: "pexelsSearch", throws: true },
+        { name: "pexelsSearchGlobal", throws: true },
+      ],
+      mutation: rateLimits.consumePexelsSearch,
+    },
+    {
+      args: { count: 12.1, secret: "secret" },
+      expected: [
+        {
+          count: 13,
+          key: "owner_123",
+          name: "pexelsImportImages",
+          throws: true,
+        },
+        { count: 13, name: "pexelsImportImagesGlobal", throws: true },
+      ],
+      mutation: rateLimits.consumePexelsImport,
+    },
+    {
+      args: { secret: "secret" },
+      expected: [
         {
           key: "owner_123",
           name: "replicateUploadAnalysis",
@@ -280,6 +301,19 @@ describe("convex rateLimits", () => {
           throws: true,
         },
         { name: "cliprProviderSpendGlobal", throws: true },
+      ],
+      mutation: rateLimits.consumeCliprHookScript,
+    },
+    {
+      args: { count: 3.2, secret: "secret" },
+      expected: [
+        {
+          count: 4,
+          key: "owner_123",
+          name: "cliprHookScriptGenerate",
+          throws: true,
+        },
+        { count: 4, name: "cliprProviderSpendGlobal", throws: true },
       ],
       mutation: rateLimits.consumeCliprHookScript,
     },

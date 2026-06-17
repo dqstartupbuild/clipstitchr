@@ -157,30 +157,6 @@ function createSwiprCtaSlide(product: ProductProfile) {
     : "Follow for more like this";
 }
 
-function getSwiprSlideIsCta(slide: string, product: ProductProfile) {
-  return (
-    /\b(save|share|send|remember|try this|use this|come back|keep this|follow|comment|like|visit|download|check it out|learn more|when you're ready)\b/i.test(
-      slide,
-    ) ||
-    (slide.toLowerCase().includes(product.name.toLowerCase()) &&
-      /\b(use|make|start|turn|keep|bring|build|create|choose|get)\b/i.test(
-        slide,
-      ))
-  );
-}
-
-function getSwiprSupportSlideIsEngagementOnly(
-  slide: string,
-  product: ProductProfile,
-) {
-  return (
-    !slide.toLowerCase().includes(product.name.toLowerCase()) &&
-    !/\b(feature|benefit|built for|made for|helps you|lets you|use it|use this|try it|download|sign up|buy)\b/i.test(
-      slide,
-    )
-  );
-}
-
 function normalizeSlides({
   filledHook,
   product,
@@ -215,35 +191,18 @@ function normalizeSlides({
     ].slice(0, slideCount);
   }
 
-  const nextSlides = [filledHook];
-  const supportSlides = slides.filter((slide) => slide !== filledHook);
-  const generatedFinalSlide = supportSlides.at(-1) ?? "";
-  const generatedCtaSlide = getSwiprSlideIsCta(generatedFinalSlide, product)
-    ? generatedFinalSlide
-    : "";
-  const supportCandidates = generatedCtaSlide
-    ? supportSlides.slice(0, -1)
-    : supportSlides;
+  const nextSlides = slides.length ? slides : [filledHook];
 
-  for (const slide of supportCandidates) {
-    if (nextSlides.length >= slideCount - 1) {
-      break;
-    }
-
-    if (
-      !nextSlides.includes(slide) &&
-      getSwiprSupportSlideIsEngagementOnly(slide, product)
-    ) {
-      nextSlides.push(slide);
-    }
+  if (slideCount > 1 && nextSlides[0] !== filledHook) {
+    nextSlides[0] = filledHook;
   }
 
-  while (nextSlides.length < Math.max(1, slideCount - 1)) {
-    nextSlides.push(getSwiprFallbackSupportSlide(product, nextSlides.length));
-  }
-
-  if (slideCount > 1) {
-    nextSlides.push(generatedCtaSlide || createSwiprCtaSlide(product));
+  while (nextSlides.length < slideCount) {
+    nextSlides.push(
+      nextSlides.length === slideCount - 1
+        ? createSwiprCtaSlide(product)
+        : getSwiprFallbackSupportSlide(product, nextSlides.length),
+    );
   }
 
   return nextSlides.slice(0, slideCount);

@@ -111,9 +111,11 @@ TikTok Events API variables:
 
 Pexels API variables:
 
-- `PEXELS_API_KEY` enables server-side Pexels photo search for Swipr.
-- The key is sent from `POST /api/swipr/pexels/search` and from the provider
-  worker's automatic Swipr draft path in the Pexels `Authorization` header.
+- `PEXELS_API_KEY` enables server-side Pexels photo search and query-pack
+  import for Swipr.
+- The key is sent from `POST /api/swipr/pexels/search`,
+  `POST /api/swipr/pexels/import`, and from the provider worker's automatic
+  Swipr draft path in the Pexels `Authorization` header.
 - Keep it server-side only. Do not prefix it with `NEXT_PUBLIC_`.
 
 Existing Convex auth variables still apply:
@@ -210,12 +212,13 @@ Firecrawl website import:
 | Avatar photo generation | `POST /api/avatars/photos/generate` from the Avatars page or UGC clip avatar action | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour. The route stores the source image in R2, creates an `avatar-photo-generation` provider job, and returns after durable queuing; the provider worker calls Replicate and saves `photoAssets`. |
 | Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 8; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
 | Swipr Pexels search | `POST /api/swipr/pexels/search` | 120 searches/hour/user, burst 30; global 800 searches/hour, burst 200 across 4 shards. The route consumes this before calling Pexels with `PEXELS_API_KEY`; selected photo saves then use existing Swipr background analysis, owner-owned R2 upload, and Convex record-save limits. |
+| Swipr Pexels query import | `POST /api/swipr/pexels/import` | Consumes the Swipr Pexels search limits before calling Pexels, then consumes 120 imported images/hour/user with burst 40 and global 3,000 imported images/hour with burst 500 across 5 shards before downloading images or writing to R2. Each imported image also uses `swiprBackgrounds.save`, which consumes the shared Convex record-save limit. |
 | Public waitlist submission | `waitlist.submit` from `/sign-up` | 3/hour/normalized email, burst 3; shared global bucket 500/hour, burst 100 |
 | TikTok Events API forwarding | `POST /api/analytics/tiktok/events` after marketing-cookie consent | 120/hour/client fingerprint, burst 30; shared global bucket 5,000/hour, burst 1,000 |
 | IndexNow sitemap submission | `POST /api/indexnow` with `INDEXNOW_SUBMIT_SECRET` | Submits all public sitemap URLs only, excludes authenticated dashboard/API routes, requires a public `NEXT_PUBLIC_SITE_URL`, consumes 500 submitted URLs/hour/client fingerprint, burst 100; shared global bucket 5,000 submitted URLs/hour, burst 500 |
 | Product enrichment and website import | `POST /api/settings/products`, `PATCH /api/settings/products/{id}` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour. The route consumes this limit before Firecrawl website crawling and before the Replicate product enrichment call. Website import is capped at 15 Firecrawl pages per create/update. Product edits only re-crawl Firecrawl when the saved website URL changes. |
 | Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; shared global provider bucket 10,000 units/hour, burst 2,000. The route resolves the requested mode, creates a queued `cliprJobs` record and a durable `manual-clipr` provider job, then returns immediately. Current visible Reaction and B-roll jobs consume the 4-10 second visual estimate. Script jobs consume the 60 second estimate only when `isCliprScriptModeEnabled` is `true`; hidden Script requests resolve to a visual mode before quota/provider work. |
-| Clipr hook/script generation | `POST /api/clipr/jobs` worker path and `POST /api/clipr/text` immediate suggestion path | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000. Manual Clipr job creation consumes this only for Script mode. Reaction, B-roll, and Demo use a local visual plan and do not consume hook/script quota. Stitchr requests can include selected UGC/demo context and return overlay text plus caption/hashtag copy under this same limit. The default writing provider is `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` can be enabled through `TEXT_WRITING_MODEL_ID` for higher-cost tests. |
+| Clipr hook/script generation | `POST /api/clipr/jobs` worker path, `POST /api/clipr/text` immediate suggestion path, and `POST /api/swipr/drafts/generate` batch draft path | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000. Manual Clipr job creation consumes this only for Script mode. Reaction, B-roll, and Demo use a local visual plan and do not consume hook/script quota. Stitchr requests can include selected UGC/demo context and return overlay text plus caption/hashtag copy under this same limit. Swipr batch draft generation consumes this with `count` equal to the requested number of editable draft Swipes before calling the writing provider. The default writing provider is `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` can be enabled through `TEXT_WRITING_MODEL_ID` for higher-cost tests. |
 | Clipr avatar still generation | `POST /api/clipr/jobs` before queued worker generation | 20 images/hour/user, burst 6; global provider bucket counted once per still. The provider worker creates the avatar still for Script, Reaction, and B-roll modes, then R2 upload byte limits are consumed before personal avatar-photo and thumbnail copies are saved. Demo mode skips avatar-still generation. |
 | Clipr voice and Script-mode lip-sync generation | `POST /api/clipr/jobs` before queued worker generation | 600 estimated voice seconds/hour/user, burst 180; global provider bucket counted by estimated seconds. Manual Clipr job creation consumes this only for Script mode. It protects ElevenLabs v3 speech generation and optional second-pass lip-sync models before the provider job is queued. PixVerse lip-sync jobs create temporary provider-worker ffmpeg video/audio segments in R2 before stitching the lip-synced segment outputs. |
 | Clipr video generation | `POST /api/clipr/jobs` before queued worker generation | 600 estimated video seconds/hour/user, burst 180; global provider bucket counted by estimated seconds. Script mode uses `prunaai/p-video-avatar`; Reaction and B-roll use the selected visual model; Demo mode uses Seedance with the selected Demo clip as a reference video. Reaction, B-roll, and Demo skip voice, music, and PixVerse. |
@@ -287,16 +290,22 @@ request direct 9:16 output. The client then analyzes the generated image through
 metadata through `swiprBackgrounds.save`.
 
 Uploaded Swipr photos and selected Pexels photos use the same analysis,
-owner-scoped R2 upload, and `swiprBackgrounds.save` path. Swipr photos are only
-listed and loaded for their owner and are used to reopen, edit, preview, and
-download saved Swipes.
+owner-scoped R2 upload, and `swiprBackgrounds.save` path. Imported Pexels query
+packs use `POST /api/swipr/pexels/import`, consume Pexels search and
+import-image limits before downloading images, write owner-scoped R2 objects,
+and save each photo with `libraryQuery` for future pack selection. Swipr photos
+are only listed and loaded for their owner and are used to reopen, edit,
+preview, batch draft, and download saved Swipes.
 
 The Swipr creation page can upload multiple photos in one browser selection and
-generate one AI photo per current carousel image. There is no separate batch
-endpoint: each generated photo calls `POST /api/swipr/backgrounds/generate` and
-consumes the existing per-image Swipr AI background limits before provider work;
-each uploaded or generated photo then consumes the existing image-analysis, R2
-upload, and Convex record-save protections before persistence.
+generate one AI photo per current carousel image. AI generation has no separate
+batch endpoint: each generated photo calls `POST /api/swipr/backgrounds/generate`
+and consumes the existing per-image Swipr AI background limits before provider
+work; each uploaded or generated photo then consumes the existing image-analysis,
+R2 upload, and Convex record-save protections before persistence. Swipr text
+batch drafts are separate from photo generation: `POST /api/swipr/drafts/generate`
+uses already-saved Pexels pack backgrounds and consumes counted writing quota
+before saving editable Swipe records.
 
 
 Settings product creates and edits call Replicate GPT-4.1 through
@@ -362,6 +371,8 @@ request, R2 upload, or Convex save starts:
 | Video upload | 20 files at once | Each video uploads one raw source object before creating an `upload-normalization` media job. The worker then creates 1 normalized video object, 1 poster object, 1 library clip, and 1 upload-analysis provider job, fitting under the R2 upload, video-analysis, and Convex-save burst limits. |
 | Stitchr UGC batch | 20 selected UGC videos at once | Each selected UGC creates one editable stitch with the selected demo, copied trims, text, and audio settings. Creating the batch consumes Convex stitch saves and, when text is present, one stitch-poster R2 upload per output; export-time browser encoding runs only when the user downloads/exports. |
 | Stitchr Longr-mode output | 1 finished Stitch at a time | Longr mode creates one browser-rendered 9:16 Stitch from the ordered sequence. The one-at-a-time cap limits browser encode work, output size, R2 upload bytes, and preview complexity. |
+| Swipr Pexels query import | 40 imported photos per request | Each imported photo downloads from Pexels, uploads one owner-scoped R2 object, and saves one Swipr background record. |
+| Swipr batch draft generation | 10 editable Swipe drafts per request | Each draft consumes counted writing quota and saves one editable Swipe. Each draft can use up to the max 8 Swipr slides. |
 
 These caps reduce partial batches and orphaned R2 objects. They do not replace
 server-side rate limits: prior usage in the same window can still cause a `429`

@@ -87,7 +87,7 @@ describe("parseCliprTextGenerationOutput", () => {
     expect(generation.slides[0]).toBe(generation.filledHook);
   });
 
-  it("forces Swipr slides into a hook, payoff, and soft CTA arc", () => {
+  it("preserves Swipr model slides while anchoring the first slide to the hook", () => {
     const generation = parseCliprTextGenerationOutput({
       candidates,
       durationSeconds: 30,
@@ -109,7 +109,7 @@ describe("parseCliprTextGenerationOutput", () => {
 
     expect(generation.slides).toHaveLength(4);
     expect(generation.slides[0]).toBe(generation.filledHook);
-    expect(generation.slides.slice(1, -1).join(" ")).not.toContain(
+    expect(generation.slides.slice(1, -1).join(" ")).toContain(
       "LaunchKit",
     );
     expect(generation.slides.at(-1)).toBe("Follow for more launch fixes");

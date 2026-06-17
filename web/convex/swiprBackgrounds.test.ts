@@ -76,6 +76,7 @@ function createSaveArgs(overrides: Record<string, unknown> = {}) {
       key: "user_123/swipr-backgrounds/background_1.jpg",
       size: 10,
     },
+    libraryQuery: "  desk setup  ",
     mimeType: "image/jpeg",
     name: "  Studio  ",
     size: 10,
@@ -138,6 +139,7 @@ describe("convex swiprBackgrounds", () => {
       expect.objectContaining({
         description: "Clean studio",
         details: "Product pedestal",
+        libraryQuery: "desk setup",
         name: "Studio",
         uploadedByOwnerId: "owner_123",
       }),

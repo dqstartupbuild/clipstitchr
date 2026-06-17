@@ -18,6 +18,8 @@ import {
 import { SWIPR_STATIC_DURATION } from "@/lib/clipstitchr/constants/swiprStaticDuration";
 import { generateSwiprBackgroundWithAi } from "@/lib/clipstitchr/client/generateSwiprBackgroundWithAi";
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
+import { generateSwiprDrafts } from "@/lib/clipstitchr/client/generateSwiprDrafts";
+import { importPexelsPhotosToSwiprLibrary } from "@/lib/clipstitchr/client/importPexelsPhotosToSwiprLibrary";
 import { loadPexelsPhotoBlob } from "@/lib/clipstitchr/client/loadPexelsPhotoBlob";
 import { searchPexelsPhotos } from "@/lib/clipstitchr/client/searchPexelsPhotos";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
@@ -39,6 +41,7 @@ import { getSwiprBackgroundFromAsset } from "@/lib/clipstitchr/utils/getSwiprBac
 import { getSwiprSavedProductIdFromOptionValue } from "@/lib/clipstitchr/utils/getSwiprSavedProductIdFromOptionValue";
 import { getSwiprSavedProductOptionValue } from "@/lib/clipstitchr/utils/getSwiprSavedProductOptionValue";
 import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
+import { getSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getSwiprLibraryPacks";
 import { getSwiprSwipeName } from "@/lib/clipstitchr/utils/getSwiprSwipeName";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { assignSwiprBackgroundsToSlides } from "@/lib/clipstitchr/utils/assignSwiprBackgroundsToSlides";
@@ -68,14 +71,22 @@ export function SwiprPageClient() {
   const [background, setBackground] = useState<SwiprBackground | null>(null);
   const [generationPrompt, setGenerationPrompt] = useState("");
   const [pexelsQuery, setPexelsQuery] = useState("");
+  const [pexelsImportCount, setPexelsImportCount] = useState(24);
   const [pexelsPhotos, setPexelsPhotos] = useState<PexelsPhotoResult[]>([]);
+  const [selectedLibraryQueries, setSelectedLibraryQueries] = useState<
+    string[]
+  >([]);
   const [backgroundError, setBackgroundError] = useState<string | null>(null);
   const [pexelsError, setPexelsError] = useState<string | null>(null);
   const [isGeneratingAiBackground, setIsGeneratingAiBackground] =
     useState(false);
   const [isImportingBackground, setIsImportingBackground] = useState(false);
+  const [isImportingPexelsLibrary, setIsImportingPexelsLibrary] =
+    useState(false);
   const [isSearchingPexels, setIsSearchingPexels] = useState(false);
+  const [isGeneratingDrafts, setIsGeneratingDrafts] = useState(false);
   const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
+  const [draftGenerationCount, setDraftGenerationCount] = useState(3);
   const [textGenerationScope, setTextGenerationScope] =
     useState<SwiprTextGenerationScope>("all");
   const [editingSwipeId, setEditingSwipeId] = useState<string | null>(() => {
@@ -147,6 +158,27 @@ export function SwiprPageClient() {
       savedSwipeBackgroundIds.every((id) =>
         swiprLibrary.backgrounds.some((item) => item.id === id),
       ),
+  );
+  const libraryPacks = useMemo(
+    () => getSwiprLibraryPacks(swiprLibrary.backgrounds),
+    [swiprLibrary.backgrounds],
+  );
+  const libraryBackgrounds = useMemo(
+    () =>
+      swiprLibrary.backgrounds.filter((backgroundAsset) => {
+        if (
+          backgroundAsset.source !== "pexels" ||
+          !backgroundAsset.libraryQuery
+        ) {
+          return false;
+        }
+
+        return (
+          selectedLibraryQueries.length === 0 ||
+          selectedLibraryQueries.includes(backgroundAsset.libraryQuery)
+        );
+      }),
+    [selectedLibraryQueries, swiprLibrary.backgrounds],
   );
 
   const assignSavedBackgroundsToSlides = useCallback(
@@ -340,6 +372,7 @@ export function SwiprPageClient() {
             ]
               .filter(Boolean)
               .join("\n"),
+            libraryQuery: pexelsQuery.trim() || undefined,
             originalName: `Pexels - ${photo.photographer}`,
             source: "pexels",
           });
@@ -355,6 +388,67 @@ export function SwiprPageClient() {
             error instanceof Error
               ? error.message
               : "Unable to add this Pexels photo.",
+          );
+        })
+        .finally(() => setIsImportingBackground(false));
+    },
+    [
+      activeSlideIndex,
+      assignSavedBackgroundToActiveSlide,
+      pexelsQuery,
+      swiprLibrary,
+    ],
+  );
+
+  const handleImportPexelsLibraryQuery = useCallback(() => {
+    setIsImportingPexelsLibrary(true);
+    setPexelsError(null);
+    setAutoTextMessage(null);
+
+    void importPexelsPhotosToSwiprLibrary({
+      count: pexelsImportCount,
+      query: pexelsQuery,
+    })
+      .then((result) => {
+        setSelectedLibraryQueries((currentQueries) =>
+          currentQueries.includes(result.query)
+            ? currentQueries
+            : [result.query, ...currentQueries],
+        );
+        setAutoTextMessage(
+          `Imported ${result.imported} Pexels photos for ${result.query}.`,
+        );
+      })
+      .catch((error) => {
+        setPexelsError(
+          error instanceof Error
+            ? error.message
+            : "Unable to import Pexels photos.",
+        );
+      })
+      .finally(() => setIsImportingPexelsLibrary(false));
+  }, [pexelsImportCount, pexelsQuery]);
+
+  const handleSelectSavedBackground = useCallback(
+    (savedBackground: SwiprBackgroundAsset) => {
+      setIsImportingBackground(true);
+      setBackgroundError(null);
+      setAutoTextMessage(null);
+
+      void swiprLibrary
+        .loadBackgroundBlob(savedBackground.id)
+        .then((blob) => {
+          assignSavedBackgroundToActiveSlide({
+            ...savedBackground,
+            blob,
+          });
+          setAutoTextMessage(`Added saved photo to slide ${activeSlideIndex + 1}.`);
+        })
+        .catch((error) => {
+          setBackgroundError(
+            error instanceof Error
+              ? error.message
+              : "Unable to add this saved photo.",
           );
         })
         .finally(() => setIsImportingBackground(false));
@@ -475,6 +569,45 @@ export function SwiprPageClient() {
           : slide,
       ),
     );
+  };
+
+  const handleGenerateDrafts = () => {
+    if (!selectedSavedProductId) {
+      setAutoTextMessage(
+        "Choose a saved Settings product before generating drafts.",
+      );
+      return;
+    }
+
+    if (!libraryBackgrounds.length) {
+      setAutoTextMessage("Import Pexels photos before generating drafts.");
+      return;
+    }
+
+    setIsGeneratingDrafts(true);
+    setAutoTextMessage(null);
+
+    void generateSwiprDrafts({
+      count: draftGenerationCount,
+      productId: selectedSavedProductId,
+      selectedLibraryQueries,
+      slideCount,
+    })
+      .then((result) => {
+        setAutoTextMessage(
+          `Created ${result.count} editable draft Swipe${
+            result.count === 1 ? "" : "s"
+          }.`,
+        );
+      })
+      .catch((error) => {
+        setAutoTextMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to generate draft Swipes.",
+        );
+      })
+      .finally(() => setIsGeneratingDrafts(false));
   };
 
   const handleGenerateAutoText = () => {
@@ -781,13 +914,17 @@ export function SwiprPageClient() {
               <div className="grid gap-4">
                 <SwiprProductPanel
                   canAddSlide={slideCount < SWIPR_MAX_SLIDE_COUNT}
+                  draftGenerationCount={draftGenerationCount}
                   productOptions={productOptions}
                   selectedProductId={activeProductId}
                   slideCount={slideCount}
                   textGenerationScope={textGenerationScope}
+                  isGeneratingDrafts={isGeneratingDrafts}
                   isGeneratingText={isGeneratingAutoText}
                   onAddSlide={handleAddSlide}
+                  onDraftGenerationCountChange={setDraftGenerationCount}
                   onProductChange={setSelectedProductId}
+                  onGenerateDrafts={handleGenerateDrafts}
                   onGenerateText={handleGenerateAutoText}
                   onTextGenerationScopeChange={setTextGenerationScope}
                 />
@@ -808,13 +945,23 @@ export function SwiprPageClient() {
                 />
                 <SwiprPexelsPanel
                   error={pexelsError}
+                  importCount={pexelsImportCount}
                   isSaving={isImportingBackground}
+                  isImportingLibrary={isImportingPexelsLibrary}
                   isSearching={isSearchingPexels}
+                  libraryBackgrounds={libraryBackgrounds}
+                  libraryPacks={libraryPacks}
                   photos={pexelsPhotos}
                   query={pexelsQuery}
+                  selectedLibraryQueries={selectedLibraryQueries}
+                  onImportCountChange={setPexelsImportCount}
+                  onImportQuery={handleImportPexelsLibraryQuery}
+                  onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
                   onQueryChange={setPexelsQuery}
                   onSearch={handleSearchPexels}
                   onSelectPhoto={handleSelectPexelsPhoto}
+                  onSelectSavedBackground={handleSelectSavedBackground}
+                  onSelectedLibraryQueriesChange={setSelectedLibraryQueries}
                 />
                 <SwiprSlideStrip
                   canCopyActivePhotoToAllSlides={Boolean(

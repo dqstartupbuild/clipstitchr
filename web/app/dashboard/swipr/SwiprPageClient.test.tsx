@@ -45,9 +45,14 @@ const mocks = vi.hoisted(() => ({
   },
   backgroundPanelProps: null as Record<string, unknown> | null,
   generateCliprText: vi.fn(),
+  generateSwiprDrafts: vi.fn(),
   generateSwiprBackgroundWithAi: vi.fn(),
+  importPexelsPhotosToSwiprLibrary: vi.fn(),
+  loadPexelsPhotoBlob: vi.fn(),
+  pexelsPanelProps: null as Record<string, unknown> | null,
   previewPanelProps: null as Record<string, unknown> | null,
   productPanelProps: null as Record<string, unknown> | null,
+  searchPexelsPhotos: vi.fn(),
   slideStripProps: null as Record<string, unknown> | null,
   stateQueue: [] as unknown[],
   stateSetters: [] as ReturnType<typeof vi.fn>[],
@@ -116,7 +121,10 @@ vi.mock("@/app/_components/swipr/SwiprAvatarPhotoPanel", () => ({
 }));
 
 vi.mock("@/app/_components/swipr/SwiprPexelsPanel", () => ({
-  SwiprPexelsPanel: () => "SwiprPexelsPanel",
+  SwiprPexelsPanel: (props: Record<string, unknown>) => {
+    mocks.pexelsPanelProps = props;
+    return "SwiprPexelsPanel";
+  },
 }));
 
 vi.mock("@/app/_components/swipr/SwiprSlideStrip", () => ({
@@ -160,8 +168,24 @@ vi.mock("@/lib/clipstitchr/client/generateCliprText", () => ({
   generateCliprText: mocks.generateCliprText,
 }));
 
+vi.mock("@/lib/clipstitchr/client/generateSwiprDrafts", () => ({
+  generateSwiprDrafts: mocks.generateSwiprDrafts,
+}));
+
 vi.mock("@/lib/clipstitchr/client/generateSwiprBackgroundWithAi", () => ({
   generateSwiprBackgroundWithAi: mocks.generateSwiprBackgroundWithAi,
+}));
+
+vi.mock("@/lib/clipstitchr/client/importPexelsPhotosToSwiprLibrary", () => ({
+  importPexelsPhotosToSwiprLibrary: mocks.importPexelsPhotosToSwiprLibrary,
+}));
+
+vi.mock("@/lib/clipstitchr/client/loadPexelsPhotoBlob", () => ({
+  loadPexelsPhotoBlob: mocks.loadPexelsPhotoBlob,
+}));
+
+vi.mock("@/lib/clipstitchr/client/searchPexelsPhotos", () => ({
+  searchPexelsPhotos: mocks.searchPexelsPhotos,
 }));
 
 function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile {
@@ -177,7 +201,9 @@ function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile 
   };
 }
 
-function createBackground(): SwiprBackgroundAsset {
+function createBackground(
+  overrides: Partial<SwiprBackgroundAsset> = {},
+): SwiprBackgroundAsset {
   return {
     createdAt: "2026-01-01T00:00:00.000Z",
     height: 1920,
@@ -193,6 +219,7 @@ function createBackground(): SwiprBackgroundAsset {
     source: "upload",
     tags: ["studio"],
     width: 1080,
+    ...overrides,
   };
 }
 
@@ -231,17 +258,22 @@ function queueSwiprState(
     generationPrompt?: string;
     isGeneratingAiBackground?: boolean;
     isGeneratingAutoText?: boolean;
+    isGeneratingDrafts?: boolean;
     isImportingBackground?: boolean;
+    isImportingPexelsLibrary?: boolean;
     isSearchingPexels?: boolean;
     loadedSwipeId?: string | null;
     pexelsError?: string | null;
+    pexelsImportCount?: number;
     pexelsPhotos?: unknown[];
     pexelsQuery?: string;
     saveMessage?: string | null;
     savedSwipeSnapshot?: SwiprSwipe | null;
+    selectedLibraryQueries?: string[];
     selectedProductId?: string;
     slides?: ReturnType<typeof createSwiprSlides>;
     textGenerationScope?: "all" | "selected";
+    draftGenerationCount?: number;
   } = {},
 ) {
   const slides = overrides.slides ?? createSwiprSlides(3);
@@ -253,13 +285,18 @@ function queueSwiprState(
     overrides.background ?? null,
     overrides.generationPrompt ?? "",
     overrides.pexelsQuery ?? "",
+    overrides.pexelsImportCount ?? 24,
     overrides.pexelsPhotos ?? [],
+    overrides.selectedLibraryQueries ?? [],
     overrides.backgroundError ?? null,
     overrides.pexelsError ?? null,
     overrides.isGeneratingAiBackground ?? false,
     overrides.isImportingBackground ?? false,
+    overrides.isImportingPexelsLibrary ?? false,
     overrides.isSearchingPexels ?? false,
+    overrides.isGeneratingDrafts ?? false,
     overrides.isGeneratingAutoText ?? false,
+    overrides.draftGenerationCount ?? 3,
     overrides.textGenerationScope ?? "all",
     overrides.editingSwipeId ?? null,
     overrides.loadedSwipeId ?? null,
@@ -304,13 +341,30 @@ describe("SwiprPageClient", () => {
     mocks.generateCliprText.mockResolvedValue({
       slides: ["One", "Two", "Three"],
     });
+    mocks.generateSwiprDrafts.mockResolvedValue({
+      count: 2,
+      ids: ["swipe_1", "swipe_2"],
+      providerModel: "text-model",
+      providerPredictionId: "prediction_1",
+    });
     mocks.generateSwiprBackgroundWithAi.mockResolvedValue({
       blob: new Blob(["ai"], { type: "image/jpeg" }),
       generationDetails: {
         prompt: "studio",
       },
     });
+    mocks.importPexelsPhotosToSwiprLibrary.mockResolvedValue({
+      ids: ["background_1"],
+      imported: 1,
+      query: "coffee desk",
+      searched: 1,
+    });
+    mocks.loadPexelsPhotoBlob.mockResolvedValue(
+      new Blob(["pexels"], { type: "image/jpeg" }),
+    );
+    mocks.searchPexelsPhotos.mockResolvedValue([]);
     mocks.backgroundPanelProps = null;
+    mocks.pexelsPanelProps = null;
     mocks.previewPanelProps = null;
     mocks.productPanelProps = null;
     mocks.slideStripProps = null;
@@ -368,6 +422,7 @@ describe("SwiprPageClient", () => {
 
     const productPanelProps = mocks.productPanelProps as {
       onAddSlide: () => void;
+      onGenerateDrafts: () => void;
       onGenerateText: () => void;
       onProductChange: (value: string) => void;
       onTextGenerationScopeChange: (scope: "all" | "selected") => void;
@@ -405,6 +460,7 @@ describe("SwiprPageClient", () => {
     productPanelProps.onProductChange("saved-product:product_1");
     productPanelProps.onAddSlide();
     productPanelProps.onTextGenerationScopeChange("selected");
+    productPanelProps.onGenerateDrafts();
     productPanelProps.onGenerateText();
     backgroundPanelProps.onGenerationPromptChange("sunny counter");
     backgroundPanelProps.onUploadBackground([
@@ -427,6 +483,7 @@ describe("SwiprPageClient", () => {
         purpose: "swipr",
       }),
     );
+    expect(mocks.generateSwiprDrafts).not.toHaveBeenCalled();
     expect(mocks.swiprLibraryState.saveBackground).toHaveBeenCalled();
     expect(mocks.generateSwiprBackgroundWithAi).toHaveBeenCalledWith({
       productContext: expect.stringContaining("Launch Kit"),
@@ -465,6 +522,100 @@ describe("SwiprPageClient", () => {
 
     expect(mocks.generateCliprText).not.toHaveBeenCalled();
     expect(mocks.generateSwiprBackgroundWithAi).not.toHaveBeenCalled();
+  });
+
+  it("imports Pexels packs and generates editable drafts from saved packs", async () => {
+    mocks.swiprLibraryState.backgrounds = [
+      createBackground({
+        id: "background_pexels",
+        libraryQuery: "coffee desk",
+        source: "pexels",
+      }),
+    ];
+    queueSwiprState({
+      draftGenerationCount: 2,
+      pexelsImportCount: 12,
+      pexelsQuery: "coffee desk",
+      selectedLibraryQueries: ["coffee desk"],
+    });
+
+    renderToStaticMarkup(<SwiprPageClient />);
+
+    const productPanelProps = mocks.productPanelProps as {
+      onGenerateDrafts: () => void;
+    };
+    const pexelsPanelProps = mocks.pexelsPanelProps as {
+      libraryPacks: unknown[];
+      onImportQuery: () => void;
+    };
+
+    pexelsPanelProps.onImportQuery();
+    productPanelProps.onGenerateDrafts();
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(pexelsPanelProps.libraryPacks).toHaveLength(1);
+    expect(mocks.importPexelsPhotosToSwiprLibrary).toHaveBeenCalledWith({
+      count: 12,
+      query: "coffee desk",
+    });
+    expect(mocks.generateSwiprDrafts).toHaveBeenCalledWith({
+      count: 2,
+      productId: "product_1",
+      selectedLibraryQueries: ["coffee desk"],
+      slideCount: 3,
+    });
+  });
+
+  it("searches Pexels and saves selected photos to the active slide", async () => {
+    const pexelsPhoto = {
+      alt: "Desk setup",
+      height: 1920,
+      id: 123,
+      photographer: "Avery",
+      photographerUrl: "https://pexels.com/@avery",
+      pexelsUrl: "https://pexels.com/photo/123",
+      src: {
+        large: "https://images.pexels.com/large.jpg",
+        large2x: "https://images.pexels.com/large2x.jpg",
+        medium: "https://images.pexels.com/medium.jpg",
+        original: "https://images.pexels.com/original.jpg",
+        portrait: "https://images.pexels.com/portrait.jpg",
+        small: "https://images.pexels.com/small.jpg",
+      },
+      width: 1080,
+    };
+
+    mocks.searchPexelsPhotos.mockResolvedValueOnce([pexelsPhoto]);
+    queueSwiprState({
+      pexelsQuery: "desk setup",
+    });
+
+    renderToStaticMarkup(<SwiprPageClient />);
+
+    const pexelsPanelProps = mocks.pexelsPanelProps as {
+      onSearch: () => void;
+      onSelectPhoto: (photo: typeof pexelsPhoto) => void;
+    };
+
+    pexelsPanelProps.onSearch();
+    pexelsPanelProps.onSelectPhoto(pexelsPhoto);
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mocks.searchPexelsPhotos).toHaveBeenCalledWith({
+      query: "desk setup",
+    });
+    expect(mocks.loadPexelsPhotoBlob).toHaveBeenCalledWith(pexelsPhoto);
+    expect(mocks.swiprLibraryState.saveBackground).toHaveBeenCalledWith(
+      expect.objectContaining({
+        libraryQuery: "desk setup",
+        originalName: "Pexels - Avery",
+        source: "pexels",
+      }),
+    );
   });
 
   it("returns early when there is no active slide to edit", () => {

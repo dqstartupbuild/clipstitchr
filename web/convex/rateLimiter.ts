@@ -48,6 +48,19 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 200,
     shards: 4,
   },
+  pexelsImportImages: {
+    kind: "token bucket",
+    rate: 120,
+    period: HOUR,
+    capacity: 40,
+  },
+  pexelsImportImagesGlobal: {
+    kind: "token bucket",
+    rate: 3000,
+    period: HOUR,
+    capacity: 500,
+    shards: 5,
+  },
   replicateUploadAnalysis: {
     kind: "token bucket",
     rate: 300,

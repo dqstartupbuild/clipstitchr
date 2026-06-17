@@ -5,6 +5,7 @@ import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 export type SaveSwiprBackgroundOptions = {
   blob: Blob;
   generationDetails?: string;
+  libraryQuery?: string;
   originalName: string;
   source: SwiprBackgroundSource;
 };

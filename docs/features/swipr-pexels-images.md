@@ -1,8 +1,9 @@
 # Swipr Pexels Images
 
-Swipr Pexels images let users search Pexels from the carousel editor and add a
-photo to the selected slide. This gives Swipr another image path beyond AI
-generation, uploads, and avatar photos.
+Swipr Pexels images let users search Pexels from the carousel editor, add a
+photo to the selected slide, and import a search query as a saved owner-owned
+photo pack. This gives Swipr another image path beyond AI generation, uploads,
+and avatar photos.
 
 ## How It Works
 
@@ -14,19 +15,41 @@ generation, uploads, and avatar photos.
    credit.
 5. When the user taps Add, the client downloads the selected image, saves it
    through the Swipr photo save flow, and assigns it to the selected slide only.
+6. When the user taps Import, the client calls
+   `POST /api/swipr/pexels/import` for the current query and requested count.
+7. The import route downloads matching Pexels photos server-side, writes them
+   to owner-scoped R2 storage, and saves `swiprBackgrounds` records with
+   `libraryQuery` set to that query.
+8. The Pexels panel groups imported photos into query packs. Users can choose
+   all packs or selected packs for batch draft generation, and can use any
+   saved pack photo on the selected slide.
 
-Pexels imports use the normal Swipr background analysis, R2 upload, and
-`swiprBackgrounds.save` path. Imported Pexels photos are owner-owned Swipr
-photo records used by saved Swipes; they are not exposed as a shared Swipr
-gallery.
+Single selected Pexels images use the normal Swipr background analysis, R2
+upload, and `swiprBackgrounds.save` path. Query-pack imports save the Pexels
+image bytes directly from the server into R2, create the same owner-owned
+background records, and store Pexels credit details for maintenance. Imported
+Pexels photos are owner-owned Swipr photo records used by saved Swipes and
+batch drafts; they are not exposed as a shared Swipr gallery.
 
 ## Relevant Code
 
 - `web/app/api/swipr/pexels/search/route.ts` searches Pexels server-side.
+- `web/app/api/swipr/pexels/import/route.ts` imports a query into R2 and
+  Convex.
+- `web/app/api/swipr/drafts/generate/route.ts` creates editable draft Swipes
+  from saved Pexels packs.
 - `web/lib/clipstitchr/client/searchPexelsPhotos.ts` calls the search route.
+- `web/lib/clipstitchr/client/importPexelsPhotosToSwiprLibrary.ts` calls the
+  import route.
+- `web/lib/clipstitchr/client/generateSwiprDrafts.ts` calls the batch draft
+  route.
 - `web/lib/clipstitchr/client/loadPexelsPhotoBlob.ts` downloads the selected
   image for saving.
 - `web/app/_components/swipr/SwiprPexelsPanel.tsx` renders the search controls.
+- `web/app/_components/swipr/SwiprLibraryPackPicker.tsx` renders imported
+  query pack selection.
+- `web/app/_components/swipr/SwiprLibraryPhotoCard.tsx` renders saved pack
+  photos.
 - `web/app/_components/swipr/PexelsPhotoCard.tsx` renders each result and
   photographer credit.
 - `web/app/dashboard/swipr/SwiprPageClient.tsx` saves the selected photo as a
@@ -56,6 +79,19 @@ Pexels-enabled job shape can deploy.
 The route consumes those limits before calling Pexels. Pexels photo saving then
 uses the existing Swipr background analysis, R2 upload, and Convex record-save
 limits.
+
+`consumePexelsImport` enforces:
+
+- 120 imported images/hour/user with burst 40.
+- 3,000 imported images/hour globally with burst 500 across 5 shards.
+
+The import route consumes search and import-image limits before downloading
+Pexels images or writing to R2. Each saved background also consumes the normal
+Convex record-save limit inside `swiprBackgrounds.save`.
+
+Batch draft generation uses the existing Clipr hook/script generation bucket
+with `count` equal to the requested draft count before calling the text-writing
+provider. Each generated draft is saved through `swipes.save`.
 
 Automatic Swipr generation is worker-only and is protected by the Swipr
 automation daily/global limits before the provider worker searches Pexels or

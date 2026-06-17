@@ -11,6 +11,7 @@ export function createSwiprBackgroundAssetFromConvexDocument(
     tags: background.tags,
     description: background.description,
     details: background.details,
+    libraryQuery: background.libraryQuery,
     source: background.source,
     imageObject: background.imageObject,
     ...(blob ? { blob } : {}),

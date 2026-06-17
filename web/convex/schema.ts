@@ -284,6 +284,7 @@ export default defineSchema({
     tags: assetTagsValidator,
     description: v.optional(v.string()),
     details: v.optional(v.string()),
+    libraryQuery: v.optional(v.string()),
     source: swiprBackgroundSourceValidator,
     imageObject: r2ObjectValidator,
     mimeType: v.string(),
