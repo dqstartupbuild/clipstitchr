@@ -290,14 +290,15 @@ ready.
 
 The provider worker owns automatic Stitchr overlay/caption/hashtag text, Swapr
 provider create/finalize, Clipr script/reaction/b-roll/avatar-image/avatar-video,
-avatar-photo generation, and Swipr draft text generation. Avatar-based automation uses
-`avatarPreferences.defaultAvatarId`; automatic avatar-photo generation queues
-only that default avatar. It also owns manual Swapr, manual Clipr, manual
-avatar-photo generation, and upload-video analysis through durable
-`providerJobs`. Convex Cron still plans daily runs, but it no longer dispatches
-provider work through `AUTOMATION_NEXT_BASE_URL`. Creating provider work now
-schedules a coalesced Convex Cloud Run dispatch immediately; the 10-minute Cloud
-Scheduler trigger is only a recovery sweep.
+avatar-photo generation, Swipr draft text generation, and automated Stitch score
+analysis. Avatar-based automation uses `avatarPreferences.defaultAvatarId`;
+automatic avatar-photo generation queues only that default avatar. It also owns
+manual Swapr, manual Clipr, manual avatar-photo generation, upload-video
+analysis, and automated Stitch score analysis through durable `providerJobs`.
+Convex Cron still plans daily runs, but it no longer dispatches provider work
+through `AUTOMATION_NEXT_BASE_URL`. Creating provider work now schedules a
+coalesced Convex Cloud Run dispatch immediately; the 10-minute Cloud Scheduler
+trigger is only a recovery sweep.
 
 The first FFmpeg media worker lives at
 `web/services/media-worker/runMediaWorker.mjs`. It claims queued media jobs with

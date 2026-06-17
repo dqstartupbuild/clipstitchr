@@ -27,10 +27,12 @@ what to trim, rewrite, or post first.
 
 Stitch scores are stored on the stitch record as `stitchScore`.
 
-Existing stitches will not have a score until the user chooses **Score stitch**.
-New stitches also start unscored so large batches do not automatically spend
-provider quota. The user can score or rescore any saved stitch from the card
-menu.
+Existing manually saved stitches will not have a score until the user chooses
+**Score stitch**. Normal user-created batches also start unscored so large
+batches do not automatically spend provider quota. Automated Stitchr outputs can
+queue a background `stitch-score-analysis` provider job after the media worker
+saves the Stitch, because the automation budget has already gated that output.
+The user can score or rescore any saved stitch from the card menu.
 
 Before scoring, the client makes sure the Stitch has a saved rendered MP4 when
 the browser can create one. The full-video model receives that finished video.
@@ -68,6 +70,8 @@ Stored fields:
 
 ## Backend Flow
 
+Manual scoring:
+
 1. `POST /api/stitches/score` authenticates the user.
 2. The route loads the owned stitch from Convex.
 3. The route consumes the dedicated stitch score rate limit before provider
@@ -82,6 +86,16 @@ Stored fields:
 7. `parseStitchScore` validates and clamps the provider response.
 8. `stitches.updateScore` saves the score on the stitch.
 9. The dashboard library refreshes and shows the score badge/details.
+
+Automated scoring:
+
+1. The media worker saves the automated Stitchr draft.
+2. It creates a queued `stitch-score-analysis` provider job with the saved
+   Stitch ID.
+3. The provider worker claims that job when the `stitchr` worker tool is
+   enabled.
+4. The provider worker runs the same Stitch Score prompt and saves the parsed
+   score through `stitches.updateScoreFromProvider`.
 
 ## Model Decision
 
@@ -122,6 +136,9 @@ Backend and data model:
 - `web/convex/validators/stitchScore.ts`
 - `web/convex/rateLimiter.ts`
 - `web/convex/rateLimits.ts`
+- `web/convex/providerJobs.ts`
+- `web/services/provider-worker/providerWorkerClaimableProviderJobs.ts`
+- `web/services/provider-worker/runProviderWorker.ts`
 
 API, prompt, parsing, and client call:
 

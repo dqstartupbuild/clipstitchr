@@ -20,6 +20,8 @@ import { createCliprJobVideoOutput } from "@/lib/clipstitchr/server/createCliprJ
 import { createCliprSceneAvatarImage } from "@/lib/clipstitchr/server/createCliprSceneAvatarImage";
 import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
 import { processManualCliprDemo } from "./processManualCliprDemo";
+import { PROVIDER_WORKER_CLAIMABLE_PROVIDER_JOBS } from "./providerWorkerClaimableProviderJobs";
+import { PROVIDER_TOOLS, type ProviderTool } from "./providerWorkerTools";
 import { createSwiprAutomationPexelsQuery } from "@/lib/clipstitchr/server/createSwiprAutomationPexelsQuery";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createStitchScoreOutputText } from "@/lib/clipstitchr/server/createStitchScoreOutputText";
@@ -85,15 +87,6 @@ import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpee
 const api = anyApi;
 const packageRoot = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 const LOCK_MS = 45 * 60 * 1000;
-const PROVIDER_TOOLS = [
-  "stitchr",
-  "swapr",
-  "clipr",
-  "avatar-photo",
-  "swipr",
-] as const;
-
-type ProviderTool = (typeof PROVIDER_TOOLS)[number];
 
 type WorkerArgs = {
   check: boolean;
@@ -2966,14 +2959,7 @@ async function claimNextProviderJob({
     }
   }
 
-  const supportedJobTypes = [
-    ["manual-swapr", "swapr"],
-    ["manual-clipr", "clipr"],
-    ["avatar-photo-generation", "avatar-photo"],
-    ["upload-video-analysis", "stitchr"],
-  ] as const;
-
-  for (const [jobType, tool] of supportedJobTypes) {
+  for (const [jobType, tool] of PROVIDER_WORKER_CLAIMABLE_PROVIDER_JOBS) {
     if (!config.providerTools.has(tool)) {
       continue;
     }
