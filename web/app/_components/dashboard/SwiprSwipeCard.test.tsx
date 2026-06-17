@@ -204,7 +204,9 @@ describe("SwiprSwipeCard", () => {
     (previewButton.props.onClick as () => void)();
     actionItems[0].onClick?.();
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(true);
-    expect(actionItems[2].href).toBe("/dashboard/swipr?swipe=swipe_1");
+    expect(actionItems[2].href).toBe(
+      "/dashboard/swipr?mode=edit&swipe=swipe_1",
+    );
 
     actionItems[1].onClick?.();
     await Promise.resolve();
@@ -263,8 +265,27 @@ describe("SwiprSwipeCard", () => {
       blob: backgroundBlob,
       id: "bg_1",
     });
-    expect(details.props.editHref).toBe("/dashboard/swipr?swipe=swipe_1");
+    expect(details.props.editHref).toBe(
+      "/dashboard/swipr?mode=edit&swipe=swipe_1",
+    );
     expect(mocks.useObjectUrl).toHaveBeenCalledWith(backgroundBlob);
+  });
+
+  it("shows saved caption and hashtag copy on the card", () => {
+    const tree = SwiprSwipeCard({
+      background: createBackground({ blob: new Blob(["background"]) }),
+      backgrounds: [createBackground()],
+      onDelete: vi.fn(),
+      onLoadBackgroundBlob: vi.fn(),
+      swipe: createSwipe({
+        caption: "The faster way to plan a launch.",
+        hashtags: ["#launch", "#founders"],
+      }),
+    });
+    const markup = JSON.stringify(tree);
+
+    expect(markup).toContain("The faster way to plan a launch.");
+    expect(markup).toContain("#launch #founders");
   });
 
   it("stores load and download errors", async () => {

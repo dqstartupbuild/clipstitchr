@@ -637,12 +637,15 @@ describe("convex media collections", () => {
       products: [
         { unique: { _id: "product_doc", id: "product_1" } },
         { unique: { _id: "product_doc", id: "product_1" } },
+        { unique: { _id: "product_doc", id: "product_1" } },
       ],
       swipes: [
+        { unique: null },
         { unique: null },
         { unique: { _id: "swipe_doc", createdAt: now, id: "swipe_1" } },
       ],
       swiprBackgrounds: [
+        { unique: { _id: "background_doc", uploadedByOwnerId: "owner_123" } },
         { unique: { _id: "background_doc", uploadedByOwnerId: "owner_123" } },
         { unique: { _id: "background_doc", uploadedByOwnerId: "owner_123" } },
       ],
@@ -660,6 +663,25 @@ describe("convex media collections", () => {
         name: "Swipe",
         productContext: "Context",
         productName: "Product",
+      }),
+    );
+    await expect(
+      getHandler<Record<string, unknown>, unknown>(swipes.save)(
+        saveCtx,
+        createSwipeArgs({
+          caption: "  Real caption  ",
+          hashtags: [" #launch ", " ", "#founders"],
+          id: "swipe_social",
+          rationale: "  The hook is specific.  ",
+        }),
+      ),
+    ).resolves.toBe("inserted_doc");
+    expect(saveCtx.db.insert).toHaveBeenCalledWith(
+      "swipes",
+      expect.objectContaining({
+        caption: "Real caption",
+        hashtags: ["#launch", "#founders"],
+        rationale: "The hook is specific.",
       }),
     );
     await expect(

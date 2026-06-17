@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { SwiprBackgroundPanel } from "@/app/_components/swipr/SwiprBackgroundPanel";
 import { SwiprAvatarPhotoPanel } from "@/app/_components/swipr/SwiprAvatarPhotoPanel";
 import { SwiprBatchControls } from "@/app/_components/swipr/SwiprBatchControls";
+import { SwiprEditModeNotice } from "@/app/_components/swipr/SwiprEditModeNotice";
 import { SwiprManualControls } from "@/app/_components/swipr/SwiprManualControls";
 import { SwiprModeToggle } from "@/app/_components/swipr/SwiprModeToggle";
 import { SwiprPexelsPanel } from "@/app/_components/swipr/SwiprPexelsPanel";
@@ -47,6 +49,7 @@ import { getSwiprSavedProductOptionValue } from "@/lib/clipstitchr/utils/getSwip
 import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
 import { getSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getSwiprLibraryPacks";
 import { getSwiprSwipeName } from "@/lib/clipstitchr/utils/getSwiprSwipeName";
+import { getSwiprSwipeEditHref } from "@/lib/clipstitchr/utils/getSwiprSwipeEditHref";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { assignSwiprBackgroundsToSlides } from "@/lib/clipstitchr/utils/assignSwiprBackgroundsToSlides";
 import { resizeSwiprSlides } from "@/lib/clipstitchr/utils/resizeSwiprSlides";
@@ -54,6 +57,9 @@ import { resizeSwiprSlides } from "@/lib/clipstitchr/utils/resizeSwiprSlides";
 const PEXELS_SEARCH_PER_PAGE = 12;
 
 export function SwiprPageClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedSwipeId = searchParams.get("swipe")?.trim() || null;
   const photoLibrary = usePhotoLibrary();
   const products = useProducts();
   const swiprLibrary = useSwiprLibrary();
@@ -68,13 +74,7 @@ export function SwiprPageClient() {
   );
   const [selectedProductId, setSelectedProductId] = useState<string>();
   const [swiprMode, setSwiprMode] = useState<SwiprMode>(() => {
-    if (typeof window === "undefined") {
-      return "batch";
-    }
-
-    return new URL(window.location.href).searchParams.get("swipe")
-      ? "manual"
-      : "batch";
+    return requestedSwipeId ? "manual" : "batch";
   });
   const [slides, setSlides] = useState(() =>
     createSwiprSlides(SWIPR_MIN_SLIDE_COUNT),
@@ -107,13 +107,7 @@ export function SwiprPageClient() {
   const [draftGenerationCount, setDraftGenerationCount] = useState(3);
   const [textGenerationScope, setTextGenerationScope] =
     useState<SwiprTextGenerationScope>("all");
-  const [editingSwipeId, setEditingSwipeId] = useState<string | null>(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
-    return new URL(window.location.href).searchParams.get("swipe");
-  });
+  const editingSwipeId = requestedSwipeId;
   const [loadedSwipeId, setLoadedSwipeId] = useState<string | null>(null);
   const [savedSwipeSnapshot, setSavedSwipeSnapshot] =
     useState<SwiprSwipe | null>(null);
@@ -142,6 +136,22 @@ export function SwiprPageClient() {
     slides.findIndex((slide) => slide.id === activeSlideId),
   );
   const activeSlide = slides[activeSlideIndex] ?? null;
+  const isEditingSavedSwipe = Boolean(editingSwipeId);
+  const activeSwiprMode = isEditingSavedSwipe ? "manual" : swiprMode;
+  const hasEditSwipeRecord = Boolean(
+    editingSwipeId &&
+      (savedSwipeSnapshot?.id === editingSwipeId ||
+        swiprLibrary.swipes.some((swipe) => swipe.id === editingSwipeId)),
+  );
+  const isEditSwipeMissing = Boolean(
+    editingSwipeId && swiprLibrary.isLoading === false && !hasEditSwipeRecord,
+  );
+  const isEditSwipeLoading = Boolean(
+    editingSwipeId &&
+      !isEditSwipeMissing &&
+      editingSwipeId !== loadedSwipeId &&
+      savedSwipeSnapshot?.id !== editingSwipeId,
+  );
   const activeSlideBackgroundAsset = activeSlide?.backgroundId
     ? swiprLibrary.backgrounds.find(
         (item) => item.id === activeSlide.backgroundId,
@@ -597,6 +607,20 @@ export function SwiprPageClient() {
     setAutoTextMessage("Copied this photo to every slide.");
   };
 
+  const handleCreateNewSwipe = useCallback(() => {
+    const nextSlides = createSwiprSlides(SWIPR_MIN_SLIDE_COUNT);
+
+    setSwiprMode("batch");
+    setSlides(nextSlides);
+    setActiveSlideId(nextSlides[0]?.id ?? null);
+    setBackground(null);
+    setLoadedSwipeId(null);
+    setSavedSwipeSnapshot(null);
+    setSaveMessage(null);
+    setAutoTextMessage(null);
+    setBackgroundError(null);
+  }, []);
+
   const handleUploadBackgrounds = (files: File[]) => {
     const selectedFiles = files.slice(0, SWIPR_MAX_SLIDE_COUNT);
 
@@ -784,30 +808,30 @@ export function SwiprPageClient() {
 
     const id = editingSwipeId ?? createId();
     const existingSwipe = swiprLibrary.swipes.find((swipe) => swipe.id === id);
+    const socialCopySource = savedSwipeSnapshot ?? existingSwipe;
 
     void swiprLibrary
       .saveSwipe({
         id,
+        caption: socialCopySource?.caption,
         name: getSwiprSwipeName(exportProductName),
         productSourceType: "saved-product",
         productSourceId: selectedSavedProductId,
         productContext: effectiveProductContext,
         productName: exportProductName,
         backgroundId: fallbackBackgroundId,
+        hashtags: socialCopySource?.hashtags,
+        rationale: socialCopySource?.rationale,
         slides: slidesForSave,
         createdAt: existingSwipe?.createdAt ?? savedSwipeSnapshot?.createdAt,
       })
       .then((savedSwipe) => {
-        setEditingSwipeId(savedSwipe.id);
         setSavedSwipeSnapshot(savedSwipe);
+        setLoadedSwipeId(savedSwipe.id);
         setSaveMessage("Swipe saved.");
-
-        if (typeof window !== "undefined") {
-          const url = new URL(window.location.href);
-
-          url.searchParams.set("swipe", savedSwipe.id);
-          window.history.replaceState(null, "", url.toString());
-        }
+        router.replace(getSwiprSwipeEditHref(savedSwipe.id), {
+          scroll: false,
+        });
       })
       .catch((error) => {
         setSaveMessage(
@@ -946,9 +970,13 @@ export function SwiprPageClient() {
     <DashboardShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <DashboardPageHeader
-          eyebrow="Carousel generator"
-          title="Create TikTok carousels"
-          description="Build vertical slides with a different photo and text on each one."
+          eyebrow={isEditingSavedSwipe ? "Swipe editor" : "Carousel generator"}
+          title={isEditingSavedSwipe ? "Edit Swipe" : "Create TikTok carousels"}
+          description={
+            isEditingSavedSwipe
+              ? "Change the photos or text, then save the latest version."
+              : "Build vertical slides with a different photo and text on each one."
+          }
         />
 
         {products.error ||
@@ -971,7 +999,7 @@ export function SwiprPageClient() {
         <div
           className={[
             "grid gap-5 xl:items-start",
-            swiprMode === "manual"
+            activeSwiprMode === "manual"
               ? "xl:grid-cols-[minmax(0,1fr)_340px]"
               : "",
           ].join(" ")}
@@ -980,19 +1008,28 @@ export function SwiprPageClient() {
             <div
               className={[
                 "grid gap-4",
-                swiprMode === "manual"
+                activeSwiprMode === "manual"
                   ? "lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.72fr)] lg:items-start"
                   : "",
               ].join(" ")}
             >
               <div className="grid gap-4">
-                <SwiprModeToggle value={swiprMode} onChange={setSwiprMode} />
+                {isEditingSavedSwipe ? (
+                  <SwiprEditModeNotice
+                    isLoading={isEditSwipeLoading}
+                    isMissing={isEditSwipeMissing}
+                    onCreateNew={handleCreateNewSwipe}
+                    swipeName={savedSwipeSnapshot?.name}
+                  />
+                ) : (
+                  <SwiprModeToggle value={swiprMode} onChange={setSwiprMode} />
+                )}
                 <SwiprProductPanel
                   productOptions={productOptions}
                   selectedProductId={activeProductId}
                   onProductChange={setSelectedProductId}
                 />
-                {swiprMode === "batch" ? (
+                {activeSwiprMode === "batch" ? (
                   <SwiprBatchControls
                     draftGenerationCount={draftGenerationCount}
                     isDisabled={!selectedSavedProduct}
@@ -1012,7 +1049,7 @@ export function SwiprPageClient() {
                     onTextGenerationScopeChange={setTextGenerationScope}
                   />
                 )}
-                {swiprMode === "manual" ? (
+                {activeSwiprMode === "manual" ? (
                   <>
                     <SwiprBackgroundPanel
                       generationPrompt={generationPrompt}
@@ -1044,9 +1081,9 @@ export function SwiprPageClient() {
                   photos={pexelsPhotos}
                   query={pexelsQuery}
                   selectedLibraryQueries={selectedLibraryQueries}
-                  showImportControls={swiprMode === "batch"}
-                  showLibraryPacks={swiprMode === "batch"}
-                  showSavedLibraryPhotos={swiprMode === "manual"}
+                  showImportControls={activeSwiprMode === "batch"}
+                  showLibraryPacks={activeSwiprMode === "batch"}
+                  showSavedLibraryPhotos={activeSwiprMode === "manual"}
                   onImportCountChange={setPexelsImportCount}
                   onImportQuery={handleImportPexelsLibraryQuery}
                   onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
@@ -1054,16 +1091,18 @@ export function SwiprPageClient() {
                   onQueryChange={handlePexelsQueryChange}
                   onSearch={handleSearchPexels}
                   onSelectPhoto={
-                    swiprMode === "manual" ? handleSelectPexelsPhoto : undefined
+                    activeSwiprMode === "manual"
+                      ? handleSelectPexelsPhoto
+                      : undefined
                   }
                   onSelectSavedBackground={
-                    swiprMode === "manual"
+                    activeSwiprMode === "manual"
                       ? handleSelectSavedBackground
                       : undefined
                   }
                   onSelectedLibraryQueriesChange={setSelectedLibraryQueries}
                 />
-                {swiprMode === "manual" ? (
+                {activeSwiprMode === "manual" ? (
                   <SwiprSlideStrip
                     canCopyActivePhotoToAllSlides={Boolean(
                       activeSlide?.backgroundId && slideCount > 1,
@@ -1076,7 +1115,7 @@ export function SwiprPageClient() {
                   />
                 ) : null}
               </div>
-              {swiprMode === "manual" ? (
+              {activeSwiprMode === "manual" ? (
                 <SwiprTextOverlayPanel
                   activeSlide={activeSlide}
                   activeSlideIndex={activeSlideIndex}
@@ -1085,7 +1124,7 @@ export function SwiprPageClient() {
               ) : null}
             </div>
           </Panel>
-          {swiprMode === "manual" ? (
+          {activeSwiprMode === "manual" ? (
             <div className="order-1 min-w-0 w-full max-w-[340px] justify-self-center xl:sticky xl:top-5 xl:order-2 xl:justify-self-end">
               <SwiprPreviewPanel
                 background={activeBackground}

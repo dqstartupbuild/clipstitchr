@@ -115,12 +115,15 @@ export async function POST(request: Request) {
       await convex.mutation(api.swipes.save, {
         id,
         backgroundId: backgroundIds[0],
+        caption: slideshow.caption,
         createdAt: now,
+        hashtags: slideshow.hashtags,
         name: getSwiprSwipeName(product.name),
         productContext: getProductSwiprContext(product),
         productName: product.name,
         productSourceId: product.id,
         productSourceType: "saved-product",
+        rationale: slideshow.rationale,
         slides,
         updatedAt: now,
       });

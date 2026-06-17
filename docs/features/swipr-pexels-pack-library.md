@@ -76,7 +76,8 @@ each slide's photo and text.
   means all saved Pexels packs.
 - Generates multiple slideshow text drafts through the existing text-writing
   provider.
-- Saves each draft through `swipes.save`.
+- Saves each draft through `swipes.save`, including the generated caption,
+  hashtags, and performance note.
 
 The Swipr Batch tab also sends a slide count of 8 for clarity, but the backend
 is the source of truth.

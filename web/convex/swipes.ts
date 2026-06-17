@@ -8,20 +8,13 @@ import { automationProvenanceValidator } from "./validators/automationProvenance
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swiprProductSourceTypeValidator } from "./validators/swiprProductSourceType";
 import { swiprSlideValidator } from "./validators/swiprSlide";
-
-const SWIPE_NAME_MAX_LENGTH = 120;
-const SWIPE_PRODUCT_CONTEXT_MAX_LENGTH = 2000;
-const SWIPE_PRODUCT_NAME_MAX_LENGTH = 120;
+import { normalizeSwiprSwipeFields } from "../lib/clipstitchr/utils/normalizeSwiprSwipeFields";
 
 const postedStatusValidator = v.union(
   v.literal("active"),
   v.literal("all"),
   v.literal("posted"),
 );
-
-function normalizeText(value: string, maxLength: number) {
-  return value.trim().slice(0, maxLength);
-}
 
 const saveArgs = {
   id: v.string(),
@@ -31,6 +24,9 @@ const saveArgs = {
   productContext: v.string(),
   productName: v.string(),
   backgroundId: v.string(),
+  caption: v.optional(v.string()),
+  hashtags: v.optional(v.array(v.string())),
+  rationale: v.optional(v.string()),
   slides: v.array(swiprSlideValidator),
   posterObject: v.optional(r2ObjectValidator),
   posterVersion: v.optional(v.number()),
@@ -145,22 +141,18 @@ export const save = mutation({
       },
     );
 
+    const normalizedFields = normalizeSwiprSwipeFields(args);
     const swipe = {
       ownerId,
       ...args,
-      name: normalizeText(args.name, SWIPE_NAME_MAX_LENGTH),
-      productContext: normalizeText(
-        args.productContext,
-        SWIPE_PRODUCT_CONTEXT_MAX_LENGTH,
-      ),
-      productName: normalizeText(args.productName, SWIPE_PRODUCT_NAME_MAX_LENGTH),
+      ...normalizedFields,
     };
 
-    if (!swipe.name) {
+    if (!normalizedFields.name) {
       throw new Error("Swipe name is required.");
     }
 
-    if (!swipe.productName) {
+    if (!normalizedFields.productName) {
       throw new Error("Swipe product name is required.");
     }
 
@@ -226,16 +218,12 @@ export const saveFromAutomation = mutation({
         q.eq("ownerId", ownerId).eq("id", args.id),
       )
       .unique();
+    const normalizedFields = normalizeSwiprSwipeFields(args);
     const swipe = {
       ownerId,
       ...args,
+      ...normalizedFields,
       automation,
-      name: normalizeText(args.name, SWIPE_NAME_MAX_LENGTH),
-      productContext: normalizeText(
-        args.productContext,
-        SWIPE_PRODUCT_CONTEXT_MAX_LENGTH,
-      ),
-      productName: normalizeText(args.productName, SWIPE_PRODUCT_NAME_MAX_LENGTH),
     };
 
     if (existingSwipe) {
@@ -300,16 +288,12 @@ export const saveFromProvider = mutation({
         q.eq("ownerId", ownerId).eq("id", args.id),
       )
       .unique();
+    const normalizedFields = normalizeSwiprSwipeFields(args);
     const swipe = {
       ownerId,
       ...args,
+      ...normalizedFields,
       automation,
-      name: normalizeText(args.name, SWIPE_NAME_MAX_LENGTH),
-      productContext: normalizeText(
-        args.productContext,
-        SWIPE_PRODUCT_CONTEXT_MAX_LENGTH,
-      ),
-      productName: normalizeText(args.productName, SWIPE_PRODUCT_NAME_MAX_LENGTH),
     };
 
     if (existingSwipe) {

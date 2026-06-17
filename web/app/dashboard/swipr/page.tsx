@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { SwiprPageClient } from "@/app/dashboard/swipr/SwiprPageClient";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
@@ -12,5 +13,9 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function SwiprPage() {
-  return <SwiprPageClient />;
+  return (
+    <Suspense fallback={null}>
+      <SwiprPageClient />
+    </Suspense>
+  );
 }

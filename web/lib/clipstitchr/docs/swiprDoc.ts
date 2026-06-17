@@ -9,7 +9,7 @@ export const swiprDoc = {
     "Build a Swipe with editable photos and text on each slide.",
   category: "feature",
   order: 30,
-  updated: "2026-05-12",
+  updated: "2026-06-17",
   sections: [
     {
       title: "What Swipr creates",
@@ -40,7 +40,7 @@ export const swiprDoc = {
     {
       title: "Saved Swipes",
       body: [
-        "Saved Swipes appear in the Content Library under Swipes and in All. From there, preview, download, keep editing, or delete a Swipe.",
+        "Saved Swipes appear in the Content Library under Swipes and in All. From there, preview, download, keep editing, or delete a Swipe. Batch Swipes also keep their caption and hashtags.",
       ],
     },
   ],

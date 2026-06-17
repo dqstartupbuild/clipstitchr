@@ -215,13 +215,17 @@ describe("SwiprSwipeDetailsDialog", () => {
         blob: new Blob(["background"], { type: "image/jpeg" }),
       }),
       backgrounds: [createBackground()],
-      editHref: "/dashboard/swipr?swipe=swipe_1",
+      editHref: "/dashboard/swipr?mode=edit&swipe=swipe_1",
       isDownloading: true,
       onClose,
       onDelete,
       onDownload,
       onLoadBackgroundBlob,
-      swipe: createSwipe(),
+      swipe: createSwipe({
+        caption: "The fastest way to plan a launch.",
+        hashtags: ["#launch", "#founders"],
+        rationale: "The hook speaks to one urgent planning problem.",
+      }),
     });
     const markup = renderToStaticMarkup(tree);
     const divs = findElements(tree, (element) => element.type === "div");
@@ -249,7 +253,10 @@ describe("SwiprSwipeDetailsDialog", () => {
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Image 1 of 2");
     expect(markup).toContain("blob:background");
-    expect(markup).toContain("/dashboard/swipr?swipe=swipe_1");
+    expect(markup).toContain("/dashboard/swipr?mode=edit&amp;swipe=swipe_1");
+    expect(markup).toContain("The fastest way to plan a launch.");
+    expect(markup).toContain("#launch #founders");
+    expect(markup).toContain("The hook speaks to one urgent planning problem.");
     expect(mocks.overlayProps?.textOverlay.text).toBe("Launch today");
     expect(mocks.swipeNavigationOptions?.isEnabled).toBe(true);
     expect(stateUpdaters.map((updater) => updater(0))).toEqual([1, 1, 1, 1]);
@@ -266,7 +273,7 @@ describe("SwiprSwipeDetailsDialog", () => {
     const tree = SwiprSwipeDetailsDialog({
       background: createBackground(),
       backgrounds: [createBackground()],
-      editHref: "/dashboard/swipr?swipe=swipe_1",
+      editHref: "/dashboard/swipr?mode=edit&swipe=swipe_1",
       isDownloading: false,
       onClose: vi.fn(),
       onDelete: vi.fn(),

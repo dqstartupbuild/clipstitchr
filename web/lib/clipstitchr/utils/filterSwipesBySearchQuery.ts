@@ -15,6 +15,9 @@ export function filterSwipesBySearchQuery(
       swipe.name,
       swipe.productName,
       swipe.productContext,
+      swipe.caption,
+      swipe.hashtags?.join(" "),
+      swipe.rationale,
       ...swipe.slides.map((slide) => slide.textOverlay.text),
     ]
       .join(" ")

@@ -77,6 +77,9 @@ export function SwiprSwipeDetailsDialog({
     onSwipeLeft: goToNext,
     onSwipeRight: goToPrevious,
   });
+  const hashtags = swipe.hashtags
+    ?.map((hashtag) => hashtag.trim())
+    .filter(Boolean);
 
   useEffect(() => {
     let isCancelled = false;
@@ -189,6 +192,36 @@ export function SwiprSwipeDetailsDialog({
                 {formatDate(swipe.updatedAt)}
               </p>
             </div>
+            {swipe.caption?.trim() ? (
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
+                  Caption
+                </p>
+                <p className="mt-1 whitespace-pre-line text-sm text-text-secondary">
+                  {swipe.caption.trim()}
+                </p>
+              </div>
+            ) : null}
+            {hashtags?.length ? (
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
+                  Hashtags
+                </p>
+                <p className="mt-1 text-sm text-text-secondary">
+                  {hashtags.join(" ")}
+                </p>
+              </div>
+            ) : null}
+            {swipe.rationale?.trim() ? (
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
+                  Why it works
+                </p>
+                <p className="mt-1 text-sm text-text-secondary">
+                  {swipe.rationale.trim()}
+                </p>
+              </div>
+            ) : null}
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"

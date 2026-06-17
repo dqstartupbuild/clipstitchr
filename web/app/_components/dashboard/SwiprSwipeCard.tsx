@@ -22,9 +22,11 @@ import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
+import { createSwiprSwipeSocialDescription } from "@/lib/clipstitchr/utils/createSwiprSwipeSocialDescription";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { getSwiprBackgroundFromAsset } from "@/lib/clipstitchr/utils/getSwiprBackgroundFromAsset";
 import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
+import { getSwiprSwipeEditHref } from "@/lib/clipstitchr/utils/getSwiprSwipeEditHref";
 
 type SwiprSwipeCardProps = {
   background: SwiprBackgroundAsset;
@@ -86,6 +88,8 @@ export function SwiprSwipeCard({
     loadBlob: loadPosterBlob,
   });
   const exporter = useSwiprExport();
+  const editHref = getSwiprSwipeEditHref(swipe.id);
+  const socialDescription = createSwiprSwipeSocialDescription(swipe);
 
   useEffect(() => {
     let isCancelled = false;
@@ -218,7 +222,7 @@ export function SwiprSwipeCard({
     {
       label: "Edit Swipe",
       icon: <Edit3 aria-hidden className="h-4 w-4" />,
-      href: `/dashboard/swipr?swipe=${encodeURIComponent(swipe.id)}`,
+      href: editHref,
     },
     ...(onUpdatePostedStatus
       ? [
@@ -296,6 +300,11 @@ export function SwiprSwipeCard({
               <p className="mt-1 text-xs text-text-tertiary">
                 Updated {formatDate(swipe.updatedAt)}
               </p>
+              {socialDescription ? (
+                <p className="mt-2 line-clamp-2 whitespace-pre-line text-xs text-text-secondary">
+                  {socialDescription}
+                </p>
+              ) : null}
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <Badge>
@@ -326,7 +335,7 @@ export function SwiprSwipeCard({
             ...(backgroundBlob ? { blob: backgroundBlob } : {}),
           }}
           backgrounds={backgrounds}
-          editHref={`/dashboard/swipr?swipe=${encodeURIComponent(swipe.id)}`}
+          editHref={editHref}
           swipe={swipe}
           isDownloading={exporter.status === "rendering"}
           onClose={() => setIsDetailsOpen(false)}

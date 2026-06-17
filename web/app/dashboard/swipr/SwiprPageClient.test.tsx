@@ -56,7 +56,9 @@ const mocks = vi.hoisted(() => ({
   pexelsPanelProps: null as Record<string, unknown> | null,
   previewPanelProps: null as Record<string, unknown> | null,
   productPanelProps: null as Record<string, unknown> | null,
+  routerReplace: vi.fn(),
   searchPexelsPhotos: vi.fn(),
+  searchParams: new URLSearchParams(),
   slideStripProps: null as Record<string, unknown> | null,
   stateQueue: [] as unknown[],
   stateSetters: [] as ReturnType<typeof vi.fn>[],
@@ -100,6 +102,13 @@ vi.mock("@/app/_components/dashboard/DashboardShell", () => ({
 
 vi.mock("@/app/_components/dashboard/DashboardPageHeader", () => ({
   DashboardPageHeader: ({ title }: { title: string }) => `Header:${title}`,
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    replace: mocks.routerReplace,
+  }),
+  useSearchParams: () => mocks.searchParams,
 }));
 
 vi.mock("@/app/_components/ui/Panel", () => ({
@@ -279,7 +288,6 @@ function queueSwiprState(
     autoTextMessage?: string | null;
     background?: unknown;
     backgroundError?: string | null;
-    editingSwipeId?: string | null;
     generationPrompt?: string;
     isGeneratingAiBackground?: boolean;
     isGeneratingAutoText?: boolean;
@@ -331,7 +339,6 @@ function queueSwiprState(
     overrides.isGeneratingAutoText ?? false,
     overrides.draftGenerationCount ?? 3,
     overrides.textGenerationScope ?? "all",
-    overrides.editingSwipeId ?? null,
     overrides.loadedSwipeId ?? null,
     overrides.savedSwipeSnapshot ?? null,
     overrides.saveMessage ?? null,
@@ -400,6 +407,7 @@ describe("SwiprPageClient", () => {
       new Blob(["pexels"], { type: "image/jpeg" }),
     );
     mocks.searchPexelsPhotos.mockResolvedValue([]);
+    mocks.searchParams = new URLSearchParams();
     mocks.batchControlsProps = null;
     mocks.backgroundPanelProps = null;
     mocks.manualControlsProps = null;
@@ -407,6 +415,7 @@ describe("SwiprPageClient", () => {
     mocks.pexelsPanelProps = null;
     mocks.previewPanelProps = null;
     mocks.productPanelProps = null;
+    mocks.routerReplace.mockReset();
     mocks.slideStripProps = null;
     mocks.stateQueue.length = 0;
     mocks.stateSetters.length = 0;
@@ -436,6 +445,19 @@ describe("SwiprPageClient", () => {
     expect(markup).toContain("SwiprSlideStrip");
     expect(markup).toContain("SwiprTextOverlayPanel");
     expect(markup).toContain("SwiprPreviewPanel");
+  });
+
+  it("renders saved Swipe URLs as a dedicated edit mode", () => {
+    mocks.searchParams = new URLSearchParams("mode=edit&swipe=swipe_1");
+
+    const markup = renderToStaticMarkup(<SwiprPageClient />);
+
+    expect(markup).toContain("Header:Edit Swipe");
+    expect(markup).toContain("Edit mode");
+    expect(markup).toContain("SwiprManualControls");
+    expect(markup).toContain("SwiprPreviewPanel");
+    expect(markup).not.toContain("SwiprModeToggle");
+    expect(markup).not.toContain("SwiprBatchControls");
   });
 
   it("selects the default product before falling back to the first product", () => {
@@ -778,7 +800,12 @@ describe("SwiprPageClient", () => {
 
   it("saves and exports a ready swipe", async () => {
     const slides = createPhotoSlides(3);
-    const savedSwipe = createSwipe({ slides });
+    const savedSwipe = createSwipe({
+      caption: "Saved caption",
+      hashtags: ["#saved"],
+      rationale: "Saved rationale",
+      slides,
+    });
 
     queueSwiprState({
       background: {
@@ -788,14 +815,6 @@ describe("SwiprPageClient", () => {
       },
       savedSwipeSnapshot: savedSwipe,
       slides,
-    });
-    vi.stubGlobal("window", {
-      history: {
-        replaceState: vi.fn(),
-      },
-      location: {
-        href: "https://example.com/dashboard/swipr",
-      },
     });
 
     renderToStaticMarkup(<SwiprPageClient />);
@@ -813,7 +832,10 @@ describe("SwiprPageClient", () => {
     expect(mocks.swiprLibraryState.saveSwipe).toHaveBeenCalledWith(
       expect.objectContaining({
         backgroundId: "background_1",
+        caption: "Saved caption",
+        hashtags: ["#saved"],
         productSourceId: "product_1",
+        rationale: "Saved rationale",
       }),
     );
     expect(mocks.swiprExportState.exportCarousel).toHaveBeenCalledWith(
@@ -822,9 +844,10 @@ describe("SwiprPageClient", () => {
         slides,
       }),
     );
-    expect(window.history.replaceState).toHaveBeenCalled();
-
-    vi.unstubAllGlobals();
+    expect(mocks.routerReplace).toHaveBeenCalledWith(
+      "/dashboard/swipr?mode=edit&swipe=swipe_1",
+      { scroll: false },
+    );
   });
 
   it("loads a saved swipe from the URL effect", async () => {
@@ -836,10 +859,8 @@ describe("SwiprPageClient", () => {
     mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
       effects.push(effect);
     });
-    queueSwiprState({
-      editingSwipeId: "swipe_1",
-      loadedSwipeId: null,
-    });
+    mocks.searchParams = new URLSearchParams("mode=edit&swipe=swipe_1");
+    queueSwiprState({ loadedSwipeId: null });
 
     renderToStaticMarkup(<SwiprPageClient />);
 
@@ -864,10 +885,8 @@ describe("SwiprPageClient", () => {
     mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
       effects.push(effect);
     });
-    queueSwiprState({
-      editingSwipeId: "swipe_1",
-      loadedSwipeId: null,
-    });
+    mocks.searchParams = new URLSearchParams("mode=edit&swipe=swipe_1");
+    queueSwiprState({ loadedSwipeId: null });
 
     renderToStaticMarkup(<SwiprPageClient />);
 
@@ -888,10 +907,8 @@ describe("SwiprPageClient", () => {
     mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
       effects.push(effect);
     });
-    queueSwiprState({
-      editingSwipeId: "swipe_1",
-      loadedSwipeId: "swipe_1",
-    });
+    mocks.searchParams = new URLSearchParams("mode=edit&swipe=swipe_1");
+    queueSwiprState({ loadedSwipeId: "swipe_1" });
 
     renderToStaticMarkup(<SwiprPageClient />);
     effects[0]?.();
@@ -905,10 +922,8 @@ describe("SwiprPageClient", () => {
     mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
       effects.push(effect);
     });
-    queueSwiprState({
-      editingSwipeId: "missing_swipe",
-      loadedSwipeId: null,
-    });
+    mocks.searchParams = new URLSearchParams("mode=edit&swipe=missing_swipe");
+    queueSwiprState({ loadedSwipeId: null });
 
     renderToStaticMarkup(<SwiprPageClient />);
     effects[0]?.();
@@ -925,10 +940,8 @@ describe("SwiprPageClient", () => {
     mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
       effects.push(effect);
     });
-    queueSwiprState({
-      editingSwipeId: "swipe_1",
-      loadedSwipeId: null,
-    });
+    mocks.searchParams = new URLSearchParams("mode=edit&swipe=swipe_1");
+    queueSwiprState({ loadedSwipeId: null });
 
     renderToStaticMarkup(<SwiprPageClient />);
     const cleanup = effects[0]?.();
@@ -957,10 +970,8 @@ describe("SwiprPageClient", () => {
     mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
       effects.push(effect);
     });
-    queueSwiprState({
-      editingSwipeId: "swipe_1",
-      loadedSwipeId: null,
-    });
+    mocks.searchParams = new URLSearchParams("mode=edit&swipe=swipe_1");
+    queueSwiprState({ loadedSwipeId: null });
 
     renderToStaticMarkup(<SwiprPageClient />);
     effects[0]?.();

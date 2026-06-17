@@ -205,8 +205,11 @@ describe("POST /api/swipr/drafts/generate", () => {
       api.swipes.save,
       expect.objectContaining({
         backgroundId: "background_1",
+        caption: "caption",
+        hashtags: ["#launch"],
         id: "swipe_1",
         productSourceId: "product_1",
+        rationale: "rationale",
         slides: Array.from({ length: 8 }, (_, index) =>
           expect.objectContaining({
             backgroundId: index % 2 === 0 ? "background_1" : "background_2",
