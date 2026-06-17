@@ -243,8 +243,9 @@ Swipr can search Pexels through `POST /api/swipr/pexels/search`. The route:
 
 The Swipr Pexels panel shows a Load more button when a page returns a full
 result set. Load more requests the next Pexels page and appends new photo IDs.
-Batch imports save the currently viewed page for the query, so a user can load
-later results and import that page as a reusable pack.
+Already-imported Pexels photos are hidden from the visible result list. Batch
+imports save the visible loaded results for the query, so a user can load more
+pages and import those new photos as a reusable pack.
 
 When a user adds a Pexels photo, the client downloads the selected portrait
 image, saves it through the existing Swipr background analysis/R2/Convex path,
@@ -255,10 +256,11 @@ details for maintenance. The UI shows
 
 Swipr can also import a full query through
 `POST /api/swipr/pexels/import`. The import route saves Pexels photos directly
-to R2 and Convex with `libraryQuery` set to the query. The Pexels panel shows
-those saved query packs with cover images, lets the user choose all packs or
-specific packs, and exposes saved pack photos for assignment to the selected
-slide.
+to R2 and Convex with `libraryQuery` set to the query. If the normalized query
+already matches an existing pack, the import reuses that pack name. The Pexels
+panel shows those saved query packs with cover images, lets the user choose all
+packs or specific packs, lets the user rename/delete packs or remove photos
+from a pack, and exposes saved pack photos for assignment to the selected slide.
 
 ## Batch Draft Generation
 
@@ -319,7 +321,11 @@ Required protections:
 - AI background generation remains rate-limited before calling Replicate.
 - Pexels search is rate-limited before calling Pexels.
 - Pexels query imports are rate-limited by requested image count before
-  downloading or saving images.
+  downloading or saving images. Loaded-photo imports do not call Pexels search
+  again because the page results were already loaded through the search route.
+- Pexels pack rename/remove/delete operations consume the existing Convex
+  metadata-update, record-delete, and R2 delete limits before changing or
+  removing owner-owned records.
 - Batch draft generation consumes counted text-generation quota before the
   writing provider is called.
 - Automatic Swipr is protected by the Swipr automation daily/global budget

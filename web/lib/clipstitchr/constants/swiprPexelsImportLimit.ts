@@ -1,0 +1,1 @@
+export const SWIPR_PEXELS_IMPORT_LIMIT = 120;

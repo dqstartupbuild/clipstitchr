@@ -285,6 +285,7 @@ export default defineSchema({
     description: v.optional(v.string()),
     details: v.optional(v.string()),
     libraryQuery: v.optional(v.string()),
+    pexelsPhotoId: v.optional(v.number()),
     source: swiprBackgroundSourceValidator,
     imageObject: r2ObjectValidator,
     mimeType: v.string(),

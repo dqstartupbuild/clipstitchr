@@ -23,6 +23,8 @@ import type {
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { getSwiprLibraryBackgroundsByPackName } from "@/lib/clipstitchr/utils/getSwiprLibraryBackgroundsByPackName";
+import { normalizeSwiprLibraryQueryKey } from "@/lib/clipstitchr/utils/normalizeSwiprLibraryQueryKey";
 
 export function useSwiprLibraryState(): SwiprLibraryValue {
   const pathname = usePathname() ?? "";
@@ -51,6 +53,15 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
     shouldLoadPostedSwipes ? { postedStatus: "posted" } : "skip",
   );
   const saveBackgroundMutation = useMutation(api.swiprBackgrounds.save);
+  const removeBackgroundFromLibraryPackMutation = useMutation(
+    api.swiprBackgrounds.removeFromLibraryPack,
+  );
+  const removeLibraryPackMutation = useMutation(
+    api.swiprBackgrounds.removeLibraryPack,
+  );
+  const renameLibraryPackMutation = useMutation(
+    api.swiprBackgrounds.renameLibraryPack,
+  );
   const saveSwipeMutation = useMutation(api.swipes.save);
   const updateSwipePostedStatusMutation = useMutation(
     api.swipes.updatePostedStatus,
@@ -204,6 +215,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
       generationDetails,
       libraryQuery,
       originalName,
+      pexelsPhotoId,
       source,
     }: SaveSwiprBackgroundOptions) => {
       setIsSavingBackground(true);
@@ -245,6 +257,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
           size: imageObject.size,
           width: dimensions.width,
           height: dimensions.height,
+          pexelsPhotoId,
           createdAt,
         });
 
@@ -255,6 +268,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
           description: analysis.description,
           details: details || undefined,
           libraryQuery,
+          pexelsPhotoId,
           source,
           imageObject,
           blob,
@@ -285,6 +299,114 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
       }
     },
     [refresh, saveBackgroundMutation],
+  );
+
+  const removeBackgroundFromLibraryPack = useCallback(
+    async (id: string) => {
+      setError(null);
+
+      try {
+        await removeBackgroundFromLibraryPackMutation({ id });
+        setBackgrounds((currentBackgrounds) =>
+          currentBackgrounds.map((background) =>
+            background.id === id
+              ? { ...background, libraryQuery: undefined }
+              : background,
+          ),
+        );
+        await refresh();
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to remove this photo from the pack.",
+        );
+        throw nextError;
+      }
+    },
+    [refresh, removeBackgroundFromLibraryPackMutation],
+  );
+
+  const renameLibraryPack = useCallback(
+    async (fromLibraryQuery: string, toLibraryQuery: string) => {
+      setError(null);
+
+      try {
+        const result = await renameLibraryPackMutation({
+          fromLibraryQuery,
+          toLibraryQuery,
+        });
+        const fromLibraryQueryKey =
+          normalizeSwiprLibraryQueryKey(fromLibraryQuery);
+
+        setBackgrounds((currentBackgrounds) =>
+          currentBackgrounds.map((background) =>
+            background.source === "pexels" &&
+            normalizeSwiprLibraryQueryKey(background.libraryQuery) ===
+              fromLibraryQueryKey
+              ? { ...background, libraryQuery: result.libraryQuery }
+              : background,
+          ),
+        );
+        await refresh();
+
+        return result;
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to rename this pack.",
+        );
+        throw nextError;
+      }
+    },
+    [refresh, renameLibraryPackMutation],
+  );
+
+  const removeLibraryPack = useCallback(
+    async (libraryQuery: string) => {
+      setError(null);
+
+      try {
+        const packBackgrounds = getSwiprLibraryBackgroundsByPackName(
+          backgrounds,
+          libraryQuery,
+        );
+
+        if (packBackgrounds.length) {
+          await deleteObjectsFromR2(
+            packBackgrounds.map((background) => background.imageObject),
+          );
+        }
+
+        const result = await removeLibraryPackMutation({ libraryQuery });
+        const removedIds = new Set(
+          packBackgrounds.map((background) => background.id),
+        );
+
+        for (const background of packBackgrounds) {
+          backgroundBlobCacheRef.current.delete(background.id);
+          backgroundDownloadPromisesRef.current.delete(background.id);
+        }
+
+        setBackgrounds((currentBackgrounds) =>
+          currentBackgrounds.filter(
+            (background) => !removedIds.has(background.id),
+          ),
+        );
+        await refresh();
+
+        return result.count;
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to delete this pack.",
+        );
+        throw nextError;
+      }
+    },
+    [backgrounds, refresh, removeLibraryPackMutation],
   );
 
   const saveSwipe = useCallback(
@@ -466,6 +588,9 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
     loadBackgroundBlob,
     loadBackgroundAsset,
     loadSwipePoster,
+    removeBackgroundFromLibraryPack,
+    removeLibraryPack,
+    renameLibraryPack,
     saveBackground,
     saveSwipe,
     updateSwipePostedStatus,

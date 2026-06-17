@@ -1939,6 +1939,7 @@ async function processSwipr({
         .filter((detail): detail is string => Boolean(detail))
         .join("\n"),
       source: "pexels",
+      pexelsPhotoId: photo.id,
       imageObject,
       mimeType: imageObject.contentType,
       size: imageObject.size,

@@ -52,7 +52,7 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     kind: "token bucket",
     rate: 120,
     period: HOUR,
-    capacity: 40,
+    capacity: 120,
   },
   pexelsImportImagesGlobal: {
     kind: "token bucket",

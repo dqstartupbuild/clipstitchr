@@ -10,17 +10,22 @@ import { searchPexelsPhotoResults } from "@/lib/clipstitchr/server/pexels/search
 import { readImageDimensionsFromBytes } from "@/lib/clipstitchr/server/readImageDimensionsFromBytes";
 import { readSwiprLibraryQuery } from "@/lib/clipstitchr/server/readSwiprLibraryQuery";
 import { readSwiprPexelsImportCount } from "@/lib/clipstitchr/server/readSwiprPexelsImportCount";
+import { readSwiprPexelsImportPhotos } from "@/lib/clipstitchr/server/readSwiprPexelsImportPhotos";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { createR2ObjectKey } from "@/lib/clipstitchr/server/r2/createR2ObjectKey";
 import { putR2Object } from "@/lib/clipstitchr/server/r2/putR2Object";
+import type { PexelsPhotoResult } from "@/lib/clipstitchr/types/PexelsPhotoResult";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { getImportedPexelsPhotoIds } from "@/lib/clipstitchr/utils/getImportedPexelsPhotoIds";
+import { getSwiprLibraryQueryForImport } from "@/lib/clipstitchr/utils/getSwiprLibraryQueryForImport";
 
 export const runtime = "nodejs";
 
 type SwiprPexelsImportRequest = {
   count?: unknown;
   page?: unknown;
+  photos?: unknown;
   query?: unknown;
 };
 
@@ -40,25 +45,42 @@ export async function POST(request: Request) {
 
     const body = (await request.json()) as SwiprPexelsImportRequest;
     const query = readSwiprLibraryQuery(body.query);
-    const count = readSwiprPexelsImportCount(body.count);
+    const loadedPhotos = readSwiprPexelsImportPhotos(body.photos);
+    const count = loadedPhotos
+      ? loadedPhotos.length
+      : readSwiprPexelsImportCount(body.count);
     const page = getPexelsSearchPage(body.page);
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const secret = getRateLimitApiSecret();
 
-    await convex.mutation(api.rateLimits.consumePexelsSearch, { secret });
-    await convex.mutation(api.rateLimits.consumePexelsImport, {
-      count,
-      secret,
-    });
+    if (!loadedPhotos) {
+      await convex.mutation(api.rateLimits.consumePexelsSearch, { secret });
+    }
 
-    const photos = await searchPexelsPhotoResults({
-      page,
-      perPage: count,
-      query,
-    });
+    const photos: PexelsPhotoResult[] =
+      loadedPhotos ??
+      (await searchPexelsPhotoResults({
+        page,
+        perPage: count,
+        query,
+      }));
+    const backgrounds = await convex.query(api.swiprBackgrounds.list, {});
+    const existingPexelsPhotoIds = getImportedPexelsPhotoIds(backgrounds);
+    const photosToImport = photos.filter(
+      (photo) => !existingPexelsPhotoIds.has(photo.id),
+    );
+    const libraryQuery = getSwiprLibraryQueryForImport(backgrounds, query);
     const importedIds: string[] = [];
+    const importedPhotoIds: number[] = [];
 
-    for (const photo of photos) {
+    if (photosToImport.length) {
+      await convex.mutation(api.rateLimits.consumePexelsImport, {
+        count: photosToImport.length,
+        secret,
+      });
+    }
+
+    for (const photo of photosToImport) {
       const id = createId();
       const { bytes, contentType } = await downloadPexelsPhotoBytes(photo);
       const dimensions = readImageDimensionsFromBytes(bytes, contentType);
@@ -72,7 +94,10 @@ export async function POST(request: Request) {
           userId,
         }),
       });
-      const metadata = createSwiprPexelsBackgroundMetadata({ photo, query });
+      const metadata = createSwiprPexelsBackgroundMetadata({
+        photo,
+        query: libraryQuery,
+      });
 
       await convex.mutation(api.swiprBackgrounds.save, {
         id,
@@ -80,9 +105,10 @@ export async function POST(request: Request) {
         description: metadata.description,
         details: metadata.details,
         imageObject,
-        libraryQuery: query,
+        libraryQuery,
         mimeType: imageObject.contentType,
         name: metadata.name,
+        pexelsPhotoId: photo.id,
         size: imageObject.size,
         source: "pexels",
         tags: metadata.tags,
@@ -90,14 +116,17 @@ export async function POST(request: Request) {
         height: dimensions.height,
       });
       importedIds.push(id);
+      importedPhotoIds.push(photo.id);
     }
 
     return Response.json({
       imported: importedIds.length,
+      importedPexelsPhotoIds: importedPhotoIds,
       ids: importedIds,
       page,
-      query,
+      query: libraryQuery,
       searched: photos.length,
+      skipped: photos.length - photosToImport.length,
     });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

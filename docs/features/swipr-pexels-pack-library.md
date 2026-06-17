@@ -16,16 +16,20 @@ owner-owned Swipr background records in Convex plus Cloudflare R2.
 3. The user searches Pexels from the Pexels panel.
 4. The user can load more Pexels results for the same query when the current
    page returns a full result set.
-5. The user can import the currently viewed query page as a saved pack. The
-   import count defaults to 24 and is clamped by the backend to 40 images.
+5. The user can import the loaded new results as a saved pack. Already-saved
+   Pexels photos are hidden from the visible result list, so repeat searches
+   make it easier to find fresh photos.
 6. In Manual mode, the user can add one visible result directly to the selected
    slide.
 7. Imported photos are saved with `source: "pexels"` and `libraryQuery` set to
-   the search query.
+   the normalized search query. If a matching pack already exists, the import
+   reuses that pack name instead of creating a duplicate casing/spacing variant.
 8. The Pexels panel shows saved query packs with cover images and lets the user
    choose all packs or selected packs.
 9. Saved pack photos can be added to the selected slide in Manual mode.
-10. The user can generate multiple editable draft Swipes at once from Batch
+10. The user can edit a saved pack by renaming it, removing a photo from that
+   pack, or deleting the pack and its saved photos.
+11. The user can generate multiple editable draft Swipes at once from Batch
    mode. Draft generation uses the selected query packs, creates text for each
    slideshow, assigns saved Pexels backgrounds to the slides, and saves each
    result as a normal editable 8-slide Swipe.
@@ -42,6 +46,9 @@ The saved background record includes:
 - R2 image object.
 - `source: "pexels"`.
 - `libraryQuery`, normalized to the trimmed query.
+- Optional `pexelsPhotoId`, used to hide or skip photos that were already
+  imported. Older records are still deduped by parsing the stored Pexels URL in
+  hidden details.
 - Pexels URL, photographer credit, and optional alt text in hidden details.
 - Dimensions, MIME type, size, tags, and created timestamp.
 
@@ -54,15 +61,46 @@ each slide's photo and text.
 `POST /api/swipr/pexels/import`
 
 - Requires an authenticated user.
-- Reads a query, result page, and import count.
-- Consumes Pexels search limits and Pexels import-image limits before calling
+- Reads a query plus either loaded Pexels photo results from the dashboard or a
+  legacy result page/import count.
+- For loaded-photo imports, skips the Pexels search call because the user
+  already searched those pages.
+- For legacy page/count imports, consumes Pexels search limits before calling
   Pexels.
-- Searches Pexels with portrait orientation.
-- Downloads each returned photo server-side.
+- Consumes Pexels import-image limits for the new photos before downloading or
+  saving images.
+- Reuses an existing pack name when the normalized search query already exists.
+- Skips photos already imported by the owner.
+- Downloads each new photo server-side.
 - Uploads each photo to owner-scoped R2 storage.
 - Saves each photo through `swiprBackgrounds.save` with `libraryQuery`.
 - Returns the imported background IDs, query, imported count, and searched
   count.
+
+`swiprBackgrounds.renameLibraryPack`
+
+- Requires an authenticated user.
+- Finds owner-owned Pexels backgrounds whose normalized `libraryQuery` matches
+  the source pack name.
+- Consumes `convexMetadataUpdate` for the matching record count.
+- Patches each matching record to the new normalized pack name.
+
+`swiprBackgrounds.removeFromLibraryPack`
+
+- Requires an authenticated user.
+- Verifies the requested background belongs to the user.
+- Consumes `convexMetadataUpdate`.
+- Clears `libraryQuery` so the photo no longer appears inside that pack.
+
+`swiprBackgrounds.removeLibraryPack`
+
+- Requires an authenticated user.
+- Finds owner-owned Pexels backgrounds whose normalized `libraryQuery` matches
+  the pack name.
+- Consumes `convexRecordDelete` for the matching record count.
+- Deletes the matching Convex records. The client deletes the matching R2 image
+  objects through the existing rate-limited R2 delete route before calling this
+  mutation.
 
 `POST /api/swipr/drafts/generate`
 
@@ -92,10 +130,17 @@ is the source of truth.
 - `web/app/_components/swipr/SwiprManualControls.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackPicker.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackButton.tsx`
+- `web/app/_components/swipr/SwiprLibraryPackEditor.tsx`
+- `web/app/_components/swipr/SwiprLibraryPackRenameForm.tsx`
+- `web/app/_components/swipr/SwiprLibraryPackPhotoList.tsx`
+- `web/app/_components/swipr/SwiprLibraryPackEditorPhoto.tsx`
+- `web/app/_components/swipr/SwiprLibraryPackDeleteAction.tsx`
 - `web/app/_components/swipr/SwiprLibraryPhotoCard.tsx`
 - `web/app/_components/swipr/SwiprDraftGenerationCountControl.tsx`
 - `web/app/dashboard/swipr/SwiprPageClient.tsx`
 - `web/lib/clipstitchr/utils/getSwiprLibraryPacks.ts`
+- `web/lib/clipstitchr/utils/getImportedPexelsPhotoIds.ts`
+- `web/lib/clipstitchr/utils/getSwiprLibraryQueryForImport.ts`
 - `web/lib/clipstitchr/server/createSwiprBatchTextGeneration.ts`
 - `web/lib/clipstitchr/server/createSwiprBatchTextGenerationPrompt.ts`
 
@@ -104,10 +149,15 @@ is the source of truth.
 Pexels pack import creates external API, bandwidth, R2, and Convex write cost.
 The import route consumes:
 
-- `pexelsSearch` and `pexelsSearchGlobal` before calling Pexels.
+- `pexelsSearch` and `pexelsSearchGlobal` before calling Pexels only for the
+  legacy page/count path. Loaded-photo imports use the already-loaded results
+  and do not call Pexels search again.
 - `pexelsImportImages` and `pexelsImportImagesGlobal` by requested import
   count before downloading or saving images.
 - `convexRecordSave` inside `swiprBackgrounds.save` for each imported photo.
+- The existing R2 delete route and `convexRecordDelete` when a pack is deleted.
+- `convexMetadataUpdate` when a pack is renamed or a photo is removed from a
+  pack.
 
 Draft generation creates provider-writing and Convex write cost. The draft
 route consumes `cliprHookScript` and `cliprProviderSpendGlobal` with `count`
@@ -119,7 +169,7 @@ saved draft then uses the existing `swipes.save` write limits.
 Imported packs are owner-owned. There is no shared Swipr image library and no
 cross-user browsing of imported photos.
 
-Deleting old R2 images remains an operator/manual cleanup task unless a future
-user-facing pack delete action is added. If pack deletion is added, it must
-delete owner-owned Convex records and R2 objects behind rate-limited, authorized
-server operations.
+Pack deletion deletes owner-owned R2 images through the rate-limited R2 delete
+route, then deletes the matching owner-owned Convex records. Removing one photo
+from a pack clears `libraryQuery`; it does not delete the photo record, so any
+saved Swipe that already references that photo can still reopen.

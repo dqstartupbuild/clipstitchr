@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SwiprPageClient } from "@/app/dashboard/swipr/SwiprPageClient";
 import { createSwiprSlides } from "@/lib/clipstitchr/utils/createSwiprSlides";
+import type { PexelsPhotoResult } from "@/lib/clipstitchr/types/PexelsPhotoResult";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
@@ -33,6 +34,9 @@ const mocks = vi.hoisted(() => ({
     loadSwipePoster: vi.fn(),
     postedSwipes: [] as SwiprSwipe[],
     refresh: vi.fn(),
+    removeBackgroundFromLibraryPack: vi.fn(),
+    removeLibraryPack: vi.fn(),
+    renameLibraryPack: vi.fn(),
     saveBackground: vi.fn(),
     saveSwipe: vi.fn(),
     swipes: [] as SwiprSwipe[],
@@ -257,6 +261,29 @@ function createBackground(
   };
 }
 
+function createPexelsPhoto(
+  overrides: Partial<PexelsPhotoResult> = {},
+): PexelsPhotoResult {
+  return {
+    alt: "Desk setup",
+    height: 1920,
+    id: 901,
+    photographer: "Avery",
+    photographerUrl: "https://pexels.com/@avery",
+    pexelsUrl: "https://pexels.com/photo/901",
+    src: {
+      large: "https://images.pexels.com/large.jpg",
+      large2x: "https://images.pexels.com/large2x.jpg",
+      medium: "https://images.pexels.com/medium.jpg",
+      original: "https://images.pexels.com/original.jpg",
+      portrait: "https://images.pexels.com/portrait.jpg",
+      small: "https://images.pexels.com/small.jpg",
+    },
+    width: 1080,
+    ...overrides,
+  };
+}
+
 function createSwipe(overrides: Partial<SwiprSwipe> = {}): SwiprSwipe {
   const slides = createPhotoSlides(3);
 
@@ -294,10 +321,10 @@ function queueSwiprState(
     isGeneratingDrafts?: boolean;
     isImportingBackground?: boolean;
     isImportingPexelsLibrary?: boolean;
+    isUpdatingPexelsPack?: boolean;
     isSearchingPexels?: boolean;
     loadedSwipeId?: string | null;
     pexelsError?: string | null;
-    pexelsImportCount?: number;
     pexelsPhotos?: unknown[];
     pexelsQuery?: string;
     saveMessage?: string | null;
@@ -323,7 +350,6 @@ function queueSwiprState(
     overrides.background ?? null,
     overrides.generationPrompt ?? "",
     overrides.pexelsQuery ?? "",
-    overrides.pexelsImportCount ?? 24,
     overrides.pexelsPhotos ?? [],
     overrides.pexelsPage ?? 1,
     overrides.hasMorePexelsPhotos ?? false,
@@ -333,6 +359,7 @@ function queueSwiprState(
     overrides.isGeneratingAiBackground ?? false,
     overrides.isImportingBackground ?? false,
     overrides.isImportingPexelsLibrary ?? false,
+    overrides.isUpdatingPexelsPack ?? false,
     overrides.isSearchingPexels ?? false,
     overrides.isLoadingMorePexels ?? false,
     overrides.isGeneratingDrafts ?? false,
@@ -366,6 +393,14 @@ describe("SwiprPageClient", () => {
       new Blob(["background"], { type: "image/jpeg" }),
     );
     mocks.swiprLibraryState.refresh.mockResolvedValue(undefined);
+    mocks.swiprLibraryState.removeBackgroundFromLibraryPack.mockResolvedValue(
+      undefined,
+    );
+    mocks.swiprLibraryState.removeLibraryPack.mockResolvedValue(1);
+    mocks.swiprLibraryState.renameLibraryPack.mockResolvedValue({
+      count: 1,
+      libraryQuery: "coffee desk",
+    });
     mocks.swiprLibraryState.saveBackground.mockResolvedValue(createBackground());
     mocks.swiprLibraryState.saveSwipe.mockResolvedValue({
       backgroundId: "background_1",
@@ -400,8 +435,11 @@ describe("SwiprPageClient", () => {
     mocks.importPexelsPhotosToSwiprLibrary.mockResolvedValue({
       ids: ["background_1"],
       imported: 1,
+      importedPexelsPhotoIds: [901],
+      page: 1,
       query: "coffee desk",
       searched: 1,
+      skipped: 0,
     });
     mocks.loadPexelsPhotoBlob.mockResolvedValue(
       new Blob(["pexels"], { type: "image/jpeg" }),
@@ -601,6 +639,8 @@ describe("SwiprPageClient", () => {
   });
 
   it("imports Pexels packs and generates editable drafts from saved packs", async () => {
+    const pexelsPhoto = createPexelsPhoto();
+
     mocks.swiprLibraryState.backgrounds = [
       createBackground({
         id: "background_pexels",
@@ -610,7 +650,7 @@ describe("SwiprPageClient", () => {
     ];
     queueSwiprState({
       draftGenerationCount: 2,
-      pexelsImportCount: 12,
+      pexelsPhotos: [pexelsPhoto],
       pexelsQuery: "coffee desk",
       selectedLibraryQueries: ["coffee desk"],
       swiprMode: "batch",
@@ -638,8 +678,8 @@ describe("SwiprPageClient", () => {
 
     expect(pexelsPanelProps.libraryPacks).toHaveLength(1);
     expect(mocks.importPexelsPhotosToSwiprLibrary).toHaveBeenCalledWith({
-      count: 12,
       page: 1,
+      photos: [pexelsPhoto],
       query: "coffee desk",
     });
     expect(mocks.generateSwiprDrafts).toHaveBeenCalledWith({
@@ -651,23 +691,7 @@ describe("SwiprPageClient", () => {
   });
 
   it("searches Pexels and saves selected photos to the active slide", async () => {
-    const pexelsPhoto = {
-      alt: "Desk setup",
-      height: 1920,
-      id: 123,
-      photographer: "Avery",
-      photographerUrl: "https://pexels.com/@avery",
-      pexelsUrl: "https://pexels.com/photo/123",
-      src: {
-        large: "https://images.pexels.com/large.jpg",
-        large2x: "https://images.pexels.com/large2x.jpg",
-        medium: "https://images.pexels.com/medium.jpg",
-        original: "https://images.pexels.com/original.jpg",
-        portrait: "https://images.pexels.com/portrait.jpg",
-        small: "https://images.pexels.com/small.jpg",
-      },
-      width: 1080,
-    };
+    const pexelsPhoto = createPexelsPhoto({ id: 123 });
 
     mocks.searchPexelsPhotos.mockResolvedValueOnce([pexelsPhoto]);
     queueSwiprState({
@@ -706,6 +730,7 @@ describe("SwiprPageClient", () => {
       expect.objectContaining({
         libraryQuery: "desk setup",
         originalName: "Pexels - Avery",
+        pexelsPhotoId: 123,
         source: "pexels",
       }),
     );

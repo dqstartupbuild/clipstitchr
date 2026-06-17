@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { get, list, save } from "./swiprBackgrounds";
+import {
+  get,
+  list,
+  removeFromLibraryPack,
+  removeLibraryPack,
+  renameLibraryPack,
+  save,
+} from "./swiprBackgrounds";
 
 type ConvexFunction<Args, Result> = {
   handler: (ctx: unknown, args: Args) => Promise<Result>;
@@ -57,8 +64,12 @@ function createQueryChain(options: {
 function createBackground(overrides: Record<string, unknown> = {}) {
   return {
     _id: "doc_1",
+    createdAt: "2026-05-20T00:00:00.000Z",
+    details: "Pexels photo: https://pexels.com/photo/101",
     id: "background_1",
+    libraryQuery: "desk setup",
     name: "Studio",
+    source: "pexels",
     uploadedByOwnerId: "owner_123",
     ...overrides,
   };
@@ -79,6 +90,7 @@ function createSaveArgs(overrides: Record<string, unknown> = {}) {
     libraryQuery: "  desk setup  ",
     mimeType: "image/jpeg",
     name: "  Studio  ",
+    pexelsPhotoId: 101,
     size: 10,
     source: "upload",
     tags: ["studio"],
@@ -141,9 +153,100 @@ describe("convex swiprBackgrounds", () => {
         details: "Product pedestal",
         libraryQuery: "desk setup",
         name: "Studio",
+        pexelsPhotoId: 101,
         uploadedByOwnerId: "owner_123",
       }),
     );
+  });
+
+  it("removes a Swipr photo from its Pexels pack", async () => {
+    const queryChain = createQueryChain({ unique: createBackground() });
+    const ctx = {
+      db: {
+        patch: vi.fn(),
+        query: vi.fn(() => queryChain),
+      },
+    };
+
+    await expect(
+      getHandler(removeFromLibraryPack)(ctx, { id: "background_1" }),
+    ).resolves.toEqual(createBackground());
+    expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
+      ctx,
+      "convexMetadataUpdate",
+      {
+        key: "owner_123",
+        throws: true,
+      },
+    );
+    expect(ctx.db.patch).toHaveBeenCalledWith("doc_1", {
+      libraryQuery: undefined,
+    });
+  });
+
+  it("renames matching Pexels packs with normalized query matching", async () => {
+    const backgrounds = [
+      createBackground({ _id: "doc_1", libraryQuery: "Desk Setup" }),
+      createBackground({ _id: "doc_2", id: "background_2", libraryQuery: "desk   setup" }),
+      createBackground({ _id: "doc_3", id: "background_3", libraryQuery: "coffee" }),
+    ];
+    const ctx = {
+      db: {
+        patch: vi.fn(),
+        query: vi.fn(() => createQueryChain({ collect: backgrounds })),
+      },
+    };
+
+    await expect(
+      getHandler(renameLibraryPack)(ctx, {
+        fromLibraryQuery: "desk setup",
+        toLibraryQuery: "  Calisthenics  ",
+      }),
+    ).resolves.toEqual({ count: 2, libraryQuery: "Calisthenics" });
+    expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
+      ctx,
+      "convexMetadataUpdate",
+      {
+        count: 2,
+        key: "owner_123",
+        throws: true,
+      },
+    );
+    expect(ctx.db.patch).toHaveBeenCalledWith("doc_1", {
+      libraryQuery: "Calisthenics",
+    });
+    expect(ctx.db.patch).toHaveBeenCalledWith("doc_2", {
+      libraryQuery: "Calisthenics",
+    });
+  });
+
+  it("deletes matching Pexels pack records", async () => {
+    const backgrounds = [
+      createBackground({ _id: "doc_1", libraryQuery: "Desk Setup" }),
+      createBackground({ _id: "doc_2", id: "background_2", libraryQuery: "desk setup" }),
+      createBackground({ _id: "doc_3", id: "background_3", libraryQuery: "coffee" }),
+    ];
+    const ctx = {
+      db: {
+        delete: vi.fn(),
+        query: vi.fn(() => createQueryChain({ collect: backgrounds })),
+      },
+    };
+
+    await expect(
+      getHandler(removeLibraryPack)(ctx, { libraryQuery: "desk setup" }),
+    ).resolves.toEqual({ count: 2 });
+    expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
+      ctx,
+      "convexRecordDelete",
+      {
+        count: 2,
+        key: "owner_123",
+        throws: true,
+      },
+    );
+    expect(ctx.db.delete).toHaveBeenCalledWith("doc_1");
+    expect(ctx.db.delete).toHaveBeenCalledWith("doc_2");
   });
 
   it("rejects blank names and duplicate backgrounds before consuming quota", async () => {

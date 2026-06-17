@@ -27,6 +27,7 @@ import { generateSwiprDrafts } from "@/lib/clipstitchr/client/generateSwiprDraft
 import { importPexelsPhotosToSwiprLibrary } from "@/lib/clipstitchr/client/importPexelsPhotosToSwiprLibrary";
 import { loadPexelsPhotoBlob } from "@/lib/clipstitchr/client/loadPexelsPhotoBlob";
 import { searchPexelsPhotos } from "@/lib/clipstitchr/client/searchPexelsPhotos";
+import { SWIPR_PEXELS_IMPORT_LIMIT } from "@/lib/clipstitchr/constants/swiprPexelsImportLimit";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
@@ -50,6 +51,8 @@ import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlide
 import { getSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getSwiprLibraryPacks";
 import { getSwiprSwipeName } from "@/lib/clipstitchr/utils/getSwiprSwipeName";
 import { getSwiprSwipeEditHref } from "@/lib/clipstitchr/utils/getSwiprSwipeEditHref";
+import { getImportedPexelsPhotoIds } from "@/lib/clipstitchr/utils/getImportedPexelsPhotoIds";
+import { normalizeSwiprLibraryQueryKey } from "@/lib/clipstitchr/utils/normalizeSwiprLibraryQueryKey";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { assignSwiprBackgroundsToSlides } from "@/lib/clipstitchr/utils/assignSwiprBackgroundsToSlides";
 import { resizeSwiprSlides } from "@/lib/clipstitchr/utils/resizeSwiprSlides";
@@ -86,7 +89,6 @@ export function SwiprPageClient() {
   const [background, setBackground] = useState<SwiprBackground | null>(null);
   const [generationPrompt, setGenerationPrompt] = useState("");
   const [pexelsQuery, setPexelsQuery] = useState("");
-  const [pexelsImportCount, setPexelsImportCount] = useState(24);
   const [pexelsPhotos, setPexelsPhotos] = useState<PexelsPhotoResult[]>([]);
   const [pexelsPage, setPexelsPage] = useState(1);
   const [hasMorePexelsPhotos, setHasMorePexelsPhotos] = useState(false);
@@ -100,6 +102,7 @@ export function SwiprPageClient() {
   const [isImportingBackground, setIsImportingBackground] = useState(false);
   const [isImportingPexelsLibrary, setIsImportingPexelsLibrary] =
     useState(false);
+  const [isUpdatingPexelsPack, setIsUpdatingPexelsPack] = useState(false);
   const [isSearchingPexels, setIsSearchingPexels] = useState(false);
   const [isLoadingMorePexels, setIsLoadingMorePexels] = useState(false);
   const [isGeneratingDrafts, setIsGeneratingDrafts] = useState(false);
@@ -184,22 +187,42 @@ export function SwiprPageClient() {
     () => getSwiprLibraryPacks(swiprLibrary.backgrounds),
     [swiprLibrary.backgrounds],
   );
+  const allPexelsLibraryBackgrounds = useMemo(
+    () =>
+      swiprLibrary.backgrounds.filter(
+        (backgroundAsset) =>
+          backgroundAsset.source === "pexels" &&
+          Boolean(backgroundAsset.libraryQuery),
+      ),
+    [swiprLibrary.backgrounds],
+  );
+  const selectedLibraryQueryKeys = useMemo(
+    () =>
+      selectedLibraryQueries.map((libraryQuery) =>
+        normalizeSwiprLibraryQueryKey(libraryQuery),
+      ),
+    [selectedLibraryQueries],
+  );
   const libraryBackgrounds = useMemo(
     () =>
-      swiprLibrary.backgrounds.filter((backgroundAsset) => {
-        if (
-          backgroundAsset.source !== "pexels" ||
-          !backgroundAsset.libraryQuery
-        ) {
-          return false;
-        }
-
+      allPexelsLibraryBackgrounds.filter((backgroundAsset) => {
         return (
-          selectedLibraryQueries.length === 0 ||
-          selectedLibraryQueries.includes(backgroundAsset.libraryQuery)
+          selectedLibraryQueryKeys.length === 0 ||
+          selectedLibraryQueryKeys.includes(
+            normalizeSwiprLibraryQueryKey(backgroundAsset.libraryQuery),
+          )
         );
       }),
-    [selectedLibraryQueries, swiprLibrary.backgrounds],
+    [allPexelsLibraryBackgrounds, selectedLibraryQueryKeys],
+  );
+  const importedPexelsPhotoIds = useMemo(
+    () => getImportedPexelsPhotoIds(swiprLibrary.backgrounds),
+    [swiprLibrary.backgrounds],
+  );
+  const visiblePexelsPhotos = useMemo(
+    () =>
+      pexelsPhotos.filter((photo) => !importedPexelsPhotoIds.has(photo.id)),
+    [importedPexelsPhotoIds, pexelsPhotos],
   );
 
   const loadSwiprBackgroundAsset = useCallback(
@@ -405,7 +428,11 @@ export function SwiprPageClient() {
         setPexelsPhotos(photos);
         setPexelsPage(nextPage);
         setHasMorePexelsPhotos(photos.length === PEXELS_SEARCH_PER_PAGE);
-        setPexelsError(photos.length ? null : "No matching photos found.");
+        setPexelsError(
+          photos.some((photo) => !importedPexelsPhotoIds.has(photo.id))
+            ? null
+            : "No new photos found. Try loading more.",
+        );
       })
       .catch((error) => {
         setPexelsError(
@@ -413,9 +440,14 @@ export function SwiprPageClient() {
         );
       })
       .finally(() => setIsSearchingPexels(false));
-  }, [pexelsQuery]);
+  }, [importedPexelsPhotoIds, pexelsQuery]);
 
   const handleLoadMorePexels = useCallback(() => {
+    if (pexelsPhotos.length >= SWIPR_PEXELS_IMPORT_LIMIT) {
+      setHasMorePexelsPhotos(false);
+      return;
+    }
+
     const nextPage = pexelsPage + 1;
 
     setIsLoadingMorePexels(true);
@@ -427,18 +459,20 @@ export function SwiprPageClient() {
       query: pexelsQuery,
     })
       .then((photos) => {
-        setPexelsPhotos((currentPhotos) => {
-          const existingPhotoIds = new Set(
-            currentPhotos.map((photo) => photo.id),
-          );
+        const existingPhotoIds = new Set(
+          pexelsPhotos.map((photo) => photo.id),
+        );
+        const nextPhotos = [
+          ...pexelsPhotos,
+          ...photos.filter((photo) => !existingPhotoIds.has(photo.id)),
+        ].slice(0, SWIPR_PEXELS_IMPORT_LIMIT);
 
-          return [
-            ...currentPhotos,
-            ...photos.filter((photo) => !existingPhotoIds.has(photo.id)),
-          ];
-        });
+        setPexelsPhotos(nextPhotos);
         setPexelsPage(nextPage);
-        setHasMorePexelsPhotos(photos.length === PEXELS_SEARCH_PER_PAGE);
+        setHasMorePexelsPhotos(
+          photos.length === PEXELS_SEARCH_PER_PAGE &&
+            nextPhotos.length < SWIPR_PEXELS_IMPORT_LIMIT,
+        );
       })
       .catch((error) => {
         setPexelsError(
@@ -446,7 +480,7 @@ export function SwiprPageClient() {
         );
       })
       .finally(() => setIsLoadingMorePexels(false));
-  }, [pexelsPage, pexelsQuery]);
+  }, [pexelsPage, pexelsPhotos, pexelsQuery]);
 
   const handleSelectPexelsPhoto = useCallback(
     (photo: PexelsPhotoResult) => {
@@ -469,6 +503,7 @@ export function SwiprPageClient() {
               .join("\n"),
             libraryQuery: pexelsQuery.trim() || undefined,
             originalName: `Pexels - ${photo.photographer}`,
+            pexelsPhotoId: photo.id,
             source: "pexels",
           });
 
@@ -496,23 +531,35 @@ export function SwiprPageClient() {
   );
 
   const handleImportPexelsLibraryQuery = useCallback(() => {
+    if (!visiblePexelsPhotos.length) {
+      setPexelsError("No new loaded photos to import.");
+      return;
+    }
+
     setIsImportingPexelsLibrary(true);
     setPexelsError(null);
     setAutoTextMessage(null);
 
     void importPexelsPhotosToSwiprLibrary({
-      count: pexelsImportCount,
       page: pexelsPage,
+      photos: visiblePexelsPhotos,
       query: pexelsQuery,
     })
       .then((result) => {
+        const importedPhotoIds = new Set(result.importedPexelsPhotoIds);
+
+        setPexelsPhotos((currentPhotos) =>
+          currentPhotos.filter((photo) => !importedPhotoIds.has(photo.id)),
+        );
         setSelectedLibraryQueries((currentQueries) =>
           currentQueries.includes(result.query)
             ? currentQueries
             : [result.query, ...currentQueries],
         );
         setAutoTextMessage(
-          `Imported ${result.imported} Pexels photos for ${result.query}.`,
+          result.imported
+            ? `Imported ${result.imported} Pexels photos for ${result.query}.`
+            : `No new Pexels photos to import for ${result.query}.`,
         );
       })
       .catch((error) => {
@@ -523,7 +570,94 @@ export function SwiprPageClient() {
         );
       })
       .finally(() => setIsImportingPexelsLibrary(false));
-  }, [pexelsImportCount, pexelsPage, pexelsQuery]);
+  }, [pexelsPage, pexelsQuery, visiblePexelsPhotos]);
+
+  const handleRenamePexelsPack = useCallback(
+    async (fromLibraryQuery: string, toLibraryQuery: string) => {
+      setIsUpdatingPexelsPack(true);
+      setPexelsError(null);
+      setAutoTextMessage(null);
+
+      try {
+        const result = await swiprLibrary.renameLibraryPack(
+          fromLibraryQuery,
+          toLibraryQuery,
+        );
+        const fromLibraryQueryKey =
+          normalizeSwiprLibraryQueryKey(fromLibraryQuery);
+
+        setSelectedLibraryQueries((currentQueries) =>
+          currentQueries.map((libraryQuery) =>
+            normalizeSwiprLibraryQueryKey(libraryQuery) === fromLibraryQueryKey
+              ? result.libraryQuery
+              : libraryQuery,
+          ),
+        );
+        setAutoTextMessage(`Renamed ${result.count} pack photos.`);
+
+        return result.libraryQuery;
+      } catch (error) {
+        setPexelsError(
+          error instanceof Error ? error.message : "Unable to rename this pack.",
+        );
+        throw error;
+      } finally {
+        setIsUpdatingPexelsPack(false);
+      }
+    },
+    [swiprLibrary],
+  );
+
+  const handleRemovePexelsPhotoFromPack = useCallback(
+    async (backgroundAsset: SwiprBackgroundAsset) => {
+      setIsUpdatingPexelsPack(true);
+      setPexelsError(null);
+      setAutoTextMessage(null);
+
+      try {
+        await swiprLibrary.removeBackgroundFromLibraryPack(backgroundAsset.id);
+        setAutoTextMessage("Removed photo from pack.");
+      } catch (error) {
+        setPexelsError(
+          error instanceof Error
+            ? error.message
+            : "Unable to remove this photo.",
+        );
+        throw error;
+      } finally {
+        setIsUpdatingPexelsPack(false);
+      }
+    },
+    [swiprLibrary],
+  );
+
+  const handleDeletePexelsPack = useCallback(
+    async (libraryQuery: string) => {
+      setIsUpdatingPexelsPack(true);
+      setPexelsError(null);
+      setAutoTextMessage(null);
+
+      try {
+        const count = await swiprLibrary.removeLibraryPack(libraryQuery);
+        const libraryQueryKey = normalizeSwiprLibraryQueryKey(libraryQuery);
+
+        setSelectedLibraryQueries((currentQueries) =>
+          currentQueries.filter(
+            (query) => normalizeSwiprLibraryQueryKey(query) !== libraryQueryKey,
+          ),
+        );
+        setAutoTextMessage(`Deleted ${count} pack photos.`);
+      } catch (error) {
+        setPexelsError(
+          error instanceof Error ? error.message : "Unable to delete this pack.",
+        );
+        throw error;
+      } finally {
+        setIsUpdatingPexelsPack(false);
+      }
+    },
+    [swiprLibrary],
+  );
 
   const handleSelectSavedBackground = useCallback(
     (savedBackground: SwiprBackgroundAsset) => {
@@ -1071,24 +1205,29 @@ export function SwiprPageClient() {
                 <SwiprPexelsPanel
                   error={pexelsError}
                   hasMorePhotos={hasMorePexelsPhotos}
-                  importCount={pexelsImportCount}
+                  allLibraryBackgrounds={allPexelsLibraryBackgrounds}
                   isLoadingMore={isLoadingMorePexels}
                   isSaving={isImportingBackground}
                   isImportingLibrary={isImportingPexelsLibrary}
                   isSearching={isSearchingPexels}
+                  isUpdatingLibraryPack={isUpdatingPexelsPack}
                   libraryBackgrounds={libraryBackgrounds}
                   libraryPacks={libraryPacks}
-                  photos={pexelsPhotos}
+                  photos={visiblePexelsPhotos}
                   query={pexelsQuery}
                   selectedLibraryQueries={selectedLibraryQueries}
                   showImportControls={activeSwiprMode === "batch"}
                   showLibraryPacks={activeSwiprMode === "batch"}
                   showSavedLibraryPhotos={activeSwiprMode === "manual"}
-                  onImportCountChange={setPexelsImportCount}
+                  onDeleteLibraryPack={handleDeletePexelsPack}
                   onImportQuery={handleImportPexelsLibraryQuery}
                   onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
                   onLoadMore={handleLoadMorePexels}
                   onQueryChange={handlePexelsQueryChange}
+                  onRemoveLibraryPhotoFromPack={
+                    handleRemovePexelsPhotoFromPack
+                  }
+                  onRenameLibraryPack={handleRenamePexelsPack}
                   onSearch={handleSearchPexels}
                   onSelectPhoto={
                     activeSwiprMode === "manual"

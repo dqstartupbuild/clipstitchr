@@ -418,7 +418,7 @@ describe("dashboard page clients", () => {
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Batch");
     expect(markup).toContain("Generate drafts");
-    expect(markup).toContain("Import page");
+    expect(markup).toContain("Import loaded");
   });
 
   it("renders the Content Library with upload controls and saved assets", () => {

@@ -83,6 +83,9 @@ vi.mock("@/convex/_generated/api", () => ({
     swiprBackgrounds: {
       get: "swiprBackgrounds.get",
       list: "swiprBackgrounds.list",
+      removeFromLibraryPack: "swiprBackgrounds.removeFromLibraryPack",
+      removeLibraryPack: "swiprBackgrounds.removeLibraryPack",
+      renameLibraryPack: "swiprBackgrounds.renameLibraryPack",
       save: "swiprBackgrounds.save",
     },
   },
@@ -491,6 +494,44 @@ describe("useSwiprLibraryState", () => {
     expect(getMutation("swipes.remove")).toHaveBeenCalledWith({
       id: "swipe_new",
     });
+  });
+
+  it("renames and removes Pexels library packs", async () => {
+    const state = useSwiprLibraryState();
+
+    getMutation("swiprBackgrounds.renameLibraryPack").mockResolvedValue({
+      count: 2,
+      libraryQuery: "Calisthenics",
+    });
+    getMutation("swiprBackgrounds.removeLibraryPack").mockResolvedValue({
+      count: 2,
+    });
+
+    await expect(
+      state.renameLibraryPack("calisthenics", " Calisthenics "),
+    ).resolves.toEqual({
+      count: 2,
+      libraryQuery: "Calisthenics",
+    });
+    await expect(
+      state.removeBackgroundFromLibraryPack("background_1"),
+    ).resolves.toBeUndefined();
+    await expect(state.removeLibraryPack("Calisthenics")).resolves.toBe(2);
+
+    expect(getMutation("swiprBackgrounds.renameLibraryPack")).toHaveBeenCalledWith(
+      {
+        fromLibraryQuery: "calisthenics",
+        toLibraryQuery: " Calisthenics ",
+      },
+    );
+    expect(
+      getMutation("swiprBackgrounds.removeFromLibraryPack"),
+    ).toHaveBeenCalledWith({ id: "background_1" });
+    expect(getMutation("swiprBackgrounds.removeLibraryPack")).toHaveBeenCalledWith(
+      {
+        libraryQuery: "Calisthenics",
+      },
+    );
   });
 
   it("updates Swipe posted status", async () => {

@@ -8,6 +8,7 @@ export type SwiprBackgroundAsset = {
   description?: string;
   details?: string;
   libraryQuery?: string;
+  pexelsPhotoId?: number;
   source: SwiprBackgroundSource;
   imageObject: R2ObjectReference;
   blob?: Blob;

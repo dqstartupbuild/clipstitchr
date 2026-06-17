@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 const mocks = vi.hoisted(() => {
   const convex = {
     mutation: vi.fn(),
+    query: vi.fn(),
   };
 
   return {
@@ -27,6 +28,7 @@ vi.mock("@/convex/_generated/api", () => ({
       consumePexelsSearch: "rateLimits.consumePexelsSearch",
     },
     swiprBackgrounds: {
+      list: "swiprBackgrounds.list",
       save: "swiprBackgrounds.save",
     },
   },
@@ -104,6 +106,7 @@ describe("POST /api/swipr/pexels/import", () => {
     mocks.getAuthenticatedUserId.mockResolvedValue("user_123");
     mocks.getAuthenticatedConvexToken.mockResolvedValue("convex-token");
     mocks.convex.mutation.mockResolvedValue(null);
+    mocks.convex.query.mockResolvedValue([]);
     mocks.createId
       .mockReturnValueOnce("background_1")
       .mockReturnValueOnce("background_2");
@@ -145,9 +148,11 @@ describe("POST /api/swipr/pexels/import", () => {
     await expect(response.json()).resolves.toEqual({
       ids: ["background_1", "background_2"],
       imported: 2,
+      importedPexelsPhotoIds: [101, 102],
       page: 3,
       query: "desk setup",
       searched: 2,
+      skipped: 0,
     });
     expect(response.status).toBe(200);
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
@@ -174,7 +179,76 @@ describe("POST /api/swipr/pexels/import", () => {
       expect.objectContaining({
         id: "background_1",
         libraryQuery: "desk setup",
+        pexelsPhotoId: 101,
         source: "pexels",
+      }),
+    );
+  });
+
+  it("imports the loaded Pexels photos without searching again", async () => {
+    const response = await POST(
+      createRequest({
+        photos: [createPhoto(101), createPhoto(102)],
+        query: " desk setup ",
+      }),
+    );
+
+    await expect(response.json()).resolves.toEqual({
+      ids: ["background_1", "background_2"],
+      imported: 2,
+      importedPexelsPhotoIds: [101, 102],
+      page: 1,
+      query: "desk setup",
+      searched: 2,
+      skipped: 0,
+    });
+    expect(response.status).toBe(200);
+    expect(mocks.searchPexelsPhotoResults).not.toHaveBeenCalled();
+    expect(mocks.convex.mutation).not.toHaveBeenCalledWith(
+      api.rateLimits.consumePexelsSearch,
+      expect.anything(),
+    );
+    expect(mocks.convex.query).toHaveBeenCalledWith(
+      api.swiprBackgrounds.list,
+      {},
+    );
+  });
+
+  it("reuses existing pack names and skips already imported photos", async () => {
+    mocks.convex.query.mockResolvedValue([
+      {
+        details: "Pexels photo: https://pexels.com/photo/101",
+        libraryQuery: "Desk Setup",
+        source: "pexels",
+      },
+    ]);
+
+    const response = await POST(
+      createRequest({
+        photos: [createPhoto(101), createPhoto(102)],
+        query: " desk   setup ",
+      }),
+    );
+
+    await expect(response.json()).resolves.toEqual({
+      ids: ["background_1"],
+      imported: 1,
+      importedPexelsPhotoIds: [102],
+      page: 1,
+      query: "Desk Setup",
+      searched: 2,
+      skipped: 1,
+    });
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.rateLimits.consumePexelsImport,
+      { count: 1, secret: "rate-limit-secret" },
+    );
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.swiprBackgrounds.save,
+      expect.objectContaining({
+        id: "background_1",
+        libraryQuery: "Desk Setup",
+        pexelsPhotoId: 102,
       }),
     );
   });

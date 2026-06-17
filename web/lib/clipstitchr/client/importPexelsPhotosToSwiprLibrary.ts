@@ -1,12 +1,16 @@
+import type { PexelsPhotoResult } from "@/lib/clipstitchr/types/PexelsPhotoResult";
+
 type ImportPexelsPhotosToSwiprLibraryOptions = {
-  count: number;
+  count?: number;
   page?: number;
+  photos?: PexelsPhotoResult[];
   query: string;
 };
 
 export async function importPexelsPhotosToSwiprLibrary({
   count,
   page = 1,
+  photos,
   query,
 }: ImportPexelsPhotosToSwiprLibraryOptions) {
   const response = await fetch("/api/swipr/pexels/import", {
@@ -14,7 +18,7 @@ export async function importPexelsPhotosToSwiprLibrary({
     headers: {
       "content-type": "application/json",
     },
-    body: JSON.stringify({ count, page, query }),
+    body: JSON.stringify({ count, page, photos, query }),
   });
 
   if (!response.ok) {
@@ -28,8 +32,10 @@ export async function importPexelsPhotosToSwiprLibrary({
   return (await response.json()) as {
     ids: string[];
     imported: number;
+    importedPexelsPhotoIds: number[];
     page: number;
     query: string;
     searched: number;
+    skipped: number;
   };
 }

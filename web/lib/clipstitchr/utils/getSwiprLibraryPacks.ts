@@ -1,5 +1,6 @@
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
+import { normalizeSwiprLibraryQueryKey } from "@/lib/clipstitchr/utils/normalizeSwiprLibraryQueryKey";
 
 export function getSwiprLibraryPacks(
   backgrounds: SwiprBackgroundAsset[],
@@ -11,7 +12,8 @@ export function getSwiprLibraryPacks(
       continue;
     }
 
-    const existingPack = packsByName.get(background.libraryQuery);
+    const packKey = normalizeSwiprLibraryQueryKey(background.libraryQuery);
+    const existingPack = packsByName.get(packKey);
     const pack =
       existingPack ??
       ({
@@ -26,7 +28,7 @@ export function getSwiprLibraryPacks(
       pack.coverBackgroundIds.push(background.id);
     }
 
-    packsByName.set(pack.name, pack);
+    packsByName.set(packKey, pack);
   }
 
   return [...packsByName.values()];

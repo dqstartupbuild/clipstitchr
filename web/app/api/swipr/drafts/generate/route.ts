@@ -15,6 +15,7 @@ import { readSwiprLibraryQueries } from "@/lib/clipstitchr/server/readSwiprLibra
 import { SWIPR_MAX_SLIDE_COUNT } from "@/lib/clipstitchr/constants/swiprSlideCountBounds";
 import { getProductSwiprContext } from "@/lib/clipstitchr/utils/getProductSwiprContext";
 import { getSwiprSwipeName } from "@/lib/clipstitchr/utils/getSwiprSwipeName";
+import { normalizeSwiprLibraryQueryKey } from "@/lib/clipstitchr/utils/normalizeSwiprLibraryQueryKey";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 
 export const runtime = "nodejs";
@@ -56,6 +57,9 @@ export async function POST(request: Request) {
     const selectedLibraryQueries = readSwiprLibraryQueries(
       body.selectedLibraryQueries,
     );
+    const selectedLibraryQueryKeys = selectedLibraryQueries.map((libraryQuery) =>
+      normalizeSwiprLibraryQueryKey(libraryQuery),
+    );
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const secret = getRateLimitApiSecret();
 
@@ -79,8 +83,10 @@ export async function POST(request: Request) {
       }
 
       return (
-        selectedLibraryQueries.length === 0 ||
-        selectedLibraryQueries.includes(background.libraryQuery)
+        selectedLibraryQueryKeys.length === 0 ||
+        selectedLibraryQueryKeys.includes(
+          normalizeSwiprLibraryQueryKey(background.libraryQuery),
+        )
       );
     });
 

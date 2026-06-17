@@ -6,6 +6,7 @@ import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack"
 type SwiprLibraryPackPickerProps = {
   packs: SwiprLibraryPack[];
   selectedPackNames: string[];
+  onEditPack?: (name: string) => void;
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onSelectedPackNamesChange: (names: string[]) => void;
 };
@@ -13,6 +14,7 @@ type SwiprLibraryPackPickerProps = {
 export function SwiprLibraryPackPicker({
   packs,
   selectedPackNames,
+  onEditPack,
   onLoadBackgroundBlob,
   onSelectedPackNamesChange,
 }: SwiprLibraryPackPickerProps) {
@@ -58,6 +60,7 @@ export function SwiprLibraryPackPicker({
               key={pack.name}
               isSelected={selectedPackNames.includes(pack.name)}
               pack={pack}
+              onEdit={onEditPack}
               onLoadBackgroundBlob={onLoadBackgroundBlob}
               onToggle={togglePack}
             />

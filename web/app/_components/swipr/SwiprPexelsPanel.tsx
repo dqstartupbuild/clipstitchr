@@ -1,7 +1,9 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { Download, Search } from "lucide-react";
 import { PexelsPhotoCard } from "@/app/_components/swipr/PexelsPhotoCard";
+import { SwiprLibraryPackEditor } from "@/app/_components/swipr/SwiprLibraryPackEditor";
 import { SwiprLibraryPackPicker } from "@/app/_components/swipr/SwiprLibraryPackPicker";
 import { SwiprLibraryPhotoCard } from "@/app/_components/swipr/SwiprLibraryPhotoCard";
 import { Button } from "@/app/_components/ui/Button";
@@ -11,12 +13,13 @@ import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgrou
 import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
 
 type SwiprPexelsPanelProps = {
+  allLibraryBackgrounds: SwiprBackgroundAsset[];
   error: string | null;
-  importCount: number;
   isLoadingMore: boolean;
   isImportingLibrary: boolean;
   isSaving: boolean;
   isSearching: boolean;
+  isUpdatingLibraryPack: boolean;
   libraryBackgrounds: SwiprBackgroundAsset[];
   libraryPacks: SwiprLibraryPack[];
   photos: PexelsPhotoResult[];
@@ -26,11 +29,15 @@ type SwiprPexelsPanelProps = {
   showLibraryPacks: boolean;
   showSavedLibraryPhotos: boolean;
   hasMorePhotos: boolean;
-  onImportCountChange: (count: number) => void;
+  onDeleteLibraryPack: (packName: string) => Promise<void>;
   onImportQuery: () => void;
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onLoadMore: () => void;
   onQueryChange: (query: string) => void;
+  onRemoveLibraryPhotoFromPack: (
+    background: SwiprBackgroundAsset,
+  ) => Promise<void>;
+  onRenameLibraryPack: (fromName: string, toName: string) => Promise<string>;
   onSearch: () => void;
   onSelectSavedBackground?: (background: SwiprBackgroundAsset) => void;
   onSelectPhoto?: (photo: PexelsPhotoResult) => void;
@@ -38,12 +45,13 @@ type SwiprPexelsPanelProps = {
 };
 
 export function SwiprPexelsPanel({
+  allLibraryBackgrounds,
   error,
-  importCount,
   isLoadingMore,
   isImportingLibrary,
   isSaving,
   isSearching,
+  isUpdatingLibraryPack,
   libraryBackgrounds,
   libraryPacks,
   photos,
@@ -53,16 +61,24 @@ export function SwiprPexelsPanel({
   showLibraryPacks,
   showSavedLibraryPhotos,
   hasMorePhotos,
-  onImportCountChange,
+  onDeleteLibraryPack,
   onImportQuery,
   onLoadBackgroundBlob,
   onLoadMore,
   onQueryChange,
+  onRemoveLibraryPhotoFromPack,
+  onRenameLibraryPack,
   onSearch,
   onSelectSavedBackground,
   onSelectPhoto,
   onSelectedLibraryQueriesChange,
 }: SwiprPexelsPanelProps) {
+  const [editingPackName, setEditingPackName] = useState<string | null>(null);
+  const editingPack = useMemo(
+    () => libraryPacks.find((pack) => pack.name === editingPackName) ?? null,
+    [editingPackName, libraryPacks],
+  );
+
   return (
     <section className="min-w-0 border-t border-border pt-4">
       <div className="mb-3 flex items-center gap-3">
@@ -96,36 +112,20 @@ export function SwiprPexelsPanel({
           </Button>
         </div>
         {showImportControls ? (
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_6rem_auto] sm:items-end">
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
             <p className="text-sm font-semibold text-text-secondary">
-              Save this search as a reusable photo pack.
+              Save the loaded photos as a reusable photo pack.
             </p>
-            <label className="grid gap-1 text-xs font-semibold text-text-secondary">
-              Max
-              <input
-                type="number"
-                min={1}
-                max={40}
-                value={importCount}
-                className="h-9 rounded-lg border border-border bg-surface px-3 text-sm font-semibold text-text-primary outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/20"
-                disabled={isSaving || isImportingLibrary}
-                onChange={(event) =>
-                  onImportCountChange(
-                    Math.max(1, Math.min(40, Number(event.target.value) || 1)),
-                  )
-                }
-              />
-            </label>
             <Button
               type="button"
               size="sm"
               variant="secondary"
               icon={<Download aria-hidden className="h-4 w-4" />}
               isLoading={isImportingLibrary}
-              disabled={isSaving || !query.trim()}
+              disabled={isSaving || !query.trim() || !photos.length}
               onClick={onImportQuery}
             >
-              Import page
+              Import loaded
             </Button>
           </div>
         ) : null}
@@ -167,8 +167,31 @@ export function SwiprPexelsPanel({
           <SwiprLibraryPackPicker
             packs={libraryPacks}
             selectedPackNames={selectedLibraryQueries}
+            onEditPack={setEditingPackName}
             onLoadBackgroundBlob={onLoadBackgroundBlob}
             onSelectedPackNamesChange={onSelectedLibraryQueriesChange}
+          />
+        ) : null}
+        {showLibraryPacks && editingPack ? (
+          <SwiprLibraryPackEditor
+            key={editingPack.name}
+            backgrounds={allLibraryBackgrounds}
+            isSaving={isUpdatingLibraryPack}
+            pack={editingPack}
+            onDeletePack={(packName) =>
+              onDeleteLibraryPack(packName).then(() => {
+                setEditingPackName(null);
+              })
+            }
+            onLoadBackgroundBlob={onLoadBackgroundBlob}
+            onRemovePhoto={onRemoveLibraryPhotoFromPack}
+            onRenamePack={(fromName, toName) =>
+              onRenameLibraryPack(fromName, toName).then((nextName) => {
+                setEditingPackName(nextName);
+
+                return nextName;
+              })
+            }
           />
         ) : null}
         {showSavedLibraryPhotos &&
