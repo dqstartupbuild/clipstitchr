@@ -30,12 +30,14 @@ export function createSwiprBatchTextGenerationPrompt({
     '      "hook": "the first slide - a scroll-stopping line, max ~8 words",',
     `      "slides": ["the hook again as slide 1", "slide 2", "...exactly ${slideCount} slides total, each max ~8 words, last is a CTA like Save this"],`,
     '      "caption": "the post caption with 1-2 emoji",',
+    '      "description": "a 1000-4000 character TikTok post description that expands the carousel idea in plain language",',
     '      "hashtags": ["three", "relevant", "hashtags"],',
     '      "rationale": "one sentence on why this should perform, tied to the style memory"',
     "    }",
     "  ]",
     "}",
     "",
+    "Each description must be 1000-4000 characters, easy to skim, useful after someone reads the carousel, and free of keyword stuffing.",
     "Keep them on-brand, varied, simple, and genuinely good. Do not write generic filler. Do not invent fake stats, studies, quotes, or testimonials. Return ONLY the JSON object.",
   ].join("\n");
 }

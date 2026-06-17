@@ -1,5 +1,9 @@
 import { getCliprJsonText } from "@/lib/clipstitchr/server/getCliprJsonText";
+import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { SwiprGeneratedSlideshow } from "@/lib/clipstitchr/types/SwiprGeneratedSlideshow";
+import { createSwiprPostDescriptionFallback } from "@/lib/clipstitchr/utils/createSwiprPostDescriptionFallback";
+import { createSwiprSocialCaption } from "@/lib/clipstitchr/utils/createSwiprSocialCaption";
+import { normalizeSwiprPostDescription } from "@/lib/clipstitchr/utils/normalizeSwiprPostDescription";
 import { sanitizeCliprGeneratedText } from "@/lib/clipstitchr/utils/sanitizeCliprGeneratedText";
 
 function normalizeSlide(value: unknown) {
@@ -53,10 +57,12 @@ function normalizeSlides(value: unknown, slideCount: number) {
 export function parseSwiprGeneratedSlideshows({
   count,
   outputText,
+  product,
   slideCount,
 }: {
   count: number;
   outputText: string;
+  product: ProductProfile;
   slideCount: number;
 }): SwiprGeneratedSlideshow[] {
   const parsed = JSON.parse(getCliprJsonText(outputText)) as {
@@ -79,18 +85,35 @@ export function parseSwiprGeneratedSlideshows({
         slides[0],
       );
 
+      const caption = sanitizeCliprGeneratedText(
+        typeof slideshow.caption === "string" ? slideshow.caption : "",
+        hook,
+      );
+      const hashtags = normalizeHashtags(slideshow.hashtags);
+      const description = normalizeSwiprPostDescription({
+        fallback: createSwiprPostDescriptionFallback({
+          caption,
+          product,
+          slides,
+        }),
+        value: slideshow.description,
+      });
+
       return {
-        caption: sanitizeCliprGeneratedText(
-          typeof slideshow.caption === "string" ? slideshow.caption : "",
-          hook,
-        ),
-        hashtags: normalizeHashtags(slideshow.hashtags),
+        caption,
+        description,
+        hashtags,
         hook,
         rationale: sanitizeCliprGeneratedText(
           typeof slideshow.rationale === "string" ? slideshow.rationale : "",
           "Generated from the saved product context.",
         ),
         slides,
+        socialCaption: createSwiprSocialCaption({
+          caption,
+          description,
+          hashtags,
+        }),
       };
     });
 }

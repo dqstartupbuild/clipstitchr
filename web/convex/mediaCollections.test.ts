@@ -670,9 +670,11 @@ describe("convex media collections", () => {
         saveCtx,
         createSwipeArgs({
           caption: "  Real caption  ",
+          description: "  Helpful long description  ",
           hashtags: [" #launch ", " ", "#founders"],
           id: "swipe_social",
           rationale: "  The hook is specific.  ",
+          socialCaption: "  Real caption\n\nHelpful long description\n\n#launch #founders  ",
         }),
       ),
     ).resolves.toBe("inserted_doc");
@@ -680,8 +682,11 @@ describe("convex media collections", () => {
       "swipes",
       expect.objectContaining({
         caption: "Real caption",
+        description: "Helpful long description",
         hashtags: ["#launch", "#founders"],
         rationale: "The hook is specific.",
+        socialCaption:
+          "Real caption\n\nHelpful long description\n\n#launch #founders",
       }),
     );
     await expect(

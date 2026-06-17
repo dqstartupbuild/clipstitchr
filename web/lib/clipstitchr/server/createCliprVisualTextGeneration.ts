@@ -40,6 +40,7 @@ export function createCliprVisualTextGeneration({
 
   return {
     caption: "",
+    description: "",
     filledHook: label,
     hashtags: [],
     hookStyleKey: mode === "reaction" ? "reaction_source" : "broll_source",

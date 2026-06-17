@@ -24,7 +24,7 @@ export async function createSwiprBatchTextGeneration({
   const prediction = await replicate.predictions.create({
     model: providerModel,
     input: createTextWritingPredictionInput({
-      maxCompletionTokens: 6000,
+      maxCompletionTokens: Math.min(24000, Math.max(6000, count * 2500)),
       modelId: providerModel,
       prompt: createSwiprBatchTextGenerationPrompt({
         count,
@@ -46,6 +46,7 @@ export async function createSwiprBatchTextGeneration({
     slideshows: parseSwiprGeneratedSlideshows({
       count,
       outputText,
+      product,
       slideCount,
     }),
   };

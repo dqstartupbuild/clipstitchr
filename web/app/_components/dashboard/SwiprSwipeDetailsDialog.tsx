@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { StitchSocialCaptionCopyButton } from "@/app/_components/stitches/StitchSocialCaptionCopyButton";
 import { SwiprStaticTextOverlayBox } from "@/app/_components/swipr/SwiprStaticTextOverlayBox";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
@@ -19,6 +20,7 @@ import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgrou
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
+import { createSwiprSwipeSocialDescription } from "@/lib/clipstitchr/utils/createSwiprSwipeSocialDescription";
 
 type SwiprSwipeDetailsDialogProps = {
   background: SwiprBackgroundAsset;
@@ -77,9 +79,7 @@ export function SwiprSwipeDetailsDialog({
     onSwipeLeft: goToNext,
     onSwipeRight: goToPrevious,
   });
-  const hashtags = swipe.hashtags
-    ?.map((hashtag) => hashtag.trim())
-    .filter(Boolean);
+  const socialDescription = createSwiprSwipeSocialDescription(swipe);
 
   useEffect(() => {
     let isCancelled = false;
@@ -192,23 +192,19 @@ export function SwiprSwipeDetailsDialog({
                 {formatDate(swipe.updatedAt)}
               </p>
             </div>
-            {swipe.caption?.trim() ? (
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
-                  Caption
-                </p>
-                <p className="mt-1 whitespace-pre-line text-sm text-text-secondary">
-                  {swipe.caption.trim()}
-                </p>
-              </div>
-            ) : null}
-            {hashtags?.length ? (
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
-                  Hashtags
-                </p>
-                <p className="mt-1 text-sm text-text-secondary">
-                  {hashtags.join(" ")}
+            {socialDescription ? (
+              <div className="min-w-0">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
+                    Caption, description, and hashtags
+                  </p>
+                  <StitchSocialCaptionCopyButton
+                    socialCaption={socialDescription}
+                    variant="icon"
+                  />
+                </div>
+                <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-text-secondary [overflow-wrap:anywhere]">
+                  {socialDescription}
                 </p>
               </div>
             ) : null}

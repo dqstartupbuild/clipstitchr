@@ -11,8 +11,10 @@ export type SwiprSwipe = {
   productName: string;
   backgroundId: string;
   caption?: string;
+  description?: string;
   hashtags?: string[];
   rationale?: string;
+  socialCaption?: string;
   slides: SwiprSlide[];
   posterObject?: R2ObjectReference;
   posterBlob?: Blob;

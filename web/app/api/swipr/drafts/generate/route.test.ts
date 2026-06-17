@@ -147,6 +147,7 @@ describe("POST /api/swipr/drafts/generate", () => {
       slideshows: [
         {
           caption: "caption",
+          description: "Long post description",
           hashtags: ["#launch"],
           hook: "Hook",
           rationale: "rationale",
@@ -160,6 +161,7 @@ describe("POST /api/swipr/drafts/generate", () => {
             "Repeat what worked",
             "Save this launch checklist",
           ],
+          socialCaption: "caption\n\nLong post description\n\n#launch",
         },
       ],
     });
@@ -206,10 +208,12 @@ describe("POST /api/swipr/drafts/generate", () => {
       expect.objectContaining({
         backgroundId: "background_1",
         caption: "caption",
+        description: "Long post description",
         hashtags: ["#launch"],
         id: "swipe_1",
         productSourceId: "product_1",
         rationale: "rationale",
+        socialCaption: "caption\n\nLong post description\n\n#launch",
         slides: Array.from({ length: 8 }, (_, index) =>
           expect.objectContaining({
             backgroundId: index % 2 === 0 ? "background_1" : "background_2",

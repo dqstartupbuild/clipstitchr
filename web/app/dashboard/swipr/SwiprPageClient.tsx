@@ -13,6 +13,7 @@ import { SwiprModeToggle } from "@/app/_components/swipr/SwiprModeToggle";
 import { SwiprPexelsPanel } from "@/app/_components/swipr/SwiprPexelsPanel";
 import { SwiprPreviewPanel } from "@/app/_components/swipr/SwiprPreviewPanel";
 import { SwiprProductPanel } from "@/app/_components/swipr/SwiprProductPanel";
+import { SwiprSocialCaptionField } from "@/app/_components/swipr/SwiprSocialCaptionField";
 import { SwiprSlideStrip } from "@/app/_components/swipr/SwiprSlideStrip";
 import { SwiprTextOverlayPanel } from "@/app/_components/swipr/SwiprTextOverlayPanel";
 import { Panel } from "@/app/_components/ui/Panel";
@@ -49,6 +50,7 @@ import { getSwiprSavedProductIdFromOptionValue } from "@/lib/clipstitchr/utils/g
 import { getSwiprSavedProductOptionValue } from "@/lib/clipstitchr/utils/getSwiprSavedProductOptionValue";
 import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
 import { getSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getSwiprLibraryPacks";
+import { createSwiprSwipeSocialDescription } from "@/lib/clipstitchr/utils/createSwiprSwipeSocialDescription";
 import { getSwiprSwipeName } from "@/lib/clipstitchr/utils/getSwiprSwipeName";
 import { getSwiprSwipeEditHref } from "@/lib/clipstitchr/utils/getSwiprSwipeEditHref";
 import { getImportedPexelsPhotoIds } from "@/lib/clipstitchr/utils/getImportedPexelsPhotoIds";
@@ -116,6 +118,11 @@ export function SwiprPageClient() {
     useState<SwiprSwipe | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [autoTextMessage, setAutoTextMessage] = useState<string | null>(null);
+  const [socialCaption, setSocialCaption] = useState("");
+  const [socialDescription, setSocialDescription] = useState("");
+  const [socialCopyMessage, setSocialCopyMessage] = useState<string | null>(
+    null,
+  );
   const defaultProductId = products.defaultProductId ?? products.products[0]?.id;
   const defaultSavedProductId = defaultProductId
     ? getSwiprSavedProductOptionValue(defaultProductId)
@@ -752,6 +759,9 @@ export function SwiprPageClient() {
     setSavedSwipeSnapshot(null);
     setSaveMessage(null);
     setAutoTextMessage(null);
+    setSocialCaption("");
+    setSocialDescription("");
+    setSocialCopyMessage(null);
     setBackgroundError(null);
   }, []);
 
@@ -909,10 +919,15 @@ export function SwiprPageClient() {
             };
           }),
         );
+        if (textGenerationScope === "all") {
+          setSocialCaption(text.socialCaption ?? "");
+          setSocialDescription(text.description ?? "");
+          setSocialCopyMessage(null);
+        }
         setAutoTextMessage(
           textGenerationScope === "selected"
             ? `Text generated for slide ${activeSlideIndex + 1}.`
-            : "Text generated.",
+            : "Text and post copy generated.",
         );
       })
       .catch((error) => {
@@ -943,19 +958,24 @@ export function SwiprPageClient() {
     const id = editingSwipeId ?? createId();
     const existingSwipe = swiprLibrary.swipes.find((swipe) => swipe.id === id);
     const socialCopySource = savedSwipeSnapshot ?? existingSwipe;
+    const savedSocialCaption = socialCaption.trim();
 
     void swiprLibrary
       .saveSwipe({
         id,
-        caption: socialCopySource?.caption,
+        caption: savedSocialCaption ? socialCopySource?.caption : undefined,
+        description: savedSocialCaption
+          ? socialDescription || socialCopySource?.description
+          : undefined,
         name: getSwiprSwipeName(exportProductName),
         productSourceType: "saved-product",
         productSourceId: selectedSavedProductId,
         productContext: effectiveProductContext,
         productName: exportProductName,
         backgroundId: fallbackBackgroundId,
-        hashtags: socialCopySource?.hashtags,
+        hashtags: savedSocialCaption ? socialCopySource?.hashtags : undefined,
         rationale: socialCopySource?.rationale,
+        socialCaption: savedSocialCaption || undefined,
         slides: slidesForSave,
         createdAt: existingSwipe?.createdAt ?? savedSwipeSnapshot?.createdAt,
       })
@@ -1077,6 +1097,9 @@ export function SwiprPageClient() {
         setBackground(getSwiprBackgroundFromAsset(savedBackground));
         setSwiprMode("manual");
         setSavedSwipeSnapshot(savedSwipe);
+        setSocialCaption(createSwiprSwipeSocialDescription(savedSwipe));
+        setSocialDescription(savedSwipe.description ?? "");
+        setSocialCopyMessage(null);
         setLoadedSwipeId(savedSwipe.id);
         setSaveMessage("Loaded saved Swipe.");
       })
@@ -1255,13 +1278,31 @@ export function SwiprPageClient() {
                 ) : null}
               </div>
               {activeSwiprMode === "manual" ? (
-                <SwiprTextOverlayPanel
-                  activeSlide={activeSlide}
-                  activeSlideIndex={activeSlideIndex}
-                  onChange={handleTextOverlayChange}
-                />
+                <div className="flex flex-col gap-4">
+                  <SwiprTextOverlayPanel
+                    activeSlide={activeSlide}
+                    activeSlideIndex={activeSlideIndex}
+                    onChange={handleTextOverlayChange}
+                  />
+                  <section className="rounded-lg border border-border p-4">
+                    <SwiprSocialCaptionField
+                      copyMessage={socialCopyMessage}
+                      socialCaption={socialCaption}
+                      onChange={(nextSocialCaption) => {
+                        setSocialCaption(nextSocialCaption);
+                        setSocialCopyMessage(null);
+                      }}
+                      onCopyError={() =>
+                        setSocialCopyMessage("Could not copy that post text.")
+                      }
+                      onCopySuccess={() =>
+                        setSocialCopyMessage("Post text copied.")
+                      }
+                    />
+                  </section>
+                </div>
               ) : null}
-            </div>
+              </div>
           </Panel>
           {activeSwiprMode === "manual" ? (
             <div className="order-1 min-w-0 w-full max-w-[340px] justify-self-center xl:sticky xl:top-5 xl:order-2 xl:justify-self-end">

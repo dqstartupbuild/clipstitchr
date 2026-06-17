@@ -83,6 +83,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       caption: generation.caption,
+      description: generation.description,
       hashtags: generation.hashtags,
       hook: generation.filledHook,
       overlayText: generation.overlayText,

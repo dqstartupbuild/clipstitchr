@@ -223,6 +223,7 @@ describe("SwiprSwipeDetailsDialog", () => {
       onLoadBackgroundBlob,
       swipe: createSwipe({
         caption: "The fastest way to plan a launch.",
+        description: "A longer post description for the carousel.",
         hashtags: ["#launch", "#founders"],
         rationale: "The hook speaks to one urgent planning problem.",
       }),
@@ -254,7 +255,9 @@ describe("SwiprSwipeDetailsDialog", () => {
     expect(markup).toContain("Image 1 of 2");
     expect(markup).toContain("blob:background");
     expect(markup).toContain("/dashboard/swipr?mode=edit&amp;swipe=swipe_1");
+    expect(markup).toContain("Caption, description, and hashtags");
     expect(markup).toContain("The fastest way to plan a launch.");
+    expect(markup).toContain("A longer post description for the carousel.");
     expect(markup).toContain("#launch #founders");
     expect(markup).toContain("The hook speaks to one urgent planning problem.");
     expect(mocks.overlayProps?.textOverlay.text).toBe("Launch today");

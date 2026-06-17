@@ -135,17 +135,22 @@ export function SwiprSwipeEditDialog({
     try {
       await onSave({
         backgroundId: swipe.backgroundId,
+        caption: swipe.caption,
         createdAt: swipe.createdAt,
+        description: swipe.description,
+        hashtags: swipe.hashtags,
         id: swipe.id,
         name: swipe.name,
         productContext: swipe.productContext,
         productName: swipe.productName,
         productSourceId: swipe.productSourceId,
         productSourceType: swipe.productSourceType,
+        rationale: swipe.rationale,
         slides: slides.map((slide) => ({
           ...slide,
           backgroundId: getSwiprSlideBackgroundId(slide, swipe.backgroundId),
         })),
+        socialCaption: swipe.socialCaption,
       });
       setSaveMessage("Swipe saved.");
     } catch (error) {

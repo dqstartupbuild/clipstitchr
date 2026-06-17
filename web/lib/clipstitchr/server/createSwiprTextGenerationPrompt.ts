@@ -62,7 +62,7 @@ export function createSwiprTextGenerationPrompt({
     "- Do not default to a bookmark-style CTA.",
     "- Avoid generic creator advice like work smarter, unlock growth, level up, or game changer.",
     "Respond with a JSON object of this exact shape:",
-    '{ "templateId": "swipr-freeform", "filledHook": "the first slide - a scroll-stopping viewer-first line, max ~8 words", "slides": ["the hook again as slide 1", "slide 2", "...same count requested, each max ~8 words, last is a soft CTA"], "caption": "the post caption with 1-2 emoji", "hashtags": ["three", "relevant", "hashtags"], "rationale": "one sentence on why this should perform, tied to the style memory", "overlayText": "same as filledHook", "script": "", "scenePlan": [], "variablesUsed": {} }',
+    '{ "templateId": "swipr-freeform", "filledHook": "the first slide - a scroll-stopping viewer-first line, max ~8 words", "slides": ["the hook again as slide 1", "slide 2", "...same count requested, each max ~8 words, last is a soft CTA"], "caption": "the post caption with 1-2 emoji", "description": "a 1000-4000 character TikTok post description that expands the carousel idea in plain language", "hashtags": ["three", "relevant", "hashtags"], "rationale": "one sentence on why this should perform, tied to the style memory", "overlayText": "same as filledHook", "script": "", "scenePlan": [], "variablesUsed": {} }',
     "",
     "Rules:",
     "- Keep the slideshow on-brand, varied, and genuinely good.",
@@ -71,6 +71,8 @@ export function createSwiprTextGenerationPrompt({
     "- Middle slides must pay off the hook with a coherent mini-story or useful framework.",
     "- Each slide must be short enough for a vertical carousel image.",
     "- Use simple human language. Avoid technical or robotic copy.",
+    "- description must be 1000-4000 characters, easy to skim, and useful even after someone reads the carousel.",
+    "- description should expand the carousel idea with relatable context, practical detail, and a simple takeaway. Do not keyword-stuff.",
     "- Do not invent fake stats, fake studies, fake quotes, or fake testimonials.",
     "- Product details are context, not a sales script.",
     isSelectedSlideGeneration

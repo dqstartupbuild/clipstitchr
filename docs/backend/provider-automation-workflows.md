@@ -229,7 +229,9 @@ Target flow:
 4. Search Pexels from the product and audience context.
 5. Copy selected Pexels photos to owner-scoped R2 objects server-side.
 6. Save owner-owned `swiprBackgrounds` records for those photos.
-7. Create an editable `swipe` draft that references one saved photo per slide.
+7. Create an editable `swipe` draft that references one saved photo per slide
+   and stores the generated caption, 1000-4000 character description,
+   hashtags, and combined social copy.
 
 For carousel export, the current browser ZIP export can remain local until
 server-side carousel rendering becomes a product requirement.

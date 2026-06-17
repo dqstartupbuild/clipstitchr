@@ -26,6 +26,11 @@ const product: ProductProfile = {
   inferredPainPoints: ["launch content gets scattered"],
   updatedAt: "2026-01-01T00:00:00.000Z",
 };
+const longDescription = Array.from(
+  { length: 24 },
+  (_, index) =>
+    `Long description sentence ${index + 1} explains why the carousel matters for a founder trying to keep launch work simple and repeatable.`,
+).join(" ");
 
 describe("parseCliprTextGenerationOutput", () => {
   it("keeps the full avatar script instead of truncating it like hook copy", () => {
@@ -93,7 +98,10 @@ describe("parseCliprTextGenerationOutput", () => {
       durationSeconds: 30,
       outputText: JSON.stringify({
         templateId: "MG-001",
+        caption: "This is where launch work gets easier",
+        description: longDescription,
         filledHook: "The launch mistake nobody talks about",
+        hashtags: ["launch", "founders", "content"],
         slides: [
           "The launch mistake nobody talks about",
           "Your files are spread across too many places",
@@ -113,6 +121,9 @@ describe("parseCliprTextGenerationOutput", () => {
       "LaunchKit",
     );
     expect(generation.slides.at(-1)).toBe("Follow for more launch fixes");
+    expect(generation.description).toBe(longDescription);
+    expect(generation.socialCaption).toContain(longDescription);
+    expect(generation.socialCaption).toContain("#launch #founders #content");
   });
 
   it("keeps Stitchr fallback text emotional and scriptless", () => {

@@ -85,12 +85,14 @@ describe("POST /api/clipr/text", () => {
     mocks.convex.mutation.mockResolvedValue(null);
     mocks.createCliprTextGeneration.mockResolvedValue({
       caption: "This is where the launch changes",
+      description: "Long post description",
       filledHook: "Stop wasting launch time",
       hashtags: ["#launchkit", "#ugc", "#demo"],
       overlayText: "Launch faster",
       script: "Full script",
       slides: [{ text: "Slide one" }],
-      socialCaption: "This is where the launch changes\n\n#launchkit #ugc #demo",
+      socialCaption:
+        "This is where the launch changes\n\nLong post description\n\n#launchkit #ugc #demo",
     });
   });
 
@@ -127,12 +129,14 @@ describe("POST /api/clipr/text", () => {
 
     await expect(response.json()).resolves.toEqual({
       caption: "This is where the launch changes",
+      description: "Long post description",
       hashtags: ["#launchkit", "#ugc", "#demo"],
       hook: "Stop wasting launch time",
       overlayText: "Launch faster",
       script: "Full script",
       slides: [{ text: "Slide one" }],
-      socialCaption: "This is where the launch changes\n\n#launchkit #ugc #demo",
+      socialCaption:
+        "This is where the launch changes\n\nLong post description\n\n#launchkit #ugc #demo",
     });
     expect(response.status).toBe(200);
     expect(mocks.convex.mutation).toHaveBeenCalledWith(

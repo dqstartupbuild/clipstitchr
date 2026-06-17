@@ -34,6 +34,8 @@ describe("createSwiprBatchTextGenerationPrompt", () => {
       "Write 4 distinct slideshows. Each slideshow must have exactly 8 slides.",
     );
     expect(prompt).toContain("...exactly 8 slides total");
+    expect(prompt).toContain("1000-4000 character TikTok post description");
+    expect(prompt).toContain("Each description must be 1000-4000 characters");
     expect(prompt).toContain("Return ONLY the JSON object.");
   });
 });

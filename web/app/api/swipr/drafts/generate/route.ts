@@ -123,6 +123,7 @@ export async function POST(request: Request) {
         backgroundId: backgroundIds[0],
         caption: slideshow.caption,
         createdAt: now,
+        description: slideshow.description,
         hashtags: slideshow.hashtags,
         name: getSwiprSwipeName(product.name),
         productContext: getProductSwiprContext(product),
@@ -131,6 +132,7 @@ export async function POST(request: Request) {
         productSourceType: "saved-product",
         rationale: slideshow.rationale,
         slides,
+        socialCaption: slideshow.socialCaption,
         updatedAt: now,
       });
       createdSwipeIds.push(id);

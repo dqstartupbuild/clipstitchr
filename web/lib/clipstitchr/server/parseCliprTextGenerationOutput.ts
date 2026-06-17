@@ -6,7 +6,10 @@ import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose"
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { createStitchSocialCaption } from "@/lib/clipstitchr/utils/createStitchSocialCaption";
+import { createSwiprPostDescriptionFallback } from "@/lib/clipstitchr/utils/createSwiprPostDescriptionFallback";
+import { createSwiprSocialCaption } from "@/lib/clipstitchr/utils/createSwiprSocialCaption";
 import { getCliprTextHasForbiddenCta } from "@/lib/clipstitchr/utils/getCliprTextHasForbiddenCta";
+import { normalizeSwiprPostDescription } from "@/lib/clipstitchr/utils/normalizeSwiprPostDescription";
 import { sanitizeCliprGeneratedText } from "@/lib/clipstitchr/utils/sanitizeCliprGeneratedText";
 import { getCliprJsonText } from "@/lib/clipstitchr/server/getCliprJsonText";
 
@@ -270,6 +273,7 @@ export function parseCliprTextGenerationOutput({
 }): CliprTextGeneration {
   const parsed = JSON.parse(getCliprJsonText(outputText)) as {
     caption?: unknown;
+    description?: unknown;
     filledHook?: unknown;
     hashtags?: unknown;
     overlayText?: unknown;
@@ -335,10 +339,35 @@ export function parseCliprTextGenerationOutput({
               estimatedDurationSeconds: durationSeconds,
             },
           ];
+  const slides = normalizeSlides({
+    filledHook,
+    product,
+    purpose,
+    slideCount,
+    value: parsed.slides,
+  });
+  const description =
+    purpose === "swipr"
+      ? normalizeSwiprPostDescription({
+          fallback: createSwiprPostDescriptionFallback({
+            caption,
+            product,
+            slides,
+          }),
+          value: parsed.description,
+        })
+      : "";
+  const socialCaption =
+    purpose === "swipr"
+      ? createSwiprSocialCaption({ caption, description, hashtags })
+      : purpose === "stitchr"
+        ? createStitchSocialCaption({ caption, hashtags })
+        : "";
 
   return {
     filledHook,
     caption,
+    description,
     hashtags,
     hookStyleKey: selectedTemplate.styleKey,
     hookTemplateId: selectedTemplate.id,
@@ -346,17 +375,8 @@ export function parseCliprTextGenerationOutput({
     providerModel,
     scenePlan: finalScenePlan,
     script: finalScript,
-    slides: normalizeSlides({
-      filledHook,
-      product,
-      purpose,
-      slideCount,
-      value: parsed.slides,
-    }),
-    socialCaption:
-      purpose === "stitchr" || purpose === "swipr"
-        ? createStitchSocialCaption({ caption, hashtags })
-        : "",
+    slides,
+    socialCaption,
     variablesUsed: normalizeVariables(parsed.variablesUsed),
   };
 }

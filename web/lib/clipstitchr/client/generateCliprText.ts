@@ -31,6 +31,7 @@ export async function generateCliprText(options: GenerateCliprTextOptions) {
 
   return (await response.json()) as {
     caption: string;
+    description: string;
     hashtags: string[];
     hook: string;
     overlayText: string;

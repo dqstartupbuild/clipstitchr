@@ -27,6 +27,7 @@ export function createCliprDemoTextGeneration({
 
   return {
     caption: "",
+    description: "",
     filledHook: "Demo remix",
     hashtags: [],
     hookStyleKey: "demo_remix_source",

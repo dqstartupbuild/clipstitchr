@@ -1,15 +1,21 @@
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
+import { createSwiprSocialCaption } from "@/lib/clipstitchr/utils/createSwiprSocialCaption";
 
 export function createSwiprSwipeSocialDescription(
-  swipe: Pick<SwiprSwipe, "caption" | "hashtags">,
+  swipe: Pick<
+    SwiprSwipe,
+    "caption" | "description" | "hashtags" | "socialCaption"
+  >,
 ) {
-  return [
-    swipe.caption?.trim(),
-    swipe.hashtags
-      ?.map((hashtag) => hashtag.trim())
-      .filter(Boolean)
-      .join(" "),
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const socialCaption = swipe.socialCaption?.trim();
+
+  if (socialCaption) {
+    return socialCaption;
+  }
+
+  return createSwiprSocialCaption({
+    caption: swipe.caption ?? "",
+    description: swipe.description ?? "",
+    hashtags: swipe.hashtags ?? [],
+  });
 }

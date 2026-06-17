@@ -141,6 +141,7 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("hook, why it happens, what it costs");
     expect(prompt).toContain("the hook again as slide 1");
     expect(prompt).toContain("last is a soft CTA");
+    expect(prompt).toContain("description must be 1000-4000 characters");
     expect(prompt).toContain("Do not default to a bookmark-style CTA");
     expect(prompt).toContain("Return only the JSON object");
   });

@@ -63,6 +63,7 @@ const mocks = vi.hoisted(() => ({
   routerReplace: vi.fn(),
   searchPexelsPhotos: vi.fn(),
   searchParams: new URLSearchParams(),
+  socialCaptionFieldProps: null as Record<string, unknown> | null,
   slideStripProps: null as Record<string, unknown> | null,
   stateQueue: [] as unknown[],
   stateSetters: [] as ReturnType<typeof vi.fn>[],
@@ -176,6 +177,13 @@ vi.mock("@/app/_components/swipr/SwiprTextOverlayPanel", () => ({
   SwiprTextOverlayPanel: (props: Record<string, unknown>) => {
     mocks.textOverlayPanelProps = props;
     return "SwiprTextOverlayPanel";
+  },
+}));
+
+vi.mock("@/app/_components/swipr/SwiprSocialCaptionField", () => ({
+  SwiprSocialCaptionField: (props: Record<string, unknown>) => {
+    mocks.socialCaptionFieldProps = props;
+    return "SwiprSocialCaptionField";
   },
 }));
 
@@ -331,6 +339,9 @@ function queueSwiprState(
     savedSwipeSnapshot?: SwiprSwipe | null;
     selectedLibraryQueries?: string[];
     selectedProductId?: string;
+    socialCaption?: string;
+    socialCopyMessage?: string | null;
+    socialDescription?: string;
     slides?: ReturnType<typeof createSwiprSlides>;
     swiprMode?: "batch" | "manual";
     textGenerationScope?: "all" | "selected";
@@ -370,6 +381,9 @@ function queueSwiprState(
     overrides.savedSwipeSnapshot ?? null,
     overrides.saveMessage ?? null,
     overrides.autoTextMessage ?? null,
+    overrides.socialCaption ?? "",
+    overrides.socialDescription ?? "",
+    overrides.socialCopyMessage ?? null,
   );
 }
 
@@ -418,7 +432,9 @@ describe("SwiprPageClient", () => {
     mocks.swiprExportState.progress = 0;
     mocks.swiprExportState.status = "idle";
     mocks.generateCliprText.mockResolvedValue({
+      description: "Long post description",
       slides: ["One", "Two", "Three"],
+      socialCaption: "Caption\n\nLong post description\n\n#launch",
     });
     mocks.generateSwiprDrafts.mockResolvedValue({
       count: 2,
@@ -454,6 +470,7 @@ describe("SwiprPageClient", () => {
     mocks.previewPanelProps = null;
     mocks.productPanelProps = null;
     mocks.routerReplace.mockReset();
+    mocks.socialCaptionFieldProps = null;
     mocks.slideStripProps = null;
     mocks.stateQueue.length = 0;
     mocks.stateSetters.length = 0;
@@ -554,6 +571,11 @@ describe("SwiprPageClient", () => {
     const textOverlayPanelProps = mocks.textOverlayPanelProps as {
       onChange: (textOverlay: TextOverlay) => void;
     };
+    const socialCaptionFieldProps = mocks.socialCaptionFieldProps as {
+      onChange: (socialCaption: string) => void;
+      onCopyError: () => void;
+      onCopySuccess: () => void;
+    };
     const previewPanelProps = mocks.previewPanelProps as {
       onExport: () => void;
       onSave: () => void;
@@ -584,6 +606,9 @@ describe("SwiprPageClient", () => {
     slideStripProps.onCopyActivePhotoToAllSlides();
     slideStripProps.onRemoveSlide("missing_slide");
     textOverlayPanelProps.onChange(overlay);
+    socialCaptionFieldProps.onChange("Edited post text");
+    socialCaptionFieldProps.onCopySuccess();
+    socialCaptionFieldProps.onCopyError();
     previewPanelProps.onTextOverlayChange(overlay);
     previewPanelProps.onSave();
     previewPanelProps.onExport();
@@ -840,6 +865,7 @@ describe("SwiprPageClient", () => {
       },
       savedSwipeSnapshot: savedSwipe,
       slides,
+      socialCaption: "Saved caption\n\n#saved",
     });
 
     renderToStaticMarkup(<SwiprPageClient />);
@@ -861,6 +887,7 @@ describe("SwiprPageClient", () => {
         hashtags: ["#saved"],
         productSourceId: "product_1",
         rationale: "Saved rationale",
+        socialCaption: "Saved caption\n\n#saved",
       }),
     );
     expect(mocks.swiprExportState.exportCarousel).toHaveBeenCalledWith(
