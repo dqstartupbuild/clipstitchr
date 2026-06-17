@@ -14,7 +14,8 @@ version at any time.
    product, searches Pexels, imports the current Pexels page as a reusable
    query pack, chooses which packs to use, and generates multiple editable
    draft Swipes at once. Batch draft generation always requests the max Swipr
-   slide count of 8.
+   slide count of 8, and the backend enforces 8 slides even if an older client
+   sends a smaller slide count.
 3. The user can switch to Manual mode to build one Swipe by hand.
 4. In Manual mode, the user starts with the default slides, adds slides up to
    the max of 8, and can remove slides they do not need.
@@ -106,6 +107,12 @@ saved per-slide photo blobs. It stays within the mobile viewport and does not
 require horizontal page scrolling. The Edit action opens the full Swipr editor
 with the saved Swipe loaded, so the user can change slide text, change photos,
 add slides, remove slides, save, and download again.
+
+When a saved Swipe is opened for editing, Swipr loads the saved slide photo IDs
+directly if the current in-memory photo list is missing one. The editor fetches
+the owner-scoped Convex photo record by ID, downloads the R2 blob through the
+existing signed Swipr photo download path, and adds the loaded asset back to the
+local Swipr background list before rendering the slide.
 
 ## Slide Photo Storage
 

@@ -79,6 +79,7 @@ const mocks = vi.hoisted(() => ({
   swiprLibraryState: {
     backgrounds: [],
     error: null as string | null,
+    loadBackgroundAsset: vi.fn(),
     loadBackgroundBlob: vi.fn(),
     loadSwipePoster: vi.fn(),
     postedSwipes: [],

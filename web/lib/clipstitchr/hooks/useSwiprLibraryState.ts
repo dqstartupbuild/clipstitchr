@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { useConvex, useConvexAuth, useMutation, useQuery } from "convex/react";
 import { usePathname } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { createSwiprBackgroundAssetFromConvexDocument } from "@/lib/clipstitchr/backend/createSwiprBackgroundAssetFromConvexDocument";
@@ -26,6 +26,7 @@ import { createId } from "@/lib/clipstitchr/utils/createId";
 
 export function useSwiprLibraryState(): SwiprLibraryValue {
   const pathname = usePathname() ?? "";
+  const convex = useConvex();
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const isDashboardHome = pathname === "/dashboard";
   const isSwiprRoute = pathname.startsWith("/dashboard/swipr");
@@ -127,6 +128,40 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
       backgroundDownloadPromisesRef.current.delete(id);
     }
   }, []);
+
+  const loadBackgroundAsset = useCallback(
+    async (id: string) => {
+      const backgroundDocument =
+        backgroundDocuments?.find((background) => background.id === id) ??
+        (await convex.query(api.swiprBackgrounds.get, { id }));
+
+      if (!backgroundDocument) {
+        return null;
+      }
+
+      const blob =
+        backgroundBlobCacheRef.current.get(id) ?? (await loadBackgroundBlob(id));
+      const backgroundAsset = createSwiprBackgroundAssetFromConvexDocument(
+        backgroundDocument,
+        blob,
+      );
+      const loadedBackgroundAsset = {
+        ...backgroundAsset,
+        blob,
+      };
+
+      setBackgrounds((currentBackgrounds) =>
+        currentBackgrounds.some((background) => background.id === id)
+          ? currentBackgrounds.map((background) =>
+              background.id === id ? loadedBackgroundAsset : background,
+            )
+          : [loadedBackgroundAsset, ...currentBackgrounds],
+      );
+
+      return loadedBackgroundAsset;
+    },
+    [backgroundDocuments, convex, loadBackgroundBlob],
+  );
 
   const loadSwipePosterBlob = useCallback(
     async (posterObject?: R2ObjectReference) => {
@@ -429,6 +464,7 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
     error,
     refresh,
     loadBackgroundBlob,
+    loadBackgroundAsset,
     loadSwipePoster,
     saveBackground,
     saveSwipe,

@@ -28,6 +28,7 @@ const mocks = vi.hoisted(() => ({
     error: null as string | null,
     isSavingBackground: false,
     isSavingSwipe: false,
+    loadBackgroundAsset: vi.fn(),
     loadBackgroundBlob: vi.fn(),
     loadSwipePoster: vi.fn(),
     postedSwipes: [] as SwiprSwipe[],
@@ -350,6 +351,10 @@ describe("SwiprPageClient", () => {
     mocks.swiprLibraryState.backgrounds = [createBackground()];
     mocks.swiprLibraryState.error = null;
     mocks.swiprLibraryState.swipes = [];
+    mocks.swiprLibraryState.loadBackgroundAsset.mockResolvedValue({
+      ...createBackground(),
+      blob: new Blob(["background"], { type: "image/jpeg" }),
+    });
     mocks.swiprLibraryState.loadBackgroundBlob.mockResolvedValue(
       new Blob(["background"], { type: "image/jpeg" }),
     );
@@ -523,8 +528,7 @@ describe("SwiprPageClient", () => {
     previewPanelProps.onSave();
     previewPanelProps.onExport();
 
-    await Promise.resolve();
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(mocks.generateCliprText).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -804,8 +808,7 @@ describe("SwiprPageClient", () => {
     previewPanelProps.onSave();
     previewPanelProps.onExport();
 
-    await Promise.resolve();
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(mocks.swiprLibraryState.saveSwipe).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -848,11 +851,35 @@ describe("SwiprPageClient", () => {
     expect(mocks.swiprLibraryState.loadBackgroundBlob).toHaveBeenCalledWith(
       "background_1",
     );
-    expect(
-      mocks.stateSetters.some((setter) =>
-        setter.mock.calls.some((call) => call[0] === "Loaded saved Swipe."),
-      ),
-    ).toBe(true);
+    expect(mocks.swiprLibraryState.loadBackgroundAsset).not.toHaveBeenCalled();
+  });
+
+  it("loads a saved swipe when its photo is missing from the current library list", async () => {
+    const slides = createPhotoSlides(3);
+    const savedSwipe = createSwipe({ slides });
+    const effects: Array<() => void | (() => void)> = [];
+
+    mocks.swiprLibraryState.backgrounds = [];
+    mocks.swiprLibraryState.swipes = [savedSwipe];
+    mocks.useEffect.mockImplementation((effect: () => void | (() => void)) => {
+      effects.push(effect);
+    });
+    queueSwiprState({
+      editingSwipeId: "swipe_1",
+      loadedSwipeId: null,
+    });
+
+    renderToStaticMarkup(<SwiprPageClient />);
+
+    effects[0]?.();
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mocks.swiprLibraryState.loadBackgroundAsset).toHaveBeenCalledWith(
+      "background_1",
+    );
+    expect(mocks.swiprLibraryState.loadBackgroundBlob).not.toHaveBeenCalled();
   });
 
   it("skips saved-swipe loading when there is no new swipe id", () => {

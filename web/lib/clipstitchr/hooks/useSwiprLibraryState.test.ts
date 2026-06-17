@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => {
 
   return {
     analyzeSwiprBackground: vi.fn(),
+    convexQuery: vi.fn(),
     createId: vi.fn(),
     createSwiprBackgroundAssetFromConvexDocument: vi.fn(),
     createSwiprSwipeFromConvexDocument: vi.fn(),
@@ -19,6 +20,7 @@ const mocks = vi.hoisted(() => {
     renderSwiprSlideBlob: vi.fn(),
     uploadBlobsToR2: vi.fn(),
     uploadSwiprBackgroundBlobToR2: vi.fn(),
+    useConvex: vi.fn(),
     useConvexAuth: vi.fn(),
     useEffect: vi.fn(),
     useMutation: vi.fn((mutationId: string) => {
@@ -60,6 +62,7 @@ vi.mock("react", () => ({
 }));
 
 vi.mock("convex/react", () => ({
+  useConvex: mocks.useConvex,
   useConvexAuth: mocks.useConvexAuth,
   useMutation: mocks.useMutation,
   useQuery: mocks.useQuery,
@@ -78,6 +81,7 @@ vi.mock("@/convex/_generated/api", () => ({
       updatePostedStatus: "swipes.updatePostedStatus",
     },
     swiprBackgrounds: {
+      get: "swiprBackgrounds.get",
       list: "swiprBackgrounds.list",
       save: "swiprBackgrounds.save",
     },
@@ -200,6 +204,12 @@ describe("useSwiprLibraryState", () => {
       isAuthenticated: true,
       isLoading: false,
     });
+    mocks.useConvex.mockReturnValue({
+      query: mocks.convexQuery,
+    });
+    mocks.convexQuery.mockResolvedValue(
+      createBackgroundDocument({ id: "background_2" }),
+    );
     mocks.usePathname.mockReturnValue("/dashboard/uploads");
     mocks.useQuery.mockImplementation((queryId: string, args) => {
       if (queryId === "swiprBackgrounds.list") {
@@ -304,6 +314,37 @@ describe("useSwiprLibraryState", () => {
     expect(mocks.downloadSwiprBackgroundBlobFromR2).toHaveBeenCalledTimes(1);
     expect(mocks.downloadSwiprBackgroundBlobFromR2).toHaveBeenCalledWith(
       "background_1",
+    );
+  });
+
+  it("loads a missing background asset and blob by id", async () => {
+    const blob = new Blob(["background 2"], { type: "image/jpeg" });
+
+    mocks.downloadSwiprBackgroundBlobFromR2.mockResolvedValueOnce(blob);
+    mocks.convexQuery.mockResolvedValueOnce(
+      createBackgroundDocument({ id: "background_2" }),
+    );
+    mocks.createSwiprBackgroundAssetFromConvexDocument.mockImplementationOnce(
+      (background, loadedBlob) => ({
+        blob: loadedBlob,
+        id: background.id,
+        name: "Mapped background 2",
+      }),
+    );
+
+    const state = useSwiprLibraryState();
+
+    await expect(state.loadBackgroundAsset("background_2")).resolves.toEqual({
+      blob,
+      id: "background_2",
+      name: "Mapped background 2",
+    });
+
+    expect(mocks.convexQuery).toHaveBeenCalledWith("swiprBackgrounds.get", {
+      id: "background_2",
+    });
+    expect(mocks.downloadSwiprBackgroundBlobFromR2).toHaveBeenCalledWith(
+      "background_2",
     );
   });
 

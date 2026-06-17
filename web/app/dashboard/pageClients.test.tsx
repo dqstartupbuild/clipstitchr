@@ -10,6 +10,7 @@ import { UploadsPageClient } from "@/app/dashboard/uploads/UploadsPageClient";
 
 const mocks = vi.hoisted(() => ({
   exportCarousel: vi.fn(),
+  loadBackgroundAsset: vi.fn(),
   loadBackgroundBlob: vi.fn(),
   loadClip: vi.fn(),
   loadPhoto: vi.fn(),
@@ -120,6 +121,7 @@ vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({
     error: null,
     isSavingBackground: false,
     isSavingSwipe: false,
+    loadBackgroundAsset: mocks.loadBackgroundAsset,
     loadBackgroundBlob: mocks.loadBackgroundBlob,
     loadSwipePoster: vi.fn(),
     removeSwipe: mocks.remove,

@@ -384,6 +384,7 @@ describe("UploadsPageClient", () => {
     mocks.swiprLibrary = {
       backgrounds: [{ id: "background_1", name: "Background" }],
       error: null,
+      loadBackgroundAsset: vi.fn(),
       loadBackgroundBlob: vi.fn(),
       loadSwipePoster: vi.fn(),
       removeSwipe: vi.fn(),

@@ -134,6 +134,9 @@ export function SwiprPageClient() {
     : "";
   const effectiveProductContext = productContext || "Product";
   const exportProductName = selectedSavedProduct?.name ?? "Product";
+  const swiprBackgrounds = swiprLibrary.backgrounds;
+  const loadLibraryBackgroundAsset = swiprLibrary.loadBackgroundAsset;
+  const loadLibraryBackgroundBlob = swiprLibrary.loadBackgroundBlob;
   const activeSlideIndex = Math.max(
     0,
     slides.findIndex((slide) => slide.id === activeSlideId),
@@ -153,17 +156,11 @@ export function SwiprPageClient() {
       : activeSlide?.backgroundId === background?.id
         ? background
         : null;
-  const savedSwipeBackground = savedSwipeSnapshot
-    ? swiprLibrary.backgrounds.find(
-        (item) => item.id === savedSwipeSnapshot.backgroundId,
+  const savedSwipeBackgroundIds = savedSwipeSnapshot
+    ? savedSwipeSnapshot.slides.map((slide) =>
+        getSwiprSlideBackgroundId(slide, savedSwipeSnapshot.backgroundId),
       )
-    : undefined;
-  const savedSwipeBackgroundIds =
-    savedSwipeSnapshot && savedSwipeBackground
-      ? savedSwipeSnapshot.slides.map((slide) =>
-          getSwiprSlideBackgroundId(slide, savedSwipeSnapshot.backgroundId),
-        )
-      : [];
+    : [];
   const isCreatingBackground =
     swiprLibrary.isSavingBackground ||
     isImportingBackground ||
@@ -171,11 +168,7 @@ export function SwiprPageClient() {
   const hasSlidePhotos =
     slides.length > 0 && slides.every((slide) => Boolean(slide.backgroundId));
   const isSavedExportReady = Boolean(
-    savedSwipeSnapshot &&
-      savedSwipeBackground &&
-      savedSwipeBackgroundIds.every((id) =>
-        swiprLibrary.backgrounds.some((item) => item.id === id),
-      ),
+    savedSwipeSnapshot && savedSwipeBackgroundIds.length > 0,
   );
   const libraryPacks = useMemo(
     () => getSwiprLibraryPacks(swiprLibrary.backgrounds),
@@ -197,6 +190,32 @@ export function SwiprPageClient() {
         );
       }),
     [selectedLibraryQueries, swiprLibrary.backgrounds],
+  );
+
+  const loadSwiprBackgroundAsset = useCallback(
+    async (id: string) => {
+      const backgroundAsset =
+        swiprBackgrounds.find((item) => item.id === id) ??
+        (await loadLibraryBackgroundAsset(id));
+
+      if (!backgroundAsset) {
+        throw new Error("Unable to load this Swipe photo.");
+      }
+
+      const blob =
+        backgroundAsset.blob ??
+        (await loadLibraryBackgroundBlob(backgroundAsset.id));
+
+      return {
+        ...backgroundAsset,
+        blob,
+      };
+    },
+    [
+      loadLibraryBackgroundAsset,
+      loadLibraryBackgroundBlob,
+      swiprBackgrounds,
+    ],
   );
 
   const assignSavedBackgroundsToSlides = useCallback(
@@ -798,7 +817,7 @@ export function SwiprPageClient() {
   };
 
   const handleExport = () => {
-    if (!savedSwipeSnapshot || !savedSwipeBackground) {
+    if (!savedSwipeSnapshot) {
       return;
     }
 
@@ -806,13 +825,12 @@ export function SwiprPageClient() {
 
     void Promise.resolve()
       .then(async () => {
-        const fallbackBlob =
-          savedSwipeBackground.blob ??
-          (await swiprLibrary.loadBackgroundBlob(savedSwipeBackground.id));
-        const fallbackBackground = getSwiprBackgroundFromAsset({
-          ...savedSwipeBackground,
-          blob: fallbackBlob,
-        });
+        const fallbackBackgroundAsset = await loadSwiprBackgroundAsset(
+          savedSwipeSnapshot.backgroundId,
+        );
+        const fallbackBackground = getSwiprBackgroundFromAsset(
+          fallbackBackgroundAsset,
+        );
         const slideBackgrounds: Record<string, SwiprBackground> = {};
 
         for (const slide of savedSwipeSnapshot.slides) {
@@ -821,24 +839,12 @@ export function SwiprPageClient() {
             savedSwipeSnapshot.backgroundId,
           );
           const backgroundAsset =
-            backgroundId === savedSwipeBackground.id
-              ? savedSwipeBackground
-              : swiprLibrary.backgrounds.find((item) => item.id === backgroundId);
+            backgroundId === fallbackBackgroundAsset.id
+              ? fallbackBackgroundAsset
+              : await loadSwiprBackgroundAsset(backgroundId);
 
-          if (!backgroundAsset) {
-            throw new Error("Unable to load this Swipe photo.");
-          }
-
-          const blob =
-            backgroundId === savedSwipeBackground.id
-              ? fallbackBlob
-              : backgroundAsset.blob ??
-                (await swiprLibrary.loadBackgroundBlob(backgroundAsset.id));
-
-          slideBackgrounds[slide.id] = getSwiprBackgroundFromAsset({
-            ...backgroundAsset,
-            blob,
-          });
+          slideBackgrounds[slide.id] =
+            getSwiprBackgroundFromAsset(backgroundAsset);
         }
 
         await exporter.exportCarousel({
@@ -865,13 +871,8 @@ export function SwiprPageClient() {
     const savedSwipe = swiprLibrary.swipes.find(
       (swipe) => swipe.id === editingSwipeId,
     );
-    const savedBackground = savedSwipe
-      ? swiprLibrary.backgrounds.find(
-          (item) => item.id === savedSwipe.backgroundId,
-        )
-      : undefined;
 
-    if (!savedSwipe || !savedBackground) {
+    if (!savedSwipe) {
       return;
     }
 
@@ -889,27 +890,20 @@ export function SwiprPageClient() {
             ...slidesWithBackgrounds.map((slide) => slide.backgroundId),
           ]),
         ];
-        const backgroundBlobs = new Map<string, Blob>();
+        const backgroundAssets = new Map<
+          string,
+          SwiprBackgroundAsset & { blob: Blob }
+        >();
 
         for (const backgroundId of backgroundIds) {
-          const backgroundAsset =
-            backgroundId === savedBackground.id
-              ? savedBackground
-              : swiprLibrary.backgrounds.find((item) => item.id === backgroundId);
-
-          if (!backgroundAsset) {
-            throw new Error("Unable to load this Swipe photo.");
-          }
-
-          backgroundBlobs.set(
+          backgroundAssets.set(
             backgroundId,
-            backgroundAsset.blob ??
-              (await swiprLibrary.loadBackgroundBlob(backgroundAsset.id)),
+            await loadSwiprBackgroundAsset(backgroundId),
           );
         }
-        const blob = backgroundBlobs.get(savedBackground.id);
+        const savedBackground = backgroundAssets.get(savedSwipe.backgroundId);
 
-        if (!blob) {
+        if (!savedBackground) {
           throw new Error("Unable to load this background.");
         }
 
@@ -922,7 +916,7 @@ export function SwiprPageClient() {
         );
         setSlides(slidesWithBackgrounds);
         setActiveSlideId(slidesWithBackgrounds[0]?.id ?? null);
-        setBackground(getSwiprBackgroundFromAsset({ ...savedBackground, blob }));
+        setBackground(getSwiprBackgroundFromAsset(savedBackground));
         setSwiprMode("manual");
         setSavedSwipeSnapshot(savedSwipe);
         setLoadedSwipeId(savedSwipe.id);
@@ -943,11 +937,9 @@ export function SwiprPageClient() {
     };
   }, [
     editingSwipeId,
+    loadSwiprBackgroundAsset,
     loadedSwipeId,
-    swiprLibrary.backgrounds,
-    swiprLibrary.loadBackgroundBlob,
     swiprLibrary.swipes,
-    swiprLibrary,
   ]);
 
   return (

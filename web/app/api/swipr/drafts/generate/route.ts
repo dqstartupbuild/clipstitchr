@@ -13,7 +13,6 @@ import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRa
 import { readSwiprDraftGenerationCount } from "@/lib/clipstitchr/server/readSwiprDraftGenerationCount";
 import { readSwiprLibraryQueries } from "@/lib/clipstitchr/server/readSwiprLibraryQueries";
 import { SWIPR_MAX_SLIDE_COUNT } from "@/lib/clipstitchr/constants/swiprSlideCountBounds";
-import { getClampedSwiprSlideCount } from "@/lib/clipstitchr/utils/getClampedSwiprSlideCount";
 import { getProductSwiprContext } from "@/lib/clipstitchr/utils/getProductSwiprContext";
 import { getSwiprSwipeName } from "@/lib/clipstitchr/utils/getSwiprSwipeName";
 import { createId } from "@/lib/clipstitchr/utils/createId";
@@ -24,7 +23,6 @@ type SwiprDraftGenerationRequest = {
   count?: unknown;
   productId?: unknown;
   selectedLibraryQueries?: unknown;
-  slideCount?: unknown;
 };
 
 function readProductId(value: unknown) {
@@ -54,11 +52,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as SwiprDraftGenerationRequest;
     const count = readSwiprDraftGenerationCount(body.count);
     const productId = readProductId(body.productId);
-    const slideCount = getClampedSwiprSlideCount(
-      typeof body.slideCount === "number"
-        ? body.slideCount
-        : SWIPR_MAX_SLIDE_COUNT,
-    );
+    const slideCount = SWIPR_MAX_SLIDE_COUNT;
     const selectedLibraryQueries = readSwiprLibraryQueries(
       body.selectedLibraryQueries,
     );

@@ -125,11 +125,22 @@ describe("POST /api/swipr/drafts/generate", () => {
         createBackground("background_3", "coffee shop"),
       ]);
     });
-    mocks.createId
-      .mockReturnValueOnce("slide_1")
-      .mockReturnValueOnce("slide_2")
-      .mockReturnValueOnce("slide_3")
-      .mockReturnValueOnce("swipe_1");
+    const createdIds = [
+      "slide_1",
+      "slide_2",
+      "slide_3",
+      "slide_4",
+      "slide_5",
+      "slide_6",
+      "slide_7",
+      "slide_8",
+      "swipe_1",
+    ];
+    let nextIdIndex = 0;
+
+    mocks.createId.mockImplementation(
+      () => createdIds[nextIdIndex++] ?? `generated_${nextIdIndex}`,
+    );
     mocks.createSwiprBatchTextGeneration.mockResolvedValue({
       providerModel: "text-model",
       providerPredictionId: "prediction_1",
@@ -142,7 +153,12 @@ describe("POST /api/swipr/drafts/generate", () => {
           slides: [
             "Stop messy launches",
             "Try this instead",
-            "Follow for more launch fixes",
+            "Pick one clear owner",
+            "Use tiny launch lists",
+            "Ship before it feels perfect",
+            "Save proof as you go",
+            "Repeat what worked",
+            "Save this launch checklist",
           ],
         },
       ],
@@ -183,7 +199,7 @@ describe("POST /api/swipr/drafts/generate", () => {
       count: 1,
       product: expect.objectContaining({ id: "product_1", name: "Launch Kit" }),
       replicate: { provider: "replicate" },
-      slideCount: 3,
+      slideCount: 8,
     });
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.swipes.save,
@@ -191,20 +207,12 @@ describe("POST /api/swipr/drafts/generate", () => {
         backgroundId: "background_1",
         id: "swipe_1",
         productSourceId: "product_1",
-        slides: [
+        slides: Array.from({ length: 8 }, (_, index) =>
           expect.objectContaining({
-            backgroundId: "background_1",
-            id: "slide_1",
+            backgroundId: index % 2 === 0 ? "background_1" : "background_2",
+            id: `slide_${index + 1}`,
           }),
-          expect.objectContaining({
-            backgroundId: "background_2",
-            id: "slide_2",
-          }),
-          expect.objectContaining({
-            backgroundId: "background_1",
-            id: "slide_3",
-          }),
-        ],
+        ),
       }),
     );
   });

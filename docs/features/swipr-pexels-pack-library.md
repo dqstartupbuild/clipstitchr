@@ -67,8 +67,9 @@ each slide's photo and text.
 `POST /api/swipr/drafts/generate`
 
 - Requires an authenticated user.
-- Reads a product ID, draft count, slide count, and optional selected library
-  queries.
+- Reads a product ID, draft count, and optional selected library queries.
+- Always creates 8-slide drafts on the server. The route ignores client slide
+  counts so old clients cannot create shorter batch Swipes.
 - Consumes the counted Clipr hook/script writing limit before provider work.
 - Loads the selected product and owner-owned Swipr backgrounds.
 - Uses Pexels backgrounds with `libraryQuery`; an empty selected-query list
@@ -77,8 +78,8 @@ each slide's photo and text.
   provider.
 - Saves each draft through `swipes.save`.
 
-The Swipr Batch tab sends a slide count of 8, so user-triggered batch drafts
-match the automatic Swipr draft shape.
+The Swipr Batch tab also sends a slide count of 8 for clarity, but the backend
+is the source of truth.
 
 ## Relevant Code
 
