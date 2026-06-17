@@ -3,6 +3,7 @@ import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/c
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
+import { getPexelsSearchPage } from "@/lib/clipstitchr/server/pexels/getPexelsSearchPage";
 import { getPexelsSearchPerPage } from "@/lib/clipstitchr/server/pexels/getPexelsSearchPerPage";
 import { getPexelsSearchQuery } from "@/lib/clipstitchr/server/pexels/getPexelsSearchQuery";
 import { searchPexelsPhotoResults } from "@/lib/clipstitchr/server/pexels/searchPexelsPhotoResults";
@@ -12,6 +13,7 @@ import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRa
 export const runtime = "nodejs";
 
 type PexelsSearchRequest = {
+  page?: unknown;
   perPage?: unknown;
   query?: unknown;
 };
@@ -26,6 +28,7 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as PexelsSearchRequest;
     const query = getPexelsSearchQuery(body.query);
+    const page = getPexelsSearchPage(body.page);
     const perPage = getPexelsSearchPerPage(body.perPage);
     const convexToken = await getAuthenticatedConvexToken();
 
@@ -40,7 +43,9 @@ export async function POST(request: Request) {
     });
 
     return Response.json({
-      photos: await searchPexelsPhotoResults({ perPage, query }),
+      page,
+      perPage,
+      photos: await searchPexelsPhotoResults({ page, perPage, query }),
     });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

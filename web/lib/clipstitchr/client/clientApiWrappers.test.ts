@@ -6,6 +6,7 @@ import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
 import { generateSwiprBackgroundWithAi } from "@/lib/clipstitchr/client/generateSwiprBackgroundWithAi";
 import { generateSwiprDrafts } from "@/lib/clipstitchr/client/generateSwiprDrafts";
 import { importPexelsPhotosToSwiprLibrary } from "@/lib/clipstitchr/client/importPexelsPhotosToSwiprLibrary";
+import { searchPexelsPhotos } from "@/lib/clipstitchr/client/searchPexelsPhotos";
 import { scoreVideoClip } from "@/lib/clipstitchr/client/scoreVideoClip";
 import { updateProductProfile } from "@/lib/clipstitchr/client/updateProductProfile";
 import { createR2DownloadUrl } from "@/lib/clipstitchr/client/r2/createR2DownloadUrl";
@@ -263,6 +264,7 @@ describe("client API wrappers", () => {
         createJsonResponse({
           ids: ["background_1"],
           imported: 1,
+          page: 3,
           query: "desk setup",
           searched: 1,
         }),
@@ -281,11 +283,13 @@ describe("client API wrappers", () => {
     await expect(
       importPexelsPhotosToSwiprLibrary({
         count: 12,
+        page: 3,
         query: "desk setup",
       }),
     ).resolves.toEqual({
       ids: ["background_1"],
       imported: 1,
+      page: 3,
       query: "desk setup",
       searched: 1,
     });
@@ -317,7 +321,7 @@ describe("client API wrappers", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/swipr/pexels/import",
       expect.objectContaining({
-        body: JSON.stringify({ count: 12, query: "desk setup" }),
+        body: JSON.stringify({ count: 12, page: 3, query: "desk setup" }),
         method: "POST",
       }),
     );
@@ -330,6 +334,49 @@ describe("client API wrappers", () => {
           selectedLibraryQueries: ["desk setup"],
           slideCount: 8,
         }),
+        method: "POST",
+      }),
+    );
+  });
+
+  it("wraps paged Swipr Pexels search results", async () => {
+    const photo = {
+      alt: "Desk setup",
+      height: 1920,
+      id: 123,
+      photographer: "Avery",
+      photographerUrl: "https://pexels.com/@avery",
+      pexelsUrl: "https://pexels.com/photo/123",
+      src: {
+        large: "https://images.pexels.com/large.jpg",
+        large2x: "https://images.pexels.com/large2x.jpg",
+        medium: "https://images.pexels.com/medium.jpg",
+        original: "https://images.pexels.com/original.jpg",
+        portrait: "https://images.pexels.com/portrait.jpg",
+        small: "https://images.pexels.com/small.jpg",
+      },
+      width: 1080,
+    };
+
+    fetchMock
+      .mockResolvedValueOnce(createJsonResponse({ page: 2, photos: [photo] }))
+      .mockResolvedValueOnce(createJsonResponse({ message: "Search failed" }, 400));
+
+    await expect(
+      searchPexelsPhotos({
+        page: 2,
+        perPage: 12,
+        query: "desk setup",
+      }),
+    ).resolves.toEqual([photo]);
+    await expect(
+      searchPexelsPhotos({ page: 1, query: "bad" }),
+    ).rejects.toThrow("Search failed");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/swipr/pexels/search",
+      expect.objectContaining({
+        body: JSON.stringify({ page: 2, perPage: 12, query: "desk setup" }),
         method: "POST",
       }),
     );

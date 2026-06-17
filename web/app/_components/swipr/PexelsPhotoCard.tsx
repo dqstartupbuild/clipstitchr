@@ -8,7 +8,7 @@ import { getPexelsPhotoDownloadUrl } from "@/lib/clipstitchr/utils/getPexelsPhot
 type PexelsPhotoCardProps = {
   isSaving: boolean;
   photo: PexelsPhotoResult;
-  onSelect: (photo: PexelsPhotoResult) => void;
+  onSelect?: (photo: PexelsPhotoResult) => void;
 };
 
 export function PexelsPhotoCard({
@@ -39,16 +39,18 @@ export function PexelsPhotoCard({
             {photo.photographer || "Pexels"}
           </p>
         )}
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          icon={<Plus aria-hidden className="h-4 w-4" />}
-          disabled={isSaving}
-          onClick={() => onSelect(photo)}
-        >
-          Add
-        </Button>
+        {onSelect ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            icon={<Plus aria-hidden className="h-4 w-4" />}
+            disabled={isSaving}
+            onClick={() => onSelect(photo)}
+          >
+            Add
+          </Button>
+        ) : null}
       </div>
     </article>
   );

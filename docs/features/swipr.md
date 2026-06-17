@@ -10,22 +10,24 @@ version at any time.
 ## User Workflow
 
 1. The user opens `/dashboard/swipr`.
-2. The user chooses a saved Settings product as the product context.
-3. The user starts with the default slides, adds slides up to the max of 8, and
-   can remove slides they do not need.
-4. The user chooses one photo for the selected carousel image:
+2. Swipr opens in Batch mode by default. The user chooses a saved Settings
+   product, searches Pexels, imports the current Pexels page as a reusable
+   query pack, chooses which packs to use, and generates multiple editable
+   draft Swipes at once. Batch draft generation always requests the max Swipr
+   slide count of 8.
+3. The user can switch to Manual mode to build one Swipe by hand.
+4. In Manual mode, the user starts with the default slides, adds slides up to
+   the max of 8, and can remove slides they do not need.
+5. The user chooses one photo for the selected carousel image:
    - A Pexels photo from the built-in search panel.
    - A saved Pexels query-pack photo imported from a previous search.
    - A saved avatar photo.
    - Uploaded background images.
    - One AI-generated background image for the selected carousel image, using
      product context and an optional user prompt.
-5. The user can copy the selected slide photo to every slide when the same
+6. The user can copy the selected slide photo to every slide when the same
    image should be reused.
-6. The user edits text independently on each carousel image.
-7. The user can import the current Pexels search as an owner-owned query pack,
-   choose which packs should be used for drafts, and generate multiple editable
-   Swipe drafts at once from those saved packs.
+7. The user edits text independently on each carousel image.
 8. The user can generate editable slide text from the shared hidden Clipr
    hook-template engine. The first slide uses the generated hook, and the
    remaining slides pay it off with supporting points. Swipr auto-text can draw
@@ -215,8 +217,16 @@ Swipr can search Pexels through `POST /api/swipr/pexels/search`. The route:
 - Reads `PEXELS_API_KEY` server-side and sends it in the Pexels
   `Authorization` header.
 - Calls `GET https://api.pexels.com/v1/search` with `orientation=portrait`.
+- Accepts a clamped `page` value so the editor can load later Pexels result
+  pages for the same query instead of showing the same first results every
+  time.
 - Returns only the photo fields needed by the client: ID, dimensions, Pexels
   URL, photographer credit/link, alt text, and source URLs.
+
+The Swipr Pexels panel shows a Load more button when a page returns a full
+result set. Load more requests the next Pexels page and appends new photo IDs.
+Batch imports save the currently viewed page for the query, so a user can load
+later results and import that page as a reusable pack.
 
 When a user adds a Pexels photo, the client downloads the selected portrait
 image, saves it through the existing Swipr background analysis/R2/Convex path,
@@ -237,6 +247,9 @@ slide.
 `POST /api/swipr/drafts/generate` creates multiple editable Swipe drafts from
 saved Pexels packs. It requires a saved Settings product and at least one
 owner-owned Pexels background with `libraryQuery`.
+
+The Batch tab is the default UI for this route. It does not expose manual slide
+controls and sends the max Swipr slide count of 8 for generated draft Swipes.
 
 The route:
 

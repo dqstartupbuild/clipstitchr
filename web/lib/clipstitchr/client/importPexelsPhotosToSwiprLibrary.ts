@@ -1,10 +1,12 @@
 type ImportPexelsPhotosToSwiprLibraryOptions = {
   count: number;
+  page?: number;
   query: string;
 };
 
 export async function importPexelsPhotosToSwiprLibrary({
   count,
+  page = 1,
   query,
 }: ImportPexelsPhotosToSwiprLibraryOptions) {
   const response = await fetch("/api/swipr/pexels/import", {
@@ -12,7 +14,7 @@ export async function importPexelsPhotosToSwiprLibrary({
     headers: {
       "content-type": "application/json",
     },
-    body: JSON.stringify({ count, query }),
+    body: JSON.stringify({ count, page, query }),
   });
 
   if (!response.ok) {
@@ -26,6 +28,7 @@ export async function importPexelsPhotosToSwiprLibrary({
   return (await response.json()) as {
     ids: string[];
     imported: number;
+    page: number;
     query: string;
     searched: number;
   };

@@ -12,19 +12,23 @@ owner-owned Swipr background records in Convex plus Cloudflare R2.
 ## User Workflow
 
 1. The user opens `/dashboard/swipr`.
-2. The user searches Pexels from the Pexels panel.
-3. The user can add one visible result directly to the selected slide.
-4. The user can also import the current query as a saved pack. The import count
-   defaults to 24 and is clamped by the backend to 40 images.
-5. Imported photos are saved with `source: "pexels"` and `libraryQuery` set to
+2. Swipr opens in Batch mode by default.
+3. The user searches Pexels from the Pexels panel.
+4. The user can load more Pexels results for the same query when the current
+   page returns a full result set.
+5. The user can import the currently viewed query page as a saved pack. The
+   import count defaults to 24 and is clamped by the backend to 40 images.
+6. In Manual mode, the user can add one visible result directly to the selected
+   slide.
+7. Imported photos are saved with `source: "pexels"` and `libraryQuery` set to
    the search query.
-6. The Pexels panel shows saved query packs with cover images and lets the user
+8. The Pexels panel shows saved query packs with cover images and lets the user
    choose all packs or selected packs.
-7. Saved pack photos can be added to the selected slide.
-8. The user can generate multiple editable draft Swipes at once. Draft
-   generation uses the selected query packs, creates text for each slideshow,
-   assigns saved Pexels backgrounds to the slides, and saves each result as a
-   normal editable Swipe.
+9. Saved pack photos can be added to the selected slide in Manual mode.
+10. The user can generate multiple editable draft Swipes at once from Batch
+   mode. Draft generation uses the selected query packs, creates text for each
+   slideshow, assigns saved Pexels backgrounds to the slides, and saves each
+   result as a normal editable 8-slide Swipe.
 
 ## Data Model
 
@@ -50,7 +54,7 @@ each slide's photo and text.
 `POST /api/swipr/pexels/import`
 
 - Requires an authenticated user.
-- Reads a query and import count.
+- Reads a query, result page, and import count.
 - Consumes Pexels search limits and Pexels import-image limits before calling
   Pexels.
 - Searches Pexels with portrait orientation.
@@ -73,11 +77,17 @@ each slide's photo and text.
   provider.
 - Saves each draft through `swipes.save`.
 
+The Swipr Batch tab sends a slide count of 8, so user-triggered batch drafts
+match the automatic Swipr draft shape.
+
 ## Relevant Code
 
 - `web/app/api/swipr/pexels/import/route.ts`
 - `web/app/api/swipr/drafts/generate/route.ts`
 - `web/app/_components/swipr/SwiprPexelsPanel.tsx`
+- `web/app/_components/swipr/SwiprModeToggle.tsx`
+- `web/app/_components/swipr/SwiprBatchControls.tsx`
+- `web/app/_components/swipr/SwiprManualControls.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackPicker.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackButton.tsx`
 - `web/app/_components/swipr/SwiprLibraryPhotoCard.tsx`

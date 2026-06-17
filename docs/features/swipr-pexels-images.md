@@ -10,17 +10,23 @@ and avatar photos.
 1. The user types a photo search in the Pexels panel on `/dashboard/swipr`.
 2. The client calls `POST /api/swipr/pexels/search`.
 3. The route authenticates the user, consumes Pexels rate limits, reads
-   `PEXELS_API_KEY`, and calls Pexels with `orientation=portrait`.
+   `PEXELS_API_KEY`, and calls Pexels with `orientation=portrait`, the
+   requested `page`, and the requested page size.
 4. The client shows returned photos with Pexels attribution and photographer
    credit.
-5. When the user taps Add, the client downloads the selected image, saves it
-   through the Swipr photo save flow, and assigns it to the selected slide only.
-6. When the user taps Import, the client calls
-   `POST /api/swipr/pexels/import` for the current query and requested count.
-7. The import route downloads matching Pexels photos server-side, writes them
+5. If the page returns a full result set, the user can load more results. The
+   client requests the next Pexels page for the same query and appends new
+   photo IDs.
+6. In Manual mode, when the user taps Add, the client downloads the selected
+   image, saves it through the Swipr photo save flow, and assigns it to the
+   selected slide only.
+7. In Batch mode, when the user taps Import page, the client calls
+   `POST /api/swipr/pexels/import` for the current query, page, and requested
+   count.
+8. The import route downloads matching Pexels photos server-side, writes them
    to owner-scoped R2 storage, and saves `swiprBackgrounds` records with
    `libraryQuery` set to that query.
-8. The Pexels panel groups imported photos into query packs. Users can choose
+9. The Pexels panel groups imported photos into query packs. Users can choose
    all packs or selected packs for batch draft generation, and can use any
    saved pack photo on the selected slide.
 
@@ -38,6 +44,8 @@ batch drafts; they are not exposed as a shared Swipr gallery.
   Convex.
 - `web/app/api/swipr/drafts/generate/route.ts` creates editable draft Swipes
   from saved Pexels packs.
+- `web/lib/clipstitchr/server/pexels/getPexelsSearchPage.ts` clamps requested
+  Pexels result pages.
 - `web/lib/clipstitchr/client/searchPexelsPhotos.ts` calls the search route.
 - `web/lib/clipstitchr/client/importPexelsPhotosToSwiprLibrary.ts` calls the
   import route.
@@ -80,6 +88,9 @@ The route consumes those limits before calling Pexels. Pexels photo saving then
 uses the existing Swipr background analysis, R2 upload, and Convex record-save
 limits.
 
+Pexels pagination uses the same `consumePexelsSearch` buckets. Loading another
+page is another Pexels search request, not a separate rate-limit surface.
+
 `consumePexelsImport` enforces:
 
 - 120 imported images/hour/user with burst 40.
@@ -88,6 +99,10 @@ limits.
 The import route consumes search and import-image limits before downloading
 Pexels images or writing to R2. Each saved background also consumes the normal
 Convex record-save limit inside `swiprBackgrounds.save`.
+
+Importing a later Pexels page uses the same import route and the same search
+and import-image limits. The only difference is the `page` value passed to
+Pexels.
 
 Batch draft generation uses the existing Clipr hook/script generation bucket
 with `count` equal to the requested draft count before calling the text-writing

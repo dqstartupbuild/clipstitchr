@@ -413,7 +413,9 @@ describe("dashboard page clients", () => {
 
     expect(markup).toContain("Create TikTok carousels");
     expect(markup).toContain("Launch Kit");
-    expect(markup).toContain("Slide photos");
+    expect(markup).toContain("Batch");
+    expect(markup).toContain("Generate drafts");
+    expect(markup).toContain("Import page");
   });
 
   it("renders the Content Library with upload controls and saved assets", () => {

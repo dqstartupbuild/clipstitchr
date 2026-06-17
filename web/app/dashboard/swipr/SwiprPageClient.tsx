@@ -5,6 +5,9 @@ import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHe
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { SwiprBackgroundPanel } from "@/app/_components/swipr/SwiprBackgroundPanel";
 import { SwiprAvatarPhotoPanel } from "@/app/_components/swipr/SwiprAvatarPhotoPanel";
+import { SwiprBatchControls } from "@/app/_components/swipr/SwiprBatchControls";
+import { SwiprManualControls } from "@/app/_components/swipr/SwiprManualControls";
+import { SwiprModeToggle } from "@/app/_components/swipr/SwiprModeToggle";
 import { SwiprPexelsPanel } from "@/app/_components/swipr/SwiprPexelsPanel";
 import { SwiprPreviewPanel } from "@/app/_components/swipr/SwiprPreviewPanel";
 import { SwiprProductPanel } from "@/app/_components/swipr/SwiprProductPanel";
@@ -30,6 +33,7 @@ import type { PexelsPhotoResult } from "@/lib/clipstitchr/types/PexelsPhotoResul
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import type { SwiprBackground } from "@/lib/clipstitchr/types/SwiprBackground";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
+import type { SwiprMode } from "@/lib/clipstitchr/types/SwiprMode";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import type { SwiprTextGenerationScope } from "@/lib/clipstitchr/types/SwiprTextGenerationScope";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -47,6 +51,8 @@ import { createId } from "@/lib/clipstitchr/utils/createId";
 import { assignSwiprBackgroundsToSlides } from "@/lib/clipstitchr/utils/assignSwiprBackgroundsToSlides";
 import { resizeSwiprSlides } from "@/lib/clipstitchr/utils/resizeSwiprSlides";
 
+const PEXELS_SEARCH_PER_PAGE = 12;
+
 export function SwiprPageClient() {
   const photoLibrary = usePhotoLibrary();
   const products = useProducts();
@@ -61,6 +67,15 @@ export function SwiprPageClient() {
     [products.products],
   );
   const [selectedProductId, setSelectedProductId] = useState<string>();
+  const [swiprMode, setSwiprMode] = useState<SwiprMode>(() => {
+    if (typeof window === "undefined") {
+      return "batch";
+    }
+
+    return new URL(window.location.href).searchParams.get("swipe")
+      ? "manual"
+      : "batch";
+  });
   const [slides, setSlides] = useState(() =>
     createSwiprSlides(SWIPR_MIN_SLIDE_COUNT),
   );
@@ -73,6 +88,8 @@ export function SwiprPageClient() {
   const [pexelsQuery, setPexelsQuery] = useState("");
   const [pexelsImportCount, setPexelsImportCount] = useState(24);
   const [pexelsPhotos, setPexelsPhotos] = useState<PexelsPhotoResult[]>([]);
+  const [pexelsPage, setPexelsPage] = useState(1);
+  const [hasMorePexelsPhotos, setHasMorePexelsPhotos] = useState(false);
   const [selectedLibraryQueries, setSelectedLibraryQueries] = useState<
     string[]
   >([]);
@@ -84,6 +101,7 @@ export function SwiprPageClient() {
   const [isImportingPexelsLibrary, setIsImportingPexelsLibrary] =
     useState(false);
   const [isSearchingPexels, setIsSearchingPexels] = useState(false);
+  const [isLoadingMorePexels, setIsLoadingMorePexels] = useState(false);
   const [isGeneratingDrafts, setIsGeneratingDrafts] = useState(false);
   const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
   const [draftGenerationCount, setDraftGenerationCount] = useState(3);
@@ -336,13 +354,28 @@ export function SwiprPageClient() {
     ],
   );
 
+  const handlePexelsQueryChange = useCallback((query: string) => {
+    setPexelsQuery(query);
+    setPexelsPage(1);
+    setHasMorePexelsPhotos(false);
+    setPexelsPhotos([]);
+  }, []);
+
   const handleSearchPexels = useCallback(() => {
+    const nextPage = 1;
+
     setIsSearchingPexels(true);
     setPexelsError(null);
 
-    void searchPexelsPhotos({ query: pexelsQuery })
+    void searchPexelsPhotos({
+      page: nextPage,
+      perPage: PEXELS_SEARCH_PER_PAGE,
+      query: pexelsQuery,
+    })
       .then((photos) => {
         setPexelsPhotos(photos);
+        setPexelsPage(nextPage);
+        setHasMorePexelsPhotos(photos.length === PEXELS_SEARCH_PER_PAGE);
         setPexelsError(photos.length ? null : "No matching photos found.");
       })
       .catch((error) => {
@@ -352,6 +385,39 @@ export function SwiprPageClient() {
       })
       .finally(() => setIsSearchingPexels(false));
   }, [pexelsQuery]);
+
+  const handleLoadMorePexels = useCallback(() => {
+    const nextPage = pexelsPage + 1;
+
+    setIsLoadingMorePexels(true);
+    setPexelsError(null);
+
+    void searchPexelsPhotos({
+      page: nextPage,
+      perPage: PEXELS_SEARCH_PER_PAGE,
+      query: pexelsQuery,
+    })
+      .then((photos) => {
+        setPexelsPhotos((currentPhotos) => {
+          const existingPhotoIds = new Set(
+            currentPhotos.map((photo) => photo.id),
+          );
+
+          return [
+            ...currentPhotos,
+            ...photos.filter((photo) => !existingPhotoIds.has(photo.id)),
+          ];
+        });
+        setPexelsPage(nextPage);
+        setHasMorePexelsPhotos(photos.length === PEXELS_SEARCH_PER_PAGE);
+      })
+      .catch((error) => {
+        setPexelsError(
+          error instanceof Error ? error.message : "Unable to search Pexels.",
+        );
+      })
+      .finally(() => setIsLoadingMorePexels(false));
+  }, [pexelsPage, pexelsQuery]);
 
   const handleSelectPexelsPhoto = useCallback(
     (photo: PexelsPhotoResult) => {
@@ -407,6 +473,7 @@ export function SwiprPageClient() {
 
     void importPexelsPhotosToSwiprLibrary({
       count: pexelsImportCount,
+      page: pexelsPage,
       query: pexelsQuery,
     })
       .then((result) => {
@@ -427,7 +494,7 @@ export function SwiprPageClient() {
         );
       })
       .finally(() => setIsImportingPexelsLibrary(false));
-  }, [pexelsImportCount, pexelsQuery]);
+  }, [pexelsImportCount, pexelsPage, pexelsQuery]);
 
   const handleSelectSavedBackground = useCallback(
     (savedBackground: SwiprBackgroundAsset) => {
@@ -591,7 +658,7 @@ export function SwiprPageClient() {
       count: draftGenerationCount,
       productId: selectedSavedProductId,
       selectedLibraryQueries,
-      slideCount,
+      slideCount: SWIPR_MAX_SLIDE_COUNT,
     })
       .then((result) => {
         setAutoTextMessage(
@@ -856,6 +923,7 @@ export function SwiprPageClient() {
         setSlides(slidesWithBackgrounds);
         setActiveSlideId(slidesWithBackgrounds[0]?.id ?? null);
         setBackground(getSwiprBackgroundFromAsset({ ...savedBackground, blob }));
+        setSwiprMode("manual");
         setSavedSwipeSnapshot(savedSwipe);
         setLoadedSwipeId(savedSwipe.id);
         setSaveMessage("Loaded saved Swipe.");
@@ -908,44 +976,74 @@ export function SwiprPageClient() {
           </div>
         ) : null}
 
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
+        <div
+          className={[
+            "grid gap-5 xl:items-start",
+            swiprMode === "manual"
+              ? "xl:grid-cols-[minmax(0,1fr)_340px]"
+              : "",
+          ].join(" ")}
+        >
           <Panel className="order-2 min-w-0 p-4 xl:order-1">
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.72fr)] lg:items-start">
+            <div
+              className={[
+                "grid gap-4",
+                swiprMode === "manual"
+                  ? "lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.72fr)] lg:items-start"
+                  : "",
+              ].join(" ")}
+            >
               <div className="grid gap-4">
+                <SwiprModeToggle value={swiprMode} onChange={setSwiprMode} />
                 <SwiprProductPanel
-                  canAddSlide={slideCount < SWIPR_MAX_SLIDE_COUNT}
-                  draftGenerationCount={draftGenerationCount}
                   productOptions={productOptions}
                   selectedProductId={activeProductId}
-                  slideCount={slideCount}
-                  textGenerationScope={textGenerationScope}
-                  isGeneratingDrafts={isGeneratingDrafts}
-                  isGeneratingText={isGeneratingAutoText}
-                  onAddSlide={handleAddSlide}
-                  onDraftGenerationCountChange={setDraftGenerationCount}
                   onProductChange={setSelectedProductId}
-                  onGenerateDrafts={handleGenerateDrafts}
-                  onGenerateText={handleGenerateAutoText}
-                  onTextGenerationScopeChange={setTextGenerationScope}
                 />
-                <SwiprBackgroundPanel
-                  generationPrompt={generationPrompt}
-                  isSaving={swiprLibrary.isSavingBackground}
-                  isGeneratingAi={isGeneratingAiBackground}
-                  isAiDisabled={!selectedSavedProduct}
-                  activeSlideIndex={activeSlideIndex}
-                  onGenerationPromptChange={setGenerationPrompt}
-                  onGenerateAiBackground={() => void generateAiBackgrounds()}
-                  onUploadBackground={handleUploadBackgrounds}
-                />
-                <SwiprAvatarPhotoPanel
-                  photos={photoLibrary.photos}
-                  onLoadPhoto={photoLibrary.loadPhoto}
-                  onSelectPhoto={handleSelectAvatarPhoto}
-                />
+                {swiprMode === "batch" ? (
+                  <SwiprBatchControls
+                    draftGenerationCount={draftGenerationCount}
+                    isDisabled={!selectedSavedProduct}
+                    isGeneratingDrafts={isGeneratingDrafts}
+                    onDraftGenerationCountChange={setDraftGenerationCount}
+                    onGenerateDrafts={handleGenerateDrafts}
+                  />
+                ) : (
+                  <SwiprManualControls
+                    canAddSlide={slideCount < SWIPR_MAX_SLIDE_COUNT}
+                    isDisabled={!selectedSavedProduct}
+                    isGeneratingText={isGeneratingAutoText}
+                    slideCount={slideCount}
+                    textGenerationScope={textGenerationScope}
+                    onAddSlide={handleAddSlide}
+                    onGenerateText={handleGenerateAutoText}
+                    onTextGenerationScopeChange={setTextGenerationScope}
+                  />
+                )}
+                {swiprMode === "manual" ? (
+                  <>
+                    <SwiprBackgroundPanel
+                      generationPrompt={generationPrompt}
+                      isSaving={swiprLibrary.isSavingBackground}
+                      isGeneratingAi={isGeneratingAiBackground}
+                      isAiDisabled={!selectedSavedProduct}
+                      activeSlideIndex={activeSlideIndex}
+                      onGenerationPromptChange={setGenerationPrompt}
+                      onGenerateAiBackground={() => void generateAiBackgrounds()}
+                      onUploadBackground={handleUploadBackgrounds}
+                    />
+                    <SwiprAvatarPhotoPanel
+                      photos={photoLibrary.photos}
+                      onLoadPhoto={photoLibrary.loadPhoto}
+                      onSelectPhoto={handleSelectAvatarPhoto}
+                    />
+                  </>
+                ) : null}
                 <SwiprPexelsPanel
                   error={pexelsError}
+                  hasMorePhotos={hasMorePexelsPhotos}
                   importCount={pexelsImportCount}
+                  isLoadingMore={isLoadingMorePexels}
                   isSaving={isImportingBackground}
                   isImportingLibrary={isImportingPexelsLibrary}
                   isSearching={isSearchingPexels}
@@ -954,52 +1052,70 @@ export function SwiprPageClient() {
                   photos={pexelsPhotos}
                   query={pexelsQuery}
                   selectedLibraryQueries={selectedLibraryQueries}
+                  showImportControls={swiprMode === "batch"}
+                  showLibraryPacks={swiprMode === "batch"}
+                  showSavedLibraryPhotos={swiprMode === "manual"}
                   onImportCountChange={setPexelsImportCount}
                   onImportQuery={handleImportPexelsLibraryQuery}
                   onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
-                  onQueryChange={setPexelsQuery}
+                  onLoadMore={handleLoadMorePexels}
+                  onQueryChange={handlePexelsQueryChange}
                   onSearch={handleSearchPexels}
-                  onSelectPhoto={handleSelectPexelsPhoto}
-                  onSelectSavedBackground={handleSelectSavedBackground}
+                  onSelectPhoto={
+                    swiprMode === "manual" ? handleSelectPexelsPhoto : undefined
+                  }
+                  onSelectSavedBackground={
+                    swiprMode === "manual"
+                      ? handleSelectSavedBackground
+                      : undefined
+                  }
                   onSelectedLibraryQueriesChange={setSelectedLibraryQueries}
                 />
-                <SwiprSlideStrip
-                  canCopyActivePhotoToAllSlides={Boolean(
-                    activeSlide?.backgroundId && slideCount > 1,
-                  )}
-                  slides={slides}
-                  activeSlideId={activeSlide?.id ?? null}
-                  onCopyActivePhotoToAllSlides={handleCopyActivePhotoToAllSlides}
-                  onRemoveSlide={handleRemoveSlide}
-                  onSelectSlide={setActiveSlideId}
-                />
+                {swiprMode === "manual" ? (
+                  <SwiprSlideStrip
+                    canCopyActivePhotoToAllSlides={Boolean(
+                      activeSlide?.backgroundId && slideCount > 1,
+                    )}
+                    slides={slides}
+                    activeSlideId={activeSlide?.id ?? null}
+                    onCopyActivePhotoToAllSlides={handleCopyActivePhotoToAllSlides}
+                    onRemoveSlide={handleRemoveSlide}
+                    onSelectSlide={setActiveSlideId}
+                  />
+                ) : null}
               </div>
-              <SwiprTextOverlayPanel
-                activeSlide={activeSlide}
-                activeSlideIndex={activeSlideIndex}
-                onChange={handleTextOverlayChange}
-              />
+              {swiprMode === "manual" ? (
+                <SwiprTextOverlayPanel
+                  activeSlide={activeSlide}
+                  activeSlideIndex={activeSlideIndex}
+                  onChange={handleTextOverlayChange}
+                />
+              ) : null}
             </div>
           </Panel>
-          <div className="order-1 min-w-0 w-full max-w-[340px] justify-self-center xl:sticky xl:top-5 xl:order-2 xl:justify-self-end">
-            <SwiprPreviewPanel
-              background={activeBackground}
-              activeSlide={activeSlide}
-              activeSlideIndex={activeSlideIndex}
-              saveMessage={saveMessage}
-              isSaveDisabled={
-                !selectedSavedProduct || !hasSlidePhotos || isCreatingBackground
-              }
-              isSaving={swiprLibrary.isSavingSwipe}
-              exportStatus={exporter.status}
-              exportProgress={exporter.progress}
-              exportError={exporter.error}
-              isExportDisabled={!isSavedExportReady || isCreatingBackground}
-              onSave={handleSave}
-              onExport={handleExport}
-              onTextOverlayChange={handleTextOverlayChange}
-            />
-          </div>
+          {swiprMode === "manual" ? (
+            <div className="order-1 min-w-0 w-full max-w-[340px] justify-self-center xl:sticky xl:top-5 xl:order-2 xl:justify-self-end">
+              <SwiprPreviewPanel
+                background={activeBackground}
+                activeSlide={activeSlide}
+                activeSlideIndex={activeSlideIndex}
+                saveMessage={saveMessage}
+                isSaveDisabled={
+                  !selectedSavedProduct ||
+                  !hasSlidePhotos ||
+                  isCreatingBackground
+                }
+                isSaving={swiprLibrary.isSavingSwipe}
+                exportStatus={exporter.status}
+                exportProgress={exporter.progress}
+                exportError={exporter.error}
+                isExportDisabled={!isSavedExportReady || isCreatingBackground}
+                onSave={handleSave}
+                onExport={handleExport}
+                onTextOverlayChange={handleTextOverlayChange}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </DashboardShell>

@@ -5,6 +5,7 @@ import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/get
 import { createSwiprPexelsBackgroundMetadata } from "@/lib/clipstitchr/server/createSwiprPexelsBackgroundMetadata";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { downloadPexelsPhotoBytes } from "@/lib/clipstitchr/server/pexels/downloadPexelsPhotoBytes";
+import { getPexelsSearchPage } from "@/lib/clipstitchr/server/pexels/getPexelsSearchPage";
 import { searchPexelsPhotoResults } from "@/lib/clipstitchr/server/pexels/searchPexelsPhotoResults";
 import { readImageDimensionsFromBytes } from "@/lib/clipstitchr/server/readImageDimensionsFromBytes";
 import { readSwiprLibraryQuery } from "@/lib/clipstitchr/server/readSwiprLibraryQuery";
@@ -19,6 +20,7 @@ export const runtime = "nodejs";
 
 type SwiprPexelsImportRequest = {
   count?: unknown;
+  page?: unknown;
   query?: unknown;
 };
 
@@ -39,6 +41,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as SwiprPexelsImportRequest;
     const query = readSwiprLibraryQuery(body.query);
     const count = readSwiprPexelsImportCount(body.count);
+    const page = getPexelsSearchPage(body.page);
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const secret = getRateLimitApiSecret();
 
@@ -48,7 +51,11 @@ export async function POST(request: Request) {
       secret,
     });
 
-    const photos = await searchPexelsPhotoResults({ perPage: count, query });
+    const photos = await searchPexelsPhotoResults({
+      page,
+      perPage: count,
+      query,
+    });
     const importedIds: string[] = [];
 
     for (const photo of photos) {
@@ -88,6 +95,7 @@ export async function POST(request: Request) {
     return Response.json({
       imported: importedIds.length,
       ids: importedIds,
+      page,
       query,
       searched: photos.length,
     });

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { POST } from "@/app/api/swipr/pexels/import/route";
+import { POST } from "@/app/api/swipr/pexels/search/route";
 import { api } from "@/convex/_generated/api";
 
 const mocks = vi.hoisted(() => {
@@ -10,12 +10,8 @@ const mocks = vi.hoisted(() => {
   return {
     convex,
     createAuthenticatedConvexHttpClient: vi.fn(() => convex),
-    createId: vi.fn(),
-    downloadPexelsPhotoBytes: vi.fn(),
     getAuthenticatedConvexToken: vi.fn(),
     getAuthenticatedUserId: vi.fn(),
-    putR2Object: vi.fn(),
-    readImageDimensionsFromBytes: vi.fn(),
     searchPexelsPhotoResults: vi.fn(),
   };
 });
@@ -23,11 +19,7 @@ const mocks = vi.hoisted(() => {
 vi.mock("@/convex/_generated/api", () => ({
   api: {
     rateLimits: {
-      consumePexelsImport: "rateLimits.consumePexelsImport",
       consumePexelsSearch: "rateLimits.consumePexelsSearch",
-    },
-    swiprBackgrounds: {
-      save: "swiprBackgrounds.save",
     },
   },
 }));
@@ -47,32 +39,16 @@ vi.mock("@/lib/clipstitchr/server/getAuthenticatedUserId", () => ({
   getAuthenticatedUserId: mocks.getAuthenticatedUserId,
 }));
 
-vi.mock("@/lib/clipstitchr/server/pexels/downloadPexelsPhotoBytes", () => ({
-  downloadPexelsPhotoBytes: mocks.downloadPexelsPhotoBytes,
-}));
-
 vi.mock("@/lib/clipstitchr/server/pexels/searchPexelsPhotoResults", () => ({
   searchPexelsPhotoResults: mocks.searchPexelsPhotoResults,
-}));
-
-vi.mock("@/lib/clipstitchr/server/r2/putR2Object", () => ({
-  putR2Object: mocks.putR2Object,
-}));
-
-vi.mock("@/lib/clipstitchr/server/readImageDimensionsFromBytes", () => ({
-  readImageDimensionsFromBytes: mocks.readImageDimensionsFromBytes,
 }));
 
 vi.mock("@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret", () => ({
   getRateLimitApiSecret: () => "rate-limit-secret",
 }));
 
-vi.mock("@/lib/clipstitchr/utils/createId", () => ({
-  createId: mocks.createId,
-}));
-
 function createRequest(body: object) {
-  return new Request("https://clipstitchr.test/api/swipr/pexels/import", {
+  return new Request("https://clipstitchr.test/api/swipr/pexels/search", {
     body: JSON.stringify(body),
     method: "POST",
   });
@@ -98,34 +74,13 @@ function createPhoto(id: number) {
   };
 }
 
-describe("POST /api/swipr/pexels/import", () => {
+describe("POST /api/swipr/pexels/search", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getAuthenticatedUserId.mockResolvedValue("user_123");
     mocks.getAuthenticatedConvexToken.mockResolvedValue("convex-token");
     mocks.convex.mutation.mockResolvedValue(null);
-    mocks.createId
-      .mockReturnValueOnce("background_1")
-      .mockReturnValueOnce("background_2");
-    mocks.searchPexelsPhotoResults.mockResolvedValue([
-      createPhoto(101),
-      createPhoto(102),
-    ]);
-    mocks.downloadPexelsPhotoBytes.mockResolvedValue({
-      bytes: new Uint8Array([1, 2, 3]),
-      contentType: "image/jpeg",
-    });
-    mocks.readImageDimensionsFromBytes.mockReturnValue({
-      height: 1920,
-      width: 1080,
-    });
-    mocks.putR2Object.mockImplementation(({ key }) =>
-      Promise.resolve({
-        contentType: "image/jpeg",
-        key,
-        size: 3,
-      }),
-    );
+    mocks.searchPexelsPhotoResults.mockResolvedValue([createPhoto(101)]);
   });
 
   it("returns 401 before token creation when authentication is missing", async () => {
@@ -137,46 +92,26 @@ describe("POST /api/swipr/pexels/import", () => {
     expect(mocks.getAuthenticatedConvexToken).not.toHaveBeenCalled();
   });
 
-  it("searches Pexels, uploads images to R2, and saves query-pack records", async () => {
+  it("searches the requested Pexels page after consuming search quota", async () => {
     const response = await POST(
-      createRequest({ count: 2, page: 3, query: " desk setup " }),
+      createRequest({ page: 2, perPage: 12, query: " desk setup " }),
     );
 
     await expect(response.json()).resolves.toEqual({
-      ids: ["background_1", "background_2"],
-      imported: 2,
-      page: 3,
-      query: "desk setup",
-      searched: 2,
+      page: 2,
+      perPage: 12,
+      photos: [createPhoto(101)],
     });
     expect(response.status).toBe(200);
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.rateLimits.consumePexelsSearch,
       { secret: "rate-limit-secret" },
     );
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.rateLimits.consumePexelsImport,
-      { count: 2, secret: "rate-limit-secret" },
-    );
     expect(mocks.searchPexelsPhotoResults).toHaveBeenCalledWith({
-      page: 3,
-      perPage: 2,
+      page: 2,
+      perPage: 12,
       query: "desk setup",
     });
-    expect(mocks.putR2Object).toHaveBeenCalledWith(
-      expect.objectContaining({
-        contentType: "image/jpeg",
-        key: "users/user_123/swipr-backgrounds/background_1/image.jpg",
-      }),
-    );
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.swiprBackgrounds.save,
-      expect.objectContaining({
-        id: "background_1",
-        libraryQuery: "desk setup",
-        source: "pexels",
-      }),
-    );
   });
 
   it("returns rate-limit responses before searching Pexels", async () => {

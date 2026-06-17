@@ -43,12 +43,15 @@ const mocks = vi.hoisted(() => ({
     progress: 0,
     status: "idle",
   },
+  batchControlsProps: null as Record<string, unknown> | null,
   backgroundPanelProps: null as Record<string, unknown> | null,
   generateCliprText: vi.fn(),
   generateSwiprDrafts: vi.fn(),
   generateSwiprBackgroundWithAi: vi.fn(),
   importPexelsPhotosToSwiprLibrary: vi.fn(),
   loadPexelsPhotoBlob: vi.fn(),
+  manualControlsProps: null as Record<string, unknown> | null,
+  modeToggleProps: null as Record<string, unknown> | null,
   pexelsPanelProps: null as Record<string, unknown> | null,
   previewPanelProps: null as Record<string, unknown> | null,
   productPanelProps: null as Record<string, unknown> | null,
@@ -106,6 +109,27 @@ vi.mock("@/app/_components/swipr/SwiprProductPanel", () => ({
   SwiprProductPanel: (props: Record<string, unknown>) => {
     mocks.productPanelProps = props;
     return "SwiprProductPanel";
+  },
+}));
+
+vi.mock("@/app/_components/swipr/SwiprBatchControls", () => ({
+  SwiprBatchControls: (props: Record<string, unknown>) => {
+    mocks.batchControlsProps = props;
+    return "SwiprBatchControls";
+  },
+}));
+
+vi.mock("@/app/_components/swipr/SwiprManualControls", () => ({
+  SwiprManualControls: (props: Record<string, unknown>) => {
+    mocks.manualControlsProps = props;
+    return "SwiprManualControls";
+  },
+}));
+
+vi.mock("@/app/_components/swipr/SwiprModeToggle", () => ({
+  SwiprModeToggle: (props: Record<string, unknown>) => {
+    mocks.modeToggleProps = props;
+    return "SwiprModeToggle";
   },
 }));
 
@@ -272,14 +296,19 @@ function queueSwiprState(
     selectedLibraryQueries?: string[];
     selectedProductId?: string;
     slides?: ReturnType<typeof createSwiprSlides>;
+    swiprMode?: "batch" | "manual";
     textGenerationScope?: "all" | "selected";
     draftGenerationCount?: number;
+    pexelsPage?: number;
+    hasMorePexelsPhotos?: boolean;
+    isLoadingMorePexels?: boolean;
   } = {},
 ) {
   const slides = overrides.slides ?? createSwiprSlides(3);
 
   mocks.stateQueue.push(
     overrides.selectedProductId,
+    overrides.swiprMode ?? "manual",
     slides,
     overrides.activeSlideId ?? slides[0]?.id ?? null,
     overrides.background ?? null,
@@ -287,6 +316,8 @@ function queueSwiprState(
     overrides.pexelsQuery ?? "",
     overrides.pexelsImportCount ?? 24,
     overrides.pexelsPhotos ?? [],
+    overrides.pexelsPage ?? 1,
+    overrides.hasMorePexelsPhotos ?? false,
     overrides.selectedLibraryQueries ?? [],
     overrides.backgroundError ?? null,
     overrides.pexelsError ?? null,
@@ -294,6 +325,7 @@ function queueSwiprState(
     overrides.isImportingBackground ?? false,
     overrides.isImportingPexelsLibrary ?? false,
     overrides.isSearchingPexels ?? false,
+    overrides.isLoadingMorePexels ?? false,
     overrides.isGeneratingDrafts ?? false,
     overrides.isGeneratingAutoText ?? false,
     overrides.draftGenerationCount ?? 3,
@@ -363,7 +395,10 @@ describe("SwiprPageClient", () => {
       new Blob(["pexels"], { type: "image/jpeg" }),
     );
     mocks.searchPexelsPhotos.mockResolvedValue([]);
+    mocks.batchControlsProps = null;
     mocks.backgroundPanelProps = null;
+    mocks.manualControlsProps = null;
+    mocks.modeToggleProps = null;
     mocks.pexelsPanelProps = null;
     mocks.previewPanelProps = null;
     mocks.productPanelProps = null;
@@ -374,11 +409,24 @@ describe("SwiprPageClient", () => {
     mocks.textOverlayPanelProps = null;
   });
 
-  it("renders the Swipr creation workspace with product and background panels", () => {
+  it("renders the Swipr creation workspace in batch mode by default", () => {
     const markup = renderToStaticMarkup(<SwiprPageClient />);
 
     expect(markup).toContain("Header:Create TikTok carousels");
+    expect(markup).toContain("SwiprModeToggle");
     expect(markup).toContain("SwiprProductPanel");
+    expect(markup).toContain("SwiprBatchControls");
+    expect(markup).toContain("SwiprPexelsPanel");
+    expect(markup).not.toContain("SwiprBackgroundPanel");
+    expect(markup).not.toContain("SwiprPreviewPanel");
+  });
+
+  it("renders the manual Swipr slide editor when manual mode is active", () => {
+    queueSwiprState({ swiprMode: "manual" });
+
+    const markup = renderToStaticMarkup(<SwiprPageClient />);
+
+    expect(markup).toContain("SwiprManualControls");
     expect(markup).toContain("SwiprBackgroundPanel");
     expect(markup).toContain("SwiprSlideStrip");
     expect(markup).toContain("SwiprTextOverlayPanel");
@@ -418,13 +466,15 @@ describe("SwiprPageClient", () => {
   });
 
   it("exercises Swipr workspace callbacks", async () => {
+    queueSwiprState({ swiprMode: "manual" });
     renderToStaticMarkup(<SwiprPageClient />);
 
     const productPanelProps = mocks.productPanelProps as {
-      onAddSlide: () => void;
-      onGenerateDrafts: () => void;
-      onGenerateText: () => void;
       onProductChange: (value: string) => void;
+    };
+    const manualControlsProps = mocks.manualControlsProps as {
+      onAddSlide: () => void;
+      onGenerateText: () => void;
       onTextGenerationScopeChange: (scope: "all" | "selected") => void;
     };
     const backgroundPanelProps = mocks.backgroundPanelProps as {
@@ -458,10 +508,9 @@ describe("SwiprPageClient", () => {
     };
 
     productPanelProps.onProductChange("saved-product:product_1");
-    productPanelProps.onAddSlide();
-    productPanelProps.onTextGenerationScopeChange("selected");
-    productPanelProps.onGenerateDrafts();
-    productPanelProps.onGenerateText();
+    manualControlsProps.onAddSlide();
+    manualControlsProps.onTextGenerationScopeChange("selected");
+    manualControlsProps.onGenerateText();
     backgroundPanelProps.onGenerationPromptChange("sunny counter");
     backgroundPanelProps.onUploadBackground([
       new File(["background"], "background.jpg", { type: "image/jpeg" }),
@@ -493,9 +542,10 @@ describe("SwiprPageClient", () => {
 
   it("covers disabled product and background error branches", async () => {
     mocks.productState.products = [];
+    queueSwiprState({ swiprMode: "manual" });
     renderToStaticMarkup(<SwiprPageClient />);
 
-    const productPanelProps = mocks.productPanelProps as {
+    const manualControlsProps = mocks.manualControlsProps as {
       onGenerateText: () => void;
     };
     const backgroundPanelProps = mocks.backgroundPanelProps as {
@@ -506,7 +556,7 @@ describe("SwiprPageClient", () => {
       onSave: () => void;
     };
 
-    productPanelProps.onGenerateText();
+    manualControlsProps.onGenerateText();
     backgroundPanelProps.onGenerateAiBackground();
     previewPanelProps.onSave();
 
@@ -537,11 +587,15 @@ describe("SwiprPageClient", () => {
       pexelsImportCount: 12,
       pexelsQuery: "coffee desk",
       selectedLibraryQueries: ["coffee desk"],
+      swiprMode: "batch",
     });
 
     renderToStaticMarkup(<SwiprPageClient />);
 
     const productPanelProps = mocks.productPanelProps as {
+      onProductChange: (value: string) => void;
+    };
+    const batchControlsProps = mocks.batchControlsProps as {
       onGenerateDrafts: () => void;
     };
     const pexelsPanelProps = mocks.pexelsPanelProps as {
@@ -549,8 +603,9 @@ describe("SwiprPageClient", () => {
       onImportQuery: () => void;
     };
 
+    productPanelProps.onProductChange("saved-product:product_1");
     pexelsPanelProps.onImportQuery();
-    productPanelProps.onGenerateDrafts();
+    batchControlsProps.onGenerateDrafts();
 
     await Promise.resolve();
     await Promise.resolve();
@@ -558,13 +613,14 @@ describe("SwiprPageClient", () => {
     expect(pexelsPanelProps.libraryPacks).toHaveLength(1);
     expect(mocks.importPexelsPhotosToSwiprLibrary).toHaveBeenCalledWith({
       count: 12,
+      page: 1,
       query: "coffee desk",
     });
     expect(mocks.generateSwiprDrafts).toHaveBeenCalledWith({
       count: 2,
       productId: "product_1",
       selectedLibraryQueries: ["coffee desk"],
-      slideCount: 3,
+      slideCount: 8,
     });
   });
 
@@ -589,23 +645,34 @@ describe("SwiprPageClient", () => {
 
     mocks.searchPexelsPhotos.mockResolvedValueOnce([pexelsPhoto]);
     queueSwiprState({
+      hasMorePexelsPhotos: true,
       pexelsQuery: "desk setup",
+      swiprMode: "manual",
     });
 
     renderToStaticMarkup(<SwiprPageClient />);
 
     const pexelsPanelProps = mocks.pexelsPanelProps as {
+      onLoadMore: () => void;
       onSearch: () => void;
       onSelectPhoto: (photo: typeof pexelsPhoto) => void;
     };
 
     pexelsPanelProps.onSearch();
+    pexelsPanelProps.onLoadMore();
     pexelsPanelProps.onSelectPhoto(pexelsPhoto);
 
     await Promise.resolve();
     await Promise.resolve();
 
     expect(mocks.searchPexelsPhotos).toHaveBeenCalledWith({
+      page: 1,
+      perPage: 12,
+      query: "desk setup",
+    });
+    expect(mocks.searchPexelsPhotos).toHaveBeenCalledWith({
+      page: 2,
+      perPage: 12,
       query: "desk setup",
     });
     expect(mocks.loadPexelsPhotoBlob).toHaveBeenCalledWith(pexelsPhoto);
@@ -643,7 +710,7 @@ describe("SwiprPageClient", () => {
       y: 0.5,
     });
 
-    expect(mocks.stateSetters[1]).not.toHaveBeenCalled();
+    expect(mocks.stateSetters[2]).not.toHaveBeenCalled();
   });
 
   it("requires a saved product before saving a swipe", () => {
@@ -897,7 +964,7 @@ describe("SwiprPageClient", () => {
 
     renderToStaticMarkup(<SwiprPageClient />);
 
-    const productPanelProps = mocks.productPanelProps as {
+    const manualControlsProps = mocks.manualControlsProps as {
       onGenerateText: () => void;
     };
     const backgroundPanelProps = mocks.backgroundPanelProps as {
@@ -907,7 +974,7 @@ describe("SwiprPageClient", () => {
       onExport: () => void;
     };
 
-    productPanelProps.onGenerateText();
+    manualControlsProps.onGenerateText();
     backgroundPanelProps.onGenerateAiBackground();
     previewPanelProps.onExport();
 

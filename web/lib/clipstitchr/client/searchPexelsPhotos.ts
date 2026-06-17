@@ -1,11 +1,13 @@
 import type { PexelsPhotoResult } from "@/lib/clipstitchr/types/PexelsPhotoResult";
 
 type SearchPexelsPhotosOptions = {
-  query: string;
+  page?: number;
   perPage?: number;
+  query: string;
 };
 
 export async function searchPexelsPhotos({
+  page = 1,
   perPage = 12,
   query,
 }: SearchPexelsPhotosOptions) {
@@ -14,7 +16,7 @@ export async function searchPexelsPhotos({
     headers: {
       "content-type": "application/json",
     },
-    body: JSON.stringify({ perPage, query }),
+    body: JSON.stringify({ page, perPage, query }),
   });
 
   if (!response.ok) {
