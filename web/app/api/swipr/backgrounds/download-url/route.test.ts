@@ -77,7 +77,7 @@ describe("POST /api/swipr/backgrounds/download-url", () => {
     });
     mocks.convex.query.mockResolvedValue({
       imageObject: {
-        key: "shared/swipr/background_1.jpg",
+        key: "users/user_123/swipr-backgrounds/background_1/image.jpg",
       },
     });
     mocks.convex.mutation.mockResolvedValue(null);
@@ -113,7 +113,7 @@ describe("POST /api/swipr/backgrounds/download-url", () => {
       { secret: "rate-limit-secret" },
     );
     expect(mocks.getR2DownloadSignedUrl).toHaveBeenCalledWith(
-      "shared/swipr/background_1.jpg",
+      "users/user_123/swipr-backgrounds/background_1/image.jpg",
     );
   });
 

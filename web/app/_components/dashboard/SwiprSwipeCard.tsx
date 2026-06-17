@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { SwiprSwipeDetailsDialog } from "@/app/_components/dashboard/SwiprSwipeDetailsDialog";
-import { SwiprSwipeEditDialog } from "@/app/_components/dashboard/SwiprSwipeEditDialog";
 import { Badge } from "@/app/_components/ui/Badge";
 import {
   MediaCardActionMenu,
@@ -21,16 +20,15 @@ import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxB
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
-import type { SaveSwiprSwipeInput } from "@/lib/clipstitchr/types/SwiprLibraryValue";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { getSwiprBackgroundFromAsset } from "@/lib/clipstitchr/utils/getSwiprBackgroundFromAsset";
+import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
 
 type SwiprSwipeCardProps = {
   background: SwiprBackgroundAsset;
   backgrounds: SwiprBackgroundAsset[];
-  isSaving?: boolean;
   isSelected?: boolean;
   isSelectionDisabled?: boolean;
   swipe: SwiprSwipe;
@@ -38,7 +36,6 @@ type SwiprSwipeCardProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
   onSelect?: () => void;
-  onSave: (input: SaveSwiprSwipeInput) => Promise<SwiprSwipe>;
   onUpdatePostedStatus?: (
     swipe: SwiprSwipe,
     isPosted: boolean,
@@ -48,7 +45,6 @@ type SwiprSwipeCardProps = {
 export function SwiprSwipeCard({
   background,
   backgrounds,
-  isSaving = false,
   isSelected = false,
   isSelectionDisabled = false,
   swipe,
@@ -56,11 +52,9 @@ export function SwiprSwipeCard({
   onLoadPoster,
   onDelete,
   onSelect,
-  onSave,
   onUpdatePostedStatus,
 }: SwiprSwipeCardProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSavingPostedStatus, setIsSavingPostedStatus] = useState(false);
   const [loadedBackground, setLoadedBackground] = useState<{
     blob: Blob;
@@ -133,14 +127,48 @@ export function SwiprSwipeCard({
       .then(async () => {
         const blob =
           backgroundBlob ?? (await onLoadBackgroundBlob(background.id));
+        const fallbackBackground = getSwiprBackgroundFromAsset({
+          ...background,
+          blob,
+        });
+        const slideBackgrounds: Parameters<
+          typeof exporter.exportCarousel
+        >[0]["slideBackgrounds"] = {};
 
         setLoadedBackground({
           id: background.id,
           blob,
         });
 
+        for (const slide of swipe.slides) {
+          const backgroundId = getSwiprSlideBackgroundId(
+            slide,
+            swipe.backgroundId,
+          );
+          const slideBackgroundAsset =
+            backgroundId === background.id
+              ? background
+              : backgrounds.find((item) => item.id === backgroundId);
+
+          if (!slideBackgroundAsset) {
+            throw new Error("Unable to load this Swipe photo.");
+          }
+
+          const slideBlob =
+            backgroundId === background.id
+              ? blob
+              : slideBackgroundAsset.blob ??
+                (await onLoadBackgroundBlob(slideBackgroundAsset.id));
+
+          slideBackgrounds[slide.id] = getSwiprBackgroundFromAsset({
+            ...slideBackgroundAsset,
+            blob: slideBlob,
+          });
+        }
+
         await exporter.exportCarousel({
-          background: getSwiprBackgroundFromAsset({ ...background, blob }),
+          background: fallbackBackground,
+          slideBackgrounds,
           slides: swipe.slides,
           productName: swipe.productName,
         });
@@ -190,7 +218,7 @@ export function SwiprSwipeCard({
     {
       label: "Edit Swipe",
       icon: <Edit3 aria-hidden className="h-4 w-4" />,
-      onClick: () => setIsEditOpen(true),
+      href: `/dashboard/swipr?swipe=${encodeURIComponent(swipe.id)}`,
     },
     ...(onUpdatePostedStatus
       ? [
@@ -212,7 +240,6 @@ export function SwiprSwipeCard({
       icon: <Trash2 aria-hidden className="h-4 w-4" />,
       onClick: () => {
         setIsDetailsOpen(false);
-        setIsEditOpen(false);
         void onDelete(swipe.id);
       },
     },
@@ -298,6 +325,8 @@ export function SwiprSwipeCard({
             ...background,
             ...(backgroundBlob ? { blob: backgroundBlob } : {}),
           }}
+          backgrounds={backgrounds}
+          editHref={`/dashboard/swipr?swipe=${encodeURIComponent(swipe.id)}`}
           swipe={swipe}
           isDownloading={exporter.status === "rendering"}
           onClose={() => setIsDetailsOpen(false)}
@@ -306,21 +335,7 @@ export function SwiprSwipeCard({
             void onDelete(swipe.id);
           }}
           onDownload={downloadSwipe}
-          onEdit={() => {
-            setIsDetailsOpen(false);
-            setIsEditOpen(true);
-          }}
-        />
-      ) : null}
-      {isEditOpen ? (
-        <SwiprSwipeEditDialog
-          background={background}
-          backgrounds={backgrounds}
-          isSaving={isSaving}
-          swipe={swipe}
-          onClose={() => setIsEditOpen(false)}
           onLoadBackgroundBlob={onLoadBackgroundBlob}
-          onSave={onSave}
         />
       ) : null}
     </>

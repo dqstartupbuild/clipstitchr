@@ -8,7 +8,8 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { SwiprStaticTextOverlayBox } from "@/app/_components/swipr/SwiprStaticTextOverlayBox";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
@@ -17,29 +18,51 @@ import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
+import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
 
 type SwiprSwipeDetailsDialogProps = {
   background: SwiprBackgroundAsset;
+  backgrounds: SwiprBackgroundAsset[];
+  editHref: string;
   isDownloading: boolean;
   swipe: SwiprSwipe;
   onClose: () => void;
   onDelete: () => void;
   onDownload: () => void;
-  onEdit: () => void;
+  onLoadBackgroundBlob: (id: string) => Promise<Blob>;
 };
 
 export function SwiprSwipeDetailsDialog({
   background,
+  backgrounds,
+  editHref,
   isDownloading,
   swipe,
   onClose,
   onDelete,
   onDownload,
-  onEdit,
+  onLoadBackgroundBlob,
 }: SwiprSwipeDetailsDialogProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const backgroundUrl = useObjectUrl(background.blob);
+  const [loadedBackgrounds, setLoadedBackgrounds] = useState<
+    Record<string, Blob>
+  >({});
   const activeSlide = swipe.slides[activeIndex] ?? null;
+  const backgroundsById = useMemo(
+    () =>
+      new Map([
+        [background.id, background],
+        ...backgrounds.map((item) => [item.id, item] as const),
+      ]),
+    [background, backgrounds],
+  );
+  const activeBackgroundId = activeSlide
+    ? getSwiprSlideBackgroundId(activeSlide, swipe.backgroundId)
+    : swipe.backgroundId;
+  const activeBackground = backgroundsById.get(activeBackgroundId);
+  const activeBackgroundBlob =
+    activeBackground?.blob ?? loadedBackgrounds[activeBackgroundId];
+  const backgroundUrl = useObjectUrl(activeBackgroundBlob);
   const goToPrevious = useCallback(() => {
     setActiveIndex(
       (currentIndex) =>
@@ -55,16 +78,41 @@ export function SwiprSwipeDetailsDialog({
     onSwipeRight: goToPrevious,
   });
 
+  useEffect(() => {
+    let isCancelled = false;
+
+    if (!activeBackground || activeBackgroundBlob) {
+      return () => {
+        isCancelled = true;
+      };
+    }
+
+    void onLoadBackgroundBlob(activeBackground.id)
+      .then((blob) => {
+        if (!isCancelled) {
+          setLoadedBackgrounds((currentBackgrounds) => ({
+            ...currentBackgrounds,
+            [activeBackground.id]: blob,
+          }));
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeBackground, activeBackgroundBlob, onLoadBackgroundBlob]);
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-2 py-3 sm:px-4 sm:py-6"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="swipr-swipe-details-title"
-        className="max-h-full w-full max-w-3xl overflow-y-auto rounded-lg bg-white shadow-xl"
+        className="max-h-full w-full max-w-3xl overflow-x-hidden overflow-y-auto rounded-lg bg-white shadow-xl"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-5">
@@ -86,10 +134,10 @@ export function SwiprSwipeDetailsDialog({
             onClick={onClose}
           />
         </div>
-        <div className="grid gap-5 p-5 md:grid-cols-[260px_minmax(0,1fr)]">
+        <div className="grid gap-5 p-3 sm:p-5 md:grid-cols-[260px_minmax(0,1fr)]">
           <div>
             <div
-              className="relative mx-auto aspect-[9/16] w-full max-w-[260px] max-h-[62vh] overflow-hidden rounded-lg bg-slate-950"
+              className="relative mx-auto aspect-[9/16] w-full max-w-[260px] overflow-hidden rounded-lg bg-slate-950"
               style={{ containerType: "size" }}
               {...swipeHandlers}
             >
@@ -150,14 +198,13 @@ export function SwiprSwipeDetailsDialog({
               >
                 Download
               </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                icon={<Edit3 aria-hidden className="h-4 w-4" />}
-                onClick={onEdit}
+              <Link
+                href={editHref}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-semibold text-text-primary transition-colors hover:border-accent"
               >
+                <Edit3 aria-hidden className="h-4 w-4" />
                 Edit
-              </Button>
+              </Link>
               <Button
                 type="button"
                 variant="danger"

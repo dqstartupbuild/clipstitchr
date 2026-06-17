@@ -112,8 +112,8 @@ TikTok Events API variables:
 Pexels API variables:
 
 - `PEXELS_API_KEY` enables server-side Pexels photo search for Swipr.
-- The key is sent only from `POST /api/swipr/pexels/search` in the Pexels
-  `Authorization` header.
+- The key is sent from `POST /api/swipr/pexels/search` and from the provider
+  worker's automatic Swipr draft path in the Pexels `Authorization` header.
 - Keep it server-side only. Do not prefix it with `NEXT_PUBLIC_`.
 
 Existing Convex auth variables still apply:
@@ -195,8 +195,8 @@ Firecrawl website import:
 | Quick Edit apply/reset | Clip and saved normal Stitch card actions after scoring | Uses `convexMetadataUpdate` before writing non-destructive edit metadata. No provider call, music generation, R2 signed URL, or media upload is created by apply/reset itself. Scoring that produces `quickEditSuggestions` is covered by the clip and Stitch score limits. |
 | R2 batch image download signed URLs | `POST /api/r2/download-urls` | Uses the R2 download signed URL limit once per authenticated batch after validating every key belongs to the user and is a cacheable `poster.*` or `thumbnail.*` image. Requests are capped at 48 keys. |
 | R2 deletes | `POST /api/r2/delete-objects` | 2,000 objects/hour/user, burst 500 |
-| Shared Swipr background R2 upload signed URL | `POST /api/swipr/backgrounds/upload-url` | Uses the R2 upload signed URL and byte limits before creating a shared-background PUT URL |
-| Shared Swipr background R2 download signed URL | `POST /api/swipr/backgrounds/download-url` | Uses the R2 download signed URL limit after validating the shared background exists |
+| Swipr photo R2 upload signed URL | `POST /api/swipr/backgrounds/upload-url` | Uses the R2 upload signed URL and byte limits before creating an owner-owned Swipr photo PUT URL |
+| Swipr photo R2 download signed URL | `POST /api/swipr/backgrounds/download-url` | Uses the R2 download signed URL limit after validating the owner-owned Swipr photo exists |
 | Shared music R2 download signed URL | `POST /api/music/download-url` | Uses the R2 download signed URL limit after validating the shared music track exists |
 | Upload image metadata analysis | `POST /api/uploads/analyze` for avatar/photo images and video fallback posters | 300/hour/user, burst 100; 10,000/30 days/user; global 6,000/hour |
 | Swipr background metadata analysis | `POST /api/swipr/backgrounds/analyze` | Uses the upload image metadata analysis limits before calling the configured upload image analysis model through Replicate |
@@ -209,8 +209,7 @@ Firecrawl website import:
 | Swapr output proxy | `GET /api/swapr/output` | 1,000/hour/user, burst 200 |
 | Avatar photo generation | `POST /api/avatars/photos/generate` from the Avatars page or UGC clip avatar action | 15 generated images/hour/user, burst 10; 25 generated images/day/user; 500 generated images/30 days/user; global 1,000 generated images/hour. The route stores the source image in R2, creates an `avatar-photo-generation` provider job, and returns after durable queuing; the provider worker calls Replicate and saves `photoAssets`. |
 | Swipr AI background generation | `POST /api/swipr/backgrounds/generate` | 20 images/hour/user, burst 8; 50 images/day/user; 500 images/30 days/user; global 1,000 images/hour |
-| Swipr Pexels search | `POST /api/swipr/pexels/search` | 120 searches/hour/user, burst 30; global 800 searches/hour, burst 200 across 4 shards. The route consumes this before calling Pexels with `PEXELS_API_KEY`; selected photo saves then use existing Swipr background analysis, R2 upload, and Convex record-save limits. |
-| Swipr seeded background import | `POST /api/dev/swipr/backgrounds/seed` in development; future admin-only seed runner in production | Development route is unavailable outside `NODE_ENV=development`, imports at most 5 images/request, skips already-saved seed IDs, consumes the development seed-generation bucket before provider work, consumes R2 upload limits before storage work, and saves through `swiprBackgrounds.save`; production runner must be admin-only, batch-capped, checkpointed, and counted against shared provider, R2 upload, and Convex record-save protection before persistence |
+| Swipr Pexels search | `POST /api/swipr/pexels/search` | 120 searches/hour/user, burst 30; global 800 searches/hour, burst 200 across 4 shards. The route consumes this before calling Pexels with `PEXELS_API_KEY`; selected photo saves then use existing Swipr background analysis, owner-owned R2 upload, and Convex record-save limits. |
 | Public waitlist submission | `waitlist.submit` from `/sign-up` | 3/hour/normalized email, burst 3; shared global bucket 500/hour, burst 100 |
 | TikTok Events API forwarding | `POST /api/analytics/tiktok/events` after marketing-cookie consent | 120/hour/client fingerprint, burst 30; shared global bucket 5,000/hour, burst 1,000 |
 | IndexNow sitemap submission | `POST /api/indexnow` with `INDEXNOW_SUBMIT_SECRET` | Submits all public sitemap URLs only, excludes authenticated dashboard/API routes, requires a public `NEXT_PUBLIC_SITE_URL`, consumes 500 submitted URLs/hour/client fingerprint, burst 100; shared global bucket 5,000 submitted URLs/hour, burst 500 |
@@ -225,13 +224,13 @@ Firecrawl website import:
 | Clipr job polling | Reserved Clipr polling route and Convex job refreshes | 600/minute/user, burst 150 |
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
 | Automation planner dispatch | `POST /api/automation/plan` and Convex Cron `automationScheduler.planCoreDaily` | Worker-secret authorized only; planners create durable automation runs/tasks and consume automation-specific tool budgets before provider or media work |
-| Provider worker jobs | `npm run provider-worker` with `PROVIDER_WORKER_SECRET`; provider-only mutations such as `providerJobs.claimNextForProvider`, `automationTasks.claimNextForProvider`, `automationTasks.markProviderStatus`, `mediaJobs.create*FromProvider`, and provider `replicateJobs` writes | Provider work is claimed from Convex and no longer dispatched through protected Next.js Preview routes. Creating a manual `providerJobs` record or automation task schedules a coalesced Convex dispatch action that runs the Cloud Run provider job immediately; the 10-minute scheduler remains as recovery. The worker handles manual Swapr, manual Clipr, manual avatar-photo generation, upload video analysis, automatic Stitchr overlay/caption/hashtag text, automatic Swapr create/finalize, automatic Clipr text/still/video, automatic avatar-photo generation, and automatic Swipr text draft generation. Manual routes consume their user limits before creating jobs; automation planners consume tool budgets before worker execution. |
+| Provider worker jobs | `npm run provider-worker` with `PROVIDER_WORKER_SECRET`; provider-only mutations such as `providerJobs.claimNextForProvider`, `automationTasks.claimNextForProvider`, `automationTasks.markProviderStatus`, `mediaJobs.create*FromProvider`, and provider `replicateJobs` writes | Provider work is claimed from Convex and no longer dispatched through protected Next.js Preview routes. Creating a manual `providerJobs` record or automation task schedules a coalesced Convex dispatch action that runs the Cloud Run provider job immediately; the 10-minute scheduler remains as recovery. The worker handles manual Swapr, manual Clipr, manual avatar-photo generation, upload video analysis, automatic Stitchr overlay/caption/hashtag text, automatic Swapr create/finalize, automatic Clipr text/still/video, automatic avatar-photo generation, and automatic Swipr Pexels-photo/text draft generation. Manual routes consume their user limits before creating jobs; automation planners consume tool budgets before worker execution. |
 | Media worker jobs | `mediaJobs.createUploadNormalization`, `mediaJobs.createCliprFinalizationFromProvider`, `mediaJobs.createSwaprFinalizationFromProvider`, `mediaJobs.createStitchrDraftFinalizationFromProvider`, existing automation media creators, and `npm run media-worker` | Media jobs are worker-secret controlled. Creating a media job schedules a coalesced Convex dispatch action that runs the Cloud Run media job immediately; the scheduler remains as recovery. The worker normalizes close-safe video uploads, creates upload posters, saves uploaded clips, creates upload-analysis provider jobs, saves editable Stitchr drafts with generated captions, creates Stitch score provider jobs for automated Stitchr outputs, finalizes Swapr provider outputs, and finalizes Clipr outputs. Manual asset saves consume normal user-facing limits before job creation; automatic final asset saves consume automatic asset save buckets: 20 saved assets/day/user; global 2,000/day. |
 | Automatic Stitchr generation | Worker-only automation planner before provider work; provider worker generates Stitchr overlay text plus caption/hashtag copy and creates the media worker job | 3 Stitchr outputs/day/user; global 300/day |
 | Automatic Swapr generation | Worker-only automation planner before provider work; provider worker claims one queued Swapr task for the default avatar before creating a Replicate prediction and later claims provider-created Swapr tasks before creating a media finalization job | 1 Swapr output/day/user; global 100/day |
 | Automatic Clipr generation | Worker-only automation planner before provider work; provider worker runs the selected Clipr mode, avatar-image, and avatar-video generation for the default avatar without consuming manual Clipr buckets | 1 Clipr output/day/user; global 100/day; Any is the default automation mode and resolves to an enabled visual mode while Script is hidden. Reaction and B-roll reserve the 8 second visual estimate and skip voice, music, and PixVerse. Script mode reserves 60 automation provider cost units only when `isCliprScriptModeEnabled` is `true`; saved hidden Script preferences are normalized to Any before resolving. |
 | Automatic avatar photo generation | Worker-only automation planner before provider work; provider worker creates one generated avatar photo from the default avatar's latest source photo | Planner queues only the default avatar; rate bucket is 1 generated photo/day/avatar; global 500/day |
-| Automatic Swipr generation | Worker-only automation planner before provider work; provider worker creates the generated slide text and saves an editable Swipe draft | 1 Swipe/day/user; global 100/day |
+| Automatic Swipr generation | Worker-only automation planner before provider work; provider worker searches Pexels, saves owner-owned Pexels photo records, creates generated slide text, and saves an editable 8-slide Swipe draft | 1 Swipe/day/user; global 100/day |
 | Automatic provider cost guard | Worker-only automation planner before provider work | 10,000 provider cost units/day global |
 | Automatic asset final saves | Worker-only finalizers for automated Stitches, video clips, avatar photos, and Swipes | 20 saved assets/day/user; global 2,000/day |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
@@ -284,14 +283,13 @@ streams the generated image back to the browser. `openai/gpt-image-2` requests
 low-quality 2:3 generation by default for speed; the Pruna background models
 request direct 9:16 output. The client then analyzes the generated image through
 `POST /api/swipr/backgrounds/analyze`, uploads it through
-`POST /api/swipr/backgrounds/upload-url`, and saves the shared background
+`POST /api/swipr/backgrounds/upload-url`, and saves the owner-owned Swipr photo
 metadata through `swiprBackgrounds.save`.
 
-Uploaded Swipr backgrounds use the same analysis, shared R2 upload, and
-`swiprBackgrounds.save` path. Shared backgrounds live under a shared R2 key
-prefix and are downloadable by authenticated users through the Swipr background
-download route after Convex validation. They are intentionally not user-deletable
-through the shared background model.
+Uploaded Swipr photos and selected Pexels photos use the same analysis,
+owner-scoped R2 upload, and `swiprBackgrounds.save` path. Swipr photos are only
+listed and loaded for their owner and are used to reopen, edit, preview, and
+download saved Swipes.
 
 The Swipr creation page can upload multiple photos in one browser selection and
 generate one AI photo per current carousel image. There is no separate batch
@@ -300,14 +298,6 @@ consumes the existing per-image Swipr AI background limits before provider work;
 each uploaded or generated photo then consumes the existing image-analysis, R2
 upload, and Convex record-save protections before persistence.
 
-Seeded Swipr backgrounds are planned through the deterministic seed catalog in
-`createSwiprBackgroundSeedPlans`. The seed metadata replaces the background
-analysis call for those images, so the development seed route and future import
-runner save the prefilled name, tags, description, and details directly after
-generation/upload. The development route is batch-capped at five images and is
-unavailable outside `NODE_ENV=development`; the production runner must be
-admin-only, checkpointed, and batch-limited before creating provider predictions
-or R2 objects.
 
 Settings product creates and edits call Replicate GPT-4.1 through
 `POST /api/settings/products` and `PATCH /api/settings/products/{id}` to infer

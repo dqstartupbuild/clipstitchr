@@ -41,7 +41,9 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
   );
   const swipeDocuments = useQuery(
     api.swipes.list,
-    shouldLoadSwipes ? { postedStatus: "active" } : "skip",
+    shouldLoadSwipes
+      ? { postedStatus: isSwiprRoute ? "all" : "active" }
+      : "skip",
   );
   const postedSwipeDocuments = useQuery(
     api.swipes.list,

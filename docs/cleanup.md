@@ -16,7 +16,6 @@ Used `codebase-cleanup-tech-debt` for the initial inventory, follow-up cleanup p
   - `POST /api/swapr/photos/expand`
   - `GET /api/swapr/output`
   - `POST /api/avatars/photos/generate`
-  - `POST /api/dev/swipr/backgrounds/seed`
   - `POST /api/uploads/analyze`
   - `POST /api/music/generate`
   - `POST /api/music/download-url`

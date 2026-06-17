@@ -6,6 +6,7 @@ import { ConvexHttpClient } from "convex/browser";
 import { anyApi } from "convex/server";
 import { DEFAULT_GENERATION_SPEED_TIER } from "@/lib/clipstitchr/constants/defaultGenerationSpeedTier";
 import { getIsAutomationToolEnabled } from "@/lib/clipstitchr/constants/automationToolFeatureFlags";
+import { SWIPR_MAX_SLIDE_COUNT } from "@/lib/clipstitchr/constants/swiprSlideCountBounds";
 import { SWAPR_MAX_REFERENCE_DURATION_SECONDS } from "@/lib/clipstitchr/constants/swaprMaxReferenceDurationSeconds";
 import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipstitchr/constants/swaprReferenceVideoMaxSizeBytes";
 import { SWAPR_MODEL_ID } from "@/lib/clipstitchr/constants/swaprModelId";
@@ -19,6 +20,7 @@ import { createCliprJobVideoOutput } from "@/lib/clipstitchr/server/createCliprJ
 import { createCliprSceneAvatarImage } from "@/lib/clipstitchr/server/createCliprSceneAvatarImage";
 import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
 import { processManualCliprDemo } from "./processManualCliprDemo";
+import { createSwiprAutomationPexelsQuery } from "@/lib/clipstitchr/server/createSwiprAutomationPexelsQuery";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createStitchScoreOutputText } from "@/lib/clipstitchr/server/createStitchScoreOutputText";
 import { createUploadVideoAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadVideoAnalysisOutputText";
@@ -35,6 +37,8 @@ import { getRemoteImageFile } from "@/lib/clipstitchr/server/getRemoteImageFile"
 import { getReplicateOutputUrls } from "@/lib/clipstitchr/server/getReplicateOutputUrls";
 import { getReplicatePredictionModelReference } from "@/lib/clipstitchr/server/getReplicatePredictionModelReference";
 import { getReplicatePredictionStatus } from "@/lib/clipstitchr/server/getReplicatePredictionStatus";
+import { downloadPexelsPhotoBytes } from "@/lib/clipstitchr/server/pexels/downloadPexelsPhotoBytes";
+import { searchPexelsPhotoResults } from "@/lib/clipstitchr/server/pexels/searchPexelsPhotoResults";
 import { readImageDimensionsFromBytes } from "@/lib/clipstitchr/server/readImageDimensionsFromBytes";
 import { assertR2ObjectKeyBelongsToUser } from "@/lib/clipstitchr/server/r2/assertR2ObjectKeyBelongsToUser";
 import { createR2ObjectKey } from "@/lib/clipstitchr/server/r2/createR2ObjectKey";
@@ -273,7 +277,6 @@ type AvatarPhotoAutomationTaskInput = {
 type SwiprAutomationTaskInput = {
   audienceDetails: string;
   automationDate: string;
-  backgroundId: string;
   inferredPainPoints: string[];
   inferredProblem?: string;
   productDetails: string;
@@ -756,7 +759,6 @@ function parseSwiprAutomationTaskInput(
   return {
     audienceDetails: getString(input.audienceDetails, "Swipr audience details"),
     automationDate: getString(input.automationDate, "Swipr automation date"),
-    backgroundId: getString(input.backgroundId, "Swipr background ID"),
     inferredPainPoints: getStringArray(input.inferredPainPoints),
     inferredProblem: getOptionalString(input.inferredProblem),
     productDetails: stripWebsiteSourcedProductDetails(
@@ -1886,18 +1888,78 @@ async function processSwipr({
     createdAt: now,
     updatedAt: now,
   };
+  const pexelsPhotos = await searchPexelsPhotoResults({
+    perPage: SWIPR_MAX_SLIDE_COUNT,
+    query: createSwiprAutomationPexelsQuery(product),
+  });
+
+  if (!pexelsPhotos.length) {
+    throw new Error("Pexels did not return photos for Swipr automation.");
+  }
+
   const replicate = createReplicateClient();
   const textGeneration = await createCliprTextGeneration({
     durationSeconds: 30,
     product,
     purpose: "swipr",
     replicate,
-    slideCount: 5,
+    slideCount: SWIPR_MAX_SLIDE_COUNT,
   });
+
+  const backgroundIds: string[] = [];
+
+  for (let index = 0; index < SWIPR_MAX_SLIDE_COUNT; index += 1) {
+    const photo = pexelsPhotos[index % pexelsPhotos.length];
+    const backgroundId = createId();
+    const { bytes, contentType } = await downloadPexelsPhotoBytes(photo);
+    const dimensions = readImageDimensionsFromBytes(bytes, contentType);
+    const imageObject = await putR2Object({
+      body: bytes,
+      contentType,
+      key: createR2ObjectKey({
+        userId: task.ownerId,
+        kind: "swipr-background",
+        recordId: backgroundId,
+        contentType,
+      }),
+    });
+
+    await client.mutation(api.swiprBackgrounds.saveFromProvider, {
+      secret: config.providerWorkerSecret,
+      ownerId: task.ownerId,
+      id: backgroundId,
+      name: `Pexels - ${photo.photographer}`,
+      tags: normalizeAssetTagsWithRequiredTag(
+        [photo.alt, product.name, product.audienceDetails].filter(
+          (tag): tag is string => Boolean(tag),
+        ),
+        "pexels",
+      ),
+      description: photo.alt || `Pexels photo by ${photo.photographer}`,
+      details: [
+        `Pexels photo: ${photo.pexelsUrl}`,
+        `Photographer: ${photo.photographer}`,
+        photo.photographerUrl
+          ? `Photographer URL: ${photo.photographerUrl}`
+          : undefined,
+      ]
+        .filter((detail): detail is string => Boolean(detail))
+        .join("\n"),
+      source: "pexels",
+      imageObject,
+      mimeType: imageObject.contentType,
+      size: imageObject.size,
+      width: dimensions.width,
+      height: dimensions.height,
+      createdAt: now,
+    });
+    backgroundIds.push(backgroundId);
+  }
+
   const swipeId = createId();
   const slides = textGeneration.slides.map((text, index) => ({
     id: createId(),
-    backgroundId: input.backgroundId,
+    backgroundId: backgroundIds[index] ?? backgroundIds[0],
     textOverlay: {
       ...createDefaultSwiprTextOverlay(index + 1),
       text,
@@ -1921,7 +1983,7 @@ async function processSwipr({
     productSourceId: input.productId,
     productContext: `${input.productDetails}\n\nAudience: ${input.audienceDetails}`,
     productName: input.productName,
-    backgroundId: input.backgroundId,
+    backgroundId: backgroundIds[0],
     slides,
     createdAt: now,
     updatedAt: now,

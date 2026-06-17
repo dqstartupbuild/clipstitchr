@@ -15,4 +15,5 @@ export type R2ObjectKind =
   | "stitch-music-audio"
   | "stitch-video"
   | "stitch-poster"
+  | "swipr-background"
   | "swipe-poster";

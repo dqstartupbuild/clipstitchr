@@ -643,8 +643,8 @@ describe("convex media collections", () => {
         { unique: { _id: "swipe_doc", createdAt: now, id: "swipe_1" } },
       ],
       swiprBackgrounds: [
-        { unique: { _id: "background_doc" } },
-        { unique: { _id: "background_doc" } },
+        { unique: { _id: "background_doc", uploadedByOwnerId: "owner_123" } },
+        { unique: { _id: "background_doc", uploadedByOwnerId: "owner_123" } },
       ],
     });
 
@@ -688,7 +688,7 @@ describe("convex media collections", () => {
 
     const missingSlideBackgroundCtx = createCtx({
       swiprBackgrounds: [
-        { unique: { _id: "background_doc" } },
+        { unique: { _id: "background_doc", uploadedByOwnerId: "owner_123" } },
         { unique: null },
       ],
     });
@@ -710,7 +710,9 @@ describe("convex media collections", () => {
 
     const missingProductCtx = createCtx({
       products: [{ unique: null }],
-      swiprBackgrounds: [{ unique: { _id: "background_doc" } }],
+      swiprBackgrounds: [
+        { unique: { _id: "background_doc", uploadedByOwnerId: "owner_123" } },
+      ],
     });
 
     await expect(
@@ -727,8 +729,8 @@ describe("convex media collections", () => {
       ],
       swipes: [{ unique: null }, { unique: null }],
       swiprBackgrounds: [
-        { unique: { _id: "background_doc" } },
-        { unique: { _id: "background_doc" } },
+        { unique: { _id: "background_doc", uploadedByOwnerId: "owner_123" } },
+        { unique: { _id: "background_doc", uploadedByOwnerId: "owner_123" } },
       ],
     });
 

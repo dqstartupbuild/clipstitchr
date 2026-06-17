@@ -1,6 +1,7 @@
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
+import type { SwiprSelectedSlideTextContext } from "@/lib/clipstitchr/types/SwiprSelectedSlideTextContext";
 
 type GenerateCliprTextOptions = {
   durationSeconds?: CliprDurationSeconds;
@@ -8,6 +9,7 @@ type GenerateCliprTextOptions = {
   purpose: CliprTextPurpose;
   slideCount?: number;
   stitchrClipContexts?: StitchrTextGenerationClipContext[];
+  swiprSelectedSlideTextContext?: SwiprSelectedSlideTextContext;
 };
 
 export async function generateCliprText(options: GenerateCliprTextOptions) {

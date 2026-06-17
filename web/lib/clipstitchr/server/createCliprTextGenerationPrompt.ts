@@ -4,6 +4,7 @@ import type { CliprPlaceholderFillers } from "@/lib/clipstitchr/types/CliprPlace
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
+import type { SwiprSelectedSlideTextContext } from "@/lib/clipstitchr/types/SwiprSelectedSlideTextContext";
 import { createStitchrHookGenerationPrompt } from "@/lib/clipstitchr/server/createStitchrHookGenerationPrompt";
 import { createSwiprTextGenerationPrompt } from "@/lib/clipstitchr/server/createSwiprTextGenerationPrompt";
 
@@ -16,6 +17,7 @@ type CreateCliprTextGenerationPromptOptions = {
   scriptIdea?: string;
   slideCount: number;
   stitchrClipContexts?: StitchrTextGenerationClipContext[];
+  swiprSelectedSlideTextContext?: SwiprSelectedSlideTextContext;
 };
 
 const contentAngles = [
@@ -96,6 +98,7 @@ export function createCliprTextGenerationPrompt({
   scriptIdea,
   slideCount,
   stitchrClipContexts = [],
+  swiprSelectedSlideTextContext,
 }: CreateCliprTextGenerationPromptOptions) {
   if (purpose === "stitchr") {
     return createStitchrHookGenerationPrompt({
@@ -113,6 +116,7 @@ export function createCliprTextGenerationPrompt({
       product,
       scriptIdea,
       slideCount,
+      swiprSelectedSlideTextContext,
     });
   }
 

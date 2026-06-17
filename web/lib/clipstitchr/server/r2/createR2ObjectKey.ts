@@ -91,6 +91,11 @@ const objectKindConfig: Record<
     baseName: "poster",
     fallbackExtension: "jpg",
   },
+  "swipr-background": {
+    directory: "swipr-backgrounds",
+    baseName: "image",
+    fallbackExtension: "jpg",
+  },
   "swipe-poster": {
     directory: "swipes",
     baseName: "poster",

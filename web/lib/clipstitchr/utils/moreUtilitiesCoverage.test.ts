@@ -10,7 +10,6 @@ import { createSwaprSegmentTrimRanges } from "@/lib/clipstitchr/utils/createSwap
 import { dispatchHideUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchHideUploadControlsEvent";
 import { dispatchShowUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchShowUploadControlsEvent";
 import { filterSwipesBySearchQuery } from "@/lib/clipstitchr/utils/filterSwipesBySearchQuery";
-import { filterSwiprBackgroundsBySearchQuery } from "@/lib/clipstitchr/utils/filterSwiprBackgroundsBySearchQuery";
 import { getAvatarLightingPrompt } from "@/lib/clipstitchr/utils/getAvatarLightingPrompt";
 import { getAvatarStylePrompt } from "@/lib/clipstitchr/utils/getAvatarStylePrompt";
 import { getCliprFinalClipName } from "@/lib/clipstitchr/utils/getCliprFinalClipName";
@@ -217,12 +216,6 @@ describe("additional utility coverage", () => {
     expect(filterSwipesBySearchQuery([swipe], "")).toEqual([swipe]);
     expect(filterSwipesBySearchQuery([swipe], "ship")).toEqual([swipe]);
     expect(filterSwipesBySearchQuery([swipe], "absent")).toEqual([]);
-    expect(filterSwiprBackgroundsBySearchQuery([background], "")).toEqual([
-      background,
-    ]);
-    expect(filterSwiprBackgroundsBySearchQuery([background], "copy space")).toEqual(
-      [background],
-    );
     expect(getSwiprBackgroundSearchText(background)).toContain("studio blue");
     expect(
       getRecentStitches(

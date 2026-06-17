@@ -223,16 +223,13 @@ only save path.
 
 Target flow:
 
-1. Create a `swipr-background-generation` provider job with product/preset
-   snapshot and prompt metadata.
+1. Create an automatic Swipr provider job with a product snapshot.
 2. Consume Swipr generation limits before provider work.
-3. Start the provider prediction and store the prediction ID.
-4. Finalize by copying the output image to R2 server-side.
-5. Run metadata analysis server-side or store deterministic metadata when using
-   seeded/preset generation.
-6. Save the `swiprBackgrounds` record.
-7. Optionally create a `swipe` draft or autopilot output that references the
-   saved background.
+3. Generate editable carousel text for the maximum 8-slide Swipe.
+4. Search Pexels from the product and audience context.
+5. Copy selected Pexels photos to owner-scoped R2 objects server-side.
+6. Save owner-owned `swiprBackgrounds` records for those photos.
+7. Create an editable `swipe` draft that references one saved photo per slide.
 
 For carousel export, the current browser ZIP export can remain local until
 server-side carousel rendering becomes a product requirement.

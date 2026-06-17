@@ -65,18 +65,11 @@ export const planDaily = mutation({
       preferences.productSelectionMode === "selected"
         ? products.find((candidate) => selectedProductIds.has(candidate.id))
         : defaultProduct ?? products[0];
-    const backgrounds = await ctx.db
-      .query("swiprBackgrounds")
-      .withIndex("by_created")
-      .order("desc")
-      .collect();
-    const background = backgrounds[0];
-
-    if (!product || !background) {
+    if (!product) {
       await markAutomationRunSkipped(
         ctx,
         run._id,
-        "Swipr automation needs one product and one saved background.",
+        "Swipr automation needs one saved product.",
         now,
       );
       return { runId, status: "skipped", taskIds: [] };
@@ -104,7 +97,6 @@ export const planDaily = mutation({
         audienceDetails: product.audienceDetails,
         inferredProblem: product.inferredProblem,
         inferredPainPoints: product.inferredPainPoints,
-        backgroundId: background.id,
       }),
       createdAt: now,
     });

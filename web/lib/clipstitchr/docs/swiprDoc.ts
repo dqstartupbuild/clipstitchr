@@ -6,7 +6,7 @@ export const swiprDoc = {
   description:
     "Create carousel posts you can save, revise, and download later.",
   summary:
-    "Build a Swipe with 3 to 8 slides, one background, and editable text on each slide.",
+    "Build a Swipe with editable photos and text on each slide.",
   category: "feature",
   order: 30,
   updated: "2026-05-12",
@@ -14,18 +14,18 @@ export const swiprDoc = {
     {
       title: "What Swipr creates",
       body: [
-        "Swipr makes vertical carousel posts called Swipes. Save a Swipe when you want to come back later, revise the text, change the background, or download the latest version.",
+        "Swipr makes vertical carousel posts called Swipes. Save a Swipe when you want to come back later, revise the text, change slide photos, or download the latest version.",
       ],
     },
     {
       title: "Build a carousel",
       body: [
-        "Each Swipe has 3 to 8 slides and one shared background. Edit the text on each slide so the carousel tells a clear story.",
+        "Each Swipe has up to 8 slides. Add a photo and text to each slide so the carousel tells a clear story.",
       ],
       bullets: [
         "Choose a saved product.",
-        "Choose 3 to 8 carousel images.",
-        "Choose a shared background from the Background Library, upload one, or generate one.",
+        "Add or remove slides.",
+        "Search Pexels, choose an avatar photo, upload a photo, or generate one.",
         "Edit text on each slide.",
         "Save the editable Swipe.",
         "Download the current saved version as a set of vertical PNG slides.",

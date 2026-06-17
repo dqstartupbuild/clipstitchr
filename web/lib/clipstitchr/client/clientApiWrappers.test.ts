@@ -5,7 +5,6 @@ import { createSwaprPrediction } from "@/lib/clipstitchr/client/createSwaprPredi
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
 import { generateSwiprBackgroundWithAi } from "@/lib/clipstitchr/client/generateSwiprBackgroundWithAi";
 import { scoreVideoClip } from "@/lib/clipstitchr/client/scoreVideoClip";
-import { seedSwiprBackgroundLibrary } from "@/lib/clipstitchr/client/seedSwiprBackgroundLibrary";
 import { updateProductProfile } from "@/lib/clipstitchr/client/updateProductProfile";
 import { createR2DownloadUrl } from "@/lib/clipstitchr/client/r2/createR2DownloadUrl";
 import { createR2DownloadUrls } from "@/lib/clipstitchr/client/r2/createR2DownloadUrls";
@@ -218,7 +217,7 @@ describe("client API wrappers", () => {
     ).rejects.toThrow("Unable to update this product.");
   });
 
-  it("handles Swipr background generation and seed responses", async () => {
+  it("handles Swipr background generation responses", async () => {
     fetchMock
       .mockResolvedValueOnce(
         new Response(new Blob(["image"], { type: "image/png" }), {
@@ -229,19 +228,7 @@ describe("client API wrappers", () => {
           },
         }),
       )
-      .mockResolvedValueOnce(createJsonResponse({ message: "No background" }, 500))
-      .mockResolvedValueOnce(
-        createJsonResponse({
-          remaining: 8,
-          requested: 3,
-          saved: 2,
-          savedIds: ["bg_1"],
-          skipped: 1,
-          total: 10,
-        }),
-      )
-      .mockResolvedValueOnce(createJsonResponse({ savedIds: "invalid" }))
-      .mockResolvedValueOnce(createJsonResponse({}, 500));
+      .mockResolvedValueOnce(createJsonResponse({ message: "No background" }, 500));
 
     await expect(
       generateSwiprBackgroundWithAi({
@@ -256,25 +243,6 @@ describe("client API wrappers", () => {
     await expect(
       generateSwiprBackgroundWithAi({ productContext: "Launch Kit" }),
     ).rejects.toThrow("No background");
-    await expect(seedSwiprBackgroundLibrary({ count: 3 })).resolves.toEqual({
-      remaining: 8,
-      requested: 3,
-      saved: 2,
-      savedIds: ["bg_1"],
-      skipped: 1,
-      total: 10,
-    });
-    await expect(seedSwiprBackgroundLibrary({ count: 1 })).resolves.toEqual({
-      remaining: 0,
-      requested: 0,
-      saved: 0,
-      savedIds: [],
-      skipped: 0,
-      total: 0,
-    });
-    await expect(seedSwiprBackgroundLibrary({ count: 1 })).rejects.toThrow(
-      "Unable to seed Swipr backgrounds.",
-    );
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/swipr/backgrounds/generate",
       expect.objectContaining({

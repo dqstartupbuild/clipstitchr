@@ -1,7 +1,8 @@
-import { Boxes, Wand2 } from "lucide-react";
+import { Boxes, Plus, Wand2 } from "lucide-react";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
-import { SwiprSlideCountControl } from "@/app/_components/swipr/SwiprSlideCountControl";
+import { SwiprTextGenerationScopeToggle } from "@/app/_components/swipr/SwiprTextGenerationScopeToggle";
 import { Button } from "@/app/_components/ui/Button";
+import type { SwiprTextGenerationScope } from "@/lib/clipstitchr/types/SwiprTextGenerationScope";
 
 type SwiprProductOption = {
   value: string;
@@ -9,23 +10,29 @@ type SwiprProductOption = {
 };
 
 type SwiprProductPanelProps = {
+  canAddSlide: boolean;
   productOptions: SwiprProductOption[];
   selectedProductId: string;
   slideCount: number;
+  textGenerationScope: SwiprTextGenerationScope;
   isGeneratingText: boolean;
+  onAddSlide: () => void;
   onProductChange: (productId: string) => void;
   onGenerateText: () => void;
-  onSlideCountChange: (count: number) => void;
+  onTextGenerationScopeChange: (scope: SwiprTextGenerationScope) => void;
 };
 
 export function SwiprProductPanel({
+  canAddSlide,
   productOptions,
   selectedProductId,
   slideCount,
+  textGenerationScope,
   isGeneratingText,
+  onAddSlide,
   onProductChange,
   onGenerateText,
-  onSlideCountChange,
+  onTextGenerationScopeChange,
 }: SwiprProductPanelProps) {
   const hasProducts = productOptions.length > 0;
 
@@ -42,7 +49,7 @@ export function SwiprProductPanel({
           </h2>
         </div>
       </div>
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-start">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
         <SelectInput
           label="Product"
           value={selectedProductId}
@@ -55,23 +62,34 @@ export function SwiprProductPanel({
             Save a product in Settings before creating a Swipe.
           </p>
         ) : null}
-        <SwiprSlideCountControl
-          value={slideCount}
-          onChange={onSlideCountChange}
-        />
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          icon={<Plus aria-hidden className="h-4 w-4" />}
+          disabled={!canAddSlide}
+          onClick={onAddSlide}
+        >
+          Add slide
+        </Button>
       </div>
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        className="mt-3"
-        icon={<Wand2 aria-hidden className="h-4 w-4" />}
-        disabled={!hasProducts}
-        isLoading={isGeneratingText}
-        onClick={onGenerateText}
-      >
-        Generate text
-      </Button>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <SwiprTextGenerationScopeToggle
+          value={textGenerationScope}
+          onChange={onTextGenerationScopeChange}
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          icon={<Wand2 aria-hidden className="h-4 w-4" />}
+          disabled={!hasProducts || !slideCount}
+          isLoading={isGeneratingText}
+          onClick={onGenerateText}
+        >
+          Generate text
+        </Button>
+      </div>
     </section>
   );
 }

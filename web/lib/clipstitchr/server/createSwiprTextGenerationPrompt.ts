@@ -1,6 +1,7 @@
 import type { CliprHookTemplate } from "@/lib/clipstitchr/types/CliprHookTemplate";
 import type { CliprPlaceholderFillers } from "@/lib/clipstitchr/types/CliprPlaceholderFillers";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { SwiprSelectedSlideTextContext } from "@/lib/clipstitchr/types/SwiprSelectedSlideTextContext";
 
 type CreateSwiprTextGenerationPromptOptions = {
   candidates: CliprHookTemplate[];
@@ -8,6 +9,7 @@ type CreateSwiprTextGenerationPromptOptions = {
   product: ProductProfile;
   scriptIdea?: string;
   slideCount: number;
+  swiprSelectedSlideTextContext?: SwiprSelectedSlideTextContext;
 };
 
 function getSwiprStyleMemory(product: ProductProfile) {
@@ -30,7 +32,11 @@ export function createSwiprTextGenerationPrompt({
   product,
   scriptIdea,
   slideCount,
+  swiprSelectedSlideTextContext,
 }: CreateSwiprTextGenerationPromptOptions) {
+  const isSelectedSlideGeneration = Boolean(swiprSelectedSlideTextContext);
+  const requestedSlideCount = isSelectedSlideGeneration ? 1 : slideCount;
+
   return [
     "You write short-form social media carousel slideshows for TikTok and Instagram.",
     "",
@@ -42,7 +48,9 @@ export function createSwiprTextGenerationPrompt({
     "What's working for this account. Respect this closely:",
     getSwiprStyleMemory(product) || "(none yet — use proven short-form patterns)",
     "",
-    `Write one distinct slideshow with exactly ${slideCount} slides.`,
+    isSelectedSlideGeneration
+      ? `Write only slide ${swiprSelectedSlideTextContext?.slideNumber} of ${swiprSelectedSlideTextContext?.totalSlides}.`
+      : `Write one distinct slideshow with exactly ${slideCount} slides.`,
     "",
     "Creative standard:",
     "- Write for the viewer first. The product is context, not the main character.",
@@ -68,9 +76,21 @@ export function createSwiprTextGenerationPrompt({
     "- Do not invent fake stats, fake studies, fake quotes, or fake testimonials.",
     "- Product details are context, not a sales script.",
     "- Keep product mentions out of middle slides unless the user specifically requested product-heavy copy.",
+    isSelectedSlideGeneration
+      ? "- Return exactly one item in slides. It must fit naturally between the previous and next slide text."
+      : "",
     "- Do not mention implementation details, model names, template names, or hidden source names.",
     "- Return only the JSON object.",
+    isSelectedSlideGeneration
+      ? [
+          "Selected slide context:",
+          `- Previous slide: ${swiprSelectedSlideTextContext?.previousSlideText || "(none)"}`,
+          `- Current slide: ${swiprSelectedSlideTextContext?.currentSlideText || "(blank)"}`,
+          `- Next slide: ${swiprSelectedSlideTextContext?.nextSlideText || "(none)"}`,
+        ].join("\n")
+      : "",
     scriptIdea ? `User creative direction: ${scriptIdea}` : "",
+    `Requested slides in JSON: ${requestedSlideCount}`,
     `Placeholder fillers: ${JSON.stringify(fillers)}`,
     `Candidate templates: ${JSON.stringify(
       candidates.map((candidate) => ({

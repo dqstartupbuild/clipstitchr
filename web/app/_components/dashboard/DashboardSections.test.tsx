@@ -146,7 +146,6 @@ describe("dashboard shell sections", () => {
           swipes={[]}
           onDelete={noop}
           onLoadBackgroundBlob={async () => new Blob()}
-          onSave={async (swipe) => swipe as SwiprSwipe}
         />
         <RecentUploadsSection
           clips={[]}
@@ -186,7 +185,6 @@ describe("dashboard shell sections", () => {
           ]}
           onDelete={noop}
           onLoadBackgroundBlob={async () => new Blob()}
-          onSave={async (swipe) => swipe as SwiprSwipe}
         />
         <RecentUploadsSection
           clips={[{ id: "clip_1" } as VideoClipMetadata]}

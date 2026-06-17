@@ -10,7 +10,6 @@ import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDe
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { LibraryPostedStatusFilter } from "@/lib/clipstitchr/types/LibraryPostedStatusFilter";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
-import type { SaveSwiprSwipeInput } from "@/lib/clipstitchr/types/SwiprLibraryValue";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 
 type SwiprSwipesSectionProps = {
@@ -18,7 +17,6 @@ type SwiprSwipesSectionProps = {
   emptyDescription?: string;
   emptyTitle?: string;
   id?: string;
-  isSaving?: boolean;
   statusCounts?: Record<LibraryPostedStatusFilter, number>;
   statusFilter?: LibraryPostedStatusFilter;
   swipes: SwiprSwipe[];
@@ -26,7 +24,6 @@ type SwiprSwipesSectionProps = {
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
-  onSave: (input: SaveSwiprSwipeInput) => Promise<SwiprSwipe>;
   onStatusFilterChange?: (status: LibraryPostedStatusFilter) => void;
   onUpdatePostedStatus?: (
     swipe: SwiprSwipe,
@@ -39,7 +36,6 @@ export function SwiprSwipesSection({
   emptyDescription = "Save a carousel from Swipr to reuse and download it later.",
   emptyTitle = "No Swipes yet",
   id = "swipes",
-  isSaving = false,
   statusCounts,
   statusFilter = "active",
   swipes,
@@ -47,7 +43,6 @@ export function SwiprSwipesSection({
   onLoadBackgroundBlob,
   onLoadPoster,
   onDelete,
-  onSave,
   onStatusFilterChange,
   onUpdatePostedStatus,
 }: SwiprSwipesSectionProps) {
@@ -151,7 +146,6 @@ export function SwiprSwipesSection({
                   key={swipe.id}
                   background={background}
                   backgrounds={backgrounds}
-                  isSaving={isSaving}
                   swipe={swipe}
                   isSelected={batchDelete.selectedIds.has(swipe.id)}
                   isSelectionDisabled={batchDelete.isDeletingSelected}
@@ -163,7 +157,6 @@ export function SwiprSwipesSection({
                       ? () => batchDelete.toggleItemSelection(swipe.id)
                       : undefined
                   }
-                  onSave={onSave}
                   onUpdatePostedStatus={onUpdatePostedStatus}
                 />
               );

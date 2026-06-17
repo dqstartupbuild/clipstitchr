@@ -3,10 +3,9 @@ import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/c
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
-import { getPexelsApiKey } from "@/lib/clipstitchr/server/pexels/getPexelsApiKey";
 import { getPexelsSearchPerPage } from "@/lib/clipstitchr/server/pexels/getPexelsSearchPerPage";
 import { getPexelsSearchQuery } from "@/lib/clipstitchr/server/pexels/getPexelsSearchQuery";
-import { parsePexelsSearchResponse } from "@/lib/clipstitchr/server/pexels/parsePexelsSearchResponse";
+import { searchPexelsPhotoResults } from "@/lib/clipstitchr/server/pexels/searchPexelsPhotoResults";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 
@@ -40,24 +39,8 @@ export async function POST(request: Request) {
       secret: getRateLimitApiSecret(),
     });
 
-    const url = new URL("https://api.pexels.com/v1/search");
-
-    url.searchParams.set("query", query);
-    url.searchParams.set("orientation", "portrait");
-    url.searchParams.set("per_page", String(perPage));
-
-    const response = await fetch(url, {
-      headers: {
-        Authorization: getPexelsApiKey(),
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Unable to search Pexels right now.");
-    }
-
     return Response.json({
-      photos: parsePexelsSearchResponse(await response.json()),
+      photos: await searchPexelsPhotoResults({ perPage, query }),
     });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

@@ -91,6 +91,17 @@ describe("createR2ObjectKey", () => {
       }),
     ).toBe("users/user_123/swipes/swipe_456/poster.png");
   });
+
+  it("creates user-scoped keys for Swipr photos", () => {
+    expect(
+      createR2ObjectKey({
+        userId: "user_123",
+        kind: "swipr-background",
+        recordId: "background_456",
+        contentType: "image/jpeg",
+      }),
+    ).toBe("users/user_123/swipr-backgrounds/background_456/image.jpg");
+  });
 });
 
 describe("createSharedMusicR2ObjectKey", () => {

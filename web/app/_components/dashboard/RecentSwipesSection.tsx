@@ -3,18 +3,15 @@
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { SwiprSwipeCard } from "@/app/_components/dashboard/SwiprSwipeCard";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
-import type { SaveSwiprSwipeInput } from "@/lib/clipstitchr/types/SwiprLibraryValue";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 
 type RecentSwipesSectionProps = {
   backgrounds: SwiprBackgroundAsset[];
-  isSaving?: boolean;
   swipes: SwiprSwipe[];
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
-  onSave: (input: SaveSwiprSwipeInput) => Promise<SwiprSwipe>;
   onUpdatePostedStatus?: (
     swipe: SwiprSwipe,
     isPosted: boolean,
@@ -23,12 +20,10 @@ type RecentSwipesSectionProps = {
 
 export function RecentSwipesSection({
   backgrounds,
-  isSaving = false,
   swipes,
   onLoadBackgroundBlob,
   onLoadPoster,
   onDelete,
-  onSave,
   onUpdatePostedStatus,
 }: RecentSwipesSectionProps) {
   const backgroundsById = new Map(
@@ -63,12 +58,10 @@ export function RecentSwipesSection({
                 key={swipe.id}
                 background={background}
                 backgrounds={backgrounds}
-                isSaving={isSaving}
                 swipe={swipe}
                 onLoadBackgroundBlob={onLoadBackgroundBlob}
                 onLoadPoster={onLoadPoster}
                 onDelete={onDelete}
-                onSave={onSave}
                 onUpdatePostedStatus={onUpdatePostedStatus}
               />
             );

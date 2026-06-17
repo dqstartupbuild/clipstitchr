@@ -65,6 +65,11 @@ docker push "$REPOSITORY/provider-worker:$TAG"
 
 Deploy the provider job with the existing production shape:
 
+The provider deployment command assumes `clipstitchr-pexels-api-key` exists in
+Secret Manager and grants
+`140346842368-compute@developer.gserviceaccount.com` secret accessor access.
+Create that secret before deploying the Pexels-enabled Swipr automation shape.
+
 ```bash
 gcloud run jobs deploy clipstitchr-provider-worker \
   --project "$PROJECT_ID" \
@@ -78,7 +83,7 @@ gcloud run jobs deploy clipstitchr-provider-worker \
   --execution-environment gen2 \
   --service-account "140346842368-compute@developer.gserviceaccount.com" \
   --set-env-vars '^@^NEXT_PUBLIC_CONVEX_URL=https://whimsical-ptarmigan-764.convex.cloud@PROVIDER_WORKER_TOOLS=stitchr,swapr,clipr,avatar-photo,swipr@CLIPR_TTS_MODEL_ID=elevenlabs/v3@CLIPR_LIP_SYNC_MODEL_ID=pixverse/lipsync@TEXT_WRITING_MODEL_ID=anthropic/claude-sonnet-4.6' \
-  --set-secrets PROVIDER_WORKER_SECRET=provider-worker-secret:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest
+  --set-secrets PROVIDER_WORKER_SECRET=provider-worker-secret:latest,REPLICATE_API_TOKEN=clipstitchr-replicate-api-token:latest,PEXELS_API_KEY=clipstitchr-pexels-api-key:latest,R2_ACCOUNT_ID=clipstitchr-r2-account-id:latest,R2_BUCKET_NAME=clipstitchr-r2-bucket-name:latest,R2_ACCESS_KEY_ID=clipstitchr-r2-access-key-id:latest,R2_SECRET_ACCESS_KEY=clipstitchr-r2-secret-access-key:latest
 ```
 
 Build and push the media worker:

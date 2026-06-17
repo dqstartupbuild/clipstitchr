@@ -95,7 +95,7 @@ export const save = mutation({
       .withIndex("by_background_id", (q) => q.eq("id", args.backgroundId))
       .unique();
 
-    if (!background) {
+    if (!background || background.uploadedByOwnerId !== ownerId) {
       throw new Error("Swipr background not found.");
     }
 
@@ -113,7 +113,7 @@ export const save = mutation({
         .withIndex("by_background_id", (q) => q.eq("id", slideBackgroundId))
         .unique();
 
-      if (!slideBackground) {
+      if (!slideBackground || slideBackground.uploadedByOwnerId !== ownerId) {
         throw new Error("Swipr slide background not found.");
       }
     }
@@ -189,8 +189,27 @@ export const saveFromAutomation = mutation({
       )
       .unique();
 
-    if (!background || !product) {
+    if (!background || background.uploadedByOwnerId !== ownerId || !product) {
       throw new Error("Automation Swipe source records were not found.");
+    }
+
+    const slideBackgroundIds = [
+      ...new Set(
+        args.slides
+          .map((slide) => slide.backgroundId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+
+    for (const slideBackgroundId of slideBackgroundIds) {
+      const slideBackground = await ctx.db
+        .query("swiprBackgrounds")
+        .withIndex("by_background_id", (q) => q.eq("id", slideBackgroundId))
+        .unique();
+
+      if (!slideBackground || slideBackground.uploadedByOwnerId !== ownerId) {
+        throw new Error("Swipr slide background not found.");
+      }
     }
 
     await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
@@ -244,8 +263,27 @@ export const saveFromProvider = mutation({
       )
       .unique();
 
-    if (!background || !product) {
+    if (!background || background.uploadedByOwnerId !== ownerId || !product) {
       throw new Error("Automation Swipe source records were not found.");
+    }
+
+    const slideBackgroundIds = [
+      ...new Set(
+        args.slides
+          .map((slide) => slide.backgroundId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+
+    for (const slideBackgroundId of slideBackgroundIds) {
+      const slideBackground = await ctx.db
+        .query("swiprBackgrounds")
+        .withIndex("by_background_id", (q) => q.eq("id", slideBackgroundId))
+        .unique();
+
+      if (!slideBackground || slideBackground.uploadedByOwnerId !== ownerId) {
+        throw new Error("Swipr slide background not found.");
+      }
     }
 
     await rateLimiter.limit(ctx, "automationAssetSaveDaily", {

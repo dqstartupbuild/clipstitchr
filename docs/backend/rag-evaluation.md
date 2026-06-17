@@ -33,18 +33,18 @@ everything" dependency.
 The strongest fit is semantic retrieval over text metadata the app already
 creates:
 
-- shared Swipr background metadata
+- owner-owned Swipr photo metadata
 - private user media-library metadata
 - avatar/photo descriptions
 - product and generated-output metadata
 - internal hook/template resources if the corpus grows
 - public help docs if the app later adds an assistant-style support feature
 
-The first pilot should be semantic search for the shared Swipr Background
-Library. It is the cleanest fit because the product docs already say background
-search should match name, tags, description, and visual details; the seeded
-catalog can grow to 1,000 backgrounds; and the content is shared rather than
-private per-user media. This proves value with a smaller authorization surface.
+The first pilot should now be private user media or owner-owned Swipr photo
+metadata search. Pexels is the user-facing Swipr photo discovery surface, and
+imported/generated Swipr photos are saved only so a user's editable Swipes can
+reopen, preview, and download later. A RAG pilot must therefore treat Swipr photo
+metadata as owner-scoped content, not as a shared catalog.
 
 RAG should not be used to replace the current upload, stitching, or generation
 pipelines. It does not process video frames, normalize media, generate images,
@@ -81,35 +81,35 @@ Sources checked:
 
 ## Best Initial Targets
 
-### Swipr Background Library Search
+### Swipr Photo Metadata Search
 
-Best first pilot.
+Possible first pilot if Swipr photo reuse becomes a product requirement.
 
 Current product behavior:
 
-- Swipr has a shared Background Library.
-- Background records store name, tags, description, details, source, dimensions,
-  and R2 object references.
-- Seeded backgrounds already include structured search metadata.
-- The feature guide explicitly says search should match name, tags,
-  description, and visual details.
+- Swipr searches Pexels for user-facing photo discovery.
+- Selected Pexels photos, avatar photos, uploaded photos, and generated AI
+  photos are saved as owner-owned Swipr photo records.
+- Swipr photo records store name, tags, description, details, source,
+  dimensions, and R2 object references.
+- Those records are used by saved Swipes; they are not exposed as a reusable
+  shared gallery.
 
 Why RAG helps:
 
-- Users will search semantically, not just by exact tags. Examples: "bright
-  kitchen with room for text", "minimal SaaS desk background", or "beauty
-  counter with soft lighting".
-- The planned seed catalog is large enough that exact substring search becomes
-  limiting.
-- Shared backgrounds can live in one namespace, reducing per-user isolation
-  complexity for the first implementation.
+- Users may eventually want to search previously saved Swipr photos
+  semantically, not just by exact tags. Examples: "bright kitchen with room for
+  text", "minimal SaaS desk photo", or "beauty counter with soft lighting".
+- Imported and generated photos already have structured metadata that can be
+  indexed.
+- Owner-scoped namespaces keep private product and photo metadata separated.
 - Filter values can preserve structured controls such as source, category,
   preset, niche, and style.
 
 Suggested namespace:
 
 ```ts
-"shared:swipr-backgrounds"
+`user:${ownerId}:swipr-photos`
 ```
 
 Suggested entry key:
@@ -124,7 +124,7 @@ Suggested indexed filters:
 [
   { name: "contentType", value: "swipr-background" },
   { name: "source", value: background.source },
-  { name: "category", value: seedCategoryOrGeneratedCategory },
+  { name: "category", value: generatedCategory },
   { name: "preset", value: backgroundPresetId },
 ]
 ```
@@ -281,12 +281,12 @@ Required protections:
 - return clear `429` responses for HTTP route wrappers
 - document any intentionally un-rate-limited operator-only backfill jobs
 
-Suggested initial limits for a Swipr Background Library pilot:
+Suggested initial limits for a Swipr photo metadata pilot:
 
 | Surface | Suggested Limit | Reason |
 | --- | --- | --- |
 | Background search query embedding | 120/hour/user, burst 30; global 5,000/hour | Search is user-triggered and can create embedding cost |
-| Background indexing | Existing background save/import limits plus global embedding limit | Indexing happens after background save or seed import |
+| Background indexing | Existing background save/import limits plus global embedding limit | Indexing happens after owner-owned photo save/import |
 | Operator reindex/backfill | Operator-only, secret-gated, paginated | Avoid public abuse and control embedding spend |
 
 ## Data And Privacy Considerations
@@ -348,8 +348,8 @@ as a replacement for rate limits or authorization checks.
 Recommended first implementation, when ready:
 
 1. Add dependencies and register the component.
-2. Add a single RAG instance configured for background metadata search.
-3. Index only shared Swipr background records.
+2. Add a single RAG instance configured for owner-owned media metadata search.
+3. Index only owner-owned records for the authenticated user.
 4. Add a semantic search wrapper that returns Convex background IDs and scores.
 5. Merge semantic results with the existing exact search/filter behavior.
 6. Add tests for namespace selection, filter handling, authorization, and
@@ -362,7 +362,7 @@ Recommended first implementation, when ready:
 Yes, ClipStitchr can benefit from `@convex-dev/rag`.
 
 It is most useful as semantic metadata retrieval infrastructure for growing
-libraries, especially the Swipr Background Library and later private media
-search. It should be adopted as a focused search pilot, not as a general AI
+libraries, especially private media search and any future Swipr photo reuse
+surface. It should be adopted as a focused search pilot, not as a general AI
 agent layer, and not before rate limits, namespace ownership, and indexing
 lifecycle are designed.

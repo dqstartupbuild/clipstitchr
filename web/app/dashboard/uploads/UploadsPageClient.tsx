@@ -588,7 +588,6 @@ export function UploadsPageClient() {
             <SwiprSwipesSection
               key={`all-swipes-${searchQuery}-${library.sortOrder}`}
               backgrounds={swiprLibrary.backgrounds}
-              isSaving={swiprLibrary.isSavingSwipe}
               swipes={activeSwipes}
               emptyTitle={hasSearchQuery ? "No matching Swipes" : undefined}
               emptyDescription={
@@ -599,7 +598,6 @@ export function UploadsPageClient() {
               onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
               onLoadPoster={swiprLibrary.loadSwipePoster}
               onDelete={swiprLibrary.removeSwipe}
-              onSave={swiprLibrary.saveSwipe}
               onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
             />
           </div>
@@ -704,7 +702,6 @@ export function UploadsPageClient() {
           <SwiprSwipesSection
             key={`swipes-${searchQuery}-${library.sortOrder}-${swipeStatusFilter}`}
             backgrounds={swiprLibrary.backgrounds}
-            isSaving={swiprLibrary.isSavingSwipe}
             swipes={swipes}
             emptyTitle={
               hasSearchQuery
@@ -727,7 +724,6 @@ export function UploadsPageClient() {
             onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
             onLoadPoster={swiprLibrary.loadSwipePoster}
             onDelete={swiprLibrary.removeSwipe}
-            onSave={swiprLibrary.saveSwipe}
             onStatusFilterChange={setSwipeStatusFilter}
             onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
           />

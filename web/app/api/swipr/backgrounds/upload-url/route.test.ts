@@ -5,13 +5,12 @@ import { api } from "@/convex/_generated/api";
 const mocks = vi.hoisted(() => {
   const convex = { mutation: vi.fn() };
 
-  return {
-    convex,
-    createAuthenticatedConvexHttpClient: vi.fn(() => convex),
-    createSharedSwiprBackgroundR2ObjectKey: vi.fn(),
-    getAuthenticatedConvexToken: vi.fn(),
-    getAuthenticatedUserId: vi.fn(),
-    getR2UploadSignedUrl: vi.fn(),
+    return {
+      convex,
+      createAuthenticatedConvexHttpClient: vi.fn(() => convex),
+      getAuthenticatedConvexToken: vi.fn(),
+      getAuthenticatedUserId: vi.fn(),
+      getR2UploadSignedUrl: vi.fn(),
     readSwiprBackgroundUploadUrlRequest: vi.fn(),
   };
 });
@@ -38,14 +37,6 @@ vi.mock("@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken", () => ({
 vi.mock("@/lib/clipstitchr/server/getAuthenticatedUserId", () => ({
   getAuthenticatedUserId: mocks.getAuthenticatedUserId,
 }));
-
-vi.mock(
-  "@/lib/clipstitchr/server/r2/createSharedSwiprBackgroundR2ObjectKey",
-  () => ({
-    createSharedSwiprBackgroundR2ObjectKey:
-      mocks.createSharedSwiprBackgroundR2ObjectKey,
-  }),
-);
 
 vi.mock("@/lib/clipstitchr/server/r2/getR2UploadSignedUrl", () => ({
   getR2UploadSignedUrl: mocks.getR2UploadSignedUrl,
@@ -81,9 +72,6 @@ describe("POST /api/swipr/backgrounds/upload-url", () => {
       sizeBytes: 123,
     });
     mocks.convex.mutation.mockResolvedValue(null);
-    mocks.createSharedSwiprBackgroundR2ObjectKey.mockReturnValue(
-      "shared/swipr/background_1.jpg",
-    );
     mocks.getR2UploadSignedUrl.mockResolvedValue({
       expiresIn: 300,
       url: "https://r2.example/upload",
@@ -104,7 +92,7 @@ describe("POST /api/swipr/backgrounds/upload-url", () => {
 
     await expect(response.json()).resolves.toEqual({
       expiresIn: 300,
-      key: "shared/swipr/background_1.jpg",
+      key: "users/user_123/swipr-backgrounds/background_1/image.jpg",
       url: "https://r2.example/upload",
     });
     expect(response.status).toBe(200);
@@ -115,13 +103,9 @@ describe("POST /api/swipr/backgrounds/upload-url", () => {
         sizeBytes: 123,
       },
     );
-    expect(mocks.createSharedSwiprBackgroundR2ObjectKey).toHaveBeenCalledWith({
-      contentType: "image/jpeg",
-      recordId: "background_1",
-    });
     expect(mocks.getR2UploadSignedUrl).toHaveBeenCalledWith({
       contentType: "image/jpeg",
-      key: "shared/swipr/background_1.jpg",
+      key: "users/user_123/swipr-backgrounds/background_1/image.jpg",
     });
   });
 

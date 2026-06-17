@@ -10,6 +10,7 @@ import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticate
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { readStitchrTextGenerationClipContexts } from "@/lib/clipstitchr/server/readStitchrTextGenerationClipContexts";
+import { readSwiprSelectedSlideTextContext } from "@/lib/clipstitchr/server/readSwiprSelectedSlideTextContext";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import { getCliprDurationSeconds } from "@/lib/clipstitchr/utils/getCliprDurationSeconds";
 
@@ -21,6 +22,7 @@ type CliprTextRequestBody = {
   purpose?: unknown;
   slideCount?: unknown;
   stitchrClipContexts?: unknown;
+  swiprSelectedSlideTextContext?: unknown;
 };
 
 function getCliprTextPurpose(value: unknown): CliprTextPurpose {
@@ -73,6 +75,9 @@ export async function POST(request: Request) {
           : 4,
       stitchrClipContexts: readStitchrTextGenerationClipContexts(
         body.stitchrClipContexts,
+      ),
+      swiprSelectedSlideTextContext: readSwiprSelectedSlideTextContext(
+        body.swiprSelectedSlideTextContext,
       ),
     });
 

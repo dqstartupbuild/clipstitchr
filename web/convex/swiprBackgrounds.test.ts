@@ -59,6 +59,7 @@ function createBackground(overrides: Record<string, unknown> = {}) {
     _id: "doc_1",
     id: "background_1",
     name: "Studio",
+    uploadedByOwnerId: "owner_123",
     ...overrides,
   };
 }
@@ -72,13 +73,13 @@ function createSaveArgs(overrides: Record<string, unknown> = {}) {
     id: "background_1",
     imageObject: {
       contentType: "image/jpeg",
-      key: "shared/swipr/background_1.jpg",
+      key: "user_123/swipr-backgrounds/background_1.jpg",
       size: 10,
     },
     mimeType: "image/jpeg",
     name: "  Studio  ",
     size: 10,
-    source: "seed",
+    source: "upload",
     tags: ["studio"],
     width: 1080,
     ...overrides,

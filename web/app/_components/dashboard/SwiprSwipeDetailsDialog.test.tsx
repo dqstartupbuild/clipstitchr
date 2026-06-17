@@ -35,6 +35,8 @@ vi.mock("react", async (importOriginal) => {
   return {
     ...actual,
     useCallback: (callback: unknown) => callback,
+    useEffect: (effect: () => void | (() => void)) => effect(),
+    useMemo: (factory: () => unknown) => factory(),
     useState: (initialValue: unknown) => [
       mocks.stateQueue.length ? mocks.stateQueue.shift() : initialValue,
       mocks.setState,
@@ -206,17 +208,19 @@ describe("SwiprSwipeDetailsDialog", () => {
     const onClose = vi.fn();
     const onDelete = vi.fn();
     const onDownload = vi.fn();
-    const onEdit = vi.fn();
+    const onLoadBackgroundBlob = vi.fn(async () => new Blob(["background"]));
     const stopPropagation = vi.fn();
     const tree = SwiprSwipeDetailsDialog({
       background: createBackground({
         blob: new Blob(["background"], { type: "image/jpeg" }),
       }),
+      backgrounds: [createBackground()],
+      editHref: "/dashboard/swipr?swipe=swipe_1",
       isDownloading: true,
       onClose,
       onDelete,
       onDownload,
-      onEdit,
+      onLoadBackgroundBlob,
       swipe: createSwipe(),
     });
     const markup = renderToStaticMarkup(tree);
@@ -236,7 +240,6 @@ describe("SwiprSwipeDetailsDialog", () => {
     mocks.swipeNavigationOptions?.onSwipeRight();
     mocks.buttons[0]?.onClick?.();
     mocks.buttons[1]?.onClick?.();
-    mocks.buttons[2]?.onClick?.();
 
     const stateUpdaters = mocks.setState.mock.calls.map(
       ([updater]) => updater as (currentIndex: number) => number,
@@ -246,6 +249,7 @@ describe("SwiprSwipeDetailsDialog", () => {
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Image 1 of 2");
     expect(markup).toContain("blob:background");
+    expect(markup).toContain("/dashboard/swipr?swipe=swipe_1");
     expect(mocks.overlayProps?.textOverlay.text).toBe("Launch today");
     expect(mocks.swipeNavigationOptions?.isEnabled).toBe(true);
     expect(stateUpdaters.map((updater) => updater(0))).toEqual([1, 1, 1, 1]);
@@ -253,7 +257,6 @@ describe("SwiprSwipeDetailsDialog", () => {
     expect(stopPropagation).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
     expect(onDownload).toHaveBeenCalled();
-    expect(onEdit).toHaveBeenCalled();
     expect(onDelete).toHaveBeenCalled();
     expect(mocks.buttons[0]?.isLoading).toBe(true);
   });
@@ -262,11 +265,13 @@ describe("SwiprSwipeDetailsDialog", () => {
     mocks.useObjectUrl.mockReturnValue(null);
     const tree = SwiprSwipeDetailsDialog({
       background: createBackground(),
+      backgrounds: [createBackground()],
+      editHref: "/dashboard/swipr?swipe=swipe_1",
       isDownloading: false,
       onClose: vi.fn(),
       onDelete: vi.fn(),
       onDownload: vi.fn(),
-      onEdit: vi.fn(),
+      onLoadBackgroundBlob: vi.fn(async () => new Blob(["background"])),
       swipe: createSwipe({
         slides: [
           {

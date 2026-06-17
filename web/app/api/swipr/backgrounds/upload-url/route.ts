@@ -5,7 +5,7 @@ import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/get
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
-import { createSharedSwiprBackgroundR2ObjectKey } from "@/lib/clipstitchr/server/r2/createSharedSwiprBackgroundR2ObjectKey";
+import { createR2ObjectKey } from "@/lib/clipstitchr/server/r2/createR2ObjectKey";
 import { getR2UploadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2UploadSignedUrl";
 import { readSwiprBackgroundUploadUrlRequest } from "@/lib/clipstitchr/server/r2/readSwiprBackgroundUploadUrlRequest";
 
@@ -33,7 +33,9 @@ export async function POST(request: Request) {
       sizeBytes: body.sizeBytes,
     });
 
-    const key = createSharedSwiprBackgroundR2ObjectKey({
+    const key = createR2ObjectKey({
+      userId,
+      kind: "swipr-background",
       recordId: body.recordId,
       contentType: body.contentType,
     });

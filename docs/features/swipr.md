@@ -3,33 +3,38 @@
 Swipr is ClipStitchr's TikTok carousel generator. A Swipe is the saved,
 editable carousel project created by Swipr. Unlike Stitchr outputs, a saved
 Swipe does not store final rendered images. It stores the editable carousel
-state so the user can reopen it, change the background, update slide text, add
-or remove images, and download the latest saved version at any time.
+state so the user can reopen it, change slide photos, update slide text, add
+or remove slides, change each slide's photo, and download the latest saved
+version at any time.
 
 ## User Workflow
 
 1. The user opens `/dashboard/swipr`.
 2. The user chooses a saved Settings product as the product context.
-3. The user chooses 3-8 carousel images.
-4. The user chooses one photo for each carousel image:
-   - A saved background from the shared Background Library.
-   - Uploaded background images.
-   - A saved avatar photo.
+3. The user starts with the default slides, adds slides up to the max of 8, and
+   can remove slides they do not need.
+4. The user chooses one photo for the selected carousel image:
    - A Pexels photo from the built-in search panel.
+   - A saved avatar photo.
+   - Uploaded background images.
    - One AI-generated background image for the selected carousel image, using
      product context and an optional user prompt.
-5. The user edits text independently on each carousel image.
-6. The user can generate editable slide text from the shared hidden Clipr
+5. The user can copy the selected slide photo to every slide when the same
+   image should be reused.
+6. The user edits text independently on each carousel image.
+7. The user can generate editable slide text from the shared hidden Clipr
    hook-template engine. The first slide uses the generated hook, and the
    remaining slides pay it off with supporting points. Swipr auto-text can draw
    from the product/ad hook library as well as non-promotional engagement
    templates, but the source names and template IDs stay hidden. The backend
    writing call uses `TEXT_WRITING_MODEL_ID`, which defaults to
    `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` is supported for
-   higher-cost writing tests.
-7. The user saves the editable Swipe.
-8. The saved Swipe appears in the Content Library under the Swipes tab.
-9. From the library, the user can open the Swipe detail view, swipe through its
+   higher-cost writing tests. The default generator mode writes text for all
+   slides. The user can switch to selected-slide mode, which sends the previous
+   and next slide text as context and updates only the selected slide.
+8. The user saves the editable Swipe.
+9. The saved Swipe appears in the Content Library under the Swipes tab.
+10. From the library, the user can open the Swipe detail view, swipe through its
    images, download the current saved version, or continue editing it in Swipr.
 
 ## Saved Swipe Model
@@ -44,14 +49,14 @@ The saved record includes:
 - Display name.
 - Saved Settings product ID.
 - Product context snapshot used for export naming and prompt context.
-- Fallback selected background ID for compatibility and default rendering.
-- Slide count.
+- Fallback selected background ID for compatibility.
 - Ordered slide records.
 - Text overlay state for each slide.
 - Created and updated timestamps.
 
 Each slide stores only the editable data needed to render it again, including
-its selected background ID when it differs from the saved fallback background.
+its selected background ID. The ordered slide records determine the current
+slide count.
 The final PNG is rendered in the browser on demand when the user downloads the
 Swipe.
 
@@ -59,7 +64,7 @@ Swipe.
 
 The download action renders the currently saved version of the Swipe. It uses:
 
-- The saved background image blobs loaded from R2.
+- The saved per-slide photo blobs loaded from R2.
 - The saved ordered slide list.
 - The saved text overlay for each slide.
 - The existing 9:16 Swipr rendering pipeline.
@@ -91,30 +96,20 @@ posted status.
 
 The Swipe detail view lets the user swipe or step through the saved carousel
 images. The detail view renders previews from the saved editable data and the
-saved background blob. It does not expose hidden background analysis metadata.
+saved per-slide photo blobs. It stays within the mobile viewport and does not
+require horizontal page scrolling. The Edit action opens the full Swipr editor
+with the saved Swipe loaded, so the user can change slide text, change photos,
+add slides, remove slides, save, and download again.
 
-## Background Library
+## Slide Photo Storage
 
-Swipr uses a shared Background Library. The Background Library contains seeded,
-uploaded, and AI-generated backgrounds saved to R2 and described in Convex.
+Swipr no longer exposes a shared Swipr photo library. Pexels is the searchable
+photo library users browse from the editor.
 
-The Background Library is shared across all users:
-
-- Any authenticated user can view and use saved backgrounds.
-- Seeded, uploaded, and generated backgrounds are saved durably to R2.
-- Users cannot delete shared background images from the library.
-- The background metadata is searchable by all authenticated users.
-
-Local starter backgrounds are not part of the current saved background model.
-When a user generates or uploads a background for reuse, it becomes a shared
-background asset.
-
-Seeded backgrounds use deterministic seed plans from
-`createSwiprBackgroundSeedPlans`. The seed catalog currently produces 1,000
-planned backgrounds from 25 niches, 5 relevant scenes per niche, and 8 visual
-styles. Each seed plan includes a provider prompt plus the same searchable
-metadata the analysis route would normally create: name, tags, description,
-details, category, preset, niche, style, and scene.
+When a user chooses a Pexels photo, avatar photo, uploaded photo, or generated
+AI photo, the selected image is saved as an owner-owned Swipr photo record in
+Convex and R2. That record is not shown as a reusable shared gallery item for
+other users. It exists so saved Swipes can reopen, render, and download later.
 
 ## AI Background Generation
 
@@ -143,28 +138,28 @@ setup, camera angle, surface, palette, composition, and background preset from
 that category. The variation metadata is saved into hidden background details so
 generated outputs can be inspected later without adding visible UI labels.
 
-## Background Storage
+## Photo Storage
 
-Background binary data is stored in Cloudflare R2. Convex stores searchable
+Photo binary data is stored in Cloudflare R2. Convex stores private
 metadata and the R2 object reference.
 
-Background records include:
+Swipr photo records include:
 
 - Stable background ID.
 - Name.
-- Source: seed, upload, or AI.
+- Source: upload, avatar-photo, Pexels, or AI.
 - R2 image object reference.
-- Optional uploader owner ID for audit/debugging only.
-- Tags generated by AI analysis or supplied by seed metadata.
-- Hidden description generated by AI analysis or supplied by seed metadata.
-- Hidden visual details generated by AI analysis or supplied by seed metadata.
+- Uploader owner ID for authorization.
+- Tags generated by AI analysis or supplied from Pexels/provider metadata.
+- Hidden description generated by AI analysis or supplied from Pexels/provider
+  metadata.
+- Hidden visual details generated by AI analysis or supplied from
+  Pexels/provider metadata.
 - MIME type, size, width, and height.
 - Created timestamp.
 
-Because backgrounds are shared, background download authorization differs from
-user-owned media. Authenticated users may request signed download URLs for
-background objects recorded in the shared background table. Delete routes must
-not allow users to delete shared background R2 objects.
+Signed download URLs are owner-scoped. A user can only request Swipr photo
+download URLs for records they own.
 
 ## Background Analysis
 
@@ -183,19 +178,6 @@ The hidden analysis should include:
 - Visual details such as setting, subject matter, composition, colors, texture,
   lighting, mood, available copy space, and product/category fit.
 
-Search in the Background Library should match against the name, tags,
-description, and visual details.
-
-Seeded backgrounds do not need to call the analysis route after generation. The
-seed plan metadata is saved directly because it is already structured for search
-and future category/filter selection.
-
-In development, the Swipr Background panel exposes a `Seed 5` button. The
-button calls `POST /api/dev/swipr/backgrounds/seed`, which is unavailable
-outside `NODE_ENV=development`. Each click imports the next five missing seed
-plans, skips seed IDs already saved in Convex, generates the image, uploads it
-to the shared Swipr R2 prefix, and saves the prefilled seed metadata directly.
-
 The Swipr creation page can upload multiple photos in one selection. Uploaded
 photos are assigned across the current carousel images. AI generation is
 intentionally single-slide only: the selected slide receives one generated
@@ -203,9 +185,8 @@ photo, and a user who wants AI photos on every slide must select each slide and
 tap Generate.
 
 Avatar photos can also be added to the selected slide. Avatar-photo Swipr
-background records are saved with source `avatar-photo` and remain visible only
-to the owner who imported them, so personal avatar images do not become shared
-library assets.
+photo records are saved with source `avatar-photo` and remain visible only to
+the owner who imported them.
 
 ## Pexels Search
 
@@ -222,22 +203,30 @@ Swipr can search Pexels through `POST /api/swipr/pexels/search`. The route:
 
 When a user adds a Pexels photo, the client downloads the selected portrait
 image, saves it through the existing Swipr background analysis/R2/Convex path,
-and assigns it to the selected slide. Pexels imports use source `pexels`, are
-part of the shared Swipr background library, and keep the Pexels URL and
-photographer in hidden background details for maintenance. The UI shows
+and assigns it to the selected slide only. Pexels imports use source `pexels`,
+are owner-owned, and keep the Pexels URL and photographer in hidden background
+details for maintenance. The UI shows
 “Photos provided by Pexels” and displays photographer credit on each result.
+
+## Automation
+
+Automatic Swipr generation uses Pexels for slide photos. The planner queues the
+task when the user has an eligible product. The provider worker searches Pexels
+from the product and audience context, saves owner-owned Pexels photo records,
+generates text for the max 8 slides, and saves an editable Swipe draft. Each
+automated slide receives its own saved Pexels photo ID.
 
 ## Abuse Protection
 
 Swipr persistence adds new cost surfaces:
 
-- R2 signed upload URLs for background uploads and generated background saves.
-- R2 signed download URLs for shared background previews and exports.
+- R2 signed upload URLs for photo uploads and generated photo saves.
+- R2 signed download URLs for owner-owned Swipr photo previews and exports.
 - GPT-4.1 mini background analysis.
 - Pexels API search requests.
-- Convex record saves for shared backgrounds.
-- Any future admin seed runner that generates and imports the 1,000-image
-  background catalog.
+- Provider-worker Pexels searches and owner-owned Swipr photo saves for
+  automatic Swipr drafts.
+- Convex record saves for owner-owned Swipr photos.
 - Convex record saves, updates, and deletes for user-owned Swipes.
 
 Required protections:
@@ -247,24 +236,25 @@ Required protections:
 - Background analysis is rate-limited before calling Replicate.
 - AI background generation remains rate-limited before calling Replicate.
 - Pexels search is rate-limited before calling Pexels.
-- Seed catalog generation/import must be admin-only, batch-capped,
-  checkpointed, and must not run through user-triggered background routes.
+- Automatic Swipr is protected by the Swipr automation daily/global budget
+  before the provider worker calls Pexels or saves draft assets.
 - Convex saves and updates consume existing record-save or metadata-update
   limits before writes.
-- Shared backgrounds are not user-deletable.
+- Swipr photo records and signed download URLs are owner-scoped.
 - User-owned Swipes must be owner-scoped for list, get, save, update, and
   delete operations.
 
 ## MVP Constraints
 
 - Swipr exports static 9:16 PNG carousel images in a ZIP.
-- Each Swipe keeps a fallback background for compatibility, and each slide can
-  use its own selected background image.
+- Each Swipe keeps a fallback background for compatibility, and each slide
+  stores its selected photo ID.
 - Each slide has one text overlay.
-- The carousel contains 3-8 images.
+- The editor starts with 3 slides and supports up to 8 slides.
 - Rendered PNG images are not stored.
 - Background analysis metadata is hidden from users.
 - Hook style names, template IDs, risk labels, and placeholder mechanics are
   hidden from users when Swipr auto-text is generated.
-- Backgrounds are shared globally and cannot be deleted by users.
-- Pexels images added through search become shared Swipr backgrounds.
+- Swipr photos are owner-owned and are not exposed as a shared searchable
+  Swipr gallery.
+- Pexels is the searchable user-facing photo library.
