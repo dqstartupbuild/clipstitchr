@@ -22,6 +22,8 @@ import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/ge
 import { resolveAutomationStitchrColor } from "../lib/clipstitchr/utils/resolveAutomationStitchrColor";
 import { resolveAutomationStitchrTextStyleId } from "../lib/clipstitchr/utils/resolveAutomationStitchrTextStyleId";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
+import { recordStitchrBatchPairHistory } from "./recordStitchrBatchPairHistory";
+import { getIsStitchrBatchRunId } from "./stitchrBatchRunId";
 import { requestWorkerLaunch } from "./workerLaunch";
 
 function createRunId(ownerId: string, automationDate: string) {
@@ -526,33 +528,49 @@ export const recordOutput = mutation({
       return;
     }
 
-    const history = await ctx.db
-      .query("automationPairHistory")
-      .withIndex("by_owner_pair", (q) =>
-        q.eq("ownerId", ownerId).eq("ugcClipId", ugcClipId).eq("demoClipId", demoClipId),
-      )
-      .unique();
+    const isStitchrBatchOutput = getIsStitchrBatchRunId(task.runId);
 
-    if (history) {
-      await ctx.db.patch(history._id, {
-        lastUsedAt: completedAt,
-        useCount: history.useCount + 1,
-        recentUseWindowKey: automationDate,
-        lastOutputStitchId: stitchId,
-        updatedAt: completedAt,
-      });
-    } else {
-      await ctx.db.insert("automationPairHistory", {
+    if (isStitchrBatchOutput) {
+      await recordStitchrBatchPairHistory(ctx, {
         ownerId,
         ugcClipId,
         demoClipId,
-        lastUsedAt: completedAt,
-        useCount: 1,
-        recentUseWindowKey: automationDate,
-        lastOutputStitchId: stitchId,
-        createdAt: completedAt,
-        updatedAt: completedAt,
+        stitchId,
+        batchDate: automationDate,
+        completedAt,
       });
+    } else {
+      const history = await ctx.db
+        .query("automationPairHistory")
+        .withIndex("by_owner_pair", (q) =>
+          q
+            .eq("ownerId", ownerId)
+            .eq("ugcClipId", ugcClipId)
+            .eq("demoClipId", demoClipId),
+        )
+        .unique();
+
+      if (history) {
+        await ctx.db.patch(history._id, {
+          lastUsedAt: completedAt,
+          useCount: history.useCount + 1,
+          recentUseWindowKey: automationDate,
+          lastOutputStitchId: stitchId,
+          updatedAt: completedAt,
+        });
+      } else {
+        await ctx.db.insert("automationPairHistory", {
+          ownerId,
+          ugcClipId,
+          demoClipId,
+          lastUsedAt: completedAt,
+          useCount: 1,
+          recentUseWindowKey: automationDate,
+          lastOutputStitchId: stitchId,
+          createdAt: completedAt,
+          updatedAt: completedAt,
+        });
+      }
     }
 
     await ctx.db.patch(task._id, {
@@ -579,7 +597,7 @@ export const recordOutput = mutation({
       runTask.id === task.id ? true : runTask.status === "completed",
     );
 
-    if (allTasksCompleted) {
+    if (allTasksCompleted && !isStitchrBatchOutput) {
       const run = await ctx.db
         .query("automationRuns")
         .withIndex("by_owner_id", (q) =>
@@ -647,33 +665,49 @@ export const recordOutputFromMediaWorker = mutation({
       return;
     }
 
-    const history = await ctx.db
-      .query("automationPairHistory")
-      .withIndex("by_owner_pair", (q) =>
-        q.eq("ownerId", ownerId).eq("ugcClipId", ugcClipId).eq("demoClipId", demoClipId),
-      )
-      .unique();
+    const isStitchrBatchOutput = getIsStitchrBatchRunId(task.runId);
 
-    if (history) {
-      await ctx.db.patch(history._id, {
-        lastUsedAt: completedAt,
-        useCount: history.useCount + 1,
-        recentUseWindowKey: automationDate,
-        lastOutputStitchId: stitchId,
-        updatedAt: completedAt,
-      });
-    } else {
-      await ctx.db.insert("automationPairHistory", {
+    if (isStitchrBatchOutput) {
+      await recordStitchrBatchPairHistory(ctx, {
         ownerId,
         ugcClipId,
         demoClipId,
-        lastUsedAt: completedAt,
-        useCount: 1,
-        recentUseWindowKey: automationDate,
-        lastOutputStitchId: stitchId,
-        createdAt: completedAt,
-        updatedAt: completedAt,
+        stitchId,
+        batchDate: automationDate,
+        completedAt,
       });
+    } else {
+      const history = await ctx.db
+        .query("automationPairHistory")
+        .withIndex("by_owner_pair", (q) =>
+          q
+            .eq("ownerId", ownerId)
+            .eq("ugcClipId", ugcClipId)
+            .eq("demoClipId", demoClipId),
+        )
+        .unique();
+
+      if (history) {
+        await ctx.db.patch(history._id, {
+          lastUsedAt: completedAt,
+          useCount: history.useCount + 1,
+          recentUseWindowKey: automationDate,
+          lastOutputStitchId: stitchId,
+          updatedAt: completedAt,
+        });
+      } else {
+        await ctx.db.insert("automationPairHistory", {
+          ownerId,
+          ugcClipId,
+          demoClipId,
+          lastUsedAt: completedAt,
+          useCount: 1,
+          recentUseWindowKey: automationDate,
+          lastOutputStitchId: stitchId,
+          createdAt: completedAt,
+          updatedAt: completedAt,
+        });
+      }
     }
 
     await ctx.db.patch(task._id, {
@@ -700,7 +734,7 @@ export const recordOutputFromMediaWorker = mutation({
       runTask.id === task.id ? true : runTask.status === "completed",
     );
 
-    if (allTasksCompleted) {
+    if (allTasksCompleted && !isStitchrBatchOutput) {
       const run = await ctx.db
         .query("automationRuns")
         .withIndex("by_owner_id", (q) =>

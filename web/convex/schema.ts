@@ -514,4 +514,17 @@ export default defineSchema({
   })
     .index("by_owner_pair", ["ownerId", "ugcClipId", "demoClipId"])
     .index("by_owner_last_used", ["ownerId", "lastUsedAt"]),
+  stitchrBatchPairHistory: defineTable({
+    ownerId: v.string(),
+    ugcClipId: v.string(),
+    demoClipId: v.string(),
+    lastUsedAt: v.string(),
+    useCount: v.number(),
+    recentUseWindowKey: v.string(),
+    lastOutputStitchId: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_pair", ["ownerId", "ugcClipId", "demoClipId"])
+    .index("by_owner_last_used", ["ownerId", "lastUsedAt"]),
 });

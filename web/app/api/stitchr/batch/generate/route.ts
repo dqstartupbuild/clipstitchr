@@ -1,10 +1,10 @@
 import { api } from "@/convex/_generated/api";
 import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { createConvexHttpClient } from "@/lib/clipstitchr/server/convex/createConvexHttpClient";
-import { getAutomationDate } from "@/lib/clipstitchr/server/automation/getAutomationDate";
 import { getAutomationWorkerSecret } from "@/lib/clipstitchr/server/automation/getAutomationWorkerSecret";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
+import { getStitchrBatchDate } from "@/lib/clipstitchr/server/stitchr/getStitchrBatchDate";
 
 export const runtime = "nodejs";
 
@@ -24,19 +24,19 @@ export async function POST() {
 
   try {
     const now = new Date().toISOString();
-    const automationDate = getAutomationDate(now);
+    const batchDate = getStitchrBatchDate(now);
     const result = (await createConvexHttpClient().mutation(
-      api.automationStitchr.planDaily,
+      api.stitchrBatch.plan,
       {
         secret: getAutomationWorkerSecret(),
         ownerId: userId,
-        automationDate,
+        batchDate,
         now,
       },
     )) as StitchrBatchPlanResult;
 
     return Response.json({
-      automationDate,
+      batchDate,
       count: result.taskIds.length,
       message: result.message,
       runId: result.runId,

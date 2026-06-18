@@ -14,6 +14,7 @@ import { automationTaskStatusValidator } from "./validators/automationTaskStatus
 import { automationTaskTypeValidator } from "./validators/automationTaskType";
 import { automationToolValidator } from "./validators/automationTool";
 import { getAutomationToolDisabledReason } from "./getAutomationToolDisabledReason";
+import { getIsStitchrBatchRunId } from "./stitchrBatchRunId";
 import { requestWorkerLaunch } from "./workerLaunch";
 
 type AutomationTaskDocument = Doc<"automationTasks">;
@@ -78,11 +79,9 @@ async function getClaimableTask(
       continue;
     }
 
-    const disabledReason = await getAutomationToolDisabledReason(
-      ctx,
-      task.ownerId,
-      task.tool,
-    );
+    const disabledReason = getIsStitchrBatchRunId(task.runId)
+      ? null
+      : await getAutomationToolDisabledReason(ctx, task.ownerId, task.tool);
 
     if (disabledReason) {
       await markTaskSkippedForDisabledTool(ctx, task, disabledReason, updatedAt);

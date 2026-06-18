@@ -78,24 +78,6 @@ const mocks = vi.hoisted(() => ({
     savingTemplateId: null as string | null,
     templates: [],
   },
-  automationState: {
-    error: null as string | null,
-    isLoading: false,
-    isSaving: false,
-    preferences: {
-      avatarSelectionMode: "all",
-      cliprGenerationMode: "any",
-      enabled: true,
-      enabledTools: ["stitchr", "clipr", "swipr"],
-      productSelectionMode: "all",
-      selectedAvatarIds: [],
-      selectedProductIds: [],
-      stitchrTextBackgroundColorChoice: "any",
-      stitchrTextColorChoice: "any",
-      stitchrTextStyleChoice: "any",
-    },
-    savePreferences: vi.fn(),
-  },
   autoTextPanelProps: null as Record<string, unknown> | null,
   batchPanelProps: null as Record<string, unknown> | null,
   clipPickerPanelProps: null as Record<string, unknown> | null,
@@ -195,10 +177,6 @@ vi.mock("@/app/_components/stitchr/StitchrEmptyState", () => ({
 
 vi.mock("@/lib/clipstitchr/hooks/useClipLibrary", () => ({
   useClipLibrary: () => mocks.clipLibraryState,
-}));
-
-vi.mock("@/lib/clipstitchr/hooks/useAutomationPreferences", () => ({
-  useAutomationPreferences: () => mocks.automationState,
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useLoadedVideoClip", () => ({
@@ -390,9 +368,9 @@ describe("StitchrPageClient", () => {
       socialCaption: "Generated caption\n\n#launchkit #ugc #demo",
     });
     mocks.generateStitchrBatch.mockResolvedValue({
-      automationDate: "2026-06-17",
+      batchDate: "2026-06-17",
       count: 2,
-      runId: "automation:stitchr:user_123:2026-06-17",
+      runId: "stitchr-batch:user_123:2026-06-17",
       status: "running",
       taskIds: ["task_1", "task_2"],
     });

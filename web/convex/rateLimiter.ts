@@ -4,6 +4,10 @@ import {
   AUTOMATION_STITCHR_DAILY_LIMIT,
   AUTOMATION_STITCHR_GLOBAL_DAILY_LIMIT,
 } from "../lib/clipstitchr/constants/automationStitchrGenerationLimits";
+import {
+  STITCHR_BATCH_DAILY_LIMIT,
+  STITCHR_BATCH_GLOBAL_DAILY_LIMIT,
+} from "../lib/clipstitchr/constants/stitchrBatchGenerationLimits";
 
 const GIGABYTE = 1024 * 1024 * 1024;
 const MONTH = 30 * DAY;
@@ -400,6 +404,32 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     rate: AUTOMATION_STITCHR_GLOBAL_DAILY_LIMIT,
     period: DAY,
     capacity: AUTOMATION_STITCHR_GLOBAL_DAILY_LIMIT,
+    shards: 5,
+  },
+  stitchrBatchDaily: {
+    kind: "token bucket",
+    rate: STITCHR_BATCH_DAILY_LIMIT,
+    period: DAY,
+    capacity: STITCHR_BATCH_DAILY_LIMIT,
+  },
+  stitchrBatchGlobalDaily: {
+    kind: "token bucket",
+    rate: STITCHR_BATCH_GLOBAL_DAILY_LIMIT,
+    period: DAY,
+    capacity: STITCHR_BATCH_GLOBAL_DAILY_LIMIT,
+    shards: 5,
+  },
+  stitchrBatchAssetSaveDaily: {
+    kind: "token bucket",
+    rate: STITCHR_BATCH_DAILY_LIMIT,
+    period: DAY,
+    capacity: STITCHR_BATCH_DAILY_LIMIT,
+  },
+  stitchrBatchAssetSaveGlobalDaily: {
+    kind: "token bucket",
+    rate: STITCHR_BATCH_GLOBAL_DAILY_LIMIT,
+    period: DAY,
+    capacity: STITCHR_BATCH_GLOBAL_DAILY_LIMIT,
     shards: 5,
   },
   automationSwaprDaily: {

@@ -50,11 +50,12 @@ social proof first, product proof immediately after.
 3. Save generated posters so clips are recognizable at a glance.
 4. Store non-destructive default trims on each clip.
 5. Stitchr opens on the Batch tab by default. Batch mode queues the signed-in
-   user's daily automated Stitchr run from the Stitchr page, creating up to 10
-   editable Stitch drafts through the provider and media workers.
-6. Batch mode uses the automation pair history when choosing UGC/Demo pairs. It
-   prefers unused or older pairs, tracks when each pair was last used, and
-   spreads a batch across different UGC and Demo clips before reusing pieces.
+   user's daily Stitchr batch from the Stitchr page at any time, creating up to
+   10 editable Stitch drafts through the provider and media workers.
+6. Batch mode uses its own Stitchr Batch pair history when choosing UGC/Demo
+   pairs. It prefers unused or older pairs, tracks when each pair was last used,
+   and spreads a batch across different UGC and Demo clips before reusing
+   pieces.
 7. Switch to Normal mode to select up to 20 UGC clips and one demo clip inside
    Stitchr, using the
    product filter when the library contains demos for multiple products. When

@@ -16,6 +16,7 @@ import { stitchScoreValidator } from "./validators/stitchScore";
 import { stitchrModeValidator } from "./validators/stitchrMode";
 import { stitchSequenceSegmentValidator } from "./validators/stitchSequenceSegment";
 import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
+import { getIsStitchrBatchRunId } from "./stitchrBatchRunId";
 import {
   textOverlayValidator,
   textOverlaysValidator,
@@ -255,6 +256,8 @@ export const saveFromMediaWorker = mutation({
   handler: async (ctx, { secret, ownerId, automation, ...args }) => {
     assertMediaWorkerSecret(secret);
 
+    const isStitchrBatchSave = getIsStitchrBatchRunId(automation.runId);
+
     const ugcClip = await ctx.db
       .query("videoClips")
       .withIndex("by_owner_id", (q) =>
@@ -279,25 +282,40 @@ export const saveFromMediaWorker = mutation({
       )
       .unique();
 
+    if (isStitchrBatchSave && existingStitch) {
+      return existingStitch._id;
+    }
+
     if (
+      !isStitchrBatchSave &&
       existingStitch?.automation?.source === "automation" &&
       existingStitch.automation.taskId === automation.taskId
     ) {
       return existingStitch._id;
     }
 
-    await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
-      key: ownerId,
-      throws: true,
-    });
-    await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
-      throws: true,
-    });
+    if (isStitchrBatchSave) {
+      await rateLimiter.limit(ctx, "stitchrBatchAssetSaveDaily", {
+        key: ownerId,
+        throws: true,
+      });
+      await rateLimiter.limit(ctx, "stitchrBatchAssetSaveGlobalDaily", {
+        throws: true,
+      });
+    } else {
+      await rateLimiter.limit(ctx, "automationAssetSaveDaily", {
+        key: ownerId,
+        throws: true,
+      });
+      await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
+        throws: true,
+      });
+    }
 
     const stitch = {
       ownerId,
       ...args,
-      automation,
+      ...(isStitchrBatchSave ? {} : { automation }),
     };
 
     if (existingStitch) {

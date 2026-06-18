@@ -1,5 +1,5 @@
 export type GenerateStitchrBatchResult = {
-  automationDate: string;
+  batchDate: string;
   count: number;
   message?: string;
   runId: string;

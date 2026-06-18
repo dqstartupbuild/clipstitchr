@@ -87,9 +87,9 @@ describe("client API wrappers", () => {
       .mockResolvedValueOnce(createJsonResponse({ id: "swapr_job_1" }))
       .mockResolvedValueOnce(
         createJsonResponse({
-          automationDate: "2026-06-17",
+          batchDate: "2026-06-17",
           count: 10,
-          runId: "automation:stitchr:user_123:2026-06-17",
+          runId: "stitchr-batch:user_123:2026-06-17",
           status: "running",
           taskIds: ["task_1"],
         }),

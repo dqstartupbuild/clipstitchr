@@ -16,8 +16,8 @@ const mocks = vi.hoisted(() => {
 
 vi.mock("@/convex/_generated/api", () => ({
   api: {
-    automationStitchr: {
-      planDaily: "automationStitchr.planDaily",
+    stitchrBatch: {
+      plan: "stitchrBatch.plan",
     },
   },
 }));
@@ -40,7 +40,7 @@ describe("POST /api/stitchr/batch/generate", () => {
     mocks.getAuthenticatedUserId.mockResolvedValue("user_123");
     mocks.convex.mutation.mockResolvedValue({
       message: undefined,
-      runId: "automation:stitchr:user_123:2026-06-17",
+      runId: "stitchr-batch:user_123:2026-06-17",
       status: "running",
       taskIds: ["task_1", "task_2"],
     });
@@ -62,14 +62,15 @@ describe("POST /api/stitchr/batch/generate", () => {
     expect(response.status).toBe(200);
     expect(body).toEqual(
       expect.objectContaining({
+        batchDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         count: 2,
-        runId: "automation:stitchr:user_123:2026-06-17",
+        runId: "stitchr-batch:user_123:2026-06-17",
         status: "running",
         taskIds: ["task_1", "task_2"],
       }),
     );
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.automationStitchr.planDaily,
+      api.stitchrBatch.plan,
       expect.objectContaining({
         secret: "automation-secret",
         ownerId: "user_123",
@@ -81,7 +82,7 @@ describe("POST /api/stitchr/batch/generate", () => {
     mocks.convex.mutation.mockRejectedValueOnce({
       data: {
         kind: "RateLimited",
-        name: "automationStitchrDaily",
+        name: "stitchrBatchDaily",
         retryAfter: 1000,
       },
     });
@@ -91,7 +92,7 @@ describe("POST /api/stitchr/batch/generate", () => {
     expect(response.status).toBe(429);
     await expect(response.json()).resolves.toEqual(
       expect.objectContaining({
-        rateLimit: "automationStitchrDaily",
+        rateLimit: "stitchrBatchDaily",
         retryAfterSeconds: 1,
       }),
     );

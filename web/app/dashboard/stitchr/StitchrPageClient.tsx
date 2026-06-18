@@ -13,11 +13,10 @@ import { StitchrAutoTextPanel } from "@/app/_components/stitchr/StitchrAutoTextP
 import { StitchrLongrTimelineStrip } from "@/app/_components/stitchr/StitchrLongrTimelineStrip";
 import { StitchrSocialCaptionPanel } from "@/app/_components/stitchr/StitchrSocialCaptionPanel";
 import { StitchTemplatePicker } from "@/app/_components/stitchr/StitchTemplatePicker";
-import { AUTOMATION_STITCHR_DAILY_LIMIT } from "@/lib/clipstitchr/constants/automationStitchrGenerationLimits";
 import { generateStitchrBatch } from "@/lib/clipstitchr/client/generateStitchrBatch";
+import { STITCHR_BATCH_DAILY_LIMIT } from "@/lib/clipstitchr/constants/stitchrBatchGenerationLimits";
 import { maxStitchrUgcSelectionCount } from "@/lib/clipstitchr/constants/maxStitchrUgcSelectionCount";
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
-import { useAutomationPreferences } from "@/lib/clipstitchr/hooks/useAutomationPreferences";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useLoadedVideoClip } from "@/lib/clipstitchr/hooks/useLoadedVideoClip";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
@@ -51,7 +50,6 @@ import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoCl
 import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchrUgcSelection";
 
 export function StitchrPageClient() {
-  const automation = useAutomationPreferences();
   const library = useClipLibrary();
   const products = useProducts();
   const stitchTemplates = useStitchTemplates();
@@ -372,14 +370,6 @@ export function StitchrPageClient() {
             selectedUgcTrimRange &&
             selectedDemoTrimRange,
         );
-  const isStitchrAutomationReady =
-    automation.preferences.enabled &&
-    automation.preferences.enabledTools.includes("stitchr");
-  const automationDisabledMessage =
-    !automation.isLoading && !isStitchrAutomationReady
-      ? "Turn on Stitchr automation in Settings first."
-      : null;
-  const activeBatchMessage = batchMessage ?? automationDisabledMessage;
   const totalDuration =
     mode === "longr"
       ? selectedLongrDuration
@@ -1214,16 +1204,6 @@ export function StitchrPageClient() {
   };
 
   const handleGenerateBatch = useCallback(() => {
-    if (automation.isLoading) {
-      setBatchMessage("Loading automation settings.");
-      return;
-    }
-
-    if (!isStitchrAutomationReady) {
-      setBatchMessage("Turn on Stitchr automation in Settings first.");
-      return;
-    }
-
     setIsGeneratingBatch(true);
     setBatchMessage(null);
 
@@ -1252,7 +1232,7 @@ export function StitchrPageClient() {
         );
       })
       .finally(() => setIsGeneratingBatch(false));
-  }, [automation.isLoading, isStitchrAutomationReady]);
+  }, []);
 
   const handleGenerateAutoText = useCallback(() => {
     if (!activeAutoTextProductId) {
@@ -1502,14 +1482,10 @@ export function StitchrPageClient() {
         ) : null}
         {hasStitchrInputs && mode === "batch" ? (
           <StitchrBatchPanel
-            dailyLimit={AUTOMATION_STITCHR_DAILY_LIMIT}
-            isDisabled={
-              automation.isLoading ||
-              isGeneratingBatch ||
-              !isStitchrAutomationReady
-            }
+            dailyLimit={STITCHR_BATCH_DAILY_LIMIT}
+            isDisabled={isGeneratingBatch}
             isGenerating={isGeneratingBatch}
-            message={activeBatchMessage}
+            message={batchMessage}
             mode={mode}
             onGenerate={handleGenerateBatch}
             onModeChange={handleModeChange}
