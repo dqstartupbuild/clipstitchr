@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Clapperboard, Layers3, Library, Sparkles } from "lucide-react";
+import { Images, Library, Scissors, UserRound } from "lucide-react";
 
 const featureLabels = [
   {
@@ -7,15 +7,15 @@ const featureLabels = [
     label: "Content library",
   },
   {
-    icon: Clapperboard,
+    icon: Scissors,
     label: "UGC + demo stitches",
   },
   {
-    icon: Layers3,
+    icon: Images,
     label: "Swipr carousel tools",
   },
   {
-    icon: Sparkles,
+    icon: UserRound,
     label: "Avatar ad variants",
   },
 ];

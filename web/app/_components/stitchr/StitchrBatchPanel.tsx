@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { Scissors } from "lucide-react";
 import { StitchrModeToggle } from "@/app/_components/stitchr/StitchrModeToggle";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
@@ -44,10 +44,10 @@ export function StitchrBatchPanel({
             type="button"
             disabled={isDisabled}
             isLoading={isGenerating}
-            icon={<Sparkles aria-hidden className="h-4 w-4" />}
+            icon={<Scissors aria-hidden className="h-4 w-4" />}
             onClick={onGenerate}
           >
-            Generate {dailyLimit} stitches
+            Generate {dailyLimit} Stitches
           </Button>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, X } from "lucide-react";
+import { UserRound, X } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { Button } from "@/app/_components/ui/Button";
@@ -269,7 +269,7 @@ export function CreateAvatarFromClipDialog({
                 type="submit"
                 isLoading={isGenerating}
                 disabled={!canCreate}
-                icon={<Sparkles aria-hidden className="h-4 w-4" />}
+                icon={<UserRound aria-hidden className="h-4 w-4" />}
               >
                 {isGenerating ? "Creating..." : "Create Avatar"}
               </Button>

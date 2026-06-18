@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { Images } from "lucide-react";
 import { SwiprDraftGenerationCountControl } from "@/app/_components/swipr/SwiprDraftGenerationCountControl";
 import { Button } from "@/app/_components/ui/Button";
 
@@ -30,12 +30,12 @@ export function SwiprBatchControls({
         type="button"
         variant="secondary"
         size="sm"
-        icon={<Sparkles aria-hidden className="h-4 w-4" />}
+        icon={<Images aria-hidden className="h-4 w-4" />}
         disabled={isDisabled}
         isLoading={isGeneratingDrafts}
         onClick={onGenerateDrafts}
       >
-        Generate drafts
+        Generate Swipes
       </Button>
     </section>
   );
