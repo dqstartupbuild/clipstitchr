@@ -5,12 +5,18 @@ import { getTextPreviewBackgroundColor } from "@/lib/clipstitchr/utils/getTextPr
 
 type AutomationStitchrTextStylePickerProps = {
   disabled: boolean;
+  previewBackgroundColor?: string;
+  previewStrokeColor?: string;
+  previewTextColor?: string;
   value: AutomationStitchrTextStyleChoice;
   onChange: (value: AutomationStitchrTextStyleChoice) => void;
 };
 
 export function AutomationStitchrTextStylePicker({
   disabled,
+  previewBackgroundColor,
+  previewStrokeColor,
+  previewTextColor,
   value,
   onChange,
 }: AutomationStitchrTextStylePickerProps) {
@@ -32,46 +38,52 @@ export function AutomationStitchrTextStylePicker({
         <Shuffle aria-hidden className="h-4 w-4" />
         Any
       </button>
-      {TEXT_OVERLAY_STYLES.map((style) => (
-        <button
-          key={style.id}
-          type="button"
-          aria-pressed={value === style.id}
-          title={style.label}
-          className={[
-            "inline-flex h-10 min-w-12 items-center justify-center rounded-lg border px-2 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60",
-            value === style.id
-              ? "border-accent bg-surface-muted text-accent-dark"
-              : "border-border bg-white text-text-secondary hover:border-accent",
-          ].join(" ")}
-          disabled={disabled}
-          style={{
-            fontFamily: style.fontFamily,
-            fontWeight: style.fontWeight,
-            textTransform: style.textTransform,
-          }}
-          onClick={() => onChange(style.id)}
-        >
-          <span
+      {TEXT_OVERLAY_STYLES.map((style) => {
+        const previewColor = previewTextColor ?? style.color;
+        const styleBackgroundColor = style.backgroundColor
+          ? (previewBackgroundColor ?? style.backgroundColor)
+          : getTextPreviewBackgroundColor(previewColor);
+        const styleStrokeColor = previewStrokeColor ?? style.strokeColor;
+
+        return (
+          <button
+            key={style.id}
+            type="button"
+            aria-pressed={value === style.id}
+            title={style.label}
             className={[
-              "inline-flex h-6 min-w-8 items-center justify-center px-2 leading-none shadow-inner",
-              style.fullWidthBand ? "w-10 rounded-none" : "rounded-md",
+              "inline-flex h-10 min-w-12 items-center justify-center rounded-lg border px-2 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+              value === style.id
+                ? "border-accent bg-surface-muted text-accent-dark"
+                : "border-border bg-white text-text-secondary hover:border-accent",
             ].join(" ")}
+            disabled={disabled}
             style={{
-              backgroundColor:
-                style.backgroundColor ??
-                getTextPreviewBackgroundColor(style.color),
-              color: style.color,
-              WebkitTextStroke:
-                style.strokeColor && style.strokeWidthRatio
-                  ? `${style.strokeWidthRatio}em ${style.strokeColor}`
-                  : undefined,
+              fontFamily: style.fontFamily,
+              fontWeight: style.fontWeight,
+              textTransform: style.textTransform,
             }}
+            onClick={() => onChange(style.id)}
           >
-            Aa
-          </span>
-        </button>
-      ))}
+            <span
+              className={[
+                "inline-flex h-6 min-w-8 items-center justify-center px-2 leading-none shadow-inner",
+                style.fullWidthBand ? "w-10 rounded-none" : "rounded-md",
+              ].join(" ")}
+              style={{
+                backgroundColor: styleBackgroundColor,
+                color: previewColor,
+                WebkitTextStroke:
+                  styleStrokeColor && style.strokeWidthRatio
+                    ? `${style.strokeWidthRatio}em ${styleStrokeColor}`
+                    : undefined,
+              }}
+            >
+              Aa
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

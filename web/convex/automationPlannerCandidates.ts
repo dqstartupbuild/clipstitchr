@@ -8,22 +8,33 @@ export const listEnabled = query({
     secret: v.string(),
     cursorOwnerId: v.optional(v.string()),
     limit: v.number(),
+    ownerId: v.optional(v.string()),
   },
-  handler: async (ctx, { secret, cursorOwnerId, limit }) => {
+  handler: async (ctx, { secret, cursorOwnerId, limit, ownerId }) => {
     assertAutomationWorkerSecret(secret);
 
     const cappedLimit = Math.max(1, Math.min(100, Math.floor(limit)));
-    const preferences = await ctx.db.query("automationPreferences").collect();
+    const preferences = ownerId
+      ? await ctx.db
+          .query("automationPreferences")
+          .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+          .collect()
+      : await ctx.db.query("automationPreferences").collect();
     const enabledPreferences = preferences
       .map((preference) => ({
         ownerId: preference.ownerId,
+        productId: preference.productId,
         enabledTools: getEnabledAutomationToolsForPreference(preference),
       }))
       .filter((preference) => preference.enabledTools.length > 0)
       .filter((preference) =>
         cursorOwnerId ? preference.ownerId > cursorOwnerId : true,
       )
-      .sort((a, b) => a.ownerId.localeCompare(b.ownerId))
+      .sort((a, b) =>
+        `${a.ownerId}:${a.productId ?? ""}`.localeCompare(
+          `${b.ownerId}:${b.productId ?? ""}`,
+        ),
+      )
       .slice(0, cappedLimit);
 
     return {
@@ -44,13 +55,16 @@ export const getEnabledToolsForOwner = query({
   handler: async (ctx, { secret, ownerId }) => {
     assertAutomationWorkerSecret(secret);
 
-    const preference = await ctx.db
+    const preferences = await ctx.db
       .query("automationPreferences")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-      .unique();
+      .collect();
+    const preference =
+      preferences.find((candidate) => !candidate.productId) ?? null;
 
     return {
       ownerId,
+      productId: preference?.productId,
       enabledTools: getEnabledAutomationToolsForPreference(preference),
     };
   },

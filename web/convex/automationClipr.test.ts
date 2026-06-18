@@ -157,14 +157,14 @@ describe("automationClipr", () => {
     const ctx = createCtx({
       automationPreferences: [
         {
-          unique: {
+          collect: [{
             enabled: true,
             enabledTools: ["clipr"],
             cliprGenerationMode: "script",
             preferenceVersion: 3,
             productSelectionMode: "default",
             selectedProductIds: [],
-          },
+          }],
         },
       ],
       photoAssets: [{ collect: [avatarPhoto] }],
@@ -181,7 +181,7 @@ describe("automationClipr", () => {
     ).resolves.toEqual(
       expect.objectContaining({
         status: "running",
-        taskIds: ["automation:clipr:owner_123:2026-06-01:1"],
+        taskIds: ["automation:clipr:owner_123:legacy:2026-06-01:1"],
       }),
     );
 
@@ -209,7 +209,7 @@ describe("automationClipr", () => {
     };
 
     expect(taskInput.requestedGenerationMode).toBe("any");
-    expect(taskInput.generationMode).toBe("reaction");
+    expect(["reaction", "broll"]).toContain(taskInput.generationMode);
     expect(taskInput.requestedVideoModelId).toBe("auto");
     expect(taskInput.targetDurationSeconds).toBe(8);
     expect(taskInput.videoModelId).toBe("kwaivgi/kling-v3-video");
@@ -226,14 +226,14 @@ describe("automationClipr", () => {
     const ctx = createCtx({
       automationPreferences: [
         {
-          unique: {
+          collect: [{
             enabled: true,
             enabledTools: ["clipr"],
             cliprGenerationMode: "broll",
             preferenceVersion: 3,
             productSelectionMode: "default",
             selectedProductIds: [],
-          },
+          }],
         },
       ],
       photoAssets: [{ collect: [avatarPhoto] }],

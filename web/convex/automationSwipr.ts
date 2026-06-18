@@ -5,21 +5,32 @@ import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
+import { defaultAutomationGenerationCount } from "../lib/clipstitchr/constants/defaultAutomationGenerationCount";
+import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
+import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
+import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForProduct";
+import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
+import { getAutomationGenerationCount } from "../lib/clipstitchr/utils/getAutomationGenerationCount";
+import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
+import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
+import { normalizeAutomationSwiprSelectedLibraryPackNames } from "../lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 export const planDaily = mutation({
   args: {
     secret: v.string(),
     ownerId: v.string(),
+    productId: v.optional(v.string()),
     automationDate: v.string(),
     now: v.string(),
   },
-  handler: async (ctx, { secret, ownerId, automationDate, now }) => {
+  handler: async (ctx, { secret, ownerId, productId, automationDate, now }) => {
     assertAutomationWorkerSecret(secret);
 
-    const runId = `automation:swipr:${ownerId}:${automationDate}`;
+    const productScopeKey = getAutomationProductScopeKey(productId);
+    const runId = `automation:swipr:${ownerId}:${productScopeKey}:${automationDate}`;
 
     if (!isWithinAutomationGlobalWindow(now)) {
       return { runId, status: "skipped", taskIds: [] };
@@ -29,10 +40,11 @@ export const planDaily = mutation({
       return { runId, status: "skipped", taskIds: [] };
     }
 
-    const preferences = await ctx.db
-      .query("automationPreferences")
-      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-      .unique();
+    const preferences = await getAutomationPreferenceForProduct(
+      ctx,
+      ownerId,
+      productId,
+    );
 
     if (!preferences?.enabled || !preferences.enabledTools.includes("swipr")) {
       return { runId, status: "skipped", taskIds: [] };
@@ -41,11 +53,13 @@ export const planDaily = mutation({
     const run = await createAutomationRun(ctx, {
       ownerId,
       id: runId,
+      productId,
       automationDate,
       tool: "swipr",
-      idempotencyKey: `${ownerId}:${automationDate}:swipr`,
+      idempotencyKey: `${ownerId}:${productScopeKey}:${automationDate}:swipr`,
       inputSnapshotJson: JSON.stringify({
         preferenceVersion: preferences?.preferenceVersion ?? 0,
+        productId,
       }),
       createdAt: now,
     });
@@ -59,10 +73,13 @@ export const planDaily = mutation({
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order("desc")
       .collect();
-    const selectedProductIds = new Set(preferences.selectedProductIds);
+    const selectedProductIds = new Set(
+      productId ? [productId] : preferences.selectedProductIds,
+    );
     const defaultProduct = await getDefaultProductForOwner(ctx, ownerId);
-    const product =
-      preferences.productSelectionMode === "selected"
+    const product = productId
+      ? products.find((candidate) => candidate.id === productId)
+      : preferences.productSelectionMode === "selected"
         ? products.find((candidate) => selectedProductIds.has(candidate.id))
         : defaultProduct ?? products[0];
     if (!product) {
@@ -75,37 +92,76 @@ export const planDaily = mutation({
       return { runId, status: "skipped", taskIds: [] };
     }
 
+    const swiprGenerationCount = getAutomationGenerationCount(
+      preferences.swiprGenerationCount ?? defaultAutomationGenerationCount,
+    );
+    const swiprSelectedLibraryPackNames =
+      normalizeAutomationSwiprSelectedLibraryPackNames(
+        preferences.swiprSelectedLibraryPackNames ?? [],
+      );
+    const swiprTextStyleChoice = getAutomationStitchrTextStyleChoice(
+      preferences.swiprTextStyleChoice ?? defaultAutomationStitchrTextStyleChoice,
+    );
+    const swiprTextColorChoice = getAutomationStitchrColorChoice(
+      preferences.swiprTextColorChoice ?? defaultAutomationStitchrColorChoice,
+    );
+    const swiprTextBackgroundColorChoice = getAutomationStitchrColorChoice(
+      preferences.swiprTextBackgroundColorChoice ??
+        defaultAutomationStitchrColorChoice,
+    );
+    const swiprTextStrokeColorChoice = getAutomationStitchrColorChoice(
+      preferences.swiprTextStrokeColorChoice ?? defaultAutomationStitchrColorChoice,
+    );
+
     await consumeAutomationBudget(ctx, {
       ownerId,
+      productId,
       tool: "swipr",
-      providerCostUnits: 5,
+      count: swiprGenerationCount,
+      providerCostUnits: swiprGenerationCount * 5,
     });
 
-    const task = await createAutomationTask(ctx, {
-      ownerId,
-      id: `${runId}:1`,
-      runId,
-      tool: "swipr",
-      taskType: "swipr-draft",
-      stage: "awaiting-text-provider",
-      idempotencyKey: `${ownerId}:${automationDate}:swipr:1`,
-      inputSnapshotJson: JSON.stringify({
-        automationDate,
-        productId: product.id,
-        productName: product.name,
-        productDetails: product.productDetails,
-        audienceDetails: product.audienceDetails,
-        inferredProblem: product.inferredProblem,
-        inferredPainPoints: product.inferredPainPoints,
-      }),
-      createdAt: now,
-    });
+    const taskIds: string[] = [];
+
+    for (let index = 0; index < swiprGenerationCount; index += 1) {
+      const task = await createAutomationTask(ctx, {
+        ownerId,
+        productId,
+        id: `${runId}:${index + 1}`,
+        runId,
+        tool: "swipr",
+        taskType: "swipr-draft",
+        stage: "awaiting-text-provider",
+        idempotencyKey: `${ownerId}:${productScopeKey}:${automationDate}:swipr:${
+          index + 1
+        }`,
+        inputSnapshotJson: JSON.stringify({
+          automationDate,
+          draftIndex: index + 1,
+          productId: product.id,
+          productName: product.name,
+          productDetails: product.productDetails,
+          audienceDetails: product.audienceDetails,
+          inferredProblem: product.inferredProblem,
+          inferredPainPoints: product.inferredPainPoints,
+          swiprSelectedLibraryPackNames,
+          swiprTextStyleChoice,
+          swiprTextColorChoice,
+          swiprTextBackgroundColorChoice,
+          swiprTextStrokeColorChoice,
+        }),
+        createdAt: now,
+      });
+
+      taskIds.push(task.id);
+    }
+
     await ctx.db.patch(run._id, {
       status: "running",
       startedAt: now,
       updatedAt: now,
     });
 
-    return { runId, status: "running", taskIds: [task.id] };
+    return { runId, status: "running", taskIds };
   },
 });

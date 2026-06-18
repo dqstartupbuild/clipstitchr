@@ -54,6 +54,26 @@ vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
   },
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
+  useDashboardProduct: () => ({
+    activeProduct: {
+      audienceDetails: "Creators",
+      createdAt: "2026-05-20T00:00:00.000Z",
+      id: "product_1",
+      inferredPainPoints: [],
+      name: "Launch Kit",
+      productDetails: "Landing page builder",
+      updatedAt: "2026-05-20T00:00:00.000Z",
+    },
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({
+  useSwiprLibrary: () => ({
+    backgrounds: [],
+  }),
+}));
+
 vi.mock("@/app/_components/dashboard/DashboardShell", () => ({
   DashboardShell: ({ children }: { children: React.ReactNode }) => (
     <main>{children}</main>
@@ -102,9 +122,17 @@ function createAutomationState(
       enabled: false,
       enabledTools: ["stitchr", "swapr", "clipr", "avatar-photo", "swipr"],
       cliprGenerationMode: "any",
+      stitchrGenerationCount: 10,
       stitchrTextStyleChoice: "any",
       stitchrTextColorChoice: "any",
       stitchrTextBackgroundColorChoice: "any",
+      stitchrTextStrokeColorChoice: "any",
+      swiprGenerationCount: 10,
+      swiprSelectedLibraryPackNames: [],
+      swiprTextStyleChoice: "any",
+      swiprTextColorChoice: "any",
+      swiprTextBackgroundColorChoice: "any",
+      swiprTextStrokeColorChoice: "any",
       productSelectionMode: "all",
       selectedProductIds: [],
       avatarSelectionMode: "all",
@@ -124,30 +152,23 @@ describe("SettingsPageClient", () => {
     mocks.productsState = createProductsState();
   });
 
-  it("renders the settings workspace with product state", () => {
+  it("renders the settings workspace with active product automation", () => {
     const markup = renderToStaticMarkup(<SettingsPageClient />);
 
     expect(markup).toContain("Settings");
-    expect(markup).toContain("Save product context");
     expect(markup).toContain("Color mode");
     expect(markup).toContain("Daily drafts");
     expect(markup).toContain("Launch Kit");
-    expect(markup).toContain("Default product");
     expect(markup).toContain("Contact support");
   });
 
-  it("shows product errors and disables list actions while deleting", () => {
-    mocks.productsState = createProductsState({
-      deletingProductId: "product_1",
-      error: "Unable to delete this product.",
-      isSaving: true,
-      savingProductId: "product_1",
+  it("shows automation errors", () => {
+    mocks.automationState = createAutomationState({
+      error: "Unable to save automation settings.",
     });
 
     const markup = renderToStaticMarkup(<SettingsPageClient />);
 
-    expect(markup).toContain("Unable to delete this product.");
-    expect(markup).toContain("Deleting");
-    expect(markup).toContain("disabled");
+    expect(markup).toContain("Unable to save automation settings.");
   });
 });

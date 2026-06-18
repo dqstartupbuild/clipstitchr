@@ -12,6 +12,8 @@ Stitchr, Clipr, Swipr, and Swapr.
   away.
 - Settings stays account-focused for appearance, support, subscription, and
   automation. Product creation no longer lives on the Settings page.
+- Automation settings are saved for the active product, so each product can run
+  its own daily tools and draft counts.
 - Uploaded UGC, demo clips, generated Clipr clips, generated Swapr clips,
   stitches, avatars, avatar photos, and saved Swipes are scoped to the active
   product.
@@ -43,6 +45,8 @@ Stitchr, Clipr, Swipr, and Swapr.
   `web/lib/clipstitchr/hooks/usePhotoLibraryState.ts`, and
   `web/lib/clipstitchr/hooks/useSwiprLibraryState.ts` receive the active
   product from the dashboard provider and use it in Convex queries.
+- `web/lib/clipstitchr/hooks/useAutomationPreferences.ts` receives the active
+  product from Settings and loads product-scoped automation preferences.
 
 ## File Tree
 
@@ -66,5 +70,6 @@ update limiter before patching old records.
 ## Source References
 
 - `docs/backend/rate-limits.md`
+- `docs/features/product-automation-settings.md`
 - `docs/features/settings-product-website-import.md`
 - `project-scope.md`

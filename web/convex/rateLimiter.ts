@@ -473,9 +473,9 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
   },
   automationSwiprDaily: {
     kind: "token bucket",
-    rate: 1,
+    rate: 10,
     period: DAY,
-    capacity: 1,
+    capacity: 10,
   },
   automationSwiprGlobalDaily: {
     kind: "token bucket",

@@ -56,6 +56,12 @@ Saved Swipes remain fully editable. Draft generation stores the same slide
 records as manual Swipr saves, so users can reopen a generated draft and change
 each slide's photo and text.
 
+Product automation settings can also reuse these packs. In Settings, the user
+can pick which saved Pexels packs Swipr automation should use for the active
+product. If the selected packs have images, the provider worker uses those
+saved background IDs instead of downloading new Pexels photos for that
+automatic Swipe.
+
 ## Backend Routes
 
 `POST /api/swipr/pexels/import`
@@ -138,6 +144,7 @@ is the source of truth.
 - `web/app/_components/swipr/SwiprLibraryPackDeleteAction.tsx`
 - `web/app/_components/swipr/SwiprLibraryPhotoCard.tsx`
 - `web/app/_components/swipr/SwiprDraftGenerationCountControl.tsx`
+- `web/app/_components/settings/AutomationSwiprPackPicker.tsx`
 - `web/app/dashboard/swipr/SwiprPageClient.tsx`
 - `web/lib/clipstitchr/utils/getSwiprLibraryPacks.ts`
 - `web/lib/clipstitchr/utils/getImportedPexelsPhotoIds.ts`

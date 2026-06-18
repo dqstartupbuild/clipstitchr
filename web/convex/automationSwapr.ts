@@ -5,6 +5,8 @@ import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
+import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForProduct";
+import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
@@ -21,13 +23,15 @@ export const planDaily = mutation({
   args: {
     secret: v.string(),
     ownerId: v.string(),
+    productId: v.optional(v.string()),
     automationDate: v.string(),
     now: v.string(),
   },
-  handler: async (ctx, { secret, ownerId, automationDate, now }) => {
+  handler: async (ctx, { secret, ownerId, productId, automationDate, now }) => {
     assertAutomationWorkerSecret(secret);
 
-    const runId = `automation:swapr:${ownerId}:${automationDate}`;
+    const productScopeKey = getAutomationProductScopeKey(productId);
+    const runId = `automation:swapr:${ownerId}:${productScopeKey}:${automationDate}`;
 
     if (!isWithinAutomationGlobalWindow(now)) {
       return { runId, status: "skipped", taskIds: [] };
@@ -37,10 +41,11 @@ export const planDaily = mutation({
       return { runId, status: "skipped", taskIds: [] };
     }
 
-    const preferences = await ctx.db
-      .query("automationPreferences")
-      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-      .unique();
+    const preferences = await getAutomationPreferenceForProduct(
+      ctx,
+      ownerId,
+      productId,
+    );
 
     if (!preferences?.enabled || !preferences.enabledTools.includes("swapr")) {
       return { runId, status: "skipped", taskIds: [] };
@@ -49,11 +54,13 @@ export const planDaily = mutation({
     const run = await createAutomationRun(ctx, {
       ownerId,
       id: runId,
+      productId,
       automationDate,
       tool: "swapr",
-      idempotencyKey: `${ownerId}:${automationDate}:swapr`,
+      idempotencyKey: `${ownerId}:${productScopeKey}:${automationDate}:swapr`,
       inputSnapshotJson: JSON.stringify({
         preferenceVersion: preferences?.preferenceVersion ?? 0,
+        productId,
       }),
       createdAt: now,
     });
@@ -62,7 +69,7 @@ export const planDaily = mutation({
       return { runId, status: run.status, taskIds: [] };
     }
 
-    const defaultAvatar = await getDefaultAvatarForOwner(ctx, ownerId);
+    const defaultAvatar = await getDefaultAvatarForOwner(ctx, ownerId, productId);
     if (!defaultAvatar) {
       await markAutomationRunSkipped(
         ctx,
@@ -81,6 +88,7 @@ export const planDaily = mutation({
     const sourcePhoto = photos.find(
       (photo) =>
         photo.avatarId === defaultAvatar.id &&
+        (!productId || photo.productId === productId) &&
         photo.photoObject.contentType.startsWith("image/"),
     );
     const clips = await ctx.db
@@ -91,6 +99,7 @@ export const planDaily = mutation({
     const referenceClip = clips.find(
       (clip) =>
         clip.clipType === "ugc" &&
+        (!productId || clip.productId === productId) &&
         clip.videoObject.contentType.startsWith("video/") &&
         clip.videoObject.size <= AUTOMATION_SWAPR_REFERENCE_MAX_SIZE_BYTES &&
         clip.duration >= 3 &&
@@ -109,23 +118,26 @@ export const planDaily = mutation({
 
     await consumeAutomationBudget(ctx, {
       ownerId,
+      productId,
       tool: "swapr",
       providerCostUnits: 10,
     });
 
     const task = await createAutomationTask(ctx, {
       ownerId,
+      productId,
       id: `${runId}:1`,
       runId,
       tool: "swapr",
       taskType: "swapr-video",
       stage: "awaiting-provider",
-      idempotencyKey: `${ownerId}:${automationDate}:swapr:1`,
+      idempotencyKey: `${ownerId}:${productScopeKey}:${automationDate}:swapr:1`,
       inputSnapshotJson: JSON.stringify({
         automationDate,
         characterOrientation: AUTOMATION_SWAPR_CHARACTER_ORIENTATION,
         keepOriginalSound: AUTOMATION_SWAPR_KEEP_ORIGINAL_SOUND,
         mode: AUTOMATION_SWAPR_MODE,
+        productId,
         photoId: sourcePhoto.id,
         photoObject: sourcePhoto.photoObject,
         prompt: AUTOMATION_SWAPR_PROMPT,

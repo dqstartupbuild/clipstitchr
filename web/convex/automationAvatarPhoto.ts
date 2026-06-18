@@ -5,6 +5,8 @@ import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
+import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForProduct";
+import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
 import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
@@ -13,11 +15,13 @@ export const planDaily = mutation({
   args: {
     secret: v.string(),
     ownerId: v.string(),
+    productId: v.optional(v.string()),
     automationDate: v.string(),
     now: v.string(),
   },
-  handler: async (ctx, { secret, ownerId, automationDate, now }) => {
+  handler: async (ctx, { secret, ownerId, productId, automationDate, now }) => {
     assertAutomationWorkerSecret(secret);
+    const productScopeKey = getAutomationProductScopeKey(productId);
 
     if (!isWithinAutomationGlobalWindow(now)) {
       return {
@@ -26,10 +30,11 @@ export const planDaily = mutation({
       };
     }
 
-    const preferences = await ctx.db
-      .query("automationPreferences")
-      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-      .unique();
+    const preferences = await getAutomationPreferenceForProduct(
+      ctx,
+      ownerId,
+      productId,
+    );
 
     if (!getIsAutomationToolEnabled("avatar-photo")) {
       return {
@@ -45,7 +50,7 @@ export const planDaily = mutation({
       };
     }
 
-    const defaultAvatar = await getDefaultAvatarForOwner(ctx, ownerId);
+    const defaultAvatar = await getDefaultAvatarForOwner(ctx, ownerId, productId);
     const eligibleAvatars = defaultAvatar ? [defaultAvatar] : [];
 
     if (eligibleAvatars.length === 0) {
@@ -63,18 +68,23 @@ export const planDaily = mutation({
     const taskIds: string[] = [];
 
     for (const avatar of eligibleAvatars) {
-      const sourcePhoto = photos.find((photo) => photo.avatarId === avatar.id);
-      const runId = `automation:avatar-photo:${ownerId}:${automationDate}:${avatar.id}`;
-      const idempotencyKey = `${ownerId}:${automationDate}:avatar-photo:${avatar.id}`;
+      const sourcePhoto = photos.find(
+        (photo) =>
+          photo.avatarId === avatar.id && (!productId || photo.productId === productId),
+      );
+      const runId = `automation:avatar-photo:${ownerId}:${productScopeKey}:${automationDate}:${avatar.id}`;
+      const idempotencyKey = `${ownerId}:${productScopeKey}:${automationDate}:avatar-photo:${avatar.id}`;
       const run = await createAutomationRun(ctx, {
         ownerId,
         id: runId,
+        productId,
         automationDate,
         tool: "avatar-photo",
         idempotencyKey,
         inputSnapshotJson: JSON.stringify({
           avatarId: avatar.id,
           avatarName: avatar.name,
+          productId,
           sourcePhotoId: sourcePhoto?.id,
         }),
         createdAt: now,
@@ -96,6 +106,7 @@ export const planDaily = mutation({
 
       await consumeAutomationBudget(ctx, {
         ownerId,
+        productId,
         tool: "avatar-photo",
         avatarId: avatar.id,
         providerCostUnits: 1,
@@ -103,7 +114,8 @@ export const planDaily = mutation({
 
       const task = await createAutomationTask(ctx, {
         ownerId,
-        id: `automation:avatar-photo:${ownerId}:${automationDate}:${avatar.id}:1`,
+        productId,
+        id: `automation:avatar-photo:${ownerId}:${productScopeKey}:${automationDate}:${avatar.id}:1`,
         runId,
         tool: "avatar-photo",
         taskType: "avatar-photo",
@@ -114,6 +126,7 @@ export const planDaily = mutation({
           avatarId: avatar.id,
           avatarName: avatar.name,
           avatarDescription: avatar.description,
+          productId,
           wardrobeStyle: avatar.wardrobeStyle,
           sourcePhotoId: sourcePhoto.id,
           sourcePhotoObject: sourcePhoto.photoObject,

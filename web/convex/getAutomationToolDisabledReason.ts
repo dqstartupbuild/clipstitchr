@@ -1,6 +1,7 @@
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import type { AutomationTool } from "../lib/clipstitchr/types/AutomationTool";
 import type { MutationCtx } from "./_generated/server";
+import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForProduct";
 
 const automationToolLabels = {
   "avatar-photo": "Avatar photo",
@@ -14,6 +15,7 @@ export async function getAutomationToolDisabledReason(
   ctx: MutationCtx,
   ownerId: string,
   tool: AutomationTool,
+  productId?: string,
 ) {
   const label = automationToolLabels[tool];
 
@@ -21,10 +23,11 @@ export async function getAutomationToolDisabledReason(
     return `${label} automation is disabled by the code flag.`;
   }
 
-  const preferences = await ctx.db
-    .query("automationPreferences")
-    .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-    .unique();
+  const preferences = await getAutomationPreferenceForProduct(
+    ctx,
+    ownerId,
+    productId,
+  );
 
   if (!preferences?.enabled || !preferences.enabledTools.includes(tool)) {
     return `${label} automation is disabled.`;

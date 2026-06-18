@@ -93,6 +93,32 @@ function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile 
   };
 }
 
+function createAutomationPreferences(
+  overrides: Partial<AutomationPreferencesInput> = {},
+): AutomationPreferencesInput {
+  return {
+    enabled: false,
+    enabledTools: ["stitchr", "swapr", "clipr", "avatar-photo", "swipr"],
+    cliprGenerationMode: "any",
+    stitchrGenerationCount: 10,
+    stitchrTextStyleChoice: "any",
+    stitchrTextColorChoice: "any",
+    stitchrTextBackgroundColorChoice: "any",
+    stitchrTextStrokeColorChoice: "any",
+    swiprGenerationCount: 10,
+    swiprSelectedLibraryPackNames: [],
+    swiprTextStyleChoice: "any",
+    swiprTextColorChoice: "any",
+    swiprTextBackgroundColorChoice: "any",
+    swiprTextStrokeColorChoice: "any",
+    productSelectionMode: "all",
+    selectedProductIds: [],
+    avatarSelectionMode: "all",
+    selectedAvatarIds: [],
+    ...overrides,
+  };
+}
+
 describe("settings components", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -123,18 +149,8 @@ describe("settings components", () => {
           error={null}
           isLoading={false}
           isSaving={false}
-          preferences={{
-            enabled: false,
-            enabledTools: ["stitchr", "swapr", "clipr", "avatar-photo", "swipr"],
-            cliprGenerationMode: "any",
-            stitchrTextStyleChoice: "any",
-            stitchrTextColorChoice: "any",
-            stitchrTextBackgroundColorChoice: "any",
-            productSelectionMode: "all",
-            selectedProductIds: [],
-            avatarSelectionMode: "all",
-            selectedAvatarIds: [],
-          }}
+          preferences={createAutomationPreferences()}
+          swiprPacks={[]}
           onSave={async () => undefined}
         />
         <SettingsSupportPanel />
@@ -168,8 +184,11 @@ describe("settings components", () => {
 
     expect(emptyMarkup).toContain("Color mode");
     expect(emptyMarkup).toContain("Daily drafts");
+    expect(emptyMarkup).toContain("Stitchr drafts");
+    expect(emptyMarkup).toContain("Swipr drafts");
     expect(emptyMarkup).toContain("Text color");
     expect(emptyMarkup).toContain("Background color");
+    expect(emptyMarkup).toContain("Outline color");
     expect(emptyMarkup).toContain("Swipr");
     expect(emptyMarkup).toContain("Contact support");
     expect(emptyMarkup).toContain("Coming soon");
@@ -191,23 +210,15 @@ describe("settings components", () => {
 
   it("drafts automation setting changes without saving", () => {
     const onSave = vi.fn(async () => undefined);
-    const preferences: AutomationPreferencesInput = {
-      enabled: false,
+    const preferences = createAutomationPreferences({
       enabledTools: ["stitchr"],
-      cliprGenerationMode: "any",
-      stitchrTextStyleChoice: "any",
-      stitchrTextColorChoice: "any",
-      stitchrTextBackgroundColorChoice: "any",
-      productSelectionMode: "all",
-      selectedProductIds: [],
-      avatarSelectionMode: "all",
-      selectedAvatarIds: [],
-    };
+    });
     const tree = SettingsAutomationPanel({
       error: null,
       isLoading: false,
       isSaving: false,
       preferences,
+      swiprPacks: [],
       onSave,
     });
     const [enableButton] = findElements(
@@ -265,18 +276,9 @@ describe("settings components", () => {
 
   it("saves automation drafts from the Save button", async () => {
     const onSave = vi.fn(async () => undefined);
-    const preferences: AutomationPreferencesInput = {
-      enabled: false,
+    const preferences = createAutomationPreferences({
       enabledTools: ["stitchr"],
-      cliprGenerationMode: "any",
-      stitchrTextStyleChoice: "any",
-      stitchrTextColorChoice: "any",
-      stitchrTextBackgroundColorChoice: "any",
-      productSelectionMode: "all",
-      selectedProductIds: [],
-      avatarSelectionMode: "all",
-      selectedAvatarIds: [],
-    };
+    });
 
     mocks.stateQueue = [
       {
@@ -290,6 +292,7 @@ describe("settings components", () => {
       isLoading: false,
       isSaving: false,
       preferences,
+      swiprPacks: [],
       onSave,
     });
     const [saveButton] = findElements(

@@ -123,6 +123,22 @@ Minimum fields:
 `inputSnapshot` matters. A daily run must not change meaning if the user edits a
 product or avatar while the run is in flight.
 
+## Product-Scoped Daily Automation
+
+Daily automation now plans from enabled product preferences. Each preference row
+can include `productId`, and planner idempotency keys include that product
+scope. This lets one account run different daily tools for different products,
+for example 10 Swipr drafts for one product and no automation for another.
+
+Tool-generation buckets are keyed by owner and product. Shared protections such
+as global provider cost and automatic asset-save limits still apply across the
+account.
+
+Product-scoped runs snapshot the product, product-specific default avatar, text
+style choices, draft counts, and selected Swipr packs before the provider
+worker starts. Legacy owner-level preferences still work as a fallback until
+the user saves settings for a product.
+
 ## Executor Choices
 
 Use different executors for different work:

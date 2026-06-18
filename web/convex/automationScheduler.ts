@@ -10,6 +10,7 @@ type PlannerCandidatesResult = {
   preferences: Array<{
     enabledTools: AutomationTool[];
     ownerId: string;
+    productId?: string;
   }>;
 };
 
@@ -18,13 +19,14 @@ type CorePlannerResult = {
   heldTools: string[];
   ownerCount: number;
   plannedTools: string[];
-  results: Array<{
-    avatarPhoto?: unknown;
-    clipr?: unknown;
-    ownerId: string;
-    stitchr?: unknown;
-    swapr?: unknown;
-    swipr?: unknown;
+    results: Array<{
+      avatarPhoto?: unknown;
+      clipr?: unknown;
+      ownerId: string;
+      productId?: string;
+      stitchr?: unknown;
+      swapr?: unknown;
+      swipr?: unknown;
   }>;
 };
 
@@ -90,17 +92,11 @@ export const planCoreDaily = internalAction({
     const automationDate = args.automationDate ?? getAutomationDate(now);
     const secret = getRequiredEnv("AUTOMATION_WORKER_SECRET");
     const candidates = args.ownerId
-      ? ({
-          preferences: [
-            (await ctx.runQuery(
-              api.automationPlannerCandidates.getEnabledToolsForOwner,
-              {
-                secret,
-                ownerId: args.ownerId,
-              },
-            )) as PlannerCandidatesResult["preferences"][number],
-          ],
-        } satisfies PlannerCandidatesResult)
+      ? ((await ctx.runQuery(api.automationPlannerCandidates.listEnabled, {
+          secret,
+          ownerId: args.ownerId,
+          limit: DEFAULT_OWNER_LIMIT,
+        })) as PlannerCandidatesResult)
       : ((await ctx.runQuery(api.automationPlannerCandidates.listEnabled, {
             secret,
             limit: getPositiveInteger(
@@ -117,6 +113,7 @@ export const planCoreDaily = internalAction({
 
     for (const preference of ownerPreferences) {
       const ownerId = preference.ownerId;
+      const productId = preference.productId;
       const entries = await Promise.all(
         preference.enabledTools.map(async (tool) => {
           if (tool === "stitchr") {
@@ -125,6 +122,7 @@ export const planCoreDaily = internalAction({
               await ctx.runMutation(api.automationStitchr.planDaily, {
                 secret,
                 ownerId,
+                productId,
                 automationDate,
                 now,
               }),
@@ -137,6 +135,7 @@ export const planCoreDaily = internalAction({
               await ctx.runMutation(api.automationSwapr.planDaily, {
                 secret,
                 ownerId,
+                productId,
                 automationDate,
                 now,
               }),
@@ -149,6 +148,7 @@ export const planCoreDaily = internalAction({
               await ctx.runMutation(api.automationClipr.planDaily, {
                 secret,
                 ownerId,
+                productId,
                 automationDate,
                 now,
               }),
@@ -161,6 +161,7 @@ export const planCoreDaily = internalAction({
               await ctx.runMutation(api.automationAvatarPhoto.planDaily, {
                 secret,
                 ownerId,
+                productId,
                 automationDate,
                 now,
               }),
@@ -172,13 +173,17 @@ export const planCoreDaily = internalAction({
             await ctx.runMutation(api.automationSwipr.planDaily, {
               secret,
               ownerId,
+              productId,
               automationDate,
               now,
             }),
           ] as const;
         }),
       );
-      const result: CorePlannerResult["results"][number] = { ownerId };
+      const result: CorePlannerResult["results"][number] = {
+        ownerId,
+        productId,
+      };
 
       for (const [tool, output] of entries) {
         result[getResultKey(tool)] = output;

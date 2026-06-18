@@ -18,6 +18,7 @@ export async function createAutomationTask(
     idempotencyKey,
     inputSnapshotJson,
     ownerId,
+    productId,
     runId,
     stage,
     taskType,
@@ -28,6 +29,7 @@ export async function createAutomationTask(
     idempotencyKey: string;
     inputSnapshotJson: string;
     ownerId: string;
+    productId?: string;
     runId: string;
     stage: string;
     taskType: AutomationTaskType;
@@ -38,6 +40,7 @@ export async function createAutomationTask(
     ctx,
     ownerId,
     tool,
+    productId,
   );
 
   if (disabledReason) {

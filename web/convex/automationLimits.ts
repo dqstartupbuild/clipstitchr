@@ -5,7 +5,7 @@ export const automationDailyLimits = {
   swapr: 1,
   clipr: 1,
   "avatar-photo": 1,
-  swipr: 1,
+  swipr: 10,
 } as const;
 
 export const automationMaxActiveTasksPerUser = 10;

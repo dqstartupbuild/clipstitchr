@@ -55,18 +55,35 @@ export function DashboardProductProvider({
   );
 
   useEffect(() => {
+    let isActive = true;
+
     if (
       !setupState?.primaryProductId ||
       !setupState.hasLegacyContent ||
       isBackfillingLegacyContent
     ) {
-      return;
+      return () => {
+        isActive = false;
+      };
     }
 
-    setIsBackfillingLegacyContent(true);
-    void assignLegacyContentToPrimary({
-      updatedAt: new Date().toISOString(),
-    }).finally(() => setIsBackfillingLegacyContent(false));
+    void (async () => {
+      setIsBackfillingLegacyContent(true);
+
+      try {
+        await assignLegacyContentToPrimary({
+          updatedAt: new Date().toISOString(),
+        });
+      } finally {
+        if (isActive) {
+          setIsBackfillingLegacyContent(false);
+        }
+      }
+    })();
+
+    return () => {
+      isActive = false;
+    };
   }, [assignLegacyContentToPrimary, isBackfillingLegacyContent, setupState]);
 
   const value = useMemo(

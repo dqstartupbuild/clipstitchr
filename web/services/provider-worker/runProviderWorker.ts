@@ -35,6 +35,7 @@ import { getCliprLipSyncModelId } from "@/lib/clipstitchr/server/getCliprLipSync
 import { getCliprResolvedGenerationMode } from "@/lib/clipstitchr/utils/getCliprResolvedGenerationMode";
 import { getCliprTtsModelId } from "@/lib/clipstitchr/server/getCliprTtsModelId";
 import { getCliprVideoModelId } from "@/lib/clipstitchr/utils/getCliprVideoModelId";
+import { getAutomationStitchrColorChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getRemoteImageFile } from "@/lib/clipstitchr/server/getRemoteImageFile";
 import { getReplicateOutputUrls } from "@/lib/clipstitchr/server/getReplicateOutputUrls";
 import { getReplicatePredictionModelReference } from "@/lib/clipstitchr/server/getReplicatePredictionModelReference";
@@ -83,6 +84,11 @@ import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightin
 import type { AvatarPhotoGenerationCount } from "@/lib/clipstitchr/types/AvatarPhotoGenerationCount";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
 import type { GenerationSpeedTier } from "@/lib/clipstitchr/types/GenerationSpeedTier";
+import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
+import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
+import { TEXT_OVERLAY_STYLES } from "@/lib/clipstitchr/constants/textOverlayStyles";
+import { resolveAutomationStitchrColor } from "@/lib/clipstitchr/utils/resolveAutomationStitchrColor";
+import { resolveAutomationStitchrTextStyleId } from "@/lib/clipstitchr/utils/resolveAutomationStitchrTextStyleId";
 
 const api = anyApi;
 const packageRoot = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
@@ -239,6 +245,7 @@ type StitchrAutomationTaskInput = {
   product: ProductProfile;
   stitchrTextBackgroundColor?: string;
   stitchrTextColor?: string;
+  stitchrTextStrokeColor?: string;
   stitchrTextStyleId: TextOverlayStyleId;
   ugcClipId: string;
   ugcClipName: string;
@@ -272,11 +279,21 @@ type AvatarPhotoAutomationTaskInput = {
 type SwiprAutomationTaskInput = {
   audienceDetails: string;
   automationDate: string;
+  draftIndex: number;
   inferredPainPoints: string[];
   inferredProblem?: string;
   productDetails: string;
   productId: string;
   productName: string;
+  swiprSelectedLibraryPackNames: string[];
+  swiprTextBackgroundColorChoice: AutomationStitchrColorChoice;
+  swiprTextColorChoice: AutomationStitchrColorChoice;
+  swiprTextStrokeColorChoice: AutomationStitchrColorChoice;
+  swiprTextStyleChoice: AutomationStitchrTextStyleChoice;
+};
+
+type SwiprProviderBackground = {
+  id: string;
 };
 
 function readMaxJobs(args: string[]) {
@@ -686,6 +703,7 @@ function parseStitchrAutomationTaskInput(
       input.stitchrTextBackgroundColor,
     ),
     stitchrTextColor: getOptionalString(input.stitchrTextColor),
+    stitchrTextStrokeColor: getOptionalString(input.stitchrTextStrokeColor),
     stitchrTextStyleId: getStitchrTextStyleId(input.stitchrTextStyleId),
     ugcClipId: getString(input.ugcClipId, "Stitchr UGC ID"),
     ugcClipName: getString(input.ugcClipName, "Stitchr UGC name"),
@@ -750,10 +768,15 @@ function parseSwiprAutomationTaskInput(
   inputSnapshotJson: string,
 ): SwiprAutomationTaskInput {
   const input = getObject(JSON.parse(inputSnapshotJson) as unknown, "Swipr input");
+  const draftIndex =
+    typeof input.draftIndex === "number" && Number.isFinite(input.draftIndex)
+      ? Math.max(1, Math.floor(input.draftIndex))
+      : 1;
 
   return {
     audienceDetails: getString(input.audienceDetails, "Swipr audience details"),
     automationDate: getString(input.automationDate, "Swipr automation date"),
+    draftIndex,
     inferredPainPoints: getStringArray(input.inferredPainPoints),
     inferredProblem: getOptionalString(input.inferredProblem),
     productDetails: stripWebsiteSourcedProductDetails(
@@ -761,6 +784,21 @@ function parseSwiprAutomationTaskInput(
     ),
     productId: getString(input.productId, "Swipr product ID"),
     productName: getString(input.productName, "Swipr product name"),
+    swiprSelectedLibraryPackNames: getStringArray(
+      input.swiprSelectedLibraryPackNames,
+    ),
+    swiprTextBackgroundColorChoice: getAutomationStitchrColorChoice(
+      input.swiprTextBackgroundColorChoice,
+    ),
+    swiprTextColorChoice: getAutomationStitchrColorChoice(
+      input.swiprTextColorChoice,
+    ),
+    swiprTextStrokeColorChoice: getAutomationStitchrColorChoice(
+      input.swiprTextStrokeColorChoice,
+    ),
+    swiprTextStyleChoice: getAutomationStitchrTextStyleChoice(
+      input.swiprTextStyleChoice,
+    ),
   };
 }
 
@@ -1018,6 +1056,7 @@ function createStitchrTextOverlay(
   styleId: TextOverlayStyleId,
   color: string | undefined,
   backgroundColor: string | undefined,
+  strokeColor: string | undefined,
 ): TextOverlay {
   return {
     text,
@@ -1030,6 +1069,7 @@ function createStitchrTextOverlay(
     styleId,
     ...(color ? { color } : {}),
     ...(backgroundColor ? { backgroundColor } : {}),
+    ...(strokeColor ? { strokeColor } : {}),
   };
 }
 
@@ -1600,6 +1640,7 @@ async function processStitchr({
     input.stitchrTextStyleId,
     input.stitchrTextColor,
     input.stitchrTextBackgroundColor,
+    input.stitchrTextStrokeColor,
   );
   const mediaJob = (await client.mutation(
     api.mediaJobs.createStitchrDraftFinalizationFromProvider,
@@ -1885,14 +1926,16 @@ async function processSwipr({
     createdAt: now,
     updatedAt: now,
   };
-  const pexelsPhotos = await searchPexelsPhotoResults({
-    perPage: SWIPR_MAX_SLIDE_COUNT,
-    query: createSwiprAutomationPexelsQuery(product),
-  });
-
-  if (!pexelsPhotos.length) {
-    throw new Error("Pexels did not return photos for Swipr automation.");
-  }
+  const selectedPackBackgrounds = input.swiprSelectedLibraryPackNames.length
+    ? ((await client.query(
+        api.swiprBackgrounds.listForProviderByLibraryPackNames,
+        {
+          secret: config.providerWorkerSecret,
+          ownerId: task.ownerId,
+          libraryPackNames: input.swiprSelectedLibraryPackNames,
+        },
+      )) as SwiprProviderBackground[])
+    : [];
 
   const replicate = createReplicateClient();
   const textGeneration = await createCliprTextGeneration({
@@ -1903,64 +1946,108 @@ async function processSwipr({
     slideCount: SWIPR_MAX_SLIDE_COUNT,
   });
 
-  const backgroundIds: string[] = [];
+  let backgroundIds = selectedPackBackgrounds.map((background) => background.id);
 
-  for (let index = 0; index < SWIPR_MAX_SLIDE_COUNT; index += 1) {
-    const photo = pexelsPhotos[index % pexelsPhotos.length];
-    const backgroundId = createId();
-    const { bytes, contentType } = await downloadPexelsPhotoBytes(photo);
-    const dimensions = readImageDimensionsFromBytes(bytes, contentType);
-    const imageObject = await putR2Object({
-      body: bytes,
-      contentType,
-      key: createR2ObjectKey({
-        userId: task.ownerId,
-        kind: "swipr-background",
-        recordId: backgroundId,
+  if (!backgroundIds.length) {
+    const pexelsPhotos = await searchPexelsPhotoResults({
+      perPage: SWIPR_MAX_SLIDE_COUNT,
+      query: createSwiprAutomationPexelsQuery(product),
+    });
+
+    if (!pexelsPhotos.length) {
+      throw new Error("Pexels did not return photos for Swipr automation.");
+    }
+
+    const pexelsBackgroundIds: string[] = [];
+
+    for (let index = 0; index < SWIPR_MAX_SLIDE_COUNT; index += 1) {
+      const photo = pexelsPhotos[index % pexelsPhotos.length];
+      const backgroundId = createId();
+      const { bytes, contentType } = await downloadPexelsPhotoBytes(photo);
+      const dimensions = readImageDimensionsFromBytes(bytes, contentType);
+      const imageObject = await putR2Object({
+        body: bytes,
         contentType,
-      }),
-    });
+        key: createR2ObjectKey({
+          userId: task.ownerId,
+          kind: "swipr-background",
+          recordId: backgroundId,
+          contentType,
+        }),
+      });
 
-    await client.mutation(api.swiprBackgrounds.saveFromProvider, {
-      secret: config.providerWorkerSecret,
-      ownerId: task.ownerId,
-      id: backgroundId,
-      name: `Pexels - ${photo.photographer}`,
-      tags: normalizeAssetTagsWithRequiredTag(
-        [photo.alt, product.name, product.audienceDetails].filter(
-          (tag): tag is string => Boolean(tag),
+      await client.mutation(api.swiprBackgrounds.saveFromProvider, {
+        secret: config.providerWorkerSecret,
+        ownerId: task.ownerId,
+        id: backgroundId,
+        name: `Pexels - ${photo.photographer}`,
+        tags: normalizeAssetTagsWithRequiredTag(
+          [photo.alt, product.name, product.audienceDetails].filter(
+            (tag): tag is string => Boolean(tag),
+          ),
+          "pexels",
         ),
-        "pexels",
-      ),
-      description: photo.alt || `Pexels photo by ${photo.photographer}`,
-      details: [
-        `Pexels photo: ${photo.pexelsUrl}`,
-        `Photographer: ${photo.photographer}`,
-        photo.photographerUrl
-          ? `Photographer URL: ${photo.photographerUrl}`
-          : undefined,
-      ]
-        .filter((detail): detail is string => Boolean(detail))
-        .join("\n"),
-      source: "pexels",
-      pexelsPhotoId: photo.id,
-      imageObject,
-      mimeType: imageObject.contentType,
-      size: imageObject.size,
-      width: dimensions.width,
-      height: dimensions.height,
-      createdAt: now,
-    });
-    backgroundIds.push(backgroundId);
+        description: photo.alt || `Pexels photo by ${photo.photographer}`,
+        details: [
+          `Pexels photo: ${photo.pexelsUrl}`,
+          `Photographer: ${photo.photographer}`,
+          photo.photographerUrl
+            ? `Photographer URL: ${photo.photographerUrl}`
+            : undefined,
+        ]
+          .filter((detail): detail is string => Boolean(detail))
+          .join("\n"),
+        source: "pexels",
+        pexelsPhotoId: photo.id,
+        imageObject,
+        mimeType: imageObject.contentType,
+        size: imageObject.size,
+        width: dimensions.width,
+        height: dimensions.height,
+        createdAt: now,
+      });
+      pexelsBackgroundIds.push(backgroundId);
+    }
+
+    backgroundIds = pexelsBackgroundIds;
   }
 
   const swipeId = createId();
+  const swiprTextStyleId = resolveAutomationStitchrTextStyleId(
+    input.swiprTextStyleChoice,
+    `${task.id}:swipr:style`,
+  );
+  const swiprTextStyle = TEXT_OVERLAY_STYLES.find(
+    (style) => style.id === swiprTextStyleId,
+  );
+  const swiprTextColor = resolveAutomationStitchrColor(
+    input.swiprTextColorChoice,
+    `${task.id}:swipr:text`,
+  );
+  const swiprTextBackgroundColor = swiprTextStyle?.backgroundColor
+    ? resolveAutomationStitchrColor(
+        input.swiprTextBackgroundColorChoice,
+        `${task.id}:swipr:background`,
+      )
+    : undefined;
+  const swiprTextStrokeColor = swiprTextStyle?.strokeColor
+    ? resolveAutomationStitchrColor(
+        input.swiprTextStrokeColorChoice,
+        `${task.id}:swipr:stroke`,
+      )
+    : undefined;
   const slides = textGeneration.slides.map((text, index) => ({
     id: createId(),
     backgroundId: backgroundIds[index] ?? backgroundIds[0],
     textOverlay: {
       ...createDefaultSwiprTextOverlay(index + 1),
       text,
+      styleId: swiprTextStyleId,
+      color: swiprTextColor,
+      ...(swiprTextBackgroundColor
+        ? { backgroundColor: swiprTextBackgroundColor }
+        : {}),
+      ...(swiprTextStrokeColor ? { strokeColor: swiprTextStrokeColor } : {}),
     },
   }));
 
@@ -1976,7 +2063,7 @@ async function processSwipr({
       sourceSummary: input.productName,
     },
     id: swipeId,
-    name: `${input.productName} - Automation Swipe`,
+    name: `${input.productName} - Automation Swipe ${input.draftIndex}`,
     productSourceType: "saved-product",
     productSourceId: input.productId,
     productContext: `${input.productDetails}\n\nAudience: ${input.audienceDetails}`,

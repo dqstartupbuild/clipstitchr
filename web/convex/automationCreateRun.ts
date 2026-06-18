@@ -12,6 +12,7 @@ export async function createAutomationRun(
     idempotencyKey,
     inputSnapshotJson,
     ownerId,
+    productId,
     tool,
   }: {
     automationDate: string;
@@ -20,6 +21,7 @@ export async function createAutomationRun(
     idempotencyKey: string;
     inputSnapshotJson: string;
     ownerId: string;
+    productId?: string;
     tool: AutomationTool;
   },
 ) {
@@ -36,6 +38,7 @@ export async function createAutomationRun(
 
   const insertedId = await ctx.db.insert("automationRuns", {
     ownerId,
+    productId,
     id,
     automationDate,
     tool,

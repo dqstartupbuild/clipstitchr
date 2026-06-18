@@ -7,6 +7,7 @@ import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swiprBackgroundSourceValidator } from "./validators/swiprBackgroundSource";
+import { normalizeAutomationSwiprSelectedLibraryPackNames } from "../lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
 import { normalizeSwiprLibraryQueryKey } from "../lib/clipstitchr/utils/normalizeSwiprLibraryQueryKey";
 import { normalizeSwiprLibraryQueryName } from "../lib/clipstitchr/utils/normalizeSwiprLibraryQueryName";
 
@@ -111,6 +112,43 @@ export const getFromProvider = query({
     }
 
     return background;
+  },
+});
+
+export const listForProviderByLibraryPackNames = query({
+  args: {
+    secret: v.string(),
+    ownerId: v.string(),
+    libraryPackNames: v.array(v.string()),
+  },
+  handler: async (ctx, { secret, ownerId, libraryPackNames }) => {
+    assertProviderWorkerSecret(secret);
+
+    const selectedPackKeys = new Set(
+      normalizeAutomationSwiprSelectedLibraryPackNames(libraryPackNames).map(
+        normalizeSwiprLibraryQueryKey,
+      ),
+    );
+
+    if (selectedPackKeys.size === 0) {
+      return [];
+    }
+
+    const backgrounds = await ctx.db
+      .query("swiprBackgrounds")
+      .withIndex("by_created")
+      .order("desc")
+      .collect();
+
+    return backgrounds.filter(
+      (background) =>
+        background.uploadedByOwnerId === ownerId &&
+        background.source === "pexels" &&
+        background.libraryQuery &&
+        selectedPackKeys.has(
+          normalizeSwiprLibraryQueryKey(background.libraryQuery),
+        ),
+    );
   },
 });
 

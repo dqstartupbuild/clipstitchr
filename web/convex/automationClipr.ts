@@ -6,6 +6,8 @@ import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
 import { defaultAutomationCliprVoiceId } from "./defaultAutomationCliprVoiceId";
+import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForProduct";
+import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
 import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
 import { defaultAutomationCliprGenerationMode } from "../lib/clipstitchr/constants/defaultAutomationCliprGenerationMode";
@@ -24,13 +26,15 @@ export const planDaily = mutation({
   args: {
     secret: v.string(),
     ownerId: v.string(),
+    productId: v.optional(v.string()),
     automationDate: v.string(),
     now: v.string(),
   },
-  handler: async (ctx, { secret, ownerId, automationDate, now }) => {
+  handler: async (ctx, { secret, ownerId, productId, automationDate, now }) => {
     assertAutomationWorkerSecret(secret);
 
-    const runId = `automation:clipr:${ownerId}:${automationDate}`;
+    const productScopeKey = getAutomationProductScopeKey(productId);
+    const runId = `automation:clipr:${ownerId}:${productScopeKey}:${automationDate}`;
 
     if (!isWithinAutomationGlobalWindow(now)) {
       return { runId, status: "skipped", taskIds: [] };
@@ -40,10 +44,11 @@ export const planDaily = mutation({
       return { runId, status: "skipped", taskIds: [] };
     }
 
-    const preferences = await ctx.db
-      .query("automationPreferences")
-      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-      .unique();
+    const preferences = await getAutomationPreferenceForProduct(
+      ctx,
+      ownerId,
+      productId,
+    );
 
     if (!preferences?.enabled || !preferences.enabledTools.includes("clipr")) {
       return { runId, status: "skipped", taskIds: [] };
@@ -52,11 +57,13 @@ export const planDaily = mutation({
     const run = await createAutomationRun(ctx, {
       ownerId,
       id: runId,
+      productId,
       automationDate,
       tool: "clipr",
-      idempotencyKey: `${ownerId}:${automationDate}:clipr`,
+      idempotencyKey: `${ownerId}:${productScopeKey}:${automationDate}:clipr`,
       inputSnapshotJson: JSON.stringify({
         preferenceVersion: preferences?.preferenceVersion ?? 0,
+        productId,
       }),
       createdAt: now,
     });
@@ -70,13 +77,16 @@ export const planDaily = mutation({
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order("desc")
       .collect();
-    const selectedProductIds = new Set(preferences.selectedProductIds);
+    const selectedProductIds = new Set(
+      productId ? [productId] : preferences.selectedProductIds,
+    );
     const defaultProduct = await getDefaultProductForOwner(ctx, ownerId);
-    const product =
-      preferences.productSelectionMode === "selected"
+    const product = productId
+      ? products.find((candidate) => candidate.id === productId)
+      : preferences.productSelectionMode === "selected"
         ? products.find((candidate) => selectedProductIds.has(candidate.id))
         : defaultProduct ?? products[0];
-    const defaultAvatar = await getDefaultAvatarForOwner(ctx, ownerId);
+    const defaultAvatar = await getDefaultAvatarForOwner(ctx, ownerId, productId);
     const avatar = defaultAvatar;
     const photos = await ctx.db
       .query("photoAssets")
@@ -87,6 +97,7 @@ export const planDaily = mutation({
       ? photos.find(
           (photo) =>
             photo.avatarId === avatar.id &&
+            (!productId || photo.productId === productId) &&
             photo.photoObject.contentType.startsWith("image/"),
         )
       : undefined;
@@ -120,6 +131,7 @@ export const planDaily = mutation({
 
     await consumeAutomationBudget(ctx, {
       ownerId,
+      productId,
       tool: "clipr",
       providerCostUnits: targetDurationSeconds,
     });
@@ -127,12 +139,13 @@ export const planDaily = mutation({
     const voiceId = avatar.cliprVoiceId ?? defaultAutomationCliprVoiceId;
     const task = await createAutomationTask(ctx, {
       ownerId,
+      productId,
       id: taskId,
       runId,
       tool: "clipr",
       taskType: "clipr-video",
       stage: "awaiting-script-provider",
-      idempotencyKey: `${ownerId}:${automationDate}:clipr:1`,
+      idempotencyKey: `${ownerId}:${productScopeKey}:${automationDate}:clipr:1`,
       inputSnapshotJson: JSON.stringify({
         addMusic: AUTOMATION_CLIPR_ADD_MUSIC,
         automationDate,

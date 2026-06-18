@@ -4,6 +4,7 @@ import { mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
 import { automationToolValidator } from "./validators/automationTool";
+import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
 
 export async function consumeAutomationBudget(
   ctx: MutationCtx,
@@ -13,19 +14,22 @@ export async function consumeAutomationBudget(
     count = 1,
     avatarId,
     providerCostUnits,
+    productId,
   }: {
     avatarId?: string;
     count?: number;
     ownerId: string;
     providerCostUnits?: number;
+    productId?: string;
     tool: "avatar-photo" | "clipr" | "stitchr" | "swapr" | "swipr";
   },
 ) {
   const normalizedCount = Math.max(1, Math.ceil(count));
+  const dailyKey = `${ownerId}:${getAutomationProductScopeKey(productId)}`;
 
   if (tool === "stitchr") {
     await rateLimiter.limit(ctx, "automationStitchrDaily", {
-      key: ownerId,
+      key: dailyKey,
       count: normalizedCount,
       throws: true,
     });
@@ -37,7 +41,7 @@ export async function consumeAutomationBudget(
 
   if (tool === "swapr") {
     await rateLimiter.limit(ctx, "automationSwaprDaily", {
-      key: ownerId,
+      key: dailyKey,
       count: normalizedCount,
       throws: true,
     });
@@ -49,7 +53,7 @@ export async function consumeAutomationBudget(
 
   if (tool === "clipr") {
     await rateLimiter.limit(ctx, "automationCliprDaily", {
-      key: ownerId,
+      key: dailyKey,
       count: normalizedCount,
       throws: true,
     });
@@ -65,7 +69,7 @@ export async function consumeAutomationBudget(
     }
 
     await rateLimiter.limit(ctx, "automationAvatarPhotoDaily", {
-      key: `${ownerId}:${avatarId}`,
+      key: `${dailyKey}:${avatarId}`,
       count: normalizedCount,
       throws: true,
     });
@@ -77,7 +81,7 @@ export async function consumeAutomationBudget(
 
   if (tool === "swipr") {
     await rateLimiter.limit(ctx, "automationSwiprDaily", {
-      key: ownerId,
+      key: dailyKey,
       count: normalizedCount,
       throws: true,
     });
@@ -99,6 +103,7 @@ export const consume = mutation({
   args: {
     secret: v.string(),
     ownerId: v.string(),
+    productId: v.optional(v.string()),
     tool: automationToolValidator,
     count: v.optional(v.number()),
     avatarId: v.optional(v.string()),
@@ -106,12 +111,13 @@ export const consume = mutation({
   },
   handler: async (
     ctx,
-    { secret, ownerId, tool, count = 1, avatarId, providerCostUnits },
+    { secret, ownerId, productId, tool, count = 1, avatarId, providerCostUnits },
   ) => {
     assertAutomationWorkerSecret(secret);
 
     await consumeAutomationBudget(ctx, {
       ownerId,
+      productId,
       tool,
       count,
       avatarId,

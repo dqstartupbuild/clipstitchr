@@ -1,7 +1,7 @@
-import type { MutationCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 
 export async function assertProductBelongsToOwner(
-  ctx: MutationCtx,
+  ctx: MutationCtx | QueryCtx,
   ownerId: string,
   productId?: string,
 ) {

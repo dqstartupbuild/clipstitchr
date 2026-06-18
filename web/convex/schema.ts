@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { assetTagsValidator } from "./validators/assetTags";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
+import { automationGenerationCountValidator } from "./validators/automationGenerationCount";
 import { automationRunStatusValidator } from "./validators/automationRunStatus";
 import { automationSelectionModeValidator } from "./validators/automationSelectionMode";
 import { automationStitchrTextStyleChoiceValidator } from "./validators/automationStitchrTextStyleChoice";
@@ -452,14 +453,23 @@ export default defineSchema({
   }).index("by_worker", ["worker"]),
   automationPreferences: defineTable({
     ownerId: v.string(),
+    productId: v.optional(v.string()),
     enabled: v.boolean(),
     enabledTools: v.array(automationToolValidator),
     cliprGenerationMode: v.optional(automationCliprGenerationModeValidator),
+    stitchrGenerationCount: v.optional(automationGenerationCountValidator),
     stitchrTextStyleChoice: v.optional(
       automationStitchrTextStyleChoiceValidator,
     ),
     stitchrTextColorChoice: v.optional(v.string()),
     stitchrTextBackgroundColorChoice: v.optional(v.string()),
+    stitchrTextStrokeColorChoice: v.optional(v.string()),
+    swiprGenerationCount: v.optional(automationGenerationCountValidator),
+    swiprSelectedLibraryPackNames: v.optional(v.array(v.string())),
+    swiprTextStyleChoice: v.optional(automationStitchrTextStyleChoiceValidator),
+    swiprTextColorChoice: v.optional(v.string()),
+    swiprTextBackgroundColorChoice: v.optional(v.string()),
+    swiprTextStrokeColorChoice: v.optional(v.string()),
     productSelectionMode: automationSelectionModeValidator,
     selectedProductIds: v.array(v.string()),
     avatarSelectionMode: automationSelectionModeValidator,
@@ -467,9 +477,12 @@ export default defineSchema({
     preferenceVersion: v.number(),
     createdAt: v.string(),
     updatedAt: v.string(),
-  }).index("by_owner", ["ownerId"]),
+  })
+    .index("by_owner", ["ownerId"])
+    .index("by_owner_product", ["ownerId", "productId"]),
   automationRuns: defineTable({
     ownerId: v.string(),
+    productId: v.optional(v.string()),
     id: v.string(),
     automationDate: v.string(),
     tool: automationToolValidator,
@@ -487,6 +500,7 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"])
     .index("by_owner_date_tool", ["ownerId", "automationDate", "tool"])
     .index("by_idempotency_key", ["idempotencyKey"]),

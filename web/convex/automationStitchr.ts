@@ -11,12 +11,16 @@ import type { Id } from "./_generated/dataModel";
 import { mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
+import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForProduct";
+import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
 import { createQuickEditSuggestionsFromMetadata } from "./createQuickEditSuggestionsFromMetadata";
 import { getQuickEditOverlayText } from "./getQuickEditOverlayText";
+import { defaultAutomationGenerationCount } from "../lib/clipstitchr/constants/defaultAutomationGenerationCount";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { TEXT_OVERLAY_STYLES } from "../lib/clipstitchr/constants/textOverlayStyles";
+import { getAutomationGenerationCount } from "../lib/clipstitchr/utils/getAutomationGenerationCount";
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { resolveAutomationStitchrColor } from "../lib/clipstitchr/utils/resolveAutomationStitchrColor";
@@ -26,12 +30,25 @@ import { recordStitchrBatchPairHistory } from "./recordStitchrBatchPairHistory";
 import { getIsStitchrBatchRunId } from "./stitchrBatchRunId";
 import { requestWorkerLaunch } from "./workerLaunch";
 
-function createRunId(ownerId: string, automationDate: string) {
-  return `automation:stitchr:${ownerId}:${automationDate}`;
+function createRunId(
+  ownerId: string,
+  automationDate: string,
+  productId?: string,
+) {
+  return `automation:stitchr:${ownerId}:${getAutomationProductScopeKey(
+    productId,
+  )}:${automationDate}`;
 }
 
-function createTaskId(ownerId: string, automationDate: string, index: number) {
-  return `automation:stitchr:${ownerId}:${automationDate}:${index}`;
+function createTaskId(
+  ownerId: string,
+  automationDate: string,
+  index: number,
+  productId?: string,
+) {
+  return `automation:stitchr:${ownerId}:${getAutomationProductScopeKey(
+    productId,
+  )}:${automationDate}:${index}`;
 }
 
 function createDefaultTrimRange(duration: number) {
@@ -57,8 +74,10 @@ async function createRun(
   automationDate: string,
   inputSnapshotJson: string,
   createdAt: string,
+  productId?: string,
 ) {
-  const idempotencyKey = `${ownerId}:${automationDate}:stitchr`;
+  const productScopeKey = getAutomationProductScopeKey(productId);
+  const idempotencyKey = `${ownerId}:${productScopeKey}:${automationDate}:stitchr`;
   const existing = await ctx.db
     .query("automationRuns")
     .withIndex("by_idempotency_key", (q) =>
@@ -70,9 +89,10 @@ async function createRun(
     return existing;
   }
 
-  const runId = createRunId(ownerId, automationDate);
+  const runId = createRunId(ownerId, automationDate, productId);
   const insertedId = await ctx.db.insert("automationRuns", {
     ownerId,
+    productId,
     id: runId,
     automationDate,
     tool: "stitchr",
@@ -112,29 +132,32 @@ export const planDaily = mutation({
   args: {
     secret: v.string(),
     ownerId: v.string(),
+    productId: v.optional(v.string()),
     automationDate: v.string(),
     now: v.string(),
   },
-  handler: async (ctx, { secret, ownerId, automationDate, now }) => {
+  handler: async (ctx, { secret, ownerId, productId, automationDate, now }) => {
     assertAutomationWorkerSecret(secret);
+    const productScopeKey = getAutomationProductScopeKey(productId);
 
     if (!isWithinAutomationGlobalWindow(now)) {
       return {
-        runId: createRunId(ownerId, automationDate),
+        runId: createRunId(ownerId, automationDate, productId),
         status: "skipped",
         taskIds: [],
         message: "Stitchr automation is outside the daily generation window.",
       };
     }
 
-    const preferences = await ctx.db
-      .query("automationPreferences")
-      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-      .unique();
+    const preferences = await getAutomationPreferenceForProduct(
+      ctx,
+      ownerId,
+      productId,
+    );
 
     if (!getIsAutomationToolEnabled("stitchr")) {
       return {
-        runId: createRunId(ownerId, automationDate),
+        runId: createRunId(ownerId, automationDate, productId),
         status: "skipped",
         taskIds: [],
         message: "Stitchr automation is turned off right now.",
@@ -143,7 +166,7 @@ export const planDaily = mutation({
 
     if (!preferences?.enabled || !preferences.enabledTools.includes("stitchr")) {
       return {
-        runId: createRunId(ownerId, automationDate),
+        runId: createRunId(ownerId, automationDate, productId),
         status: "skipped",
         taskIds: [],
         message: "Turn on Stitchr automation in Settings first.",
@@ -161,18 +184,28 @@ export const planDaily = mutation({
           preferences.stitchrTextBackgroundColorChoice,
         )
       : defaultAutomationStitchrColorChoice;
+    const stitchrTextStrokeColorChoice = preferences
+      ? getAutomationStitchrColorChoice(preferences.stitchrTextStrokeColorChoice)
+      : defaultAutomationStitchrColorChoice;
+    const stitchrGenerationCount = getAutomationGenerationCount(
+      preferences?.stitchrGenerationCount ?? defaultAutomationGenerationCount,
+    );
     const run = await createRun(
       ctx,
       ownerId,
       automationDate,
       JSON.stringify({
         preferenceVersion: preferences?.preferenceVersion ?? 0,
+        productId,
         selectedProductIds: preferences?.selectedProductIds ?? [],
+        stitchrGenerationCount,
         stitchrTextStyleChoice,
         stitchrTextColorChoice,
         stitchrTextBackgroundColorChoice,
+        stitchrTextStrokeColorChoice,
       }),
       now,
+      productId,
     );
 
     if (run.status !== "queued") {
@@ -194,8 +227,11 @@ export const planDaily = mutation({
       .order("desc")
       .collect();
     const defaultProduct = await getDefaultProductForOwner(ctx, ownerId);
-    const ugcClips = clips.filter((clip) => clip.clipType === "ugc");
-    const demoClips = clips.filter((clip) => clip.clipType === "demo");
+    const productClips = productId
+      ? clips.filter((clip) => clip.productId === productId)
+      : clips;
+    const ugcClips = productClips.filter((clip) => clip.clipType === "ugc");
+    const demoClips = productClips.filter((clip) => clip.clipType === "demo");
 
     if (ugcClips.length === 0 || demoClips.length === 0) {
       await markRunSkipped(
@@ -214,25 +250,27 @@ export const planDaily = mutation({
       };
     }
 
-    const selectedProductIds = new Set(preferences.selectedProductIds);
+    const selectedProductIds = new Set(
+      productId ? [productId] : preferences.selectedProductIds,
+    );
     const productById = new Map(products.map((product) => [product.id, product]));
     const selectedProducts = products.filter((product) =>
       selectedProductIds.has(product.id),
     );
     const defaultProducts = defaultProduct ? [defaultProduct] : [];
     const eligibleProducts =
-      preferences.productSelectionMode === "selected" &&
+      (productId || preferences.productSelectionMode === "selected") &&
       selectedProducts.length > 0
         ? selectedProducts
         : defaultProducts.length > 0
           ? defaultProducts
         : products;
     const defaultProductIds =
-      preferences.productSelectionMode === "selected"
+      productId || preferences.productSelectionMode === "selected"
         ? new Set<string>()
         : new Set(defaultProduct ? [defaultProduct.id] : []);
     const demoProductFilterIds =
-      preferences.productSelectionMode === "selected" &&
+      (productId || preferences.productSelectionMode === "selected") &&
       selectedProductIds.size > 0
         ? selectedProductIds
         : defaultProductIds;
@@ -293,8 +331,8 @@ export const planDaily = mutation({
     );
     const selectedPairs = selectStitchrPairs(
       candidates,
-      automationDailyLimits.stitchr,
-      `${ownerId}:${automationDate}:stitchr`,
+      Math.min(stitchrGenerationCount, automationDailyLimits.stitchr),
+      `${ownerId}:${productScopeKey}:${automationDate}:stitchr`,
       Date.parse(now),
     );
 
@@ -317,6 +355,7 @@ export const planDaily = mutation({
 
     await consumeAutomationBudget(ctx, {
       ownerId,
+      productId,
       tool: "stitchr",
       count: selectedPairs.length,
     });
@@ -335,7 +374,12 @@ export const planDaily = mutation({
         continue;
       }
 
-      const taskId = createTaskId(ownerId, automationDate, index + 1);
+      const taskId = createTaskId(
+        ownerId,
+        automationDate,
+        index + 1,
+        productId,
+      );
       const idempotencyKey = `${taskId}:${ugc.id}:${demo.id}`;
       const existingTask = await ctx.db
         .query("automationTasks")
@@ -354,19 +398,25 @@ export const planDaily = mutation({
         eligibleProducts[0];
       const stitchrTextStyleId = resolveAutomationStitchrTextStyleId(
         stitchrTextStyleChoice,
-        `${ownerId}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}`,
+        `${ownerId}:${productScopeKey}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}`,
       );
       const stitchrTextStyle = TEXT_OVERLAY_STYLES.find(
         (style) => style.id === stitchrTextStyleId,
       );
       const stitchrTextColor = resolveAutomationStitchrColor(
         stitchrTextColorChoice,
-        `${ownerId}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:text`,
+        `${ownerId}:${productScopeKey}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:text`,
       );
       const stitchrTextBackgroundColor = stitchrTextStyle?.backgroundColor
         ? resolveAutomationStitchrColor(
             stitchrTextBackgroundColorChoice,
-            `${ownerId}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:background`,
+            `${ownerId}:${productScopeKey}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:background`,
+          )
+        : undefined;
+      const stitchrTextStrokeColor = stitchrTextStyle?.strokeColor
+        ? resolveAutomationStitchrColor(
+            stitchrTextStrokeColorChoice,
+            `${ownerId}:${productScopeKey}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:stroke`,
           )
         : undefined;
       const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(ugc.quickEdit);
@@ -446,6 +496,8 @@ export const planDaily = mutation({
           stitchrTextColor,
           stitchrTextBackgroundColorChoice,
           stitchrTextBackgroundColor,
+          stitchrTextStrokeColorChoice,
+          stitchrTextStrokeColor,
         }),
         outputAssetIds: [],
         providerJobIds: [],
