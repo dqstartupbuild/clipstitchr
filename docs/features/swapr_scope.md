@@ -11,7 +11,7 @@
 **Swapr** is an AI-powered ClipStitchr feature that lets a user choose:
 
 1. a saved photo of a person or character, and
-2. a saved UGC video from the existing ClipStitchr UGC library,
+2. a saved UGC-style video from the existing ClipStitchr library,
 
 then generate a new AI video where the person from the photo appears to follow the action, pose, motion, or performance from the selected UGC video.
 
@@ -28,7 +28,7 @@ The generated output should be saved back into ClipStitchr as a usable UGC-style
 | User phrase | Product interpretation | Implementation meaning |
 |-------------|------------------------|-------------------------|
 | Select a photo | Choose the person, face, character, or appearance to use in the output | Pick a saved `PhotoAsset` |
-| Select a video | Choose the UGC clip whose motion should drive the output | Pick a saved UGC `VideoClip`; Demo clips are excluded |
+| Select a video | Choose the UGC-style clip whose motion should drive the output | Pick a saved UGC, Clipr, or Swapr `VideoClip`; Demo clips are excluded |
 | Swap the person | Replace the visible performer conceptually | Generate a new video where the photo subject follows the reference motion |
 | Swap locations | Optionally influence background or scene | Add scene controls or prompt fields, but do not guarantee exact background replacement in v1 |
 | Use Replicate | Run the AI generation through Replicate server-side | Next.js API route calls Replicate with a secret token |
@@ -48,7 +48,7 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
            |
            v
 +---------------------+
-| Select UGC video    |
+| Select UGC-style video |
 | from ClipStitchr library  |
 | Demo videos hidden  |
 +----------+----------+
@@ -104,9 +104,9 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
-| 1 | Show existing uploaded UGC videos as selectable motion references | Yes | Yes |
+| 1 | Show uploaded UGC videos plus generated Clipr and Swapr clips as selectable motion references | Yes | Yes |
 | 2 | Exclude Demo clips from Swapr selection | Yes | Yes |
-| 3 | Use normalized 9:16 UGC blobs as the default reference video source | Yes | Yes |
+| 3 | Use normalized 9:16 UGC-style blobs as the default reference video source | Yes | Yes |
 | 4 | Respect default trim ranges where model duration limits require shorter clips | Yes | Yes |
 | 5 | Allow a Swapr-specific trim range without changing the source UGC default trim | Yes | Yes |
 
@@ -133,6 +133,7 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
 | 3 | Make generated Swapr output selectable as a UGC clip in `/dashboard/stitchr` | Yes | Yes |
 | 4 | Preserve provenance showing the output came from Swapr | Yes | Yes |
 | 5 | Link back to source photo, source UGC clip, model, and prompt metadata | Yes | Yes |
+| 6 | Make generated Swapr output selectable as a future Swapr reference clip | Yes | Yes |
 
 ---
 
@@ -141,8 +142,8 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
 ```
 /dashboard/swapr                 -> Swapr studio: choose photo, choose UGC video, configure, generate
 /dashboard/avatars               -> Avatar photo upload, avatar descriptions, and generated avatar scenario photos
-/dashboard/uploads?tab=ugc       -> Existing UGC library; UGC clips can feed Swapr
-/dashboard/uploads?tab=swaps     -> Generated Swapr outputs; outputs are saved as reusable UGC-style clips
+/dashboard/uploads?tab=ugc       -> Existing UGC library; UGC-style clips can feed Swapr
+/dashboard/uploads?tab=swaps     -> Generated Swapr outputs; outputs are saved as reusable UGC-style clips and can feed Swapr again
 /dashboard/uploads?tab=stitches  -> Existing stitches library inside the unified Content Library
 /dashboard/stitches              -> Compatibility redirect to `/dashboard/uploads?tab=stitches`
 ```

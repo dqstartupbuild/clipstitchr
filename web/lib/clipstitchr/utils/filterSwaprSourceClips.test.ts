@@ -28,7 +28,7 @@ const clips = [
 ] as VideoClipMetadata[];
 
 describe("filterSwaprSourceClips", () => {
-  it("keeps UGC clips and removes demos and Swapr outputs", () => {
-    expect(filterSwaprSourceClips(clips)).toEqual([clips[0]]);
+  it("keeps UGC-style clips and removes demos", () => {
+    expect(filterSwaprSourceClips(clips)).toEqual([clips[0], clips[2]]);
   });
 });
