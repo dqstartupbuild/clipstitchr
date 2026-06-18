@@ -137,6 +137,29 @@ vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
   useProducts: () => mocks.productState,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
+  useDashboardProduct: () => {
+    const products = mocks.productState.products as Array<{ id: string }>;
+    const activeProduct = products[0];
+
+    return {
+      activeProduct,
+      activeProductId: activeProduct?.id,
+      defaultProductId: activeProduct?.id,
+      error: mocks.productState.error,
+      isBackfillingLegacyContent: false,
+      isCreating: false,
+      isLoading: false,
+      isSaving: false,
+      products,
+      requiresProductSetup: false,
+      createProduct: vi.fn(),
+      setActiveProduct: vi.fn(),
+      updateProduct: vi.fn(),
+    };
+  },
+}));
+
 vi.mock("@/lib/clipstitchr/hooks/useStitchTemplates", () => ({
   useStitchTemplates: () => mocks.stitchTemplateState,
 }));

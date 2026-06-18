@@ -40,6 +40,7 @@ function createQueryChain(options: {
   };
   const chain = {
     collect: vi.fn(async () => options.collect ?? []),
+    first: vi.fn(async () => options.unique ?? null),
     order: vi.fn(() => chain),
     unique: vi.fn(async () => options.unique ?? null),
     withIndex: vi.fn((_indexName: string, callback: (q: typeof indexQuery) => void) => {
@@ -121,9 +122,12 @@ describe("convex products", () => {
   });
 
   it("normalizes product input before creating a product", async () => {
+    const queryChain = createQueryChain();
     const ctx = {
       db: {
         insert: vi.fn(async () => "doc_123"),
+        patch: vi.fn(async () => undefined),
+        query: vi.fn(() => queryChain),
       },
     };
 
@@ -171,6 +175,13 @@ describe("convex products", () => {
         cliprPlaceholderFillers: {
           "very long key that will be trimmed after": ["fast setup"],
         },
+      }),
+    );
+    expect(ctx.db.insert).toHaveBeenCalledWith(
+      "productPreferences",
+      expect.objectContaining({
+        defaultProductId: "product_123",
+        ownerId: "owner_123",
       }),
     );
   });

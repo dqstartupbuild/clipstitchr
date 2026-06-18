@@ -14,14 +14,17 @@ const mocks = vi.hoisted(() => ({
   loadBackgroundBlob: vi.fn(),
   loadClip: vi.fn(),
   loadPhoto: vi.fn(),
+  createProduct: vi.fn(),
   refresh: vi.fn(),
   remove: vi.fn(),
   saveBackground: vi.fn(),
   saveFiles: vi.fn(),
   saveGeneratedPhotos: vi.fn(),
   saveSwipe: vi.fn(),
+  setActiveProduct: vi.fn(),
   stitchLongrSequence: vi.fn(),
   stitchVideos: vi.fn(),
+  updateProduct: vi.fn(),
   useMutation: vi.fn(() => vi.fn()),
 }));
 
@@ -87,6 +90,40 @@ vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
         audienceDetails: "Founders",
       },
     ],
+  }),
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
+  useDashboardProduct: () => ({
+    activeProduct: {
+      id: "product_1",
+      inferredPainPoints: ["slow launch"],
+      inferredProblem: "campaigns take too long",
+      name: "Launch Kit",
+      productDetails: "AI launch planner",
+      audienceDetails: "Founders",
+    },
+    activeProductId: "product_1",
+    defaultProductId: "product_1",
+    error: null,
+    isBackfillingLegacyContent: false,
+    isCreating: false,
+    isLoading: false,
+    isSaving: false,
+    products: [
+      {
+        id: "product_1",
+        inferredPainPoints: ["slow launch"],
+        inferredProblem: "campaigns take too long",
+        name: "Launch Kit",
+        productDetails: "AI launch planner",
+        audienceDetails: "Founders",
+      },
+    ],
+    requiresProductSetup: false,
+    createProduct: mocks.createProduct,
+    setActiveProduct: mocks.setActiveProduct,
+    updateProduct: mocks.updateProduct,
   }),
 }));
 
@@ -157,7 +194,7 @@ vi.mock("@/lib/clipstitchr/hooks/useClipLibrary", () => ({
     });
     const clips = [ugcClip, demoClip];
 
-      return {
+    return {
       clips,
       counts: {
         activeStitches: 1,
@@ -402,12 +439,12 @@ describe("dashboard page clients", () => {
     mocks.loadClip.mockResolvedValue(createClip());
   });
 
-  it("renders the Stitchr workflow with available UGC and demo clips", () => {
+  it("renders the Stitchr workflow with batch controls", () => {
     const markup = renderToStaticMarkup(<StitchrPageClient />);
 
     expect(markup).toContain("Stitchr");
-    expect(markup).toContain("UGC clip");
-    expect(markup).toContain("Demo clip");
+    expect(markup).toContain("Generate today&#x27;s stitch batch");
+    expect(markup).toContain("Generate 10 Stitches");
   });
 
   it("renders the Swapr workflow with photo and source clip inputs", () => {
@@ -424,7 +461,7 @@ describe("dashboard page clients", () => {
     expect(markup).toContain("Create TikTok carousels");
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Batch");
-    expect(markup).toContain("Generate drafts");
+    expect(markup).toContain("Generate Swipes");
     expect(markup).toContain("Import loaded");
   });
 

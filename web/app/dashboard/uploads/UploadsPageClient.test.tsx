@@ -96,6 +96,37 @@ vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
   useProducts: mocks.useProducts,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
+  useDashboardProduct: () => {
+    const productState = mocks.products as {
+      defaultProductId?: string;
+      error?: string | null;
+      isLoading?: boolean;
+      products?: ProductProfile[];
+    };
+    const products = productState.products ?? [];
+    const activeProduct =
+      products.find((product) => product.id === productState.defaultProductId) ??
+      products[0];
+
+    return {
+      activeProduct,
+      activeProductId: activeProduct?.id,
+      defaultProductId: productState.defaultProductId,
+      error: productState.error ?? null,
+      isBackfillingLegacyContent: false,
+      isCreating: false,
+      isLoading: productState.isLoading ?? false,
+      isSaving: false,
+      products,
+      requiresProductSetup: false,
+      createProduct: vi.fn(),
+      setActiveProduct: vi.fn(),
+      updateProduct: vi.fn(),
+    };
+  },
+}));
+
 vi.mock("@/lib/clipstitchr/hooks/useShowUploadControls", () => ({
   useShowUploadControls: mocks.useShowUploadControls,
 }));
@@ -611,20 +642,42 @@ describe("UploadsPageClient", () => {
     );
 
     expect(uploadPanel?.props?.demoProductId).toBe("product_2");
-    expect(section?.props?.clips).toEqual([defaultDemoClip]);
+    expect(section?.props?.clips).toEqual([
+      expect.objectContaining({ id: "demo_1" }),
+      defaultDemoClip,
+    ]);
   });
 
-  it("uses product-specific demo empty copy when a valid product filter is active", () => {
+  it("uses generic demo empty copy because product scoping happens in the library query", () => {
+    mocks.library = {
+      ...mocks.library,
+      videoGroups: {
+        ...(mocks.library.videoGroups as Record<string, unknown>),
+        demo: {
+          clips: [],
+          postedClips: [],
+          hasMoreItems: false,
+          hasMorePostedItems: false,
+          isLoadingMoreItems: false,
+          isLoadingMorePostedItems: false,
+          loadMoreItems: vi.fn(),
+          loadMorePostedItems: vi.fn(),
+        },
+      },
+    };
+    mocks.useClipLibrary.mockReturnValue(mocks.library);
+
     const { elements } = renderUploadsPage({
-      stateValues: ["demo", "", "product_1", "product_1"],
+      stateValues: ["demo", "", "active", "active"],
     });
     const section = findByProp(elements, "id", "demo-videos");
 
     expect(section?.props).toEqual(
       expect.objectContaining({
-        emptyDescription: "No saved demo videos are linked to that product.",
-        emptyTitle: "No demos for this product",
-        totalCount: undefined,
+        emptyDescription:
+          "Upload product walkthroughs or screen recordings to use after UGC.",
+        emptyTitle: "No demo videos yet",
+        totalCount: 30,
       }),
     );
   });
@@ -647,7 +700,7 @@ describe("UploadsPageClient", () => {
 
   it("filters the Stitches tab to posted stitches", () => {
     const { elements } = renderUploadsPage({
-      stateValues: ["stitches", "posted", "all", "", "posted"],
+      stateValues: ["stitches", "", "posted", "active"],
     });
     const section = findByProp(elements, "statusFilter", "posted");
 
@@ -655,8 +708,8 @@ describe("UploadsPageClient", () => {
       expect.objectContaining({
         hasMoreItems: true,
         statusCounts: {
-          active: 0,
-          all: 1,
+          active: 1,
+          all: 2,
           posted: 1,
         },
         stitches: expect.arrayContaining([
@@ -693,7 +746,7 @@ describe("UploadsPageClient", () => {
 
   it("filters the Swipes tab to posted Swipes", () => {
     const { elements } = renderUploadsPage({
-      stateValues: ["swipes", "", "all", "", "active", "posted"],
+      stateValues: ["swipes", "", "active", "posted"],
     });
     const section = findByProp(elements, "statusFilter", "posted");
 

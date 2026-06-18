@@ -42,7 +42,6 @@ const mocks = vi.hoisted(() => ({
       },
     ],
   },
-  productPanelProps: null as Record<string, unknown> | null,
   productState: {
     defaultProductId: "product_2" as string | undefined,
     error: null as string | null,
@@ -65,13 +64,6 @@ vi.mock("@/app/_components/ui/Panel", () => ({
 
 vi.mock("@/app/_components/ui/Button", () => ({
   Button: ({ children }: ChildrenProps) => <button type="button">{children}</button>,
-}));
-
-vi.mock("@/app/_components/clipr/CliprProductPanel", () => ({
-  CliprProductPanel: (props: Record<string, unknown>) => {
-    mocks.productPanelProps = props;
-    return "CliprProductPanel";
-  },
 }));
 
 vi.mock("@/app/_components/clipr/CliprAvatarPanel", () => ({
@@ -117,6 +109,32 @@ vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
   useProducts: () => mocks.productState,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
+  useDashboardProduct: () => {
+    const products = mocks.productState.products;
+    const activeProduct =
+      products.find(
+        (product) => product.id === mocks.productState.defaultProductId,
+      ) ?? products[0];
+
+    return {
+      activeProduct,
+      activeProductId: activeProduct?.id,
+      defaultProductId: mocks.productState.defaultProductId,
+      error: mocks.productState.error,
+      isBackfillingLegacyContent: false,
+      isCreating: false,
+      isLoading: false,
+      isSaving: false,
+      products,
+      requiresProductSetup: false,
+      createProduct: vi.fn(),
+      setActiveProduct: vi.fn(),
+      updateProduct: vi.fn(),
+    };
+  },
+}));
+
 function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile {
   return {
     audienceDetails: "Creators",
@@ -133,7 +151,6 @@ function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile 
 describe("CliprPageClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.productPanelProps = null;
     mocks.sceneControlsProps = null;
     mocks.productState.defaultProductId = "product_2";
     mocks.productState.products = [
@@ -150,7 +167,6 @@ describe("CliprPageClient", () => {
 
     expect(markup).toContain("Header:Create more UGC");
     expect(markup).toContain("CliprSceneControls");
-    expect(mocks.productPanelProps?.selectedProductId).toBe("product_2");
     expect(mocks.sceneControlsProps).toEqual(
       expect.objectContaining({
         location: "",

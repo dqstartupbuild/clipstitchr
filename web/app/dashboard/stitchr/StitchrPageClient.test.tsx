@@ -187,6 +187,32 @@ vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
   useProducts: () => mocks.productState,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
+  useDashboardProduct: () => {
+    const products = mocks.productState.products;
+    const activeProduct =
+      products.find(
+        (product) => product.id === mocks.productState.defaultProductId,
+      ) ?? products[0];
+
+    return {
+      activeProduct,
+      activeProductId: activeProduct?.id,
+      defaultProductId: mocks.productState.defaultProductId,
+      error: mocks.productState.error,
+      isBackfillingLegacyContent: false,
+      isCreating: false,
+      isLoading: false,
+      isSaving: false,
+      products,
+      requiresProductSetup: false,
+      createProduct: vi.fn(),
+      setActiveProduct: vi.fn(),
+      updateProduct: vi.fn(),
+    };
+  },
+}));
+
 vi.mock("@/lib/clipstitchr/hooks/useStitchr", () => ({
   useStitchr: () => mocks.stitchrState,
 }));
@@ -290,7 +316,6 @@ function queueStitchrState(
     longrTimelineClipIds?: string[];
     mode?: "normal" | "longr";
     appliedTemplateId?: string;
-    selectedAutoTextProductId?: string;
     selectedDemoId?: string | null;
     selectedDemoIds?: string[];
     selectedMusicTrack?: SharedMusicTrack | null;
@@ -319,7 +344,6 @@ function queueStitchrState(
     overrides.socialCaptionByUgcId ?? {},
     overrides.reusedSocialCaption ?? null,
     overrides.longrSocialCaption ?? "",
-    overrides.selectedAutoTextProductId ?? "",
     overrides.demoProductFilterId,
     overrides.isGeneratingAutoText ?? false,
     overrides.autoTextMessage ?? null,
@@ -333,6 +357,8 @@ function queueStitchrState(
     overrides.selectedDemoId,
     overrides.selectedDemoIds ?? [],
     overrides.longrTimelineClipIds ?? [],
+    false,
+    null,
   );
 }
 
@@ -750,11 +776,11 @@ describe("StitchrPageClient", () => {
     );
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("ugc_2");
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[23]).toHaveBeenCalledWith(["ugc_2"]);
-    expect(mocks.stateSetters[24]).toHaveBeenCalledWith("ugc_2");
-    expect(mocks.stateSetters[25]).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[26]).toHaveBeenCalledWith(["demo_2"]);
-    expect(mocks.stateSetters[27]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
+    expect(mocks.stateSetters[22]).toHaveBeenCalledWith(["ugc_2"]);
+    expect(mocks.stateSetters[23]).toHaveBeenCalledWith("ugc_2");
+    expect(mocks.stateSetters[24]).toHaveBeenCalledWith("demo_2");
+    expect(mocks.stateSetters[25]).toHaveBeenCalledWith(["demo_2"]);
+    expect(mocks.stateSetters[26]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
     expect(mocks.stateSetters[8]).toHaveBeenCalledWith({});
     expect(mocks.stateSetters[9]).toHaveBeenCalledWith([textOverlay]);
     expect(mocks.stateSetters[11]).toHaveBeenCalledWith({});

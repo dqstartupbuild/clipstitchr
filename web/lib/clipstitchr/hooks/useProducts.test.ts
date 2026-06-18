@@ -210,7 +210,7 @@ describe("useProducts", () => {
     expect(mocks.stateSetter).toHaveBeenCalledWith("default failed");
   });
 
-  it("ignores stale default product preferences", () => {
+  it("falls back to the first product when the default product preference is stale", () => {
     mocks.useQuery.mockImplementation((queryId) =>
       queryId === api.productPreferences.get
         ? { defaultProductId: "missing_product" }
@@ -219,6 +219,6 @@ describe("useProducts", () => {
 
     const state = useProducts();
 
-    expect(state.defaultProductId).toBeUndefined();
+    expect(state.defaultProductId).toBe("product_1");
   });
 });

@@ -143,6 +143,32 @@ vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
   usePhotoLibrary: () => mocks.photoLibraryState,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
+  useDashboardProduct: () => ({
+    activeProduct: {
+      audienceDetails: "Creators",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      id: "product_1",
+      inferredPainPoints: [],
+      name: "Launch Kit",
+      productDetails: "A launch kit",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    },
+    activeProductId: "product_1",
+    defaultProductId: "product_1",
+    error: null,
+    isBackfillingLegacyContent: false,
+    isCreating: false,
+    isLoading: false,
+    isSaving: false,
+    products: [],
+    requiresProductSetup: false,
+    createProduct: vi.fn(),
+    setActiveProduct: vi.fn(),
+    updateProduct: vi.fn(),
+  }),
+}));
+
 vi.mock("@/lib/clipstitchr/hooks/useSwaprGeneration", () => ({
   useSwaprGeneration: () => mocks.swaprGenerationState,
 }));

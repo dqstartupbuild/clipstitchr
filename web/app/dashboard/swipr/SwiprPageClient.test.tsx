@@ -198,6 +198,32 @@ vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
   useProducts: () => mocks.productState,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
+  useDashboardProduct: () => {
+    const products = mocks.productState.products;
+    const activeProduct =
+      products.find(
+        (product) => product.id === mocks.productState.defaultProductId,
+      ) ?? products[0];
+
+    return {
+      activeProduct,
+      activeProductId: activeProduct?.id,
+      defaultProductId: mocks.productState.defaultProductId,
+      error: mocks.productState.error,
+      isBackfillingLegacyContent: false,
+      isCreating: false,
+      isLoading: false,
+      isSaving: false,
+      products,
+      requiresProductSetup: false,
+      createProduct: vi.fn(),
+      setActiveProduct: vi.fn(),
+      updateProduct: vi.fn(),
+    };
+  },
+}));
+
 vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
   usePhotoLibrary: () => mocks.photoLibraryState,
 }));
@@ -338,7 +364,6 @@ function queueSwiprState(
     saveMessage?: string | null;
     savedSwipeSnapshot?: SwiprSwipe | null;
     selectedLibraryQueries?: string[];
-    selectedProductId?: string;
     socialCaption?: string;
     socialCopyMessage?: string | null;
     socialDescription?: string;
@@ -354,7 +379,6 @@ function queueSwiprState(
   const slides = overrides.slides ?? createSwiprSlides(3);
 
   mocks.stateQueue.push(
-    overrides.selectedProductId,
     overrides.swiprMode ?? "manual",
     slides,
     overrides.activeSlideId ?? slides[0]?.id ?? null,
@@ -483,7 +507,6 @@ describe("SwiprPageClient", () => {
 
     expect(markup).toContain("Header:Create TikTok carousels");
     expect(markup).toContain("SwiprModeToggle");
-    expect(markup).toContain("SwiprProductPanel");
     expect(markup).toContain("SwiprBatchControls");
     expect(markup).toContain("SwiprPexelsPanel");
     expect(markup).not.toContain("SwiprBackgroundPanel");
@@ -515,7 +538,7 @@ describe("SwiprPageClient", () => {
     expect(markup).not.toContain("SwiprBatchControls");
   });
 
-  it("selects the default product before falling back to the first product", () => {
+  it("uses the default product for batch generation", () => {
     mocks.productState.defaultProductId = "product_2";
     mocks.productState.products = [
       createProduct(),
@@ -524,11 +547,26 @@ describe("SwiprPageClient", () => {
         name: "Second Product",
       }),
     ];
+    mocks.swiprLibraryState.backgrounds = [
+      createBackground({
+        id: "background_pexels",
+        libraryQuery: "coffee desk",
+        source: "pexels",
+      }),
+    ];
+    queueSwiprState({
+      selectedLibraryQueries: ["coffee desk"],
+      swiprMode: "batch",
+    });
 
     renderToStaticMarkup(<SwiprPageClient />);
+    (mocks.batchControlsProps as { onGenerateDrafts: () => void })
+      .onGenerateDrafts();
 
-    expect(mocks.productPanelProps?.selectedProductId).toBe(
-      "saved-product:product_2",
+    expect(mocks.generateSwiprDrafts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        productId: "product_2",
+      }),
     );
   });
 
@@ -551,9 +589,6 @@ describe("SwiprPageClient", () => {
     queueSwiprState({ swiprMode: "manual" });
     renderToStaticMarkup(<SwiprPageClient />);
 
-    const productPanelProps = mocks.productPanelProps as {
-      onProductChange: (value: string) => void;
-    };
     const manualControlsProps = mocks.manualControlsProps as {
       onAddSlide: () => void;
       onGenerateText: () => void;
@@ -594,7 +629,6 @@ describe("SwiprPageClient", () => {
       y: 0.5,
     };
 
-    productPanelProps.onProductChange("saved-product:product_1");
     manualControlsProps.onAddSlide();
     manualControlsProps.onTextGenerationScopeChange("selected");
     manualControlsProps.onGenerateText();
@@ -683,9 +717,6 @@ describe("SwiprPageClient", () => {
 
     renderToStaticMarkup(<SwiprPageClient />);
 
-    const productPanelProps = mocks.productPanelProps as {
-      onProductChange: (value: string) => void;
-    };
     const batchControlsProps = mocks.batchControlsProps as {
       onGenerateDrafts: () => void;
     };
@@ -694,7 +725,6 @@ describe("SwiprPageClient", () => {
       onImportQuery: () => void;
     };
 
-    productPanelProps.onProductChange("saved-product:product_1");
     pexelsPanelProps.onImportQuery();
     batchControlsProps.onGenerateDrafts();
 
@@ -812,7 +842,7 @@ describe("SwiprPageClient", () => {
       mocks.stateSetters.some((setter) =>
         setter.mock.calls.some(
           (call) =>
-            call[0] === "Choose a saved Settings product before saving.",
+            call[0] === "Choose a product from the sidebar before saving.",
         ),
       ),
     ).toBe(true);

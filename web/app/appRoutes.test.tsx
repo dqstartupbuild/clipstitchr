@@ -64,6 +64,18 @@ vi.mock("@/app/dashboard/DashboardPageClient", () => ({
   DashboardPageClient: () => <main>Dashboard client</main>,
 }));
 
+vi.mock("@/app/dashboard/DashboardProductProvider", () => ({
+  DashboardProductProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+}));
+
+vi.mock("@/app/dashboard/DashboardLibraryProvider", () => ({
+  DashboardLibraryProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+}));
+
 vi.mock("@/app/dashboard/avatars/AvatarsPageClient", () => ({
   AvatarsPageClient: () => <main>Avatars client</main>,
 }));
