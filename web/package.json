@@ -11,6 +11,7 @@
     "lint": "npm run content:build && eslint .",
     "media-worker": "node ./services/media-worker/runMediaWorker.mjs",
     "provider-worker": "tsx ./services/provider-worker/runProviderWorker.ts",
+    "submit:indexnow": "node --env-file-if-exists=.env.local ./scripts/submit-indexnow.mjs",
     "typecheck": "npm run content:build && tsc --noEmit",
     "test": "npm run content:build && vitest run --coverage"
   },

@@ -11,6 +11,8 @@ private routes.
   `web/public/1112f07c108a4eebb9f78ed8c9f7a362.txt`
 - Submission route:
   `web/app/api/indexnow/route.ts`
+- Manual submission script:
+  `web/scripts/submit-indexnow.mjs`
 - Sitemap source:
   `web/lib/getSitemapEntries.ts`
 - Rate limits:
@@ -59,6 +61,22 @@ are active.
 
 ## Submit URLs
 
+Use the npm script from `web/` after a production deployment finishes:
+
+```bash
+cd web
+export INDEXNOW_SUBMIT_SECRET="<secret-from-vercel>"
+npm run submit:indexnow
+```
+
+The npm script loads `web/.env.local` when it exists, so the secret can also live
+there for local use. It submits to `https://clipstitchr.com/api/indexnow` by
+default. To target a different deployment, set:
+
+```bash
+INDEXNOW_SUBMIT_ENDPOINT=https://example.com/api/indexnow
+```
+
 Use a literal secret:
 
 ```bash
@@ -87,13 +105,15 @@ curl -X POST https://clipstitchr.com/api/indexnow \
 
 ## Expected Success
 
-A successful submission returns `202 Accepted` from IndexNow:
+A successful npm script run prints the number of submitted URLs and the
+provider status. The app route returns success when IndexNow returns an accepted
+provider response, commonly `200 OK` or `202 Accepted`:
 
 ```json
 {
   "ok": true,
-  "providerStatus": 202,
-  "providerStatusText": "Accepted",
+  "providerStatus": 200,
+  "providerStatusText": "OK",
   "submittedUrlCount": 14
 }
 ```
