@@ -1,5 +1,9 @@
 import { DAY, HOUR, MINUTE, RateLimiter } from "@convex-dev/rate-limiter";
 import { components } from "./_generated/api";
+import {
+  AUTOMATION_STITCHR_DAILY_LIMIT,
+  AUTOMATION_STITCHR_GLOBAL_DAILY_LIMIT,
+} from "../lib/clipstitchr/constants/automationStitchrGenerationLimits";
 
 const GIGABYTE = 1024 * 1024 * 1024;
 const MONTH = 30 * DAY;
@@ -387,15 +391,15 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
   },
   automationStitchrDaily: {
     kind: "token bucket",
-    rate: 3,
+    rate: AUTOMATION_STITCHR_DAILY_LIMIT,
     period: DAY,
-    capacity: 3,
+    capacity: AUTOMATION_STITCHR_DAILY_LIMIT,
   },
   automationStitchrGlobalDaily: {
     kind: "token bucket",
-    rate: 300,
+    rate: AUTOMATION_STITCHR_GLOBAL_DAILY_LIMIT,
     period: DAY,
-    capacity: 300,
+    capacity: AUTOMATION_STITCHR_GLOBAL_DAILY_LIMIT,
     shards: 5,
   },
   automationSwaprDaily: {

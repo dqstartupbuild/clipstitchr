@@ -8,6 +8,7 @@ type StitchrModeToggleProps = {
 };
 
 const modes: { label: string; value: StitchrMode }[] = [
+  { label: "Batch", value: "batch" },
   { label: "Normal", value: "normal" },
   { label: "Longr", value: "longr" },
 ];

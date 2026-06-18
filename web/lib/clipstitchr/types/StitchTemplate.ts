@@ -1,4 +1,4 @@
-import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
+import type { SavedStitchrMode } from "@/lib/clipstitchr/types/SavedStitchrMode";
 import type { StitchSequenceSegment } from "@/lib/clipstitchr/types/StitchSequenceSegment";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
@@ -9,7 +9,7 @@ export type StitchTemplate = {
   name: string;
   sourceStitchId: string;
   sourceStitchName: string;
-  mode?: StitchrMode;
+  mode?: SavedStitchrMode;
   ugcClipId: string;
   demoClipId: string;
   ugcClipName: string;

@@ -49,16 +49,23 @@ social proof first, product proof immediately after.
 2. Normalize every video to 9:16 before it enters the library.
 3. Save generated posters so clips are recognizable at a glance.
 4. Store non-destructive default trims on each clip.
-5. Select up to 20 UGC clips and one demo clip inside Stitchr, using the
+5. Stitchr opens on the Batch tab by default. Batch mode queues the signed-in
+   user's daily automated Stitchr run from the Stitchr page, creating up to 10
+   editable Stitch drafts through the provider and media workers.
+6. Batch mode uses the automation pair history when choosing UGC/Demo pairs. It
+   prefers unused or older pairs, tracks when each pair was last used, and
+   spreads a batch across different UGC and Demo clips before reusing pieces.
+7. Switch to Normal mode to select up to 20 UGC clips and one demo clip inside
+   Stitchr, using the
    product filter when the library contains demos for multiple products. When
    upload analysis has scored a clip, show that score in the picker so the user
    can spot clips worth using before building the batch.
-6. Copy clip default trims and active source Quick Edit metadata into the
+8. Copy clip default trims and active source Quick Edit metadata into the
    Stitchr session.
-7. Tap or swipe through each exact UGC-then-demo preview.
-8. Optionally configure one text overlay and one caption/hashtag field per
+9. Tap or swipe through each exact UGC-then-demo preview.
+10. Optionally configure one text overlay and one caption/hashtag field per
    output or copy one overlay across the batch.
-9. Optionally generate an overlay hook, a caption hook, and 3-5 hashtags from
+11. Optionally generate an overlay hook, a caption hook, and 3-5 hashtags from
    the hidden Clipr hook-template engine using saved product context and the
    selected UGC/demo clip descriptions. Stitchr auto-text can draw from
    product/ad hook-library templates, but source names and template IDs stay
@@ -68,13 +75,13 @@ social proof first, product proof immediately after.
    backend writing call uses `TEXT_WRITING_MODEL_ID`, which defaults to
    `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` is supported for
    higher-cost writing tests.
-10. Optionally attach selected shared music to each stitch.
-11. Create one stitched output per selected UGC clip.
-12. Render and save each finished Stitch video.
-13. Download the finished ad variants whenever needed.
-14. Mark saved stitches as posted after they go live so the Stitches library can
+12. Optionally attach selected shared music to each stitch.
+13. Create one stitched output per selected UGC clip.
+14. Render and save each finished Stitch video.
+15. Download the finished ad variants whenever needed.
+16. Mark saved stitches as posted after they go live so the Stitches library can
     separate reusable drafts from already-published assets.
-15. Score a saved stitch when the user wants a quick retention estimate,
+17. Score a saved stitch when the user wants a quick retention estimate,
     hook-to-demo flow read, drop-off risks, trim ideas, overlay ideas, and a
     stronger opening line before posting.
 
@@ -86,6 +93,9 @@ a fresh one the next time the user previews, downloads, or scores the Stitch.
 
 Saved Stitch renders are documented separately in
 `docs/features/saved-stitch-renders.md`.
+
+Stitchr Batch is documented separately in
+`docs/features/stitchr-batch.md`.
 
 Saved stitches are reusable templates. The saved stitch card can launch Stitchr
 with the original source clips, trims, source-audio flags, playback rates, and

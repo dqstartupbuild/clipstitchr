@@ -3,6 +3,7 @@ import { createCliprJob } from "@/lib/clipstitchr/client/createCliprJob";
 import { createProductProfile } from "@/lib/clipstitchr/client/createProductProfile";
 import { createSwaprPrediction } from "@/lib/clipstitchr/client/createSwaprPrediction";
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
+import { generateStitchrBatch } from "@/lib/clipstitchr/client/generateStitchrBatch";
 import { generateSwiprBackgroundWithAi } from "@/lib/clipstitchr/client/generateSwiprBackgroundWithAi";
 import { generateSwiprDrafts } from "@/lib/clipstitchr/client/generateSwiprDrafts";
 import { importPexelsPhotosToSwiprLibrary } from "@/lib/clipstitchr/client/importPexelsPhotosToSwiprLibrary";
@@ -83,7 +84,16 @@ describe("client API wrappers", () => {
       .mockResolvedValueOnce(
         createJsonResponse({ product: { ...product, name: "Updated" } }),
       )
-      .mockResolvedValueOnce(createJsonResponse({ id: "swapr_job_1" }));
+      .mockResolvedValueOnce(createJsonResponse({ id: "swapr_job_1" }))
+      .mockResolvedValueOnce(
+        createJsonResponse({
+          automationDate: "2026-06-17",
+          count: 10,
+          runId: "automation:stitchr:user_123:2026-06-17",
+          status: "running",
+          taskIds: ["task_1"],
+        }),
+      );
 
     await expect(
       createCliprJob({
@@ -143,6 +153,12 @@ describe("client API wrappers", () => {
         totalSegmentCount: 1,
       } as Parameters<typeof createSwaprPrediction>[0]),
     ).resolves.toEqual({ id: "swapr_job_1" });
+    await expect(generateStitchrBatch()).resolves.toEqual(
+      expect.objectContaining({
+        count: 10,
+        status: "running",
+      }),
+    );
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/clipr/jobs",
@@ -153,6 +169,10 @@ describe("client API wrappers", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/settings/products/product%2F1",
       expect.objectContaining({ method: "PATCH" }),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/stitchr/batch/generate",
+      expect.objectContaining({ method: "POST" }),
     );
   });
 

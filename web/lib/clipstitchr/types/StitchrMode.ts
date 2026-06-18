@@ -1,1 +1,1 @@
-export type StitchrMode = "normal" | "longr";
+export type StitchrMode = "batch" | "normal" | "longr";

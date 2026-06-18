@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ClipPickerPanel } from "@/app/_components/stitchr/ClipPickerPanel";
 import { StitchrProgressPanel } from "@/app/_components/stitchr/StitchrProgressPanel";
 import { StitchrEmptyState } from "@/app/_components/stitchr/StitchrEmptyState";
+import { StitchrBatchPanel } from "@/app/_components/stitchr/StitchrBatchPanel";
 import { StitchrHeader } from "@/app/_components/stitchr/StitchrHeader";
 import { StitchrShell } from "@/app/_components/stitchr/StitchrShell";
 import { DownloadStitchesPanel } from "@/app/_components/stitchr/DownloadStitchesPanel";
@@ -12,8 +13,11 @@ import { StitchrAutoTextPanel } from "@/app/_components/stitchr/StitchrAutoTextP
 import { StitchrLongrTimelineStrip } from "@/app/_components/stitchr/StitchrLongrTimelineStrip";
 import { StitchrSocialCaptionPanel } from "@/app/_components/stitchr/StitchrSocialCaptionPanel";
 import { StitchTemplatePicker } from "@/app/_components/stitchr/StitchTemplatePicker";
+import { AUTOMATION_STITCHR_DAILY_LIMIT } from "@/lib/clipstitchr/constants/automationStitchrGenerationLimits";
+import { generateStitchrBatch } from "@/lib/clipstitchr/client/generateStitchrBatch";
 import { maxStitchrUgcSelectionCount } from "@/lib/clipstitchr/constants/maxStitchrUgcSelectionCount";
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
+import { useAutomationPreferences } from "@/lib/clipstitchr/hooks/useAutomationPreferences";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useLoadedVideoClip } from "@/lib/clipstitchr/hooks/useLoadedVideoClip";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
@@ -36,6 +40,7 @@ import { createDefaultTextOverlay } from "@/lib/clipstitchr/utils/createDefaultT
 import { createStitchrTextGenerationClipContext } from "@/lib/clipstitchr/utils/createStitchrTextGenerationClipContext";
 import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
+import { getInitialStitchrMode } from "@/lib/clipstitchr/utils/getInitialStitchrMode";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
@@ -46,6 +51,7 @@ import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoCl
 import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchrUgcSelection";
 
 export function StitchrPageClient() {
+  const automation = useAutomationPreferences();
   const library = useClipLibrary();
   const products = useProducts();
   const stitchTemplates = useStitchTemplates();
@@ -53,7 +59,7 @@ export function StitchrPageClient() {
     loadClip: library.loadClip,
     onCreated: library.refresh,
   });
-  const [mode, setMode] = useState<StitchrMode>("normal");
+  const [mode, setMode] = useState<StitchrMode>(getInitialStitchrMode);
   const [includeDemoAudio, setIncludeDemoAudio] = useState(false);
   const [includeUgcAudio, setIncludeUgcAudio] = useState(false);
   const [demoPlaybackRate, setDemoPlaybackRate] =
@@ -199,6 +205,8 @@ export function StitchrPageClient() {
       );
     },
   );
+  const [isGeneratingBatch, setIsGeneratingBatch] = useState(false);
+  const [batchMessage, setBatchMessage] = useState<string | null>(null);
   const activeSelectedUgcIds = useMemo(() => {
     const validUgcIds = new Set(ugcClips.map((clip) => clip.id));
 
@@ -354,7 +362,9 @@ export function StitchrPageClient() {
     ],
   );
   const canStitch =
-    mode === "longr"
+    mode === "batch"
+      ? false
+      : mode === "longr"
       ? selectedLongrMetadata.length > 0
       : Boolean(
           selectedUgcMetadata.length &&
@@ -362,6 +372,14 @@ export function StitchrPageClient() {
             selectedUgcTrimRange &&
             selectedDemoTrimRange,
         );
+  const isStitchrAutomationReady =
+    automation.preferences.enabled &&
+    automation.preferences.enabledTools.includes("stitchr");
+  const automationDisabledMessage =
+    !automation.isLoading && !isStitchrAutomationReady
+      ? "Turn on Stitchr automation in Settings first."
+      : null;
+  const activeBatchMessage = batchMessage ?? automationDisabledMessage;
   const totalDuration =
     mode === "longr"
       ? selectedLongrDuration
@@ -700,6 +718,7 @@ export function StitchrPageClient() {
       const initialDemoId = getSearchParamValue("demoId");
 
       if (templateStitchId) {
+        setMode("normal");
         setSelectedTemplateId("");
         setAppliedTemplateId("");
         void applyTemplateStitch(templateStitchId);
@@ -707,6 +726,7 @@ export function StitchrPageClient() {
       }
 
       if (templateId) {
+        setMode("normal");
         setSelectedTemplateId(templateId);
         setAppliedTemplateId("");
         return;
@@ -720,6 +740,8 @@ export function StitchrPageClient() {
       if (!initialUgcId && !initialDemoId) {
         return;
       }
+
+      setMode("normal");
 
       if (initialUgcId) {
         setSelectedUgcIds([initialUgcId]);
@@ -1191,6 +1213,47 @@ export function StitchrPageClient() {
     }
   };
 
+  const handleGenerateBatch = useCallback(() => {
+    if (automation.isLoading) {
+      setBatchMessage("Loading automation settings.");
+      return;
+    }
+
+    if (!isStitchrAutomationReady) {
+      setBatchMessage("Turn on Stitchr automation in Settings first.");
+      return;
+    }
+
+    setIsGeneratingBatch(true);
+    setBatchMessage(null);
+
+    void generateStitchrBatch()
+      .then((result) => {
+        if (result.count > 0) {
+          setBatchMessage(
+            `Queued ${result.count} Stitch drafts. ` +
+              "They will show in your library when they are ready.",
+          );
+          return;
+        }
+
+        if (result.message) {
+          setBatchMessage(result.message);
+          return;
+        }
+
+        setBatchMessage("No Stitch drafts were queued today.");
+      })
+      .catch((error) => {
+        setBatchMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to generate Stitch drafts.",
+        );
+      })
+      .finally(() => setIsGeneratingBatch(false));
+  }, [automation.isLoading, isStitchrAutomationReady]);
+
   const handleGenerateAutoText = useCallback(() => {
     if (!activeAutoTextProductId) {
       setAutoTextMessage("Choose a saved Settings product before generating text.");
@@ -1424,18 +1487,34 @@ export function StitchrPageClient() {
     <StitchrShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <StitchrHeader />
-        <StitchTemplatePicker
-          isLoading={stitchTemplates.isLoading}
-          selectedTemplateId={selectedTemplateId}
-          templates={stitchTemplates.templates}
-          onTemplateChange={handleTemplateChange}
-        />
+        {mode === "batch" ? null : (
+          <StitchTemplatePicker
+            isLoading={stitchTemplates.isLoading}
+            selectedTemplateId={selectedTemplateId}
+            templates={stitchTemplates.templates}
+            onTemplateChange={handleTemplateChange}
+          />
+        )}
         {library.error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {library.error}
           </div>
         ) : null}
-        {hasStitchrInputs ? (
+        {hasStitchrInputs && mode === "batch" ? (
+          <StitchrBatchPanel
+            dailyLimit={AUTOMATION_STITCHR_DAILY_LIMIT}
+            isDisabled={
+              automation.isLoading ||
+              isGeneratingBatch ||
+              !isStitchrAutomationReady
+            }
+            isGenerating={isGeneratingBatch}
+            message={activeBatchMessage}
+            mode={mode}
+            onGenerate={handleGenerateBatch}
+            onModeChange={handleModeChange}
+          />
+        ) : hasStitchrInputs ? (
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
             <div className="flex min-w-0 flex-col gap-5">
               <ClipPickerPanel

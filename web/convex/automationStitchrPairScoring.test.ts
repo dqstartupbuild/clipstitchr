@@ -71,4 +71,24 @@ describe("automation Stitchr pair scoring", () => {
       nowMs,
     )).toEqual(pairs);
   });
+
+  it("spreads a batch across different clips before reusing pieces", () => {
+    const pairs = selectStitchrPairs(
+      [
+        candidate({ ugcClipId: "ugc_1", demoClipId: "demo_1" }),
+        candidate({ ugcClipId: "ugc_1", demoClipId: "demo_2" }),
+        candidate({ ugcClipId: "ugc_2", demoClipId: "demo_1" }),
+        candidate({ ugcClipId: "ugc_2", demoClipId: "demo_2" }),
+      ],
+      2,
+      "owner_1:2026-05-31:stitchr",
+      nowMs,
+    );
+    const ugcIds = new Set(pairs.map((pair) => pair.candidate.ugcClipId));
+    const demoIds = new Set(pairs.map((pair) => pair.candidate.demoClipId));
+
+    expect(pairs).toHaveLength(2);
+    expect(ugcIds).toHaveLength(2);
+    expect(demoIds).toHaveLength(2);
+  });
 });

@@ -1,5 +1,7 @@
+import { AUTOMATION_STITCHR_DAILY_LIMIT } from "../lib/clipstitchr/constants/automationStitchrGenerationLimits";
+
 export const automationDailyLimits = {
-  stitchr: 3,
+  stitchr: AUTOMATION_STITCHR_DAILY_LIMIT,
   swapr: 1,
   clipr: 1,
   "avatar-photo": 1,

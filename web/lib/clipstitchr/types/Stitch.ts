@@ -1,8 +1,8 @@
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { QuickEditMetadata } from "@/lib/clipstitchr/types/QuickEditMetadata";
 import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
+import type { SavedStitchrMode } from "@/lib/clipstitchr/types/SavedStitchrMode";
 import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
-import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 import type { StitchSequenceSegment } from "@/lib/clipstitchr/types/StitchSequenceSegment";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -11,7 +11,7 @@ import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 export type Stitch = {
   id: string;
-  mode?: StitchrMode;
+  mode?: SavedStitchrMode;
   name: string;
   ugcClipId: string;
   demoClipId: string;

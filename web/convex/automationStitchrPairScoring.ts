@@ -88,7 +88,8 @@ export function selectStitchrPairs(
   seed: string,
   nowMs: number,
 ) {
-  return candidates
+  const cappedLimit = Math.max(0, Math.floor(limit));
+  const scoredPairs = candidates
     .map((candidate): SelectedStitchrPair => {
       const score = scoreStitchrPair(candidate, nowMs);
       const randomFactor =
@@ -103,6 +104,49 @@ export function selectStitchrPairs(
         score: score * randomFactor,
       };
     })
-    .sort((left, right) => right.score - left.score)
-    .slice(0, Math.max(0, Math.floor(limit)));
+    .sort((left, right) => right.score - left.score);
+  const selectedPairs: SelectedStitchrPair[] = [];
+  const selectedPairKeys = new Set<string>();
+  const selectedUgcClipIds = new Set<string>();
+  const selectedDemoClipIds = new Set<string>();
+
+  while (selectedPairs.length < cappedLimit) {
+    const nextPair =
+      scoredPairs.find((pair) => {
+        const pairKey = `${pair.candidate.ugcClipId}:${pair.candidate.demoClipId}`;
+
+        return (
+          !selectedPairKeys.has(pairKey) &&
+          !selectedUgcClipIds.has(pair.candidate.ugcClipId) &&
+          !selectedDemoClipIds.has(pair.candidate.demoClipId)
+        );
+      }) ??
+      scoredPairs.find((pair) => {
+        const pairKey = `${pair.candidate.ugcClipId}:${pair.candidate.demoClipId}`;
+
+        return (
+          !selectedPairKeys.has(pairKey) &&
+          (!selectedUgcClipIds.has(pair.candidate.ugcClipId) ||
+            !selectedDemoClipIds.has(pair.candidate.demoClipId))
+        );
+      }) ??
+      scoredPairs.find((pair) => {
+        const pairKey = `${pair.candidate.ugcClipId}:${pair.candidate.demoClipId}`;
+
+        return !selectedPairKeys.has(pairKey);
+      });
+
+    if (!nextPair) {
+      break;
+    }
+
+    selectedPairs.push(nextPair);
+    selectedPairKeys.add(
+      `${nextPair.candidate.ugcClipId}:${nextPair.candidate.demoClipId}`,
+    );
+    selectedUgcClipIds.add(nextPair.candidate.ugcClipId);
+    selectedDemoClipIds.add(nextPair.candidate.demoClipId);
+  }
+
+  return selectedPairs;
 }

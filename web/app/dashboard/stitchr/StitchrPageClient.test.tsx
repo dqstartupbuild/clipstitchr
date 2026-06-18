@@ -1,6 +1,6 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StitchrPageClient } from "@/app/dashboard/stitchr/StitchrPageClient";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
@@ -78,8 +78,28 @@ const mocks = vi.hoisted(() => ({
     savingTemplateId: null as string | null,
     templates: [],
   },
+  automationState: {
+    error: null as string | null,
+    isLoading: false,
+    isSaving: false,
+    preferences: {
+      avatarSelectionMode: "all",
+      cliprGenerationMode: "any",
+      enabled: true,
+      enabledTools: ["stitchr", "clipr", "swipr"],
+      productSelectionMode: "all",
+      selectedAvatarIds: [],
+      selectedProductIds: [],
+      stitchrTextBackgroundColorChoice: "any",
+      stitchrTextColorChoice: "any",
+      stitchrTextStyleChoice: "any",
+    },
+    savePreferences: vi.fn(),
+  },
   autoTextPanelProps: null as Record<string, unknown> | null,
+  batchPanelProps: null as Record<string, unknown> | null,
   clipPickerPanelProps: null as Record<string, unknown> | null,
+  generateStitchrBatch: vi.fn(),
   generateCliprText: vi.fn(),
   sequencePreviewPanelProps: null as Record<string, unknown> | null,
   socialCaptionPanelProps: null as Record<string, unknown> | null,
@@ -133,6 +153,13 @@ vi.mock("@/app/_components/stitchr/ClipPickerPanel", () => ({
   },
 }));
 
+vi.mock("@/app/_components/stitchr/StitchrBatchPanel", () => ({
+  StitchrBatchPanel: (props: Record<string, unknown>) => {
+    mocks.batchPanelProps = props;
+    return "StitchrBatchPanel";
+  },
+}));
+
 vi.mock("@/app/_components/stitchr/StitchrAutoTextPanel", () => ({
   StitchrAutoTextPanel: (props: Record<string, unknown>) => {
     mocks.autoTextPanelProps = props;
@@ -170,6 +197,10 @@ vi.mock("@/lib/clipstitchr/hooks/useClipLibrary", () => ({
   useClipLibrary: () => mocks.clipLibraryState,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useAutomationPreferences", () => ({
+  useAutomationPreferences: () => mocks.automationState,
+}));
+
 vi.mock("@/lib/clipstitchr/hooks/useLoadedVideoClip", () => ({
   useLoadedVideoClip: () => mocks.loadedClipState,
 }));
@@ -188,6 +219,10 @@ vi.mock("@/lib/clipstitchr/hooks/useStitchTemplates", () => ({
 
 vi.mock("@/lib/clipstitchr/client/generateCliprText", () => ({
   generateCliprText: mocks.generateCliprText,
+}));
+
+vi.mock("@/lib/clipstitchr/client/generateStitchrBatch", () => ({
+  generateStitchrBatch: mocks.generateStitchrBatch,
 }));
 
 function createClip(id: string, clipType: "ugc" | "demo"): VideoClipMetadata {
@@ -326,6 +361,13 @@ function queueStitchrState(
 describe("StitchrPageClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal("window", {
+      addEventListener: vi.fn(),
+      location: {
+        href: "https://clipstitchr.test/dashboard/stitchr?mode=normal",
+      },
+      removeEventListener: vi.fn(),
+    });
     mocks.clipLibraryState.clips = [];
     mocks.clipLibraryState.error = null;
     mocks.clipLibraryState.isLoading = false;
@@ -347,13 +389,54 @@ describe("StitchrPageClient", () => {
       slides: ["Generated overlay"],
       socialCaption: "Generated caption\n\n#launchkit #ugc #demo",
     });
+    mocks.generateStitchrBatch.mockResolvedValue({
+      automationDate: "2026-06-17",
+      count: 2,
+      runId: "automation:stitchr:user_123:2026-06-17",
+      status: "running",
+      taskIds: ["task_1", "task_2"],
+    });
     mocks.autoTextPanelProps = null;
+    mocks.batchPanelProps = null;
     mocks.clipPickerPanelProps = null;
     mocks.sequencePreviewPanelProps = null;
     mocks.socialCaptionPanelProps = null;
     mocks.stateQueue.length = 0;
     mocks.stateSetters.length = 0;
     mocks.useEffect.mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("opens the plain Stitchr page in Batch mode by default", async () => {
+    vi.stubGlobal("window", {
+      addEventListener: vi.fn(),
+      location: {
+        href: "https://clipstitchr.test/dashboard/stitchr",
+      },
+      removeEventListener: vi.fn(),
+    });
+
+    const markup = renderToStaticMarkup(<StitchrPageClient />);
+
+    expect(markup).toContain("StitchrBatchPanel");
+    expect(markup).not.toContain("ClipPickerPanel");
+    expect(mocks.batchPanelProps).toEqual(
+      expect.objectContaining({
+        dailyLimit: 10,
+        isDisabled: false,
+        mode: "batch",
+      }),
+    );
+
+    (mocks.batchPanelProps as { onGenerate: () => void }).onGenerate();
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mocks.generateStitchrBatch).toHaveBeenCalledTimes(1);
   });
 
   it("renders the Stitchr build workspace from category-specific media groups", () => {

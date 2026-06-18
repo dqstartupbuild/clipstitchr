@@ -22,6 +22,7 @@ import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/ge
 import { resolveAutomationStitchrColor } from "../lib/clipstitchr/utils/resolveAutomationStitchrColor";
 import { resolveAutomationStitchrTextStyleId } from "../lib/clipstitchr/utils/resolveAutomationStitchrTextStyleId";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
+import { requestWorkerLaunch } from "./workerLaunch";
 
 function createRunId(ownerId: string, automationDate: string) {
   return `automation:stitchr:${ownerId}:${automationDate}`;
@@ -120,6 +121,7 @@ export const planDaily = mutation({
         runId: createRunId(ownerId, automationDate),
         status: "skipped",
         taskIds: [],
+        message: "Stitchr automation is outside the daily generation window.",
       };
     }
 
@@ -133,6 +135,7 @@ export const planDaily = mutation({
         runId: createRunId(ownerId, automationDate),
         status: "skipped",
         taskIds: [],
+        message: "Stitchr automation is turned off right now.",
       };
     }
 
@@ -141,6 +144,7 @@ export const planDaily = mutation({
         runId: createRunId(ownerId, automationDate),
         status: "skipped",
         taskIds: [],
+        message: "Turn on Stitchr automation in Settings first.",
       };
     }
 
@@ -174,6 +178,7 @@ export const planDaily = mutation({
         runId: run.id,
         status: run.status,
         taskIds: [],
+        message: `Today's Stitchr batch is already ${run.status}.`,
       };
     }
 
@@ -202,6 +207,8 @@ export const planDaily = mutation({
         runId: run.id,
         status: "skipped",
         taskIds: [],
+        message:
+          "Stitchr automation needs at least one UGC clip and one Demo clip.",
       };
     }
 
@@ -301,6 +308,8 @@ export const planDaily = mutation({
         runId: run.id,
         status: "skipped",
         taskIds: [],
+        message:
+          "Stitchr automation could not find eligible UGC and Demo pairs.",
       };
     }
 
@@ -451,6 +460,14 @@ export const planDaily = mutation({
       startedAt: now,
       updatedAt: now,
     });
+
+    if (taskIds.length > 0) {
+      await requestWorkerLaunch({
+        ctx,
+        now,
+        worker: "provider",
+      });
+    }
 
     return {
       runId: run.id,
