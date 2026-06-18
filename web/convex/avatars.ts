@@ -3,6 +3,8 @@ import { assertProductBelongsToOwner } from "./assertProductBelongsToOwner";
 import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import { createNotification } from "./createNotification";
+import { getAvatarNotificationCopy } from "./getAvatarNotificationCopy";
 import { rateLimiter } from "./rateLimiter";
 import { avatarWardrobeStyleValidator } from "./validators/avatarWardrobeStyle";
 
@@ -77,7 +79,22 @@ export const save = mutation({
       return existingAvatar._id;
     }
 
-    return await ctx.db.insert("avatars", avatar);
+    const avatarDocumentId = await ctx.db.insert("avatars", avatar);
+    const notificationCopy = getAvatarNotificationCopy(args);
+
+    await createNotification(ctx, {
+      ownerId,
+      productId: args.productId,
+      sourceType: "avatar",
+      sourceId: args.id,
+      dedupeKey: `avatar:${args.id}:created`,
+      title: notificationCopy.title,
+      preview: notificationCopy.preview,
+      message: notificationCopy.message,
+      createdAt: args.createdAt,
+    });
+
+    return avatarDocumentId;
   },
 });
 

@@ -1887,18 +1887,15 @@ async function processAvatarPhoto({
     updatedAt: savedAt,
   });
 
-  await Promise.all([
-    markTaskStatus({
-      client,
-      config,
-      task,
-      status: "completed",
-      stage: "completed",
-      outputAssetId: photoId,
-      providerJobId: prediction.id,
-    }),
-    markRunStatus({ client, config, task, status: "completed" }),
-  ]);
+  await markTaskStatus({
+    client,
+    config,
+    task,
+    status: "completed",
+    stage: "completed",
+    outputAssetId: photoId,
+    providerJobId: prediction.id,
+  });
 }
 
 async function processSwipr({
@@ -2078,18 +2075,15 @@ async function processSwipr({
     updatedAt: now,
   });
 
-  await Promise.all([
-    markTaskStatus({
-      client,
-      config,
-      task,
-      status: "completed",
-      stage: "completed",
-      outputAssetId: swipeId,
-      providerJobId: textGeneration.providerPredictionId,
-    }),
-    markRunStatus({ client, config, task, status: "completed" }),
-  ]);
+  await markTaskStatus({
+    client,
+    config,
+    task,
+    status: "completed",
+    stage: "completed",
+    outputAssetId: swipeId,
+    providerJobId: textGeneration.providerPredictionId,
+  });
 }
 
 async function processManualSwaprStart({

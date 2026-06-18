@@ -25,6 +25,7 @@ import { clipTypeValidator } from "./validators/clipType";
 import { mediaJobStatusValidator } from "./validators/mediaJobStatus";
 import { mediaJobTypeValidator } from "./validators/mediaJobType";
 import { musicTrackSourceValidator } from "./validators/musicTrackSource";
+import { notificationSourceTypeValidator } from "./validators/notificationSourceType";
 import { providerJobStatusValidator } from "./validators/providerJobStatus";
 import { providerJobTypeValidator } from "./validators/providerJobType";
 import { quickEditMetadataValidator } from "./validators/quickEditMetadata";
@@ -451,6 +452,25 @@ export default defineSchema({
     lastRequestedAt: v.string(),
     updatedAt: v.string(),
   }).index("by_worker", ["worker"]),
+  notifications: defineTable({
+    ownerId: v.string(),
+    productId: v.optional(v.string()),
+    id: v.string(),
+    dedupeKey: v.string(),
+    sourceType: notificationSourceTypeValidator,
+    sourceId: v.optional(v.string()),
+    title: v.string(),
+    preview: v.string(),
+    message: v.string(),
+    isRead: v.boolean(),
+    readAt: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_dedupe", ["ownerId", "dedupeKey"])
+    .index("by_owner_id", ["ownerId", "id"])
+    .index("by_owner_is_read_created", ["ownerId", "isRead", "createdAt"]),
   automationPreferences: defineTable({
     ownerId: v.string(),
     productId: v.optional(v.string()),

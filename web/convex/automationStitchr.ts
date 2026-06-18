@@ -15,6 +15,7 @@ import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForP
 import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
 import { createQuickEditSuggestionsFromMetadata } from "./createQuickEditSuggestionsFromMetadata";
 import { getQuickEditOverlayText } from "./getQuickEditOverlayText";
+import { createCompletedRunNotification } from "./createCompletedRunNotification";
 import { defaultAutomationGenerationCount } from "../lib/clipstitchr/constants/defaultAutomationGenerationCount";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
@@ -28,6 +29,7 @@ import { resolveAutomationStitchrTextStyleId } from "../lib/clipstitchr/utils/re
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 import { recordStitchrBatchPairHistory } from "./recordStitchrBatchPairHistory";
 import { getIsStitchrBatchRunId } from "./stitchrBatchRunId";
+import { markAutomationRunStatus } from "./markAutomationRunStatus";
 import { requestWorkerLaunch } from "./workerLaunch";
 
 function createRunId(
@@ -649,6 +651,17 @@ export const recordOutput = mutation({
       runTask.id === task.id ? true : runTask.status === "completed",
     );
 
+    if (allTasksCompleted && isStitchrBatchOutput) {
+      await createCompletedRunNotification(ctx, {
+        automationDate,
+        completedAt,
+        ownerId,
+        runId: task.runId,
+        sourceType: "stitchr-batch",
+        tool: "stitchr",
+      });
+    }
+
     if (allTasksCompleted && !isStitchrBatchOutput) {
       const run = await ctx.db
         .query("automationRuns")
@@ -658,9 +671,9 @@ export const recordOutput = mutation({
         .unique();
 
       if (run) {
-        await ctx.db.patch(run._id, {
+        await markAutomationRunStatus(ctx, {
+          runDocumentId: run._id,
           status: "completed",
-          completedAt,
           updatedAt: completedAt,
         });
       }
@@ -786,6 +799,17 @@ export const recordOutputFromMediaWorker = mutation({
       runTask.id === task.id ? true : runTask.status === "completed",
     );
 
+    if (allTasksCompleted && isStitchrBatchOutput) {
+      await createCompletedRunNotification(ctx, {
+        automationDate,
+        completedAt,
+        ownerId,
+        runId: task.runId,
+        sourceType: "stitchr-batch",
+        tool: "stitchr",
+      });
+    }
+
     if (allTasksCompleted && !isStitchrBatchOutput) {
       const run = await ctx.db
         .query("automationRuns")
@@ -795,9 +819,9 @@ export const recordOutputFromMediaWorker = mutation({
         .unique();
 
       if (run) {
-        await ctx.db.patch(run._id, {
+        await markAutomationRunStatus(ctx, {
+          runDocumentId: run._id,
           status: "completed",
-          completedAt,
           updatedAt: completedAt,
         });
       }

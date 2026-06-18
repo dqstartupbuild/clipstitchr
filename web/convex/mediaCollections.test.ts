@@ -389,7 +389,11 @@ describe("convex media collections", () => {
       )(queryCtx, { avatarId: "avatar_2" }),
     ).resolves.toBe(secondPhoto);
 
-    const insertCtx = createCtx({ photoAssets: [{ unique: null }] });
+    const insertCtx = createCtx({
+      avatars: [{ unique: { _id: "avatar_doc", id: "avatar_1" } }],
+      notifications: [{ unique: null }],
+      photoAssets: [{ unique: null }],
+    });
 
     await expect(
       getHandler<Record<string, unknown>, unknown>(photoAssets.save)(
@@ -399,6 +403,7 @@ describe("convex media collections", () => {
     ).resolves.toBe("inserted_doc");
 
     const saveCtx = createCtx({
+      avatars: [{ unique: { _id: "avatar_doc", id: "avatar_1" } }],
       photoAssets: [
         { unique: { _id: "photo_doc_1" } },
         { unique: { _id: "photo_doc_1" } },
@@ -747,7 +752,7 @@ describe("convex media collections", () => {
         missingProductCtx,
         createSwipeArgs(),
       ),
-    ).rejects.toThrow("Saved Settings product not found.");
+    ).rejects.toThrow("Product not found.");
 
     const blankNameCtx = createCtx({
       products: [

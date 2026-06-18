@@ -15,6 +15,7 @@ import { automationTaskTypeValidator } from "./validators/automationTaskType";
 import { automationToolValidator } from "./validators/automationTool";
 import { getAutomationToolDisabledReason } from "./getAutomationToolDisabledReason";
 import { getIsStitchrBatchRunId } from "./stitchrBatchRunId";
+import { markAutomationRunCompletedWhenTasksDone } from "./markAutomationRunCompletedWhenTasksDone";
 import { requestWorkerLaunch } from "./workerLaunch";
 
 type AutomationTaskDocument = Doc<"automationTasks">;
@@ -447,6 +448,15 @@ export const markStatus = mutation({
       ...(error === undefined ? {} : { error }),
       updatedAt,
     });
+
+    if (status === "completed") {
+      await markAutomationRunCompletedWhenTasksDone(ctx, {
+        completedTaskId: task.id,
+        ownerId,
+        runId: task.runId,
+        updatedAt,
+      });
+    }
   },
 });
 
@@ -518,6 +528,15 @@ export const markProviderStatus = mutation({
       ...(error === undefined ? {} : { error }),
       updatedAt,
     });
+
+    if (status === "completed") {
+      await markAutomationRunCompletedWhenTasksDone(ctx, {
+        completedTaskId: task.id,
+        ownerId,
+        runId: task.runId,
+        updatedAt,
+      });
+    }
 
     if (status === "queued") {
       await requestWorkerLaunch({
@@ -606,5 +625,14 @@ export const markMediaStatus = mutation({
       ...(error === undefined ? {} : { error }),
       updatedAt,
     });
+
+    if (status === "completed") {
+      await markAutomationRunCompletedWhenTasksDone(ctx, {
+        completedTaskId: task.id,
+        ownerId,
+        runId: task.runId,
+        updatedAt,
+      });
+    }
   },
 });

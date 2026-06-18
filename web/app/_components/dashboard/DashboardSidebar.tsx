@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { BrandMark } from "@/app/_components/BrandMark";
+import { DashboardNotificationBell } from "@/app/_components/dashboard/DashboardNotificationBell";
 import { DashboardProductSwitcher } from "@/app/_components/dashboard/DashboardProductSwitcher";
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 
@@ -40,6 +41,7 @@ export function DashboardSidebar() {
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-surface px-4 py-3 lg:hidden">
         <BrandMark />
         <div className="flex items-center gap-2">
+          <DashboardNotificationBell />
           <UserButton />
           <button
             type="button"

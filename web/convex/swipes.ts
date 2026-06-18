@@ -3,6 +3,8 @@ import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecre
 import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import { createNotification } from "./createNotification";
+import { getSwipeNotificationCopy } from "./getSwipeNotificationCopy";
 import { rateLimiter } from "./rateLimiter";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { r2ObjectValidator } from "./validators/r2Object";
@@ -168,7 +170,25 @@ export const save = mutation({
       return existingSwipe._id;
     }
 
-    return await ctx.db.insert("swipes", swipe);
+    const swipeDocumentId = await ctx.db.insert("swipes", swipe);
+    const notificationCopy = getSwipeNotificationCopy({
+      name: normalizedFields.name,
+      productName: normalizedFields.productName,
+    });
+
+    await createNotification(ctx, {
+      ownerId,
+      productId: args.productSourceId,
+      sourceType: "swipe",
+      sourceId: args.id,
+      dedupeKey: `swipe:${args.id}:created`,
+      title: notificationCopy.title,
+      preview: notificationCopy.preview,
+      message: notificationCopy.message,
+      createdAt: args.createdAt,
+    });
+
+    return swipeDocumentId;
   },
 });
 

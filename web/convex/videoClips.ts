@@ -6,9 +6,11 @@ import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
 import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import { createNotification } from "./createNotification";
 import { videoClipCounts } from "./aggregateCounts";
 import { getVideoClipCanBePosted } from "./getVideoClipCanBePosted";
 import { getVideoClipLibraryKind } from "./getVideoClipLibraryKind";
+import { getVideoClipNotificationCopy } from "./getVideoClipNotificationCopy";
 import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
@@ -274,6 +276,20 @@ export const save = mutation({
       await videoClipCounts.insertIfDoesNotExist(ctx, insertedClip);
     }
 
+    const notificationCopy = getVideoClipNotificationCopy(args);
+
+    await createNotification(ctx, {
+      ownerId,
+      productId: requestedProductId,
+      sourceType: "video-clip",
+      sourceId: args.id,
+      dedupeKey: `video-clip:${args.id}:created`,
+      title: notificationCopy.title,
+      preview: notificationCopy.preview,
+      message: notificationCopy.message,
+      createdAt: args.createdAt,
+    });
+
     return clipId;
   },
 });
@@ -392,6 +408,22 @@ export const saveFromMediaWorker = mutation({
 
     if (insertedClip) {
       await videoClipCounts.insertIfDoesNotExist(ctx, insertedClip);
+    }
+
+    if (!automation) {
+      const notificationCopy = getVideoClipNotificationCopy(args);
+
+      await createNotification(ctx, {
+        ownerId,
+        productId: args.productId,
+        sourceType: "video-clip",
+        sourceId: args.id,
+        dedupeKey: `video-clip:${args.id}:created`,
+        title: notificationCopy.title,
+        preview: notificationCopy.preview,
+        message: notificationCopy.message,
+        createdAt: args.createdAt,
+      });
     }
 
     return clipId;
@@ -523,6 +555,10 @@ export const updateMetadata = mutation({
 
       if (!requestedProductId) {
         throw new Error("Choose a product before saving this video.");
+      }
+
+      if (clip.clipType !== "demo") {
+        throw new Error("Only demo videos can be linked to products.");
       }
 
       await assertProductBelongsToOwner(ctx, ownerId, requestedProductId);

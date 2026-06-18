@@ -1,5 +1,5 @@
 import React from "react";
-import { useConvexAuth, useQuery } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
@@ -25,10 +25,19 @@ vi.mock("convex/react", () => ({
     isLoading: false,
   })),
   useQuery: vi.fn(() => []),
+  useMutation: vi.fn(() => vi.fn()),
 }));
 
 vi.mock("@/app/_components/dashboard/UploadDestinationMenuButton", () => ({
   UploadDestinationMenuButton: () => <button type="button">Upload</button>,
+}));
+
+vi.mock("@/app/_components/dashboard/DashboardNotificationBell", () => ({
+  DashboardNotificationBell: () => <button type="button">Notifications</button>,
+}));
+
+vi.mock("@/app/_components/dashboard/DashboardProductSwitcher", () => ({
+  DashboardProductSwitcher: () => <button type="button">Product</button>,
 }));
 
 vi.mock("@/lib/clipstitchr/analytics/trackPostHogEvent", () => ({
@@ -64,6 +73,10 @@ describe("dashboard shell sections", () => {
     });
     vi.mocked(useQuery).mockReset();
     vi.mocked(useQuery).mockReturnValue([]);
+    vi.mocked(useMutation).mockReset();
+    vi.mocked(useMutation).mockReturnValue(
+      vi.fn() as unknown as ReturnType<typeof useMutation>,
+    );
   });
 
   it("renders headers, shell navigation, sidebar links, and stats", () => {

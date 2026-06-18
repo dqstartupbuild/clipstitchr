@@ -39,6 +39,13 @@ vi.mock("@/convex/_generated/api", () => ({
     mediaJobs: {
       listActive: "mediaJobs.listActive",
     },
+    notifications: {
+      clearAll: "notifications.clearAll",
+      listRecent: "notifications.listRecent",
+      markAllRead: "notifications.markAllRead",
+      markRead: "notifications.markRead",
+      remove: "notifications.remove",
+    },
     providerJobs: {
       listActive: "providerJobs.listActive",
     },

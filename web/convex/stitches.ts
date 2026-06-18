@@ -5,7 +5,9 @@ import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
 import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import { createNotification } from "./createNotification";
 import { getStitchProductId } from "./getStitchProductId";
+import { getStitchNotificationCopy } from "./getStitchNotificationCopy";
 import { stitchCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
@@ -194,6 +196,20 @@ export const save = mutation({
     if (insertedStitch) {
       await stitchCounts.insertIfDoesNotExist(ctx, insertedStitch);
     }
+
+    const notificationCopy = getStitchNotificationCopy(args);
+
+    await createNotification(ctx, {
+      ownerId,
+      productId,
+      sourceType: "stitch",
+      sourceId: args.id,
+      dedupeKey: `stitch:${args.id}:created`,
+      title: notificationCopy.title,
+      preview: notificationCopy.preview,
+      message: notificationCopy.message,
+      createdAt: args.createdAt,
+    });
 
     return stitchId;
   },

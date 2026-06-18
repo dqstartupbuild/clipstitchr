@@ -4,6 +4,8 @@ import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
 import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import { markAutomationRunCompletedIfAllTasksDone } from "./markAutomationRunCompletedIfAllTasksDone";
+import { markAutomationRunStatus } from "./markAutomationRunStatus";
 import { automationRunStatusValidator } from "./validators/automationRunStatus";
 import { automationToolValidator } from "./validators/automationTool";
 
@@ -79,13 +81,19 @@ export const markStatus = mutation({
       throw new Error("Automation run not found.");
     }
 
-    await ctx.db.patch(run._id, {
+    if (status === "completed") {
+      await markAutomationRunCompletedIfAllTasksDone(ctx, {
+        ownerId,
+        runId: id,
+        updatedAt,
+      });
+      return;
+    }
+
+    await markAutomationRunStatus(ctx, {
+      runDocumentId: run._id,
       status,
-      ...(status === "running" && !run.startedAt ? { startedAt: updatedAt } : {}),
-      ...(status === "completed" ? { completedAt: updatedAt } : {}),
-      ...(status === "skipped" ? { skippedAt: updatedAt } : {}),
-      ...(status === "failed" ? { failedAt: updatedAt } : {}),
-      ...(error === undefined ? {} : { error }),
+      error,
       updatedAt,
     });
   },
@@ -112,13 +120,19 @@ export const markProviderStatus = mutation({
       throw new Error("Automation run not found.");
     }
 
-    await ctx.db.patch(run._id, {
+    if (status === "completed") {
+      await markAutomationRunCompletedIfAllTasksDone(ctx, {
+        ownerId,
+        runId: id,
+        updatedAt,
+      });
+      return;
+    }
+
+    await markAutomationRunStatus(ctx, {
+      runDocumentId: run._id,
       status,
-      ...(status === "running" && !run.startedAt ? { startedAt: updatedAt } : {}),
-      ...(status === "completed" ? { completedAt: updatedAt } : {}),
-      ...(status === "skipped" ? { skippedAt: updatedAt } : {}),
-      ...(status === "failed" ? { failedAt: updatedAt } : {}),
-      ...(error === undefined ? {} : { error }),
+      error,
       updatedAt,
     });
   },
@@ -145,13 +159,19 @@ export const markMediaStatus = mutation({
       throw new Error("Automation run not found.");
     }
 
-    await ctx.db.patch(run._id, {
+    if (status === "completed") {
+      await markAutomationRunCompletedIfAllTasksDone(ctx, {
+        ownerId,
+        runId: id,
+        updatedAt,
+      });
+      return;
+    }
+
+    await markAutomationRunStatus(ctx, {
+      runDocumentId: run._id,
       status,
-      ...(status === "running" && !run.startedAt ? { startedAt: updatedAt } : {}),
-      ...(status === "completed" ? { completedAt: updatedAt } : {}),
-      ...(status === "skipped" ? { skippedAt: updatedAt } : {}),
-      ...(status === "failed" ? { failedAt: updatedAt } : {}),
-      ...(error === undefined ? {} : { error }),
+      error,
       updatedAt,
     });
   },

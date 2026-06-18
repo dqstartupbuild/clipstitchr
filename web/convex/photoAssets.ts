@@ -4,6 +4,8 @@ import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecre
 import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import { createNotification } from "./createNotification";
+import { getPhotoNotificationCopy } from "./getPhotoNotificationCopy";
 import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
@@ -178,7 +180,22 @@ export const save = mutation({
       return existingPhoto._id;
     }
 
-    return await ctx.db.insert("photoAssets", photo);
+    const photoDocumentId = await ctx.db.insert("photoAssets", photo);
+    const notificationCopy = getPhotoNotificationCopy(args);
+
+    await createNotification(ctx, {
+      ownerId,
+      productId: args.productId,
+      sourceType: "photo",
+      sourceId: args.id,
+      dedupeKey: `photo:${args.id}:created`,
+      title: notificationCopy.title,
+      preview: notificationCopy.preview,
+      message: notificationCopy.message,
+      createdAt: args.createdAt,
+    });
+
+    return photoDocumentId;
   },
 });
 
@@ -213,7 +230,9 @@ export const saveFromAutomation = mutation({
       return existingPhoto._id;
     }
 
-    return await ctx.db.insert("photoAssets", photo);
+    const photoDocumentId = await ctx.db.insert("photoAssets", photo);
+
+    return photoDocumentId;
   },
 });
 
@@ -255,7 +274,25 @@ export const saveFromProvider = mutation({
       return existingPhoto._id;
     }
 
-    return await ctx.db.insert("photoAssets", photo);
+    const photoDocumentId = await ctx.db.insert("photoAssets", photo);
+
+    if (!automation) {
+      const notificationCopy = getPhotoNotificationCopy(args);
+
+      await createNotification(ctx, {
+        ownerId,
+        productId: args.productId,
+        sourceType: "photo",
+        sourceId: args.id,
+        dedupeKey: `photo:${args.id}:created`,
+        title: notificationCopy.title,
+        preview: notificationCopy.preview,
+        message: notificationCopy.message,
+        createdAt: args.createdAt,
+      });
+    }
+
+    return photoDocumentId;
   },
 });
 
