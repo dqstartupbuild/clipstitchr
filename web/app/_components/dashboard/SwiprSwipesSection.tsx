@@ -50,11 +50,7 @@ export function SwiprSwipesSection({
     () => new Map(backgrounds.map((background) => [background.id, background])),
     [backgrounds],
   );
-  const visibleSwipes = useMemo(
-    () => swipes.filter((swipe) => backgroundsById.has(swipe.backgroundId)),
-    [backgroundsById, swipes],
-  );
-  const pagination = usePagination(visibleSwipes, {
+  const pagination = usePagination(swipes, {
     pageSize: uploadLibraryPageSize,
   });
   const pageItemIds = useMemo(
@@ -82,7 +78,7 @@ export function SwiprSwipesSection({
         <div className="flex items-center gap-3">
           <h2 className="text-xl font-bold text-text-primary">{title}</h2>
           <span className="text-sm font-semibold text-text-tertiary">
-            {visibleSwipes.length}
+            {swipes.length}
           </span>
         </div>
         <div className="flex flex-col gap-2 sm:items-end">
@@ -113,7 +109,7 @@ export function SwiprSwipesSection({
               ))}
             </div>
           ) : null}
-          {visibleSwipes.length ? (
+          {swipes.length ? (
             <LibraryBatchActionBar
               areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
               isDeletingSelected={batchDelete.isDeletingSelected}
@@ -131,20 +127,14 @@ export function SwiprSwipesSection({
           ) : null}
         </div>
       </div>
-      {visibleSwipes.length ? (
+      {swipes.length ? (
         <>
           <div className="grid justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {pagination.pageItems.map((swipe) => {
-              const background = backgroundsById.get(swipe.backgroundId);
-
-              if (!background) {
-                return null;
-              }
-
               return (
                 <SwiprSwipeCard
                   key={swipe.id}
-                  background={background}
+                  background={backgroundsById.get(swipe.backgroundId)}
                   backgrounds={backgrounds}
                   swipe={swipe}
                   isSelected={batchDelete.selectedIds.has(swipe.id)}

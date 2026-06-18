@@ -5,10 +5,11 @@ import {
   Download,
   Edit3,
   Eye,
+  ImageOff,
   RotateCcw,
   Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { SwiprSwipeDetailsDialog } from "@/app/_components/dashboard/SwiprSwipeDetailsDialog";
 import { Badge } from "@/app/_components/ui/Badge";
 import {
@@ -29,7 +30,7 @@ import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlide
 import { getSwiprSwipeEditHref } from "@/lib/clipstitchr/utils/getSwiprSwipeEditHref";
 
 type SwiprSwipeCardProps = {
-  background: SwiprBackgroundAsset;
+  background?: SwiprBackgroundAsset;
   backgrounds: SwiprBackgroundAsset[];
   isSelected?: boolean;
   isSelectionDisabled?: boolean;
@@ -66,11 +67,37 @@ export function SwiprSwipeCard({
     id: string;
     message: string;
   } | null>(null);
+  const backgroundsById = useMemo(
+    () => {
+      const nextBackgroundsById = new Map(
+        backgrounds.map((item) => [item.id, item] as const),
+      );
+
+      if (background) {
+        nextBackgroundsById.set(background.id, background);
+      }
+
+      return nextBackgroundsById;
+    },
+    [background, backgrounds],
+  );
+  const missingBackgroundCount = useMemo(() => {
+    const referencedIds = new Set([
+      swipe.backgroundId,
+      ...swipe.slides.map((slide) =>
+        getSwiprSlideBackgroundId(slide, swipe.backgroundId),
+      ),
+    ]);
+
+    return [...referencedIds].filter((id) => !backgroundsById.has(id)).length;
+  }, [backgroundsById, swipe.backgroundId, swipe.slides]);
+  const hasMissingBackground = missingBackgroundCount > 0;
   const backgroundBlob =
-    background.blob ??
-    (loadedBackground?.id === background.id ? loadedBackground.blob : undefined);
-  const backgroundErrorMessage =
-    backgroundError?.id === background.id ? backgroundError.message : null;
+    background?.blob ??
+    (background && loadedBackground && loadedBackground.id === background.id
+      ? loadedBackground.blob
+      : undefined);
+  const backgroundErrorMessage = backgroundError?.message ?? null;
   const backgroundUrl = useObjectUrl(backgroundBlob);
   const isPosted = Boolean(swipe.isPosted);
   const [postedStatusError, setPostedStatusError] = useState<string | null>(
@@ -94,17 +121,19 @@ export function SwiprSwipeCard({
   useEffect(() => {
     let isCancelled = false;
 
-    if (background.blob) {
+    if (!background || background.blob) {
       return () => {
         isCancelled = true;
       };
     }
 
-    void onLoadBackgroundBlob(background.id)
+    const currentBackgroundId = background.id;
+
+    void onLoadBackgroundBlob(currentBackgroundId)
       .then((blob) => {
         if (!isCancelled) {
           setLoadedBackground({
-            id: background.id,
+            id: currentBackgroundId,
             blob,
           });
         }
@@ -112,7 +141,7 @@ export function SwiprSwipeCard({
       .catch((error) => {
         if (!isCancelled) {
           setBackgroundError({
-            id: background.id,
+            id: currentBackgroundId,
             message:
               error instanceof Error
                 ? error.message
@@ -124,15 +153,21 @@ export function SwiprSwipeCard({
     return () => {
       isCancelled = true;
     };
-  }, [background.blob, background.id, onLoadBackgroundBlob]);
+  }, [background, onLoadBackgroundBlob]);
 
   const downloadSwipe = () => {
     void Promise.resolve()
       .then(async () => {
+        const currentBackground = background;
+
+        if (hasMissingBackground || !currentBackground) {
+          throw new Error("This Swipe is missing a photo.");
+        }
+
         const blob =
-          backgroundBlob ?? (await onLoadBackgroundBlob(background.id));
+          backgroundBlob ?? (await onLoadBackgroundBlob(currentBackground.id));
         const fallbackBackground = getSwiprBackgroundFromAsset({
-          ...background,
+          ...currentBackground,
           blob,
         });
         const slideBackgrounds: Parameters<
@@ -140,7 +175,7 @@ export function SwiprSwipeCard({
         >[0]["slideBackgrounds"] = {};
 
         setLoadedBackground({
-          id: background.id,
+          id: currentBackground.id,
           blob,
         });
 
@@ -150,16 +185,16 @@ export function SwiprSwipeCard({
             swipe.backgroundId,
           );
           const slideBackgroundAsset =
-            backgroundId === background.id
-              ? background
-              : backgrounds.find((item) => item.id === backgroundId);
+            backgroundId === currentBackground.id
+              ? currentBackground
+              : backgroundsById.get(backgroundId);
 
           if (!slideBackgroundAsset) {
             throw new Error("Unable to load this Swipe photo.");
           }
 
           const slideBlob =
-            backgroundId === background.id
+            backgroundId === currentBackground.id
               ? blob
               : slideBackgroundAsset.blob ??
                 (await onLoadBackgroundBlob(slideBackgroundAsset.id));
@@ -179,7 +214,7 @@ export function SwiprSwipeCard({
       })
       .catch((error) => {
         setBackgroundError({
-          id: background.id,
+          id: background?.id ?? swipe.backgroundId,
           message:
             error instanceof Error
               ? error.message
@@ -216,7 +251,7 @@ export function SwiprSwipeCard({
     {
       label: "Download Swipe",
       icon: <Download aria-hidden className="h-4 w-4" />,
-      disabled: exporter.status === "rendering",
+      disabled: exporter.status === "rendering" || hasMissingBackground,
       onClick: downloadSwipe,
     },
     {
@@ -249,6 +284,12 @@ export function SwiprSwipeCard({
     },
   ];
 
+  const previewUrl = hasMissingBackground ? null : (posterUrl ?? backgroundUrl);
+  const missingBackgroundCopy =
+    missingBackgroundCount === 1
+      ? "A photo for this Swipe was deleted."
+      : "Some photos for this Swipe were deleted.";
+
   return (
     <>
       <Panel
@@ -263,15 +304,31 @@ export function SwiprSwipeCard({
           className="relative block aspect-[9/11] w-full bg-slate-100 text-left"
           onClick={() => setIsDetailsOpen(true)}
         >
-          {posterUrl || backgroundUrl ? (
+          {previewUrl ? (
             <span
               aria-hidden
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${posterUrl ?? backgroundUrl})` }}
+              style={{ backgroundImage: `url(${previewUrl})` }}
             />
           ) : null}
-          <span className="absolute inset-0 bg-slate-950/10" />
-          {!posterUrl ? (
+          {hasMissingBackground ? (
+            <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-100 px-5 text-center">
+              <ImageOff
+                aria-hidden
+                className="h-9 w-9 text-text-tertiary"
+              />
+              <span className="text-sm font-bold text-text-primary">
+                Photo is missing
+              </span>
+              <span className="text-xs font-semibold leading-5 text-text-secondary">
+                Edit or delete this Swipe.
+              </span>
+            </span>
+          ) : null}
+          {!hasMissingBackground ? (
+            <span className="absolute inset-0 bg-slate-950/10" />
+          ) : null}
+          {!previewUrl && !hasMissingBackground ? (
             <span className="absolute bottom-3 left-3 right-3 rounded-md bg-white/95 px-3 py-2 shadow-sm">
               <span className="block truncate text-sm font-bold text-text-primary">
                 {swipe.name}
@@ -305,10 +362,15 @@ export function SwiprSwipeCard({
                   {socialDescription}
                 </p>
               ) : null}
+              {hasMissingBackground ? (
+                <p className="mt-2 text-xs font-semibold leading-5 text-amber-700">
+                  {missingBackgroundCopy}
+                </p>
+              ) : null}
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <Badge>
-                {isPosted ? "POSTED" : "SWIPE"}
+                {hasMissingBackground ? "MISSING" : isPosted ? "POSTED" : "SWIPE"}
               </Badge>
               <MediaCardActionMenu
                 label={`Actions for ${swipe.name}`}
@@ -330,14 +392,20 @@ export function SwiprSwipeCard({
       </Panel>
       {isDetailsOpen ? (
         <SwiprSwipeDetailsDialog
-          background={{
-            ...background,
-            ...(backgroundBlob ? { blob: backgroundBlob } : {}),
-          }}
+          background={
+            background
+              ? {
+                  ...background,
+                  ...(backgroundBlob ? { blob: backgroundBlob } : {}),
+                }
+              : undefined
+          }
           backgrounds={backgrounds}
           editHref={editHref}
+          isDownloadDisabled={hasMissingBackground}
           swipe={swipe}
           isDownloading={exporter.status === "rendering"}
+          missingBackgroundCount={missingBackgroundCount}
           onClose={() => setIsDetailsOpen(false)}
           onDelete={() => {
             setIsDetailsOpen(false);

@@ -29,10 +29,6 @@ export function RecentSwipesSection({
   const backgroundsById = new Map(
     backgrounds.map((background) => [background.id, background]),
   );
-  const visibleSwipes = swipes.filter((swipe) =>
-    backgroundsById.has(swipe.backgroundId),
-  );
-
   return (
     <section id="recent-swipes">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -44,19 +40,13 @@ export function RecentSwipesSection({
           See all
         </SecondaryButtonLink>
       </div>
-      {visibleSwipes.length ? (
+      {swipes.length ? (
         <div className="grid justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {visibleSwipes.map((swipe) => {
-            const background = backgroundsById.get(swipe.backgroundId);
-
-            if (!background) {
-              return null;
-            }
-
+          {swipes.map((swipe) => {
             return (
               <SwiprSwipeCard
                 key={swipe.id}
-                background={background}
+                background={backgroundsById.get(swipe.backgroundId)}
                 backgrounds={backgrounds}
                 swipe={swipe}
                 onLoadBackgroundBlob={onLoadBackgroundBlob}

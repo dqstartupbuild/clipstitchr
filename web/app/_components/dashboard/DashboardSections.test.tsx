@@ -162,7 +162,7 @@ describe("dashboard shell sections", () => {
     expect(markup).toContain("No uploads yet");
   });
 
-  it("renders populated recent dashboard cards and filters missing swipe backgrounds", () => {
+  it("renders populated recent dashboard cards and keeps missing-background Swipes visible", () => {
     const markup = renderToStaticMarkup(
       <>
         <RecentStitchesSection
@@ -198,7 +198,7 @@ describe("dashboard shell sections", () => {
 
     expect(markup).toContain("Stitch stitch_1");
     expect(markup).toContain("Swipe swipe_1");
-    expect(markup).not.toContain("Swipe swipe_2");
+    expect(markup).toContain("Swipe swipe_2");
     expect(markup).toContain("Clip clip_1");
   });
 });

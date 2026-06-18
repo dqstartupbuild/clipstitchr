@@ -97,7 +97,8 @@ The Swipes tab shows saved Swipe cards with:
 - Background preview.
 - Last updated date.
 - Caption, description, and hashtag preview when they exist.
-- Download action for the current saved version.
+- Download action for the current saved version when all saved photos still
+  exist.
 - Mark posted or active action.
 - Detail action.
 - Continue editing action.
@@ -106,6 +107,12 @@ The Swipes tab shows saved Swipe cards with:
 The All tab includes Swipes with the other saved content types. Swipe posted
 status is stored on the saved Swipe record and is separate from video clip
 posted status.
+
+If a user deletes a Pexels pack or another saved photo that a Swipe still
+references, the Swipe stays visible in the library with a missing-photo state
+instead of disappearing from the list. Missing-photo Swipes keep their Edit and
+Delete actions so the user can choose new photos or remove the saved Swipe.
+Download is disabled until every referenced photo exists again.
 
 The Swipe detail view lets the user swipe or step through the saved carousel
 images. The detail view renders previews from the saved editable data and the

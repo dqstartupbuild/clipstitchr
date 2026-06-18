@@ -27,6 +27,7 @@ vi.mock("react", async (importOriginal) => {
     ...actual,
     useCallback: (callback: unknown) => callback,
     useEffect: (effect: () => void | (() => void)) => effect(),
+    useMemo: (factory: () => unknown) => factory(),
     useState: (initialValue: unknown) => {
       const value = mocks.stateQueue.length
         ? mocks.stateQueue.shift()
@@ -286,6 +287,31 @@ describe("SwiprSwipeCard", () => {
 
     expect(markup).toContain("The faster way to plan a launch.");
     expect(markup).toContain("#launch #founders");
+  });
+
+  it("shows missing-background Swipes with edit and delete actions", () => {
+    const onLoadBackgroundBlob = vi.fn();
+
+    mocks.stateQueue = [false, false, null, null, null];
+
+    const tree = SwiprSwipeCard({
+      backgrounds: [],
+      onDelete: vi.fn(),
+      onLoadBackgroundBlob,
+      swipe: createSwipe(),
+    });
+    const markup = JSON.stringify(tree);
+    const actionItems = getActionItems(tree);
+
+    expect(onLoadBackgroundBlob).not.toHaveBeenCalled();
+    expect(markup).toContain("Photo is missing");
+    expect(markup).toContain("Edit or delete this Swipe.");
+    expect(markup).toContain("A photo for this Swipe was deleted.");
+    expect(actionItems.find((item) => item.label === "Download Swipe")?.disabled).toBe(true);
+    expect(actionItems.find((item) => item.label === "Edit Swipe")?.href).toBe(
+      "/dashboard/swipr?mode=edit&swipe=swipe_1",
+    );
+    expect(actionItems.some((item) => item.label === "Delete Swipe")).toBe(true);
   });
 
   it("stores load and download errors", async () => {

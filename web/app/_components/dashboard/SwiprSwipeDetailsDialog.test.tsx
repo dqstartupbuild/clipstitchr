@@ -308,4 +308,28 @@ describe("SwiprSwipeDetailsDialog", () => {
       )?.disabled,
     ).toBe(true);
   });
+
+  it("shows missing photo copy and disables download for orphaned Swipes", () => {
+    mocks.useObjectUrl.mockReturnValue(null);
+
+    const tree = SwiprSwipeDetailsDialog({
+      backgrounds: [],
+      editHref: "/dashboard/swipr?mode=edit&swipe=swipe_1",
+      isDownloadDisabled: true,
+      isDownloading: false,
+      missingBackgroundCount: 1,
+      onClose: vi.fn(),
+      onDelete: vi.fn(),
+      onDownload: vi.fn(),
+      onLoadBackgroundBlob: vi.fn(async () => new Blob(["background"])),
+      swipe: createSwipe(),
+    });
+    const markup = renderToStaticMarkup(tree);
+
+    expect(markup).toContain("Photo is missing");
+    expect(markup).toContain("A photo for this Swipe was deleted.");
+    expect(markup).toContain("/dashboard/swipr?mode=edit&amp;swipe=swipe_1");
+    expect(mocks.buttons[0]?.disabled).toBe(true);
+    expect(mocks.overlayProps).toBeNull();
+  });
 });
