@@ -8,7 +8,6 @@ import { CliprGenerationProgress } from "@/app/_components/clipr/CliprGeneration
 import { CliprJobResult } from "@/app/_components/clipr/CliprJobResult";
 import { CliprModeToggle } from "@/app/_components/clipr/CliprModeToggle";
 import { CliprMusicControl } from "@/app/_components/clipr/CliprMusicControl";
-import { CliprProductPanel } from "@/app/_components/clipr/CliprProductPanel";
 import { CliprScriptIdeaPanel } from "@/app/_components/clipr/CliprScriptIdeaPanel";
 import { CliprSceneControls } from "@/app/_components/clipr/CliprSceneControls";
 import { CliprVoiceSelect } from "@/app/_components/clipr/CliprVoiceSelect";
@@ -23,18 +22,17 @@ import { defaultCliprVoiceId } from "@/lib/clipstitchr/constants/defaultCliprVoi
 import { isCliprScriptModeEnabled } from "@/lib/clipstitchr/constants/isCliprScriptModeEnabled";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useCliprGeneration } from "@/lib/clipstitchr/hooks/useCliprGeneration";
+import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
-import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 
 export function CliprPageClient() {
   const library = useClipLibrary();
-  const products = useProducts();
+  const products = useDashboardProduct();
   const photoLibrary = usePhotoLibrary();
   const generator = useCliprGeneration({ onCreated: library.refresh });
-  const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedAvatarId, setSelectedAvatarId] = useState("");
   const [selectedDemoClipId, setSelectedDemoClipId] = useState("");
   const [mode, setMode] = useState<CliprGenerationMode>(
@@ -50,8 +48,7 @@ export function CliprPageClient() {
   } | null>(null);
   const [selectedMusicTrack, setSelectedMusicTrack] =
     useState<SharedMusicTrack | null>(null);
-  const activeProductId =
-    selectedProductId || products.defaultProductId || products.products[0]?.id || "";
+  const activeProductId = products.activeProductId ?? "";
   const defaultAvatar = useMemo(
     () =>
       photoLibrary.defaultAvatarId
@@ -143,11 +140,6 @@ export function CliprPageClient() {
                   onChange={setScriptIdea}
                 />
               ) : null}
-              <CliprProductPanel
-                products={products.products}
-                selectedProductId={activeProductId}
-                onChange={setSelectedProductId}
-              />
               {isDemoMode ? (
                 <CliprDemoClipPanel
                   clips={demoClips}

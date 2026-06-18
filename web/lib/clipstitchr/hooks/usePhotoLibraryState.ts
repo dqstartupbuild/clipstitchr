@@ -59,7 +59,7 @@ type AvatarDeleteResponse = {
   message?: string;
 };
 
-export function usePhotoLibraryState(): PhotoLibraryValue {
+export function usePhotoLibraryState(productId?: string): PhotoLibraryValue {
   const convex = useConvex();
   const pathname = usePathname() ?? "";
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
@@ -85,17 +85,18 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
       isSwiprRoute);
   const shouldLoadPhotoPreferences =
     isAuthenticated && (shouldLoadAvatarDocuments || isUploadsRoute);
+  const productQueryArgs = productId ? { productId } : {};
   const photoDocuments = useQuery(
     api.photoAssets.list,
-    shouldLoadPhotoDocuments ? {} : "skip",
+    shouldLoadPhotoDocuments ? productQueryArgs : "skip",
   );
   const avatarDocuments = useQuery(
     api.avatars.list,
-    shouldLoadAvatarDocuments ? {} : "skip",
+    shouldLoadAvatarDocuments ? productQueryArgs : "skip",
   );
   const avatarPreferences = useQuery(
     api.avatarPreferences.get,
-    shouldLoadPhotoPreferences ? {} : "skip",
+    shouldLoadPhotoPreferences ? productQueryArgs : "skip",
   );
   const cliprPreferences = useQuery(
     api.cliprPreferences.get,
@@ -154,6 +155,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
         const now = new Date().toISOString();
         const avatar: Avatar = {
           id: createId(),
+          productId,
           name: trimmedName,
           description: trimmedDescription || undefined,
           wardrobeStyle,
@@ -178,7 +180,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
         setIsSaving(false);
       }
     },
-    [refresh, resolvedDefaultCliprVoiceId, saveAvatar],
+    [productId, refresh, resolvedDefaultCliprVoiceId, saveAvatar],
   );
 
   const loadPhoto = useCallback(async (id: string) => {
@@ -316,6 +318,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
 
             await saveAvatar({
               id: uploadAvatarId,
+              productId,
               name: trimmedAvatarName,
               description: analysis.avatarDescription,
               wardrobeStyle: "any",
@@ -366,6 +369,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
             ]);
           const photo: PhotoAsset = {
             id: photoId,
+            productId,
             avatarId: uploadAvatarId,
             name: analysis.name,
             tags: normalizeAssetTagsWithRequiredTag(analysis.tags, "photo"),
@@ -394,6 +398,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
 
           await savePhotoAsset({
             id: photo.id,
+            productId: photo.productId,
             avatarId: photo.avatarId,
             name: photo.name,
             tags: photo.tags ?? [],
@@ -436,6 +441,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
     },
     [
       avatars,
+      productId,
       refresh,
       resolvedDefaultCliprVoiceId,
       saveAvatar,
@@ -580,6 +586,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
       try {
         await setDefaultAvatarMutation({
           avatarId: avatar.id,
+          productId,
           updatedAt: new Date().toISOString(),
         });
         await refresh();
@@ -594,7 +601,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
         setIsSaving(false);
       }
     },
-    [refresh, setDefaultAvatarMutation],
+    [productId, refresh, setDefaultAvatarMutation],
   );
 
   const setDefaultCliprVoice = useCallback(
@@ -716,6 +723,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
             ]);
           const photo: PhotoAsset = {
             id: photoId,
+            productId,
             name: getGeneratedAvatarPhotoName({
               index,
               location: variant.locationDescription,
@@ -752,6 +760,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
 
           await savePhotoAsset({
             id: photo.id,
+            productId: photo.productId,
             avatarId: photo.avatarId,
             name: photo.name,
             tags: photo.tags ?? [],
@@ -790,7 +799,7 @@ export function usePhotoLibraryState(): PhotoLibraryValue {
         setIsSaving(false);
       }
     },
-    [refresh, savePhotoAsset],
+    [productId, refresh, savePhotoAsset],
   );
 
   const removePhoto = useCallback(

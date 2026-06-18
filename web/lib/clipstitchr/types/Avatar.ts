@@ -2,6 +2,7 @@ import type { AvatarWardrobeStyle } from "@/lib/clipstitchr/types/AvatarWardrobe
 
 export type Avatar = {
   id: string;
+  productId?: string;
   name: string;
   description?: string;
   wardrobeStyle: AvatarWardrobeStyle;

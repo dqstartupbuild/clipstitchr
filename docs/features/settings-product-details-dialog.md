@@ -1,6 +1,7 @@
-# Settings Product Details Dialog
+# Product Details Dialog
 
-Saved products in Settings can be opened in a read-only details dialog.
+Saved products can be opened in a read-only details dialog from product
+management surfaces.
 
 ## What It Does
 

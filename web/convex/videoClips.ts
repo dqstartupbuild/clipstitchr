@@ -1,5 +1,6 @@
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
+import { assertProductBelongsToOwner } from "./assertProductBelongsToOwner";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
 import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
@@ -79,37 +80,54 @@ const postedStatusValidator = v.union(
 export const list = query({
   args: {
     paginationOpts: paginationOptsValidator,
+    productId: v.optional(v.string()),
     postedStatus: v.optional(postedStatusValidator),
     sortOrder: v.optional(librarySortOrderValidator),
   },
-  handler: async (ctx, { paginationOpts, postedStatus = "all", sortOrder }) => {
+  handler: async (
+    ctx,
+    { paginationOpts, productId, postedStatus = "all", sortOrder },
+  ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const productFilterId = productId?.trim() || undefined;
 
     if (postedStatus === "active") {
-      return await ctx.db
+      const query = ctx.db
         .query("videoClips")
         .withIndex("by_owner_is_posted_created", (q) =>
           q.eq("ownerId", ownerId).eq("isPosted", undefined),
         )
-        .order(sortOrder === "oldest" ? "asc" : "desc")
-        .paginate(paginationOpts);
+        .order(sortOrder === "oldest" ? "asc" : "desc");
+
+      return await (productFilterId
+        ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+        : query
+      ).paginate(paginationOpts);
     }
 
     if (postedStatus === "posted") {
-      return await ctx.db
+      const query = ctx.db
         .query("videoClips")
         .withIndex("by_owner_is_posted_created", (q) =>
           q.eq("ownerId", ownerId).eq("isPosted", true),
         )
-        .order(sortOrder === "oldest" ? "asc" : "desc")
-        .paginate(paginationOpts);
+        .order(sortOrder === "oldest" ? "asc" : "desc");
+
+      return await (productFilterId
+        ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+        : query
+      ).paginate(paginationOpts);
     }
 
-    return await ctx.db
+    const query = ctx.db
       .query("videoClips")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order(sortOrder === "oldest" ? "asc" : "desc")
-      .paginate(paginationOpts);
+      .order(sortOrder === "oldest" ? "asc" : "desc");
+
+    return await (productFilterId
+      ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+      : query
+    ).paginate(paginationOpts);
   },
 });
 
@@ -117,17 +135,19 @@ export const listByLibraryKind = query({
   args: {
     kind: videoClipLibraryKindValidator,
     paginationOpts: paginationOptsValidator,
+    productId: v.optional(v.string()),
     postedStatus: v.optional(postedStatusValidator),
     sortOrder: v.optional(librarySortOrderValidator),
   },
   handler: async (
     ctx,
-    { kind, paginationOpts, postedStatus = "all", sortOrder },
+    { kind, paginationOpts, productId, postedStatus = "all", sortOrder },
   ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const productFilterId = productId?.trim() || undefined;
 
     if (postedStatus === "active") {
-      return await ctx.db
+      const query = ctx.db
         .query("videoClips")
         .withIndex("by_owner_library_kind_is_posted_created", (q) =>
           q
@@ -135,27 +155,39 @@ export const listByLibraryKind = query({
             .eq("libraryKind", kind)
             .eq("isPosted", undefined),
         )
-        .order(sortOrder === "oldest" ? "asc" : "desc")
-        .paginate(paginationOpts);
+        .order(sortOrder === "oldest" ? "asc" : "desc");
+
+      return await (productFilterId
+        ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+        : query
+      ).paginate(paginationOpts);
     }
 
     if (postedStatus === "posted") {
-      return await ctx.db
+      const query = ctx.db
         .query("videoClips")
         .withIndex("by_owner_library_kind_is_posted_created", (q) =>
           q.eq("ownerId", ownerId).eq("libraryKind", kind).eq("isPosted", true),
         )
-        .order(sortOrder === "oldest" ? "asc" : "desc")
-        .paginate(paginationOpts);
+        .order(sortOrder === "oldest" ? "asc" : "desc");
+
+      return await (productFilterId
+        ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+        : query
+      ).paginate(paginationOpts);
     }
 
-    return await ctx.db
+    const query = ctx.db
       .query("videoClips")
       .withIndex("by_owner_library_kind_created", (q) =>
         q.eq("ownerId", ownerId).eq("libraryKind", kind),
       )
-      .order(sortOrder === "oldest" ? "asc" : "desc")
-      .paginate(paginationOpts);
+      .order(sortOrder === "oldest" ? "asc" : "desc");
+
+    return await (productFilterId
+      ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+      : query
+    ).paginate(paginationOpts);
   },
 });
 
@@ -199,28 +231,13 @@ export const save = mutation({
       throws: true,
     });
 
-    let demoProductId: string | undefined;
+    const requestedProductId = args.productId?.trim() || undefined;
 
-    if (args.clipType === "demo") {
-      const requestedProductId = args.productId?.trim();
-
-      if (!requestedProductId) {
-        throw new Error("Choose a product before saving a demo video.");
-      }
-
-      const product = await ctx.db
-        .query("products")
-        .withIndex("by_owner_id", (q) =>
-          q.eq("ownerId", ownerId).eq("id", requestedProductId),
-        )
-        .unique();
-
-      if (!product) {
-        throw new Error("Product not found.");
-      }
-
-      demoProductId = requestedProductId;
+    if (args.clipType === "demo" && !requestedProductId) {
+      throw new Error("Choose a product before saving a demo video.");
     }
+
+    await assertProductBelongsToOwner(ctx, ownerId, requestedProductId);
 
     const existingClip = await ctx.db
       .query("videoClips")
@@ -228,15 +245,15 @@ export const save = mutation({
         q.eq("ownerId", ownerId).eq("id", args.id),
       )
       .unique();
-    const clipArgs = { ...args };
-
-    delete clipArgs.productId;
+    const clipArgs = {
+      ...args,
+      productId: requestedProductId,
+    };
 
     const clip = {
       ownerId,
       ...clipArgs,
       libraryKind: getVideoClipLibraryKind(clipArgs),
-      ...(demoProductId ? { productId: demoProductId } : {}),
     };
 
     if (existingClip) {
@@ -499,31 +516,16 @@ export const updateMetadata = mutation({
       throw new Error("Video clip not found.");
     }
 
-    let demoProductId: string | undefined;
+    let requestedProductId: string | undefined;
 
     if (productId !== undefined) {
-      if (clip.clipType !== "demo") {
-        throw new Error("Only demo videos can be linked to products.");
-      }
-
-      const requestedProductId = productId.trim();
+      requestedProductId = productId.trim();
 
       if (!requestedProductId) {
-        throw new Error("Choose a product before saving a demo video.");
+        throw new Error("Choose a product before saving this video.");
       }
 
-      const product = await ctx.db
-        .query("products")
-        .withIndex("by_owner_id", (q) =>
-          q.eq("ownerId", ownerId).eq("id", requestedProductId),
-        )
-        .unique();
-
-      if (!product) {
-        throw new Error("Product not found.");
-      }
-
-      demoProductId = requestedProductId;
+      await assertProductBelongsToOwner(ctx, ownerId, requestedProductId);
     }
 
     await ctx.db.patch(clip._id, {
@@ -535,7 +537,7 @@ export const updateMetadata = mutation({
       ...(locationDescription === undefined ? {} : { locationDescription }),
       ...(poseDescription === undefined ? {} : { poseDescription }),
       ...(productDescription === undefined ? {} : { productDescription }),
-      ...(demoProductId === undefined ? {} : { productId: demoProductId }),
+      ...(productId === undefined ? {} : { productId: requestedProductId }),
       ...(defaultTrimRange === undefined ? {} : { defaultTrimRange }),
       updatedAt,
     });

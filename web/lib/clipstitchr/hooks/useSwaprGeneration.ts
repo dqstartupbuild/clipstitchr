@@ -21,6 +21,7 @@ type GenerateSwaprVideoOptions = {
   characterOrientation: SwaprCharacterOrientation;
   generationSpeedTier?: GenerationSpeedTier;
   keepOriginalSound: boolean;
+  productId?: string;
 };
 
 export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
@@ -40,6 +41,7 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
       characterOrientation,
       generationSpeedTier,
       keepOriginalSound,
+      productId,
     }: GenerateSwaprVideoOptions) => {
       setStatus("uploading");
       setProgress(0.05);
@@ -68,6 +70,7 @@ export function useSwaprGeneration(onClipSaved?: () => void | Promise<void>) {
           keepOriginalSound,
           mode,
           photoId: photo.id,
+          productId,
           prompt,
           referenceClipId: clip.id,
           referenceClipName: clip.name,

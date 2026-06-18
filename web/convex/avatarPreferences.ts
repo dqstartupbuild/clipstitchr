@@ -4,23 +4,40 @@ import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
 
 export const get = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    productId: v.optional(v.string()),
+  },
+  handler: async (ctx, { productId }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    if (productId) {
+      const productPreferences = await ctx.db
+        .query("avatarPreferences")
+        .withIndex("by_owner_product", (q) =>
+          q.eq("ownerId", ownerId).eq("productId", productId),
+        )
+        .unique();
+
+      if (productPreferences) {
+        return productPreferences;
+      }
+    }
 
     return await ctx.db
       .query("avatarPreferences")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-      .unique();
+      .filter((q) => q.eq(q.field("productId"), undefined))
+      .first();
   },
 });
 
 export const setDefaultAvatar = mutation({
   args: {
     avatarId: v.string(),
+    productId: v.optional(v.string()),
     updatedAt: v.string(),
   },
-  handler: async (ctx, { avatarId, updatedAt }) => {
+  handler: async (ctx, { avatarId, productId, updatedAt }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
@@ -39,12 +56,19 @@ export const setDefaultAvatar = mutation({
       throw new Error("Avatar not found.");
     }
 
+    if (productId && avatar.productId !== productId) {
+      throw new Error("Avatar not found for this product.");
+    }
+
     const existing = await ctx.db
       .query("avatarPreferences")
-      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+      .withIndex("by_owner_product", (q) =>
+        q.eq("ownerId", ownerId).eq("productId", productId),
+      )
       .unique();
     const preferences = {
       ownerId,
+      productId,
       defaultAvatarId: avatar.id,
       updatedAt,
     };

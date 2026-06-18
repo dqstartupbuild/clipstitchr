@@ -65,6 +65,7 @@ export function useCreateAvatarFromUgcClip({
             blob: posterBlob,
             mimeType: posterBlob.type || "image/jpeg",
             name: clip.name,
+            productId: avatar.productId,
           },
           avatarId: avatar.id,
           avatarName: avatar.name,

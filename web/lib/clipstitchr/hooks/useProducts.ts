@@ -57,7 +57,7 @@ export function useProducts() {
     preferredDefaultProductId &&
     products.some((product) => product.id === preferredDefaultProductId)
       ? preferredDefaultProductId
-      : undefined;
+      : products[0]?.id;
   const createProduct = useCallback(async (input: ProductProfileCreateInput) => {
     setIsCreating(true);
     setError(null);

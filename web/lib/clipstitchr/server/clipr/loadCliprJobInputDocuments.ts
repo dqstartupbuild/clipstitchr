@@ -22,6 +22,7 @@ export async function loadCliprJobInputDocuments({
         ? Promise.resolve(null)
         : convex.query(api.photoAssets.getFirstForAvatar, {
             avatarId: input.avatarId,
+            productId: input.productId,
           }),
       input.generationMode === "demo" && input.demoClipId
         ? convex.query(api.videoClips.get, { id: input.demoClipId })
@@ -39,6 +40,14 @@ export async function loadCliprJobInputDocuments({
     throw new Error("Avatar not found.");
   }
 
+  if (
+    input.generationMode !== "demo" &&
+    avatarDocument?.productId &&
+    avatarDocument.productId !== input.productId
+  ) {
+    throw new Error("Avatar not found for this product.");
+  }
+
   if (input.generationMode !== "demo" && !avatarPhotoDocument) {
     throw new Error("Upload at least one photo for this avatar.");
   }
@@ -53,6 +62,14 @@ export async function loadCliprJobInputDocuments({
     demoClipDocument.clipType !== "demo"
   ) {
     throw new Error("Choose a saved demo video.");
+  }
+
+  if (
+    input.generationMode === "demo" &&
+    demoClipDocument?.productId &&
+    demoClipDocument.productId !== input.productId
+  ) {
+    throw new Error("Demo video not found for this product.");
   }
 
   if (input.musicTrackId && !selectedMusicTrack) {

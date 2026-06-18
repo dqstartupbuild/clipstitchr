@@ -4,11 +4,23 @@ import type { MutationCtx } from "./_generated/server";
 export async function getDefaultAvatarForOwner(
   ctx: MutationCtx,
   ownerId: string,
+  productId?: string,
 ): Promise<Doc<"avatars"> | null> {
-  const preferences = await ctx.db
-    .query("avatarPreferences")
-    .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-    .unique();
+  const productPreferences = productId
+    ? await ctx.db
+        .query("avatarPreferences")
+        .withIndex("by_owner_product", (q) =>
+          q.eq("ownerId", ownerId).eq("productId", productId),
+        )
+        .unique()
+    : null;
+  const preferences =
+    productPreferences ??
+    (await ctx.db
+      .query("avatarPreferences")
+      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+      .filter((q) => q.eq(q.field("productId"), undefined))
+      .first());
 
   if (!preferences?.defaultAvatarId) {
     return null;
@@ -16,10 +28,16 @@ export async function getDefaultAvatarForOwner(
 
   const defaultAvatarId = preferences.defaultAvatarId;
 
-  return await ctx.db
+  const avatar = await ctx.db
     .query("avatars")
     .withIndex("by_owner_id", (q) =>
       q.eq("ownerId", ownerId).eq("id", defaultAvatarId),
     )
     .unique();
+
+  if (productId && avatar?.productId && avatar.productId !== productId) {
+    return null;
+  }
+
+  return avatar;
 }

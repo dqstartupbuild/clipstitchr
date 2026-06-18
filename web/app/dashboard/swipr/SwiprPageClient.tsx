@@ -12,7 +12,6 @@ import { SwiprManualControls } from "@/app/_components/swipr/SwiprManualControls
 import { SwiprModeToggle } from "@/app/_components/swipr/SwiprModeToggle";
 import { SwiprPexelsPanel } from "@/app/_components/swipr/SwiprPexelsPanel";
 import { SwiprPreviewPanel } from "@/app/_components/swipr/SwiprPreviewPanel";
-import { SwiprProductPanel } from "@/app/_components/swipr/SwiprProductPanel";
 import { SwiprSocialCaptionField } from "@/app/_components/swipr/SwiprSocialCaptionField";
 import { SwiprSlideStrip } from "@/app/_components/swipr/SwiprSlideStrip";
 import { SwiprTextOverlayPanel } from "@/app/_components/swipr/SwiprTextOverlayPanel";
@@ -29,8 +28,8 @@ import { importPexelsPhotosToSwiprLibrary } from "@/lib/clipstitchr/client/impor
 import { loadPexelsPhotoBlob } from "@/lib/clipstitchr/client/loadPexelsPhotoBlob";
 import { searchPexelsPhotos } from "@/lib/clipstitchr/client/searchPexelsPhotos";
 import { SWIPR_PEXELS_IMPORT_LIMIT } from "@/lib/clipstitchr/constants/swiprPexelsImportLimit";
+import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
-import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import type { PexelsPhotoResult } from "@/lib/clipstitchr/types/PexelsPhotoResult";
@@ -46,8 +45,6 @@ import { createSwiprSlides } from "@/lib/clipstitchr/utils/createSwiprSlides";
 import { createSwiprSlide } from "@/lib/clipstitchr/utils/createSwiprSlide";
 import { getProductSwiprContext } from "@/lib/clipstitchr/utils/getProductSwiprContext";
 import { getSwiprBackgroundFromAsset } from "@/lib/clipstitchr/utils/getSwiprBackgroundFromAsset";
-import { getSwiprSavedProductIdFromOptionValue } from "@/lib/clipstitchr/utils/getSwiprSavedProductIdFromOptionValue";
-import { getSwiprSavedProductOptionValue } from "@/lib/clipstitchr/utils/getSwiprSavedProductOptionValue";
 import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
 import { getSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getSwiprLibraryPacks";
 import { createSwiprSwipeSocialDescription } from "@/lib/clipstitchr/utils/createSwiprSwipeSocialDescription";
@@ -66,18 +63,9 @@ export function SwiprPageClient() {
   const searchParams = useSearchParams();
   const requestedSwipeId = searchParams.get("swipe")?.trim() || null;
   const photoLibrary = usePhotoLibrary();
-  const products = useProducts();
+  const products = useDashboardProduct();
   const swiprLibrary = useSwiprLibrary();
   const exporter = useSwiprExport();
-  const productOptions = useMemo(
-    () =>
-      products.products.map((product) => ({
-        value: getSwiprSavedProductOptionValue(product.id),
-        label: product.name,
-      })),
-    [products.products],
-  );
-  const [selectedProductId, setSelectedProductId] = useState<string>();
   const [swiprMode, setSwiprMode] = useState<SwiprMode>(() => {
     return requestedSwipeId ? "manual" : "batch";
   });
@@ -123,16 +111,8 @@ export function SwiprPageClient() {
   const [socialCopyMessage, setSocialCopyMessage] = useState<string | null>(
     null,
   );
-  const defaultProductId = products.defaultProductId ?? products.products[0]?.id;
-  const defaultSavedProductId = defaultProductId
-    ? getSwiprSavedProductOptionValue(defaultProductId)
-    : "";
-  const activeProductId = selectedProductId ?? defaultSavedProductId;
-  const selectedSavedProductId =
-    getSwiprSavedProductIdFromOptionValue(activeProductId);
-  const selectedSavedProduct = selectedSavedProductId
-    ? products.products.find((product) => product.id === selectedSavedProductId)
-    : undefined;
+  const selectedSavedProduct = products.activeProduct;
+  const selectedSavedProductId = selectedSavedProduct?.id;
   const productContext = selectedSavedProduct
     ? getProductSwiprContext(selectedSavedProduct)
     : "";
@@ -318,7 +298,7 @@ export function SwiprPageClient() {
   const generateAiBackgrounds = useCallback(async () => {
     if (!selectedSavedProduct) {
       setBackgroundError(
-        "Choose a saved Settings product before generating photos.",
+        "Choose a product from the sidebar before generating photos.",
       );
       return;
     }
@@ -828,7 +808,7 @@ export function SwiprPageClient() {
   const handleGenerateDrafts = () => {
     if (!selectedSavedProductId) {
       setAutoTextMessage(
-        "Choose a saved Settings product before generating drafts.",
+        "Choose a product from the sidebar before generating drafts.",
       );
       return;
     }
@@ -867,7 +847,7 @@ export function SwiprPageClient() {
   const handleGenerateAutoText = () => {
     if (!selectedSavedProductId) {
       setAutoTextMessage(
-        "Choose a saved Settings product before generating text.",
+        "Choose a product from the sidebar before generating text.",
       );
       return;
     }
@@ -951,7 +931,7 @@ export function SwiprPageClient() {
     }
 
     if (!selectedSavedProductId) {
-      setSaveMessage("Choose a saved Settings product before saving.");
+      setSaveMessage("Choose a product from the sidebar before saving.");
       return;
     }
 
@@ -1089,9 +1069,6 @@ export function SwiprPageClient() {
           return;
         }
 
-        setSelectedProductId(
-          getSwiprSavedProductOptionValue(savedSwipe.productSourceId),
-        );
         setSlides(slidesWithBackgrounds);
         setActiveSlideId(slidesWithBackgrounds[0]?.id ?? null);
         setBackground(getSwiprBackgroundFromAsset(savedBackground));
@@ -1181,11 +1158,6 @@ export function SwiprPageClient() {
                 ) : (
                   <SwiprModeToggle value={swiprMode} onChange={setSwiprMode} />
                 )}
-                <SwiprProductPanel
-                  productOptions={productOptions}
-                  selectedProductId={activeProductId}
-                  onProductChange={setSelectedProductId}
-                />
                 {activeSwiprMode === "batch" ? (
                   <SwiprBatchControls
                     draftGenerationCount={draftGenerationCount}

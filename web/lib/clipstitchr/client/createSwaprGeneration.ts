@@ -14,6 +14,7 @@ type CreateSwaprGenerationOptions = {
   keepOriginalSound: boolean;
   mode: SwaprMode;
   photoId: string;
+  productId?: string;
   prompt: string;
   referenceClipId: string;
   referenceClipName: string;

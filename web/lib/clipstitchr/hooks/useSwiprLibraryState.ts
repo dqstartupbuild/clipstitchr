@@ -26,18 +26,21 @@ import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getSwiprLibraryBackgroundsByPackName } from "@/lib/clipstitchr/utils/getSwiprLibraryBackgroundsByPackName";
 import { normalizeSwiprLibraryQueryKey } from "@/lib/clipstitchr/utils/normalizeSwiprLibraryQueryKey";
 
-export function useSwiprLibraryState(): SwiprLibraryValue {
+export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   const pathname = usePathname() ?? "";
   const convex = useConvex();
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const isDashboardHome = pathname === "/dashboard";
+  const isSettingsRoute = pathname.startsWith("/dashboard/settings");
   const isSwiprRoute = pathname.startsWith("/dashboard/swipr");
   const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
   const shouldLoadBackgrounds =
-    isAuthenticated && (isDashboardHome || isSwiprRoute || isUploadsRoute);
+    isAuthenticated &&
+    (isDashboardHome || isSettingsRoute || isSwiprRoute || isUploadsRoute);
   const shouldLoadSwipes =
     isAuthenticated && (isDashboardHome || isSwiprRoute || isUploadsRoute);
   const shouldLoadPostedSwipes = isAuthenticated && isUploadsRoute;
+  const productQueryArgs = productId ? { productId } : {};
   const backgroundDocuments = useQuery(
     api.swiprBackgrounds.list,
     shouldLoadBackgrounds ? {} : "skip",
@@ -45,12 +48,14 @@ export function useSwiprLibraryState(): SwiprLibraryValue {
   const swipeDocuments = useQuery(
     api.swipes.list,
     shouldLoadSwipes
-      ? { postedStatus: isSwiprRoute ? "all" : "active" }
+      ? { postedStatus: isSwiprRoute ? "all" : "active", ...productQueryArgs }
       : "skip",
   );
   const postedSwipeDocuments = useQuery(
     api.swipes.list,
-    shouldLoadPostedSwipes ? { postedStatus: "posted" } : "skip",
+    shouldLoadPostedSwipes
+      ? { postedStatus: "posted", ...productQueryArgs }
+      : "skip",
   );
   const saveBackgroundMutation = useMutation(api.swiprBackgrounds.save);
   const removeBackgroundFromLibraryPackMutation = useMutation(

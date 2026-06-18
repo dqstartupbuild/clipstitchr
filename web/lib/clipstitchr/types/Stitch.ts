@@ -11,6 +11,7 @@ import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
 
 export type Stitch = {
   id: string;
+  productId?: string;
   mode?: SavedStitchrMode;
   name: string;
   ugcClipId: string;

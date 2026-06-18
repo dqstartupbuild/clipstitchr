@@ -142,6 +142,7 @@ type ManualSwaprProviderJobInput = {
   keepOriginalSound: boolean;
   mode: "std" | "pro";
   photoObject: R2ObjectReference;
+  productId?: string;
   prompt: string;
   referenceClipId: string;
   referenceClipName: string;
@@ -195,6 +196,7 @@ type ManualAvatarPhotoProviderJobInput = {
   lighting: AvatarLightingOption;
   location: string;
   outfit?: string;
+  productId?: string;
   sourceImageName: string;
   sourceImageObject: R2ObjectReference;
   style: AvatarStyleOption;
@@ -811,6 +813,7 @@ function parseManualSwaprProviderJobInput(
     keepOriginalSound: input.keepOriginalSound === true,
     mode: getSwaprMode(input.mode),
     photoObject: getR2ObjectReference(input.photoObject, "Swapr photo"),
+    productId: getOptionalString(input.productId),
     prompt: getOptionalString(input.prompt) ?? "",
     referenceClipId: getString(input.referenceClipId, "reference clip ID"),
     referenceClipName: getString(
@@ -945,6 +948,7 @@ function parseManualAvatarPhotoProviderJobInput(
         : "any",
     location: getOptionalString(input.location) ?? "",
     outfit: getOptionalString(input.outfit),
+    productId: getOptionalString(input.productId),
     sourceImageName: getString(input.sourceImageName, "source image name"),
     sourceImageObject: getR2ObjectReference(
       input.sourceImageObject,
@@ -2180,6 +2184,7 @@ async function processManualSwaprFinalize({
         keepOriginalSound: input.keepOriginalSound,
         mode: input.mode,
         modelId: SWAPR_MODEL_ID,
+        productId: input.productId,
         prompt: input.prompt,
         providerJobId: job.id,
         referenceClipId: input.referenceClipId,
@@ -2558,6 +2563,7 @@ async function processManualAvatarPhoto({
       secret: config.providerWorkerSecret,
       ownerId: job.ownerId,
       id: photoId,
+      productId: input.productId,
       avatarId: input.avatarId,
       name: `${sourceName} - Generated ${savedAt.slice(0, 10)}`,
       tags: normalizeAssetTagsWithRequiredTag(

@@ -18,8 +18,8 @@ import { STITCHR_BATCH_DAILY_LIMIT } from "@/lib/clipstitchr/constants/stitchrBa
 import { maxStitchrUgcSelectionCount } from "@/lib/clipstitchr/constants/maxStitchrUgcSelectionCount";
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
+import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { useLoadedVideoClip } from "@/lib/clipstitchr/hooks/useLoadedVideoClip";
-import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useStitchr } from "@/lib/clipstitchr/hooks/useStitchr";
 import type { StitchrLongrSelection } from "@/lib/clipstitchr/types/StitchrLongrSelection";
@@ -51,7 +51,7 @@ import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchr
 
 export function StitchrPageClient() {
   const library = useClipLibrary();
-  const products = useProducts();
+  const products = useDashboardProduct();
   const stitchTemplates = useStitchTemplates();
   const stitchrState = useStitchr({
     loadClip: library.loadClip,
@@ -83,7 +83,6 @@ export function StitchrPageClient() {
     null,
   );
   const [longrSocialCaption, setLongrSocialCaption] = useState("");
-  const [selectedAutoTextProductId, setSelectedAutoTextProductId] = useState("");
   const [demoProductFilterId, setDemoProductFilterId] = useState<
     string | undefined
   >();
@@ -160,11 +159,15 @@ export function StitchrPageClient() {
     isLoadingMoreCliprClips ||
     isLoadingMoreSwaprClips ||
     isLoadingMoreDemoClips;
-  const productIds = useMemo(
-    () => new Set(products.products.map((product) => product.id)),
-    [products.products],
+  const activeProducts = useMemo(
+    () => (products.activeProduct ? [products.activeProduct] : []),
+    [products.activeProduct],
   );
-  const defaultProductFilterId = products.defaultProductId ?? "all";
+  const productIds = useMemo(
+    () => new Set(activeProducts.map((product) => product.id)),
+    [activeProducts],
+  );
+  const defaultProductFilterId = products.activeProductId ?? "all";
   const activeDemoProductFilterId =
     demoProductFilterId === undefined
       ? defaultProductFilterId
@@ -402,10 +405,7 @@ export function StitchrPageClient() {
     totalDuration,
   );
   const activeAutoTextProductId =
-    selectedAutoTextProductId ||
-    products.defaultProductId ||
-    products.products[0]?.id ||
-    "";
+    products.activeProductId ?? "";
 
   const applyTemplateStitch = useCallback(
     async (templateStitchId: string) => {
@@ -1236,7 +1236,7 @@ export function StitchrPageClient() {
 
   const handleGenerateAutoText = useCallback(() => {
     if (!activeAutoTextProductId) {
-      setAutoTextMessage("Choose a saved Settings product before generating text.");
+      setAutoTextMessage("Choose a product from the sidebar before generating text.");
       return;
     }
 
@@ -1501,7 +1501,7 @@ export function StitchrPageClient() {
                 hasMoreClips={hasMoreStitchrClips}
                 isLoadingMoreClips={isLoadingMoreStitchrClips}
                 selectedMusicTrack={selectedMusicTrack}
-                products={products.products}
+                products={activeProducts}
                 ugcClips={ugcClips}
                 demoClips={visibleDemoClips}
                 demoProductFilterId={activeDemoProductFilterId}
@@ -1544,11 +1544,11 @@ export function StitchrPageClient() {
                 />
               ) : null}
               <StitchrAutoTextPanel
-                products={products.products}
+                products={activeProducts}
                 selectedProductId={activeAutoTextProductId}
                 isGenerating={isGeneratingAutoText}
                 message={autoTextMessage}
-                onProductChange={setSelectedAutoTextProductId}
+                onProductChange={() => undefined}
                 onGenerate={handleGenerateAutoText}
               />
               {mode === "longr" || activeUgcMetadata ? (

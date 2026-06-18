@@ -52,6 +52,7 @@ export async function POST(request: Request) {
     const identityMode = getAvatarIdentityMode(
       getSwaprFormString(formData, "identityMode"),
     );
+    const productId = getSwaprFormString(formData, "productId").trim();
     const lighting = getAvatarLightingOption(
       getSwaprFormString(formData, "lighting"),
     );
@@ -83,6 +84,14 @@ export async function POST(request: Request) {
 
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const rateLimitSecret = getRateLimitApiSecret();
+
+    if (productId) {
+      const product = await convex.query(api.products.get, { id: productId });
+
+      if (!product) {
+        throw new Error("Product not found.");
+      }
+    }
 
     await convex.mutation(api.rateLimits.consumeAvatarPhotoGenerate, {
       count,
@@ -121,6 +130,7 @@ export async function POST(request: Request) {
         lighting,
         location,
         outfit,
+        productId: productId || undefined,
         sourceImageName: image.name || "avatar-reference.jpg",
         sourceImageObject,
         style,

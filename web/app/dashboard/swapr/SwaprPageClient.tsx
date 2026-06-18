@@ -19,6 +19,7 @@ import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { SWAPR_MAX_REFERENCE_DURATION_SECONDS } from "@/lib/clipstitchr/constants/swaprMaxReferenceDurationSeconds";
 import { SWAPR_REFERENCE_VIDEO_MAX_SIZE_BYTES } from "@/lib/clipstitchr/constants/swaprReferenceVideoMaxSizeBytes";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
+import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useSwaprGeneration } from "@/lib/clipstitchr/hooks/useSwaprGeneration";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
@@ -34,6 +35,7 @@ import { getSwaprSegmentDurationLimit } from "@/lib/clipstitchr/utils/getSwaprSe
 
 export function SwaprPageClient() {
   const library = useClipLibrary();
+  const products = useDashboardProduct();
   const photoLibrary = usePhotoLibrary();
   const updateRenderedStitchVideo = useMutation(api.stitches.updateRenderedVideo);
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | undefined>(
@@ -272,6 +274,7 @@ export function SwaprPageClient() {
         mode,
         characterOrientation,
         keepOriginalSound,
+        productId: products.activeProductId,
       });
 
       if (!wasQueued && temporaryObjects.length) {

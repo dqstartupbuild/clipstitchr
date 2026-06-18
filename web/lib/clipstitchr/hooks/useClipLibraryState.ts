@@ -59,7 +59,7 @@ type PendingPosterBlobLoad = {
   resolve: (blob: Blob | null) => void;
 };
 
-export function useClipLibraryState(): ClipLibraryValue {
+export function useClipLibraryState(productId?: string): ClipLibraryValue {
   const convex = useConvex();
   const pathname = usePathname() ?? "";
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
@@ -88,57 +88,69 @@ export function useClipLibraryState(): ClipLibraryValue {
   const shouldLoadPostedStitches = isAuthenticated && isUploadsRoute;
   const shouldLoadCounts =
     isAuthenticated && (isDashboardHome || isUploadsRoute);
+  const productQueryArgs = productId ? { productId } : {};
   const clipDocumentsQuery = usePaginatedQuery(
     api.videoClips.list,
-    shouldLoadAllClips ? { sortOrder } : "skip",
+    shouldLoadAllClips ? { sortOrder, ...productQueryArgs } : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const ugcClipDocumentsQuery = usePaginatedQuery(
     api.videoClips.listByLibraryKind,
-    shouldLoadUgcClips ? { kind: "ugc", sortOrder } : "skip",
+    shouldLoadUgcClips
+      ? { kind: "ugc", sortOrder, ...productQueryArgs }
+      : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const cliprClipDocumentsQuery = usePaginatedQuery(
     api.videoClips.listByLibraryKind,
     shouldLoadCliprClips
-      ? { kind: "clipr", sortOrder }
+      ? { kind: "clipr", sortOrder, ...productQueryArgs }
       : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const postedCliprClipDocumentsQuery = usePaginatedQuery(
     api.videoClips.listByLibraryKind,
     shouldLoadPostedCliprClips
-      ? { kind: "clipr", postedStatus: "posted", sortOrder }
+      ? {
+          kind: "clipr",
+          postedStatus: "posted",
+          sortOrder,
+          ...productQueryArgs,
+        }
       : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const demoClipDocumentsQuery = usePaginatedQuery(
     api.videoClips.listByLibraryKind,
-    shouldLoadDemoClips ? { kind: "demo", sortOrder } : "skip",
+    shouldLoadDemoClips
+      ? { kind: "demo", sortOrder, ...productQueryArgs }
+      : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const swapClipDocumentsQuery = usePaginatedQuery(
     api.videoClips.listByLibraryKind,
-    shouldLoadSwapClips ? { kind: "swapr", sortOrder } : "skip",
+    shouldLoadSwapClips
+      ? { kind: "swapr", sortOrder, ...productQueryArgs }
+      : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const stitchDocumentsQuery = usePaginatedQuery(
     api.stitches.list,
     shouldLoadStitches
-      ? { postedStatus: "active", sortOrder }
+      ? { postedStatus: "active", sortOrder, ...productQueryArgs }
       : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const postedStitchDocumentsQuery = usePaginatedQuery(
     api.stitches.list,
     shouldLoadPostedStitches
-      ? { postedStatus: "posted", sortOrder }
+      ? { postedStatus: "posted", sortOrder, ...productQueryArgs }
       : "skip",
     { initialNumItems: libraryMetadataPageSize },
   );
   const aggregateCounts = useQuery(
     api.libraryCounts.get,
-    shouldLoadCounts ? {} : "skip",
+    shouldLoadCounts ? productQueryArgs : "skip",
   );
   const clipDocuments = clipDocumentsQuery.results;
   const ugcClipDocuments = ugcClipDocumentsQuery.results;

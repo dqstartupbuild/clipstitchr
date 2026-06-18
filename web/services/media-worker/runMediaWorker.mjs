@@ -482,6 +482,10 @@ function parseSwaprFinalizationInput(inputSnapshotJson) {
     keepOriginalSound: input.keepOriginalSound === true,
     mode: getSwaprMode(input.mode),
     modelId: getString(input.modelId, "model ID"),
+    productId:
+      typeof input.productId === "string" && input.productId.trim()
+        ? input.productId.trim()
+        : undefined,
     providerJobId:
       typeof input.providerJobId === "string" && input.providerJobId.trim()
         ? input.providerJobId.trim()
@@ -1241,6 +1245,7 @@ async function processSwaprFinalization({ client, config, job, r2 }) {
         end: metadata.duration,
       },
       hasAudio: metadata.hasAudio,
+      productId: input.productId,
       swaprMetadata: {
         source: "swapr",
         sourcePhotoId: input.sourcePhotoId,
@@ -1267,6 +1272,7 @@ async function processSwaprFinalization({ client, config, job, r2 }) {
       originalName: `${input.clipName}.mp4`,
       ownerId: job.ownerId,
       posterObject,
+      productId: input.productId,
       updatedAt,
       videoObject,
     });

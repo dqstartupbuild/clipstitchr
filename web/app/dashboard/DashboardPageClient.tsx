@@ -9,8 +9,8 @@ import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitche
 import { RecentSwipesSection } from "@/app/_components/dashboard/RecentSwipesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
+import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
-import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
@@ -23,7 +23,7 @@ const RECENT_DASHBOARD_ITEM_LIMIT = 4;
 export function DashboardPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
-  const products = useProducts();
+  const products = useDashboardProduct();
   const stitchTemplates = useStitchTemplates();
   const swiprLibrary = useSwiprLibrary();
   const recentUploads = useMemo(

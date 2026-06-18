@@ -16,6 +16,7 @@ export function createPhotoAssetFromConvexDocument({
 }: CreatePhotoAssetFromConvexDocumentOptions): PhotoAsset {
   return {
     id: photo.id,
+    productId: photo.productId,
     avatarId: photo.avatarId,
     name: photo.name,
     tags: photo.tags,

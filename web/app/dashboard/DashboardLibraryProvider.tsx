@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { DashboardLibraryContext } from "@/lib/clipstitchr/context/DashboardLibraryContext";
+import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { useClipLibraryState } from "@/lib/clipstitchr/hooks/useClipLibraryState";
 import { usePhotoLibraryState } from "@/lib/clipstitchr/hooks/usePhotoLibraryState";
 import { useSwiprLibraryState } from "@/lib/clipstitchr/hooks/useSwiprLibraryState";
@@ -14,9 +15,10 @@ type DashboardLibraryProviderProps = {
 export function DashboardLibraryProvider({
   children,
 }: DashboardLibraryProviderProps) {
-  const clipLibrary = useClipLibraryState();
-  const photoLibrary = usePhotoLibraryState();
-  const swiprLibrary = useSwiprLibraryState();
+  const { activeProductId } = useDashboardProduct();
+  const clipLibrary = useClipLibraryState(activeProductId);
+  const photoLibrary = usePhotoLibraryState(activeProductId);
+  const swiprLibrary = useSwiprLibraryState(activeProductId);
   const value = useMemo(
     () => ({
       clipLibrary,

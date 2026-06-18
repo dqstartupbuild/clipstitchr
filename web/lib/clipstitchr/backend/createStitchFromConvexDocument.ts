@@ -14,6 +14,7 @@ export function createStitchFromConvexDocument({
 }: CreateStitchFromConvexDocumentOptions): Stitch {
   return {
     id: stitch.id,
+    productId: stitch.productId,
     mode: stitch.mode,
     name: stitch.name,
     ugcClipId: stitch.ugcClipId,

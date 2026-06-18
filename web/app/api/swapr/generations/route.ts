@@ -26,6 +26,7 @@ type SwaprGenerationRequestBody = {
   keepOriginalSound?: unknown;
   mode?: unknown;
   photoId?: unknown;
+  productId?: unknown;
   prompt?: unknown;
   referenceClipId?: unknown;
   referenceClipName?: unknown;
@@ -132,6 +133,7 @@ export async function POST(request: Request) {
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const secret = getRateLimitApiSecret();
     const batchId = getOptionalString(body.batchId) ?? createId();
+    const productId = getOptionalString(body.productId);
     const photoId = getString(body.photoId, "Swapr photo ID");
     const photoDocument = await convex.query(api.photoAssets.get, {
       id: photoId,
@@ -145,6 +147,14 @@ export async function POST(request: Request) {
 
     if (!photoDocument.photoObject.contentType.startsWith("image/")) {
       throw new Error("Swapr photo object must be an image.");
+    }
+
+    if (productId) {
+      const product = await convex.query(api.products.get, { id: productId });
+
+      if (!product) {
+        throw new Error("Product not found.");
+      }
     }
 
     const requestedGenerationSpeedTier = getOptionalString(
@@ -227,6 +237,7 @@ export async function POST(request: Request) {
         keepOriginalSound: body.keepOriginalSound === true,
         mode,
         photoObject: photoDocument.photoObject,
+        productId,
         prompt: getOptionalString(body.prompt) ?? "",
         referenceClipId: getString(body.referenceClipId, "reference clip ID"),
         referenceClipName: getString(

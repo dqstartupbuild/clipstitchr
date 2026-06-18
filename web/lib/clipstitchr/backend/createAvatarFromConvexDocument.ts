@@ -7,6 +7,7 @@ export function createAvatarFromConvexDocument(
 ): Avatar {
   return {
     id: avatar.id,
+    productId: avatar.productId,
     name: avatar.name,
     description: avatar.description,
     wardrobeStyle: avatar.wardrobeStyle ?? "any",

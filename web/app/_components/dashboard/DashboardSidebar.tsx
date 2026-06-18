@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { BrandMark } from "@/app/_components/BrandMark";
+import { DashboardProductSwitcher } from "@/app/_components/dashboard/DashboardProductSwitcher";
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 
 const links = [
@@ -77,7 +78,10 @@ export function DashboardSidebar() {
             <X aria-hidden className="h-5 w-5" />
           </button>
         </div>
-        <nav className="mt-6 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto lg:mt-8">
+        <div className="mt-5">
+          <DashboardProductSwitcher />
+        </div>
+        <nav className="mt-6 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
           {links.map((item) => {
             const Icon = item.icon;
 

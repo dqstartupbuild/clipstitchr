@@ -28,6 +28,7 @@ type UploadPanelProps = {
   onDismiss?: () => void;
   canUploadDemo?: boolean;
   demoProductId?: string;
+  productId?: string;
   demoUploadBlockedMessage?: string;
   demoControls?: ReactNode;
   onPhotoExpandPreferenceChange?: (shouldExpandWithAi: boolean) => void;
@@ -80,6 +81,7 @@ export function UploadPanel({
   onDismiss,
   canUploadDemo = true,
   demoProductId,
+  productId,
   demoUploadBlockedMessage = "Choose a product before uploading demo videos.",
   demoControls,
   onPhotoExpandPreferenceChange,
@@ -97,6 +99,7 @@ export function UploadPanel({
     demoProductId,
     initialClipType: initialAssetType === "demo" ? "demo" : "ugc",
     onClipSaved: onUploaded,
+    productId,
   });
   const setClipType = uploadProcessor.setClipType;
   const content = contentByAssetType[assetType];

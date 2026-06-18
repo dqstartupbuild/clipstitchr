@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { assertProductBelongsToOwner } from "./assertProductBelongsToOwner";
 import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
@@ -6,15 +7,23 @@ import { rateLimiter } from "./rateLimiter";
 import { avatarWardrobeStyleValidator } from "./validators/avatarWardrobeStyle";
 
 export const list = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    productId: v.optional(v.string()),
+  },
+  handler: async (ctx, { productId }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-
-    return await ctx.db
+    const query = ctx.db
       .query("avatars")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .collect();
+      .order("desc");
+
+    if (productId) {
+      return await query
+        .filter((q) => q.eq(q.field("productId"), productId))
+        .collect();
+    }
+
+    return await query.collect();
   },
 });
 
@@ -35,6 +44,7 @@ export const get = query({
 export const save = mutation({
   args: {
     id: v.string(),
+    productId: v.optional(v.string()),
     name: v.string(),
     description: v.optional(v.string()),
     wardrobeStyle: v.optional(avatarWardrobeStyleValidator),
@@ -49,6 +59,7 @@ export const save = mutation({
       key: ownerId,
       throws: true,
     });
+    await assertProductBelongsToOwner(ctx, ownerId, args.productId);
 
     const existingAvatar = await ctx.db
       .query("avatars")
@@ -181,10 +192,12 @@ export const removeWithPhotos = mutation({
     const preferences = await ctx.db
       .query("avatarPreferences")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-      .unique();
+      .collect();
 
-    if (preferences?.defaultAvatarId === id) {
-      await ctx.db.delete(preferences._id);
+    for (const preference of preferences) {
+      if (preference.defaultAvatarId === id) {
+        await ctx.db.delete(preference._id);
+      }
     }
 
     return {

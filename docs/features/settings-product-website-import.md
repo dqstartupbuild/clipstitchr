@@ -1,7 +1,7 @@
 # Settings Product Website Import
 
-Settings product create and edit can use a public website URL to fill missing
-product context and improve generated marketing ideas.
+Product create and edit can use a public website URL to fill missing product
+context and improve generated marketing ideas.
 
 ## What It Does
 
@@ -35,6 +35,7 @@ product context and improve generated marketing ideas.
 - `web/app/api/settings/products/route.ts` and
   `web/app/api/settings/products/[id]/route.ts` consume the existing product
   enrichment rate limit before Firecrawl and Replicate work.
+- Product creation is surfaced from the dashboard sidebar product switcher.
 
 ## Abuse Protection
 

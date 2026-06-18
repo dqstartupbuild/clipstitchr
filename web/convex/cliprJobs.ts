@@ -972,6 +972,7 @@ export const finalizeWithClip = mutation({
     await ctx.db.insert("videoClips", {
       ownerId,
       id: args.clipId,
+      productId: job.productId,
       name: args.name,
       originalName: `${args.name}.mp4`,
       ...clipStorageFields,
@@ -1100,6 +1101,7 @@ export const finalizeWithClipFromMediaWorker = mutation({
     const clip = {
       ownerId,
       id: args.clipId,
+      productId: job.productId,
       name: args.name,
       originalName: `${args.name}.mp4`,
       ...clipStorageFields,

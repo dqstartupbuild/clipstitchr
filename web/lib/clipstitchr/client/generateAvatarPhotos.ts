@@ -60,6 +60,9 @@ export async function generateAvatarPhotos({
   formData.set("context", context);
   formData.set("count", String(count));
   formData.set("identityMode", identityMode);
+  if (avatar.productId) {
+    formData.set("productId", avatar.productId);
+  }
   if (generationSpeedTier) {
     formData.set("generationSpeedTier", generationSpeedTier);
   }

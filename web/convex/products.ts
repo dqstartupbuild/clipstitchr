@@ -1,5 +1,9 @@
 import { v } from "convex/values";
+import { assignLegacyRecordsToProduct } from "./assignLegacyRecordsToProduct";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
+import { getOwnerHasContent } from "./getOwnerHasContent";
+import { getOwnerHasLegacyProductRecords } from "./getOwnerHasLegacyProductRecords";
+import { getPrimaryProductForOwner } from "./getPrimaryProductForOwner";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
 
@@ -67,6 +71,25 @@ export const list = query({
   },
 });
 
+export const getSetupState = query({
+  args: {},
+  handler: async (ctx) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const [primaryProduct, hasContent, hasLegacyContent] = await Promise.all([
+      getPrimaryProductForOwner(ctx, ownerId),
+      getOwnerHasContent(ctx, ownerId),
+      getOwnerHasLegacyProductRecords(ctx, ownerId),
+    ]);
+
+    return {
+      hasContent,
+      hasLegacyContent,
+      primaryProductId: primaryProduct?.id,
+      requiresProductSetup: hasContent && !primaryProduct,
+    };
+  },
+});
+
 export const create = mutation({
   args: {
     id: v.string(),
@@ -117,7 +140,12 @@ export const create = mutation({
       throws: true,
     });
 
-    return await ctx.db.insert("products", {
+    const existingPrimaryProduct = await getPrimaryProductForOwner(
+      ctx,
+      ownerId,
+    );
+
+    const productId = await ctx.db.insert("products", {
       ownerId,
       id,
       name: normalizedName,
@@ -161,6 +189,58 @@ export const create = mutation({
       createdAt,
       updatedAt,
     });
+
+    if (!existingPrimaryProduct) {
+      const existingPreferences = await ctx.db
+        .query("productPreferences")
+        .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+        .unique();
+      const preferences = {
+        ownerId,
+        defaultProductId: id,
+        updatedAt,
+      };
+
+      if (existingPreferences) {
+        await ctx.db.patch(existingPreferences._id, preferences);
+      } else {
+        await ctx.db.insert("productPreferences", preferences);
+      }
+
+      await assignLegacyRecordsToProduct(ctx, ownerId, id, updatedAt);
+    }
+
+    return productId;
+  },
+});
+
+export const assignLegacyContentToPrimary = mutation({
+  args: {
+    updatedAt: v.string(),
+  },
+  handler: async (ctx, { updatedAt }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const primaryProduct = await getPrimaryProductForOwner(ctx, ownerId);
+
+    if (!primaryProduct) {
+      return {
+        updatedCount: 0,
+      };
+    }
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    return {
+      updatedCount: await assignLegacyRecordsToProduct(
+        ctx,
+        ownerId,
+        primaryProduct.id,
+        updatedAt,
+      ),
+    };
   },
 });
 

@@ -179,7 +179,7 @@ Optional Replicate model overrides:
 Firecrawl website import:
 
 - `FIRECRAWL_API_KEY` is required in the Next.js runtime environment when users
-  save a Settings product with a website URL. The route calls Firecrawl's v2
+  save a product with a website URL. The route calls Firecrawl's v2
   crawl endpoint server-side, imports markdown, summaries, and links from up to
   15 public landing pages on the site, passes the capped website context to
   product enrichment, and keeps that website context out of the user's saved
@@ -310,13 +310,16 @@ uses already-saved Pexels pack backgrounds and consumes counted writing quota
 before saving editable Swipe records.
 
 
-Settings product creates and edits call Replicate GPT-4.1 through
+Product creates and edits call Replicate GPT-4.1 through
 `POST /api/settings/products` and `PATCH /api/settings/products/{id}` to infer
 hidden product strategy metadata before saving the product to Convex. The route
 consumes the product enrichment limit before creating the prediction, then
 `products.create` consumes the shared Convex record-save limit or
 `products.update` consumes the shared Convex metadata-update limit before the
 database write. `products.remove` consumes the shared Convex record-delete limit.
+When the dashboard automatically assigns old unscoped content to a user's first
+product, `products.assignLegacyContentToPrimary` consumes the shared Convex
+metadata-update limit before patching records.
 
 The shared music picker searches `sharedMusicTracks`. Selecting an existing
 track only creates an R2 download signed URL after Convex validation and uses

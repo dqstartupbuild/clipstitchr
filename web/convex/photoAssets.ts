@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { assertProductBelongsToOwner } from "./assertProductBelongsToOwner";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
@@ -16,6 +17,7 @@ const preparationValidator = v.union(
 
 const saveArgs = {
   id: v.string(),
+  productId: v.optional(v.string()),
   avatarId: v.optional(v.string()),
   name: v.string(),
   tags: assetTagsValidator,
@@ -56,15 +58,23 @@ const saveFromProviderArgs = {
 };
 
 export const list = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    productId: v.optional(v.string()),
+  },
+  handler: async (ctx, { productId }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-
-    return await ctx.db
+    const query = ctx.db
       .query("photoAssets")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .collect();
+      .order("desc");
+
+    if (productId) {
+      return await query
+        .filter((q) => q.eq(q.field("productId"), productId))
+        .collect();
+    }
+
+    return await query.collect();
   },
 });
 
@@ -85,8 +95,9 @@ export const get = query({
 export const getMostRecentForAvatar = query({
   args: {
     avatarId: v.string(),
+    productId: v.optional(v.string()),
   },
-  handler: async (ctx, { avatarId }) => {
+  handler: async (ctx, { avatarId, productId }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const photos = await ctx.db
       .query("photoAssets")
@@ -94,15 +105,22 @@ export const getMostRecentForAvatar = query({
       .order("desc")
       .collect();
 
-    return photos.find((photo) => photo.avatarId === avatarId) ?? null;
+    return (
+      photos.find(
+        (photo) =>
+          photo.avatarId === avatarId &&
+          (!productId || photo.productId === productId),
+      ) ?? null
+    );
   },
 });
 
 export const getFirstForAvatar = query({
   args: {
     avatarId: v.string(),
+    productId: v.optional(v.string()),
   },
-  handler: async (ctx, { avatarId }) => {
+  handler: async (ctx, { avatarId, productId }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const photos = await ctx.db
       .query("photoAssets")
@@ -110,7 +128,13 @@ export const getFirstForAvatar = query({
       .order("asc")
       .collect();
 
-    return photos.find((photo) => photo.avatarId === avatarId) ?? null;
+    return (
+      photos.find(
+        (photo) =>
+          photo.avatarId === avatarId &&
+          (!productId || photo.productId === productId),
+      ) ?? null
+    );
   },
 });
 
@@ -123,6 +147,20 @@ export const save = mutation({
       key: ownerId,
       throws: true,
     });
+    await assertProductBelongsToOwner(ctx, ownerId, args.productId);
+
+    if (args.avatarId) {
+      const avatar = await ctx.db
+        .query("avatars")
+        .withIndex("by_owner_id", (q) =>
+          q.eq("ownerId", ownerId).eq("id", args.avatarId ?? ""),
+        )
+        .unique();
+
+      if (!avatar || (args.productId && avatar.productId !== args.productId)) {
+        throw new Error("Avatar not found for this product.");
+      }
+    }
 
     const existingPhoto = await ctx.db
       .query("photoAssets")
@@ -156,6 +194,7 @@ export const saveFromAutomation = mutation({
     await rateLimiter.limit(ctx, "automationAssetSaveGlobalDaily", {
       throws: true,
     });
+    await assertProductBelongsToOwner(ctx, ownerId, args.productId);
 
     const existingPhoto = await ctx.db
       .query("photoAssets")
@@ -197,6 +236,7 @@ export const saveFromProvider = mutation({
         throws: true,
       });
     }
+    await assertProductBelongsToOwner(ctx, ownerId, args.productId);
 
     const existingPhoto = await ctx.db
       .query("photoAssets")

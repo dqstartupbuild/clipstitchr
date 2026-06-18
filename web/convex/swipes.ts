@@ -45,28 +45,33 @@ const saveFromAutomationArgs = {
 
 export const list = query({
   args: {
+    productId: v.optional(v.string()),
     postedStatus: v.optional(postedStatusValidator),
   },
-  handler: async (ctx, { postedStatus = "all" }) => {
+  handler: async (ctx, { productId, postedStatus = "all" }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const productFilterId = productId?.trim() || undefined;
     const swipes = ctx.db
       .query("swipes")
       .withIndex("by_owner_updated", (q) => q.eq("ownerId", ownerId))
       .order("desc");
+    const productSwipes = productFilterId
+      ? swipes.filter((q) => q.eq(q.field("productSourceId"), productFilterId))
+      : swipes;
 
     if (postedStatus === "active") {
-      return await swipes
+      return await productSwipes
         .filter((q) => q.eq(q.field("isPosted"), undefined))
         .collect();
     }
 
     if (postedStatus === "posted") {
-      return await swipes
+      return await productSwipes
         .filter((q) => q.eq(q.field("isPosted"), true))
         .collect();
     }
 
-    return await swipes.collect();
+    return await productSwipes.collect();
   },
 });
 
@@ -124,7 +129,7 @@ export const save = mutation({
       .unique();
 
     if (!product) {
-      throw new Error("Saved Settings product not found.");
+      throw new Error("Product not found.");
     }
 
     const existingSwipe = await ctx.db

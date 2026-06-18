@@ -7,6 +7,7 @@ export function createPhotoAssetMetadataFromConvexDocument(
 ): PhotoAssetMetadata {
   return {
     id: photo.id,
+    productId: photo.productId,
     avatarId: photo.avatarId,
     name: photo.name,
     tags: photo.tags,

@@ -5,6 +5,7 @@ import { assertMediaWorkerSecret } from "./auth/assertMediaWorkerSecret";
 import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import { getStitchProductId } from "./getStitchProductId";
 import { stitchCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
@@ -72,37 +73,54 @@ const postedStatusValidator = v.union(
 export const list = query({
   args: {
     paginationOpts: paginationOptsValidator,
+    productId: v.optional(v.string()),
     postedStatus: v.optional(postedStatusValidator),
     sortOrder: v.optional(librarySortOrderValidator),
   },
-  handler: async (ctx, { paginationOpts, postedStatus = "all", sortOrder }) => {
+  handler: async (
+    ctx,
+    { paginationOpts, productId, postedStatus = "all", sortOrder },
+  ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const productFilterId = productId?.trim() || undefined;
 
     if (postedStatus === "active") {
-      return await ctx.db
+      const query = ctx.db
         .query("stitches")
         .withIndex("by_owner_is_posted_created", (q) =>
           q.eq("ownerId", ownerId).eq("isPosted", undefined),
         )
-        .order(sortOrder === "oldest" ? "asc" : "desc")
-        .paginate(paginationOpts);
+        .order(sortOrder === "oldest" ? "asc" : "desc");
+
+      return await (productFilterId
+        ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+        : query
+      ).paginate(paginationOpts);
     }
 
     if (postedStatus === "posted") {
-      return await ctx.db
+      const query = ctx.db
         .query("stitches")
         .withIndex("by_owner_is_posted_created", (q) =>
           q.eq("ownerId", ownerId).eq("isPosted", true),
         )
-        .order(sortOrder === "oldest" ? "asc" : "desc")
-        .paginate(paginationOpts);
+        .order(sortOrder === "oldest" ? "asc" : "desc");
+
+      return await (productFilterId
+        ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+        : query
+      ).paginate(paginationOpts);
     }
 
-    return await ctx.db
+    const query = ctx.db
       .query("stitches")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order(sortOrder === "oldest" ? "asc" : "desc")
-      .paginate(paginationOpts);
+      .order(sortOrder === "oldest" ? "asc" : "desc");
+
+    return await (productFilterId
+      ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+      : query
+    ).paginate(paginationOpts);
   },
 });
 
@@ -152,9 +170,11 @@ export const save = mutation({
         q.eq("ownerId", ownerId).eq("id", args.id),
       )
       .unique();
+    const productId = await getStitchProductId(ctx, ownerId, args.demoClipId);
     const stitch = {
       ownerId,
       ...args,
+      productId,
     };
 
     if (existingStitch) {
@@ -226,6 +246,7 @@ export const saveFromAutomation = mutation({
     const stitch = {
       ownerId,
       ...args,
+      productId: demoClip.productId,
       automation,
     };
 
@@ -315,6 +336,7 @@ export const saveFromMediaWorker = mutation({
     const stitch = {
       ownerId,
       ...args,
+      productId: demoClip.productId,
       ...(isStitchrBatchSave ? {} : { automation }),
     };
 
@@ -534,6 +556,7 @@ export const updateSourceSettings = mutation({
       duration,
       mimeType: undefined,
       name,
+      productId: demoClip.productId,
       posterObject: posterObject ?? undefined,
       posterVersion: posterObject ? posterVersion : undefined,
       quickEdit: undefined,

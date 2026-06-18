@@ -91,6 +91,7 @@ export async function createCliprJobAvatarImageOutput({
       convex,
       createdAt: new Date().toISOString(),
       photoId: generatedAvatarPhotoId,
+      productId: documents.product.id,
       scene: avatarSourceScene,
       userId,
     }),

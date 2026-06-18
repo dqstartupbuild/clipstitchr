@@ -97,6 +97,7 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
     .index("by_owner_is_posted_created", ["ownerId", "isPosted", "createdAt"])
     .index("by_owner_library_kind_created", [
       "ownerId",
@@ -113,6 +114,7 @@ export default defineSchema({
   photoAssets: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    productId: v.optional(v.string()),
     avatarId: v.optional(v.string()),
     name: v.string(),
     tags: assetTagsValidator,
@@ -145,10 +147,12 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
   avatars: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    productId: v.optional(v.string()),
     name: v.string(),
     description: v.optional(v.string()),
     wardrobeStyle: v.optional(avatarWardrobeStyleValidator),
@@ -157,12 +161,16 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
   avatarPreferences: defineTable({
     ownerId: v.string(),
+    productId: v.optional(v.string()),
     defaultAvatarId: v.optional(v.string()),
     updatedAt: v.string(),
-  }).index("by_owner", ["ownerId"]),
+  })
+    .index("by_owner", ["ownerId"])
+    .index("by_owner_product", ["ownerId", "productId"]),
   products: defineTable({
     ownerId: v.string(),
     id: v.string(),
@@ -192,6 +200,7 @@ export default defineSchema({
   stitches: defineTable({
     ownerId: v.string(),
     id: v.string(),
+    productId: v.optional(v.string()),
     mode: v.optional(stitchrModeValidator),
     name: v.string(),
     ugcClipId: v.string(),
@@ -227,6 +236,7 @@ export default defineSchema({
     createdAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
     .index("by_owner_is_posted_created", ["ownerId", "isPosted", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
   stitchTemplates: defineTable({
@@ -320,6 +330,11 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_owner_updated", ["ownerId", "updatedAt"])
+    .index("by_owner_product_updated", [
+      "ownerId",
+      "productSourceId",
+      "updatedAt",
+    ])
     .index("by_owner_id", ["ownerId", "id"]),
   replicateJobs: defineTable({
     ownerId: v.string(),

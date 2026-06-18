@@ -7,16 +7,14 @@ import { StitchesSection } from "@/app/_components/dashboard/StitchesSection";
 import { SwiprSwipesSection } from "@/app/_components/dashboard/SwiprSwipesSection";
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
 import { VideoLibrarySection } from "@/app/_components/dashboard/VideoLibrarySection";
-import { ProductDemoUploadControls } from "@/app/_components/products/ProductDemoUploadControls";
-import { ProductFilterSelect } from "@/app/_components/products/ProductFilterSelect";
 import { UploadLibraryTabs } from "@/app/_components/uploads/UploadLibraryTabs";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { SHOW_UPLOAD_CONTROLS_EVENT_NAME } from "@/lib/clipstitchr/constants/showUploadControlsEventName";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useCreateAvatarFromUgcClip } from "@/lib/clipstitchr/hooks/useCreateAvatarFromUgcClip";
+import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
-import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
 import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
@@ -27,7 +25,6 @@ import type { StitchLibraryStatusFilter } from "@/lib/clipstitchr/types/StitchLi
 import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
-import { filterClipsByDemoProductId } from "@/lib/clipstitchr/utils/filterClipsByDemoProductId";
 import { filterStitchesByName } from "@/lib/clipstitchr/utils/filterStitchesByName";
 import { filterSwipesBySearchQuery } from "@/lib/clipstitchr/utils/filterSwipesBySearchQuery";
 import { dispatchHideUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchHideUploadControlsEvent";
@@ -89,7 +86,7 @@ const videoLibraryContent: Record<
 export function UploadsPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
-  const products = useProducts();
+  const products = useDashboardProduct();
   const stitchTemplates = useStitchTemplates();
   const swiprLibrary = useSwiprLibrary();
   const showUploadControls = useShowUploadControls();
@@ -102,28 +99,11 @@ export function UploadsPageClient() {
     getInitialUploadLibraryTab,
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [demoProductFilterId, setDemoProductFilterId] = useState<
-    string | undefined
-  >();
-  const [demoUploadProductId, setDemoUploadProductId] = useState("");
   const [stitchStatusFilter, setStitchStatusFilter] =
     useState<StitchLibraryStatusFilter>("active");
   const [swipeStatusFilter, setSwipeStatusFilter] =
     useState<LibraryPostedStatusFilter>("active");
-  const productIds = useMemo(
-    () => new Set(products.products.map((product) => product.id)),
-    [products.products],
-  );
-  const defaultProductFilterId = products.defaultProductId ?? "all";
-  const activeDemoProductFilterId =
-    demoProductFilterId === undefined
-      ? defaultProductFilterId
-      : demoProductFilterId === "all" || productIds.has(demoProductFilterId)
-        ? demoProductFilterId
-      : "all";
-  const activeDemoUploadProductId = productIds.has(demoUploadProductId)
-    ? demoUploadProductId
-    : (products.defaultProductId ?? products.products[0]?.id ?? "");
+  const activeProductId = products.activeProductId ?? "";
   const ugcClips = useMemo(
     () => filterClipsBySearchQuery(library.videoGroups.ugc.clips, searchQuery),
     [library.videoGroups.ugc.clips, searchQuery],
@@ -133,12 +113,8 @@ export function UploadsPageClient() {
     [library.videoGroups.demo.clips, searchQuery],
   );
   const demoClips = useMemo(
-    () =>
-      filterClipsByDemoProductId(
-        allDemoClips,
-        selectedTab === "demo" ? activeDemoProductFilterId : "all",
-      ),
-    [activeDemoProductFilterId, allDemoClips, selectedTab],
+    () => allDemoClips,
+    [allDemoClips],
   );
   const swapClips = useMemo(
     () =>
@@ -245,8 +221,7 @@ export function UploadsPageClient() {
   const hasSearchQuery = searchQuery.trim().length > 0;
   const error =
     library.error ?? swiprLibrary.error ?? products.error ?? stitchTemplates.error;
-  const hasDemoProductFilter =
-    selectedTab === "demo" && activeDemoProductFilterId !== "all";
+  const hasDemoProductFilter = false;
   const canUseLibraryTotals = !hasSearchQuery;
   const selectedVideoTotalCount =
     !canUseLibraryTotals || hasDemoProductFilter
@@ -258,11 +233,10 @@ export function UploadsPageClient() {
           : selectedTab === "swaps"
             ? library.counts.swapClips
             : undefined;
-  const canUploadDemo =
-    products.products.length > 0 && activeDemoUploadProductId.length > 0;
+  const canUploadDemo = activeProductId.length > 0;
   const demoUploadBlockedMessage = products.isLoading
     ? "Products are loading."
-    : "Create a product in Settings before uploading demo videos.";
+    : "Create a product from the sidebar before uploading demo videos.";
   const selectedVideoSection =
     selectedTab === "ugc"
         ? {
@@ -391,16 +365,9 @@ export function UploadsPageClient() {
             initialAssetType={getUploadAssetTypeFromLibraryTab(selectedTab)}
             isPhotoUploading={photoLibrary.isSaving}
             canUploadDemo={canUploadDemo}
-            demoProductId={activeDemoUploadProductId}
+            demoProductId={activeProductId}
+            productId={activeProductId}
             demoUploadBlockedMessage={demoUploadBlockedMessage}
-            demoControls={
-              <ProductDemoUploadControls
-                products={products.products}
-                isLoading={products.isLoading}
-                selectedProductId={activeDemoUploadProductId}
-                onSelectedProductIdChange={setDemoUploadProductId}
-              />
-            }
             onDismiss={dispatchHideUploadControlsEvent}
             onAssetTypeChange={(assetType) =>
               handleTabChange(getUploadLibraryTabFromAssetType(assetType))
@@ -414,9 +381,7 @@ export function UploadsPageClient() {
           <div
             className={[
               "grid w-full gap-3 sm:items-end",
-              selectedTab === "demo"
-                ? "sm:grid-cols-3 lg:max-w-3xl"
-                : "sm:grid-cols-2 lg:max-w-xl",
+              "sm:grid-cols-2 lg:max-w-xl",
             ].join(" ")}
           >
             <SelectInput
@@ -427,14 +392,6 @@ export function UploadsPageClient() {
                 library.setSortOrder(event.target.value as ClipLibrarySortOrder)
               }
             />
-            {selectedTab === "demo" ? (
-              <ProductFilterSelect
-                products={products.products}
-                label="Product"
-                value={activeDemoProductFilterId}
-                onChange={setDemoProductFilterId}
-              />
-            ) : null}
             <SearchInput
               label="Search library"
               value={searchQuery}

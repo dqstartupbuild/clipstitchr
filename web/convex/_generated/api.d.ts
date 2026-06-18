@@ -10,6 +10,8 @@
 
 import type * as aggregateBackfills from "../aggregateBackfills.js";
 import type * as aggregateCounts from "../aggregateCounts.js";
+import type * as assertProductBelongsToOwner from "../assertProductBelongsToOwner.js";
+import type * as assignLegacyRecordsToProduct from "../assignLegacyRecordsToProduct.js";
 import type * as auth_assertAutomationWorkerSecret from "../auth/assertAutomationWorkerSecret.js";
 import type * as auth_assertMediaWorkerSecret from "../auth/assertMediaWorkerSecret.js";
 import type * as auth_assertProviderWorkerSecret from "../auth/assertProviderWorkerSecret.js";
@@ -44,7 +46,11 @@ import type * as getCliprGeneratedClipStorageFields from "../getCliprGeneratedCl
 import type * as getDefaultAvatarForOwner from "../getDefaultAvatarForOwner.js";
 import type * as getDefaultProductForOwner from "../getDefaultProductForOwner.js";
 import type * as getEnabledAutomationToolsForPreference from "../getEnabledAutomationToolsForPreference.js";
+import type * as getOwnerHasContent from "../getOwnerHasContent.js";
+import type * as getOwnerHasLegacyProductRecords from "../getOwnerHasLegacyProductRecords.js";
+import type * as getPrimaryProductForOwner from "../getPrimaryProductForOwner.js";
 import type * as getQuickEditOverlayText from "../getQuickEditOverlayText.js";
+import type * as getStitchProductId from "../getStitchProductId.js";
 import type * as getVideoClipCanBePosted from "../getVideoClipCanBePosted.js";
 import type * as getVideoClipLibraryKind from "../getVideoClipLibraryKind.js";
 import type * as isWithinAutomationGlobalWindow from "../isWithinAutomationGlobalWindow.js";
@@ -132,6 +138,8 @@ import type {
 declare const fullApi: ApiFromModules<{
   aggregateBackfills: typeof aggregateBackfills;
   aggregateCounts: typeof aggregateCounts;
+  assertProductBelongsToOwner: typeof assertProductBelongsToOwner;
+  assignLegacyRecordsToProduct: typeof assignLegacyRecordsToProduct;
   "auth/assertAutomationWorkerSecret": typeof auth_assertAutomationWorkerSecret;
   "auth/assertMediaWorkerSecret": typeof auth_assertMediaWorkerSecret;
   "auth/assertProviderWorkerSecret": typeof auth_assertProviderWorkerSecret;
@@ -166,7 +174,11 @@ declare const fullApi: ApiFromModules<{
   getDefaultAvatarForOwner: typeof getDefaultAvatarForOwner;
   getDefaultProductForOwner: typeof getDefaultProductForOwner;
   getEnabledAutomationToolsForPreference: typeof getEnabledAutomationToolsForPreference;
+  getOwnerHasContent: typeof getOwnerHasContent;
+  getOwnerHasLegacyProductRecords: typeof getOwnerHasLegacyProductRecords;
+  getPrimaryProductForOwner: typeof getPrimaryProductForOwner;
   getQuickEditOverlayText: typeof getQuickEditOverlayText;
+  getStitchProductId: typeof getStitchProductId;
   getVideoClipCanBePosted: typeof getVideoClipCanBePosted;
   getVideoClipLibraryKind: typeof getVideoClipLibraryKind;
   isWithinAutomationGlobalWindow: typeof isWithinAutomationGlobalWindow;

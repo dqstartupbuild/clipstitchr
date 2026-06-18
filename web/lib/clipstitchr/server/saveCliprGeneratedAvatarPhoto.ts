@@ -18,6 +18,7 @@ type SaveCliprGeneratedAvatarPhotoOptions = {
   convex: ConvexHttpClient;
   createdAt: string;
   photoId: string;
+  productId?: string;
   scene: CliprScenePlan;
   userId: string;
 };
@@ -31,6 +32,7 @@ export async function saveCliprGeneratedAvatarPhoto({
   convex,
   createdAt,
   photoId,
+  productId,
   scene,
   userId,
 }: SaveCliprGeneratedAvatarPhotoOptions) {
@@ -62,6 +64,7 @@ export async function saveCliprGeneratedAvatarPhoto({
 
   await convex.mutation(api.photoAssets.save, {
     id: photoId,
+    productId,
     avatarId,
     name: `${sourceName} - Clipr source ${createdAt.slice(0, 10)}`,
     tags: normalizeAssetTagsWithRequiredTag(
