@@ -1,47 +1,57 @@
 # Swipr Pexels Pack Library
 
 Swipr Pexels packs let a user import a group of Pexels photos from one search
-query, save those photos into their own R2-backed library, and use those saved
-packs later for editable Swipe drafts.
+query, save those photos as a global R2-backed pack, and add packs to their own
+account for editable Swipe drafts.
 
 This mirrors the useful part of SlideSmith's image-pack workflow: a search
 query becomes a reusable pack of images. ClipStitchr keeps the provider
-different by using Pexels instead of Pinterest and stores the images as
-owner-owned Swipr background records in Convex plus Cloudflare R2.
+different by using Pexels instead of Pinterest and stores the images as global
+Pexels Swipr background records in Convex plus Cloudflare R2. A separate
+account-pack table controls which global packs appear in a user's Swipr and
+automation settings.
 
 ## User Workflow
 
-1. The user opens `/dashboard/swipr`.
-2. Swipr opens in Batch mode by default.
-3. The user searches Pexels from the Pexels panel.
-4. The user can load more Pexels results for the same query when the current
+1. The user opens `/dashboard/library?tab=pexels`.
+2. The user searches Pexels from the Pexels tab.
+3. The user can load more Pexels results for the same query when the current
    page returns a full result set.
-5. The user can import the loaded new results as a saved pack. Already-saved
+4. The user can import the loaded new results as a global saved pack. Already-saved
    Pexels photos are hidden from the visible result list, so repeat searches
    make it easier to find fresh photos.
-6. In Manual mode, the user can add one visible result directly to the selected
-   slide.
-7. Imported photos are saved with `source: "pexels"` and `libraryQuery` set to
+5. Imported photos are saved with `source: "pexels"` and `libraryQuery` set to
    the normalized search query. If a matching pack already exists, the import
    reuses that pack name instead of creating a duplicate casing/spacing variant.
-8. The Pexels panel shows saved query packs with cover images and lets the user
-   choose all packs or selected packs.
-9. Saved pack photos can be added to the selected slide in Manual mode.
-10. The user can edit a saved pack by renaming it, removing a photo from that
+6. The Library Pexels tab shows All and Mine filters. All includes every global
+   imported pack. Mine includes packs the user imported and global packs they
+   added to their account.
+7. Users can add a global pack to Mine for Swipr batch generation and
+   automation.
+8. Users can edit packs they imported by renaming them, removing a photo from a
    pack, or deleting the pack and its saved photos.
-11. The user can generate multiple editable draft Swipes at once from Batch
-   mode. Draft generation uses the selected query packs, creates text for each
-   slideshow, assigns saved Pexels backgrounds to the slides, and saves each
-   result as a normal editable 8-slide Swipe.
+9. Swipr Batch mode shows the user's Mine packs as small selectable buttons.
+   The user must choose at least one pack.
+10. Swipr Batch mode generates 10 editable draft Swipes at once. Draft
+    generation uses the selected packs, creates text for each slideshow,
+    assigns saved Pexels backgrounds to the slides, and saves each result as a
+    normal editable 8-slide Swipe.
 
 ## Data Model
 
-`swiprBackgrounds` now stores an optional `libraryQuery` string. This field is
-only used for owner-owned Pexels pack images.
+`swiprBackgrounds` stores an optional `libraryQuery` string. This field is only
+used for global Pexels pack images.
+
+`swiprLibraryPackAccounts` stores one row per account-added pack:
+
+- Owner ID from Convex auth.
+- Normalized pack display name.
+- Normalized pack key.
+- Created timestamp.
 
 The saved background record includes:
 
-- Owner ID from Convex auth.
+- Importing owner ID from Convex auth.
 - Stable background ID.
 - R2 image object.
 - `source: "pexels"`.
@@ -56,10 +66,10 @@ Saved Swipes remain fully editable. Draft generation stores the same slide
 records as manual Swipr saves, so users can reopen a generated draft and change
 each slide's photo and text.
 
-Product automation settings can also reuse these packs. In Settings, the user
-can pick which saved Pexels packs Swipr automation should use for the active
-product. If the selected packs have images, the provider worker uses those
-saved background IDs instead of downloading new Pexels photos for that
+Product automation settings can also reuse Mine packs. In Settings, the user
+can pick which account-added Pexels packs Swipr automation should use for the
+active product. If the selected packs have images, the provider worker uses
+those saved background IDs instead of downloading new Pexels photos for that
 automatic Swipe.
 
 ## Backend Routes
@@ -75,11 +85,14 @@ automatic Swipe.
   Pexels.
 - Consumes Pexels import-image limits for the new photos before downloading or
   saving images.
-- Reuses an existing pack name when the normalized search query already exists.
-- Skips photos already imported by the owner.
+- Reuses an existing global pack name when the normalized search query already
+  exists.
+- Skips photos already imported globally.
 - Downloads each new photo server-side.
 - Uploads each photo to owner-scoped R2 storage.
 - Saves each photo through `swiprBackgrounds.save` with `libraryQuery`.
+- Adds the pack to the current user's account, even when the pack already
+  existed globally and no new photos were imported.
 - Returns the imported background IDs, query, imported count, and searched
   count.
 
@@ -90,6 +103,7 @@ automatic Swipe.
   the source pack name.
 - Consumes `convexMetadataUpdate` for the matching record count.
 - Patches each matching record to the new normalized pack name.
+- Patches matching account-pack rows to the new normalized pack name.
 
 `swiprBackgrounds.removeFromLibraryPack`
 
@@ -107,17 +121,32 @@ automatic Swipe.
 - Deletes the matching Convex records. The client deletes the matching R2 image
   objects through the existing rate-limited R2 delete route before calling this
   mutation.
+- Deletes matching account-pack rows because the global pack no longer exists.
+
+`swiprBackgrounds.addLibraryPackToAccount`
+
+- Requires an authenticated user.
+- Verifies the global Pexels pack exists.
+- Consumes `convexMetadataUpdate`.
+- Inserts the account-pack row when it does not already exist.
+
+`swiprBackgrounds.removeLibraryPackFromAccount`
+
+- Requires an authenticated user.
+- Consumes `convexMetadataUpdate`.
+- Deletes the account-pack row. It does not delete global Pexels photos.
 
 `POST /api/swipr/drafts/generate`
 
 - Requires an authenticated user.
-- Reads a product ID, draft count, and optional selected library queries.
+- Reads a product ID and selected library queries.
+- Requires at least one selected Pexels pack.
+- Always creates 10 draft Swipes on the server.
 - Always creates 8-slide drafts on the server. The route ignores client slide
   counts so old clients cannot create shorter batch Swipes.
 - Consumes the counted Clipr hook/script writing limit before provider work.
-- Loads the selected product and owner-owned Swipr backgrounds.
-- Uses Pexels backgrounds with `libraryQuery`; an empty selected-query list
-  means all saved Pexels packs.
+- Loads the selected product and the user's account-added Swipr backgrounds.
+- Uses Pexels backgrounds from the selected account-added pack names.
 - Generates multiple slideshow text drafts through the existing text-writing
   provider.
 - Saves each draft through `swipes.save`, including the generated caption,
@@ -131,20 +160,22 @@ is the source of truth.
 
 - `web/app/api/swipr/pexels/import/route.ts`
 - `web/app/api/swipr/drafts/generate/route.ts`
+- `web/app/_components/library/PexelsLibraryTabSection.tsx`
+- `web/app/_components/library/PexelsLibraryFilterTabs.tsx`
+- `web/app/_components/library/PexelsLibraryPackCard.tsx`
 - `web/app/_components/swipr/SwiprPexelsPanel.tsx`
 - `web/app/_components/swipr/SwiprModeToggle.tsx`
 - `web/app/_components/swipr/SwiprBatchControls.tsx`
 - `web/app/_components/swipr/SwiprManualControls.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackPicker.tsx`
-- `web/app/_components/swipr/SwiprLibraryPackButton.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackEditor.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackRenameForm.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackPhotoList.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackEditorPhoto.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackDeleteAction.tsx`
 - `web/app/_components/swipr/SwiprLibraryPhotoCard.tsx`
-- `web/app/_components/swipr/SwiprDraftGenerationCountControl.tsx`
 - `web/app/_components/settings/AutomationSwiprPackPicker.tsx`
+- `web/app/dashboard/library/LibraryPageClient.tsx`
 - `web/app/dashboard/swipr/SwiprPageClient.tsx`
 - `web/lib/clipstitchr/utils/getSwiprLibraryPacks.ts`
 - `web/lib/clipstitchr/utils/getImportedPexelsPhotoIds.ts`
@@ -169,13 +200,14 @@ The import route consumes:
 
 Draft generation creates provider-writing and Convex write cost. The draft
 route consumes `cliprHookScript` and `cliprProviderSpendGlobal` with `count`
-equal to the requested draft count before calling the writing provider. Each
-saved draft then uses the existing `swipes.save` write limits.
+equal to the fixed Swipr batch count of 10 before calling the writing provider.
+Each saved draft then uses the existing `swipes.save` write limits.
 
 ## Maintenance Notes
 
-Imported packs are owner-owned. There is no shared Swipr image library and no
-cross-user browsing of imported photos.
+Imported Pexels packs are global for authenticated users. Only Pexels records
+with a `libraryQuery` are globally readable. Uploaded, avatar-photo, AI, and
+provider-generated one-off Swipr backgrounds remain private.
 
 Pack deletion deletes owner-owned R2 images through the rate-limited R2 delete
 route, then deletes the matching owner-owned Convex records. Removing one photo

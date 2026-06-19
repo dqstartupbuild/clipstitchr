@@ -3,6 +3,7 @@ export type LibraryTab =
   | "demo"
   | "swaps"
   | "swipes"
+  | "pexels"
   | "stitches"
   | "avatars"
   | "templates";

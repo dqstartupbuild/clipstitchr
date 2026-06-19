@@ -33,6 +33,7 @@ const mocks = vi.hoisted(() => ({
   avatarTabProps: null as Record<string, unknown> | null,
   library: {} as Record<string, unknown>,
   listeners: new Map<string, EventListener[]>(),
+  pexelsTabProps: null as Record<string, unknown> | null,
   photoLibrary: {} as Record<string, unknown>,
   products: {} as Record<string, unknown>,
   stateSetter: vi.fn(),
@@ -152,6 +153,13 @@ vi.mock("@/app/_components/library/TemplateLibraryTabSection", () => ({
   TemplateLibraryTabSection: (props: Record<string, unknown>) => {
     mocks.templateTabProps = props;
     return "TemplateLibraryTabSection";
+  },
+}));
+
+vi.mock("@/app/_components/library/PexelsLibraryTabSection", () => ({
+  PexelsLibraryTabSection: (props: Record<string, unknown>) => {
+    mocks.pexelsTabProps = props;
+    return "PexelsLibraryTabSection";
   },
 }));
 
@@ -297,6 +305,7 @@ describe("LibraryPageClient", () => {
     mocks.avatarCreator.generate.mockResolvedValue({ id: "avatar_1" });
     mocks.avatarCreator.isGenerating = true;
     mocks.avatarTabProps = null;
+    mocks.pexelsTabProps = null;
     mocks.templateTabProps = null;
     const ugcClip = createClip("ugc_1", "ugc");
     const cliprClip = createClip("clipr_1", "ugc", {
@@ -431,12 +440,26 @@ describe("LibraryPageClient", () => {
       products: [createProduct()],
     };
     mocks.swiprLibrary = {
+      addLibraryPackToAccount: vi.fn(),
       backgrounds: [{ id: "background_1", name: "Background" }],
       error: null,
+      globalPexelsBackgrounds: [
+        {
+          id: "background_pexels",
+          libraryQuery: "desk setup",
+          name: "Desk setup",
+          source: "pexels",
+        },
+      ],
+      isLoading: false,
       loadBackgroundAsset: vi.fn(),
       loadBackgroundBlob: vi.fn(),
       loadSwipePoster: vi.fn(),
+      removeBackgroundFromLibraryPack: vi.fn(),
+      removeLibraryPack: vi.fn(),
+      removeLibraryPackFromAccount: vi.fn(),
       removeSwipe: vi.fn(),
+      renameLibraryPack: vi.fn(),
       postedSwipes: [
         {
           backgroundId: "background_1",
@@ -467,6 +490,7 @@ describe("LibraryPageClient", () => {
           updatedAt: "2026-05-20T00:00:00.000Z",
         },
       ],
+      updateSwipePostedStatus: vi.fn(),
     };
     mocks.useClipLibrary.mockReturnValue(mocks.library);
     mocks.useCreateAvatarFromUgcClip.mockReturnValue(mocks.avatarCreator);
@@ -521,6 +545,25 @@ describe("LibraryPageClient", () => {
       null,
       "",
       expect.stringContaining("tab=demo"),
+    );
+  });
+
+  it("renders the Pexels library tab with global and account packs", () => {
+    const { elements } = renderLibraryPage({ search: "?tab=pexels" });
+    const pexelsSection = elements.find(
+      (element) => "allBackgrounds" in (element.props ?? {}),
+    );
+
+    expect(pexelsSection?.props).toEqual(
+      expect.objectContaining({
+        allBackgrounds: mocks.swiprLibrary.globalPexelsBackgrounds,
+        mineBackgrounds: mocks.swiprLibrary.backgrounds,
+        onAddPackToAccount: mocks.swiprLibrary.addLibraryPackToAccount,
+        onLoadBackgroundBlob: mocks.swiprLibrary.loadBackgroundBlob,
+        onRemovePackFromAccount:
+          mocks.swiprLibrary.removeLibraryPackFromAccount,
+        searchQuery: "",
+      }),
     );
   });
 

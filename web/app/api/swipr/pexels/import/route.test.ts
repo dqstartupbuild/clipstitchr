@@ -28,7 +28,8 @@ vi.mock("@/convex/_generated/api", () => ({
       consumePexelsSearch: "rateLimits.consumePexelsSearch",
     },
     swiprBackgrounds: {
-      list: "swiprBackgrounds.list",
+      addLibraryPackToAccount: "swiprBackgrounds.addLibraryPackToAccount",
+      listGlobalPexels: "swiprBackgrounds.listGlobalPexels",
       save: "swiprBackgrounds.save",
     },
   },
@@ -183,6 +184,10 @@ describe("POST /api/swipr/pexels/import", () => {
         source: "pexels",
       }),
     );
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.swiprBackgrounds.addLibraryPackToAccount,
+      { libraryQuery: "desk setup" },
+    );
   });
 
   it("imports the loaded Pexels photos without searching again", async () => {
@@ -209,7 +214,7 @@ describe("POST /api/swipr/pexels/import", () => {
       expect.anything(),
     );
     expect(mocks.convex.query).toHaveBeenCalledWith(
-      api.swiprBackgrounds.list,
+      api.swiprBackgrounds.listGlobalPexels,
       {},
     );
   });

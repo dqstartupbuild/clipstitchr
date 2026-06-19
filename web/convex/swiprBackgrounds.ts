@@ -40,10 +40,113 @@ async function getOwnerLibraryPackBackgrounds(
   );
 }
 
+function getIsGlobalPexelsPackBackground(background: {
+  libraryQuery?: string;
+  source: string;
+}) {
+  return background.source === "pexels" && Boolean(background.libraryQuery);
+}
+
+async function getOwnerLibraryPackAccountKeys(
+  ctx: MutationCtx | QueryCtx,
+  ownerId: string,
+) {
+  const packAccounts = await ctx.db
+    .query("swiprLibraryPackAccounts")
+    .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+    .collect();
+
+  return new Set(
+    packAccounts.map((packAccount) => packAccount.libraryQueryKey),
+  );
+}
+
+function getBackgroundBelongsToOwnerPack(
+  background: {
+    libraryQuery?: string;
+    source: string;
+    uploadedByOwnerId: string;
+  },
+  ownerId: string,
+  ownerLibraryPackAccountKeys: Set<string>,
+) {
+  if (background.uploadedByOwnerId === ownerId) {
+    return true;
+  }
+
+  if (!getIsGlobalPexelsPackBackground(background)) {
+    return false;
+  }
+
+  return ownerLibraryPackAccountKeys.has(
+    normalizeSwiprLibraryQueryKey(background.libraryQuery),
+  );
+}
+
+async function getGlobalPexelsPackBackgrounds(ctx: MutationCtx | QueryCtx) {
+  const backgrounds = await ctx.db
+    .query("swiprBackgrounds")
+    .withIndex("by_created")
+    .order("desc")
+    .collect();
+
+  return backgrounds.filter(getIsGlobalPexelsPackBackground);
+}
+
+async function getGlobalPexelsPackByQueryKey(
+  ctx: MutationCtx | QueryCtx,
+  libraryQueryKey: string,
+) {
+  const backgrounds = await getGlobalPexelsPackBackgrounds(ctx);
+  const packBackgrounds = backgrounds.filter(
+    (background) =>
+      normalizeSwiprLibraryQueryKey(background.libraryQuery) ===
+      libraryQueryKey,
+  );
+
+  return {
+    backgrounds: packBackgrounds,
+    libraryQuery: packBackgrounds[0]?.libraryQuery,
+  };
+}
+
+async function ensureOwnerLibraryPackAccount(
+  ctx: MutationCtx,
+  ownerId: string,
+  libraryQuery: string,
+) {
+  const normalizedLibraryQuery = normalizeSwiprLibraryQueryName(libraryQuery);
+  const libraryQueryKey = normalizeSwiprLibraryQueryKey(normalizedLibraryQuery);
+
+  if (!normalizedLibraryQuery || !libraryQueryKey) {
+    throw new Error("Pack name is required.");
+  }
+
+  const existingAccount = await ctx.db
+    .query("swiprLibraryPackAccounts")
+    .withIndex("by_owner_query", (q) =>
+      q.eq("ownerId", ownerId).eq("libraryQueryKey", libraryQueryKey),
+    )
+    .unique();
+
+  if (existingAccount) {
+    return existingAccount._id;
+  }
+
+  return await ctx.db.insert("swiprLibraryPackAccounts", {
+    ownerId,
+    libraryQuery: normalizedLibraryQuery,
+    libraryQueryKey,
+    createdAt: new Date().toISOString(),
+  });
+}
+
 export const list = query({
   args: {},
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const ownerLibraryPackAccountKeys =
+      await getOwnerLibraryPackAccountKeys(ctx, ownerId);
 
     const backgrounds = await ctx.db
       .query("swiprBackgrounds")
@@ -51,9 +154,31 @@ export const list = query({
       .order("desc")
       .collect();
 
-    return backgrounds.filter(
-      (background) => background.uploadedByOwnerId === ownerId,
-    );
+    return backgrounds
+      .filter((background) =>
+        getBackgroundBelongsToOwnerPack(
+          background,
+          ownerId,
+          ownerLibraryPackAccountKeys,
+        ),
+      )
+      .map((background) => ({
+        ...background,
+        isOwnedByCurrentUser: background.uploadedByOwnerId === ownerId,
+      }));
+  },
+});
+
+export const listGlobalPexels = query({
+  args: {},
+  handler: async (ctx) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const backgrounds = await getGlobalPexelsPackBackgrounds(ctx);
+
+    return backgrounds.map((background) => ({
+      ...background,
+      isOwnedByCurrentUser: background.uploadedByOwnerId === ownerId,
+    }));
   },
 });
 
@@ -68,11 +193,18 @@ export const get = query({
       .withIndex("by_background_id", (q) => q.eq("id", id))
       .unique();
 
-    if (!background || background.uploadedByOwnerId !== ownerId) {
+    if (
+      !background ||
+      (background.uploadedByOwnerId !== ownerId &&
+        !getIsGlobalPexelsPackBackground(background))
+    ) {
       return null;
     }
 
-    return background;
+    return {
+      ...background,
+      isOwnedByCurrentUser: background.uploadedByOwnerId === ownerId,
+    };
   },
 });
 
@@ -129,6 +261,8 @@ export const listForProviderByLibraryPackNames = query({
         normalizeSwiprLibraryQueryKey,
       ),
     );
+    const ownerLibraryPackAccountKeys =
+      await getOwnerLibraryPackAccountKeys(ctx, ownerId);
 
     if (selectedPackKeys.size === 0) {
       return [];
@@ -142,9 +276,12 @@ export const listForProviderByLibraryPackNames = query({
 
     return backgrounds.filter(
       (background) =>
-        background.uploadedByOwnerId === ownerId &&
-        background.source === "pexels" &&
-        background.libraryQuery &&
+        getBackgroundBelongsToOwnerPack(
+          background,
+          ownerId,
+          ownerLibraryPackAccountKeys,
+        ) &&
+        getIsGlobalPexelsPackBackground(background) &&
         selectedPackKeys.has(
           normalizeSwiprLibraryQueryKey(background.libraryQuery),
         ),
@@ -175,7 +312,7 @@ export const save = mutation({
       throws: true,
     });
 
-    return await ctx.db.insert("swiprBackgrounds", {
+    const backgroundDocumentId = await ctx.db.insert("swiprBackgrounds", {
       uploadedByOwnerId: ownerId,
       ...args,
       name,
@@ -189,6 +326,12 @@ export const save = mutation({
         ? normalizeText(args.libraryQuery, BACKGROUND_LIBRARY_QUERY_MAX_LENGTH)
         : undefined,
     });
+
+    if (args.source === "pexels" && args.libraryQuery) {
+      await ensureOwnerLibraryPackAccount(ctx, ownerId, args.libraryQuery);
+    }
+
+    return backgroundDocumentId;
   },
 });
 
@@ -223,7 +366,7 @@ export const saveFromProvider = mutation({
       throws: true,
     });
 
-    return await ctx.db.insert("swiprBackgrounds", {
+    const backgroundDocumentId = await ctx.db.insert("swiprBackgrounds", {
       uploadedByOwnerId: ownerId,
       ...args,
       name,
@@ -237,6 +380,12 @@ export const saveFromProvider = mutation({
         ? normalizeText(args.libraryQuery, BACKGROUND_LIBRARY_QUERY_MAX_LENGTH)
         : undefined,
     });
+
+    if (args.source === "pexels" && args.libraryQuery) {
+      await ensureOwnerLibraryPackAccount(ctx, ownerId, args.libraryQuery);
+    }
+
+    return backgroundDocumentId;
   },
 });
 
@@ -264,6 +413,70 @@ export const removeFromLibraryPack = mutation({
     });
 
     return background;
+  },
+});
+
+export const addLibraryPackToAccount = mutation({
+  args: {
+    libraryQuery: v.string(),
+  },
+  handler: async (ctx, { libraryQuery }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const normalizedLibraryQuery = normalizeSwiprLibraryQueryName(libraryQuery);
+    const libraryQueryKey = normalizeSwiprLibraryQueryKey(normalizedLibraryQuery);
+
+    if (!normalizedLibraryQuery || !libraryQueryKey) {
+      throw new Error("Pack name is required.");
+    }
+
+    const pack = await getGlobalPexelsPackByQueryKey(ctx, libraryQueryKey);
+
+    if (!pack.backgrounds.length || !pack.libraryQuery) {
+      throw new Error("Pexels pack not found.");
+    }
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+    await ensureOwnerLibraryPackAccount(ctx, ownerId, pack.libraryQuery);
+
+    return {
+      count: pack.backgrounds.length,
+      libraryQuery: pack.libraryQuery,
+    };
+  },
+});
+
+export const removeLibraryPackFromAccount = mutation({
+  args: {
+    libraryQuery: v.string(),
+  },
+  handler: async (ctx, { libraryQuery }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const libraryQueryKey = normalizeSwiprLibraryQueryKey(libraryQuery);
+    const existingAccount = await ctx.db
+      .query("swiprLibraryPackAccounts")
+      .withIndex("by_owner_query", (q) =>
+        q.eq("ownerId", ownerId).eq("libraryQueryKey", libraryQueryKey),
+      )
+      .unique();
+
+    if (!existingAccount) {
+      return {
+        count: 0,
+      };
+    }
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+    await ctx.db.delete(existingAccount._id);
+
+    return {
+      count: 1,
+    };
   },
 });
 
@@ -296,9 +509,25 @@ export const renameLibraryPack = mutation({
       throws: true,
     });
 
+    const fromLibraryQueryKey = normalizeSwiprLibraryQueryKey(fromLibraryQuery);
+    const packAccounts = await ctx.db
+      .query("swiprLibraryPackAccounts")
+      .withIndex("by_query_key", (q) =>
+        q.eq("libraryQueryKey", fromLibraryQueryKey),
+      )
+      .collect();
+    const libraryQueryKey = normalizeSwiprLibraryQueryKey(libraryQuery);
+
     for (const background of backgrounds) {
       await ctx.db.patch(background._id, {
         libraryQuery,
+      });
+    }
+
+    for (const packAccount of packAccounts) {
+      await ctx.db.patch(packAccount._id, {
+        libraryQuery,
+        libraryQueryKey,
       });
     }
 
@@ -333,8 +562,18 @@ export const removeLibraryPack = mutation({
       throws: true,
     });
 
+    const libraryQueryKey = normalizeSwiprLibraryQueryKey(libraryQuery);
+    const packAccounts = await ctx.db
+      .query("swiprLibraryPackAccounts")
+      .withIndex("by_query_key", (q) => q.eq("libraryQueryKey", libraryQueryKey))
+      .collect();
+
     for (const background of backgrounds) {
       await ctx.db.delete(background._id);
+    }
+
+    for (const packAccount of packAccounts) {
+      await ctx.db.delete(packAccount._id);
     }
 
     return {

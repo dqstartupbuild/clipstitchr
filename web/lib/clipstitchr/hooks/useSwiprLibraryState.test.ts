@@ -81,10 +81,13 @@ vi.mock("@/convex/_generated/api", () => ({
       updatePostedStatus: "swipes.updatePostedStatus",
     },
     swiprBackgrounds: {
+      addLibraryPackToAccount: "swiprBackgrounds.addLibraryPackToAccount",
       get: "swiprBackgrounds.get",
       list: "swiprBackgrounds.list",
+      listGlobalPexels: "swiprBackgrounds.listGlobalPexels",
       removeFromLibraryPack: "swiprBackgrounds.removeFromLibraryPack",
       removeLibraryPack: "swiprBackgrounds.removeLibraryPack",
+      removeLibraryPackFromAccount: "swiprBackgrounds.removeLibraryPackFromAccount",
       renameLibraryPack: "swiprBackgrounds.renameLibraryPack",
       save: "swiprBackgrounds.save",
     },
@@ -215,8 +218,22 @@ describe("useSwiprLibraryState", () => {
     );
     mocks.usePathname.mockReturnValue("/dashboard/library");
     mocks.useQuery.mockImplementation((queryId: string, args) => {
+      if (args === "skip") {
+        return undefined;
+      }
+
       if (queryId === "swiprBackgrounds.list") {
         return [createBackgroundDocument()];
+      }
+
+      if (queryId === "swiprBackgrounds.listGlobalPexels") {
+        return [
+          createBackgroundDocument({
+            id: "background_pexels",
+            libraryQuery: "desk setup",
+            source: "pexels",
+          }),
+        ];
       }
 
       if (queryId === "swipes.list") {
@@ -277,9 +294,16 @@ describe("useSwiprLibraryState", () => {
     const state = useSwiprLibraryState();
 
     expect(state.swipes).toEqual([{ id: "swipe_1", name: "Mapped swipe" }]);
+    expect(state.globalPexelsBackgrounds).toEqual([
+      { id: "background_1", name: "Mapped background" },
+    ]);
     expect(state.postedSwipes).toEqual([]);
     expect(state.isLoading).toBe(false);
     expect(mocks.useQuery).toHaveBeenCalledWith("swiprBackgrounds.list", {});
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      "swiprBackgrounds.listGlobalPexels",
+      {},
+    );
     expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", {
       postedStatus: "active",
     });
@@ -299,6 +323,10 @@ describe("useSwiprLibraryState", () => {
     expect(state.isLoading).toBe(false);
     expect(mocks.useQuery).toHaveBeenCalledWith(
       "swiprBackgrounds.list",
+      "skip",
+    );
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      "swiprBackgrounds.listGlobalPexels",
       "skip",
     );
     expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", "skip");
@@ -323,6 +351,7 @@ describe("useSwiprLibraryState", () => {
   it("loads a missing background asset and blob by id", async () => {
     const blob = new Blob(["background 2"], { type: "image/jpeg" });
 
+    mocks.usePathname.mockReturnValue("/dashboard/swipr");
     mocks.downloadSwiprBackgroundBlobFromR2.mockResolvedValueOnce(blob);
     mocks.convexQuery.mockResolvedValueOnce(
       createBackgroundDocument({ id: "background_2" }),
@@ -499,6 +528,13 @@ describe("useSwiprLibraryState", () => {
   it("renames and removes Pexels library packs", async () => {
     const state = useSwiprLibraryState();
 
+    getMutation("swiprBackgrounds.addLibraryPackToAccount").mockResolvedValue({
+      count: 2,
+      libraryQuery: "Desk Setup",
+    });
+    getMutation("swiprBackgrounds.removeLibraryPackFromAccount").mockResolvedValue({
+      count: 1,
+    });
     getMutation("swiprBackgrounds.renameLibraryPack").mockResolvedValue({
       count: 2,
       libraryQuery: "Calisthenics",
@@ -507,6 +543,15 @@ describe("useSwiprLibraryState", () => {
       count: 2,
     });
 
+    await expect(
+      state.addLibraryPackToAccount("desk setup"),
+    ).resolves.toEqual({
+      count: 2,
+      libraryQuery: "Desk Setup",
+    });
+    await expect(
+      state.removeLibraryPackFromAccount("desk setup"),
+    ).resolves.toBe(1);
     await expect(
       state.renameLibraryPack("calisthenics", " Calisthenics "),
     ).resolves.toEqual({
@@ -713,6 +758,8 @@ describe("useSwiprLibraryState", () => {
 
   it("skips background hydration after the effect cleanup runs", async () => {
     let cleanup: (() => void) | undefined;
+
+    mocks.usePathname.mockReturnValue("/dashboard/swipr");
     mocks.useEffect.mockImplementationOnce(
       (effect: () => void | (() => void)) => {
         cleanup = effect() ?? undefined;

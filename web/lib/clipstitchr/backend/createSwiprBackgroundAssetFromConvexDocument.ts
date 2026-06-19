@@ -2,7 +2,7 @@ import type { Doc } from "@/convex/_generated/dataModel";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 
 export function createSwiprBackgroundAssetFromConvexDocument(
-  background: Doc<"swiprBackgrounds">,
+  background: Doc<"swiprBackgrounds"> & { isOwnedByCurrentUser?: boolean },
   blob?: Blob,
 ): SwiprBackgroundAsset {
   return {
@@ -14,6 +14,7 @@ export function createSwiprBackgroundAssetFromConvexDocument(
     libraryQuery: background.libraryQuery,
     pexelsPhotoId: background.pexelsPhotoId,
     source: background.source,
+    isOwnedByCurrentUser: background.isOwnedByCurrentUser,
     imageObject: background.imageObject,
     ...(blob ? { blob } : {}),
     mimeType: background.mimeType,

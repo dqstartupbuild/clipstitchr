@@ -12,6 +12,7 @@ const tabs: { label: string; value: LibraryTab }[] = [
   { label: "Demo", value: "demo" },
   { label: "Swaps", value: "swaps" },
   { label: "Swipes", value: "swipes" },
+  { label: "Pexels", value: "pexels" },
   { label: "Stitches", value: "stitches" },
   { label: "Avatars", value: "avatars" },
   { label: "Templates", value: "templates" },

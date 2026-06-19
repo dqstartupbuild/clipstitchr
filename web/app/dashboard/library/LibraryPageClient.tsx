@@ -9,6 +9,7 @@ import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
 import { VideoLibrarySection } from "@/app/_components/dashboard/VideoLibrarySection";
 import { AvatarLibraryTabSection } from "@/app/_components/library/AvatarLibraryTabSection";
 import { LibraryTabs } from "@/app/_components/library/LibraryTabs";
+import { PexelsLibraryTabSection } from "@/app/_components/library/PexelsLibraryTabSection";
 import { TemplateLibraryTabSection } from "@/app/_components/library/TemplateLibraryTabSection";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
@@ -240,13 +241,17 @@ export function LibraryPageClient() {
     ? "Products are loading."
     : "Create a product from the sidebar before uploading demo videos.";
   const canSortSelectedTab =
-    selectedTab !== "avatars" && selectedTab !== "templates";
+    selectedTab !== "avatars" &&
+    selectedTab !== "templates" &&
+    selectedTab !== "pexels";
   const searchPlaceholder =
     selectedTab === "avatars"
       ? "Search avatars"
       : selectedTab === "templates"
         ? "Search templates"
-        : "Search library";
+        : selectedTab === "pexels"
+          ? "Search Pexels packs"
+          : "Search library";
   const selectedVideoSection =
     selectedTab === "ugc"
         ? {
@@ -370,7 +375,8 @@ export function LibraryPageClient() {
         ) : null}
         {showUploadControls &&
         selectedTab !== "avatars" &&
-        selectedTab !== "templates" ? (
+        selectedTab !== "templates" &&
+        selectedTab !== "pexels" ? (
           <UploadPanel
             allowedAssetTypes={["ugc", "demo"]}
             key={selectedTab}
@@ -540,6 +546,28 @@ export function LibraryPageClient() {
             onDelete={swiprLibrary.removeSwipe}
             onStatusFilterChange={setSwipeStatusFilter}
             onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
+          />
+        ) : null}
+        {selectedTab === "pexels" ? (
+          <PexelsLibraryTabSection
+            allBackgrounds={swiprLibrary.globalPexelsBackgrounds}
+            isLoading={swiprLibrary.isLoading}
+            mineBackgrounds={swiprLibrary.backgrounds}
+            searchQuery={searchQuery}
+            onAddPackToAccount={swiprLibrary.addLibraryPackToAccount}
+            onDeletePack={(packName) =>
+              swiprLibrary.removeLibraryPack(packName).then(() => undefined)
+            }
+            onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
+            onRemovePackFromAccount={swiprLibrary.removeLibraryPackFromAccount}
+            onRemovePhotoFromPack={(background) =>
+              swiprLibrary.removeBackgroundFromLibraryPack(background.id)
+            }
+            onRenamePack={(fromName, toName) =>
+              swiprLibrary
+                .renameLibraryPack(fromName, toName)
+                .then((result) => result.libraryQuery)
+            }
           />
         ) : null}
         {selectedTab === "avatars" ? (

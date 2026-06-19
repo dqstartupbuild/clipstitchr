@@ -12,6 +12,7 @@ Library tabs:
 - Demo
 - Swaps
 - Swipes
+- Pexels
 - Stitches
 - Avatars
 - Templates
@@ -48,6 +49,12 @@ Template management moved into
 `web/app/_components/library/TemplateLibraryTabSection.tsx`. It preserves saved
 template browsing, rename, delete, and "Use in Stitchr" actions.
 
+Pexels pack management lives in
+`web/app/_components/library/PexelsLibraryTabSection.tsx`. It preserves Pexels
+search/import, imported pack browsing, pack editing, and account pack selection.
+The Pexels tab has All/Mine filters: All shows global imported packs, and Mine
+shows packs the current user imported or added for Swipr.
+
 ## Data Loading
 
 The dashboard providers still share one library context. The route-aware hooks
@@ -55,8 +62,8 @@ load the data needed by `/dashboard/library`:
 
 - `useClipLibraryState` loads UGC, Demo, Swaps, Stitches, posted Stitches, and
   library counts.
-- `useSwiprLibraryState` loads Swipr backgrounds, active Swipes, and posted
-  Swipes.
+- `useSwiprLibraryState` loads account Swipr backgrounds, global Pexels packs,
+  active Swipes, and posted Swipes.
 - `usePhotoLibraryState` loads avatar documents, photo documents, and avatar
   preferences.
 
@@ -85,6 +92,9 @@ web/app/_components/library/
   AvatarLibraryTabSection.tsx
   AvatarLibraryTabSection.test.tsx
   LibraryTabs.tsx
+  PexelsLibraryFilterTabs.tsx
+  PexelsLibraryPackCard.tsx
+  PexelsLibraryTabSection.tsx
   TemplateLibraryTabSection.tsx
 
 web/app/dashboard/uploads/page.tsx

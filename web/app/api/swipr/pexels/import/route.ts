@@ -64,7 +64,10 @@ export async function POST(request: Request) {
         perPage: count,
         query,
       }));
-    const backgrounds = await convex.query(api.swiprBackgrounds.list, {});
+    const backgrounds = await convex.query(
+      api.swiprBackgrounds.listGlobalPexels,
+      {},
+    );
     const existingPexelsPhotoIds = getImportedPexelsPhotoIds(backgrounds);
     const photosToImport = photos.filter(
       (photo) => !existingPexelsPhotoIds.has(photo.id),
@@ -118,6 +121,10 @@ export async function POST(request: Request) {
       importedIds.push(id);
       importedPhotoIds.push(photo.id);
     }
+
+    await convex.mutation(api.swiprBackgrounds.addLibraryPackToAccount, {
+      libraryQuery,
+    });
 
     return Response.json({
       imported: importedIds.length,

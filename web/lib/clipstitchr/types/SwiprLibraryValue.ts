@@ -32,6 +32,7 @@ export type SaveSwiprSwipeInput = Omit<
 
 export type SwiprLibraryValue = {
   backgrounds: SwiprBackgroundAsset[];
+  globalPexelsBackgrounds: SwiprBackgroundAsset[];
   postedSwipes: SwiprSwipe[];
   swipes: SwiprSwipe[];
   isLoading: boolean;
@@ -47,6 +48,10 @@ export type SwiprLibraryValue = {
     id: string,
   ) => Promise<(SwiprBackgroundAsset & { blob: Blob }) | null>;
   loadSwipePoster: (id: string) => Promise<Blob | null>;
+  addLibraryPackToAccount: (
+    libraryQuery: string,
+  ) => Promise<RenameSwiprLibraryPackResult>;
+  removeLibraryPackFromAccount: (libraryQuery: string) => Promise<number>;
   removeBackgroundFromLibraryPack: (id: string) => Promise<void>;
   removeLibraryPack: (libraryQuery: string) => Promise<number>;
   renameLibraryPack: (

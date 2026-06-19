@@ -47,10 +47,15 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     (isDashboardHome || isLibraryRoute || isSwiprRoute || isUploadsRoute);
   const shouldLoadPostedSwipes =
     isAuthenticated && (isLibraryRoute || isUploadsRoute);
+  const shouldLoadGlobalPexelsBackgrounds = isAuthenticated && isLibraryRoute;
   const productQueryArgs = productId ? { productId } : {};
   const backgroundDocuments = useQuery(
     api.swiprBackgrounds.list,
     shouldLoadBackgrounds ? {} : "skip",
+  );
+  const globalPexelsBackgroundDocuments = useQuery(
+    api.swiprBackgrounds.listGlobalPexels,
+    shouldLoadGlobalPexelsBackgrounds ? {} : "skip",
   );
   const swipeDocuments = useQuery(
     api.swipes.list,
@@ -68,6 +73,12 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   const removeBackgroundFromLibraryPackMutation = useMutation(
     api.swiprBackgrounds.removeFromLibraryPack,
   );
+  const addLibraryPackToAccountMutation = useMutation(
+    api.swiprBackgrounds.addLibraryPackToAccount,
+  );
+  const removeLibraryPackFromAccountMutation = useMutation(
+    api.swiprBackgrounds.removeLibraryPackFromAccount,
+  );
   const removeLibraryPackMutation = useMutation(
     api.swiprBackgrounds.removeLibraryPack,
   );
@@ -82,13 +93,23 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   const [backgrounds, setBackgrounds] = useState<
     SwiprLibraryValue["backgrounds"]
   >([]);
-  const [isSavingBackground, setIsSavingBackground] = useState(false);
-  const [isSavingSwipe, setIsSavingSwipe] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const backgroundBlobCacheRef = useRef(new Map<string, Blob>());
   const backgroundDownloadPromisesRef = useRef(new Map<string, Promise<Blob>>());
   const backgroundDownloadQueueRef = useRef(Promise.resolve());
   const swipePosterBlobCacheRef = useRef(new Map<string, Blob>());
+  const globalPexelsBackgrounds = useMemo(
+    () =>
+      globalPexelsBackgroundDocuments?.map((background) =>
+        createSwiprBackgroundAssetFromConvexDocument(
+          background,
+          backgroundBlobCacheRef.current.get(background.id),
+        ),
+      ) ?? [],
+    [globalPexelsBackgroundDocuments],
+  );
+  const [isSavingBackground, setIsSavingBackground] = useState(false);
+  const [isSavingSwipe, setIsSavingSwipe] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const swipes = useMemo(
     () =>
       swipeDocuments?.map((swipe) =>
@@ -339,6 +360,50 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     [refresh, removeBackgroundFromLibraryPackMutation],
   );
 
+  const addLibraryPackToAccount = useCallback(
+    async (libraryQuery: string) => {
+      setError(null);
+
+      try {
+        const result = await addLibraryPackToAccountMutation({ libraryQuery });
+        await refresh();
+
+        return result;
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to add this pack.",
+        );
+        throw nextError;
+      }
+    },
+    [addLibraryPackToAccountMutation, refresh],
+  );
+
+  const removeLibraryPackFromAccount = useCallback(
+    async (libraryQuery: string) => {
+      setError(null);
+
+      try {
+        const result = await removeLibraryPackFromAccountMutation({
+          libraryQuery,
+        });
+        await refresh();
+
+        return result.count;
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to remove this pack.",
+        );
+        throw nextError;
+      }
+    },
+    [refresh, removeLibraryPackFromAccountMutation],
+  );
+
   const renameLibraryPack = useCallback(
     async (fromLibraryQuery: string, toLibraryQuery: string) => {
       setError(null);
@@ -383,7 +448,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
         const packBackgrounds = getSwiprLibraryBackgroundsByPackName(
           backgrounds,
           libraryQuery,
-        );
+        ).filter((background) => background.isOwnedByCurrentUser !== false);
 
         if (packBackgrounds.length) {
           await deleteObjectsFromR2(
@@ -587,10 +652,13 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   return {
     backgrounds,
     postedSwipes,
+    globalPexelsBackgrounds,
     swipes,
     isLoading:
       isAuthLoading ||
       (shouldLoadBackgrounds && backgroundDocuments === undefined) ||
+      (shouldLoadGlobalPexelsBackgrounds &&
+        globalPexelsBackgroundDocuments === undefined) ||
       (shouldLoadSwipes && swipeDocuments === undefined) ||
       (shouldLoadPostedSwipes && postedSwipeDocuments === undefined),
     isSavingBackground,
@@ -600,6 +668,8 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     loadBackgroundBlob,
     loadBackgroundAsset,
     loadSwipePoster,
+    addLibraryPackToAccount,
+    removeLibraryPackFromAccount,
     removeBackgroundFromLibraryPack,
     removeLibraryPack,
     renameLibraryPack,

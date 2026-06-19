@@ -124,9 +124,11 @@ slide text, change photos, add slides, remove slides, save, and download again.
 
 When a saved Swipe is opened for editing, Swipr loads the saved slide photo IDs
 directly if the current in-memory photo list is missing one. The editor fetches
-the owner-scoped Convex photo record by ID, downloads the R2 blob through the
+the accessible Convex photo record by ID, downloads the R2 blob through the
 existing signed Swipr photo download path, and adds the loaded asset back to the
-local Swipr background list before rendering the slide.
+local Swipr background list before rendering the slide. Private upload, AI, and
+avatar-photo backgrounds remain owner-scoped. Pexels backgrounds in saved packs
+are globally readable so any user can preview and adopt shared packs.
 
 When a generated Swipe is edited and saved again, Swipr preserves its existing
 social copy and performance note unless the user edits the social copy field.
@@ -135,19 +137,20 @@ single caption, description, and hashtag field.
 
 ## Slide Photo Storage
 
-Swipr no longer exposes a shared Swipr photo library. Pexels is the searchable
-photo library users browse from the editor.
+Swipr no longer exposes a generic shared Swipr photo library. Pexels packs are
+managed from the Library Pexels tab and selected from Swipr Batch mode.
 
-When a user chooses a Pexels photo, avatar photo, uploaded photo, or generated
-AI photo, the selected image is saved as an owner-owned Swipr photo record in
-Convex and R2. That record is not shown as a reusable shared gallery item for
-other users. It exists so saved Swipes can reopen, render, and download later.
+When a user chooses a Pexels photo in Manual mode, avatar photo, uploaded photo,
+or generated AI photo, the selected image is saved as a Swipr photo record in
+Convex and R2. Non-Pexels records stay private to the owner. Pexels records with
+a `libraryQuery` belong to a global pack that other users can browse and add to
+their own account.
 
-Pexels query imports are the reusable owner-owned pack path. The user can
-import a Pexels search query, and each imported photo is saved as a normal
-Swipr photo record with `source: "pexels"` and `libraryQuery` set to the
-trimmed query. The editor groups those records into query packs for future
-slide selection and batch draft generation.
+Pexels query imports are the reusable pack path. The user can import a Pexels
+search query from the Library Pexels tab, and each imported photo is saved with
+`source: "pexels"` and `libraryQuery` set to the trimmed query. The importer is
+automatically given that pack in their Mine list. Other users can find the pack
+under All and add it to Mine for Swipr batch generation and automation.
 
 ## AI Background Generation
 
@@ -198,8 +201,9 @@ Swipr photo records include:
 - MIME type, size, width, and height.
 - Created timestamp.
 
-Signed download URLs are owner-scoped. A user can only request Swipr photo
-download URLs for records they own.
+Signed download URLs are owner-scoped for private Swipr photos. Pexels photos
+with a pack name are globally readable because the Library Pexels tab must show
+shared imported packs to every authenticated user.
 
 The `seed` source remains in the schema only so production can tolerate old
 shared-library records while the R2 objects and matching Convex documents are
@@ -235,7 +239,8 @@ the owner who imported them.
 
 ## Pexels Search
 
-Swipr can search Pexels through `POST /api/swipr/pexels/search`. The route:
+The Library Pexels tab and manual Swipr editor can search Pexels through
+`POST /api/swipr/pexels/search`. The route:
 
 - Requires an authenticated user.
 - Consumes the `pexelsSearch` per-user and `pexelsSearchGlobal` shared limits
@@ -249,42 +254,42 @@ Swipr can search Pexels through `POST /api/swipr/pexels/search`. The route:
 - Returns only the photo fields needed by the client: ID, dimensions, Pexels
   URL, photographer credit/link, alt text, and source URLs.
 
-The Swipr Pexels panel shows a Load more button when a page returns a full
-result set. Load more requests the next Pexels page and appends new photo IDs.
-Already-imported Pexels photos are hidden from the visible result list. Batch
-imports save the visible loaded results for the query, so a user can load more
-pages and import those new photos as a reusable pack.
+The Pexels search UI shows a Load more button when a page returns a full result
+set. Load more requests the next Pexels page and appends new photo IDs.
+Already-imported global Pexels photos are hidden from the visible result list.
+Library imports save the visible loaded results for the query, so a user can
+load more pages and import those new photos as a reusable pack.
 
 When a user adds a Pexels photo, the client downloads the selected portrait
 image, saves it through the existing Swipr background analysis/R2/Convex path,
-and assigns it to the selected slide only. Pexels imports use source `pexels`,
-are owner-owned, and keep the Pexels URL and photographer in hidden background
-details for maintenance. The UI shows
+and assigns it to the selected slide only. Pexels imports use source `pexels`
+and keep the Pexels URL and photographer in hidden background details for
+maintenance. The UI shows
 “Photos provided by Pexels” and displays photographer credit on each result.
 
 Swipr can also import a full query through
 `POST /api/swipr/pexels/import`. The import route saves Pexels photos directly
 to R2 and Convex with `libraryQuery` set to the query. If the normalized query
-already matches an existing pack, the import reuses that pack name. The Pexels
-panel shows those saved query packs with cover images, lets the user choose all
-packs or specific packs, lets the user rename/delete packs or remove photos
-from a pack, and exposes saved pack photos for assignment to the selected slide.
+already matches an existing global pack, the import reuses that pack name. The
+Library Pexels tab shows saved query packs with cover images, lets the user
+filter All or Mine, lets the user add global packs to Mine, and lets pack owners
+rename/delete packs or remove photos from a pack.
 
 ## Batch Draft Generation
 
 `POST /api/swipr/drafts/generate` creates multiple editable Swipe drafts from
 saved Pexels packs. It requires a saved Settings product and at least one
-owner-owned Pexels background with `libraryQuery`.
+account-added Pexels pack with saved photos.
 
 The Batch tab is the default UI for this route. It does not expose manual slide
-controls and sends the max Swipr slide count of 8 for generated draft Swipes.
+controls or a draft-count input. It sends the selected pack names, and the
+server creates 10 generated draft Swipes with the max Swipr slide count of 8.
 
 The route:
 
 - Consumes counted text-generation quota before provider work.
-- Loads the selected product and the user's Swipr backgrounds.
-- Filters backgrounds to selected Pexels query packs, or all Pexels packs when
-  no pack is selected.
+- Loads the selected product and the user's account-added Swipr backgrounds.
+- Requires selected Pexels query packs.
 - Generates multiple slideshow text drafts with a SlideSmith-style prompt that
   writes complete, distinct slide decks without exposing internal template IDs.
 - Assigns saved Pexels background IDs across each deck.
@@ -298,27 +303,29 @@ the currently open Swipe.
 
 ## Automation
 
-Automatic Swipr generation uses Pexels for slide photos. The planner queues the
-task when the user has an eligible product. The provider worker searches Pexels
-from the product and audience context, saves owner-owned Pexels photo records,
-generates text for the max 8 slides, and saves an editable Swipe draft. Each
-automated slide receives its own saved Pexels photo ID.
+Automatic Swipr generation can use selected Mine Pexels packs for slide photos.
+The planner queues the task when the user has an eligible product. If selected
+packs are available, the provider worker uses those saved background IDs. If no
+selected pack backgrounds are available, it searches Pexels from the product and
+audience context, saves private one-off Pexels photo records, generates text for
+the max 8 slides, and saves an editable Swipe draft.
 
 ## Abuse Protection
 
 Swipr persistence adds new cost surfaces:
 
 - R2 signed upload URLs for photo uploads and generated photo saves.
-- R2 signed download URLs for owner-owned Swipr photo previews and exports.
+- R2 signed download URLs for private Swipr photo previews, global Pexels pack
+  previews, and exports.
 - GPT-4.1 mini background analysis.
 - Pexels API search requests.
 - Pexels query-pack imports, including image downloads, R2 writes, and Convex
   background saves.
 - Batch Swipr draft generation, including counted text-writing provider calls
   and Convex Swipe saves.
-- Provider-worker Pexels searches and owner-owned Swipr photo saves for
+- Provider-worker Pexels searches and private Swipr photo saves for
   automatic Swipr drafts.
-- Convex record saves for owner-owned Swipr photos.
+- Convex record saves for private and global Swipr photos.
 - Convex record saves, updates, and deletes for user-owned Swipes.
 
 Required protections:
@@ -331,16 +338,17 @@ Required protections:
 - Pexels query imports are rate-limited by requested image count before
   downloading or saving images. Loaded-photo imports do not call Pexels search
   again because the page results were already loaded through the search route.
-- Pexels pack rename/remove/delete operations consume the existing Convex
-  metadata-update, record-delete, and R2 delete limits before changing or
-  removing owner-owned records.
+- Pexels pack add/remove/rename/delete operations consume existing Convex
+  metadata-update, record-delete, and R2 delete limits before changing account
+  pack rows or owned imported records.
 - Batch draft generation consumes counted text-generation quota before the
   writing provider is called.
 - Automatic Swipr is protected by the Swipr automation daily/global budget
   before the provider worker calls Pexels or saves draft assets.
 - Convex saves and updates consume existing record-save or metadata-update
   limits before writes.
-- Swipr photo records and signed download URLs are owner-scoped.
+- Private Swipr photo records and signed download URLs are owner-scoped.
+- Global Pexels pack photo records are readable by authenticated users.
 - User-owned Swipes must be owner-scoped for list, get, save, update, and
   delete operations.
 
@@ -355,7 +363,8 @@ Required protections:
 - Background analysis metadata is hidden from users.
 - Hook style names, template IDs, risk labels, and placeholder mechanics are
   hidden from users when Swipr auto-text is generated.
-- Swipr photos are owner-owned and are not exposed as a shared searchable
-  Swipr gallery.
+- Private Swipr photos are owner-owned and are not exposed as a shared
+  searchable Swipr gallery.
 - Pexels is the searchable user-facing photo library.
-- Pexels query packs are owner-owned imported groups, not shared system packs.
+- Pexels query packs are global imported groups that users add to their Mine
+  list before using in Swipr Batch mode or automation.

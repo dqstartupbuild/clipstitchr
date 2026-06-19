@@ -25,9 +25,11 @@ type SwiprPexelsPanelProps = {
   photos: PexelsPhotoResult[];
   query: string;
   selectedLibraryQueries: string[];
+  allowLibraryPackEditing?: boolean;
   showImportControls: boolean;
   showLibraryPacks: boolean;
   showSavedLibraryPhotos: boolean;
+  showSearch?: boolean;
   hasMorePhotos: boolean;
   onDeleteLibraryPack: (packName: string) => Promise<void>;
   onImportQuery: () => void;
@@ -57,9 +59,11 @@ export function SwiprPexelsPanel({
   photos,
   query,
   selectedLibraryQueries,
+  allowLibraryPackEditing = true,
   showImportControls,
   showLibraryPacks,
   showSavedLibraryPhotos,
+  showSearch = true,
   hasMorePhotos,
   onDeleteLibraryPack,
   onImportQuery,
@@ -88,29 +92,31 @@ export function SwiprPexelsPanel({
         <div>
           <p className="text-sm font-semibold text-accent-dark">Pexels</p>
           <h2 className="mt-0.5 text-base font-bold text-text-primary">
-            Search photos
+            {showSearch ? "Search photos" : "Choose packs"}
           </h2>
         </div>
       </div>
       <div className="grid gap-4">
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-          <SearchInput
-            label="Search Pexels photos"
-            value={query}
-            onChange={onQueryChange}
-            placeholder="Search lifestyle photos"
-          />
-          <Button
-            type="button"
-            size="sm"
-            icon={<Search aria-hidden className="h-4 w-4" />}
-            isLoading={isSearching}
-            disabled={isSaving || !query.trim()}
-            onClick={onSearch}
-          >
-            Search
-          </Button>
-        </div>
+        {showSearch ? (
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+            <SearchInput
+              label="Search Pexels photos"
+              value={query}
+              onChange={onQueryChange}
+              placeholder="Search lifestyle photos"
+            />
+            <Button
+              type="button"
+              size="sm"
+              icon={<Search aria-hidden className="h-4 w-4" />}
+              isLoading={isSearching}
+              disabled={isSaving || !query.trim()}
+              onClick={onSearch}
+            >
+              Search
+            </Button>
+          </div>
+        ) : null}
         {showImportControls ? (
           <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
             <p className="text-sm font-semibold text-text-secondary">
@@ -137,7 +143,7 @@ export function SwiprPexelsPanel({
             {error}
           </p>
         ) : null}
-        {photos.length ? (
+        {showSearch && photos.length ? (
           <div className="grid gap-2">
             <div className="flex max-w-full gap-2 overflow-x-auto pb-1">
               {photos.map((photo) => (
@@ -167,11 +173,13 @@ export function SwiprPexelsPanel({
           <SwiprLibraryPackPicker
             packs={libraryPacks}
             selectedPackNames={selectedLibraryQueries}
-            onEditPack={setEditingPackName}
+            onEditPack={
+              allowLibraryPackEditing ? setEditingPackName : undefined
+            }
             onSelectedPackNamesChange={onSelectedLibraryQueriesChange}
           />
         ) : null}
-        {showLibraryPacks && editingPack ? (
+        {showLibraryPacks && allowLibraryPackEditing && editingPack ? (
           <SwiprLibraryPackEditor
             key={editingPack.name}
             backgrounds={allLibraryBackgrounds}

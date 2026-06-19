@@ -308,6 +308,15 @@ export default defineSchema({
   })
     .index("by_created", ["createdAt"])
     .index("by_background_id", ["id"]),
+  swiprLibraryPackAccounts: defineTable({
+    ownerId: v.string(),
+    libraryQuery: v.string(),
+    libraryQueryKey: v.string(),
+    createdAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_query", ["ownerId", "libraryQueryKey"])
+    .index("by_query_key", ["libraryQueryKey"]),
   swipes: defineTable({
     ownerId: v.string(),
     id: v.string(),

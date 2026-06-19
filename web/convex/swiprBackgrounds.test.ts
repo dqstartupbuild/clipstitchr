@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  addLibraryPackToAccount,
   get,
   list,
+  listGlobalPexels,
   removeFromLibraryPack,
   removeLibraryPack,
+  removeLibraryPackFromAccount,
   renameLibraryPack,
   save,
 } from "./swiprBackgrounds";
@@ -75,6 +78,17 @@ function createBackground(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function createPackAccount(overrides: Record<string, unknown> = {}) {
+  return {
+    _id: "pack_account_1",
+    createdAt: "2026-05-20T00:00:00.000Z",
+    libraryQuery: "desk setup",
+    libraryQueryKey: "desk setup",
+    ownerId: "owner_123",
+    ...overrides,
+  };
+}
+
 function createSaveArgs(overrides: Record<string, unknown> = {}) {
   return {
     createdAt: "2026-05-20T00:00:00.000Z",
@@ -108,25 +122,81 @@ describe("convex swiprBackgrounds", () => {
 
   it("lists and gets Swipr backgrounds for authenticated users", async () => {
     const backgrounds = [createBackground()];
-    const queryChain = createQueryChain({
+    const backgroundQueryChain = createQueryChain({
       collect: backgrounds,
       unique: createBackground(),
     });
+    const packAccountQueryChain = createQueryChain({ collect: [] });
     const ctx = {
       db: {
-        query: vi.fn(() => queryChain),
+        query: vi.fn((tableName: string) =>
+          tableName === "swiprLibraryPackAccounts"
+            ? packAccountQueryChain
+            : backgroundQueryChain,
+        ),
       },
     };
 
-    await expect(getHandler(list)(ctx, {})).resolves.toStrictEqual(backgrounds);
-    await expect(getHandler(get)(ctx, { id: "background_1" })).resolves.toEqual(
-      createBackground(),
-    );
-    expect(queryChain.withIndex).toHaveBeenCalledWith("by_created");
-    expect(queryChain.withIndex).toHaveBeenCalledWith(
+    await expect(getHandler(list)(ctx, {})).resolves.toStrictEqual([
+      { ...createBackground(), isOwnedByCurrentUser: true },
+    ]);
+    await expect(
+      getHandler(get)(ctx, { id: "background_1" }),
+    ).resolves.toEqual({
+      ...createBackground(),
+      isOwnedByCurrentUser: true,
+    });
+    expect(backgroundQueryChain.withIndex).toHaveBeenCalledWith("by_created");
+    expect(backgroundQueryChain.withIndex).toHaveBeenCalledWith(
       "by_background_id",
       expect.any(Function),
     );
+  });
+
+  it("lists global Pexels packs and account-added Pexels packs", async () => {
+    const backgrounds = [
+      createBackground({
+        _id: "doc_1",
+        id: "background_1",
+        libraryQuery: "Desk Setup",
+        uploadedByOwnerId: "other_owner",
+      }),
+      createBackground({
+        _id: "doc_2",
+        id: "background_2",
+        libraryQuery: "Coffee",
+        uploadedByOwnerId: "other_owner",
+      }),
+      createBackground({
+        _id: "doc_3",
+        id: "background_3",
+        source: "upload",
+        uploadedByOwnerId: "other_owner",
+      }),
+    ];
+    const backgroundQueryChain = createQueryChain({
+      collect: backgrounds,
+    });
+    const packAccountQueryChain = createQueryChain({
+      collect: [createPackAccount({ libraryQueryKey: "desk setup" })],
+    });
+    const ctx = {
+      db: {
+        query: vi.fn((tableName: string) =>
+          tableName === "swiprLibraryPackAccounts"
+            ? packAccountQueryChain
+            : backgroundQueryChain,
+        ),
+      },
+    };
+
+    await expect(getHandler(list)(ctx, {})).resolves.toStrictEqual([
+      { ...backgrounds[0], isOwnedByCurrentUser: false },
+    ]);
+    await expect(getHandler(listGlobalPexels)(ctx, {})).resolves.toStrictEqual([
+      { ...backgrounds[0], isOwnedByCurrentUser: false },
+      { ...backgrounds[1], isOwnedByCurrentUser: false },
+    ]);
   });
 
   it("normalizes and saves a new background", async () => {
@@ -157,6 +227,46 @@ describe("convex swiprBackgrounds", () => {
         uploadedByOwnerId: "owner_123",
       }),
     );
+  });
+
+  it("adds and removes global Pexels packs for the authenticated account", async () => {
+    const backgroundQueryChain = createQueryChain({
+      collect: [createBackground({ libraryQuery: "Desk Setup" })],
+    });
+    const missingPackAccountQueryChain = createQueryChain({ unique: null });
+    const existingPackAccountQueryChain = createQueryChain({
+      unique: createPackAccount(),
+    });
+    const ctx = {
+      db: {
+        delete: vi.fn(),
+        insert: vi.fn(async () => "pack_account_1"),
+        query: vi
+          .fn()
+          .mockReturnValueOnce(backgroundQueryChain)
+          .mockReturnValueOnce(missingPackAccountQueryChain)
+          .mockReturnValueOnce(existingPackAccountQueryChain),
+      },
+    };
+
+    await expect(
+      getHandler(addLibraryPackToAccount)(ctx, {
+        libraryQuery: "desk setup",
+      }),
+    ).resolves.toEqual({ count: 1, libraryQuery: "Desk Setup" });
+    expect(ctx.db.insert).toHaveBeenCalledWith("swiprLibraryPackAccounts", {
+      createdAt: expect.any(String),
+      libraryQuery: "Desk Setup",
+      libraryQueryKey: "desk setup",
+      ownerId: "owner_123",
+    });
+
+    await expect(
+      getHandler(removeLibraryPackFromAccount)(ctx, {
+        libraryQuery: "desk setup",
+      }),
+    ).resolves.toEqual({ count: 1 });
+    expect(ctx.db.delete).toHaveBeenCalledWith("pack_account_1");
   });
 
   it("removes a Swipr photo from its Pexels pack", async () => {
@@ -190,10 +300,16 @@ describe("convex swiprBackgrounds", () => {
       createBackground({ _id: "doc_2", id: "background_2", libraryQuery: "desk   setup" }),
       createBackground({ _id: "doc_3", id: "background_3", libraryQuery: "coffee" }),
     ];
+    const backgroundQueryChain = createQueryChain({ collect: backgrounds });
+    const packAccountQueryChain = createQueryChain({ collect: [] });
     const ctx = {
       db: {
         patch: vi.fn(),
-        query: vi.fn(() => createQueryChain({ collect: backgrounds })),
+        query: vi.fn((tableName: string) =>
+          tableName === "swiprLibraryPackAccounts"
+            ? packAccountQueryChain
+            : backgroundQueryChain,
+        ),
       },
     };
 
@@ -226,10 +342,16 @@ describe("convex swiprBackgrounds", () => {
       createBackground({ _id: "doc_2", id: "background_2", libraryQuery: "desk setup" }),
       createBackground({ _id: "doc_3", id: "background_3", libraryQuery: "coffee" }),
     ];
+    const backgroundQueryChain = createQueryChain({ collect: backgrounds });
+    const packAccountQueryChain = createQueryChain({ collect: [] });
     const ctx = {
       db: {
         delete: vi.fn(),
-        query: vi.fn(() => createQueryChain({ collect: backgrounds })),
+        query: vi.fn((tableName: string) =>
+          tableName === "swiprLibraryPackAccounts"
+            ? packAccountQueryChain
+            : backgroundQueryChain,
+        ),
       },
     };
 

@@ -190,7 +190,7 @@ export function SwiprPageClient() {
       ),
     [selectedLibraryQueries],
   );
-  const libraryBackgrounds = useMemo(
+  const selectedLibraryBackgrounds = useMemo(
     () =>
       allPexelsLibraryBackgrounds.filter((backgroundAsset) => {
         return (
@@ -813,10 +813,15 @@ export function SwiprPageClient() {
       return;
     }
 
-    if (!libraryBackgrounds.length) {
+    if (!selectedLibraryQueries.length) {
       setAutoTextMessage(
         "Choose at least one Pexels pack before generating drafts.",
       );
+      return;
+    }
+
+    if (!selectedLibraryBackgrounds.length) {
+      setAutoTextMessage("Choose a Pexels pack with saved photos.");
       return;
     }
 
@@ -1201,19 +1206,25 @@ export function SwiprPageClient() {
                   error={pexelsError}
                   hasMorePhotos={hasMorePexelsPhotos}
                   allLibraryBackgrounds={allPexelsLibraryBackgrounds}
+                  allowLibraryPackEditing={false}
                   isLoadingMore={isLoadingMorePexels}
                   isSaving={isImportingBackground}
                   isImportingLibrary={isImportingPexelsLibrary}
                   isSearching={isSearchingPexels}
                   isUpdatingLibraryPack={isUpdatingPexelsPack}
-                  libraryBackgrounds={libraryBackgrounds}
+                  libraryBackgrounds={
+                    activeSwiprMode === "manual"
+                      ? allPexelsLibraryBackgrounds
+                      : selectedLibraryBackgrounds
+                  }
                   libraryPacks={libraryPacks}
                   photos={visiblePexelsPhotos}
                   query={pexelsQuery}
                   selectedLibraryQueries={selectedLibraryQueries}
-                  showImportControls={activeSwiprMode === "batch"}
+                  showImportControls={false}
                   showLibraryPacks={activeSwiprMode === "batch"}
                   showSavedLibraryPhotos={activeSwiprMode === "manual"}
+                  showSearch={activeSwiprMode === "manual"}
                   onDeleteLibraryPack={handleDeletePexelsPack}
                   onImportQuery={handleImportPexelsLibraryQuery}
                   onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}

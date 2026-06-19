@@ -10,6 +10,7 @@ export type SwiprBackgroundAsset = {
   libraryQuery?: string;
   pexelsPhotoId?: number;
   source: SwiprBackgroundSource;
+  isOwnedByCurrentUser?: boolean;
   imageObject: R2ObjectReference;
   blob?: Blob;
   mimeType: string;
