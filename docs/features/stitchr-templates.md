@@ -84,3 +84,7 @@ behavior. Normal Stitchr templates place copied text into the reusable text
 and caption state instead of tying it to the original UGC clip. That means a
 user can deselect the original UGC, move through picker pages, choose new UGC
 clips, and still keep the same text and caption on the new stitch outputs.
+
+The URL sync on `/dashboard/stitchr` must only run on initial load and browser
+history changes. The in-page Template picker does not rewrite the URL, so reruns
+from ordinary library-state changes must not clear reusable template text.

@@ -98,6 +98,7 @@ vi.mock("react", async (importOriginal) => {
     useCallback: (callback: unknown) => callback,
     useEffect: mocks.useEffect,
     useMemo: (factory: () => unknown) => factory(),
+    useRef: (initialValue: unknown) => ({ current: initialValue }),
     useState: (initialValue: unknown) => {
       const value =
         mocks.stateQueue.length > 0
@@ -703,6 +704,7 @@ describe("StitchrPageClient", () => {
     renderToStaticMarkup(<StitchrPageClient />);
     cleanup?.();
 
+    expect(mocks.useEffect.mock.calls[0]?.[1]).toEqual([]);
     expect(addEventListener).toHaveBeenCalledWith(
       "popstate",
       expect.any(Function),

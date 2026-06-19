@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ClipPickerPanel } from "@/app/_components/stitchr/ClipPickerPanel";
 import { StitchrProgressPanel } from "@/app/_components/stitchr/StitchrProgressPanel";
 import { StitchrEmptyState } from "@/app/_components/stitchr/StitchrEmptyState";
@@ -128,6 +128,7 @@ export function StitchrPageClient() {
     isLoadingMoreItems: isLoadingMoreDemoClips,
     loadMoreItems: loadMoreDemoClips,
   } = library.videoGroups.demo;
+  const loadStitch = library.loadStitch;
   const demoClips = useMemo(
     () => mergeVideoClipMetadataById([...templateDemoClips, ...libraryDemoClips]),
     [libraryDemoClips, templateDemoClips],
@@ -409,7 +410,7 @@ export function StitchrPageClient() {
 
   const applyTemplateStitch = useCallback(
     async (templateStitchId: string) => {
-      const templateStitch = await library.loadStitch(templateStitchId);
+      const templateStitch = await loadStitch(templateStitchId);
 
       if (!templateStitch) {
         setAutoTextMessage("Unable to load that stitch template.");
@@ -557,7 +558,7 @@ export function StitchrPageClient() {
       setReusedSocialCaption(templateStitch.socialCaption ?? null);
       setLongrSocialCaption("");
     },
-    [library, loadClip],
+    [loadClip, loadStitch],
   );
   const applyStitchTemplate = useCallback(
     async (template: StitchTemplate) => {
@@ -700,6 +701,8 @@ export function StitchrPageClient() {
     [loadClip],
   );
 
+  const applyTemplateStitchRef = useRef(applyTemplateStitch);
+
   useEffect(() => {
     const syncSelectionFromUrl = () => {
       const templateStitchId = getSearchParamValue("templateStitchId");
@@ -711,7 +714,7 @@ export function StitchrPageClient() {
         setMode("normal");
         setSelectedTemplateId("");
         setAppliedTemplateId("");
-        void applyTemplateStitch(templateStitchId);
+        void applyTemplateStitchRef.current(templateStitchId);
         return;
       }
 
@@ -750,6 +753,10 @@ export function StitchrPageClient() {
     return () => {
       window.removeEventListener("popstate", syncSelectionFromUrl);
     };
+  }, []);
+
+  useEffect(() => {
+    applyTemplateStitchRef.current = applyTemplateStitch;
   }, [applyTemplateStitch]);
 
   useEffect(() => {
