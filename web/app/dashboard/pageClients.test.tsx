@@ -461,7 +461,7 @@ describe("dashboard page clients", () => {
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Batch");
     expect(markup).toContain("Generate Swipes");
-    expect(markup).toContain("Import loaded");
+    expect(markup).toContain("Choose packs");
   });
 
   it("renders the Library with UGC as the default tab", () => {
