@@ -11,11 +11,10 @@ version at any time.
 
 1. The user opens `/dashboard/swipr`.
 2. Swipr opens in Batch mode by default. The user chooses a saved Settings
-   product, searches Pexels, imports the current Pexels page as a reusable
-   query pack, chooses which packs to use, and generates multiple editable
-   draft Swipes at once. Batch draft generation always requests the max Swipr
-   slide count of 8, and the backend enforces 8 slides even if an older client
-   sends a smaller slide count.
+   product, chooses at least one saved Pexels pack, and generates 10 editable
+   draft Swipes at once. Batch draft generation always creates 10 draft Swipes,
+   always requests the max Swipr slide count of 8, and the backend enforces
+   both values even if an older client sends a different count or slide count.
 3. The user can switch to Manual mode to build one Swipe by hand.
 4. In Manual mode, the user starts with the default slides, adds slides up to
    the max of 8, and can remove slides they do not need.

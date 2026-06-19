@@ -370,7 +370,6 @@ function queueSwiprState(
     slides?: ReturnType<typeof createSwiprSlides>;
     swiprMode?: "batch" | "manual";
     textGenerationScope?: "all" | "selected";
-    draftGenerationCount?: number;
     pexelsPage?: number;
     hasMorePexelsPhotos?: boolean;
     isLoadingMorePexels?: boolean;
@@ -399,7 +398,6 @@ function queueSwiprState(
     overrides.isLoadingMorePexels ?? false,
     overrides.isGeneratingDrafts ?? false,
     overrides.isGeneratingAutoText ?? false,
-    overrides.draftGenerationCount ?? 3,
     overrides.textGenerationScope ?? "all",
     overrides.loadedSwipeId ?? null,
     overrides.savedSwipeSnapshot ?? null,
@@ -708,7 +706,6 @@ describe("SwiprPageClient", () => {
       }),
     ];
     queueSwiprState({
-      draftGenerationCount: 2,
       pexelsPhotos: [pexelsPhoto],
       pexelsQuery: "coffee desk",
       selectedLibraryQueries: ["coffee desk"],
@@ -738,7 +735,7 @@ describe("SwiprPageClient", () => {
       query: "coffee desk",
     });
     expect(mocks.generateSwiprDrafts).toHaveBeenCalledWith({
-      count: 2,
+      count: 10,
       productId: "product_1",
       selectedLibraryQueries: ["coffee desk"],
       slideCount: 8,

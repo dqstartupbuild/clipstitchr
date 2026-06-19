@@ -10,8 +10,8 @@ import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticate
 import { pickSwiprDraftBackgroundIds } from "@/lib/clipstitchr/server/pickSwiprDraftBackgroundIds";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
-import { readSwiprDraftGenerationCount } from "@/lib/clipstitchr/server/readSwiprDraftGenerationCount";
 import { readSwiprLibraryQueries } from "@/lib/clipstitchr/server/readSwiprLibraryQueries";
+import { SWIPR_BATCH_DRAFT_COUNT } from "@/lib/clipstitchr/constants/swiprBatchDraftCount";
 import { SWIPR_MAX_SLIDE_COUNT } from "@/lib/clipstitchr/constants/swiprSlideCountBounds";
 import { getProductSwiprContext } from "@/lib/clipstitchr/utils/getProductSwiprContext";
 import { getSwiprSwipeName } from "@/lib/clipstitchr/utils/getSwiprSwipeName";
@@ -51,12 +51,19 @@ export async function POST(request: Request) {
     }
 
     const body = (await request.json()) as SwiprDraftGenerationRequest;
-    const count = readSwiprDraftGenerationCount(body.count);
+    const count = SWIPR_BATCH_DRAFT_COUNT;
     const productId = readProductId(body.productId);
     const slideCount = SWIPR_MAX_SLIDE_COUNT;
     const selectedLibraryQueries = readSwiprLibraryQueries(
       body.selectedLibraryQueries,
     );
+
+    if (!selectedLibraryQueries.length) {
+      throw new Error(
+        "Choose at least one Pexels pack before generating draft Swipes.",
+      );
+    }
+
     const selectedLibraryQueryKeys = selectedLibraryQueries.map((libraryQuery) =>
       normalizeSwiprLibraryQueryKey(libraryQuery),
     );
@@ -83,7 +90,6 @@ export async function POST(request: Request) {
       }
 
       return (
-        selectedLibraryQueryKeys.length === 0 ||
         selectedLibraryQueryKeys.includes(
           normalizeSwiprLibraryQueryKey(background.libraryQuery),
         )

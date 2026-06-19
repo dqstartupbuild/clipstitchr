@@ -1,0 +1,1 @@
+export const SWIPR_BATCH_DRAFT_COUNT = 10;

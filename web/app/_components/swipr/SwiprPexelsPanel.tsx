@@ -168,7 +168,6 @@ export function SwiprPexelsPanel({
             packs={libraryPacks}
             selectedPackNames={selectedLibraryQueries}
             onEditPack={setEditingPackName}
-            onLoadBackgroundBlob={onLoadBackgroundBlob}
             onSelectedPackNamesChange={onSelectedLibraryQueriesChange}
           />
         ) : null}

@@ -16,6 +16,7 @@ import { SwiprSocialCaptionField } from "@/app/_components/swipr/SwiprSocialCapt
 import { SwiprSlideStrip } from "@/app/_components/swipr/SwiprSlideStrip";
 import { SwiprTextOverlayPanel } from "@/app/_components/swipr/SwiprTextOverlayPanel";
 import { Panel } from "@/app/_components/ui/Panel";
+import { SWIPR_BATCH_DRAFT_COUNT } from "@/lib/clipstitchr/constants/swiprBatchDraftCount";
 import {
   SWIPR_MAX_SLIDE_COUNT,
   SWIPR_MIN_SLIDE_COUNT,
@@ -97,7 +98,6 @@ export function SwiprPageClient() {
   const [isLoadingMorePexels, setIsLoadingMorePexels] = useState(false);
   const [isGeneratingDrafts, setIsGeneratingDrafts] = useState(false);
   const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
-  const [draftGenerationCount, setDraftGenerationCount] = useState(3);
   const [textGenerationScope, setTextGenerationScope] =
     useState<SwiprTextGenerationScope>("all");
   const editingSwipeId = requestedSwipeId;
@@ -194,7 +194,7 @@ export function SwiprPageClient() {
     () =>
       allPexelsLibraryBackgrounds.filter((backgroundAsset) => {
         return (
-          selectedLibraryQueryKeys.length === 0 ||
+          selectedLibraryQueryKeys.length > 0 &&
           selectedLibraryQueryKeys.includes(
             normalizeSwiprLibraryQueryKey(backgroundAsset.libraryQuery),
           )
@@ -814,7 +814,9 @@ export function SwiprPageClient() {
     }
 
     if (!libraryBackgrounds.length) {
-      setAutoTextMessage("Import Pexels photos before generating drafts.");
+      setAutoTextMessage(
+        "Choose at least one Pexels pack before generating drafts.",
+      );
       return;
     }
 
@@ -822,7 +824,7 @@ export function SwiprPageClient() {
     setAutoTextMessage(null);
 
     void generateSwiprDrafts({
-      count: draftGenerationCount,
+      count: SWIPR_BATCH_DRAFT_COUNT,
       productId: selectedSavedProductId,
       selectedLibraryQueries,
       slideCount: SWIPR_MAX_SLIDE_COUNT,
@@ -1160,10 +1162,8 @@ export function SwiprPageClient() {
                 )}
                 {activeSwiprMode === "batch" ? (
                   <SwiprBatchControls
-                    draftGenerationCount={draftGenerationCount}
                     isDisabled={!selectedSavedProduct}
                     isGeneratingDrafts={isGeneratingDrafts}
-                    onDraftGenerationCountChange={setDraftGenerationCount}
                     onGenerateDrafts={handleGenerateDrafts}
                   />
                 ) : (

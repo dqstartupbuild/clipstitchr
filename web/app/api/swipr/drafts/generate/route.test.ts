@@ -195,10 +195,10 @@ describe("POST /api/swipr/drafts/generate", () => {
     expect(response.status).toBe(200);
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.rateLimits.consumeCliprHookScript,
-      { count: 1, secret: "rate-limit-secret" },
+      { count: 10, secret: "rate-limit-secret" },
     );
     expect(mocks.createSwiprBatchTextGeneration).toHaveBeenCalledWith({
-      count: 1,
+      count: 10,
       product: expect.objectContaining({ id: "product_1", name: "Launch Kit" }),
       replicate: { provider: "replicate" },
       slideCount: 8,
@@ -247,6 +247,19 @@ describe("POST /api/swipr/drafts/generate", () => {
     expect(mocks.createSwiprBatchTextGeneration).not.toHaveBeenCalled();
   });
 
+  it("requires at least one selected Pexels pack", async () => {
+    const response = await POST(createRequest({ productId: "product_1" }));
+
+    await expect(response.json()).resolves.toEqual({
+      message: "Choose at least one Pexels pack before generating draft Swipes.",
+    });
+    expect(response.status).toBe(400);
+    expect(mocks.convex.mutation).not.toHaveBeenCalledWith(
+      api.rateLimits.consumeCliprHookScript,
+      expect.anything(),
+    );
+  });
+
   it("returns counted rate-limit responses before product lookup", async () => {
     mocks.convex.mutation.mockRejectedValueOnce({
       data: {
@@ -256,7 +269,13 @@ describe("POST /api/swipr/drafts/generate", () => {
       },
     });
 
-    const response = await POST(createRequest({ count: 2, productId: "product_1" }));
+    const response = await POST(
+      createRequest({
+        count: 2,
+        productId: "product_1",
+        selectedLibraryQueries: ["desk setup"],
+      }),
+    );
 
     expect(response.status).toBe(429);
     expect(mocks.convex.query).not.toHaveBeenCalled();
