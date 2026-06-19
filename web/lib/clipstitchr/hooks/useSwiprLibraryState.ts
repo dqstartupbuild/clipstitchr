@@ -94,6 +94,9 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     SwiprLibraryValue["backgrounds"]
   >([]);
   const backgroundBlobCacheRef = useRef(new Map<string, Blob>());
+  const [backgroundBlobsById, setBackgroundBlobsById] = useState(
+    () => new Map<string, Blob>(),
+  );
   const backgroundDownloadPromisesRef = useRef(new Map<string, Promise<Blob>>());
   const backgroundDownloadQueueRef = useRef(Promise.resolve());
   const swipePosterBlobCacheRef = useRef(new Map<string, Blob>());
@@ -102,10 +105,10 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
       globalPexelsBackgroundDocuments?.map((background) =>
         createSwiprBackgroundAssetFromConvexDocument(
           background,
-          backgroundBlobCacheRef.current.get(background.id),
+          backgroundBlobsById.get(background.id),
         ),
       ) ?? [],
-    [globalPexelsBackgroundDocuments],
+    [backgroundBlobsById, globalPexelsBackgroundDocuments],
   );
   const [isSavingBackground, setIsSavingBackground] = useState(false);
   const [isSavingSwipe, setIsSavingSwipe] = useState(false);
@@ -161,6 +164,13 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
       const blob = await download;
 
       backgroundBlobCacheRef.current.set(id, blob);
+      setBackgroundBlobsById((currentBlobsById) => {
+        const nextBlobsById = new Map(currentBlobsById);
+
+        nextBlobsById.set(id, blob);
+
+        return nextBlobsById;
+      });
       setBackgrounds((currentBackgrounds) =>
         currentBackgrounds.map((background) =>
           background.id === id ? { ...background, blob } : background,
@@ -313,6 +323,13 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
         };
 
         backgroundBlobCacheRef.current.set(id, blob);
+        setBackgroundBlobsById((currentBlobsById) => {
+          const nextBlobsById = new Map(currentBlobsById);
+
+          nextBlobsById.set(id, blob);
+
+          return nextBlobsById;
+        });
         setBackgrounds((currentBackgrounds) => [
           savedBackground,
           ...currentBackgrounds,
@@ -465,6 +482,15 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
           backgroundBlobCacheRef.current.delete(background.id);
           backgroundDownloadPromisesRef.current.delete(background.id);
         }
+        setBackgroundBlobsById((currentBlobsById) => {
+          const nextBlobsById = new Map(currentBlobsById);
+
+          for (const background of packBackgrounds) {
+            nextBlobsById.delete(background.id);
+          }
+
+          return nextBlobsById;
+        });
 
         setBackgrounds((currentBackgrounds) =>
           currentBackgrounds.filter(
@@ -603,6 +629,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
         backgroundBlobCacheRef.current.clear();
         backgroundDownloadPromisesRef.current.clear();
         swipePosterBlobCacheRef.current.clear();
+        setBackgroundBlobsById(new Map());
         setBackgrounds([]);
       });
       return;
@@ -614,6 +641,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
           backgroundBlobCacheRef.current.clear();
           backgroundDownloadPromisesRef.current.clear();
           swipePosterBlobCacheRef.current.clear();
+          setBackgroundBlobsById(new Map());
           setBackgrounds([]);
         });
       }
@@ -633,7 +661,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
         backgroundDocuments.map((background) =>
           createSwiprBackgroundAssetFromConvexDocument(
             background,
-            backgroundBlobCacheRef.current.get(background.id),
+            backgroundBlobsById.get(background.id),
           ),
         ),
       );
@@ -644,6 +672,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     };
   }, [
     backgroundDocuments,
+    backgroundBlobsById,
     isAuthenticated,
     isAuthLoading,
     shouldLoadBackgrounds,
