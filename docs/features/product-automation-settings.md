@@ -28,6 +28,10 @@ two products can both run Swipr with 10 drafts on the same day.
 Legacy owner-level automation preferences still work as a fallback until a user
 saves settings for a product.
 
+Uploaded UGC is account-wide and can be used by any product's Stitchr
+automation. Product demos, generated Clipr clips, and generated Swapr clips
+remain product-scoped.
+
 ## Generation Counts
 
 The shared count type is `3 | 5 | 10`. The default remains 10.

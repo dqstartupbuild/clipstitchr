@@ -1,6 +1,7 @@
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { query } from "./_generated/server";
 import { stitchCounts, videoClipCounts } from "./aggregateCounts";
+import { getVideoClipIsAccountWideUgc } from "./getVideoClipIsAccountWideUgc";
 import { v } from "convex/values";
 
 export const get = query({
@@ -16,7 +17,6 @@ export const get = query({
         ctx.db
           .query("videoClips")
           .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-          .filter((q) => q.eq(q.field("productId"), productFilterId))
           .collect(),
         ctx.db
           .query("stitches")
@@ -24,47 +24,52 @@ export const get = query({
           .filter((q) => q.eq(q.field("productId"), productFilterId))
           .collect(),
       ]);
-      const ugcClips = clips.filter(
-        (clip) =>
-          clip.clipType === "ugc" && clip.swaprMetadata?.source !== "swapr",
-      ).length;
+      const plainUgcClips = clips.filter(getVideoClipIsAccountWideUgc).length;
       const cliprClips = clips.filter(
-        (clip) => clip.libraryKind === "clipr",
+        (clip) =>
+          clip.productId === productFilterId &&
+          clip.clipType === "ugc" &&
+          Boolean(clip.cliprMetadata),
       ).length;
 
       return {
         activeStitches: stitches.filter((stitch) => !stitch.isPosted).length,
         cliprClips: 0,
-        demoClips: clips.filter((clip) => clip.clipType === "demo").length,
+        demoClips: clips.filter(
+          (clip) =>
+            clip.productId === productFilterId && clip.clipType === "demo",
+        ).length,
         postedStitches: stitches.filter((stitch) => stitch.isPosted).length,
         stitches: stitches.length,
         swapClips: clips.filter(
-          (clip) => clip.swaprMetadata?.source === "swapr",
+          (clip) =>
+            clip.productId === productFilterId &&
+            clip.swaprMetadata?.source === "swapr",
         ).length,
-        ugcClips: ugcClips + cliprClips,
+        ugcClips: plainUgcClips + cliprClips,
       };
     }
 
     const [ugcClips, demoClips, legacyCliprClips, swapClips, stitches] =
       await Promise.all([
-      videoClipCounts.count(ctx, {
-        bounds: { eq: "ugc" },
-        namespace: ownerId,
-      }),
-      videoClipCounts.count(ctx, {
-        bounds: { eq: "demo" },
-        namespace: ownerId,
-      }),
-      videoClipCounts.count(ctx, {
-        bounds: { eq: "clipr" },
-        namespace: ownerId,
-      }),
-      videoClipCounts.count(ctx, {
-        bounds: { eq: "swapr" },
-        namespace: ownerId,
-      }),
-      stitchCounts.count(ctx, { namespace: ownerId }),
-    ]);
+        videoClipCounts.count(ctx, {
+          bounds: { eq: "ugc" },
+          namespace: ownerId,
+        }),
+        videoClipCounts.count(ctx, {
+          bounds: { eq: "demo" },
+          namespace: ownerId,
+        }),
+        videoClipCounts.count(ctx, {
+          bounds: { eq: "clipr" },
+          namespace: ownerId,
+        }),
+        videoClipCounts.count(ctx, {
+          bounds: { eq: "swapr" },
+          namespace: ownerId,
+        }),
+        stitchCounts.count(ctx, { namespace: ownerId }),
+      ]);
 
     return {
       activeStitches: 0,

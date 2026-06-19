@@ -45,7 +45,8 @@ social proof first, product proof immediately after.
 
 ## Workflow
 
-1. Upload UGC and demo videos. Product demos must be linked to a saved product.
+1. Upload UGC and demo videos. Uploaded UGC is account-wide, and product demos
+   must be linked to a saved product.
 2. Normalize every video to 9:16 before it enters the library.
 3. Save generated posters so clips are recognizable at a glance.
 4. Store non-destructive default trims on each clip.
@@ -57,8 +58,8 @@ social proof first, product proof immediately after.
    and spreads a batch across different UGC and Demo clips before reusing
    pieces.
 7. Switch to Normal mode to select up to 20 UGC clips and one demo clip inside
-   Stitchr, using the
-   product filter when the library contains demos for multiple products. When
+   Stitchr. UGC stays account-wide, while demo selection uses the product
+   filter when the library contains demos for multiple products. When
    upload analysis has scored a clip, show that score in the picker so the user
    can spot clips worth using before building the batch.
 8. Copy clip default trims and active source Quick Edit metadata into the

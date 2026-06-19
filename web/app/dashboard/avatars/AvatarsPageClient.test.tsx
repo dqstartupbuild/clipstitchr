@@ -37,8 +37,31 @@ const mocks = vi.hoisted(() => ({
     setDefaultAvatar: vi.fn(),
     setDefaultCliprVoice: vi.fn(),
     updateAvatarCliprVoice: vi.fn(),
+    updateAvatarProduct: vi.fn(),
     updateAvatarWardrobeStyle: vi.fn(),
     updatePhotoMetadata: vi.fn(),
+  },
+  productState: {
+    products: [
+      {
+        audienceDetails: "Creators",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        id: "product_1",
+        inferredPainPoints: [],
+        name: "Launch Kit",
+        productDetails: "A launch kit",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        audienceDetails: "Teams",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        id: "product_2",
+        inferredPainPoints: [],
+        name: "Second Product",
+        productDetails: "A second offer",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+      },
+    ],
   },
   searchInputProps: null as Record<string, unknown> | null,
   selectedAvatarActionsProps: null as Record<string, unknown> | null,
@@ -146,6 +169,10 @@ vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
   usePhotoLibrary: () => mocks.photoLibraryState,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
+  useDashboardProduct: () => mocks.productState,
+}));
+
 vi.mock("@/lib/clipstitchr/hooks/useShowUploadControls", () => ({
   useShowUploadControls: () => mocks.showUploadControls,
 }));
@@ -244,6 +271,7 @@ describe("AvatarsPageClient", () => {
     mocks.photoLibraryState.setDefaultAvatar.mockResolvedValue(undefined);
     mocks.photoLibraryState.setDefaultCliprVoice.mockResolvedValue(undefined);
     mocks.photoLibraryState.updateAvatarCliprVoice.mockResolvedValue(undefined);
+    mocks.photoLibraryState.updateAvatarProduct.mockResolvedValue(undefined);
     mocks.photoLibraryState.updateAvatarWardrobeStyle.mockResolvedValue(undefined);
     mocks.photoLibraryState.updatePhotoMetadata.mockResolvedValue(undefined);
     mocks.generatorState.error = null;
@@ -357,6 +385,8 @@ describe("AvatarsPageClient", () => {
     const selectedActions = mocks.selectedAvatarActionsProps as {
       onSetDefault: (avatar: Avatar) => Promise<void>;
       onDelete: (avatar: Avatar) => Promise<void>;
+      onProductChange: (avatar: Avatar, productId: string) => Promise<void>;
+      products: unknown[];
     };
     const generationProps = mocks.avatarGenerationPanelProps as {
       onGenerate: () => void;
@@ -379,6 +409,7 @@ describe("AvatarsPageClient", () => {
     filterProps.onChange("avatar_1");
     searchProps.onChange("avatar");
     await selectedActions.onDelete(createAvatar());
+    await selectedActions.onProductChange(createAvatar(), "product_2");
     await selectedActions.onSetDefault(createAvatar());
     generationProps.onGenerate();
     libraryProps.onSelect(createPhoto());
@@ -391,6 +422,11 @@ describe("AvatarsPageClient", () => {
     expect(mocks.photoLibraryState.setDefaultAvatar).toHaveBeenCalledWith(
       expect.objectContaining({ id: "avatar_1" }),
     );
+    expect(mocks.photoLibraryState.updateAvatarProduct).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "avatar_1" }),
+      "product_2",
+    );
+    expect(selectedActions.products).toHaveLength(2);
     expect(mocks.generatorState.generate).toHaveBeenCalledWith(
       expect.objectContaining({
         avatar: expect.objectContaining({ id: "avatar_1" }),

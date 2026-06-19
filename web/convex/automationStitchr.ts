@@ -15,6 +15,7 @@ import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForP
 import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
 import { createQuickEditSuggestionsFromMetadata } from "./createQuickEditSuggestionsFromMetadata";
 import { getQuickEditOverlayText } from "./getQuickEditOverlayText";
+import { getVideoClipIsAccountWideUgc } from "./getVideoClipIsAccountWideUgc";
 import { createCompletedRunNotification } from "./createCompletedRunNotification";
 import { defaultAutomationGenerationCount } from "../lib/clipstitchr/constants/defaultAutomationGenerationCount";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
@@ -230,7 +231,10 @@ export const planDaily = mutation({
       .collect();
     const defaultProduct = await getDefaultProductForOwner(ctx, ownerId);
     const productClips = productId
-      ? clips.filter((clip) => clip.productId === productId)
+      ? clips.filter(
+          (clip) =>
+            clip.productId === productId || getVideoClipIsAccountWideUgc(clip),
+        )
       : clips;
     const ugcClips = productClips.filter((clip) => clip.clipType === "ugc");
     const demoClips = productClips.filter((clip) => clip.clipType === "demo");

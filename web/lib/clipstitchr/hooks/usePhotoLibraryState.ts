@@ -577,6 +577,40 @@ export function usePhotoLibraryState(productId?: string): PhotoLibraryValue {
     },
     [refresh, updateAvatarMutation],
   );
+  const updateAvatarProduct = useCallback(
+    async (avatar: Avatar, nextProductId: string) => {
+      const productId = nextProductId.trim();
+
+      if (!productId) {
+        setError("Choose a product before linking this avatar.");
+        throw new Error("Choose a product before linking this avatar.");
+      }
+
+      setIsSaving(true);
+      setError(null);
+
+      try {
+        await updateAvatarMutation({
+          id: avatar.id,
+          name: avatar.name,
+          description: avatar.description,
+          productId,
+          updatedAt: new Date().toISOString(),
+        });
+        await refresh();
+      } catch (nextError) {
+        setError(
+          nextError instanceof Error
+            ? nextError.message
+            : "Unable to link this avatar to that product.",
+        );
+        throw nextError;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [refresh, updateAvatarMutation],
+  );
 
   const setDefaultAvatar = useCallback(
     async (avatar: Avatar) => {
@@ -924,6 +958,7 @@ export function usePhotoLibraryState(productId?: string): PhotoLibraryValue {
     renameAvatar,
     updateAvatarWardrobeStyle,
     updateAvatarCliprVoice,
+    updateAvatarProduct,
     setDefaultAvatar,
     setDefaultCliprVoice,
     removeAvatar,

@@ -55,24 +55,36 @@ function createQueryChain(uniqueValues: unknown[] = [], collect: unknown[] = [])
   const indexQuery = {
     eq: vi.fn(() => indexQuery),
   };
+  const filterQuery = {
+    and: vi.fn((...expressions: unknown[]) => ({ expressions, type: "and" })),
+    eq: vi.fn((left: unknown, right: unknown) => ({ left, right, type: "eq" })),
+    field: vi.fn((fieldName: string) => fieldName),
+    or: vi.fn((...expressions: unknown[]) => ({ expressions, type: "or" })),
+  };
   const chain = {
     collect: vi.fn(async () => collect),
-    filter: vi.fn(() => chain),
-    order: vi.fn(() => chain),
-    paginate: vi.fn(async () => collect),
-    unique: vi.fn(async () => uniqueValues.shift() ?? null),
-    withIndex: vi.fn((_indexName: string, callback: (q: typeof indexQuery) => void) => {
-      callback(indexQuery);
+    filter: vi.fn((callback: (q: typeof filterQuery) => unknown) => {
+      callback(filterQuery);
 
       return chain;
     }),
+    order: vi.fn(() => chain),
+    paginate: vi.fn(async () => collect),
+    unique: vi.fn(async () => uniqueValues.shift() ?? null),
+    withIndex: vi.fn(
+      (_indexName: string, callback: (q: typeof indexQuery) => void) => {
+        callback(indexQuery);
+
+        return chain;
+      },
+    ),
   };
 
-  return chain;
+  return { chain, filterQuery };
 }
 
 function createCtx(uniqueValues: unknown[] = [], collect: unknown[] = []) {
-  const chain = createQueryChain(uniqueValues, collect);
+  const { chain, filterQuery } = createQueryChain(uniqueValues, collect);
 
   return {
     chain,
@@ -85,6 +97,7 @@ function createCtx(uniqueValues: unknown[] = [], collect: unknown[] = []) {
         query: vi.fn(() => chain),
       },
     },
+    filterQuery,
   };
 }
 
@@ -165,6 +178,35 @@ describe("convex videoClips", () => {
       cursor: null,
       numItems: 20,
     });
+  });
+
+  it("includes account-wide uploaded UGC in product-filtered clip lists", async () => {
+    const clips = [{ _id: "doc_1", id: "clip_1" }];
+    const { chain, ctx, filterQuery } = createCtx([], clips);
+
+    await expect(
+      getHandler(listByLibraryKind)(ctx, {
+        kind: "ugc",
+        paginationOpts: { cursor: null, numItems: 20 },
+        productId: " product_1 ",
+      }),
+    ).resolves.toBe(clips);
+
+    expect(chain.filter).toHaveBeenCalledTimes(1);
+    expect(filterQuery.field.mock.calls.map((call) => call[0])).toEqual(
+      expect.arrayContaining([
+        "productId",
+        "clipType",
+        "cliprMetadata",
+        "swaprMetadata",
+      ]),
+    );
+    expect(filterQuery.eq).toHaveBeenCalledWith("productId", "product_1");
+    expect(filterQuery.eq).toHaveBeenCalledWith("clipType", "ugc");
+    expect(filterQuery.eq).toHaveBeenCalledWith("cliprMetadata", undefined);
+    expect(filterQuery.eq).toHaveBeenCalledWith("swaprMetadata", undefined);
+    expect(filterQuery.and).toHaveBeenCalledTimes(1);
+    expect(filterQuery.or).toHaveBeenCalledTimes(1);
   });
 
   it("requires valid products for demo saves and inserts or patches clips", async () => {

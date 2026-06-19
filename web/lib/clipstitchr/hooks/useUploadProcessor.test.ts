@@ -77,6 +77,25 @@ describe("useUploadProcessor", () => {
     expect(mocks.uploadBlobsToR2).not.toHaveBeenCalled();
   });
 
+  it("links demo uploads to the selected product", async () => {
+    const state = useUploadProcessor({
+      demoProductId: " product_1 ",
+      initialClipType: "demo",
+    });
+    const file = createVideoFile("demo.mov");
+
+    await state.processFiles([file]);
+
+    expect(mocks.createUploadVideoJob).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clipId: "clip_1",
+        clipType: "demo",
+        originalName: "demo.mov",
+        productId: "product_1",
+      }),
+    );
+  });
+
   it("rejects upload batches over the clip limit", async () => {
     const state = useUploadProcessor({});
     const files = Array.from({ length: 21 }, (_, index) =>

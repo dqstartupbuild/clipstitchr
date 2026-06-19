@@ -13,6 +13,7 @@ import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { ACCEPTED_PHOTO_TYPES } from "@/lib/clipstitchr/constants/acceptedPhotoTypes";
 import { DEFAULT_AVATAR_STYLE_OPTION } from "@/lib/clipstitchr/constants/defaultAvatarStyleOption";
 import { useAvatarPhotoGeneration } from "@/lib/clipstitchr/hooks/useAvatarPhotoGeneration";
+import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
@@ -24,6 +25,7 @@ import { filterPhotosBySearchQuery } from "@/lib/clipstitchr/utils/filterPhotosB
 
 export function AvatarsPageClient() {
   const photoLibrary = usePhotoLibrary();
+  const products = useDashboardProduct();
   const showUploadControls = useShowUploadControls();
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | undefined>();
   const [avatarFilterId, setAvatarFilterId] = useState<string | undefined>();
@@ -247,7 +249,9 @@ export function AvatarsPageClient() {
             }
             isSaving={photoLibrary.isSaving}
             photoCount={selectedFilterAvatarPhotoCount}
+            products={products.products}
             onDelete={deleteAvatar}
+            onProductChange={photoLibrary.updateAvatarProduct}
             onRename={photoLibrary.renameAvatar}
             onSetDefault={photoLibrary.setDefaultAvatar}
             onWardrobeStyleChange={photoLibrary.updateAvatarWardrobeStyle}

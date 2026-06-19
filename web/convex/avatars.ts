@@ -103,13 +103,14 @@ export const update = mutation({
     id: v.string(),
     name: v.string(),
     description: v.optional(v.string()),
+    productId: v.optional(v.string()),
     wardrobeStyle: v.optional(avatarWardrobeStyleValidator),
     cliprVoiceId: v.optional(v.string()),
     updatedAt: v.string(),
   },
   handler: async (
     ctx,
-    { id, name, description, wardrobeStyle, cliprVoiceId, updatedAt },
+    { id, name, description, productId, wardrobeStyle, cliprVoiceId, updatedAt },
   ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
@@ -127,13 +128,41 @@ export const update = mutation({
       throw new Error("Avatar not found.");
     }
 
+    let requestedProductId: string | undefined;
+
+    if (productId !== undefined) {
+      requestedProductId = productId.trim();
+
+      if (!requestedProductId) {
+        throw new Error("Choose a product before linking this avatar.");
+      }
+
+      await assertProductBelongsToOwner(ctx, ownerId, requestedProductId);
+    }
+
     await ctx.db.patch(avatar._id, {
       name,
       ...(description === undefined ? {} : { description }),
+      ...(productId === undefined ? {} : { productId: requestedProductId }),
       ...(wardrobeStyle === undefined ? {} : { wardrobeStyle }),
       ...(cliprVoiceId === undefined ? {} : { cliprVoiceId }),
       updatedAt,
     });
+
+    if (productId !== undefined && requestedProductId !== avatar.productId) {
+      const avatarPhotos = await ctx.db
+        .query("photoAssets")
+        .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+        .filter((q) => q.eq(q.field("avatarId"), id))
+        .collect();
+
+      for (const photo of avatarPhotos) {
+        await ctx.db.patch(photo._id, {
+          productId: requestedProductId,
+          updatedAt,
+        });
+      }
+    }
   },
 });
 

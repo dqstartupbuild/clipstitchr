@@ -47,6 +47,7 @@ export type PhotoLibraryValue = {
     avatar: Avatar,
     cliprVoiceId: Avatar["cliprVoiceId"],
   ) => Promise<void>;
+  updateAvatarProduct: (avatar: Avatar, productId: string) => Promise<void>;
   setDefaultAvatar: (avatar: Avatar) => Promise<void>;
   setDefaultCliprVoice: (cliprVoiceId: string) => Promise<void>;
   removeAvatar: (id: string) => Promise<void>;

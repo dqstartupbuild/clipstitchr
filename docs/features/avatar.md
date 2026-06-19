@@ -19,6 +19,7 @@ Each avatar stores identity-level fields:
 - `id`
 - `name`
 - `description`
+- `productId`
 - `wardrobeStyle`
 - `cliprVoiceId`
 - `createdAt`
@@ -52,6 +53,11 @@ which outfit presets are eligible during generated avatar photo creation.
 from the same selected-avatar controls as avatar name, outfit preset, and
 delete. Clipr should preload this voice when the avatar is selected, while still
 allowing a one-off voice change for an individual Clipr job.
+
+`productId` links the avatar to the product that can use it. Users can change
+that product from the selected-avatar controls. When an avatar is linked to a
+different product, its avatar photos are moved to the same product so the avatar
+and its source images stay together.
 
 ### Avatar Photo
 
@@ -91,6 +97,10 @@ If the user selects an existing avatar:
 ## Browsing and Selection
 
 The Avatars dashboard page must provide an avatar selector dropdown for browsing photos, with `All avatars` as the default.
+
+The Avatars page follows the active dashboard product. Product-linked avatars
+appear for their product, and the selected-avatar controls include a product
+picker so a user can move an existing avatar to another product.
 
 The Swapr photo selector must also provide an avatar selector dropdown, with `All avatars` as the default, so users can narrow the selectable images to one avatar.
 

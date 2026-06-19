@@ -63,8 +63,10 @@ import type * as getStitchNotificationCopy from "../getStitchNotificationCopy.js
 import type * as getStitchProductId from "../getStitchProductId.js";
 import type * as getSwipeNotificationCopy from "../getSwipeNotificationCopy.js";
 import type * as getVideoClipCanBePosted from "../getVideoClipCanBePosted.js";
+import type * as getVideoClipIsAccountWideUgc from "../getVideoClipIsAccountWideUgc.js";
 import type * as getVideoClipLibraryKind from "../getVideoClipLibraryKind.js";
 import type * as getVideoClipNotificationCopy from "../getVideoClipNotificationCopy.js";
+import type * as getVideoClipProductScopeFilter from "../getVideoClipProductScopeFilter.js";
 import type * as isWithinAutomationGlobalWindow from "../isWithinAutomationGlobalWindow.js";
 import type * as libraryCounts from "../libraryCounts.js";
 import type * as markAutomationRunCompletedIfAllTasksDone from "../markAutomationRunCompletedIfAllTasksDone.js";
@@ -209,8 +211,10 @@ declare const fullApi: ApiFromModules<{
   getStitchProductId: typeof getStitchProductId;
   getSwipeNotificationCopy: typeof getSwipeNotificationCopy;
   getVideoClipCanBePosted: typeof getVideoClipCanBePosted;
+  getVideoClipIsAccountWideUgc: typeof getVideoClipIsAccountWideUgc;
   getVideoClipLibraryKind: typeof getVideoClipLibraryKind;
   getVideoClipNotificationCopy: typeof getVideoClipNotificationCopy;
+  getVideoClipProductScopeFilter: typeof getVideoClipProductScopeFilter;
   isWithinAutomationGlobalWindow: typeof isWithinAutomationGlobalWindow;
   libraryCounts: typeof libraryCounts;
   markAutomationRunCompletedIfAllTasksDone: typeof markAutomationRunCompletedIfAllTasksDone;

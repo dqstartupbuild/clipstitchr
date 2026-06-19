@@ -9,6 +9,7 @@ import { avatarWardrobeStyleOptions } from "@/lib/clipstitchr/constants/avatarWa
 import { cliprVoices } from "@/lib/clipstitchr/constants/cliprVoices";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 import type { AvatarWardrobeStyle } from "@/lib/clipstitchr/types/AvatarWardrobeStyle";
+import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import { getCliprVoiceId } from "@/lib/clipstitchr/utils/getCliprVoiceId";
 
 type SelectedAvatarActionsProps = {
@@ -17,7 +18,9 @@ type SelectedAvatarActionsProps = {
   isDefaultAvatar: boolean;
   isSaving: boolean;
   photoCount: number;
+  products?: ProductProfile[];
   onDelete: (avatar: Avatar) => Promise<void>;
+  onProductChange?: (avatar: Avatar, productId: string) => Promise<void>;
   onRename: (avatar: Avatar, name: string) => Promise<void>;
   onWardrobeStyleChange: (
     avatar: Avatar,
@@ -34,7 +37,9 @@ export function SelectedAvatarActions({
   isDefaultAvatar,
   isSaving,
   photoCount,
+  products = [],
   onDelete,
+  onProductChange,
   onRename,
   onWardrobeStyleChange,
   onVoiceChange,
@@ -49,6 +54,7 @@ export function SelectedAvatarActions({
   const [isFavoriteVoiceSaving, setIsFavoriteVoiceSaving] = useState(false);
   const [name, setName] = useState("");
   const [isDefaultSaving, setIsDefaultSaving] = useState(false);
+  const [isProductSaving, setIsProductSaving] = useState(false);
 
   if (!avatar) {
     return null;
@@ -63,7 +69,8 @@ export function SelectedAvatarActions({
     !isWardrobeSaving &&
     !isVoiceSaving &&
     !isFavoriteVoiceSaving &&
-    !isDefaultSaving;
+    !isDefaultSaving &&
+    !isProductSaving;
   const photoLabel = photoCount === 1 ? "1 photo" : `${photoCount} photos`;
   const activeVoiceId = getCliprVoiceId(avatar.cliprVoiceId);
   const activeVoice = cliprVoices.find((voice) => voice.id === activeVoiceId);
@@ -75,7 +82,13 @@ export function SelectedAvatarActions({
     isWardrobeSaving ||
     isVoiceSaving ||
     isFavoriteVoiceSaving ||
-    isDefaultSaving;
+    isDefaultSaving ||
+    isProductSaving;
+  const selectedProductId = products.some(
+    (product) => product.id === avatar.productId,
+  )
+    ? (avatar.productId ?? "")
+    : "";
 
   const handleDelete = async () => {
     const didConfirm = window.confirm(
@@ -151,6 +164,39 @@ export function SelectedAvatarActions({
 
   return (
     <div className="flex flex-wrap items-end gap-1">
+      {products.length > 0 && onProductChange ? (
+        <SelectInput
+          label="Product"
+          value={selectedProductId}
+          options={[
+            { label: "Choose product", value: "" },
+            ...products.map((product) => ({
+              label: product.name,
+              value: product.id,
+            })),
+          ]}
+          wrapperClassName="w-40"
+          className="h-10"
+          disabled={isDisabled}
+          onChange={async (event) => {
+            const productId = event.currentTarget.value;
+
+            if (!productId || productId === selectedProductId) {
+              return;
+            }
+
+            setIsProductSaving(true);
+
+            try {
+              await onProductChange(avatar, productId);
+            } catch {
+              // The parent hook surfaces the error.
+            } finally {
+              setIsProductSaving(false);
+            }
+          }}
+        />
+      ) : null}
       <SelectInput
         label="Outfits"
         value={avatar.wardrobeStyle}

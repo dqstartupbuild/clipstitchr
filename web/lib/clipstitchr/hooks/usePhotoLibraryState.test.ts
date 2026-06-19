@@ -685,6 +685,7 @@ describe("usePhotoLibraryState", () => {
     await state.renameAvatar(avatar, " Updated Avatar ");
     await state.updateAvatarWardrobeStyle(avatar, "female");
     await state.updateAvatarCliprVoice(avatar, "Drew");
+    await state.updateAvatarProduct(avatar, " product_2 ");
 
     expect(getMutation("avatars.update")).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -702,6 +703,12 @@ describe("usePhotoLibraryState", () => {
       expect.objectContaining({
         cliprVoiceId: "Drew",
         id: "avatar_1",
+      }),
+    );
+    expect(getMutation("avatars.update")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "avatar_1",
+        productId: "product_2",
       }),
     );
   });

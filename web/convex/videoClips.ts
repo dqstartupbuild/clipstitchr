@@ -11,6 +11,7 @@ import { videoClipCounts } from "./aggregateCounts";
 import { getVideoClipCanBePosted } from "./getVideoClipCanBePosted";
 import { getVideoClipLibraryKind } from "./getVideoClipLibraryKind";
 import { getVideoClipNotificationCopy } from "./getVideoClipNotificationCopy";
+import { getVideoClipProductScopeFilter } from "./getVideoClipProductScopeFilter";
 import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
@@ -102,7 +103,9 @@ export const list = query({
         .order(sortOrder === "oldest" ? "asc" : "desc");
 
       return await (productFilterId
-        ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+        ? query.filter((q) =>
+            getVideoClipProductScopeFilter(q, productFilterId),
+          )
         : query
       ).paginate(paginationOpts);
     }
@@ -116,7 +119,9 @@ export const list = query({
         .order(sortOrder === "oldest" ? "asc" : "desc");
 
       return await (productFilterId
-        ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+        ? query.filter((q) =>
+            getVideoClipProductScopeFilter(q, productFilterId),
+          )
         : query
       ).paginate(paginationOpts);
     }
@@ -127,7 +132,7 @@ export const list = query({
       .order(sortOrder === "oldest" ? "asc" : "desc");
 
     return await (productFilterId
-      ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+      ? query.filter((q) => getVideoClipProductScopeFilter(q, productFilterId))
       : query
     ).paginate(paginationOpts);
   },
@@ -160,7 +165,9 @@ export const listByLibraryKind = query({
         .order(sortOrder === "oldest" ? "asc" : "desc");
 
       return await (productFilterId
-        ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+        ? query.filter((q) =>
+            getVideoClipProductScopeFilter(q, productFilterId),
+          )
         : query
       ).paginate(paginationOpts);
     }
@@ -174,7 +181,9 @@ export const listByLibraryKind = query({
         .order(sortOrder === "oldest" ? "asc" : "desc");
 
       return await (productFilterId
-        ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+        ? query.filter((q) =>
+            getVideoClipProductScopeFilter(q, productFilterId),
+          )
         : query
       ).paginate(paginationOpts);
     }
@@ -187,7 +196,7 @@ export const listByLibraryKind = query({
       .order(sortOrder === "oldest" ? "asc" : "desc");
 
     return await (productFilterId
-      ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
+      ? query.filter((q) => getVideoClipProductScopeFilter(q, productFilterId))
       : query
     ).paginate(paginationOpts);
   },

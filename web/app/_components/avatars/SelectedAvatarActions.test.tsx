@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SelectedAvatarActions } from "@/app/_components/avatars/SelectedAvatarActions";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
+import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 
 const reactMocks = vi.hoisted(() => ({
   stateQueue: [] as unknown[],
@@ -63,8 +64,22 @@ function createAvatar(): Avatar {
     createdAt: "2026-01-01T00:00:00.000Z",
     id: "avatar_1",
     name: "Nova",
+    productId: "product_1",
     updatedAt: "2026-01-01T00:00:00.000Z",
     wardrobeStyle: "female",
+  };
+}
+
+function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile {
+  return {
+    audienceDetails: "Creators",
+    createdAt: "2026-01-01T00:00:00.000Z",
+    id: "product_1",
+    inferredPainPoints: [],
+    name: "Launch Kit",
+    productDetails: "A launch kit",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+    ...overrides,
   };
 }
 
@@ -76,6 +91,7 @@ function createProps(overrides: Partial<Parameters<typeof SelectedAvatarActions>
     isSaving: false,
     onDelete: vi.fn(),
     onFavoriteVoiceChange: vi.fn(),
+    onProductChange: vi.fn(),
     onRename: vi.fn(),
     onSetDefault: vi.fn(),
     onVoiceChange: vi.fn(),
@@ -149,6 +165,36 @@ describe("SelectedAvatarActions", () => {
     expect(markup).toContain("IconButton:Rename Nova:false");
     expect(markup).toContain("IconButton:Delete Nova:false");
     expect(markup).toContain("IconButton:Set Nova as default avatar:false");
+  });
+
+  it("links the selected avatar to another product", async () => {
+    const props = createProps({
+      products: [
+        createProduct(),
+        createProduct({ id: "product_2", name: "Second Product" }),
+      ],
+    });
+    const element = SelectedAvatarActions(props);
+
+    if (!React.isValidElement<{ children: React.ReactNode }>(element)) {
+      throw new Error("Expected avatar action wrapper.");
+    }
+
+    const [productSelect] = React.Children.toArray(
+      element.props.children,
+    ) as React.ReactElement<{
+      onChange: (event: React.ChangeEvent<HTMLSelectElement>) => Promise<void>;
+    }>[];
+
+    await productSelect.props.onChange(createSelectChangeEvent("product_2"));
+    await productSelect.props.onChange(createSelectChangeEvent("product_1"));
+    await productSelect.props.onChange(createSelectChangeEvent(""));
+
+    expect(props.onProductChange).toHaveBeenCalledTimes(1);
+    expect(props.onProductChange).toHaveBeenCalledWith(
+      props.avatar,
+      "product_2",
+    );
   });
 
   it("disables avatar controls while saving", () => {

@@ -366,7 +366,6 @@ export function UploadsPageClient() {
             isPhotoUploading={photoLibrary.isSaving}
             canUploadDemo={canUploadDemo}
             demoProductId={activeProductId}
-            productId={activeProductId}
             demoUploadBlockedMessage={demoUploadBlockedMessage}
             onDismiss={dispatchHideUploadControlsEvent}
             onAssetTypeChange={(assetType) =>
