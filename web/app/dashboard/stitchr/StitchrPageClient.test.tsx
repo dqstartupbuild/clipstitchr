@@ -315,7 +315,7 @@ function queueStitchrState(
     longrTextOverlays?: TextOverlay[];
     longrSocialCaption?: string;
     longrTimelineClipIds?: string[];
-    mode?: "normal" | "longr";
+    mode?: "batch" | "normal" | "longr";
     appliedTemplateId?: string;
     selectedDemoId?: string | null;
     selectedDemoIds?: string[];
@@ -423,6 +423,10 @@ describe("StitchrPageClient", () => {
       },
       removeEventListener: vi.fn(),
     });
+    queueStitchrState({
+      mode: "batch",
+      selectedTemplateId: "template_1",
+    });
 
     const markup = renderToStaticMarkup(<StitchrPageClient />);
 
@@ -442,6 +446,9 @@ describe("StitchrPageClient", () => {
     await Promise.resolve();
 
     expect(mocks.generateStitchrBatch).toHaveBeenCalledTimes(1);
+    expect(mocks.generateStitchrBatch).toHaveBeenCalledWith({
+      templateId: "template_1",
+    });
   });
 
   it("renders the Stitchr build workspace from category-specific media groups", () => {

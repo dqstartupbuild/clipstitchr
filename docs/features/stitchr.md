@@ -117,8 +117,10 @@ downloadable output.
 Dedicated Stitchr templates are saved setup records created from finished stitch
 cards with **Save as Template**. They can be selected from the Template picker on
 the Stitchr page, where **None** is the default, or managed from the Templates
-sidebar page. See `docs/features/stitchr-templates.md` for the data model,
-routes, CRUD behavior, rate limits, and maintenance notes.
+sidebar page. In Batch mode, a selected template supplies the text overlay style
+and caption copy for every queued draft while Batch still picks fresh UGC/Demo
+pairs. See `docs/features/stitchr-templates.md` for the data model, routes,
+CRUD behavior, rate limits, and maintenance notes.
 
 Stitchr social captions are documented separately in
 `docs/features/stitchr-social-captions.md`.

@@ -32,6 +32,11 @@ downloaded media blobs. They are setup records only.
    available for new UGC clips unless the user gives a specific clip its own
    edit.
 
+In Stitchr Batch mode, the same picker chooses text and caption copy for the
+daily batch without loading the template clips into the manual editor. Batch
+drafts still pick fresh UGC/Demo pairs, but each queued draft uses the selected
+template's first non-empty text overlay style and saved caption copy.
+
 The Library **Templates** tab opens at `/dashboard/library?tab=templates`,
 where users can see templates, rename them, delete them, and send one back into
 Stitchr.
@@ -63,9 +68,13 @@ Client template data flows through:
 
 The save action is exposed by `StitchCard` and passed through dashboard stitch
 sections. The picker is `StitchTemplatePicker`, rendered on
-`/dashboard/stitchr`. Template management lives in the Library Templates tab
-through `web/app/_components/library/TemplateLibraryTabSection.tsx`, rendered
-by `web/app/dashboard/library/LibraryPageClient.tsx`.
+`/dashboard/stitchr` for manual and Batch modes. Batch requests pass the
+selected template ID through `generateStitchrBatch` and
+`POST /api/stitchr/batch/generate`, then `stitchrBatch.plan` copies the
+template overlay and caption into the queued task snapshots. Template
+management lives in the Library Templates tab through
+`web/app/_components/library/TemplateLibraryTabSection.tsx`, rendered by
+`web/app/dashboard/library/LibraryPageClient.tsx`.
 
 ## Abuse Protection
 

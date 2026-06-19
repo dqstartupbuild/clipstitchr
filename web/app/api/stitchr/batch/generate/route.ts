@@ -4,6 +4,7 @@ import { createConvexHttpClient } from "@/lib/clipstitchr/server/convex/createCo
 import { getAutomationWorkerSecret } from "@/lib/clipstitchr/server/automation/getAutomationWorkerSecret";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
+import { readStitchrBatchGenerateRequest } from "@/lib/clipstitchr/server/readStitchrBatchGenerateRequest";
 import { getStitchrBatchDate } from "@/lib/clipstitchr/server/stitchr/getStitchrBatchDate";
 
 export const runtime = "nodejs";
@@ -15,7 +16,7 @@ type StitchrBatchPlanResult = {
   taskIds: string[];
 };
 
-export async function POST() {
+export async function POST(request?: Request) {
   const userId = await getAuthenticatedUserId();
 
   if (!userId) {
@@ -25,6 +26,7 @@ export async function POST() {
   try {
     const now = new Date().toISOString();
     const batchDate = getStitchrBatchDate(now);
+    const input = request ? await readStitchrBatchGenerateRequest(request) : {};
     const result = (await createConvexHttpClient().mutation(
       api.stitchrBatch.plan,
       {
@@ -32,6 +34,7 @@ export async function POST() {
         ownerId: userId,
         batchDate,
         now,
+        ...(input.templateId ? { templateId: input.templateId } : {}),
       },
     )) as StitchrBatchPlanResult;
 

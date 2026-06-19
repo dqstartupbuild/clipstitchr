@@ -78,6 +78,24 @@ describe("POST /api/stitchr/batch/generate", () => {
     );
   });
 
+  it("passes a selected Stitch template into planning", async () => {
+    const request = new Request("https://clipstitchr.test/api/stitchr/batch/generate", {
+      body: JSON.stringify({ templateId: "template_1" }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(200);
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.stitchrBatch.plan,
+      expect.objectContaining({
+        templateId: "template_1",
+      }),
+    );
+  });
+
   it("returns rate-limit responses from Convex planning", async () => {
     mocks.convex.mutation.mockRejectedValueOnce({
       data: {

@@ -7,8 +7,21 @@ export type GenerateStitchrBatchResult = {
   taskIds: string[];
 };
 
-export async function generateStitchrBatch() {
+type GenerateStitchrBatchOptions = {
+  templateId?: string;
+};
+
+export async function generateStitchrBatch(
+  options: GenerateStitchrBatchOptions = {},
+) {
+  const templateId = options.templateId?.trim();
   const response = await fetch("/api/stitchr/batch/generate", {
+    ...(templateId
+      ? {
+          body: JSON.stringify({ templateId }),
+          headers: { "content-type": "application/json" },
+        }
+      : {}),
     method: "POST",
   });
 

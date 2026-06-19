@@ -10,6 +10,9 @@ scheduled Stitchr automation.
 - Works even when scheduled automation is turned off in Settings.
 - Uses its own Stitchr Batch pair history so recent UGC and Demo pairings are
   avoided when better options exist.
+- Can use a selected Stitchr template so every queued draft uses that
+  template's saved text overlay style and caption copy instead of generated
+  random text.
 - Launches the provider worker after tasks are queued so the drafts can move
   through the existing provider and media worker flow.
 - Saves finished drafts as normal Stitch library items, not as automation-owned
@@ -21,13 +24,25 @@ scheduled Stitchr automation.
 1. The user opens `/dashboard/stitchr`.
 2. The page starts on Batch mode unless the URL is launching a saved stitch,
    template, UGC clip, or Demo clip for direct editing.
-3. The Batch panel shows the current daily limit and a single generation button.
-4. When the user generates a batch, the client posts to
+3. The Template picker stays available in Batch mode. **None** is the default.
+   Selecting a template in Batch mode does not switch the page into manual
+   editing.
+4. The Batch panel shows the current daily limit and a single generation button.
+5. When the user generates a batch, the client posts to
    `/api/stitchr/batch/generate`.
-5. The API route authenticates the user, asks Convex to plan the daily Stitchr
+6. The API route authenticates the user, asks Convex to plan the daily Stitchr
    batch, and returns the queued task IDs.
-6. Finished drafts appear in the user's library after the existing provider and
+7. Finished drafts appear in the user's library after the existing provider and
    media workers complete them.
+
+## Template Behavior
+
+When a template is selected, `stitchrBatch.plan` verifies the template belongs
+to the signed-in user and copies its first non-empty text overlay plus saved
+caption copy into every queued task. The provider worker skips Stitchr text
+generation for those tasks, stretches the saved overlay across each new draft's
+duration, and preserves the overlay text, placement, font size, style, and
+colors. Pair selection still uses the user's current UGC and Demo library.
 
 ## Pair History Behavior
 
@@ -69,10 +84,16 @@ retry timing. The current limits and verification notes are tracked in
   and Longr modes.
 - `web/app/api/stitchr/batch/generate/route.ts` authenticates the user and
   asks Convex to plan the run.
+- `web/lib/clipstitchr/server/readStitchrBatchGenerateRequest.ts` reads the
+  optional selected template ID from the Batch API request.
 - `web/lib/clipstitchr/client/generateStitchrBatch.ts` is the browser client
   wrapper for the Batch API route.
 - `web/convex/stitchrBatch.ts` plans the tasks and requests a provider worker
   launch.
+- `web/convex/stitchTemplates/getStitchTemplateBatchTextOverlay.ts` picks the
+  reusable overlay from a saved template.
+- `web/services/provider-worker/createStitchrTemplateTextOverlay.ts` adapts the
+  saved overlay to each generated draft duration.
 - `web/convex/recordStitchrBatchPairHistory.ts` records completed Batch pair
   usage.
 - `web/convex/automationStitchrPairScoring.ts` scores and spreads pair
@@ -91,6 +112,7 @@ web/app/api/stitchr/batch/generate/route.test.ts
 web/app/dashboard/stitchr/StitchrPageClient.tsx
 web/lib/clipstitchr/client/generateStitchrBatch.ts
 web/lib/clipstitchr/constants/stitchrBatchGenerationLimits.ts
+web/lib/clipstitchr/server/readStitchrBatchGenerateRequest.ts
 web/lib/clipstitchr/types/SavedStitchrMode.ts
 web/lib/clipstitchr/types/StitchrMode.ts
 web/lib/clipstitchr/utils/getInitialStitchrMode.ts
@@ -98,8 +120,10 @@ web/convex/automationStitchr.ts
 web/convex/automationStitchrPairScoring.ts
 web/convex/recordStitchrBatchPairHistory.ts
 web/convex/rateLimiter.ts
+web/convex/stitchTemplates/getStitchTemplateBatchTextOverlay.ts
 web/convex/stitchrBatch.ts
 web/convex/stitchrBatchRunId.ts
+web/services/provider-worker/createStitchrTemplateTextOverlay.ts
 ```
 
 ## Maintenance Notes

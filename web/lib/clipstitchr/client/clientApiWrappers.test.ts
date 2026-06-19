@@ -203,6 +203,29 @@ describe("client API wrappers", () => {
     );
   });
 
+  it("sends selected Stitchr batch templates", async () => {
+    fetchMock.mockResolvedValueOnce(
+      createJsonResponse({
+        batchDate: "2026-06-17",
+        count: 10,
+        runId: "stitchr-batch:user_123:2026-06-17",
+        status: "running",
+        taskIds: [],
+      }),
+    );
+
+    await generateStitchrBatch({ templateId: "template_1" });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/stitchr/batch/generate",
+      expect.objectContaining({
+        body: JSON.stringify({ templateId: "template_1" }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      }),
+    );
+  });
+
   it("surfaces generation and product error messages", async () => {
     fetchMock
       .mockResolvedValueOnce(createJsonResponse({ message: "No Clipr" }, 400))

@@ -761,6 +761,7 @@ export function StitchrPageClient() {
 
   useEffect(() => {
     if (
+      mode === "batch" ||
       !selectedTemplateId ||
       selectedTemplateId === appliedTemplateId ||
       stitchTemplates.isLoading
@@ -792,6 +793,7 @@ export function StitchrPageClient() {
   }, [
     appliedTemplateId,
     applyStitchTemplate,
+    mode,
     selectedTemplateId,
     stitchTemplates.isLoading,
     stitchTemplates.templates,
@@ -1214,7 +1216,9 @@ export function StitchrPageClient() {
     setIsGeneratingBatch(true);
     setBatchMessage(null);
 
-    void generateStitchrBatch()
+    void generateStitchrBatch({
+      templateId: selectedTemplateId || undefined,
+    })
       .then((result) => {
         if (result.count > 0) {
           setBatchMessage(
@@ -1239,7 +1243,7 @@ export function StitchrPageClient() {
         );
       })
       .finally(() => setIsGeneratingBatch(false));
-  }, []);
+  }, [selectedTemplateId]);
 
   const handleGenerateAutoText = useCallback(() => {
     if (!activeAutoTextProductId) {
@@ -1474,14 +1478,12 @@ export function StitchrPageClient() {
     <StitchrShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <StitchrHeader />
-        {mode === "batch" ? null : (
-          <StitchTemplatePicker
-            isLoading={stitchTemplates.isLoading}
-            selectedTemplateId={selectedTemplateId}
-            templates={stitchTemplates.templates}
-            onTemplateChange={handleTemplateChange}
-          />
-        )}
+        <StitchTemplatePicker
+          isLoading={stitchTemplates.isLoading}
+          selectedTemplateId={selectedTemplateId}
+          templates={stitchTemplates.templates}
+          onTemplateChange={handleTemplateChange}
+        />
         {library.error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {library.error}

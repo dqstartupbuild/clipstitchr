@@ -19,6 +19,8 @@ import { createCliprJobTextGeneration } from "@/lib/clipstitchr/server/createCli
 import { createCliprJobVideoOutput } from "@/lib/clipstitchr/server/createCliprJobVideoOutput";
 import { createCliprSceneAvatarImage } from "@/lib/clipstitchr/server/createCliprSceneAvatarImage";
 import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
+import { createStitchrTemplateTextOverlay } from "./createStitchrTemplateTextOverlay";
+import { getOptionalStitchrTextOverlay } from "./getOptionalStitchrTextOverlay";
 import { processManualCliprDemo } from "./processManualCliprDemo";
 import { PROVIDER_WORKER_CLAIMABLE_PROVIDER_JOBS } from "./providerWorkerClaimableProviderJobs";
 import { PROVIDER_TOOLS, type ProviderTool } from "./providerWorkerTools";
@@ -247,6 +249,8 @@ type StitchrAutomationTaskInput = {
   stitchrTextColor?: string;
   stitchrTextStrokeColor?: string;
   stitchrTextStyleId: TextOverlayStyleId;
+  templateSocialCaption?: string;
+  templateTextOverlay?: TextOverlay;
   ugcClipId: string;
   ugcClipName: string;
   ugcDuration: number;
@@ -705,6 +709,10 @@ function parseStitchrAutomationTaskInput(
     stitchrTextColor: getOptionalString(input.stitchrTextColor),
     stitchrTextStrokeColor: getOptionalString(input.stitchrTextStrokeColor),
     stitchrTextStyleId: getStitchrTextStyleId(input.stitchrTextStyleId),
+    templateSocialCaption: getOptionalString(input.templateSocialCaption),
+    templateTextOverlay: getOptionalStitchrTextOverlay(
+      input.templateTextOverlay,
+    ),
     ugcClipId: getString(input.ugcClipId, "Stitchr UGC ID"),
     ugcClipName: getString(input.ugcClipName, "Stitchr UGC name"),
     ugcDuration,
@@ -1614,15 +1622,6 @@ async function processStitchr({
       videoDescription: input.demoVideoDescription,
     },
   ];
-  const replicate = createReplicateClient();
-  const textGeneration = await createCliprTextGeneration({
-    durationSeconds: 30,
-    product: input.product,
-    purpose: "stitchr",
-    replicate,
-    slideCount: 1,
-    stitchrClipContexts,
-  });
   const duration =
     getQuickEditPlaybackDuration(
       input.ugcTrimRange,
@@ -1634,14 +1633,29 @@ async function processStitchr({
       input.demoDuration,
       input.demoQuickEdit?.removeRanges,
     );
-  const textOverlay = createStitchrTextOverlay(
-    textGeneration.overlayText || textGeneration.filledHook,
-    duration,
-    input.stitchrTextStyleId,
-    input.stitchrTextColor,
-    input.stitchrTextBackgroundColor,
-    input.stitchrTextStrokeColor,
-  );
+  const templateTextOverlay = input.templateTextOverlay
+    ? createStitchrTemplateTextOverlay(input.templateTextOverlay, duration)
+    : undefined;
+  const textGeneration = templateTextOverlay
+    ? null
+    : await createCliprTextGeneration({
+        durationSeconds: 30,
+        product: input.product,
+        purpose: "stitchr",
+        replicate: createReplicateClient(),
+        slideCount: 1,
+        stitchrClipContexts,
+      });
+  const textOverlay =
+    templateTextOverlay ??
+    createStitchrTextOverlay(
+      textGeneration?.overlayText || textGeneration?.filledHook || "",
+      duration,
+      input.stitchrTextStyleId,
+      input.stitchrTextColor,
+      input.stitchrTextBackgroundColor,
+      input.stitchrTextStrokeColor,
+    );
   const mediaJob = (await client.mutation(
     api.mediaJobs.createStitchrDraftFinalizationFromProvider,
     {
@@ -1666,7 +1680,8 @@ async function processStitchr({
         sourceSummary: `${input.ugcClipName} + ${input.demoClipName}`,
         stitchId: `${task.id}:stitch`,
         stitchName: `${input.ugcClipName} + ${input.demoClipName}`,
-        socialCaption: textGeneration.socialCaption,
+        socialCaption:
+          input.templateSocialCaption ?? textGeneration?.socialCaption,
         textOverlay,
         ugcClipId: input.ugcClipId,
         ugcClipName: input.ugcClipName,
@@ -1687,7 +1702,7 @@ async function processStitchr({
     task,
     status: "running",
     stage: "awaiting-media-worker",
-    providerJobId: textGeneration.providerPredictionId,
+    providerJobId: textGeneration?.providerPredictionId,
     mediaJobId: mediaJob.id,
     releaseLock: true,
   });
