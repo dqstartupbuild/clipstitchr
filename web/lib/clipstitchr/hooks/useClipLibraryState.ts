@@ -67,6 +67,7 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
   const [sortOrder, setSortOrder] =
     useState<ClipLibrarySortOrder>("newest");
   const isDashboardHome = pathname === "/dashboard";
+  const isLibraryRoute = pathname.startsWith("/dashboard/library");
   const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
   const isStitchrRoute = pathname.startsWith("/dashboard/stitchr");
   const isSwaprRoute = pathname.startsWith("/dashboard/swapr");
@@ -74,20 +75,29 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
   const shouldLoadAllClips =
     isAuthenticated && (isDashboardHome || isSwaprRoute);
   const shouldLoadUgcClips =
-    isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
+    isAuthenticated &&
+    (isDashboardHome || isLibraryRoute || isUploadsRoute || isStitchrRoute);
   const shouldLoadCliprClips =
-    isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
+    isAuthenticated &&
+    (isDashboardHome || isLibraryRoute || isUploadsRoute || isStitchrRoute);
   const shouldLoadPostedCliprClips = false;
   const shouldLoadDemoClips =
     isAuthenticated &&
-    (isDashboardHome || isUploadsRoute || isStitchrRoute || isCliprRoute);
+    (isDashboardHome ||
+      isLibraryRoute ||
+      isUploadsRoute ||
+      isStitchrRoute ||
+      isCliprRoute);
   const shouldLoadSwapClips =
-    isAuthenticated && (isDashboardHome || isUploadsRoute || isStitchrRoute);
+    isAuthenticated &&
+    (isDashboardHome || isLibraryRoute || isUploadsRoute || isStitchrRoute);
   const shouldLoadStitches =
-    isAuthenticated && (isDashboardHome || isUploadsRoute || isSwaprRoute);
-  const shouldLoadPostedStitches = isAuthenticated && isUploadsRoute;
+    isAuthenticated &&
+    (isDashboardHome || isLibraryRoute || isUploadsRoute || isSwaprRoute);
+  const shouldLoadPostedStitches =
+    isAuthenticated && (isLibraryRoute || isUploadsRoute);
   const shouldLoadCounts =
-    isAuthenticated && (isDashboardHome || isUploadsRoute);
+    isAuthenticated && (isDashboardHome || isLibraryRoute || isUploadsRoute);
   const productQueryArgs = productId ? { productId } : {};
   const clipDocumentsQuery = usePaginatedQuery(
     api.videoClips.list,

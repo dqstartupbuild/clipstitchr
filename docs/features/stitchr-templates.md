@@ -32,8 +32,9 @@ downloaded media blobs. They are setup records only.
    available for new UGC clips unless the user gives a specific clip its own
    edit.
 
-The **Templates** sidebar item opens `/dashboard/templates`, where users can see
-templates, rename them, delete them, and send one back into Stitchr.
+The Library **Templates** tab opens at `/dashboard/library?tab=templates`,
+where users can see templates, rename them, delete them, and send one back into
+Stitchr.
 
 ## Implementation
 
@@ -62,9 +63,9 @@ Client template data flows through:
 
 The save action is exposed by `StitchCard` and passed through dashboard stitch
 sections. The picker is `StitchTemplatePicker`, rendered on
-`/dashboard/stitchr`. The management page is
-`web/app/dashboard/templates/page.tsx` and
-`web/app/dashboard/templates/TemplatesPageClient.tsx`.
+`/dashboard/stitchr`. Template management lives in the Library Templates tab
+through `web/app/_components/library/TemplateLibraryTabSection.tsx`, rendered
+by `web/app/dashboard/library/LibraryPageClient.tsx`.
 
 ## Abuse Protection
 

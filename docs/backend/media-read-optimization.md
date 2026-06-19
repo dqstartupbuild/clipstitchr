@@ -28,7 +28,7 @@ reads across every mounted subscription.
   instead of filtering through all clips owned by the user.
 - Legacy Clipr category rows are loaded only as a compatibility source and
   folded into visible UGC lists. Posted Stitch and posted Swipe subscriptions
-  are loaded only on the Content Library route where posted filters are
+  are loaded only on the Library route where posted filters are
   available.
 
 ## Backfill Runbook

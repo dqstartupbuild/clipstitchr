@@ -1,8 +1,8 @@
-import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab";
+import type { LibraryTab } from "@/lib/clipstitchr/types/LibraryTab";
 
-export function getUploadLibraryTabFromSearchParams(
+export function getLibraryTabFromSearchParams(
   searchParams: URLSearchParams,
-): UploadLibraryTab {
+): LibraryTab {
   const tab = searchParams.get("tab");
 
   switch (tab) {
@@ -11,10 +11,13 @@ export function getUploadLibraryTabFromSearchParams(
     case "swaps":
     case "swipes":
     case "stitches":
+    case "avatars":
+    case "templates":
       return tab;
+    case "all":
     case "clips":
       return "ugc";
     default:
-      return "all";
+      return "ugc";
   }
 }

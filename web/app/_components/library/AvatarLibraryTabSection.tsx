@@ -6,16 +6,12 @@ import { AvatarGenerationPanel } from "@/app/_components/avatars/AvatarGeneratio
 import { AvatarLibrarySection } from "@/app/_components/avatars/AvatarLibrarySection";
 import { AvatarPhotoUploadControls } from "@/app/_components/avatars/AvatarPhotoUploadControls";
 import { SelectedAvatarActions } from "@/app/_components/avatars/SelectedAvatarActions";
-import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
-import { LibraryPageHeader } from "@/app/_components/dashboard/LibraryPageHeader";
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
-import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { ACCEPTED_PHOTO_TYPES } from "@/lib/clipstitchr/constants/acceptedPhotoTypes";
 import { DEFAULT_AVATAR_STYLE_OPTION } from "@/lib/clipstitchr/constants/defaultAvatarStyleOption";
 import { useAvatarPhotoGeneration } from "@/lib/clipstitchr/hooks/useAvatarPhotoGeneration";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
-import { useShowUploadControls } from "@/lib/clipstitchr/hooks/useShowUploadControls";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightingOption";
 import type { AvatarPhotoGenerationCount } from "@/lib/clipstitchr/types/AvatarPhotoGenerationCount";
@@ -23,10 +19,17 @@ import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOptio
 import { dispatchHideUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchHideUploadControlsEvent";
 import { filterPhotosBySearchQuery } from "@/lib/clipstitchr/utils/filterPhotosBySearchQuery";
 
-export function AvatarsPageClient() {
+type AvatarLibraryTabSectionProps = {
+  searchQuery: string;
+  showUploadControls: boolean;
+};
+
+export function AvatarLibraryTabSection({
+  searchQuery,
+  showUploadControls,
+}: AvatarLibraryTabSectionProps) {
   const photoLibrary = usePhotoLibrary();
   const products = useDashboardProduct();
-  const showUploadControls = useShowUploadControls();
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | undefined>();
   const [avatarFilterId, setAvatarFilterId] = useState<string | undefined>();
   const [uploadAvatarId, setUploadAvatarId] = useState("");
@@ -34,7 +37,6 @@ export function AvatarsPageClient() {
   const [pendingPhotoFiles, setPendingPhotoFiles] = useState<File[]>([]);
   const [pendingPhotoShouldExpandWithAi, setPendingPhotoShouldExpandWithAi] =
     useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [context, setContext] = useState("");
   const [count, setCount] = useState<AvatarPhotoGenerationCount>(3);
   const [lighting, setLighting] =
@@ -182,13 +184,13 @@ export function AvatarsPageClient() {
   );
 
   return (
-    <DashboardShell>
-      <div className="mx-auto flex max-w-7xl flex-col gap-8">
-        <LibraryPageHeader
-          eyebrow="Source photos"
-          title="Avatars"
-          description="Save avatar photos to use in Swapr when you need more UGC."
-        />
+    <div className="flex flex-col gap-8">
+      <div className="grid gap-2">
+        <h2 className="text-2xl font-bold text-text-primary">Avatars</h2>
+        <p className="max-w-2xl text-sm leading-6 text-text-secondary">
+          Save people you can reuse in Swapr, Clipr, and AI photo generation.
+        </p>
+      </div>
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {error}
@@ -224,19 +226,12 @@ export function AvatarsPageClient() {
           />
         ) : null}
         <div className="grid gap-3">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-end">
+          <div className="max-w-sm">
             <AvatarFilterSelect
               avatars={photoLibrary.avatars}
               label="Avatar"
               value={activeAvatarFilterId}
               onChange={setAvatarFilterId}
-            />
-            <SearchInput
-              label="Search avatars"
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Search avatars"
-              className="w-full"
             />
           </div>
           <SelectedAvatarActions
@@ -309,7 +304,6 @@ export function AvatarsPageClient() {
           }
           onUpdateMetadata={photoLibrary.updatePhotoMetadata}
         />
-      </div>
-    </DashboardShell>
+    </div>
   );
 }

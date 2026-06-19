@@ -24,26 +24,26 @@ const uploadDestinations = [
   {
     assetType: "ugc",
     description: "Creator hooks, reactions, b-roll, and social proof.",
-    href: `/dashboard/uploads?tab=ugc&${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
+    href: `/dashboard/library?tab=ugc&${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
     icon: Video,
     label: "UGC",
-    page: "/dashboard/uploads",
+    page: "/dashboard/library",
   },
   {
     assetType: "demo",
     description: "Product walkthroughs, screen recordings, and demos.",
-    href: `/dashboard/uploads?tab=demo&${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
+    href: `/dashboard/library?tab=demo&${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
     icon: MonitorPlay,
     label: "Demo video",
-    page: "/dashboard/uploads",
+    page: "/dashboard/library",
   },
   {
     assetType: "photo",
     description: "Avatar photos for Swapr and AI photo generation.",
-    href: `/dashboard/avatars?${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
+    href: `/dashboard/library?tab=avatars&${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
     icon: ImagePlus,
     label: "Avatar photo",
-    page: "/dashboard/avatars",
+    page: "/dashboard/library",
   },
 ] as const;
 

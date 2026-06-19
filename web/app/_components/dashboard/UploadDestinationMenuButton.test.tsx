@@ -4,7 +4,7 @@ import { UploadDestinationMenuButton } from "@/app/_components/dashboard/UploadD
 const mocks = vi.hoisted(() => ({
   addEventListener: vi.fn(),
   dispatchShowUploadControlsEvent: vi.fn(),
-  pathname: "/dashboard/uploads",
+  pathname: "/dashboard/library",
   push: vi.fn(),
   removeEventListener: vi.fn(),
   setStateCalls: [] as Array<ReturnType<typeof vi.fn>>,
@@ -78,7 +78,7 @@ function findElements(
 describe("UploadDestinationMenuButton", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.pathname = "/dashboard/uploads";
+    mocks.pathname = "/dashboard/library";
     mocks.setStateCalls = [];
     mocks.stateQueue = [];
     vi.stubGlobal("window", {
@@ -104,7 +104,7 @@ describe("UploadDestinationMenuButton", () => {
     (button.props.onClick as () => void)();
 
     expect(mocks.trackPostHogEvent).toHaveBeenCalledWith("upload_menu_opened", {
-      page_path: "/dashboard/uploads",
+      page_path: "/dashboard/library",
     });
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(expect.any(Function));
   });
@@ -131,11 +131,11 @@ describe("UploadDestinationMenuButton", () => {
       "upload_destination_selected",
       expect.objectContaining({
         asset_type: "ugc",
-        page_path: "/dashboard/uploads",
+        page_path: "/dashboard/library",
       }),
     );
     expect(mocks.push).toHaveBeenCalledWith(
-      "/dashboard/uploads?tab=ugc&upload=open#upload-panel",
+      "/dashboard/library?tab=ugc&upload=open#upload-panel",
     );
     expect(mocks.dispatchShowUploadControlsEvent).toHaveBeenCalledWith("ugc");
   });

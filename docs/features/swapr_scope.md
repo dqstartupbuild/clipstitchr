@@ -141,14 +141,14 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
 
 ```
 /dashboard/swapr                 -> Swapr studio: choose photo, choose UGC video, configure, generate
-/dashboard/avatars               -> Avatar photo upload, avatar descriptions, and generated avatar scenario photos
-/dashboard/uploads?tab=ugc       -> Existing UGC library; UGC-style clips can feed Swapr
-/dashboard/uploads?tab=swaps     -> Generated Swapr outputs; outputs are saved as reusable UGC-style clips and can feed Swapr again
-/dashboard/uploads?tab=stitches  -> Existing stitches library inside the unified Content Library
-/dashboard/stitches              -> Compatibility redirect to `/dashboard/uploads?tab=stitches`
+/dashboard/library?tab=avatars   -> Avatar photo upload, avatar descriptions, and generated avatar scenario photos
+/dashboard/library?tab=ugc       -> Existing UGC library; UGC-style clips can feed Swapr
+/dashboard/library?tab=swaps     -> Generated Swapr outputs; outputs are saved as reusable UGC-style clips and can feed Swapr again
+/dashboard/library?tab=stitches  -> Existing stitches library inside the unified Library
+/dashboard/stitches              -> Compatibility redirect to `/dashboard/library?tab=stitches`
 ```
 
-Avatar photos are uploaded, deleted, downloaded, described, and expanded into new scenario photos from `/dashboard/avatars`. Successful Swapr outputs are saved to the Swaps tab and remain selectable in Stitchr as UGC-style clips. The dashboard upload action for `/dashboard/uploads` handles UGC and Demo videos; avatar photo upload lives on the Avatars page. Avatar photos are only selected for Swapr from `/dashboard/swapr`, matching the way UGC videos are uploaded in the library but selected inside the Swapr studio. Photo AI expansion must be an explicit opt-in upload option, deselected by default.
+Avatar photos are uploaded, deleted, downloaded, described, and expanded into new scenario photos from `/dashboard/library?tab=avatars`. Successful Swapr outputs are saved to the Swaps tab and remain selectable in Stitchr as UGC-style clips. The dashboard upload action routes UGC, Demo, and Avatar uploads into the matching Library tab. Avatar photos are only selected for Swapr from `/dashboard/swapr`, matching the way UGC videos are uploaded in the Library but selected inside the Swapr studio. Photo AI expansion must be an explicit opt-in upload option, deselected by default.
 
 ---
 
@@ -439,7 +439,7 @@ The Swapr screen should be a work-focused generation interface, not a marketing 
 
 Primary areas:
 
-- Photo selector: grid/list of saved avatar photos, with upload and scenario generation handled from `/dashboard/avatars`.
+- Photo selector: grid/list of saved avatar photos, with upload and scenario generation handled from `/dashboard/library?tab=avatars`.
 - UGC selector: filtered list of UGC clips only.
 - Preview column: selected photo, selected reference video, and generated output when ready.
 - Controls: prompt, scene mode, quality mode, orientation/motion mode if supported.

@@ -4,7 +4,7 @@ import { Images, Library, Scissors, UserRound } from "lucide-react";
 const featureLabels = [
   {
     icon: Library,
-    label: "Content library",
+    label: "Library",
   },
   {
     icon: Scissors,

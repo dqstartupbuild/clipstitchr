@@ -65,6 +65,7 @@ export function usePhotoLibraryState(productId?: string): PhotoLibraryValue {
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const isDashboardHome = pathname === "/dashboard";
   const isAvatarsRoute = pathname.startsWith("/dashboard/avatars");
+  const isLibraryRoute = pathname.startsWith("/dashboard/library");
   const isCliprRoute = pathname.startsWith("/dashboard/clipr");
   const isSwaprRoute = pathname.startsWith("/dashboard/swapr");
   const isSwiprRoute = pathname.startsWith("/dashboard/swipr");
@@ -73,6 +74,7 @@ export function usePhotoLibraryState(productId?: string): PhotoLibraryValue {
     isAuthenticated &&
     (isDashboardHome ||
       isAvatarsRoute ||
+      isLibraryRoute ||
       isCliprRoute ||
       isSwaprRoute ||
       isSwiprRoute);
@@ -80,11 +82,13 @@ export function usePhotoLibraryState(productId?: string): PhotoLibraryValue {
     isAuthenticated &&
     (isDashboardHome ||
       isAvatarsRoute ||
+      isLibraryRoute ||
       isCliprRoute ||
       isSwaprRoute ||
       isSwiprRoute);
   const shouldLoadPhotoPreferences =
-    isAuthenticated && (shouldLoadAvatarDocuments || isUploadsRoute);
+    isAuthenticated &&
+    (shouldLoadAvatarDocuments || isLibraryRoute || isUploadsRoute);
   const productQueryArgs = productId ? { productId } : {};
   const photoDocuments = useQuery(
     api.photoAssets.list,

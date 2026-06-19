@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { UploadsPageClient } from "@/app/dashboard/uploads/UploadsPageClient";
+import { LibraryPageClient } from "@/app/dashboard/library/LibraryPageClient";
 import { SHOW_UPLOAD_CONTROLS_EVENT_NAME } from "@/lib/clipstitchr/constants/showUploadControlsEventName";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { UploadAssetType } from "@/lib/clipstitchr/types/UploadAssetType";
@@ -30,6 +30,7 @@ const mocks = vi.hoisted(() => ({
     generate: vi.fn(),
     isGenerating: false,
   },
+  avatarTabProps: null as Record<string, unknown> | null,
   library: {} as Record<string, unknown>,
   listeners: new Map<string, EventListener[]>(),
   photoLibrary: {} as Record<string, unknown>,
@@ -48,6 +49,7 @@ const mocks = vi.hoisted(() => ({
     templates: [],
   },
   swiprLibrary: {} as Record<string, unknown>,
+  templateTabProps: null as Record<string, unknown> | null,
   useClipLibrary: vi.fn(),
   useCreateAvatarFromUgcClip: vi.fn(),
   usePhotoLibrary: vi.fn(),
@@ -139,6 +141,20 @@ vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({
   useSwiprLibrary: mocks.useSwiprLibrary,
 }));
 
+vi.mock("@/app/_components/library/AvatarLibraryTabSection", () => ({
+  AvatarLibraryTabSection: (props: Record<string, unknown>) => {
+    mocks.avatarTabProps = props;
+    return "AvatarLibraryTabSection";
+  },
+}));
+
+vi.mock("@/app/_components/library/TemplateLibraryTabSection", () => ({
+  TemplateLibraryTabSection: (props: Record<string, unknown>) => {
+    mocks.templateTabProps = props;
+    return "TemplateLibraryTabSection";
+  },
+}));
+
 class TestCustomEvent<T = unknown> extends Event {
   detail: T;
 
@@ -182,9 +198,9 @@ function createClip(
   } as VideoClipMetadata;
 }
 
-function createWindow(search = "?tab=all") {
+function createWindow(search = "") {
   mocks.listeners.clear();
-  const initialUrl = new URL(`https://clipstitchr.test/dashboard/uploads${search}`);
+  const initialUrl = new URL(`https://clipstitchr.test/dashboard/library${search}`);
   const testWindow: TestWindow = {
     addEventListener: vi.fn((type: string, listener: EventListener) => {
       const listeners = mocks.listeners.get(type) ?? [];
@@ -246,8 +262,8 @@ function collectElements(element: unknown): ElementLike[] {
   ];
 }
 
-function renderUploadsPage({
-  search = "?tab=all",
+function renderLibraryPage({
+  search = "",
   stateValues = [],
 }: {
   search?: string;
@@ -257,7 +273,7 @@ function renderUploadsPage({
   mocks.stateValues = [...stateValues];
 
   return {
-    elements: collectElements(UploadsPageClient()),
+    elements: collectElements(LibraryPageClient()),
     testWindow,
   };
 }
@@ -272,7 +288,7 @@ function dispatchWindowEvent(type: string, event: Event) {
   }
 }
 
-describe("UploadsPageClient", () => {
+describe("LibraryPageClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.avatarCreator.createdAvatar = { name: "Ava" };
@@ -280,6 +296,8 @@ describe("UploadsPageClient", () => {
     mocks.avatarCreator.generatedCount = 3;
     mocks.avatarCreator.generate.mockResolvedValue({ id: "avatar_1" });
     mocks.avatarCreator.isGenerating = true;
+    mocks.avatarTabProps = null;
+    mocks.templateTabProps = null;
     const ugcClip = createClip("ugc_1", "ugc");
     const cliprClip = createClip("clipr_1", "ugc", {
       cliprMetadata: { prompt: "Hook" } as unknown as VideoClipMetadata["cliprMetadata"],
@@ -458,8 +476,8 @@ describe("UploadsPageClient", () => {
     mocks.useSwiprLibrary.mockReturnValue(mocks.swiprLibrary);
   });
 
-  it("renders the all library tab and wires upload controls", async () => {
-    const { elements, testWindow } = renderUploadsPage();
+  it("renders the UGC library tab by default and wires upload controls", async () => {
+    const { elements, testWindow } = renderLibraryPage();
     const uploadPanel = elements.find((element) =>
       Array.isArray(element.props?.allowedAssetTypes),
     );
@@ -477,9 +495,6 @@ describe("UploadsPageClient", () => {
         initialAssetType: "ugc",
       }),
     );
-    expect(
-      (elements.filter((element) => element.props?.loadMoreLabel) ?? []).length,
-    ).toBe(3);
     expect(ugcSection?.props?.totalCount).toBe(30);
     expect(ugcSection?.props?.clips).toEqual(
       expect.arrayContaining([
@@ -487,8 +502,8 @@ describe("UploadsPageClient", () => {
       ]),
     );
     expect(findByProp(elements, "id", "clips")).toBeUndefined();
-    expect(findByProp(elements, "id", "demo-videos")?.props?.totalCount).toBe(30);
-    expect(findByProp(elements, "id", "swaps")?.props?.totalCount).toBe(40);
+    expect(findByProp(elements, "id", "demo-videos")).toBeUndefined();
+    expect(findByProp(elements, "id", "swaps")).toBeUndefined();
 
     await expect(
       (
@@ -510,7 +525,7 @@ describe("UploadsPageClient", () => {
   });
 
   it("syncs tab state from popstate and upload-control events", () => {
-    const { testWindow } = renderUploadsPage({ search: "?tab=ugc" });
+    const { testWindow } = renderLibraryPage({ search: "?tab=ugc" });
 
     dispatchWindowEvent("popstate", new Event("popstate"));
     dispatchWindowEvent(
@@ -537,7 +552,7 @@ describe("UploadsPageClient", () => {
   });
 
   it("renders a searched UGC tab with avatar generation controls", async () => {
-    const { elements } = renderUploadsPage({
+    const { elements } = renderLibraryPage({
       stateValues: ["ugc", "match", "all", ""],
     });
     const section = findByProp(elements, "id", "ugc-clips");
@@ -571,7 +586,7 @@ describe("UploadsPageClient", () => {
     };
     mocks.useProducts.mockReturnValue(mocks.products);
 
-    const { elements } = renderUploadsPage({
+    const { elements } = renderLibraryPage({
       stateValues: ["demo", "", "missing_product", "missing_product"],
     });
     const section = findByProp(elements, "id", "demo-videos");
@@ -633,7 +648,7 @@ describe("UploadsPageClient", () => {
     mocks.useProducts.mockReturnValue(mocks.products);
     mocks.useClipLibrary.mockReturnValue(mocks.library);
 
-    const { elements } = renderUploadsPage({
+    const { elements } = renderLibraryPage({
       stateValues: ["demo", "", undefined, ""],
     });
     const section = findByProp(elements, "id", "demo-videos");
@@ -667,7 +682,7 @@ describe("UploadsPageClient", () => {
     };
     mocks.useClipLibrary.mockReturnValue(mocks.library);
 
-    const { elements } = renderUploadsPage({
+    const { elements } = renderLibraryPage({
       stateValues: ["demo", "", "active", "active"],
     });
     const section = findByProp(elements, "id", "demo-videos");
@@ -683,10 +698,10 @@ describe("UploadsPageClient", () => {
   });
 
   it("renders non-video library tabs", () => {
-    const stitches = renderUploadsPage({
+    const stitches = renderLibraryPage({
       stateValues: ["stitches", "stitch", "all", ""],
     }).elements;
-    const swipes = renderUploadsPage({
+    const swipes = renderLibraryPage({
       stateValues: ["swipes", "swipe", "all", ""],
     }).elements;
 
@@ -698,8 +713,38 @@ describe("UploadsPageClient", () => {
     );
   });
 
+  it("renders avatar and template tabs inside the Library", () => {
+    const avatarElements = renderLibraryPage({
+      stateValues: ["avatars", "avatar", "active", "active"],
+    }).elements;
+    const avatarTab = findByProp(avatarElements, "showUploadControls", true);
+
+    expect(avatarTab?.props).toEqual(
+      expect.objectContaining({
+        searchQuery: "avatar",
+        showUploadControls: true,
+      }),
+    );
+
+    const templateElements = renderLibraryPage({
+      stateValues: ["templates", "template", "active", "active"],
+    }).elements;
+    const templateTab = findByProp(
+      templateElements,
+      "templates",
+      mocks.stitchTemplates.templates,
+    );
+
+    expect(templateTab?.props).toEqual(
+      expect.objectContaining({
+        searchQuery: "template",
+        templates: mocks.stitchTemplates.templates,
+      }),
+    );
+  });
+
   it("filters the Stitches tab to posted stitches", () => {
-    const { elements } = renderUploadsPage({
+    const { elements } = renderLibraryPage({
       stateValues: ["stitches", "", "posted", "active"],
     });
     const section = findByProp(elements, "statusFilter", "posted");
@@ -727,7 +772,7 @@ describe("UploadsPageClient", () => {
   });
 
   it("maps old Clips tab links to UGC", () => {
-    const { elements } = renderUploadsPage({
+    const { elements } = renderLibraryPage({
       search: "?tab=clips",
     });
     const section = findByProp(elements, "id", "ugc-clips");
@@ -745,7 +790,7 @@ describe("UploadsPageClient", () => {
   });
 
   it("filters the Swipes tab to posted Swipes", () => {
-    const { elements } = renderUploadsPage({
+    const { elements } = renderLibraryPage({
       stateValues: ["swipes", "", "active", "posted"],
     });
     const section = findByProp(elements, "statusFilter", "posted");
@@ -770,10 +815,10 @@ describe("UploadsPageClient", () => {
   it("renders UGC and swap tabs without upload controls", () => {
     mocks.useShowUploadControls.mockReturnValue(false);
 
-    const ugc = renderUploadsPage({
+    const ugc = renderLibraryPage({
       stateValues: ["ugc", "", "all", ""],
     }).elements;
-    const swaps = renderUploadsPage({
+    const swaps = renderLibraryPage({
       stateValues: ["swaps", "", "all", ""],
     }).elements;
 
@@ -792,7 +837,7 @@ describe("UploadsPageClient", () => {
     mocks.useProducts.mockReturnValue(mocks.products);
     mocks.useSwiprLibrary.mockReturnValue(mocks.swiprLibrary);
 
-    const { elements } = renderUploadsPage();
+    const { elements } = renderLibraryPage();
 
     expect(
       elements.some((element) =>

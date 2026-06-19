@@ -213,7 +213,7 @@ describe("useSwiprLibraryState", () => {
     mocks.convexQuery.mockResolvedValue(
       createBackgroundDocument({ id: "background_2" }),
     );
-    mocks.usePathname.mockReturnValue("/dashboard/uploads");
+    mocks.usePathname.mockReturnValue("/dashboard/library");
     mocks.useQuery.mockImplementation((queryId: string, args) => {
       if (queryId === "swiprBackgrounds.list") {
         return [createBackgroundDocument()];

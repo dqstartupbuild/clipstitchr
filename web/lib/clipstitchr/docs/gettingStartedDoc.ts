@@ -19,7 +19,7 @@ export const gettingStartedDoc = {
       bullets: [
         "Create or sign in to your account.",
         "Open Settings and save the product you want to make content for.",
-        "Upload UGC and product demos into the Content Library.",
+        "Upload UGC and product demos into the Library.",
         "Open Stitchr and choose up to 20 UGC with one demo.",
         "Preview each ad before you export.",
         "Add one text hook if the batch needs it, then create and download the finished ads.",
@@ -54,7 +54,7 @@ export const gettingStartedDoc = {
     {
       title: "How the library stays organized",
       body: [
-        "The Content Library keeps your UGC, demos, generated footage, carousels, and finished ads in one place. Use the tabs when you need to find UGC, Demos, Swaps, Swipes, or Stitches.",
+        "The Library keeps your UGC, demos, avatar photos, templates, carousels, and finished ads in one place. Use the tabs when you need to find UGC, Demos, Swaps, Swipes, Stitches, Avatars, or Templates.",
         "ClipStitchr prepares uploads for vertical social posts before they enter the library, so you do not have to fix the same clip every time you use it.",
       ],
     },

@@ -102,8 +102,10 @@ describe("dashboard shell sections", () => {
     expect(headerMarkup).toContain("Welcome to ClipStitchr");
     expect(customHeaderMarkup).toContain("Custom action");
     expect(shellMarkup).toContain("Workspace child");
+    expect(sidebarMarkup).toContain("Library");
     expect(sidebarMarkup).toContain("Stitchr");
-    expect(sidebarMarkup).toContain("Templates");
+    expect(sidebarMarkup).not.toContain("Templates");
+    expect(sidebarMarkup).not.toContain("Avatars");
     expect(sidebarMarkup).toContain("Settings");
     expect(statsMarkup).toContain("Demo Videos");
     expect(statsMarkup).toContain("4");

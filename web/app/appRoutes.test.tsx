@@ -9,11 +9,13 @@ import DashboardPage from "@/app/dashboard/page";
 import DashboardLayout from "@/app/dashboard/layout";
 import AvatarsPage from "@/app/dashboard/avatars/page";
 import CliprPage from "@/app/dashboard/clipr/page";
+import LibraryPage from "@/app/dashboard/library/page";
 import SettingsPage from "@/app/dashboard/settings/page";
 import StitchesPage from "@/app/dashboard/stitches/page";
 import StitchrPage from "@/app/dashboard/stitchr/page";
 import SwaprPage from "@/app/dashboard/swapr/page";
 import SwiprPage from "@/app/dashboard/swipr/page";
+import TemplatesPage from "@/app/dashboard/templates/page";
 import UploadsPage from "@/app/dashboard/uploads/page";
 import robots from "@/app/robots";
 
@@ -76,12 +78,12 @@ vi.mock("@/app/dashboard/DashboardLibraryProvider", () => ({
   ),
 }));
 
-vi.mock("@/app/dashboard/avatars/AvatarsPageClient", () => ({
-  AvatarsPageClient: () => <main>Avatars client</main>,
-}));
-
 vi.mock("@/app/dashboard/clipr/CliprPageClient", () => ({
   CliprPageClient: () => <main>Clipr client</main>,
+}));
+
+vi.mock("@/app/dashboard/library/LibraryPageClient", () => ({
+  LibraryPageClient: () => <main>Library client</main>,
 }));
 
 vi.mock("@/app/dashboard/settings/SettingsPageClient", () => ({
@@ -98,10 +100,6 @@ vi.mock("@/app/dashboard/swapr/SwaprPageClient", () => ({
 
 vi.mock("@/app/dashboard/swipr/SwiprPageClient", () => ({
   SwiprPageClient: () => <main>Swipr client</main>,
-}));
-
-vi.mock("@/app/dashboard/uploads/UploadsPageClient", () => ({
-  UploadsPageClient: () => <main>Uploads client</main>,
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useClipLibraryState", () => ({
@@ -136,29 +134,34 @@ describe("app route wrappers", () => {
     const markup = renderToStaticMarkup(
       <DashboardLayout>
         <DashboardPage />
-        <AvatarsPage />
         <CliprPage />
+        <LibraryPage />
         <SettingsPage />
         <StitchrPage />
         <SwaprPage />
         <SwiprPage />
-        <UploadsPage />
       </DashboardLayout>,
     );
 
     expect(markup).toContain("Dashboard client");
-    expect(markup).toContain("Avatars client");
     expect(markup).toContain("Clipr client");
+    expect(markup).toContain("Library client");
     expect(markup).toContain("Settings client");
     expect(markup).toContain("Stitchr client");
     expect(markup).toContain("Swapr client");
     expect(markup).toContain("Swipr client");
-    expect(markup).toContain("Uploads client");
   });
 
-  it("redirects the compatibility stitches route", () => {
+  it("redirects old dashboard library routes", () => {
+    expect(() => AvatarsPage()).toThrow(
+      "REDIRECT:/dashboard/library?tab=avatars",
+    );
+    expect(() => TemplatesPage()).toThrow(
+      "REDIRECT:/dashboard/library?tab=templates",
+    );
+    expect(() => UploadsPage()).toThrow("REDIRECT:/dashboard/library");
     expect(() => StitchesPage()).toThrow(
-      "REDIRECT:/dashboard/uploads?tab=stitches",
+      "REDIRECT:/dashboard/library?tab=stitches",
     );
   });
 

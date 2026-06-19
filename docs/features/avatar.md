@@ -75,8 +75,8 @@ Outfit, location, and pose descriptions are per-photo metadata. They can help us
 
 ## Upload Flow
 
-Avatar photo upload controls are hidden on the Avatars page until the user opens
-them from the dashboard upload selector or a direct upload link.
+Avatar photo upload controls are hidden on the Library Avatars tab until the
+user opens them from the dashboard upload selector or a direct upload link.
 
 When uploading avatar photos, the user stages photo files first, then creates or
 selects the avatar the images belong to before saving. Staging files without an
@@ -96,9 +96,9 @@ If the user selects an existing avatar:
 
 ## Browsing and Selection
 
-The Avatars dashboard page must provide an avatar selector dropdown for browsing photos, with `All avatars` as the default.
+The Library Avatars tab must provide an avatar selector dropdown for browsing photos, with `All avatars` as the default.
 
-The Avatars page follows the active dashboard product. Product-linked avatars
+The Library Avatars tab follows the active dashboard product. Product-linked avatars
 appear for their product, and the selected-avatar controls include a product
 picker so a user can move an existing avatar to another product.
 
@@ -120,7 +120,7 @@ The avatar photo generation UI supports:
 - optional location/scenario input
 - optional context input for what the avatar should be doing or how they should pose
 
-The Content Library UGC cards also support creating a new avatar from a UGC clip.
+The Library UGC cards also support creating a new avatar from a UGC clip.
 This flow uses the clip poster as the reference image and pre-fills the person
 description from the clip metadata. Users can choose whether generation should
 preserve the source person or create a similar but different person. Successful

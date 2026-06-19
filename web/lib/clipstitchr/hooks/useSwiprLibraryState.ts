@@ -31,15 +31,22 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   const convex = useConvex();
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const isDashboardHome = pathname === "/dashboard";
+  const isLibraryRoute = pathname.startsWith("/dashboard/library");
   const isSettingsRoute = pathname.startsWith("/dashboard/settings");
   const isSwiprRoute = pathname.startsWith("/dashboard/swipr");
   const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
   const shouldLoadBackgrounds =
     isAuthenticated &&
-    (isDashboardHome || isSettingsRoute || isSwiprRoute || isUploadsRoute);
+    (isDashboardHome ||
+      isLibraryRoute ||
+      isSettingsRoute ||
+      isSwiprRoute ||
+      isUploadsRoute);
   const shouldLoadSwipes =
-    isAuthenticated && (isDashboardHome || isSwiprRoute || isUploadsRoute);
-  const shouldLoadPostedSwipes = isAuthenticated && isUploadsRoute;
+    isAuthenticated &&
+    (isDashboardHome || isLibraryRoute || isSwiprRoute || isUploadsRoute);
+  const shouldLoadPostedSwipes =
+    isAuthenticated && (isLibraryRoute || isUploadsRoute);
   const productQueryArgs = productId ? { productId } : {};
   const backgroundDocuments = useQuery(
     api.swiprBackgrounds.list,

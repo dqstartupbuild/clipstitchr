@@ -1,22 +1,23 @@
 "use client";
 
-import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab";
+import type { LibraryTab } from "@/lib/clipstitchr/types/LibraryTab";
 
-type UploadLibraryTabsProps = {
-  value: UploadLibraryTab;
-  onChange: (tab: UploadLibraryTab) => void;
+type LibraryTabsProps = {
+  value: LibraryTab;
+  onChange: (tab: LibraryTab) => void;
 };
 
-const tabs: { label: string; value: UploadLibraryTab }[] = [
-  { label: "All", value: "all" },
+const tabs: { label: string; value: LibraryTab }[] = [
   { label: "UGC", value: "ugc" },
   { label: "Demo", value: "demo" },
   { label: "Swaps", value: "swaps" },
   { label: "Swipes", value: "swipes" },
   { label: "Stitches", value: "stitches" },
+  { label: "Avatars", value: "avatars" },
+  { label: "Templates", value: "templates" },
 ];
 
-export function UploadLibraryTabs({ value, onChange }: UploadLibraryTabsProps) {
+export function LibraryTabs({ value, onChange }: LibraryTabsProps) {
   return (
     <div className="inline-flex flex-wrap gap-1 rounded-lg border border-border bg-slate-100 p-1">
       {tabs.map((tab) => (

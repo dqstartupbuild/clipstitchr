@@ -18,13 +18,13 @@ import { getCssColorAlpha } from "@/lib/clipstitchr/utils/getCssColorAlpha";
 import { getCssColorHex } from "@/lib/clipstitchr/utils/getCssColorHex";
 import { getGeneratedAvatarPhotoName } from "@/lib/clipstitchr/utils/getGeneratedAvatarPhotoName";
 import { getHexColorLuminance } from "@/lib/clipstitchr/utils/getHexColorLuminance";
-import { getInitialUploadLibraryTab } from "@/lib/clipstitchr/utils/getInitialUploadLibraryTab";
+import { getInitialLibraryTab } from "@/lib/clipstitchr/utils/getInitialLibraryTab";
 import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
 import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
 import { getSwiprBackgroundSearchText } from "@/lib/clipstitchr/utils/getSwiprBackgroundSearchText";
 import { getSwiprExportMessage } from "@/lib/clipstitchr/utils/getSwiprExportMessage";
 import { getSwiprSwipeName } from "@/lib/clipstitchr/utils/getSwiprSwipeName";
-import { getUploadLibraryTabFromSearchParams } from "@/lib/clipstitchr/utils/getUploadLibraryTabFromSearchParams";
+import { getLibraryTabFromSearchParams } from "@/lib/clipstitchr/utils/getLibraryTabFromSearchParams";
 import { readSwaprPredictionResponse } from "@/lib/clipstitchr/utils/readSwaprPredictionResponse";
 import { resizeSwiprSlides } from "@/lib/clipstitchr/utils/resizeSwiprSlides";
 import { waitForSwaprPollInterval } from "@/lib/clipstitchr/utils/waitForSwaprPollInterval";
@@ -198,15 +198,15 @@ describe("additional utility coverage", () => {
     );
     expect(getSwiprSwipeName(" Launch Kit ")).toBe("Launch Kit carousel");
     expect(getSwiprSwipeName("   ")).toBe("Product carousel");
-    expect(getUploadLibraryTabFromSearchParams(new URLSearchParams("tab=ugc"))).toBe(
+    expect(getLibraryTabFromSearchParams(new URLSearchParams("tab=ugc"))).toBe(
       "ugc",
     );
     expect(
-      getUploadLibraryTabFromSearchParams(new URLSearchParams("tab=clips")),
+      getLibraryTabFromSearchParams(new URLSearchParams("tab=clips")),
     ).toBe("ugc");
     expect(
-      getUploadLibraryTabFromSearchParams(new URLSearchParams("tab=missing")),
-    ).toBe("all");
+      getLibraryTabFromSearchParams(new URLSearchParams("tab=missing")),
+    ).toBe("ugc");
   });
 
   it("filters saved media and computes timeline labels", () => {
@@ -281,7 +281,7 @@ describe("additional utility coverage", () => {
       },
       location: {
         hash: "#upload",
-        href: `https://clipstitchr.test/dashboard/uploads?upload=${UPLOAD_CONTROLS_SEARCH_PARAM_VALUE}#upload`,
+        href: `https://clipstitchr.test/dashboard/library?upload=${UPLOAD_CONTROLS_SEARCH_PARAM_VALUE}#upload`,
         search: `?upload=${UPLOAD_CONTROLS_SEARCH_PARAM_VALUE}`,
       },
       setTimeout: vi.fn((callback: () => void) => {
@@ -310,13 +310,13 @@ describe("additional utility coverage", () => {
   });
 
   it("reads initial upload tabs", () => {
-    expect(getInitialUploadLibraryTab()).toBe("all");
+    expect(getInitialLibraryTab()).toBe("ugc");
 
     vi.stubGlobal("window", {
       location: {
         search: "?tab=swipes",
       },
     });
-    expect(getInitialUploadLibraryTab()).toBe("swipes");
+    expect(getInitialLibraryTab()).toBe("swipes");
   });
 });

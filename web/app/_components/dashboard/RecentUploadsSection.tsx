@@ -59,7 +59,7 @@ export function RecentUploadsSection({
           Recent Uploads
         </h2>
         <SecondaryButtonLink
-          href="/dashboard/uploads"
+          href="/dashboard/library"
           className="h-9 px-3 text-xs"
         >
           See all

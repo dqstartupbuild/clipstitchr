@@ -25,7 +25,7 @@ export function getVideoClipNotificationCopy({
     return {
       title: "Clip is ready",
       preview: `${name} is saved in your library.`,
-      message: `Your Clipr clip "${name}" is ready and saved in your content library.`,
+      message: `Your Clipr clip "${name}" is ready and saved in your Library.`,
     };
   }
 

@@ -76,7 +76,7 @@ Write feature copy around user outcomes:
 | Feature | User-facing angle |
 | --- | --- |
 | Upload normalization | Every clip becomes ready for vertical ad output. |
-| Content Library | Keep UGC, demos, swaps, and stitches in one searchable place. |
+| Library | Keep UGC, demos, avatars, templates, swaps, and stitches in one searchable place. |
 | Stitchr | Pair up to 20 UGC with one product demo and create finished ads. |
 | Swipr | Create carousel posts, save the draft, and come back to revise or download it later. |
 | Clipr | Generate reusable reaction and b-roll UGC when the library needs fresh source footage. |

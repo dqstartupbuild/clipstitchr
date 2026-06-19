@@ -82,7 +82,7 @@ export function SwaprSourceClipSelector({
             Upload UGC or create a stitch before using Swapr.
           </p>
           <Link
-            href="/dashboard/uploads?tab=ugc&upload=open#upload-panel"
+            href="/dashboard/library?tab=ugc&upload=open#upload-panel"
             className="btn-secondary mt-4"
           >
             Upload Video

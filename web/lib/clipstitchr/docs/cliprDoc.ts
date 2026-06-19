@@ -66,7 +66,7 @@ export const cliprDoc = {
     {
       title: "Where Clipr videos appear",
       body: [
-        "Generated reaction and b-roll clips appear in the Content Library under UGC. Preview them, download them, or select them in Stitchr.",
+        "Generated reaction and b-roll clips appear in the Library under UGC. Preview them, download them, or select them in Stitchr.",
       ],
     },
     {

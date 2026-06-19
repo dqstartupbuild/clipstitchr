@@ -1,12 +1,11 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AvatarsPageClient } from "@/app/dashboard/avatars/AvatarsPageClient";
 import { CliprPageClient } from "@/app/dashboard/clipr/CliprPageClient";
+import { LibraryPageClient } from "@/app/dashboard/library/LibraryPageClient";
 import { StitchrPageClient } from "@/app/dashboard/stitchr/StitchrPageClient";
 import { SwaprPageClient } from "@/app/dashboard/swapr/SwaprPageClient";
 import { SwiprPageClient } from "@/app/dashboard/swipr/SwiprPageClient";
-import { UploadsPageClient } from "@/app/dashboard/uploads/UploadsPageClient";
 
 const mocks = vi.hoisted(() => ({
   exportCarousel: vi.fn(),
@@ -465,20 +464,11 @@ describe("dashboard page clients", () => {
     expect(markup).toContain("Import loaded");
   });
 
-  it("renders the Content Library with upload controls and saved assets", () => {
-    const markup = renderToStaticMarkup(<UploadsPageClient />);
+  it("renders the Library with UGC as the default tab", () => {
+    const markup = renderToStaticMarkup(<LibraryPageClient />);
 
-    expect(markup).toContain("Content Library");
+    expect(markup).toContain("Library");
     expect(markup).toContain("UGC clip");
-    expect(markup).toContain("Saved stitch");
-  });
-
-  it("renders the Avatars library with upload and generation controls", () => {
-    const markup = renderToStaticMarkup(<AvatarsPageClient />);
-
-    expect(markup).toContain("Avatars");
-    expect(markup).toContain("Avatar photo");
-    expect(markup).toContain("Create avatar photos");
   });
 
   it("renders the Clipr generator with product and avatar selectors", () => {

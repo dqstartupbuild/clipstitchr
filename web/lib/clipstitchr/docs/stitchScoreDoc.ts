@@ -24,7 +24,7 @@ export const stitchScoreDoc = {
         "Open your saved Stitches, choose the Stitch menu, and select Score stitch. ClipStitchr saves the score on that Stitch when it is done.",
       ],
       bullets: [
-        "Open the Content Library.",
+        "Open the Library.",
         "Go to Stitches.",
         "Open the Stitch menu.",
         "Choose Score stitch.",

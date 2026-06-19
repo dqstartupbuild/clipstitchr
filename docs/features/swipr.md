@@ -43,7 +43,7 @@ version at any time.
    text block containing the caption, a 1000-4000 character description, and
    hashtags. Manual saves keep this single field editable and copyable.
 10. The user saves the editable Swipe.
-11. The saved Swipe appears in the Content Library under the Swipes tab.
+11. The saved Swipe appears in the Library under the Swipes tab.
 12. From the library, the user can open the Swipe detail view, swipe through its
    images, download the current saved version, or continue editing it in Swipr.
 
@@ -87,8 +87,8 @@ should become the version available from the library.
 
 ## Library Behavior
 
-The Content Library includes a Swipes tab alongside All, UGC, Demo, Swaps, and
-Stitches.
+The Library includes a Swipes tab alongside UGC, Demo, Swaps, Stitches,
+Avatars, and Templates.
 
 The Swipes tab shows saved Swipe cards with:
 
@@ -104,9 +104,8 @@ The Swipes tab shows saved Swipe cards with:
 - Continue editing action.
 - Delete action for the saved Swipe record.
 
-The All tab includes Swipes with the other saved content types. Swipe posted
-status is stored on the saved Swipe record and is separate from video clip
-posted status.
+Swipe posted status is stored on the saved Swipe record and is separate from
+video clip posted status.
 
 If a user deletes a Pexels pack or another saved photo that a Swipe still
 references, the Swipe stays visible in the library with a missing-photo state

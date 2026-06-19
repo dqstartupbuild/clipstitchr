@@ -17,7 +17,7 @@ describe("removeUploadControlsUrlState", () => {
       },
       location: {
         hash: "",
-        href: "https://clipstitchr.test/dashboard/uploads",
+        href: "https://clipstitchr.test/dashboard/library",
         search: "",
       },
     });
@@ -36,7 +36,7 @@ describe("removeUploadControlsUrlState", () => {
       },
       location: {
         hash: UPLOAD_CONTROLS_HASH,
-        href: `https://clipstitchr.test/dashboard/uploads?${UPLOAD_CONTROLS_SEARCH_PARAM}=open&tab=ugc${UPLOAD_CONTROLS_HASH}`,
+        href: `https://clipstitchr.test/dashboard/library?${UPLOAD_CONTROLS_SEARCH_PARAM}=open&tab=ugc${UPLOAD_CONTROLS_HASH}`,
         search: `?${UPLOAD_CONTROLS_SEARCH_PARAM}=open&tab=ugc`,
       },
     });
@@ -46,7 +46,7 @@ describe("removeUploadControlsUrlState", () => {
     expect(replaceState).toHaveBeenCalledWith(
       null,
       "",
-      "https://clipstitchr.test/dashboard/uploads?tab=ugc",
+      "https://clipstitchr.test/dashboard/library?tab=ugc",
     );
   });
 });

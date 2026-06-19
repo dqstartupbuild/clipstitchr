@@ -238,7 +238,7 @@ describe("usePhotoLibraryState", () => {
       isAuthenticated: true,
       isLoading: false,
     });
-    mocks.usePathname.mockReturnValue("/dashboard/avatars");
+    mocks.usePathname.mockReturnValue("/dashboard/library");
     mocks.useQuery.mockImplementation((queryId: string) => {
       if (queryId === "photoAssets.list") {
         return [];

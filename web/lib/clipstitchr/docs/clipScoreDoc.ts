@@ -24,7 +24,7 @@ export const clipScoreDoc = {
         "When a clip has been analyzed, its score can appear on the clip card and inside the clip details view. You can use it while organizing uploads or while choosing clips for Stitchr. Finished Stitches have their own Stitch Score after you score them from the Stitch menu.",
       ],
       bullets: [
-        "Open the Content Library.",
+        "Open the Library.",
         "Upload UGC or product demo clips.",
         "Wait for ClipStitchr to finish describing the clip.",
         "Look for the simple score badge on the clip card.",

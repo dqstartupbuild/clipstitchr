@@ -28,7 +28,7 @@ export const swaprDoc = {
         "Choose saved UGC as the motion reference.",
         "Add scene or style guidance if you need it.",
         "Start the generation and follow its status.",
-        "Save the successful output into the Content Library under Swaps.",
+        "Save the successful output into the Library under Swaps.",
       ],
     },
     {

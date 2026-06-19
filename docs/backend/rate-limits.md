@@ -396,7 +396,7 @@ before calling Replicate or fetching an output URL.
 
 Avatar photo generation is rate-limited by requested output image count before
 creating the durable provider job, including generation started from a UGC clip
-poster in the Content Library. The source image is copied to R2 before the route
+poster in the Library. The source image is copied to R2 before the route
 returns. The provider worker runs one prediction per generated avatar photo so
 each output can receive a unique prompt variant and avoid grid/contact-sheet
 results. The MiniMax Image-01 workflow is also one prediction per generated

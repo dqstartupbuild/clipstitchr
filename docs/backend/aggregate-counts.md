@@ -215,7 +215,7 @@ npx convex run libraryCounts:get '{}' \
 ```bash
 npm run lint
 npm run typecheck
-npm test -- useClipLibraryState.test.ts DashboardPageClient.test.tsx UploadsPageClient.test.tsx videoClips.test.ts stitches.test.ts mediaCollections.test.ts
+npm test -- useClipLibraryState.test.ts DashboardPageClient.test.tsx LibraryPageClient.test.tsx videoClips.test.ts stitches.test.ts mediaCollections.test.ts
 ```
 
 ## Adding Future Counts

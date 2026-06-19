@@ -7,7 +7,9 @@ import { StitchesSection } from "@/app/_components/dashboard/StitchesSection";
 import { SwiprSwipesSection } from "@/app/_components/dashboard/SwiprSwipesSection";
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
 import { VideoLibrarySection } from "@/app/_components/dashboard/VideoLibrarySection";
-import { UploadLibraryTabs } from "@/app/_components/uploads/UploadLibraryTabs";
+import { AvatarLibraryTabSection } from "@/app/_components/library/AvatarLibraryTabSection";
+import { LibraryTabs } from "@/app/_components/library/LibraryTabs";
+import { TemplateLibraryTabSection } from "@/app/_components/library/TemplateLibraryTabSection";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
 import { SHOW_UPLOAD_CONTROLS_EVENT_NAME } from "@/lib/clipstitchr/constants/showUploadControlsEventName";
@@ -20,18 +22,18 @@ import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
+import type { LibraryTab } from "@/lib/clipstitchr/types/LibraryTab";
 import type { LibraryPostedStatusFilter } from "@/lib/clipstitchr/types/LibraryPostedStatusFilter";
 import type { StitchLibraryStatusFilter } from "@/lib/clipstitchr/types/StitchLibraryStatusFilter";
-import type { UploadLibraryTab } from "@/lib/clipstitchr/types/UploadLibraryTab";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsBySearchQuery";
 import { filterStitchesByName } from "@/lib/clipstitchr/utils/filterStitchesByName";
 import { filterSwipesBySearchQuery } from "@/lib/clipstitchr/utils/filterSwipesBySearchQuery";
 import { dispatchHideUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchHideUploadControlsEvent";
-import { getInitialUploadLibraryTab } from "@/lib/clipstitchr/utils/getInitialUploadLibraryTab";
+import { getInitialLibraryTab } from "@/lib/clipstitchr/utils/getInitialLibraryTab";
+import { getLibraryTabFromAssetType } from "@/lib/clipstitchr/utils/getLibraryTabFromAssetType";
 import { getStitchrUgcSourceClips } from "@/lib/clipstitchr/utils/getStitchrUgcSourceClips";
 import { getUploadAssetTypeFromLibraryTab } from "@/lib/clipstitchr/utils/getUploadAssetTypeFromLibraryTab";
-import { getUploadLibraryTabFromAssetType } from "@/lib/clipstitchr/utils/getUploadLibraryTabFromAssetType";
 
 type VideoLibraryTab = "ugc" | "demo" | "swaps";
 
@@ -83,7 +85,7 @@ const videoLibraryContent: Record<
   },
 };
 
-export function UploadsPageClient() {
+export function LibraryPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
   const products = useDashboardProduct();
@@ -95,8 +97,8 @@ export function UploadsPageClient() {
     loadClip: library.loadClip,
     saveGeneratedPhotos: photoLibrary.saveGeneratedPhotos,
   });
-  const [selectedTab, setSelectedTab] = useState<UploadLibraryTab>(
-    getInitialUploadLibraryTab,
+  const [selectedTab, setSelectedTab] = useState<LibraryTab>(
+    getInitialLibraryTab,
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [stitchStatusFilter, setStitchStatusFilter] =
@@ -237,6 +239,14 @@ export function UploadsPageClient() {
   const demoUploadBlockedMessage = products.isLoading
     ? "Products are loading."
     : "Create a product from the sidebar before uploading demo videos.";
+  const canSortSelectedTab =
+    selectedTab !== "avatars" && selectedTab !== "templates";
+  const searchPlaceholder =
+    selectedTab === "avatars"
+      ? "Search avatars"
+      : selectedTab === "templates"
+        ? "Search templates"
+        : "Search library";
   const selectedVideoSection =
     selectedTab === "ugc"
         ? {
@@ -283,7 +293,7 @@ export function UploadsPageClient() {
 
     library.loadMoreStitches();
   }, [library, stitchStatusFilter]);
-  const handleTabChange = useCallback((nextTab: UploadLibraryTab) => {
+  const handleTabChange = useCallback((nextTab: LibraryTab) => {
     setSelectedTab(nextTab);
 
     if (typeof window !== "undefined") {
@@ -302,7 +312,7 @@ export function UploadsPageClient() {
 
   useEffect(() => {
     const syncUploadTabFromUrl = () => {
-      setSelectedTab(getInitialUploadLibraryTab());
+      setSelectedTab(getInitialLibraryTab());
     };
 
     syncUploadTabFromUrl();
@@ -321,8 +331,8 @@ export function UploadsPageClient() {
 
       const assetType = (event.detail as { assetType?: unknown }).assetType;
 
-      if (assetType === "ugc" || assetType === "demo") {
-        handleTabChange(assetType);
+      if (assetType === "ugc" || assetType === "demo" || assetType === "photo") {
+        handleTabChange(getLibraryTabFromAssetType(assetType));
       }
     };
 
@@ -344,8 +354,8 @@ export function UploadsPageClient() {
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <LibraryPageHeader
           eyebrow="Library"
-          title="Content Library"
-          description="Keep UGC, product demos, swaps, Swipes, and stitches ready for the next export."
+          title="Library"
+          description="Keep your clips, demos, avatars, templates, Swipes, and finished stitches in one place."
         />
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -358,7 +368,9 @@ export function UploadsPageClient() {
             {avatarCreator.createdAvatar.name}.
           </div>
         ) : null}
-        {showUploadControls ? (
+        {showUploadControls &&
+        selectedTab !== "avatars" &&
+        selectedTab !== "templates" ? (
           <UploadPanel
             allowedAssetTypes={["ugc", "demo"]}
             key={selectedTab}
@@ -369,195 +381,41 @@ export function UploadsPageClient() {
             demoUploadBlockedMessage={demoUploadBlockedMessage}
             onDismiss={dispatchHideUploadControlsEvent}
             onAssetTypeChange={(assetType) =>
-              handleTabChange(getUploadLibraryTabFromAssetType(assetType))
+              handleTabChange(getLibraryTabFromAssetType(assetType))
             }
             onPhotoUploaded={photoLibrary.saveFiles}
             onUploaded={library.refresh}
           />
         ) : null}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <UploadLibraryTabs value={selectedTab} onChange={handleTabChange} />
+          <LibraryTabs value={selectedTab} onChange={handleTabChange} />
           <div
             className={[
               "grid w-full gap-3 sm:items-end",
-              "sm:grid-cols-2 lg:max-w-xl",
+              canSortSelectedTab
+                ? "sm:grid-cols-2 lg:max-w-xl"
+                : "lg:max-w-sm",
             ].join(" ")}
           >
-            <SelectInput
-              label="Sort"
-              options={sortOptions}
-              value={library.sortOrder}
-              onChange={(event) =>
-                library.setSortOrder(event.target.value as ClipLibrarySortOrder)
-              }
-            />
+            {canSortSelectedTab ? (
+              <SelectInput
+                label="Sort"
+                options={sortOptions}
+                value={library.sortOrder}
+                onChange={(event) =>
+                  library.setSortOrder(event.target.value as ClipLibrarySortOrder)
+                }
+              />
+            ) : null}
             <SearchInput
               label="Search library"
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search library"
+              placeholder={searchPlaceholder}
               className="w-full"
             />
           </div>
         </div>
-        {selectedTab === "all" ? (
-          <div className="flex flex-col gap-8">
-            <VideoLibrarySection
-              key={`all-ugc-${searchQuery}-${library.sortOrder}`}
-              id={videoLibraryContent.ugc.sectionId}
-              title={videoLibraryContent.ugc.title}
-              clips={ugcClips}
-              totalCount={
-                canUseLibraryTotals ? library.counts.ugcClips : undefined
-              }
-              products={products.products}
-              avatarCreatorError={avatarCreator.error}
-              emptyTitle={
-                hasSearchQuery
-                  ? videoLibraryContent.ugc.searchEmptyTitle
-                  : videoLibraryContent.ugc.emptyTitle
-              }
-              emptyDescription={
-                hasSearchQuery
-                  ? videoLibraryContent.ugc.searchEmptyDescription
-                  : videoLibraryContent.ugc.emptyDescription
-              }
-              hasMoreItems={library.videoGroups.ugc.hasMoreItems}
-              isLoadingMoreItems={library.videoGroups.ugc.isLoadingMoreItems}
-              loadMoreLabel="Load more videos"
-              onLoadClip={library.loadClip}
-              onLoadPoster={library.loadClipPoster}
-              onLoadMoreItems={library.videoGroups.ugc.loadMoreItems}
-              isCreatingAvatarFromClip={avatarCreator.isGenerating}
-              onDelete={library.removeClip}
-              onScoreClip={library.scoreClip}
-              onApplyQuickEdit={library.applyClipQuickEdit}
-              onResetQuickEdit={library.resetClipQuickEdit}
-              onUpdateCliprMusic={library.updateCliprMusic}
-              onUpdateMetadata={library.updateClipMetadata}
-              onUpdateCrop={library.updateClipCrop}
-              onUpdateTrim={library.updateClipTrimRange}
-              onUpdatePostedStatus={library.updateClipPostedStatus}
-              onCreateAvatarFromClip={handleCreateAvatarFromClip}
-            />
-            <VideoLibrarySection
-              key={`all-demo-${searchQuery}-${library.sortOrder}`}
-              id={videoLibraryContent.demo.sectionId}
-              title={videoLibraryContent.demo.title}
-              clips={demoClips}
-              totalCount={
-                canUseLibraryTotals ? library.counts.demoClips : undefined
-              }
-              products={products.products}
-              emptyTitle={
-                hasSearchQuery
-                  ? videoLibraryContent.demo.searchEmptyTitle
-                  : videoLibraryContent.demo.emptyTitle
-              }
-              emptyDescription={
-                hasSearchQuery
-                  ? videoLibraryContent.demo.searchEmptyDescription
-                  : videoLibraryContent.demo.emptyDescription
-              }
-              hasMoreItems={library.videoGroups.demo.hasMoreItems}
-              isLoadingMoreItems={library.videoGroups.demo.isLoadingMoreItems}
-              loadMoreLabel="Load more videos"
-              onLoadClip={library.loadClip}
-              onLoadPoster={library.loadClipPoster}
-              onLoadMoreItems={library.videoGroups.demo.loadMoreItems}
-              onDelete={library.removeClip}
-              onScoreClip={library.scoreClip}
-              onApplyQuickEdit={library.applyClipQuickEdit}
-              onResetQuickEdit={library.resetClipQuickEdit}
-              onUpdateCliprMusic={library.updateCliprMusic}
-              onUpdateMetadata={library.updateClipMetadata}
-              onUpdateCrop={library.updateClipCrop}
-              onUpdateTrim={library.updateClipTrimRange}
-              onUpdatePostedStatus={library.updateClipPostedStatus}
-            />
-            <VideoLibrarySection
-              key={`all-swaps-${searchQuery}-${library.sortOrder}`}
-              id={videoLibraryContent.swaps.sectionId}
-              title={videoLibraryContent.swaps.title}
-              clips={swapClips}
-              totalCount={
-                canUseLibraryTotals ? library.counts.swapClips : undefined
-              }
-              products={products.products}
-              emptyTitle={
-                hasSearchQuery
-                  ? videoLibraryContent.swaps.searchEmptyTitle
-                  : videoLibraryContent.swaps.emptyTitle
-              }
-              emptyDescription={
-                hasSearchQuery
-                  ? videoLibraryContent.swaps.searchEmptyDescription
-                  : videoLibraryContent.swaps.emptyDescription
-              }
-              hasMoreItems={library.videoGroups.swapr.hasMoreItems}
-              isLoadingMoreItems={library.videoGroups.swapr.isLoadingMoreItems}
-              loadMoreLabel="Load more videos"
-              onLoadClip={library.loadClip}
-              onLoadPoster={library.loadClipPoster}
-              onLoadMoreItems={library.videoGroups.swapr.loadMoreItems}
-              onDelete={library.removeClip}
-              onScoreClip={library.scoreClip}
-              onApplyQuickEdit={library.applyClipQuickEdit}
-              onResetQuickEdit={library.resetClipQuickEdit}
-              onUpdateCliprMusic={library.updateCliprMusic}
-              onUpdateMetadata={library.updateClipMetadata}
-              onUpdateCrop={library.updateClipCrop}
-              onUpdateTrim={library.updateClipTrimRange}
-              onUpdatePostedStatus={library.updateClipPostedStatus}
-            />
-            <StitchesSection
-              key={`all-stitches-${searchQuery}-${library.sortOrder}`}
-              demoClips={library.videoGroups.demo.clips}
-              savingTemplateStitchId={stitchTemplates.savingStitchId}
-              stitches={activeStitches}
-              totalCount={hasSearchQuery ? undefined : activeStitches.length}
-              emptyTitle={hasSearchQuery ? "No matching stitches" : undefined}
-              emptyDescription={
-                hasSearchQuery
-                  ? "No stitches match that name."
-                  : undefined
-              }
-              hasMoreItems={library.hasMoreStitches}
-              isLoadingMoreItems={library.isLoadingMoreStitches}
-              onDelete={library.removeStitch}
-              onLoadClip={library.loadClip}
-              onLoadMoreItems={library.loadMoreStitches}
-              onLoadPoster={library.loadStitchPoster}
-              onLoadVideo={library.loadStitchVideo}
-              onSaveTemplate={stitchTemplates.createTemplateFromStitch}
-              onScore={library.scoreStitch}
-              onApplyQuickEdit={library.applyStitchQuickEdit}
-              onResetQuickEdit={library.resetStitchQuickEdit}
-              onUpdateMusic={library.updateStitchMusic}
-              onUpdatePostedStatus={library.updateStitchPostedStatus}
-              onUpdateSocialCaption={library.updateStitchSocialCaption}
-              onUpdateSourceCrop={library.updateStitchSourceCrop}
-              onUpdateSourceSettings={library.updateStitchSourceSettings}
-              onUpdateTextOverlay={library.updateStitchTextOverlay}
-              ugcClips={stitchrUgcClips}
-            />
-            <SwiprSwipesSection
-              key={`all-swipes-${searchQuery}-${library.sortOrder}`}
-              backgrounds={swiprLibrary.backgrounds}
-              swipes={activeSwipes}
-              emptyTitle={hasSearchQuery ? "No matching Swipes" : undefined}
-              emptyDescription={
-                hasSearchQuery
-                  ? "No saved Swipes match that search."
-                  : undefined
-              }
-              onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
-              onLoadPoster={swiprLibrary.loadSwipePoster}
-              onDelete={swiprLibrary.removeSwipe}
-              onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
-            />
-          </div>
-        ) : null}
         {selectedVideoSection ? (
           <VideoLibrarySection
             key={`${selectedTab}-${searchQuery}-${library.sortOrder}`}
@@ -682,6 +540,24 @@ export function UploadsPageClient() {
             onDelete={swiprLibrary.removeSwipe}
             onStatusFilterChange={setSwipeStatusFilter}
             onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
+          />
+        ) : null}
+        {selectedTab === "avatars" ? (
+          <AvatarLibraryTabSection
+            searchQuery={searchQuery}
+            showUploadControls={showUploadControls}
+          />
+        ) : null}
+        {selectedTab === "templates" ? (
+          <TemplateLibraryTabSection
+            deletingTemplateId={stitchTemplates.deletingTemplateId}
+            error={stitchTemplates.error}
+            isLoading={stitchTemplates.isLoading}
+            savingTemplateId={stitchTemplates.savingTemplateId}
+            searchQuery={searchQuery}
+            templates={stitchTemplates.templates}
+            onDelete={stitchTemplates.deleteTemplate}
+            onRename={stitchTemplates.renameTemplate}
           />
         ) : null}
       </div>

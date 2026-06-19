@@ -13,7 +13,7 @@ resources.
 Clipr is not a direct-promo generator. Generated Clipr clips are meant to create
 engagement around the user's audience, problem space, opinions, stories, tests,
 or educational angles. They must not include a CTA. They can be downloaded as
-standalone clips and must be saved into the Content Library and used in Stitchr the same
+standalone clips and must be saved into the Library and used in Stitchr the same
 way UGC clips are used.
 
 The implementation must also extend the hook system to Swipr slide text and
@@ -28,7 +28,7 @@ hook, and the remaining slides should pay it off with simple supporting points.
 - Script mode exists behind `web/lib/clipstitchr/constants/isCliprScriptModeEnabled.ts`.
   Set that flag to `true` to show Script mode again in manual and automation UI.
 - Non-demo Clipr outputs are UGC-compatible source clips with separate Clipr
-  provenance. They appear in the Content Library `UGC` tab, count toward UGC,
+  provenance. They appear in the Library `UGC` tab, count toward UGC,
   and remain selectable in Stitchr.
 - Clipr Demo remixes remain supported in backend/finalization paths and save as
   Demo clips, but Demo mode is not shown in the current Clipr mode picker.
@@ -102,7 +102,7 @@ Clipr affects these docs:
     full-script avatar generation, library behavior, data model, rate limits,
     and MVP limits.
 - `project-scope.md`
-  - Add Clipr to feature requirements, routes, Content Library tabs, AI-assisted
+  - Add Clipr to feature requirements, routes, Library tabs, AI-assisted
     content supply, data model, phases, and success criteria.
   - Update old "no external services" language so it reflects the existing and
     planned paid-provider AI workflows.
@@ -650,7 +650,7 @@ Rules:
 18. Final video and poster are uploaded to R2.
 19. Convex saves the final output as a UGC-compatible video clip with Clipr
     provenance metadata.
-20. The output appears in the Content Library `UGC` tab and can be used in
+20. The output appears in the Library `UGC` tab and can be used in
     Stitchr.
 21. If music metadata is attached and enabled, download/export renders a fresh
     MP4 with Media Bunny using the clean video, the R2 music file, and the saved
@@ -829,7 +829,7 @@ type CliprMusicMetadata = {
 };
 ```
 
-Content Library behavior:
+Library behavior:
 
 - There is no visible `Clips` tab.
 - `UGC` should show uploaded UGC plus non-demo Clipr outputs with
@@ -838,7 +838,6 @@ Content Library behavior:
   lists and counts for compatibility.
 - `Demo` should show uploaded demos plus Clipr Demo remixes.
 - `Swaps` should continue to show Swapr outputs.
-- `All` should include UGC, Demo, Swaps, Swipes, and Stitches.
 - Clipr videos should have `Use in Stitchr`, preview, metadata edit, music
   settings, download/export, and delete behavior consistent with other saved
   video clips.
@@ -861,14 +860,14 @@ Add:
 - `POST /api/music/upload`
   - Authenticated, rate-limited shared music upload endpoint used by Clipr,
     Stitchr, and the shared music picker.
-- `/dashboard/uploads?tab=ugc`
+- `/dashboard/library?tab=ugc`
   - Generated non-demo Clipr output appears with UGC.
 
 Update:
 
 - Dashboard sidebar: add `Clipr`.
 - Dashboard page: add Clipr entry point.
-- Content Library tabs: remove the old visible `Clips` tab.
+- Library tabs: remove the old visible `Clips` tab.
 - Stitchr UGC selector: include Clipr outputs as UGC-compatible.
 - Upload/library filters: include Clipr outputs in UGC.
 - Video details dialog: show Clipr provenance in a user-friendly way without
@@ -1080,7 +1079,7 @@ Current and future code areas:
 - `web/app/_components/clipr/*`
   - one component per file for product, avatar, mode, model, voice, progress,
     preview, and generated output controls.
-- `web/app/dashboard/uploads/UploadsPageClient.tsx`
+- `web/app/dashboard/library/LibraryPageClient.tsx`
   - UGC tab/filter behavior for uploaded and generated UGC.
 - `web/lib/clipstitchr/utils/*`
   - Clipr filters and library-tab helpers.
@@ -1118,11 +1117,10 @@ After implementation:
 14. Test final output appears in the `UGC` tab.
 15. Test Clipr output is selectable in Stitchr.
 16. Test UGC tab includes uploaded UGC and generated Clipr UGC together.
-17. Test All tab includes Clipr outputs.
-18. Test Swipr auto-text puts the hook on the first slide and supporting text on
+17. Test Swipr auto-text puts the hook on the first slide and supporting text on
     the remaining slides.
-19. Test Stitchr auto-text fills the single editable overlay.
-20. Test paid-provider routes return `429` before provider calls when limited.
+18. Test Stitchr auto-text fills the single editable overlay.
+19. Test paid-provider routes return `429` before provider calls when limited.
 21. Test Reaction mode creates a 4-10 second silent single-shot Clip and does
     not call hook/script, voice, music, or PixVerse lip sync.
 22. Test B-roll mode creates a 4-10 second silent single-shot Clip with a

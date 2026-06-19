@@ -49,7 +49,7 @@ export const stitchrDoc = {
     {
       title: "Saved outputs",
       body: [
-        "Finished stitches appear in the Content Library under Stitches. Your original UGC and demo clips stay unchanged, so you can reuse them in the next batch.",
+        "Finished stitches appear in the Library under Stitches. Your original UGC and demo clips stay unchanged, so you can reuse them in the next batch.",
         "Open the Stitch menu to score a saved Stitch before posting, save the setup as a Template, or load it in Stitchr later.",
       ],
     },

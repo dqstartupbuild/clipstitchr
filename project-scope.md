@@ -156,14 +156,14 @@ shared text.
 | 2 | Dashboard shows workspace status, recent uploads, recent stitches, and Stitchr entry points | ✅ | ✅ |
 | 3 | No login required — dashboard is directly accessible | — | — |
 | 4 | Clerk-authenticated access to dashboard | ✅ | ✅ |
-| 5 | Uploaded UGC clips and demo videos share the tabbed Content Library page | ✅ | ✅ |
-| 6 | Uploaded Swapr avatar photos appear in the Avatars page; AI expansion is optional and off by default | ✅ | ✅ |
+| 5 | Uploaded UGC clips and demo videos share the tabbed Library page | ✅ | ✅ |
+| 6 | Uploaded Swapr avatar photos appear in the Library Avatars tab; AI expansion is optional and off by default | ✅ | ✅ |
 | 7 | Avatar photos store a detailed non-sensitive visual description of the person for scenario generation | ✅ | ✅ |
 | 8 | Users can generate 1, 3, or 5 new avatar scenario photos from a selected Replicate image model | ✅ | ✅ |
-| 9 | Swapr-generated outputs appear in the Content Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
-| 10 | Clipr-generated reaction and b-roll outputs appear in the Content Library UGC tab and remain reusable in Stitchr | ✅ | ✅ |
-| 11 | Stitches appear in the Content Library Stitches tab with Active, Posted, and All status filters; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
-| 12 | The Content Library includes an All tab so users can view every saved video output type at once | ✅ | ✅ |
+| 9 | Swapr-generated outputs appear in the Library Swaps tab and remain reusable as UGC-style clips | ✅ | ✅ |
+| 10 | Clipr-generated reaction and b-roll outputs appear in the Library UGC tab and remain reusable in Stitchr | ✅ | ✅ |
+| 11 | Stitches appear in the Library Stitches tab with Active, Posted, and All status filters; `/dashboard/stitches` redirects there for compatibility | ✅ | ✅ |
+| 12 | The Library includes Avatars and Templates tabs so source people and saved Stitchr setups sit beside saved media | ✅ | ✅ |
 | 13 | The dashboard header upload action opens an upload selector for UGC, Demo, or Photo, then routes to the relevant page/tab with controls revealed | ✅ | ✅ |
 | 14 | Demo upload and picker surfaces can filter demos by linked product | ✅ | ✅ |
 
@@ -221,7 +221,7 @@ an ordered sequence of selected source clips.
 | 3 | Selected Longr clips appear in a compact horizontal timeline for drag reordering | ✅ | ✅ |
 | 4 | One Stitch action creates one saved Stitch from the ordered Longr sequence | ✅ | ✅ |
 | 5 | Longr mode uses the same trim, text overlay, source-audio, music, preview, and download model as normal Stitches | ✅ | ✅ |
-| 6 | Longr-mode Stitches appear in the Content Library Stitches tab | ✅ | ✅ |
+| 6 | Longr-mode Stitches appear in the Library Stitches tab | ✅ | ✅ |
 
 Longr mode uses the same browser-local Media Bunny output pattern as Stitchr,
 but accepts an arbitrary ordered sequence instead of a UGC-to-Demo pairing.
@@ -251,7 +251,7 @@ selected slides.
 | 4 | One background image is reused across every rendered carousel image | ✅ | ✅ |
 | 5 | User adds and positions text independently on each image | ✅ | ✅ |
 | 6 | Browser renders 9:16 PNG images and downloads them as one ZIP file | ✅ | ✅ |
-| 7 | Saved Swipes appear in the Content Library Swipes tab and download from saved editable state | ✅ | ✅ |
+| 7 | Saved Swipes appear in the Library Swipes tab and download from saved editable state | ✅ | ✅ |
 | 8 | Uploaded/generated backgrounds save to shared R2-backed Background Library with hidden GPT-4.1-mini search metadata | ✅ | ✅ |
 | 9 | Auto-generated Swipr slide text uses purpose-filtered hidden hook libraries | ✅ | ✅ |
 | 10 | Pinterest or stock-library provider integration | — | ✅ |
@@ -267,9 +267,11 @@ selected slides.
 /dashboard/clipr → Authenticated Clipr engagement clip generator
 /dashboard/swipr → Authenticated TikTok carousel image generator
 /dashboard/swapr → Authenticated AI motion-transfer studio using saved photos with UGC clips or finished stitches
-/dashboard/avatars → Authenticated avatar photo library with hidden-until-requested photo upload controls, avatar assignment, descriptions, and AI scenario photo generation
-/dashboard/uploads → Authenticated Content Library with All, UGC, Demo, Swaps, Swipes, and Stitches tabs; UGC/Demo upload controls open from the header upload selector
-/dashboard/stitches → Compatibility redirect to `/dashboard/uploads?tab=stitches`
+/dashboard/library → Authenticated Library with UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Templates tabs; UGC/Demo/Avatar upload controls open from the header upload selector
+/dashboard/avatars → Compatibility redirect to `/dashboard/library?tab=avatars`
+/dashboard/templates → Compatibility redirect to `/dashboard/library?tab=templates`
+/dashboard/uploads → Compatibility redirect to `/dashboard/library`
+/dashboard/stitches → Compatibility redirect to `/dashboard/library?tab=stitches`
 ```
 
 ---

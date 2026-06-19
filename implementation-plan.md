@@ -7,9 +7,9 @@
 ### Product Scope
 
 - `project-scope.md`
-  - MVP routes are `/`, `/dashboard`, `/dashboard/stitchr`, `/dashboard/uploads`, `/dashboard/avatars`, and `/dashboard/swapr`; `/dashboard/stitches` redirects to the Stitches tab inside `/dashboard/uploads`.
-  - The authenticated Content Library at `/dashboard/uploads` has All, UGC, Demo, Swaps, and Stitches tabs.
-  - Avatar photo upload, avatar descriptions, and avatar scenario photo generation live on `/dashboard/avatars`.
+  - MVP routes are `/`, `/dashboard`, `/dashboard/library`, `/dashboard/stitchr`, `/dashboard/swapr`, `/dashboard/clipr`, and `/dashboard/swipr`; `/dashboard/uploads`, `/dashboard/avatars`, `/dashboard/templates`, and `/dashboard/stitches` redirect to the relevant Library tab for compatibility.
+  - The authenticated Library at `/dashboard/library` has UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Templates tabs.
+  - Avatar photo upload, avatar descriptions, avatar scenario photo generation, and Stitchr templates live in Library tabs.
   - Uploads are UGC clips, Demo videos, and Swapr avatar reference photos.
   - Every uploaded clip must be normalized to TikTok 9:16 before it is usable.
   - Preview and export must use the same sequence: each selected UGC plays first, Demo starts immediately after that UGC ends.
@@ -208,22 +208,31 @@ web/app/(content)/terms/page.tsx
 - Exports page metadata with canonical `/dashboard/swapr`.
 - Renders the client Swapr studio shell.
 
-#### `web/app/dashboard/uploads/page.tsx`
+#### `web/app/dashboard/library/page.tsx`
 
-- Server route entry for the authenticated Content Library.
-- Exports page metadata with canonical `/dashboard/uploads`.
-- Renders the tabbed library client with All, UGC, Demo, Swaps, and Stitches tabs.
+- Server route entry for the authenticated Library.
+- Exports page metadata with canonical `/dashboard/library`.
+- Renders the tabbed library client with UGC, Demo, Swaps, Swipes, Stitches, Avatars, and Templates tabs.
 
 #### `web/app/dashboard/avatars/page.tsx`
 
-- Server route entry for avatar photo management.
-- Exports page metadata with canonical `/dashboard/avatars`.
-- Renders hidden-until-requested avatar upload, staged avatar assignment/save controls, search, person description editing, and Replicate-backed scenario photo generation.
+- Compatibility route only.
+- Redirects to `/dashboard/library?tab=avatars` instead of rendering a dedicated avatars screen.
+
+#### `web/app/dashboard/templates/page.tsx`
+
+- Compatibility route only.
+- Redirects to `/dashboard/library?tab=templates` instead of rendering a dedicated templates screen.
+
+#### `web/app/dashboard/uploads/page.tsx`
+
+- Compatibility route only.
+- Redirects to `/dashboard/library` instead of rendering a dedicated uploads screen.
 
 #### `web/app/dashboard/stitches/page.tsx`
 
 - Compatibility route only.
-- Redirects to `/dashboard/uploads?tab=stitches` instead of rendering a dedicated stitches screen.
+- Redirects to `/dashboard/library?tab=stitches` instead of rendering a dedicated stitches screen.
 
 ## 6. Metadata / SEO Plan
 
@@ -405,7 +414,7 @@ Create:
 Create:
 
 - Sidebar inspired by mockup.
-- Links: Dashboard, Library, Avatars, Stitchr, Swapr.
+- Links: Dashboard, Library, Stitchr, Swapr, Clipr, Swipr, and Settings.
 - Uses `next/link` and lucide icons.
 
 ### `web/app/_components/dashboard/DashboardHeader.tsx`
@@ -448,7 +457,7 @@ Create:
 
 Create:
 
-- Section shell for video groups in the Content Library and dashboard recents.
+- Section shell for video groups in the Library and dashboard recents.
 - Receives clips and title.
 
 ### `web/app/_components/dashboard/VideoClipCard.tsx`
@@ -462,7 +471,7 @@ Create:
 
 Create:
 
-- Section shell for stitches in the Content Library and dashboard recents.
+- Section shell for stitches in the Library and dashboard recents.
 
 ### `web/app/_components/dashboard/StitchCard.tsx`
 

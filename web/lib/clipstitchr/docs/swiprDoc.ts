@@ -40,7 +40,7 @@ export const swiprDoc = {
     {
       title: "Saved Swipes",
       body: [
-        "Saved Swipes appear in the Content Library under Swipes and in All. From there, preview, download, keep editing, or delete a Swipe. Batch Swipes also keep their caption and hashtags.",
+        "Saved Swipes appear in the Library under Swipes. From there, preview, download, keep editing, or delete a Swipe. Batch Swipes also keep their caption and hashtags.",
       ],
     },
   ],

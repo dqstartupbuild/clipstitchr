@@ -41,9 +41,8 @@ Help a new user upload both source types, organize them, and create their first 
    - Link the demo to the right product when prompted.
    - Say: "These are the clips that show what you sell."
 
-4. Open the Content Library.
-   - Show the All tab first.
-   - Switch to UGC.
+4. Open the Library.
+   - Show the UGC tab first.
    - Switch to Demo.
    - Say: "Now the clips are sorted, so you are not hunting through folders."
 
@@ -68,7 +67,7 @@ Help a new user upload both source types, organize them, and create their first 
    - Show the progress state.
    - Wait for the saved outputs.
 
-9. Open the Stitches library.
+9. Open the Library Stitches tab.
    - Show the finished outputs.
    - Download one.
    - Mark one as posted if the demo includes the publishing follow-up.
@@ -105,7 +104,7 @@ Help a user create UGC-style source clips with their existing avatar, then pair 
    - Link them to the product.
    - Say: "This gives every future video a clear product moment."
 
-3. Open Avatars.
+3. Open the Library Avatars tab.
    - Show the existing avatar.
    - Confirm there is at least one avatar photo.
    - If needed, set this avatar as the default avatar.
@@ -130,7 +129,7 @@ Help a user create UGC-style source clips with their existing avatar, then pair 
    - Save it to the UGC library.
    - Say: "Two or three options give you room to test different openings."
 
-7. Open Content Library.
+7. Open the Library.
    - Show Demo.
    - Show UGC.
    - Confirm the Clipr outputs appear as UGC-compatible clips.
@@ -176,7 +175,7 @@ Help a user create their avatar first, then use it to generate UGC-style clips f
    - Add the product demos.
    - Link them to a product.
 
-3. Open Avatars.
+3. Open the Library Avatars tab.
    - Choose photo upload.
    - Upload one or more clear photos of the person.
    - Create a new avatar name.
@@ -273,7 +272,7 @@ Help a completely empty user create useful carousel content with Swipr instead o
 
 7. Save the Swipe.
    - Save the editable carousel project.
-   - Open the Content Library.
+   - Open the Library.
    - Show the Swipes tab.
 
 8. Download the carousel.
@@ -353,7 +352,7 @@ Help a user turn on daily drafts and choose which tools ClipStitchr should use a
    - Confirm the settings stay enabled after saving.
 
 10. Show where drafts appear.
-    - Open Content Library.
+    - Open the Library.
     - Explain that finished items appear in their normal tabs: UGC, Stitches, Swipes, and Avatars.
     - Say: "Automation does not create a separate inbox. It fills the same library you already use."
 
@@ -380,7 +379,7 @@ Help a user save a finished Stitchr setup as a reusable template, then use it to
 
 ### Play-by-Play
 
-1. Open the Content Library.
+1. Open the Library.
    - Go to the Stitches tab.
    - Pick a finished stitch that represents a good setup.
    - Say: "When a video has the right structure, you do not have to rebuild it from scratch."
@@ -391,8 +390,7 @@ Help a user save a finished Stitchr setup as a reusable template, then use it to
    - Wait for the save to finish.
    - Say: "This saves the setup, not another copy of the video."
 
-3. Open Templates.
-   - Use the sidebar Templates item.
+3. Open the Library Templates tab.
    - Show the new template card.
    - Point out the source stitch name and the UGC plus Demo pairing.
    - Say: "Templates keep the pieces that made the stitch work."
@@ -419,11 +417,11 @@ Help a user save a finished Stitchr setup as a reusable template, then use it to
 7. Stitch the new version.
    - Click Stitch.
    - Save the new output.
-   - Open Stitches and show the new video beside the original.
+   - Open the Library Stitches tab and show the new video beside the original.
    - Say: "Now one good setup can turn into more versions without extra setup work."
 
 8. Manage templates.
-   - Return to Templates.
+   - Return to the Library Templates tab.
    - Show rename and delete.
    - Say: "Deleting a template only removes the saved setup. Your clips and finished stitches stay in the library."
 
@@ -454,6 +452,6 @@ Help a user save a finished Stitchr setup as a reusable template, then use it to
 - `provider-automation.md`
 - `web/app/dashboard/settings/SettingsPageClient.tsx`
 - `web/app/_components/settings/SettingsAutomationPanel.tsx`
-- `web/app/dashboard/templates/TemplatesPageClient.tsx`
+- `web/app/_components/library/TemplateLibraryTabSection.tsx`
 - `web/app/_components/templates/StitchTemplateCard.tsx`
 - `web/app/_components/stitchr/StitchTemplatePicker.tsx`

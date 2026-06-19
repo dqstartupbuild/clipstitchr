@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AvatarsPageClient } from "@/app/dashboard/avatars/AvatarsPageClient";
+import { AvatarLibraryTabSection } from "@/app/_components/library/AvatarLibraryTabSection";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 
@@ -63,7 +63,6 @@ const mocks = vi.hoisted(() => ({
       },
     ],
   },
-  searchInputProps: null as Record<string, unknown> | null,
   selectedAvatarActionsProps: null as Record<string, unknown> | null,
   showUploadControls: true,
   stateQueue: [] as unknown[],
@@ -158,23 +157,12 @@ vi.mock("@/app/_components/avatars/AvatarLibrarySection", () => ({
   },
 }));
 
-vi.mock("@/app/_components/ui/SearchInput", () => ({
-  SearchInput: (props: Record<string, unknown>) => {
-    mocks.searchInputProps = props;
-    return "SearchInput";
-  },
-}));
-
 vi.mock("@/lib/clipstitchr/hooks/usePhotoLibrary", () => ({
   usePhotoLibrary: () => mocks.photoLibraryState,
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
   useDashboardProduct: () => mocks.productState,
-}));
-
-vi.mock("@/lib/clipstitchr/hooks/useShowUploadControls", () => ({
-  useShowUploadControls: () => mocks.showUploadControls,
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useAvatarPhotoGeneration", () => ({
@@ -230,7 +218,6 @@ function queueAvatarState(
     outfit?: string;
     pendingPhotoFiles?: File[];
     pendingPhotoShouldExpandWithAi?: boolean;
-    searchQuery?: string;
     selectedPhotoId?: string;
     style?: string;
     uploadAvatarId?: string;
@@ -243,7 +230,6 @@ function queueAvatarState(
     overrides.newAvatarName ?? "",
     overrides.pendingPhotoFiles ?? [],
     overrides.pendingPhotoShouldExpandWithAi ?? false,
-    overrides.searchQuery ?? "",
     overrides.context ?? "",
     overrides.count ?? 3,
     overrides.lighting ?? "any",
@@ -253,7 +239,16 @@ function queueAvatarState(
   );
 }
 
-describe("AvatarsPageClient", () => {
+function renderAvatarLibraryTabSection(searchQuery = "") {
+  return renderToStaticMarkup(
+    <AvatarLibraryTabSection
+      searchQuery={searchQuery}
+      showUploadControls={mocks.showUploadControls}
+    />,
+  );
+}
+
+describe("AvatarLibraryTabSection", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.photoLibraryState.avatars = [createAvatar()];
@@ -283,7 +278,6 @@ describe("AvatarsPageClient", () => {
     mocks.avatarLibrarySectionProps = null;
     mocks.avatarPhotoUploadControlsProps = null;
     mocks.filterSelectProps = null;
-    mocks.searchInputProps = null;
     mocks.selectedAvatarActionsProps = null;
     mocks.stateQueue.length = 0;
     mocks.stateSetters.length = 0;
@@ -291,9 +285,9 @@ describe("AvatarsPageClient", () => {
   });
 
   it("renders upload, filters, generation, and library sections", () => {
-    const markup = renderToStaticMarkup(<AvatarsPageClient />);
+    const markup = renderAvatarLibraryTabSection();
 
-    expect(markup).toContain("Header:Avatars");
+    expect(markup).toContain("Avatars");
     expect(markup).toContain("UploadPanel");
     expect(markup).toContain("AvatarFilterSelect");
     expect(markup).toContain("SelectedAvatarActions");
@@ -303,19 +297,19 @@ describe("AvatarsPageClient", () => {
 
   it("surfaces library, generation, and generated-count messages", () => {
     mocks.photoLibraryState.error = "Photo library unavailable.";
-    expect(renderToStaticMarkup(<AvatarsPageClient />)).toContain(
+    expect(renderAvatarLibraryTabSection()).toContain(
       "Photo library unavailable.",
     );
 
     mocks.photoLibraryState.error = null;
     mocks.generatorState.error = "Generation unavailable.";
-    expect(renderToStaticMarkup(<AvatarsPageClient />)).toContain(
+    expect(renderAvatarLibraryTabSection()).toContain(
       "Generation unavailable.",
     );
 
     mocks.generatorState.error = null;
     mocks.generatorState.generatedCount = 2;
-    expect(renderToStaticMarkup(<AvatarsPageClient />)).toContain(
+    expect(renderAvatarLibraryTabSection()).toContain(
       "Queued 2 generated photos.",
     );
   });
@@ -331,7 +325,7 @@ describe("AvatarsPageClient", () => {
       pendingPhotoShouldExpandWithAi: true,
       uploadAvatarId: "new",
     });
-    renderToStaticMarkup(<AvatarsPageClient />);
+    renderAvatarLibraryTabSection();
 
     const photoControls = mocks.avatarPhotoUploadControlsProps as {
       onSave: () => void;
@@ -363,10 +357,9 @@ describe("AvatarsPageClient", () => {
       lighting: "studio",
       location: "Cafe",
       outfit: "navy workout set",
-      searchQuery: "studio",
       selectedPhotoId: "photo_1",
     });
-    renderToStaticMarkup(<AvatarsPageClient />);
+    renderAvatarLibraryTabSection("studio");
 
     const uploadProps = mocks.uploadPanelProps as {
       onPhotoExpandPreferenceChange: (value: boolean) => void;
@@ -378,9 +371,6 @@ describe("AvatarsPageClient", () => {
     };
     const filterProps = mocks.filterSelectProps as {
       onChange: (id: string) => void;
-    };
-    const searchProps = mocks.searchInputProps as {
-      onChange: (value: string) => void;
     };
     const selectedActions = mocks.selectedAvatarActionsProps as {
       onSetDefault: (avatar: Avatar) => Promise<void>;
@@ -407,7 +397,6 @@ describe("AvatarsPageClient", () => {
     uploadProps.onPhotoExpandPreferenceChange(false);
     uploadProps.onUploaded();
     filterProps.onChange("avatar_1");
-    searchProps.onChange("avatar");
     await selectedActions.onDelete(createAvatar());
     await selectedActions.onProductChange(createAvatar(), "product_2");
     await selectedActions.onSetDefault(createAvatar());
@@ -442,7 +431,7 @@ describe("AvatarsPageClient", () => {
   it("omits the upload panel when upload controls are hidden and guards generation without a selection", () => {
     mocks.showUploadControls = false;
 
-    const markup = renderToStaticMarkup(<AvatarsPageClient />);
+    const markup = renderAvatarLibraryTabSection();
 
     expect(markup).not.toContain("UploadPanel");
     (mocks.avatarGenerationPanelProps as { onGenerate: () => void }).onGenerate();
