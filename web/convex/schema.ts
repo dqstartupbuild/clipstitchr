@@ -5,6 +5,7 @@ import { automationProvenanceValidator } from "./validators/automationProvenance
 import { automationGenerationCountValidator } from "./validators/automationGenerationCount";
 import { automationRunStatusValidator } from "./validators/automationRunStatus";
 import { automationSelectionModeValidator } from "./validators/automationSelectionMode";
+import { automationStitchrTemplateAllocationValidator } from "./validators/automationStitchrTemplateAllocation";
 import { automationStitchrTextStyleChoiceValidator } from "./validators/automationStitchrTextStyleChoice";
 import { automationTaskStatusValidator } from "./validators/automationTaskStatus";
 import { automationTaskTypeValidator } from "./validators/automationTaskType";
@@ -493,6 +494,9 @@ export default defineSchema({
     stitchrTextColorChoice: v.optional(v.string()),
     stitchrTextBackgroundColorChoice: v.optional(v.string()),
     stitchrTextStrokeColorChoice: v.optional(v.string()),
+    stitchrTemplateAllocations: v.optional(
+      v.array(automationStitchrTemplateAllocationValidator),
+    ),
     swiprGenerationCount: v.optional(automationGenerationCountValidator),
     swiprSelectedLibraryPackNames: v.optional(v.array(v.string())),
     swiprTextStyleChoice: v.optional(automationStitchrTextStyleChoiceValidator),

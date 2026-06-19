@@ -4,9 +4,11 @@ import { useMemo, useState } from "react";
 import { Bot, Clock } from "lucide-react";
 import { AutomationCliprModePicker } from "@/app/_components/settings/AutomationCliprModePicker";
 import { AutomationGenerationCountPicker } from "@/app/_components/settings/AutomationGenerationCountPicker";
+import { AutomationStitchrTemplateAllocationPicker } from "@/app/_components/settings/AutomationStitchrTemplateAllocationPicker";
 import { AutomationStitchrColorChoicePicker } from "@/app/_components/settings/AutomationStitchrColorChoicePicker";
 import { AutomationStitchrTextStylePicker } from "@/app/_components/settings/AutomationStitchrTextStylePicker";
 import { AutomationSwiprPackPicker } from "@/app/_components/settings/AutomationSwiprPackPicker";
+import { AutomationToolConfigDisclosure } from "@/app/_components/settings/AutomationToolConfigDisclosure";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { automationToolOptions } from "@/lib/clipstitchr/constants/automationToolOptions";
@@ -19,8 +21,10 @@ import type {
   AutomationPreferencesInput,
 } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import type { AutomationTool } from "@/lib/clipstitchr/types/AutomationTool";
+import type { StitchTemplate } from "@/lib/clipstitchr/types/StitchTemplate";
 import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
 import { getCssColorHex } from "@/lib/clipstitchr/utils/getCssColorHex";
+import { normalizeAutomationStitchrTemplateAllocations } from "@/lib/clipstitchr/utils/normalizeAutomationStitchrTemplateAllocations";
 
 type SettingsAutomationPanelProps = {
   error: string | null;
@@ -28,6 +32,7 @@ type SettingsAutomationPanelProps = {
   isSaving: boolean;
   productName?: string;
   preferences: AutomationPreferencesInput;
+  stitchTemplates: StitchTemplate[];
   swiprPacks: SwiprLibraryPack[];
   onSave: (preferences: AutomationPreferencesInput) => Promise<void>;
 };
@@ -48,6 +53,7 @@ export function SettingsAutomationPanel({
   isSaving,
   productName,
   preferences,
+  stitchTemplates,
   swiprPacks,
   onSave,
 }: SettingsAutomationPanelProps) {
@@ -115,6 +121,9 @@ export function SettingsAutomationPanel({
     selectedSwiprTextStyle?.strokeColor ?? "#020617",
     "#020617",
   );
+  const isCliprSelected = draftPreferences.enabledTools.includes("clipr");
+  const isStitchrSelected = draftPreferences.enabledTools.includes("stitchr");
+  const isSwiprSelected = draftPreferences.enabledTools.includes("swipr");
   const hasChanges = preferencesKey !== draftPreferencesKey;
 
   if (draftState.preferencesKey !== preferencesKey) {
@@ -152,6 +161,20 @@ export function SettingsAutomationPanel({
     updateDraftPreferences({
       ...draftPreferences,
       stitchrGenerationCount,
+      stitchrTemplateAllocations:
+        normalizeAutomationStitchrTemplateAllocations(
+          draftPreferences.stitchrTemplateAllocations,
+          stitchrGenerationCount,
+          new Set(stitchTemplates.map((template) => template.id)),
+        ),
+    });
+  };
+  const handleStitchrTemplateAllocationsChange = (
+    stitchrTemplateAllocations: AutomationPreferencesInput["stitchrTemplateAllocations"],
+  ) => {
+    updateDraftPreferences({
+      ...draftPreferences,
+      stitchrTemplateAllocations,
     });
   };
   const handleStitchrTextColorChange = (
@@ -235,7 +258,15 @@ export function SettingsAutomationPanel({
     });
   };
   const handleSave = async () => {
-    await onSave(draftPreferences);
+    await onSave({
+      ...draftPreferences,
+      stitchrTemplateAllocations:
+        normalizeAutomationStitchrTemplateAllocations(
+          draftPreferences.stitchrTemplateAllocations,
+          draftPreferences.stitchrGenerationCount,
+          new Set(stitchTemplates.map((template) => template.id)),
+        ),
+    });
   };
 
   return (
@@ -290,144 +321,172 @@ export function SettingsAutomationPanel({
             </label>
           ))}
         </div>
-        <div className="flex flex-col gap-2">
-          <p className="text-sm font-semibold text-text-primary">Clipr mode</p>
-          <AutomationCliprModePicker
+        {isCliprSelected ? (
+          <AutomationToolConfigDisclosure
             disabled={isLoading || isSaving}
-            value={draftPreferences.cliprGenerationMode}
-            onChange={handleCliprModeChange}
-          />
-        </div>
-        <div className="grid gap-5 border-t border-border pt-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <AutomationGenerationCountPicker
-              disabled={isLoading || isSaving}
-              label="Stitchr drafts"
-              value={draftPreferences.stitchrGenerationCount}
-              onChange={handleStitchrGenerationCountChange}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <p className="text-sm font-semibold text-text-primary">
-              Stitchr text style
-            </p>
-            <AutomationStitchrTextStylePicker
-              disabled={isLoading || isSaving}
-              previewBackgroundColor={
-                draftPreferences.stitchrTextBackgroundColorChoice === "any"
-                  ? undefined
-                  : draftPreferences.stitchrTextBackgroundColorChoice
-              }
-              previewStrokeColor={
-                draftPreferences.stitchrTextStrokeColorChoice === "any"
-                  ? undefined
-                  : draftPreferences.stitchrTextStrokeColorChoice
-              }
-              previewTextColor={
-                draftPreferences.stitchrTextColorChoice === "any"
-                  ? undefined
-                  : draftPreferences.stitchrTextColorChoice
-              }
-              value={draftPreferences.stitchrTextStyleChoice}
-              onChange={handleStitchrTextStyleChange}
-            />
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            <AutomationStitchrColorChoicePicker
-              disabled={isLoading || isSaving}
-              fallbackColor={stitchrTextColorFallback}
-              label="Text color"
-              value={draftPreferences.stitchrTextColorChoice}
-              onChange={handleStitchrTextColorChange}
-            />
-            {showsStitchrBackgroundColor ? (
+            label="Clipr Config"
+          >
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-semibold text-text-primary">
+                Clipr mode
+              </p>
+              <AutomationCliprModePicker
+                disabled={isLoading || isSaving}
+                value={draftPreferences.cliprGenerationMode}
+                onChange={handleCliprModeChange}
+              />
+            </div>
+          </AutomationToolConfigDisclosure>
+        ) : null}
+        {isStitchrSelected ? (
+          <AutomationToolConfigDisclosure
+            disabled={isLoading || isSaving}
+            label="Stitchr Config"
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <AutomationGenerationCountPicker
+                disabled={isLoading || isSaving}
+                label="Stitchr drafts"
+                value={draftPreferences.stitchrGenerationCount}
+                onChange={handleStitchrGenerationCountChange}
+              />
+              <AutomationStitchrTemplateAllocationPicker
+                allocations={draftPreferences.stitchrTemplateAllocations}
+                disabled={isLoading || isSaving}
+                generationCount={draftPreferences.stitchrGenerationCount}
+                templates={stitchTemplates}
+                onChange={handleStitchrTemplateAllocationsChange}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-semibold text-text-primary">
+                Stitchr text style
+              </p>
+              <AutomationStitchrTextStylePicker
+                disabled={isLoading || isSaving}
+                previewBackgroundColor={
+                  draftPreferences.stitchrTextBackgroundColorChoice === "any"
+                    ? undefined
+                    : draftPreferences.stitchrTextBackgroundColorChoice
+                }
+                previewStrokeColor={
+                  draftPreferences.stitchrTextStrokeColorChoice === "any"
+                    ? undefined
+                    : draftPreferences.stitchrTextStrokeColorChoice
+                }
+                previewTextColor={
+                  draftPreferences.stitchrTextColorChoice === "any"
+                    ? undefined
+                    : draftPreferences.stitchrTextColorChoice
+                }
+                value={draftPreferences.stitchrTextStyleChoice}
+                onChange={handleStitchrTextStyleChange}
+              />
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
               <AutomationStitchrColorChoicePicker
                 disabled={isLoading || isSaving}
-                fallbackColor={stitchrBackgroundColorFallback}
-                label="Background color"
-                value={draftPreferences.stitchrTextBackgroundColorChoice}
-                onChange={handleStitchrBackgroundColorChange}
+                fallbackColor={stitchrTextColorFallback}
+                label="Text color"
+                value={draftPreferences.stitchrTextColorChoice}
+                onChange={handleStitchrTextColorChange}
               />
-            ) : null}
-            {showsStitchrStrokeColor ? (
+              {showsStitchrBackgroundColor ? (
+                <AutomationStitchrColorChoicePicker
+                  disabled={isLoading || isSaving}
+                  fallbackColor={stitchrBackgroundColorFallback}
+                  label="Background color"
+                  value={draftPreferences.stitchrTextBackgroundColorChoice}
+                  onChange={handleStitchrBackgroundColorChange}
+                />
+              ) : null}
+              {showsStitchrStrokeColor ? (
+                <AutomationStitchrColorChoicePicker
+                  disabled={isLoading || isSaving}
+                  fallbackColor={stitchrStrokeColorFallback}
+                  label="Outline color"
+                  value={draftPreferences.stitchrTextStrokeColorChoice}
+                  onChange={handleStitchrStrokeColorChange}
+                />
+              ) : null}
+            </div>
+          </AutomationToolConfigDisclosure>
+        ) : null}
+        {isSwiprSelected ? (
+          <AutomationToolConfigDisclosure
+            disabled={isLoading || isSaving}
+            label="Swipr Config"
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <AutomationGenerationCountPicker
+                disabled={isLoading || isSaving}
+                label="Swipr drafts"
+                value={draftPreferences.swiprGenerationCount}
+                onChange={handleSwiprGenerationCountChange}
+              />
+              <AutomationSwiprPackPicker
+                disabled={isLoading || isSaving}
+                packs={swiprPacks}
+                selectedPackNames={
+                  draftPreferences.swiprSelectedLibraryPackNames
+                }
+                onChange={handleSwiprPackNamesChange}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-semibold text-text-primary">
+                Swipr text style
+              </p>
+              <AutomationStitchrTextStylePicker
+                disabled={isLoading || isSaving}
+                previewBackgroundColor={
+                  draftPreferences.swiprTextBackgroundColorChoice === "any"
+                    ? undefined
+                    : draftPreferences.swiprTextBackgroundColorChoice
+                }
+                previewStrokeColor={
+                  draftPreferences.swiprTextStrokeColorChoice === "any"
+                    ? undefined
+                    : draftPreferences.swiprTextStrokeColorChoice
+                }
+                previewTextColor={
+                  draftPreferences.swiprTextColorChoice === "any"
+                    ? undefined
+                    : draftPreferences.swiprTextColorChoice
+                }
+                value={draftPreferences.swiprTextStyleChoice}
+                onChange={handleSwiprTextStyleChange}
+              />
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
               <AutomationStitchrColorChoicePicker
                 disabled={isLoading || isSaving}
-                fallbackColor={stitchrStrokeColorFallback}
-                label="Outline color"
-                value={draftPreferences.stitchrTextStrokeColorChoice}
-                onChange={handleStitchrStrokeColorChange}
+                fallbackColor={swiprTextColorFallback}
+                label="Text color"
+                value={draftPreferences.swiprTextColorChoice}
+                onChange={handleSwiprTextColorChange}
               />
-            ) : null}
-          </div>
-        </div>
-        <div className="grid gap-5 border-t border-border pt-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <AutomationGenerationCountPicker
-              disabled={isLoading || isSaving}
-              label="Swipr drafts"
-              value={draftPreferences.swiprGenerationCount}
-              onChange={handleSwiprGenerationCountChange}
-            />
-            <AutomationSwiprPackPicker
-              disabled={isLoading || isSaving}
-              packs={swiprPacks}
-              selectedPackNames={draftPreferences.swiprSelectedLibraryPackNames}
-              onChange={handleSwiprPackNamesChange}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <p className="text-sm font-semibold text-text-primary">
-              Swipr text style
-            </p>
-            <AutomationStitchrTextStylePicker
-              disabled={isLoading || isSaving}
-              previewBackgroundColor={
-                draftPreferences.swiprTextBackgroundColorChoice === "any"
-                  ? undefined
-                  : draftPreferences.swiprTextBackgroundColorChoice
-              }
-              previewStrokeColor={
-                draftPreferences.swiprTextStrokeColorChoice === "any"
-                  ? undefined
-                  : draftPreferences.swiprTextStrokeColorChoice
-              }
-              previewTextColor={
-                draftPreferences.swiprTextColorChoice === "any"
-                  ? undefined
-                  : draftPreferences.swiprTextColorChoice
-              }
-              value={draftPreferences.swiprTextStyleChoice}
-              onChange={handleSwiprTextStyleChange}
-            />
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            <AutomationStitchrColorChoicePicker
-              disabled={isLoading || isSaving}
-              fallbackColor={swiprTextColorFallback}
-              label="Text color"
-              value={draftPreferences.swiprTextColorChoice}
-              onChange={handleSwiprTextColorChange}
-            />
-            {showsSwiprBackgroundColor ? (
-              <AutomationStitchrColorChoicePicker
-                disabled={isLoading || isSaving}
-                fallbackColor={swiprBackgroundColorFallback}
-                label="Background color"
-                value={draftPreferences.swiprTextBackgroundColorChoice}
-                onChange={handleSwiprBackgroundColorChange}
-              />
-            ) : null}
-            {showsSwiprStrokeColor ? (
-              <AutomationStitchrColorChoicePicker
-                disabled={isLoading || isSaving}
-                fallbackColor={swiprStrokeColorFallback}
-                label="Outline color"
-                value={draftPreferences.swiprTextStrokeColorChoice}
-                onChange={handleSwiprStrokeColorChange}
-              />
-            ) : null}
-          </div>
-        </div>
+              {showsSwiprBackgroundColor ? (
+                <AutomationStitchrColorChoicePicker
+                  disabled={isLoading || isSaving}
+                  fallbackColor={swiprBackgroundColorFallback}
+                  label="Background color"
+                  value={draftPreferences.swiprTextBackgroundColorChoice}
+                  onChange={handleSwiprBackgroundColorChange}
+                />
+              ) : null}
+              {showsSwiprStrokeColor ? (
+                <AutomationStitchrColorChoicePicker
+                  disabled={isLoading || isSaving}
+                  fallbackColor={swiprStrokeColorFallback}
+                  label="Outline color"
+                  value={draftPreferences.swiprTextStrokeColorChoice}
+                  onChange={handleSwiprStrokeColorChange}
+                />
+              ) : null}
+            </div>
+          </AutomationToolConfigDisclosure>
+        ) : null}
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
         <div className="flex justify-end">
           <Button

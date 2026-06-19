@@ -17,6 +17,7 @@ import { createQuickEditSuggestionsFromMetadata } from "./createQuickEditSuggest
 import { getQuickEditOverlayText } from "./getQuickEditOverlayText";
 import { getVideoClipIsAccountWideUgc } from "./getVideoClipIsAccountWideUgc";
 import { createCompletedRunNotification } from "./createCompletedRunNotification";
+import { getStitchTemplateBatchTextOverlay } from "./stitchTemplates/getStitchTemplateBatchTextOverlay";
 import { defaultAutomationGenerationCount } from "../lib/clipstitchr/constants/defaultAutomationGenerationCount";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
@@ -25,6 +26,7 @@ import { TEXT_OVERLAY_STYLES } from "../lib/clipstitchr/constants/textOverlaySty
 import { getAutomationGenerationCount } from "../lib/clipstitchr/utils/getAutomationGenerationCount";
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
+import { normalizeAutomationStitchrTemplateAllocations } from "../lib/clipstitchr/utils/normalizeAutomationStitchrTemplateAllocations";
 import { resolveAutomationStitchrColor } from "../lib/clipstitchr/utils/resolveAutomationStitchrColor";
 import { resolveAutomationStitchrTextStyleId } from "../lib/clipstitchr/utils/resolveAutomationStitchrTextStyleId";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
@@ -130,7 +132,6 @@ async function markRunSkipped(
   });
 }
 
-
 export const planDaily = mutation({
   args: {
     secret: v.string(),
@@ -193,6 +194,11 @@ export const planDaily = mutation({
     const stitchrGenerationCount = getAutomationGenerationCount(
       preferences?.stitchrGenerationCount ?? defaultAutomationGenerationCount,
     );
+    const stitchrTemplateAllocations =
+      normalizeAutomationStitchrTemplateAllocations(
+        preferences?.stitchrTemplateAllocations,
+        stitchrGenerationCount,
+      );
     const run = await createRun(
       ctx,
       ownerId,
@@ -206,6 +212,7 @@ export const planDaily = mutation({
         stitchrTextColorChoice,
         stitchrTextBackgroundColorChoice,
         stitchrTextStrokeColorChoice,
+        stitchrTemplateAllocations,
       }),
       now,
       productId,
@@ -367,6 +374,29 @@ export const planDaily = mutation({
     });
 
     const taskIds: string[] = [];
+    const allocatedTemplateIds = new Set(
+      stitchrTemplateAllocations.map((allocation) => allocation.templateId),
+    );
+    const stitchTemplates = allocatedTemplateIds.size
+      ? (
+          await ctx.db
+            .query("stitchTemplates")
+            .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+            .collect()
+        ).filter((template) => allocatedTemplateIds.has(template.id))
+      : [];
+    const stitchTemplateById = new Map(
+      stitchTemplates.map((template) => [template.id, template]),
+    );
+    const stitchTemplatePlan = stitchrTemplateAllocations.flatMap(
+      (allocation) => {
+        const template = stitchTemplateById.get(allocation.templateId);
+
+        return template
+          ? Array.from({ length: allocation.count }, () => template)
+          : [];
+      },
+    );
 
     for (const [index, selectedPair] of selectedPairs.entries()) {
       const ugc = ugcClips.find(
@@ -402,29 +432,43 @@ export const planDaily = mutation({
       const product =
         (demo.productId ? productById.get(demo.productId) : undefined) ??
         eligibleProducts[0];
-      const stitchrTextStyleId = resolveAutomationStitchrTextStyleId(
-        stitchrTextStyleChoice,
-        `${ownerId}:${productScopeKey}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}`,
-      );
+      const stitchTemplate = stitchTemplatePlan[index];
+      const templateTextOverlay = stitchTemplate
+        ? getStitchTemplateBatchTextOverlay(stitchTemplate)
+        : undefined;
+      const templateSocialCaption =
+        stitchTemplate?.socialCaption?.trim() || undefined;
+      const stitchrTextStyleId =
+        templateTextOverlay?.styleId ??
+        resolveAutomationStitchrTextStyleId(
+          stitchrTextStyleChoice,
+          `${ownerId}:${productScopeKey}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}`,
+        );
       const stitchrTextStyle = TEXT_OVERLAY_STYLES.find(
         (style) => style.id === stitchrTextStyleId,
       );
-      const stitchrTextColor = resolveAutomationStitchrColor(
-        stitchrTextColorChoice,
-        `${ownerId}:${productScopeKey}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:text`,
-      );
-      const stitchrTextBackgroundColor = stitchrTextStyle?.backgroundColor
-        ? resolveAutomationStitchrColor(
-            stitchrTextBackgroundColorChoice,
-            `${ownerId}:${productScopeKey}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:background`,
-          )
-        : undefined;
-      const stitchrTextStrokeColor = stitchrTextStyle?.strokeColor
-        ? resolveAutomationStitchrColor(
-            stitchrTextStrokeColorChoice,
-            `${ownerId}:${productScopeKey}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:stroke`,
-          )
-        : undefined;
+      const stitchrTextColor =
+        templateTextOverlay?.color ??
+        resolveAutomationStitchrColor(
+          stitchrTextColorChoice,
+          `${ownerId}:${productScopeKey}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:text`,
+        );
+      const stitchrTextBackgroundColor =
+        templateTextOverlay?.backgroundColor ??
+        (stitchrTextStyle?.backgroundColor
+          ? resolveAutomationStitchrColor(
+              stitchrTextBackgroundColorChoice,
+              `${ownerId}:${productScopeKey}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:background`,
+            )
+          : undefined);
+      const stitchrTextStrokeColor =
+        templateTextOverlay?.strokeColor ??
+        (stitchrTextStyle?.strokeColor
+          ? resolveAutomationStitchrColor(
+              stitchrTextStrokeColorChoice,
+              `${ownerId}:${productScopeKey}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:stroke`,
+            )
+          : undefined);
       const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(ugc.quickEdit);
       const demoQuickEdit = createQuickEditSuggestionsFromMetadata(demo.quickEdit);
       const ugcOverlayText = getQuickEditOverlayText({
@@ -496,6 +540,10 @@ export const planDaily = mutation({
           productCreatedAt: product?.createdAt,
           productUpdatedAt: product?.updatedAt,
           selectedScore: selectedPair.score,
+          templateId: stitchTemplate?.id,
+          templateName: stitchTemplate?.name,
+          templateTextOverlay,
+          templateSocialCaption,
           stitchrTextStyleChoice,
           stitchrTextStyleId,
           stitchrTextColorChoice,

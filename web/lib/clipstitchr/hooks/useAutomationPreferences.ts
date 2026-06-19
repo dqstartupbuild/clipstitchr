@@ -15,29 +15,31 @@ import { filterEnabledAutomationTools } from "@/lib/clipstitchr/utils/filterEnab
 import { getAutomationStitchrColorChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { normalizeAutomationSwiprSelectedLibraryPackNames } from "@/lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
+import { normalizeAutomationStitchrTemplateAllocations } from "@/lib/clipstitchr/utils/normalizeAutomationStitchrTemplateAllocations";
 
 function getDefaultPreferences(productId?: string): AutomationPreferencesInput {
   return {
-  enabled: false,
-  enabledTools: automationToolOptions.map((tool) => tool.id),
-  cliprGenerationMode: defaultAutomationCliprGenerationMode,
-  productId,
-  stitchrGenerationCount: defaultAutomationGenerationCount,
-  stitchrTextStyleChoice: defaultAutomationStitchrTextStyleChoice,
-  stitchrTextColorChoice: defaultAutomationStitchrColorChoice,
-  stitchrTextBackgroundColorChoice: defaultAutomationStitchrColorChoice,
-  stitchrTextStrokeColorChoice: defaultAutomationStitchrColorChoice,
-  swiprGenerationCount: defaultAutomationGenerationCount,
-  swiprSelectedLibraryPackNames: [],
-  swiprTextStyleChoice: defaultAutomationStitchrTextStyleChoice,
-  swiprTextColorChoice: defaultAutomationStitchrColorChoice,
-  swiprTextBackgroundColorChoice: defaultAutomationStitchrColorChoice,
-  swiprTextStrokeColorChoice: defaultAutomationStitchrColorChoice,
-  productSelectionMode: productId ? "selected" : "all",
-  selectedProductIds: productId ? [productId] : [],
-  avatarSelectionMode: "all",
-  selectedAvatarIds: [],
-};
+    enabled: false,
+    enabledTools: automationToolOptions.map((tool) => tool.id),
+    cliprGenerationMode: defaultAutomationCliprGenerationMode,
+    productId,
+    stitchrGenerationCount: defaultAutomationGenerationCount,
+    stitchrTextStyleChoice: defaultAutomationStitchrTextStyleChoice,
+    stitchrTextColorChoice: defaultAutomationStitchrColorChoice,
+    stitchrTextBackgroundColorChoice: defaultAutomationStitchrColorChoice,
+    stitchrTextStrokeColorChoice: defaultAutomationStitchrColorChoice,
+    stitchrTemplateAllocations: [],
+    swiprGenerationCount: defaultAutomationGenerationCount,
+    swiprSelectedLibraryPackNames: [],
+    swiprTextStyleChoice: defaultAutomationStitchrTextStyleChoice,
+    swiprTextColorChoice: defaultAutomationStitchrColorChoice,
+    swiprTextBackgroundColorChoice: defaultAutomationStitchrColorChoice,
+    swiprTextStrokeColorChoice: defaultAutomationStitchrColorChoice,
+    productSelectionMode: productId ? "selected" : "all",
+    selectedProductIds: productId ? [productId] : [],
+    avatarSelectionMode: "all",
+    selectedAvatarIds: [],
+  };
 }
 
 export function useAutomationPreferences(productId?: string) {
@@ -77,6 +79,11 @@ export function useAutomationPreferences(productId?: string) {
             stitchrTextStrokeColorChoice: getAutomationStitchrColorChoice(
               preferencesDocument.stitchrTextStrokeColorChoice,
             ),
+            stitchrTemplateAllocations:
+              normalizeAutomationStitchrTemplateAllocations(
+                preferencesDocument.stitchrTemplateAllocations,
+                preferencesDocument.stitchrGenerationCount,
+              ),
             swiprGenerationCount: getAutomationGenerationCount(
               preferencesDocument.swiprGenerationCount,
             ),
@@ -138,6 +145,11 @@ export function useAutomationPreferences(productId?: string) {
           stitchrTextStrokeColorChoice: getAutomationStitchrColorChoice(
             nextPreferences.stitchrTextStrokeColorChoice,
           ),
+          stitchrTemplateAllocations:
+            normalizeAutomationStitchrTemplateAllocations(
+              nextPreferences.stitchrTemplateAllocations,
+              nextPreferences.stitchrGenerationCount,
+            ),
           swiprGenerationCount: getAutomationGenerationCount(
             nextPreferences.swiprGenerationCount,
           ),

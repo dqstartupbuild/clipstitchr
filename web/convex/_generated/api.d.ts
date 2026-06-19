@@ -86,6 +86,7 @@ import type * as sharedMusicTracks from "../sharedMusicTracks.js";
 import type * as stitchTemplates_createFromStitch from "../stitchTemplates/createFromStitch.js";
 import type * as stitchTemplates_createStitchTemplateDocumentFromStitch from "../stitchTemplates/createStitchTemplateDocumentFromStitch.js";
 import type * as stitchTemplates_get from "../stitchTemplates/get.js";
+import type * as stitchTemplates_getStitchTemplateBatchTextOverlay from "../stitchTemplates/getStitchTemplateBatchTextOverlay.js";
 import type * as stitchTemplates_list from "../stitchTemplates/list.js";
 import type * as stitchTemplates_remove from "../stitchTemplates/remove.js";
 import type * as stitchTemplates_updateName from "../stitchTemplates/updateName.js";
@@ -100,6 +101,7 @@ import type * as validators_automationGenerationCount from "../validators/automa
 import type * as validators_automationProvenance from "../validators/automationProvenance.js";
 import type * as validators_automationRunStatus from "../validators/automationRunStatus.js";
 import type * as validators_automationSelectionMode from "../validators/automationSelectionMode.js";
+import type * as validators_automationStitchrTemplateAllocation from "../validators/automationStitchrTemplateAllocation.js";
 import type * as validators_automationStitchrTextStyleChoice from "../validators/automationStitchrTextStyleChoice.js";
 import type * as validators_automationTaskStatus from "../validators/automationTaskStatus.js";
 import type * as validators_automationTaskType from "../validators/automationTaskType.js";
@@ -234,6 +236,7 @@ declare const fullApi: ApiFromModules<{
   "stitchTemplates/createFromStitch": typeof stitchTemplates_createFromStitch;
   "stitchTemplates/createStitchTemplateDocumentFromStitch": typeof stitchTemplates_createStitchTemplateDocumentFromStitch;
   "stitchTemplates/get": typeof stitchTemplates_get;
+  "stitchTemplates/getStitchTemplateBatchTextOverlay": typeof stitchTemplates_getStitchTemplateBatchTextOverlay;
   "stitchTemplates/list": typeof stitchTemplates_list;
   "stitchTemplates/remove": typeof stitchTemplates_remove;
   "stitchTemplates/updateName": typeof stitchTemplates_updateName;
@@ -248,6 +251,7 @@ declare const fullApi: ApiFromModules<{
   "validators/automationProvenance": typeof validators_automationProvenance;
   "validators/automationRunStatus": typeof validators_automationRunStatus;
   "validators/automationSelectionMode": typeof validators_automationSelectionMode;
+  "validators/automationStitchrTemplateAllocation": typeof validators_automationStitchrTemplateAllocation;
   "validators/automationStitchrTextStyleChoice": typeof validators_automationStitchrTextStyleChoice;
   "validators/automationTaskStatus": typeof validators_automationTaskStatus;
   "validators/automationTaskType": typeof validators_automationTaskType;

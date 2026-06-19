@@ -10,10 +10,15 @@ subscription remain shared across the whole account.
   section for the active sidebar product.
 - Each product can enable a different set of daily tools.
 - Stitchr and Swipr can each generate 3, 5, or 10 automatic drafts per product.
+- Tool-specific controls only appear after that tool is selected, and each
+  selected tool keeps its settings behind a `{Tool} Config` button.
 - Stitchr and Swipr each have their own text style, text color, background
   color, and outline color choices.
 - Outline color appears in Settings for outline-capable styles, matching the
   editor controls.
+- Stitchr automation can allocate drafts to saved templates. Any unallocated
+  draft count stays Random, so a 3-draft run can use 2 template-matched drafts
+  and 1 fresh random draft.
 - Swipr automation can use selected saved Pexels packs. If selected packs have
   usable images, the provider worker reuses those saved backgrounds. If no
   selected pack image is available, it falls back to Pexels search.
@@ -41,6 +46,18 @@ The shared count type is `3 | 5 | 10`. The default remains 10.
 - Counts are capped by the existing maximum so new settings cannot exceed the
   current automation limit.
 
+## Stitchr Template Allocation
+
+The Stitchr Config panel lists the user's saved Stitchr templates with small
+minus and plus buttons. Each template count reserves that many automated drafts
+for the template's saved text overlay style and caption. The Random row is the
+remaining count and always keeps the total equal to the selected draft count.
+
+Saved allocations are owner-scoped. The client normalizes duplicate and stale
+template entries before saving, and `automationPreferences.save` verifies that
+every requested template belongs to the signed-in user before persisting the
+settings.
+
 ## Text Styling
 
 The settings UI writes separate fields for Stitchr and Swipr:
@@ -58,12 +75,17 @@ before it creates the final overlay.
 - `web/app/_components/settings/SettingsAutomationPanel.tsx`
 - `web/app/_components/settings/SettingsProductSection.tsx`
 - `web/app/_components/settings/AutomationGenerationCountPicker.tsx`
+- `web/app/_components/settings/AutomationStitchrTemplateAllocationPicker.tsx`
 - `web/app/_components/settings/AutomationSwiprPackPicker.tsx`
+- `web/app/_components/settings/AutomationToolConfigDisclosure.tsx`
 - `web/app/dashboard/settings/SettingsPageClient.tsx`
 - `web/lib/clipstitchr/hooks/useAutomationPreferences.ts`
 - `web/lib/clipstitchr/types/AutomationPreferencesInput.ts`
 - `web/lib/clipstitchr/types/AutomationGenerationCount.ts`
+- `web/lib/clipstitchr/types/AutomationStitchrTemplateAllocation.ts`
+- `web/lib/clipstitchr/utils/normalizeAutomationStitchrTemplateAllocations.ts`
 - `web/convex/automationPreferences.ts`
+- `web/convex/validators/automationStitchrTemplateAllocation.ts`
 - `web/convex/automationPlannerCandidates.ts`
 - `web/convex/automationScheduler.ts`
 - `web/convex/automationStitchr.ts`

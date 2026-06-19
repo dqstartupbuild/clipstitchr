@@ -9,12 +9,14 @@ import { getAutomationGenerationCount } from "../lib/clipstitchr/utils/getAutoma
 import { getAutomationCliprGenerationMode } from "../lib/clipstitchr/utils/getAutomationCliprGenerationMode";
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
+import { normalizeAutomationStitchrTemplateAllocations } from "../lib/clipstitchr/utils/normalizeAutomationStitchrTemplateAllocations";
 import { normalizeAutomationSwiprSelectedLibraryPackNames } from "../lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
 import { assertProductBelongsToOwner } from "./assertProductBelongsToOwner";
 import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForProduct";
 import { rateLimiter } from "./rateLimiter";
 import { automationGenerationCountValidator } from "./validators/automationGenerationCount";
 import { automationSelectionModeValidator } from "./validators/automationSelectionMode";
+import { automationStitchrTemplateAllocationValidator } from "./validators/automationStitchrTemplateAllocation";
 import { automationStitchrTextStyleChoiceValidator } from "./validators/automationStitchrTextStyleChoice";
 import { automationToolValidator } from "./validators/automationTool";
 import { automationCliprGenerationModeValidator } from "./validators/automationCliprGenerationMode";
@@ -62,6 +64,11 @@ export const get = query({
           stitchrTextStrokeColorChoice: getAutomationStitchrColorChoice(
             preferences.stitchrTextStrokeColorChoice,
           ),
+          stitchrTemplateAllocations:
+            normalizeAutomationStitchrTemplateAllocations(
+              preferences.stitchrTemplateAllocations,
+              preferences.stitchrGenerationCount,
+            ),
           swiprGenerationCount: getAutomationGenerationCount(
             preferences.swiprGenerationCount,
           ),
@@ -99,6 +106,9 @@ export const save = mutation({
     stitchrTextColorChoice: v.optional(v.string()),
     stitchrTextBackgroundColorChoice: v.optional(v.string()),
     stitchrTextStrokeColorChoice: v.optional(v.string()),
+    stitchrTemplateAllocations: v.optional(
+      v.array(automationStitchrTemplateAllocationValidator),
+    ),
     swiprGenerationCount: v.optional(automationGenerationCountValidator),
     swiprSelectedLibraryPackNames: v.optional(v.array(v.string())),
     swiprTextStyleChoice: v.optional(automationStitchrTextStyleChoiceValidator),
@@ -142,6 +152,39 @@ export const save = mutation({
     const productIds = Array.from(new Set(args.selectedProductIds));
     const avatarIds = Array.from(new Set(args.selectedAvatarIds));
     const selectedProductIds = args.productId ? [args.productId] : productIds;
+    const stitchrGenerationCount = getAutomationGenerationCount(
+      args.stitchrGenerationCount ?? defaultAutomationGenerationCount,
+    );
+    const requestedStitchrTemplateAllocations =
+      normalizeAutomationStitchrTemplateAllocations(
+        args.stitchrTemplateAllocations,
+        stitchrGenerationCount,
+      );
+    const requestedTemplateIds = new Set(
+      requestedStitchrTemplateAllocations.map(
+        (allocation) => allocation.templateId,
+      ),
+    );
+    const ownedStitchTemplateIds = requestedTemplateIds.size
+      ? new Set(
+          (
+            await ctx.db
+              .query("stitchTemplates")
+              .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+              .collect()
+          ).map((template) => template.id),
+        )
+      : undefined;
+
+    if (
+      ownedStitchTemplateIds &&
+      [...requestedTemplateIds].some(
+        (templateId) => !ownedStitchTemplateIds.has(templateId),
+      )
+    ) {
+      throw new Error("Choose templates from your account.");
+    }
+
     const preferences = {
       ownerId,
       productId: args.productId,
@@ -150,9 +193,7 @@ export const save = mutation({
       cliprGenerationMode: getAutomationCliprGenerationMode(
         args.cliprGenerationMode,
       ),
-      stitchrGenerationCount: getAutomationGenerationCount(
-        args.stitchrGenerationCount ?? defaultAutomationGenerationCount,
-      ),
+      stitchrGenerationCount,
       stitchrTextStyleChoice:
         args.stitchrTextStyleChoice ?? defaultAutomationStitchrTextStyleChoice,
       stitchrTextColorChoice: getAutomationStitchrColorChoice(
@@ -165,6 +206,12 @@ export const save = mutation({
       stitchrTextStrokeColorChoice: getAutomationStitchrColorChoice(
         args.stitchrTextStrokeColorChoice ?? defaultAutomationStitchrColorChoice,
       ),
+      stitchrTemplateAllocations:
+        normalizeAutomationStitchrTemplateAllocations(
+          requestedStitchrTemplateAllocations,
+          stitchrGenerationCount,
+          ownedStitchTemplateIds,
+        ),
       swiprGenerationCount: getAutomationGenerationCount(
         args.swiprGenerationCount ?? defaultAutomationGenerationCount,
       ),

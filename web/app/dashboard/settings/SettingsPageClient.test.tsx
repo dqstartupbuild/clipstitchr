@@ -74,6 +74,13 @@ vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({
   }),
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useStitchTemplates", () => ({
+  useStitchTemplates: () => ({
+    isLoading: false,
+    templates: [],
+  }),
+}));
+
 vi.mock("@/app/_components/dashboard/DashboardShell", () => ({
   DashboardShell: ({ children }: { children: React.ReactNode }) => (
     <main>{children}</main>
@@ -127,6 +134,7 @@ function createAutomationState(
       stitchrTextColorChoice: "any",
       stitchrTextBackgroundColorChoice: "any",
       stitchrTextStrokeColorChoice: "any",
+      stitchrTemplateAllocations: [],
       swiprGenerationCount: 10,
       swiprSelectedLibraryPackNames: [],
       swiprTextStyleChoice: "any",

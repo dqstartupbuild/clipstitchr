@@ -14,6 +14,7 @@ import { themeModeChangeEventName } from "@/lib/clipstitchr/theme/themeModeChang
 import { themeModeStorageKey } from "@/lib/clipstitchr/theme/themeModeStorageKey";
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { StitchTemplate } from "@/lib/clipstitchr/types/StitchTemplate";
 
 const mocks = vi.hoisted(() => ({
   confirm: vi.fn(),
@@ -104,6 +105,7 @@ function createAutomationPreferences(
     stitchrTextColorChoice: "any",
     stitchrTextBackgroundColorChoice: "any",
     stitchrTextStrokeColorChoice: "any",
+    stitchrTemplateAllocations: [],
     swiprGenerationCount: 10,
     swiprSelectedLibraryPackNames: [],
     swiprTextStyleChoice: "any",
@@ -114,6 +116,29 @@ function createAutomationPreferences(
     selectedProductIds: [],
     avatarSelectionMode: "all",
     selectedAvatarIds: [],
+    ...overrides,
+  };
+}
+
+function createStitchTemplate(
+  overrides: Partial<StitchTemplate> = {},
+): StitchTemplate {
+  return {
+    createdAt: "2026-05-20T00:00:00.000Z",
+    demoClipId: "demo_1",
+    demoClipName: "Demo",
+    duration: 12,
+    height: 1920,
+    id: "template_1",
+    mode: "normal",
+    name: "Winning hook",
+    sourceStitchId: "stitch_1",
+    sourceStitchName: "Source stitch",
+    textOverlays: [],
+    ugcClipId: "ugc_1",
+    ugcClipName: "UGC",
+    updatedAt: "2026-05-20T00:00:00.000Z",
+    width: 1080,
     ...overrides,
   };
 }
@@ -155,6 +180,7 @@ describe("settings components", () => {
           isProductActionDisabled={false}
           products={[]}
           savingProductId={null}
+          stitchTemplates={[]}
           swiprPacks={[]}
           onDeleteProduct={async () => undefined}
           onSaveAutomation={async () => undefined}
@@ -180,11 +206,9 @@ describe("settings components", () => {
 
     expect(emptyMarkup).toContain("Color mode");
     expect(emptyMarkup).toContain("Daily drafts");
-    expect(emptyMarkup).toContain("Stitchr drafts");
-    expect(emptyMarkup).toContain("Swipr drafts");
-    expect(emptyMarkup).toContain("Text color");
-    expect(emptyMarkup).toContain("Background color");
-    expect(emptyMarkup).toContain("Outline color");
+    expect(emptyMarkup).toContain("Clipr Config");
+    expect(emptyMarkup).toContain("Stitchr Config");
+    expect(emptyMarkup).toContain("Swipr Config");
     expect(emptyMarkup).toContain("Swipr");
     expect(emptyMarkup).toContain("Product settings");
     expect(emptyMarkup).toContain("Account settings");
@@ -216,6 +240,7 @@ describe("settings components", () => {
       isLoading: false,
       isSaving: false,
       preferences,
+      stitchTemplates: [createStitchTemplate()],
       swiprPacks: [],
       onSave,
     });
@@ -241,11 +266,20 @@ describe("settings components", () => {
         typeof element.type === "function" &&
         element.type.name === "AutomationStitchrColorChoicePicker",
     );
+    const [templatePicker] = findElements(
+      tree,
+      (element) =>
+        typeof element.type === "function" &&
+        element.type.name === "AutomationStitchrTemplateAllocationPicker",
+    );
 
     (enableButton.props.onClick as () => void)();
     (stitchrCheckbox.props.onChange as () => void)();
     (stylePicker.props.onChange as (value: "hook") => void)("hook");
     (colorPickers[0].props.onChange as (value: "#fde047") => void)("#fde047");
+    (templatePicker.props.onChange as (value: unknown) => void)([
+      { templateId: "template_1", count: 2 },
+    ]);
 
     expect(onSave).not.toHaveBeenCalled();
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(
@@ -270,6 +304,13 @@ describe("settings components", () => {
         }),
       }),
     );
+    expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(
+      expect.objectContaining({
+        preferences: expect.objectContaining({
+          stitchrTemplateAllocations: [{ templateId: "template_1", count: 2 }],
+        }),
+      }),
+    );
   });
 
   it("saves automation drafts from the Save button", async () => {
@@ -290,6 +331,7 @@ describe("settings components", () => {
       isLoading: false,
       isSaving: false,
       preferences,
+      stitchTemplates: [],
       swiprPacks: [],
       onSave,
     });

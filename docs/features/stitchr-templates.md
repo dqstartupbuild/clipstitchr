@@ -37,6 +37,12 @@ daily batch without loading the template clips into the manual editor. Batch
 drafts still pick fresh UGC/Demo pairs, but each queued draft uses the selected
 template's first non-empty text overlay style and saved caption copy.
 
+In automation settings, templates are allocated by count instead of by one
+single selection. The Stitchr Config panel shows each template with minus and
+plus buttons, plus a Random remainder row. The template counts and Random count
+always add up to the selected automation draft count, letting a user repeat a
+winning format while leaving the rest of the run fresh.
+
 The Library **Templates** tab opens at `/dashboard/library?tab=templates`,
 where users can see templates, rename them, delete them, and send one back into
 Stitchr.
@@ -72,7 +78,9 @@ sections. The picker is `StitchTemplatePicker`, rendered on
 selected template ID through `generateStitchrBatch` and
 `POST /api/stitchr/batch/generate`, then `stitchrBatch.plan` copies the
 template overlay and caption into the queued task snapshots. Template
-management lives in the Library Templates tab through
+automation allocations are saved on `automationPreferences` and used by
+`automationStitchr.planDaily` when it builds daily draft task snapshots.
+Template management lives in the Library Templates tab through
 `web/app/_components/library/TemplateLibraryTabSection.tsx`, rendered by
 `web/app/dashboard/library/LibraryPageClient.tsx`.
 
