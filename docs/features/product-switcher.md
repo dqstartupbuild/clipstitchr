@@ -10,8 +10,11 @@ Stitchr, Clipr, Swipr, and Swapr.
   products globally.
 - The same switcher can create a new product. New products become active right
   away.
-- Settings stays account-focused for appearance, support, subscription, and
-  automation. Product creation no longer lives on the Settings page.
+- Settings has a Product settings section for editing saved products and
+  product automation, followed by an Account settings section for appearance,
+  support, and subscription.
+- Product creation stays in the sidebar switcher. Existing products can be
+  edited from Settings.
 - Automation settings are saved for the active product, so each product can run
   its own daily tools and draft counts.
 - Uploaded UGC, demo clips, generated Clipr clips, generated Swapr clips,
@@ -34,6 +37,14 @@ Stitchr, Clipr, Swipr, and Swapr.
   sidebar switcher and product creation entry point.
 - `web/app/_components/products/ProductCreateDialog.tsx` is the shared product
   creation dialog.
+- `web/app/dashboard/settings/SettingsPageClient.tsx` renders product settings
+  above account settings.
+- `web/app/_components/settings/SettingsProductSection.tsx` groups product
+  editing and product automation.
+- `web/app/_components/settings/SettingsAccountSection.tsx` groups shared
+  account preferences.
+- `web/app/_components/settings/ProductSettingsList.tsx` shows saved products
+  and keeps edit, make active, details, and delete actions available.
 - `web/convex/products.ts` creates products, reports setup state, and assigns
   legacy content to the primary product.
 - `web/convex/assignLegacyRecordsToProduct.ts` patches old records that do not
@@ -52,7 +63,12 @@ Stitchr, Clipr, Swipr, and Swapr.
 
 - `web/app/_components/dashboard/DashboardProductSwitcher.tsx`
 - `web/app/_components/products/ProductCreateDialog.tsx`
+- `web/app/_components/settings/SettingsProductSection.tsx`
+- `web/app/_components/settings/SettingsAccountSection.tsx`
+- `web/app/_components/settings/ProductSettingsList.tsx`
+- `web/app/_components/settings/ProductSettingsCard.tsx`
 - `web/app/dashboard/DashboardProductProvider.tsx`
+- `web/app/dashboard/settings/SettingsPageClient.tsx`
 - `web/lib/clipstitchr/context/DashboardProductContext.ts`
 - `web/lib/clipstitchr/hooks/useDashboardProduct.ts`
 - `web/lib/clipstitchr/types/DashboardProductContextValue.ts`

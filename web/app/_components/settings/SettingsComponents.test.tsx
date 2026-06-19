@@ -5,11 +5,10 @@ import { ProductHookStyleSelect } from "@/app/_components/settings/ProductHookSt
 import { ProductSettingsCard } from "@/app/_components/settings/ProductSettingsCard";
 import { ProductSettingsForm } from "@/app/_components/settings/ProductSettingsForm";
 import { ProductSettingsList } from "@/app/_components/settings/ProductSettingsList";
-import { SettingsAppearancePanel } from "@/app/_components/settings/SettingsAppearancePanel";
+import { SettingsAccountSection } from "@/app/_components/settings/SettingsAccountSection";
 import { AutomationCliprModePicker } from "@/app/_components/settings/AutomationCliprModePicker";
 import { SettingsAutomationPanel } from "@/app/_components/settings/SettingsAutomationPanel";
-import { SettingsSubscriptionPanel } from "@/app/_components/settings/SettingsSubscriptionPanel";
-import { SettingsSupportPanel } from "@/app/_components/settings/SettingsSupportPanel";
+import { SettingsProductSection } from "@/app/_components/settings/SettingsProductSection";
 import { ThemeModeSelect } from "@/app/_components/settings/ThemeModeSelect";
 import { themeModeChangeEventName } from "@/lib/clipstitchr/theme/themeModeChangeEventName";
 import { themeModeStorageKey } from "@/lib/clipstitchr/theme/themeModeStorageKey";
@@ -144,28 +143,25 @@ describe("settings components", () => {
   it("renders support, subscription, and product list states", () => {
     const emptyMarkup = renderToStaticMarkup(
       <>
-        <SettingsAppearancePanel />
-        <SettingsAutomationPanel
-          error={null}
-          isLoading={false}
-          isSaving={false}
-          preferences={createAutomationPreferences()}
-          swiprPacks={[]}
-          onSave={async () => undefined}
-        />
-        <SettingsSupportPanel />
-        <SettingsSubscriptionPanel />
-        <ProductSettingsList
-          products={[]}
-          defaultProductId={undefined}
+        <SettingsProductSection
+          activeProductId={undefined}
+          activeProductName={undefined}
+          automationError={null}
+          automationPreferences={createAutomationPreferences()}
           defaultingProductId={null}
           deletingProductId={null}
-          isActionDisabled={false}
+          isAutomationLoading={false}
+          isAutomationSaving={false}
+          isProductActionDisabled={false}
+          products={[]}
           savingProductId={null}
-          onDelete={async () => undefined}
-          onSetDefault={async () => undefined}
-          onUpdate={async () => undefined}
+          swiprPacks={[]}
+          onDeleteProduct={async () => undefined}
+          onSaveAutomation={async () => undefined}
+          onSetActiveProduct={async () => undefined}
+          onUpdateProduct={async () => undefined}
         />
+        <SettingsAccountSection />
       </>,
     );
     const populatedMarkup = renderToStaticMarkup(
@@ -190,11 +186,13 @@ describe("settings components", () => {
     expect(emptyMarkup).toContain("Background color");
     expect(emptyMarkup).toContain("Outline color");
     expect(emptyMarkup).toContain("Swipr");
+    expect(emptyMarkup).toContain("Product settings");
+    expect(emptyMarkup).toContain("Account settings");
     expect(emptyMarkup).toContain("Contact support");
     expect(emptyMarkup).toContain("Coming soon");
-    expect(emptyMarkup).toContain("Saved products will appear");
+    expect(emptyMarkup).toContain("Use the product switcher");
     expect(populatedMarkup).toContain("Launch Kit");
-    expect(populatedMarkup).toContain("Default product");
+    expect(populatedMarkup).toContain("Active product");
   });
 
   it("shows Any in the Clipr automation mode picker", () => {

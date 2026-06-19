@@ -3,17 +3,17 @@
 import { useMemo } from "react";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
-import { SettingsAppearancePanel } from "@/app/_components/settings/SettingsAppearancePanel";
-import { SettingsAutomationPanel } from "@/app/_components/settings/SettingsAutomationPanel";
-import { SettingsSubscriptionPanel } from "@/app/_components/settings/SettingsSubscriptionPanel";
-import { SettingsSupportPanel } from "@/app/_components/settings/SettingsSupportPanel";
+import { SettingsAccountSection } from "@/app/_components/settings/SettingsAccountSection";
+import { SettingsProductSection } from "@/app/_components/settings/SettingsProductSection";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { useAutomationPreferences } from "@/lib/clipstitchr/hooks/useAutomationPreferences";
+import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import { getSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getSwiprLibraryPacks";
 
 export function SettingsPageClient() {
   const { activeProduct } = useDashboardProduct();
+  const products = useProducts();
   const swiprLibrary = useSwiprLibrary();
   const automation = useAutomationPreferences(activeProduct?.id);
   const swiprPacks = useMemo(
@@ -27,23 +27,28 @@ export function SettingsPageClient() {
         <DashboardPageHeader
           eyebrow="Workspace"
           title="Settings"
-          description="Manage account preferences and automation."
+          description="Edit product details, automation, and account preferences."
           actions={null}
         />
-        <SettingsAppearancePanel />
-        <SettingsAutomationPanel
-          error={automation.error}
-          isLoading={automation.isLoading}
-          isSaving={automation.isSaving}
-          productName={activeProduct?.name}
-          preferences={automation.preferences}
+        <SettingsProductSection
+          activeProductId={products.defaultProductId}
+          activeProductName={activeProduct?.name}
+          automationError={automation.error}
+          automationPreferences={automation.preferences}
+          defaultingProductId={products.defaultingProductId}
+          deletingProductId={products.deletingProductId}
+          isAutomationLoading={automation.isLoading}
+          isAutomationSaving={automation.isSaving}
+          isProductActionDisabled={products.isSaving}
+          products={products.products}
+          savingProductId={products.savingProductId}
           swiprPacks={swiprPacks}
-          onSave={automation.savePreferences}
+          onDeleteProduct={products.deleteProduct}
+          onSaveAutomation={automation.savePreferences}
+          onSetActiveProduct={products.setDefaultProduct}
+          onUpdateProduct={products.updateProduct}
         />
-        <div className="grid gap-4 md:grid-cols-2">
-          <SettingsSupportPanel />
-          <SettingsSubscriptionPanel />
-        </div>
+        <SettingsAccountSection />
       </div>
     </DashboardShell>
   );

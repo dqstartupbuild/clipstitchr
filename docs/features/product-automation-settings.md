@@ -6,8 +6,8 @@ subscription remain shared across the whole account.
 
 ## What It Does
 
-- Settings reads and saves automation preferences for the active sidebar
-  product.
+- Settings reads and saves automation preferences in the Product settings
+  section for the active sidebar product.
 - Each product can enable a different set of daily tools.
 - Stitchr and Swipr can each generate 3, 5, or 10 automatic drafts per product.
 - Stitchr and Swipr each have their own text style, text color, background
@@ -52,6 +52,7 @@ before it creates the final overlay.
 ## File Tree
 
 - `web/app/_components/settings/SettingsAutomationPanel.tsx`
+- `web/app/_components/settings/SettingsProductSection.tsx`
 - `web/app/_components/settings/AutomationGenerationCountPicker.tsx`
 - `web/app/_components/settings/AutomationSwiprPackPicker.tsx`
 - `web/app/dashboard/settings/SettingsPageClient.tsx`

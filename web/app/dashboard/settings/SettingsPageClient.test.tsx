@@ -156,7 +156,10 @@ describe("SettingsPageClient", () => {
     const markup = renderToStaticMarkup(<SettingsPageClient />);
 
     expect(markup).toContain("Settings");
+    expect(markup).toContain("Product settings");
+    expect(markup).toContain("Edit saved products");
     expect(markup).toContain("Color mode");
+    expect(markup).toContain("Account settings");
     expect(markup).toContain("Daily drafts");
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Contact support");

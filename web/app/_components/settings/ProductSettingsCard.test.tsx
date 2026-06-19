@@ -65,7 +65,7 @@ describe("ProductSettingsCard", () => {
     expect(markup).toContain("Hook style:");
 
     await mocks.iconButtons
-      .find((button) => button.label === "Set Launch Kit as default product")
+      .find((button) => button.label === "Make Launch Kit active")
       ?.onClick?.();
     await mocks.iconButtons
       .find((button) => button.label === "Delete product")
@@ -98,8 +98,8 @@ describe("ProductSettingsCard", () => {
     );
 
     expect(markup).toContain("Saved product");
-    expect(markup).toContain("Default product");
-    expect(markup).toContain("Launch Kit is the default product");
+    expect(markup).toContain("Active product");
+    expect(markup).toContain("Launch Kit is active");
     expect(markup).toContain("Deleting product");
   });
 });

@@ -86,7 +86,7 @@ export function ProductSettingsCard({
             </span>
             {isDefault ? (
               <span className="mt-1 block text-xs font-bold text-accent-dark">
-                Default product
+                Active product
               </span>
             ) : null}
           </button>
@@ -97,10 +97,10 @@ export function ProductSettingsCard({
             <IconButton
               label={
                 isDefault
-                  ? `${product.name} is the default product`
+                  ? `${product.name} is active`
                   : isDefaulting
-                    ? "Setting default product"
-                    : `Set ${product.name} as default product`
+                    ? "Making product active"
+                    : `Make ${product.name} active`
               }
               icon={
                 <Star

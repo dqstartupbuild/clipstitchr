@@ -34,10 +34,10 @@ export function ProductSettingsList({
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-accent-dark">
-            Saved products
+            Products
           </p>
           <h2 className="mt-1 text-lg font-bold text-text-primary">
-            Your Products
+            Edit saved products
           </h2>
         </div>
         <span className="text-sm font-semibold text-text-tertiary">
@@ -63,7 +63,8 @@ export function ProductSettingsList({
         </div>
       ) : (
         <p className="mt-4 text-sm leading-6 text-text-secondary">
-          Saved products will appear in Swipr as carousel background context.
+          Use the product switcher in the sidebar to add one, then edit it
+          here.
         </p>
       )}
     </Panel>
