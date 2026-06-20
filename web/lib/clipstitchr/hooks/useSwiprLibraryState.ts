@@ -629,8 +629,12 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
         backgroundBlobCacheRef.current.clear();
         backgroundDownloadPromisesRef.current.clear();
         swipePosterBlobCacheRef.current.clear();
-        setBackgroundBlobsById(new Map());
-        setBackgrounds([]);
+        setBackgroundBlobsById((currentBlobsById) =>
+          currentBlobsById.size ? new Map() : currentBlobsById,
+        );
+        setBackgrounds((currentBackgrounds) =>
+          currentBackgrounds.length ? [] : currentBackgrounds,
+        );
       });
       return;
     }
@@ -641,8 +645,12 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
           backgroundBlobCacheRef.current.clear();
           backgroundDownloadPromisesRef.current.clear();
           swipePosterBlobCacheRef.current.clear();
-          setBackgroundBlobsById(new Map());
-          setBackgrounds([]);
+          setBackgroundBlobsById((currentBlobsById) =>
+            currentBlobsById.size ? new Map() : currentBlobsById,
+          );
+          setBackgrounds((currentBackgrounds) =>
+            currentBackgrounds.length ? [] : currentBackgrounds,
+          );
         });
       }
 

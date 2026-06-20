@@ -753,7 +753,20 @@ describe("useSwiprLibraryState", () => {
     useSwiprLibraryState();
     await Promise.resolve();
 
-    expect(mocks.useStateSetter).toHaveBeenCalledWith([]);
+    const functionalSetters = mocks.useStateSetter.mock.calls
+      .map(([nextValue]) => nextValue)
+      .filter(
+        (nextValue): nextValue is (currentValue: unknown) => unknown =>
+          typeof nextValue === "function",
+      );
+
+    expect(
+      functionalSetters.some((setter) => {
+        const result = setter(["cached background"]);
+
+        return Array.isArray(result) && result.length === 0;
+      }),
+    ).toBe(true);
   });
 
   it("skips background hydration after the effect cleanup runs", async () => {
