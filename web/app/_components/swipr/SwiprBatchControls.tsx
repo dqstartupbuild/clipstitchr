@@ -18,7 +18,7 @@ export function SwiprBatchControls({
   return (
     <section className="flex flex-wrap items-center gap-2">
       <p className="text-sm font-semibold text-text-secondary">
-        Creates {SWIPR_BATCH_DRAFT_COUNT} draft Swipes.
+        Creates {SWIPR_BATCH_DRAFT_COUNT} Swipes in batch.
       </p>
       <Button
         type="button"

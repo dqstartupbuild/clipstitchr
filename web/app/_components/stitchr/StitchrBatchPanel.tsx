@@ -31,11 +31,10 @@ export function StitchrBatchPanel({
         <div className="min-w-0">
           <p className="text-sm font-semibold text-accent-dark">Stitchr</p>
           <h2 className="mt-0.5 text-base font-bold text-text-primary">
-            Generate today&apos;s stitch batch
+            Generate stitches in batch
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-text-secondary">
-            Creates up to {dailyLimit} fresh Stitch drafts from your UGC and
-            Demo clips, using recent pair history to avoid repeats.
+            Creates up to {dailyLimit} fresh Stitches from your UGC and Demo clips.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
