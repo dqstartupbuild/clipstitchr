@@ -23,8 +23,6 @@ import type {
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import { createId } from "@/lib/clipstitchr/utils/createId";
-import { getSwiprLibraryBackgroundsByPackName } from "@/lib/clipstitchr/utils/getSwiprLibraryBackgroundsByPackName";
-import { normalizeSwiprLibraryQueryKey } from "@/lib/clipstitchr/utils/normalizeSwiprLibraryQueryKey";
 
 export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   const pathname = usePathname() ?? "";
@@ -78,12 +76,6 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   );
   const removeLibraryPackFromAccountMutation = useMutation(
     api.swiprBackgrounds.removeLibraryPackFromAccount,
-  );
-  const removeLibraryPackMutation = useMutation(
-    api.swiprBackgrounds.removeLibraryPack,
-  );
-  const renameLibraryPackMutation = useMutation(
-    api.swiprBackgrounds.renameLibraryPack,
   );
   const saveSwipeMutation = useMutation(api.swipes.save);
   const updateSwipePostedStatusMutation = useMutation(
@@ -358,11 +350,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
       try {
         await removeBackgroundFromLibraryPackMutation({ id });
         setBackgrounds((currentBackgrounds) =>
-          currentBackgrounds.map((background) =>
-            background.id === id
-              ? { ...background, libraryQuery: undefined }
-              : background,
-          ),
+          currentBackgrounds.filter((background) => background.id !== id),
         );
         await refresh();
       } catch (nextError) {
@@ -421,95 +409,11 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     [refresh, removeLibraryPackFromAccountMutation],
   );
 
-  const renameLibraryPack = useCallback(
-    async (fromLibraryQuery: string, toLibraryQuery: string) => {
-      setError(null);
-
-      try {
-        const result = await renameLibraryPackMutation({
-          fromLibraryQuery,
-          toLibraryQuery,
-        });
-        const fromLibraryQueryKey =
-          normalizeSwiprLibraryQueryKey(fromLibraryQuery);
-
-        setBackgrounds((currentBackgrounds) =>
-          currentBackgrounds.map((background) =>
-            background.source === "pexels" &&
-            normalizeSwiprLibraryQueryKey(background.libraryQuery) ===
-              fromLibraryQueryKey
-              ? { ...background, libraryQuery: result.libraryQuery }
-              : background,
-          ),
-        );
-        await refresh();
-
-        return result;
-      } catch (nextError) {
-        setError(
-          nextError instanceof Error
-            ? nextError.message
-            : "Unable to rename this pack.",
-        );
-        throw nextError;
-      }
-    },
-    [refresh, renameLibraryPackMutation],
-  );
-
   const removeLibraryPack = useCallback(
     async (libraryQuery: string) => {
-      setError(null);
-
-      try {
-        const packBackgrounds = getSwiprLibraryBackgroundsByPackName(
-          backgrounds,
-          libraryQuery,
-        ).filter((background) => background.isOwnedByCurrentUser !== false);
-
-        if (packBackgrounds.length) {
-          await deleteObjectsFromR2(
-            packBackgrounds.map((background) => background.imageObject),
-          );
-        }
-
-        const result = await removeLibraryPackMutation({ libraryQuery });
-        const removedIds = new Set(
-          packBackgrounds.map((background) => background.id),
-        );
-
-        for (const background of packBackgrounds) {
-          backgroundBlobCacheRef.current.delete(background.id);
-          backgroundDownloadPromisesRef.current.delete(background.id);
-        }
-        setBackgroundBlobsById((currentBlobsById) => {
-          const nextBlobsById = new Map(currentBlobsById);
-
-          for (const background of packBackgrounds) {
-            nextBlobsById.delete(background.id);
-          }
-
-          return nextBlobsById;
-        });
-
-        setBackgrounds((currentBackgrounds) =>
-          currentBackgrounds.filter(
-            (background) => !removedIds.has(background.id),
-          ),
-        );
-        await refresh();
-
-        return result.count;
-      } catch (nextError) {
-        setError(
-          nextError instanceof Error
-            ? nextError.message
-            : "Unable to delete this pack.",
-        );
-        throw nextError;
-      }
+      return await removeLibraryPackFromAccount(libraryQuery);
     },
-    [backgrounds, refresh, removeLibraryPackMutation],
+    [removeLibraryPackFromAccount],
   );
 
   const saveSwipe = useCallback(
@@ -709,7 +613,6 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     removeLibraryPackFromAccount,
     removeBackgroundFromLibraryPack,
     removeLibraryPack,
-    renameLibraryPack,
     saveBackground,
     saveSwipe,
     updateSwipePostedStatus,

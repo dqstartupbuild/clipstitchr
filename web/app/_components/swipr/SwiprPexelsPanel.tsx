@@ -1,9 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { Download, Search } from "lucide-react";
 import { PexelsPhotoCard } from "@/app/_components/swipr/PexelsPhotoCard";
-import { SwiprLibraryPackEditor } from "@/app/_components/swipr/SwiprLibraryPackEditor";
 import { SwiprLibraryPackPicker } from "@/app/_components/swipr/SwiprLibraryPackPicker";
 import { SwiprLibraryPhotoCard } from "@/app/_components/swipr/SwiprLibraryPhotoCard";
 import { Button } from "@/app/_components/ui/Button";
@@ -13,33 +11,25 @@ import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgrou
 import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
 
 type SwiprPexelsPanelProps = {
-  allLibraryBackgrounds: SwiprBackgroundAsset[];
   error: string | null;
   isLoadingMore: boolean;
   isImportingLibrary: boolean;
   isSaving: boolean;
   isSearching: boolean;
-  isUpdatingLibraryPack: boolean;
   libraryBackgrounds: SwiprBackgroundAsset[];
   libraryPacks: SwiprLibraryPack[];
   photos: PexelsPhotoResult[];
   query: string;
   selectedLibraryQueries: string[];
-  allowLibraryPackEditing?: boolean;
   showImportControls: boolean;
   showLibraryPacks: boolean;
   showSavedLibraryPhotos: boolean;
   showSearch?: boolean;
   hasMorePhotos: boolean;
-  onDeleteLibraryPack: (packName: string) => Promise<void>;
   onImportQuery: () => void;
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onLoadMore: () => void;
   onQueryChange: (query: string) => void;
-  onRemoveLibraryPhotoFromPack: (
-    background: SwiprBackgroundAsset,
-  ) => Promise<void>;
-  onRenameLibraryPack: (fromName: string, toName: string) => Promise<string>;
   onSearch: () => void;
   onSelectSavedBackground?: (background: SwiprBackgroundAsset) => void;
   onSelectPhoto?: (photo: PexelsPhotoResult) => void;
@@ -47,42 +37,30 @@ type SwiprPexelsPanelProps = {
 };
 
 export function SwiprPexelsPanel({
-  allLibraryBackgrounds,
   error,
   isLoadingMore,
   isImportingLibrary,
   isSaving,
   isSearching,
-  isUpdatingLibraryPack,
   libraryBackgrounds,
   libraryPacks,
   photos,
   query,
   selectedLibraryQueries,
-  allowLibraryPackEditing = true,
   showImportControls,
   showLibraryPacks,
   showSavedLibraryPhotos,
   showSearch = true,
   hasMorePhotos,
-  onDeleteLibraryPack,
   onImportQuery,
   onLoadBackgroundBlob,
   onLoadMore,
   onQueryChange,
-  onRemoveLibraryPhotoFromPack,
-  onRenameLibraryPack,
   onSearch,
   onSelectSavedBackground,
   onSelectPhoto,
   onSelectedLibraryQueriesChange,
 }: SwiprPexelsPanelProps) {
-  const [editingPackName, setEditingPackName] = useState<string | null>(null);
-  const editingPack = useMemo(
-    () => libraryPacks.find((pack) => pack.name === editingPackName) ?? null,
-    [editingPackName, libraryPacks],
-  );
-
   return (
     <section className="min-w-0 border-t border-border pt-4">
       <div className="mb-3 flex items-center gap-3">
@@ -173,32 +151,7 @@ export function SwiprPexelsPanel({
           <SwiprLibraryPackPicker
             packs={libraryPacks}
             selectedPackNames={selectedLibraryQueries}
-            onEditPack={
-              allowLibraryPackEditing ? setEditingPackName : undefined
-            }
             onSelectedPackNamesChange={onSelectedLibraryQueriesChange}
-          />
-        ) : null}
-        {showLibraryPacks && allowLibraryPackEditing && editingPack ? (
-          <SwiprLibraryPackEditor
-            key={editingPack.name}
-            backgrounds={allLibraryBackgrounds}
-            isSaving={isUpdatingLibraryPack}
-            pack={editingPack}
-            onDeletePack={(packName) =>
-              onDeleteLibraryPack(packName).then(() => {
-                setEditingPackName(null);
-              })
-            }
-            onLoadBackgroundBlob={onLoadBackgroundBlob}
-            onRemovePhoto={onRemoveLibraryPhotoFromPack}
-            onRenamePack={(fromName, toName) =>
-              onRenameLibraryPack(fromName, toName).then((nextName) => {
-                setEditingPackName(nextName);
-
-                return nextName;
-              })
-            }
           />
         ) : null}
         {showSavedLibraryPhotos &&

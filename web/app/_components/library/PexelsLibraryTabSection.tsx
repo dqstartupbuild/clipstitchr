@@ -17,7 +17,6 @@ import type { RenameSwiprLibraryPackResult } from "@/lib/clipstitchr/types/Swipr
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import { filterPexelsLibraryPacksBySearchQuery } from "@/lib/clipstitchr/utils/filterPexelsLibraryPacksBySearchQuery";
 import { getImportedPexelsPhotoIds } from "@/lib/clipstitchr/utils/getImportedPexelsPhotoIds";
-import { getPexelsLibraryPackCanEdit } from "@/lib/clipstitchr/utils/getPexelsLibraryPackCanEdit";
 import { getPexelsLibraryPackKeys } from "@/lib/clipstitchr/utils/getPexelsLibraryPackKeys";
 import { getSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getSwiprLibraryPacks";
 import { normalizeSwiprLibraryQueryKey } from "@/lib/clipstitchr/utils/normalizeSwiprLibraryQueryKey";
@@ -32,11 +31,9 @@ type PexelsLibraryTabSectionProps = {
   onAddPackToAccount: (
     packName: string,
   ) => Promise<RenameSwiprLibraryPackResult>;
-  onDeletePack: (packName: string) => Promise<void>;
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onRemovePackFromAccount: (packName: string) => Promise<number>;
   onRemovePhotoFromPack: (background: SwiprBackgroundAsset) => Promise<void>;
-  onRenamePack: (fromName: string, toName: string) => Promise<string>;
 };
 
 export function PexelsLibraryTabSection({
@@ -45,14 +42,12 @@ export function PexelsLibraryTabSection({
   mineBackgrounds,
   searchQuery,
   onAddPackToAccount,
-  onDeletePack,
   onLoadBackgroundBlob,
   onRemovePackFromAccount,
   onRemovePhotoFromPack,
-  onRenamePack,
 }: PexelsLibraryTabSectionProps) {
   const [filter, setFilter] = useState<PexelsLibraryFilter>("all");
-  const [editingPackName, setEditingPackName] = useState<string | null>(null);
+  const [viewingPackName, setViewingPackName] = useState<string | null>(null);
   const [pexelsQuery, setPexelsQuery] = useState("");
   const [pexelsPhotos, setPexelsPhotos] = useState<PexelsPhotoResult[]>([]);
   const [pexelsPage, setPexelsPage] = useState(1);
@@ -83,8 +78,16 @@ export function PexelsLibraryTabSection({
       ),
     [allPacks, filter, minePacks, searchQuery],
   );
-  const editingPack =
-    allPacks.find((pack) => pack.name === editingPackName) ?? null;
+  const viewingPacks = filter === "mine" ? minePacks : allPacks;
+  const viewingPack =
+    viewingPacks.find((pack) => pack.name === viewingPackName) ??
+    allPacks.find((pack) => pack.name === viewingPackName) ??
+    null;
+  const viewingPackIsMine = viewingPack
+    ? minePackKeys.has(normalizeSwiprLibraryQueryKey(viewingPack.name))
+    : false;
+  const viewingBackgrounds =
+    filter === "mine" && viewingPackIsMine ? mineBackgrounds : allBackgrounds;
   const importedPexelsPhotoIds = useMemo(
     () => getImportedPexelsPhotoIds(allBackgrounds),
     [allBackgrounds],
@@ -230,23 +233,56 @@ export function PexelsLibraryTabSection({
       .finally(() => setSavingPackName(null));
   };
 
-  const handleRemovePack = (packName: string) => {
+  const handleRemovePack = async (packName: string) => {
     setSavingPackName(packName);
     setError(null);
     setMessage(null);
 
-    void onRemovePackFromAccount(packName)
-      .then(() => {
-        setMessage(`${packName} is no longer in your packs.`);
-      })
-      .catch((nextError) => {
-        setError(
-          nextError instanceof Error
-            ? nextError.message
-            : "Unable to remove pack.",
-        );
-      })
-      .finally(() => setSavingPackName(null));
+    try {
+      await onRemovePackFromAccount(packName);
+      setMessage(`${packName} is no longer in your packs.`);
+
+      if (
+        viewingPackName &&
+        normalizeSwiprLibraryQueryKey(viewingPackName) ===
+          normalizeSwiprLibraryQueryKey(packName)
+      ) {
+        setViewingPackName(null);
+      }
+    } catch (nextError) {
+      setError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to remove pack.",
+      );
+      throw nextError;
+    } finally {
+      setSavingPackName(null);
+    }
+  };
+
+  const handleRemovePhotoFromPack = async (
+    background: SwiprBackgroundAsset,
+  ) => {
+    const packName = background.libraryQuery ?? viewingPackName ?? "";
+
+    setSavingPackName(packName);
+    setError(null);
+    setMessage(null);
+
+    try {
+      await onRemovePhotoFromPack(background);
+      setMessage(`${background.name} is no longer in your pack.`);
+    } catch (nextError) {
+      setError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to remove this photo.",
+      );
+      throw nextError;
+    } finally {
+      setSavingPackName(null);
+    }
   };
 
   return (
@@ -345,22 +381,17 @@ export function PexelsLibraryTabSection({
           {filteredPacks.map((pack) => {
             const packKey = normalizeSwiprLibraryQueryKey(pack.name);
             const isMine = minePackKeys.has(packKey);
-            const canEdit = getPexelsLibraryPackCanEdit(
-              allBackgrounds,
-              pack.name,
-            );
 
             return (
               <PexelsLibraryPackCard
                 key={packKey}
-                canEdit={canEdit}
                 isMine={isMine}
                 isSaving={savingPackName === pack.name}
                 pack={pack}
                 onAdd={handleAddPack}
-                onEdit={setEditingPackName}
                 onLoadBackgroundBlob={onLoadBackgroundBlob}
                 onRemove={handleRemovePack}
+                onView={setViewingPackName}
               />
             );
           })}
@@ -373,27 +404,21 @@ export function PexelsLibraryTabSection({
         </p>
       )}
 
-      {editingPack &&
-      getPexelsLibraryPackCanEdit(allBackgrounds, editingPack.name) ? (
+      {viewingPack ? (
         <SwiprLibraryPackEditor
-          key={editingPack.name}
-          backgrounds={allBackgrounds}
-          isSaving={savingPackName === editingPack.name}
-          pack={editingPack}
-          onDeletePack={(packName) =>
-            onDeletePack(packName).then(() => {
-              setEditingPackName(null);
-            })
-          }
+          key={`${filter}-${viewingPack.name}`}
+          backgrounds={viewingBackgrounds}
+          isMine={viewingPackIsMine}
+          isSaving={savingPackName === viewingPack.name}
+          pack={viewingPack}
+          onDismiss={() => setViewingPackName(null)}
           onLoadBackgroundBlob={onLoadBackgroundBlob}
-          onRemovePhoto={onRemovePhotoFromPack}
-          onRenamePack={(fromName, toName) =>
-            onRenamePack(fromName, toName).then((nextName) => {
-              setEditingPackName(nextName);
-
-              return nextName;
+          onRemovePack={(packName) =>
+            handleRemovePack(packName).then(() => {
+              setViewingPackName(null);
             })
           }
+          onRemovePhoto={handleRemovePhotoFromPack}
         />
       ) : null}
     </section>

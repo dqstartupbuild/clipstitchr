@@ -28,11 +28,14 @@ automation settings.
    added to their account.
 7. Users can add a global pack to Mine for Swipr batch generation and
    automation.
-8. Users can edit packs they imported by renaming them, removing a photo from a
-   pack, or deleting the pack and its saved photos.
-9. Swipr Batch mode shows the user's Mine packs as small selectable buttons.
-   The user must choose at least one pack.
-10. Swipr Batch mode generates 10 editable draft Swipes at once. Draft
+8. Users can click any pack card to view its photos.
+9. Users can remove a pack from Mine. This only removes the pack from that
+   user's account and never deletes the shared global pack.
+10. Users can remove individual photos from their own account copy of a pack.
+    The photo remains in the global pack for everyone else.
+11. Swipr Batch mode shows the user's Mine packs as small selectable buttons.
+    The user must choose at least one pack.
+12. Swipr Batch mode generates 10 editable draft Swipes at once. Draft
     generation uses the selected packs, creates text for each slideshow,
     assigns saved Pexels backgrounds to the slides, and saves each result as a
     normal editable 8-slide Swipe.
@@ -45,6 +48,14 @@ used for global Pexels pack images.
 `swiprLibraryPackAccounts` stores one row per account-added pack:
 
 - Owner ID from Convex auth.
+- Normalized pack display name.
+- Normalized pack key.
+- Created timestamp.
+
+`swiprLibraryPackPhotoExclusions` stores one row per account-hidden photo:
+
+- Owner ID from Convex auth.
+- Stable Swipr background ID.
 - Normalized pack display name.
 - Normalized pack key.
 - Created timestamp.
@@ -98,30 +109,28 @@ automatic Swipe.
 
 `swiprBackgrounds.renameLibraryPack`
 
+- Remains as a compatibility mutation for older clients.
 - Requires an authenticated user.
-- Finds owner-owned Pexels backgrounds whose normalized `libraryQuery` matches
-  the source pack name.
-- Consumes `convexMetadataUpdate` for the matching record count.
-- Patches each matching record to the new normalized pack name.
-- Patches matching account-pack rows to the new normalized pack name.
+- Always throws because Pexels packs are shared and cannot be renamed by one
+  user.
 
 `swiprBackgrounds.removeFromLibraryPack`
 
 - Requires an authenticated user.
-- Verifies the requested background belongs to the user.
+- Verifies the requested background is a global Pexels pack photo and that the
+  pack is in the user's account.
 - Consumes `convexMetadataUpdate`.
-- Clears `libraryQuery` so the photo no longer appears inside that pack.
+- Inserts a `swiprLibraryPackPhotoExclusions` row so the photo no longer appears
+  in that user's Mine pack or Swipr pack picker.
+- Does not delete or patch the global photo record.
 
 `swiprBackgrounds.removeLibraryPack`
 
+- Remains as a compatibility mutation for older clients.
 - Requires an authenticated user.
-- Finds owner-owned Pexels backgrounds whose normalized `libraryQuery` matches
-  the pack name.
-- Consumes `convexRecordDelete` for the matching record count.
-- Deletes the matching Convex records. The client deletes the matching R2 image
-  objects through the existing rate-limited R2 delete route before calling this
-  mutation.
-- Deletes matching account-pack rows because the global pack no longer exists.
+- Consumes `convexMetadataUpdate` when the pack is in the user's account.
+- Removes the account-pack row and matching per-photo exclusions.
+- Does not delete shared Convex records or R2 image objects.
 
 `swiprBackgrounds.addLibraryPackToAccount`
 
@@ -134,7 +143,8 @@ automatic Swipe.
 
 - Requires an authenticated user.
 - Consumes `convexMetadataUpdate`.
-- Deletes the account-pack row. It does not delete global Pexels photos.
+- Deletes the account-pack row and any per-photo exclusions for that user and
+  pack. It does not delete global Pexels photos.
 
 `POST /api/swipr/drafts/generate`
 
@@ -169,10 +179,8 @@ is the source of truth.
 - `web/app/_components/swipr/SwiprManualControls.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackPicker.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackEditor.tsx`
-- `web/app/_components/swipr/SwiprLibraryPackRenameForm.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackPhotoList.tsx`
 - `web/app/_components/swipr/SwiprLibraryPackEditorPhoto.tsx`
-- `web/app/_components/swipr/SwiprLibraryPackDeleteAction.tsx`
 - `web/app/_components/swipr/SwiprLibraryPhotoCard.tsx`
 - `web/app/_components/settings/AutomationSwiprPackPicker.tsx`
 - `web/app/dashboard/library/LibraryPageClient.tsx`
@@ -194,9 +202,8 @@ The import route consumes:
 - `pexelsImportImages` and `pexelsImportImagesGlobal` by requested import
   count before downloading or saving images.
 - `convexRecordSave` inside `swiprBackgrounds.save` for each imported photo.
-- The existing R2 delete route and `convexRecordDelete` when a pack is deleted.
-- `convexMetadataUpdate` when a pack is renamed or a photo is removed from a
-  pack.
+- `convexMetadataUpdate` when a pack is added to or removed from an account,
+  and when a photo is removed from an account copy of a pack.
 
 Draft generation creates provider-writing and Convex write cost. The draft
 route consumes `cliprHookScript` and `cliprProviderSpendGlobal` with `count`
@@ -209,7 +216,8 @@ Imported Pexels packs are global for authenticated users. Only Pexels records
 with a `libraryQuery` are globally readable. Uploaded, avatar-photo, AI, and
 provider-generated one-off Swipr backgrounds remain private.
 
-Pack deletion deletes owner-owned R2 images through the rate-limited R2 delete
-route, then deletes the matching owner-owned Convex records. Removing one photo
-from a pack clears `libraryQuery`; it does not delete the photo record, so any
-saved Swipe that already references that photo can still reopen.
+Pexels packs are shared and immutable from the user UI. Removing a pack deletes
+only that user's account-pack row. Removing one photo inserts a user-specific
+exclusion row. Neither action deletes global Convex records or R2 images, so
+the All list can keep helping other users start faster and saved Swipes that
+already reference a photo can still reopen.

@@ -459,7 +459,6 @@ describe("LibraryPageClient", () => {
       removeLibraryPack: vi.fn(),
       removeLibraryPackFromAccount: vi.fn(),
       removeSwipe: vi.fn(),
-      renameLibraryPack: vi.fn(),
       postedSwipes: [
         {
           backgroundId: "background_1",

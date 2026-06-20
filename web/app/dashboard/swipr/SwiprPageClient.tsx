@@ -93,7 +93,6 @@ export function SwiprPageClient() {
   const [isImportingBackground, setIsImportingBackground] = useState(false);
   const [isImportingPexelsLibrary, setIsImportingPexelsLibrary] =
     useState(false);
-  const [isUpdatingPexelsPack, setIsUpdatingPexelsPack] = useState(false);
   const [isSearchingPexels, setIsSearchingPexels] = useState(false);
   const [isLoadingMorePexels, setIsLoadingMorePexels] = useState(false);
   const [isGeneratingDrafts, setIsGeneratingDrafts] = useState(false);
@@ -558,93 +557,6 @@ export function SwiprPageClient() {
       })
       .finally(() => setIsImportingPexelsLibrary(false));
   }, [pexelsPage, pexelsQuery, visiblePexelsPhotos]);
-
-  const handleRenamePexelsPack = useCallback(
-    async (fromLibraryQuery: string, toLibraryQuery: string) => {
-      setIsUpdatingPexelsPack(true);
-      setPexelsError(null);
-      setAutoTextMessage(null);
-
-      try {
-        const result = await swiprLibrary.renameLibraryPack(
-          fromLibraryQuery,
-          toLibraryQuery,
-        );
-        const fromLibraryQueryKey =
-          normalizeSwiprLibraryQueryKey(fromLibraryQuery);
-
-        setSelectedLibraryQueries((currentQueries) =>
-          currentQueries.map((libraryQuery) =>
-            normalizeSwiprLibraryQueryKey(libraryQuery) === fromLibraryQueryKey
-              ? result.libraryQuery
-              : libraryQuery,
-          ),
-        );
-        setAutoTextMessage(`Renamed ${result.count} pack photos.`);
-
-        return result.libraryQuery;
-      } catch (error) {
-        setPexelsError(
-          error instanceof Error ? error.message : "Unable to rename this pack.",
-        );
-        throw error;
-      } finally {
-        setIsUpdatingPexelsPack(false);
-      }
-    },
-    [swiprLibrary],
-  );
-
-  const handleRemovePexelsPhotoFromPack = useCallback(
-    async (backgroundAsset: SwiprBackgroundAsset) => {
-      setIsUpdatingPexelsPack(true);
-      setPexelsError(null);
-      setAutoTextMessage(null);
-
-      try {
-        await swiprLibrary.removeBackgroundFromLibraryPack(backgroundAsset.id);
-        setAutoTextMessage("Removed photo from pack.");
-      } catch (error) {
-        setPexelsError(
-          error instanceof Error
-            ? error.message
-            : "Unable to remove this photo.",
-        );
-        throw error;
-      } finally {
-        setIsUpdatingPexelsPack(false);
-      }
-    },
-    [swiprLibrary],
-  );
-
-  const handleDeletePexelsPack = useCallback(
-    async (libraryQuery: string) => {
-      setIsUpdatingPexelsPack(true);
-      setPexelsError(null);
-      setAutoTextMessage(null);
-
-      try {
-        const count = await swiprLibrary.removeLibraryPack(libraryQuery);
-        const libraryQueryKey = normalizeSwiprLibraryQueryKey(libraryQuery);
-
-        setSelectedLibraryQueries((currentQueries) =>
-          currentQueries.filter(
-            (query) => normalizeSwiprLibraryQueryKey(query) !== libraryQueryKey,
-          ),
-        );
-        setAutoTextMessage(`Deleted ${count} pack photos.`);
-      } catch (error) {
-        setPexelsError(
-          error instanceof Error ? error.message : "Unable to delete this pack.",
-        );
-        throw error;
-      } finally {
-        setIsUpdatingPexelsPack(false);
-      }
-    },
-    [swiprLibrary],
-  );
 
   const handleSelectSavedBackground = useCallback(
     (savedBackground: SwiprBackgroundAsset) => {
@@ -1205,13 +1117,10 @@ export function SwiprPageClient() {
                 <SwiprPexelsPanel
                   error={pexelsError}
                   hasMorePhotos={hasMorePexelsPhotos}
-                  allLibraryBackgrounds={allPexelsLibraryBackgrounds}
-                  allowLibraryPackEditing={false}
                   isLoadingMore={isLoadingMorePexels}
                   isSaving={isImportingBackground}
                   isImportingLibrary={isImportingPexelsLibrary}
                   isSearching={isSearchingPexels}
-                  isUpdatingLibraryPack={isUpdatingPexelsPack}
                   libraryBackgrounds={
                     activeSwiprMode === "manual"
                       ? allPexelsLibraryBackgrounds
@@ -1225,15 +1134,10 @@ export function SwiprPageClient() {
                   showLibraryPacks={activeSwiprMode === "batch"}
                   showSavedLibraryPhotos={activeSwiprMode === "manual"}
                   showSearch={activeSwiprMode === "manual"}
-                  onDeleteLibraryPack={handleDeletePexelsPack}
                   onImportQuery={handleImportPexelsLibraryQuery}
                   onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
                   onLoadMore={handleLoadMorePexels}
                   onQueryChange={handlePexelsQueryChange}
-                  onRemoveLibraryPhotoFromPack={
-                    handleRemovePexelsPhotoFromPack
-                  }
-                  onRenameLibraryPack={handleRenamePexelsPack}
                   onSearch={handleSearchPexels}
                   onSelectPhoto={
                     activeSwiprMode === "manual"

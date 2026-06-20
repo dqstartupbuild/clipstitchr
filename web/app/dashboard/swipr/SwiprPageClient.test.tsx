@@ -36,7 +36,6 @@ const mocks = vi.hoisted(() => ({
     refresh: vi.fn(),
     removeBackgroundFromLibraryPack: vi.fn(),
     removeLibraryPack: vi.fn(),
-    renameLibraryPack: vi.fn(),
     saveBackground: vi.fn(),
     saveSwipe: vi.fn(),
     swipes: [] as SwiprSwipe[],
@@ -355,7 +354,6 @@ function queueSwiprState(
     isGeneratingDrafts?: boolean;
     isImportingBackground?: boolean;
     isImportingPexelsLibrary?: boolean;
-    isUpdatingPexelsPack?: boolean;
     isSearchingPexels?: boolean;
     loadedSwipeId?: string | null;
     pexelsError?: string | null;
@@ -393,7 +391,6 @@ function queueSwiprState(
     overrides.isGeneratingAiBackground ?? false,
     overrides.isImportingBackground ?? false,
     overrides.isImportingPexelsLibrary ?? false,
-    overrides.isUpdatingPexelsPack ?? false,
     overrides.isSearchingPexels ?? false,
     overrides.isLoadingMorePexels ?? false,
     overrides.isGeneratingDrafts ?? false,
@@ -433,10 +430,6 @@ describe("SwiprPageClient", () => {
       undefined,
     );
     mocks.swiprLibraryState.removeLibraryPack.mockResolvedValue(1);
-    mocks.swiprLibraryState.renameLibraryPack.mockResolvedValue({
-      count: 1,
-      libraryQuery: "coffee desk",
-    });
     mocks.swiprLibraryState.saveBackground.mockResolvedValue(createBackground());
     mocks.swiprLibraryState.saveSwipe.mockResolvedValue({
       backgroundId: "background_1",

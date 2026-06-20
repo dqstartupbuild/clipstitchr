@@ -5,6 +5,7 @@ import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgrou
 
 type SwiprLibraryPackPhotoListProps = {
   backgrounds: SwiprBackgroundAsset[];
+  canRemove: boolean;
   isSaving: boolean;
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onRemovePhoto: (background: SwiprBackgroundAsset) => void;
@@ -12,6 +13,7 @@ type SwiprLibraryPackPhotoListProps = {
 
 export function SwiprLibraryPackPhotoList({
   backgrounds,
+  canRemove,
   isSaving,
   onLoadBackgroundBlob,
   onRemovePhoto,
@@ -22,6 +24,7 @@ export function SwiprLibraryPackPhotoList({
         <SwiprLibraryPackEditorPhoto
           key={background.id}
           background={background}
+          canRemove={canRemove}
           isSaving={isSaving}
           onLoadBackgroundBlob={onLoadBackgroundBlob}
           onRemove={onRemovePhoto}

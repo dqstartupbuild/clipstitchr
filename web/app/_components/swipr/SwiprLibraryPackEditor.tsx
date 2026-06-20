@@ -1,69 +1,80 @@
 "use client";
 
-import { useState } from "react";
-import { SwiprLibraryPackDeleteAction } from "@/app/_components/swipr/SwiprLibraryPackDeleteAction";
+import { Minus, X } from "lucide-react";
 import { SwiprLibraryPackPhotoList } from "@/app/_components/swipr/SwiprLibraryPackPhotoList";
-import { SwiprLibraryPackRenameForm } from "@/app/_components/swipr/SwiprLibraryPackRenameForm";
+import { Button } from "@/app/_components/ui/Button";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
 import { getSwiprLibraryBackgroundsByPackName } from "@/lib/clipstitchr/utils/getSwiprLibraryBackgroundsByPackName";
 
 type SwiprLibraryPackEditorProps = {
   backgrounds: SwiprBackgroundAsset[];
+  isMine: boolean;
   isSaving: boolean;
   pack: SwiprLibraryPack;
-  onDeletePack: (packName: string) => Promise<void>;
+  onDismiss: () => void;
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
+  onRemovePack: (packName: string) => Promise<void>;
   onRemovePhoto: (background: SwiprBackgroundAsset) => Promise<void>;
-  onRenamePack: (fromName: string, toName: string) => Promise<string>;
 };
 
 export function SwiprLibraryPackEditor({
   backgrounds,
+  isMine,
   isSaving,
   pack,
-  onDeletePack,
+  onDismiss,
   onLoadBackgroundBlob,
+  onRemovePack,
   onRemovePhoto,
-  onRenamePack,
 }: SwiprLibraryPackEditorProps) {
-  const [draftName, setDraftName] = useState(pack.name);
   const packBackgrounds = getSwiprLibraryBackgroundsByPackName(
     backgrounds,
     pack.name,
   );
 
-  const handleRename = () => {
-    void onRenamePack(pack.name, draftName)
-      .then(setDraftName)
-      .catch(() => undefined);
-  };
-
   return (
     <div className="grid gap-3 rounded-lg border border-border bg-surface-elevated p-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold text-text-tertiary">Edit pack</p>
+          <p className="text-xs font-semibold text-text-tertiary">
+            Pack photos
+          </p>
           <h3 className="mt-0.5 text-sm font-bold text-text-primary">
             {pack.name}
           </h3>
         </div>
-        <SwiprLibraryPackDeleteAction
-          isSaving={isSaving}
-          onDelete={() => {
-            void onDeletePack(pack.name).catch(() => undefined);
-          }}
-        />
+        <div className="flex flex-wrap justify-end gap-2">
+          {isMine ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              icon={<Minus aria-hidden className="h-4 w-4" />}
+              isLoading={isSaving}
+              onClick={() => {
+                void onRemovePack(pack.name).catch(() => undefined);
+              }}
+            >
+              Remove pack
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            size="sm"
+            variant="subtle"
+            icon={<X aria-hidden className="h-4 w-4" />}
+            disabled={isSaving}
+            onClick={onDismiss}
+          >
+            Close
+          </Button>
+        </div>
       </div>
-      <SwiprLibraryPackRenameForm
-        draftName={draftName}
-        isSaving={isSaving}
-        onDraftNameChange={setDraftName}
-        onSubmit={handleRename}
-      />
       {packBackgrounds.length ? (
         <SwiprLibraryPackPhotoList
           backgrounds={packBackgrounds}
+          canRemove={isMine}
           isSaving={isSaving}
           onLoadBackgroundBlob={onLoadBackgroundBlob}
           onRemovePhoto={(background) => {

@@ -525,7 +525,7 @@ describe("useSwiprLibraryState", () => {
     });
   });
 
-  it("renames and removes Pexels library packs", async () => {
+  it("adds and removes Pexels library packs from the account", async () => {
     const state = useSwiprLibraryState();
 
     getMutation("swiprBackgrounds.addLibraryPackToAccount").mockResolvedValue({
@@ -534,13 +534,6 @@ describe("useSwiprLibraryState", () => {
     });
     getMutation("swiprBackgrounds.removeLibraryPackFromAccount").mockResolvedValue({
       count: 1,
-    });
-    getMutation("swiprBackgrounds.renameLibraryPack").mockResolvedValue({
-      count: 2,
-      libraryQuery: "Calisthenics",
-    });
-    getMutation("swiprBackgrounds.removeLibraryPack").mockResolvedValue({
-      count: 2,
     });
 
     await expect(
@@ -553,29 +546,18 @@ describe("useSwiprLibraryState", () => {
       state.removeLibraryPackFromAccount("desk setup"),
     ).resolves.toBe(1);
     await expect(
-      state.renameLibraryPack("calisthenics", " Calisthenics "),
-    ).resolves.toEqual({
-      count: 2,
-      libraryQuery: "Calisthenics",
-    });
-    await expect(
       state.removeBackgroundFromLibraryPack("background_1"),
     ).resolves.toBeUndefined();
-    await expect(state.removeLibraryPack("Calisthenics")).resolves.toBe(2);
+    await expect(state.removeLibraryPack("Calisthenics")).resolves.toBe(1);
 
-    expect(getMutation("swiprBackgrounds.renameLibraryPack")).toHaveBeenCalledWith(
-      {
-        fromLibraryQuery: "calisthenics",
-        toLibraryQuery: " Calisthenics ",
-      },
-    );
     expect(
       getMutation("swiprBackgrounds.removeFromLibraryPack"),
     ).toHaveBeenCalledWith({ id: "background_1" });
-    expect(getMutation("swiprBackgrounds.removeLibraryPack")).toHaveBeenCalledWith(
-      {
-        libraryQuery: "Calisthenics",
-      },
+    expect(
+      getMutation("swiprBackgrounds.removeLibraryPackFromAccount"),
+    ).toHaveBeenCalledWith({ libraryQuery: "Calisthenics" });
+    expect(mocks.mutationFns.has("swiprBackgrounds.removeLibraryPack")).toBe(
+      false,
     );
   });
 

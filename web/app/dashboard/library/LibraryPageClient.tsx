@@ -555,18 +555,10 @@ export function LibraryPageClient() {
             mineBackgrounds={swiprLibrary.backgrounds}
             searchQuery={searchQuery}
             onAddPackToAccount={swiprLibrary.addLibraryPackToAccount}
-            onDeletePack={(packName) =>
-              swiprLibrary.removeLibraryPack(packName).then(() => undefined)
-            }
             onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
             onRemovePackFromAccount={swiprLibrary.removeLibraryPackFromAccount}
             onRemovePhotoFromPack={(background) =>
               swiprLibrary.removeBackgroundFromLibraryPack(background.id)
-            }
-            onRenamePack={(fromName, toName) =>
-              swiprLibrary
-                .renameLibraryPack(fromName, toName)
-                .then((result) => result.libraryQuery)
             }
           />
         ) : null}

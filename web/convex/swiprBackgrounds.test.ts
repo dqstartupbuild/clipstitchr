@@ -121,29 +121,40 @@ describe("convex swiprBackgrounds", () => {
   });
 
   it("lists and gets Swipr backgrounds for authenticated users", async () => {
-    const backgrounds = [createBackground()];
+    const ownedBackground = createBackground({
+      libraryQuery: undefined,
+      source: "upload",
+    });
+    const backgrounds = [ownedBackground];
     const backgroundQueryChain = createQueryChain({
       collect: backgrounds,
-      unique: createBackground(),
+      unique: ownedBackground,
     });
     const packAccountQueryChain = createQueryChain({ collect: [] });
+    const photoExclusionQueryChain = createQueryChain({ collect: [] });
     const ctx = {
       db: {
-        query: vi.fn((tableName: string) =>
-          tableName === "swiprLibraryPackAccounts"
-            ? packAccountQueryChain
-            : backgroundQueryChain,
-        ),
+        query: vi.fn((tableName: string) => {
+          if (tableName === "swiprLibraryPackAccounts") {
+            return packAccountQueryChain;
+          }
+
+          if (tableName === "swiprLibraryPackPhotoExclusions") {
+            return photoExclusionQueryChain;
+          }
+
+          return backgroundQueryChain;
+        }),
       },
     };
 
     await expect(getHandler(list)(ctx, {})).resolves.toStrictEqual([
-      { ...createBackground(), isOwnedByCurrentUser: true },
+      { ...ownedBackground, isOwnedByCurrentUser: true },
     ]);
     await expect(
       getHandler(get)(ctx, { id: "background_1" }),
     ).resolves.toEqual({
-      ...createBackground(),
+      ...ownedBackground,
       isOwnedByCurrentUser: true,
     });
     expect(backgroundQueryChain.withIndex).toHaveBeenCalledWith("by_created");
@@ -180,18 +191,81 @@ describe("convex swiprBackgrounds", () => {
     const packAccountQueryChain = createQueryChain({
       collect: [createPackAccount({ libraryQueryKey: "desk setup" })],
     });
+    const photoExclusionQueryChain = createQueryChain({ collect: [] });
     const ctx = {
       db: {
-        query: vi.fn((tableName: string) =>
-          tableName === "swiprLibraryPackAccounts"
-            ? packAccountQueryChain
-            : backgroundQueryChain,
-        ),
+        query: vi.fn((tableName: string) => {
+          if (tableName === "swiprLibraryPackAccounts") {
+            return packAccountQueryChain;
+          }
+
+          if (tableName === "swiprLibraryPackPhotoExclusions") {
+            return photoExclusionQueryChain;
+          }
+
+          return backgroundQueryChain;
+        }),
       },
     };
 
     await expect(getHandler(list)(ctx, {})).resolves.toStrictEqual([
       { ...backgrounds[0], isOwnedByCurrentUser: false },
+    ]);
+    await expect(getHandler(listGlobalPexels)(ctx, {})).resolves.toStrictEqual([
+      { ...backgrounds[0], isOwnedByCurrentUser: false },
+      { ...backgrounds[1], isOwnedByCurrentUser: false },
+    ]);
+  });
+
+  it("hides account-removed pack photos from Mine while keeping them global", async () => {
+    const backgrounds = [
+      createBackground({
+        id: "background_1",
+        libraryQuery: "Desk Setup",
+        uploadedByOwnerId: "other_owner",
+      }),
+      createBackground({
+        id: "background_2",
+        libraryQuery: "Desk Setup",
+        uploadedByOwnerId: "other_owner",
+      }),
+    ];
+    const backgroundQueryChain = createQueryChain({
+      collect: backgrounds,
+    });
+    const packAccountQueryChain = createQueryChain({
+      collect: [createPackAccount({ libraryQueryKey: "desk setup" })],
+    });
+    const photoExclusionQueryChain = createQueryChain({
+      collect: [
+        {
+          _id: "exclusion_1",
+          backgroundId: "background_1",
+          createdAt: "2026-05-20T00:00:00.000Z",
+          libraryQuery: "Desk Setup",
+          libraryQueryKey: "desk setup",
+          ownerId: "owner_123",
+        },
+      ],
+    });
+    const ctx = {
+      db: {
+        query: vi.fn((tableName: string) => {
+          if (tableName === "swiprLibraryPackAccounts") {
+            return packAccountQueryChain;
+          }
+
+          if (tableName === "swiprLibraryPackPhotoExclusions") {
+            return photoExclusionQueryChain;
+          }
+
+          return backgroundQueryChain;
+        }),
+      },
+    };
+
+    await expect(getHandler(list)(ctx, {})).resolves.toStrictEqual([
+      { ...backgrounds[1], isOwnedByCurrentUser: false },
     ]);
     await expect(getHandler(listGlobalPexels)(ctx, {})).resolves.toStrictEqual([
       { ...backgrounds[0], isOwnedByCurrentUser: false },
@@ -237,15 +311,27 @@ describe("convex swiprBackgrounds", () => {
     const existingPackAccountQueryChain = createQueryChain({
       unique: createPackAccount(),
     });
+    const emptyPhotoExclusionQueryChain = createQueryChain({ collect: [] });
+    const packAccountQueries = [
+      missingPackAccountQueryChain,
+      existingPackAccountQueryChain,
+      existingPackAccountQueryChain,
+    ];
     const ctx = {
       db: {
         delete: vi.fn(),
         insert: vi.fn(async () => "pack_account_1"),
-        query: vi
-          .fn()
-          .mockReturnValueOnce(backgroundQueryChain)
-          .mockReturnValueOnce(missingPackAccountQueryChain)
-          .mockReturnValueOnce(existingPackAccountQueryChain),
+        query: vi.fn((tableName: string) => {
+          if (tableName === "swiprLibraryPackAccounts") {
+            return packAccountQueries.shift() ?? existingPackAccountQueryChain;
+          }
+
+          if (tableName === "swiprLibraryPackPhotoExclusions") {
+            return emptyPhotoExclusionQueryChain;
+          }
+
+          return backgroundQueryChain;
+        }),
       },
     };
 
@@ -269,18 +355,33 @@ describe("convex swiprBackgrounds", () => {
     expect(ctx.db.delete).toHaveBeenCalledWith("pack_account_1");
   });
 
-  it("removes a Swipr photo from its Pexels pack", async () => {
-    const queryChain = createQueryChain({ unique: createBackground() });
+  it("removes a Swipr photo from the authenticated account pack", async () => {
+    const background = createBackground({ uploadedByOwnerId: "other_owner" });
+    const backgroundQueryChain = createQueryChain({ unique: background });
+    const packAccountQueryChain = createQueryChain({
+      unique: createPackAccount(),
+    });
+    const missingPhotoExclusionQueryChain = createQueryChain({ unique: null });
     const ctx = {
       db: {
-        patch: vi.fn(),
-        query: vi.fn(() => queryChain),
+        insert: vi.fn(async () => "photo_exclusion_1"),
+        query: vi.fn((tableName: string) => {
+          if (tableName === "swiprLibraryPackAccounts") {
+            return packAccountQueryChain;
+          }
+
+          if (tableName === "swiprLibraryPackPhotoExclusions") {
+            return missingPhotoExclusionQueryChain;
+          }
+
+          return backgroundQueryChain;
+        }),
       },
     };
 
     await expect(
       getHandler(removeFromLibraryPack)(ctx, { id: "background_1" }),
-    ).resolves.toEqual(createBackground());
+    ).resolves.toEqual(background);
     expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
       ctx,
       "convexMetadataUpdate",
@@ -289,27 +390,23 @@ describe("convex swiprBackgrounds", () => {
         throws: true,
       },
     );
-    expect(ctx.db.patch).toHaveBeenCalledWith("doc_1", {
-      libraryQuery: undefined,
-    });
+    expect(ctx.db.insert).toHaveBeenCalledWith(
+      "swiprLibraryPackPhotoExclusions",
+      {
+        backgroundId: "background_1",
+        createdAt: expect.any(String),
+        libraryQuery: "desk setup",
+        libraryQueryKey: "desk setup",
+        ownerId: "owner_123",
+      },
+    );
   });
 
-  it("renames matching Pexels packs with normalized query matching", async () => {
-    const backgrounds = [
-      createBackground({ _id: "doc_1", libraryQuery: "Desk Setup" }),
-      createBackground({ _id: "doc_2", id: "background_2", libraryQuery: "desk   setup" }),
-      createBackground({ _id: "doc_3", id: "background_3", libraryQuery: "coffee" }),
-    ];
-    const backgroundQueryChain = createQueryChain({ collect: backgrounds });
-    const packAccountQueryChain = createQueryChain({ collect: [] });
+  it("rejects Pexels pack renames because packs are shared", async () => {
     const ctx = {
       db: {
         patch: vi.fn(),
-        query: vi.fn((tableName: string) =>
-          tableName === "swiprLibraryPackAccounts"
-            ? packAccountQueryChain
-            : backgroundQueryChain,
-        ),
+        query: vi.fn(),
       },
     };
 
@@ -318,57 +415,58 @@ describe("convex swiprBackgrounds", () => {
         fromLibraryQuery: "desk setup",
         toLibraryQuery: "  Calisthenics  ",
       }),
-    ).resolves.toEqual({ count: 2, libraryQuery: "Calisthenics" });
-    expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
-      ctx,
-      "convexMetadataUpdate",
-      {
-        count: 2,
-        key: "owner_123",
-        throws: true,
-      },
-    );
-    expect(ctx.db.patch).toHaveBeenCalledWith("doc_1", {
-      libraryQuery: "Calisthenics",
-    });
-    expect(ctx.db.patch).toHaveBeenCalledWith("doc_2", {
-      libraryQuery: "Calisthenics",
-    });
+    ).rejects.toThrow("Pexels packs are shared now and cannot be renamed.");
+    expect(mocks.rateLimiter.limit).not.toHaveBeenCalled();
+    expect(ctx.db.patch).not.toHaveBeenCalled();
   });
 
-  it("deletes matching Pexels pack records", async () => {
-    const backgrounds = [
-      createBackground({ _id: "doc_1", libraryQuery: "Desk Setup" }),
-      createBackground({ _id: "doc_2", id: "background_2", libraryQuery: "desk setup" }),
-      createBackground({ _id: "doc_3", id: "background_3", libraryQuery: "coffee" }),
-    ];
-    const backgroundQueryChain = createQueryChain({ collect: backgrounds });
-    const packAccountQueryChain = createQueryChain({ collect: [] });
+  it("removes Pexels packs from the account without deleting shared records", async () => {
+    const existingPackAccountQueryChain = createQueryChain({
+      unique: createPackAccount(),
+    });
+    const photoExclusionQueryChain = createQueryChain({
+      collect: [
+        {
+          _id: "exclusion_1",
+          backgroundId: "background_1",
+          createdAt: "2026-05-20T00:00:00.000Z",
+          libraryQuery: "Desk Setup",
+          libraryQueryKey: "desk setup",
+          ownerId: "owner_123",
+        },
+      ],
+    });
     const ctx = {
       db: {
         delete: vi.fn(),
-        query: vi.fn((tableName: string) =>
-          tableName === "swiprLibraryPackAccounts"
-            ? packAccountQueryChain
-            : backgroundQueryChain,
-        ),
+        query: vi.fn((tableName: string) => {
+          if (tableName === "swiprLibraryPackAccounts") {
+            return existingPackAccountQueryChain;
+          }
+
+          if (tableName === "swiprLibraryPackPhotoExclusions") {
+            return photoExclusionQueryChain;
+          }
+
+          return createQueryChain();
+        }),
       },
     };
 
     await expect(
       getHandler(removeLibraryPack)(ctx, { libraryQuery: "desk setup" }),
-    ).resolves.toEqual({ count: 2 });
+    ).resolves.toEqual({ count: 1 });
     expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
       ctx,
-      "convexRecordDelete",
+      "convexMetadataUpdate",
       {
-        count: 2,
         key: "owner_123",
         throws: true,
       },
     );
-    expect(ctx.db.delete).toHaveBeenCalledWith("doc_1");
-    expect(ctx.db.delete).toHaveBeenCalledWith("doc_2");
+    expect(ctx.db.delete).toHaveBeenCalledWith("pack_account_1");
+    expect(ctx.db.delete).toHaveBeenCalledWith("exclusion_1");
+    expect(ctx.db.query).not.toHaveBeenCalledWith("swiprBackgrounds");
   });
 
   it("rejects blank names and duplicate backgrounds before consuming quota", async () => {

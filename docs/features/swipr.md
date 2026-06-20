@@ -272,8 +272,10 @@ Swipr can also import a full query through
 to R2 and Convex with `libraryQuery` set to the query. If the normalized query
 already matches an existing global pack, the import reuses that pack name. The
 Library Pexels tab shows saved query packs with cover images, lets the user
-filter All or Mine, lets the user add global packs to Mine, and lets pack owners
-rename/delete packs or remove photos from a pack.
+filter All or Mine, lets the user add global packs to Mine, and lets users
+click any pack to view its photos. Removing a pack or photo only removes it
+from that user's account copy; the global pack and images remain available to
+everyone.
 
 ## Batch Draft Generation
 
@@ -338,9 +340,9 @@ Required protections:
 - Pexels query imports are rate-limited by requested image count before
   downloading or saving images. Loaded-photo imports do not call Pexels search
   again because the page results were already loaded through the search route.
-- Pexels pack add/remove/rename/delete operations consume existing Convex
-  metadata-update, record-delete, and R2 delete limits before changing account
-  pack rows or owned imported records.
+- Pexels pack add/remove account actions and account-only photo removals
+  consume existing Convex metadata-update limits before changing account-pack
+  rows or user-specific photo exclusion rows.
 - Batch draft generation consumes counted text-generation quota before the
   writing provider is called.
 - Automatic Swipr is protected by the Swipr automation daily/global budget

@@ -54,10 +54,6 @@ export type SwiprLibraryValue = {
   removeLibraryPackFromAccount: (libraryQuery: string) => Promise<number>;
   removeBackgroundFromLibraryPack: (id: string) => Promise<void>;
   removeLibraryPack: (libraryQuery: string) => Promise<number>;
-  renameLibraryPack: (
-    fromLibraryQuery: string,
-    toLibraryQuery: string,
-  ) => Promise<RenameSwiprLibraryPackResult>;
   saveSwipe: (input: SaveSwiprSwipeInput) => Promise<SwiprSwipe>;
   updateSwipePostedStatus: (
     swipe: SwiprSwipe,

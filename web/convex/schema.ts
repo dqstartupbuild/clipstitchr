@@ -318,6 +318,16 @@ export default defineSchema({
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_query", ["ownerId", "libraryQueryKey"])
     .index("by_query_key", ["libraryQueryKey"]),
+  swiprLibraryPackPhotoExclusions: defineTable({
+    ownerId: v.string(),
+    backgroundId: v.string(),
+    libraryQuery: v.string(),
+    libraryQueryKey: v.string(),
+    createdAt: v.string(),
+  })
+    .index("by_owner_background", ["ownerId", "backgroundId"])
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_query", ["ownerId", "libraryQueryKey"]),
   swipes: defineTable({
     ownerId: v.string(),
     id: v.string(),

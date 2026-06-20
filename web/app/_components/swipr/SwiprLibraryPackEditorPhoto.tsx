@@ -7,6 +7,7 @@ import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgrou
 
 type SwiprLibraryPackEditorPhotoProps = {
   background: SwiprBackgroundAsset;
+  canRemove: boolean;
   isSaving: boolean;
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onRemove: (background: SwiprBackgroundAsset) => void;
@@ -14,6 +15,7 @@ type SwiprLibraryPackEditorPhotoProps = {
 
 export function SwiprLibraryPackEditorPhoto({
   background,
+  canRemove,
   isSaving,
   onLoadBackgroundBlob,
   onRemove,
@@ -30,16 +32,18 @@ export function SwiprLibraryPackEditorPhoto({
         <p className="truncate text-xs font-semibold text-text-secondary">
           {background.name}
         </p>
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          icon={<X aria-hidden className="h-4 w-4" />}
-          disabled={isSaving}
-          onClick={() => onRemove(background)}
-        >
-          Remove
-        </Button>
+        {canRemove ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            icon={<X aria-hidden className="h-4 w-4" />}
+            disabled={isSaving}
+            onClick={() => onRemove(background)}
+          >
+            Remove
+          </Button>
+        ) : null}
       </div>
     </article>
   );

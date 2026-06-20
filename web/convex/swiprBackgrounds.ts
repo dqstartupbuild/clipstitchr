@@ -20,31 +20,24 @@ function normalizeText(value: string, maxLength: number) {
   return value.trim().slice(0, maxLength);
 }
 
-async function getOwnerLibraryPackBackgrounds(
-  ctx: MutationCtx | QueryCtx,
-  ownerId: string,
-  libraryQuery: string,
-) {
-  const libraryQueryKey = normalizeSwiprLibraryQueryKey(libraryQuery);
-  const backgrounds = await ctx.db
-    .query("swiprBackgrounds")
-    .withIndex("by_created")
-    .collect();
-
-  return backgrounds.filter(
-    (background) =>
-      background.uploadedByOwnerId === ownerId &&
-      background.source === "pexels" &&
-      normalizeSwiprLibraryQueryKey(background.libraryQuery) ===
-        libraryQueryKey,
-  );
-}
-
 function getIsGlobalPexelsPackBackground(background: {
   libraryQuery?: string;
   source: string;
 }) {
   return background.source === "pexels" && Boolean(background.libraryQuery);
+}
+
+async function getOwnerLibraryPackAccount(
+  ctx: MutationCtx | QueryCtx,
+  ownerId: string,
+  libraryQueryKey: string,
+) {
+  return await ctx.db
+    .query("swiprLibraryPackAccounts")
+    .withIndex("by_owner_query", (q) =>
+      q.eq("ownerId", ownerId).eq("libraryQueryKey", libraryQueryKey),
+    )
+    .unique();
 }
 
 async function getOwnerLibraryPackAccountKeys(
@@ -70,17 +63,13 @@ function getBackgroundBelongsToOwnerPack(
   ownerId: string,
   ownerLibraryPackAccountKeys: Set<string>,
 ) {
-  if (background.uploadedByOwnerId === ownerId) {
-    return true;
+  if (getIsGlobalPexelsPackBackground(background)) {
+    return ownerLibraryPackAccountKeys.has(
+      normalizeSwiprLibraryQueryKey(background.libraryQuery),
+    );
   }
 
-  if (!getIsGlobalPexelsPackBackground(background)) {
-    return false;
-  }
-
-  return ownerLibraryPackAccountKeys.has(
-    normalizeSwiprLibraryQueryKey(background.libraryQuery),
-  );
+  return background.uploadedByOwnerId === ownerId;
 }
 
 async function getGlobalPexelsPackBackgrounds(ctx: MutationCtx | QueryCtx) {
@@ -122,12 +111,11 @@ async function ensureOwnerLibraryPackAccount(
     throw new Error("Pack name is required.");
   }
 
-  const existingAccount = await ctx.db
-    .query("swiprLibraryPackAccounts")
-    .withIndex("by_owner_query", (q) =>
-      q.eq("ownerId", ownerId).eq("libraryQueryKey", libraryQueryKey),
-    )
-    .unique();
+  const existingAccount = await getOwnerLibraryPackAccount(
+    ctx,
+    ownerId,
+    libraryQueryKey,
+  );
 
   if (existingAccount) {
     return existingAccount._id;
@@ -141,12 +129,68 @@ async function ensureOwnerLibraryPackAccount(
   });
 }
 
+async function getOwnerLibraryPackPhotoExclusionBackgroundIds(
+  ctx: MutationCtx | QueryCtx,
+  ownerId: string,
+) {
+  const exclusions = await ctx.db
+    .query("swiprLibraryPackPhotoExclusions")
+    .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+    .collect();
+
+  return new Set(exclusions.map((exclusion) => exclusion.backgroundId));
+}
+
+async function deleteOwnerLibraryPackPhotoExclusions(
+  ctx: MutationCtx,
+  ownerId: string,
+  libraryQueryKey: string,
+) {
+  const exclusions = await ctx.db
+    .query("swiprLibraryPackPhotoExclusions")
+    .withIndex("by_owner_query", (q) =>
+      q.eq("ownerId", ownerId).eq("libraryQueryKey", libraryQueryKey),
+    )
+    .collect();
+
+  for (const exclusion of exclusions) {
+    await ctx.db.delete(exclusion._id);
+  }
+
+  return exclusions.length;
+}
+
+async function removeOwnerLibraryPackAccount(
+  ctx: MutationCtx,
+  ownerId: string,
+  libraryQueryKey: string,
+) {
+  const existingAccount = await getOwnerLibraryPackAccount(
+    ctx,
+    ownerId,
+    libraryQueryKey,
+  );
+
+  if (!existingAccount) {
+    await deleteOwnerLibraryPackPhotoExclusions(ctx, ownerId, libraryQueryKey);
+
+    return 0;
+  }
+
+  await ctx.db.delete(existingAccount._id);
+  await deleteOwnerLibraryPackPhotoExclusions(ctx, ownerId, libraryQueryKey);
+
+  return 1;
+}
+
 export const list = query({
   args: {},
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const ownerLibraryPackAccountKeys =
       await getOwnerLibraryPackAccountKeys(ctx, ownerId);
+    const excludedBackgroundIds =
+      await getOwnerLibraryPackPhotoExclusionBackgroundIds(ctx, ownerId);
 
     const backgrounds = await ctx.db
       .query("swiprBackgrounds")
@@ -160,7 +204,7 @@ export const list = query({
           background,
           ownerId,
           ownerLibraryPackAccountKeys,
-        ),
+        ) && !excludedBackgroundIds.has(background.id),
       )
       .map((background) => ({
         ...background,
@@ -263,6 +307,8 @@ export const listForProviderByLibraryPackNames = query({
     );
     const ownerLibraryPackAccountKeys =
       await getOwnerLibraryPackAccountKeys(ctx, ownerId);
+    const excludedBackgroundIds =
+      await getOwnerLibraryPackPhotoExclusionBackgroundIds(ctx, ownerId);
 
     if (selectedPackKeys.size === 0) {
       return [];
@@ -281,6 +327,7 @@ export const listForProviderByLibraryPackNames = query({
           ownerId,
           ownerLibraryPackAccountKeys,
         ) &&
+        !excludedBackgroundIds.has(background.id) &&
         getIsGlobalPexelsPackBackground(background) &&
         selectedPackKeys.has(
           normalizeSwiprLibraryQueryKey(background.libraryQuery),
@@ -400,17 +447,43 @@ export const removeFromLibraryPack = mutation({
       .withIndex("by_background_id", (q) => q.eq("id", id))
       .unique();
 
-    if (!background || background.uploadedByOwnerId !== ownerId) {
+    if (!background || !getIsGlobalPexelsPackBackground(background)) {
       throw new Error("Swipr photo not found.");
+    }
+
+    const libraryQueryKey = normalizeSwiprLibraryQueryKey(
+      background.libraryQuery,
+    );
+    const existingAccount = await getOwnerLibraryPackAccount(
+      ctx,
+      ownerId,
+      libraryQueryKey,
+    );
+
+    if (!existingAccount) {
+      throw new Error("Pexels pack is not in your account.");
     }
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
       key: ownerId,
       throws: true,
     });
-    await ctx.db.patch(background._id, {
-      libraryQuery: undefined,
-    });
+    const existingExclusion = await ctx.db
+      .query("swiprLibraryPackPhotoExclusions")
+      .withIndex("by_owner_background", (q) =>
+        q.eq("ownerId", ownerId).eq("backgroundId", background.id),
+      )
+      .unique();
+
+    if (!existingExclusion) {
+      await ctx.db.insert("swiprLibraryPackPhotoExclusions", {
+        ownerId,
+        backgroundId: background.id,
+        libraryQuery: background.libraryQuery ?? "",
+        libraryQueryKey,
+        createdAt: new Date().toISOString(),
+      });
+    }
 
     return background;
   },
@@ -440,6 +513,11 @@ export const addLibraryPackToAccount = mutation({
       throws: true,
     });
     await ensureOwnerLibraryPackAccount(ctx, ownerId, pack.libraryQuery);
+    await deleteOwnerLibraryPackPhotoExclusions(
+      ctx,
+      ownerId,
+      libraryQueryKey,
+    );
 
     return {
       count: pack.backgrounds.length,
@@ -455,14 +533,19 @@ export const removeLibraryPackFromAccount = mutation({
   handler: async (ctx, { libraryQuery }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const libraryQueryKey = normalizeSwiprLibraryQueryKey(libraryQuery);
-    const existingAccount = await ctx.db
-      .query("swiprLibraryPackAccounts")
-      .withIndex("by_owner_query", (q) =>
-        q.eq("ownerId", ownerId).eq("libraryQueryKey", libraryQueryKey),
-      )
-      .unique();
+    const existingAccount = await getOwnerLibraryPackAccount(
+      ctx,
+      ownerId,
+      libraryQueryKey,
+    );
 
     if (!existingAccount) {
+      await deleteOwnerLibraryPackPhotoExclusions(
+        ctx,
+        ownerId,
+        libraryQueryKey,
+      );
+
       return {
         count: 0,
       };
@@ -472,7 +555,7 @@ export const removeLibraryPackFromAccount = mutation({
       key: ownerId,
       throws: true,
     });
-    await ctx.db.delete(existingAccount._id);
+    await removeOwnerLibraryPackAccount(ctx, ownerId, libraryQueryKey);
 
     return {
       count: 1,
@@ -486,55 +569,11 @@ export const renameLibraryPack = mutation({
     toLibraryQuery: v.string(),
   },
   handler: async (ctx, { fromLibraryQuery, toLibraryQuery }) => {
-    const ownerId = await getAuthenticatedOwnerId(ctx);
-    const libraryQuery = normalizeSwiprLibraryQueryName(toLibraryQuery);
+    await getAuthenticatedOwnerId(ctx);
+    void fromLibraryQuery;
+    void toLibraryQuery;
 
-    if (!libraryQuery) {
-      throw new Error("Pack name is required.");
-    }
-
-    const backgrounds = await getOwnerLibraryPackBackgrounds(
-      ctx,
-      ownerId,
-      fromLibraryQuery,
-    );
-
-    if (!backgrounds.length) {
-      throw new Error("Pexels pack not found.");
-    }
-
-    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
-      count: backgrounds.length,
-      key: ownerId,
-      throws: true,
-    });
-
-    const fromLibraryQueryKey = normalizeSwiprLibraryQueryKey(fromLibraryQuery);
-    const packAccounts = await ctx.db
-      .query("swiprLibraryPackAccounts")
-      .withIndex("by_query_key", (q) =>
-        q.eq("libraryQueryKey", fromLibraryQueryKey),
-      )
-      .collect();
-    const libraryQueryKey = normalizeSwiprLibraryQueryKey(libraryQuery);
-
-    for (const background of backgrounds) {
-      await ctx.db.patch(background._id, {
-        libraryQuery,
-      });
-    }
-
-    for (const packAccount of packAccounts) {
-      await ctx.db.patch(packAccount._id, {
-        libraryQuery,
-        libraryQueryKey,
-      });
-    }
-
-    return {
-      count: backgrounds.length,
-      libraryQuery,
-    };
+    throw new Error("Pexels packs are shared now and cannot be renamed.");
   },
 });
 
@@ -544,40 +583,37 @@ export const removeLibraryPack = mutation({
   },
   handler: async (ctx, { libraryQuery }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const backgrounds = await getOwnerLibraryPackBackgrounds(
+    const libraryQueryKey = normalizeSwiprLibraryQueryKey(libraryQuery);
+    const existingAccount = await getOwnerLibraryPackAccount(
       ctx,
       ownerId,
-      libraryQuery,
+      libraryQueryKey,
     );
 
-    if (!backgrounds.length) {
+    if (!existingAccount) {
+      await deleteOwnerLibraryPackPhotoExclusions(
+        ctx,
+        ownerId,
+        libraryQueryKey,
+      );
+
       return {
         count: 0,
       };
     }
 
-    await rateLimiter.limit(ctx, "convexRecordDelete", {
-      count: backgrounds.length,
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
       key: ownerId,
       throws: true,
     });
-
-    const libraryQueryKey = normalizeSwiprLibraryQueryKey(libraryQuery);
-    const packAccounts = await ctx.db
-      .query("swiprLibraryPackAccounts")
-      .withIndex("by_query_key", (q) => q.eq("libraryQueryKey", libraryQueryKey))
-      .collect();
-
-    for (const background of backgrounds) {
-      await ctx.db.delete(background._id);
-    }
-
-    for (const packAccount of packAccounts) {
-      await ctx.db.delete(packAccount._id);
-    }
+    const count = await removeOwnerLibraryPackAccount(
+      ctx,
+      ownerId,
+      libraryQueryKey,
+    );
 
     return {
-      count: backgrounds.length,
+      count,
     };
   },
 });

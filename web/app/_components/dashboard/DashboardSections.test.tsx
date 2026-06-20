@@ -70,6 +70,7 @@ describe("dashboard shell sections", () => {
     vi.mocked(useConvexAuth).mockReturnValue({
       isAuthenticated: true,
       isLoading: false,
+      isRefreshing: false,
     });
     vi.mocked(useQuery).mockReset();
     vi.mocked(useQuery).mockReturnValue([]);
