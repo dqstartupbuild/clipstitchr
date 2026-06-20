@@ -50,7 +50,9 @@ function createQueryChain(options: {
   };
   const chain = {
     collect: vi.fn(async () => options.collect ?? []),
+    first: vi.fn(async () => (options.collect ?? [options.unique ?? null])[0]),
     order: vi.fn(() => chain),
+    take: vi.fn(async () => options.collect ?? []),
     unique: vi.fn(async () => options.unique ?? null),
     withIndex: vi.fn(
       (_indexName: string, callback?: (q: typeof indexQuery) => void) => {
@@ -157,7 +159,10 @@ describe("convex swiprBackgrounds", () => {
       ...ownedBackground,
       isOwnedByCurrentUser: true,
     });
-    expect(backgroundQueryChain.withIndex).toHaveBeenCalledWith("by_created");
+    expect(backgroundQueryChain.withIndex).toHaveBeenCalledWith(
+      "by_uploaded_owner_created",
+      expect.any(Function),
+    );
     expect(backgroundQueryChain.withIndex).toHaveBeenCalledWith(
       "by_background_id",
       expect.any(Function),
@@ -188,6 +193,10 @@ describe("convex swiprBackgrounds", () => {
     const backgroundQueryChain = createQueryChain({
       collect: backgrounds,
     });
+    backgroundQueryChain.take
+      .mockResolvedValueOnce(backgrounds)
+      .mockResolvedValueOnce(backgrounds)
+      .mockResolvedValueOnce(backgrounds.slice(0, 2));
     const packAccountQueryChain = createQueryChain({
       collect: [createPackAccount({ libraryQueryKey: "desk setup" })],
     });

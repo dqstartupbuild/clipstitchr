@@ -31,7 +31,7 @@ vi.mock("@/convex/_generated/api", () => ({
       save: "swipes.save",
     },
     swiprBackgrounds: {
-      list: "swiprBackgrounds.list",
+      listByLibraryQueryKeys: "swiprBackgrounds.listByLibraryQueryKeys",
     },
   },
 }));
@@ -122,7 +122,6 @@ describe("POST /api/swipr/drafts/generate", () => {
       return Promise.resolve([
         createBackground("background_1", "desk setup"),
         createBackground("background_2", "desk setup"),
-        createBackground("background_3", "coffee shop"),
       ]);
     });
     const createdIds = [
@@ -203,6 +202,10 @@ describe("POST /api/swipr/drafts/generate", () => {
       replicate: { provider: "replicate" },
       slideCount: 8,
     });
+    expect(mocks.convex.query).toHaveBeenCalledWith(
+      api.swiprBackgrounds.listByLibraryQueryKeys,
+      { libraryQueryKeys: ["desk setup"] },
+    );
     expect(mocks.convex.mutation).toHaveBeenCalledWith(
       api.swipes.save,
       expect.objectContaining({
@@ -230,7 +233,7 @@ describe("POST /api/swipr/drafts/generate", () => {
         return Promise.resolve(createProductDocument());
       }
 
-      return Promise.resolve([createBackground("background_3", "coffee shop")]);
+      return Promise.resolve([]);
     });
 
     const response = await POST(

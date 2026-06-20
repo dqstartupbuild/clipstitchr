@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => {
     createSwiprSwipeFromConvexDocument: vi.fn(),
     deleteObjectsFromR2: vi.fn(),
     downloadCachedR2ImageBlobs: vi.fn(),
+    downloadBlobFromR2: vi.fn(),
     downloadSwiprBackgroundBlobFromR2: vi.fn(),
     getImageDimensions: vi.fn(),
     mutationFns,
@@ -124,6 +125,10 @@ vi.mock(
 
 vi.mock("@/lib/clipstitchr/client/r2/deleteObjectsFromR2", () => ({
   deleteObjectsFromR2: mocks.deleteObjectsFromR2,
+}));
+
+vi.mock("@/lib/clipstitchr/client/r2/downloadBlobFromR2", () => ({
+  downloadBlobFromR2: mocks.downloadBlobFromR2,
 }));
 
 vi.mock("@/lib/clipstitchr/client/r2/downloadCachedR2ImageBlobs", () => ({
@@ -263,6 +268,9 @@ describe("useSwiprLibraryState", () => {
     mocks.downloadSwiprBackgroundBlobFromR2.mockResolvedValue(
       new Blob(["background"], { type: "image/jpeg" }),
     );
+    mocks.downloadBlobFromR2.mockResolvedValue(
+      new Blob(["background"], { type: "image/jpeg" }),
+    );
     mocks.deleteObjectsFromR2.mockResolvedValue(undefined);
     mocks.downloadCachedR2ImageBlobs.mockImplementation(async (objects) => {
       return new Map(
@@ -342,10 +350,13 @@ describe("useSwiprLibraryState", () => {
       expect.any(Blob),
     );
 
-    expect(mocks.downloadSwiprBackgroundBlobFromR2).toHaveBeenCalledTimes(1);
-    expect(mocks.downloadSwiprBackgroundBlobFromR2).toHaveBeenCalledWith(
-      "background_1",
+    expect(mocks.downloadBlobFromR2).toHaveBeenCalledTimes(1);
+    expect(mocks.downloadBlobFromR2).toHaveBeenCalledWith(
+      expect.objectContaining({
+        key: "users/user_123/swipr/background_1.jpg",
+      }),
     );
+    expect(mocks.downloadSwiprBackgroundBlobFromR2).not.toHaveBeenCalled();
   });
 
   it("loads a missing background asset and blob by id", async () => {
@@ -385,7 +396,7 @@ describe("useSwiprLibraryState", () => {
     const download = new Promise<Blob>((resolve) => {
       resolveDownload = resolve;
     });
-    mocks.downloadSwiprBackgroundBlobFromR2.mockReturnValueOnce(download);
+    mocks.downloadBlobFromR2.mockReturnValueOnce(download);
     const state = useSwiprLibraryState();
 
     const firstLoad = state.loadBackgroundBlob("background_1");
@@ -395,13 +406,14 @@ describe("useSwiprLibraryState", () => {
 
     await expect(firstLoad).resolves.toBe(blob);
     await expect(secondLoad).resolves.toBe(blob);
-    expect(mocks.downloadSwiprBackgroundBlobFromR2).toHaveBeenCalledTimes(1);
+    expect(mocks.downloadBlobFromR2).toHaveBeenCalledTimes(1);
   });
 
   it("continues queued background downloads after a rejected download", async () => {
-    mocks.downloadSwiprBackgroundBlobFromR2
-      .mockRejectedValueOnce(new Error("download failed"))
-      .mockResolvedValueOnce(new Blob(["second"], { type: "image/jpeg" }));
+    mocks.downloadBlobFromR2.mockRejectedValueOnce(new Error("download failed"));
+    mocks.downloadSwiprBackgroundBlobFromR2.mockResolvedValueOnce(
+      new Blob(["second"], { type: "image/jpeg" }),
+    );
     const state = useSwiprLibraryState();
 
     await expect(state.loadBackgroundBlob("background_1")).rejects.toThrow(
@@ -411,8 +423,7 @@ describe("useSwiprLibraryState", () => {
       expect.any(Blob),
     );
 
-    expect(mocks.downloadSwiprBackgroundBlobFromR2).toHaveBeenNthCalledWith(
-      2,
+    expect(mocks.downloadSwiprBackgroundBlobFromR2).toHaveBeenCalledWith(
       "background_2",
     );
   });
@@ -642,8 +653,10 @@ describe("useSwiprLibraryState", () => {
       }),
     );
 
-    expect(mocks.downloadSwiprBackgroundBlobFromR2).toHaveBeenCalledWith(
-      "background_1",
+    expect(mocks.downloadBlobFromR2).toHaveBeenCalledWith(
+      expect.objectContaining({
+        key: "users/user_123/swipr/background_1.jpg",
+      }),
     );
     expect(mocks.renderSwiprSlideBlob).toHaveBeenCalledWith(
       expect.any(Blob),

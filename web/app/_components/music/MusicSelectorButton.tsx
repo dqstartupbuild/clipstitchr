@@ -26,8 +26,8 @@ export function MusicSelectorButton({
   source,
   onSelectTrack,
 }: MusicSelectorButtonProps) {
-  const library = useSharedMusicTracks();
   const [isOpen, setIsOpen] = useState(false);
+  const library = useSharedMusicTracks(isOpen);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

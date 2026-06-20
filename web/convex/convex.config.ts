@@ -6,6 +6,8 @@ const app = defineApp();
 
 app.use(rateLimiter);
 app.use(aggregate, { name: "videoClipCounts" });
+app.use(aggregate, { name: "videoClipProductCounts" });
 app.use(aggregate, { name: "stitchCounts" });
+app.use(aggregate, { name: "stitchProductCounts" });
 
 export default app;

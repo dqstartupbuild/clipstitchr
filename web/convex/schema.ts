@@ -102,13 +102,32 @@ export default defineSchema({
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
     .index("by_owner_is_posted_created", ["ownerId", "isPosted", "createdAt"])
+    .index("by_owner_product_is_posted_created", [
+      "ownerId",
+      "productId",
+      "isPosted",
+      "createdAt",
+    ])
     .index("by_owner_library_kind_created", [
       "ownerId",
       "libraryKind",
       "createdAt",
     ])
+    .index("by_owner_product_library_kind_created", [
+      "ownerId",
+      "productId",
+      "libraryKind",
+      "createdAt",
+    ])
     .index("by_owner_library_kind_is_posted_created", [
       "ownerId",
+      "libraryKind",
+      "isPosted",
+      "createdAt",
+    ])
+    .index("by_owner_product_library_kind_is_posted_created", [
+      "ownerId",
+      "productId",
       "libraryKind",
       "isPosted",
       "createdAt",
@@ -151,6 +170,13 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
+    .index("by_owner_avatar_created", ["ownerId", "avatarId", "createdAt"])
+    .index("by_owner_avatar_product_created", [
+      "ownerId",
+      "avatarId",
+      "productId",
+      "createdAt",
+    ])
     .index("by_owner_id", ["ownerId", "id"]),
   avatars: defineTable({
     ownerId: v.string(),
@@ -241,6 +267,12 @@ export default defineSchema({
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
     .index("by_owner_is_posted_created", ["ownerId", "isPosted", "createdAt"])
+    .index("by_owner_product_is_posted_created", [
+      "ownerId",
+      "productId",
+      "isPosted",
+      "createdAt",
+    ])
     .index("by_owner_id", ["ownerId", "id"]),
   stitchTemplates: defineTable({
     ownerId: v.string(),
@@ -298,6 +330,7 @@ export default defineSchema({
     description: v.optional(v.string()),
     details: v.optional(v.string()),
     libraryQuery: v.optional(v.string()),
+    libraryQueryKey: v.optional(v.string()),
     pexelsPhotoId: v.optional(v.number()),
     source: swiprBackgroundSourceValidator,
     imageObject: r2ObjectValidator,
@@ -308,6 +341,14 @@ export default defineSchema({
     createdAt: v.string(),
   })
     .index("by_created", ["createdAt"])
+    .index("by_uploaded_owner_created", ["uploadedByOwnerId", "createdAt"])
+    .index("by_source_created", ["source", "createdAt"])
+    .index("by_source_library_query_created", [
+      "source",
+      "libraryQueryKey",
+      "createdAt",
+    ])
+    .index("by_source_pexels_photo", ["source", "pexelsPhotoId"])
     .index("by_background_id", ["id"]),
   swiprLibraryPackAccounts: defineTable({
     ownerId: v.string(),
@@ -352,9 +393,16 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_owner_updated", ["ownerId", "updatedAt"])
+    .index("by_owner_is_posted_updated", ["ownerId", "isPosted", "updatedAt"])
     .index("by_owner_product_updated", [
       "ownerId",
       "productSourceId",
+      "updatedAt",
+    ])
+    .index("by_owner_product_is_posted_updated", [
+      "ownerId",
+      "productSourceId",
+      "isPosted",
       "updatedAt",
     ])
     .index("by_owner_id", ["ownerId", "id"]),
@@ -440,7 +488,15 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"])
+    .index("by_owner_status_created", ["ownerId", "status", "createdAt"])
     .index("by_status_created", ["status", "createdAt"])
+    .index("by_status_job_type_created", ["status", "jobType", "createdAt"])
+    .index("by_status_job_type_stage_created", [
+      "status",
+      "jobType",
+      "stage",
+      "createdAt",
+    ])
     .index("by_idempotency_key", ["idempotencyKey"]),
   providerJobs: defineTable({
     ownerId: v.string(),
@@ -465,7 +521,15 @@ export default defineSchema({
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"])
     .index("by_owner_status", ["ownerId", "status"])
+    .index("by_owner_status_created", ["ownerId", "status", "createdAt"])
     .index("by_status_created", ["status", "createdAt"])
+    .index("by_status_job_type_created", ["status", "jobType", "createdAt"])
+    .index("by_status_job_type_stage_created", [
+      "status",
+      "jobType",
+      "stage",
+      "createdAt",
+    ])
     .index("by_idempotency_key", ["idempotencyKey"]),
   workerLaunchState: defineTable({
     worker: v.union(v.literal("media"), v.literal("provider")),
@@ -491,6 +555,11 @@ export default defineSchema({
     .index("by_owner_dedupe", ["ownerId", "dedupeKey"])
     .index("by_owner_id", ["ownerId", "id"])
     .index("by_owner_is_read_created", ["ownerId", "isRead", "createdAt"]),
+  notificationSummaries: defineTable({
+    ownerId: v.string(),
+    unreadCount: v.number(),
+    updatedAt: v.string(),
+  }).index("by_owner", ["ownerId"]),
   automationPreferences: defineTable({
     ownerId: v.string(),
     productId: v.optional(v.string()),
@@ -569,9 +638,18 @@ export default defineSchema({
     completedAt: v.optional(v.string()),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"])
     .index("by_owner_status", ["ownerId", "status"])
     .index("by_status_created", ["status", "createdAt"])
+    .index("by_status_tool_created", ["status", "tool", "createdAt"])
+    .index("by_status_tool_stage_created", [
+      "status",
+      "tool",
+      "stage",
+      "createdAt",
+    ])
     .index("by_run", ["runId"])
+    .index("by_run_status", ["runId", "status"])
     .index("by_idempotency_key", ["idempotencyKey"]),
   automationPairHistory: defineTable({
     ownerId: v.string(),

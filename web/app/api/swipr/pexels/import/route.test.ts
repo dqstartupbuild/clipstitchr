@@ -29,7 +29,7 @@ vi.mock("@/convex/_generated/api", () => ({
     },
     swiprBackgrounds: {
       addLibraryPackToAccount: "swiprBackgrounds.addLibraryPackToAccount",
-      listGlobalPexels: "swiprBackgrounds.listGlobalPexels",
+      getExistingPexelsPhotoIds: "swiprBackgrounds.getExistingPexelsPhotoIds",
       save: "swiprBackgrounds.save",
     },
   },
@@ -169,6 +169,10 @@ describe("POST /api/swipr/pexels/import", () => {
       perPage: 2,
       query: "desk setup",
     });
+    expect(mocks.convex.query).toHaveBeenCalledWith(
+      api.swiprBackgrounds.getExistingPexelsPhotoIds,
+      { photoIds: [101, 102] },
+    );
     expect(mocks.putR2Object).toHaveBeenCalledWith(
       expect.objectContaining({
         contentType: "image/jpeg",
@@ -214,19 +218,13 @@ describe("POST /api/swipr/pexels/import", () => {
       expect.anything(),
     );
     expect(mocks.convex.query).toHaveBeenCalledWith(
-      api.swiprBackgrounds.listGlobalPexels,
-      {},
+      api.swiprBackgrounds.getExistingPexelsPhotoIds,
+      { photoIds: [101, 102] },
     );
   });
 
   it("reuses existing pack names and skips already imported photos", async () => {
-    mocks.convex.query.mockResolvedValue([
-      {
-        details: "Pexels photo: https://pexels.com/photo/101",
-        libraryQuery: "Desk Setup",
-        source: "pexels",
-      },
-    ]);
+    mocks.convex.query.mockResolvedValue([101]);
 
     const response = await POST(
       createRequest({
@@ -240,7 +238,7 @@ describe("POST /api/swipr/pexels/import", () => {
       imported: 1,
       importedPexelsPhotoIds: [102],
       page: 1,
-      query: "Desk Setup",
+      query: "desk setup",
       searched: 2,
       skipped: 1,
     });
@@ -252,7 +250,7 @@ describe("POST /api/swipr/pexels/import", () => {
       api.swiprBackgrounds.save,
       expect.objectContaining({
         id: "background_1",
-        libraryQuery: "Desk Setup",
+        libraryQuery: "desk setup",
         pexelsPhotoId: 102,
       }),
     );

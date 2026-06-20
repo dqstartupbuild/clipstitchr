@@ -5,7 +5,7 @@ import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
-import { videoClipCounts } from "./aggregateCounts";
+import { videoClipCounts, videoClipProductCounts } from "./aggregateCounts";
 import { getCliprGeneratedClipStorageFields } from "./getCliprGeneratedClipStorageFields";
 import { rateLimiter } from "./rateLimiter";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
@@ -1154,14 +1154,20 @@ export const finalizeWithClipFromMediaWorker = mutation({
       const updatedClip = await ctx.db.get(existingClip._id);
 
       if (updatedClip) {
-        await videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip);
+        await Promise.all([
+          videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(ctx, existingClip, updatedClip),
+        ]);
       }
     } else {
       const insertedClipId = await ctx.db.insert("videoClips", clip);
       const insertedClip = await ctx.db.get(insertedClipId);
 
       if (insertedClip) {
-        await videoClipCounts.insertIfDoesNotExist(ctx, insertedClip);
+        await Promise.all([
+        videoClipCounts.insertIfDoesNotExist(ctx, insertedClip),
+        videoClipProductCounts.insertIfDoesNotExist(ctx, insertedClip),
+      ]);
       }
     }
 

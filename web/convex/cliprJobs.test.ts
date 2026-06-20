@@ -24,6 +24,11 @@ const mocks = vi.hoisted(() => ({
     insertIfDoesNotExist: vi.fn(),
     replaceOrInsert: vi.fn(),
   },
+  videoClipProductCounts: {
+    deleteIfExists: vi.fn(),
+    insertIfDoesNotExist: vi.fn(),
+    replaceOrInsert: vi.fn(),
+  },
 }));
 
 vi.mock("./_generated/server", () => ({
@@ -49,6 +54,7 @@ vi.mock("./rateLimiter", () => ({
 
 vi.mock("./aggregateCounts", () => ({
   videoClipCounts: mocks.videoClipCounts,
+  videoClipProductCounts: mocks.videoClipProductCounts,
 }));
 
 function getHandler<Args, Result>(convexFunction: unknown) {

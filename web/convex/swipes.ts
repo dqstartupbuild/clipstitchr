@@ -17,6 +17,7 @@ const postedStatusValidator = v.union(
   v.literal("all"),
   v.literal("posted"),
 );
+const SWIPE_LIST_LIMIT = 120;
 
 const saveArgs = {
   id: v.string(),
@@ -53,27 +54,68 @@ export const list = query({
   handler: async (ctx, { productId, postedStatus = "all" }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const productFilterId = productId?.trim() || undefined;
-    const swipes = ctx.db
-      .query("swipes")
-      .withIndex("by_owner_updated", (q) => q.eq("ownerId", ownerId))
-      .order("desc");
-    const productSwipes = productFilterId
-      ? swipes.filter((q) => q.eq(q.field("productSourceId"), productFilterId))
-      : swipes;
 
     if (postedStatus === "active") {
-      return await productSwipes
-        .filter((q) => q.eq(q.field("isPosted"), undefined))
-        .collect();
+      if (productFilterId) {
+        return await ctx.db
+          .query("swipes")
+          .withIndex("by_owner_product_is_posted_updated", (q) =>
+            q
+              .eq("ownerId", ownerId)
+              .eq("productSourceId", productFilterId)
+              .eq("isPosted", undefined),
+          )
+          .order("desc")
+          .take(SWIPE_LIST_LIMIT);
+      }
+
+      return await ctx.db
+        .query("swipes")
+        .withIndex("by_owner_is_posted_updated", (q) =>
+          q.eq("ownerId", ownerId).eq("isPosted", undefined),
+        )
+        .order("desc")
+        .take(SWIPE_LIST_LIMIT);
     }
 
     if (postedStatus === "posted") {
-      return await productSwipes
-        .filter((q) => q.eq(q.field("isPosted"), true))
-        .collect();
+      if (productFilterId) {
+        return await ctx.db
+          .query("swipes")
+          .withIndex("by_owner_product_is_posted_updated", (q) =>
+            q
+              .eq("ownerId", ownerId)
+              .eq("productSourceId", productFilterId)
+              .eq("isPosted", true),
+          )
+          .order("desc")
+          .take(SWIPE_LIST_LIMIT);
+      }
+
+      return await ctx.db
+        .query("swipes")
+        .withIndex("by_owner_is_posted_updated", (q) =>
+          q.eq("ownerId", ownerId).eq("isPosted", true),
+        )
+        .order("desc")
+        .take(SWIPE_LIST_LIMIT);
     }
 
-    return await productSwipes.collect();
+    if (productFilterId) {
+      return await ctx.db
+        .query("swipes")
+        .withIndex("by_owner_product_updated", (q) =>
+          q.eq("ownerId", ownerId).eq("productSourceId", productFilterId),
+        )
+        .order("desc")
+        .take(SWIPE_LIST_LIMIT);
+    }
+
+    return await ctx.db
+      .query("swipes")
+      .withIndex("by_owner_updated", (q) => q.eq("ownerId", ownerId))
+      .order("desc")
+      .take(SWIPE_LIST_LIMIT);
   },
 });
 

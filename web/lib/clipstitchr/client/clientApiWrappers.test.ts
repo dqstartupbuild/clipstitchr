@@ -528,7 +528,12 @@ describe("client API wrappers", () => {
       expiresIn: 60,
       url: "direct",
     });
-    await expect(downloadBlobFromR2(r2Object)).rejects.toThrow(
+    await expect(
+      downloadBlobFromR2({
+        ...r2Object,
+        key: "users/user_123/clips/failing-video.mp4",
+      }),
+    ).rejects.toThrow(
       "Unable to download media from R2.",
     );
 

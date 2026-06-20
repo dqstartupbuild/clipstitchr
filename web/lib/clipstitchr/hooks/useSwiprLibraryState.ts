@@ -9,6 +9,7 @@ import { createSwiprSwipeFromConvexDocument } from "@/lib/clipstitchr/backend/cr
 import { analyzeSwiprBackground } from "@/lib/clipstitchr/client/analyzeSwiprBackground";
 import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
 import { downloadCachedR2ImageBlobs } from "@/lib/clipstitchr/client/r2/downloadCachedR2ImageBlobs";
+import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
 import { downloadSwiprBackgroundBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadSwiprBackgroundBlobFromR2";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { SWIPR_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/swiprPosterCaptureVersion";
@@ -28,21 +29,16 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   const pathname = usePathname() ?? "";
   const convex = useConvex();
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
-  const isDashboardHome = pathname === "/dashboard";
   const isLibraryRoute = pathname.startsWith("/dashboard/library");
   const isSettingsRoute = pathname.startsWith("/dashboard/settings");
   const isSwiprRoute = pathname.startsWith("/dashboard/swipr");
   const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
   const shouldLoadBackgrounds =
     isAuthenticated &&
-    (isDashboardHome ||
-      isLibraryRoute ||
-      isSettingsRoute ||
-      isSwiprRoute ||
-      isUploadsRoute);
+    (isLibraryRoute || isSettingsRoute || isSwiprRoute || isUploadsRoute);
   const shouldLoadSwipes =
     isAuthenticated &&
-    (isDashboardHome || isLibraryRoute || isSwiprRoute || isUploadsRoute);
+    (isLibraryRoute || isSwiprRoute || isUploadsRoute);
   const shouldLoadPostedSwipes =
     isAuthenticated && (isLibraryRoute || isUploadsRoute);
   const shouldLoadGlobalPexelsBackgrounds = isAuthenticated && isLibraryRoute;
@@ -141,9 +137,18 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
       return pendingDownload;
     }
 
+    const backgroundObject =
+      backgroundDocuments?.find((background) => background.id === id)
+        ?.imageObject ??
+      globalPexelsBackgroundDocuments?.find((background) => background.id === id)
+        ?.imageObject;
+    const downloadBackground = () =>
+      backgroundObject
+        ? downloadBlobFromR2(backgroundObject)
+        : downloadSwiprBackgroundBlobFromR2(id);
     const download = backgroundDownloadQueueRef.current.then(
-      () => downloadSwiprBackgroundBlobFromR2(id),
-      () => downloadSwiprBackgroundBlobFromR2(id),
+      downloadBackground,
+      downloadBackground,
     );
 
     backgroundDownloadQueueRef.current = download.then(
@@ -173,7 +178,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     } finally {
       backgroundDownloadPromisesRef.current.delete(id);
     }
-  }, []);
+  }, [backgroundDocuments, globalPexelsBackgroundDocuments]);
 
   const loadBackgroundAsset = useCallback(
     async (id: string) => {

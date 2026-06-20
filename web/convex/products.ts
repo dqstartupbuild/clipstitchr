@@ -20,6 +20,7 @@ const CLIPR_FILLER_KEY_MAX_LENGTH = 40;
 const CLIPR_FILLER_VALUE_MAX_LENGTH = 120;
 const CLIPR_FILLER_VALUE_LIMIT = 16;
 const CLIPR_HOOK_STYLE_KEY_MAX_LENGTH = 80;
+const PRODUCT_LIST_LIMIT = 100;
 
 function normalizeText(value: string, maxLength: number) {
   return value.trim().slice(0, maxLength);
@@ -67,7 +68,7 @@ export const list = query({
       .query("products")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order("desc")
-      .collect();
+      .take(PRODUCT_LIST_LIMIT);
   },
 });
 

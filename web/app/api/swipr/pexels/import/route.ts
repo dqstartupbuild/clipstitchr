@@ -17,8 +17,7 @@ import { createR2ObjectKey } from "@/lib/clipstitchr/server/r2/createR2ObjectKey
 import { putR2Object } from "@/lib/clipstitchr/server/r2/putR2Object";
 import type { PexelsPhotoResult } from "@/lib/clipstitchr/types/PexelsPhotoResult";
 import { createId } from "@/lib/clipstitchr/utils/createId";
-import { getImportedPexelsPhotoIds } from "@/lib/clipstitchr/utils/getImportedPexelsPhotoIds";
-import { getSwiprLibraryQueryForImport } from "@/lib/clipstitchr/utils/getSwiprLibraryQueryForImport";
+import { normalizeSwiprLibraryQueryName } from "@/lib/clipstitchr/utils/normalizeSwiprLibraryQueryName";
 
 export const runtime = "nodejs";
 
@@ -64,15 +63,15 @@ export async function POST(request: Request) {
         perPage: count,
         query,
       }));
-    const backgrounds = await convex.query(
-      api.swiprBackgrounds.listGlobalPexels,
-      {},
+    const existingPexelsPhotoIds = new Set(
+      await convex.query(api.swiprBackgrounds.getExistingPexelsPhotoIds, {
+        photoIds: photos.map((photo) => photo.id),
+      }),
     );
-    const existingPexelsPhotoIds = getImportedPexelsPhotoIds(backgrounds);
     const photosToImport = photos.filter(
       (photo) => !existingPexelsPhotoIds.has(photo.id),
     );
-    const libraryQuery = getSwiprLibraryQueryForImport(backgrounds, query);
+    const libraryQuery = normalizeSwiprLibraryQueryName(query);
     const importedIds: string[] = [];
     const importedPhotoIds: number[] = [];
 

@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
+import { adjustNotificationUnreadSummary } from "./adjustNotificationUnreadSummary";
 
 export const listRecent = query({
   args: {
@@ -16,6 +17,30 @@ export const listRecent = query({
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order("desc")
       .take(cappedLimit);
+  },
+});
+
+export const unreadCount = query({
+  args: {},
+  handler: async (ctx) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const summary = await ctx.db
+      .query("notificationSummaries")
+      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+      .unique();
+
+    if (summary) {
+      return summary.unreadCount;
+    }
+
+    const unreadNotifications = await ctx.db
+      .query("notifications")
+      .withIndex("by_owner_is_read_created", (q) =>
+        q.eq("ownerId", ownerId).eq("isRead", false),
+      )
+      .take(1000);
+
+    return unreadNotifications.length;
   },
 });
 
@@ -45,6 +70,11 @@ export const markRead = mutation({
     await ctx.db.patch(notification._id, {
       isRead: true,
       readAt,
+      updatedAt: readAt,
+    });
+    await adjustNotificationUnreadSummary(ctx, {
+      ownerId,
+      delta: -1,
       updatedAt: readAt,
     });
 
@@ -77,6 +107,11 @@ export const markAllRead = mutation({
         updatedAt: readAt,
       });
     }
+    await adjustNotificationUnreadSummary(ctx, {
+      ownerId,
+      delta: -unreadNotifications.length,
+      updatedAt: readAt,
+    });
 
     return unreadNotifications.length;
   },
@@ -105,6 +140,14 @@ export const remove = mutation({
 
     await ctx.db.delete(notification._id);
 
+    if (!notification.isRead) {
+      await adjustNotificationUnreadSummary(ctx, {
+        ownerId,
+        delta: -1,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
     return notification._id;
   },
 });
@@ -124,9 +167,20 @@ export const clearAll = mutation({
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .take(100);
 
+    let unreadCount = 0;
+
     for (const notification of notifications) {
+      if (!notification.isRead) {
+        unreadCount += 1;
+      }
+
       await ctx.db.delete(notification._id);
     }
+    await adjustNotificationUnreadSummary(ctx, {
+      ownerId,
+      delta: -unreadCount,
+      updatedAt: new Date().toISOString(),
+    });
 
     return notifications.length;
   },

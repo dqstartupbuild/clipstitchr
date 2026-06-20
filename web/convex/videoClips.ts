@@ -7,7 +7,7 @@ import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { createNotification } from "./createNotification";
-import { videoClipCounts } from "./aggregateCounts";
+import { videoClipCounts, videoClipProductCounts } from "./aggregateCounts";
 import { getVideoClipCanBePosted } from "./getVideoClipCanBePosted";
 import { getVideoClipLibraryKind } from "./getVideoClipLibraryKind";
 import { getVideoClipNotificationCopy } from "./getVideoClipNotificationCopy";
@@ -95,46 +95,66 @@ export const list = query({
     const productFilterId = productId?.trim() || undefined;
 
     if (postedStatus === "active") {
-      const query = ctx.db
+      if (productFilterId) {
+        return await ctx.db
+          .query("videoClips")
+          .withIndex("by_owner_product_is_posted_created", (q) =>
+            q
+              .eq("ownerId", ownerId)
+              .eq("productId", productFilterId)
+              .eq("isPosted", undefined),
+          )
+          .order(sortOrder === "oldest" ? "asc" : "desc")
+          .paginate(paginationOpts);
+      }
+
+      return await ctx.db
         .query("videoClips")
         .withIndex("by_owner_is_posted_created", (q) =>
           q.eq("ownerId", ownerId).eq("isPosted", undefined),
         )
-        .order(sortOrder === "oldest" ? "asc" : "desc");
-
-      return await (productFilterId
-        ? query.filter((q) =>
-            getVideoClipProductScopeFilter(q, productFilterId),
-          )
-        : query
-      ).paginate(paginationOpts);
+        .order(sortOrder === "oldest" ? "asc" : "desc")
+        .paginate(paginationOpts);
     }
 
     if (postedStatus === "posted") {
-      const query = ctx.db
+      if (productFilterId) {
+        return await ctx.db
+          .query("videoClips")
+          .withIndex("by_owner_product_is_posted_created", (q) =>
+            q
+              .eq("ownerId", ownerId)
+              .eq("productId", productFilterId)
+              .eq("isPosted", true),
+          )
+          .order(sortOrder === "oldest" ? "asc" : "desc")
+          .paginate(paginationOpts);
+      }
+
+      return await ctx.db
         .query("videoClips")
         .withIndex("by_owner_is_posted_created", (q) =>
           q.eq("ownerId", ownerId).eq("isPosted", true),
         )
-        .order(sortOrder === "oldest" ? "asc" : "desc");
-
-      return await (productFilterId
-        ? query.filter((q) =>
-            getVideoClipProductScopeFilter(q, productFilterId),
-          )
-        : query
-      ).paginate(paginationOpts);
+        .order(sortOrder === "oldest" ? "asc" : "desc")
+        .paginate(paginationOpts);
     }
 
-    const query = ctx.db
+    if (productFilterId) {
+      return await ctx.db
+        .query("videoClips")
+        .withIndex("by_owner_product_created", (q) =>
+          q.eq("ownerId", ownerId).eq("productId", productFilterId),
+        )
+        .order(sortOrder === "oldest" ? "asc" : "desc")
+        .paginate(paginationOpts);
+    }
+
+    return await ctx.db
       .query("videoClips")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order(sortOrder === "oldest" ? "asc" : "desc");
-
-    return await (productFilterId
-      ? query.filter((q) => getVideoClipProductScopeFilter(q, productFilterId))
-      : query
-    ).paginate(paginationOpts);
+      .order(sortOrder === "oldest" ? "asc" : "desc")
+      .paginate(paginationOpts);
   },
 });
 
@@ -154,6 +174,20 @@ export const listByLibraryKind = query({
     const productFilterId = productId?.trim() || undefined;
 
     if (postedStatus === "active") {
+      if (productFilterId && kind !== "ugc") {
+        return await ctx.db
+          .query("videoClips")
+          .withIndex("by_owner_product_library_kind_is_posted_created", (q) =>
+            q
+              .eq("ownerId", ownerId)
+              .eq("productId", productFilterId)
+              .eq("libraryKind", kind)
+              .eq("isPosted", undefined),
+          )
+          .order(sortOrder === "oldest" ? "asc" : "desc")
+          .paginate(paginationOpts);
+      }
+
       const query = ctx.db
         .query("videoClips")
         .withIndex("by_owner_library_kind_is_posted_created", (q) =>
@@ -173,6 +207,20 @@ export const listByLibraryKind = query({
     }
 
     if (postedStatus === "posted") {
+      if (productFilterId && kind !== "ugc") {
+        return await ctx.db
+          .query("videoClips")
+          .withIndex("by_owner_product_library_kind_is_posted_created", (q) =>
+            q
+              .eq("ownerId", ownerId)
+              .eq("productId", productFilterId)
+              .eq("libraryKind", kind)
+              .eq("isPosted", true),
+          )
+          .order(sortOrder === "oldest" ? "asc" : "desc")
+          .paginate(paginationOpts);
+      }
+
       const query = ctx.db
         .query("videoClips")
         .withIndex("by_owner_library_kind_is_posted_created", (q) =>
@@ -186,6 +234,19 @@ export const listByLibraryKind = query({
           )
         : query
       ).paginate(paginationOpts);
+    }
+
+    if (productFilterId && kind !== "ugc") {
+      return await ctx.db
+        .query("videoClips")
+        .withIndex("by_owner_product_library_kind_created", (q) =>
+          q
+            .eq("ownerId", ownerId)
+            .eq("productId", productFilterId)
+            .eq("libraryKind", kind),
+        )
+        .order(sortOrder === "oldest" ? "asc" : "desc")
+        .paginate(paginationOpts);
     }
 
     const query = ctx.db
@@ -272,7 +333,10 @@ export const save = mutation({
       const updatedClip = await ctx.db.get(existingClip._id);
 
       if (updatedClip) {
-        await videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip);
+        await Promise.all([
+          videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(ctx, existingClip, updatedClip),
+        ]);
       }
 
       return existingClip._id;
@@ -282,7 +346,10 @@ export const save = mutation({
     const insertedClip = await ctx.db.get(clipId);
 
     if (insertedClip) {
-      await videoClipCounts.insertIfDoesNotExist(ctx, insertedClip);
+      await Promise.all([
+        videoClipCounts.insertIfDoesNotExist(ctx, insertedClip),
+        videoClipProductCounts.insertIfDoesNotExist(ctx, insertedClip),
+      ]);
     }
 
     const notificationCopy = getVideoClipNotificationCopy(args);
@@ -342,7 +409,10 @@ export const saveFromAutomation = mutation({
       const updatedClip = await ctx.db.get(existingClip._id);
 
       if (updatedClip) {
-        await videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip);
+        await Promise.all([
+          videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(ctx, existingClip, updatedClip),
+        ]);
       }
 
       return existingClip._id;
@@ -352,7 +422,10 @@ export const saveFromAutomation = mutation({
     const insertedClip = await ctx.db.get(clipId);
 
     if (insertedClip) {
-      await videoClipCounts.insertIfDoesNotExist(ctx, insertedClip);
+      await Promise.all([
+        videoClipCounts.insertIfDoesNotExist(ctx, insertedClip),
+        videoClipProductCounts.insertIfDoesNotExist(ctx, insertedClip),
+      ]);
     }
 
     return clipId;
@@ -406,7 +479,10 @@ export const saveFromMediaWorker = mutation({
       const updatedClip = await ctx.db.get(existingClip._id);
 
       if (updatedClip) {
-        await videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip);
+        await Promise.all([
+          videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(ctx, existingClip, updatedClip),
+        ]);
       }
 
       return existingClip._id;
@@ -416,7 +492,10 @@ export const saveFromMediaWorker = mutation({
     const insertedClip = await ctx.db.get(clipId);
 
     if (insertedClip) {
-      await videoClipCounts.insertIfDoesNotExist(ctx, insertedClip);
+      await Promise.all([
+        videoClipCounts.insertIfDoesNotExist(ctx, insertedClip),
+        videoClipProductCounts.insertIfDoesNotExist(ctx, insertedClip),
+      ]);
     }
 
     if (!automation) {
@@ -589,7 +668,10 @@ export const updateMetadata = mutation({
     const updatedClip = await ctx.db.get(clip._id);
 
     if (updatedClip) {
-      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+      await Promise.all([
+          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        ]);
     }
   },
 });
@@ -687,7 +769,10 @@ export const updateCrop = mutation({
     const updatedClip = await ctx.db.get(clip._id);
 
     if (updatedClip) {
-      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+      await Promise.all([
+          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        ]);
     }
   },
 });
@@ -731,7 +816,10 @@ export const applyQuickEdit = mutation({
     const updatedClip = await ctx.db.get(clip._id);
 
     if (updatedClip) {
-      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+      await Promise.all([
+          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        ]);
     }
   },
 });
@@ -766,7 +854,10 @@ export const resetQuickEdit = mutation({
     const updatedClip = await ctx.db.get(clip._id);
 
     if (updatedClip) {
-      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+      await Promise.all([
+          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        ]);
     }
   },
 });
@@ -803,7 +894,10 @@ export const updatePoster = mutation({
     const updatedClip = await ctx.db.get(clip._id);
 
     if (updatedClip) {
-      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+      await Promise.all([
+          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        ]);
     }
   },
 });
@@ -852,7 +946,10 @@ export const updateCliprMusic = mutation({
     const updatedClip = await ctx.db.get(clip._id);
 
     if (updatedClip) {
-      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+      await Promise.all([
+          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        ]);
     }
   },
 });
@@ -890,7 +987,10 @@ export const updatePostedStatus = mutation({
     const updatedClip = await ctx.db.get(clip._id);
 
     if (updatedClip) {
-      await videoClipCounts.replaceOrInsert(ctx, clip, updatedClip);
+      await Promise.all([
+          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        ]);
     }
   },
 });
@@ -917,7 +1017,10 @@ export const remove = mutation({
     }
 
     await ctx.db.delete(clip._id);
-    await videoClipCounts.deleteIfExists(ctx, clip);
+    await Promise.all([
+      videoClipCounts.deleteIfExists(ctx, clip),
+      videoClipProductCounts.deleteIfExists(ctx, clip),
+    ]);
     return clip;
   },
 });

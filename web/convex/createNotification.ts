@@ -1,4 +1,5 @@
 import type { MutationCtx } from "./_generated/server";
+import { adjustNotificationUnreadSummary } from "./adjustNotificationUnreadSummary";
 
 type CreateNotificationArgs = {
   ownerId: string;
@@ -44,7 +45,7 @@ export async function createNotification(
     return existingNotification._id;
   }
 
-  return await ctx.db.insert("notifications", {
+  const notificationId = await ctx.db.insert("notifications", {
     ownerId,
     productId,
     sourceType,
@@ -58,4 +59,12 @@ export async function createNotification(
     createdAt,
     updatedAt: createdAt,
   });
+
+  await adjustNotificationUnreadSummary(ctx, {
+    ownerId,
+    delta: 1,
+    updatedAt: createdAt,
+  });
+
+  return notificationId;
 }

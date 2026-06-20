@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as activeWorkerJobs from "../activeWorkerJobs.js";
+import type * as adjustNotificationUnreadSummary from "../adjustNotificationUnreadSummary.js";
 import type * as aggregateBackfills from "../aggregateBackfills.js";
 import type * as aggregateCounts from "../aggregateCounts.js";
 import type * as assertProductBelongsToOwner from "../assertProductBelongsToOwner.js";
@@ -42,9 +44,13 @@ import type * as createCompletedRunNotification from "../createCompletedRunNotif
 import type * as createNotification from "../createNotification.js";
 import type * as createQuickEditSuggestionsFromMetadata from "../createQuickEditSuggestionsFromMetadata.js";
 import type * as crons from "../crons.js";
+import type * as dashboardSummary from "../dashboardSummary.js";
 import type * as defaultAutomationCliprVoiceId from "../defaultAutomationCliprVoiceId.js";
+import type * as getActiveWorkerJobSummary from "../getActiveWorkerJobSummary.js";
 import type * as getAutomationPreferenceForProduct from "../getAutomationPreferenceForProduct.js";
 import type * as getAutomationProductScopeKey from "../getAutomationProductScopeKey.js";
+import type * as getAutomationRunHasIncompleteTasks from "../getAutomationRunHasIncompleteTasks.js";
+import type * as getAutomationRunHasTasks from "../getAutomationRunHasTasks.js";
 import type * as getAutomationToolDisabledReason from "../getAutomationToolDisabledReason.js";
 import type * as getAvatarNotificationCopy from "../getAvatarNotificationCopy.js";
 import type * as getCliprGeneratedClipStorageFields from "../getCliprGeneratedClipStorageFields.js";
@@ -158,6 +164,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  activeWorkerJobs: typeof activeWorkerJobs;
+  adjustNotificationUnreadSummary: typeof adjustNotificationUnreadSummary;
   aggregateBackfills: typeof aggregateBackfills;
   aggregateCounts: typeof aggregateCounts;
   assertProductBelongsToOwner: typeof assertProductBelongsToOwner;
@@ -192,9 +200,13 @@ declare const fullApi: ApiFromModules<{
   createNotification: typeof createNotification;
   createQuickEditSuggestionsFromMetadata: typeof createQuickEditSuggestionsFromMetadata;
   crons: typeof crons;
+  dashboardSummary: typeof dashboardSummary;
   defaultAutomationCliprVoiceId: typeof defaultAutomationCliprVoiceId;
+  getActiveWorkerJobSummary: typeof getActiveWorkerJobSummary;
   getAutomationPreferenceForProduct: typeof getAutomationPreferenceForProduct;
   getAutomationProductScopeKey: typeof getAutomationProductScopeKey;
+  getAutomationRunHasIncompleteTasks: typeof getAutomationRunHasIncompleteTasks;
+  getAutomationRunHasTasks: typeof getAutomationRunHasTasks;
   getAutomationToolDisabledReason: typeof getAutomationToolDisabledReason;
   getAvatarNotificationCopy: typeof getAvatarNotificationCopy;
   getCliprGeneratedClipStorageFields: typeof getCliprGeneratedClipStorageFields;
@@ -331,5 +343,7 @@ export declare const internal: FilterApi<
 export declare const components: {
   rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
   videoClipCounts: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"videoClipCounts">;
+  videoClipProductCounts: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"videoClipProductCounts">;
   stitchCounts: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"stitchCounts">;
+  stitchProductCounts: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"stitchProductCounts">;
 };

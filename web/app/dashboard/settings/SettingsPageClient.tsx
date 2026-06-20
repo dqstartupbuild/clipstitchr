@@ -7,17 +7,15 @@ import { SettingsAccountSection } from "@/app/_components/settings/SettingsAccou
 import { SettingsProductSection } from "@/app/_components/settings/SettingsProductSection";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { useAutomationPreferences } from "@/lib/clipstitchr/hooks/useAutomationPreferences";
-import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
 import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 import { getSwiprLibraryPacks } from "@/lib/clipstitchr/utils/getSwiprLibraryPacks";
 
 export function SettingsPageClient() {
-  const { activeProduct } = useDashboardProduct();
-  const products = useProducts();
+  const products = useDashboardProduct();
   const stitchTemplates = useStitchTemplates();
   const swiprLibrary = useSwiprLibrary();
-  const automation = useAutomationPreferences(activeProduct?.id);
+  const automation = useAutomationPreferences(products.activeProduct?.id);
   const swiprPacks = useMemo(
     () => getSwiprLibraryPacks(swiprLibrary.backgrounds),
     [swiprLibrary.backgrounds],
@@ -34,7 +32,7 @@ export function SettingsPageClient() {
         />
         <SettingsProductSection
           activeProductId={products.defaultProductId}
-          activeProductName={activeProduct?.name}
+          activeProductName={products.activeProduct?.name}
           automationError={automation.error}
           automationPreferences={automation.preferences}
           defaultingProductId={products.defaultingProductId}
@@ -48,7 +46,7 @@ export function SettingsPageClient() {
           swiprPacks={swiprPacks}
           onDeleteProduct={products.deleteProduct}
           onSaveAutomation={automation.savePreferences}
-          onSetActiveProduct={products.setDefaultProduct}
+          onSetActiveProduct={products.setActiveProduct}
           onUpdateProduct={products.updateProduct}
         />
         <SettingsAccountSection />

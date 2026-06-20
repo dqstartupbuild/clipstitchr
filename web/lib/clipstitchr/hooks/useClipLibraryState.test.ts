@@ -410,6 +410,7 @@ describe("useClipLibraryState", () => {
   });
 
   it("loads listed documents and poster fallbacks", async () => {
+    mocks.usePathname.mockReturnValue("/dashboard/swapr");
     const clipWithoutPoster = createClipDocument({
       id: "clip_without_poster",
       posterObject: undefined,
@@ -924,6 +925,7 @@ describe("useClipLibraryState", () => {
   });
 
   it("removes listed documents and skips optional music object deletes", async () => {
+    mocks.usePathname.mockReturnValue("/dashboard/swapr");
     mocks.usePaginatedQuery.mockImplementation((queryId: string, args) => ({
       isLoading: false,
       loadMore: vi.fn(),
@@ -952,6 +954,7 @@ describe("useClipLibraryState", () => {
   });
 
   it("maps paginated metadata without downloading media blobs", () => {
+    mocks.usePathname.mockReturnValue("/dashboard/swapr");
     mocks.usePaginatedQuery.mockImplementation((queryId: string, args) => {
       if (queryId === "videoClips.list") {
         return {
@@ -1092,6 +1095,7 @@ describe("useClipLibraryState", () => {
   });
 
   it("reports first-page and load-more loading states", () => {
+    mocks.usePathname.mockReturnValue("/dashboard/swapr");
     mocks.usePaginatedQuery.mockImplementation((queryId: string) => ({
       isLoading: false,
       loadMore: vi.fn(),

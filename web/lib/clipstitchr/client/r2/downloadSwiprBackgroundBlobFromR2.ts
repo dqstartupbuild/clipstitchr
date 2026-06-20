@@ -1,7 +1,7 @@
-import { createSwiprBackgroundDownloadUrl } from "@/lib/clipstitchr/client/r2/createSwiprBackgroundDownloadUrl";
+import { createCachedSwiprBackgroundDownloadUrl } from "@/lib/clipstitchr/client/r2/createCachedSwiprBackgroundDownloadUrl";
 
 export async function downloadSwiprBackgroundBlobFromR2(id: string) {
-  const downloadUrl = await createSwiprBackgroundDownloadUrl(id);
+  const downloadUrl = await createCachedSwiprBackgroundDownloadUrl(id);
   const response = await fetch(downloadUrl.url);
 
   if (!response.ok) {

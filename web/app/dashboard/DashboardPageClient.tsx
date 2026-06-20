@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
+import { useConvexAuth, useQuery } from "convex/react";
 import { StitchrCallout } from "@/app/_components/dashboard/StitchrCallout";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
@@ -8,61 +9,86 @@ import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
 import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitchesSection";
 import { RecentSwipesSection } from "@/app/_components/dashboard/RecentSwipesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
+import { api } from "@/convex/_generated/api";
+import { createStitchFromConvexDocument } from "@/lib/clipstitchr/backend/createStitchFromConvexDocument";
+import { createSwiprBackgroundAssetFromConvexDocument } from "@/lib/clipstitchr/backend/createSwiprBackgroundAssetFromConvexDocument";
+import { createSwiprSwipeFromConvexDocument } from "@/lib/clipstitchr/backend/createSwiprSwipeFromConvexDocument";
+import { createVideoClipMetadataFromConvexDocument } from "@/lib/clipstitchr/backend/createVideoClipMetadataFromConvexDocument";
+import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
 import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
-import { getRecentStitches } from "@/lib/clipstitchr/utils/getRecentStitches";
-import { getRecentSwiprSwipes } from "@/lib/clipstitchr/utils/getRecentSwiprSwipes";
-import { getRecentVideoClips } from "@/lib/clipstitchr/utils/getRecentVideoClips";
-import { getStitchrUgcSourceClips } from "@/lib/clipstitchr/utils/getStitchrUgcSourceClips";
-
-const RECENT_DASHBOARD_ITEM_LIMIT = 4;
 
 export function DashboardPageClient() {
+  const { isAuthenticated } = useConvexAuth();
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
   const products = useDashboardProduct();
   const stitchTemplates = useStitchTemplates();
   const swiprLibrary = useSwiprLibrary();
+  const productQueryArgs = products.activeProductId
+    ? { productId: products.activeProductId }
+    : {};
+  const dashboardSummary = useQuery(
+    api.dashboardSummary.get,
+    isAuthenticated ? productQueryArgs : "skip",
+  );
   const recentUploads = useMemo(
-    () => getRecentVideoClips(library.clips, RECENT_DASHBOARD_ITEM_LIMIT),
-    [library.clips],
+    () =>
+      dashboardSummary?.recentUploads.map((clip) =>
+        createVideoClipMetadataFromConvexDocument(clip),
+      ) ?? [],
+    [dashboardSummary],
   );
   const recentStitches = useMemo(
     () =>
-      getRecentStitches(
-        library.stitches,
-        RECENT_DASHBOARD_ITEM_LIMIT,
-    ),
-    [library.stitches],
+      dashboardSummary?.recentStitches.map((stitch) =>
+        createStitchFromConvexDocument({ stitch }),
+      ) ?? [],
+    [dashboardSummary],
   );
   const stitchrUgcClips = useMemo(
     () =>
-      getStitchrUgcSourceClips(
-        library.videoGroups.ugc.clips,
-        library.videoGroups.clipr.clips,
-        library.videoGroups.swapr.clips,
-      ),
-    [
-      library.videoGroups.clipr.clips,
-      library.videoGroups.swapr.clips,
-      library.videoGroups.ugc.clips,
-    ],
+      dashboardSummary?.stitchrUgcSourceClips.map((clip) =>
+        createVideoClipMetadataFromConvexDocument(clip),
+      ) ?? [],
+    [dashboardSummary],
   );
-  const recentSwipes = useMemo(() => {
-    const backgroundIds = new Set(
-      swiprLibrary.backgrounds.map((background) => background.id),
-    );
+  const demoClips = useMemo(
+    () =>
+      dashboardSummary?.demoClips.map((clip) =>
+        createVideoClipMetadataFromConvexDocument(clip),
+      ) ?? [],
+    [dashboardSummary],
+  );
+  const recentSwipes = useMemo(
+    () =>
+      dashboardSummary?.recentSwipes.map((swipe) =>
+        createSwiprSwipeFromConvexDocument(swipe),
+      ) ?? [],
+    [dashboardSummary],
+  );
+  const swipeBackgrounds = useMemo(
+    () =>
+      dashboardSummary?.swipeBackgrounds.map((background) =>
+        createSwiprBackgroundAssetFromConvexDocument(background),
+      ) ?? [],
+    [dashboardSummary],
+  );
+  const loadDashboardBackgroundBlob = useCallback(
+    async (id: string) => {
+      const background = swipeBackgrounds.find((item) => item.id === id);
 
-    return getRecentSwiprSwipes(
-      swiprLibrary.swipes.filter((swipe) =>
-        backgroundIds.has(swipe.backgroundId),
-      ),
-      RECENT_DASHBOARD_ITEM_LIMIT,
-    );
-  }, [swiprLibrary.backgrounds, swiprLibrary.swipes]);
+      if (background?.imageObject) {
+        return await downloadBlobFromR2(background.imageObject);
+      }
+
+      return await swiprLibrary.loadBackgroundBlob(id);
+    },
+    [swipeBackgrounds, swiprLibrary],
+  );
   const error =
     library.error ??
     photoLibrary.error ??
@@ -99,7 +125,7 @@ export function DashboardPageClient() {
           onUpdatePostedStatus={library.updateClipPostedStatus}
         />
         <RecentStitchesSection
-          demoClips={library.videoGroups.demo.clips}
+          demoClips={demoClips}
           savingTemplateStitchId={stitchTemplates.savingStitchId}
           stitches={recentStitches}
           onDelete={library.removeStitch}
@@ -119,9 +145,9 @@ export function DashboardPageClient() {
           ugcClips={stitchrUgcClips}
         />
         <RecentSwipesSection
-          backgrounds={swiprLibrary.backgrounds}
+          backgrounds={swipeBackgrounds}
           swipes={recentSwipes}
-          onLoadBackgroundBlob={swiprLibrary.loadBackgroundBlob}
+          onLoadBackgroundBlob={loadDashboardBackgroundBlob}
           onLoadPoster={swiprLibrary.loadSwipePoster}
           onDelete={swiprLibrary.removeSwipe}
           onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}

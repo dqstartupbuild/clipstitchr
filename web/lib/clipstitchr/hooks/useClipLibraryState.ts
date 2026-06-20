@@ -72,28 +72,23 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
   const isStitchrRoute = pathname.startsWith("/dashboard/stitchr");
   const isSwaprRoute = pathname.startsWith("/dashboard/swapr");
   const isCliprRoute = pathname.startsWith("/dashboard/clipr");
-  const shouldLoadAllClips =
-    isAuthenticated && (isDashboardHome || isSwaprRoute);
+  const shouldLoadAllClips = isAuthenticated && isSwaprRoute;
   const shouldLoadUgcClips =
     isAuthenticated &&
-    (isDashboardHome || isLibraryRoute || isUploadsRoute || isStitchrRoute);
+    (isLibraryRoute || isUploadsRoute || isStitchrRoute);
   const shouldLoadCliprClips =
     isAuthenticated &&
-    (isDashboardHome || isLibraryRoute || isUploadsRoute || isStitchrRoute);
+    (isLibraryRoute || isUploadsRoute || isStitchrRoute);
   const shouldLoadPostedCliprClips = false;
   const shouldLoadDemoClips =
     isAuthenticated &&
-    (isDashboardHome ||
-      isLibraryRoute ||
-      isUploadsRoute ||
-      isStitchrRoute ||
-      isCliprRoute);
+    (isLibraryRoute || isUploadsRoute || isStitchrRoute || isCliprRoute);
   const shouldLoadSwapClips =
     isAuthenticated &&
-    (isDashboardHome || isLibraryRoute || isUploadsRoute || isStitchrRoute);
+    (isLibraryRoute || isUploadsRoute || isStitchrRoute);
   const shouldLoadStitches =
     isAuthenticated &&
-    (isDashboardHome || isLibraryRoute || isUploadsRoute || isSwaprRoute);
+    (isLibraryRoute || isUploadsRoute || isSwaprRoute);
   const shouldLoadPostedStitches =
     isAuthenticated && (isLibraryRoute || isUploadsRoute);
   const shouldLoadCounts =

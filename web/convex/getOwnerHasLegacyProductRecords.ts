@@ -7,28 +7,33 @@ export async function getOwnerHasLegacyProductRecords(
   const [clip, photo, avatar, stitch, avatarPreference] = await Promise.all([
     ctx.db
       .query("videoClips")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .filter((q) => q.eq(q.field("productId"), undefined))
+      .withIndex("by_owner_product_created", (q) =>
+        q.eq("ownerId", ownerId).eq("productId", undefined),
+      )
       .first(),
     ctx.db
       .query("photoAssets")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .filter((q) => q.eq(q.field("productId"), undefined))
+      .withIndex("by_owner_product_created", (q) =>
+        q.eq("ownerId", ownerId).eq("productId", undefined),
+      )
       .first(),
     ctx.db
       .query("avatars")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .filter((q) => q.eq(q.field("productId"), undefined))
+      .withIndex("by_owner_product_created", (q) =>
+        q.eq("ownerId", ownerId).eq("productId", undefined),
+      )
       .first(),
     ctx.db
       .query("stitches")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .filter((q) => q.eq(q.field("productId"), undefined))
+      .withIndex("by_owner_product_created", (q) =>
+        q.eq("ownerId", ownerId).eq("productId", undefined),
+      )
       .first(),
     ctx.db
       .query("avatarPreferences")
-      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-      .filter((q) => q.eq(q.field("productId"), undefined))
+      .withIndex("by_owner_product", (q) =>
+        q.eq("ownerId", ownerId).eq("productId", undefined),
+      )
       .first(),
   ]);
 

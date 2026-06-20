@@ -9,6 +9,7 @@ import { useDashboardNotifications } from "@/lib/clipstitchr/hooks/useDashboardN
 import type { DashboardNotification } from "@/lib/clipstitchr/types/DashboardNotification";
 
 export function DashboardNotificationBell() {
+  const [isOpen, setIsOpen] = useState(false);
   const {
     clearAll,
     isLoading,
@@ -17,8 +18,7 @@ export function DashboardNotificationBell() {
     notifications,
     remove,
     unreadCount,
-  } = useDashboardNotifications();
-  const [isOpen, setIsOpen] = useState(false);
+  } = useDashboardNotifications(isOpen);
   const [selectedNotification, setSelectedNotification] =
     useState<DashboardNotification | null>(null);
 

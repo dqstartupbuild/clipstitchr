@@ -51,6 +51,8 @@ function createQueryChain(uniqueValues: unknown[] = [], collect: unknown[] = [])
 
       return chain;
     }),
+    order: vi.fn(() => chain),
+    take: vi.fn(async () => collect),
     unique: vi.fn(async () => uniqueValues.shift() ?? null),
     withIndex: vi.fn((_indexName: string, callback: (q: typeof indexQuery) => void) => {
       callback(indexQuery);

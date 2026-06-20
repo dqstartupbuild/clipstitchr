@@ -8,24 +8,30 @@ import { getAvatarNotificationCopy } from "./getAvatarNotificationCopy";
 import { rateLimiter } from "./rateLimiter";
 import { avatarWardrobeStyleValidator } from "./validators/avatarWardrobeStyle";
 
+const AVATAR_LIST_LIMIT = 120;
+
 export const list = query({
   args: {
     productId: v.optional(v.string()),
   },
   handler: async (ctx, { productId }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const query = ctx.db
-      .query("avatars")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc");
 
     if (productId) {
-      return await query
-        .filter((q) => q.eq(q.field("productId"), productId))
-        .collect();
+      return await ctx.db
+        .query("avatars")
+        .withIndex("by_owner_product_created", (q) =>
+          q.eq("ownerId", ownerId).eq("productId", productId),
+        )
+        .order("desc")
+        .take(AVATAR_LIST_LIMIT);
     }
 
-    return await query.collect();
+    return await ctx.db
+      .query("avatars")
+      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .order("desc")
+      .take(AVATAR_LIST_LIMIT);
   },
 });
 
@@ -152,8 +158,9 @@ export const update = mutation({
     if (productId !== undefined && requestedProductId !== avatar.productId) {
       const avatarPhotos = await ctx.db
         .query("photoAssets")
-        .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-        .filter((q) => q.eq(q.field("avatarId"), id))
+        .withIndex("by_owner_avatar_created", (q) =>
+          q.eq("ownerId", ownerId).eq("avatarId", id),
+        )
         .collect();
 
       for (const photo of avatarPhotos) {
@@ -183,12 +190,14 @@ export const getDeleteBundle = query({
 
     const ownerPhotos = await ctx.db
       .query("photoAssets")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .withIndex("by_owner_avatar_created", (q) =>
+        q.eq("ownerId", ownerId).eq("avatarId", id),
+      )
       .collect();
 
     return {
       avatar,
-      photos: ownerPhotos.filter((photo) => photo.avatarId === id),
+      photos: ownerPhotos,
     };
   },
 });
@@ -217,9 +226,11 @@ export const removeWithPhotos = mutation({
 
     const ownerPhotos = await ctx.db
       .query("photoAssets")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .withIndex("by_owner_avatar_created", (q) =>
+        q.eq("ownerId", ownerId).eq("avatarId", id),
+      )
       .collect();
-    const avatarPhotos = ownerPhotos.filter((photo) => photo.avatarId === id);
+    const avatarPhotos = ownerPhotos;
     const expectedPhotoIds = new Set(photoIds);
     const hasUncleanedPhoto = avatarPhotos.some(
       (photo) => !expectedPhotoIds.has(photo.id),

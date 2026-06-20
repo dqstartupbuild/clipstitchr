@@ -31,7 +31,17 @@ const mocks = vi.hoisted(() => ({
     insertIfDoesNotExist: vi.fn(),
     replaceOrInsert: vi.fn(),
   },
+  stitchProductCounts: {
+    deleteIfExists: vi.fn(),
+    insertIfDoesNotExist: vi.fn(),
+    replaceOrInsert: vi.fn(),
+  },
   videoClipCounts: {
+    deleteIfExists: vi.fn(),
+    insertIfDoesNotExist: vi.fn(),
+    replaceOrInsert: vi.fn(),
+  },
+  videoClipProductCounts: {
     deleteIfExists: vi.fn(),
     insertIfDoesNotExist: vi.fn(),
     replaceOrInsert: vi.fn(),
@@ -57,7 +67,9 @@ vi.mock("./rateLimiter", () => ({
 
 vi.mock("./aggregateCounts", () => ({
   stitchCounts: mocks.stitchCounts,
+  stitchProductCounts: mocks.stitchProductCounts,
   videoClipCounts: mocks.videoClipCounts,
+  videoClipProductCounts: mocks.videoClipProductCounts,
 }));
 
 function getHandler<Args, Result>(convexFunction: unknown) {
@@ -70,6 +82,7 @@ function createQueryChain(result: QueryResult = {}) {
   };
   const chain = {
     collect: vi.fn(async () => result.collect ?? []),
+    first: vi.fn(async () => result.unique ?? result.collect?.[0] ?? null),
     order: vi.fn(() => chain),
     paginate: vi.fn(async () =>
       result.paginate ?? {
@@ -78,7 +91,7 @@ function createQueryChain(result: QueryResult = {}) {
         page: [],
       },
     ),
-    take: vi.fn(async () => result.take ?? []),
+    take: vi.fn(async () => result.take ?? result.collect ?? []),
     unique: vi.fn(async () => result.unique ?? null),
     withIndex: vi.fn((_index: string, callback: (q: typeof indexQuery) => void) => {
       callback(indexQuery);
@@ -361,8 +374,8 @@ describe("convex media collections", () => {
       photoAssets: [
         { collect: [firstPhoto, secondPhoto] },
         { unique: firstPhoto },
-        { collect: [secondPhoto, firstPhoto] },
-        { collect: [firstPhoto, secondPhoto] },
+        { collect: [firstPhoto] },
+        { collect: [secondPhoto] },
       ],
     });
 
@@ -542,7 +555,6 @@ describe("convex media collections", () => {
         {
           collect: [
             { _id: "photo_doc_1", avatarId: "avatar_1", id: "photo_1" },
-            { _id: "photo_doc_2", avatarId: "other", id: "photo_2" },
           ],
         },
       ],
@@ -570,7 +582,6 @@ describe("convex media collections", () => {
         {
           collect: [
             { _id: "photo_doc_1", avatarId: "avatar_1", id: "photo_1" },
-            { _id: "photo_doc_2", avatarId: "other", id: "photo_2" },
           ],
         },
       ],

@@ -33,13 +33,37 @@ vi.mock("convex/react", () => ({
     isLoading: false,
   }),
   useMutation: mocks.useMutation,
-  useQuery: () => [],
+  useQuery: (query: string) => {
+    if (query === "activeWorkerJobs.summary") {
+      return { jobs: [], totalCount: 0 };
+    }
+
+    if (query === "dashboardSummary.get") {
+      return {
+        demoClips: [],
+        recentStitches: [],
+        recentSwipes: [],
+        recentUploads: [],
+        stitchrUgcSourceClips: [],
+        swipeBackgrounds: [],
+      };
+    }
+
+    if (query === "notifications.unreadCount") {
+      return 0;
+    }
+
+    return [];
+  },
 }));
 
 vi.mock("@/convex/_generated/api", () => ({
   api: {
-    mediaJobs: {
-      listActive: "mediaJobs.listActive",
+    activeWorkerJobs: {
+      summary: "activeWorkerJobs.summary",
+    },
+    dashboardSummary: {
+      get: "dashboardSummary.get",
     },
     notifications: {
       clearAll: "notifications.clearAll",
@@ -47,9 +71,7 @@ vi.mock("@/convex/_generated/api", () => ({
       markAllRead: "notifications.markAllRead",
       markRead: "notifications.markRead",
       remove: "notifications.remove",
-    },
-    providerJobs: {
-      listActive: "providerJobs.listActive",
+      unreadCount: "notifications.unreadCount",
     },
     sharedMusicTracks: {
       list: "sharedMusicTracks.list",
@@ -104,6 +126,8 @@ vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
     },
     activeProductId: "product_1",
     defaultProductId: "product_1",
+    defaultingProductId: null,
+    deletingProductId: null,
     error: null,
     isBackfillingLegacyContent: false,
     isCreating: false,
@@ -120,7 +144,9 @@ vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
       },
     ],
     requiresProductSetup: false,
+    savingProductId: null,
     createProduct: mocks.createProduct,
+    deleteProduct: vi.fn(),
     setActiveProduct: mocks.setActiveProduct,
     updateProduct: mocks.updateProduct,
   }),
@@ -442,7 +468,7 @@ describe("dashboard page clients", () => {
     const markup = renderToStaticMarkup(<StitchrPageClient />);
 
     expect(markup).toContain("Stitchr");
-    expect(markup).toContain("Generate today&#x27;s stitch batch");
+    expect(markup).toContain("Generate stitches in batch");
     expect(markup).toContain("Generate 10 Stitches");
   });
 

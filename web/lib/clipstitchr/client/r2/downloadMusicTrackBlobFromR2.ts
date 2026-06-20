@@ -1,7 +1,7 @@
-import { createMusicTrackDownloadUrl } from "@/lib/clipstitchr/client/r2/createMusicTrackDownloadUrl";
+import { createCachedMusicTrackDownloadUrl } from "@/lib/clipstitchr/client/r2/createCachedMusicTrackDownloadUrl";
 
 export async function downloadMusicTrackBlobFromR2(id: string) {
-  const downloadUrl = await createMusicTrackDownloadUrl(id);
+  const downloadUrl = await createCachedMusicTrackDownloadUrl(id);
   const response = await fetch(downloadUrl.url);
 
   if (!response.ok) {

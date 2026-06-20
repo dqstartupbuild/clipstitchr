@@ -65,6 +65,14 @@ const mocks = vi.hoisted(() => ({
     error: null as string | null,
     products: [],
   },
+  dashboardSummary: {
+    demoClips: [],
+    recentStitches: [],
+    recentSwipes: [],
+    recentUploads: [],
+    stitchrUgcSourceClips: [],
+    swipeBackgrounds: [],
+  },
   stitchTemplateState: {
     createTemplateFromStitch: vi.fn(),
     deleteTemplate: vi.fn(),
@@ -86,6 +94,22 @@ const mocks = vi.hoisted(() => ({
     removeSwipe: vi.fn(),
     swipes: [],
     updateSwipePostedStatus: vi.fn(),
+  },
+}));
+
+vi.mock("convex/react", () => ({
+  useConvexAuth: () => ({
+    isAuthenticated: true,
+    isLoading: false,
+  }),
+  useQuery: () => mocks.dashboardSummary,
+}));
+
+vi.mock("@/convex/_generated/api", () => ({
+  api: {
+    dashboardSummary: {
+      get: "dashboardSummary.get",
+    },
   },
 }));
 
@@ -146,6 +170,8 @@ vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
       activeProduct,
       activeProductId: activeProduct?.id,
       defaultProductId: activeProduct?.id,
+      defaultingProductId: null,
+      deletingProductId: null,
       error: mocks.productState.error,
       isBackfillingLegacyContent: false,
       isCreating: false,
@@ -153,7 +179,9 @@ vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
       isSaving: false,
       products,
       requiresProductSetup: false,
+      savingProductId: null,
       createProduct: vi.fn(),
+      deleteProduct: vi.fn(),
       setActiveProduct: vi.fn(),
       updateProduct: vi.fn(),
     };

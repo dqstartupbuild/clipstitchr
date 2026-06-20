@@ -8,7 +8,7 @@ import { mutation, query } from "./_generated/server";
 import { createNotification } from "./createNotification";
 import { getStitchProductId } from "./getStitchProductId";
 import { getStitchNotificationCopy } from "./getStitchNotificationCopy";
-import { stitchCounts } from "./aggregateCounts";
+import { stitchCounts, stitchProductCounts } from "./aggregateCounts";
 import { rateLimiter } from "./rateLimiter";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
@@ -87,42 +87,66 @@ export const list = query({
     const productFilterId = productId?.trim() || undefined;
 
     if (postedStatus === "active") {
-      const query = ctx.db
+      if (productFilterId) {
+        return await ctx.db
+          .query("stitches")
+          .withIndex("by_owner_product_is_posted_created", (q) =>
+            q
+              .eq("ownerId", ownerId)
+              .eq("productId", productFilterId)
+              .eq("isPosted", undefined),
+          )
+          .order(sortOrder === "oldest" ? "asc" : "desc")
+          .paginate(paginationOpts);
+      }
+
+      return await ctx.db
         .query("stitches")
         .withIndex("by_owner_is_posted_created", (q) =>
           q.eq("ownerId", ownerId).eq("isPosted", undefined),
         )
-        .order(sortOrder === "oldest" ? "asc" : "desc");
-
-      return await (productFilterId
-        ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
-        : query
-      ).paginate(paginationOpts);
+        .order(sortOrder === "oldest" ? "asc" : "desc")
+        .paginate(paginationOpts);
     }
 
     if (postedStatus === "posted") {
-      const query = ctx.db
+      if (productFilterId) {
+        return await ctx.db
+          .query("stitches")
+          .withIndex("by_owner_product_is_posted_created", (q) =>
+            q
+              .eq("ownerId", ownerId)
+              .eq("productId", productFilterId)
+              .eq("isPosted", true),
+          )
+          .order(sortOrder === "oldest" ? "asc" : "desc")
+          .paginate(paginationOpts);
+      }
+
+      return await ctx.db
         .query("stitches")
         .withIndex("by_owner_is_posted_created", (q) =>
           q.eq("ownerId", ownerId).eq("isPosted", true),
         )
-        .order(sortOrder === "oldest" ? "asc" : "desc");
-
-      return await (productFilterId
-        ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
-        : query
-      ).paginate(paginationOpts);
+        .order(sortOrder === "oldest" ? "asc" : "desc")
+        .paginate(paginationOpts);
     }
 
-    const query = ctx.db
+    if (productFilterId) {
+      return await ctx.db
+        .query("stitches")
+        .withIndex("by_owner_product_created", (q) =>
+          q.eq("ownerId", ownerId).eq("productId", productFilterId),
+        )
+        .order(sortOrder === "oldest" ? "asc" : "desc")
+        .paginate(paginationOpts);
+    }
+
+    return await ctx.db
       .query("stitches")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order(sortOrder === "oldest" ? "asc" : "desc");
-
-    return await (productFilterId
-      ? query.filter((q) => q.eq(q.field("productId"), productFilterId))
-      : query
-    ).paginate(paginationOpts);
+      .order(sortOrder === "oldest" ? "asc" : "desc")
+      .paginate(paginationOpts);
   },
 });
 
@@ -184,7 +208,10 @@ export const save = mutation({
       const updatedStitch = await ctx.db.get(existingStitch._id);
 
       if (updatedStitch) {
-        await stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch);
+        await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
+      ]);
       }
 
       return existingStitch._id;
@@ -194,7 +221,10 @@ export const save = mutation({
     const insertedStitch = await ctx.db.get(stitchId);
 
     if (insertedStitch) {
-      await stitchCounts.insertIfDoesNotExist(ctx, insertedStitch);
+      await Promise.all([
+      stitchCounts.insertIfDoesNotExist(ctx, insertedStitch),
+      stitchProductCounts.insertIfDoesNotExist(ctx, insertedStitch),
+    ]);
     }
 
     const notificationCopy = getStitchNotificationCopy(args);
@@ -271,7 +301,10 @@ export const saveFromAutomation = mutation({
       const updatedStitch = await ctx.db.get(existingStitch._id);
 
       if (updatedStitch) {
-        await stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch);
+        await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
+      ]);
       }
 
       return existingStitch._id;
@@ -281,7 +314,10 @@ export const saveFromAutomation = mutation({
     const insertedStitch = await ctx.db.get(stitchId);
 
     if (insertedStitch) {
-      await stitchCounts.insertIfDoesNotExist(ctx, insertedStitch);
+      await Promise.all([
+      stitchCounts.insertIfDoesNotExist(ctx, insertedStitch),
+      stitchProductCounts.insertIfDoesNotExist(ctx, insertedStitch),
+    ]);
     }
 
     return stitchId;
@@ -361,7 +397,10 @@ export const saveFromMediaWorker = mutation({
       const updatedStitch = await ctx.db.get(existingStitch._id);
 
       if (updatedStitch) {
-        await stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch);
+        await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
+      ]);
       }
 
       return existingStitch._id;
@@ -371,7 +410,10 @@ export const saveFromMediaWorker = mutation({
     const insertedStitch = await ctx.db.get(stitchId);
 
     if (insertedStitch) {
-      await stitchCounts.insertIfDoesNotExist(ctx, insertedStitch);
+      await Promise.all([
+      stitchCounts.insertIfDoesNotExist(ctx, insertedStitch),
+      stitchProductCounts.insertIfDoesNotExist(ctx, insertedStitch),
+    ]);
     }
 
     return stitchId;
@@ -408,7 +450,10 @@ export const updatePoster = mutation({
     const updatedStitch = await ctx.db.get(stitch._id);
 
     if (updatedStitch) {
-      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+      ]);
     }
   },
 });
@@ -445,7 +490,10 @@ export const updateRenderedVideo = mutation({
     const updatedStitch = await ctx.db.get(stitch._id);
 
     if (updatedStitch) {
-      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+      ]);
     }
   },
 });
@@ -482,7 +530,10 @@ export const updateMusic = mutation({
     const updatedStitch = await ctx.db.get(stitch._id);
 
     if (updatedStitch) {
-      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+      ]);
     }
   },
 });
@@ -588,7 +639,10 @@ export const updateSourceSettings = mutation({
     const updatedStitch = await ctx.db.get(stitch._id);
 
     if (updatedStitch) {
-      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+      ]);
     }
   },
 });
@@ -691,7 +745,10 @@ export const updateSourceCrop = mutation({
     const updatedStitch = await ctx.db.get(stitch._id);
 
     if (updatedStitch) {
-      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+      ]);
     }
   },
 });
@@ -744,7 +801,10 @@ export const updateTextOverlay = mutation({
     const updatedStitch = await ctx.db.get(stitch._id);
 
     if (updatedStitch) {
-      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+      ]);
     }
   },
 });
@@ -777,7 +837,10 @@ export const updateScore = mutation({
     const updatedStitch = await ctx.db.get(stitch._id);
 
     if (updatedStitch) {
-      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+      ]);
     }
   },
 });
@@ -812,7 +875,10 @@ export const updateScoreFromProvider = mutation({
     const updatedStitch = await ctx.db.get(stitch._id);
 
     if (updatedStitch) {
-      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+      ]);
     }
   },
 });
@@ -909,7 +975,10 @@ export const applyQuickEdit = mutation({
     const updatedStitch = await ctx.db.get(stitch._id);
 
     if (updatedStitch) {
-      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+      ]);
     }
   },
 });
@@ -961,7 +1030,10 @@ export const resetQuickEdit = mutation({
     const updatedStitch = await ctx.db.get(stitch._id);
 
     if (updatedStitch) {
-      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+      ]);
     }
   },
 });
@@ -1023,7 +1095,10 @@ export const updatePostedStatus = mutation({
     const updatedStitch = await ctx.db.get(stitch._id);
 
     if (updatedStitch) {
-      await stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch);
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+      ]);
     }
   },
 });
@@ -1050,7 +1125,10 @@ export const remove = mutation({
     }
 
     await ctx.db.delete(stitch._id);
-    await stitchCounts.deleteIfExists(ctx, stitch);
+    await Promise.all([
+      stitchCounts.deleteIfExists(ctx, stitch),
+      stitchProductCounts.deleteIfExists(ctx, stitch),
+    ]);
     return stitch;
   },
 });

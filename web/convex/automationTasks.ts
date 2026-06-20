@@ -193,11 +193,19 @@ export const claimNext = mutation({
   handler: async (ctx, { secret, workerId, lockedUntil, updatedAt, tool }) => {
     assertAutomationWorkerSecret(secret);
 
-    const queuedTasks = await ctx.db
-      .query("automationTasks")
-      .withIndex("by_status_created", (q) => q.eq("status", "queued"))
-      .order("asc")
-      .take(50);
+    const queuedTasks = tool
+      ? await ctx.db
+          .query("automationTasks")
+          .withIndex("by_status_tool_created", (q) =>
+            q.eq("status", "queued").eq("tool", tool),
+          )
+          .order("asc")
+          .take(10)
+      : await ctx.db
+          .query("automationTasks")
+          .withIndex("by_status_created", (q) => q.eq("status", "queued"))
+          .order("asc")
+          .take(10);
     const task = await getClaimableTask(
       ctx,
       queuedTasks,
@@ -249,9 +257,11 @@ export const claimNextByStage = mutation({
     const nowMs = Date.parse(updatedAt);
     const runningTasks = await ctx.db
       .query("automationTasks")
-      .withIndex("by_status_created", (q) => q.eq("status", "running"))
+      .withIndex("by_status_tool_stage_created", (q) =>
+        q.eq("status", "running").eq("tool", tool).eq("stage", stage),
+      )
       .order("asc")
-      .take(50);
+      .take(10);
     const task = await getClaimableTask(
       ctx,
       runningTasks,
@@ -304,13 +314,15 @@ export const claimNextForProvider = mutation({
       (!tool || candidate.tool === tool) &&
       (!stage || candidate.stage === stage);
 
-    if (stage) {
+    if (stage && tool) {
       const nowMs = Date.parse(updatedAt);
       const runningTasks = await ctx.db
         .query("automationTasks")
-        .withIndex("by_status_created", (q) => q.eq("status", "running"))
+        .withIndex("by_status_tool_stage_created", (q) =>
+          q.eq("status", "running").eq("tool", tool).eq("stage", stage),
+        )
         .order("asc")
-        .take(50);
+        .take(10);
       const task = await getClaimableTask(
         ctx,
         runningTasks,
@@ -342,11 +354,19 @@ export const claimNextForProvider = mutation({
       return await ctx.db.get(task._id);
     }
 
-    const queuedTasks = await ctx.db
-      .query("automationTasks")
-      .withIndex("by_status_created", (q) => q.eq("status", "queued"))
-      .order("asc")
-      .take(50);
+    const queuedTasks = tool
+      ? await ctx.db
+          .query("automationTasks")
+          .withIndex("by_status_tool_created", (q) =>
+            q.eq("status", "queued").eq("tool", tool),
+          )
+          .order("asc")
+          .take(10)
+      : await ctx.db
+          .query("automationTasks")
+          .withIndex("by_status_created", (q) => q.eq("status", "queued"))
+          .order("asc")
+          .take(10);
     const task = await getClaimableTask(
       ctx,
       queuedTasks,
@@ -414,8 +434,7 @@ export const markStatus = mutation({
 
     const task = await ctx.db
       .query("automationTasks")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .filter((q) => q.eq(q.field("id"), id))
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
       .unique();
 
     if (!task) {
@@ -494,8 +513,7 @@ export const markProviderStatus = mutation({
 
     const task = await ctx.db
       .query("automationTasks")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .filter((q) => q.eq(q.field("id"), id))
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
       .unique();
 
     if (!task) {
@@ -591,8 +609,7 @@ export const markMediaStatus = mutation({
 
     const task = await ctx.db
       .query("automationTasks")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .filter((q) => q.eq(q.field("id"), id))
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
       .unique();
 
     if (!task) {

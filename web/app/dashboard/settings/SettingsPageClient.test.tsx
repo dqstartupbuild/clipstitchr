@@ -55,17 +55,36 @@ vi.mock("@/lib/clipstitchr/hooks/useProducts", () => ({
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
-  useDashboardProduct: () => ({
-    activeProduct: {
-      audienceDetails: "Creators",
-      createdAt: "2026-05-20T00:00:00.000Z",
-      id: "product_1",
-      inferredPainPoints: [],
-      name: "Launch Kit",
-      productDetails: "Landing page builder",
-      updatedAt: "2026-05-20T00:00:00.000Z",
-    },
-  }),
+  useDashboardProduct: () => {
+    if (!mocks.productsState) {
+      throw new Error("Missing products state");
+    }
+
+    const activeProduct =
+      mocks.productsState.products.find(
+        (product) => product.id === mocks.productsState?.defaultProductId,
+      ) ?? mocks.productsState.products[0];
+
+    return {
+      activeProduct,
+      activeProductId: activeProduct?.id,
+      defaultProductId: mocks.productsState.defaultProductId,
+      defaultingProductId: mocks.productsState.defaultingProductId,
+      deletingProductId: mocks.productsState.deletingProductId,
+      error: mocks.productsState.error,
+      isBackfillingLegacyContent: false,
+      isCreating: mocks.productsState.isCreating,
+      isLoading: mocks.productsState.isLoading,
+      isSaving: mocks.productsState.isSaving,
+      products: mocks.productsState.products,
+      requiresProductSetup: false,
+      savingProductId: mocks.productsState.savingProductId,
+      createProduct: mocks.productsState.createProduct,
+      deleteProduct: mocks.productsState.deleteProduct,
+      setActiveProduct: mocks.productsState.setDefaultProduct,
+      updateProduct: mocks.productsState.updateProduct,
+    };
+  },
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({

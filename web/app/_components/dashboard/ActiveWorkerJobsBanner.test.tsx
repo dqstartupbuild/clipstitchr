@@ -18,11 +18,8 @@ vi.mock("convex/react", () => ({
 
 vi.mock("@/convex/_generated/api", () => ({
   api: {
-    mediaJobs: {
-      listActive: "mediaJobs.listActive",
-    },
-    providerJobs: {
-      listActive: "providerJobs.listActive",
+    activeWorkerJobs: {
+      summary: "activeWorkerJobs.summary",
     },
   },
 }));
@@ -31,7 +28,7 @@ describe("ActiveWorkerJobsBanner", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.isAuthenticated = true;
-    mocks.useQuery.mockReturnValue([]);
+    mocks.useQuery.mockReturnValue({ jobs: [], totalCount: 0 });
   });
 
   it("skips active job queries until Convex auth is authenticated", () => {
@@ -39,33 +36,34 @@ describe("ActiveWorkerJobsBanner", () => {
 
     expect(renderToStaticMarkup(<ActiveWorkerJobsBanner />)).toBe("");
 
-    expect(mocks.useQuery).toHaveBeenCalledWith("providerJobs.listActive", "skip");
-    expect(mocks.useQuery).toHaveBeenCalledWith("mediaJobs.listActive", "skip");
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      "activeWorkerJobs.summary",
+      "skip",
+    );
   });
 
   it("renders active provider and media jobs after authentication", () => {
-    mocks.useQuery
-      .mockReturnValueOnce([
+    mocks.useQuery.mockReturnValue({
+      jobs: [
         {
           id: "provider_1",
           jobType: "manual-swapr",
           stage: "queued",
           status: "queued",
         },
-      ])
-      .mockReturnValueOnce([
         {
           id: "media_1",
           jobType: "upload-video-analysis",
           stage: "running",
           status: "running",
         },
-      ]);
+      ],
+      totalCount: 2,
+    });
 
     const markup = renderToStaticMarkup(<ActiveWorkerJobsBanner />);
 
-    expect(mocks.useQuery).toHaveBeenCalledWith("providerJobs.listActive", {});
-    expect(mocks.useQuery).toHaveBeenCalledWith("mediaJobs.listActive", {});
+    expect(mocks.useQuery).toHaveBeenCalledWith("activeWorkerJobs.summary", {});
     expect(markup).toContain("Background AI work is running");
     expect(markup).toContain("Swapr generation queued");
     expect(markup).toContain("Upload analysis running");

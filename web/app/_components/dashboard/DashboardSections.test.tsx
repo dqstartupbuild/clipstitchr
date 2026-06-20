@@ -113,23 +113,23 @@ describe("dashboard shell sections", () => {
   });
 
   it("renders a background job banner when workers are still running", () => {
-    vi.mocked(useQuery)
-      .mockReturnValueOnce([
+    vi.mocked(useQuery).mockReturnValueOnce({
+      jobs: [
         {
           id: "provider_job_1",
           jobType: "manual-swapr",
           stage: "queued",
           status: "queued",
         },
-      ])
-      .mockReturnValueOnce([
         {
           id: "media_job_1",
           jobType: "upload-normalization",
           stage: "claimed",
           status: "running",
         },
-      ]);
+      ],
+      totalCount: 2,
+    });
 
     const markup = renderToStaticMarkup(
       <DashboardShell>

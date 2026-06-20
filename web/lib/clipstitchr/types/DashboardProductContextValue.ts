@@ -5,6 +5,8 @@ export type DashboardProductContextValue = {
   activeProduct?: ProductProfile;
   activeProductId?: string;
   defaultProductId?: string;
+  defaultingProductId: string | null;
+  deletingProductId: string | null;
   error: string | null;
   isBackfillingLegacyContent: boolean;
   isCreating: boolean;
@@ -12,7 +14,9 @@ export type DashboardProductContextValue = {
   isSaving: boolean;
   products: ProductProfile[];
   requiresProductSetup: boolean;
+  savingProductId: string | null;
   createProduct: (input: ProductProfileCreateInput) => Promise<ProductProfile>;
+  deleteProduct: (id: string) => Promise<void>;
   setActiveProduct: (product: ProductProfile) => Promise<void>;
   updateProduct: (
     id: string,

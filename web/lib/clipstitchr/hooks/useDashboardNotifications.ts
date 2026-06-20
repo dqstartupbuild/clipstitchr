@@ -5,11 +5,15 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { createDashboardNotificationFromConvexDocument } from "@/lib/clipstitchr/backend/createDashboardNotificationFromConvexDocument";
 
-export function useDashboardNotifications() {
+export function useDashboardNotifications(shouldLoadList = false) {
   const { isAuthenticated } = useConvexAuth();
   const notificationDocuments = useQuery(
     api.notifications.listRecent,
-    isAuthenticated ? { limit: 50 } : "skip",
+    isAuthenticated && shouldLoadList ? { limit: 50 } : "skip",
+  );
+  const unreadCount = useQuery(
+    api.notifications.unreadCount,
+    isAuthenticated ? {} : "skip",
   );
   const markReadMutation = useMutation(api.notifications.markRead);
   const markAllReadMutation = useMutation(api.notifications.markAllRead);
@@ -20,10 +24,6 @@ export function useDashboardNotifications() {
       notificationDocuments?.map(createDashboardNotificationFromConvexDocument) ??
       [],
     [notificationDocuments],
-  );
-  const unreadCount = useMemo(
-    () => notifications.filter((notification) => !notification.isRead).length,
-    [notifications],
   );
   const markRead = useCallback(
     async (id: string) => {
@@ -46,11 +46,12 @@ export function useDashboardNotifications() {
 
   return {
     clearAll,
-    isLoading: isAuthenticated && notificationDocuments === undefined,
+    isLoading:
+      isAuthenticated && shouldLoadList && notificationDocuments === undefined,
     markAllRead,
     markRead,
     notifications,
     remove,
-    unreadCount,
+    unreadCount: unreadCount ?? 0,
   };
 }

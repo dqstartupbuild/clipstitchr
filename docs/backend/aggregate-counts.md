@@ -38,18 +38,25 @@ Stitches use a `null` key because they only need a per-user total.
 
 ## Current Setup
 
-The Aggregate component is registered twice in
+The Aggregate component is registered four times in
 `web/convex/convex.config.ts`:
 
 ```ts
 app.use(aggregate, { name: "videoClipCounts" });
+app.use(aggregate, { name: "videoClipProductCounts" });
 app.use(aggregate, { name: "stitchCounts" });
+app.use(aggregate, { name: "stitchProductCounts" });
 ```
 
 The shared aggregate definitions live in `web/convex/aggregateCounts.ts`:
 
 - `videoClipCounts` counts `videoClips` by `ownerId` and video library type.
+- `videoClipProductCounts` counts `videoClips` by
+  `ownerId:productId-or-__account__` and video library type, so product-filtered
+  dashboard/library counters do not scan all clips.
 - `stitchCounts` counts `stitches` by `ownerId`.
+- `stitchProductCounts` counts active and posted stitches by
+  `ownerId:productId-or-__account__`.
 
 The read query lives in `web/convex/libraryCounts.ts`. It returns:
 
@@ -66,6 +73,9 @@ The read query lives in `web/convex/libraryCounts.ts`. It returns:
 Generated non-demo Clipr output now counts as UGC. Legacy aggregate rows with
 `libraryKind: "clipr"` are added into the returned `ugcClips` count and
 `cliprClips` is returned as `0` for visible dashboard/library surfaces.
+Product-filtered count reads combine product-scoped aggregates with the
+account-wide UGC namespace, preserving shared UGC behavior without owner-wide
+document scans.
 
 The client reads this query in `useClipLibraryState`. Display counts use the
 larger value between the aggregate and the currently loaded page count so a
@@ -134,7 +144,15 @@ npx convex run aggregateBackfills:backfillVideoClipCounts \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
 npx convex run aggregateBackfills:backfillStitchCounts \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
+npx convex run aggregateBackfills:backfillVideoClipProductCounts \
+  '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
+npx convex run aggregateBackfills:backfillStitchProductCounts \
+  '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
 npx convex run aggregateBackfills:backfillVideoClipLibraryKinds \
+  '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
+npx convex run aggregateBackfills:backfillSwiprBackgroundLibraryQueryKeys \
+  '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
+npx convex run aggregateBackfills:backfillNotificationSummaries \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
 ```
 
@@ -148,7 +166,19 @@ npx convex run aggregateBackfills:backfillVideoClipCounts \
 npx convex run aggregateBackfills:backfillStitchCounts \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}' \
   --prod
+npx convex run aggregateBackfills:backfillVideoClipProductCounts \
+  '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}' \
+  --prod
+npx convex run aggregateBackfills:backfillStitchProductCounts \
+  '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}' \
+  --prod
 npx convex run aggregateBackfills:backfillVideoClipLibraryKinds \
+  '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}' \
+  --prod
+npx convex run aggregateBackfills:backfillSwiprBackgroundLibraryQueryKeys \
+  '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}' \
+  --prod
+npx convex run aggregateBackfills:backfillNotificationSummaries \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}' \
   --prod
 ```
@@ -186,11 +216,12 @@ npm ls @convex-dev/aggregate
 npx convex dev --once
 ```
 
-3. Confirm generated API types include `components.videoClipCounts` and
-   `components.stitchCounts`.
+3. Confirm generated API types include `components.videoClipCounts`,
+   `components.videoClipProductCounts`, `components.stitchCounts`, and
+   `components.stitchProductCounts`.
 
 ```bash
-rg "videoClipCounts|stitchCounts" convex/_generated/api.d.ts
+rg "videoClipCounts|videoClipProductCounts|stitchCounts|stitchProductCounts" convex/_generated/api.d.ts
 ```
 
 4. Run each aggregate backfill to completion in the target deployment.

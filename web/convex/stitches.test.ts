@@ -28,6 +28,11 @@ const mocks = vi.hoisted(() => ({
     insertIfDoesNotExist: vi.fn(),
     replaceOrInsert: vi.fn(),
   },
+  stitchProductCounts: {
+    deleteIfExists: vi.fn(),
+    insertIfDoesNotExist: vi.fn(),
+    replaceOrInsert: vi.fn(),
+  },
   rateLimiter: {
     limit: vi.fn(),
   },
@@ -48,6 +53,7 @@ vi.mock("./rateLimiter", () => ({
 
 vi.mock("./aggregateCounts", () => ({
   stitchCounts: mocks.stitchCounts,
+  stitchProductCounts: mocks.stitchProductCounts,
 }));
 
 function getHandler<Args, Result>(convexFunction: unknown) {

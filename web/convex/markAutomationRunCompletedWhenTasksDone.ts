@@ -1,5 +1,5 @@
 import { markAutomationRunStatus } from "./markAutomationRunStatus";
-import type { Doc } from "./_generated/dataModel";
+import { getAutomationRunHasIncompleteTasks } from "./getAutomationRunHasIncompleteTasks";
 import type { MutationCtx } from "./_generated/server";
 
 type MarkAutomationRunCompletedWhenTasksDoneArgs = {
@@ -12,7 +12,6 @@ type MarkAutomationRunCompletedWhenTasksDoneArgs = {
 export async function markAutomationRunCompletedWhenTasksDone(
   ctx: MutationCtx,
   {
-    completedTaskId,
     ownerId,
     runId,
     updatedAt,
@@ -29,15 +28,9 @@ export async function markAutomationRunCompletedWhenTasksDone(
     return;
   }
 
-  const tasks = await ctx.db
-    .query("automationTasks")
-    .withIndex("by_run", (q) => q.eq("runId", runId))
-    .collect();
-  const allTasksCompleted = tasks.every((task: Doc<"automationTasks">) =>
-    task.id === completedTaskId ? true : task.status === "completed",
-  );
+  const incompleteTask = await getAutomationRunHasIncompleteTasks(ctx, runId);
 
-  if (!allTasksCompleted) {
+  if (incompleteTask) {
     return;
   }
 

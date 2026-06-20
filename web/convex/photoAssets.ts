@@ -16,6 +16,7 @@ const preparationValidator = v.union(
   v.literal("original-portrait"),
   v.literal("auto-crop"),
 );
+const PHOTO_LIST_LIMIT = 120;
 
 const saveArgs = {
   id: v.string(),
@@ -65,18 +66,22 @@ export const list = query({
   },
   handler: async (ctx, { productId }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const query = ctx.db
-      .query("photoAssets")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc");
 
     if (productId) {
-      return await query
-        .filter((q) => q.eq(q.field("productId"), productId))
-        .collect();
+      return await ctx.db
+        .query("photoAssets")
+        .withIndex("by_owner_product_created", (q) =>
+          q.eq("ownerId", ownerId).eq("productId", productId),
+        )
+        .order("desc")
+        .take(PHOTO_LIST_LIMIT);
     }
 
-    return await query.collect();
+    return await ctx.db
+      .query("photoAssets")
+      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .order("desc")
+      .take(PHOTO_LIST_LIMIT);
   },
 });
 
@@ -101,19 +106,27 @@ export const getMostRecentForAvatar = query({
   },
   handler: async (ctx, { avatarId, productId }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const photos = await ctx.db
-      .query("photoAssets")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .collect();
 
-    return (
-      photos.find(
-        (photo) =>
-          photo.avatarId === avatarId &&
-          (!productId || photo.productId === productId),
-      ) ?? null
-    );
+    if (productId) {
+      return await ctx.db
+        .query("photoAssets")
+        .withIndex("by_owner_avatar_product_created", (q) =>
+          q
+            .eq("ownerId", ownerId)
+            .eq("avatarId", avatarId)
+            .eq("productId", productId),
+        )
+        .order("desc")
+        .first();
+    }
+
+    return await ctx.db
+      .query("photoAssets")
+      .withIndex("by_owner_avatar_created", (q) =>
+        q.eq("ownerId", ownerId).eq("avatarId", avatarId),
+      )
+      .order("desc")
+      .first();
   },
 });
 
@@ -124,19 +137,27 @@ export const getFirstForAvatar = query({
   },
   handler: async (ctx, { avatarId, productId }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const photos = await ctx.db
-      .query("photoAssets")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("asc")
-      .collect();
 
-    return (
-      photos.find(
-        (photo) =>
-          photo.avatarId === avatarId &&
-          (!productId || photo.productId === productId),
-      ) ?? null
-    );
+    if (productId) {
+      return await ctx.db
+        .query("photoAssets")
+        .withIndex("by_owner_avatar_product_created", (q) =>
+          q
+            .eq("ownerId", ownerId)
+            .eq("avatarId", avatarId)
+            .eq("productId", productId),
+        )
+        .order("asc")
+        .first();
+    }
+
+    return await ctx.db
+      .query("photoAssets")
+      .withIndex("by_owner_avatar_created", (q) =>
+        q.eq("ownerId", ownerId).eq("avatarId", avatarId),
+      )
+      .order("asc")
+      .first();
   },
 });
 

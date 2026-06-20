@@ -39,15 +39,27 @@ export const listActive = query({
   args: {},
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const jobs = await ctx.db
-      .query("mediaJobs")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .take(50);
+    const [queuedJobs, runningJobs] = await Promise.all([
+      ctx.db
+        .query("mediaJobs")
+        .withIndex("by_owner_status_created", (q) =>
+          q.eq("ownerId", ownerId).eq("status", "queued"),
+        )
+        .order("desc")
+        .take(25),
+      ctx.db
+        .query("mediaJobs")
+        .withIndex("by_owner_status_created", (q) =>
+          q.eq("ownerId", ownerId).eq("status", "running"),
+        )
+        .order("desc")
+        .take(25),
+    ]);
+    const jobs = [...queuedJobs, ...runningJobs].sort(
+      (left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt),
+    );
 
-    return jobs
-      .filter((job) => job.status === "queued" || job.status === "running")
-      .map(clientJobFields);
+    return jobs.map(clientJobFields);
   },
 });
 
@@ -394,20 +406,36 @@ export const claimNext = mutation({
 
     const matchesJobType = (candidate: { jobType: string }) =>
       jobType ? candidate.jobType === jobType : true;
-    const queuedJobs = await ctx.db
-      .query("mediaJobs")
-      .withIndex("by_status_created", (q) => q.eq("status", "queued"))
-      .order("asc")
-      .take(50);
+    const queuedJobs = jobType
+      ? await ctx.db
+          .query("mediaJobs")
+          .withIndex("by_status_job_type_created", (q) =>
+            q.eq("status", "queued").eq("jobType", jobType),
+          )
+          .order("asc")
+          .take(10)
+      : await ctx.db
+          .query("mediaJobs")
+          .withIndex("by_status_created", (q) => q.eq("status", "queued"))
+          .order("asc")
+          .take(10);
     let job = queuedJobs.find(matchesJobType);
 
     if (!job) {
       const nowMs = Date.parse(updatedAt);
-      const runningJobs = await ctx.db
-        .query("mediaJobs")
-        .withIndex("by_status_created", (q) => q.eq("status", "running"))
-        .order("asc")
-        .take(50);
+      const runningJobs = jobType
+        ? await ctx.db
+            .query("mediaJobs")
+            .withIndex("by_status_job_type_created", (q) =>
+              q.eq("status", "running").eq("jobType", jobType),
+            )
+            .order("asc")
+            .take(10)
+        : await ctx.db
+            .query("mediaJobs")
+            .withIndex("by_status_created", (q) => q.eq("status", "running"))
+            .order("asc")
+            .take(10);
 
       job = runningJobs.find((candidate) => {
         const lockedUntilMs = candidate.lockedUntil

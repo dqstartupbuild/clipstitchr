@@ -33,22 +33,20 @@ function getJobStatusLabel(job: WorkerJob) {
 
 export function ActiveWorkerJobsBanner() {
   const { isAuthenticated } = useConvexAuth();
-  const providerJobs = useQuery(
-    api.providerJobs.listActive,
+  const activeJobSummary = useQuery(
+    api.activeWorkerJobs.summary,
     isAuthenticated ? {} : "skip",
   );
-  const mediaJobs = useQuery(
-    api.mediaJobs.listActive,
-    isAuthenticated ? {} : "skip",
-  );
-  const jobs = [...(providerJobs ?? []), ...(mediaJobs ?? [])];
+  const jobs = activeJobSummary?.jobs ?? [];
 
   if (jobs.length === 0) {
     return null;
   }
 
-  const visibleJobs = jobs.slice(0, 3);
-  const hiddenCount = jobs.length - visibleJobs.length;
+  const hiddenCount = Math.max(
+    0,
+    (activeJobSummary?.totalCount ?? 0) - jobs.length,
+  );
 
   return (
     <section
@@ -71,7 +69,7 @@ export function ActiveWorkerJobsBanner() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          {visibleJobs.map((job) => (
+          {jobs.map((job) => (
             <span
               className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1"
               key={job.id}

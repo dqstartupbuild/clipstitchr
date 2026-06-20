@@ -77,24 +77,18 @@ export async function POST(request: Request) {
 
     const [productDocument, backgroundDocuments] = await Promise.all([
       convex.query(api.products.get, { id: productId }),
-      convex.query(api.swiprBackgrounds.list, {}),
+      convex.query(api.swiprBackgrounds.listByLibraryQueryKeys, {
+        libraryQueryKeys: selectedLibraryQueryKeys,
+      }),
     ]);
 
     if (!productDocument) {
       throw new Error("Saved product not found.");
     }
 
-    const libraryBackgrounds = backgroundDocuments.filter((background) => {
-      if (background.source !== "pexels" || !background.libraryQuery) {
-        return false;
-      }
-
-      return (
-        selectedLibraryQueryKeys.includes(
-          normalizeSwiprLibraryQueryKey(background.libraryQuery),
-        )
-      );
-    });
+    const libraryBackgrounds = backgroundDocuments.filter(
+      (background) => background.source === "pexels" && background.libraryQuery,
+    );
 
     if (!libraryBackgrounds.length) {
       throw new Error("Import Pexels photos before generating draft Swipes.");
