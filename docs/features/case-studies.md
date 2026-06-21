@@ -6,10 +6,6 @@ ClipStitchr now has a public Case Studies section for sales-focused proof pages.
 The first case study is the Guppy 30-day growth story at
 `/case-studies/guppy-30-day-growth`.
 
-The same story also exists as a blog post at `/blog/guppy-30-day-growth`. The
-blog post answers what happened. The case study answers whether a similar
-workflow could work for another founder or team.
-
 ## How It Works
 
 Case studies are authored as MDX files in `web/content/case-studies/`. The
@@ -40,20 +36,19 @@ web/app/_components/case-studies/CaseStudyFeatureImage.tsx
 web/app/_components/case-studies/CaseStudyHeroMetric.tsx
 web/app/_components/case-studies/CaseStudyIndexCard.tsx
 web/content/case-studies/guppy-30-day-growth.mdx
-web/content/blog/guppy-30-day-growth.mdx
 web/lib/content/caseStudyDocumentSchema.ts
 web/lib/content/caseStudyQueries.ts
-web/public/blog/guppy-30-day-growth/feature-image.jpg
-web/public/blog/guppy-30-day-growth/tiktok-total-views-139k.png
-web/public/blog/guppy-30-day-growth/tiktok-promote-overview-103k.png
-web/public/blog/guppy-30-day-growth/tiktok-promote-button-clicks.png
-web/public/blog/guppy-30-day-growth/revenuecat-funnel-results.png
-web/public/blog/guppy-30-day-growth/revenuecat-new-trial-yearly.jpg
-web/public/blog/guppy-30-day-growth/revenuecat-trial-conversion-weekly.jpg
-web/public/blog/guppy-30-day-growth/instagram-overall-views-22318.png
-web/public/blog/guppy-30-day-growth/instagram-top-post-views-grid.jpg
-web/public/blog/guppy-30-day-growth/instagram-75-reels-milestone.jpg
-web/public/blog/guppy-30-day-growth/clipstitchr-stitches-production.png
+web/public/case-studies/guppy-30-day-growth/feature-image.jpg
+web/public/case-studies/guppy-30-day-growth/tiktok-total-views-139k.png
+web/public/case-studies/guppy-30-day-growth/tiktok-promote-overview-103k.png
+web/public/case-studies/guppy-30-day-growth/tiktok-promote-button-clicks.png
+web/public/case-studies/guppy-30-day-growth/revenuecat-funnel-results.png
+web/public/case-studies/guppy-30-day-growth/revenuecat-new-trial-yearly.jpg
+web/public/case-studies/guppy-30-day-growth/revenuecat-trial-conversion-weekly.jpg
+web/public/case-studies/guppy-30-day-growth/instagram-overall-views-22318.png
+web/public/case-studies/guppy-30-day-growth/instagram-top-post-views-grid.jpg
+web/public/case-studies/guppy-30-day-growth/instagram-75-reels-milestone.jpg
+web/public/case-studies/guppy-30-day-growth/clipstitchr-stitches-production.png
 ```
 
 ## Use Cases
