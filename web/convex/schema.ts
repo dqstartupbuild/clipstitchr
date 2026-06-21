@@ -618,6 +618,7 @@ export default defineSchema({
     .index("by_idempotency_key", ["idempotencyKey"]),
   automationTasks: defineTable({
     ownerId: v.string(),
+    productId: v.optional(v.string()),
     id: v.string(),
     runId: v.string(),
     tool: automationToolValidator,

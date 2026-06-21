@@ -482,6 +482,7 @@ export const planDaily = mutation({
 
       await ctx.db.insert("automationTasks", {
         ownerId,
+        productId,
         id: taskId,
         runId: run.id,
         tool: "stitchr",

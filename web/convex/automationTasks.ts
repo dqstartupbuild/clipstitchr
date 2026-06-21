@@ -14,6 +14,7 @@ import { automationTaskStatusValidator } from "./validators/automationTaskStatus
 import { automationTaskTypeValidator } from "./validators/automationTaskType";
 import { automationToolValidator } from "./validators/automationTool";
 import { getAutomationToolDisabledReason } from "./getAutomationToolDisabledReason";
+import { getAutomationTaskProductId } from "./getAutomationTaskProductId";
 import { getIsStitchrBatchRunId } from "./stitchrBatchRunId";
 import { markAutomationRunCompletedWhenTasksDone } from "./markAutomationRunCompletedWhenTasksDone";
 import { requestWorkerLaunch } from "./workerLaunch";
@@ -82,7 +83,12 @@ async function getClaimableTask(
 
     const disabledReason = getIsStitchrBatchRunId(task.runId)
       ? null
-      : await getAutomationToolDisabledReason(ctx, task.ownerId, task.tool);
+      : await getAutomationToolDisabledReason(
+          ctx,
+          task.ownerId,
+          task.tool,
+          await getAutomationTaskProductId(ctx, task),
+        );
 
     if (disabledReason) {
       await markTaskSkippedForDisabledTool(ctx, task, disabledReason, updatedAt);
@@ -123,6 +129,7 @@ export const create = mutation({
   args: {
     secret: v.string(),
     ownerId: v.string(),
+    productId: v.optional(v.string()),
     id: v.string(),
     runId: v.string(),
     tool: automationToolValidator,
@@ -139,6 +146,7 @@ export const create = mutation({
       ctx,
       task.ownerId,
       task.tool,
+      task.productId,
     );
 
     if (disabledReason) {

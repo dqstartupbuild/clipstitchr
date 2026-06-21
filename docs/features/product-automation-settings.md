@@ -30,6 +30,12 @@ Automation preferences are stored in `automationPreferences` with an optional
 product preference. Run IDs and idempotency keys include the product scope, so
 two products can both run Swipr with 10 drafts on the same day.
 
+Queued automation tasks also store the product scope. Before a worker claims a
+task, Convex checks the matching product preference again and skips the task if
+automation was paused or the tool was removed after planning. Older queued tasks
+that do not have task-level product scope fall back to their parent run's
+`productId`.
+
 Legacy owner-level automation preferences still work as a fallback until a user
 saves settings for a product.
 

@@ -51,6 +51,7 @@ import type * as getAutomationPreferenceForProduct from "../getAutomationPrefere
 import type * as getAutomationProductScopeKey from "../getAutomationProductScopeKey.js";
 import type * as getAutomationRunHasIncompleteTasks from "../getAutomationRunHasIncompleteTasks.js";
 import type * as getAutomationRunHasTasks from "../getAutomationRunHasTasks.js";
+import type * as getAutomationTaskProductId from "../getAutomationTaskProductId.js";
 import type * as getAutomationToolDisabledReason from "../getAutomationToolDisabledReason.js";
 import type * as getAvatarNotificationCopy from "../getAvatarNotificationCopy.js";
 import type * as getCliprGeneratedClipStorageFields from "../getCliprGeneratedClipStorageFields.js";
@@ -207,6 +208,7 @@ declare const fullApi: ApiFromModules<{
   getAutomationProductScopeKey: typeof getAutomationProductScopeKey;
   getAutomationRunHasIncompleteTasks: typeof getAutomationRunHasIncompleteTasks;
   getAutomationRunHasTasks: typeof getAutomationRunHasTasks;
+  getAutomationTaskProductId: typeof getAutomationTaskProductId;
   getAutomationToolDisabledReason: typeof getAutomationToolDisabledReason;
   getAvatarNotificationCopy: typeof getAvatarNotificationCopy;
   getCliprGeneratedClipStorageFields: typeof getCliprGeneratedClipStorageFields;

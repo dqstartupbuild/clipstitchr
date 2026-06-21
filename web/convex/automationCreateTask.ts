@@ -60,6 +60,7 @@ export async function createAutomationTask(
 
   const insertedId = await ctx.db.insert("automationTasks", {
     ownerId,
+    productId,
     id,
     runId,
     tool,

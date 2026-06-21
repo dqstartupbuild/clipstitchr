@@ -139,6 +139,13 @@ style choices, draft counts, and selected Swipr packs before the provider
 worker starts. Legacy owner-level preferences still work as a fallback until
 the user saves settings for a product.
 
+Automation tasks persist the same product scope and worker claim mutations
+re-check the current product preference before taking queued or expired work.
+If a user pauses automation or removes a tool after a task was planned, the
+claim path skips that task and marks the run skipped. Older tasks created before
+task-level product scope fall back to `automationRuns.productId` during this
+check.
+
 ## Executor Choices
 
 Use different executors for different work:
