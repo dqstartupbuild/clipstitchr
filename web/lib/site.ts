@@ -59,6 +59,11 @@ export const site = {
       priority: 0.88,
     },
     {
+      pathname: "/case-studies",
+      changeFrequency: "weekly" as const,
+      priority: 0.87,
+    },
+    {
       pathname: "/docs",
       changeFrequency: "weekly" as const,
       priority: 0.86,

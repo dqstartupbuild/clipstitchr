@@ -24,6 +24,7 @@ export function createLlmsTxt() {
     "## Core Reading Path",
     "- /",
     "- /blog",
+    "- /case-studies",
     "- /docs",
     ...docsPaths,
     "- /feed.xml",
@@ -31,10 +32,11 @@ export function createLlmsTxt() {
     "## Key Sections",
     "- Public landing page for the ClipStitchr authenticated workspace",
     "- Blog articles and guides",
+    "- Case studies with real content workflow results",
     "- Customer docs for Stitchr, Clipr, Swipr, Swapr, avatars, and rate limits",
     "- RSS feed for content syndication",
     "",
     "## Site Context",
-    `${site.name} helps marketers turn UGC clips and product demos into finished vertical ad variants without opening a traditional video editor. Stitchr includes a Longr mode for arranging multiple saved clips into one saved Stitch. The public site also keeps docs, a blog, and RSS feed.`,
+    `${site.name} helps marketers turn UGC clips and product demos into finished vertical ad variants without opening a traditional video editor. Stitchr includes a Longr mode for arranging multiple saved clips into one saved Stitch. The public site also keeps docs, a blog, case studies, and RSS feed.`,
   ].join("\n");
 }

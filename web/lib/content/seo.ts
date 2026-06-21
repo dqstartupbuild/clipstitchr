@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { type Blog } from "content-collections";
+import { type Blog, type CaseStudy } from "content-collections";
 import { createPageMetadata } from "@/lib/metadata";
 import { createCanonicalUrl, site } from "@/lib/site";
+
+type ContentArticle = Blog | CaseStudy;
 
 function toAbsoluteImageUrl(image: string) {
   return image.startsWith("http") ? image : createCanonicalUrl(image);
@@ -16,7 +18,7 @@ function escapeXml(value: string) {
     .replaceAll("'", "&apos;");
 }
 
-export function createContentMetadata(post: Blog): Metadata {
+export function createContentMetadata(post: ContentArticle): Metadata {
   const metadata = createPageMetadata({
     title: post.seoTitle,
     description: post.description,
@@ -49,7 +51,7 @@ export function createContentMetadata(post: Blog): Metadata {
   };
 }
 
-export function createArticleJsonLd(post: Blog) {
+export function createArticleJsonLd(post: ContentArticle) {
   return {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -73,7 +75,7 @@ export function createArticleJsonLd(post: Blog) {
   };
 }
 
-export function createFaqJsonLd(post: Blog) {
+export function createFaqJsonLd(post: ContentArticle) {
   if (!post.faq?.length) {
     return null;
   }

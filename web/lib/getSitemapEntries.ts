@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getCustomerDocs } from "@/lib/clipstitchr/docs/getCustomerDocs";
 import { createPublicVideoExamplePath } from "@/lib/clipstitchr/example-outputs/createPublicVideoExamplePath";
 import { getPublicVideoExamples } from "@/lib/clipstitchr/example-outputs/getPublicVideoExamples";
+import { getPublishedCaseStudies } from "@/lib/content/caseStudyQueries";
 import { getPublishedBlogPosts } from "@/lib/content/queries";
 import { createCanonicalUrl, site } from "@/lib/site";
 
@@ -34,5 +35,18 @@ export function getSitemapEntries(): MetadataRoute.Sitemap {
     priority: 0.76,
   }));
 
-  return [...staticEntries, ...docsEntries, ...exampleEntries, ...postEntries];
+  const caseStudyEntries = getPublishedCaseStudies().map((caseStudy) => ({
+    url: caseStudy.canonical,
+    lastModified: new Date(caseStudy.updated ?? caseStudy.date),
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
+  return [
+    ...staticEntries,
+    ...docsEntries,
+    ...exampleEntries,
+    ...postEntries,
+    ...caseStudyEntries,
+  ];
 }

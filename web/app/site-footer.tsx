@@ -27,6 +27,12 @@ export function SiteFooter() {
             Blog
           </Link>
           <Link
+            href="/case-studies"
+            className="transition-colors hover:text-text-primary"
+          >
+            Case Studies
+          </Link>
+          <Link
             href="/docs"
             className="transition-colors hover:text-text-primary"
           >

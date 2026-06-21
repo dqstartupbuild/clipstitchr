@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { blogDocumentSchema } from "@/lib/content/schema";
+import { blogDocumentSchema } from "@/lib/content/blogDocumentSchema";
+import { caseStudyDocumentSchema } from "@/lib/content/caseStudyDocumentSchema";
 
 const validDocument = {
   title: "Getting Started",
@@ -43,6 +44,31 @@ describe("blogDocumentSchema", () => {
     const result = blogDocumentSchema.safeParse({
       ...validDocument,
       seoTitle: "Too short",
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("caseStudyDocumentSchema", () => {
+  const validCaseStudyDocument = {
+    ...validDocument,
+    companyName: "Guppy",
+    productName: "Guppy",
+    metrics: [{ label: "Total views", value: "139K+" }],
+    tools: ["ClipStitchr"],
+  };
+
+  it("accepts a valid case study document payload", () => {
+    const result = caseStudyDocumentSchema.safeParse(validCaseStudyDocument);
+
+    expect(result.success).toBe(true);
+  });
+
+  it("requires at least one case study metric", () => {
+    const result = caseStudyDocumentSchema.safeParse({
+      ...validCaseStudyDocument,
+      metrics: [],
     });
 
     expect(result.success).toBe(false);

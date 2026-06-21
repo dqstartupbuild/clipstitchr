@@ -22,7 +22,7 @@ const faqEntrySchema = z.object({
   answer: z.string().trim().min(1),
 });
 
-const baseDocumentSchema = z.object({
+export const baseContentDocumentSchema = z.object({
   title: z.string().trim().min(1),
   seoTitle: z.string().trim().min(50).max(70),
   slug: slugSchema,
@@ -50,9 +50,4 @@ const baseDocumentSchema = z.object({
     .min(1)
     .default(["article"]),
   content: z.string().trim().min(1),
-});
-
-export const blogDocumentSchema = baseDocumentSchema.extend({
-  excerpt: z.string().trim().min(1).optional(),
-  featured: z.boolean().default(false),
 });

@@ -67,6 +67,12 @@ export function SiteHeader({
               Blog
             </Link>
             <Link
+              href="/case-studies"
+              className="font-semibold transition-colors hover:text-text-primary"
+            >
+              Case Studies
+            </Link>
+            <Link
               href="/examples"
               className="font-semibold transition-colors hover:text-text-primary"
             >
@@ -86,6 +92,12 @@ export function SiteHeader({
               className="font-semibold transition-colors hover:text-text-primary"
             >
               Blog
+            </Link>
+            <Link
+              href="/case-studies"
+              className="font-semibold transition-colors hover:text-text-primary"
+            >
+              Case Studies
             </Link>
             <Link
               href="/examples"

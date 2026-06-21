@@ -1,16 +1,8 @@
 import { allBlogs, type Blog } from "content-collections";
-
-function sortByDateDescending(posts: Blog[]) {
-  return [...posts].sort((left, right) => {
-    return (
-      new Date(right.updated ?? right.date).getTime() -
-      new Date(left.updated ?? left.date).getTime()
-    );
-  });
-}
+import { sortContentByDateDescending } from "./sortContentByDateDescending";
 
 function getAllBlogPosts() {
-  return sortByDateDescending(allBlogs);
+  return sortContentByDateDescending(allBlogs);
 }
 
 export function getPublishedBlogPosts() {

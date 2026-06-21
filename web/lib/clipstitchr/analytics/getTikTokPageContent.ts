@@ -20,6 +20,11 @@ const staticPageContent: Record<string, TikTokPageContent> = {
     contentId: "docs",
     contentName: "Docs",
   },
+  "/case-studies": {
+    contentCategory: "Content",
+    contentId: "case_studies",
+    contentName: "Case Studies",
+  },
   "/privacy": {
     contentCategory: "Legal",
     contentId: "privacy",
@@ -52,6 +57,14 @@ export function getTikTokPageContent(pathname: string): TikTokPageContent {
       contentCategory: "Content",
       contentId: "blog_article",
       contentName: "Blog article",
+    };
+  }
+
+  if (pathname.startsWith("/case-studies/")) {
+    return {
+      contentCategory: "Content",
+      contentId: "case_study",
+      contentName: "Case study",
     };
   }
 

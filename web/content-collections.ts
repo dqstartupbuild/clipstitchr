@@ -1,7 +1,8 @@
 import { defineCollection, defineConfig } from "@content-collections/core";
 import { compileMDX } from "@content-collections/mdx";
 import remarkGfm from "remark-gfm";
-import { blogDocumentSchema } from "./lib/content/schema";
+import { blogDocumentSchema } from "./lib/content/blogDocumentSchema";
+import { caseStudyDocumentSchema } from "./lib/content/caseStudyDocumentSchema";
 import { createCanonicalUrl } from "./lib/site";
 
 function estimateReadingTime(content: string) {
@@ -33,6 +34,30 @@ const blog = defineCollection({
   },
 });
 
+const caseStudy = defineCollection({
+  name: "caseStudy",
+  directory: "content/case-studies",
+  include: "**/*.mdx",
+  schema: caseStudyDocumentSchema,
+  transform: async (document, context) => {
+    const url = `/case-studies/${document.slug}`;
+    const canonical = createCanonicalUrl(url);
+
+    const body = await compileMDX(context, document, {
+      remarkPlugins: [remarkGfm],
+    });
+
+    return {
+      ...document,
+      body,
+      canonical,
+      excerpt: document.excerpt ?? document.description,
+      readingTimeMinutes: estimateReadingTime(document.content),
+      url,
+    };
+  },
+});
+
 export default defineConfig({
-  content: [blog],
+  content: [blog, caseStudy],
 });

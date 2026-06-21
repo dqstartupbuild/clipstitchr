@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { getPublishedCaseStudies } from "@/lib/content/caseStudyQueries";
 import { getPublishedBlogPosts } from "@/lib/content/queries";
 import {
   createArticleJsonLd,
@@ -18,6 +19,21 @@ describe("content SEO helpers", () => {
     const metadata = createContentMetadata(post);
 
     expect(metadata.alternates?.canonical).toBe(post.canonical);
+    expect(metadata.openGraph).toMatchObject({
+      type: "article",
+    });
+  });
+
+  it("creates article metadata from a case study", () => {
+    const caseStudy = getPublishedCaseStudies()[0];
+
+    if (!caseStudy) {
+      throw new Error("Expected seeded case study content to exist");
+    }
+
+    const metadata = createContentMetadata(caseStudy);
+
+    expect(metadata.alternates?.canonical).toBe(caseStudy.canonical);
     expect(metadata.openGraph).toMatchObject({
       type: "article",
     });

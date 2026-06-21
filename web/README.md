@@ -111,6 +111,9 @@ The app processes media in the browser and stores durable data in Convex and Clo
 │       ├── blog/
 │       │   ├── page.tsx         # Blog index
 │       │   └── [slug]/page.tsx  # Blog post
+│       ├── case-studies/
+│       │   ├── page.tsx         # Case studies index
+│       │   └── [slug]/page.tsx  # Case study detail
 │       ├── privacy/page.tsx
 │       └── terms/page.tsx
 ├── lib/
@@ -125,14 +128,18 @@ The app processes media in the browser and stores durable data in Convex and Clo
 │   │   ├── types/               # ClipStitchr data model types
 │   │   └── constants/           # ClipStitchr media constants
 │   ├── content/
-│   │   ├── schema.ts            # Blog frontmatter schema (Zod)
-│   │   ├── queries.ts           # Content query helpers
+│   │   ├── baseContentDocumentSchema.ts
+│   │   ├── blogDocumentSchema.ts
+│   │   ├── caseStudyDocumentSchema.ts
+│   │   ├── queries.ts           # Blog query helpers
+│   │   ├── caseStudyQueries.ts  # Case study query helpers
 │   │   ├── mdx-components.tsx   # MDX component registry
 │   │   └── seo.ts               # Article JSON-LD, OG, RSS
 │   └── og/
 │       └── server-resolver.ts   # OG image fallback resolver
 ├── content/
-│   └── blog/                    # MDX blog posts go here
+│   ├── blog/                    # MDX blog posts
+│   └── case-studies/            # MDX case studies
 ├── scripts/
 │   ├── build-content-collections.mjs
 │   └── watch-content-collections.mjs
@@ -173,7 +180,6 @@ category: "guides"
 tags:
   - "your-tag"
 image: "/og/default.png"
-canonical: "http://localhost:3000/blog/your-post-slug"
 targetKeyword: "your keyword"
 intent: "informational"
 ctaVariant: "primary"
@@ -191,10 +197,25 @@ Your MDX content here.
 | `seoTitle` | 50–70 characters |
 | `description` | 110–170 characters |
 | `slug` | Lowercase, hyphenated only |
-| `canonical` | Must be absolute URL matching site URL + slug |
+| `canonical` | Optional legacy override. Prefer generated canonicals. |
 | `intent` | `informational`, `commercial`, `comparison`, or `transactional` |
 | `ctaVariant` | `survey`, `primary`, or `validation` |
 | `schemaTypeHints` | `article`, `faq`, and/or `comparison` |
+
+## Writing Case Studies
+
+Create a new `.mdx` file in `content/case-studies/`. Case studies use the same
+core frontmatter as blog posts and also require:
+
+```yaml
+companyName: "Customer or product name"
+productName: "Product name"
+metrics:
+  - label: "Total views"
+    value: "139K+"
+tools:
+  - "ClipStitchr"
+```
 
 ### Available MDX Components
 
@@ -206,12 +227,12 @@ Do not import components inside MDX files. All components are registered globall
 
 Everything is pre-configured:
 
-- **Sitemap** — Auto-generated at `/sitemap.xml` from static pages + blog posts
+- **Sitemap** — Auto-generated at `/sitemap.xml` from static pages, blog posts, case studies, docs, and examples
 - **Private dashboard routes** — Excluded from sitemap and LLM discovery files
 - **Robots.txt** — At `/robots.txt`
 - **RSS** — At `/feed.xml`
 - **LLMs.txt** — At `/llms.txt`
-- **JSON-LD** — WebSite + Organization on every page, Article + FAQ on blog posts
+- **JSON-LD** — WebSite + Organization on every page, Article + FAQ on blog posts and case studies
 - **Open Graph + Twitter Cards** — Generated from page metadata
 - **Canonical URLs** — From `lib/site.ts` config
 
@@ -222,7 +243,7 @@ npm test
 ```
 
 Includes tests for:
-- Blog frontmatter schema validation
+- Blog and case study frontmatter schema validation
 - SEO metadata generation
 - Article JSON-LD and RSS output
 - Sitemap coverage
@@ -240,7 +261,7 @@ This is a standard Next.js app. Deploy to:
 - [Netlify](https://netlify.com) — `npm run build`
 - Any Node.js host — `npm run build && npm start`
 
-Set `NEXT_PUBLIC_SITE_URL` to your production domain before deploying. Update all `canonical` fields in blog posts to match.
+Set `NEXT_PUBLIC_SITE_URL` to your production domain before deploying so generated canonical URLs match the live site.
 
 ## License
 

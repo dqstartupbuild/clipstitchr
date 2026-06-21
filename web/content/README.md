@@ -1,6 +1,6 @@
 # Content Authoring
 
-All authored MDX lives in `content/blog/`.
+Authored MDX lives in `content/blog/` and `content/case-studies/`.
 
 ## Required Frontmatter
 
@@ -30,6 +30,15 @@ All authored MDX lives in `content/blog/`.
 - `canonical`: legacy/local authoring override. Published canonicals are derived
   from the deployment site URL and post slug during the content build.
 
+## Case Study Frontmatter
+
+Case studies use the shared content fields plus:
+
+- `companyName`: customer, app, or brand name
+- `productName`: product or campaign name
+- `metrics`: label/value pairs shown in the case-study hero and index card
+- `tools`: workflow tools shown in the case-study sidebar
+
 ## MDX Rules
 
 - Do not import components directly inside MDX files.
@@ -43,5 +52,5 @@ All authored MDX lives in `content/blog/`.
 - Vercel preview builds use `NEXT_PUBLIC_PREVIEW_SITE_URL` or
   `PREVIEW_SITE_URL` first, then Vercel's branch/deployment URL system
   variables.
-- Do not hard-code published blog canonicals in MDX. The content build derives
+- Do not hard-code published content canonicals in MDX. The content build derives
   them from the active deployment URL plus the slug.
