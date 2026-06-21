@@ -212,7 +212,7 @@ companyName: "Customer or product name"
 productName: "Product name"
 metrics:
   - label: "Total views"
-    value: "139K+"
+    value: "161K+"
 tools:
   - "ClipStitchr"
 ```

@@ -55,7 +55,7 @@ describe("caseStudyDocumentSchema", () => {
     ...validDocument,
     companyName: "Guppy",
     productName: "Guppy",
-    metrics: [{ label: "Total views", value: "139K+" }],
+    metrics: [{ label: "Total views", value: "161K+" }],
     tools: ["ClipStitchr"],
   };
 
