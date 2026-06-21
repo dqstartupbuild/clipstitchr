@@ -16,8 +16,11 @@ import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constant
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import { STITCHR_BATCH_DAILY_LIMIT } from "../lib/clipstitchr/constants/stitchrBatchGenerationLimits";
 import { TEXT_OVERLAY_STYLES } from "../lib/clipstitchr/constants/textOverlayStyles";
+import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
+import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { resolveAutomationStitchrColor } from "../lib/clipstitchr/utils/resolveAutomationStitchrColor";
 import { resolveAutomationStitchrTextStyleId } from "../lib/clipstitchr/utils/resolveAutomationStitchrTextStyleId";
+import { automationStitchrTextStyleChoiceValidator } from "./validators/automationStitchrTextStyleChoice";
 
 function createTaskId(ownerId: string, batchDate: string, index: number) {
   return `stitchr-batch:${ownerId}:${batchDate}:${index}`;
@@ -66,9 +69,26 @@ export const plan = mutation({
     ownerId: v.string(),
     batchDate: v.string(),
     now: v.string(),
+    stitchrTextBackgroundColorChoice: v.optional(v.string()),
+    stitchrTextColorChoice: v.optional(v.string()),
+    stitchrTextStrokeColorChoice: v.optional(v.string()),
+    stitchrTextStyleChoice: v.optional(automationStitchrTextStyleChoiceValidator),
     templateId: v.optional(v.string()),
   },
-  handler: async (ctx, { secret, ownerId, batchDate, now, templateId }) => {
+  handler: async (
+    ctx,
+    {
+      secret,
+      ownerId,
+      batchDate,
+      now,
+      stitchrTextBackgroundColorChoice,
+      stitchrTextColorChoice,
+      stitchrTextStrokeColorChoice,
+      stitchrTextStyleChoice,
+      templateId,
+    },
+  ) => {
     assertAutomationWorkerSecret(secret);
 
     const runId = createStitchrBatchRunId(ownerId, batchDate);
@@ -199,11 +219,22 @@ export const plan = mutation({
     });
 
     const taskIds: string[] = [];
-    const stitchrTextStyleChoice =
-      templateTextOverlay?.styleId ?? defaultAutomationStitchrTextStyleChoice;
-    const stitchrTextColorChoice = defaultAutomationStitchrColorChoice;
-    const stitchrTextBackgroundColorChoice =
-      defaultAutomationStitchrColorChoice;
+    const selectedStitchrTextStyleChoice =
+      templateTextOverlay?.styleId ??
+      getAutomationStitchrTextStyleChoice(
+        stitchrTextStyleChoice ?? defaultAutomationStitchrTextStyleChoice,
+      );
+    const selectedStitchrTextColorChoice = getAutomationStitchrColorChoice(
+      stitchrTextColorChoice ?? defaultAutomationStitchrColorChoice,
+    );
+    const selectedStitchrTextBackgroundColorChoice =
+      getAutomationStitchrColorChoice(
+        stitchrTextBackgroundColorChoice ?? defaultAutomationStitchrColorChoice,
+      );
+    const selectedStitchrTextStrokeColorChoice =
+      getAutomationStitchrColorChoice(
+        stitchrTextStrokeColorChoice ?? defaultAutomationStitchrColorChoice,
+      );
 
     for (const [index, selectedPair] of selectedPairs.entries()) {
       const ugc = ugcClips.find(
@@ -238,7 +269,7 @@ export const plan = mutation({
       const stitchrTextStyleId =
         templateTextOverlay?.styleId ??
         resolveAutomationStitchrTextStyleId(
-          stitchrTextStyleChoice,
+          selectedStitchrTextStyleChoice,
           `${ownerId}:${batchDate}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}`,
         );
       const stitchrTextStyle = TEXT_OVERLAY_STYLES.find(
@@ -247,15 +278,23 @@ export const plan = mutation({
       const stitchrTextColor =
         templateTextOverlay?.color ??
         resolveAutomationStitchrColor(
-          stitchrTextColorChoice,
+          selectedStitchrTextColorChoice,
           `${ownerId}:${batchDate}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}:text`,
         );
       const stitchrTextBackgroundColor =
         templateTextOverlay?.backgroundColor ??
         (stitchrTextStyle?.backgroundColor
           ? resolveAutomationStitchrColor(
-              stitchrTextBackgroundColorChoice,
+              selectedStitchrTextBackgroundColorChoice,
               `${ownerId}:${batchDate}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}:background`,
+            )
+          : undefined);
+      const stitchrTextStrokeColor =
+        templateTextOverlay?.strokeColor ??
+        (stitchrTextStyle?.strokeColor
+          ? resolveAutomationStitchrColor(
+              selectedStitchrTextStrokeColorChoice,
+              `${ownerId}:${batchDate}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}:stroke`,
             )
           : undefined);
       const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(ugc.quickEdit);
@@ -333,12 +372,15 @@ export const plan = mutation({
           templateName: batchTemplate?.name,
           templateTextOverlay,
           templateSocialCaption,
-          stitchrTextStyleChoice,
+          stitchrTextStyleChoice: selectedStitchrTextStyleChoice,
           stitchrTextStyleId,
-          stitchrTextColorChoice,
+          stitchrTextColorChoice: selectedStitchrTextColorChoice,
           stitchrTextColor,
-          stitchrTextBackgroundColorChoice,
+          stitchrTextBackgroundColorChoice:
+            selectedStitchrTextBackgroundColorChoice,
           stitchrTextBackgroundColor,
+          stitchrTextStrokeColorChoice: selectedStitchrTextStrokeColorChoice,
+          stitchrTextStrokeColor,
         }),
         outputAssetIds: [],
         providerJobIds: [],

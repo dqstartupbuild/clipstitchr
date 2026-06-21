@@ -88,6 +88,8 @@ describe("DashboardNotificationBell", () => {
     expect(populatedMarkup).toContain("Read all");
     expect(populatedMarkup).toContain("Clear all");
     expect(populatedMarkup).toContain("Launch Stitch is ready.");
+    expect(populatedMarkup).toContain("fixed left-3 right-3 top-20");
+    expect(populatedMarkup).toContain("max-h-[calc(100dvh-6rem)]");
   });
 
   it("renders the full notification dialog", () => {

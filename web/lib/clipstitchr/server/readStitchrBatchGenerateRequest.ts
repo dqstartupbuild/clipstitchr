@@ -1,4 +1,13 @@
+import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
+import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
+import { getAutomationStitchrColorChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrColorChoice";
+import { getAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
+
 type StitchrBatchGenerateRequest = {
+  stitchrTextBackgroundColorChoice?: AutomationStitchrColorChoice;
+  stitchrTextColorChoice?: AutomationStitchrColorChoice;
+  stitchrTextStrokeColorChoice?: AutomationStitchrColorChoice;
+  stitchrTextStyleChoice?: AutomationStitchrTextStyleChoice;
   templateId?: string;
 };
 
@@ -17,9 +26,46 @@ export async function readStitchrBatchGenerateRequest(
     return {};
   }
 
-  const { templateId } = body as { templateId?: unknown };
+  const {
+    stitchrTextBackgroundColorChoice,
+    stitchrTextColorChoice,
+    stitchrTextStrokeColorChoice,
+    stitchrTextStyleChoice,
+    templateId,
+  } = body as Record<string, unknown>;
   const normalizedTemplateId =
     typeof templateId === "string" ? templateId.trim() : "";
+  const input: StitchrBatchGenerateRequest = {
+    ...(typeof stitchrTextBackgroundColorChoice === "string"
+      ? {
+          stitchrTextBackgroundColorChoice: getAutomationStitchrColorChoice(
+            stitchrTextBackgroundColorChoice,
+          ),
+        }
+      : {}),
+    ...(typeof stitchrTextColorChoice === "string"
+      ? {
+          stitchrTextColorChoice: getAutomationStitchrColorChoice(
+            stitchrTextColorChoice,
+          ),
+        }
+      : {}),
+    ...(typeof stitchrTextStrokeColorChoice === "string"
+      ? {
+          stitchrTextStrokeColorChoice: getAutomationStitchrColorChoice(
+            stitchrTextStrokeColorChoice,
+          ),
+        }
+      : {}),
+    ...(typeof stitchrTextStyleChoice === "string"
+      ? {
+          stitchrTextStyleChoice: getAutomationStitchrTextStyleChoice(
+            stitchrTextStyleChoice,
+          ),
+        }
+      : {}),
+    ...(normalizedTemplateId ? { templateId: normalizedTemplateId } : {}),
+  };
 
-  return normalizedTemplateId ? { templateId: normalizedTemplateId } : {};
+  return input;
 }

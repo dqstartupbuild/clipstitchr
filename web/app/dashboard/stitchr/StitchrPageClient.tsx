@@ -17,11 +17,15 @@ import { generateStitchrBatch } from "@/lib/clipstitchr/client/generateStitchrBa
 import { STITCHR_BATCH_DAILY_LIMIT } from "@/lib/clipstitchr/constants/stitchrBatchGenerationLimits";
 import { maxStitchrUgcSelectionCount } from "@/lib/clipstitchr/constants/maxStitchrUgcSelectionCount";
 import { generateCliprText } from "@/lib/clipstitchr/client/generateCliprText";
+import { defaultAutomationStitchrColorChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
+import { defaultAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { useLoadedVideoClip } from "@/lib/clipstitchr/hooks/useLoadedVideoClip";
 import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useStitchr } from "@/lib/clipstitchr/hooks/useStitchr";
+import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
+import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
 import type { StitchrLongrSelection } from "@/lib/clipstitchr/types/StitchrLongrSelection";
 import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
@@ -69,6 +73,16 @@ export function StitchrPageClient() {
     () => getSearchParamValue("templateId") ?? "",
   );
   const [appliedTemplateId, setAppliedTemplateId] = useState("");
+  const [batchTextStyleChoice, setBatchTextStyleChoice] =
+    useState<AutomationStitchrTextStyleChoice>(
+      defaultAutomationStitchrTextStyleChoice,
+    );
+  const [batchTextColorChoice, setBatchTextColorChoice] =
+    useState<AutomationStitchrColorChoice>(defaultAutomationStitchrColorChoice);
+  const [batchTextBackgroundColorChoice, setBatchTextBackgroundColorChoice] =
+    useState<AutomationStitchrColorChoice>(defaultAutomationStitchrColorChoice);
+  const [batchTextStrokeColorChoice, setBatchTextStrokeColorChoice] =
+    useState<AutomationStitchrColorChoice>(defaultAutomationStitchrColorChoice);
   const [textOverlaysByUgcId, setTextOverlaysByUgcId] = useState<
     Record<string, TextOverlay[]>
   >({});
@@ -1217,6 +1231,10 @@ export function StitchrPageClient() {
     setBatchMessage(null);
 
     void generateStitchrBatch({
+      stitchrTextBackgroundColorChoice: batchTextBackgroundColorChoice,
+      stitchrTextColorChoice: batchTextColorChoice,
+      stitchrTextStrokeColorChoice: batchTextStrokeColorChoice,
+      stitchrTextStyleChoice: batchTextStyleChoice,
       templateId: selectedTemplateId || undefined,
     })
       .then((result) => {
@@ -1243,7 +1261,13 @@ export function StitchrPageClient() {
         );
       })
       .finally(() => setIsGeneratingBatch(false));
-  }, [selectedTemplateId]);
+  }, [
+    batchTextBackgroundColorChoice,
+    batchTextColorChoice,
+    batchTextStrokeColorChoice,
+    batchTextStyleChoice,
+    selectedTemplateId,
+  ]);
 
   const handleGenerateAutoText = useCallback(() => {
     if (!activeAutoTextProductId) {
@@ -1491,13 +1515,21 @@ export function StitchrPageClient() {
         ) : null}
         {hasStitchrInputs && mode === "batch" ? (
           <StitchrBatchPanel
+            backgroundColorChoice={batchTextBackgroundColorChoice}
             dailyLimit={STITCHR_BATCH_DAILY_LIMIT}
             isDisabled={isGeneratingBatch}
             isGenerating={isGeneratingBatch}
             message={batchMessage}
             mode={mode}
+            strokeColorChoice={batchTextStrokeColorChoice}
+            textColorChoice={batchTextColorChoice}
+            textStyleChoice={batchTextStyleChoice}
+            onBackgroundColorChoiceChange={setBatchTextBackgroundColorChoice}
             onGenerate={handleGenerateBatch}
             onModeChange={handleModeChange}
+            onStrokeColorChoiceChange={setBatchTextStrokeColorChoice}
+            onTextColorChoiceChange={setBatchTextColorChoice}
+            onTextStyleChoiceChange={setBatchTextStyleChoice}
           />
         ) : hasStitchrInputs ? (
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">

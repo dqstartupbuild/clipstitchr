@@ -1,3 +1,6 @@
+import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
+import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
+
 export type GenerateStitchrBatchResult = {
   batchDate: string;
   count: number;
@@ -8,6 +11,10 @@ export type GenerateStitchrBatchResult = {
 };
 
 type GenerateStitchrBatchOptions = {
+  stitchrTextBackgroundColorChoice?: AutomationStitchrColorChoice;
+  stitchrTextColorChoice?: AutomationStitchrColorChoice;
+  stitchrTextStrokeColorChoice?: AutomationStitchrColorChoice;
+  stitchrTextStyleChoice?: AutomationStitchrTextStyleChoice;
   templateId?: string;
 };
 
@@ -15,10 +22,29 @@ export async function generateStitchrBatch(
   options: GenerateStitchrBatchOptions = {},
 ) {
   const templateId = options.templateId?.trim();
-  const response = await fetch("/api/stitchr/batch/generate", {
-    ...(templateId
+  const body = {
+    ...(options.stitchrTextBackgroundColorChoice
       ? {
-          body: JSON.stringify({ templateId }),
+          stitchrTextBackgroundColorChoice:
+            options.stitchrTextBackgroundColorChoice,
+        }
+      : {}),
+    ...(options.stitchrTextColorChoice
+      ? { stitchrTextColorChoice: options.stitchrTextColorChoice }
+      : {}),
+    ...(options.stitchrTextStrokeColorChoice
+      ? { stitchrTextStrokeColorChoice: options.stitchrTextStrokeColorChoice }
+      : {}),
+    ...(options.stitchrTextStyleChoice
+      ? { stitchrTextStyleChoice: options.stitchrTextStyleChoice }
+      : {}),
+    ...(templateId ? { templateId } : {}),
+  };
+  const hasBody = Object.keys(body).length > 0;
+  const response = await fetch("/api/stitchr/batch/generate", {
+    ...(hasBody
+      ? {
+          body: JSON.stringify(body),
           headers: { "content-type": "application/json" },
         }
       : {}),

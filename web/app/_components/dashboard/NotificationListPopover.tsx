@@ -24,11 +24,11 @@ export function NotificationListPopover({
     <div
       role="dialog"
       aria-label="Notifications"
-      className="absolute right-0 top-12 z-50 w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-border bg-white p-2 shadow-xl shadow-slate-900/10"
+      className="fixed left-3 right-3 top-20 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-lg border border-border bg-white p-2 shadow-xl shadow-slate-900/10 sm:absolute sm:left-auto sm:right-0 sm:top-12 sm:w-[min(24rem,calc(100vw-2rem))] sm:max-h-[min(28rem,calc(100dvh-6rem))]"
     >
-      <div className="flex items-center justify-between gap-3 px-2 py-2">
+      <div className="flex flex-col gap-2 px-2 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <p className="text-sm font-bold text-text-primary">Notifications</p>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             size="sm"
@@ -51,7 +51,7 @@ export function NotificationListPopover({
           </Button>
         </div>
       </div>
-      <div className="max-h-[26rem] overflow-y-auto">
+      <div className="min-h-0 overflow-y-auto">
         {isLoading ? (
           <p className="px-3 py-6 text-center text-sm text-text-secondary">
             Loading notifications.

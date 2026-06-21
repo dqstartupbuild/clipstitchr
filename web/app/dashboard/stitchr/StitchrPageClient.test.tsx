@@ -2,6 +2,8 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StitchrPageClient } from "@/app/dashboard/stitchr/StitchrPageClient";
+import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
+import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -317,6 +319,10 @@ function queueStitchrState(
     longrTimelineClipIds?: string[];
     mode?: "batch" | "normal" | "longr";
     appliedTemplateId?: string;
+    batchTextBackgroundColorChoice?: AutomationStitchrColorChoice;
+    batchTextColorChoice?: AutomationStitchrColorChoice;
+    batchTextStrokeColorChoice?: AutomationStitchrColorChoice;
+    batchTextStyleChoice?: AutomationStitchrTextStyleChoice;
     selectedDemoId?: string | null;
     selectedDemoIds?: string[];
     selectedMusicTrack?: SharedMusicTrack | null;
@@ -339,6 +345,10 @@ function queueStitchrState(
     overrides.selectedMusicTrack ?? null,
     overrides.selectedTemplateId ?? "",
     overrides.appliedTemplateId ?? "",
+    overrides.batchTextStyleChoice ?? "any",
+    overrides.batchTextColorChoice ?? "any",
+    overrides.batchTextBackgroundColorChoice ?? "any",
+    overrides.batchTextStrokeColorChoice ?? "any",
     overrides.textOverlaysByUgcId ?? {},
     overrides.reusedTextOverlays ?? null,
     overrides.longrTextOverlays ?? [],
@@ -434,9 +444,13 @@ describe("StitchrPageClient", () => {
     expect(markup).not.toContain("ClipPickerPanel");
     expect(mocks.batchPanelProps).toEqual(
       expect.objectContaining({
+        backgroundColorChoice: "any",
         dailyLimit: 10,
         isDisabled: false,
         mode: "batch",
+        strokeColorChoice: "any",
+        textColorChoice: "any",
+        textStyleChoice: "any",
       }),
     );
 
@@ -447,7 +461,45 @@ describe("StitchrPageClient", () => {
 
     expect(mocks.generateStitchrBatch).toHaveBeenCalledTimes(1);
     expect(mocks.generateStitchrBatch).toHaveBeenCalledWith({
+      stitchrTextBackgroundColorChoice: "any",
+      stitchrTextColorChoice: "any",
+      stitchrTextStrokeColorChoice: "any",
+      stitchrTextStyleChoice: "any",
       templateId: "template_1",
+    });
+  });
+
+  it("passes selected Batch text styling into generation", async () => {
+    queueStitchrState({
+      batchTextBackgroundColorChoice: "#111111",
+      batchTextColorChoice: "#f97316",
+      batchTextStrokeColorChoice: "#ffffff",
+      batchTextStyleChoice: "outline",
+      mode: "batch",
+    });
+
+    renderToStaticMarkup(<StitchrPageClient />);
+
+    expect(mocks.batchPanelProps).toEqual(
+      expect.objectContaining({
+        backgroundColorChoice: "#111111",
+        strokeColorChoice: "#ffffff",
+        textColorChoice: "#f97316",
+        textStyleChoice: "outline",
+      }),
+    );
+
+    (mocks.batchPanelProps as { onGenerate: () => void }).onGenerate();
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mocks.generateStitchrBatch).toHaveBeenCalledWith({
+      stitchrTextBackgroundColorChoice: "#111111",
+      stitchrTextColorChoice: "#f97316",
+      stitchrTextStrokeColorChoice: "#ffffff",
+      stitchrTextStyleChoice: "outline",
+      templateId: undefined,
     });
   });
 
@@ -785,15 +837,15 @@ describe("StitchrPageClient", () => {
     );
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("ugc_2");
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[22]).toHaveBeenCalledWith(["ugc_2"]);
-    expect(mocks.stateSetters[23]).toHaveBeenCalledWith("ugc_2");
-    expect(mocks.stateSetters[24]).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[25]).toHaveBeenCalledWith(["demo_2"]);
-    expect(mocks.stateSetters[26]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
-    expect(mocks.stateSetters[8]).toHaveBeenCalledWith({});
-    expect(mocks.stateSetters[9]).toHaveBeenCalledWith([textOverlay]);
-    expect(mocks.stateSetters[11]).toHaveBeenCalledWith({});
-    expect(mocks.stateSetters[12]).toHaveBeenCalledWith(
+    expect(mocks.stateSetters[26]).toHaveBeenCalledWith(["ugc_2"]);
+    expect(mocks.stateSetters[27]).toHaveBeenCalledWith("ugc_2");
+    expect(mocks.stateSetters[28]).toHaveBeenCalledWith("demo_2");
+    expect(mocks.stateSetters[29]).toHaveBeenCalledWith(["demo_2"]);
+    expect(mocks.stateSetters[30]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
+    expect(mocks.stateSetters[12]).toHaveBeenCalledWith({});
+    expect(mocks.stateSetters[13]).toHaveBeenCalledWith([textOverlay]);
+    expect(mocks.stateSetters[15]).toHaveBeenCalledWith({});
+    expect(mocks.stateSetters[16]).toHaveBeenCalledWith(
       "Reuse this caption\n\n#ugc #demo #launch",
     );
 

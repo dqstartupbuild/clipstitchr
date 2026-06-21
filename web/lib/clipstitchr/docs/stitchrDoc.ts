@@ -9,7 +9,7 @@ export const stitchrDoc = {
     "Choose UGC, pick one demo, preview each ad, and export finished variants.",
   category: "feature",
   order: 10,
-  updated: "2026-06-16",
+  updated: "2026-06-21",
   sections: [
     {
       title: "What Stitchr does",
@@ -23,6 +23,7 @@ export const stitchrDoc = {
       body: [
         "Choose up to 20 UGC and one product demo. Stitchr makes one finished ad for each UGC selection and reuses the same demo for the batch.",
         "When a clip has a score, use it as a quick clue for which UGC or demo is worth trying first.",
+        "In Batch mode, choose Any text styling for fresh variety or pick exact text, background, and outline colors before you queue drafts.",
       ],
       bullets: [
         "Choose UGC and Demo clips from the library.",

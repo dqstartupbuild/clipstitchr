@@ -34,6 +34,21 @@ export async function POST(request?: Request) {
         ownerId: userId,
         batchDate,
         now,
+        ...(input.stitchrTextBackgroundColorChoice
+          ? {
+              stitchrTextBackgroundColorChoice:
+                input.stitchrTextBackgroundColorChoice,
+            }
+          : {}),
+        ...(input.stitchrTextColorChoice
+          ? { stitchrTextColorChoice: input.stitchrTextColorChoice }
+          : {}),
+        ...(input.stitchrTextStrokeColorChoice
+          ? { stitchrTextStrokeColorChoice: input.stitchrTextStrokeColorChoice }
+          : {}),
+        ...(input.stitchrTextStyleChoice
+          ? { stitchrTextStyleChoice: input.stitchrTextStyleChoice }
+          : {}),
         ...(input.templateId ? { templateId: input.templateId } : {}),
       },
     )) as StitchrBatchPlanResult;

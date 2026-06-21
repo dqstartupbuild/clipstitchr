@@ -13,6 +13,8 @@ scheduled Stitchr automation.
 - Can use a selected Stitchr template so every queued draft uses that
   template's saved text overlay style and caption copy instead of generated
   random text.
+- Lets the user choose Batch text style, text color, background color, and
+  outline color, including `Any` choices that vary drafts automatically.
 - Launches the provider worker after tasks are queued so the drafts can move
   through the existing provider and media worker flow.
 - Saves finished drafts as normal Stitch library items, not as automation-owned
@@ -27,13 +29,30 @@ scheduled Stitchr automation.
 3. The Template picker stays available in Batch mode. **None** is the default.
    Selecting a template in Batch mode does not switch the page into manual
    editing.
-4. The Batch panel shows the current daily limit and a single generation button.
+4. The Batch panel shows the current daily limit, text style controls, and a
+   generation button.
 5. When the user generates a batch, the client posts to
    `/api/stitchr/batch/generate`.
-6. The API route authenticates the user, asks Convex to plan the daily Stitchr
-   batch, and returns the queued task IDs.
+6. The API route authenticates the user, reads the selected Batch text style,
+   asks Convex to plan the daily Stitchr batch, and returns the queued task IDs.
 7. Finished drafts appear in the user's library after the existing provider and
    media workers complete them.
+
+## Text Style Behavior
+
+Batch mode uses the same text style choice model as product automation:
+
+- `Any` picks a deterministic style or color per queued task.
+- Specific choices reuse the selected style or color for every queued task in
+  that Batch run.
+- Background and outline controls only apply when the resolved style supports
+  those visual parts.
+
+The selected choices are included in the Batch API request, normalized by
+`readStitchrBatchGenerateRequest`, passed to `stitchrBatch.plan`, and stored in
+each task input snapshot. When no selected template provides a saved overlay,
+the provider worker uses those resolved values when it creates the final text
+overlay.
 
 ## Template Behavior
 
@@ -77,9 +96,11 @@ retry timing. The current limits and verification notes are tracked in
 ## Relevant Code
 
 - `web/app/dashboard/stitchr/StitchrPageClient.tsx` owns the page mode,
-  default Batch selection, and generate action.
+  default Batch selection, Batch text choices, and generate action.
 - `web/app/_components/stitchr/StitchrBatchPanel.tsx` renders the Batch tab
   content.
+- `web/app/_components/stitchr/StitchrBatchTextStylePanel.tsx` renders the
+  Batch text style and color controls.
 - `web/app/_components/stitchr/StitchrModeToggle.tsx` exposes Batch, Normal,
   and Longr modes.
 - `web/app/api/stitchr/batch/generate/route.ts` authenticates the user and
@@ -106,6 +127,7 @@ retry timing. The current limits and verification notes are tracked in
 ```text
 docs/features/stitchr-batch.md
 web/app/_components/stitchr/StitchrBatchPanel.tsx
+web/app/_components/stitchr/StitchrBatchTextStylePanel.tsx
 web/app/_components/stitchr/StitchrModeToggle.tsx
 web/app/api/stitchr/batch/generate/route.ts
 web/app/api/stitchr/batch/generate/route.test.ts

@@ -96,6 +96,32 @@ describe("POST /api/stitchr/batch/generate", () => {
     );
   });
 
+  it("passes selected Batch text styling into planning", async () => {
+    const request = new Request("https://clipstitchr.test/api/stitchr/batch/generate", {
+      body: JSON.stringify({
+        stitchrTextBackgroundColorChoice: "#111111",
+        stitchrTextColorChoice: "#f97316",
+        stitchrTextStrokeColorChoice: "#ffffff",
+        stitchrTextStyleChoice: "outline",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(200);
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.stitchrBatch.plan,
+      expect.objectContaining({
+        stitchrTextBackgroundColorChoice: "#111111",
+        stitchrTextColorChoice: "#f97316",
+        stitchrTextStrokeColorChoice: "#ffffff",
+        stitchrTextStyleChoice: "outline",
+      }),
+    );
+  });
+
   it("returns rate-limit responses from Convex planning", async () => {
     mocks.convex.mutation.mockRejectedValueOnce({
       data: {
