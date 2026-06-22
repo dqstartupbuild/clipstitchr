@@ -4,17 +4,17 @@ export const clipScoreDoc = {
   slug: "clip-scores",
   title: "Clip Scores",
   description:
-    "See which clips are worth using before you spend time turning them into posts.",
+    "See which clips are worth using before you spend a batch on them.",
   summary:
-    "Upload a UGC clip or demo, then use the score and quick notes to decide what to use next.",
+    "Upload a UGC clip or demo, then use the score and quick notes to decide what belongs in the next batch.",
   category: "feature",
   order: 15,
-  updated: "2026-06-14",
+  updated: "2026-06-22",
   sections: [
     {
       title: "What clip scores do",
       body: [
-        "Clip scores help you decide what to use before you build another ad. A score is a quick read on whether a clip has a strong opener, clear camera presence, good pacing, and a useful fit for short-form posts.",
+        "Clip scores help you decide what to use before you build another batch. A score is a quick read on whether a clip has a strong opener, clear camera presence, good pacing, and a useful fit for short-form ads.",
         "The score is a guide, not a rule. Use it to find the clips that deserve your attention first.",
       ],
     },
@@ -43,7 +43,7 @@ export const clipScoreDoc = {
         "Pace: does the clip move quickly enough?",
         "Clarity: is it obvious what is happening?",
         "Platform fit: does it feel right for short-form feeds?",
-        "Stitch fit: will it pair cleanly with another UGC or demo clip?",
+        "Stitch fit: will it pair cleanly with a source clip or product demo?",
       ],
     },
     {

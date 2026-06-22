@@ -42,6 +42,12 @@ export function SiteHeader({
             >
               Examples
             </a>
+            <Link
+              href="/case-studies"
+              className="font-semibold transition-colors hover:text-text-primary"
+            >
+              Case Studies
+            </Link>
             <a
               href="#offer-stack"
               className="font-semibold transition-colors hover:text-text-primary"

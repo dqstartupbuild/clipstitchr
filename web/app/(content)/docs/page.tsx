@@ -7,7 +7,7 @@ import { site } from "@/lib/site";
 export const metadata = createPageMetadata({
   title: `Docs | ${site.name}`,
   description:
-    "Simple ClipStitchr docs for getting started, making ad variants, creating source clips, and checking usage limits.",
+    "Simple ClipStitchr docs for creating ad batches, improving saved clips, reusing templates, and checking usage limits.",
   canonical: "/docs",
 });
 
@@ -22,12 +22,13 @@ export default function DocsIndexPage() {
         <div className="max-w-3xl">
           <p className="text-sm font-semibold text-accent-dark">Docs</p>
           <h1 className="mt-4 text-4xl font-bold text-text-primary md:text-5xl">
-            Find the guide for what you want to make.
+            Start with the batch, then use the helpers when you need them.
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
-            Start with the basics, then jump into the feature that matches your
-            next post: a finished ad, a fresh Clip, a carousel, or more
-            source footage.
+            The fastest path is simple: upload clips, pick the product demo, and
+            create finished ad variants. Use the other guides when you want to
+            pick stronger clips, reuse a format, make more source footage, or
+            ship a carousel instead.
           </p>
         </div>
 
@@ -79,9 +80,11 @@ export default function DocsIndexPage() {
 
         <section className="mt-16">
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold text-accent-dark">Features</p>
+            <p className="text-sm font-semibold text-accent-dark">
+              What helps your batch
+            </p>
             <h2 className="mt-3 text-3xl font-bold text-text-primary">
-              Choose what you are making.
+              Choose the guide for the job in front of you.
             </h2>
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">

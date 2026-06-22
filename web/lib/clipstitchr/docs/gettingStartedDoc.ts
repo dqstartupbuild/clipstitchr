@@ -4,25 +4,25 @@ export const gettingStartedDoc = {
   slug: "getting-started",
   title: "Get Started",
   description:
-    "Set up your first product, add a few clips, and make your first finished ad.",
+    "Set up your first product, add a few clips, and create your first ad batch.",
   summary:
-    "The shortest path from a new account to your first Stitchr export.",
+    "The shortest path from a new account to your first Stitchr batch.",
   category: "start",
   order: 0,
-  updated: "2026-05-12",
+  updated: "2026-06-22",
   sections: [
     {
       title: "The fastest first session",
       body: [
-        "You do not need a perfect library to start. Use one product, a few pieces of UGC, and one product demo. That is enough to make your first ad and see how ClipStitchr fits into your content work.",
+        "You do not need a perfect library to start. Use one product, a few saved clips, and one product demo. That is enough to create your first batch and see how ClipStitchr fits into your content work.",
       ],
       bullets: [
         "Create or sign in to your account.",
         "Open Settings and save the product you want to make content for.",
         "Upload UGC and product demos into the Library.",
-        "Open Stitchr and choose up to 20 UGC with one demo.",
-        "Preview each ad before you export.",
-        "Add one text hook if the batch needs it, then create and download the finished ads.",
+        "Open Stitchr, leave Batch mode selected, and pick the product demo you want to promote.",
+        "Choose text style settings or leave them on Any.",
+        "Create the batch, then review and download the finished ads.",
       ],
     },
     {
@@ -61,14 +61,20 @@ export const gettingStartedDoc = {
     {
       title: "Where to go next",
       body: [
-        "Use Stitchr when you already have footage and need finished ads. Use Clipr, Swapr, Swipr, and Avatars when you need more clips or a carousel post.",
+        "Use Stitchr when you already have footage and need finished ads. Use scores, templates, Clipr, Swapr, Swipr, and Avatars when you want a stronger batch, more clips, or a carousel post.",
       ],
       cards: [
         {
           title: "Make ad variants",
           description:
-            "Pair UGC with a demo and export finished vertical ads.",
+            "Pick a product demo and create a batch of finished vertical ads.",
           href: "/docs/stitchr",
+        },
+        {
+          title: "Improve the batch",
+          description:
+            "Use clip scores, stitch scores, and templates to pick better inputs and reuse what worked.",
+          href: "/docs/clip-scores",
         },
         {
           title: "Create source clips",

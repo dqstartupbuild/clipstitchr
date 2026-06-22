@@ -4,12 +4,12 @@ export const templatesDoc = {
   slug: "templates",
   title: "Templates",
   description:
-    "Save a Stitch setup and reuse it when the next ad should start from the same structure.",
+    "Save a Stitch setup and reuse it when the next batch should follow the same structure.",
   summary:
-    "Turn a finished Stitch into a reusable setup, then load it in Stitchr when you want a faster starting point.",
+    "Turn a finished Stitch into a reusable setup, then use it to make future batches faster.",
   category: "feature",
   order: 18,
-  updated: "2026-06-14",
+  updated: "2026-06-22",
   sections: [
     {
       title: "What templates save",
@@ -39,8 +39,8 @@ export const templatesDoc = {
     {
       title: "Use a template",
       body: [
-        "Open Stitchr and choose a saved template from the Template picker. ClipStitchr fills in the saved setup so you can preview faster.",
-        "You can still change the UGC, demo, text, trims, caption, and audio choices before creating the next Stitch.",
+        "Open Stitchr and choose a saved template from the Template picker. In Batch mode, the template supplies the saved text and caption style while ClipStitchr still picks fresh clip pairings from your library.",
+        "In Normal mode, ClipStitchr fills in the saved setup so you can preview faster. You can still change the UGC, demo, text, trims, caption, and audio choices before creating the next Stitch.",
       ],
     },
     {

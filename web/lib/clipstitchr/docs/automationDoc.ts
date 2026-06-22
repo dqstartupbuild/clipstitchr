@@ -4,17 +4,17 @@ export const automationDoc = {
   slug: "automation",
   title: "Automation",
   description:
-    "Let ClipStitchr prepare daily drafts you can review, edit, and use when they feel right.",
+    "Let ClipStitchr prepare daily ad batches and content drafts you can review before using.",
   summary:
-    "Choose which daily drafts ClipStitchr can make, then review everything before you use it.",
+    "Choose what ClipStitchr can prepare each day, then review everything before you use it.",
   category: "feature",
   order: 70,
-  updated: "2026-06-14",
+  updated: "2026-06-22",
   sections: [
     {
       title: "What automation does",
       body: [
-        "Automation helps keep your library moving by preparing new drafts in the background. It is built for review, not auto-posting.",
+        "Automation helps keep your library moving by preparing new ad batches, source clips, and carousel drafts in the background. It is built for review, not auto-posting.",
         "You stay in control. Pause it anytime, edit the drafts, and only use the ones that fit.",
       ],
     },
@@ -27,7 +27,7 @@ export const automationDoc = {
         "Enable or pause daily drafts.",
         "Choose Stitchr, Clipr, or Swipr.",
         "Pick Any, Reaction, or B-roll for generated UGC.",
-        "Choose the default text style and colors for Stitchr drafts.",
+        "Choose the default text style, colors, and template mix for Stitchr drafts.",
         "Save your changes.",
       ],
     },

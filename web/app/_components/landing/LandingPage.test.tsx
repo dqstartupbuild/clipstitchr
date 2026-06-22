@@ -89,8 +89,10 @@ describe("LandingPage", () => {
 
     expect(landingMarkup).toContain("How it Works");
     expect(landingMarkup).toContain("Examples");
+    expect(landingMarkup).toContain("Case Studies");
     expect(landingMarkup).toContain("What you get");
     expect(landingMarkup).toContain("Pricing");
+    expect(landingMarkup).toContain('href="/case-studies"');
     expect(landingMarkup).toContain('href="/sign-up"');
     expect(landingMarkup).not.toContain("Features");
     expect(landingMarkup).not.toContain("Scores");

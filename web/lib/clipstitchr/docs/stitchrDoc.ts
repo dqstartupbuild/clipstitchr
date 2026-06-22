@@ -4,32 +4,44 @@ export const stitchrDoc = {
   slug: "stitchr",
   title: "Stitchr",
   description:
-    "Turn UGC and product demos into finished vertical ads.",
+    "Create batches of finished vertical ads from saved clips and one product demo.",
   summary:
-    "Choose UGC, pick one demo, preview each ad, and export finished variants.",
+    "Pick the product demo, create a batch, then review and export finished variants.",
   category: "feature",
   order: 10,
-  updated: "2026-06-21",
+  updated: "2026-06-22",
   sections: [
     {
       title: "What Stitchr does",
       body: [
-        "Use Stitchr when you have clips, but not finished ads. It pairs a UGC opener with a product demo so you can turn saved footage into ad variants without opening a timeline editor.",
-        "Every stitch follows a simple order: UGC first, product demo second.",
+        "Use Stitchr when you have clips, but not finished ads. Batch mode turns saved footage into finished ad variants without making you rebuild each video by hand.",
+        "Each finished stitch follows a simple order: source clip first, product demo second.",
       ],
     },
     {
-      title: "Make a batch",
+      title: "Create a batch",
       body: [
-        "Choose up to 20 UGC and one product demo. Stitchr makes one finished ad for each UGC selection and reuses the same demo for the batch.",
-        "When a clip has a score, use it as a quick clue for which UGC or demo is worth trying first.",
-        "In Batch mode, choose Any text styling for fresh variety or pick exact text, background, and outline colors before you queue drafts.",
+        "Batch mode is the default Stitchr flow. Pick the product demo you want to promote, choose text styling, and create the batch. ClipStitchr chooses useful clip pairings from your saved library and prepares finished drafts for review.",
+        "When clips have scores, use them as quick guidance while you organize the library, trim weak moments, or decide what to use in Normal mode.",
+        "Choose Any text styling for fresh variety, or pick exact text, background, and outline colors before you queue drafts.",
       ],
       bullets: [
-        "Choose UGC and Demo clips from the library.",
-        "Select the UGC you want to test.",
-        "Select one demo clip for the batch.",
-        "Preview each ad before export.",
+        "Open Stitchr.",
+        "Keep Batch mode selected.",
+        "Pick the product demo you want to promote.",
+        "Choose text style settings or leave them on Any.",
+        "Create the batch and review the finished drafts.",
+      ],
+    },
+    {
+      title: "When to use Normal mode",
+      body: [
+        "Normal mode is for hands-on control. Use it when you want to manually select the UGC clips, preview each exact UGC-then-demo pairing, and customize text per selected output before export.",
+      ],
+      bullets: [
+        "Select up to 20 UGC clips.",
+        "Select one product demo.",
+        "Preview each pairing.",
         "Create one finished stitch for each selected UGC.",
       ],
     },
@@ -43,8 +55,8 @@ export const stitchrDoc = {
     {
       title: "Text overlay",
       body: [
-        "Add one text hook per selected ad when the batch needs it. Use different text for each UGC opener, or copy the active overlay to all selected ads.",
-        "Write the hook yourself or generate a starting point from your product settings. Edit each overlay before export.",
+        "Batch mode can vary text style automatically or follow the exact colors you choose before generation. Saved templates can also supply text and caption copy for every queued draft.",
+        "In Normal mode, add one text hook per selected ad when the batch needs it. Use different text for each opener, or copy the active overlay to all selected ads.",
       ],
     },
     {

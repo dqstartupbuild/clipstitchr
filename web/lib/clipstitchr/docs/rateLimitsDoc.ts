@@ -9,7 +9,7 @@ export const rateLimitsDoc = {
     "See how often you can run common actions before ClipStitchr asks you to wait.",
   category: "limits",
   order: 100,
-  updated: "2026-05-13",
+  updated: "2026-06-22",
   sections: [
     {
       title: "Why limits exist",
@@ -66,9 +66,14 @@ export const rateLimitsDoc = {
           limit: "20 files at once",
         },
         {
-          action: "Stitchr UGC selection",
+          action: "Stitchr Batch generation",
+          limit: "10 outputs per day",
+          note: "Applies before the batch starts provider work.",
+        },
+        {
+          action: "Stitchr Normal mode UGC selection",
           limit: "20 UGC per batch",
-          note: "Each selected UGC creates one finished stitch with the selected demo.",
+          note: "Each selected UGC creates one finished stitch with the selected demo in Normal mode.",
         },
         {
           action: "Stitchr Longr-mode duration",

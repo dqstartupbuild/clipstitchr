@@ -167,7 +167,8 @@ describe("content pages", () => {
     ).resolves.toEqual(expect.objectContaining({
       title: expect.stringContaining(firstDoc.title),
     }));
-    expect(indexMarkup).toContain("Find the guide");
+    expect(indexMarkup).toContain("Start with the batch");
+    expect(indexMarkup).toContain("What helps your batch");
     expect(indexMarkup).toContain(firstDoc.title);
     expect(indexMarkup).toContain("Clip Scores");
     expect(indexMarkup).toContain("Templates");
