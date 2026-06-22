@@ -28,14 +28,14 @@ export function LandingAutomationSection() {
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.04fr_0.96fr] lg:items-center">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
-            Automation
+            Daily drafts
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Let ClipStitchr make daily drafts while you work on everything else.
+            Let ClipStitchr prepare new drafts while you work on everything else.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Pick the tools you want running, choose a few defaults, and let the
-            app prepare content drafts you can review before anything goes live.
+            Choose which tools can run, set a few defaults, and review the
+            drafts before anything leaves the app.
           </p>
         </div>
         <div className="rounded-lg border border-border bg-white p-5 shadow-sm shadow-slate-200/60">
@@ -49,8 +49,8 @@ export function LandingAutomationSection() {
                 New drafts, ready to review.
               </h3>
               <p className="mt-2 text-sm leading-6 text-text-secondary">
-                Automation can prepare Stitchr drafts, new UGC, and Swipes
-                based on the tools you choose.
+                Automation can prepare ad batches, new source clips, and
+                carousel drafts based on the tools you choose.
               </p>
             </div>
             <CalendarClock aria-hidden className="h-9 w-9 shrink-0 text-accent" />

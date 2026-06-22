@@ -32,9 +32,9 @@ export const site = {
   name: "ClipStitchr",
   url: configuredSiteUrl.replace(/\/$/, ""),
   publisherName: "ClipStitchr",
-  defaultTitle: "ClipStitchr | Turn UGC Clips Into Finished Ads",
+  defaultTitle: "ClipStitchr | Make Ad Variants From Saved Clips",
   defaultDescription:
-    "ClipStitchr helps marketers turn UGC clips and product demos into finished vertical ad variants without opening a traditional video editor.",
+    "ClipStitchr helps marketers upload clips once, pick a product demo, and create a batch of finished vertical ads ready to test across TikTok, Reels, and Shorts.",
   keywords: [
     "UGC ad creator",
     "TikTok ad maker",

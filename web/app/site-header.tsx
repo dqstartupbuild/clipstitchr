@@ -31,52 +31,28 @@ export function SiteHeader({
         {isLanding ? (
           <>
             <a
-              href="#features"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Features
-            </a>
-            <a
-              href="#scores"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Scores
-            </a>
-            <a
-              href="#templates"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Templates
-            </a>
-            <a
-              href="#automation"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Automation
-            </a>
-            <a
               href="#workflow"
               className="font-semibold transition-colors hover:text-text-primary"
             >
               How it Works
             </a>
-            <Link
-              href="/blog"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Blog
-            </Link>
-            <Link
-              href="/case-studies"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Case Studies
-            </Link>
-            <Link
-              href="/examples"
+            <a
+              href="#example-output-reel"
               className="font-semibold transition-colors hover:text-text-primary"
             >
               Examples
+            </a>
+            <a
+              href="#offer-stack"
+              className="font-semibold transition-colors hover:text-text-primary"
+            >
+              What you get
+            </a>
+            <Link
+              href="/sign-up"
+              className="font-semibold transition-colors hover:text-text-primary"
+            >
+              Pricing
             </Link>
           </>
         ) : (

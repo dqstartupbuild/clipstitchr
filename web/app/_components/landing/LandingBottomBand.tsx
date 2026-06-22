@@ -8,11 +8,11 @@ export function LandingBottomBand() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6 rounded-lg border border-border bg-surface-muted p-8 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-3xl font-bold text-text-primary">
-            Turn your clip library into the next ad batch.
+            Create the next batch from clips you already have.
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-text-secondary">
-            Upload UGC and demos once, keep them organized, and create finished
-            ad variants whenever you need new creative to test.
+            Upload clips once, pick the demo, and create finished vertical ad
+            variants whenever you need new creative to test.
           </p>
         </div>
         <TrackedButtonLink
@@ -22,7 +22,7 @@ export function LandingBottomBand() {
           contentId="bottom_dashboard_button"
           contentName="Bottom dashboard"
         >
-          Open Dashboard
+          Create your first batch
           <ArrowRight aria-hidden className="h-4 w-4" />
         </TrackedButtonLink>
       </div>

@@ -28,15 +28,15 @@ export function LandingTemplateSection() {
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
-            Templates
+            Keep winning structures
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Save the ad setup that worked. Reuse it without starting over.
+            When a format works, reuse it without rebuilding everything.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
             Turn a finished Stitch into a template, then use it as the starting
-            point for the next batch. Keep the useful structure and change the
-            parts that need to be fresh.
+            point for the next batch. Keep the trims, text, captions, and timing
+            that worked while the clips stay easy to swap.
           </p>
         </div>
         <div className="rounded-lg border border-border bg-surface-muted p-5 shadow-sm shadow-slate-200/60">
@@ -69,7 +69,7 @@ export function LandingTemplateSection() {
             )}
           </div>
           <div className="mt-5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-text-primary">
-            Next time: load it, pick new UGC, preview, export.
+            Next time: load it, create the batch, review, export.
           </div>
         </div>
         <div className="grid gap-4 lg:col-span-2 md:grid-cols-3">

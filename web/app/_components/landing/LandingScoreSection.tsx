@@ -3,21 +3,21 @@ import { Panel } from "@/app/_components/ui/Panel";
 
 const scoreBenefits = [
   {
-    title: "Pick faster",
+    title: "Choose stronger inputs",
     description:
-      "See the clips that are most worth using before you start building an ad.",
+      "See which clips deserve a spot before you create the next batch.",
     icon: SearchCheck,
   },
   {
-    title: "Fix the weak spots",
+    title: "Fix weak moments",
     description:
-      "Get simple notes on the hook, pace, clarity, and how well the clip fits short-form.",
+      "Get plain notes on the opener, pace, clarity, and short-form fit.",
     icon: Scissors,
   },
   {
-    title: "Check finished stitches",
+    title: "Check finished ads",
     description:
-      "Score a saved Stitch and see where to trim, what text to try, and whether the demo lands fast enough.",
+      "Score a finished Stitch and see where to trim, what text to try, and whether the demo lands fast enough.",
     icon: WandSparkles,
   },
 ];
@@ -35,15 +35,15 @@ export function LandingScoreSection() {
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
-            Clip and Stitch scores
+            Make the batch better
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Know which clips are worth using before you waste time posting.
+            Know which clips are worth putting into the batch.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Upload a UGC clip or demo to score the source. Score a finished
-            Stitch when you want to see if the hook, demo, and text are ready
-            before posting.
+            Clip and Stitch scores help you spot strong openers, slow pacing,
+            unclear moments, and quick fixes before you spend a batch on the
+            wrong clips.
           </p>
         </div>
         <div className="rounded-lg border border-border bg-white p-5 shadow-sm shadow-slate-200/60">
@@ -58,7 +58,7 @@ export function LandingScoreSection() {
               </h3>
               <p className="mt-2 text-sm leading-6 text-text-secondary">
                 The first second is clear, the face stays easy to see, and the
-                product moment lands fast.
+                product moment lands fast enough for the batch.
               </p>
             </div>
             <p className="shrink-0 text-4xl font-bold text-accent-dark">84</p>

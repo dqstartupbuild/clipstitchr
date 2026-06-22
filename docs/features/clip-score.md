@@ -186,7 +186,7 @@ UI:
 - `web/app/_components/dashboard/VideoClipCard.tsx`
 - `web/app/_components/landing/LandingScoreSection.tsx`
 - `web/app/_components/landing/LandingHero.tsx`
-- `web/app/_components/landing/LandingFeatureGrid.tsx`
+- `web/app/_components/landing/LandingOfferStackSection.tsx`
 - `web/app/site-header.tsx`
 
 Docs:

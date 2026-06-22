@@ -3,9 +3,9 @@
 ClipStitchr is for people who know they need to publish more short-form ad
 content, but hate the operational grind of making it.
 
-The core product is not an AI playground. The core product is Stitchr: a simple
-way to turn a messy pile of UGC, b-roll, reaction clips, and product demos
-into finished 9:16 ads without opening a timeline editor.
+The core product is not an AI playground. The core product is the Stitchr batch
+workflow: a simple way to turn saved UGC, b-roll, reaction clips, and product
+demos into batches of finished 9:16 ads without opening a timeline editor.
 
 ## The Customer Pain
 
@@ -31,25 +31,32 @@ business gets less distribution than it should.
 
 ## The Solution
 
-ClipStitchr turns the messy middle of ad creation into a repeatable workflow:
+ClipStitchr turns the messy middle of ad creation into a repeatable batch
+workflow:
 
 1. Upload UGC and product demos.
 2. Normalize everything to vertical 9:16 once.
 3. Keep the clips organized in a reusable content library.
-4. Select up to 20 UGC and one demo.
-5. Tap or swipe through each UGC-then-demo preview.
-6. Click once to create the finished ad variants.
-7. Reuse the same library to make more variants.
-8. Use Swipr when the next post should be a carousel instead of a video.
-9. Use Clipr when the library needs more reusable engagement clips.
+4. Pick the product demo.
+5. Click once to create a batch of finished ad variants.
+6. Review, download, and test the outputs.
+7. Reuse the same library and templates to make more variants.
+8. Use scoring when the user is unsure which clips are strongest.
+9. Use Clipr and Swapr when the library needs more source clips.
+10. Use Swipr when the next post should be a carousel instead of a video.
+11. Use automation when the user wants daily drafts prepared for review.
 
 The user should feel like they are operating a content machine, not performing
 video editing chores.
 
 ## Primary Promise
 
-Turn your saved UGC and product demos into finished vertical ads without opening
-a video editor.
+Make more ad variants from the clips you already have.
+
+Supporting copy:
+
+Upload your clips once. Pick the product demo. Click once to create a batch of
+finished vertical ads, ready to test across TikTok, Reels, and Shorts.
 
 ## Product Category
 
@@ -86,12 +93,16 @@ Secondary users:
 
 Primary feature:
 
-- Stitchr: combine up to 20 UGC with one product demo into finished 9:16 ad videos.
+- Stitchr Batch: create multiple finished 9:16 ad variants from saved clips and
+  one product demo.
 
 Core supporting features:
 
 - upload and normalize UGC and demo assets
 - organize reusable content in the library
+- plan and queue a Stitchr batch from the saved library
+- score clips and finished Stitches when the user is unsure what to use or fix
+- save templates when a format works and reuse that structure in future batches
 - create, save, edit, and download Swipr carousels
 - create non-promotional Clipr engagement clips that feed the library
 - trim clips without destructive editing
@@ -114,12 +125,14 @@ the main product story.
 
 ## Main Message
 
-You already have clips. ClipStitchr turns them into ads.
+Make more ad variants from the clips you already have.
 
 ## Short Copy Options
 
 - Turn your UGC pile into finished ads.
 - Make more ad variants without opening a video editor.
+- Make more ad variants from the clips you already have.
+- Upload clips once. Create new ad batches whenever you need them.
 - Upload UGC and demos once. Stitch batches of new ads whenever you need them.
 - Stop collecting clips you never publish.
 - Build a reusable content library, then turn it into vertical ads.
@@ -128,15 +141,17 @@ You already have clips. ClipStitchr turns them into ads.
 ## Longer Positioning Copy
 
 ClipStitchr helps marketers who collect UGC, b-roll, reaction clips, and product
-demos but struggle to turn those assets into finished ads. Upload your clips,
-organize them once, select up to 20 UGC with one demo, and create vertical
-UGC-then-demo videos without opening a traditional editor.
+demos but struggle to turn those assets into finished ads. Upload clips once,
+organize them, pick the product demo, and create a batch of vertical ad variants
+without opening a traditional editor.
 
 Clipr and Swipr extend the same library into reusable engagement clips and saved
-carousel posts. They should be positioned as useful secondary workflows, not as
-the primary reason to choose ClipStitchr. Internal hook libraries can help
-generate editable Swipr and Stitchr text, but those mechanics should stay out of
-positioning copy.
+carousel posts. Swapr helps create more source footage when the library is thin.
+Scoring, templates, automation, Clipr, Swapr, and Swipr should be positioned as
+offer-stack bonuses that make the batch workflow easier, stronger, or more
+repeatable, not as separate reasons to choose ClipStitchr. Internal hook
+libraries can help generate editable Swipr and Stitchr text, but those mechanics
+should stay out of positioning copy.
 
 ## What To Avoid
 
@@ -150,6 +165,21 @@ Avoid positioning ClipStitchr as:
 
 The strongest positioning is practical: less editing friction, more finished ad
 variants, and less media chaos.
+
+## Landing Page Message Order
+
+Use this order for the public landing page:
+
+1. Hero: outcome first, "Make more ad variants from the clips you already have."
+2. Output: show finished ad examples before listing features.
+3. How it works: upload clips, pick the product demo, click once for a batch.
+4. Main workflow: one demo can turn the clip library into a creative test.
+5. Scoring: answer "What if I do not know which clips are good?"
+6. Templates: answer "What if I find a structure that works?"
+7. Clipr and Swapr: answer "What if I do not have enough clips?"
+8. Swipr: answer "What if I need posts that are not videos?"
+9. Automation: answer "What if I want this happening every day?"
+10. Offer stack: summarize the full bundle around repeatable ad creation.
 
 ## Customer Language
 

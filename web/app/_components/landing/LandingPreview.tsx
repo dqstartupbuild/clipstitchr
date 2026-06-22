@@ -7,13 +7,16 @@ export function LandingPreview() {
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
         <div>
           <p className="text-sm font-semibold text-accent-dark">
-            One reusable ad library
+            Main workflow
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Stop hunting through folders every time you need a post.
+            One demo can turn your clip library into a full creative test.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Keep UGC, product demos, avatar photos, and finished ads in one place. Search, trim, preview, and reuse them instead of rebuilding every ad from scratch.
+            Choose the demo you want to promote, then let the batch builder turn
+            saved clips into separate UGC-first ad variants. Text, captions,
+            trims, and export settings stay organized so every batch is easier
+            than the last one.
           </p>
         </div>
         <Panel className="overflow-hidden p-2">

@@ -28,20 +28,22 @@ Weak:
 
 Stronger:
 
-> Turn your saved UGC and product demos into finished vertical ads without
-> opening a video editor.
+> Make more ad variants from the clips you already have.
+>
+> Upload your clips once. Pick the product demo. Click once to create a batch of
+> finished vertical ads, ready to test across TikTok, Reels, and Shorts.
 
 ## Message Order
 
 Use this order for most marketing pages:
 
-1. Pain: clips pile up, editing blocks output.
-2. Promise: turn existing clips into finished ads quickly.
-3. Workflow: upload, organize, stitch, export.
-4. Secondary output: use Swipr for carousel posts when slides fit the channel
-   better than video.
-5. Scale: make more variants from the same library.
-6. AI: optional help when users need more source content.
+1. Promise: make more ad variants from the clips the user already has.
+2. Output: show finished ad examples before listing tools.
+3. Workflow: upload clips, pick the product demo, click once for a batch.
+4. Main workflow: one demo can turn the library into a creative test.
+5. Objections: scoring, templates, source-material helpers, carousels, and
+   automation each answer one practical concern.
+6. Offer stack: summarize the bundle as a repeatable ad engine.
 
 ## Primary Headline Patterns
 
@@ -49,6 +51,8 @@ Good headline directions:
 
 - Turn your UGC pile into finished ads.
 - Make ad variants without opening a video editor.
+- Make more ad variants from the clips you already have.
+- Upload clips once. Create new ad batches whenever you need them.
 - Stop collecting clips you never publish.
 - Upload UGC and demos once. Stitch batches of ads whenever you need them.
 - A content library that actually turns into ads.
@@ -65,9 +69,9 @@ Avoid headline directions:
 
 Default short description:
 
-ClipStitchr turns UGC and product demos into finished 9:16 ad videos. It
-keeps your clips organized, handles UGC-then-demo stitching in batches, and
-helps you make more ad variants without traditional editing work.
+ClipStitchr helps marketers upload clips once, pick a product demo, and create
+a batch of finished vertical ads ready to test across TikTok, Reels, and
+Shorts.
 
 ## Feature Copy
 
@@ -77,7 +81,9 @@ Write feature copy around user outcomes:
 | --- | --- |
 | Upload normalization | Every clip becomes ready for vertical ad output. |
 | Library | Keep UGC, demos, avatars, templates, swaps, and stitches in one searchable place. |
-| Stitchr | Pair up to 20 UGC with one product demo and create finished ads. |
+| Stitchr Batch | Create multiple finished vertical ads from saved clips and one product demo. |
+| Scores | Know which clips and finished ads are worth using before you post. |
+| Templates | Save the ad structure that worked and reuse it for future batches. |
 | Swipr | Create carousel posts, save the draft, and come back to revise or download it later. |
 | Clipr | Generate reusable reaction and b-roll UGC when the library needs fresh source footage. |
 | Trim ranges | Cut dead space without damaging the original clip. |
@@ -127,8 +133,8 @@ Avoid framing plans only by:
 ### "I already have a video editor."
 
 ClipStitchr is not trying to replace a full editor. It removes the repetitive
-ad-variant workflow: find clips, normalize, pair UGC with demo, export, and keep
-the output organized.
+ad-variant workflow: find clips, normalize, pair clips with a demo, export, and
+keep the output organized.
 
 ### "I do not have enough UGC yet."
 
@@ -144,8 +150,8 @@ more finished creative so they can test faster.
 
 - Say "finished ad" or "ad variant" when the output is the value.
 - Say "UGC" and "product demo" instead of generic "asset" when space allows.
-- For batch Stitchr flows, say "selected UGC" and "selected demo" so the
-  one-demo-to-many-UGC relationship stays clear.
+- For batch Stitchr flows, lead with one-click batch creation before explaining
+  the one-demo-to-many-clips relationship.
 - For Swipr flows, say "carousel posts," "slides," "looks," and "ready to
   publish" before naming implementation details.
 - For Clipr flows, say "UGC," "reaction," "b-roll," "avatar," and "Use in
@@ -166,6 +172,7 @@ more finished creative so they can test faster.
 
 - clips
 - demos
+- batches
 - ad variants
 - finished ads
 - content library

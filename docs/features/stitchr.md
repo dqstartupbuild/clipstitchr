@@ -23,9 +23,9 @@ library, not editing from scratch.
 
 ## Core Promise
 
-Select up to 20 UGC clips and one product demo. Preview each pairing, customize
-one text overlay per output when needed, and create finished vertical ad
-variants.
+Upload clips once, pick the product demo, and click once to create a batch of
+finished vertical ad variants. Normal mode still lets the user select up to 20
+UGC clips and one product demo when they want hands-on control.
 
 ## Intended Sequence
 
@@ -144,8 +144,8 @@ Stitch.
 - Preserve saved Stitch control; later source clip defaults must not rewrite
   existing Stitches.
 - Make outputs easy to recognize later with names, posters, and metadata.
-- Keep batch creation predictable: one selected demo, up to 20 selected UGC
-  clips, and one editable overlay per output.
+- Keep Normal mode creation predictable: one selected demo, up to 20 selected
+  UGC clips, and one editable overlay per output.
 - Keep AI-generated Clipr UGC and Swaps as UGC-compatible clips that can flow
   into Stitchr.
 - Keep generated overlay text and caption copy editable while hiding hook

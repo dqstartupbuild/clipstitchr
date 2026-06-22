@@ -37,6 +37,6 @@ export function createLlmsTxt() {
     "- RSS feed for content syndication",
     "",
     "## Site Context",
-    `${site.name} helps marketers turn UGC clips and product demos into finished vertical ad variants without opening a traditional video editor. Stitchr includes a Longr mode for arranging multiple saved clips into one saved Stitch. The public site also keeps docs, a blog, case studies, and RSS feed.`,
+    `${site.name} helps marketers make more ad variants from clips they already have. Users upload clips once, pick a product demo, and create a batch of finished vertical ads ready to test across TikTok, Reels, and Shorts. Stitchr includes a Longr mode for arranging multiple saved clips into one saved Stitch. The public site also keeps docs, a blog, case studies, and RSS feed.`,
   ].join("\n");
 }

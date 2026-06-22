@@ -932,23 +932,24 @@ Use the `brand-guidelines` skill:
 - Marketing copy can have a little personality, but it must stay practical and
   low-hype.
 - Do not use technical model names in landing page copy.
-- Keep Stitchr as the main promise.
-- Add Clipr as a way to create more reusable engagement clips when the library
-  needs fresh material.
+- Keep one-click Stitchr batch creation as the main promise.
+- Position Clipr as a source-material helper for users who do not have enough
+  clips for the next batch.
 
 Landing page touchpoints:
 
 - `web/app/_components/landing/LandingHero.tsx`
-  - Keep the hero centered on turning UGC and demos into finished ads.
-  - Optionally add a short mention that users can generate extra clips when the
-    library is thin.
+  - Keep the hero centered on making more ad variants from saved clips.
+  - Do not mention Clipr in the hero unless the core batch promise is already
+    clear.
 - `web/app/_components/landing/LandingStudioSection.tsx`
-  - Add Clipr as a studio card.
-- `web/app/_components/landing/LandingFeatureGrid.tsx`
-  - Add a feature for generating reusable UGC with Clipr.
-  - Adjust existing AI clip copy so Swapr and Clipr are distinct.
+  - Present Clipr with Swapr and avatar photos under the "Need more clips?"
+    objection.
+- `web/app/_components/landing/LandingOfferStackSection.tsx`
+  - Include Clipr inside the offer stack as extra UGC generation.
 - `web/app/_components/landing/LandingWorkflow.tsx`
-  - Add a Clipr workflow.
+  - Keep the workflow focused on upload clips, pick the product demo, and create
+    the batch.
 - Any new UI copy:
   - buttons: `Generate UGC`, `Use in Stitchr`
   - labels: `Avatar`, `Product`, `Reaction`, `B-roll`

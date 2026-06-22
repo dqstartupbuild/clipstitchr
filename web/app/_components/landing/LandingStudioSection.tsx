@@ -1,38 +1,30 @@
-import { CirclePlay, Images, Scissors, Shuffle } from "lucide-react";
+import { CirclePlay, Shuffle, UserRound } from "lucide-react";
 import { Panel } from "@/app/_components/ui/Panel";
 
 const studios = [
   {
-    eyebrow: "Stitchr",
-    title: "Turn real clips and demos into ads.",
-    description:
-      "Choose UGC and one product demo. Trim the dead space, preview the ad, add simple text, and create a finished vertical video.",
-    caption: "We call these 'Stitches'.",
-    icon: Scissors,
-  },
-  {
     eyebrow: "Clipr",
-    title: "Generate reaction and b-roll UGC.",
+    title: "Generate reaction and b-roll clips.",
     description:
-      "Choose a product and avatar, generate a short clip, and save it as source footage for Stitchr.",
-    caption: "These save into UGC.",
+      "Choose a product and avatar, create a short source clip, and save it into the library for the next ad batch.",
+    caption: "Use it like any other saved clip.",
     icon: CirclePlay,
   },
   {
     eyebrow: "Swapr",
-    title: "Create new UGC when you need more.",
+    title: "Turn one saved clip into more source footage.",
     description:
-      "Pick or upload an avatar photo and saved UGC to make new UGC, then use it in Stitchr like the rest of your library.",
-    caption: "We call these 'Swaps'.",
+      "Pick an avatar photo and an existing clip, create a new UGC-style variation, then save it for future batches.",
+    caption: "Useful when the library is thin.",
     icon: Shuffle,
   },
   {
-    eyebrow: "Swipr",
-    title: "Make carousel posts when video is not the move.",
+    eyebrow: "Avatars",
+    title: "Keep faces ready for new source clips.",
     description:
-      "Start with a product idea, choose a look, edit the slides, and save the carousel so you can come back to it before downloading.",
-    caption: "We call these 'Swipes'.",
-    icon: Images,
+      "Save avatar photos so Clipr and Swapr have reusable people to work with when you need fresh UGC.",
+    caption: "Source material stays reusable.",
+    icon: UserRound,
   },
 ];
 
@@ -42,14 +34,18 @@ export function LandingStudioSection() {
       <div className="mx-auto max-w-6xl">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
-            Stitch first, generate when needed
+            Never start from an empty library
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            The main workflow turns your existing clips into ads. AI helps fill
-            the library.
+            Need more clips? Generate extra source material for the next batch.
           </h2>
+          <p className="mt-4 leading-7 text-text-secondary">
+            Clipr, Swapr, and avatar photos are helpers for the same system.
+            They fill gaps in your library so the batch workflow has more clips
+            to work with.
+          </p>
         </div>
-        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
           {studios.map((studio) => {
             const Icon = studio.icon;
 
