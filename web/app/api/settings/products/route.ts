@@ -53,8 +53,8 @@ export async function POST(request: Request) {
     const now = new Date().toISOString();
     const product = {
       id: createId(),
-      ...input,
       ...enrichment,
+      ...input,
       ...resolvedFields,
       createdAt: now,
       updatedAt: now,

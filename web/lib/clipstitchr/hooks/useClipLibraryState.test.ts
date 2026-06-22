@@ -368,6 +368,23 @@ describe("useClipLibraryState", () => {
     );
   });
 
+  it("loads UGC and demo clip metadata on the onboarding route", () => {
+    mocks.usePathname.mockReturnValue("/dashboard/onboarding");
+
+    useClipLibraryState();
+
+    expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
+      "videoClips.listByLibraryKind",
+      { kind: "ugc", sortOrder: "newest" },
+      { initialNumItems: 48 },
+    );
+    expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
+      "videoClips.listByLibraryKind",
+      { kind: "demo", sortOrder: "newest" },
+      { initialNumItems: 48 },
+    );
+  });
+
   it("loads a clip from Convex and R2 once, then reuses the cache", async () => {
     const state = useClipLibraryState();
 

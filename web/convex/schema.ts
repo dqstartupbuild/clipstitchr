@@ -224,6 +224,7 @@ export default defineSchema({
   productPreferences: defineTable({
     ownerId: v.string(),
     defaultProductId: v.optional(v.string()),
+    onboardingCompletedAt: v.optional(v.string()),
     updatedAt: v.string(),
   }).index("by_owner", ["ownerId"]),
   stitches: defineTable({

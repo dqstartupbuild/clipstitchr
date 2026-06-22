@@ -209,7 +209,9 @@ vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
       isSaving: false,
       products,
       requiresProductSetup: false,
+      requiresOnboarding: false,
       createProduct: vi.fn(),
+      markOnboardingCompletedLocally: vi.fn(),
       setActiveProduct: vi.fn(),
       updateProduct: vi.fn(),
     };

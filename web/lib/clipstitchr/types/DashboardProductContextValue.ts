@@ -13,10 +13,12 @@ export type DashboardProductContextValue = {
   isLoading: boolean;
   isSaving: boolean;
   products: ProductProfile[];
+  requiresOnboarding: boolean;
   requiresProductSetup: boolean;
   savingProductId: string | null;
   createProduct: (input: ProductProfileCreateInput) => Promise<ProductProfile>;
   deleteProduct: (id: string) => Promise<void>;
+  markOnboardingCompletedLocally: (completedAt: string) => void;
   setActiveProduct: (product: ProductProfile) => Promise<void>;
   updateProduct: (
     id: string,

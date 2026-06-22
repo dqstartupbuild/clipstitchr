@@ -10,6 +10,8 @@ describe("readProductProfileInput", () => {
         productDetails: "  AI launch planning  ",
         audienceDetails: "  solo founders  ",
         emotionalNarrative: "  solo founders want confidence  ",
+        inferredProblem: "  launches feel slow  ",
+        inferredPainPoints: ["  no content rhythm  ", "", "no content rhythm"],
       }),
     ).toEqual({
       name: "LaunchKit",
@@ -17,6 +19,8 @@ describe("readProductProfileInput", () => {
       productDetails: "AI launch planning",
       audienceDetails: "solo founders",
       emotionalNarrative: "solo founders want confidence",
+      inferredProblem: "launches feel slow",
+      inferredPainPoints: ["no content rhythm"],
     });
   });
 
@@ -29,6 +33,22 @@ describe("readProductProfileInput", () => {
         audienceDetails: "beginner fitness users",
       }).productDetails,
     ).toBe("Simple calisthenics app.");
+  });
+
+  it("keeps a blank inferred problem when the field is submitted", () => {
+    expect(
+      readProductProfileInput({
+        name: "LaunchKit",
+        productDetails: "AI launch planning",
+        audienceDetails: "solo founders",
+        inferredProblem: "   ",
+      }),
+    ).toEqual({
+      name: "LaunchKit",
+      productDetails: "AI launch planning",
+      audienceDetails: "solo founders",
+      inferredProblem: "",
+    });
   });
 
   it("rejects private or unsupported website URLs", () => {

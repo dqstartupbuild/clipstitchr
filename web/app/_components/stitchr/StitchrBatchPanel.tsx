@@ -12,10 +12,13 @@ import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 type StitchrBatchPanelProps = {
   backgroundColorChoice: AutomationStitchrColorChoice;
   dailyLimit: number;
+  description?: string;
+  generateButtonLabel?: string;
   isDisabled: boolean;
   isGenerating: boolean;
   message: string | null;
   mode: StitchrMode;
+  showModeToggle?: boolean;
   strokeColorChoice: AutomationStitchrColorChoice;
   textColorChoice: AutomationStitchrColorChoice;
   textStyleChoice: AutomationStitchrTextStyleChoice;
@@ -30,10 +33,13 @@ type StitchrBatchPanelProps = {
 export function StitchrBatchPanel({
   backgroundColorChoice,
   dailyLimit,
+  description,
+  generateButtonLabel,
   isDisabled,
   isGenerating,
   message,
   mode,
+  showModeToggle = true,
   strokeColorChoice,
   textColorChoice,
   textStyleChoice,
@@ -54,11 +60,14 @@ export function StitchrBatchPanel({
               Generate stitches in batch
             </h2>
             <p className="mt-1 max-w-2xl text-sm text-text-secondary">
-              Creates up to {dailyLimit} fresh Stitches from your UGC and Demo clips.
+              {description ??
+                `Creates up to ${dailyLimit} fresh Stitches from your UGC and Demo clips.`}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <StitchrModeToggle value={mode} onChange={onModeChange} />
+            {showModeToggle ? (
+              <StitchrModeToggle value={mode} onChange={onModeChange} />
+            ) : null}
             <Button
               type="button"
               disabled={isDisabled}
@@ -66,7 +75,7 @@ export function StitchrBatchPanel({
               icon={<Scissors aria-hidden className="h-4 w-4" />}
               onClick={onGenerate}
             >
-              Generate {dailyLimit} Stitches
+              {generateButtonLabel ?? `Generate ${dailyLimit} Stitches`}
             </Button>
           </div>
         </div>

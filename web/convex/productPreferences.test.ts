@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { get, setDefaultProduct } from "./productPreferences";
+import {
+  completeOnboarding,
+  get,
+  setDefaultProduct,
+} from "./productPreferences";
 
 type ConvexFunction<Args, Result> = {
   handler: (ctx: unknown, args: Args) => Promise<Result>;
@@ -155,5 +159,60 @@ describe("product preferences", () => {
     ).rejects.toThrow("Product not found.");
     expect(ctx.db.patch).not.toHaveBeenCalled();
     expect(ctx.db.insert).not.toHaveBeenCalled();
+  });
+
+  it("marks onboarding complete on existing preferences", async () => {
+    const preferences = { _id: "pref_doc", defaultProductId: "product_1" };
+    const preferenceQuery = createQueryChain({ unique: preferences });
+    const ctx = {
+      db: {
+        insert: vi.fn(),
+        patch: vi.fn(async () => undefined),
+        query: vi.fn(() => preferenceQuery),
+      },
+    };
+
+    await expect(
+      getHandler(completeOnboarding)(ctx, {
+        completedAt: "2026-06-22T20:00:00.000Z",
+      }),
+    ).resolves.toBe("pref_doc");
+    expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
+      ctx,
+      "convexMetadataUpdate",
+      {
+        key: "owner_123",
+        throws: true,
+      },
+    );
+    expect(ctx.db.patch).toHaveBeenCalledWith("pref_doc", {
+      ownerId: "owner_123",
+      onboardingCompletedAt: "2026-06-22T20:00:00.000Z",
+      updatedAt: "2026-06-22T20:00:00.000Z",
+    });
+    expect(ctx.db.insert).not.toHaveBeenCalled();
+  });
+
+  it("creates preferences when onboarding completes first", async () => {
+    const preferenceQuery = createQueryChain();
+    const ctx = {
+      db: {
+        insert: vi.fn(async () => "pref_doc"),
+        patch: vi.fn(),
+        query: vi.fn(() => preferenceQuery),
+      },
+    };
+
+    await expect(
+      getHandler(completeOnboarding)(ctx, {
+        completedAt: "2026-06-22T20:00:00.000Z",
+      }),
+    ).resolves.toBe("pref_doc");
+    expect(ctx.db.insert).toHaveBeenCalledWith("productPreferences", {
+      ownerId: "owner_123",
+      onboardingCompletedAt: "2026-06-22T20:00:00.000Z",
+      updatedAt: "2026-06-22T20:00:00.000Z",
+    });
+    expect(ctx.db.patch).not.toHaveBeenCalled();
   });
 });

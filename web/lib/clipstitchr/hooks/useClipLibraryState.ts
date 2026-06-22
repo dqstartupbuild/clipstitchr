@@ -68,6 +68,7 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
     useState<ClipLibrarySortOrder>("newest");
   const isDashboardHome = pathname === "/dashboard";
   const isLibraryRoute = pathname.startsWith("/dashboard/library");
+  const isOnboardingRoute = pathname.startsWith("/dashboard/onboarding");
   const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
   const isStitchrRoute = pathname.startsWith("/dashboard/stitchr");
   const isSwaprRoute = pathname.startsWith("/dashboard/swapr");
@@ -75,14 +76,18 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
   const shouldLoadAllClips = isAuthenticated && isSwaprRoute;
   const shouldLoadUgcClips =
     isAuthenticated &&
-    (isLibraryRoute || isUploadsRoute || isStitchrRoute);
+    (isLibraryRoute || isOnboardingRoute || isUploadsRoute || isStitchrRoute);
   const shouldLoadCliprClips =
     isAuthenticated &&
-    (isLibraryRoute || isUploadsRoute || isStitchrRoute);
+    (isLibraryRoute || isOnboardingRoute || isUploadsRoute || isStitchrRoute);
   const shouldLoadPostedCliprClips = false;
   const shouldLoadDemoClips =
     isAuthenticated &&
-    (isLibraryRoute || isUploadsRoute || isStitchrRoute || isCliprRoute);
+    (isLibraryRoute ||
+      isOnboardingRoute ||
+      isUploadsRoute ||
+      isStitchrRoute ||
+      isCliprRoute);
   const shouldLoadSwapClips =
     isAuthenticated &&
     (isLibraryRoute || isUploadsRoute || isStitchrRoute);

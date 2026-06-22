@@ -313,33 +313,33 @@ burst and the 100-token metadata-analysis burst.
 
 Prices change frequently. Verify these before launch and during billing reviews:
 
-- OpenAI API pricing: https://openai.com/api/pricing/
+- OpenAI API pricing: <https://openai.com/api/pricing/>
   - GPT Image 2 is priced by image/text input and output tokens.
   - GPT-4.1 mini is priced by input and output tokens.
-- Replicate pricing: https://replicate.com/pricing
+- Replicate pricing: <https://replicate.com/pricing>
   - Replicate states that some models bill by hardware/runtime and others by
     input/output; model pages contain cost estimates.
 - Replicate model pages:
-  - https://replicate.com/openai/gpt-image-2
-  - https://replicate.com/prunaai/z-image-turbo-img2img
-  - https://replicate.com/prunaai/p-image
-  - https://replicate.com/prunaai/wan-2.2-image
-  - https://replicate.com/black-forest-labs/flux-fill-pro
-  - https://replicate.com/kwaivgi/kling-v3-motion-control
-- Cloudflare R2 pricing: https://developers.cloudflare.com/r2/pricing/
+  - <https://replicate.com/openai/gpt-image-2>
+  - <https://replicate.com/prunaai/z-image-turbo-img2img>
+  - <https://replicate.com/prunaai/p-image>
+  - <https://replicate.com/prunaai/wan-2.2-image>
+  - <https://replicate.com/black-forest-labs/flux-fill-pro>
+  - <https://replicate.com/kwaivgi/kling-v3-motion-control>
+- Cloudflare R2 pricing: <https://developers.cloudflare.com/r2/pricing/>
   - Standard storage: $0.015/GB-month.
   - Standard Class A operations: $4.50/million.
   - Standard Class B operations: $0.36/million.
   - Standard egress to Internet: free.
-- Vercel Pro plan: https://vercel.com/docs/plans/pro
+- Vercel Pro plan: <https://vercel.com/docs/plans/pro>
   - Pro platform fee includes $20/month usage credit, 1 TB Fast Data Transfer,
     and 10,000,000 Edge Requests.
-- Vercel pricing model: https://vercel.com/docs/pricing
+- Vercel pricing model: <https://vercel.com/docs/pricing>
   - Managed infrastructure is usage-based across transfer, requests, and compute.
-- Convex pricing: https://www.convex.dev/pricing
+- Convex pricing: <https://www.convex.dev/pricing>
   - Professional includes 25M function calls/month, 50 GB database storage,
     50 GB database I/O, 50 GB data egress, and metered overages.
-- Stripe pricing: https://stripe.com/us/pricing
+- Stripe pricing: <https://stripe.com/us/pricing>
   - Domestic card processing is 2.9% + $0.30 per successful transaction.
 
 ## Review Cadence

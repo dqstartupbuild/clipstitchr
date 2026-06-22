@@ -10,7 +10,7 @@ export type GenerateStitchrBatchResult = {
   taskIds: string[];
 };
 
-type GenerateStitchrBatchOptions = {
+export type GenerateStitchrBatchOptions = {
   stitchrTextBackgroundColorChoice?: AutomationStitchrColorChoice;
   stitchrTextColorChoice?: AutomationStitchrColorChoice;
   stitchrTextStrokeColorChoice?: AutomationStitchrColorChoice;

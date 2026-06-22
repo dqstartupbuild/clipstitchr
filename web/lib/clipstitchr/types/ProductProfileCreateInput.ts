@@ -4,5 +4,7 @@ export type ProductProfileCreateInput = {
   audienceDetails: string;
   emotionalNarrative?: string;
   websiteUrl?: string;
+  inferredProblem?: string;
+  inferredPainPoints?: string[];
   preferredCliprHookStyleKey?: string;
 };

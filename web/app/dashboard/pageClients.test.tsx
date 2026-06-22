@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CliprPageClient } from "@/app/dashboard/clipr/CliprPageClient";
 import { LibraryPageClient } from "@/app/dashboard/library/LibraryPageClient";
+import { OnboardingPageClient } from "@/app/dashboard/onboarding/OnboardingPageClient";
 import { StitchrPageClient } from "@/app/dashboard/stitchr/StitchrPageClient";
 import { SwaprPageClient } from "@/app/dashboard/swapr/SwaprPageClient";
 import { SwiprPageClient } from "@/app/dashboard/swipr/SwiprPageClient";
@@ -73,6 +74,9 @@ vi.mock("@/convex/_generated/api", () => ({
       remove: "notifications.remove",
       unreadCount: "notifications.unreadCount",
     },
+    productPreferences: {
+      completeOnboarding: "productPreferences.completeOnboarding",
+    },
     sharedMusicTracks: {
       list: "sharedMusicTracks.list",
     },
@@ -94,6 +98,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({
     push: vi.fn(),
+    replace: vi.fn(),
   }),
 }));
 
@@ -144,9 +149,11 @@ vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
       },
     ],
     requiresProductSetup: false,
+    requiresOnboarding: false,
     savingProductId: null,
     createProduct: mocks.createProduct,
     deleteProduct: vi.fn(),
+    markOnboardingCompletedLocally: vi.fn(),
     setActiveProduct: mocks.setActiveProduct,
     updateProduct: mocks.updateProduct,
   }),
@@ -470,6 +477,14 @@ describe("dashboard page clients", () => {
     expect(markup).toContain("Stitchr");
     expect(markup).toContain("Generate stitches in batch");
     expect(markup).toContain("Generate 10 Stitches");
+  });
+
+  it("renders first batch onboarding for the active product", () => {
+    const markup = renderToStaticMarkup(<OnboardingPageClient />);
+
+    expect(markup).toContain("Create your first batch of ads");
+    expect(markup).toContain("Review what ClipStitchr found");
+    expect(markup).toContain("Continue to uploads");
   });
 
   it("renders the Swapr workflow with photo and source clip inputs", () => {

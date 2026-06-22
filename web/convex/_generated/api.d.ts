@@ -62,6 +62,7 @@ import type * as getDefaultProductForOwner from "../getDefaultProductForOwner.js
 import type * as getEnabledAutomationToolsForPreference from "../getEnabledAutomationToolsForPreference.js";
 import type * as getOwnerHasContent from "../getOwnerHasContent.js";
 import type * as getOwnerHasLegacyProductRecords from "../getOwnerHasLegacyProductRecords.js";
+import type * as getOwnerHasStitches from "../getOwnerHasStitches.js";
 import type * as getPhotoNotificationCopy from "../getPhotoNotificationCopy.js";
 import type * as getPrimaryProductForOwner from "../getPrimaryProductForOwner.js";
 import type * as getProductNameFromAutomationTasks from "../getProductNameFromAutomationTasks.js";
@@ -222,6 +223,7 @@ declare const fullApi: ApiFromModules<{
   getEnabledAutomationToolsForPreference: typeof getEnabledAutomationToolsForPreference;
   getOwnerHasContent: typeof getOwnerHasContent;
   getOwnerHasLegacyProductRecords: typeof getOwnerHasLegacyProductRecords;
+  getOwnerHasStitches: typeof getOwnerHasStitches;
   getPhotoNotificationCopy: typeof getPhotoNotificationCopy;
   getPrimaryProductForOwner: typeof getPrimaryProductForOwner;
   getProductNameFromAutomationTasks: typeof getProductNameFromAutomationTasks;

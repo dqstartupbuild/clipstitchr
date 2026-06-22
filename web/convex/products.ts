@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { assignLegacyRecordsToProduct } from "./assignLegacyRecordsToProduct";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { getOwnerHasContent } from "./getOwnerHasContent";
+import { getOwnerHasStitches } from "./getOwnerHasStitches";
 import { getOwnerHasLegacyProductRecords } from "./getOwnerHasLegacyProductRecords";
 import { getPrimaryProductForOwner } from "./getPrimaryProductForOwner";
 import { mutation, query } from "./_generated/server";
@@ -76,17 +77,34 @@ export const getSetupState = query({
   args: {},
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const [primaryProduct, hasContent, hasLegacyContent] = await Promise.all([
+    const [
+      preferences,
+      primaryProduct,
+      hasContent,
+      hasLegacyContent,
+      hasStitches,
+    ] = await Promise.all([
+      ctx.db
+        .query("productPreferences")
+        .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+        .unique(),
       getPrimaryProductForOwner(ctx, ownerId),
       getOwnerHasContent(ctx, ownerId),
       getOwnerHasLegacyProductRecords(ctx, ownerId),
+      getOwnerHasStitches(ctx, ownerId),
     ]);
+    const onboardingCompletedAt = preferences?.onboardingCompletedAt;
+    const isOnboardingComplete = Boolean(onboardingCompletedAt || hasStitches);
 
     return {
       hasContent,
       hasLegacyContent,
+      hasStitches,
+      isOnboardingComplete,
+      onboardingCompletedAt,
       primaryProductId: primaryProduct?.id,
       requiresProductSetup: hasContent && !primaryProduct,
+      requiresOnboarding: !isOnboardingComplete,
     };
   },
 });

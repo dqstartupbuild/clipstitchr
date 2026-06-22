@@ -3,6 +3,7 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
+import { DashboardGateState } from "@/app/_components/dashboard/DashboardGateState";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardSidebar } from "@/app/_components/dashboard/DashboardSidebar";
@@ -14,6 +15,10 @@ import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
+
+const mocks = vi.hoisted(() => ({
+  requiresOnboarding: false,
+}));
 
 vi.mock("@clerk/nextjs", () => ({
   UserButton: () => <span>User menu</span>,
@@ -44,6 +49,12 @@ vi.mock("@/lib/clipstitchr/analytics/trackPostHogEvent", () => ({
   trackPostHogEvent: vi.fn(),
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
+  useDashboardProduct: () => ({
+    requiresOnboarding: mocks.requiresOnboarding,
+  }),
+}));
+
 vi.mock("@/app/_components/dashboard/StitchCard", () => ({
   StitchCard: ({ stitch }: { stitch: Stitch }) => (
     <article>Stitch {stitch.id}</article>
@@ -66,6 +77,7 @@ const noop = vi.fn();
 
 describe("dashboard shell sections", () => {
   beforeEach(() => {
+    mocks.requiresOnboarding = false;
     vi.mocked(useConvexAuth).mockReset();
     vi.mocked(useConvexAuth).mockReturnValue({
       isAuthenticated: true,
@@ -110,6 +122,25 @@ describe("dashboard shell sections", () => {
     expect(sidebarMarkup).toContain("Settings");
     expect(statsMarkup).toContain("Demo Videos");
     expect(statsMarkup).toContain("4");
+  });
+
+  it("hides dashboard navigation while onboarding is required", () => {
+    mocks.requiresOnboarding = true;
+
+    const sidebarMarkup = renderToStaticMarkup(<DashboardSidebar />);
+
+    expect(sidebarMarkup).toContain("Finish your first batch");
+    expect(sidebarMarkup).not.toContain('href="/dashboard/library"');
+    expect(sidebarMarkup).not.toContain('href="/dashboard/stitchr"');
+    expect(sidebarMarkup).not.toContain('href="/dashboard/settings"');
+  });
+
+  it("renders the dashboard gate waiting state", () => {
+    const markup = renderToStaticMarkup(
+      <DashboardGateState message="Taking you to your first batch setup..." />,
+    );
+
+    expect(markup).toContain("Taking you to your first batch setup");
   });
 
   it("renders a background job banner when workers are still running", () => {

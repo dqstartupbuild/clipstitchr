@@ -18,6 +18,7 @@ import { BrandMark } from "@/app/_components/BrandMark";
 import { DashboardNotificationBell } from "@/app/_components/dashboard/DashboardNotificationBell";
 import { DashboardProductSwitcher } from "@/app/_components/dashboard/DashboardProductSwitcher";
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
+import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -31,6 +32,7 @@ const links = [
 
 export function DashboardSidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { requiresOnboarding } = useDashboardProduct();
 
   return (
     <>
@@ -76,11 +78,17 @@ export function DashboardSidebar() {
             <X aria-hidden className="h-5 w-5" />
           </button>
         </div>
-        <div className="mt-5">
-          <DashboardProductSwitcher />
-        </div>
+        {requiresOnboarding ? null : (
+          <div className="mt-5">
+            <DashboardProductSwitcher />
+          </div>
+        )}
         <nav className="mt-6 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
-          {links.map((item) => {
+          {requiresOnboarding ? (
+            <p className="rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm font-semibold leading-6 text-text-secondary">
+              Finish your first batch to unlock the workspace.
+            </p>
+          ) : links.map((item) => {
             const Icon = item.icon;
 
             return (

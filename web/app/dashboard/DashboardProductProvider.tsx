@@ -3,7 +3,9 @@
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { usePathname, useRouter } from "next/navigation";
 import { api } from "@/convex/_generated/api";
+import { DashboardGateState } from "@/app/_components/dashboard/DashboardGateState";
 import { ProductCreateDialog } from "@/app/_components/products/ProductCreateDialog";
 import { DashboardProductContext } from "@/lib/clipstitchr/context/DashboardProductContext";
 import { useProducts } from "@/lib/clipstitchr/hooks/useProducts";
@@ -18,6 +20,8 @@ export function DashboardProductProvider({
   children,
 }: DashboardProductProviderProps) {
   const { isAuthenticated } = useConvexAuth();
+  const pathname = usePathname() ?? "";
+  const router = useRouter();
   const products = useProducts();
   const setupState = useQuery(
     api.products.getSetupState,
@@ -26,6 +30,8 @@ export function DashboardProductProvider({
   const assignLegacyContentToPrimary = useMutation(
     api.products.assignLegacyContentToPrimary,
   );
+  const [localOnboardingCompletedAt, setLocalOnboardingCompletedAt] =
+    useState<string | null>(null);
   const [isBackfillingLegacyContent, setIsBackfillingLegacyContent] =
     useState(false);
   const activeProduct = useMemo(
@@ -37,6 +43,19 @@ export function DashboardProductProvider({
   );
   const requiresProductSetup =
     setupState?.requiresProductSetup === true && !products.isLoading;
+  const requiresOnboarding =
+    setupState?.requiresOnboarding === true &&
+    !localOnboardingCompletedAt;
+  const isOnboardingRoute = pathname.startsWith("/dashboard/onboarding");
+  const isDashboardGateLoading =
+    isAuthenticated && (setupState === undefined || products.isLoading);
+  const shouldBlockDashboard =
+    !isOnboardingRoute && (isDashboardGateLoading || requiresOnboarding);
+  const shouldShowRequiredProductDialog =
+    requiresProductSetup &&
+    !requiresOnboarding &&
+    !isOnboardingRoute &&
+    !shouldBlockDashboard;
   const createProduct = useCallback(
     async (input: ProductProfileCreateInput): Promise<ProductProfile> => {
       const product = await products.createProduct(input);
@@ -53,6 +72,18 @@ export function DashboardProductProvider({
     },
     [products],
   );
+  const markOnboardingCompletedLocally = useCallback(
+    (completedAt: string) => {
+      setLocalOnboardingCompletedAt(completedAt);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (requiresOnboarding && !isOnboardingRoute) {
+      router.replace("/dashboard/onboarding");
+    }
+  }, [isOnboardingRoute, requiresOnboarding, router]);
 
   useEffect(() => {
     let isActive = true;
@@ -100,10 +131,12 @@ export function DashboardProductProvider({
         products.isLoading || (isAuthenticated && setupState === undefined),
       isSaving: products.isSaving,
       products: products.products,
+      requiresOnboarding,
       requiresProductSetup,
       savingProductId: products.savingProductId,
       createProduct,
       deleteProduct: products.deleteProduct,
+      markOnboardingCompletedLocally,
       setActiveProduct,
       updateProduct: products.updateProduct,
     }),
@@ -121,6 +154,8 @@ export function DashboardProductProvider({
       products.isLoading,
       products.isSaving,
       products.products,
+      requiresOnboarding,
+      markOnboardingCompletedLocally,
       products.savingProductId,
       products.updateProduct,
       requiresProductSetup,
@@ -131,8 +166,18 @@ export function DashboardProductProvider({
 
   return (
     <DashboardProductContext.Provider value={value}>
-      {children}
-      {requiresProductSetup ? (
+      {shouldBlockDashboard ? (
+        <DashboardGateState
+          message={
+            requiresOnboarding
+              ? "Taking you to your first batch setup..."
+              : "Preparing your workspace..."
+          }
+        />
+      ) : (
+        children
+      )}
+      {shouldShowRequiredProductDialog ? (
         <ProductCreateDialog
           isRequired
           isSaving={products.isCreating}

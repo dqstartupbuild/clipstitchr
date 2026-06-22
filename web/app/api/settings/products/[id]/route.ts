@@ -79,8 +79,8 @@ export async function PATCH(
     const now = new Date().toISOString();
     const product = {
       id: productId,
-      ...input,
       ...enrichment,
+      ...input,
       ...resolvedFields,
       createdAt: existingProduct.createdAt,
       updatedAt: now,
