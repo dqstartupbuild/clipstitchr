@@ -22,6 +22,7 @@ import ExampleOutputPage, {
   generateMetadata as generateExampleOutputMetadata,
   generateStaticParams as generateExampleOutputStaticParams,
 } from "@/app/(content)/examples/[slug]/page";
+import PricingPage from "@/app/(content)/pricing/page";
 import PrivacyPage from "@/app/(content)/privacy/page";
 import TermsPage from "@/app/(content)/terms/page";
 import { BlogEmptyState } from "@/app/_components/content/BlogEmptyState";
@@ -243,6 +244,7 @@ describe("content pages", () => {
         <p>Content child</p>
       </ContentLayout>,
     );
+    const pricingMarkup = renderToStaticMarkup(<PricingPage />);
     const privacyMarkup = renderToStaticMarkup(<PrivacyPage />);
     const termsMarkup = renderToStaticMarkup(<TermsPage />);
     const emptyMarkup = renderToStaticMarkup(<BlogEmptyState />);
@@ -250,6 +252,17 @@ describe("content pages", () => {
     expect(layoutMarkup).toContain("Content child");
     expect(layoutMarkup).toContain("Blog");
     expect(layoutMarkup).toContain("Case Studies");
+    expect(layoutMarkup).toContain("Pricing");
+    expect(pricingMarkup).toContain(
+      "Create more ad variants from the clips you already have",
+    );
+    expect(pricingMarkup).toContain("Stitchr batches from saved clips");
+    expect(pricingMarkup).toContain("Clip scoring and video analysis");
+    expect(pricingMarkup).toContain("$99");
+    expect(pricingMarkup).toContain("250 credits/month");
+    expect(pricingMarkup).toContain("10k Organic Views Challenge");
+    expect(pricingMarkup).toContain("Boost");
+    expect(pricingMarkup).toContain("150 credits");
     expect(privacyMarkup).toContain("Privacy Policy");
     expect(privacyMarkup).toContain("Media Processing and Storage");
     expect(termsMarkup).toContain("Terms of Use");

@@ -16,6 +16,7 @@ describe("sitemap", () => {
     );
     expect(urls).toContain("http://localhost:3000/docs");
     expect(urls).toContain("http://localhost:3000/examples");
+    expect(urls).toContain("http://localhost:3000/pricing");
     expect(urls).toContain(
       "http://localhost:3000/examples/stitchr-boyfriend-ten-out-of-ten",
     );

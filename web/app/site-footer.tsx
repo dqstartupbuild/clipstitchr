@@ -39,6 +39,12 @@ export function SiteFooter() {
             Docs
           </Link>
           <Link
+            href="/pricing"
+            className="transition-colors hover:text-text-primary"
+          >
+            Pricing
+          </Link>
+          <Link
             href="/privacy"
             className="transition-colors hover:text-text-primary"
           >

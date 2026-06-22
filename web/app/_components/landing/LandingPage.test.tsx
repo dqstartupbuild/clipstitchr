@@ -93,7 +93,7 @@ describe("LandingPage", () => {
     expect(landingMarkup).toContain("What you get");
     expect(landingMarkup).toContain("Pricing");
     expect(landingMarkup).toContain('href="/case-studies"');
-    expect(landingMarkup).toContain('href="/sign-up"');
+    expect(landingMarkup).toContain('href="/pricing"');
     expect(landingMarkup).not.toContain("Features");
     expect(landingMarkup).not.toContain("Scores");
     expect(landingMarkup).not.toContain("Real Stitchr output");
@@ -102,6 +102,7 @@ describe("LandingPage", () => {
       landingMarkup.indexOf("/example-outputs/clipstitchr-example-01.webm"),
     ).toBeLessThan(landingMarkup.indexOf("One simple flow from saved clips"));
     expect(contentHeaderMarkup).toContain("Home");
+    expect(contentHeaderMarkup).toContain("Pricing");
     expect(contentHeaderMarkup).toContain("Dashboard");
   });
 });

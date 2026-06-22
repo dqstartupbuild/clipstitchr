@@ -55,7 +55,7 @@ export function SiteHeader({
               What you get
             </a>
             <Link
-              href="/sign-up"
+              href="/pricing"
               className="font-semibold transition-colors hover:text-text-primary"
             >
               Pricing
@@ -86,6 +86,12 @@ export function SiteHeader({
               className="font-semibold transition-colors hover:text-text-primary"
             >
               Examples
+            </Link>
+            <Link
+              href="/pricing"
+              className="font-semibold transition-colors hover:text-text-primary"
+            >
+              Pricing
             </Link>
             <Link
               href="/dashboard"
