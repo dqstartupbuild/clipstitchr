@@ -70,6 +70,7 @@ import type * as getQuickEditOverlayText from "../getQuickEditOverlayText.js";
 import type * as getStitchNotificationCopy from "../getStitchNotificationCopy.js";
 import type * as getStitchProductId from "../getStitchProductId.js";
 import type * as getSwipeNotificationCopy from "../getSwipeNotificationCopy.js";
+import type * as getSwiprSwipeReferencedBackgroundIds from "../getSwiprSwipeReferencedBackgroundIds.js";
 import type * as getVideoClipCanBePosted from "../getVideoClipCanBePosted.js";
 import type * as getVideoClipIsAccountWideUgc from "../getVideoClipIsAccountWideUgc.js";
 import type * as getVideoClipLibraryKind from "../getVideoClipLibraryKind.js";
@@ -231,6 +232,7 @@ declare const fullApi: ApiFromModules<{
   getStitchNotificationCopy: typeof getStitchNotificationCopy;
   getStitchProductId: typeof getStitchProductId;
   getSwipeNotificationCopy: typeof getSwipeNotificationCopy;
+  getSwiprSwipeReferencedBackgroundIds: typeof getSwiprSwipeReferencedBackgroundIds;
   getVideoClipCanBePosted: typeof getVideoClipCanBePosted;
   getVideoClipIsAccountWideUgc: typeof getVideoClipIsAccountWideUgc;
   getVideoClipLibraryKind: typeof getVideoClipLibraryKind;

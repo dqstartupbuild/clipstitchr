@@ -19,9 +19,11 @@ reads across every mounted subscription.
 
 - `/dashboard` uses `dashboardSummary.get` for recent uploads, recent
   stitches, Stitchr source clips, recent Swipes, and the specific Swipe
-  backgrounds needed by those cards. It no longer mounts full clip, photo,
-  avatar, Swipr background, or Swipe library subscriptions just to render the
-  home widgets.
+  backgrounds needed by those cards. The Swipe background set includes the
+  top-level Swipe background plus any per-slide background IDs used by those
+  recent cards, so the dashboard does not need the full Swipr background
+  library subscription. It no longer mounts full clip, photo, avatar, Swipr
+  background, or Swipe library subscriptions just to render the home widgets.
 - `useClipLibraryState` subscribes only on dashboard routes that render clip or
   stitch media directly. The dashboard home keeps only aggregate counts loaded.
   Settings, Clipr, Avatars, and Swipr do not open hidden clip-list

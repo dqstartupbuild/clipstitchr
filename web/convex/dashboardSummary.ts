@@ -3,6 +3,7 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
+import { getSwiprSwipeReferencedBackgroundIds } from "./getSwiprSwipeReferencedBackgroundIds";
 
 const RECENT_ITEM_LIMIT = 4;
 const SOURCE_CLIP_LIMIT = 30;
@@ -196,9 +197,7 @@ async function getRecentSwipes(
 }
 
 async function getSwipeBackgrounds(ctx: QueryCtx, swipes: Doc<"swipes">[]) {
-  const backgroundIds = [
-    ...new Set(swipes.map((swipe) => swipe.backgroundId).filter(Boolean)),
-  ];
+  const backgroundIds = getSwiprSwipeReferencedBackgroundIds(swipes);
   const backgrounds = await Promise.all(
     backgroundIds.map((backgroundId) =>
       ctx.db
