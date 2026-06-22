@@ -17,6 +17,11 @@ export function PricingGuaranteeSection() {
               If they do not reach 10k total organic views, your next month is
               on us, with extra credits to keep testing.
             </p>
+            <p className="mt-4 leading-7 text-text-secondary">
+              Hook Lab is part of setup. Add hooks from viral content in your
+              niche and from your own winners so ClipStitchr has a real taste
+              file before you start posting.
+            </p>
             <p className="mt-4 text-sm leading-6 text-text-tertiary">
               Views count across public TikTok, Reels, and Shorts posts. No paid
               boosting. Submit links or analytics screenshots within 7 days

@@ -15,6 +15,8 @@ function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile 
     eligibleCliprHookStyleKeys: ["mystery_gap", "direct_diagnosis"],
     emotionalNarrative: "They want launch day to feel calm and real.",
     id: "product_1",
+    hookEdgeLevel: "bold",
+    hookGenerationGoal: "comments",
     inferredPainPoints: [
       "Launch work feels scattered",
       "They do not know what to post",
@@ -23,8 +25,10 @@ function createProduct(overrides: Partial<ProductProfile> = {}): ProductProfile 
     name: "Launch Kit",
     preferredCliprHookStyleKey: "mystery_gap",
     productDetails: "A planning tool for product launches.",
+    rejectedHookExamples: ["This changes everything"],
     updatedAt: "2026-05-21T12:00:00.000Z",
     websiteUrl: "https://launchkit.example.com/",
+    winningHookExamples: ["I thought launch day would feel calmer"],
     ...overrides,
   };
 }
@@ -46,6 +50,14 @@ describe("ProductSettingsDetailsDialog", () => {
     expect(markup).toContain("https://launchkit.example.com/");
     expect(markup).toContain("Founders struggle to turn launch plans into posts.");
     expect(markup).toContain("Launch work feels scattered");
+    expect(markup).toContain("Hook goal");
+    expect(markup).toContain("Get more comments");
+    expect(markup).toContain("Hook tone");
+    expect(markup).toContain("Bold");
+    expect(markup).toContain("Hooks to learn from");
+    expect(markup).toContain("I thought launch day would feel calmer");
+    expect(markup).toContain("Hooks to avoid");
+    expect(markup).toContain("This changes everything");
     expect(markup).toContain("Writing angles");
     expect(markup).toContain("Phrase bank");
     expect(markup).toContain("solo founders");

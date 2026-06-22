@@ -19,6 +19,8 @@ scheduled Stitchr automation.
   through the existing provider and media worker flow.
 - Saves finished drafts as normal Stitch library items, not as automation-owned
   outputs.
+- Uses the saved product's Hook Lab examples when it generates text for drafts
+  that do not use a selected template.
 - Leaves Normal and Longr Stitchr modes available for manual editing.
 
 ## User Flow
@@ -62,6 +64,11 @@ caption copy into every queued task. The provider worker skips Stitchr text
 generation for those tasks, stretches the saved overlay across each new draft's
 duration, and preserves the overlay text, placement, font size, style, and
 colors. Pair selection still uses the user's current UGC and Demo library.
+
+When no template provides copy, `stitchrBatch.plan` snapshots the product's Hook
+Lab fields into each provider task. The provider worker reconstructs the product
+profile from that snapshot before calling the shared Stitchr text-generation
+prompt.
 
 ## Pair History Behavior
 

@@ -398,10 +398,14 @@ describe("settings components", () => {
     expect(onCreate).toHaveBeenCalledWith({
       audienceDetails: "Creators",
       emotionalNarrative: "Creators want to feel proud of launching.",
+      hookEdgeLevel: "punchy",
+      hookGenerationGoal: "views",
       name: "Launch Kit",
       preferredCliprHookStyleKey: "problem",
       productDetails: "Benefits",
+      rejectedHookExamples: [],
       websiteUrl: "https://launchkit.example.com/",
+      winningHookExamples: [],
     });
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith("");
     expect(mocks.setStateCalls[4]).toHaveBeenCalledWith("");

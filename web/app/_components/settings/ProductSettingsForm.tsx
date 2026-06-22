@@ -2,10 +2,14 @@
 
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { ProductHookMemoryFields } from "@/app/_components/settings/ProductHookMemoryFields";
 import { ProductHookStyleSelect } from "@/app/_components/settings/ProductHookStyleSelect";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
+import type { HookEdgeLevel } from "@/lib/clipstitchr/types/HookEdgeLevel";
+import type { HookGenerationGoal } from "@/lib/clipstitchr/types/HookGenerationGoal";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
+import { parseProductHookExamplesText } from "@/lib/clipstitchr/utils/parseProductHookExamplesText";
 
 type ProductSettingsFormProps = {
   isSaving: boolean;
@@ -23,6 +27,11 @@ export function ProductSettingsForm({
   const [emotionalNarrative, setEmotionalNarrative] = useState("");
   const [preferredCliprHookStyleKey, setPreferredCliprHookStyleKey] =
     useState("");
+  const [winningHookExamplesText, setWinningHookExamplesText] = useState("");
+  const [rejectedHookExamplesText, setRejectedHookExamplesText] = useState("");
+  const [hookGenerationGoal, setHookGenerationGoal] =
+    useState<HookGenerationGoal>("views");
+  const [hookEdgeLevel, setHookEdgeLevel] = useState<HookEdgeLevel>("punchy");
   const trimmedName = name.trim();
   const canSave = trimmedName.length > 0 && !isSaving;
 
@@ -46,6 +55,14 @@ export function ProductSettingsForm({
               emotionalNarrative: emotionalNarrative || undefined,
               preferredCliprHookStyleKey:
                 preferredCliprHookStyleKey || undefined,
+              winningHookExamples: parseProductHookExamplesText(
+                winningHookExamplesText,
+              ),
+              rejectedHookExamples: parseProductHookExamplesText(
+                rejectedHookExamplesText,
+              ),
+              hookGenerationGoal,
+              hookEdgeLevel,
             });
           } catch {
             return;
@@ -57,6 +74,10 @@ export function ProductSettingsForm({
           setAudienceDetails("");
           setEmotionalNarrative("");
           setPreferredCliprHookStyleKey("");
+          setWinningHookExamplesText("");
+          setRejectedHookExamplesText("");
+          setHookGenerationGoal("views");
+          setHookEdgeLevel("punchy");
         }}
       >
         <div>
@@ -95,6 +116,16 @@ export function ProductSettingsForm({
         <ProductHookStyleSelect
           value={preferredCliprHookStyleKey}
           onChange={setPreferredCliprHookStyleKey}
+        />
+        <ProductHookMemoryFields
+          hookEdgeLevel={hookEdgeLevel}
+          hookGenerationGoal={hookGenerationGoal}
+          rejectedHookExamplesText={rejectedHookExamplesText}
+          winningHookExamplesText={winningHookExamplesText}
+          onHookEdgeLevelChange={setHookEdgeLevel}
+          onHookGenerationGoalChange={setHookGenerationGoal}
+          onRejectedHookExamplesTextChange={setRejectedHookExamplesText}
+          onWinningHookExamplesTextChange={setWinningHookExamplesText}
         />
         <div className="grid gap-4 lg:grid-cols-2">
           <label className="block">

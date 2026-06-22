@@ -88,6 +88,13 @@ describe("POST /api/clipr/text", () => {
       description: "Long post description",
       filledHook: "Stop wasting launch time",
       hashtags: ["#launchkit", "#ugc", "#demo"],
+      hookVariants: [
+        {
+          angle: "Pain callout",
+          reason: "Matches the creator reaction.",
+          text: "Stop wasting launch time",
+        },
+      ],
       overlayText: "Launch faster",
       script: "Full script",
       slides: [{ text: "Slide one" }],
@@ -132,6 +139,13 @@ describe("POST /api/clipr/text", () => {
       description: "Long post description",
       hashtags: ["#launchkit", "#ugc", "#demo"],
       hook: "Stop wasting launch time",
+      hookVariants: [
+        {
+          angle: "Pain callout",
+          reason: "Matches the creator reaction.",
+          text: "Stop wasting launch time",
+        },
+      ],
       overlayText: "Launch faster",
       script: "Full script",
       slides: [{ text: "Slide one" }],

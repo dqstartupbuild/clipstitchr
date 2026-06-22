@@ -1,6 +1,8 @@
 import type { CliprPlaceholderFillers } from "@/lib/clipstitchr/types/CliprPlaceholderFillers";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
+import { getHookEdgeLevelLabel } from "@/lib/clipstitchr/utils/getHookEdgeLevelLabel";
+import { getHookGenerationGoalLabel } from "@/lib/clipstitchr/utils/getHookGenerationGoalLabel";
 import { formatStitchrTextGenerationClipContext } from "@/lib/clipstitchr/server/formatStitchrTextGenerationClipContext";
 
 type CreateStitchrHookGenerationPromptOptions = {
@@ -14,6 +16,12 @@ export function createStitchrHookGenerationPrompt({
   product,
   stitchrClipContexts = [],
 }: CreateStitchrHookGenerationPromptOptions) {
+  const winningHookExamples = product.winningHookExamples?.length
+    ? product.winningHookExamples.map((example) => `- ${example}`).join("\n")
+    : "- None saved yet.";
+  const rejectedHookExamples = product.rejectedHookExamples?.length
+    ? product.rejectedHookExamples.map((example) => `- ${example}`).join("\n")
+    : "- None saved yet.";
   const sourceContext = stitchrClipContexts.length
     ? stitchrClipContexts
         .map(formatStitchrTextGenerationClipContext)
@@ -33,20 +41,31 @@ export function createStitchrHookGenerationPrompt({
       product.inferredProblem ||
       "(none yet - use proven short-form patterns)",
     "",
+    "Hook Lab memory:",
+    `- Goal: ${getHookGenerationGoalLabel(product.hookGenerationGoal)}`,
+    `- Tone: ${getHookEdgeLevelLabel(product.hookEdgeLevel)}`,
+    "Hooks to learn from:",
+    winningHookExamples,
+    "Hooks to avoid:",
+    rejectedHookExamples,
+    "",
     "Stitchr source context:",
     sourceContext,
     "",
-    "Write one visual overlay hook and one feed caption for a stitched video.",
+    "Write eight ranked visual overlay hook options and one feed caption for a stitched video.",
     "The video has a short UGC reaction followed by a product or demo clip. There is no script or voiceover.",
     "Use the source context when it gives you a real visual detail, reaction, or demo payoff. If the source context is thin, use the account context instead and do not invent details.",
     "",
     "Respond with a JSON object of this exact shape:",
-    '{"templateId":"stitchr-emotional-narrative","filledHook":"short visual overlay hook","variablesUsed":{"placeholder":"value"},"overlayText":"same short visual overlay hook","caption":"short caption hook related to the overlay and clips","hashtags":["#tagone","#tagtwo","#tagthree"],"slides":["same short visual overlay hook"],"script":"","scenePlan":[]}',
+    '{"templateId":"stitchr-hook-lab","filledHook":"best short visual overlay hook","variablesUsed":{"placeholder":"value"},"overlayText":"same best short visual overlay hook","caption":"short caption hook related to the overlay and clips","hashtags":["#tagone","#tagtwo","#tagthree"],"hookVariants":[{"text":"best short visual overlay hook","angle":"why this angle should stop the scroll","reason":"why it fits this product and clip pair"}],"slides":["same best short visual overlay hook"],"script":"","scenePlan":[]}',
     "",
     "Creative standard:",
     "- Write for the viewer first. The product is context, not the main character.",
     "- The hook should make the viewer feel seen, curious, surprised, or slightly called out.",
     "- The hook should fit what appears to happen in the selected UGC/demo clips when that context is useful.",
+    "- Use saved winning hooks as taste examples. Adapt their emotional pattern, not their exact wording.",
+    "- If a saved hook came from viral niche content, rewrite it so it fits this account and does not feel copied.",
+    "- Avoid the saved rejected hooks and avoid their cadence.",
     "- Do not open with the product name unless the source context makes that feel natural.",
     "- Use product facts only as quiet background proof. Do not explain features or write a product pitch.",
     "- The caption should be a second simple hook for the feed caption, not a repeat of the overlay.",
@@ -56,6 +75,9 @@ export function createStitchrHookGenerationPrompt({
     "- Keep the hook and caption on-brand, simple, and genuinely good.",
     "- Do not write generic filler or vague hype.",
     "- filledHook and overlayText must be the same final human-readable hook.",
+    "- hookVariants must contain 6-8 distinct hooks, ranked best first.",
+    "- hookVariants[0].text must match filledHook and overlayText.",
+    "- Each hookVariants item must have a short plain-language angle and reason.",
     "- Most hooks should be 3-9 words and readable on a vertical video.",
     "- Do not invent fake stats, fake studies, fake quotes, fake testimonials, or visual details not present in the context.",
     "- hashtags must contain 3-5 hashtags, all lowercase, no spaces, each starting with #.",

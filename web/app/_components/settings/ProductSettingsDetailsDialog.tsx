@@ -5,6 +5,8 @@ import { IconButton } from "@/app/_components/ui/IconButton";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { getCliprHookStyleName } from "@/lib/clipstitchr/utils/getCliprHookStyleName";
+import { getHookEdgeLevelLabel } from "@/lib/clipstitchr/utils/getHookEdgeLevelLabel";
+import { getHookGenerationGoalLabel } from "@/lib/clipstitchr/utils/getHookGenerationGoalLabel";
 
 type ProductSettingsDetailsDialogProps = {
   product: ProductProfile;
@@ -24,6 +26,18 @@ export function ProductSettingsDetailsDialog({
       label: "Hook style",
       value: getCliprHookStyleName(product.preferredCliprHookStyleKey),
     },
+    {
+      label: "Hook goal",
+      value: product.hookGenerationGoal
+        ? getHookGenerationGoalLabel(product.hookGenerationGoal)
+        : undefined,
+    },
+    {
+      label: "Hook tone",
+      value: product.hookEdgeLevel
+        ? getHookEdgeLevelLabel(product.hookEdgeLevel)
+        : undefined,
+    },
     { label: "Audience problem", value: product.inferredProblem },
   ].flatMap((item) =>
     item.value?.trim()
@@ -37,6 +51,12 @@ export function ProductSettingsDetailsDialog({
   );
   const painPoints = product.inferredPainPoints
     .map((painPoint) => painPoint.trim())
+    .filter(Boolean);
+  const winningHookExamples = (product.winningHookExamples ?? [])
+    .map((example) => example.trim())
+    .filter(Boolean);
+  const rejectedHookExamples = (product.rejectedHookExamples ?? [])
+    .map((example) => example.trim())
     .filter(Boolean);
   const writingAngles = (product.eligibleCliprHookStyleKeys ?? []).map((key) =>
     getCliprHookStyleName(key),
@@ -102,6 +122,40 @@ export function ProductSettingsDetailsDialog({
                     className="rounded-md border border-border bg-surface-muted px-3 py-2 text-sm leading-5 text-text-secondary"
                   >
                     {painPoint}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {winningHookExamples.length ? (
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
+                Hooks to learn from
+              </p>
+              <ul className="mt-2 grid gap-2">
+                {winningHookExamples.map((example, index) => (
+                  <li
+                    key={`${example}-${index}`}
+                    className="rounded-md border border-border bg-surface-muted px-3 py-2 text-sm leading-5 text-text-secondary"
+                  >
+                    {example}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {rejectedHookExamples.length ? (
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
+                Hooks to avoid
+              </p>
+              <ul className="mt-2 grid gap-2">
+                {rejectedHookExamples.map((example, index) => (
+                  <li
+                    key={`${example}-${index}`}
+                    className="rounded-md border border-border bg-surface-muted px-3 py-2 text-sm leading-5 text-text-secondary"
+                  >
+                    {example}
                   </li>
                 ))}
               </ul>

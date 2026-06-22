@@ -6,6 +6,7 @@ import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/Autom
 import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
+import type { StitchrHookVariant } from "@/lib/clipstitchr/types/StitchrHookVariant";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
@@ -308,6 +309,8 @@ function setClipLibraryVideoGroups({
 function queueStitchrState(
   overrides: {
     activePreviewUgcId?: string;
+    autoTextHookVariantContextKey?: string;
+    autoTextHookVariants?: StitchrHookVariant[];
     autoTextMessage?: string | null;
     demoProductFilterId?: string;
     demoPlaybackRate?: 1 | 2;
@@ -360,6 +363,10 @@ function queueStitchrState(
     overrides.demoProductFilterId,
     overrides.isGeneratingAutoText ?? false,
     overrides.autoTextMessage ?? null,
+    {
+      contextKey: overrides.autoTextHookVariantContextKey ?? "",
+      hookVariants: overrides.autoTextHookVariants ?? [],
+    },
     overrides.ugcTrimRangesByClipId ?? {},
     overrides.demoTrimRangesByClipId ?? {},
     overrides.loadedLongrClipsById ?? {},
@@ -839,11 +846,11 @@ describe("StitchrPageClient", () => {
     );
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("ugc_2");
     expect(mocks.clipLibraryState.loadClip).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[26]).toHaveBeenCalledWith(["ugc_2"]);
-    expect(mocks.stateSetters[27]).toHaveBeenCalledWith("ugc_2");
-    expect(mocks.stateSetters[28]).toHaveBeenCalledWith("demo_2");
-    expect(mocks.stateSetters[29]).toHaveBeenCalledWith(["demo_2"]);
-    expect(mocks.stateSetters[30]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
+    expect(mocks.stateSetters[27]).toHaveBeenCalledWith(["ugc_2"]);
+    expect(mocks.stateSetters[28]).toHaveBeenCalledWith("ugc_2");
+    expect(mocks.stateSetters[29]).toHaveBeenCalledWith("demo_2");
+    expect(mocks.stateSetters[30]).toHaveBeenCalledWith(["demo_2"]);
+    expect(mocks.stateSetters[31]).toHaveBeenCalledWith(["ugc_2", "demo_2"]);
     expect(mocks.stateSetters[12]).toHaveBeenCalledWith({});
     expect(mocks.stateSetters[13]).toHaveBeenCalledWith([textOverlay]);
     expect(mocks.stateSetters[15]).toHaveBeenCalledWith({});

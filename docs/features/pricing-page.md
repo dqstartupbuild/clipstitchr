@@ -41,6 +41,10 @@ The page includes the 10k Organic Views Challenge. Users must publish 30
 ClipStitchr-made posts in 30 days. If those posts do not reach 10k total
 organic views, the page promises plan-based help to keep testing.
 
+The guarantee section now calls out Hook Lab setup so users understand they
+should add hooks from viral niche content and their own winners before running
+the challenge.
+
 ## Relevant Code
 
 - `web/app/(content)/pricing/page.tsx` defines the route and metadata.

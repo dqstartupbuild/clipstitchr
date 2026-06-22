@@ -16,6 +16,9 @@ const mocks = vi.hoisted(() => ({
     onChange: (value: string) => void;
     value: string;
   } | null,
+  hookMemoryProps: null as {
+    winningHookExamplesText: string;
+  } | null,
   setState: vi.fn(),
   stateQueue: [] as unknown[],
 }));
@@ -36,6 +39,15 @@ vi.mock("@/app/_components/settings/ProductHookStyleSelect", () => ({
   ProductHookStyleSelect: (props: NonNullable<typeof mocks.hookSelectProps>) => {
     mocks.hookSelectProps = props;
     return `ProductHookStyleSelect:${props.value}`;
+  },
+}));
+
+vi.mock("@/app/_components/settings/ProductHookMemoryFields", () => ({
+  ProductHookMemoryFields: (
+    props: NonNullable<typeof mocks.hookMemoryProps>,
+  ) => {
+    mocks.hookMemoryProps = props;
+    return `ProductHookMemoryFields:${props.winningHookExamplesText}`;
   },
 }));
 
@@ -109,6 +121,7 @@ describe("ProductSettingsEditDialog", () => {
     vi.clearAllMocks();
     mocks.buttons = [];
     mocks.hookSelectProps = null;
+    mocks.hookMemoryProps = null;
     mocks.setState.mockReset();
     mocks.stateQueue = [];
   });
@@ -126,6 +139,7 @@ describe("ProductSettingsEditDialog", () => {
     expect(markup).toContain("Edit product context");
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("ProductHookStyleSelect:mystery_gap");
+    expect(markup).toContain("ProductHookMemoryFields:");
     expect(markup).toContain("Website URL");
     expect(markup).toContain("Product details");
     expect(markup).toContain("Audience details");
@@ -141,6 +155,10 @@ describe("ProductSettingsEditDialog", () => {
       "New audience",
       "New emotional story",
       "direct",
+      "Winning hook\nSecond hook",
+      "Rejected hook",
+      "comments",
+      "bold",
     ];
     const onClose = vi.fn();
     const onSave = vi.fn(async (input: ProductProfileCreateInput) => {
@@ -199,10 +217,14 @@ describe("ProductSettingsEditDialog", () => {
     expect(onSave).toHaveBeenCalledWith({
       audienceDetails: "New audience",
       emotionalNarrative: "New emotional story",
+      hookEdgeLevel: "bold",
+      hookGenerationGoal: "comments",
       name: "New Launch Kit",
       preferredCliprHookStyleKey: "direct",
       productDetails: "New product details",
+      rejectedHookExamples: ["Rejected hook"],
       websiteUrl: "https://new.example.com/",
+      winningHookExamples: ["Winning hook", "Second hook"],
     });
   });
 
@@ -279,9 +301,13 @@ describe("ProductSettingsEditDialog", () => {
 
     expect(rejectedSave).toHaveBeenCalledWith({
       audienceDetails: "Audience",
+      hookEdgeLevel: "punchy",
+      hookGenerationGoal: "views",
       name: "Launch Kit",
       preferredCliprHookStyleKey: undefined,
       productDetails: "Details",
+      rejectedHookExamples: [],
+      winningHookExamples: [],
     });
   });
 });

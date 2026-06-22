@@ -663,6 +663,14 @@ function parseStitchrAutomationTaskInput(
         preferredCliprHookStyleKey: getOptionalString(
           input.preferredCliprHookStyleKey,
         ),
+        winningHookExamples: getStringArray(input.winningHookExamples),
+        rejectedHookExamples: getStringArray(input.rejectedHookExamples),
+        hookGenerationGoal: getOptionalString(
+          input.hookGenerationGoal,
+        ) as ProductProfile["hookGenerationGoal"],
+        hookEdgeLevel: getOptionalString(
+          input.hookEdgeLevel,
+        ) as ProductProfile["hookEdgeLevel"],
         createdAt: getOptionalString(input.productCreatedAt) ?? "",
         updatedAt: getOptionalString(input.productUpdatedAt) ?? "",
       }

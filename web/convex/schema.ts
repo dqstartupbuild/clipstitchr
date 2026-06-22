@@ -216,6 +216,10 @@ export default defineSchema({
       v.record(v.string(), v.array(v.string())),
     ),
     preferredCliprHookStyleKey: v.optional(v.string()),
+    winningHookExamples: v.optional(v.array(v.string())),
+    rejectedHookExamples: v.optional(v.array(v.string())),
+    hookGenerationGoal: v.optional(v.string()),
+    hookEdgeLevel: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
   })
@@ -535,6 +539,7 @@ export default defineSchema({
   workerLaunchState: defineTable({
     worker: v.union(v.literal("media"), v.literal("provider")),
     lastRequestedAt: v.string(),
+    lastCoalescedFollowupRequestedAt: v.optional(v.string()),
     lastRecoveryRequestedAt: v.optional(v.string()),
     updatedAt: v.string(),
   }).index("by_worker", ["worker"]),

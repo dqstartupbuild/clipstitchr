@@ -191,9 +191,67 @@ describe("parseCliprTextGenerationOutput", () => {
     });
 
     expect(generation.caption).toBe("I was not expecting that");
+    expect(generation.hookVariants).toEqual([
+      {
+        angle: "Best fit",
+        reason: "Matches the selected clips and product.",
+        text: "I was not expecting that",
+      },
+    ]);
     expect(generation.hashtags.length).toBeGreaterThanOrEqual(3);
     expect(generation.hashtags.length).toBeLessThanOrEqual(5);
     expect(generation.socialCaption).toContain("I was not expecting that");
+  });
+
+  it("normalizes Stitchr hook variants with the selected hook ranked first", () => {
+    const generation = parseCliprTextGenerationOutput({
+      candidates,
+      durationSeconds: 30,
+      outputText: JSON.stringify({
+        caption: "That reaction tells you everything",
+        filledHook: "This launch got away from me",
+        hashtags: ["launch", "ugc", "demo"],
+        hookVariants: [
+          {
+            angle: "Shared frustration",
+            reason: "Fits the founder reaction.",
+            text: "This launch got away from me",
+          },
+          {
+            angle: "Identity callout",
+            reason: "Names the viewer's quiet fear.",
+            text: "Your launch plan looks calm until this",
+          },
+          {
+            angle: "Duplicate",
+            reason: "Should be removed.",
+            text: "Your launch plan looks calm until this",
+          },
+          {
+            angle: "Unreadable",
+            reason: "Too short.",
+            text: "The the",
+          },
+        ],
+      }),
+      providerModel: "openai/gpt-4.1",
+      product,
+      purpose: "stitchr",
+      slideCount: 2,
+    });
+
+    expect(generation.hookVariants).toEqual([
+      {
+        angle: "Shared frustration",
+        reason: "Fits the founder reaction.",
+        text: "This launch got away from me",
+      },
+      {
+        angle: "Identity callout",
+        reason: "Names the viewer's quiet fear.",
+        text: "Your launch plan looks calm until this",
+      },
+    ]);
   });
 
   it("fills sparse Swipr slide decks with support and CTA fallbacks", () => {

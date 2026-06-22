@@ -71,6 +71,8 @@ function createProductArgs(overrides: Record<string, unknown> = {}) {
     eligibleCliprHookTemplateIds: [" APP-001 ", "APP-001", "APP-002"],
     id: "product_123",
     websiteUrl: "  https://launchkit.example.com/  ",
+    hookEdgeLevel: " bold ",
+    hookGenerationGoal: " comments ",
     inferredPainPoints: [
       "  slow launches  ",
       "",
@@ -92,7 +94,13 @@ function createProductArgs(overrides: Record<string, unknown> = {}) {
     name: "  Launch Kit  ",
     preferredCliprHookStyleKey: " direct_diagnosis ",
     productDetails: "  AI launch planner  ",
+    rejectedHookExamples: ["  Stop scrolling  ", "Stop scrolling", ""],
     updatedAt: "2026-05-20T00:00:00.000Z",
+    winningHookExamples: [
+      "  This launch got away from me  ",
+      "This launch got away from me",
+      "I thought launch day would feel calmer",
+    ],
     ...overrides,
   };
 }
@@ -150,6 +158,8 @@ describe("convex products", () => {
         emotionalNarrative: "Founders want to stop feeling behind",
         eligibleCliprHookStyleKeys: ["direct_diagnosis"],
         eligibleCliprHookTemplateIds: ["APP-001", "APP-002"],
+        hookEdgeLevel: "bold",
+        hookGenerationGoal: "comments",
         inferredPainPoints: [
           "slow launches",
           "duplicate",
@@ -167,7 +177,12 @@ describe("convex products", () => {
         ownerId: "owner_123",
         preferredCliprHookStyleKey: "direct_diagnosis",
         productDetails: "AI launch planner",
+        rejectedHookExamples: ["Stop scrolling"],
         websiteUrl: "https://launchkit.example.com/",
+        winningHookExamples: [
+          "This launch got away from me",
+          "I thought launch day would feel calmer",
+        ],
       }),
     );
     expect(ctx.db.insert).toHaveBeenCalledWith(
@@ -226,9 +241,16 @@ describe("convex products", () => {
       "doc_123",
       expect.objectContaining({
         emotionalNarrative: "Founders want to stop feeling behind",
+        hookEdgeLevel: "bold",
+        hookGenerationGoal: "comments",
         name: "Launch Kit",
         productDetails: "AI launch planner",
+        rejectedHookExamples: ["Stop scrolling"],
         websiteUrl: "https://launchkit.example.com/",
+        winningHookExamples: [
+          "This launch got away from me",
+          "I thought launch day would feel calmer",
+        ],
       }),
     );
   });

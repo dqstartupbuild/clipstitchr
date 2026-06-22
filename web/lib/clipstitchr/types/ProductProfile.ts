@@ -1,3 +1,6 @@
+import type { HookEdgeLevel } from "@/lib/clipstitchr/types/HookEdgeLevel";
+import type { HookGenerationGoal } from "@/lib/clipstitchr/types/HookGenerationGoal";
+
 export type ProductProfile = {
   id: string;
   name: string;
@@ -8,9 +11,13 @@ export type ProductProfile = {
   cliprPlaceholderFillers?: Record<string, string[]>;
   eligibleCliprHookStyleKeys?: string[];
   eligibleCliprHookTemplateIds?: string[];
+  hookEdgeLevel?: HookEdgeLevel;
+  hookGenerationGoal?: HookGenerationGoal;
   inferredProblem?: string;
   inferredPainPoints: string[];
   preferredCliprHookStyleKey?: string;
+  rejectedHookExamples?: string[];
+  winningHookExamples?: string[];
   createdAt: string;
   updatedAt: string;
 };

@@ -8,6 +8,7 @@ the feed caption and hashtags together.
 When Stitchr auto-text runs, the writing model now returns:
 
 - the visual overlay hook
+- ranked visual overlay hook options for Stitchr
 - a caption hook that relates to the overlay
 - 3-5 normalized hashtags
 - one combined caption/hashtag text block for editing and copying
@@ -16,12 +17,12 @@ The caption is meant to be another hook for TikTok, Reels, or Shorts. It should
 feel connected to the overlay hook and to what appears in the selected UGC and
 demo clips.
 
-The Stitchr writing prompt intentionally follows the simpler Swipr-style
-prompt shape: account context, source context, a compact JSON contract, and
-short viewer-first copy rules. Selected UGC/demo descriptions and hook hints
-are used when they add real context, but the prompt avoids heavy internal hook
-framework lists and falls back to product/audience context when source details
-are thin.
+The Stitchr writing prompt intentionally follows the simpler Swipr-style prompt
+shape: account context, Hook Lab memory, source context, a compact JSON
+contract, and short viewer-first copy rules. Selected UGC/demo descriptions and
+hook hints are used when they add real context, but the prompt avoids heavy
+internal hook framework lists and falls back to product/audience context when
+source details are thin.
 
 Copy buttons for this field temporarily swap from the copy icon to a checkmark
 after the clipboard write succeeds.
@@ -30,11 +31,12 @@ after the clipboard write succeeds.
 
 1. Select Stitchr source clips.
 2. Generate text from the Stitchr auto-text panel.
-3. Review or edit the caption and hashtags in the single caption field.
-4. Create the stitch.
-5. Open the saved stitch details later to read or copy the same caption and
+3. Pick a different generated hook option if the top hook is not right.
+4. Review or edit the caption and hashtags in the single caption field.
+5. Create the stitch.
+6. Open the saved stitch details later to read or copy the same caption and
    hashtags.
-6. Open the saved stitch editor later to edit or copy the same field.
+7. Open the saved stitch editor later to edit or copy the same field.
 
 For reused stitches and templates, normal Stitchr mode treats the saved caption
 like reused overlay text. It stays available even if the original UGC is

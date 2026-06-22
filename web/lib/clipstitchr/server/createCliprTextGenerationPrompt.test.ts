@@ -23,8 +23,15 @@ const product: ProductProfile = {
   audienceDetails: "Founders and solo marketers.",
   createdAt: "2026-01-01T00:00:00.000Z",
   emotionalNarrative: "Founders want to stop looking scattered and feel proud.",
+  hookEdgeLevel: "bold",
+  hookGenerationGoal: "comments",
   inferredPainPoints: ["launch content gets scattered"],
+  rejectedHookExamples: ["Stop scrolling"],
   updatedAt: "2026-01-01T00:00:00.000Z",
+  winningHookExamples: [
+    "This launch got away from me",
+    "I thought launch day would feel calmer",
+  ],
 };
 
 describe("createCliprTextGenerationPrompt", () => {
@@ -95,13 +102,24 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("What's working for this account");
     expect(prompt).toContain("Stitchr source context:");
     expect(prompt).toContain("There is no script or voiceover.");
+    expect(prompt).toContain('"templateId":"stitchr-hook-lab"');
     expect(prompt).toContain('"caption":"short caption hook related to the overlay and clips"');
     expect(prompt).toContain('"hashtags":["#tagone","#tagtwo","#tagthree"]');
+    expect(prompt).toContain('"hookVariants"');
     expect(prompt).toContain(
       "Founders want to stop looking scattered and feel proud.",
     );
+    expect(prompt).toContain("Hook Lab memory:");
+    expect(prompt).toContain("Goal: Get more comments");
+    expect(prompt).toContain("Tone: Bold");
+    expect(prompt).toContain("This launch got away from me");
+    expect(prompt).toContain("I thought launch day would feel calmer");
+    expect(prompt).toContain("Stop scrolling");
     expect(prompt).toContain("Write for the viewer first");
     expect(prompt).toContain("The product is context, not the main character");
+    expect(prompt).toContain("Adapt their emotional pattern");
+    expect(prompt).toContain("viral niche content");
+    expect(prompt).toContain("hookVariants must contain 6-8 distinct hooks");
     expect(prompt).toContain("Most hooks should be 3-9 words");
     expect(prompt).toContain("hashtags must contain 3-5 hashtags");
     expect(prompt).toContain("Creator surprised by messy launch work");

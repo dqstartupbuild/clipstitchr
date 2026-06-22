@@ -62,6 +62,14 @@ export function readStitchrTextGenerationClipContexts(
             source.productDescription,
             400,
           ),
+          quickEditOverlayTextHint: readStitchrTextGenerationString(
+            source.quickEditOverlayTextHint,
+            220,
+          ),
+          quickEditOverlayTextReason: readStitchrTextGenerationString(
+            source.quickEditOverlayTextReason,
+            300,
+          ),
         },
       ];
     })

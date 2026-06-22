@@ -2,10 +2,14 @@
 
 import { PackagePlus, X } from "lucide-react";
 import { useState } from "react";
+import { ProductHookMemoryFields } from "@/app/_components/settings/ProductHookMemoryFields";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
+import type { HookEdgeLevel } from "@/lib/clipstitchr/types/HookEdgeLevel";
+import type { HookGenerationGoal } from "@/lib/clipstitchr/types/HookGenerationGoal";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
+import { parseProductHookExamplesText } from "@/lib/clipstitchr/utils/parseProductHookExamplesText";
 
 type ProductCreateDialogProps = {
   isRequired?: boolean;
@@ -24,8 +28,17 @@ export function ProductCreateDialog({
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [productDetails, setProductDetails] = useState("");
   const [audienceDetails, setAudienceDetails] = useState("");
+  const [winningHookExamplesText, setWinningHookExamplesText] = useState("");
+  const [rejectedHookExamplesText, setRejectedHookExamplesText] = useState("");
+  const [hookGenerationGoal, setHookGenerationGoal] =
+    useState<HookGenerationGoal>("views");
+  const [hookEdgeLevel, setHookEdgeLevel] = useState<HookEdgeLevel>("punchy");
   const [error, setError] = useState<string | null>(null);
-  const canSave = name.trim().length > 0 && !isSaving;
+  const canSave =
+    name.trim().length > 0 &&
+    (!isRequired ||
+      parseProductHookExamplesText(winningHookExamplesText).length > 0) &&
+    !isSaving;
 
   return (
     <div
@@ -53,6 +66,14 @@ export function ProductCreateDialog({
               websiteUrl: websiteUrl || undefined,
               productDetails,
               audienceDetails,
+              winningHookExamples: parseProductHookExamplesText(
+                winningHookExamplesText,
+              ),
+              rejectedHookExamples: parseProductHookExamplesText(
+                rejectedHookExamplesText,
+              ),
+              hookGenerationGoal,
+              hookEdgeLevel,
             });
             onClose?.();
           } catch (nextError) {
@@ -139,6 +160,17 @@ export function ProductCreateDialog({
               onChange={(event) => setAudienceDetails(event.currentTarget.value)}
             />
           </label>
+          <ProductHookMemoryFields
+            hookEdgeLevel={hookEdgeLevel}
+            hookGenerationGoal={hookGenerationGoal}
+            rejectedHookExamplesText={rejectedHookExamplesText}
+            winningHookExamplesText={winningHookExamplesText}
+            isWinningRequired={isRequired}
+            onHookEdgeLevelChange={setHookEdgeLevel}
+            onHookGenerationGoalChange={setHookGenerationGoal}
+            onRejectedHookExamplesTextChange={setRejectedHookExamplesText}
+            onWinningHookExamplesTextChange={setWinningHookExamplesText}
+          />
         </div>
         {error ? (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">

@@ -67,14 +67,15 @@ social proof first, product proof immediately after.
 9. Tap or swipe through each exact UGC-then-demo preview.
 10. Optionally configure one text overlay and one caption/hashtag field per
    output or copy one overlay across the batch.
-11. Optionally generate an overlay hook, a caption hook, and 3-5 hashtags from
-   the hidden Clipr hook-template engine using saved product context and the
-   selected UGC/demo clip descriptions. Stitchr auto-text can draw from
-   product/ad hook-library templates, but source names and template IDs stay
-   hidden. When selected clips have Quick Edit overlay text suggestions from
-   score analysis, auto-text treats those suggestions as soft hook direction,
-   not required copy. The generated overlay and caption field stay editable. The
-   backend writing call uses `TEXT_WRITING_MODEL_ID`, which defaults to
+11. Optionally generate ranked overlay hook options, a caption hook, and 3-5
+   hashtags from saved product context, Hook Lab examples, and the selected
+   UGC/demo clip descriptions. Stitchr auto-text can draw from product/ad
+   hook-library templates, but source names and template IDs stay hidden. When
+   selected clips have Quick Edit overlay text suggestions from score analysis,
+   auto-text treats those suggestions as soft hook direction, not required
+   copy. The top hook is applied automatically, alternate hooks stay selectable,
+   and the generated overlay and caption field stay editable. The backend
+   writing call uses `TEXT_WRITING_MODEL_ID`, which defaults to
    `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` is supported for
    higher-cost writing tests.
 12. Optionally attach selected shared music to each stitch.
@@ -125,6 +126,9 @@ CRUD behavior, rate limits, and maintenance notes.
 Stitchr social captions are documented separately in
 `docs/features/stitchr-social-captions.md`.
 
+Stitchr Hook Lab is documented separately in
+`docs/features/stitchr-hook-lab.md`.
+
 Saved Stitch scoring is documented separately in `docs/features/stitch-score.md`.
 Quick Edit is documented separately in `docs/features/quick-edit.md`. Applying
 Quick Edit to a source UGC or Demo clip affects future Stitchr selections only.
@@ -150,6 +154,7 @@ Stitch.
   into Stitchr.
 - Keep generated overlay text and caption copy editable while hiding hook
   style/template mechanics.
+- Keep Hook Lab examples as user-owned taste memory, not copied output.
 - Keep Stitchr hook and caption generation simple and viewer-first, matching
   the Swipr prompt style while still using selected source context when it is
   helpful.

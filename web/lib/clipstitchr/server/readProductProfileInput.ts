@@ -1,4 +1,7 @@
 import { cliprHookStyleOptions } from "@/lib/clipstitchr/resources/clipr/cliprHookStyleOptions";
+import { readHookEdgeLevel } from "@/lib/clipstitchr/server/readHookEdgeLevel";
+import { readHookGenerationGoal } from "@/lib/clipstitchr/server/readHookGenerationGoal";
+import { readProductHookExamples } from "@/lib/clipstitchr/server/readProductHookExamples";
 import { normalizeProductWebsiteUrl } from "@/lib/clipstitchr/server/normalizeProductWebsiteUrl";
 import { readInferredProductPainPoints } from "@/lib/clipstitchr/server/readInferredProductPainPoints";
 import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
@@ -32,6 +35,12 @@ export function readProductProfileInput(
   const preferredCliprHookStyleKey = readPreferredCliprHookStyleKey(
     source.preferredCliprHookStyleKey,
   );
+  const hookEdgeLevel = readHookEdgeLevel(source.hookEdgeLevel);
+  const hookGenerationGoal = readHookGenerationGoal(source.hookGenerationGoal);
+  const rejectedHookExamples = readProductHookExamples(
+    source.rejectedHookExamples,
+  );
+  const winningHookExamples = readProductHookExamples(source.winningHookExamples);
   const websiteUrl = normalizeProductWebsiteUrl(source.websiteUrl);
   const hasInferredProblem = Object.prototype.hasOwnProperty.call(
     source,
@@ -60,6 +69,10 @@ export function readProductProfileInput(
     ...(hasInferredProblem ? { inferredProblem } : {}),
     ...(inferredPainPoints ? { inferredPainPoints } : {}),
     ...(preferredCliprHookStyleKey ? { preferredCliprHookStyleKey } : {}),
+    ...(rejectedHookExamples.length ? { rejectedHookExamples } : {}),
+    ...(winningHookExamples.length ? { winningHookExamples } : {}),
+    ...(hookGenerationGoal ? { hookGenerationGoal } : {}),
+    ...(hookEdgeLevel ? { hookEdgeLevel } : {}),
   };
 
   if (!input.name) {

@@ -43,7 +43,8 @@ export async function createCliprTextGeneration({
   const prediction = await replicate.predictions.create({
     model: providerModel,
     input: createTextWritingPredictionInput({
-      maxCompletionTokens: purpose === "clipr" ? 1800 : 1200,
+      maxCompletionTokens:
+        purpose === "clipr" || purpose === "stitchr" ? 1800 : 1200,
       modelId: providerModel,
       prompt: createCliprTextGenerationPrompt({
         candidates,

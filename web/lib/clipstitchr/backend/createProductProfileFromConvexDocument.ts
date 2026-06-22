@@ -15,9 +15,14 @@ export function createProductProfileFromConvexDocument(
     cliprPlaceholderFillers: product.cliprPlaceholderFillers,
     eligibleCliprHookStyleKeys: product.eligibleCliprHookStyleKeys,
     eligibleCliprHookTemplateIds: product.eligibleCliprHookTemplateIds,
+    hookEdgeLevel: product.hookEdgeLevel as ProductProfile["hookEdgeLevel"],
+    hookGenerationGoal:
+      product.hookGenerationGoal as ProductProfile["hookGenerationGoal"],
     inferredProblem: product.inferredProblem,
     inferredPainPoints: product.inferredPainPoints,
     preferredCliprHookStyleKey: product.preferredCliprHookStyleKey,
+    rejectedHookExamples: product.rejectedHookExamples,
+    winningHookExamples: product.winningHookExamples,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
   };

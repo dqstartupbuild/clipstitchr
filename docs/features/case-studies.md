@@ -33,6 +33,11 @@ TikTok total reach, TikTok Promote, RevenueCat funnel results, Instagram top
 hooks, the 75-reel publishing milestone, individual RevenueCat trial receipts,
 and ClipStitchr production proof.
 
+The Guppy case study also explains why Hook Lab was added to onboarding: the
+best posts came from identity and transformation hooks chosen from real niche
+content, so ClipStitchr now asks users to save examples before their first
+batch.
+
 ## File Tree
 
 ```text

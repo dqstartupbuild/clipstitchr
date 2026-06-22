@@ -59,6 +59,8 @@ describe("LandingPage", () => {
     );
     expect(markup).toContain("Create your first batch");
     expect(markup).toContain("One simple flow from saved clips");
+    expect(markup).toContain("Your hooks should sound like your best posts");
+    expect(markup).toContain("Paste hooks from viral posts in your niche");
     expect(markup).toContain(
       "Saved clips + one demo = a batch of ad variants",
     );
