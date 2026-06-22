@@ -2,7 +2,7 @@ import { MDXContent } from "@content-collections/mdx/react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CaseStudyFeatureImage } from "@/app/_components/case-studies/CaseStudyFeatureImage";
-import { CaseStudyHeroMetric } from "@/app/_components/case-studies/CaseStudyHeroMetric";
+import { CaseStudyQuickResults } from "@/app/_components/case-studies/CaseStudyQuickResults";
 import {
   getCaseStudyBySlug,
   getPublishedCaseStudies,
@@ -66,29 +66,14 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
           Back to case studies
         </Link>
 
-        <header className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,520px)] lg:items-start">
-          <div>
+        <header className="mt-8 space-y-8">
+          <div className="max-w-4xl">
             <p className="text-sm font-semibold text-accent-dark">
               {caseStudy.companyName} case study
             </p>
             <h1 className="mt-4 text-4xl font-bold text-text-primary md:text-5xl">
               {caseStudy.title}
             </h1>
-            <p className="mt-6 text-lg leading-8 text-text-secondary">
-              {caseStudy.description}
-            </p>
-            <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
-              {caseStudy.metrics.map((metric) => (
-                <CaseStudyHeroMetric
-                  key={metric.label}
-                  label={metric.label}
-                  value={metric.value}
-                />
-              ))}
-            </div>
-            <Link href="/dashboard" className="btn-primary mt-8">
-              Try ClipStitchr
-            </Link>
           </div>
 
           <CaseStudyFeatureImage
@@ -96,6 +81,8 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
             alt={`Workspace for the ${caseStudy.companyName} content experiment`}
             caption={`${caseStudy.companyName} used a repeatable short-form workflow to test hooks, publish consistently, and turn attention into customers.`}
           />
+
+          <CaseStudyQuickResults metrics={caseStudy.metrics} />
         </header>
 
         <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1fr)_18rem]">

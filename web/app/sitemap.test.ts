@@ -12,7 +12,7 @@ describe("sitemap", () => {
     expect(urls).not.toContain("http://localhost:3000/blog/guppy-30-day-growth");
     expect(urls).toContain("http://localhost:3000/case-studies");
     expect(urls).toContain(
-      "http://localhost:3000/case-studies/guppy-30-day-growth",
+      "http://localhost:3000/case-studies/fitness-app-growth-case-study-guppy",
     );
     expect(urls).toContain("http://localhost:3000/docs");
     expect(urls).toContain("http://localhost:3000/examples");

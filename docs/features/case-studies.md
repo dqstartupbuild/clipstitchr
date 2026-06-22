@@ -4,7 +4,7 @@
 
 ClipStitchr now has a public Case Studies section for sales-focused proof pages.
 The first case study is the Guppy 30-day growth story at
-`/case-studies/guppy-30-day-growth`.
+`/case-studies/fitness-app-growth-case-study-guppy`.
 
 ## How It Works
 
@@ -20,6 +20,12 @@ The reusable page pieces live under `web/app/_components/case-studies/`:
 - `CaseStudyIndexCard.tsx` renders cards on `/case-studies`.
 - `CaseStudyHeroMetric.tsx` renders metric tiles in the case-study hero.
 - `CaseStudyFeatureImage.tsx` renders the feature image and caption.
+- `CaseStudyQuickResults.tsx` renders the quick results box under the feature
+  image.
+
+On detail pages, the hero order is the case study title, the feature image, the
+quick results box, and then the MDX narrative. This keeps the strongest visual
+and proof points visible before the reader reaches the first body section.
 
 Evidence screenshots can be placed directly inside the MDX body after the claim
 they support. The Guppy case study uses this pattern for Instagram reach,
@@ -35,7 +41,8 @@ web/app/(content)/case-studies/[slug]/page.tsx
 web/app/_components/case-studies/CaseStudyFeatureImage.tsx
 web/app/_components/case-studies/CaseStudyHeroMetric.tsx
 web/app/_components/case-studies/CaseStudyIndexCard.tsx
-web/content/case-studies/guppy-30-day-growth.mdx
+web/app/_components/case-studies/CaseStudyQuickResults.tsx
+web/content/case-studies/fitness-app-growth-case-study-guppy.mdx
 web/lib/content/caseStudyDocumentSchema.ts
 web/lib/content/caseStudyQueries.ts
 web/public/case-studies/guppy-30-day-growth/feature-image.jpg
