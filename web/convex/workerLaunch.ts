@@ -4,6 +4,9 @@ import type { MutationCtx } from "./_generated/server";
 export type WorkerLaunchTarget = "media" | "provider";
 
 const immediateCoalesceMs = 15_000;
+const recoveryDelayMs = 10 * 60 * 1000;
+const recoveryCoalesceMs = recoveryDelayMs;
+const epochLaunchTimestamp = "1970-01-01T00:00:00.000Z";
 
 export async function requestWorkerLaunch({
   ctx,
@@ -16,13 +19,6 @@ export async function requestWorkerLaunch({
   now: string;
   worker: WorkerLaunchTarget;
 }) {
-  if (delayMs > 0) {
-    await ctx.scheduler.runAfter(delayMs, internal.workerDispatch.runWorker, {
-      worker,
-    });
-    return;
-  }
-
   const existing = await ctx.db
     .query("workerLaunchState")
     .withIndex("by_worker", (q) => q.eq("worker", worker))
@@ -31,30 +27,62 @@ export async function requestWorkerLaunch({
     ? Date.parse(existing.lastRequestedAt)
     : 0;
   const nowMs = Date.parse(now);
-  const shouldCoalesce =
+  const shouldCoalesceImmediate =
+    delayMs === 0 &&
     existing &&
     Number.isFinite(lastRequestedMs) &&
     Number.isFinite(nowMs) &&
     nowMs - lastRequestedMs < immediateCoalesceMs;
+  const shouldSchedulePrimary = delayMs > 0 || !shouldCoalesceImmediate;
+  const lastRecoveryRequestedMs = existing?.lastRecoveryRequestedAt
+    ? Date.parse(existing.lastRecoveryRequestedAt)
+    : 0;
+  const shouldScheduleRecovery =
+    !existing?.lastRecoveryRequestedAt ||
+    !Number.isFinite(lastRecoveryRequestedMs) ||
+    !Number.isFinite(nowMs) ||
+    nowMs - lastRecoveryRequestedMs >= recoveryCoalesceMs;
 
-  if (shouldCoalesce) {
-    return;
+  const statePatch: {
+    lastRecoveryRequestedAt?: string;
+    lastRequestedAt?: string;
+    updatedAt: string;
+  } = { updatedAt: now };
+
+  if (delayMs === 0 && shouldSchedulePrimary) {
+    statePatch.lastRequestedAt = now;
+  }
+
+  if (shouldScheduleRecovery) {
+    statePatch.lastRecoveryRequestedAt = now;
   }
 
   if (existing) {
-    await ctx.db.patch(existing._id, {
-      lastRequestedAt: now,
-      updatedAt: now,
-    });
-  } else {
+    if (statePatch.lastRequestedAt || statePatch.lastRecoveryRequestedAt) {
+      await ctx.db.patch(existing._id, statePatch);
+    }
+  } else if (statePatch.lastRequestedAt || statePatch.lastRecoveryRequestedAt) {
     await ctx.db.insert("workerLaunchState", {
       worker,
-      lastRequestedAt: now,
+      lastRequestedAt: statePatch.lastRequestedAt ?? epochLaunchTimestamp,
+      ...(statePatch.lastRecoveryRequestedAt
+        ? { lastRecoveryRequestedAt: statePatch.lastRecoveryRequestedAt }
+        : {}),
       updatedAt: now,
     });
   }
 
-  await ctx.scheduler.runAfter(delayMs, internal.workerDispatch.runWorker, {
-    worker,
-  });
+  if (shouldSchedulePrimary) {
+    await ctx.scheduler.runAfter(delayMs, internal.workerDispatch.runWorker, {
+      worker,
+    });
+  }
+
+  if (shouldScheduleRecovery) {
+    await ctx.scheduler.runAfter(
+      delayMs + recoveryDelayMs,
+      internal.workerDispatch.runWorker,
+      { worker },
+    );
+  }
 }

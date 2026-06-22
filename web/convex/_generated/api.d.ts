@@ -80,11 +80,13 @@ import type * as markAutomationRunCompletedIfAllTasksDone from "../markAutomatio
 import type * as markAutomationRunCompletedWhenTasksDone from "../markAutomationRunCompletedWhenTasksDone.js";
 import type * as markAutomationRunStatus from "../markAutomationRunStatus.js";
 import type * as mediaJobs from "../mediaJobs.js";
+import type * as mediaWorkerLaunch from "../mediaWorkerLaunch.js";
 import type * as notifications from "../notifications.js";
 import type * as photoAssets from "../photoAssets.js";
 import type * as productPreferences from "../productPreferences.js";
 import type * as products from "../products.js";
 import type * as providerJobs from "../providerJobs.js";
+import type * as providerWorkerLaunch from "../providerWorkerLaunch.js";
 import type * as rateLimiter from "../rateLimiter.js";
 import type * as rateLimits from "../rateLimits.js";
 import type * as recordStitchrBatchPairHistory from "../recordStitchrBatchPairHistory.js";
@@ -155,6 +157,7 @@ import type * as validators_videoPlaybackRate from "../validators/videoPlaybackR
 import type * as validators_videoTrimRange from "../validators/videoTrimRange.js";
 import type * as videoClips from "../videoClips.js";
 import type * as waitlist from "../waitlist.js";
+import type * as workerContinuationDelayMs from "../workerContinuationDelayMs.js";
 import type * as workerDispatch from "../workerDispatch.js";
 import type * as workerLaunch from "../workerLaunch.js";
 
@@ -237,11 +240,13 @@ declare const fullApi: ApiFromModules<{
   markAutomationRunCompletedWhenTasksDone: typeof markAutomationRunCompletedWhenTasksDone;
   markAutomationRunStatus: typeof markAutomationRunStatus;
   mediaJobs: typeof mediaJobs;
+  mediaWorkerLaunch: typeof mediaWorkerLaunch;
   notifications: typeof notifications;
   photoAssets: typeof photoAssets;
   productPreferences: typeof productPreferences;
   products: typeof products;
   providerJobs: typeof providerJobs;
+  providerWorkerLaunch: typeof providerWorkerLaunch;
   rateLimiter: typeof rateLimiter;
   rateLimits: typeof rateLimits;
   recordStitchrBatchPairHistory: typeof recordStitchrBatchPairHistory;
@@ -312,6 +317,7 @@ declare const fullApi: ApiFromModules<{
   "validators/videoTrimRange": typeof validators_videoTrimRange;
   videoClips: typeof videoClips;
   waitlist: typeof waitlist;
+  workerContinuationDelayMs: typeof workerContinuationDelayMs;
   workerDispatch: typeof workerDispatch;
   workerLaunch: typeof workerLaunch;
 }>;

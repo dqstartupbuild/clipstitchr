@@ -38,14 +38,15 @@ The committed scheduler shape is:
 Convex Cron
   -> internal.automationScheduler.planCoreDaily
       -> plans Stitchr, Swapr, Clipr only
-  -> internal.automationScheduler.dispatchCoreProviders
-      -> calls Next.js provider worker routes for Swapr and Clipr
 
-Cloud Scheduler
+Convex job creation
+  -> internal.workerDispatch.runWorker
+      -> runs provider/media Cloud Run Jobs immediately
+      -> schedules coalesced delayed recovery after each launch target
+
+Optional slow Cloud Scheduler sweep
   -> Cloud Run Job
-      -> npm run media-worker -- --once --max-jobs=N
-      -> claims queued mediaJobs from Convex
-      -> saves editable Stitchr drafts or final Swapr/Clipr clips
+      -> claims queued or stale jobs only as an external disaster-recovery net
 ```
 
 The planner runs repeatedly and depends on idempotency keys. Repeated scheduler
@@ -78,11 +79,10 @@ npx convex deploy
 deployment:
 
 - `plan core daily automation`
-- `dispatch core provider automation`
 
 The planner cron can run every 30 minutes because the tool planners enforce the
-single global UTC window. Provider dispatch can run more often because it only
-claims already-created tasks.
+single global UTC window. Provider and media dispatches happen from job
+creation and worker continuations, not from the planner cron.
 
 ## Vercel Setup
 
@@ -266,20 +266,23 @@ gcloud run jobs add-iam-policy-binding clipstitchr-media-worker \
   --role roles/run.invoker
 ```
 
-10. Schedule the Cloud Run Job. The Google Cloud documented path is Cloud
-Scheduler calling the Cloud Run Jobs run endpoint with OAuth:
+10. Optionally schedule a slow external recovery sweep. The normal recovery path
+is Convex delayed dispatch, so this is only a disaster-recovery net. The Google
+Cloud documented path is Cloud Scheduler calling the Cloud Run Jobs run endpoint
+with OAuth:
 
 ```bash
-gcloud scheduler jobs create http clipstitchr-media-worker-every-10m \
+gcloud scheduler jobs create http clipstitchr-media-worker-recovery-sweep \
   --location "$SCHEDULER_REGION" \
-  --schedule="*/10 * * * *" \
+  --schedule="0 * * * *" \
   --uri="https://run.googleapis.com/v2/projects/$PROJECT_ID/locations/$REGION/jobs/clipstitchr-media-worker:run" \
   --http-method POST \
   --oauth-service-account-email "$SCHEDULER_SERVICE_ACCOUNT"
 ```
 
-Start with every 10 minutes. Reduce the interval only after benchmarking FFmpeg
-runtime and provider-output volume.
+Use an hourly or slower interval only if you want an external safety net beyond
+Convex delayed recovery. Existing every-10-minute worker sweeps can be paused or
+deleted after delayed recovery is deployed and smoke-tested.
 
 ## Production Cutover From Preview
 
@@ -309,7 +312,7 @@ REGION=us-central1
 SCHEDULER_REGION=us-central1
 
 gcloud config set project "$PROJECT_ID"
-gcloud scheduler jobs pause clipstitchr-media-worker-every-10m \
+gcloud scheduler jobs pause clipstitchr-media-worker-recovery-sweep \
   --location "$SCHEDULER_REGION"
 ```
 
@@ -340,7 +343,6 @@ npx convex deploy
 Confirm the production Convex dashboard shows these cron jobs:
 
 - `plan core daily automation`
-- `dispatch core provider automation`
 
 4. Set Vercel production environment variables and deploy/promote the
    production Next.js app. Production Vercel must use the production Convex URL:
@@ -426,10 +428,11 @@ gcloud run jobs execute clipstitchr-media-worker \
 The second command should complete successfully. If no production `mediaJobs`
 are queued, it should log `Media worker processed 0 job(s).`
 
-8. Resume the Scheduler after the production worker succeeds:
+8. Resume the optional Scheduler after the production worker succeeds, if you
+   kept one:
 
 ```bash
-gcloud scheduler jobs resume clipstitchr-media-worker-every-10m \
+gcloud scheduler jobs resume clipstitchr-media-worker-recovery-sweep \
   --location "$SCHEDULER_REGION"
 ```
 

@@ -174,9 +174,11 @@ while work is still running sees that background AI work is queued or running.
 After completion, the final asset appears in the normal Library/Avatar views.
 
 Manual job creation also requests an immediate Cloud Run worker execution
-through a Convex internal dispatcher. The 10-minute scheduler remains as
-recovery, but user-clicked Swapr, Clipr, avatar photo generation, upload
-normalization, and upload analysis should not wait for the schedule tick.
+through a Convex internal dispatcher. The dispatcher also schedules a coalesced
+delayed recovery launch 10 minutes after the launch target, and bounded workers
+request a short continuation launch when they process a full batch. User-clicked
+Swapr, Clipr, avatar photo generation, upload normalization, and upload analysis
+should not wait for an external schedule tick.
 
 Durability starts after the source upload and job creation finish. If the user
 closes the browser before a brand-new local video or source image finishes
@@ -195,8 +197,8 @@ Deployed Preview/dev worker jobs:
 
 | Job | Schedule | Secret boundary |
 | --- | --- | --- |
-| `clipstitchr-provider-worker` | Convex immediate dispatch plus Cloud Scheduler every 10 minutes | `PROVIDER_WORKER_SECRET` plus Replicate/R2 secrets |
-| `clipstitchr-media-worker` | Convex immediate dispatch plus Cloud Scheduler every 10 minutes | `MEDIA_WORKER_SECRET` plus R2 secrets |
+| `clipstitchr-provider-worker` | Convex immediate dispatch plus coalesced delayed recovery and bounded continuations | `PROVIDER_WORKER_SECRET` plus Replicate/R2 secrets |
+| `clipstitchr-media-worker` | Convex immediate dispatch plus coalesced delayed recovery and bounded continuations | `MEDIA_WORKER_SECRET` plus R2 secrets |
 
 The provider secret was generated with `openssl rand -base64 32`, written to
 Convex and Google Secret Manager without printing it, and granted only to the
@@ -234,8 +236,9 @@ CLOUD_RUN_DISPATCH_PRIVATE_KEY=...
 
 Operational notes:
 
-- Trigger immediately from the coalesced Convex dispatcher; keep the short
-  schedule only as a recovery sweep.
+- Trigger immediately from the coalesced Convex dispatcher. Keep any external
+  Cloud Scheduler sweep slow and optional because Convex delayed recovery now
+  covers normal missed dispatch and stale-lock recovery.
 - Keep max jobs bounded so one execution cannot monopolize provider spend.
 - Use Secret Manager for secrets and IAM for deploy/run access.
 - Logs should include task IDs and tool names, never secret values.

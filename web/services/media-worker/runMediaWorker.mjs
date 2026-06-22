@@ -1562,6 +1562,13 @@ async function runLoop({ client, config, r2 }) {
   }
 }
 
+async function requestMediaWorkerContinuation({ client, config }) {
+  await client.mutation(api.mediaWorkerLaunch.requestContinuation, {
+    secret: config.mediaWorkerSecret,
+    requestedAt: new Date().toISOString(),
+  });
+}
+
 async function main() {
   await loadWorkerEnv();
 
@@ -1585,6 +1592,10 @@ async function main() {
       maxJobs: args.maxJobs,
       r2,
     });
+
+    if (processedCount === args.maxJobs) {
+      await requestMediaWorkerContinuation({ client, config });
+    }
 
     console.log(`Media worker processed ${processedCount} job(s).`);
     return;

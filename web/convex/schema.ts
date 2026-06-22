@@ -534,6 +534,7 @@ export default defineSchema({
   workerLaunchState: defineTable({
     worker: v.union(v.literal("media"), v.literal("provider")),
     lastRequestedAt: v.string(),
+    lastRecoveryRequestedAt: v.optional(v.string()),
     updatedAt: v.string(),
   }).index("by_worker", ["worker"]),
   notifications: defineTable({

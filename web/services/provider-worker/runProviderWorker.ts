@@ -3210,6 +3210,19 @@ async function runLoop({
   }
 }
 
+async function requestProviderWorkerContinuation({
+  client,
+  config,
+}: {
+  client: ConvexHttpClient;
+  config: ProviderWorkerConfig;
+}) {
+  await client.mutation(api.providerWorkerLaunch.requestContinuation, {
+    secret: config.providerWorkerSecret,
+    requestedAt: getNow(),
+  });
+}
+
 async function main() {
   const args = readArgs();
 
@@ -3230,6 +3243,10 @@ async function main() {
       config,
       maxJobs: args.maxJobs,
     });
+
+    if (processedCount === args.maxJobs) {
+      await requestProviderWorkerContinuation({ client, config });
+    }
 
     console.log(`Processed ${processedCount} provider job(s).`);
     return;

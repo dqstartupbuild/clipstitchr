@@ -131,8 +131,10 @@ Recommended starting options:
 
 The current Preview/dev deployment uses a Cloud Run Job named
 `clipstitchr-media-worker` with `npm run media-worker -- --once --max-jobs=3`.
-Convex dispatches that job immediately when media work is queued and the
-10-minute Cloud Scheduler trigger remains as a recovery sweep.
+Convex dispatches that job immediately when media work is queued and schedules a
+coalesced delayed recovery launch 10 minutes after the launch target. See
+`docs/backend/worker-dispatch-recovery.md` for the current recovery model and
+future queue-based dispatch option.
 
 Avoid these as the primary media worker:
 
@@ -276,25 +278,28 @@ The coalescing gate is required because one user action can create many jobs. A
 20-video upload or 20-UGC Stitchr batch should not launch 20 Cloud Run Job
 executions.
 
-Planned coalescing behavior:
+Implemented coalescing behavior:
 
 1. Media job creation writes the durable `mediaJobs` record first.
 2. A Convex dispatcher requests execution after job creation.
 3. The dispatcher checks the `workerLaunchState` coordination record.
-4. If an immediate launch was requested within the last 15 seconds, the dispatcher does
-   nothing.
-5. Otherwise, the dispatcher records `lastRequestedAt`, then calls the Cloud
-   Run Jobs API.
-6. The Cloud Run Job processes a bounded batch with `--once --max-jobs=N`.
-7. If jobs remain after the batch, the worker or dispatcher can request another
-   launch after the coalescing window.
+4. If an immediate launch was requested within the last 15 seconds, the
+   dispatcher coalesces the primary launch.
+5. Otherwise, the dispatcher records `lastRequestedAt`, then schedules the
+   Cloud Run Jobs API dispatch.
+6. The dispatcher records `lastRecoveryRequestedAt` and schedules one delayed
+   recovery dispatch 10 minutes after the launch target, coalesced per worker.
+7. The Cloud Run Job processes a bounded batch with `--once --max-jobs=N`.
+8. If a worker processes exactly `maxJobs`, it requests a short delayed
+   continuation launch so larger bursts can keep draining.
 
 Correctness comes from Convex job claiming, not from the launcher. It is safe if
 two Cloud Run Job executions overlap because each worker must atomically claim a
 queued job before processing it.
 
-The scheduler interval is still useful for stale-lock recovery and missed
-dispatches, but manual user actions should not wait for the scheduler.
+An external Cloud Scheduler sweep is optional after coalesced delayed recovery
+is deployed. Keep it only as a slow disaster-recovery sweep; manual user actions
+should not wait for it.
 
 ## Production Checklist
 
