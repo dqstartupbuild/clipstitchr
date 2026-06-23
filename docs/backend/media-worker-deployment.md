@@ -79,6 +79,8 @@ Run, include them in the worker container image. The startup check requires
 `libx264` and AAC encoding. Stitchr text overlays additionally need an FFmpeg
 build with the `drawtext` filter. Override binary paths with
 `MEDIA_WORKER_FFMPEG_PATH` and `MEDIA_WORKER_FFPROBE_PATH` only when needed.
+Normalization keeps the first video stream and first audio stream only, so
+mobile uploads with extra unsupported camera audio tracks can still process.
 
 To check local text-overlay support:
 

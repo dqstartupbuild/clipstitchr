@@ -634,7 +634,7 @@ async function assertFfmpegAvailable(config) {
 async function normalizeVideo({ config, inputPath, outputPath, stripAudio = false }) {
   const audioArgs = stripAudio
     ? ["-an"]
-    : ["-map", "0:a?", "-c:a", "aac", "-b:a", "128k"];
+    : ["-map", "0:a:0?", "-c:a", "aac", "-b:a", "128k"];
 
   await runFfmpeg(config, [
     "-y",

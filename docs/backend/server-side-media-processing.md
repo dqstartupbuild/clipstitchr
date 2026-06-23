@@ -139,6 +139,9 @@ needs media encoding:
 - R2 source objects are downloaded to scratch disk before processing.
 - FFmpeg performs server-side H.264/AAC encoding, normalization, posters, and
   concatenation for jobs that produce rendered media.
+- Normalization maps the first video stream and the first audio stream only. This
+  preserves normal clip audio while ignoring extra unsupported camera-side audio
+  tracks that can appear in phone uploads.
 - Completed output and poster files are uploaded back to R2.
 - Scratch files are deleted after completion or failure cleanup.
 
