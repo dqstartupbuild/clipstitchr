@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { internalAction } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
+import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 
 type GoogleAccessTokenResponse = {
   access_token?: unknown;
@@ -135,35 +136,49 @@ async function getAccessToken() {
   return body.access_token;
 }
 
+async function dispatchCloudRunWorker(worker: "media" | "provider") {
+  const projectId = getRequiredEnv("CLOUD_RUN_PROJECT_ID");
+  const location = getRequiredEnv("CLOUD_RUN_LOCATION");
+  const jobName = getWorkerJobName(worker);
+  const token = await getAccessToken();
+  const response = await fetch(
+    `https://run.googleapis.com/v2/projects/${projectId}/locations/${location}/jobs/${jobName}:run`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: "{}",
+    },
+  );
+  const body = (await response.json()) as CloudRunJobRunResponse;
+
+  if (!response.ok) {
+    throw new Error(`Cloud Run ${worker} worker dispatch failed.`);
+  }
+
+  return {
+    worker,
+    executionName: typeof body.name === "string" ? body.name : null,
+  };
+}
+
 export const runWorker = internalAction({
   args: {
     worker: v.union(v.literal("media"), v.literal("provider")),
   },
-  handler: async (_ctx, { worker }) => {
-    const projectId = getRequiredEnv("CLOUD_RUN_PROJECT_ID");
-    const location = getRequiredEnv("CLOUD_RUN_LOCATION");
-    const jobName = getWorkerJobName(worker);
-    const token = await getAccessToken();
-    const response = await fetch(
-      `https://run.googleapis.com/v2/projects/${projectId}/locations/${location}/jobs/${jobName}:run`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: "{}",
-      },
-    );
-    const body = (await response.json()) as CloudRunJobRunResponse;
+  handler: async (_ctx, { worker }) => await dispatchCloudRunWorker(worker),
+});
 
-    if (!response.ok) {
-      throw new Error(`Cloud Run ${worker} worker dispatch failed.`);
-    }
+export const runWorkerFromApi = action({
+  args: {
+    secret: v.string(),
+    worker: v.union(v.literal("media"), v.literal("provider")),
+  },
+  handler: async (_ctx, { secret, worker }) => {
+    assertAutomationWorkerSecret(secret);
 
-    return {
-      worker,
-      executionName: typeof body.name === "string" ? body.name : null,
-    };
+    return await dispatchCloudRunWorker(worker);
   },
 });

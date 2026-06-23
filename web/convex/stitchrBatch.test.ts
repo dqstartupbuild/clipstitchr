@@ -154,14 +154,20 @@ function createProduct() {
   };
 }
 
-async function planBatch(existingTasks: unknown[]) {
+async function planBatch(
+  existingTasks: unknown[],
+  overrides: Partial<Record<string, string | number>> = {},
+) {
   const ctx = createCtx({
     automationTasks: [{ collect: existingTasks }],
   });
-  const result = await getHandler<Record<string, string>, unknown>(plan)(ctx, {
+  const result = await getHandler<Record<string, string | number>, unknown>(
+    plan,
+  )(ctx, {
     batchDate: "2026-06-23",
     now,
     ownerId: "user_123",
+    ...overrides,
     secret: "automation-secret",
   });
 
@@ -175,7 +181,9 @@ describe("stitchrBatch.plan existing runs", () => {
   });
 
   it("returns active queued task IDs and relaunches the provider worker", async () => {
-    const { result } = await planBatch([createTask()]);
+    const { result } = await planBatch([createTask()], {
+      providerLaunchDelayMs: 60000,
+    });
 
     expect(result).toEqual(
       expect.objectContaining({
@@ -186,6 +194,7 @@ describe("stitchrBatch.plan existing runs", () => {
     );
     expect(mocks.requestWorkerLaunch).toHaveBeenCalledWith(
       expect.objectContaining({
+        delayMs: 60000,
         now,
         worker: "provider",
       }),
@@ -287,10 +296,11 @@ describe("stitchrBatch.plan existing runs", () => {
       ],
     });
 
-    await getHandler<Record<string, string>, unknown>(plan)(ctx, {
+    await getHandler<Record<string, string | number>, unknown>(plan)(ctx, {
       batchDate: "2026-06-22",
       now,
       ownerId: "user_123",
+      providerLaunchDelayMs: 60000,
       secret: "automation-secret",
     });
 
@@ -301,6 +311,13 @@ describe("stitchrBatch.plan existing runs", () => {
         count: 1,
         key: "user_123:2026-06-22",
         throws: true,
+      }),
+    );
+    expect(mocks.requestWorkerLaunch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        delayMs: 60000,
+        now,
+        worker: "provider",
       }),
     );
   });

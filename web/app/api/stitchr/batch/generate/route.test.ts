@@ -4,6 +4,7 @@ import { POST } from "@/app/api/stitchr/batch/generate/route";
 
 const mocks = vi.hoisted(() => {
   const convex = {
+    action: vi.fn(),
     mutation: vi.fn(),
     query: vi.fn(),
   };
@@ -29,6 +30,9 @@ vi.mock("@/convex/_generated/api", () => ({
     },
     stitchrBatch: {
       plan: "stitchrBatch.plan",
+    },
+    workerDispatch: {
+      runWorkerFromApi: "workerDispatch.runWorkerFromApi",
     },
   },
 }));
@@ -113,6 +117,10 @@ describe("POST /api/stitchr/batch/generate", () => {
     vi.clearAllMocks();
     mocks.getAuthenticatedConvexToken.mockResolvedValue("convex-token");
     mocks.getAuthenticatedUserId.mockResolvedValue("user_123");
+    mocks.convex.action.mockResolvedValue({
+      executionName: "clipstitchr-provider-worker-abcde",
+      worker: "provider",
+    });
     mocks.convex.mutation.mockImplementation((name: unknown) => {
       if (name === api.stitchrBatch.plan) {
         return Promise.resolve({
@@ -160,6 +168,7 @@ describe("POST /api/stitchr/batch/generate", () => {
         count: 2,
         hookPlanCount: 0,
         hookPlanStatus: "skipped",
+        providerDispatchStatus: "dispatched",
         runId: "stitchr-batch:user_123:2026-06-17",
         status: "running",
         taskIds: ["task_1", "task_2"],
@@ -170,8 +179,46 @@ describe("POST /api/stitchr/batch/generate", () => {
       expect.objectContaining({
         secret: "automation-secret",
         ownerId: "user_123",
+        providerLaunchDelayMs: 60000,
       }),
     );
+    expect(mocks.convex.action).toHaveBeenCalledWith(
+      api.workerDispatch.runWorkerFromApi,
+      {
+        secret: "automation-secret",
+        worker: "provider",
+      },
+    );
+  });
+
+  it("does not dispatch the provider when planning returns no active tasks", async () => {
+    mocks.convex.mutation.mockImplementation((name: unknown) => {
+      if (name === api.stitchrBatch.plan) {
+        return Promise.resolve({
+          hookPlanningTaskIds: [],
+          message: "Today's Stitchr batch is already completed.",
+          runId: "stitchr-batch:user_123:2026-06-17",
+          status: "completed",
+          taskIds: [],
+        });
+      }
+
+      return Promise.resolve(undefined);
+    });
+
+    const response = await POST();
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual(
+      expect.objectContaining({
+        count: 0,
+        providerDispatchStatus: "skipped",
+        status: "completed",
+        taskIds: [],
+      }),
+    );
+    expect(mocks.convex.action).not.toHaveBeenCalled();
   });
 
   it("plans batch hooks once and saves the returned per-task options", async () => {
@@ -244,6 +291,21 @@ describe("POST /api/stitchr/batch/generate", () => {
             demoClipId: "demo_task_1",
           }),
         ]),
+      }),
+    );
+  });
+
+  it("keeps the batch response successful when direct provider dispatch fails", async () => {
+    mocks.convex.action.mockRejectedValueOnce(new Error("Cloud Run is busy"));
+
+    const response = await POST();
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual(
+      expect.objectContaining({
+        providerDispatchStatus: "fallback_scheduled",
+        status: "running",
       }),
     );
   });

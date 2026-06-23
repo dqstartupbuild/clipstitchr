@@ -8,6 +8,7 @@ export type GenerateStitchrBatchResult = {
   hookPlanCount?: number;
   hookPlanStatus?: string;
   message?: string;
+  providerDispatchStatus?: string;
   runId: string;
   status: string;
   taskIds: string[];

@@ -7,14 +7,16 @@ are created. The planner sees every selected UGC/demo pair in the run, writes
 distinct hook options for each stitch, and saves those options before the media
 worker finishes the videos.
 
-The worker path still stays durable. If the foreground planner fails or misses a
+The worker path still stays durable. The API route schedules a delayed provider
+fallback when tasks are created, then tries to run the provider worker directly
+after foreground hook planning. If the foreground planner fails or misses a
 task, the provider worker uses the existing per-stitch text generation fallback
 for only that task and saves the fallback hook into the same history table.
 
 ## How It Works
 
 1. `POST /api/stitchr/batch/generate` creates Stitchr automation tasks through
-   `convex/stitchrBatch.ts`.
+   `convex/stitchrBatch.ts` and requests a delayed provider fallback launch.
 2. The route reads the new task snapshots through
    `convex/stitchrHookPlans.listBatchPlanningInputs`.
 3. Template-covered tasks are skipped because the template already supplies the
@@ -25,10 +27,12 @@ for only that task and saves the fallback hook into the same history table.
    contexts.
 6. Parsed per-task plans are saved to `stitchrHookPlans` with source
    `batch_planner`.
-7. Provider workers query `stitchrHookPlans.getByAutomationTaskForProvider`.
+7. The route calls `convex/workerDispatch.runWorkerFromApi` so the provider
+   worker starts immediately when active task IDs exist.
+8. Provider workers query `stitchrHookPlans.getByAutomationTaskForProvider`.
    Usable saved plans skip per-stitch writing. Missing, failed, or unusable
    plans fall back to `createCliprTextGeneration`.
-8. Worker fallback generations are saved with source `worker_fallback`.
+9. Worker fallback generations are saved with source `worker_fallback`.
 
 ## Hook History
 
@@ -59,6 +63,10 @@ Lab is visible because it is active writing memory, not a hidden product detail.
 ## File Tree
 
 - `web/app/api/stitchr/batch/generate/route.ts` runs the API-first planner.
+- `web/lib/clipstitchr/server/stitchr/dispatchStitchrBatchProviderWorkerFromApi.ts`
+  directly starts the provider Cloud Run job through Convex.
+- `web/lib/clipstitchr/constants/stitchrBatchProviderFallbackLaunchDelayMs.ts`
+  stores the delayed provider fallback timing.
 - `web/convex/stitchrHookPlans.ts` owns hook-plan reads, writes, and feedback.
 - `web/convex/schema.ts` defines the `stitchrHookPlans` table.
 - `web/lib/clipstitchr/server/createStitchrBatchHookGeneration.ts` calls the
@@ -77,6 +85,11 @@ Lab is visible because it is active writing memory, not a hidden product detail.
 ## Failure Behavior
 
 - Batch task creation remains the source of durability.
+- Task creation schedules a delayed provider fallback before foreground hook
+  planning starts, so a route failure still leaves a worker launch behind.
+- After hook planning, the route directly dispatches the provider Cloud Run job
+  through Convex. If direct dispatch fails, the API response remains successful
+  with `providerDispatchStatus: "fallback_scheduled"`.
 - Planner failure records failed hook-plan rows when possible and still returns
   the batch response, because workers can fall back per stitch.
 - Worker fallback only runs for tasks without a usable saved plan.
@@ -99,4 +112,11 @@ planning is rate-limited, and existing-run recovery:
 ```bash
 cd web
 npx vitest run app/api/stitchr/batch/generate/route.test.ts convex/stitchrBatch.test.ts convex/mediaJobs.test.ts
+```
+
+Direct-dispatch fallback coverage lives in:
+
+```bash
+cd web
+npx vitest run app/api/stitchr/batch/generate/route.test.ts convex/stitchrBatch.test.ts convex/workerLaunch.test.ts
 ```

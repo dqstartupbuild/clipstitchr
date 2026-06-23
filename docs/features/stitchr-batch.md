@@ -15,8 +15,9 @@ scheduled Stitchr automation.
   random text.
 - Lets the user choose Batch text style, text color, background color, and
   outline color, including `Any` choices that vary drafts automatically.
-- Launches the provider worker after tasks are queued so the drafts can move
-  through the existing provider and media worker flow.
+- Schedules a delayed provider-worker fallback when tasks are queued, then the
+  API route dispatches the provider worker directly after foreground hook
+  planning so drafts start without waiting for the fallback.
 - Saves finished drafts as normal Stitch library items, not as automation-owned
   outputs.
 - Uses the saved product's Hook Lab examples when it generates text for drafts
@@ -37,8 +38,10 @@ scheduled Stitchr automation.
    `/api/stitchr/batch/generate`.
 6. The API route authenticates the user, reads the selected Batch text style
    and browser time zone, asks Convex to plan the daily Stitchr batch for that
-   local date, and returns the queued task IDs.
-7. Finished drafts appear in the user's library after the existing provider and
+   local date, and schedules a delayed provider-worker fallback.
+7. The route plans hooks in the foreground when the batch needs generated text,
+   then directly dispatches the provider Cloud Run job through Convex.
+8. Finished drafts appear in the user's library after the existing provider and
    media workers complete them.
 
 ## Text Style Behavior
@@ -108,6 +111,27 @@ The API route converts Convex rate-limit errors into HTTP `429` responses with
 retry timing. The current limits and verification notes are tracked in
 `docs/backend/rate-limits.md`.
 
+## Dispatch Behavior
+
+`stitchrBatch.plan` is still the durable source of truth. It creates or repairs
+Batch tasks and asks `workerLaunch` for a delayed provider fallback. The
+foreground API route then tries the faster path:
+
+1. Create or recover active Stitchr Batch tasks.
+2. Plan hooks directly for tasks without template text.
+3. Call `workerDispatch.runWorkerFromApi` to run the provider Cloud Run job
+   immediately.
+4. Return success even if the direct dispatch fails, because the delayed
+   provider fallback is already scheduled.
+
+The JSON response includes `providerDispatchStatus`:
+
+- `dispatched` means the direct provider dispatch call succeeded.
+- `fallback_scheduled` means direct dispatch failed but the delayed fallback
+  remains queued.
+- `skipped` means Convex returned no active task IDs, such as an already
+  completed daily batch.
+
 ## Relevant Code
 
 - `web/app/dashboard/stitchr/StitchrPageClient.tsx` owns the page mode,
@@ -118,8 +142,9 @@ retry timing. The current limits and verification notes are tracked in
   Batch text style and color controls.
 - `web/app/_components/stitchr/StitchrModeToggle.tsx` exposes Batch, Normal,
   and Longr modes.
-- `web/app/api/stitchr/batch/generate/route.ts` authenticates the user and
-  asks Convex to plan the run.
+- `web/app/api/stitchr/batch/generate/route.ts` authenticates the user, asks
+  Convex to plan the run, plans hooks, and directly dispatches the provider
+  worker when active tasks exist.
 - `web/lib/clipstitchr/server/stitchr/getStitchrBatchDate.ts` converts the
   request timestamp into the user's browser-local batch date.
 - `web/lib/clipstitchr/server/readStitchrBatchGenerateRequest.ts` reads the
@@ -129,8 +154,16 @@ retry timing. The current limits and verification notes are tracked in
   wrapper for the Batch API route.
 - `web/lib/clipstitchr/client/getBrowserTimeZone.ts` reads the browser IANA
   time zone for the Batch API request.
-- `web/convex/stitchrBatch.ts` plans the tasks and requests a provider worker
-  launch.
+- `web/lib/clipstitchr/constants/stitchrBatchProviderFallbackLaunchDelayMs.ts`
+  stores the delayed fallback timing used by the Batch API route.
+- `web/lib/clipstitchr/server/stitchr/dispatchStitchrBatchProviderWorkerFromApi.ts`
+  calls the Convex action that directly starts the provider Cloud Run job.
+- `web/convex/stitchrBatch.ts` plans the tasks and requests the delayed
+  provider fallback launch.
+- `web/convex/workerDispatch.ts` owns the direct Cloud Run dispatch action used
+  by the Batch API route and the scheduled worker fallback action.
+- `web/convex/workerLaunch.ts` schedules the delayed fallback and coalesced
+  recovery dispatches.
 - `web/lib/clipstitchr/server/stitchr/getStitchrBatchRateLimitKey.ts` keeps
   the planning and media-worker final-save quota keys aligned by owner and
   batch date.
@@ -158,7 +191,9 @@ web/app/dashboard/stitchr/StitchrPageClient.tsx
 web/lib/clipstitchr/client/generateStitchrBatch.ts
 web/lib/clipstitchr/client/getBrowserTimeZone.ts
 web/lib/clipstitchr/constants/stitchrBatchGenerationLimits.ts
+web/lib/clipstitchr/constants/stitchrBatchProviderFallbackLaunchDelayMs.ts
 web/lib/clipstitchr/server/readStitchrBatchGenerateRequest.ts
+web/lib/clipstitchr/server/stitchr/dispatchStitchrBatchProviderWorkerFromApi.ts
 web/lib/clipstitchr/server/stitchr/getStitchrBatchDate.ts
 web/lib/clipstitchr/server/stitchr/getStitchrBatchDate.test.ts
 web/lib/clipstitchr/types/SavedStitchrMode.ts
@@ -168,6 +203,8 @@ web/convex/automationStitchr.ts
 web/convex/automationStitchrPairScoring.ts
 web/convex/recordStitchrBatchPairHistory.ts
 web/convex/rateLimiter.ts
+web/convex/workerDispatch.ts
+web/convex/workerLaunch.ts
 web/lib/clipstitchr/server/stitchr/getStitchrBatchRateLimitKey.ts
 web/convex/stitchTemplates/getStitchTemplateBatchTextOverlay.ts
 web/convex/stitchrBatch.ts

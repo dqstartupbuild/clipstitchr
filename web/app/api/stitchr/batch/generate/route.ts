@@ -7,9 +7,11 @@ import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticate
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createStitchrBatchHookGeneration } from "@/lib/clipstitchr/server/createStitchrBatchHookGeneration";
 import { createStitchrBatchHookPlanningInputFromTask } from "@/lib/clipstitchr/server/createStitchrBatchHookPlanningInputFromTask";
+import { stitchrBatchProviderFallbackLaunchDelayMs } from "@/lib/clipstitchr/constants/stitchrBatchProviderFallbackLaunchDelayMs";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { readStitchrBatchGenerateRequest } from "@/lib/clipstitchr/server/readStitchrBatchGenerateRequest";
+import { dispatchStitchrBatchProviderWorkerFromApi } from "@/lib/clipstitchr/server/stitchr/dispatchStitchrBatchProviderWorkerFromApi";
 import { getStitchrBatchDate } from "@/lib/clipstitchr/server/stitchr/getStitchrBatchDate";
 import type { ConvexHttpClient } from "convex/browser";
 
@@ -171,6 +173,7 @@ export async function POST(request?: Request) {
       ownerId: userId,
       batchDate,
       now,
+      providerLaunchDelayMs: stitchrBatchProviderFallbackLaunchDelayMs,
       ...(input.stitchrTextBackgroundColorChoice
         ? {
             stitchrTextBackgroundColorChoice:
@@ -192,6 +195,11 @@ export async function POST(request?: Request) {
       convex,
       taskIds: result.hookPlanningTaskIds ?? result.taskIds,
     });
+    const providerDispatchStatus =
+      await dispatchStitchrBatchProviderWorkerFromApi({
+        convex,
+        shouldDispatch: result.taskIds.length > 0,
+      });
 
     return Response.json({
       batchDate,
@@ -199,6 +207,7 @@ export async function POST(request?: Request) {
       hookPlanCount: hookPlan.hookPlanCount,
       hookPlanStatus: hookPlan.hookPlanStatus,
       message: result.message,
+      providerDispatchStatus,
       runId: result.runId,
       status: result.status,
       taskIds: result.taskIds,

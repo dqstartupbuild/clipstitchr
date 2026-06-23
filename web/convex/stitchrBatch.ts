@@ -124,6 +124,7 @@ export const plan = mutation({
     ownerId: v.string(),
     batchDate: v.string(),
     now: v.string(),
+    providerLaunchDelayMs: v.optional(v.number()),
     stitchrTextBackgroundColorChoice: v.optional(v.string()),
     stitchrTextColorChoice: v.optional(v.string()),
     stitchrTextStrokeColorChoice: v.optional(v.string()),
@@ -137,6 +138,7 @@ export const plan = mutation({
       ownerId,
       batchDate,
       now,
+      providerLaunchDelayMs,
       stitchrTextBackgroundColorChoice,
       stitchrTextColorChoice,
       stitchrTextStrokeColorChoice,
@@ -189,6 +191,7 @@ export const plan = mutation({
       if (shouldLaunchProvider) {
         await requestWorkerLaunch({
           ctx,
+          delayMs: providerLaunchDelayMs,
           now,
           worker: "provider",
         });
@@ -505,6 +508,7 @@ export const plan = mutation({
     if (taskIds.length > 0) {
       await requestWorkerLaunch({
         ctx,
+        delayMs: providerLaunchDelayMs,
         now,
         worker: "provider",
       });
