@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => {
     convex,
     createAuthenticatedConvexHttpClient: vi.fn(() => convex),
     createReplicateClient: vi.fn(() => ({ provider: "replicate" })),
+    createStitchScoreDetectorCandidates: vi.fn(),
     createStitchScoreOutputText: vi.fn(),
     getAuthenticatedConvexToken: vi.fn(),
     getAuthenticatedUserId: vi.fn(),
@@ -52,6 +53,10 @@ vi.mock("@/lib/clipstitchr/server/createStitchScoreOutputText", () => ({
   createStitchScoreOutputText: mocks.createStitchScoreOutputText,
 }));
 
+vi.mock("@/lib/clipstitchr/server/createStitchScoreDetectorCandidates", () => ({
+  createStitchScoreDetectorCandidates: mocks.createStitchScoreDetectorCandidates,
+}));
+
 vi.mock("@/lib/clipstitchr/server/getAuthenticatedUserId", () => ({
   getAuthenticatedUserId: mocks.getAuthenticatedUserId,
 }));
@@ -76,6 +81,14 @@ describe("POST /api/stitches/score", () => {
     mocks.getAuthenticatedUserId.mockResolvedValue("user_123");
     mocks.getAuthenticatedConvexToken.mockResolvedValue("convex-token");
     mocks.convex.mutation.mockResolvedValue(null);
+    mocks.createStitchScoreDetectorCandidates.mockResolvedValue([
+      {
+        start: 3,
+        end: 5,
+        confidence: 0.78,
+        signals: ["low-motion"],
+      },
+    ]);
     mocks.convex.query.mockImplementation(async (query) => {
       if (query === api.stitches.get) {
         return {
@@ -130,7 +143,30 @@ describe("POST /api/stitches/score", () => {
         id: "stitch_1",
         stitchScore: expect.objectContaining({
           hookToDemoFlow: 80,
+          quickEditSuggestions: expect.objectContaining({
+            candidates: [
+              {
+                start: 3,
+                end: 5,
+                confidence: 0.78,
+                signals: ["low-motion"],
+              },
+            ],
+            removeRanges: [],
+          }),
         }),
+      }),
+    );
+    expect(mocks.createStitchScoreOutputText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        detectorCandidates: [
+          {
+            start: 3,
+            end: 5,
+            confidence: 0.78,
+            signals: ["low-motion"],
+          },
+        ],
       }),
     );
   });

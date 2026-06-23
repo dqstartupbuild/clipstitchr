@@ -7,6 +7,7 @@ import { createStitchScoreVideoFallbackOutputText } from "@/lib/clipstitchr/serv
 import { createStitchScoreVideoInputs } from "@/lib/clipstitchr/server/createStitchScoreVideoInputs";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { getUploadVideoAnalysisModelId } from "@/lib/clipstitchr/server/getUploadVideoAnalysisModelId";
+import type { QuickEditCandidate } from "@/lib/clipstitchr/types/QuickEditCandidate";
 
 const STITCH_SCORE_SYSTEM_INSTRUCTION =
   "You review short-form stitched ad videos and give simple, grounded editing guidance.";
@@ -14,11 +15,13 @@ const STITCH_SCORE_SYSTEM_INSTRUCTION =
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
 export async function createStitchScoreOutputText({
+  detectorCandidates = [],
   replicate,
   sourceClips,
   stitch,
   userId,
 }: {
+  detectorCandidates?: QuickEditCandidate[];
   replicate: ReplicateClient;
   sourceClips: Doc<"videoClips">[];
   stitch: Doc<"stitches">;
@@ -45,6 +48,7 @@ export async function createStitchScoreOutputText({
       input: {
         ...(videoInputs.videos.length ? { videos: videoInputs.videos } : {}),
         prompt: createStitchScorePrompt({
+          detectorCandidates,
           sourceClips,
           stitch,
           videoInputDescription: videoInputs.videoInputDescription,
@@ -67,6 +71,7 @@ export async function createStitchScoreOutputText({
         replicate,
         sourceClips,
         stitch,
+        detectorCandidates,
         videoInput: videoInputs.videos[0],
         videoInputDescription: videoInputs.videoInputDescription,
       });
@@ -76,6 +81,7 @@ export async function createStitchScoreOutputText({
 
     return await createStitchScoreFallbackOutputText({
       posterFile: await createStitchScorePosterFile({ stitch, userId }),
+      detectorCandidates,
       replicate,
       sourceClips,
       stitch,

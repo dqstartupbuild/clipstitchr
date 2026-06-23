@@ -1,9 +1,13 @@
+import { formatQuickEditDetectorCandidatesForPrompt } from "@/lib/clipstitchr/server/formatQuickEditDetectorCandidatesForPrompt";
+import type { QuickEditCandidate } from "@/lib/clipstitchr/types/QuickEditCandidate";
 import type { UploadAssetAnalysisKind } from "@/lib/clipstitchr/types/UploadAssetAnalysisKind";
 
 export function createUploadVideoFallbackAnalysisPrompt({
+  detectorCandidates = [],
   mediaKind,
   originalName,
 }: {
+  detectorCandidates?: QuickEditCandidate[];
   mediaKind: UploadAssetAnalysisKind;
   originalName: string;
 }) {
@@ -20,6 +24,7 @@ export function createUploadVideoFallbackAnalysisPrompt({
       "Return an empty string for product, location, or action fields that do not fit the visible demo. Do not fill fields with unrelated details.",
       "Every score is 0 to 100, not 0 to 10. Use 50 to 75 for an average usable clip and only use very low scores for unusable clips.",
       "Base the score only on visible short-form posting usefulness.",
+      ...formatQuickEditDetectorCandidatesForPrompt(detectorCandidates),
       "Use quickEditSuggestions.candidates for detector-style ranges, then use removeRanges only for ranges worth reviewing in the manual cut editor.",
     ].join("\n");
   }
@@ -34,6 +39,7 @@ export function createUploadVideoFallbackAnalysisPrompt({
     "Return an empty string for person, outfit, location, or action fields that do not fit the visible UGC. Do not fill fields with unrelated details.",
     "Every score is 0 to 100, not 0 to 10. Use 50 to 75 for an average usable clip and only use very low scores for unusable clips.",
     "Base the score only on visible short-form posting usefulness.",
+    ...formatQuickEditDetectorCandidatesForPrompt(detectorCandidates),
     "Use quickEditSuggestions.candidates for detector-style ranges, then use removeRanges only for ranges worth reviewing in the manual cut editor.",
   ].join("\n");
 }

@@ -140,6 +140,10 @@ cut workflow when the score also includes conservative `removeRanges`; the clip
 card then opens the manual cut editor with **Review AI cuts** so the user can
 adjust the exact timing before saving.
 
+Before video scoring calls the provider, Quick Edit detectors sample frames and
+audio to add deterministic candidate evidence. See
+`docs/features/quick-edit-detectors.md`.
+
 ## Abuse and Rate Limits
 
 The feature uses the existing upload analysis surfaces:
@@ -178,6 +182,8 @@ Analysis prompts, parsing, and types:
 - `web/lib/clipstitchr/server/readVideoClipScoreRequest.ts`
 - `web/lib/clipstitchr/server/createClipPerformanceScorePromptLines.ts`
 - `web/lib/clipstitchr/server/createQuickEditHybridPromptLines.ts`
+- `web/lib/clipstitchr/server/createQuickEditDetectorCandidates.ts`
+- `web/lib/clipstitchr/server/formatQuickEditDetectorCandidatesForPrompt.ts`
 - `web/lib/clipstitchr/server/createUploadAnalysisPrompt.ts`
 - `web/lib/clipstitchr/server/createUploadVideoAnalysisPrompt.ts`
 - `web/lib/clipstitchr/server/getUploadAnalysisModelId.ts`
@@ -190,6 +196,7 @@ Analysis prompts, parsing, and types:
 - `web/lib/clipstitchr/utils/parseQuickEditCandidate.ts`
 - `web/lib/clipstitchr/utils/parseQuickEditCandidates.ts`
 - `web/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange.ts`
+- `web/lib/clipstitchr/utils/mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis.ts`
 
 UI:
 

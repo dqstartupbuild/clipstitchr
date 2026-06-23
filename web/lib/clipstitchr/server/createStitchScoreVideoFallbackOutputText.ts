@@ -5,17 +5,20 @@ import { createStitchScorePrompt } from "@/lib/clipstitchr/server/createStitchSc
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { getReplicatePredictionModelReference } from "@/lib/clipstitchr/server/getReplicatePredictionModelReference";
 import { getUploadVideoFallbackAnalysisModelId } from "@/lib/clipstitchr/server/getUploadVideoFallbackAnalysisModelId";
+import type { QuickEditCandidate } from "@/lib/clipstitchr/types/QuickEditCandidate";
 import { parseStitchScore } from "@/lib/clipstitchr/utils/parseStitchScore";
 
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
 export async function createStitchScoreVideoFallbackOutputText({
+  detectorCandidates = [],
   replicate,
   sourceClips,
   stitch,
   videoInput,
   videoInputDescription,
 }: {
+  detectorCandidates?: QuickEditCandidate[];
   replicate: ReplicateClient;
   sourceClips: Doc<"videoClips">[];
   stitch: Doc<"stitches">;
@@ -30,6 +33,7 @@ export async function createStitchScoreVideoFallbackOutputText({
       videoInput,
       prompt: [
         createStitchScorePrompt({
+          detectorCandidates,
           sourceClips,
           stitch,
           videoInputDescription,

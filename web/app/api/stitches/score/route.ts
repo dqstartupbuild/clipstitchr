@@ -6,11 +6,13 @@ import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/co
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createStitchScoreOutputText } from "@/lib/clipstitchr/server/createStitchScoreOutputText";
+import { createStitchScoreDetectorCandidates } from "@/lib/clipstitchr/server/createStitchScoreDetectorCandidates";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 import { readStitchScoreRequest } from "@/lib/clipstitchr/server/readStitchScoreRequest";
 import { getStitchScoreSourceClipIds } from "@/lib/clipstitchr/utils/getStitchScoreSourceClipIds";
+import { mergeQuickEditDetectorCandidatesIntoStitchScore } from "@/lib/clipstitchr/utils/mergeQuickEditDetectorCandidatesIntoStitchScore";
 import { parseStitchScore } from "@/lib/clipstitchr/utils/parseStitchScore";
 
 export const runtime = "nodejs";
@@ -50,7 +52,12 @@ export async function POST(request: Request) {
         sourceClipIds.map((id) => convex.query(api.videoClips.get, { id })),
       )
     ).filter((clip): clip is Doc<"videoClips"> => Boolean(clip));
+    const detectorCandidates = await createStitchScoreDetectorCandidates({
+      stitch,
+      userId,
+    });
     const outputText = await createStitchScoreOutputText({
+      detectorCandidates,
       replicate: createReplicateClient(),
       sourceClips,
       stitch,
@@ -61,13 +68,17 @@ export async function POST(request: Request) {
     if (!stitchScore) {
       throw new Error("The stitch score came back empty.");
     }
-
-    await convex.mutation(api.stitches.updateScore, {
-      id: stitch.id,
+    const mergedStitchScore = mergeQuickEditDetectorCandidatesIntoStitchScore({
+      detectorCandidates,
       stitchScore,
     });
 
-    return NextResponse.json({ stitchScore });
+    await convex.mutation(api.stitches.updateScore, {
+      id: stitch.id,
+      stitchScore: mergedStitchScore,
+    });
+
+    return NextResponse.json({ stitchScore: mergedStitchScore });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);
 

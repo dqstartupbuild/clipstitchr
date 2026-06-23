@@ -4,6 +4,7 @@ import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/c
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
+import { createQuickEditDetectorCandidates } from "@/lib/clipstitchr/server/createQuickEditDetectorCandidates";
 import { createUploadImageAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadImageAnalysisOutputText";
 import { createUploadVideoAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadVideoAnalysisOutputText";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
@@ -16,6 +17,7 @@ import { getUploadAnalysisKind } from "@/lib/clipstitchr/server/getUploadAnalysi
 import { parseUploadAssetAnalysis } from "@/lib/clipstitchr/server/parseUploadAssetAnalysis";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
+import { mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis } from "@/lib/clipstitchr/utils/mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis";
 
 export const runtime = "nodejs";
 
@@ -61,8 +63,12 @@ export async function POST(request: Request) {
     );
 
     const replicate = createReplicateClient();
+    const detectorCandidates = isVideoAnalysis
+      ? await createQuickEditDetectorCandidates({ file, sourceUrl })
+      : [];
     const outputText = isVideoAnalysis
       ? await createUploadVideoAnalysisOutputText({
+          detectorCandidates,
           fallbackImageFile,
           file,
           mediaKind,
@@ -78,8 +84,15 @@ export async function POST(request: Request) {
           replicate,
         });
 
+    const analysis = parseUploadAssetAnalysis(outputText, originalName);
+
     return NextResponse.json(
-      parseUploadAssetAnalysis(outputText, originalName),
+      isVideoAnalysis
+        ? mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis({
+            analysis,
+            detectorCandidates,
+          })
+        : analysis,
     );
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

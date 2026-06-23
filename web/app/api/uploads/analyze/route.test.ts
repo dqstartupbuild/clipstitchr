@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => {
   return {
     convex,
     createAuthenticatedConvexHttpClient: vi.fn(() => convex),
+    createQuickEditDetectorCandidates: vi.fn(),
     createReplicateClient: vi.fn(() => ({ provider: "replicate" })),
     createUploadImageAnalysisOutputText: vi.fn(),
     createUploadVideoAnalysisOutputText: vi.fn(),
@@ -39,6 +40,10 @@ vi.mock("@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken", () => ({
 
 vi.mock("@/lib/clipstitchr/server/createReplicateClient", () => ({
   createReplicateClient: mocks.createReplicateClient,
+}));
+
+vi.mock("@/lib/clipstitchr/server/createQuickEditDetectorCandidates", () => ({
+  createQuickEditDetectorCandidates: mocks.createQuickEditDetectorCandidates,
 }));
 
 vi.mock("@/lib/clipstitchr/server/createUploadImageAnalysisOutputText", () => ({
@@ -85,6 +90,14 @@ describe("POST /api/uploads/analyze", () => {
     mocks.getAuthenticatedUserId.mockResolvedValue("user_123");
     mocks.getAuthenticatedConvexToken.mockResolvedValue("convex-token");
     mocks.convex.mutation.mockResolvedValue(null);
+    mocks.createQuickEditDetectorCandidates.mockResolvedValue([
+      {
+        start: 1,
+        end: 3,
+        confidence: 0.8,
+        signals: ["static-frame"],
+      },
+    ]);
     mocks.createUploadVideoAnalysisOutputText.mockResolvedValue("video output");
     mocks.createUploadImageAnalysisOutputText.mockResolvedValue("image output");
     mocks.parseUploadAssetAnalysis.mockReturnValue({
@@ -117,6 +130,14 @@ describe("POST /api/uploads/analyze", () => {
     expect(mocks.createUploadVideoAnalysisOutputText).toHaveBeenCalledWith(
       expect.objectContaining({
         mediaKind: "ugc-video",
+        detectorCandidates: [
+          {
+            start: 1,
+            end: 3,
+            confidence: 0.8,
+            signals: ["static-frame"],
+          },
+        ],
         originalName: "clip.mp4",
         sourceSizeBytes: 42,
         sourceUrl: "https://r2.example/clip.mp4",

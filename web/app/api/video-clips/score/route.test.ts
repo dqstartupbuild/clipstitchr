@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => {
     convex,
     createAuthenticatedConvexHttpClient: vi.fn(() => convex),
     createFileFromR2Object: vi.fn(),
+    createQuickEditDetectorCandidates: vi.fn(),
     createReplicateClient: vi.fn(() => ({ provider: "replicate" })),
     createUploadVideoAnalysisOutputText: vi.fn(),
     getAuthenticatedConvexToken: vi.fn(),
@@ -46,6 +47,10 @@ vi.mock("@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken", () => ({
 
 vi.mock("@/lib/clipstitchr/server/createReplicateClient", () => ({
   createReplicateClient: mocks.createReplicateClient,
+}));
+
+vi.mock("@/lib/clipstitchr/server/createQuickEditDetectorCandidates", () => ({
+  createQuickEditDetectorCandidates: mocks.createQuickEditDetectorCandidates,
 }));
 
 vi.mock("@/lib/clipstitchr/server/createUploadVideoAnalysisOutputText", () => ({
@@ -118,6 +123,14 @@ describe("POST /api/video-clips/score", () => {
     mocks.createFileFromR2Object.mockResolvedValue(
       new File(["poster"], "poster.jpg", { type: "image/jpeg" }),
     );
+    mocks.createQuickEditDetectorCandidates.mockResolvedValue([
+      {
+        start: 2,
+        end: 4,
+        confidence: 0.82,
+        signals: ["silence", "long-pause"],
+      },
+    ]);
     mocks.createUploadVideoAnalysisOutputText.mockResolvedValue("video output");
     mocks.parseUploadAssetAnalysis.mockReturnValue({
       performanceScore: {
@@ -149,6 +162,14 @@ describe("POST /api/video-clips/score", () => {
     expect(mocks.createUploadVideoAnalysisOutputText).toHaveBeenCalledWith(
       expect.objectContaining({
         fallbackImageFile: expect.any(File),
+        detectorCandidates: [
+          {
+            start: 2,
+            end: 4,
+            confidence: 0.82,
+            signals: ["silence", "long-pause"],
+          },
+        ],
         mediaKind: "ugc-video",
         originalName: "ugc.mp4",
         sourceSizeBytes: 100,
@@ -161,6 +182,24 @@ describe("POST /api/video-clips/score", () => {
         id: "clip_1",
         performanceScore: expect.objectContaining({ overall: 86 }),
         updatedAt: expect.any(String),
+      }),
+    );
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.videoClips.updatePerformanceScore,
+      expect.objectContaining({
+        performanceScore: expect.objectContaining({
+          quickEditSuggestions: expect.objectContaining({
+            candidates: [
+              {
+                start: 2,
+                end: 4,
+                confidence: 0.82,
+                signals: ["silence", "long-pause"],
+              },
+            ],
+            removeRanges: [],
+          }),
+        }),
       }),
     );
   });

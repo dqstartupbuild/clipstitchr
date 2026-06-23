@@ -62,6 +62,10 @@ not show **Improve stitch**. The action appears only when the suggestion also
 contains an actual editable change such as a trim, cut range, overlay text, or
 crop metadata.
 
+When a saved rendered Stitch MP4 is available, Quick Edit detectors sample its
+frames and audio before provider scoring and merge the resulting candidate
+evidence into the saved score. See `docs/features/quick-edit-detectors.md`.
+
 ## Data Shape
 
 Stored fields:
@@ -157,6 +161,8 @@ API, prompt, parsing, and client call:
 - `web/lib/clipstitchr/server/createStitchScorePosterFile.ts`
 - `web/lib/clipstitchr/server/createStitchScorePrompt.ts`
 - `web/lib/clipstitchr/server/createQuickEditHybridPromptLines.ts`
+- `web/lib/clipstitchr/server/createStitchScoreDetectorCandidates.ts`
+- `web/lib/clipstitchr/server/formatQuickEditDetectorCandidatesForPrompt.ts`
 - `web/lib/clipstitchr/server/createStitchScoreVideoInputs.ts`
 - `web/lib/clipstitchr/server/formatStitchScoreSourceClipContext.ts`
 - `web/lib/clipstitchr/server/readStitchScoreRequest.ts`
@@ -171,6 +177,7 @@ API, prompt, parsing, and client call:
 - `web/lib/clipstitchr/utils/parseQuickEditCandidate.ts`
 - `web/lib/clipstitchr/utils/parseQuickEditCandidates.ts`
 - `web/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange.ts`
+- `web/lib/clipstitchr/utils/mergeQuickEditDetectorCandidatesIntoStitchScore.ts`
 
 UI:
 

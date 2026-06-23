@@ -4,6 +4,7 @@ import { createReplicateInputFile } from "@/lib/clipstitchr/server/createReplica
 import { createStitchScorePrompt } from "@/lib/clipstitchr/server/createStitchScorePrompt";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { getUploadAnalysisModelId } from "@/lib/clipstitchr/server/getUploadAnalysisModelId";
+import type { QuickEditCandidate } from "@/lib/clipstitchr/types/QuickEditCandidate";
 
 const STITCH_SCORE_FALLBACK_SYSTEM_PROMPT =
   "You review short-form stitched ad videos from a poster frame, saved settings, and source notes. Give simple, grounded editing guidance.";
@@ -11,11 +12,13 @@ const STITCH_SCORE_FALLBACK_SYSTEM_PROMPT =
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
 export async function createStitchScoreFallbackOutputText({
+  detectorCandidates = [],
   posterFile,
   replicate,
   sourceClips,
   stitch,
 }: {
+  detectorCandidates?: QuickEditCandidate[];
   posterFile?: File;
   replicate: ReplicateClient;
   sourceClips: Doc<"videoClips">[];
@@ -33,6 +36,7 @@ export async function createStitchScoreFallbackOutputText({
     input: {
       ...(posterInput ? { image_input: [posterInput] } : {}),
       prompt: createStitchScorePrompt({
+        detectorCandidates,
         sourceClips,
         stitch,
         videoInputDescription: posterInput

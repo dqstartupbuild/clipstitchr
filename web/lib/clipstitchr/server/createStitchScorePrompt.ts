@@ -1,12 +1,16 @@
 import type { Doc } from "@/convex/_generated/dataModel";
 import { createQuickEditHybridPromptLines } from "@/lib/clipstitchr/server/createQuickEditHybridPromptLines";
+import { formatQuickEditDetectorCandidatesForPrompt } from "@/lib/clipstitchr/server/formatQuickEditDetectorCandidatesForPrompt";
 import { formatStitchScoreSourceClipContext } from "@/lib/clipstitchr/server/formatStitchScoreSourceClipContext";
+import type { QuickEditCandidate } from "@/lib/clipstitchr/types/QuickEditCandidate";
 
 export function createStitchScorePrompt({
+  detectorCandidates = [],
   sourceClips,
   stitch,
   videoInputDescription,
 }: {
+  detectorCandidates?: QuickEditCandidate[];
   sourceClips: Doc<"videoClips">[];
   stitch: Doc<"stitches">;
   videoInputDescription: string;
@@ -44,6 +48,9 @@ export function createStitchScorePrompt({
     "- quickEditSuggestions should be concrete enough for non-destructive edits that a user can review before saving.",
     "- Use removeRanges for boring internal sections. Use trimStart for dead air at the beginning and trimEnd when the payoff is complete.",
     ...createQuickEditHybridPromptLines().map((line) => `- ${line}`),
+    ...formatQuickEditDetectorCandidatesForPrompt(detectorCandidates).map(
+      (line) => `- ${line}`,
+    ),
     "- Use overlayText.replaceWith when the stitch needs a stronger short hook.",
     "- Use crop.mode smart-9x16 only when black bars or weak framing clearly hurt the finished video.",
     "- Keep every note short, human, and useful.",

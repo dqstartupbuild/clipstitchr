@@ -5,16 +5,19 @@ import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/ser
 import { getReplicatePredictionModelReference } from "@/lib/clipstitchr/server/getReplicatePredictionModelReference";
 import { getUploadVideoFallbackAnalysisModelId } from "@/lib/clipstitchr/server/getUploadVideoFallbackAnalysisModelId";
 import { parseUploadAssetAnalysis } from "@/lib/clipstitchr/server/parseUploadAssetAnalysis";
+import type { QuickEditCandidate } from "@/lib/clipstitchr/types/QuickEditCandidate";
 import type { UploadAssetAnalysisKind } from "@/lib/clipstitchr/types/UploadAssetAnalysisKind";
 
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
 export async function createUploadVideoFallbackAnalysisOutputText({
+  detectorCandidates = [],
   mediaKind,
   originalName,
   replicate,
   videoInput,
 }: {
+  detectorCandidates?: QuickEditCandidate[];
   mediaKind: UploadAssetAnalysisKind;
   originalName: string;
   replicate: ReplicateClient;
@@ -27,6 +30,7 @@ export async function createUploadVideoFallbackAnalysisOutputText({
     input: createQwenVideoFallbackPredictionInput({
       videoInput,
       prompt: createUploadVideoFallbackAnalysisPrompt({
+        detectorCandidates,
         mediaKind,
         originalName,
       }),

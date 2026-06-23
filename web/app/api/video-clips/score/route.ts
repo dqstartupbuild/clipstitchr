@@ -3,6 +3,7 @@ import { api } from "@/convex/_generated/api";
 import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
+import { createQuickEditDetectorCandidates } from "@/lib/clipstitchr/server/createQuickEditDetectorCandidates";
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createUploadVideoAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadVideoAnalysisOutputText";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
@@ -14,6 +15,7 @@ import { createFileFromR2Object } from "@/lib/clipstitchr/server/r2/createFileFr
 import { getR2DownloadSignedUrl } from "@/lib/clipstitchr/server/r2/getR2DownloadSignedUrl";
 import { readVideoClipScoreRequest } from "@/lib/clipstitchr/server/readVideoClipScoreRequest";
 import { getClipCanBeScored } from "@/lib/clipstitchr/utils/getClipCanBeScored";
+import { mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis } from "@/lib/clipstitchr/utils/mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis";
 
 export const runtime = "nodejs";
 
@@ -63,7 +65,11 @@ export async function POST(request: Request) {
           userId,
         }).catch(() => undefined)
       : undefined;
+    const detectorCandidates = await createQuickEditDetectorCandidates({
+      sourceUrl,
+    });
     const outputText = await createUploadVideoAnalysisOutputText({
+      detectorCandidates,
       fallbackImageFile,
       mediaKind: clip.clipType === "demo" ? "demo-video" : "ugc-video",
       originalName: clip.originalName,
@@ -71,10 +77,11 @@ export async function POST(request: Request) {
       sourceSizeBytes: clip.videoObject.size,
       sourceUrl,
     });
-    const performanceScore = parseUploadAssetAnalysis(
-      outputText,
-      clip.originalName,
-    ).performanceScore;
+    const performanceScore =
+      mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis({
+        analysis: parseUploadAssetAnalysis(outputText, clip.originalName),
+        detectorCandidates,
+      }).performanceScore;
 
     if (!performanceScore) {
       throw new Error("The clip score came back empty.");

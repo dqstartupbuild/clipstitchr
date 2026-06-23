@@ -6,6 +6,7 @@ import { createUploadVideoFallbackAnalysisOutputText } from "@/lib/clipstitchr/s
 import { createUploadVideoAnalysisPrompt } from "@/lib/clipstitchr/server/createUploadVideoAnalysisPrompt";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { getUploadVideoAnalysisModelId } from "@/lib/clipstitchr/server/getUploadVideoAnalysisModelId";
+import type { QuickEditCandidate } from "@/lib/clipstitchr/types/QuickEditCandidate";
 import type { UploadAssetAnalysisKind } from "@/lib/clipstitchr/types/UploadAssetAnalysisKind";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 
@@ -15,6 +16,7 @@ const UPLOAD_VIDEO_ANALYSIS_SYSTEM_INSTRUCTION =
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
 export async function createUploadVideoAnalysisOutputText({
+  detectorCandidates = [],
   fallbackImageFile,
   file,
   mediaKind,
@@ -23,6 +25,7 @@ export async function createUploadVideoAnalysisOutputText({
   sourceSizeBytes,
   sourceUrl,
 }: {
+  detectorCandidates?: QuickEditCandidate[];
   fallbackImageFile?: File;
   file?: File;
   mediaKind: UploadAssetAnalysisKind;
@@ -48,7 +51,11 @@ export async function createUploadVideoAnalysisOutputText({
         model: getUploadVideoAnalysisModelId(),
         input: {
           videos: [videoInput],
-          prompt: createUploadVideoAnalysisPrompt({ mediaKind, originalName }),
+          prompt: createUploadVideoAnalysisPrompt({
+            detectorCandidates,
+            mediaKind,
+            originalName,
+          }),
           system_instruction: UPLOAD_VIDEO_ANALYSIS_SYSTEM_INSTRUCTION,
           temperature: 0.2,
           thinking_level: "low",
@@ -65,6 +72,7 @@ export async function createUploadVideoAnalysisOutputText({
       try {
         return await createUploadVideoFallbackAnalysisOutputText({
           mediaKind,
+          detectorCandidates,
           originalName,
           replicate,
           videoInput,

@@ -1,10 +1,14 @@
 import { createClipPerformanceScorePromptLines } from "@/lib/clipstitchr/server/createClipPerformanceScorePromptLines";
+import { formatQuickEditDetectorCandidatesForPrompt } from "@/lib/clipstitchr/server/formatQuickEditDetectorCandidatesForPrompt";
+import type { QuickEditCandidate } from "@/lib/clipstitchr/types/QuickEditCandidate";
 import type { UploadAssetAnalysisKind } from "@/lib/clipstitchr/types/UploadAssetAnalysisKind";
 
 export function createUploadVideoAnalysisPrompt({
+  detectorCandidates = [],
   mediaKind,
   originalName,
 }: {
+  detectorCandidates?: QuickEditCandidate[];
   mediaKind: UploadAssetAnalysisKind;
   originalName: string;
 }) {
@@ -24,6 +28,7 @@ export function createUploadVideoAnalysisPrompt({
       "If a field does not fit the visible content, return an empty string for that field. Do not fill location, outfit, pose, or person fields with unrelated details.",
       "Do not guess private identity, race, ethnicity, nationality, religion, gender identity, health, disability, or other sensitive traits.",
       "If a person is not clearly visible, set mainPersonDescription to an empty string.",
+      ...formatQuickEditDetectorCandidatesForPrompt(detectorCandidates),
       ...createClipPerformanceScorePromptLines(mediaKind),
     ].join("\n");
   }
@@ -41,6 +46,7 @@ export function createUploadVideoAnalysisPrompt({
     "Put visible surroundings only in locationDescription.",
     "If a field does not fit the demo, return an empty string for that field. Do not put product details in locationDescription or generic movement in productDescription.",
     "Do not guess private identity, demographics, brands, pricing, claims, or sensitive traits.",
+    ...formatQuickEditDetectorCandidatesForPrompt(detectorCandidates),
     ...createClipPerformanceScorePromptLines(mediaKind),
   ].join("\n");
 }

@@ -37,6 +37,12 @@ timestamp detector can usually verify: loading text, loading spinners, static or
 repeated frames, low motion, black frames, silence, no words, long pauses, and
 scene changes.
 
+Clip and Stitch scoring now run deterministic detectors before the provider
+call when a video source is available. Those detectors sample video frames and
+audio to find static, repeated, black-frame, low-motion, silence, no-word, and
+long-pause ranges. The detector output is passed into the AI prompt and merged
+back into saved score metadata. See `docs/features/quick-edit-detectors.md`.
+
 Those ranges are stored in `quickEditSuggestions.candidates` with timestamps,
 confidence, signal names, a short reason, and short stats. Candidate ranges are
 evidence only. They help explain why a section may be weak, but they do not
@@ -143,8 +149,8 @@ Stitch tries to regenerate the poster with the updated ranges; if capture fails,
 the app clears the stale poster reference instead of keeping an incorrect frame.
 
 Crop suggestions are stored as metadata with `mode: "smart-9x16"`. The current
-MVP keeps the existing normalized 9:16 render path and does not add OpenCV or
-MediaPipe.
+MVP keeps the existing normalized 9:16 render path. Quick Edit detectors improve
+timestamp evidence for cuts; they do not change crop rendering.
 
 ## Data Shape
 
@@ -222,6 +228,20 @@ Prompts:
 - `web/lib/clipstitchr/server/createQuickEditHybridPromptLines.ts`
 - `web/lib/clipstitchr/server/createClipPerformanceScorePromptLines.ts`
 - `web/lib/clipstitchr/server/createStitchScorePrompt.ts`
+- `web/lib/clipstitchr/server/formatQuickEditDetectorCandidatesForPrompt.ts`
+
+Detectors:
+
+- `web/lib/clipstitchr/server/createQuickEditDetectorCandidates.ts`
+- `web/lib/clipstitchr/server/createQuickEditDetectorSource.ts`
+- `web/lib/clipstitchr/server/createStitchScoreDetectorCandidates.ts`
+- `web/lib/clipstitchr/server/createQuickEditBlackFrameCandidates.ts`
+- `web/lib/clipstitchr/server/createQuickEditLowMotionCandidates.ts`
+- `web/lib/clipstitchr/server/createQuickEditVisualCandidates.ts`
+- `web/lib/clipstitchr/server/createQuickEditSilenceCandidates.ts`
+- `web/lib/clipstitchr/server/extractQuickEditDetectorFrameSamples.ts`
+- `web/lib/clipstitchr/server/extractQuickEditSilenceRanges.ts`
+- `web/lib/clipstitchr/utils/mergeQuickEditDetectorCandidatesIntoSuggestions.ts`
 
 Edit math:
 

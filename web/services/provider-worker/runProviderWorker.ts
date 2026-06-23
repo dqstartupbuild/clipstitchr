@@ -28,6 +28,8 @@ import { createSwiprAutomationPexelsQuery } from "@/lib/clipstitchr/server/creat
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createStitchScoreOutputText } from "@/lib/clipstitchr/server/createStitchScoreOutputText";
 import { createUploadVideoAnalysisOutputText } from "@/lib/clipstitchr/server/createUploadVideoAnalysisOutputText";
+import { createQuickEditDetectorCandidates } from "@/lib/clipstitchr/server/createQuickEditDetectorCandidates";
+import { createStitchScoreDetectorCandidates } from "@/lib/clipstitchr/server/createStitchScoreDetectorCandidates";
 import { fetchReplicateOutput } from "@/lib/clipstitchr/server/fetchReplicateOutput";
 import { getAvatarPhotoGenerationModelId } from "@/lib/clipstitchr/server/getAvatarPhotoGenerationModelId";
 import { getCliprAvatarSourceScene } from "@/lib/clipstitchr/server/getCliprAvatarSourceScene";
@@ -83,6 +85,8 @@ import { getSwaprSegmentDurationLimit } from "@/lib/clipstitchr/utils/getSwaprSe
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 import { parseStitchScore } from "@/lib/clipstitchr/utils/parseStitchScore";
 import { quickEditCandidateSignalValues } from "@/lib/clipstitchr/utils/quickEditCandidateSignalValues";
+import { mergeQuickEditDetectorCandidatesIntoStitchScore } from "@/lib/clipstitchr/utils/mergeQuickEditDetectorCandidatesIntoStitchScore";
+import { mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis } from "@/lib/clipstitchr/utils/mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis";
 import { getResolvedCliprVideoModelId } from "@/lib/clipstitchr/utils/getResolvedCliprVideoModelId";
 import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
 import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
@@ -2946,6 +2950,9 @@ async function processUploadVideoAnalysis({
     ? await getRemoteImageFile(posterUrl.url, `${input.clipId}-poster.jpg`)
     : undefined;
   const replicate = createReplicateClient();
+  const detectorCandidates = await createQuickEditDetectorCandidates({
+    sourceUrl: videoUrl.url,
+  });
 
   await markProviderJobStatus({
     client,
@@ -2957,6 +2964,7 @@ async function processUploadVideoAnalysis({
   });
 
   const outputText = await createUploadVideoAnalysisOutputText({
+    detectorCandidates,
     fallbackImageFile,
     mediaKind: input.clipType === "ugc" ? "ugc-video" : "demo-video",
     originalName: input.originalName,
@@ -2964,7 +2972,10 @@ async function processUploadVideoAnalysis({
     sourceSizeBytes: input.sourceSizeBytes,
     sourceUrl: videoUrl.url,
   });
-  const analysis = parseUploadAssetAnalysis(outputText, input.originalName);
+  const analysis = mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis({
+    analysis: parseUploadAssetAnalysis(outputText, input.originalName),
+    detectorCandidates,
+  });
   const updatedAt = getNow();
 
   await client.mutation(api.videoClips.updateMetadataFromProvider, {
@@ -3035,7 +3046,12 @@ async function processStitchScoreAnalysis({
       ),
     )
   ).filter(Boolean);
+  const detectorCandidates = await createStitchScoreDetectorCandidates({
+    stitch,
+    userId: job.ownerId,
+  });
   const outputText = await createStitchScoreOutputText({
+    detectorCandidates,
     replicate: createReplicateClient(),
     sourceClips,
     stitch,
@@ -3051,7 +3067,10 @@ async function processStitchScoreAnalysis({
     secret: config.providerWorkerSecret,
     ownerId: job.ownerId,
     id: input.stitchId,
-    stitchScore,
+    stitchScore: mergeQuickEditDetectorCandidatesIntoStitchScore({
+      detectorCandidates,
+      stitchScore,
+    }),
   });
 
   await markProviderJobStatus({
