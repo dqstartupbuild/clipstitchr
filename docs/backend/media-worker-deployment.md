@@ -132,7 +132,8 @@ Recommended starting options:
 The current Preview/dev deployment uses a Cloud Run Job named
 `clipstitchr-media-worker` with `npm run media-worker -- --once --max-jobs=3`.
 Convex dispatches that job immediately when media work is queued and schedules a
-coalesced delayed recovery launch 10 minutes after the launch target. See
+short 3-second follow-up when an immediate launch is coalesced, plus a coalesced
+delayed recovery launch 10 minutes after the launch target. See
 `docs/backend/worker-dispatch-recovery.md` for the current recovery model and
 future queue-based dispatch option.
 
@@ -287,10 +288,13 @@ Implemented coalescing behavior:
    dispatcher coalesces the primary launch.
 5. Otherwise, the dispatcher records `lastRequestedAt`, then schedules the
    Cloud Run Jobs API dispatch.
-6. The dispatcher records `lastRecoveryRequestedAt` and schedules one delayed
+6. If an immediate launch was coalesced, the dispatcher records
+   `lastCoalescedFollowupRequestedAt` and schedules one short 3-second follow-up
+   dispatch for that coalescing window.
+7. The dispatcher records `lastRecoveryRequestedAt` and schedules one delayed
    recovery dispatch 10 minutes after the launch target, coalesced per worker.
-7. The Cloud Run Job processes a bounded batch with `--once --max-jobs=N`.
-8. If a worker processes exactly `maxJobs`, it requests a short delayed
+8. The Cloud Run Job processes a bounded batch with `--once --max-jobs=N`.
+9. If a worker processes exactly `maxJobs`, it requests a short delayed
    continuation launch so larger bursts can keep draining.
 
 Correctness comes from Convex job claiming, not from the launcher. It is safe if

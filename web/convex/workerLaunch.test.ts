@@ -16,6 +16,7 @@ vi.mock("./_generated/api", () => ({
 
 type WorkerLaunchDocument = {
   _id: string;
+  lastCoalescedFollowupRequestedAt?: string;
   lastRecoveryRequestedAt?: string;
   lastRequestedAt: string;
   updatedAt: string;
@@ -77,7 +78,7 @@ describe("requestWorkerLaunch", () => {
     );
   });
 
-  it("coalesces an immediate launch while keeping an overdue recovery launch", async () => {
+  it("schedules a short follow-up when coalescing an immediate launch", async () => {
     const ctx = createCtx({
       _id: "launch_state_doc",
       lastRecoveryRequestedAt: "2026-06-22T09:40:00.000Z",
@@ -93,10 +94,16 @@ describe("requestWorkerLaunch", () => {
     });
 
     expect(ctx.db.patch).toHaveBeenCalledWith("launch_state_doc", {
+      lastCoalescedFollowupRequestedAt: "2026-06-22T10:00:00.000Z",
       lastRecoveryRequestedAt: "2026-06-22T10:00:00.000Z",
       updatedAt: "2026-06-22T10:00:00.000Z",
     });
-    expect(ctx.scheduler.runAfter).toHaveBeenCalledTimes(1);
+    expect(ctx.scheduler.runAfter).toHaveBeenCalledTimes(2);
+    expect(ctx.scheduler.runAfter).toHaveBeenCalledWith(
+      3_000,
+      mocks.runWorker,
+      { worker: "provider" },
+    );
     expect(ctx.scheduler.runAfter).toHaveBeenCalledWith(
       600_000,
       mocks.runWorker,
@@ -107,6 +114,7 @@ describe("requestWorkerLaunch", () => {
   it("coalesces immediate and recovery launches inside their windows", async () => {
     const ctx = createCtx({
       _id: "launch_state_doc",
+      lastCoalescedFollowupRequestedAt: "2026-06-22T09:59:58.000Z",
       lastRecoveryRequestedAt: "2026-06-22T09:59:00.000Z",
       lastRequestedAt: "2026-06-22T09:59:50.000Z",
       updatedAt: "2026-06-22T09:59:50.000Z",

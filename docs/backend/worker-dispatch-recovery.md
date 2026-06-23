@@ -3,16 +3,18 @@
 ClipStitchr provider and media workers use coalesced Convex dispatch instead of
 an always-on 10-minute Cloud Scheduler sweep.
 
-## Current Model: Coalesced Delayed Recovery
+## Current Model: Coalesced Follow-Up And Delayed Recovery
 
 When provider or media work is created, Convex writes the durable job first, then
 requests a Cloud Run Job launch through `web/convex/workerLaunch.ts`.
 
-The launch request does two things:
+The launch request does three things:
 
 1. Schedules the primary Cloud Run launch immediately, unless another launch for
    the same worker was requested within the last 15 seconds.
-2. Schedules one delayed recovery launch 10 minutes after the primary launch
+2. When an immediate launch is coalesced, schedules a short 3-second follow-up
+   launch unless one was already requested in the same coalescing window.
+3. Schedules one delayed recovery launch 10 minutes after the primary launch
    target, unless a recovery launch for the same worker was requested within the
    last 10 minutes.
 
@@ -20,6 +22,8 @@ The coordination record lives in the `workerLaunchState` table and stores:
 
 - `lastRequestedAt`: last immediate launch request used for 15-second
   coalescing.
+- `lastCoalescedFollowupRequestedAt`: last short follow-up request used to keep
+  coalesced one-shot workers from waiting for the recovery window.
 - `lastRecoveryRequestedAt`: last delayed recovery request used for 10-minute
   recovery coalescing.
 
