@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { quickEditBaselineValidator } from "./quickEditBaseline";
+import { quickEditCandidateValidator } from "./quickEditCandidate";
 import { quickEditCropValidator } from "./quickEditCrop";
 import { quickEditOverlayTextValidator } from "./quickEditOverlayText";
 import { quickEditRemoveRangeValidator } from "./quickEditRemoveRange";
@@ -7,6 +8,7 @@ import { quickEditRemoveRangeValidator } from "./quickEditRemoveRange";
 export const quickEditMetadataValidator = v.object({
   trimStart: v.optional(v.number()),
   trimEnd: v.optional(v.union(v.number(), v.null())),
+  candidates: v.optional(v.array(quickEditCandidateValidator)),
   removeRanges: v.array(quickEditRemoveRangeValidator),
   overlayText: v.optional(quickEditOverlayTextValidator),
   crop: v.optional(quickEditCropValidator),

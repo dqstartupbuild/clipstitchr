@@ -3,6 +3,62 @@ export function readQuickEditSuggestions(value) {
     return undefined;
   }
 
+  const candidateSignalValues = new Set([
+    "black-frame",
+    "loading-spinner",
+    "loading-text",
+    "long-pause",
+    "low-motion",
+    "no-words",
+    "repeated-frame",
+    "scene-change",
+    "silence",
+    "static-frame",
+  ]);
+  const candidates = Array.isArray(value.candidates)
+    ? value.candidates.flatMap((candidate) => {
+        if (!candidate || typeof candidate !== "object") {
+          return [];
+        }
+
+        const signals = Array.isArray(candidate.signals)
+          ? Array.from(
+              new Set(
+                candidate.signals.filter(
+                  (signal) =>
+                    typeof signal === "string" &&
+                    candidateSignalValues.has(signal),
+                ),
+              ),
+            ).slice(0, 6)
+          : [];
+
+        if (
+          !Number.isFinite(candidate.start) ||
+          !Number.isFinite(candidate.end) ||
+          !Number.isFinite(candidate.confidence) ||
+          candidate.end <= candidate.start ||
+          !signals.length
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            start: candidate.start,
+            end: candidate.end,
+            confidence: Math.max(0, Math.min(1, candidate.confidence)),
+            signals,
+            ...(typeof candidate.reason === "string" && candidate.reason.trim()
+              ? { reason: candidate.reason.trim() }
+              : {}),
+            ...(typeof candidate.stats === "string" && candidate.stats.trim()
+              ? { stats: candidate.stats.trim() }
+              : {}),
+          },
+        ];
+      })
+    : [];
   const removeRanges = Array.isArray(value.removeRanges)
     ? value.removeRanges.flatMap((range) => {
         if (!range || typeof range !== "object") {
@@ -77,6 +133,7 @@ export function readQuickEditSuggestions(value) {
   if (
     trimStart === undefined &&
     trimEnd === undefined &&
+    candidates.length === 0 &&
     removeRanges.length === 0 &&
     !overlayText &&
     !crop &&
@@ -88,6 +145,7 @@ export function readQuickEditSuggestions(value) {
   return {
     ...(trimStart === undefined ? {} : { trimStart }),
     ...(trimEnd === undefined ? {} : { trimEnd }),
+    ...(candidates.length ? { candidates: candidates.slice(0, 10) } : {}),
     removeRanges,
     ...(overlayText ? { overlayText } : {}),
     ...(crop ? { crop } : {}),

@@ -55,6 +55,7 @@ import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDuration
 import type { CliprTextGeneration } from "@/lib/clipstitchr/types/CliprTextGeneration";
 import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { QuickEditCandidateSignal } from "@/lib/clipstitchr/types/QuickEditCandidateSignal";
 import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { CliprLipSyncModelId } from "@/lib/clipstitchr/types/CliprLipSyncModelId";
 import type { CliprResolvedGenerationMode } from "@/lib/clipstitchr/types/CliprResolvedGenerationMode";
@@ -81,6 +82,7 @@ import { getSwaprPredictionOutputUrl } from "@/lib/clipstitchr/utils/getSwaprPre
 import { getSwaprSegmentDurationLimit } from "@/lib/clipstitchr/utils/getSwaprSegmentDurationLimit";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 import { parseStitchScore } from "@/lib/clipstitchr/utils/parseStitchScore";
+import { quickEditCandidateSignalValues } from "@/lib/clipstitchr/utils/quickEditCandidateSignalValues";
 import { getResolvedCliprVideoModelId } from "@/lib/clipstitchr/utils/getResolvedCliprVideoModelId";
 import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
 import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
@@ -556,6 +558,55 @@ function getOptionalQuickEditSuggestions(
         ];
       })
     : [];
+  const candidates = Array.isArray(source.candidates)
+    ? source.candidates.flatMap((candidate) => {
+        if (!candidate || typeof candidate !== "object") {
+          return [];
+        }
+
+        const candidateSource = candidate as Record<string, unknown>;
+        const start = candidateSource.start;
+        const end = candidateSource.end;
+        const confidence = candidateSource.confidence;
+        const signals = Array.isArray(candidateSource.signals)
+          ? candidateSource.signals.filter(
+              (signal): signal is QuickEditCandidateSignal =>
+                typeof signal === "string" &&
+                quickEditCandidateSignalValues.includes(
+                  signal as QuickEditCandidateSignal,
+                ),
+            )
+          : [];
+
+        if (
+          typeof start !== "number" ||
+          typeof end !== "number" ||
+          typeof confidence !== "number" ||
+          !Number.isFinite(start) ||
+          !Number.isFinite(end) ||
+          !Number.isFinite(confidence) ||
+          end <= start ||
+          !signals.length
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            start,
+            end,
+            confidence: Math.max(0, Math.min(1, confidence)),
+            signals: Array.from(new Set(signals)).slice(0, 6),
+            ...(getOptionalString(candidateSource.reason)
+              ? { reason: getOptionalString(candidateSource.reason) }
+              : {}),
+            ...(getOptionalString(candidateSource.stats)
+              ? { stats: getOptionalString(candidateSource.stats) }
+              : {}),
+          },
+        ];
+      })
+    : [];
   const overlaySource =
     source.overlayText && typeof source.overlayText === "object"
       ? (source.overlayText as Record<string, unknown>)
@@ -605,6 +656,7 @@ function getOptionalQuickEditSuggestions(
   if (
     trimStart === undefined &&
     trimEnd === undefined &&
+    !candidates.length &&
     !removeRanges.length &&
     !overlayReplaceWith &&
     !crop &&
@@ -616,6 +668,7 @@ function getOptionalQuickEditSuggestions(
   return {
     ...(trimStart === undefined ? {} : { trimStart }),
     ...(trimEnd === undefined ? {} : { trimEnd }),
+    ...(candidates.length ? { candidates: candidates.slice(0, 10) } : {}),
     removeRanges,
     ...(overlayReplaceWith
       ? {

@@ -39,6 +39,7 @@ import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVide
 import { getClipCanUseInSwapr } from "@/lib/clipstitchr/utils/getClipCanUseInSwapr";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
+import { getQuickEditSuggestionsHasActionableChange } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange";
 import { getUseInStitchrHref } from "@/lib/clipstitchr/utils/getUseInStitchrHref";
 import { getUseInSwaprClipHref } from "@/lib/clipstitchr/utils/getUseInSwaprClipHref";
 
@@ -126,6 +127,9 @@ export function VideoClipCard({
   const defaultTrimRange = getDefaultVideoTrimRange(clip);
   const quickEdit = createQuickEditSuggestionsFromMetadata(clip.quickEdit);
   const quickEditSuggestions = clip.performanceScore?.quickEditSuggestions;
+  const hasActionableQuickEditSuggestions =
+    getQuickEditSuggestionsHasActionableChange(quickEditSuggestions);
+  const suggestedRemoveRanges = quickEditSuggestions?.removeRanges ?? [];
   const isPosted = Boolean(clip.isPosted);
   const canUpdatePostedStatus = getVideoClipCanBePosted(clip);
   const displayDuration = getQuickEditPlaybackDuration(
@@ -313,7 +317,8 @@ export function VideoClipCard({
         cutEditor={
           onUpdateCuts
             ? {
-                initialRemoveRanges: quickEdit?.removeRanges ?? [],
+                initialRemoveRanges:
+                  quickEdit?.removeRanges ?? suggestedRemoveRanges,
                 onSave: (removeRanges) => onUpdateCuts(clip, removeRanges),
               }
             : undefined
@@ -405,7 +410,14 @@ export function VideoClipCard({
               disabled: isLoading || isApplyingQuickEdit,
               onClick: () => void handleResetQuickEdit(),
             });
-          } else if (quickEditSuggestions && onApplyQuickEdit) {
+          } else if (suggestedRemoveRanges.length && onUpdateCuts) {
+            items.push({
+              label: "Review AI cuts",
+              icon: <WandSparkles aria-hidden className="h-4 w-4" />,
+              disabled: isLoading,
+              onClick: () => openDetails({ showControlsEditor: true }),
+            });
+          } else if (hasActionableQuickEditSuggestions && onApplyQuickEdit) {
             items.push({
               label: "Improve clip",
               icon: <WandSparkles aria-hidden className="h-4 w-4" />,

@@ -41,6 +41,40 @@ describe("parseStitchScore", () => {
     expect(score?.hookToDemoFlow).toBe(63);
   });
 
+  it("keeps hybrid Quick Edit candidates on scored stitches", () => {
+    const score = parseStitchScore({
+      dropOffRiskPoints: ["2-5s loading screen"],
+      overallRetentionEstimate: 63,
+      quickEditSuggestions: {
+        candidates: [
+          {
+            start: 2,
+            end: 5,
+            confidence: 0.8,
+            signals: ["loading-text", "low-motion"],
+          },
+        ],
+        removeRanges: [{ start: 2.2, end: 4.8 }],
+      },
+      suggestedOpeningLine: "",
+      suggestedOverlayText: [],
+      suggestedTrims: [],
+      summary: "",
+    });
+
+    expect(score?.quickEditSuggestions).toEqual({
+      candidates: [
+        {
+          start: 2,
+          end: 5,
+          confidence: 0.8,
+          signals: ["loading-text", "low-motion"],
+        },
+      ],
+      removeRanges: [{ start: 2.2, end: 4.8 }],
+    });
+  });
+
   it("returns undefined when no score is present", () => {
     expect(parseStitchScore("no json")).toBeUndefined();
     expect(parseStitchScore({ summary: "missing score" })).toBeUndefined();

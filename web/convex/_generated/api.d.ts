@@ -140,6 +140,8 @@ import type * as validators_notificationSourceType from "../validators/notificat
 import type * as validators_providerJobStatus from "../validators/providerJobStatus.js";
 import type * as validators_providerJobType from "../validators/providerJobType.js";
 import type * as validators_quickEditBaseline from "../validators/quickEditBaseline.js";
+import type * as validators_quickEditCandidate from "../validators/quickEditCandidate.js";
+import type * as validators_quickEditCandidateSignal from "../validators/quickEditCandidateSignal.js";
 import type * as validators_quickEditCrop from "../validators/quickEditCrop.js";
 import type * as validators_quickEditMetadata from "../validators/quickEditMetadata.js";
 import type * as validators_quickEditOverlayText from "../validators/quickEditOverlayText.js";
@@ -309,6 +311,8 @@ declare const fullApi: ApiFromModules<{
   "validators/providerJobStatus": typeof validators_providerJobStatus;
   "validators/providerJobType": typeof validators_providerJobType;
   "validators/quickEditBaseline": typeof validators_quickEditBaseline;
+  "validators/quickEditCandidate": typeof validators_quickEditCandidate;
+  "validators/quickEditCandidateSignal": typeof validators_quickEditCandidateSignal;
   "validators/quickEditCrop": typeof validators_quickEditCrop;
   "validators/quickEditMetadata": typeof validators_quickEditMetadata;
   "validators/quickEditOverlayText": typeof validators_quickEditOverlayText;

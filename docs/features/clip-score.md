@@ -132,6 +132,14 @@ When the provider returns `quickEditSuggestions`, UGC and Demo cards can show
 new default trim for future uses. Existing saved Stitches keep their own saved
 trim and Quick Edit metadata and are not rewritten by later source clip changes.
 
+Quick Edit suggestions can include hybrid `candidates` for likely weak ranges:
+loading text, loading spinners, static or repeated frames, low motion, black
+frames, silence, no words, long pauses, and scene changes. Candidates are
+stored as evidence with confidence and short stats. They only become a visible
+cut workflow when the score also includes conservative `removeRanges`; the clip
+card then opens the manual cut editor with **Review AI cuts** so the user can
+adjust the exact timing before saving.
+
 ## Abuse and Rate Limits
 
 The feature uses the existing upload analysis surfaces:
@@ -163,10 +171,13 @@ Analysis prompts, parsing, and types:
 - `web/lib/clipstitchr/client/scoreVideoClip.ts`
 - `web/lib/clipstitchr/types/ClipPerformanceScore.ts`
 - `web/lib/clipstitchr/types/QuickEditSuggestions.ts`
+- `web/lib/clipstitchr/types/QuickEditCandidate.ts`
+- `web/lib/clipstitchr/types/QuickEditCandidateSignal.ts`
 - `web/lib/clipstitchr/types/UploadAssetAnalysis.ts`
 - `web/lib/clipstitchr/types/VideoClip.ts`
 - `web/lib/clipstitchr/server/readVideoClipScoreRequest.ts`
 - `web/lib/clipstitchr/server/createClipPerformanceScorePromptLines.ts`
+- `web/lib/clipstitchr/server/createQuickEditHybridPromptLines.ts`
 - `web/lib/clipstitchr/server/createUploadAnalysisPrompt.ts`
 - `web/lib/clipstitchr/server/createUploadVideoAnalysisPrompt.ts`
 - `web/lib/clipstitchr/server/getUploadAnalysisModelId.ts`
@@ -176,6 +187,9 @@ Analysis prompts, parsing, and types:
 - `web/lib/clipstitchr/utils/getClipCanBeScored.ts`
 - `web/lib/clipstitchr/utils/parseClipPerformanceScore.ts`
 - `web/lib/clipstitchr/utils/parseQuickEditSuggestions.ts`
+- `web/lib/clipstitchr/utils/parseQuickEditCandidate.ts`
+- `web/lib/clipstitchr/utils/parseQuickEditCandidates.ts`
+- `web/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange.ts`
 
 UI:
 

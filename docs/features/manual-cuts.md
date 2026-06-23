@@ -17,6 +17,11 @@ drop a quick cut at the playhead, mark a start and cut to the current playhead,
 drag full cut blocks, resize cut edges, select saved cuts, and type exact
 timestamps in the selected-cut inspector.
 
+When clip scoring finds likely dead space, the card can show **Review AI cuts**
+instead of applying the edit immediately. That opens this same timeline editor
+with AI-suggested cut blocks already placed. The user can tighten, move, remove,
+or save those blocks before anything becomes active.
+
 The same control is available in saved normal Stitches. When a saved Stitch is
 edited, the user can add UGC cuts and Demo cuts on the source settings panel.
 Those cuts apply only to that saved Stitch, regenerate its poster, and clear any
@@ -32,6 +37,8 @@ UGC and Demo source clips store manual cuts in `quickEdit.removeRanges`. Saving
 cuts uses `videoClips.updateCuts`, which validates ownership, normalizes and
 merges ranges against the clip duration, stores `source: "manual-cut"`, and
 preserves any existing trim, crop, overlay text, summary, and baseline metadata.
+If the saved score had hybrid Quick Edit candidates, the source clip save keeps
+that candidate evidence with the user-corrected manual cut ranges.
 
 Changing source clip cuts is global for future use of that clip. New Stitches
 copy the current source clip Quick Edit metadata into `ugcQuickEdit` and
@@ -84,6 +91,16 @@ Manual cuts use the same range shape as AI Quick Edit suggestions:
         "reason": "Cut by hand"
       }
     ],
+    "candidates": [
+      {
+        "start": 1.4,
+        "end": 5,
+        "confidence": 0.82,
+        "signals": ["loading-text", "static-frame"],
+        "reason": "The AI flagged the loading screen.",
+        "stats": "The frame barely changes."
+      }
+    ],
     "baseline": {
       "defaultTrimRange": {
         "start": 0,
@@ -132,6 +149,7 @@ Helpers:
 - `web/lib/clipstitchr/utils/getQuickEditSuggestionsWithReplacedRemoveRanges.ts`
 - `web/lib/clipstitchr/utils/normalizeQuickEditRemoveRanges.ts`
 - `web/lib/clipstitchr/utils/getQuickEditPlaybackDuration.ts`
+- `web/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange.ts`
 
 Tests:
 

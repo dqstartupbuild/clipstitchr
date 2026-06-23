@@ -1,4 +1,5 @@
 type QuickEditSuggestionsLike = {
+  candidates?: unknown[];
   crop?: unknown;
   overlayText?: unknown;
   removeRanges?: unknown[];
@@ -21,6 +22,9 @@ export function createQuickEditSuggestionsFromMetadata(
     ...(quickEdit.trimEnd === undefined
       ? {}
       : { trimEnd: quickEdit.trimEnd }),
+    ...(quickEdit.candidates?.length
+      ? { candidates: quickEdit.candidates }
+      : {}),
     removeRanges: quickEdit.removeRanges ?? [],
     ...(quickEdit.overlayText ? { overlayText: quickEdit.overlayText } : {}),
     ...(quickEdit.crop ? { crop: quickEdit.crop } : {}),

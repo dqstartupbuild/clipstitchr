@@ -811,9 +811,16 @@ export const updateCuts = mutation({
       clip.quickEdit,
       normalizedRemoveRanges,
     );
+    const scoreCandidates =
+      clip.performanceScore?.quickEditSuggestions?.candidates;
+    const candidateEvidence =
+      nextQuickEditSuggestions?.candidates?.length || !scoreCandidates?.length
+        ? {}
+        : { candidates: scoreCandidates };
     const nextQuickEdit = nextQuickEditSuggestions
       ? {
           ...nextQuickEditSuggestions,
+          ...candidateEvidence,
           appliedAt: updatedAt,
           baseline:
             clip.quickEdit?.baseline ??

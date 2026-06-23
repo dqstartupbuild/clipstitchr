@@ -44,6 +44,7 @@ import { createStitchPreviewCacheKey } from "@/lib/clipstitchr/utils/createStitc
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { getReuseStitchHref } from "@/lib/clipstitchr/utils/getReuseStitchHref";
+import { getQuickEditSuggestionsHasActionableChange } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange";
 import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
 import { getStitchrHookPlanMatchesStitch } from "@/lib/clipstitchr/utils/getStitchrHookPlanMatchesStitch";
 import { capturePostHogException } from "@/lib/clipstitchr/analytics/capturePostHogException";
@@ -205,6 +206,10 @@ export function StitchCard({
   const matchingHookPlans = hookPlans.filter((plan) =>
     getStitchrHookPlanMatchesStitch(plan, stitch),
   );
+  const hasActionableQuickEditSuggestions =
+    getQuickEditSuggestionsHasActionableChange(
+      stitch.stitchScore?.quickEditSuggestions,
+    );
 
   const loadRenderedPreview = async () => {
     if (stitchVideoBlob || isLoadingPreview) {
@@ -628,7 +633,7 @@ export function StitchCard({
           },
         ]
       : canUseQuickEdit &&
-          stitch.stitchScore?.quickEditSuggestions &&
+          hasActionableQuickEditSuggestions &&
           onApplyQuickEdit
         ? [
             {

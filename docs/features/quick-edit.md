@@ -29,6 +29,31 @@ Manual cuts use the same non-destructive `removeRanges` metadata, but they are
 edited directly by the user instead of coming from score suggestions. See
 `docs/features/manual-cuts.md` for the source clip and saved Stitch workflow.
 
+## Hybrid Candidate Model
+
+Quick Edit scores can now carry detector-style candidate ranges before they
+become actual edits. The analysis prompt asks the model to look for signals a
+timestamp detector can usually verify: loading text, loading spinners, static or
+repeated frames, low motion, black frames, silence, no words, long pauses, and
+scene changes.
+
+Those ranges are stored in `quickEditSuggestions.candidates` with timestamps,
+confidence, signal names, a short reason, and short stats. Candidate ranges are
+evidence only. They help explain why a section may be weak, but they do not
+change playback or export by themselves.
+
+When a candidate is strong enough, the score can also include a conservative
+`removeRanges` suggestion. Clip cards show **Review AI cuts** for those cases
+and open the manual cut editor with the suggested ranges already placed on the
+timeline. The user can drag, resize, delete, or save them like any other manual
+cut. Candidate-only scores are preserved for review, but they do not show the
+one-click **Improve clip** or **Improve stitch** action.
+
+When a user saves source clip cuts after reviewing AI suggestions, ClipStitchr
+keeps the score candidates alongside the corrected manual range metadata. That
+gives later analysis a record of the original detector-style guess and the
+human-corrected timing without modifying the uploaded video.
+
 ## Source Clip Behavior
 
 UGC and Demo Quick Edit updates the clip's global default trim metadata. This
@@ -136,6 +161,16 @@ Score parsers accept optional `quickEditSuggestions`:
       "reason": "Loading screen slows down the before/after payoff."
     }
   ],
+  "candidates": [
+    {
+      "start": 4.2,
+      "end": 7.8,
+      "confidence": 0.86,
+      "signals": ["loading-text", "low-motion"],
+      "reason": "Loading screen slows down the before/after payoff.",
+      "stats": "Screen stays mostly unchanged."
+    }
+  ],
   "overlayText": {
     "replaceWith": "The moment I realized my landing page was the problem",
     "reason": "Makes the emotional hook clearer."
@@ -164,13 +199,29 @@ Data model and mutations:
 - `web/convex/stitches.ts`
 - `web/convex/validators/quickEditSuggestions.ts`
 - `web/convex/validators/quickEditMetadata.ts`
+- `web/convex/validators/quickEditCandidate.ts`
+- `web/convex/validators/quickEditCandidateSignal.ts`
 
 Types and parsers:
 
 - `web/lib/clipstitchr/types/QuickEditSuggestions.ts`
+- `web/lib/clipstitchr/types/QuickEditCandidate.ts`
+- `web/lib/clipstitchr/types/QuickEditCandidateSignal.ts`
 - `web/lib/clipstitchr/types/QuickEditMetadata.ts`
 - `web/lib/clipstitchr/utils/parseQuickEditSuggestions.ts`
+- `web/lib/clipstitchr/utils/parseQuickEditCandidate.ts`
+- `web/lib/clipstitchr/utils/parseQuickEditCandidates.ts`
+- `web/lib/clipstitchr/utils/parseQuickEditCandidateSignal.ts`
+- `web/lib/clipstitchr/utils/parseQuickEditCandidateSignals.ts`
+- `web/lib/clipstitchr/utils/quickEditCandidateSignalValues.ts`
+- `web/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange.ts`
 - `web/lib/clipstitchr/utils/createQuickEditSuggestionsFromMetadata.ts`
+
+Prompts:
+
+- `web/lib/clipstitchr/server/createQuickEditHybridPromptLines.ts`
+- `web/lib/clipstitchr/server/createClipPerformanceScorePromptLines.ts`
+- `web/lib/clipstitchr/server/createStitchScorePrompt.ts`
 
 Edit math:
 

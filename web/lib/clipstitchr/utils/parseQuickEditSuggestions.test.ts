@@ -7,6 +7,16 @@ describe("parseQuickEditSuggestions", () => {
       parseQuickEditSuggestions({
         trimStart: "1.2",
         trimEnd: 14.8,
+        candidateRanges: [
+          {
+            start: 4,
+            end: 8,
+            confidence: 0.82,
+            signals: ["loading-text", "static-frame"],
+            reason: "Loading screen",
+            stats: "Mostly static",
+          },
+        ],
         removeRanges: [
           {
             start: 4.2,
@@ -29,6 +39,16 @@ describe("parseQuickEditSuggestions", () => {
     ).toEqual({
       trimStart: 1.2,
       trimEnd: 14.8,
+      candidates: [
+        {
+          start: 4,
+          end: 8,
+          confidence: 0.82,
+          signals: ["loading-text", "static-frame"],
+          reason: "Loading screen",
+          stats: "Mostly static",
+        },
+      ],
       removeRanges: [
         {
           start: 4.2,
@@ -47,6 +67,31 @@ describe("parseQuickEditSuggestions", () => {
         reason: "Keep the screen visible.",
       },
       summary: "Cut the slow section.",
+    });
+  });
+
+  it("keeps candidate-only evidence", () => {
+    expect(
+      parseQuickEditSuggestions({
+        candidates: [
+          {
+            start: 1,
+            end: 3,
+            confidence: 0.7,
+            signals: ["silence"],
+          },
+        ],
+      }),
+    ).toEqual({
+      candidates: [
+        {
+          start: 1,
+          end: 3,
+          confidence: 0.7,
+          signals: ["silence"],
+        },
+      ],
+      removeRanges: [],
     });
   });
 

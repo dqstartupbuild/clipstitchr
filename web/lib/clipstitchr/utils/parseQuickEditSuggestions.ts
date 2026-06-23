@@ -2,6 +2,7 @@ import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { QuickEditOverlayText } from "@/lib/clipstitchr/types/QuickEditOverlayText";
 import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
+import { parseQuickEditCandidates } from "@/lib/clipstitchr/utils/parseQuickEditCandidates";
 
 function parseTime(value: unknown) {
   if (value === null) {
@@ -111,6 +112,7 @@ function getHasQuickEditChange(suggestions: QuickEditSuggestions) {
   return Boolean(
     suggestions.trimStart !== undefined ||
       suggestions.trimEnd !== undefined ||
+      (suggestions.candidates?.length ?? 0) ||
       suggestions.removeRanges.length ||
       suggestions.overlayText ||
       suggestions.crop,
@@ -129,10 +131,14 @@ export function parseQuickEditSuggestions(
   const trimEnd = parseTime(source.trimEnd);
   const overlayText = parseOverlayText(source.overlayText);
   const crop = parseCrop(source.crop);
+  const candidates = parseQuickEditCandidates(
+    source.candidates ?? source.candidateRanges,
+  );
   const summary = parseText(source.summary, 260);
   const suggestions: QuickEditSuggestions = {
     ...(trimStart === undefined || trimStart === null ? {} : { trimStart }),
     ...(trimEnd === undefined ? {} : { trimEnd }),
+    ...(candidates.length ? { candidates } : {}),
     removeRanges: parseRemoveRanges(source.removeRanges),
     ...(overlayText ? { overlayText } : {}),
     ...(crop ? { crop } : {}),

@@ -55,6 +55,13 @@ saved Stitch baseline from before the action and does not pull the latest UGC
 or Demo clip defaults. Applying or resetting Quick Edit keeps the visible score
 until the user chooses to rescore.
 
+Stitch Score can also return hybrid Quick Edit `candidates` for likely weak
+ranges, using signals such as loading text, low motion, static frames, silence,
+no words, and long pauses. Candidate-only scores are stored for review but do
+not show **Improve stitch**. The action appears only when the suggestion also
+contains an actual editable change such as a trim, cut range, overlay text, or
+crop metadata.
+
 ## Data Shape
 
 Stored fields:
@@ -149,15 +156,21 @@ API, prompt, parsing, and client call:
 - `web/lib/clipstitchr/server/createStitchScoreOutputText.ts`
 - `web/lib/clipstitchr/server/createStitchScorePosterFile.ts`
 - `web/lib/clipstitchr/server/createStitchScorePrompt.ts`
+- `web/lib/clipstitchr/server/createQuickEditHybridPromptLines.ts`
 - `web/lib/clipstitchr/server/createStitchScoreVideoInputs.ts`
 - `web/lib/clipstitchr/server/formatStitchScoreSourceClipContext.ts`
 - `web/lib/clipstitchr/server/readStitchScoreRequest.ts`
 - `web/lib/clipstitchr/types/StitchScore.ts`
 - `web/lib/clipstitchr/types/QuickEditSuggestions.ts`
+- `web/lib/clipstitchr/types/QuickEditCandidate.ts`
+- `web/lib/clipstitchr/types/QuickEditCandidateSignal.ts`
 - `web/lib/clipstitchr/utils/getStitchScoreLabel.ts`
 - `web/lib/clipstitchr/utils/getStitchScoreSourceClipIds.ts`
 - `web/lib/clipstitchr/utils/parseStitchScore.ts`
 - `web/lib/clipstitchr/utils/parseQuickEditSuggestions.ts`
+- `web/lib/clipstitchr/utils/parseQuickEditCandidate.ts`
+- `web/lib/clipstitchr/utils/parseQuickEditCandidates.ts`
+- `web/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange.ts`
 
 UI:
 

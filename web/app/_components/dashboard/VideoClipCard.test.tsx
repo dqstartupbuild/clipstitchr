@@ -38,6 +38,12 @@ const mocks = vi.hoisted(() => ({
     onRemove: () => void | Promise<void>;
     onSave: (music: CliprMusicMetadata | null) => void | Promise<void>;
   },
+  cutEditor: null as null | {
+    initialRemoveRanges: Array<{ start: number; end: number; reason?: string }>;
+    onSave: (
+      removeRanges: Array<{ start: number; end: number; reason?: string }>,
+    ) => void | Promise<void>;
+  },
 }));
 
 vi.mock("react", async (importOriginal) => {
@@ -56,6 +62,7 @@ vi.mock("@/app/_components/dashboard/VideoClipPreviewCard", () => ({
   VideoClipPreviewCard: ({
     actions,
     cliprMusicEditor,
+    cutEditor,
     footer,
     metadataEditor,
     trimEditor,
@@ -67,12 +74,14 @@ vi.mock("@/app/_components/dashboard/VideoClipPreviewCard", () => ({
       openDetails: (options?: unknown) => void;
     }) => MediaCardActionMenuItem[];
     cliprMusicEditor?: typeof mocks.cliprMusicEditor;
+    cutEditor?: typeof mocks.cutEditor;
     footer: () => React.ReactNode;
     metadataEditor?: typeof mocks.metadataEditor;
     trimEditor: typeof mocks.trimEditor;
   }) => {
     mocks.trimEditor = trimEditor;
     mocks.cliprMusicEditor = cliprMusicEditor ?? null;
+    mocks.cutEditor = cutEditor ?? null;
     mocks.metadataEditor = metadataEditor ?? null;
     mocks.actionItems = actions({
       closeDetails: mocks.closeDetails,
@@ -214,6 +223,7 @@ describe("VideoClipCard", () => {
     mocks.metadataEditor = null;
     mocks.trimEditor = null;
     mocks.cliprMusicEditor = null;
+    mocks.cutEditor = null;
     mocks.stateQueue = [];
     mocks.loadFullClip.mockResolvedValue({
       ...createClipMetadata(),
@@ -378,6 +388,57 @@ describe("VideoClipCard", () => {
     );
 
     expect(mocks.actionItems.map((item) => item.label)).toContain("Score clip");
+  });
+
+  it("opens AI cut suggestions in the manual cut editor", () => {
+    const suggestedRange = {
+      start: 2,
+      end: 5,
+      reason: "Loading screen",
+    };
+
+    renderToStaticMarkup(
+      <VideoClipCard
+        clip={createClipMetadata({
+          performanceScore: {
+            ...createPerformanceScore(),
+            quickEditSuggestions: {
+              candidates: [
+                {
+                  start: 1.8,
+                  end: 5.2,
+                  confidence: 0.86,
+                  signals: ["loading-text", "low-motion"],
+                  reason: "Loading screen",
+                  stats: "Mostly static",
+                },
+              ],
+              removeRanges: [suggestedRange],
+            },
+          },
+        })}
+        onApplyQuickEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onUpdateCuts={vi.fn()}
+        onUpdateMetadata={vi.fn()}
+        onUpdateTrim={vi.fn()}
+      />,
+    );
+
+    expect(mocks.actionItems.map((item) => item.label)).toContain(
+      "Review AI cuts",
+    );
+    expect(mocks.actionItems.map((item) => item.label)).not.toContain(
+      "Improve clip",
+    );
+    expect(mocks.cutEditor?.initialRemoveRanges).toEqual([suggestedRange]);
+
+    mocks.actionItems.find((item) => item.label === "Review AI cuts")?.onClick?.();
+
+    expect(mocks.openDetails).toHaveBeenCalledWith({
+      showControlsEditor: true,
+    });
   });
 
   it("marks script clips as posted and active", async () => {

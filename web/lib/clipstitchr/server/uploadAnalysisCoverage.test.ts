@@ -137,6 +137,18 @@ describe("upload analysis helpers", () => {
     ).toContain("full uploaded UGC video");
     expect(
       createUploadVideoAnalysisPrompt({
+        mediaKind: "ugc-video",
+        originalName: "hook.mp4",
+      }),
+    ).toContain("quickEditSuggestions.candidates");
+    expect(
+      createUploadVideoAnalysisPrompt({
+        mediaKind: "ugc-video",
+        originalName: "hook.mp4",
+      }),
+    ).toContain("loading-text");
+    expect(
+      createUploadVideoAnalysisPrompt({
         mediaKind: "demo-video",
         originalName: "",
       }),

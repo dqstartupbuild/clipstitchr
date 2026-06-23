@@ -65,6 +65,9 @@ describe("createStitchScorePrompt", () => {
     expect(prompt).toContain("suggestedTrims");
     expect(prompt).toContain("suggestedOverlayText");
     expect(prompt).toContain("suggestedOpeningLine");
+    expect(prompt).toContain("quickEditSuggestions.candidates");
+    expect(prompt).toContain("loading-text");
+    expect(prompt).toContain("manual cut editor");
     expect(prompt).toContain("Wait for it");
     expect(prompt).toContain("Person reacts in the first second.");
   });

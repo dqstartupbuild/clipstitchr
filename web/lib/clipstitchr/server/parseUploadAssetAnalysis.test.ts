@@ -71,6 +71,24 @@ describe("parseUploadAssetAnalysis", () => {
               "Extra item is ignored",
             ],
             fixes: ["Trim the first pause", "Add a simple text hook"],
+            quickEditSuggestions: {
+              candidates: [
+                {
+                  start: 2,
+                  end: 5,
+                  confidence: 0.78,
+                  signals: ["static-frame", "no-words"],
+                  reason: "Pause before the product appears.",
+                },
+              ],
+              removeRanges: [
+                {
+                  start: 2.2,
+                  end: 4.7,
+                  reason: "Pause before the product appears.",
+                },
+              ],
+            },
           },
           poseDescription: "Holding the bottle near their face and smiling.",
           name: "Bathroom Skincare Hook",
@@ -101,6 +119,24 @@ describe("parseUploadAssetAnalysis", () => {
           "Energy feels natural",
         ],
         fixes: ["Trim the first pause", "Add a simple text hook"],
+        quickEditSuggestions: {
+          candidates: [
+            {
+              start: 2,
+              end: 5,
+              confidence: 0.78,
+              signals: ["static-frame", "no-words"],
+              reason: "Pause before the product appears.",
+            },
+          ],
+          removeRanges: [
+            {
+              start: 2.2,
+              end: 4.7,
+              reason: "Pause before the product appears.",
+            },
+          ],
+        },
       },
       poseDescription: "Holding the bottle near their face and smiling.",
       name: "Bathroom Skincare Hook",
