@@ -45,14 +45,26 @@ function previousBatchDate(batchDate: string) {
 
 function getExistingRunStatus(
   tasks: Array<{
+    outputAssetIds: string[];
     status: string;
   }>,
 ) {
-  if (tasks.every((task) => task.status === "completed")) {
+  if (
+    tasks.every(
+      (task) => task.status === "completed" && task.outputAssetIds.length > 0,
+    )
+  ) {
     return "completed";
   }
 
-  if (tasks.some((task) => task.status === "queued" || task.status === "running")) {
+  if (
+    tasks.some(
+      (task) =>
+        task.status === "queued" ||
+        task.status === "running" ||
+        (task.status === "completed" && task.outputAssetIds.length === 0),
+    )
+  ) {
     return "running";
   }
 
@@ -61,6 +73,48 @@ function getExistingRunStatus(
   }
 
   return "skipped";
+}
+
+function getStitchrBatchTaskNeedsProviderLaunch(task: {
+  outputAssetIds: string[];
+  stage: string;
+  status: string;
+}) {
+  return (
+    task.status === "queued" ||
+    (task.status === "running" && task.stage === "awaiting-text-provider") ||
+    (task.status === "completed" && task.outputAssetIds.length === 0)
+  );
+}
+
+function getStitchrBatchTaskNeedsMediaLaunch(task: {
+  stage: string;
+  status: string;
+}) {
+  return task.status === "running" && task.stage === "awaiting-media-worker";
+}
+
+function getStitchrBatchTaskNeedsHookPlanning(task: {
+  outputAssetIds: string[];
+  stage: string;
+  status: string;
+}) {
+  return (
+    task.status === "queued" ||
+    (task.status === "running" && task.stage === "awaiting-text-provider") ||
+    (task.status === "completed" && task.outputAssetIds.length === 0)
+  );
+}
+
+function getStitchrBatchTaskIsActive(task: {
+  outputAssetIds: string[];
+  status: string;
+}) {
+  return (
+    task.status === "queued" ||
+    task.status === "running" ||
+    (task.status === "completed" && task.outputAssetIds.length === 0)
+  );
 }
 
 export const plan = mutation({
@@ -99,12 +153,63 @@ export const plan = mutation({
 
     if (existingTasks.length > 0) {
       const status = getExistingRunStatus(existingTasks);
+      const activeTaskIds = existingTasks
+        .filter(getStitchrBatchTaskIsActive)
+        .map((task) => task.id);
+      const hookPlanningTaskIds = existingTasks
+        .filter(getStitchrBatchTaskNeedsHookPlanning)
+        .map((task) => task.id);
+      const shouldLaunchProvider = existingTasks.some(
+        getStitchrBatchTaskNeedsProviderLaunch,
+      );
+      const shouldLaunchMedia = existingTasks.some(
+        getStitchrBatchTaskNeedsMediaLaunch,
+      );
+
+      await Promise.all(
+        existingTasks
+          .filter(
+            (task) =>
+              task.status === "completed" && task.outputAssetIds.length === 0,
+          )
+          .map((task) =>
+            ctx.db.patch(task._id, {
+              status: "queued",
+              stage: "awaiting-text-provider",
+              lockedBy: undefined,
+              lockedUntil: undefined,
+              completedAt: undefined,
+              error: undefined,
+              updatedAt: now,
+            }),
+          ),
+      );
+
+      if (shouldLaunchProvider) {
+        await requestWorkerLaunch({
+          ctx,
+          now,
+          worker: "provider",
+        });
+      }
+
+      if (shouldLaunchMedia) {
+        await requestWorkerLaunch({
+          ctx,
+          now,
+          worker: "media",
+        });
+      }
 
       return {
         runId,
         status,
-        taskIds: [],
-        message: `Today's Stitchr batch is already ${status}.`,
+        taskIds: status === "running" ? activeTaskIds : [],
+        hookPlanningTaskIds: status === "running" ? hookPlanningTaskIds : [],
+        message:
+          status === "running"
+            ? "Today's Stitchr batch is already running, so I nudged it to keep going."
+            : `Today's Stitchr batch is already ${status}.`,
       };
     }
 
@@ -408,6 +513,7 @@ export const plan = mutation({
       runId,
       status: "running",
       taskIds,
+      hookPlanningTaskIds: taskIds,
     };
   },
 });

@@ -1256,8 +1256,9 @@ export function StitchrPageClient() {
       .then((result) => {
         if (result.count > 0) {
           setBatchMessage(
-            `Queued ${result.count} Stitch drafts. ` +
-              "They will show in your library when they are ready.",
+            result.message ??
+              `Queued ${result.count} Stitch drafts. ` +
+                "They will show in your library when they are ready.",
           );
           return;
         }

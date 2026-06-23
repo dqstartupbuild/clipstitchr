@@ -292,6 +292,57 @@ describe("POST /api/stitchr/batch/generate", () => {
     );
   });
 
+  it("keeps the batch queued when the hook planner is rate-limited", async () => {
+    mocks.convex.query.mockResolvedValueOnce([
+      createTaskInputSnapshot("task_1", false),
+      createTaskInputSnapshot("task_2", false),
+    ]);
+    mocks.convex.mutation.mockImplementation((name: unknown) => {
+      if (name === api.stitchrBatch.plan) {
+        return Promise.resolve({
+          hookPlanningTaskIds: ["task_1", "task_2"],
+          message: undefined,
+          runId: "stitchr-batch:user_123:2026-06-17",
+          status: "running",
+          taskIds: ["task_1", "task_2"],
+        });
+      }
+
+      if (name === api.rateLimits.consumeStitchrBatchHookPlan) {
+        return Promise.reject({
+          data: {
+            kind: "RateLimited",
+            name: "stitchrBatchHookPlanDaily",
+            retryAfter: 1000,
+          },
+        });
+      }
+
+      return Promise.resolve({ savedCount: 2 });
+    });
+
+    const response = await POST();
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual(
+      expect.objectContaining({
+        count: 2,
+        hookPlanCount: 0,
+        hookPlanStatus: "failed",
+        status: "running",
+        taskIds: ["task_1", "task_2"],
+      }),
+    );
+    expect(mocks.createStitchrBatchHookGeneration).not.toHaveBeenCalled();
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.stitchrHookPlans.saveBatchPlannerFailure,
+      expect.objectContaining({
+        taskIds: ["task_1", "task_2"],
+      }),
+    );
+  });
+
   it("returns rate-limit responses from Convex planning", async () => {
     mocks.convex.mutation.mockImplementationOnce(() =>
       Promise.reject({

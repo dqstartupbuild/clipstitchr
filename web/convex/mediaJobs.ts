@@ -361,6 +361,30 @@ export const createStitchrDraftFinalizationFromProvider = mutation({
       .unique();
 
     if (existing) {
+      if (
+        existing.outputAssetIds.length === 0 &&
+        (existing.status === "queued" ||
+          existing.status === "running" ||
+          existing.status === "failed" ||
+          existing.status === "completed")
+      ) {
+        await ctx.db.patch(existing._id, {
+          status: "queued",
+          stage: "retry-queued",
+          lockedBy: undefined,
+          lockedUntil: undefined,
+          error: undefined,
+          updatedAt: createdAt,
+        });
+        await requestWorkerLaunch({
+          ctx,
+          now: createdAt,
+          worker: "media",
+        });
+
+        return (await ctx.db.get(existing._id)) ?? existing;
+      }
+
       return existing;
     }
 

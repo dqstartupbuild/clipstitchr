@@ -3266,6 +3266,19 @@ async function claimNextTask({
   client: ConvexHttpClient;
   config: ProviderWorkerConfig;
 }) {
+  if (config.automationTools.has("stitchr")) {
+    const staleStitchrTextTask = await claimTaskByStage({
+      client,
+      config,
+      tool: "stitchr",
+      stage: "awaiting-text-provider",
+    });
+
+    if (staleStitchrTextTask) {
+      return staleStitchrTextTask;
+    }
+  }
+
   if (config.automationTools.has("swapr")) {
     const swaprFinalizationTask = await claimTaskByStage({
       client,

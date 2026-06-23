@@ -16,11 +16,34 @@ import type { ConvexHttpClient } from "convex/browser";
 export const runtime = "nodejs";
 
 type StitchrBatchPlanResult = {
+  hookPlanningTaskIds?: string[];
   message?: string;
   runId: string;
   status: string;
   taskIds: string[];
 };
+
+async function saveBatchHookPlanningFailure({
+  convex,
+  reason,
+  taskIds,
+}: {
+  convex: ConvexHttpClient;
+  reason: string;
+  taskIds: string[];
+}) {
+  if (!taskIds.length) {
+    return;
+  }
+
+  await convex
+    .mutation(api.stitchrHookPlans.saveBatchPlannerFailure, {
+      reason,
+      taskIds,
+      updatedAt: new Date().toISOString(),
+    })
+    .catch(() => null);
+}
 
 async function planBatchHooks({
   convex,
@@ -53,11 +76,11 @@ async function planBatchHooks({
     };
   }
 
-  await convex.mutation(api.rateLimits.consumeStitchrBatchHookPlan, {
-    secret: getRateLimitApiSecret(),
-  });
-
   try {
+    await convex.mutation(api.rateLimits.consumeStitchrBatchHookPlan, {
+      secret: getRateLimitApiSecret(),
+    });
+
     const generation = await createStitchrBatchHookGeneration({
       inputs: planningInputs,
       replicate: createReplicateClient(),
@@ -109,19 +132,13 @@ async function planBatchHooks({
       hookPlanStatus: missingTaskIds.length ? "partial" : "planned",
     };
   } catch (error) {
-    const rateLimitResponse = createRateLimitExceededResponse(error);
-
-    if (rateLimitResponse) {
-      throw error;
-    }
-
-    await convex.mutation(api.stitchrHookPlans.saveBatchPlannerFailure, {
+    await saveBatchHookPlanningFailure({
+      convex,
       reason:
         error instanceof Error
           ? error.message
           : "The batch hook planner did not finish.",
       taskIds: planningInputs.map((input) => input.automationTaskId),
-      updatedAt: new Date().toISOString(),
     });
 
     return {
@@ -173,7 +190,7 @@ export async function POST(request?: Request) {
     })) as StitchrBatchPlanResult;
     const hookPlan = await planBatchHooks({
       convex,
-      taskIds: result.taskIds,
+      taskIds: result.hookPlanningTaskIds ?? result.taskIds,
     });
 
     return Response.json({
