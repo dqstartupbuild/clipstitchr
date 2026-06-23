@@ -325,6 +325,20 @@ should not wait for it.
 8. Confirm failed jobs show a clear error in the dashboard job panel.
 9. Add host-level logs and restart policy before production traffic.
 
+## Environment Targets
+
+Each Convex deployment must dispatch to Cloud Run Jobs that point back to that
+same Convex deployment through `NEXT_PUBLIC_CONVEX_URL`. Do not point dev Convex
+at production worker jobs, because those workers will launch successfully but
+claim work from production instead of draining dev queues.
+
+Current Cloud Run targets:
+
+- Production Convex `prod:whimsical-ptarmigan-764` dispatches to
+  `clipstitchr-media-worker` and `clipstitchr-provider-worker`.
+- Dev Convex `dev:neighborly-beagle-365` dispatches to
+  `clipstitchr-dev-media-worker` and `clipstitchr-dev-provider-worker`.
+
 ## Sources
 
 - Cloudflare Containers pricing:
