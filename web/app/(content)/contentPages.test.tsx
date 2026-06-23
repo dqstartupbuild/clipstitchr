@@ -62,7 +62,7 @@ describe("content pages", () => {
       throw new Error("Expected blog content.");
     }
 
-    const indexMarkup = renderToStaticMarkup(<BlogIndexPage />);
+    const indexMarkup = renderToStaticMarkup(await BlogIndexPage());
     const articleMarkup = renderToStaticMarkup(
       await BlogPostPage({
         params: Promise.resolve({ slug: firstPost.slug }),

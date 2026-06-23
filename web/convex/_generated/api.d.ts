@@ -38,6 +38,7 @@ import type * as automationSwipr from "../automationSwipr.js";
 import type * as automationTasks from "../automationTasks.js";
 import type * as avatarPreferences from "../avatarPreferences.js";
 import type * as avatars from "../avatars.js";
+import type * as blogPosts from "../blogPosts.js";
 import type * as cliprJobs from "../cliprJobs.js";
 import type * as cliprPreferences from "../cliprPreferences.js";
 import type * as createCompletedRunNotification from "../createCompletedRunNotification.js";
@@ -121,6 +122,7 @@ import type * as validators_automationTaskStatus from "../validators/automationT
 import type * as validators_automationTaskType from "../validators/automationTaskType.js";
 import type * as validators_automationTool from "../validators/automationTool.js";
 import type * as validators_avatarWardrobeStyle from "../validators/avatarWardrobeStyle.js";
+import type * as validators_blogPostContentFormat from "../validators/blogPostContentFormat.js";
 import type * as validators_clipPerformanceScore from "../validators/clipPerformanceScore.js";
 import type * as validators_clipType from "../validators/clipType.js";
 import type * as validators_cliprDurationSeconds from "../validators/cliprDurationSeconds.js";
@@ -209,6 +211,7 @@ declare const fullApi: ApiFromModules<{
   automationTasks: typeof automationTasks;
   avatarPreferences: typeof avatarPreferences;
   avatars: typeof avatars;
+  blogPosts: typeof blogPosts;
   cliprJobs: typeof cliprJobs;
   cliprPreferences: typeof cliprPreferences;
   createCompletedRunNotification: typeof createCompletedRunNotification;
@@ -292,6 +295,7 @@ declare const fullApi: ApiFromModules<{
   "validators/automationTaskType": typeof validators_automationTaskType;
   "validators/automationTool": typeof validators_automationTool;
   "validators/avatarWardrobeStyle": typeof validators_avatarWardrobeStyle;
+  "validators/blogPostContentFormat": typeof validators_blogPostContentFormat;
   "validators/clipPerformanceScore": typeof validators_clipPerformanceScore;
   "validators/clipType": typeof validators_clipType;
   "validators/cliprDurationSeconds": typeof validators_cliprDurationSeconds;

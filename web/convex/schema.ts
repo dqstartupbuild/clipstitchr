@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { assetTagsValidator } from "./validators/assetTags";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
+import { blogPostContentFormatValidator } from "./validators/blogPostContentFormat";
 import { automationGenerationCountValidator } from "./validators/automationGenerationCount";
 import { automationRunStatusValidator } from "./validators/automationRunStatus";
 import { automationSelectionModeValidator } from "./validators/automationSelectionMode";
@@ -65,6 +66,23 @@ export default defineSchema({
   })
     .index("by_normalized_email", ["normalizedEmail"])
     .index("by_created", ["createdAt"]),
+  blogPosts: defineTable({
+    slug: v.string(),
+    externalId: v.optional(v.string()),
+    title: v.string(),
+    metaDescription: v.string(),
+    contentFormat: blogPostContentFormatValidator,
+    content: v.string(),
+    contentHtml: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+    tags: v.array(v.string()),
+    source: v.optional(v.string()),
+    publishedAt: v.string(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_published", ["publishedAt"]),
   videoClips: defineTable({
     ownerId: v.string(),
     id: v.string(),

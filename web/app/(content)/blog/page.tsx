@@ -2,11 +2,9 @@ import Link from "next/link";
 import { BlogEmptyState } from "@/app/_components/content/BlogEmptyState";
 import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
-import {
-  getBlogCategories,
-  getFeaturedBlogPosts,
-  getPublishedBlogPosts,
-} from "@/lib/content/queries";
+import { getBlogPostCards } from "@/lib/content/runtimeBlog/getBlogPostCards";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = createPageMetadata({
   title: `Blog | ${site.name}`,
@@ -14,10 +12,12 @@ export const metadata = createPageMetadata({
   canonical: "/blog",
 });
 
-export default function BlogIndexPage() {
-  const posts = getPublishedBlogPosts();
-  const featured = getFeaturedBlogPosts()[0] ?? posts[0];
-  const categories = getBlogCategories();
+export default async function BlogIndexPage() {
+  const posts = await getBlogPostCards();
+  const featured = posts.find((post) => post.featured) ?? posts[0];
+  const categories = Array.from(
+    new Set(posts.map((post) => post.category)),
+  ).sort();
   const isEmpty = posts.length === 0;
 
   return (

@@ -61,6 +61,17 @@ npx convex dev --once
   verification key file.
 - Must not be prefixed with `NEXT_PUBLIC_`.
 
+`BLOG_PUBLISH_WEBHOOK_TOKEN`
+
+- Required in the Next.js runtime environment to use
+  `POST /api/webhooks/blog-publisher`.
+- Authorizes the external blog publisher (Blogger) to upsert published posts
+  with `Authorization: Bearer <token>`.
+- Compared in constant time. Missing or wrong tokens return `401` with
+  `{ "error": "Invalid access token." }`.
+- Must be a high-entropy random secret.
+- Must not be prefixed with `NEXT_PUBLIC_`.
+
 `AUTOMATION_WORKER_SECRET`
 
 - Required in the Convex deployment and in any trusted scheduler or manual
@@ -221,6 +232,7 @@ Firecrawl website import:
 | Public waitlist submission | `waitlist.submit` from `/sign-up` | 3/hour/normalized email, burst 3; shared global bucket 500/hour, burst 100 |
 | TikTok Events API forwarding | `POST /api/analytics/tiktok/events` after marketing-cookie consent | 120/hour/client fingerprint, burst 30; shared global bucket 5,000/hour, burst 1,000 |
 | IndexNow sitemap submission | `POST /api/indexnow` with `INDEXNOW_SUBMIT_SECRET` | Submits all public sitemap URLs only, excludes authenticated dashboard/API routes, requires a public `NEXT_PUBLIC_SITE_URL`, consumes 500 submitted URLs/hour/client fingerprint, burst 100; shared global bucket 5,000 submitted URLs/hour, burst 500 |
+| Blog publish webhook | `POST /api/webhooks/blog-publisher` with `BLOG_PUBLISH_WEBHOOK_TOKEN` | Bearer-token authorized only; rejects missing/wrong tokens with `401` before any work. Consumes 120 published articles/hour/client fingerprint, burst 30; shared global bucket 600 published articles/hour, burst 120 across 5 shards. The rate-limit consume runs before any `blogPosts.upsertPublishedArticle` Convex write. Upserts posts by slug into the `blogPosts` table and revalidates `/blog` and each published `/blog/{slug}` path. |
 | Product enrichment, Hook Lab setup, and website import | `POST /api/settings/products`, `PATCH /api/settings/products/{id}` | 100/hour/user, burst 20; 2,000/30 days/user; global 5,000/hour. The route consumes this limit before Firecrawl website crawling and before the Replicate product enrichment call. Website import is capped at 15 Firecrawl pages per create/update. Product edits only re-crawl Firecrawl when the saved website URL changes. Hook Lab examples, goal, and tone are saved on the same product create/update path and do not add a separate provider call. |
 | Clipr job create | `POST /api/clipr/jobs` | 3/hour/user, burst 2; 8/day/user; 900 generated seconds/30 days/user; shared global provider bucket 10,000 units/hour, burst 2,000. The route resolves the requested mode, creates a queued `cliprJobs` record and a durable `manual-clipr` provider job, then returns immediately. Current visible Reaction and B-roll jobs consume the 4-10 second visual estimate. Script jobs consume the 60 second estimate only when `isCliprScriptModeEnabled` is `true`; hidden Script requests resolve to a visual mode before quota/provider work. |
 | Clipr hook/script generation | `POST /api/clipr/jobs` worker path, `POST /api/clipr/text` immediate suggestion path, and `POST /api/swipr/drafts/generate` batch draft path | 30/hour/user, burst 10; shared global provider bucket 10,000 units/hour, burst 2,000. Manual Clipr job creation consumes this only for Script mode. Reaction, B-roll, and Demo use a local visual plan and do not consume hook/script quota. Stitchr requests can include selected UGC/demo context and return overlay text plus caption/hashtag copy under this same limit. Swipr text generation returns carousel text plus one combined caption, 1000-4000 character description, and hashtag field under this same limit. Swipr batch draft generation consumes this with `count` fixed to 10 editable draft Swipes before calling the writing provider. The default writing provider is `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` can be enabled through `TEXT_WRITING_MODEL_ID` for higher-cost tests. |

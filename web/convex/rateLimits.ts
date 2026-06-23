@@ -136,6 +136,32 @@ export const consumeIndexNowSubmit = mutation({
   },
 });
 
+export const consumeBlogPublishWebhook = mutation({
+  args: {
+    key: v.string(),
+    secret: v.string(),
+    articleCount: v.number(),
+  },
+  handler: async (ctx, { key, secret, articleCount }) => {
+    assertRateLimitApiSecret(secret);
+
+    const publishedArticleCount = getPositiveCount(
+      articleCount,
+      "Article count",
+    );
+
+    await rateLimiter.limit(ctx, "blogPublishWebhookByClient", {
+      key,
+      count: publishedArticleCount,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "blogPublishWebhookGlobal", {
+      count: publishedArticleCount,
+      throws: true,
+    });
+  },
+});
+
 export const consumePexelsSearch = mutation({
   args: {
     secret: v.string(),

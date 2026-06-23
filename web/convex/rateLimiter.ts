@@ -308,6 +308,19 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 500,
     shards: 5,
   },
+  blogPublishWebhookByClient: {
+    kind: "token bucket",
+    rate: 120,
+    period: HOUR,
+    capacity: 30,
+  },
+  blogPublishWebhookGlobal: {
+    kind: "token bucket",
+    rate: 600,
+    period: HOUR,
+    capacity: 120,
+    shards: 5,
+  },
   cliprJobCreate: {
     kind: "token bucket",
     rate: 3,
