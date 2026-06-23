@@ -25,6 +25,10 @@ Applying the action can save:
 The source video blob in R2 is never modified. Quick Edit stores metadata on
 the clip or Stitch record and all render paths read that metadata.
 
+Manual cuts use the same non-destructive `removeRanges` metadata, but they are
+edited directly by the user instead of coming from score suggestions. See
+`docs/features/manual-cuts.md` for the source clip and saved Stitch workflow.
+
 ## Source Clip Behavior
 
 UGC and Demo Quick Edit updates the clip's global default trim metadata. This
@@ -44,6 +48,10 @@ changes to the source UGC or Demo clip do not rewrite that saved Stitch.
 Resetting a source clip restores the default trim snapshot that existed before
 Quick Edit was applied and clears the clip's `quickEdit` metadata.
 
+Manual source clip cuts are saved through the same `quickEdit.removeRanges`
+field with `source: "manual-cut"`. They can coexist with other Quick Edit
+metadata such as crop, overlay text, summary, and baseline data.
+
 ## Saved Stitch Behavior
 
 Saved normal Stitches get their own `quickEdit` metadata. Applying Quick Edit
@@ -61,6 +69,10 @@ to a scored Stitch:
 Resetting a saved Stitch restores the saved baseline snapshot from before
 Quick Edit was applied. It does not read the latest source clip defaults, and it
 does not clear the saved score.
+
+Manual saved Stitch cuts are stored on `ugcQuickEdit.removeRanges` or
+`demoQuickEdit.removeRanges`, apply only to that saved Stitch, and clear stale
+render fields so the next preview or download uses the current source timing.
 
 Longr exports inherit source clip Quick Edit metadata through sequence segments,
 but the one-click scored-Stitch remap is intentionally limited to normal
@@ -140,7 +152,7 @@ Score parsers accept optional `quickEditSuggestions`:
 Applied metadata uses the same suggestion fields plus:
 
 - `appliedAt`
-- `source: "ai-score"`
+- `source: "ai-score"` or `source: "manual-cut"`
 - `baseline` for undo/reset
 
 ## File Tree
@@ -191,6 +203,9 @@ Preview and render:
 
 UI:
 
+- `web/app/_components/cuts/VideoCutEditor.tsx`
+- `web/app/_components/cuts/VideoCutRangeFields.tsx`
+- `web/app/_components/cuts/VideoCutRangeSlider.tsx`
 - `web/app/_components/dashboard/VideoClipCard.tsx`
 - `web/app/_components/dashboard/StitchCard.tsx`
 - `web/app/_components/dashboard/VideoClipMusicPreview.tsx`
@@ -200,7 +215,10 @@ UI:
 ## Abuse Protection
 
 Quick Edit apply/reset operations are Convex metadata updates and use the
-existing `convexMetadataUpdate` limiter before writes. The feature does not
-create a new provider call, signed URL route, or music upload surface.
+existing `convexMetadataUpdate` limiter before writes. Manual source clip cuts
+use the same Convex metadata limiter. Manual saved Stitch cuts also use the
+existing R2 upload signed URL and byte limits when a replacement poster is
+uploaded, then consume `convexMetadataUpdate` before the saved Stitch metadata
+write. The feature does not create a new provider call or music upload surface.
 Scoring still uses the existing clip and Stitch score rate limits before the AI
 returns suggestions.

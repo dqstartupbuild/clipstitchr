@@ -4,5 +4,5 @@ import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSugg
 export type QuickEditMetadata = QuickEditSuggestions & {
   appliedAt: string;
   baseline?: QuickEditBaseline;
-  source: "ai-score" | "manual-crop";
+  source: "ai-score" | "manual-crop" | "manual-cut";
 };

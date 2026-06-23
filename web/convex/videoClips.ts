@@ -12,6 +12,8 @@ import { getVideoClipCanBePosted } from "./getVideoClipCanBePosted";
 import { getVideoClipLibraryKind } from "./getVideoClipLibraryKind";
 import { getVideoClipNotificationCopy } from "./getVideoClipNotificationCopy";
 import { getVideoClipProductScopeFilter } from "./getVideoClipProductScopeFilter";
+import { getQuickEditWithRemoveRanges } from "./getQuickEditWithRemoveRanges";
+import { normalizeQuickEditRemoveRanges } from "./normalizeQuickEditRemoveRanges";
 import { rateLimiter } from "./rateLimiter";
 import { assetTagsValidator } from "./validators/assetTags";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
@@ -21,6 +23,7 @@ import { clipPerformanceScoreValidator } from "./validators/clipPerformanceScore
 import { clipTypeValidator } from "./validators/clipType";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { quickEditCropValidator } from "./validators/quickEditCrop";
+import { quickEditRemoveRangeValidator } from "./validators/quickEditRemoveRange";
 import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
@@ -773,6 +776,65 @@ export const updateCrop = mutation({
           videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
           videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
         ]);
+    }
+  },
+});
+
+export const updateCuts = mutation({
+  args: {
+    id: v.string(),
+    removeRanges: v.array(quickEditRemoveRangeValidator),
+    updatedAt: v.string(),
+  },
+  handler: async (ctx, { id, removeRanges, updatedAt }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const clip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!clip) {
+      throw new Error("Video clip not found.");
+    }
+
+    const normalizedRemoveRanges = normalizeQuickEditRemoveRanges(
+      removeRanges,
+      clip.duration,
+    );
+    const nextQuickEditSuggestions = getQuickEditWithRemoveRanges(
+      clip.quickEdit,
+      normalizedRemoveRanges,
+    );
+    const nextQuickEdit = nextQuickEditSuggestions
+      ? {
+          ...nextQuickEditSuggestions,
+          appliedAt: updatedAt,
+          baseline:
+            clip.quickEdit?.baseline ??
+            (clip.defaultTrimRange
+              ? { defaultTrimRange: clip.defaultTrimRange }
+              : {}),
+          source: "manual-cut" as const,
+        }
+      : undefined;
+
+    await ctx.db.patch(clip._id, {
+      quickEdit: nextQuickEdit,
+      updatedAt,
+    });
+    const updatedClip = await ctx.db.get(clip._id);
+
+    if (updatedClip) {
+      await Promise.all([
+        videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+        videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+      ]);
     }
   },
 });

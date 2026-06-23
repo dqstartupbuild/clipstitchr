@@ -6,12 +6,14 @@ import { ClipPerformanceScoreDetails } from "@/app/_components/dashboard/ClipPer
 import { CliprMusicControls } from "@/app/_components/dashboard/CliprMusicControls";
 import { MediaActionButtonList } from "@/app/_components/dashboard/MediaActionButtonList";
 import { VideoClipMusicPreview } from "@/app/_components/dashboard/VideoClipMusicPreview";
+import { VideoCutEditor } from "@/app/_components/cuts/VideoCutEditor";
 import { VideoTrimEditor } from "@/app/_components/trim/VideoTrimEditor";
 import { AssetTagList } from "@/app/_components/uploads/AssetTagList";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import { useVideoClipDetailsMusic } from "@/lib/clipstitchr/hooks/useVideoClipDetailsMusic";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -20,8 +22,10 @@ import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
+import { getQuickEditSuggestionsWithReplacedRemoveRanges } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsWithReplacedRemoveRanges";
 import { getVideoClipBadgeLabel } from "@/lib/clipstitchr/utils/getVideoClipBadgeLabel";
-import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
+import { normalizeQuickEditRemoveRanges } from "@/lib/clipstitchr/utils/normalizeQuickEditRemoveRanges";
 
 type VideoClipDetailsTrimEditor = {
   initialTrimRange: VideoTrimRange;
@@ -30,9 +34,15 @@ type VideoClipDetailsTrimEditor = {
   onSave: (trimRange: VideoTrimRange) => void | Promise<void>;
 };
 
+type VideoClipDetailsCutEditor = {
+  initialRemoveRanges: QuickEditRemoveRange[];
+  onSave: (removeRanges: QuickEditRemoveRange[]) => void | Promise<void>;
+};
+
 type VideoClipDetailsDialogProps = {
   actionItems?: MediaCardActionMenuItem[];
   clip: VideoClipMetadata;
+  cutEditor?: VideoClipDetailsCutEditor;
   productName?: string;
   initialControlsEditorOpen?: boolean;
   isLoading: boolean;
@@ -48,6 +58,7 @@ type VideoClipDetailsDialogProps = {
 export function VideoClipDetailsDialog({
   actionItems = [],
   clip,
+  cutEditor,
   productName,
   initialControlsEditorOpen = false,
   isLoading,
@@ -67,13 +78,31 @@ export function VideoClipDetailsDialog({
   const [savedTrimRange, setSavedTrimRange] = useState(() =>
     clampVideoTrimRange(initialTrimRange, clip.duration),
   );
+  const [activeRemoveRanges, setActiveRemoveRanges] = useState(() =>
+    normalizeQuickEditRemoveRanges(
+      cutEditor?.initialRemoveRanges ?? quickEdit?.removeRanges ?? [],
+      clip.duration,
+    ),
+  );
+  const [savedRemoveRanges, setSavedRemoveRanges] = useState(() =>
+    normalizeQuickEditRemoveRanges(
+      cutEditor?.initialRemoveRanges ?? quickEdit?.removeRanges ?? [],
+      clip.duration,
+    ),
+  );
   const [isControlsEditorOpen, setIsControlsEditorOpen] = useState(
-    Boolean((trimEditor || musicEditor) && initialControlsEditorOpen),
+    Boolean((trimEditor || cutEditor || musicEditor) && initialControlsEditorOpen),
   );
   const musicState = useVideoClipDetailsMusic({ clip, musicEditor });
-  const displayDuration = getVideoTrimDisplayDuration(
-    clip.duration,
+  const activeQuickEdit = getQuickEditSuggestionsWithReplacedRemoveRanges({
+    duration: clip.duration,
+    quickEdit: quickEdit ?? undefined,
+    removeRanges: activeRemoveRanges,
+  });
+  const displayDuration = getQuickEditPlaybackDuration(
     activeTrimRange,
+    clip.duration,
+    activeRemoveRanges,
   );
   const musicDetail = musicState.music
     ? musicState.musicEnabled
@@ -104,6 +133,7 @@ export function VideoClipDetailsDialog({
 
   const handleCancelTrim = () => {
     setActiveTrimRange(savedTrimRange);
+    setActiveRemoveRanges(savedRemoveRanges);
   };
 
   const handleSaveTrim = async (trimRange: VideoTrimRange) => {
@@ -117,8 +147,30 @@ export function VideoClipDetailsDialog({
     setActiveTrimRange(clampedTrimRange);
     setSavedTrimRange(clampedTrimRange);
   };
-  const controlsLabel =
-    trimEditor && musicEditor ? "Trim & music" : trimEditor ? "Trim" : "Music";
+  const handleSaveCuts = async (removeRanges: QuickEditRemoveRange[]) => {
+    if (!cutEditor) {
+      return;
+    }
+
+    const normalizedRemoveRanges = normalizeQuickEditRemoveRanges(
+      removeRanges,
+      clip.duration,
+    );
+
+    await cutEditor.onSave(normalizedRemoveRanges);
+    setActiveRemoveRanges(normalizedRemoveRanges);
+    setSavedRemoveRanges(normalizedRemoveRanges);
+  };
+  const controlLabels = [
+    trimEditor ? "trim" : null,
+    cutEditor ? "cuts" : null,
+    musicEditor ? "music" : null,
+  ].filter(Boolean) as string[];
+  const controlsLabel = controlLabels
+    .map((label, index) =>
+      index === 0 ? `${label.charAt(0).toUpperCase()}${label.slice(1)}` : label,
+    )
+    .join(" & ");
 
   return (
     <div
@@ -163,7 +215,7 @@ export function VideoClipDetailsDialog({
             musicBlob={musicState.musicBlob}
             musicEnabled={musicState.musicEnabled}
             musicVolume={musicState.musicVolume}
-            quickEdit={quickEdit}
+            quickEdit={activeQuickEdit}
             sourceDuration={clip.duration}
             trimRange={activeTrimRange}
             onLoadPreview={onLoadPreview}
@@ -178,7 +230,7 @@ export function VideoClipDetailsDialog({
                   {clip.hasAudio ? "Audio" : "No audio"}
                 </span>
               </div>
-              {trimEditor || musicEditor ? (
+              {trimEditor || cutEditor || musicEditor ? (
                 <Button
                   type="button"
                   variant="secondary"
@@ -207,6 +259,18 @@ export function VideoClipDetailsDialog({
                     onCancel={handleCancelTrim}
                     onChange={setActiveTrimRange}
                     onSave={handleSaveTrim}
+                  />
+                ) : null}
+                {cutEditor ? (
+                  <VideoCutEditor
+                    duration={clip.duration}
+                    title="Cuts"
+                    saveLabel="Save cuts"
+                    trimRange={activeTrimRange}
+                    value={activeRemoveRanges}
+                    onCancel={handleCancelTrim}
+                    onChange={setActiveRemoveRanges}
+                    onSave={handleSaveCuts}
                   />
                 ) : null}
                 {musicEditor ? (

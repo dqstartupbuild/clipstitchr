@@ -2,6 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { StitchSourceSettingsPanel } from "@/app/_components/dashboard/StitchSourceSettingsPanel";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -16,6 +17,10 @@ const mocks = vi.hoisted(() => ({
     onDemoPlaybackRateChange: (playbackRate: VideoPlaybackRate) => void;
     onUgcPlaybackRateChange: (playbackRate: VideoPlaybackRate) => void;
   },
+  cutEditors: [] as Array<{
+    onChange: (removeRanges: QuickEditRemoveRange[]) => void;
+    title: string;
+  }>,
   trimControls: [] as Array<{
     onChange: (trimRange: VideoTrimRange) => void;
     title: string;
@@ -39,6 +44,16 @@ vi.mock("@/app/_components/dashboard/StitchSourceTrimControl", () => ({
     title: string;
   }) => {
     mocks.trimControls.push(props);
+    return <div>{props.title}</div>;
+  },
+}));
+
+vi.mock("@/app/_components/cuts/VideoCutEditor", () => ({
+  VideoCutEditor: (props: {
+    onChange: (removeRanges: QuickEditRemoveRange[]) => void;
+    title: string;
+  }) => {
+    mocks.cutEditors.push(props);
     return <div>{props.title}</div>;
   },
 }));
@@ -79,6 +94,7 @@ function createClip(id: string, name: string): VideoClipMetadata {
 describe("StitchSourceSettingsPanel", () => {
   beforeEach(() => {
     mocks.clipSelects = [];
+    mocks.cutEditors = [];
     mocks.playbackRateControls = null;
     mocks.trimControls = [];
   });
@@ -86,9 +102,11 @@ describe("StitchSourceSettingsPanel", () => {
   it("renders source controls and forwards selection, trim, and speed changes", () => {
     const onDemoClipChange = vi.fn();
     const onDemoPlaybackRateChange = vi.fn();
+    const onDemoRemoveRangesChange = vi.fn();
     const onDemoTrimChange = vi.fn();
     const onUgcClipChange = vi.fn();
     const onUgcPlaybackRateChange = vi.fn();
+    const onUgcRemoveRangesChange = vi.fn();
     const onUgcTrimChange = vi.fn();
     const markup = renderToStaticMarkup(
       <StitchSourceSettingsPanel
@@ -98,6 +116,7 @@ describe("StitchSourceSettingsPanel", () => {
           name: "Demo 1",
         }}
         demoPlaybackRate={1}
+        demoRemoveRanges={[{ end: 4, start: 2 }]}
         demoTrimDuration={10}
         demoTrimRange={{
           end: 8,
@@ -113,6 +132,7 @@ describe("StitchSourceSettingsPanel", () => {
           name: "UGC 1",
         }}
         ugcPlaybackRate={2}
+        ugcRemoveRanges={[{ end: 3, start: 1 }]}
         ugcTrimDuration={10}
         ugcTrimRange={{
           end: 5,
@@ -120,9 +140,11 @@ describe("StitchSourceSettingsPanel", () => {
         }}
         onDemoClipChange={onDemoClipChange}
         onDemoPlaybackRateChange={onDemoPlaybackRateChange}
+        onDemoRemoveRangesChange={onDemoRemoveRangesChange}
         onDemoTrimChange={onDemoTrimChange}
         onUgcClipChange={onUgcClipChange}
         onUgcPlaybackRateChange={onUgcPlaybackRateChange}
+        onUgcRemoveRangesChange={onUgcRemoveRangesChange}
         onUgcTrimChange={onUgcTrimChange}
       />,
     );
@@ -131,6 +153,8 @@ describe("StitchSourceSettingsPanel", () => {
     mocks.clipSelects[1].onChange("demo_2");
     mocks.trimControls[0].onChange({ end: 5, start: 2 });
     mocks.trimControls[1].onChange({ end: 8, start: 3 });
+    mocks.cutEditors[0].onChange([{ end: 4, start: 2 }]);
+    mocks.cutEditors[1].onChange([{ end: 9, start: 7 }]);
     mocks.playbackRateControls?.onUgcPlaybackRateChange(1);
 
     expect(markup).toContain("Sources");
@@ -147,6 +171,10 @@ describe("StitchSourceSettingsPanel", () => {
       end: 8,
       start: 3,
     });
+    expect(onUgcRemoveRangesChange).toHaveBeenCalledWith([{ end: 4, start: 2 }]);
+    expect(onDemoRemoveRangesChange).toHaveBeenCalledWith([
+      { end: 9, start: 7 },
+    ]);
     expect(onUgcPlaybackRateChange).toHaveBeenCalledWith(1);
     expect(onDemoPlaybackRateChange).not.toHaveBeenCalled();
   });

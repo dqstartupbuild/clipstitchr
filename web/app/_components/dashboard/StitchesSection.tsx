@@ -10,6 +10,7 @@ import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibrary
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchLibraryStatusFilter } from "@/lib/clipstitchr/types/StitchLibraryStatusFilter";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
@@ -63,6 +64,11 @@ type StitchesSectionProps = {
     source: "ugc" | "demo",
     crop: QuickEditCrop | null,
   ) => void | Promise<void>;
+  onUpdateSourceCuts?: (
+    stitch: Stitch,
+    source: "ugc" | "demo",
+    removeRanges: QuickEditRemoveRange[],
+  ) => void | Promise<void>;
   onUpdateTextOverlay: (
     stitch: Stitch,
     textOverlay: TextOverlay | TextOverlay[] | null,
@@ -97,6 +103,7 @@ export function StitchesSection({
   onUpdatePostedStatus,
   onUpdateSocialCaption,
   onUpdateSourceCrop,
+  onUpdateSourceCuts,
   onUpdateSourceSettings,
   onUpdateTextOverlay,
   ugcClips,
@@ -206,6 +213,7 @@ export function StitchesSection({
                 onUpdatePostedStatus={onUpdatePostedStatus}
                 onUpdateSocialCaption={onUpdateSocialCaption}
                 onUpdateSourceCrop={onUpdateSourceCrop}
+                onUpdateSourceCuts={onUpdateSourceCuts}
                 onUpdateSourceSettings={onUpdateSourceSettings}
                 onUpdateTextOverlay={onUpdateTextOverlay}
                 ugcClips={ugcClips}

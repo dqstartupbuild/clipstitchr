@@ -32,6 +32,7 @@ import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySo
 import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetadata";
 import type { ClipLibraryValue } from "@/lib/clipstitchr/types/ClipLibraryValue";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
@@ -46,11 +47,14 @@ import { createStitchQuickEditUpdate } from "@/lib/clipstitchr/utils/createStitc
 import { getClipLibraryDisplayCounts } from "@/lib/clipstitchr/utils/getClipLibraryDisplayCounts";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 import { getDeletableMusicAudioObject } from "@/lib/clipstitchr/utils/getDeletableMusicAudioObject";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getQuickEditSuggestedTrimRange } from "@/lib/clipstitchr/utils/getQuickEditSuggestedTrimRange";
+import { getQuickEditSuggestionsWithReplacedRemoveRanges } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsWithReplacedRemoveRanges";
 import { getQuickEditSuggestionsWithCrop } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsWithCrop";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoClipMetadataById";
+import { normalizeQuickEditRemoveRanges } from "@/lib/clipstitchr/utils/normalizeQuickEditRemoveRanges";
 import { normalizeAssetTagsWithRequiredTag } from "@/lib/clipstitchr/utils/normalizeAssetTagsWithRequiredTag";
 
 type PendingPosterBlobLoad = {
@@ -176,6 +180,7 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
   );
   const updateClipMetadataMutation = useMutation(api.videoClips.updateMetadata);
   const updateClipCropMutation = useMutation(api.videoClips.updateCrop);
+  const updateClipCutsMutation = useMutation(api.videoClips.updateCuts);
   const updateClipPosterMutation = useMutation(api.videoClips.updatePoster);
   const applyClipQuickEditMutation = useMutation(api.videoClips.applyQuickEdit);
   const resetClipQuickEditMutation = useMutation(api.videoClips.resetQuickEdit);
@@ -194,6 +199,9 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
   );
   const updateStitchSourceCropMutation = useMutation(
     api.stitches.updateSourceCrop,
+  );
+  const updateStitchSourceCutsMutation = useMutation(
+    api.stitches.updateSourceCuts,
   );
   const updateStitchTextOverlayMutation = useMutation(
     api.stitches.updateTextOverlay,
@@ -730,6 +738,25 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
     [loadClip, refresh, updateClipCropMutation, updateClipPosterMutation],
   );
 
+  const updateClipCuts = useCallback(
+    async (
+      clip: VideoClipMetadata,
+      removeRanges: QuickEditRemoveRange[],
+    ) => {
+      await updateClipCutsMutation({
+        id: clip.id,
+        removeRanges: normalizeQuickEditRemoveRanges(
+          removeRanges,
+          clip.duration,
+        ),
+        updatedAt: new Date().toISOString(),
+      });
+      clipCacheRef.current.delete(clip.id);
+      await refresh();
+    },
+    [refresh, updateClipCutsMutation],
+  );
+
   const applyClipQuickEdit = useCallback(
     async (clip: VideoClipMetadata) => {
       const quickEdit = clip.performanceScore?.quickEditSuggestions;
@@ -949,6 +976,110 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
       await refresh();
     },
     [loadClip, refresh, updateStitchSourceCropMutation],
+  );
+
+  const updateStitchSourceCuts = useCallback(
+    async (
+      stitch: Stitch,
+      source: "ugc" | "demo",
+      removeRanges: QuickEditRemoveRange[],
+    ) => {
+      const previousPosterObject = stitch.posterObject;
+      const previousStitchObject = stitch.stitchObject;
+      const [ugcClip, demoClip] = await Promise.all([
+        loadClip(stitch.ugcClipId),
+        loadClip(stitch.demoClipId),
+      ]);
+
+      if (!ugcClip || !demoClip) {
+        throw new Error("Unable to load the source videos for this stitch.");
+      }
+
+      const normalizedRemoveRanges = normalizeQuickEditRemoveRanges(
+        removeRanges,
+        source === "ugc" ? ugcClip.duration : demoClip.duration,
+      );
+      const ugcQuickEdit =
+        source === "ugc"
+          ? getQuickEditSuggestionsWithReplacedRemoveRanges({
+              duration: ugcClip.duration,
+              quickEdit: stitch.ugcQuickEdit,
+              removeRanges: normalizedRemoveRanges,
+            })
+          : stitch.ugcQuickEdit;
+      const demoQuickEdit =
+        source === "demo"
+          ? getQuickEditSuggestionsWithReplacedRemoveRanges({
+              duration: demoClip.duration,
+              quickEdit: stitch.demoQuickEdit,
+              removeRanges: normalizedRemoveRanges,
+            })
+          : stitch.demoQuickEdit;
+      const ugcTrimRange =
+        stitch.ugcTrimRange ?? getDefaultVideoTrimRange(ugcClip);
+      const demoTrimRange =
+        stitch.demoTrimRange ?? getDefaultVideoTrimRange(demoClip);
+      const duration =
+        getQuickEditPlaybackDuration(
+          ugcTrimRange,
+          ugcClip.duration,
+          ugcQuickEdit?.removeRanges,
+          stitch.ugcPlaybackRate ?? 1,
+        ) +
+        getQuickEditPlaybackDuration(
+          demoTrimRange,
+          demoClip.duration,
+          demoQuickEdit?.removeRanges,
+          stitch.demoPlaybackRate ?? 1,
+        );
+      let posterObject: R2ObjectReference | null = null;
+
+      try {
+        const posterBlob = await createStitchPosterBlob({
+          demoClip,
+          demoPlaybackRate: stitch.demoPlaybackRate ?? 1,
+          demoQuickEdit,
+          demoTrimRange,
+          duration,
+          textOverlay: stitch.textOverlay ?? null,
+          textOverlays: stitch.textOverlays,
+          ugcClip,
+          ugcPlaybackRate: stitch.ugcPlaybackRate ?? 1,
+          ugcQuickEdit,
+          ugcTrimRange,
+        });
+
+        posterObject = await uploadStitchPosterBlob({
+          blob: posterBlob,
+          stitchId: stitch.id,
+        });
+        posterBlobCacheRef.current.set(posterObject.key, posterBlob);
+      } catch {
+        posterObject = null;
+      }
+
+      await updateStitchSourceCutsMutation({
+        id: stitch.id,
+        duration,
+        posterObject,
+        posterVersion: posterObject ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
+        removeRanges: normalizedRemoveRanges,
+        source,
+      });
+
+      if (previousPosterObject && previousPosterObject.key !== posterObject?.key) {
+        await deleteObjectsFromR2([previousPosterObject]).catch(() => null);
+        posterBlobCacheRef.current.delete(previousPosterObject.key);
+      }
+
+      if (previousStitchObject) {
+        await deleteObjectsFromR2([previousStitchObject]).catch(() => null);
+        stitchBlobCacheRef.current.delete(previousStitchObject.key);
+      }
+
+      await refresh();
+    },
+    [loadClip, refresh, updateStitchSourceCutsMutation],
   );
 
   const updateStitchTextOverlay = useCallback(
@@ -1364,6 +1495,7 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
     removeClip,
     renameClip,
     updateClipCrop,
+    updateClipCuts,
     updateClipMetadata,
     scoreClip,
     applyClipQuickEdit,
@@ -1376,6 +1508,7 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
     resetStitchQuickEdit,
     updateStitchMusic,
     updateStitchSourceCrop,
+    updateStitchSourceCuts,
     updateStitchSourceSettings,
     updateStitchTextOverlay,
     updateStitchSocialCaption,

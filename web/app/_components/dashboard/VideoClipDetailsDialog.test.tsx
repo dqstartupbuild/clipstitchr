@@ -217,6 +217,8 @@ describe("VideoClipDetailsDialog", () => {
     mocks.stateQueue = [
       { start: 1, end: 5 },
       { start: 1, end: 5 },
+      [],
+      [],
       true,
     ];
 
@@ -307,10 +309,12 @@ describe("VideoClipDetailsDialog", () => {
     expect(controlsButton.props.children).toBe("Trim & music");
     (controlsButton.props.onClick as () => void)();
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith({ start: 1, end: 5 });
-    expect(mocks.setStateCalls[2]).toHaveReturnedWith(false);
+    expect(mocks.setStateCalls[2]).toHaveBeenCalledWith([]);
+    expect(mocks.setStateCalls[4]).toHaveReturnedWith(false);
 
     (trimEditor.props.onCancel as () => void)();
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith({ start: 1, end: 5 });
+    expect(mocks.setStateCalls[2]).toHaveBeenCalledWith([]);
     (trimEditor.props.onChange as (range: { start: number; end: number }) => void)(
       { start: 2, end: 4 },
     );
@@ -388,6 +392,8 @@ describe("VideoClipDetailsDialog", () => {
     mocks.stateQueue = [
       { start: 0, end: 8 },
       { start: 0, end: 8 },
+      [],
+      [],
       false,
     ];
     const trimOnlyTree = VideoClipDetailsDialog({
@@ -416,6 +422,8 @@ describe("VideoClipDetailsDialog", () => {
     mocks.stateQueue = [
       { start: 0, end: 8 },
       { start: 0, end: 8 },
+      [],
+      [],
       false,
     ];
     const musicOnlyTree = VideoClipDetailsDialog({
@@ -449,6 +457,8 @@ describe("VideoClipDetailsDialog", () => {
     mocks.stateQueue = [
       { start: 0, end: 8 },
       { start: 0, end: 8 },
+      [],
+      [],
       false,
     ];
     const detailsOnlyTree = VideoClipDetailsDialog({

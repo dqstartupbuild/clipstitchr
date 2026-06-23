@@ -6,13 +6,16 @@ import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { createNotification } from "./createNotification";
+import { getQuickEditWithRemoveRanges } from "./getQuickEditWithRemoveRanges";
 import { getStitchProductId } from "./getStitchProductId";
 import { getStitchNotificationCopy } from "./getStitchNotificationCopy";
 import { stitchCounts, stitchProductCounts } from "./aggregateCounts";
+import { normalizeQuickEditRemoveRanges } from "./normalizeQuickEditRemoveRanges";
 import { rateLimiter } from "./rateLimiter";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { quickEditCropValidator } from "./validators/quickEditCrop";
+import { quickEditRemoveRangeValidator } from "./validators/quickEditRemoveRange";
 import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchScoreValidator } from "./validators/stitchScore";
@@ -732,6 +735,93 @@ export const updateSourceCrop = mutation({
       ...(source === "ugc"
         ? { ugcQuickEdit: getQuickEditWithCrop(stitch.ugcQuickEdit, crop) }
         : { demoQuickEdit: getQuickEditWithCrop(stitch.demoQuickEdit, crop) }),
+      mimeType: undefined,
+      ...(posterObject === undefined
+        ? {}
+        : {
+            posterObject: posterObject ?? undefined,
+            posterVersion: posterObject ? posterVersion : undefined,
+          }),
+      quickEdit: undefined,
+      size: undefined,
+      stitchObject: undefined,
+    });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+      ]);
+    }
+  },
+});
+
+export const updateSourceCuts = mutation({
+  args: {
+    id: v.string(),
+    duration: v.number(),
+    posterObject: v.optional(v.union(r2ObjectValidator, v.null())),
+    posterVersion: v.optional(v.number()),
+    removeRanges: v.array(quickEditRemoveRangeValidator),
+    source: v.union(v.literal("ugc"), v.literal("demo")),
+  },
+  handler: async (
+    ctx,
+    { id, duration, posterObject, posterVersion, removeRanges, source },
+  ) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    if (stitch.mode === "longr" && stitch.sequenceSegments?.length) {
+      throw new Error("Longr stitches do not support UGC and demo source cuts.");
+    }
+
+    const sourceClipId = source === "ugc" ? stitch.ugcClipId : stitch.demoClipId;
+    const sourceClip = await ctx.db
+      .query("videoClips")
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", sourceClipId),
+      )
+      .unique();
+
+    if (!sourceClip) {
+      throw new Error("Source clip not found.");
+    }
+
+    const normalizedRemoveRanges = normalizeQuickEditRemoveRanges(
+      removeRanges,
+      sourceClip.duration,
+    );
+    const nextQuickEdit =
+      source === "ugc"
+        ? getQuickEditWithRemoveRanges(
+            stitch.ugcQuickEdit,
+            normalizedRemoveRanges,
+          )
+        : getQuickEditWithRemoveRanges(
+            stitch.demoQuickEdit,
+            normalizedRemoveRanges,
+          );
+
+    await ctx.db.patch(stitch._id, {
+      ...(source === "ugc"
+        ? { ugcQuickEdit: nextQuickEdit }
+        : { demoQuickEdit: nextQuickEdit }),
+      duration,
       mimeType: undefined,
       ...(posterObject === undefined
         ? {}
