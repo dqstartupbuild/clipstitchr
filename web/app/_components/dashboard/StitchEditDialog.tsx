@@ -7,6 +7,7 @@ import { StitchSourceSettingsPanel } from "@/app/_components/dashboard/StitchSou
 import { StitchSequencePreview } from "@/app/_components/dashboard/StitchSequencePreview";
 import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
 import { StitchSocialCaptionField } from "@/app/_components/stitches/StitchSocialCaptionField";
+import { StitchrHookOptionSelector } from "@/app/_components/stitchr/StitchrHookOptionSelector";
 import { TextOverlayEditor } from "@/app/_components/stitchr/TextOverlayEditor";
 import { Badge } from "@/app/_components/ui/Badge";
 import { Button } from "@/app/_components/ui/Button";
@@ -19,6 +20,7 @@ import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMet
 import type { StitchPreviewErrorState } from "@/lib/clipstitchr/types/StitchPreviewErrorState";
 import type { StitchPreviewSources } from "@/lib/clipstitchr/types/StitchPreviewSources";
 import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
+import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
@@ -39,11 +41,15 @@ import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyText
 import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
 import { getQuickEditSuggestionsWithCrop } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsWithCrop";
 import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
+import { getStitchrHookPlanMatchesStitch } from "@/lib/clipstitchr/utils/getStitchrHookPlanMatchesStitch";
 import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
+import { getTextOverlaysWithSelectedHook } from "@/lib/clipstitchr/utils/getTextOverlaysWithSelectedHook";
 
 type StitchEditDialogProps = {
   demoClips: VideoClipMetadata[];
+  hookPlans: StitchrHookPlan[];
+  isSavingHookPlan: boolean;
   isLoadingPreview: boolean;
   isSavingMusic: boolean;
   isSavingSocialCaption: boolean;
@@ -59,6 +65,7 @@ type StitchEditDialogProps = {
   textError: string | null;
   ugcClips: VideoClipMetadata[];
   onClose: () => void;
+  onAcceptHookVariant?: (planId: string, hookText: string) => void;
   onLoadPreview: (ugcClipId?: string, demoClipId?: string) => void;
   onRemoveMusic: () => Promise<void>;
   onSaveMusic: (music: StitchMusicMetadata) => Promise<void>;
@@ -79,10 +86,14 @@ type StitchEditDialogProps = {
     textOverlay: TextOverlay | TextOverlay[] | null,
     stitchOverride?: Stitch,
   ) => Promise<void>;
+  onRejectHookVariant?: (planId: string, hookText: string) => void;
+  onSelectHookVariant?: (planId: string, hookText: string) => void;
 };
 
 export function StitchEditDialog({
   demoClips,
+  hookPlans,
+  isSavingHookPlan,
   isLoadingPreview,
   isSavingMusic,
   isSavingSocialCaption,
@@ -98,6 +109,7 @@ export function StitchEditDialog({
   textError,
   ugcClips,
   onClose,
+  onAcceptHookVariant,
   onLoadPreview,
   onRemoveMusic,
   onSaveMusic,
@@ -105,6 +117,8 @@ export function StitchEditDialog({
   onSaveSourceSettings,
   onSaveSourceCrop,
   onSaveTextOverlay,
+  onRejectHookVariant,
+  onSelectHookVariant,
 }: StitchEditDialogProps) {
   const isLongrStitch = getStitchIsLongr(stitch);
   const currentUgcFallbackClip = {
@@ -280,6 +294,16 @@ export function StitchEditDialog({
     ugcPlaybackRate,
     ugcTrimRange: clampedUgcTrimRange,
   };
+  const selectedHookPlan =
+    hookPlans.find((plan) => getStitchrHookPlanMatchesStitch(plan, draftStitch)) ??
+    hookPlans[0];
+  const [selectedHookTextByPlanId, setSelectedHookTextByPlanId] = useState<
+    Record<string, string>
+  >({});
+  const selectedHookText = selectedHookPlan
+    ? (selectedHookTextByPlanId[selectedHookPlan.id] ??
+      selectedHookPlan.selectedHook)
+    : "";
   const fileSizeLabel = stitch.size
     ? formatBytes(stitch.size)
     : "Ready to download";
@@ -487,6 +511,41 @@ export function StitchEditDialog({
   const handleRemoveMusic = () => {
     setMusic(null);
   };
+  const handleSelectHookVariant = (hookText: string) => {
+    if (!selectedHookPlan) {
+      return;
+    }
+
+    setTextOverlays(
+      clampTextOverlays(
+        getTextOverlaysWithSelectedHook({
+          hookText,
+          textOverlays,
+          totalDuration: draftStitch.duration,
+        }),
+        draftStitch.duration,
+      ),
+    );
+    setSelectedHookTextByPlanId((selectedHooks) => ({
+      ...selectedHooks,
+      [selectedHookPlan.id]: hookText,
+    }));
+    onSelectHookVariant?.(selectedHookPlan.id, hookText);
+  };
+  const handleAcceptHookVariant = (hookText: string) => {
+    if (!selectedHookPlan) {
+      return;
+    }
+
+    onAcceptHookVariant?.(selectedHookPlan.id, hookText);
+  };
+  const handleRejectHookVariant = (hookText: string) => {
+    if (!selectedHookPlan) {
+      return;
+    }
+
+    onRejectHookVariant?.(selectedHookPlan.id, hookText);
+  };
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/60 px-2 py-3 sm:items-center sm:px-4 sm:py-6"
@@ -659,6 +718,22 @@ export function StitchEditDialog({
                 onUgcPlaybackRateChange={setUgcPlaybackRate}
                 onUgcTrimChange={setUgcTrimRange}
               />
+            ) : null}
+            {selectedHookPlan?.hookOptions.length ? (
+              <section className="min-w-0 overflow-hidden rounded-lg border border-border p-4">
+                <div className="mb-1 flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-bold text-text-primary">Hooks</h3>
+                </div>
+                <StitchrHookOptionSelector
+                  hookPlanId={selectedHookPlan.id}
+                  hookVariants={selectedHookPlan.hookOptions}
+                  isSaving={isSavingHookPlan}
+                  selectedHook={selectedHookText}
+                  onAcceptHookVariant={handleAcceptHookVariant}
+                  onRejectHookVariant={handleRejectHookVariant}
+                  onSelectHookVariant={handleSelectHookVariant}
+                />
+              </section>
             ) : null}
             <section className="min-w-0 overflow-hidden rounded-lg border border-border p-4">
               <div className="mb-4 flex items-center justify-between gap-3">

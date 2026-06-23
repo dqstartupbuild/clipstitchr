@@ -1700,6 +1700,7 @@ async function saveStitchrWorkerFallbackHookPlan({
       providerPredictionId: textGeneration.providerPredictionId,
       selectedHook: textGeneration.overlayText || textGeneration.filledHook,
       socialCaption: textGeneration.socialCaption,
+      stitchId: `${task.id}:stitch`,
       ugcClipId: input.ugcClipId,
       ugcClipName: input.ugcClipName,
     },

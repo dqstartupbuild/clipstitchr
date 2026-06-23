@@ -5,6 +5,7 @@ import { HookPlanCard } from "@/app/_components/library/HookPlanCard";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
+import { filterStitchrHookPlansByProductId } from "@/lib/clipstitchr/utils/filterStitchrHookPlansByProductId";
 import { filterStitchrHookPlansBySearchQuery } from "@/lib/clipstitchr/utils/filterStitchrHookPlansBySearchQuery";
 
 type HookLibraryTabSectionProps = {
@@ -15,9 +16,10 @@ type HookLibraryTabSectionProps = {
   savingPlanId: string | null;
   searchQuery: string;
   plans: StitchrHookPlan[];
-  onAccept: (id: string) => Promise<void>;
+  onAccept: (id: string, hookText?: string) => Promise<void>;
   onProductFilterChange: (productId: string) => void;
-  onReject: (id: string) => Promise<void>;
+  onReject: (id: string, hookText?: string) => Promise<void>;
+  onSelectOption: (id: string, hookText: string) => Promise<void>;
 };
 
 export function HookLibraryTabSection({
@@ -31,8 +33,12 @@ export function HookLibraryTabSection({
   onAccept,
   onProductFilterChange,
   onReject,
+  onSelectOption,
 }: HookLibraryTabSectionProps) {
-  const visiblePlans = filterStitchrHookPlansBySearchQuery(plans, searchQuery);
+  const visiblePlans = filterStitchrHookPlansBySearchQuery(
+    filterStitchrHookPlansByProductId(plans, productFilterId),
+    searchQuery,
+  );
   const hasSearchQuery = searchQuery.trim().length > 0;
 
   return (
@@ -76,6 +82,7 @@ export function HookLibraryTabSection({
               isSaving={savingPlanId === plan.id}
               onAccept={onAccept}
               onReject={onReject}
+              onSelectOption={onSelectOption}
             />
           ))}
         </div>

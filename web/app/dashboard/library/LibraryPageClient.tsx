@@ -109,7 +109,7 @@ export function LibraryPageClient() {
   const [swipeStatusFilter, setSwipeStatusFilter] =
     useState<LibraryPostedStatusFilter>("active");
   const [hookProductFilterId, setHookProductFilterId] = useState("");
-  const hookPlans = useStitchrHookPlans(hookProductFilterId || undefined);
+  const hookPlans = useStitchrHookPlans();
   const activeProductId = products.activeProductId ?? "";
   const ugcClips = useMemo(
     () => filterClipsBySearchQuery(library.videoGroups.ugc.clips, searchQuery),
@@ -486,6 +486,8 @@ export function LibraryPageClient() {
           <StitchesSection
             key={`stitches-${searchQuery}-${library.sortOrder}`}
             demoClips={library.videoGroups.demo.clips}
+            hookPlans={hookPlans.plans}
+            savingHookPlanId={hookPlans.savingPlanId}
             savingTemplateStitchId={stitchTemplates.savingStitchId}
             stitches={stitches}
             totalCount={
@@ -509,6 +511,7 @@ export function LibraryPageClient() {
             }
             hasMoreItems={selectedStitchHasMoreItems}
             isLoadingMoreItems={selectedStitchIsLoadingMoreItems}
+            onAcceptHookVariant={hookPlans.accept}
             onDelete={library.removeStitch}
             onLoadClip={library.loadClip}
             onLoadMoreItems={handleLoadMoreSelectedStitches}
@@ -518,6 +521,7 @@ export function LibraryPageClient() {
             onScore={library.scoreStitch}
             onApplyQuickEdit={library.applyStitchQuickEdit}
             onResetQuickEdit={library.resetStitchQuickEdit}
+            onRejectHookVariant={hookPlans.reject}
             statusCounts={stitchStatusCounts}
             statusFilter={stitchStatusFilter}
             onStatusFilterChange={setStitchStatusFilter}
@@ -527,6 +531,7 @@ export function LibraryPageClient() {
             onUpdateSourceCrop={library.updateStitchSourceCrop}
             onUpdateSourceSettings={library.updateStitchSourceSettings}
             onUpdateTextOverlay={library.updateStitchTextOverlay}
+            onSelectHookVariant={hookPlans.selectOption}
             ugcClips={stitchrUgcClips}
           />
         ) : null}
@@ -572,6 +577,7 @@ export function LibraryPageClient() {
             onAccept={hookPlans.accept}
             onProductFilterChange={setHookProductFilterId}
             onReject={hookPlans.reject}
+            onSelectOption={hookPlans.selectOption}
           />
         ) : null}
         {selectedTab === "pexels" ? (

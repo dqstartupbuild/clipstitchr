@@ -29,6 +29,7 @@ import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchPreviewErrorState } from "@/lib/clipstitchr/types/StitchPreviewErrorState";
 import type { StitchPreviewSources } from "@/lib/clipstitchr/types/StitchPreviewSources";
+import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
 import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
 import type { StitchSourceSettingsUpdate } from "@/lib/clipstitchr/types/StitchSourceSettingsUpdate";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -43,15 +44,19 @@ import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyText
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { getReuseStitchHref } from "@/lib/clipstitchr/utils/getReuseStitchHref";
 import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
+import { getStitchrHookPlanMatchesStitch } from "@/lib/clipstitchr/utils/getStitchrHookPlanMatchesStitch";
 import { capturePostHogException } from "@/lib/clipstitchr/analytics/capturePostHogException";
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 
 type StitchCardProps = {
   stitch: Stitch;
   demoClips?: VideoClipMetadata[];
+  hookPlans?: StitchrHookPlan[];
   isSelected?: boolean;
   isSelectionDisabled?: boolean;
   isSavingTemplate?: boolean;
+  savingHookPlanId?: string | null;
+  onAcceptHookVariant?: (planId: string, hookText: string) => void;
   onDelete: (id: string) => void | Promise<void>;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
@@ -59,7 +64,9 @@ type StitchCardProps = {
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
   onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
+  onRejectHookVariant?: (planId: string, hookText: string) => void;
   onSelect?: () => void;
+  onSelectHookVariant?: (planId: string, hookText: string) => void;
   onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
   onUpdateMusic: (
     stitch: Stitch,
@@ -92,9 +99,12 @@ type StitchCardProps = {
 export function StitchCard({
   stitch,
   demoClips = [],
+  hookPlans = [],
   isSelected = false,
   isSelectionDisabled = false,
   isSavingTemplate = false,
+  savingHookPlanId = null,
+  onAcceptHookVariant,
   onDelete,
   onLoadClip,
   onLoadPoster,
@@ -102,7 +112,9 @@ export function StitchCard({
   onScore,
   onApplyQuickEdit,
   onResetQuickEdit,
+  onRejectHookVariant,
   onSelect,
+  onSelectHookVariant,
   onSaveTemplate,
   onUpdateMusic,
   onUpdatePostedStatus,
@@ -183,6 +195,9 @@ export function StitchCard({
     : "Ready to download";
   const isPosted = Boolean(stitch.isPosted);
   const canUseQuickEdit = !getStitchIsLongr(stitch);
+  const matchingHookPlans = hookPlans.filter((plan) =>
+    getStitchrHookPlanMatchesStitch(plan, stitch),
+  );
 
   const loadRenderedPreview = async () => {
     if (stitchVideoBlob || isLoadingPreview) {
@@ -750,7 +765,12 @@ export function StitchCard({
       {isEditOpen ? (
         <StitchEditDialog
           demoClips={demoClips}
+          hookPlans={matchingHookPlans}
           isLoadingPreview={isLoadingPreview}
+          isSavingHookPlan={Boolean(
+            savingHookPlanId &&
+              matchingHookPlans.some((plan) => plan.id === savingHookPlanId),
+          )}
           isSavingMusic={isSavingMusic}
           isSavingSocialCaption={isSavingSocialCaption}
           isSavingSourceSettings={isSavingSourceSettings || isSavingSourceCrop}
@@ -765,6 +785,7 @@ export function StitchCard({
           textError={textError}
           ugcClips={ugcClips}
           onClose={() => setIsEditOpen(false)}
+          onAcceptHookVariant={onAcceptHookVariant}
           onLoadPreview={(ugcClipId, demoClipId) => {
             void loadSourcePreview(ugcClipId, demoClipId);
           }}
@@ -776,6 +797,8 @@ export function StitchCard({
           }
           onSaveSourceSettings={handleUpdateSourceSettings}
           onSaveTextOverlay={handleUpdateTextOverlay}
+          onRejectHookVariant={onRejectHookVariant}
+          onSelectHookVariant={onSelectHookVariant}
         />
       ) : null}
     </>

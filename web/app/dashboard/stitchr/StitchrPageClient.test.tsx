@@ -6,6 +6,7 @@ import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/Autom
 import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
+import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
 import type { StitchrHookVariant } from "@/lib/clipstitchr/types/StitchrHookVariant";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -88,6 +89,17 @@ const mocks = vi.hoisted(() => ({
   generateCliprText: vi.fn(),
   sequencePreviewPanelProps: null as Record<string, unknown> | null,
   socialCaptionPanelProps: null as Record<string, unknown> | null,
+  stitchrHookPlansState: {
+    accept: vi.fn(),
+    attachStitch: vi.fn(),
+    error: null as string | null,
+    isLoading: false,
+    plans: [] as StitchrHookPlan[],
+    reject: vi.fn(),
+    saveManualGeneration: vi.fn(),
+    savingPlanId: null as string | null,
+    selectOption: vi.fn(),
+  },
   stateQueue: [] as unknown[],
   stateSetters: [] as ReturnType<typeof vi.fn>[],
   useEffect: vi.fn(),
@@ -227,6 +239,10 @@ vi.mock("@/lib/clipstitchr/hooks/useStitchTemplates", () => ({
   useStitchTemplates: () => mocks.stitchTemplateState,
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useStitchrHookPlans", () => ({
+  useStitchrHookPlans: () => mocks.stitchrHookPlansState,
+}));
+
 vi.mock("@/lib/clipstitchr/client/generateCliprText", () => ({
   generateCliprText: mocks.generateCliprText,
 }));
@@ -310,6 +326,8 @@ function queueStitchrState(
   overrides: {
     activePreviewUgcId?: string;
     autoTextHookVariantContextKey?: string;
+    autoTextHookPlanId?: string;
+    autoTextSelectedHook?: string;
     autoTextHookVariants?: StitchrHookVariant[];
     autoTextMessage?: string | null;
     demoProductFilterId?: string;
@@ -365,7 +383,9 @@ function queueStitchrState(
     overrides.autoTextMessage ?? null,
     {
       contextKey: overrides.autoTextHookVariantContextKey ?? "",
+      hookPlanId: overrides.autoTextHookPlanId,
       hookVariants: overrides.autoTextHookVariants ?? [],
+      selectedHook: overrides.autoTextSelectedHook ?? "",
     },
     overrides.ugcTrimRangesByClipId ?? {},
     overrides.demoTrimRangesByClipId ?? {},
@@ -402,17 +422,33 @@ describe("StitchrPageClient", () => {
     setClipLibraryVideoGroups();
     mocks.productState.defaultProductId = undefined;
     mocks.productState.products = [createProduct()];
+    mocks.stitchrHookPlansState.error = null;
+    mocks.stitchrHookPlansState.isLoading = false;
+    mocks.stitchrHookPlansState.plans = [];
+    mocks.stitchrHookPlansState.savingPlanId = null;
     mocks.stitchrState.stitchLongrSequence.mockResolvedValue(undefined);
     mocks.stitchrState.stitchVideos.mockResolvedValue(undefined);
     mocks.generateCliprText.mockResolvedValue({
       caption: "Generated caption",
       hashtags: ["#launchkit", "#ugc", "#demo"],
       hook: "Generated hook",
+      hookVariants: [
+        {
+          angle: "Clear pain",
+          reason: "It matches the clip pair.",
+          text: "Generated overlay",
+        },
+      ],
       overlayText: "Generated overlay",
       script: "",
       slides: ["Generated overlay"],
       socialCaption: "Generated caption\n\n#launchkit #ugc #demo",
     });
+    mocks.stitchrHookPlansState.accept.mockResolvedValue(undefined);
+    mocks.stitchrHookPlansState.attachStitch.mockResolvedValue(undefined);
+    mocks.stitchrHookPlansState.reject.mockResolvedValue(undefined);
+    mocks.stitchrHookPlansState.saveManualGeneration.mockResolvedValue("hook_plan_1");
+    mocks.stitchrHookPlansState.selectOption.mockResolvedValue(undefined);
     mocks.generateStitchrBatch.mockResolvedValue({
       batchDate: "2026-06-17",
       count: 2,
@@ -510,6 +546,80 @@ describe("StitchrPageClient", () => {
       stitchrTextStyleChoice: "outline",
       templateId: undefined,
     });
+  });
+
+  it("passes recent batch hook options through review callbacks", async () => {
+    const batchPlan = {
+      createdAt: "2026-06-17T00:00:00.000Z",
+      demoClipId: "demo_1",
+      demoClipName: "Demo",
+      hashtags: [],
+      hookOptions: [
+        {
+          angle: "Pain",
+          reason: "Matches the demo.",
+          text: "Stop scrolling for this.",
+        },
+      ],
+      id: "hook_plan_batch_1",
+      productId: "product_1",
+      productName: "Launch Kit",
+      selectedHook: "Stop scrolling for this.",
+      source: "batch_planner",
+      status: "planned",
+      ugcClipId: "ugc_1",
+      ugcClipName: "UGC",
+      updatedAt: "2026-06-17T00:00:00.000Z",
+    } satisfies StitchrHookPlan;
+
+    mocks.stitchrHookPlansState.plans = [batchPlan];
+    queueStitchrState({ mode: "batch" });
+
+    renderToStaticMarkup(<StitchrPageClient />);
+
+    expect(mocks.batchPanelProps).toEqual(
+      expect.objectContaining({
+        hookPlans: [batchPlan],
+        savingHookPlanId: null,
+      }),
+    );
+
+    (
+      mocks.batchPanelProps as {
+        onAcceptHookVariant: (planId: string, hookText: string) => void;
+        onRejectHookVariant: (planId: string, hookText: string) => void;
+        onSelectHookVariant: (planId: string, hookText: string) => void;
+      }
+    ).onSelectHookVariant("hook_plan_batch_1", "Stop scrolling for this.");
+    (
+      mocks.batchPanelProps as {
+        onAcceptHookVariant: (planId: string, hookText: string) => void;
+        onRejectHookVariant: (planId: string, hookText: string) => void;
+        onSelectHookVariant: (planId: string, hookText: string) => void;
+      }
+    ).onAcceptHookVariant("hook_plan_batch_1", "Stop scrolling for this.");
+    (
+      mocks.batchPanelProps as {
+        onAcceptHookVariant: (planId: string, hookText: string) => void;
+        onRejectHookVariant: (planId: string, hookText: string) => void;
+        onSelectHookVariant: (planId: string, hookText: string) => void;
+      }
+    ).onRejectHookVariant("hook_plan_batch_1", "Stop scrolling for this.");
+
+    await Promise.resolve();
+
+    expect(mocks.stitchrHookPlansState.selectOption).toHaveBeenCalledWith(
+      "hook_plan_batch_1",
+      "Stop scrolling for this.",
+    );
+    expect(mocks.stitchrHookPlansState.accept).toHaveBeenCalledWith(
+      "hook_plan_batch_1",
+      "Stop scrolling for this.",
+    );
+    expect(mocks.stitchrHookPlansState.reject).toHaveBeenCalledWith(
+      "hook_plan_batch_1",
+      "Stop scrolling for this.",
+    );
   });
 
   it("renders the Stitchr build workspace from category-specific media groups", () => {
@@ -988,6 +1098,73 @@ describe("StitchrPageClient", () => {
         musicTrack,
         ugcPlaybackRate: 1,
       }),
+    );
+  });
+
+  it("links the visible normal hook plan after creating a stitch", async () => {
+    mocks.stitchrState.stitchVideos.mockResolvedValueOnce([
+      {
+        createdAt: "2026-06-17T00:00:00.000Z",
+        demoClipId: "demo_1",
+        demoClipName: "Demo",
+        duration: 16,
+        height: 1920,
+        id: "stitch_1",
+        name: "UGC + Demo",
+        ugcClipId: "ugc_1",
+        ugcClipName: "UGC",
+        width: 1080,
+      },
+    ]);
+    mocks.stitchrHookPlansState.plans = [
+      {
+        createdAt: "2026-06-17T00:00:00.000Z",
+        demoClipId: "demo_1",
+        demoClipName: "Demo",
+        hashtags: [],
+        hookOptions: [
+          {
+            angle: "Pain",
+            reason: "Matches the demo.",
+            text: "Stop scrolling for this.",
+          },
+        ],
+        id: "hook_plan_1",
+        productId: "product_1",
+        productName: "Launch Kit",
+        selectedHook: "Stop scrolling for this.",
+        source: "manual",
+        status: "planned",
+        ugcClipId: "ugc_1",
+        ugcClipName: "UGC",
+        updatedAt: "2026-06-17T00:00:00.000Z",
+      },
+    ];
+    queueStitchrState({
+      activePreviewUgcId: "ugc_1",
+      autoTextHookPlanId: "hook_plan_1",
+      autoTextHookVariantContextKey: "ugc_1|demo_1",
+      autoTextHookVariants: [
+        {
+          angle: "Pain",
+          reason: "Matches the demo.",
+          text: "Stop scrolling for this.",
+        },
+      ],
+      autoTextSelectedHook: "Stop scrolling for this.",
+      selectedUgcIds: ["ugc_1"],
+    });
+
+    renderToStaticMarkup(<StitchrPageClient />);
+
+    (mocks.clipPickerPanelProps as { onStitch: () => void }).onStitch();
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mocks.stitchrHookPlansState.attachStitch).toHaveBeenCalledWith(
+      "hook_plan_1",
+      "stitch_1",
     );
   });
 

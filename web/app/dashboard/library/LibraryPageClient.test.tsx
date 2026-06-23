@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LibraryPageClient } from "@/app/dashboard/library/LibraryPageClient";
 import { SHOW_UPLOAD_CONTROLS_EVENT_NAME } from "@/lib/clipstitchr/constants/showUploadControlsEventName";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
 import type { UploadAssetType } from "@/lib/clipstitchr/types/UploadAssetType";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
@@ -509,7 +510,9 @@ describe("LibraryPageClient", () => {
       isLoading: false,
       plans: [],
       reject: vi.fn(),
+      saveManualGeneration: vi.fn(),
       savingPlanId: null,
+      selectOption: vi.fn(),
     });
     mocks.useSwiprLibrary.mockReturnValue(mocks.swiprLibrary);
   });
@@ -755,6 +758,40 @@ describe("LibraryPageClient", () => {
   });
 
   it("renders non-video library tabs", () => {
+    const accept = vi.fn();
+    const reject = vi.fn();
+    const selectOption = vi.fn();
+    const hookPlan = {
+      createdAt: "2026-06-17T00:00:00.000Z",
+      demoClipId: "demo_1",
+      hashtags: [],
+      hookOptions: [
+        {
+          angle: "Pain",
+          reason: "Matches the demo.",
+          text: "Stop scrolling for this.",
+        },
+      ],
+      id: "hook_plan_1",
+      selectedHook: "Stop scrolling for this.",
+      source: "manual",
+      status: "planned",
+      stitchId: "stitch_1",
+      ugcClipId: "ugc_1",
+      updatedAt: "2026-06-17T00:00:00.000Z",
+    } satisfies StitchrHookPlan;
+
+    mocks.useStitchrHookPlans.mockReturnValue({
+      accept,
+      error: null,
+      isLoading: false,
+      plans: [hookPlan],
+      reject,
+      saveManualGeneration: vi.fn(),
+      savingPlanId: "hook_plan_1",
+      selectOption,
+    });
+
     const stitches = renderLibraryPage({
       stateValues: ["stitches", "stitch", "all", ""],
     }).elements;
@@ -762,8 +799,18 @@ describe("LibraryPageClient", () => {
       stateValues: ["swipes", "swipe", "all", ""],
     }).elements;
 
-    expect(stitches.some((element) => "stitches" in (element.props ?? {}))).toBe(
-      true,
+    const stitchSection = stitches.find(
+      (element) => "stitches" in (element.props ?? {}),
+    );
+
+    expect(stitchSection?.props).toEqual(
+      expect.objectContaining({
+        hookPlans: [hookPlan],
+        savingHookPlanId: "hook_plan_1",
+        onAcceptHookVariant: accept,
+        onRejectHookVariant: reject,
+        onSelectHookVariant: selectOption,
+      }),
     );
     expect(swipes.some((element) => "swipes" in (element.props ?? {}))).toBe(
       true,

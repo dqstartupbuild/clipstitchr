@@ -27,9 +27,14 @@ emotional pattern, not as copy to reuse verbatim.
 3. User pastes at least one hook from their own winners or viral niche content.
 4. User can add hooks to avoid, choose the goal, and choose the tone.
 5. In Stitchr Normal or Longr mode, Generate text applies the best hook and
-   shows alternate hook options.
-6. User clicks any alternate hook to replace the active overlay.
-7. Batch and scheduled Stitchr drafts use the same saved product hook memory
+   saves the ranked hook options.
+6. In Normal mode, the user can switch generated hooks from the Hook dropdown,
+   save a hook as a winner, or add a hook to the avoid list.
+7. In Batch mode, recent generated hook plans appear with the same dropdown and
+   accept/reject controls.
+8. Saved normal and batch Stitches can be edited from the Library Stitches tab,
+   where the user can choose another saved hook option for that Stitch.
+9. Batch and scheduled Stitchr drafts use the same saved product hook memory
    without asking the user again.
 
 This is mostly a one-time setup step. Users only revisit it when they learn
@@ -63,7 +68,8 @@ It appears in:
 - `web/app/_components/settings/ProductSettingsEditDialog.tsx`
 - `web/app/_components/settings/ProductSettingsDetailsDialog.tsx`
 
-Stitchr text generation now returns ranked hook candidates through:
+Stitchr text generation now returns ranked hook candidates and saves manual
+generations to the Hook Library through:
 
 - `web/lib/clipstitchr/types/StitchrHookVariant.ts`
 - `web/lib/clipstitchr/types/CliprTextGeneration.ts`
@@ -71,8 +77,14 @@ Stitchr text generation now returns ranked hook candidates through:
 - `web/lib/clipstitchr/server/parseCliprTextGenerationOutput.ts`
 - `web/app/api/clipr/text/route.ts`
 - `web/lib/clipstitchr/client/generateCliprText.ts`
+- `web/convex/stitchrHookPlans.ts`
+- `web/lib/clipstitchr/hooks/useStitchrHookPlans.ts`
 - `web/app/_components/stitchr/StitchrAutoTextPanel.tsx`
+- `web/app/_components/stitchr/StitchrHookOptionSelector.tsx`
+- `web/app/_components/stitchr/StitchrBatchHookReviewList.tsx`
 - `web/app/dashboard/stitchr/StitchrPageClient.tsx`
+- `web/app/_components/dashboard/StitchEditDialog.tsx`
+- `web/app/_components/dashboard/StitchCard.tsx`
 
 Batch and automation task snapshots include the Hook Lab fields so provider
 worker drafts match manual Stitchr generation:
@@ -80,6 +92,21 @@ worker drafts match manual Stitchr generation:
 - `web/convex/stitchrBatch.ts`
 - `web/convex/automationStitchr.ts`
 - `web/services/provider-worker/runProviderWorker.ts`
+
+Batch and manual generations both store one selected hook plus the full ranked
+option list in `stitchrHookPlans`. Each option can be marked as a winner or
+added to the avoid list independently. Accepting a hook adds that exact option
+to `winningHookExamples`; rejecting one adds that exact option to
+`rejectedHookExamples`. The Library Hooks tab shows the same option-level
+controls, so batch-generated hooks no longer require accepting or rejecting the
+single selected hook only.
+
+Normal Stitchr creation links the generated hook plan to the finished Stitch
+after the render saves. Batch hook plans store the deterministic final Stitch id
+from their automation task. The Library Stitches editor first matches by that
+saved Stitch id and falls back to the UGC + Demo pair for older hook records.
+Selecting a hook option in the editor updates the first text overlay in the
+draft; the normal Save changes button persists that text to the Stitch.
 
 Public copy appears on:
 
@@ -110,8 +137,9 @@ before Firecrawl or Replicate work starts.
 
 Generating Stitchr hook options still uses `POST /api/clipr/text` and the
 existing Clipr hook/script generation limit before provider writing work starts.
-Choosing a candidate in the Stitchr panel is client-side overlay editing and
-does not call a provider.
+Saving manual hook options uses the shared Convex record-save limit, and
+linking, switching, accepting, or rejecting hook options uses the shared Convex
+metadata-update limit. None of those selector actions call a provider.
 
 ## Maintenance Notes
 

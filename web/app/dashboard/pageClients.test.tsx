@@ -355,7 +355,9 @@ vi.mock("@/lib/clipstitchr/hooks/useStitchrHookPlans", () => ({
     isLoading: false,
     plans: [],
     reject: vi.fn(),
+    saveManualGeneration: vi.fn(),
     savingPlanId: null,
+    selectOption: vi.fn(),
   }),
 }));
 

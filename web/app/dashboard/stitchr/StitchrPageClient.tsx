@@ -24,12 +24,14 @@ import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct
 import { useLoadedVideoClip } from "@/lib/clipstitchr/hooks/useLoadedVideoClip";
 import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useStitchr } from "@/lib/clipstitchr/hooks/useStitchr";
+import { useStitchrHookPlans } from "@/lib/clipstitchr/hooks/useStitchrHookPlans";
 import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
 import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
 import type { StitchrLongrSelection } from "@/lib/clipstitchr/types/StitchrLongrSelection";
 import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 import type { StitchrUgcSelection } from "@/lib/clipstitchr/types/StitchrUgcSelection";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
+import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchTemplate } from "@/lib/clipstitchr/types/StitchTemplate";
 import type { StitchrHookVariant } from "@/lib/clipstitchr/types/StitchrHookVariant";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
@@ -49,6 +51,7 @@ import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyText
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getSearchParamValue } from "@/lib/clipstitchr/utils/getSearchParamValue";
 import { getStitchrSocialCaptionForUgcId } from "@/lib/clipstitchr/utils/getStitchrSocialCaptionForUgcId";
+import { getStitchrHookPlanMatchesClipPair } from "@/lib/clipstitchr/utils/getStitchrHookPlanMatchesClipPair";
 import { getStitchrTextOverlaysForUgcId } from "@/lib/clipstitchr/utils/getStitchrTextOverlaysForUgcId";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoClipMetadataById";
@@ -58,6 +61,16 @@ export function StitchrPageClient() {
   const library = useClipLibrary();
   const products = useDashboardProduct();
   const stitchTemplates = useStitchTemplates();
+  const hookPlans = useStitchrHookPlans(products.activeProductId ?? undefined);
+  const {
+    accept: acceptHookPlan,
+    attachStitch: attachHookPlanStitch,
+    plans: hookPlanList,
+    reject: rejectHookPlan,
+    saveManualGeneration: saveManualHookGeneration,
+    savingPlanId: savingHookPlanId,
+    selectOption: selectHookPlanOption,
+  } = hookPlans;
   const stitchrState = useStitchr({
     loadClip: library.loadClip,
     onCreated: library.refresh,
@@ -105,10 +118,13 @@ export function StitchrPageClient() {
   const [autoTextMessage, setAutoTextMessage] = useState<string | null>(null);
   const [autoTextHookVariantState, setAutoTextHookVariantState] = useState<{
     contextKey: string;
+    hookPlanId?: string;
     hookVariants: StitchrHookVariant[];
+    selectedHook: string;
   }>({
     contextKey: "",
     hookVariants: [],
+    selectedHook: "",
   });
   const [ugcTrimRangesByClipId, setUgcTrimRangesByClipId] = useState<
     Record<string, VideoTrimRange>
@@ -429,14 +445,93 @@ export function StitchrPageClient() {
   );
   const activeAutoTextProductId =
     products.activeProductId ?? "";
+  const activeAutoTextProductName = products.activeProduct?.name;
   const hookVariantContextKey =
     mode === "longr"
       ? selectedLongrMetadata.map((clip) => clip.id).join("|")
       : [activeUgcMetadata?.id ?? "", selectedDemoMetadata?.id ?? ""].join("|");
-  const visibleAutoTextHookVariants =
-    autoTextHookVariantState.contextKey === hookVariantContextKey
-      ? autoTextHookVariantState.hookVariants
-      : [];
+  const autoTextHookPlansForActivePair = useMemo(
+    () =>
+      mode === "normal"
+        ? hookPlanList.filter((plan) =>
+            getStitchrHookPlanMatchesClipPair(plan, {
+              demoClipId: selectedDemoMetadata?.id,
+              productId: activeAutoTextProductId,
+              ugcClipId: activeUgcMetadata?.id,
+            }),
+          )
+        : [],
+    [
+      activeAutoTextProductId,
+      activeUgcMetadata?.id,
+      hookPlanList,
+      mode,
+      selectedDemoMetadata?.id,
+    ],
+  );
+  const savedAutoTextHookPlan = autoTextHookPlansForActivePair[0];
+  const visibleBatchHookPlans = useMemo(
+    () =>
+      hookPlanList
+        .filter((plan) => plan.source !== "manual" && plan.hookOptions.length)
+        .slice(0, 6),
+    [hookPlanList],
+  );
+  const hasCurrentAutoTextHookState =
+    autoTextHookVariantState.contextKey === hookVariantContextKey &&
+    autoTextHookVariantState.hookVariants.length > 0;
+  const visibleAutoTextHookPlanId = hasCurrentAutoTextHookState
+    ? autoTextHookVariantState.hookPlanId
+    : savedAutoTextHookPlan?.id;
+  const visibleAutoTextHookVariants = useMemo(
+    () =>
+      hasCurrentAutoTextHookState
+        ? autoTextHookVariantState.hookVariants
+        : (savedAutoTextHookPlan?.hookOptions ?? []),
+    [
+      autoTextHookVariantState.hookVariants,
+      hasCurrentAutoTextHookState,
+      savedAutoTextHookPlan?.hookOptions,
+    ],
+  );
+  const visibleAutoTextSelectedHook = hasCurrentAutoTextHookState
+    ? autoTextHookVariantState.selectedHook
+    : (savedAutoTextHookPlan?.selectedHook ?? "");
+  const attachVisibleAutoTextHookPlanToStitches = useCallback(
+    async (createdStitches: Stitch[] | undefined) => {
+      if (!visibleAutoTextHookPlanId || !createdStitches?.length) {
+        return;
+      }
+
+      const plan = hookPlanList.find(
+        (hookPlan) => hookPlan.id === visibleAutoTextHookPlanId,
+      );
+      const ugcClipId = plan?.ugcClipId ?? activeUgcMetadata?.id;
+      const demoClipId = plan?.demoClipId ?? selectedDemoMetadata?.id;
+      const matchingStitch = createdStitches.find(
+        (createdStitch) =>
+          createdStitch.ugcClipId === ugcClipId &&
+          createdStitch.demoClipId === demoClipId,
+      );
+
+      if (!matchingStitch) {
+        return;
+      }
+
+      try {
+        await attachHookPlanStitch(visibleAutoTextHookPlanId, matchingStitch.id);
+      } catch {
+        setAutoTextMessage("Stitch saved, but its hooks did not link.");
+      }
+    },
+    [
+      activeUgcMetadata?.id,
+      attachHookPlanStitch,
+      hookPlanList,
+      selectedDemoMetadata?.id,
+      visibleAutoTextHookPlanId,
+    ],
+  );
 
   const applyTemplateStitch = useCallback(
     async (templateStitchId: string) => {
@@ -1238,7 +1333,9 @@ export function StitchrPageClient() {
           musicTrack: selectedMusicTrack,
           ugcPlaybackRate,
         },
-      );
+      ).then((createdStitches) => {
+        void attachVisibleAutoTextHookPlanToStitches(createdStitches);
+      });
     }
   };
 
@@ -1285,6 +1382,44 @@ export function StitchrPageClient() {
     batchTextStyleChoice,
     selectedTemplateId,
   ]);
+  const handleSelectBatchHookVariant = useCallback(
+    (planId: string, hookText: string) => {
+      void selectHookPlanOption(planId, hookText)
+        .then(() => setBatchMessage("Hook switched."))
+        .catch((error) => {
+          setBatchMessage(
+            error instanceof Error
+              ? error.message
+              : "Unable to switch that hook.",
+          );
+        });
+    },
+    [selectHookPlanOption],
+  );
+  const handleAcceptBatchHookVariant = useCallback(
+    (planId: string, hookText: string) => {
+      void acceptHookPlan(planId, hookText)
+        .then(() => setBatchMessage("Hook accepted."))
+        .catch((error) => {
+          setBatchMessage(
+            error instanceof Error ? error.message : "Unable to accept that hook.",
+          );
+        });
+    },
+    [acceptHookPlan],
+  );
+  const handleRejectBatchHookVariant = useCallback(
+    (planId: string, hookText: string) => {
+      void rejectHookPlan(planId, hookText)
+        .then(() => setBatchMessage("Hook rejected."))
+        .catch((error) => {
+          setBatchMessage(
+            error instanceof Error ? error.message : "Unable to reject that hook.",
+          );
+        });
+    },
+    [rejectHookPlan],
+  );
 
   const handleGenerateAutoText = useCallback(() => {
     if (!activeAutoTextProductId) {
@@ -1307,6 +1442,7 @@ export function StitchrPageClient() {
     setAutoTextHookVariantState({
       contextKey: hookVariantContextKey,
       hookVariants: [],
+      selectedHook: "",
     });
 
     const stitchrClipContexts =
@@ -1323,10 +1459,50 @@ export function StitchrPageClient() {
       purpose: "stitchr",
       stitchrClipContexts,
       })
-      .then((text) => {
+      .then(async (text) => {
+        const selectedHook = text.overlayText || text.hook;
+        const hookOptions =
+          text.hookVariants?.length
+            ? text.hookVariants
+            : selectedHook
+              ? [
+                  {
+                    angle: "Best fit",
+                    reason: "Matches the selected clips.",
+                    text: selectedHook,
+                  },
+                ]
+              : [];
+        let savedHookPlanId: string | undefined;
+
+        if (hookOptions.length) {
+          try {
+            savedHookPlanId = await saveManualHookGeneration({
+              caption: text.caption,
+              demoClipId:
+                mode === "normal" ? selectedDemoMetadata?.id : undefined,
+              demoClipName:
+                mode === "normal" ? selectedDemoMetadata?.name : undefined,
+              hashtags: text.hashtags ?? [],
+              hookOptions,
+              productId: activeAutoTextProductId,
+              productName: activeAutoTextProductName,
+              selectedHook,
+              socialCaption: text.socialCaption,
+              ugcClipId: mode === "normal" ? activeUgcMetadata?.id : undefined,
+              ugcClipName:
+                mode === "normal" ? activeUgcMetadata?.name : undefined,
+            });
+          } catch {
+            savedHookPlanId = undefined;
+          }
+        }
+
         setAutoTextHookVariantState({
           contextKey: hookVariantContextKey,
-          hookVariants: text.hookVariants ?? [],
+          hookPlanId: savedHookPlanId,
+          hookVariants: hookOptions,
+          selectedHook,
         });
         const baseOverlay =
           previewTextOverlays[0] ?? createDefaultTextOverlay(totalDuration, 0);
@@ -1334,7 +1510,7 @@ export function StitchrPageClient() {
           [
             {
               ...baseOverlay,
-              text: text.overlayText || text.hook,
+              text: selectedHook,
             },
             ...previewTextOverlays.slice(1),
           ],
@@ -1344,7 +1520,11 @@ export function StitchrPageClient() {
         if (mode === "longr") {
           setLongrTextOverlays(nextTextOverlays);
           setLongrSocialCaption(text.socialCaption || "");
-          setAutoTextMessage("Text, caption, and hook options generated.");
+          setAutoTextMessage(
+            savedHookPlanId
+              ? "Text, caption, and hook options generated."
+              : "Text generated, but those hooks did not save.",
+          );
           return;
         }
 
@@ -1361,7 +1541,11 @@ export function StitchrPageClient() {
         ) {
           setReusedTextOverlays(nextTextOverlays);
           setReusedSocialCaption(text.socialCaption || "");
-          setAutoTextMessage("Text, caption, and hook options generated.");
+          setAutoTextMessage(
+            savedHookPlanId
+              ? "Text, caption, and hook options generated."
+              : "Text generated, but those hooks did not save.",
+          );
           return;
         }
 
@@ -1373,7 +1557,11 @@ export function StitchrPageClient() {
           ...captions,
           [activeUgcMetadata.id]: text.socialCaption || "",
         }));
-        setAutoTextMessage("Text, caption, and hook options generated.");
+        setAutoTextMessage(
+          savedHookPlanId
+            ? "Text, caption, and hook options generated."
+            : "Text generated, but those hooks did not save.",
+        );
       })
       .catch((error) => {
         setAutoTextMessage(
@@ -1387,7 +1575,9 @@ export function StitchrPageClient() {
     hookVariantContextKey,
     mode,
     previewTextOverlays,
+    activeAutoTextProductName,
     reusedTextOverlays,
+    saveManualHookGeneration,
     selectedDemoMetadata,
     selectedLongrMetadata,
     textOverlaysByUgcId,
@@ -1398,6 +1588,24 @@ export function StitchrPageClient() {
     (hookText: string) => {
       if (!totalDuration) {
         return;
+      }
+
+      setAutoTextHookVariantState({
+        contextKey: hookVariantContextKey,
+        hookPlanId: visibleAutoTextHookPlanId,
+        hookVariants: visibleAutoTextHookVariants,
+        selectedHook: hookText,
+      });
+
+      if (visibleAutoTextHookPlanId) {
+        void selectHookPlanOption(visibleAutoTextHookPlanId, hookText)
+          .catch((error) => {
+            setAutoTextMessage(
+              error instanceof Error
+                ? error.message
+                : "Unable to switch that hook.",
+            );
+          });
       }
 
       const baseOverlay =
@@ -1443,11 +1651,96 @@ export function StitchrPageClient() {
     },
     [
       activeUgcMetadata,
+      hookVariantContextKey,
       mode,
       previewTextOverlays,
       reusedTextOverlays,
+      selectHookPlanOption,
       textOverlaysByUgcId,
       totalDuration,
+      visibleAutoTextHookPlanId,
+      visibleAutoTextHookVariants,
+    ],
+  );
+  const handleAcceptAutoTextHookVariant = useCallback(
+    (hookText: string) => {
+      if (!visibleAutoTextHookPlanId) {
+        setAutoTextMessage("Generate hooks before saving one.");
+        return;
+      }
+
+      void acceptHookPlan(visibleAutoTextHookPlanId, hookText)
+        .then(() => {
+          setAutoTextHookVariantState({
+            contextKey: hookVariantContextKey,
+            hookPlanId: visibleAutoTextHookPlanId,
+            hookVariants: visibleAutoTextHookVariants.map((variant) =>
+              variant.text === hookText
+                ? {
+                    ...variant,
+                    acceptedAt: new Date().toISOString(),
+                    feedbackStatus: "accepted" as const,
+                    rejectedAt: undefined,
+                    rejectionReason: undefined,
+                  }
+                : variant,
+            ),
+            selectedHook: hookText,
+          });
+          setAutoTextMessage("Saved as a winner.");
+        })
+        .catch((error) => {
+          setAutoTextMessage(
+            error instanceof Error ? error.message : "Unable to save that hook.",
+          );
+        });
+    },
+    [
+      acceptHookPlan,
+      hookVariantContextKey,
+      visibleAutoTextHookPlanId,
+      visibleAutoTextHookVariants,
+    ],
+  );
+  const handleRejectAutoTextHookVariant = useCallback(
+    (hookText: string) => {
+      if (!visibleAutoTextHookPlanId) {
+        setAutoTextMessage("Generate hooks before avoiding one.");
+        return;
+      }
+
+      void rejectHookPlan(visibleAutoTextHookPlanId, hookText)
+        .then(() => {
+          setAutoTextHookVariantState({
+            contextKey: hookVariantContextKey,
+            hookPlanId: visibleAutoTextHookPlanId,
+            hookVariants: visibleAutoTextHookVariants.map((variant) =>
+              variant.text === hookText
+                ? {
+                    ...variant,
+                    acceptedAt: undefined,
+                    feedbackStatus: "rejected" as const,
+                    rejectedAt: new Date().toISOString(),
+                  }
+                : variant,
+            ),
+            selectedHook: hookText,
+          });
+          setAutoTextMessage("Added to the avoid list.");
+        })
+        .catch((error) => {
+          setAutoTextMessage(
+            error instanceof Error
+              ? error.message
+              : "Unable to update that hook.",
+          );
+        });
+    },
+    [
+      hookVariantContextKey,
+      rejectHookPlan,
+      visibleAutoTextHookPlanId,
+      visibleAutoTextHookVariants,
     ],
   );
 
@@ -1600,16 +1893,21 @@ export function StitchrPageClient() {
           <StitchrBatchPanel
             backgroundColorChoice={batchTextBackgroundColorChoice}
             dailyLimit={STITCHR_BATCH_DAILY_LIMIT}
+            hookPlans={visibleBatchHookPlans}
             isDisabled={isGeneratingBatch}
             isGenerating={isGeneratingBatch}
             message={batchMessage}
             mode={mode}
+            savingHookPlanId={savingHookPlanId}
             strokeColorChoice={batchTextStrokeColorChoice}
             textColorChoice={batchTextColorChoice}
             textStyleChoice={batchTextStyleChoice}
+            onAcceptHookVariant={handleAcceptBatchHookVariant}
             onBackgroundColorChoiceChange={setBatchTextBackgroundColorChoice}
             onGenerate={handleGenerateBatch}
             onModeChange={handleModeChange}
+            onRejectHookVariant={handleRejectBatchHookVariant}
+            onSelectHookVariant={handleSelectBatchHookVariant}
             onStrokeColorChoiceChange={setBatchTextStrokeColorChoice}
             onTextColorChoiceChange={setBatchTextColorChoice}
             onTextStyleChoiceChange={setBatchTextStyleChoice}
@@ -1668,13 +1966,23 @@ export function StitchrPageClient() {
                 />
               ) : null}
               <StitchrAutoTextPanel
+                hookPlanId={visibleAutoTextHookPlanId}
                 hookVariants={visibleAutoTextHookVariants}
                 products={activeProducts}
                 selectedProductId={activeAutoTextProductId}
                 isGenerating={isGeneratingAutoText}
+                isSavingHookPlan={
+                  Boolean(
+                    visibleAutoTextHookPlanId &&
+                      savingHookPlanId === visibleAutoTextHookPlanId,
+                  )
+                }
                 message={autoTextMessage}
+                selectedHook={visibleAutoTextSelectedHook}
+                onAcceptHookVariant={handleAcceptAutoTextHookVariant}
                 onApplyHookVariant={handleApplyAutoTextHookVariant}
                 onProductChange={() => undefined}
+                onRejectHookVariant={handleRejectAutoTextHookVariant}
                 onGenerate={handleGenerateAutoText}
               />
               {mode === "longr" || activeUgcMetadata ? (

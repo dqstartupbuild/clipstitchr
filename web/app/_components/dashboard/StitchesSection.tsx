@@ -11,6 +11,7 @@ import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDe
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
+import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
 import type { StitchLibraryStatusFilter } from "@/lib/clipstitchr/types/StitchLibraryStatusFilter";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
@@ -21,6 +22,8 @@ import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadat
 
 type StitchesSectionProps = {
   demoClips: VideoClipMetadata[];
+  hookPlans?: StitchrHookPlan[];
+  savingHookPlanId?: string | null;
   stitches: Stitch[];
   emptyDescription?: string;
   emptyTitle?: string;
@@ -33,6 +36,7 @@ type StitchesSectionProps = {
   title?: string;
   totalCount?: number;
   onDelete: (id: string) => void | Promise<void>;
+  onAcceptHookVariant?: (planId: string, hookText: string) => void;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadMoreItems?: () => void;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
@@ -41,6 +45,8 @@ type StitchesSectionProps = {
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
   onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
+  onRejectHookVariant?: (planId: string, hookText: string) => void;
+  onSelectHookVariant?: (planId: string, hookText: string) => void;
   onStatusFilterChange?: (status: StitchLibraryStatusFilter) => void;
   onUpdateMusic: (
     stitch: Stitch,
@@ -72,6 +78,8 @@ type StitchesSectionProps = {
 
 export function StitchesSection({
   demoClips,
+  hookPlans = [],
+  savingHookPlanId = null,
   stitches,
   emptyDescription = "Stitch a video after you have at least one UGC and one demo video.",
   emptyTitle = "No stitches yet",
@@ -84,6 +92,7 @@ export function StitchesSection({
   title = "Stitches",
   totalCount,
   onDelete,
+  onAcceptHookVariant,
   onLoadClip,
   onLoadMoreItems,
   onLoadPoster,
@@ -92,6 +101,8 @@ export function StitchesSection({
   onScore,
   onApplyQuickEdit,
   onResetQuickEdit,
+  onRejectHookVariant,
+  onSelectHookVariant,
   onStatusFilterChange,
   onUpdateMusic,
   onUpdatePostedStatus,
@@ -186,10 +197,13 @@ export function StitchesSection({
                 key={stitch.id}
                 stitch={stitch}
                 demoClips={demoClips}
+                hookPlans={hookPlans}
+                savingHookPlanId={savingHookPlanId}
                 isSelected={batchDelete.selectedIds.has(stitch.id)}
                 isSelectionDisabled={batchDelete.isDeletingSelected}
                 isSavingTemplate={savingTemplateStitchId === stitch.id}
                 onDelete={onDelete}
+                onAcceptHookVariant={onAcceptHookVariant}
                 onLoadClip={onLoadClip}
                 onLoadPoster={onLoadPoster}
                 onLoadVideo={onLoadVideo}
@@ -197,6 +211,7 @@ export function StitchesSection({
                 onScore={onScore}
                 onApplyQuickEdit={onApplyQuickEdit}
                 onResetQuickEdit={onResetQuickEdit}
+                onRejectHookVariant={onRejectHookVariant}
                 onSelect={
                   batchDelete.isSelecting
                     ? () => batchDelete.toggleItemSelection(stitch.id)
@@ -208,6 +223,7 @@ export function StitchesSection({
                 onUpdateSourceCrop={onUpdateSourceCrop}
                 onUpdateSourceSettings={onUpdateSourceSettings}
                 onUpdateTextOverlay={onUpdateTextOverlay}
+                onSelectHookVariant={onSelectHookVariant}
                 ugcClips={ugcClips}
               />
             ))}

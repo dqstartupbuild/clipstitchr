@@ -2,6 +2,7 @@
 
 import { Check, Copy, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useState } from "react";
+import { HookOptionFeedbackBadge } from "@/app/_components/hooks/HookOptionFeedbackBadge";
 import { HookPlanStatusBadge } from "@/app/_components/library/HookPlanStatusBadge";
 import { Button } from "@/app/_components/ui/Button";
 import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
@@ -11,8 +12,9 @@ import { getStitchrHookPlanSourceLabel } from "@/lib/clipstitchr/utils/getStitch
 type HookPlanCardProps = {
   isSaving: boolean;
   plan: StitchrHookPlan;
-  onAccept: (id: string) => Promise<void>;
-  onReject: (id: string) => Promise<void>;
+  onAccept: (id: string, hookText?: string) => Promise<void>;
+  onReject: (id: string, hookText?: string) => Promise<void>;
+  onSelectOption: (id: string, hookText: string) => Promise<void>;
 };
 
 export function HookPlanCard({
@@ -20,6 +22,7 @@ export function HookPlanCard({
   plan,
   onAccept,
   onReject,
+  onSelectOption,
 }: HookPlanCardProps) {
   const [isCopied, setIsCopied] = useState(false);
   const canUseHook = Boolean(
@@ -68,11 +71,64 @@ export function HookPlanCard({
           </p>
           <ul className="mt-2 grid gap-2">
             {plan.hookOptions.map((option) => (
-              <li key={option.text} className="text-sm text-text-secondary">
-                <span className="font-semibold text-text-primary">
-                  {option.text}
-                </span>
-                {option.angle ? ` - ${option.angle}` : ""}
+              <li
+                key={option.text}
+                className="rounded-md border border-border bg-white p-3 text-sm text-text-secondary"
+              >
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="break-words font-semibold text-text-primary">
+                      {option.text}
+                    </p>
+                    {option.angle ? (
+                      <p className="mt-1 text-xs font-semibold text-accent-dark">
+                        {option.angle}
+                      </p>
+                    ) : null}
+                  </div>
+                  <HookOptionFeedbackBadge status={option.feedbackStatus} />
+                </div>
+                {option.reason ? (
+                  <p className="mt-2 text-xs leading-5 text-text-secondary">
+                    {option.reason}
+                  </p>
+                ) : null}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    disabled={option.text === plan.selectedHook || isSaving}
+                    title="Make active hook"
+                    onClick={() => onSelectOption(plan.id, option.text)}
+                  >
+                    {option.text === plan.selectedHook ? "Active" : "Use"}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    icon={<ThumbsUp aria-hidden className="h-4 w-4" />}
+                    disabled={!option.text.trim() || option.feedbackStatus === "accepted"}
+                    isLoading={isSaving}
+                    title="Save as winner"
+                    onClick={() => onAccept(plan.id, option.text)}
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="danger"
+                    icon={<ThumbsDown aria-hidden className="h-4 w-4" />}
+                    disabled={!option.text.trim() || option.feedbackStatus === "rejected"}
+                    isLoading={isSaving}
+                    title="Add to avoid list"
+                    onClick={() => onReject(plan.id, option.text)}
+                  >
+                    Reject
+                  </Button>
+                </div>
               </li>
             ))}
           </ul>
@@ -110,7 +166,7 @@ export function HookPlanCard({
           title="Save as winner"
           onClick={() => onAccept(plan.id)}
         >
-          Save as winner
+          Accept hook
         </Button>
         <Button
           type="button"
@@ -122,7 +178,7 @@ export function HookPlanCard({
           title="Add to avoid list"
           onClick={() => onReject(plan.id)}
         >
-          Add to avoid list
+          Reject hook
         </Button>
       </div>
     </article>

@@ -244,8 +244,8 @@ Firecrawl website import:
 | Automatic asset final saves | Worker-only finalizers for automated Stitches, video clips, avatar photos, and Swipes | 20 saved assets/day/user; global 2,000/day |
 | Notification inbox actions | `notifications.unreadCount`, `notifications.listRecent`, `notifications.markRead`, `notifications.markAllRead`, `notifications.remove`, and `notifications.clearAll` | `unreadCount` reads one summary row for the always-visible bell badge. `listRecent` is an indexed, capped read of at most 80 records and is loaded only while the popover is open. Neither read is separately rate-limited because they do not mutate data, create storage, or call paid providers. Read-state changes consume `convexMetadataUpdate`; deletes consume `convexRecordDelete`. Notification creation happens after already-limited content saves or worker-only automation completion paths and does not call paid providers or create media storage. |
 | Avatar cascade delete | `DELETE /api/avatars/{id}` | 100/hour/user, burst 20 |
-| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `stitchTemplates.createFromStitch`, `stitchrHookPlans.saveBatchPlannerResults`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
-| Convex metadata updates | `avatars.update`, `avatarPreferences.setDefaultAvatar`, `productPreferences.setDefaultProduct`, `productPreferences.completeOnboarding`, `automationPreferences.save`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `videoClips.updateCrop`, `stitches.updateMusic`, `stitches.updatePostedStatus`, `stitches.updateSourceSettings`, `stitches.updateSourceCrop`, `stitches.updateTextOverlay`, `stitches.updateSocialCaption`, `stitches.updateRenderedVideo`, `stitchTemplates.updateName`, `products.update`, `stitchrHookPlans.accept`, `stitchrHookPlans.reject`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
+| Convex record saves | `avatars.save`, `videoClips.save`, `photoAssets.save`, `products.create`, `stitches.save`, `stitchTemplates.createFromStitch`, `stitchrHookPlans.saveBatchPlannerResults`, `stitchrHookPlans.saveManualGeneration`, `swiprBackgrounds.save`, `sharedMusicTracks.save`, new `swipes.save` records | 3,000/hour/user, burst 500 |
+| Convex metadata updates | `avatars.update`, `avatarPreferences.setDefaultAvatar`, `productPreferences.setDefaultProduct`, `productPreferences.completeOnboarding`, `automationPreferences.save`, `updateMetadata` mutations, `videoClips.updateCliprMusic`, `videoClips.updateCrop`, `stitches.updateMusic`, `stitches.updatePostedStatus`, `stitches.updateSourceSettings`, `stitches.updateSourceCrop`, `stitches.updateTextOverlay`, `stitches.updateSocialCaption`, `stitches.updateRenderedVideo`, `stitchTemplates.updateName`, `products.update`, `stitchrHookPlans.attachStitch`, `stitchrHookPlans.selectOption`, `stitchrHookPlans.accept`, `stitchrHookPlans.reject`, `cliprPreferences.setDefaultVoice`, existing `swipes.save` records | 5,000/hour/user, burst 1,000 |
 
 Changing an avatar's linked product uses `avatars.update` and patches the
 avatar's photo records to the same product under the shared Convex metadata
@@ -369,10 +369,12 @@ metadata; it creates no backend cost until the user saves or exports a new
 stitch.
 
 The expanded hook libraries and Hook Lab product examples are prompt resources,
-not new backend operations. Swipr and Stitchr auto-text continue to use
+not new provider operations. Swipr and Stitchr auto-text continue to use
 `POST /api/clipr/text` and the existing Clipr hook/script generation rate limit
-before the provider call. Stitchr Hook Lab variants return in the same response;
-clicking an alternate hook in the dashboard only edits client state.
+before the provider call. Stitchr Hook Lab variants return in the same response.
+Saving a manual hook generation to the Hook Library consumes the shared Convex
+record-save limit. Switching, accepting, or rejecting a specific hook option
+consumes the shared Convex metadata-update limit and does not call a provider.
 
 ## Client Batch Caps
 

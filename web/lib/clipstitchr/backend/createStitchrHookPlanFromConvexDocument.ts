@@ -7,6 +7,25 @@ import type { StitchrHookPlanStatus } from "@/lib/clipstitchr/types/StitchrHookP
 export function createStitchrHookPlanFromConvexDocument(
   plan: Doc<"stitchrHookPlans">,
 ): StitchrHookPlan {
+  const feedbackStatus = plan.feedbackStatus as
+    | StitchrHookFeedbackStatus
+    | undefined;
+  const hookOptions = plan.hookOptions.map((option) =>
+    feedbackStatus &&
+    option.text === plan.selectedHook &&
+    !option.feedbackStatus
+      ? {
+          ...option,
+          ...(plan.acceptedAt ? { acceptedAt: plan.acceptedAt } : {}),
+          feedbackStatus,
+          ...(plan.rejectedAt ? { rejectedAt: plan.rejectedAt } : {}),
+          ...(plan.rejectionReason
+            ? { rejectionReason: plan.rejectionReason }
+            : {}),
+        }
+      : option,
+  );
+
   return {
     acceptedAt: plan.acceptedAt,
     angle: plan.angle,
@@ -16,9 +35,9 @@ export function createStitchrHookPlanFromConvexDocument(
     createdAt: plan.createdAt,
     demoClipId: plan.demoClipId,
     demoClipName: plan.demoClipName,
-    feedbackStatus: plan.feedbackStatus as StitchrHookFeedbackStatus | undefined,
+    feedbackStatus,
     hashtags: plan.hashtags,
-    hookOptions: plan.hookOptions,
+    hookOptions,
     id: plan.id,
     productId: plan.productId,
     productName: plan.productName,
