@@ -395,13 +395,13 @@ Use `docs/media-bunny/media-bunny-llms.md` as the implementation guide and `docs
 - Set video conversion options to target TikTok format:
   - `width: 1080`
   - `height: 1920`
-  - `fit: 'contain'` for MVP so source footage is not stretched
+  - `fit: 'cover'` so source footage fills the vertical ad frame without stretching
   - `allowRotationMetadata: false` so rotation is baked into the normalized output
   - `forceTranscode: true` so uploaded assets have consistent dimensions and codec settings
 - Prefer MP4-compatible codecs. Prefer `avc` for video and `aac` for audio when browser support allows them.
 - Use `conversion.onProgress` for upload-normalization progress.
 - Store the normalized `BufferTarget.buffer` as a browser `Blob` only long enough to upload it to R2.
-- After normalization succeeds, generate a poster `Blob` from the normalized video, upload the poster to R2, and save both R2 object references with the Convex clip record.
+- After normalization succeeds, generate a poster `Blob` from the normalized video, upload the normalized video and poster to R2, call `POST /api/uploads/analyze` with a signed R2 video URL plus poster fallback, then save both R2 object references and analysis metadata with the Convex clip record.
 
 #### Sequence Preview
 

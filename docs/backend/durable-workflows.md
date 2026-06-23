@@ -134,7 +134,7 @@ device cannot resume the work.
 | Avatar photo generation | Worker-owned. The route uploads the source image to R2, creates an `avatar-photo-generation` provider job, and the provider worker saves final `photoAssets`. | Add webhook-triggered finalization and retry controls; current worker polling already removes browser-close loss. |
 | Swapr generation | Worker-owned. The route validates saved R2 inputs, creates a `manual-swapr` provider job, and the provider/media workers create the final saved Swapr clip. | Add webhook-triggered finalization and operational retry controls; current worker polling already removes browser-close loss. |
 | Photo upload | Browser prepares photo, uploads objects, and saves Convex metadata. Refresh can stop before completion. | Upload original source to a durable job first, then finalize from a recoverable source. |
-| Video upload normalization | Worker-owned after the raw source upload and `upload-normalization` job creation. The media worker normalizes, captures the poster, saves the clip, and creates the upload-analysis provider job. | Add resumable/multipart source uploads if close-before-upload durability becomes required. |
+| Video upload normalization | Browser-first. The client normalizes with Media Bunny, captures the poster, uploads the normalized video/poster, calls immediate upload analysis, and saves the clip. If browser normalization or poster capture fails, it falls back to raw source upload plus `upload-normalization`. | Add resumable/multipart source uploads or browser-resume state if close-before-completion durability becomes required for the browser-first path. |
 | Stitchr composition | Inputs are durable saved clips, but each stitch job is browser-local. Refresh stops work, including multi-UGC batches that have not finished saving every output. Optional music is durable because uploaded shared music objects and editable settings live on the saved stitch. | Create a stitch job with selected UGC clip IDs, demo clip ID, trim ranges, per-output overlay configs, and optional music settings, then process in a backend worker or resumable browser queue. |
 | Longr composition | Inputs are durable saved clips, but the combined long-form render is browser-local. Refresh stops the build before the final Long, poster, and Convex record are saved. | Create a Longr job with ordered source clip IDs and trim ranges, then process in a backend worker or resumable browser queue. |
 | Clipr generation | Worker-owned. `POST /api/clipr/jobs` creates a queued `cliprJobs` record and `manual-clipr` provider job. The provider worker handles text/still/video work and the media worker saves the final Clipr clip with any selected shared music. | Add webhook-triggered provider completion and richer user-visible retry/recover controls. |
@@ -189,7 +189,7 @@ For Stitchr, each job needs:
 - per-output text overlay settings
 - final stitch IDs after finalization
 
-For upload normalization, each job needs:
+For fallback upload normalization, each job needs:
 
 - raw source R2 object or local durable source reference
 - target asset type
@@ -220,9 +220,10 @@ For upload normalization, each job needs:
 ### Phase 3: Make Browser Media Work Recoverable
 
 - Decide between server-worker media processing and browser-resume processing.
-- Server-worker processing is implemented for video upload normalization, manual
-  Swapr finalization, and manual Clipr finalization. Extend the same model to
-  Stitchr/Longr rendered exports when server-rendered outputs become required.
+- Server-worker processing remains implemented for fallback video upload
+  normalization, manual Swapr finalization, and manual Clipr finalization.
+  Extend the same model to Stitchr/Longr rendered exports when server-rendered
+  outputs become required.
 - If browser-resume processing is chosen, explicitly allow a transient local job
   store and implement resume-on-load.
 

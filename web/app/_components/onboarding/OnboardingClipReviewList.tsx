@@ -1,8 +1,6 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
 import { OnboardingClipReviewCard } from "@/app/_components/onboarding/OnboardingClipReviewCard";
-import { IconButton } from "@/app/_components/ui/IconButton";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
 type OnboardingClipReviewListProps = {
@@ -10,7 +8,6 @@ type OnboardingClipReviewListProps = {
   emptyDescription: string;
   emptyTitle: string;
   title: string;
-  onRefresh: () => void | Promise<void>;
 };
 
 export function OnboardingClipReviewList({
@@ -18,7 +15,6 @@ export function OnboardingClipReviewList({
   emptyDescription,
   emptyTitle,
   title,
-  onRefresh,
 }: OnboardingClipReviewListProps) {
   const scoredCount = clips.filter((clip) => clip.performanceScore).length;
   const pendingCount = clips.length - scoredCount;
@@ -34,14 +30,6 @@ export function OnboardingClipReviewList({
               : emptyDescription}
           </p>
         </div>
-        <IconButton
-          type="button"
-          label="Refresh clips"
-          icon={<RefreshCw aria-hidden className="h-4 w-4" />}
-          onClick={() => {
-            void onRefresh();
-          }}
-        />
       </div>
       {clips.length ? (
         <div className="mt-4 grid gap-3 lg:grid-cols-2">

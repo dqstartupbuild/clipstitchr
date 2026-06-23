@@ -343,9 +343,12 @@ with `swaprMetadata`, creates an `upload-video-analysis` provider job for
 automatic naming/details/scoring, and marks either the automation task/run or
 the manual provider job complete. Automated Stitchr draft finalization saves the
 editable Stitch and creates a `stitch-score-analysis` provider job so the saved
-Stitch receives an automatic score. For `upload-normalization`, it downloads the raw uploaded
-source from R2, normalizes it, captures the poster, saves the `videoClips`
-record, and creates the follow-on `upload-video-analysis` provider job.
+Stitch receives an automatic score. For fallback `upload-normalization`, it
+downloads the raw uploaded source from R2, normalizes it, captures the poster,
+saves the `videoClips` record, and creates the follow-on
+`upload-video-analysis` provider job. The normal manual upload path runs browser
+Media Bunny normalization and calls `POST /api/uploads/analyze` before saving the
+clip.
 
 Recommended idempotency key:
 

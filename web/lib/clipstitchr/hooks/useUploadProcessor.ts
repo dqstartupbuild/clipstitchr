@@ -1,9 +1,17 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { createUploadVideoJob } from "@/lib/clipstitchr/client/createUploadVideoJob";
-import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { analyzeNormalizedVideoUpload } from "@/lib/clipstitchr/client/analyzeNormalizedVideoUpload";
+import { createBrowserUploadVideoClipSaveArgs } from "@/lib/clipstitchr/client/createBrowserUploadVideoClipSaveArgs";
+import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
+import { uploadNormalizedVideoClipObjects } from "@/lib/clipstitchr/client/r2/uploadNormalizedVideoClipObjects";
+import { queueUploadVideoWorkerFallback } from "@/lib/clipstitchr/client/queueUploadVideoWorkerFallback";
+import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
+import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
 import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { UploadQueueItem } from "@/lib/clipstitchr/types/UploadQueueItem";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { getUploadBatchLimit } from "@/lib/clipstitchr/utils/getUploadBatchLimit";
@@ -24,6 +32,7 @@ export function useUploadProcessor({
   const [queue, setQueue] = useState<UploadQueueItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const saveClip = useMutation(api.videoClips.save);
 
   const updateQueueItem = useCallback(
     (id: string, update: Partial<UploadQueueItem>) => {
@@ -88,44 +97,118 @@ export function useUploadProcessor({
       try {
         for (const [index, file] of selectedFiles.entries()) {
           const item = queueItems[index];
+          let uploadedObjects: R2ObjectReference[] = [];
 
           updateQueueItem(item.id, { status: "reading", progress: 0.05 });
 
           try {
             const clipId = createId();
-            const [sourceVideoObject] = await uploadBlobsToR2([
-              {
-                blob: file,
-                kind: "upload-source-video",
-                recordId: clipId,
-              },
-            ]);
+            let normalizedVideo: Awaited<ReturnType<typeof normalizeUploadedVideo>>;
+            let posterBlob: Blob;
+
+            try {
+              updateQueueItem(item.id, {
+                status: "normalizing",
+                progress: 0.05,
+              });
+              normalizedVideo = await normalizeUploadedVideo(
+                file,
+                (progress) =>
+                  updateQueueItem(item.id, {
+                    status: "normalizing",
+                    progress: 0.05 + progress * 0.45,
+                  }),
+                { fit: "cover" },
+              );
+              updateQueueItem(item.id, {
+                status: "normalizing",
+                progress: 0.55,
+              });
+              posterBlob = await createVideoPosterBlob(normalizedVideo.blob);
+            } catch {
+              updateQueueItem(item.id, {
+                status: "reading",
+                progress: 0.05,
+              });
+              await queueUploadVideoWorkerFallback({
+                clipId,
+                clipType: item.clipType,
+                file,
+                productId: item.productId,
+              });
+              await onClipSaved?.();
+
+              updateQueueItem(item.id, {
+                status: "queued",
+                progress: 0.25,
+              });
+              continue;
+            }
 
             updateQueueItem(item.id, {
               status: "saving",
-              progress: 0.9,
+              progress: 0.65,
             });
-            await createUploadVideoJob({
-              clipId,
+            const { posterObject, videoObject } =
+              await uploadNormalizedVideoClipObjects({
+                clipId,
+                posterBlob,
+                videoBlob: normalizedVideo.blob,
+              });
+            uploadedObjects = [videoObject, posterObject];
+
+            updateQueueItem(item.id, {
+              status: "analyzing",
+              progress: 0.8,
+            });
+            const analysis = await analyzeNormalizedVideoUpload({
               clipType: item.clipType,
               originalName: file.name,
-              productId: item.productId,
-              sourceVideoObject,
+              posterBlob,
+              videoObject,
             });
+
+            updateQueueItem(item.id, {
+              status: "saving",
+              progress: 0.95,
+            });
+            const updatedAt = new Date().toISOString();
+
+            await saveClip(
+              createBrowserUploadVideoClipSaveArgs({
+                analysis,
+                clipId,
+                clipType: item.clipType,
+                metadata: normalizedVideo.metadata,
+                mimeType: normalizedVideo.mimeType,
+                originalName: file.name,
+                originalSize: file.size,
+                posterObject,
+                productId: item.productId,
+                sourceMimeType: file.type || normalizedVideo.metadata.mimeType,
+                updatedAt,
+                videoObject,
+              }),
+            );
+            uploadedObjects = [];
             await onClipSaved?.();
 
             updateQueueItem(item.id, {
-              status: "queued",
-              progress: 0.25,
+              status: "complete",
+              progress: 1,
             });
           } catch (error) {
+            if (uploadedObjects.length > 0) {
+              await deleteObjectsFromR2(uploadedObjects).catch(() => null);
+            }
+
             updateQueueItem(item.id, {
               status: "error",
               progress: 1,
               error:
                 error instanceof Error
                   ? error.message
-                  : "Unable to queue this video.",
+                  : "Unable to upload this video.",
             });
           }
         }
@@ -133,7 +216,7 @@ export function useUploadProcessor({
         setIsProcessing(false);
       }
     },
-    [clipType, demoProductId, onClipSaved, updateQueueItem],
+    [clipType, demoProductId, onClipSaved, saveClip, updateQueueItem],
   );
 
   const clearQueue = useCallback(() => setQueue([]), []);

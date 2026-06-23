@@ -52,10 +52,11 @@ The implementation uses:
   `web/services/media-worker/runMediaWorker.mjs`.
 - Worker env examples in `web/.env.worker.example`.
 
-Current worker execution supports `upload-normalization` jobs that process raw
-uploaded source videos, `stitchr-draft-finalization` jobs that save editable
-Stitchr drafts, `clipr-finalization` jobs that normalize Clipr provider videos,
-and `swapr-finalization` jobs that download one or more Replicate outputs,
+Current worker execution supports fallback `upload-normalization` jobs that
+process raw uploaded source videos when browser normalization is unavailable,
+`stitchr-draft-finalization` jobs that save editable Stitchr drafts,
+`clipr-finalization` jobs that normalize Clipr provider videos, and
+`swapr-finalization` jobs that download one or more Replicate outputs,
 normalize/concatenate them, and save reusable UGC-compatible Swapr clips. Longr
 export, launch coalescing, and operational dashboards remain follow-up phases.
 
@@ -93,7 +94,7 @@ Deployment choices and where those variables live are documented in
 
 | Job type | Durable source | Worker output |
 | --- | --- | --- |
-| `upload-normalization` | Implemented original video uploaded to R2 as `upload-source-video` | Normalized 9:16 video, poster image, final `videoClips` record, and follow-on `upload-video-analysis` provider job |
+| `upload-normalization` | Fallback original video uploaded to R2 as `upload-source-video` | Normalized 9:16 video, poster image, final `videoClips` record, and follow-on `upload-video-analysis` provider job |
 | `stitchr-draft-finalization` | Implemented saved UGC clips, one saved Demo clip, copied trims, and audio settings | Editable `stitches` draft records; automation does not render or persist final Stitchr MP4 clips |
 | `stitchr-longr-export` | Planned saved sequence clips, copied trims, output metadata | One finished Stitch from the ordered Longr-mode sequence, poster image, final `stitches` record |
 | `clipr-finalization` | Implemented provider-generated avatar video already copied to R2 and referenced by a Clipr job/provider job | Normalized final Clipr UGC video, poster image, final `videoClips` record |
@@ -111,7 +112,7 @@ Durability starts at different points for different workflows:
 
 | Workflow | Safe to close browser after |
 | --- | --- |
-| New video upload | The raw source upload finishes and the `upload-normalization` job exists in Convex |
+| New video upload | Browser-first path: after the normalized video/poster and clip metadata are saved. Fallback path: after the raw source upload finishes and the `upload-normalization` job exists in Convex |
 | Stitchr | The `stitchr-draft-finalization` job exists in Convex |
 | Stitchr Longr mode | The `stitchr-longr-export` job exists in Convex |
 | Clipr generation | The `manual-clipr` provider job exists; media durability starts after the provider worker creates `clipr-finalization` |

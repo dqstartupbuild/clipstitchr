@@ -20,7 +20,6 @@ type OnboardingUploadStepProps = {
   reviewTitle: string;
   title: string;
   onContinue: () => void;
-  onRefresh: () => void | Promise<void>;
   onUploaded: () => void | Promise<void>;
 };
 
@@ -35,7 +34,6 @@ export function OnboardingUploadStep({
   reviewTitle,
   title,
   onContinue,
-  onRefresh,
   onUploaded,
 }: OnboardingUploadStepProps) {
   const canContinue = clips.length > 0;
@@ -63,7 +61,6 @@ export function OnboardingUploadStep({
         emptyDescription={emptyDescription}
         emptyTitle={emptyTitle}
         title={reviewTitle}
-        onRefresh={onRefresh}
       />
       <div className="flex justify-end">
         <Button

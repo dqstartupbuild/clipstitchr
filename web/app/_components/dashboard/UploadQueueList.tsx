@@ -16,8 +16,12 @@ function getQueueStatusLabel(item: UploadQueueItem) {
       return "Queued";
     case "reading":
       return "Uploading";
+    case "normalizing":
+      return "Normalizing";
+    case "analyzing":
+      return "Scoring";
     case "saving":
-      return "Creating job";
+      return "Saving";
     case "complete":
       return "Complete";
     default:

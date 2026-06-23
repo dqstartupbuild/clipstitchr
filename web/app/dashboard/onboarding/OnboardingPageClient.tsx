@@ -155,7 +155,6 @@ export function OnboardingPageClient() {
           reviewTitle="Review UGC scores"
           title="Upload UGC clips"
           onContinue={() => setStep("demo-upload")}
-          onRefresh={library.refresh}
           onUploaded={library.refresh}
         />
       ) : null}
@@ -171,7 +170,6 @@ export function OnboardingPageClient() {
           reviewTitle="Review demo scores"
           title="Upload the product demo"
           onContinue={() => setStep("batch")}
-          onRefresh={library.refresh}
           onUploaded={library.refresh}
         />
       ) : null}
