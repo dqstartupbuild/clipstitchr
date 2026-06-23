@@ -6,7 +6,7 @@ scheduled Stitchr automation.
 
 ## What It Does
 
-- Queues up to 10 Stitch drafts for the current batch date.
+- Queues up to 10 Stitch drafts for the user's browser-local batch date.
 - Works even when scheduled automation is turned off in Settings.
 - Uses its own Stitchr Batch pair history so recent UGC and Demo pairings are
   avoided when better options exist.
@@ -35,8 +35,9 @@ scheduled Stitchr automation.
    generation button.
 5. When the user generates a batch, the client posts to
    `/api/stitchr/batch/generate`.
-6. The API route authenticates the user, reads the selected Batch text style,
-   asks Convex to plan the daily Stitchr batch, and returns the queued task IDs.
+6. The API route authenticates the user, reads the selected Batch text style
+   and browser time zone, asks Convex to plan the daily Stitchr batch for that
+   local date, and returns the queued task IDs.
 7. Finished drafts appear in the user's library after the existing provider and
    media workers complete them.
 
@@ -89,12 +90,19 @@ available.
 
 Stitchr Batch uses separate Convex rate limits from scheduled automation:
 
-- 10 Stitchr outputs per user per day.
+- 10 Stitchr outputs per user per browser-local batch date.
 - 1,000 Stitchr outputs globally per day.
+
+The browser sends its IANA time zone in the Batch API request. The API uses
+that time zone to compute the batch date, falling back to UTC only when the time
+zone is missing or invalid. The per-user planning and final-save buckets are
+keyed by owner and batch date so a late-night batch does not consume the next
+local day's Batch run.
 
 The scheduled automation planner still respects the daily generation window.
 The Stitchr Batch tab does not; a signed-in user can press the batch button at
-any time until their daily Stitchr batch has already been queued or completed.
+any time until their local daily Stitchr batch has already been queued or
+completed.
 
 The API route converts Convex rate-limit errors into HTTP `429` responses with
 retry timing. The current limits and verification notes are tracked in
@@ -112,12 +120,20 @@ retry timing. The current limits and verification notes are tracked in
   and Longr modes.
 - `web/app/api/stitchr/batch/generate/route.ts` authenticates the user and
   asks Convex to plan the run.
+- `web/lib/clipstitchr/server/stitchr/getStitchrBatchDate.ts` converts the
+  request timestamp into the user's browser-local batch date.
 - `web/lib/clipstitchr/server/readStitchrBatchGenerateRequest.ts` reads the
-  optional selected template ID from the Batch API request.
+  optional selected template ID, text styling, and browser time zone from the
+  Batch API request.
 - `web/lib/clipstitchr/client/generateStitchrBatch.ts` is the browser client
   wrapper for the Batch API route.
+- `web/lib/clipstitchr/client/getBrowserTimeZone.ts` reads the browser IANA
+  time zone for the Batch API request.
 - `web/convex/stitchrBatch.ts` plans the tasks and requests a provider worker
   launch.
+- `web/lib/clipstitchr/server/stitchr/getStitchrBatchRateLimitKey.ts` keeps
+  the planning and media-worker final-save quota keys aligned by owner and
+  batch date.
 - `web/convex/stitchTemplates/getStitchTemplateBatchTextOverlay.ts` picks the
   reusable overlay from a saved template.
 - `web/services/provider-worker/createStitchrTemplateTextOverlay.ts` adapts the
@@ -140,8 +156,11 @@ web/app/api/stitchr/batch/generate/route.ts
 web/app/api/stitchr/batch/generate/route.test.ts
 web/app/dashboard/stitchr/StitchrPageClient.tsx
 web/lib/clipstitchr/client/generateStitchrBatch.ts
+web/lib/clipstitchr/client/getBrowserTimeZone.ts
 web/lib/clipstitchr/constants/stitchrBatchGenerationLimits.ts
 web/lib/clipstitchr/server/readStitchrBatchGenerateRequest.ts
+web/lib/clipstitchr/server/stitchr/getStitchrBatchDate.ts
+web/lib/clipstitchr/server/stitchr/getStitchrBatchDate.test.ts
 web/lib/clipstitchr/types/SavedStitchrMode.ts
 web/lib/clipstitchr/types/StitchrMode.ts
 web/lib/clipstitchr/utils/getInitialStitchrMode.ts
@@ -149,6 +168,7 @@ web/convex/automationStitchr.ts
 web/convex/automationStitchrPairScoring.ts
 web/convex/recordStitchrBatchPairHistory.ts
 web/convex/rateLimiter.ts
+web/lib/clipstitchr/server/stitchr/getStitchrBatchRateLimitKey.ts
 web/convex/stitchTemplates/getStitchTemplateBatchTextOverlay.ts
 web/convex/stitchrBatch.ts
 web/convex/stitchrBatchRunId.ts

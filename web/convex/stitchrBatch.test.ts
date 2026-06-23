@@ -7,6 +7,7 @@ type ConvexFunction<Args, Result> = {
 
 type QueryResult = {
   collect?: unknown[];
+  first?: unknown;
   unique?: unknown;
 };
 
@@ -14,6 +15,9 @@ const mocks = vi.hoisted(() => ({
   assertAutomationWorkerSecret: vi.fn(),
   mutation: vi.fn((definition) => definition),
   requestWorkerLaunch: vi.fn(),
+  rateLimiter: {
+    limit: vi.fn(),
+  },
 }));
 
 vi.mock("./_generated/server", () => ({
@@ -28,6 +32,10 @@ vi.mock("./workerLaunch", () => ({
   requestWorkerLaunch: mocks.requestWorkerLaunch,
 }));
 
+vi.mock("./rateLimiter", () => ({
+  rateLimiter: mocks.rateLimiter,
+}));
+
 function getHandler<Args, Result>(convexFunction: unknown) {
   return (convexFunction as ConvexFunction<Args, Result>).handler;
 }
@@ -38,6 +46,7 @@ function createQueryChain(result: QueryResult = {}) {
   };
   const chain = {
     collect: vi.fn(async () => result.collect ?? []),
+    first: vi.fn(async () => result.first ?? null),
     order: vi.fn(() => chain),
     unique: vi.fn(async () => result.unique ?? null),
     withIndex: vi.fn(
@@ -114,6 +123,37 @@ function createTask(
   };
 }
 
+function createClip(id: string, clipType: "demo" | "ugc") {
+  return {
+    _id: `${id}_doc`,
+    clipType,
+    createdAt: "2026-06-20T00:00:00.000Z",
+    duration: 8,
+    hasAudio: true,
+    id,
+    libraryKind: "user",
+    name: clipType === "ugc" ? "UGC" : "Demo",
+    ownerId: "user_123",
+    videoObject: {
+      contentType: "video/mp4",
+      key: `users/user_123/${id}.mp4`,
+      size: 100,
+    },
+  };
+}
+
+function createProduct() {
+  return {
+    _id: "product_doc_1",
+    createdAt: "2026-06-20T00:00:00.000Z",
+    id: "product_1",
+    name: "Launch Kit",
+    ownerId: "user_123",
+    productDetails: "Helps creators make better short-form ads.",
+    updatedAt: "2026-06-20T00:00:00.000Z",
+  };
+}
+
 async function planBatch(existingTasks: unknown[]) {
   const ctx = createCtx({
     automationTasks: [{ collect: existingTasks }],
@@ -131,6 +171,7 @@ async function planBatch(existingTasks: unknown[]) {
 describe("stitchrBatch.plan existing runs", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.rateLimiter.limit.mockResolvedValue(undefined);
   });
 
   it("returns active queued task IDs and relaunches the provider worker", async () => {
@@ -232,5 +273,35 @@ describe("stitchrBatch.plan existing runs", () => {
       }),
     );
     expect(mocks.requestWorkerLaunch).not.toHaveBeenCalled();
+  });
+
+  it("keys the user quota by the local batch date when planning a new run", async () => {
+    const product = createProduct();
+    const ctx = createCtx({
+      automationTasks: [{ collect: [] }, { unique: null }],
+      productPreferences: [{ unique: null }],
+      products: [{ collect: [product] }, { first: product }],
+      stitchrBatchPairHistory: [{ collect: [] }],
+      videoClips: [
+        { collect: [createClip("ugc_1", "ugc"), createClip("demo_1", "demo")] },
+      ],
+    });
+
+    await getHandler<Record<string, string>, unknown>(plan)(ctx, {
+      batchDate: "2026-06-22",
+      now,
+      ownerId: "user_123",
+      secret: "automation-secret",
+    });
+
+    expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
+      expect.anything(),
+      "stitchrBatchDaily",
+      expect.objectContaining({
+        count: 1,
+        key: "user_123:2026-06-22",
+        throws: true,
+      }),
+    );
   });
 });

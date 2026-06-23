@@ -26,6 +26,7 @@ import {
 } from "./validators/textOverlay";
 import { videoPlaybackRateValidator } from "./validators/videoPlaybackRate";
 import { videoTrimRangeValidator } from "./validators/videoTrimRange";
+import { getStitchrBatchRateLimitKey } from "../lib/clipstitchr/server/stitchr/getStitchrBatchRateLimitKey";
 
 const saveArgs = {
   id: v.string(),
@@ -369,7 +370,7 @@ export const saveFromMediaWorker = mutation({
 
     if (isStitchrBatchSave) {
       await rateLimiter.limit(ctx, "stitchrBatchAssetSaveDaily", {
-        key: ownerId,
+        key: getStitchrBatchRateLimitKey(ownerId, automation.automationDate),
         throws: true,
       });
       await rateLimiter.limit(ctx, "stitchrBatchAssetSaveGlobalDaily", {

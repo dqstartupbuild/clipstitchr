@@ -9,6 +9,7 @@ type StitchrBatchGenerateRequest = {
   stitchrTextStrokeColorChoice?: AutomationStitchrColorChoice;
   stitchrTextStyleChoice?: AutomationStitchrTextStyleChoice;
   templateId?: string;
+  timeZone?: string;
 };
 
 export async function readStitchrBatchGenerateRequest(
@@ -32,9 +33,12 @@ export async function readStitchrBatchGenerateRequest(
     stitchrTextStrokeColorChoice,
     stitchrTextStyleChoice,
     templateId,
+    timeZone,
   } = body as Record<string, unknown>;
   const normalizedTemplateId =
     typeof templateId === "string" ? templateId.trim() : "";
+  const normalizedTimeZone =
+    typeof timeZone === "string" ? timeZone.trim().slice(0, 128) : "";
   const input: StitchrBatchGenerateRequest = {
     ...(typeof stitchrTextBackgroundColorChoice === "string"
       ? {
@@ -65,6 +69,7 @@ export async function readStitchrBatchGenerateRequest(
         }
       : {}),
     ...(normalizedTemplateId ? { templateId: normalizedTemplateId } : {}),
+    ...(normalizedTimeZone ? { timeZone: normalizedTimeZone } : {}),
   };
 
   return input;

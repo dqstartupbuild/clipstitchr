@@ -266,6 +266,41 @@ describe("POST /api/stitchr/batch/generate", () => {
     );
   });
 
+  it("plans the daily batch with the browser time zone", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-23T01:02:03.034Z"));
+
+    try {
+      const request = new Request(
+        "https://clipstitchr.test/api/stitchr/batch/generate",
+        {
+          body: JSON.stringify({ timeZone: "America/Detroit" }),
+          headers: { "content-type": "application/json" },
+          method: "POST",
+        },
+      );
+
+      const response = await POST(request);
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          batchDate: "2026-06-22",
+        }),
+      );
+      expect(mocks.convex.mutation).toHaveBeenCalledWith(
+        api.stitchrBatch.plan,
+        expect.objectContaining({
+          batchDate: "2026-06-22",
+          now: "2026-06-23T01:02:03.034Z",
+        }),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("passes selected Batch text styling into planning", async () => {
     const request = new Request("https://clipstitchr.test/api/stitchr/batch/generate", {
       body: JSON.stringify({

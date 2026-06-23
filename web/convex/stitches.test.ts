@@ -6,6 +6,7 @@ import {
   remove,
   resetQuickEdit,
   save,
+  saveFromMediaWorker,
   updateMusic,
   updatePostedStatus,
   updatePoster,
@@ -21,6 +22,7 @@ type ConvexFunction<Args, Result> = {
 
 const mocks = vi.hoisted(() => ({
   getAuthenticatedOwnerId: vi.fn(),
+  assertMediaWorkerSecret: vi.fn(),
   mutation: vi.fn((definition) => definition),
   query: vi.fn((definition) => definition),
   stitchCounts: {
@@ -45,6 +47,10 @@ vi.mock("./_generated/server", () => ({
 
 vi.mock("./auth/getAuthenticatedOwnerId", () => ({
   getAuthenticatedOwnerId: mocks.getAuthenticatedOwnerId,
+}));
+
+vi.mock("./auth/assertMediaWorkerSecret", () => ({
+  assertMediaWorkerSecret: mocks.assertMediaWorkerSecret,
 }));
 
 vi.mock("./rateLimiter", () => ({
@@ -169,6 +175,36 @@ describe("convex stitches", () => {
       "doc_existing",
       expect.objectContaining({
         ownerId: "owner_123",
+      }),
+    );
+  });
+
+  it("keys Stitchr Batch media-worker saves by the batch date", async () => {
+    const setup = createCtx([
+      { id: "ugc_1", clipType: "ugc", name: "UGC" },
+      { id: "demo_1", clipType: "demo", name: "Demo", productId: "product_1" },
+      null,
+    ]);
+
+    await getHandler(saveFromMediaWorker)(setup.ctx, {
+      ...createSaveArgs(),
+      automation: {
+        automationDate: "2026-06-22",
+        runId: "stitchr-batch:owner_123:2026-06-22",
+        source: "automation",
+        taskId: "stitchr-batch:owner_123:2026-06-22:1",
+        tool: "stitchr",
+      },
+      ownerId: "owner_123",
+      secret: "media-secret",
+    });
+
+    expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
+      expect.anything(),
+      "stitchrBatchAssetSaveDaily",
+      expect.objectContaining({
+        key: "owner_123:2026-06-22",
+        throws: true,
       }),
     );
   });

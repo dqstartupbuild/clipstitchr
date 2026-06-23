@@ -1,5 +1,6 @@
 import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
 import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
+import { getBrowserTimeZone } from "@/lib/clipstitchr/client/getBrowserTimeZone";
 
 export type GenerateStitchrBatchResult = {
   batchDate: string;
@@ -18,12 +19,14 @@ export type GenerateStitchrBatchOptions = {
   stitchrTextStrokeColorChoice?: AutomationStitchrColorChoice;
   stitchrTextStyleChoice?: AutomationStitchrTextStyleChoice;
   templateId?: string;
+  timeZone?: string;
 };
 
 export async function generateStitchrBatch(
   options: GenerateStitchrBatchOptions = {},
 ) {
   const templateId = options.templateId?.trim();
+  const timeZone = options.timeZone?.trim() || getBrowserTimeZone();
   const body = {
     ...(options.stitchrTextBackgroundColorChoice
       ? {
@@ -41,6 +44,7 @@ export async function generateStitchrBatch(
       ? { stitchrTextStyleChoice: options.stitchrTextStyleChoice }
       : {}),
     ...(templateId ? { templateId } : {}),
+    ...(timeZone ? { timeZone } : {}),
   };
   const hasBody = Object.keys(body).length > 0;
   const response = await fetch("/api/stitchr/batch/generate", {

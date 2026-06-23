@@ -16,6 +16,7 @@ import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constant
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
 import { STITCHR_BATCH_DAILY_LIMIT } from "../lib/clipstitchr/constants/stitchrBatchGenerationLimits";
 import { TEXT_OVERLAY_STYLES } from "../lib/clipstitchr/constants/textOverlayStyles";
+import { getStitchrBatchRateLimitKey } from "../lib/clipstitchr/server/stitchr/getStitchrBatchRateLimitKey";
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { resolveAutomationStitchrColor } from "../lib/clipstitchr/utils/resolveAutomationStitchrColor";
@@ -314,7 +315,7 @@ export const plan = mutation({
     }
 
     await rateLimiter.limit(ctx, "stitchrBatchDaily", {
-      key: ownerId,
+      key: getStitchrBatchRateLimitKey(ownerId, batchDate),
       count: selectedPairs.length,
       throws: true,
     });

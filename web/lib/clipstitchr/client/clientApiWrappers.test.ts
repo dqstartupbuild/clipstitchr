@@ -214,12 +214,18 @@ describe("client API wrappers", () => {
       }),
     );
 
-    await generateStitchrBatch({ templateId: "template_1" });
+    await generateStitchrBatch({
+      templateId: "template_1",
+      timeZone: "America/Detroit",
+    });
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/stitchr/batch/generate",
       expect.objectContaining({
-        body: JSON.stringify({ templateId: "template_1" }),
+        body: JSON.stringify({
+          templateId: "template_1",
+          timeZone: "America/Detroit",
+        }),
         headers: { "content-type": "application/json" },
         method: "POST",
       }),

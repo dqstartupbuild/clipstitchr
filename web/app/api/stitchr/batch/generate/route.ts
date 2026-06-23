@@ -164,8 +164,8 @@ export async function POST(request?: Request) {
 
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const now = new Date().toISOString();
-    const batchDate = getStitchrBatchDate(now);
     const input = request ? await readStitchrBatchGenerateRequest(request) : {};
+    const batchDate = getStitchrBatchDate(now, input.timeZone);
     const result = (await convex.mutation(api.stitchrBatch.plan, {
       secret: getAutomationWorkerSecret(),
       ownerId: userId,
