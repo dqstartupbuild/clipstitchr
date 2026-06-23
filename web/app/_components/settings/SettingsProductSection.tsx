@@ -1,4 +1,5 @@
 import { ProductSettingsList } from "@/app/_components/settings/ProductSettingsList";
+import { SettingsHookLabPanel } from "@/app/_components/settings/SettingsHookLabPanel";
 import { SettingsAutomationPanel } from "@/app/_components/settings/SettingsAutomationPanel";
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
@@ -10,6 +11,7 @@ type SettingsProductSectionProps = {
   automationError: string | null;
   automationPreferences: AutomationPreferencesInput;
   activeProductId?: string;
+  activeProduct?: ProductProfile;
   activeProductName?: string;
   defaultingProductId: string | null;
   deletingProductId: string | null;
@@ -35,6 +37,7 @@ export function SettingsProductSection({
   automationError,
   automationPreferences,
   activeProductId,
+  activeProduct,
   activeProductName,
   defaultingProductId,
   deletingProductId,
@@ -76,6 +79,11 @@ export function SettingsProductSection({
         savingProductId={savingProductId}
         onDelete={onDeleteProduct}
         onSetDefault={onSetActiveProduct}
+        onUpdate={onUpdateProduct}
+      />
+      <SettingsHookLabPanel
+        isSaving={isProductActionDisabled}
+        product={activeProduct}
         onUpdate={onUpdateProduct}
       />
       <SettingsAutomationPanel

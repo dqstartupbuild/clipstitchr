@@ -35,6 +35,10 @@ import { r2ObjectValidator } from "./validators/r2Object";
 import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
 import { replicatePredictionStatusValidator } from "./validators/replicatePredictionStatus";
 import { stitchScoreValidator } from "./validators/stitchScore";
+import { stitchrHookFeedbackStatusValidator } from "./validators/stitchrHookFeedbackStatus";
+import { stitchrHookPlanSourceValidator } from "./validators/stitchrHookPlanSource";
+import { stitchrHookPlanStatusValidator } from "./validators/stitchrHookPlanStatus";
+import { stitchrHookVariantValidator } from "./validators/stitchrHookVariant";
 import { stitchrModeValidator } from "./validators/stitchrMode";
 import { stitchSequenceSegmentValidator } from "./validators/stitchSequenceSegment";
 import { swiprBackgroundSourceValidator } from "./validators/swiprBackgroundSource";
@@ -308,6 +312,45 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
+  stitchrHookPlans: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    productId: v.optional(v.string()),
+    productName: v.optional(v.string()),
+    automationRunId: v.optional(v.string()),
+    automationTaskId: v.optional(v.string()),
+    stitchId: v.optional(v.string()),
+    ugcClipId: v.optional(v.string()),
+    ugcClipName: v.optional(v.string()),
+    demoClipId: v.optional(v.string()),
+    demoClipName: v.optional(v.string()),
+    status: stitchrHookPlanStatusValidator,
+    source: stitchrHookPlanSourceValidator,
+    selectedHook: v.string(),
+    hookOptions: v.array(stitchrHookVariantValidator),
+    caption: v.optional(v.string()),
+    hashtags: v.array(v.string()),
+    socialCaption: v.optional(v.string()),
+    angle: v.optional(v.string()),
+    reason: v.optional(v.string()),
+    providerModel: v.optional(v.string()),
+    providerPredictionId: v.optional(v.string()),
+    feedbackStatus: v.optional(stitchrHookFeedbackStatusValidator),
+    acceptedAt: v.optional(v.string()),
+    rejectedAt: v.optional(v.string()),
+    rejectionReason: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
+    .index("by_owner_feedback_created", [
+      "ownerId",
+      "feedbackStatus",
+      "createdAt",
+    ])
+    .index("by_owner_id", ["ownerId", "id"])
+    .index("by_owner_task", ["ownerId", "automationTaskId"]),
   sharedMusicTracks: defineTable({
     id: v.string(),
     uploadedByOwnerId: v.string(),

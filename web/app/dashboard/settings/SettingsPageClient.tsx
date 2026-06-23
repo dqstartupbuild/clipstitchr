@@ -32,6 +32,7 @@ export function SettingsPageClient() {
         />
         <SettingsProductSection
           activeProductId={products.defaultProductId}
+          activeProduct={products.activeProduct}
           activeProductName={products.activeProduct?.name}
           automationError={automation.error}
           automationPreferences={automation.preferences}

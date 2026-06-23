@@ -348,6 +348,17 @@ vi.mock("@/lib/clipstitchr/hooks/useStitchr", () => ({
   }),
 }));
 
+vi.mock("@/lib/clipstitchr/hooks/useStitchrHookPlans", () => ({
+  useStitchrHookPlans: () => ({
+    accept: vi.fn(),
+    error: null,
+    isLoading: false,
+    plans: [],
+    reject: vi.fn(),
+    savingPlanId: null,
+  }),
+}));
+
 vi.mock("@/lib/clipstitchr/hooks/useShowUploadControls", () => ({
   useShowUploadControls: () => true,
 }));

@@ -4,6 +4,8 @@ import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/A
 export type GenerateStitchrBatchResult = {
   batchDate: string;
   count: number;
+  hookPlanCount?: number;
+  hookPlanStatus?: string;
   message?: string;
   runId: string;
   status: string;

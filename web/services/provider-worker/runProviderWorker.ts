@@ -52,6 +52,7 @@ import { putR2Object } from "@/lib/clipstitchr/server/r2/putR2Object";
 import { saveCliprSceneImageObject } from "@/lib/clipstitchr/server/saveCliprSceneImageObject";
 import { parseUploadAssetAnalysis } from "@/lib/clipstitchr/server/parseUploadAssetAnalysis";
 import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDurationSeconds";
+import type { CliprTextGeneration } from "@/lib/clipstitchr/types/CliprTextGeneration";
 import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
@@ -67,6 +68,7 @@ import type { TextOverlayStyleId } from "@/lib/clipstitchr/types/TextOverlayStyl
 import { createCliprMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createCliprMusicMetadataFromSharedTrack";
 import { createDefaultSwiprTextOverlay } from "@/lib/clipstitchr/utils/createDefaultSwiprTextOverlay";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { createStitchSocialCaption } from "@/lib/clipstitchr/utils/createStitchSocialCaption";
 import { getAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { getAvatarGenerationTags } from "@/lib/clipstitchr/utils/getAvatarGenerationTags";
 import { getCliprFinalClipName } from "@/lib/clipstitchr/utils/getCliprFinalClipName";
@@ -299,6 +301,29 @@ type SwiprAutomationTaskInput = {
 type SwiprProviderBackground = {
   id: string;
 };
+
+type SavedStitchrHookPlan = {
+  caption?: string;
+  hashtags: string[];
+  hookOptions: CliprTextGeneration["hookVariants"];
+  providerModel?: string;
+  providerPredictionId?: string;
+  selectedHook: string;
+  socialCaption?: string;
+  status: string;
+};
+
+type StitchrWorkerTextGeneration = Pick<
+  CliprTextGeneration,
+  | "caption"
+  | "filledHook"
+  | "hashtags"
+  | "hookVariants"
+  | "overlayText"
+  | "providerModel"
+  | "providerPredictionId"
+  | "socialCaption"
+>;
 
 function readMaxJobs(args: string[]) {
   const equalsArg = args.find((arg) => arg.startsWith("--max-jobs="));
@@ -1584,6 +1609,105 @@ async function processClipr({
   });
 }
 
+function getSavedStitchrHookPlanIsUsable(
+  plan: SavedStitchrHookPlan | null,
+): plan is SavedStitchrHookPlan {
+  return Boolean(
+    plan &&
+      (plan.status === "planned" || plan.status === "fallback") &&
+      plan.selectedHook.trim(),
+  );
+}
+
+function createStitchrTextGenerationFromHookPlan(
+  plan: SavedStitchrHookPlan,
+): StitchrWorkerTextGeneration {
+  const caption = plan.caption?.trim() || plan.selectedHook;
+  const hashtags = plan.hashtags.length
+    ? plan.hashtags
+    : ["#ugc", "#productdemo", "#adcreative"];
+
+  return {
+    caption,
+    filledHook: plan.selectedHook,
+    hashtags,
+    hookVariants: plan.hookOptions.length
+      ? plan.hookOptions
+      : [
+          {
+            angle: "Saved hook",
+            reason: "Loaded from the batch hook plan.",
+            text: plan.selectedHook,
+          },
+        ],
+    overlayText: plan.selectedHook,
+    providerModel: plan.providerModel ?? "saved-hook-plan",
+    providerPredictionId: plan.providerPredictionId,
+    socialCaption:
+      plan.socialCaption ?? createStitchSocialCaption({ caption, hashtags }),
+  };
+}
+
+async function getStitchrTextGenerationFromSavedPlan({
+  client,
+  config,
+  task,
+}: {
+  client: ConvexHttpClient;
+  config: ProviderWorkerConfig;
+  task: AutomationTask;
+}) {
+  const hookPlan = (await client.query(
+    api.stitchrHookPlans.getByAutomationTaskForProvider,
+    {
+      automationTaskId: task.id,
+      ownerId: task.ownerId,
+      secret: config.providerWorkerSecret,
+    },
+  )) as SavedStitchrHookPlan | null;
+
+  return getSavedStitchrHookPlanIsUsable(hookPlan)
+    ? createStitchrTextGenerationFromHookPlan(hookPlan)
+    : null;
+}
+
+async function saveStitchrWorkerFallbackHookPlan({
+  client,
+  config,
+  input,
+  task,
+  textGeneration,
+}: {
+  client: ConvexHttpClient;
+  config: ProviderWorkerConfig;
+  input: StitchrAutomationTaskInput;
+  task: AutomationTask;
+  textGeneration: StitchrWorkerTextGeneration;
+}) {
+  await client.mutation(api.stitchrHookPlans.saveWorkerFallbackResult, {
+    ownerId: task.ownerId,
+    plan: {
+      automationRunId: task.runId,
+      automationTaskId: task.id,
+      caption: textGeneration.caption,
+      demoClipId: input.demoClipId,
+      demoClipName: input.demoClipName,
+      hashtags: textGeneration.hashtags,
+      hookOptions: textGeneration.hookVariants,
+      productId: input.product.id,
+      productName: input.product.name,
+      providerModel: textGeneration.providerModel,
+      providerPredictionId: textGeneration.providerPredictionId,
+      selectedHook: textGeneration.overlayText || textGeneration.filledHook,
+      socialCaption: textGeneration.socialCaption,
+      ugcClipId: input.ugcClipId,
+      ugcClipName: input.ugcClipName,
+    },
+    secret: config.providerWorkerSecret,
+    updatedAt: getNow(),
+  });
+}
+
 async function processStitchr({
   client,
   config,
@@ -1644,9 +1768,17 @@ async function processStitchr({
   const templateTextOverlay = input.templateTextOverlay
     ? createStitchrTemplateTextOverlay(input.templateTextOverlay, duration)
     : undefined;
-  const textGeneration = templateTextOverlay
-    ? null
-    : await createCliprTextGeneration({
+  let textGeneration: StitchrWorkerTextGeneration | null = null;
+
+  if (!templateTextOverlay) {
+    textGeneration = await getStitchrTextGenerationFromSavedPlan({
+      client,
+      config,
+      task,
+    });
+
+    if (!textGeneration) {
+      textGeneration = await createCliprTextGeneration({
         durationSeconds: 30,
         product: input.product,
         purpose: "stitchr",
@@ -1654,6 +1786,17 @@ async function processStitchr({
         slideCount: 1,
         stitchrClipContexts,
       });
+
+      await saveStitchrWorkerFallbackHookPlan({
+        client,
+        config,
+        input,
+        task,
+        textGeneration,
+      });
+    }
+  }
+
   const textOverlay =
     templateTextOverlay ??
     createStitchrTextOverlay(

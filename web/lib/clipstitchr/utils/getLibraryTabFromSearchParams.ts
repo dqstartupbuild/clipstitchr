@@ -10,6 +10,7 @@ export function getLibraryTabFromSearchParams(
     case "demo":
     case "swaps":
     case "swipes":
+    case "hooks":
     case "pexels":
     case "stitches":
     case "avatars":

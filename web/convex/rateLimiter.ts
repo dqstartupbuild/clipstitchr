@@ -419,6 +419,19 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: STITCHR_BATCH_GLOBAL_DAILY_LIMIT,
     shards: 5,
   },
+  stitchrBatchHookPlanDaily: {
+    kind: "token bucket",
+    rate: 20,
+    period: DAY,
+    capacity: 10,
+  },
+  stitchrBatchHookPlanGlobalDaily: {
+    kind: "token bucket",
+    rate: 2000,
+    period: DAY,
+    capacity: 500,
+    shards: 5,
+  },
   stitchrBatchAssetSaveDaily: {
     kind: "token bucket",
     rate: STITCHR_BATCH_DAILY_LIMIT,

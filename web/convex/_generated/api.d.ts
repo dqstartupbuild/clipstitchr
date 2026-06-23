@@ -104,6 +104,7 @@ import type * as stitchTemplates_updateName from "../stitchTemplates/updateName.
 import type * as stitches from "../stitches.js";
 import type * as stitchrBatch from "../stitchrBatch.js";
 import type * as stitchrBatchRunId from "../stitchrBatchRunId.js";
+import type * as stitchrHookPlans from "../stitchrHookPlans.js";
 import type * as swipes from "../swipes.js";
 import type * as swiprBackgrounds from "../swiprBackgrounds.js";
 import type * as validators_assetTags from "../validators/assetTags.js";
@@ -148,6 +149,10 @@ import type * as validators_replicatePredictionStatus from "../validators/replic
 import type * as validators_stitchMusicMetadata from "../validators/stitchMusicMetadata.js";
 import type * as validators_stitchScore from "../validators/stitchScore.js";
 import type * as validators_stitchSequenceSegment from "../validators/stitchSequenceSegment.js";
+import type * as validators_stitchrHookFeedbackStatus from "../validators/stitchrHookFeedbackStatus.js";
+import type * as validators_stitchrHookPlanSource from "../validators/stitchrHookPlanSource.js";
+import type * as validators_stitchrHookPlanStatus from "../validators/stitchrHookPlanStatus.js";
+import type * as validators_stitchrHookVariant from "../validators/stitchrHookVariant.js";
 import type * as validators_stitchrMode from "../validators/stitchrMode.js";
 import type * as validators_swaprMetadata from "../validators/swaprMetadata.js";
 import type * as validators_swiprBackgroundSource from "../validators/swiprBackgroundSource.js";
@@ -266,6 +271,7 @@ declare const fullApi: ApiFromModules<{
   stitches: typeof stitches;
   stitchrBatch: typeof stitchrBatch;
   stitchrBatchRunId: typeof stitchrBatchRunId;
+  stitchrHookPlans: typeof stitchrHookPlans;
   swipes: typeof swipes;
   swiprBackgrounds: typeof swiprBackgrounds;
   "validators/assetTags": typeof validators_assetTags;
@@ -310,6 +316,10 @@ declare const fullApi: ApiFromModules<{
   "validators/stitchMusicMetadata": typeof validators_stitchMusicMetadata;
   "validators/stitchScore": typeof validators_stitchScore;
   "validators/stitchSequenceSegment": typeof validators_stitchSequenceSegment;
+  "validators/stitchrHookFeedbackStatus": typeof validators_stitchrHookFeedbackStatus;
+  "validators/stitchrHookPlanSource": typeof validators_stitchrHookPlanSource;
+  "validators/stitchrHookPlanStatus": typeof validators_stitchrHookPlanStatus;
+  "validators/stitchrHookVariant": typeof validators_stitchrHookVariant;
   "validators/stitchrMode": typeof validators_stitchrMode;
   "validators/swaprMetadata": typeof validators_swaprMetadata;
   "validators/swiprBackgroundSource": typeof validators_swiprBackgroundSource;

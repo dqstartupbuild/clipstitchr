@@ -402,6 +402,28 @@ export const consumeCliprHookScript = mutation({
   },
 });
 
+export const consumeStitchrBatchHookPlan = mutation({
+  args: {
+    secret: v.string(),
+  },
+  handler: async (ctx, { secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "stitchrBatchHookPlanDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "stitchrBatchHookPlanGlobalDaily", {
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      throws: true,
+    });
+  },
+});
+
 export const consumeCliprVoiceGeneration = mutation({
   args: {
     estimatedSeconds: v.number(),

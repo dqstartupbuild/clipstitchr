@@ -202,6 +202,9 @@ describe("additional utility coverage", () => {
       "ugc",
     );
     expect(
+      getLibraryTabFromSearchParams(new URLSearchParams("tab=hooks")),
+    ).toBe("hooks");
+    expect(
       getLibraryTabFromSearchParams(new URLSearchParams("tab=clips")),
     ).toBe("ugc");
     expect(

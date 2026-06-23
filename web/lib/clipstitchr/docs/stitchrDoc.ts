@@ -9,7 +9,7 @@ export const stitchrDoc = {
     "Pick the product demo, create a batch, then review and export finished variants.",
   category: "feature",
   order: 10,
-  updated: "2026-06-22",
+  updated: "2026-06-23",
   sections: [
     {
       title: "What Stitchr does",
@@ -57,6 +57,13 @@ export const stitchrDoc = {
       body: [
         "Batch mode can vary text style automatically or follow the exact colors you choose before generation. Saved templates can also supply text and caption copy for every queued draft.",
         "In Normal mode, add one text hook per selected ad when the batch needs it. Use different text for each opener, or copy the active overlay to all selected ads.",
+      ],
+    },
+    {
+      title: "Hooks",
+      body: [
+        "Batch mode writes hooks for the whole batch together when it can. That helps the hooks feel less repetitive across the finished drafts.",
+        "Open Library, then Hooks, to copy hooks, save the ones you like, or add weak ones to the avoid list. Those choices help the next batch sound closer to your taste.",
       ],
     },
     {
