@@ -382,6 +382,57 @@ describe("VideoClipDetailsDialog", () => {
     expect(titleText.props.className).toContain("break-words");
   });
 
+  it("wires the cut editor playhead to the clip preview", () => {
+    mocks.stateQueue = [
+      { start: 1, end: 7 },
+      { start: 1, end: 7 },
+      [{ end: 3, start: 2 }],
+      [{ end: 3, start: 2 }],
+      true,
+      2,
+      null,
+    ];
+
+    const tree = VideoClipDetailsDialog({
+      clip: createClip({ duration: 8 }),
+      cutEditor: {
+        initialRemoveRanges: [{ end: 3, start: 2 }],
+        onSave: vi.fn(async () => undefined),
+      },
+      initialControlsEditorOpen: true,
+      isLoading: false,
+      onClose: vi.fn(),
+      onLoadPreview: vi.fn(),
+      posterUrl: "poster.jpg",
+      videoUrl: "clip.mp4",
+    });
+    const preview = findElements(
+      tree,
+      (element) =>
+        typeof element.type === "function" &&
+        element.type.name === "VideoClipMusicPreview",
+    )[0];
+    const cutEditor = findElements(
+      tree,
+      (element) =>
+        typeof element.type === "function" &&
+        element.type.name === "VideoCutEditor",
+    )[0];
+
+    expect(cutEditor.props.playheadSeconds).toBe(2);
+    expect(preview.props.seekRequest).toBeNull();
+
+    (cutEditor.props.onSeek as (seconds: number) => void)(4);
+    expect(mocks.setStateCalls[5]).toHaveBeenCalledWith(4);
+    expect(mocks.setStateCalls[6]).toHaveReturnedWith({
+      id: 1,
+      seconds: 4,
+    });
+
+    (preview.props.onSourceTimeChange as (seconds: number) => void)(6);
+    expect(mocks.setStateCalls[5]).toHaveBeenCalledWith(6);
+  });
+
   it("handles trim-only, music-only, and missing editor states", () => {
     mocks.musicState = {
       ...mocks.musicState,

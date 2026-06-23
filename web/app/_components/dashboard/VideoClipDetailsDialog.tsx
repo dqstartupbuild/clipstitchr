@@ -18,6 +18,7 @@ import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSugg
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { clamp } from "@/lib/clipstitchr/utils/clamp";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { formatBytes } from "@/lib/clipstitchr/utils/formatBytes";
 import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
@@ -37,6 +38,11 @@ type VideoClipDetailsTrimEditor = {
 type VideoClipDetailsCutEditor = {
   initialRemoveRanges: QuickEditRemoveRange[];
   onSave: (removeRanges: QuickEditRemoveRange[]) => void | Promise<void>;
+};
+
+type VideoClipDetailsSeekRequest = {
+  id: number;
+  seconds: number;
 };
 
 type VideoClipDetailsDialogProps = {
@@ -93,6 +99,11 @@ export function VideoClipDetailsDialog({
   const [isControlsEditorOpen, setIsControlsEditorOpen] = useState(
     Boolean((trimEditor || cutEditor || musicEditor) && initialControlsEditorOpen),
   );
+  const [cutPreviewPlayheadSeconds, setCutPreviewPlayheadSeconds] = useState(
+    activeTrimRange.start,
+  );
+  const [cutPreviewSeekRequest, setCutPreviewSeekRequest] =
+    useState<VideoClipDetailsSeekRequest | null>(null);
   const musicState = useVideoClipDetailsMusic({ clip, musicEditor });
   const activeQuickEdit = getQuickEditSuggestionsWithReplacedRemoveRanges({
     duration: clip.duration,
@@ -134,6 +145,14 @@ export function VideoClipDetailsDialog({
   const handleCancelTrim = () => {
     setActiveTrimRange(savedTrimRange);
     setActiveRemoveRanges(savedRemoveRanges);
+    setCutPreviewPlayheadSeconds(savedTrimRange.start);
+  };
+
+  const handleActiveTrimRangeChange = (trimRange: VideoTrimRange) => {
+    setActiveTrimRange(trimRange);
+    setCutPreviewPlayheadSeconds((currentTime) =>
+      clamp(currentTime, trimRange.start, trimRange.end),
+    );
   };
 
   const handleSaveTrim = async (trimRange: VideoTrimRange) => {
@@ -146,6 +165,9 @@ export function VideoClipDetailsDialog({
     await trimEditor.onSave(clampedTrimRange);
     setActiveTrimRange(clampedTrimRange);
     setSavedTrimRange(clampedTrimRange);
+    setCutPreviewPlayheadSeconds((currentTime) =>
+      clamp(currentTime, clampedTrimRange.start, clampedTrimRange.end),
+    );
   };
   const handleSaveCuts = async (removeRanges: QuickEditRemoveRange[]) => {
     if (!cutEditor) {
@@ -160,6 +182,18 @@ export function VideoClipDetailsDialog({
     await cutEditor.onSave(normalizedRemoveRanges);
     setActiveRemoveRanges(normalizedRemoveRanges);
     setSavedRemoveRanges(normalizedRemoveRanges);
+  };
+  const handleCutPreviewSeek = (seconds: number) => {
+    const clampedSeconds = clamp(seconds, activeTrimRange.start, activeTrimRange.end);
+
+    setCutPreviewPlayheadSeconds(clampedSeconds);
+    setCutPreviewSeekRequest((currentRequest) => ({
+      id: (currentRequest?.id ?? 0) + 1,
+      seconds: clampedSeconds,
+    }));
+  };
+  const handlePreviewSourceTimeChange = (sourceTime: number) => {
+    setCutPreviewPlayheadSeconds(clamp(sourceTime, 0, clip.duration));
   };
   const controlLabels = [
     trimEditor ? "trim" : null,
@@ -216,9 +250,11 @@ export function VideoClipDetailsDialog({
             musicEnabled={musicState.musicEnabled}
             musicVolume={musicState.musicVolume}
             quickEdit={activeQuickEdit}
+            seekRequest={cutPreviewSeekRequest}
             sourceDuration={clip.duration}
             trimRange={activeTrimRange}
             onLoadPreview={onLoadPreview}
+            onSourceTimeChange={cutEditor ? handlePreviewSourceTimeChange : undefined}
           />
           <div className="flex min-w-0 flex-col gap-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -257,13 +293,14 @@ export function VideoClipDetailsDialog({
                     saveLabel={trimEditor.saveLabel}
                     value={activeTrimRange}
                     onCancel={handleCancelTrim}
-                    onChange={setActiveTrimRange}
+                    onChange={handleActiveTrimRangeChange}
                     onSave={handleSaveTrim}
                   />
                 ) : null}
                 {cutEditor ? (
                   <VideoCutEditor
                     duration={clip.duration}
+                    playheadSeconds={cutPreviewPlayheadSeconds}
                     title="Cuts"
                     saveLabel="Save cuts"
                     trimRange={activeTrimRange}
@@ -271,6 +308,7 @@ export function VideoClipDetailsDialog({
                     onCancel={handleCancelTrim}
                     onChange={setActiveRemoveRanges}
                     onSave={handleSaveCuts}
+                    onSeek={handleCutPreviewSeek}
                   />
                 ) : null}
                 {musicEditor ? (

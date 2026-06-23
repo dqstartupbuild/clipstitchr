@@ -1,7 +1,6 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
-import { VideoCutRangeSlider } from "@/app/_components/cuts/VideoCutRangeSlider";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
@@ -9,7 +8,6 @@ import { formatDuration } from "@/lib/clipstitchr/utils/formatDuration";
 
 type VideoCutRangeFieldsProps = {
   duration: number;
-  id: string;
   index: number;
   value: QuickEditRemoveRange;
   onChange: (range: QuickEditRemoveRange) => void;
@@ -18,7 +16,6 @@ type VideoCutRangeFieldsProps = {
 
 export function VideoCutRangeFields({
   duration,
-  id,
   index,
   value,
   onChange,
@@ -38,10 +35,10 @@ export function VideoCutRangeFields({
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-wide text-red-700">
-            Cut {index + 1}
+            Selected cut {index + 1}
           </p>
           <p className="mt-1 text-xs font-semibold text-text-tertiary">
-            {formatDuration(value.start)} to {formatDuration(value.end)}
+            {formatDuration(value.end - value.start)}
           </p>
         </div>
         <IconButton
@@ -52,15 +49,7 @@ export function VideoCutRangeFields({
           onClick={onRemove}
         />
       </div>
-      <div className="mt-3">
-        <VideoCutRangeSlider
-          id={id}
-          duration={duration}
-          value={value}
-          onChange={updateRange}
-        />
-      </div>
-      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <label className="block min-w-0">
           <span className="text-xs font-semibold text-text-tertiary">
             Starts at

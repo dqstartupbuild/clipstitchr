@@ -204,8 +204,10 @@ Preview and render:
 UI:
 
 - `web/app/_components/cuts/VideoCutEditor.tsx`
+- `web/app/_components/cuts/VideoCutPlayheadControls.tsx`
 - `web/app/_components/cuts/VideoCutRangeFields.tsx`
-- `web/app/_components/cuts/VideoCutRangeSlider.tsx`
+- `web/app/_components/cuts/VideoCutRangeList.tsx`
+- `web/app/_components/cuts/VideoCutTimeline.tsx`
 - `web/app/_components/dashboard/VideoClipCard.tsx`
 - `web/app/_components/dashboard/StitchCard.tsx`
 - `web/app/_components/dashboard/VideoClipMusicPreview.tsx`

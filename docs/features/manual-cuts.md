@@ -11,6 +11,12 @@ Users can open a clip's controls and add one or more cut ranges. Each range has
 a start time and end time, and preview/export skips those sections while keeping
 the source file in R2 untouched.
 
+The editor uses a compact timeline instead of paired range sliders. Users can
+scrub the playhead, click the preview to the same timestamp in clip details,
+drop a quick cut at the playhead, mark a start and cut to the current playhead,
+drag full cut blocks, resize cut edges, select saved cuts, and type exact
+timestamps in the selected-cut inspector.
+
 The same control is available in saved normal Stitches. When a saved Stitch is
 edited, the user can add UGC cuts and Demo cuts on the source settings panel.
 Those cuts apply only to that saved Stitch, regenerate its poster, and clear any
@@ -98,9 +104,12 @@ original clip record.
 UI:
 
 - `web/app/_components/cuts/VideoCutEditor.tsx`
+- `web/app/_components/cuts/VideoCutPlayheadControls.tsx`
 - `web/app/_components/cuts/VideoCutRangeFields.tsx`
-- `web/app/_components/cuts/VideoCutRangeSlider.tsx`
+- `web/app/_components/cuts/VideoCutRangeList.tsx`
+- `web/app/_components/cuts/VideoCutTimeline.tsx`
 - `web/app/_components/dashboard/VideoClipDetailsDialog.tsx`
+- `web/app/_components/dashboard/VideoClipMusicPreview.tsx`
 - `web/app/_components/dashboard/VideoClipCard.tsx`
 - `web/app/_components/dashboard/StitchEditDialog.tsx`
 - `web/app/_components/dashboard/StitchSourceSettingsPanel.tsx`
@@ -116,7 +125,9 @@ State and mutations:
 
 Helpers:
 
-- `web/lib/clipstitchr/utils/getNextManualCutRange.ts`
+- `web/lib/clipstitchr/utils/getManualCutRangeAtPlayhead.ts`
+- `web/lib/clipstitchr/utils/getTimelineSecondsFromPointer.ts`
+- `web/lib/clipstitchr/utils/getVideoCutRangeFromMarkedTimes.ts`
 - `web/lib/clipstitchr/utils/createQuickEditRemoveRangesComparisonKey.ts`
 - `web/lib/clipstitchr/utils/getQuickEditSuggestionsWithReplacedRemoveRanges.ts`
 - `web/lib/clipstitchr/utils/normalizeQuickEditRemoveRanges.ts`
@@ -124,9 +135,14 @@ Helpers:
 
 Tests:
 
+- `web/app/_components/cuts/VideoCutEditor.test.tsx`
 - `web/app/_components/dashboard/VideoClipDetailsDialog.test.tsx`
+- `web/app/_components/dashboard/VideoClipMusicPreview.test.tsx`
 - `web/app/_components/dashboard/StitchSourceSettingsPanel.test.tsx`
 - `web/lib/clipstitchr/hooks/useClipLibraryState.test.ts`
+- `web/lib/clipstitchr/utils/getManualCutRangeAtPlayhead.test.ts`
+- `web/lib/clipstitchr/utils/getTimelineSecondsFromPointer.test.ts`
+- `web/lib/clipstitchr/utils/getVideoCutRangeFromMarkedTimes.test.ts`
 - `web/lib/clipstitchr/utils/getQuickEditSuggestionsWithReplacedRemoveRanges.test.ts`
 
 ## Abuse Protection

@@ -110,6 +110,51 @@ describe("VideoClipMusicPreview", () => {
     expect(audio.pause).toHaveBeenCalled();
   });
 
+  it("seeks from timeline requests and reports preview source time", () => {
+    const video = {
+      currentTime: 0,
+      muted: false,
+      volume: 0,
+    };
+    const audio = {
+      currentTime: 0,
+      duration: 2,
+      muted: true,
+      pause: vi.fn(),
+      play: vi.fn(async () => undefined),
+      volume: 0,
+    };
+    const onSourceTimeChange = vi.fn();
+
+    mocks.refQueue = [{ current: video }, { current: audio }];
+
+    const tree = VideoClipMusicPreview({
+      hasSourceAudio: true,
+      label: "Preview clip",
+      musicBlob: null,
+      musicEnabled: false,
+      musicVolume: 1,
+      onSourceTimeChange,
+      seekRequest: { id: 1, seconds: 6 },
+      sourceDuration: 12,
+      src: "clip.mp4",
+      trimRange: { start: 1, end: 10 },
+    });
+    const [videoElement] = findElements(tree, (element) => element.type === "video");
+
+    expect(video.currentTime).toBe(6);
+    expect(onSourceTimeChange).toHaveBeenLastCalledWith(6);
+
+    video.currentTime = 7;
+    (videoElement.props.onSeeked as () => void)();
+    expect(onSourceTimeChange).toHaveBeenLastCalledWith(7);
+
+    video.currentTime = 11;
+    (videoElement.props.onTimeUpdate as () => void)();
+    expect(video.currentTime).toBe(1);
+    expect(onSourceTimeChange).toHaveBeenLastCalledWith(1);
+  });
+
   it("uses a viewport-capped preview frame for mobile dialogs", () => {
     const tree = VideoClipMusicPreview({
       hasSourceAudio: false,
