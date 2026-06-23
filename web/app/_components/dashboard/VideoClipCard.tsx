@@ -23,6 +23,7 @@ import type { CliprMusicMetadata } from "@/lib/clipstitchr/types/CliprMusicMetad
 import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/CreateAvatarFromUgcClipOptions";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -64,6 +65,10 @@ type VideoClipCardProps = {
   onScore?: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
   onApplyQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
   onResetQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
+  onUpdateCuts?: (
+    clip: VideoClipMetadata,
+    removeRanges: QuickEditRemoveRange[],
+  ) => void | Promise<void>;
   onUpdateCliprMusic?: (
     clip: VideoClipMetadata,
     music: CliprMusicMetadata | null,
@@ -97,6 +102,7 @@ export function VideoClipCard({
   onScore,
   onApplyQuickEdit,
   onResetQuickEdit,
+  onUpdateCuts,
   onUpdateCliprMusic,
   onUpdateCrop,
   onUpdateMetadata,
@@ -304,6 +310,14 @@ export function VideoClipCard({
           title: "Default trim",
           onSave: (trimRange) => onUpdateTrim(clip, trimRange),
         }}
+        cutEditor={
+          onUpdateCuts
+            ? {
+                initialRemoveRanges: quickEdit?.removeRanges ?? [],
+                onSave: (removeRanges) => onUpdateCuts(clip, removeRanges),
+              }
+            : undefined
+        }
         cliprMusicEditor={
           clip.cliprMetadata && onUpdateCliprMusic
             ? {
@@ -352,6 +366,15 @@ export function VideoClipCard({
               onClick: () => openDetails({ showEditDialog: true }),
             },
           );
+
+          if (onUpdateCuts) {
+            items.push({
+              label: "Edit cuts",
+              icon: <Scissors aria-hidden className="h-4 w-4" />,
+              disabled: isLoading,
+              onClick: () => openDetails({ showControlsEditor: true }),
+            });
+          }
 
           if (onUpdatePostedStatus && canUpdatePostedStatus) {
             items.push({

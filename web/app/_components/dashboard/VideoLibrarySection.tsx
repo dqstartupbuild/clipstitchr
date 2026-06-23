@@ -16,6 +16,7 @@ import type { CreateAvatarFromUgcClipOptions } from "@/lib/clipstitchr/types/Cre
 import type { LibraryPostedStatusFilter } from "@/lib/clipstitchr/types/LibraryPostedStatusFilter";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -44,6 +45,10 @@ type VideoLibrarySectionProps = {
   onUpdateCrop?: (
     clip: VideoClipMetadata,
     crop: QuickEditCrop | null,
+  ) => void | Promise<void>;
+  onUpdateCuts?: (
+    clip: VideoClipMetadata,
+    removeRanges: QuickEditRemoveRange[],
   ) => void | Promise<void>;
   onScoreClip?: (clip: VideoClipMetadata) => Promise<ClipPerformanceScore>;
   onApplyQuickEdit?: (clip: VideoClipMetadata) => Promise<void>;
@@ -94,6 +99,7 @@ export function VideoLibrarySection({
   onStatusFilterChange,
   onUpdateCliprMusic,
   onUpdateCrop,
+  onUpdateCuts,
   onUpdateMetadata,
   onUpdateTrim,
   onUpdatePostedStatus,
@@ -208,6 +214,7 @@ export function VideoLibrarySection({
                 onResetQuickEdit={onResetQuickEdit}
                 onUpdateCliprMusic={onUpdateCliprMusic}
                 onUpdateCrop={onUpdateCrop}
+                onUpdateCuts={onUpdateCuts}
                 onUpdateMetadata={onUpdateMetadata}
                 onUpdateTrim={onUpdateTrim}
                 onUpdatePostedStatus={onUpdatePostedStatus}

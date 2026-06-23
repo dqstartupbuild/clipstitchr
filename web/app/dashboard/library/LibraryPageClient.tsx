@@ -475,6 +475,7 @@ export function LibraryPageClient() {
             onUpdateCliprMusic={library.updateCliprMusic}
             onUpdateMetadata={library.updateClipMetadata}
             onUpdateCrop={library.updateClipCrop}
+            onUpdateCuts={library.updateClipCuts}
             onUpdateTrim={library.updateClipTrimRange}
             onUpdatePostedStatus={library.updateClipPostedStatus}
             onCreateAvatarFromClip={
@@ -529,6 +530,7 @@ export function LibraryPageClient() {
             onUpdatePostedStatus={library.updateStitchPostedStatus}
             onUpdateSocialCaption={library.updateStitchSocialCaption}
             onUpdateSourceCrop={library.updateStitchSourceCrop}
+            onUpdateSourceCuts={library.updateStitchSourceCuts}
             onUpdateSourceSettings={library.updateStitchSourceSettings}
             onUpdateTextOverlay={library.updateStitchTextOverlay}
             onSelectHookVariant={hookPlans.selectOption}

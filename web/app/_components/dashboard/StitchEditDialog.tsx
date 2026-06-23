@@ -14,6 +14,7 @@ import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
@@ -27,6 +28,7 @@ import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRat
 import { clampTextOverlays } from "@/lib/clipstitchr/utils/clampTextOverlays";
 import { clampVideoTrimRange } from "@/lib/clipstitchr/utils/clampVideoTrimRange";
 import { createMusicMetadataComparisonKey } from "@/lib/clipstitchr/utils/createMusicMetadataComparisonKey";
+import { createQuickEditRemoveRangesComparisonKey } from "@/lib/clipstitchr/utils/createQuickEditRemoveRangesComparisonKey";
 import { createStitchPreviewCacheKey } from "@/lib/clipstitchr/utils/createStitchPreviewCacheKey";
 import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
 import { createStitchSourceSettingsComparisonKey } from "@/lib/clipstitchr/utils/createStitchSourceSettingsComparisonKey";
@@ -38,13 +40,15 @@ import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVide
 import { getDownloadFileName } from "@/lib/clipstitchr/utils/getDownloadFileName";
 import { getManualCropForSave } from "@/lib/clipstitchr/utils/getManualCropForSave";
 import { getNonEmptyTextOverlays } from "@/lib/clipstitchr/utils/getNonEmptyTextOverlays";
-import { getPlaybackRateDuration } from "@/lib/clipstitchr/utils/getPlaybackRateDuration";
+import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
+import { getQuickEditSuggestionsWithReplacedRemoveRanges } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsWithReplacedRemoveRanges";
 import { getQuickEditSuggestionsWithCrop } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsWithCrop";
 import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
 import { getStitchrHookPlanMatchesStitch } from "@/lib/clipstitchr/utils/getStitchrHookPlanMatchesStitch";
 import { getStitchTrimRangeLabel } from "@/lib/clipstitchr/utils/getStitchTrimRangeLabel";
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { getTextOverlaysWithSelectedHook } from "@/lib/clipstitchr/utils/getTextOverlaysWithSelectedHook";
+import { normalizeQuickEditRemoveRanges } from "@/lib/clipstitchr/utils/normalizeQuickEditRemoveRanges";
 
 type StitchEditDialogProps = {
   demoClips: VideoClipMetadata[];
@@ -82,6 +86,11 @@ type StitchEditDialogProps = {
     crop: QuickEditCrop | null,
     stitchOverride?: Stitch,
   ) => Promise<void>;
+  onSaveSourceCuts?: (
+    source: "ugc" | "demo",
+    removeRanges: QuickEditRemoveRange[],
+    stitchOverride?: Stitch,
+  ) => Promise<void>;
   onSaveTextOverlay: (
     textOverlay: TextOverlay | TextOverlay[] | null,
     stitchOverride?: Stitch,
@@ -116,6 +125,7 @@ export function StitchEditDialog({
   onSaveSocialCaption,
   onSaveSourceSettings,
   onSaveSourceCrop,
+  onSaveSourceCuts,
   onSaveTextOverlay,
   onRejectHookVariant,
   onSelectHookVariant,
@@ -203,6 +213,12 @@ export function StitchEditDialog({
   );
   const [ugcTrimRange, setUgcTrimRange] = useState(() => initialUgcTrimRange);
   const [demoTrimRange, setDemoTrimRange] = useState(() => initialDemoTrimRange);
+  const [ugcRemoveRanges, setUgcRemoveRanges] = useState<
+    QuickEditRemoveRange[]
+  >(() => stitch.ugcQuickEdit?.removeRanges ?? []);
+  const [demoRemoveRanges, setDemoRemoveRanges] = useState<
+    QuickEditRemoveRange[]
+  >(() => stitch.demoQuickEdit?.removeRanges ?? []);
   const [isUgcCropOpen, setIsUgcCropOpen] = useState(false);
   const [isDemoCropOpen, setIsDemoCropOpen] = useState(false);
   const [ugcCrop, setUgcCrop] = useState<QuickEditCrop>(() => ({
@@ -225,6 +241,18 @@ export function StitchEditDialog({
   );
   const [savedSourceSettingsKey, setSavedSourceSettingsKey] = useState(
     () => initialSourceSettingsKey,
+  );
+  const [savedUgcRemoveRangesKey, setSavedUgcRemoveRangesKey] = useState(() =>
+    createQuickEditRemoveRangesComparisonKey(
+      stitch.ugcQuickEdit?.removeRanges ?? [],
+      initialUgcClip?.duration ?? stitch.ugcTrimRange?.end ?? 0,
+    ),
+  );
+  const [savedDemoRemoveRangesKey, setSavedDemoRemoveRangesKey] = useState(() =>
+    createQuickEditRemoveRangesComparisonKey(
+      stitch.demoQuickEdit?.removeRanges ?? [],
+      initialDemoClip?.duration ?? stitch.demoTrimRange?.end ?? 0,
+    ),
   );
   const [savedTextOverlaysKey, setSavedTextOverlaysKey] = useState(
     () => initialTextOverlaysKey,
@@ -256,11 +284,50 @@ export function StitchEditDialog({
   const clampedDemoTrimRange = selectedDemoClip
     ? clampVideoTrimRange(demoTrimRange, selectedDemoClip.duration)
     : demoTrimRange;
+  const normalizedUgcRemoveRanges = selectedUgcClip
+    ? normalizeQuickEditRemoveRanges(ugcRemoveRanges, selectedUgcClip.duration)
+    : ugcRemoveRanges;
+  const normalizedDemoRemoveRanges = selectedDemoClip
+    ? normalizeQuickEditRemoveRanges(
+        demoRemoveRanges,
+        selectedDemoClip.duration,
+      )
+    : demoRemoveRanges;
+  const baseUgcQuickEdit =
+    selectedUgcClipId === stitch.ugcClipId ? stitch.ugcQuickEdit : undefined;
+  const baseDemoQuickEdit =
+    selectedDemoClipId === stitch.demoClipId ? stitch.demoQuickEdit : undefined;
+  const draftUgcQuickEdit = getQuickEditSuggestionsWithCrop(
+    getQuickEditSuggestionsWithReplacedRemoveRanges({
+      duration: selectedUgcClip?.duration ?? 0,
+      quickEdit: baseUgcQuickEdit,
+      removeRanges: normalizedUgcRemoveRanges,
+    }),
+    getManualCropForSave(ugcCrop),
+  );
+  const draftDemoQuickEdit = getQuickEditSuggestionsWithCrop(
+    getQuickEditSuggestionsWithReplacedRemoveRanges({
+      duration: selectedDemoClip?.duration ?? 0,
+      quickEdit: baseDemoQuickEdit,
+      removeRanges: normalizedDemoRemoveRanges,
+    }),
+    getManualCropForSave(demoCrop),
+  );
   const ugcDuration = selectedUgcClip
-    ? getPlaybackRateDuration(clampedUgcTrimRange, ugcPlaybackRate)
+    ? getQuickEditPlaybackDuration(
+        clampedUgcTrimRange,
+        selectedUgcClip.duration,
+        draftUgcQuickEdit?.removeRanges,
+        ugcPlaybackRate,
+      )
     : 0;
   const demoDuration = selectedDemoClip
-    ? getPlaybackRateDuration(clampedDemoTrimRange, demoPlaybackRate)
+    ? getQuickEditPlaybackDuration(
+        clampedDemoTrimRange,
+        selectedDemoClip.duration,
+        draftDemoQuickEdit?.removeRanges,
+        demoPlaybackRate,
+      )
     : 0;
   const sourceDuration = ugcDuration + demoDuration;
   const selectedPreviewCacheKey = createStitchPreviewCacheKey(
@@ -283,8 +350,9 @@ export function StitchEditDialog({
     demoClipId: selectedDemoClipId,
     demoClipName: selectedDemoClip?.name ?? stitch.demoClipName,
     demoPlaybackRate,
+    demoQuickEdit: draftDemoQuickEdit,
     demoTrimRange: clampedDemoTrimRange,
-    duration: sourceDuration || stitch.duration,
+    duration: selectedUgcClip && selectedDemoClip ? sourceDuration : stitch.duration,
     music: music ?? undefined,
     socialCaption: socialCaption.trim() || undefined,
     textOverlay: textOverlays[0],
@@ -292,6 +360,7 @@ export function StitchEditDialog({
     ugcClipId: selectedUgcClipId,
     ugcClipName: selectedUgcClip?.name ?? stitch.ugcClipName,
     ugcPlaybackRate,
+    ugcQuickEdit: draftUgcQuickEdit,
     ugcTrimRange: clampedUgcTrimRange,
   };
   const selectedHookPlan =
@@ -331,11 +400,24 @@ export function StitchEditDialog({
   const currentSocialCaption = socialCaption.trim();
   const hasSourceChanges =
     !isLongrStitch && currentSourceSettingsKey !== savedSourceSettingsKey;
+  const currentUgcRemoveRangesKey = createQuickEditRemoveRangesComparisonKey(
+    normalizedUgcRemoveRanges,
+    selectedUgcClip?.duration ?? 0,
+  );
+  const currentDemoRemoveRangesKey = createQuickEditRemoveRangesComparisonKey(
+    normalizedDemoRemoveRanges,
+    selectedDemoClip?.duration ?? 0,
+  );
   const hasTextChanges = currentTextOverlaysKey !== savedTextOverlaysKey;
   const currentUgcCrop = getManualCropForSave(ugcCrop);
   const currentDemoCrop = getManualCropForSave(demoCrop);
   const currentUgcCropKey = JSON.stringify(currentUgcCrop);
   const currentDemoCropKey = JSON.stringify(currentDemoCrop);
+  const canEditSourceCuts = !isLongrStitch && Boolean(onSaveSourceCuts);
+  const hasUgcCutChanges =
+    canEditSourceCuts && currentUgcRemoveRangesKey !== savedUgcRemoveRangesKey;
+  const hasDemoCutChanges =
+    canEditSourceCuts && currentDemoRemoveRangesKey !== savedDemoRemoveRangesKey;
   const canEditSourceCrop = !isLongrStitch && Boolean(onSaveSourceCrop);
   const hasUgcCropChanges =
     canEditSourceCrop && currentUgcCropKey !== savedUgcCropKey;
@@ -347,6 +429,8 @@ export function StitchEditDialog({
   const hasChanges =
     hasSourceChanges ||
     hasTextChanges ||
+    hasUgcCutChanges ||
+    hasDemoCutChanges ||
     hasUgcCropChanges ||
     hasDemoCropChanges ||
     hasMusicChanges ||
@@ -423,6 +507,26 @@ export function StitchEditDialog({
         setSavedSourceSettingsKey(currentSourceSettingsKey);
       }
 
+      if (onSaveSourceCuts && hasUgcCutChanges) {
+        await onSaveSourceCuts(
+          "ugc",
+          normalizedUgcRemoveRanges,
+          stitchDraftForSave,
+        );
+        setUgcRemoveRanges(normalizedUgcRemoveRanges);
+        setSavedUgcRemoveRangesKey(currentUgcRemoveRangesKey);
+      }
+
+      if (onSaveSourceCuts && hasDemoCutChanges) {
+        await onSaveSourceCuts(
+          "demo",
+          normalizedDemoRemoveRanges,
+          stitchDraftForSave,
+        );
+        setDemoRemoveRanges(normalizedDemoRemoveRanges);
+        setSavedDemoRemoveRangesKey(currentDemoRemoveRangesKey);
+      }
+
       if (hasTextChanges) {
         await onSaveTextOverlay(
           nextTextOverlays.length ? nextTextOverlays : null,
@@ -476,6 +580,7 @@ export function StitchEditDialog({
       setUgcTrimRange(getDefaultVideoTrimRange(nextClip));
     }
 
+    setUgcRemoveRanges([]);
     setUgcCrop({
       mode: "smart-9x16",
       positionX: 0,
@@ -493,6 +598,7 @@ export function StitchEditDialog({
       setDemoTrimRange(getDefaultVideoTrimRange(nextClip));
     }
 
+    setDemoRemoveRanges([]);
     setDemoCrop({
       mode: "smart-9x16",
       positionX: 0,
@@ -700,6 +806,7 @@ export function StitchEditDialog({
                 demoClips={demoClips}
                 demoFallbackClip={currentDemoFallbackClip}
                 demoPlaybackRate={demoPlaybackRate}
+                demoRemoveRanges={normalizedDemoRemoveRanges}
                 demoTrimDuration={selectedDemoClip?.duration ?? 0}
                 demoTrimRange={clampedDemoTrimRange}
                 error={sourceSettingsError}
@@ -709,13 +816,16 @@ export function StitchEditDialog({
                 ugcClips={ugcClips}
                 ugcFallbackClip={currentUgcFallbackClip}
                 ugcPlaybackRate={ugcPlaybackRate}
+                ugcRemoveRanges={normalizedUgcRemoveRanges}
                 ugcTrimDuration={selectedUgcClip?.duration ?? 0}
                 ugcTrimRange={clampedUgcTrimRange}
                 onDemoClipChange={handleSelectDemoClip}
                 onDemoPlaybackRateChange={setDemoPlaybackRate}
+                onDemoRemoveRangesChange={setDemoRemoveRanges}
                 onDemoTrimChange={setDemoTrimRange}
                 onUgcClipChange={handleSelectUgcClip}
                 onUgcPlaybackRateChange={setUgcPlaybackRate}
+                onUgcRemoveRangesChange={setUgcRemoveRanges}
                 onUgcTrimChange={setUgcTrimRange}
               />
             ) : null}

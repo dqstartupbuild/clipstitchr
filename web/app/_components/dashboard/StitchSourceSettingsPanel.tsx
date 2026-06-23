@@ -1,8 +1,10 @@
 "use client";
 
 import { SourcePlaybackRateControls } from "@/app/_components/controls/SourcePlaybackRateControls";
+import { VideoCutEditor } from "@/app/_components/cuts/VideoCutEditor";
 import { StitchSourceClipSelect } from "@/app/_components/dashboard/StitchSourceClipSelect";
 import { StitchSourceTrimControl } from "@/app/_components/dashboard/StitchSourceTrimControl";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -15,6 +17,7 @@ type StitchSourceSettingsPanelProps = {
     name: string;
   };
   demoPlaybackRate: VideoPlaybackRate;
+  demoRemoveRanges: QuickEditRemoveRange[];
   demoTrimDuration: number;
   demoTrimRange: VideoTrimRange;
   error: string | null;
@@ -27,13 +30,16 @@ type StitchSourceSettingsPanelProps = {
     name: string;
   };
   ugcPlaybackRate: VideoPlaybackRate;
+  ugcRemoveRanges: QuickEditRemoveRange[];
   ugcTrimDuration: number;
   ugcTrimRange: VideoTrimRange;
   onDemoClipChange: (clipId: string) => void;
   onDemoPlaybackRateChange: (playbackRate: VideoPlaybackRate) => void;
+  onDemoRemoveRangesChange: (removeRanges: QuickEditRemoveRange[]) => void;
   onDemoTrimChange: (trimRange: VideoTrimRange) => void;
   onUgcClipChange: (clipId: string) => void;
   onUgcPlaybackRateChange: (playbackRate: VideoPlaybackRate) => void;
+  onUgcRemoveRangesChange: (removeRanges: QuickEditRemoveRange[]) => void;
   onUgcTrimChange: (trimRange: VideoTrimRange) => void;
 };
 
@@ -41,6 +47,7 @@ export function StitchSourceSettingsPanel({
   demoClips,
   demoFallbackClip,
   demoPlaybackRate,
+  demoRemoveRanges,
   demoTrimDuration,
   demoTrimRange,
   error,
@@ -50,13 +57,16 @@ export function StitchSourceSettingsPanel({
   ugcClips,
   ugcFallbackClip,
   ugcPlaybackRate,
+  ugcRemoveRanges,
   ugcTrimDuration,
   ugcTrimRange,
   onDemoClipChange,
   onDemoPlaybackRateChange,
+  onDemoRemoveRangesChange,
   onDemoTrimChange,
   onUgcClipChange,
   onUgcPlaybackRateChange,
+  onUgcRemoveRangesChange,
   onUgcTrimChange,
 }: StitchSourceSettingsPanelProps) {
   return (
@@ -102,6 +112,24 @@ export function StitchSourceSettingsPanel({
           title="Demo trim"
           value={demoTrimRange}
           onChange={onDemoTrimChange}
+        />
+      </div>
+      <div className="mt-4 grid min-w-0 gap-3 sm:grid-cols-2">
+        <VideoCutEditor
+          duration={ugcTrimDuration}
+          showActions={false}
+          title="UGC cuts"
+          trimRange={ugcTrimRange}
+          value={ugcRemoveRanges}
+          onChange={onUgcRemoveRangesChange}
+        />
+        <VideoCutEditor
+          duration={demoTrimDuration}
+          showActions={false}
+          title="Demo cuts"
+          trimRange={demoTrimRange}
+          value={demoRemoveRanges}
+          onChange={onDemoRemoveRangesChange}
         />
       </div>
       <SourcePlaybackRateControls

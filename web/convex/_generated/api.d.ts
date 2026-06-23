@@ -67,6 +67,7 @@ import type * as getPhotoNotificationCopy from "../getPhotoNotificationCopy.js";
 import type * as getPrimaryProductForOwner from "../getPrimaryProductForOwner.js";
 import type * as getProductNameFromAutomationTasks from "../getProductNameFromAutomationTasks.js";
 import type * as getQuickEditOverlayText from "../getQuickEditOverlayText.js";
+import type * as getQuickEditWithRemoveRanges from "../getQuickEditWithRemoveRanges.js";
 import type * as getStitchNotificationCopy from "../getStitchNotificationCopy.js";
 import type * as getStitchProductId from "../getStitchProductId.js";
 import type * as getSwipeNotificationCopy from "../getSwipeNotificationCopy.js";
@@ -83,6 +84,7 @@ import type * as markAutomationRunCompletedWhenTasksDone from "../markAutomation
 import type * as markAutomationRunStatus from "../markAutomationRunStatus.js";
 import type * as mediaJobs from "../mediaJobs.js";
 import type * as mediaWorkerLaunch from "../mediaWorkerLaunch.js";
+import type * as normalizeQuickEditRemoveRanges from "../normalizeQuickEditRemoveRanges.js";
 import type * as notifications from "../notifications.js";
 import type * as photoAssets from "../photoAssets.js";
 import type * as productPreferences from "../productPreferences.js";
@@ -234,6 +236,7 @@ declare const fullApi: ApiFromModules<{
   getPrimaryProductForOwner: typeof getPrimaryProductForOwner;
   getProductNameFromAutomationTasks: typeof getProductNameFromAutomationTasks;
   getQuickEditOverlayText: typeof getQuickEditOverlayText;
+  getQuickEditWithRemoveRanges: typeof getQuickEditWithRemoveRanges;
   getStitchNotificationCopy: typeof getStitchNotificationCopy;
   getStitchProductId: typeof getStitchProductId;
   getSwipeNotificationCopy: typeof getSwipeNotificationCopy;
@@ -250,6 +253,7 @@ declare const fullApi: ApiFromModules<{
   markAutomationRunStatus: typeof markAutomationRunStatus;
   mediaJobs: typeof mediaJobs;
   mediaWorkerLaunch: typeof mediaWorkerLaunch;
+  normalizeQuickEditRemoveRanges: typeof normalizeQuickEditRemoveRanges;
   notifications: typeof notifications;
   photoAssets: typeof photoAssets;
   productPreferences: typeof productPreferences;

@@ -4,6 +4,7 @@ import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyS
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
@@ -45,6 +46,11 @@ type RecentStitchesSectionProps = {
     source: "ugc" | "demo",
     crop: QuickEditCrop | null,
   ) => void | Promise<void>;
+  onUpdateSourceCuts?: (
+    stitch: Stitch,
+    source: "ugc" | "demo",
+    removeRanges: QuickEditRemoveRange[],
+  ) => void | Promise<void>;
   onUpdateTextOverlay: (
     stitch: Stitch,
     textOverlay: TextOverlay | TextOverlay[] | null,
@@ -68,6 +74,7 @@ export function RecentStitchesSection({
   onUpdatePostedStatus,
   onUpdateSocialCaption,
   onUpdateSourceCrop,
+  onUpdateSourceCuts,
   onUpdateSourceSettings,
   onUpdateTextOverlay,
   ugcClips,
@@ -105,6 +112,7 @@ export function RecentStitchesSection({
               onUpdatePostedStatus={onUpdatePostedStatus}
               onUpdateSocialCaption={onUpdateSocialCaption}
               onUpdateSourceCrop={onUpdateSourceCrop}
+              onUpdateSourceCuts={onUpdateSourceCuts}
               onUpdateSourceSettings={onUpdateSourceSettings}
               onUpdateTextOverlay={onUpdateTextOverlay}
               ugcClips={ugcClips}

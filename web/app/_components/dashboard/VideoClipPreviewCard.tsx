@@ -16,6 +16,7 @@ import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { AssetMetadataUpdate } from "@/lib/clipstitchr/types/AssetMetadataUpdate";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { VideoClipDetailsMusicEditor } from "@/lib/clipstitchr/types/VideoClipDetailsMusicEditor";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
@@ -46,6 +47,11 @@ type VideoClipPreviewCardTrimEditor = {
   onSave: (trimRange: VideoTrimRange) => void | Promise<void>;
 };
 
+type VideoClipPreviewCardCutEditor = {
+  initialRemoveRanges: QuickEditRemoveRange[];
+  onSave: (removeRanges: QuickEditRemoveRange[]) => void | Promise<void>;
+};
+
 type VideoClipPreviewCardMetadataEditor = {
   products?: ProductProfile[];
   onSaveCrop?: (crop: QuickEditCrop | null) => void | Promise<void>;
@@ -63,6 +69,7 @@ type VideoClipPreviewCardProps = {
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect?: () => void;
+  cutEditor?: VideoClipPreviewCardCutEditor;
   cliprMusicEditor?: VideoClipDetailsMusicEditor;
   metadataEditor?: VideoClipPreviewCardMetadataEditor;
   trimEditor?: VideoClipPreviewCardTrimEditor;
@@ -79,6 +86,7 @@ export function VideoClipPreviewCard({
   onLoadClip,
   onLoadPoster,
   onSelect,
+  cutEditor,
   cliprMusicEditor,
   metadataEditor,
   trimEditor,
@@ -242,6 +250,7 @@ export function VideoClipPreviewCard({
           musicEditor={detailsMode === "controls" ? cliprMusicEditor : undefined}
           posterUrl={posterUrl}
           quickEdit={quickEdit}
+          cutEditor={detailsMode === "controls" ? cutEditor : undefined}
           trimEditor={detailsMode === "controls" ? trimEditor : undefined}
           videoUrl={videoUrl}
           onClose={() => setDetailsMode(null)}

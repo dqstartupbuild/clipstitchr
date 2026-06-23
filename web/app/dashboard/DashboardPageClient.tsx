@@ -121,6 +121,7 @@ export function DashboardPageClient() {
           onResetQuickEdit={library.resetClipQuickEdit}
           onUpdateMetadata={library.updateClipMetadata}
           onUpdateCrop={library.updateClipCrop}
+          onUpdateCuts={library.updateClipCuts}
           onUpdateTrim={library.updateClipTrimRange}
           onUpdatePostedStatus={library.updateClipPostedStatus}
         />
@@ -140,6 +141,7 @@ export function DashboardPageClient() {
           onUpdatePostedStatus={library.updateStitchPostedStatus}
           onUpdateSocialCaption={library.updateStitchSocialCaption}
           onUpdateSourceCrop={library.updateStitchSourceCrop}
+          onUpdateSourceCuts={library.updateStitchSourceCuts}
           onUpdateSourceSettings={library.updateStitchSourceSettings}
           onUpdateTextOverlay={library.updateStitchTextOverlay}
           ugcClips={stitchrUgcClips}

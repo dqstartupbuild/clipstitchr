@@ -92,6 +92,7 @@ vi.mock("@/convex/_generated/api", () => ({
       updatePostedStatus: "stitches.updatePostedStatus",
       updatePoster: "stitches.updatePoster",
       updateRenderedVideo: "stitches.updateRenderedVideo",
+      updateSourceCuts: "stitches.updateSourceCuts",
       updateSourceSettings: "stitches.updateSourceSettings",
       updateTextOverlay: "stitches.updateTextOverlay",
     },
@@ -102,6 +103,7 @@ vi.mock("@/convex/_generated/api", () => ({
       remove: "videoClips.remove",
       updateCliprMusic: "videoClips.updateCliprMusic",
       updateCrop: "videoClips.updateCrop",
+      updateCuts: "videoClips.updateCuts",
       updateMetadata: "videoClips.updateMetadata",
       updatePostedStatus: "videoClips.updatePostedStatus",
       updatePoster: "videoClips.updatePoster",
@@ -669,6 +671,23 @@ describe("useClipLibraryState", () => {
     expect(mocks.deleteObjectsFromR2).toHaveBeenCalledWith([oldPosterObject]);
   });
 
+  it("updates clip cuts with normalized remove ranges", async () => {
+    const state = useClipLibraryState();
+    const clip = createClipMetadata({ duration: 10 });
+
+    await state.updateClipCuts(clip, [
+      { end: 4, start: 2, reason: "Loading" },
+      { end: 7, start: 6 },
+      { end: 6.5, start: 3 },
+    ]);
+
+    expect(getMutation("videoClips.updateCuts")).toHaveBeenCalledWith({
+      id: "clip_1",
+      removeRanges: [{ end: 7, start: 2, reason: "Loading" }],
+      updatedAt: expect.any(String),
+    });
+  });
+
   it("saves Clipr music replacements with owned-audio cleanup", async () => {
     const state = useClipLibraryState();
     const clip = createClipMetadata();
@@ -878,6 +897,90 @@ describe("useClipLibraryState", () => {
         posterVersion: 2,
       }),
     );
+  });
+
+  it("updates stitch source cuts with a regenerated poster", async () => {
+    const oldPosterObject = {
+      contentType: "image/jpeg",
+      key: "users/user_123/stitches/stitch_1/old-poster.jpg",
+      size: 8,
+    };
+    const oldStitchObject = {
+      contentType: "video/mp4",
+      key: "users/user_123/stitches/stitch_1/old-render.mp4",
+      size: 200,
+    };
+    const stitch = createStitch({
+      demoPlaybackRate: 2,
+      demoTrimRange: { end: 20, start: 0 },
+      posterObject: oldPosterObject,
+      stitchObject: oldStitchObject,
+      ugcPlaybackRate: 1,
+      ugcTrimRange: { end: 10, start: 0 },
+    });
+
+    mocks.convex.query.mockImplementation(async (queryId: string, args: unknown) => {
+      if (queryId === "videoClips.get") {
+        const id = (args as { id: string }).id;
+        const isDemo = id.startsWith("demo");
+
+        return createClipDocument({
+          clipType: isDemo ? "demo" : "ugc",
+          defaultTrimRange: { end: isDemo ? 20 : 10, start: 0 },
+          duration: isDemo ? 20 : 10,
+          id,
+          name: isDemo ? "Demo" : "UGC",
+        });
+      }
+
+      return null;
+    });
+    mocks.createVideoClipFromConvexDocument.mockImplementation(
+      ({
+        blob,
+        clip,
+        posterBlob,
+      }: {
+        blob: Blob;
+        clip: ReturnType<typeof createClipDocument>;
+        posterBlob?: Blob;
+      }) => ({
+        ...clip,
+        blob,
+        posterBlob,
+      }),
+    );
+
+    const state = useClipLibraryState();
+
+    await state.updateStitchSourceCuts(stitch, "demo", [
+      { end: 4, start: 2, reason: "Loading" },
+      { end: 6, start: 3 },
+    ]);
+
+    expect(mocks.createStitchPosterBlob).toHaveBeenCalledWith(
+      expect.objectContaining({
+        demoQuickEdit: {
+          removeRanges: [{ end: 6, start: 2, reason: "Loading" }],
+        },
+        duration: 18,
+        ugcQuickEdit: undefined,
+      }),
+    );
+    expect(getMutation("stitches.updateSourceCuts")).toHaveBeenCalledWith(
+      expect.objectContaining({
+        duration: 18,
+        id: "stitch_1",
+        posterObject: expect.objectContaining({
+          key: "users/user_123/stitches/stitch_1/poster.jpg",
+        }),
+        posterVersion: 2,
+        removeRanges: [{ end: 6, start: 2, reason: "Loading" }],
+        source: "demo",
+      }),
+    );
+    expect(mocks.deleteObjectsFromR2).toHaveBeenCalledWith([oldPosterObject]);
+    expect(mocks.deleteObjectsFromR2).toHaveBeenCalledWith([oldStitchObject]);
   });
 
   it("keeps stitch music when replacing shared or unchanged audio", async () => {

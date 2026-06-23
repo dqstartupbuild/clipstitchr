@@ -7,9 +7,15 @@ import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { getCliprMusicGain } from "@/lib/clipstitchr/media/getCliprMusicGain";
 import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { clamp } from "@/lib/clipstitchr/utils/clamp";
 import { getNextQuickEditSourceTime } from "@/lib/clipstitchr/utils/getNextQuickEditSourceTime";
 import { getQuickEditCropTransform } from "@/lib/clipstitchr/utils/getQuickEditCropTransform";
 import { getQuickEditPlaybackTimeForSourceTime } from "@/lib/clipstitchr/utils/getQuickEditPlaybackTimeForSourceTime";
+
+type VideoClipMusicPreviewSeekRequest = {
+  id: number;
+  seconds: number;
+};
 
 type VideoClipMusicPreviewProps = {
   src: string | null;
@@ -23,9 +29,11 @@ type VideoClipMusicPreviewProps = {
   musicEnabled: boolean;
   musicVolume: number;
   quickEdit?: QuickEditSuggestions | null;
+  seekRequest?: VideoClipMusicPreviewSeekRequest | null;
   sourceDuration?: number;
   trimRange?: VideoTrimRange | null;
   onLoadPreview?: () => void;
+  onSourceTimeChange?: (sourceTime: number) => void;
 };
 
 export function VideoClipMusicPreview({
@@ -40,9 +48,11 @@ export function VideoClipMusicPreview({
   musicEnabled,
   musicVolume,
   quickEdit = null,
+  seekRequest = null,
   sourceDuration,
   trimRange = null,
   onLoadPreview,
+  onSourceTimeChange,
 }: VideoClipMusicPreviewProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -55,6 +65,7 @@ export function VideoClipMusicPreview({
     : 0;
   const shouldShowVideoControls = controls && (!isPlaying || isHovered);
   const trimStart = trimRange?.start;
+  const trimEnd = trimRange?.end;
   const safeSourceDuration = sourceDuration ?? trimRange?.end ?? 0;
   const cropTransform = getQuickEditCropTransform(quickEdit?.crop);
 
@@ -108,6 +119,16 @@ export function VideoClipMusicPreview({
     void audio.play().catch(() => null);
   }, [musicGain, pauseMusic, shouldPlayMusic, syncMusicToVideo]);
 
+  const emitSourceTimeChange = useCallback(() => {
+    const video = videoRef.current;
+
+    if (!video) {
+      return;
+    }
+
+    onSourceTimeChange?.(video.currentTime);
+  }, [onSourceTimeChange]);
+
   useEffect(() => {
     const video = videoRef.current;
     const audio = audioRef.current;
@@ -151,12 +172,37 @@ export function VideoClipMusicPreview({
         )
       : trimStart;
     syncMusicToVideo();
+    emitSourceTimeChange();
   }, [
+    emitSourceTimeChange,
     quickEdit?.removeRanges,
     safeSourceDuration,
     src,
     syncMusicToVideo,
     trimRange,
+    trimStart,
+  ]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video || !seekRequest) {
+      return;
+    }
+
+    video.currentTime = clamp(
+      seekRequest.seconds,
+      trimStart ?? 0,
+      trimEnd ?? safeSourceDuration,
+    );
+    syncMusicToVideo();
+    emitSourceTimeChange();
+  }, [
+    emitSourceTimeChange,
+    safeSourceDuration,
+    seekRequest,
+    syncMusicToVideo,
+    trimEnd,
     trimStart,
   ]);
 
@@ -202,6 +248,7 @@ export function VideoClipMusicPreview({
     }
 
     syncMusicToVideo();
+    emitSourceTimeChange();
   };
 
   const handlePlay = () => {
@@ -222,6 +269,7 @@ export function VideoClipMusicPreview({
 
     setIsPlaying(true);
     playMusic();
+    emitSourceTimeChange();
   };
 
   const handlePause = () => {
@@ -232,6 +280,12 @@ export function VideoClipMusicPreview({
   const handleTimeUpdate = () => {
     keepPlaybackInsideTrim();
     syncMusicToVideo();
+    emitSourceTimeChange();
+  };
+
+  const handleSeeked = () => {
+    syncMusicToVideo();
+    emitSourceTimeChange();
   };
 
   return (
@@ -260,7 +314,7 @@ export function VideoClipMusicPreview({
             onLoadedMetadata={handleLoadedMetadata}
             onPause={handlePause}
             onPlay={handlePlay}
-            onSeeked={syncMusicToVideo}
+            onSeeked={handleSeeked}
             onTimeUpdate={handleTimeUpdate}
             playsInline
             poster={posterSrc ?? undefined}

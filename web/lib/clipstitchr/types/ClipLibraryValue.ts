@@ -5,6 +5,7 @@ import type { ClipLibraryCounts } from "@/lib/clipstitchr/types/ClipLibraryCount
 import type { ClipLibrarySortOrder } from "@/lib/clipstitchr/types/ClipLibrarySortOrder";
 import type { ClipLibraryVideoGroup } from "@/lib/clipstitchr/types/ClipLibraryVideoGroup";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
@@ -55,6 +56,10 @@ export type ClipLibraryValue = {
     clip: VideoClipMetadata,
     crop: QuickEditCrop | null,
   ) => Promise<void>;
+  updateClipCuts: (
+    clip: VideoClipMetadata,
+    removeRanges: QuickEditRemoveRange[],
+  ) => Promise<void>;
   applyClipQuickEdit: (clip: VideoClipMetadata) => Promise<void>;
   resetClipQuickEdit: (clip: VideoClipMetadata) => Promise<void>;
   updateCliprMusic: (
@@ -84,6 +89,11 @@ export type ClipLibraryValue = {
     stitch: Stitch,
     source: "ugc" | "demo",
     crop: QuickEditCrop | null,
+  ) => Promise<void>;
+  updateStitchSourceCuts: (
+    stitch: Stitch,
+    source: "ugc" | "demo",
+    removeRanges: QuickEditRemoveRange[],
   ) => Promise<void>;
   updateStitchTextOverlay: (
     stitch: Stitch,

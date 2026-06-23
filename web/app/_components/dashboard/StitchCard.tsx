@@ -25,6 +25,7 @@ import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExp
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { createVideoBlobWithPosterMetadata } from "@/lib/clipstitchr/media/createVideoBlobWithPosterMetadata";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 import type { StitchMusicMetadata } from "@/lib/clipstitchr/types/StitchMusicMetadata";
 import type { StitchPreviewErrorState } from "@/lib/clipstitchr/types/StitchPreviewErrorState";
@@ -85,6 +86,11 @@ type StitchCardProps = {
     source: "ugc" | "demo",
     crop: QuickEditCrop | null,
   ) => void | Promise<void>;
+  onUpdateSourceCuts?: (
+    stitch: Stitch,
+    source: "ugc" | "demo",
+    removeRanges: QuickEditRemoveRange[],
+  ) => void | Promise<void>;
   onUpdateTextOverlay: (
     stitch: Stitch,
     textOverlay: TextOverlay | TextOverlay[] | null,
@@ -120,6 +126,7 @@ export function StitchCard({
   onUpdatePostedStatus,
   onUpdateSocialCaption,
   onUpdateSourceCrop,
+  onUpdateSourceCuts,
   onUpdateSourceSettings,
   onUpdateTextOverlay,
   ugcClips = [],
@@ -509,6 +516,33 @@ export function StitchCard({
       setIsSavingSourceCrop(false);
     }
   };
+  const handleUpdateSourceCuts = async (
+    source: "ugc" | "demo",
+    removeRanges: QuickEditRemoveRange[],
+    stitchOverride = stitch,
+  ) => {
+    if (!onUpdateSourceCuts) {
+      return;
+    }
+
+    setIsSavingSourceSettings(true);
+    setSourceSettingsError(null);
+
+    try {
+      await onUpdateSourceCuts(stitchOverride, source, removeRanges);
+      setStitchVideoBlob(null);
+      setPreviewState(null);
+    } catch (nextError) {
+      setSourceSettingsError(
+        nextError instanceof Error
+          ? nextError.message
+          : "Unable to update stitch cuts.",
+      );
+      throw nextError;
+    } finally {
+      setIsSavingSourceSettings(false);
+    }
+  };
   const handleUpdatePostedStatus = async (nextIsPosted: boolean) => {
     setIsSavingPostedStatus(true);
     setPostedStatusError(null);
@@ -794,6 +828,9 @@ export function StitchCard({
           onSaveSocialCaption={handleUpdateSocialCaption}
           onSaveSourceCrop={
             onUpdateSourceCrop ? handleUpdateSourceCrop : undefined
+          }
+          onSaveSourceCuts={
+            onUpdateSourceCuts ? handleUpdateSourceCuts : undefined
           }
           onSaveSourceSettings={handleUpdateSourceSettings}
           onSaveTextOverlay={handleUpdateTextOverlay}
