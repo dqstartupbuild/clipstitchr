@@ -25,6 +25,15 @@ describe("normalizeBlogArticle", () => {
     expect(normalized.content).toBe("# MDX body");
   });
 
+  it("does not keep stale html when mdx is the source of truth", () => {
+    const normalized = normalizeBlogArticle({
+      ...baseArticle,
+      content_html: "<p>Stale Blogger HTML</p>",
+    });
+
+    expect(normalized.contentHtml).toBeUndefined();
+  });
+
   it("falls back to content_markdown when mdx is absent", () => {
     const normalized = normalizeBlogArticle({
       ...baseArticle,
@@ -45,6 +54,7 @@ describe("normalizeBlogArticle", () => {
 
     expect(normalized.contentFormat).toBe("html");
     expect(normalized.content).toBe("<p>HTML body</p>");
+    expect(normalized.contentHtml).toBe("<p>HTML body</p>");
   });
 
   it("derives a slug from the title when slug is missing", () => {
@@ -62,13 +72,13 @@ describe("normalizeBlogArticle", () => {
     expect(normalized.tags).toEqual(["keyword", "spaced"]);
   });
 
-  it("ignores image urls that are not absolute http urls", () => {
-    const normalized = normalizeBlogArticle({
-      ...baseArticle,
-      image_url: "not-a-url",
-    });
-
-    expect(normalized.imageUrl).toBeUndefined();
+  it("rejects image urls that are not absolute http urls", () => {
+    expect(() =>
+      normalizeBlogArticle({
+        ...baseArticle,
+        image_url: "not-a-url",
+      }),
+    ).toThrow("Blog image URLs must use http or https.");
   });
 
   it("throws when there is no publishable content", () => {

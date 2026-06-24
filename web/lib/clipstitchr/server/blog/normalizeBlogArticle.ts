@@ -47,8 +47,12 @@ function resolveSlug(article: BlogPublishArticle) {
 function resolveImageUrl(imageUrl: string | undefined) {
   const trimmed = imageUrl?.trim();
 
-  if (!trimmed || !/^https?:\/\//i.test(trimmed)) {
+  if (!trimmed) {
     return undefined;
+  }
+
+  if (!/^https?:\/\//i.test(trimmed)) {
+    throw new Error("Blog image URLs must use http or https.");
   }
 
   return trimmed;
@@ -92,7 +96,7 @@ export function normalizeBlogArticle(
     metaDescription,
     contentFormat,
     content,
-    contentHtml: html || undefined,
+    contentHtml: contentFormat === "html" ? html || undefined : undefined,
     imageUrl: resolveImageUrl(article.image_url),
     tags: normalizeTags(article.tags),
     source: article.source?.trim() || undefined,

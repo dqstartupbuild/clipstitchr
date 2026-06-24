@@ -14,6 +14,11 @@ describe("mdxComponents", () => {
     const Blockquote = mdxComponents.blockquote;
     const Code = mdxComponents.code;
     const Pre = mdxComponents.pre;
+    const Image = mdxComponents.img;
+    const Iframe = mdxComponents.iframe;
+    const Table = mdxComponents.table;
+    const TableHeaderCell = mdxComponents.th;
+    const TableCell = mdxComponents.td;
     const CallToAction = mdxComponents.CallToAction;
 
     const markup = renderToStaticMarkup(
@@ -31,6 +36,16 @@ describe("mdxComponents", () => {
         <Blockquote>Quote</Blockquote>
         <Code>inlineCode()</Code>
         <Pre>preformatted</Pre>
+        <Image src="/image.jpg" alt="Evidence" />
+        <Iframe src="https://www.youtube-nocookie.com/embed/video" />
+        <Table>
+          <tbody>
+            <tr>
+              <TableHeaderCell>Metric</TableHeaderCell>
+              <TableCell>Result</TableCell>
+            </tr>
+          </tbody>
+        </Table>
         <CallToAction />
         <CallToAction href="/waitlist" label="Join now" />
       </>,
@@ -45,6 +60,12 @@ describe("mdxComponents", () => {
     expect(markup).toContain("Quote");
     expect(markup).toContain("inlineCode()");
     expect(markup).toContain("preformatted");
+    expect(markup).toContain('loading="lazy"');
+    expect(markup).toContain('decoding="async"');
+    expect(markup).toContain("Evidence");
+    expect(markup).toContain("youtube-nocookie.com");
+    expect(markup).toContain("Metric");
+    expect(markup).toContain("Result");
     expect(markup).toContain("Join now");
   });
 });

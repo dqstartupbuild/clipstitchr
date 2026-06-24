@@ -62,4 +62,18 @@ describe("content SEO helpers", () => {
     expect(xml).toContain('<rss version="2.0">');
     expect(xml).toContain("http://localhost:3000/blog/what-is-ugc");
   });
+
+  it("renders RSS XML for runtime posts", () => {
+    const xml = createRssXml([
+      {
+        title: "Runtime Blog",
+        canonical: "http://localhost:3000/blog/runtime-blog",
+        date: "2026-06-23",
+        description: "A short summary.",
+      },
+    ]);
+
+    expect(xml).toContain("<title>Runtime Blog</title>");
+    expect(xml).toContain("http://localhost:3000/blog/runtime-blog");
+  });
 });

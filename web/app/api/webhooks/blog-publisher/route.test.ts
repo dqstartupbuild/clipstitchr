@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => {
   return {
     convex,
     createConvexHttpClient: vi.fn(() => convex),
+    copyBlogArticleImages: vi.fn(),
     getIsAuthorizedBlogPublishRequest: vi.fn(),
     revalidatePath: vi.fn(),
   };
@@ -30,6 +31,10 @@ vi.mock("@/convex/_generated/api", () => ({
 
 vi.mock("@/lib/clipstitchr/server/convex/createConvexHttpClient", () => ({
   createConvexHttpClient: mocks.createConvexHttpClient,
+}));
+
+vi.mock("@/lib/clipstitchr/server/blog/copyBlogArticleImages", () => ({
+  copyBlogArticleImages: mocks.copyBlogArticleImages,
 }));
 
 vi.mock(
@@ -73,6 +78,7 @@ describe("POST /api/webhooks/blog-publisher", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.convex.mutation.mockResolvedValue(undefined);
+    mocks.copyBlogArticleImages.mockImplementation(async (article) => article);
   });
 
   it("returns 401 with the invalid token error when unauthorized", async () => {
@@ -90,10 +96,22 @@ describe("POST /api/webhooks/blog-publisher", () => {
       error: "Invalid access token.",
     });
     expect(mocks.convex.mutation).not.toHaveBeenCalled();
+    expect(mocks.copyBlogArticleImages).not.toHaveBeenCalled();
   });
 
-  it("publishes every article and returns 200", async () => {
+  it("copies article images, publishes every article, and returns 200", async () => {
     mocks.getIsAuthorizedBlogPublishRequest.mockReturnValue(true);
+    mocks.copyBlogArticleImages.mockImplementation(async (article) => ({
+      ...article,
+      content:
+        article.slug === "a-helpful-blog-title"
+          ? "![Hero](https://clipstitchr.test/blog-images/a-helpful-blog-title/hero.jpg)"
+          : article.content,
+      imageUrl:
+        article.slug === "a-helpful-blog-title"
+          ? "https://clipstitchr.test/blog-images/a-helpful-blog-title/hero.jpg"
+          : article.imageUrl,
+    }));
 
     const response = await POST(
       createRequest({
@@ -114,10 +132,18 @@ describe("POST /api/webhooks/blog-publisher", () => {
       expect.objectContaining({
         slug: "a-helpful-blog-title",
         contentFormat: "mdx",
-        content: "# Article body",
+        content:
+          "![Hero](https://clipstitchr.test/blog-images/a-helpful-blog-title/hero.jpg)",
+        imageUrl:
+          "https://clipstitchr.test/blog-images/a-helpful-blog-title/hero.jpg",
       }),
     );
+    expect(
+      mocks.convex.mutation.mock.invocationCallOrder[0],
+    ).toBeLessThan(mocks.copyBlogArticleImages.mock.invocationCallOrder[0]);
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/blog");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/feed.xml");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/sitemap.xml");
     expect(mocks.revalidatePath).toHaveBeenCalledWith(
       "/blog/a-helpful-blog-title",
     );

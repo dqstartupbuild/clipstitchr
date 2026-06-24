@@ -1,9 +1,10 @@
 import { getSitemapEntries } from "@/lib/getSitemapEntries";
 
-export function getIndexNowSubmissionUrls(siteUrl: string) {
+export async function getIndexNowSubmissionUrls(siteUrl: string) {
   const host = new URL(siteUrl).host;
+  const entries = await getSitemapEntries();
   const urls = Array.from(
-    new Set(getSitemapEntries().map((entry) => entry.url)),
+    new Set(entries.map((entry) => entry.url)),
   );
   const invalidUrl = urls.find((url) => {
     const parsed = new URL(url);

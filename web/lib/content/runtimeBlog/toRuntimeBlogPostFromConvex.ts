@@ -49,6 +49,7 @@ export function toRuntimeBlogPostFromConvex(
       contentFormat: post.contentFormat,
       content: post.content,
       contentHtml: post.contentHtml,
+      title: post.title,
     }),
     canonical: createCanonicalUrl(url),
     source: "convex",

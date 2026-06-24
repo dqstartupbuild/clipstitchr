@@ -1,4 +1,11 @@
 import type { ComponentPropsWithoutRef } from "react";
+import { MdxFigcaption } from "@/app/_components/content/MdxFigcaption";
+import { MdxFigure } from "@/app/_components/content/MdxFigure";
+import { MdxIframe } from "@/app/_components/content/MdxIframe";
+import { MdxImage } from "@/app/_components/content/MdxImage";
+import { MdxTable } from "@/app/_components/content/MdxTable";
+import { MdxTableCell } from "@/app/_components/content/MdxTableCell";
+import { MdxTableHeaderCell } from "@/app/_components/content/MdxTableHeaderCell";
 import { site } from "@/lib/site";
 
 type CallToActionProps = {
@@ -70,5 +77,12 @@ export const mdxComponents = {
       className="overflow-x-auto rounded-2xl border border-border bg-surface-elevated p-5"
     />
   ),
+  figure: MdxFigure,
+  figcaption: MdxFigcaption,
+  iframe: MdxIframe,
+  img: MdxImage,
+  table: MdxTable,
+  td: MdxTableCell,
+  th: MdxTableHeaderCell,
   CallToAction,
 };

@@ -39,4 +39,25 @@ describe("renderRuntimeBlogContent", () => {
     expect(html).toContain("<h2>Section</h2>");
     expect(html).toContain("<p>Body</p>");
   });
+
+  it("removes a duplicate body title heading when a title is provided", () => {
+    const html = renderRuntimeBlogContent({
+      contentFormat: "markdown",
+      content: "# Helpful Blog Title\n\nBody",
+      title: "Helpful Blog Title",
+    });
+
+    expect(html).not.toContain("<h1>Helpful Blog Title</h1>");
+    expect(html).toContain("<p>Body</p>");
+  });
+
+  it("keeps a body h1 when it does not match the page title", () => {
+    const html = renderRuntimeBlogContent({
+      contentFormat: "markdown",
+      content: "# Different Heading\n\nBody",
+      title: "Helpful Blog Title",
+    });
+
+    expect(html).toContain("<h1>Different Heading</h1>");
+  });
 });

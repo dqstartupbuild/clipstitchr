@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     }
 
     const siteUrl = getIndexNowPublicSiteUrl();
-    const urls = getIndexNowSubmissionUrls(siteUrl);
+    const urls = await getIndexNowSubmissionUrls(siteUrl);
     const payload = createIndexNowPayload({ siteUrl, urls });
     const convex = createConvexHttpClient();
 

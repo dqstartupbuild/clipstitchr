@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { getIndexNowSubmissionUrls } from "@/lib/clipstitchr/server/indexnow/getIndexNowSubmissionUrls";
 
 describe("getIndexNowSubmissionUrls", () => {
-  it("returns public sitemap URLs for the configured host", () => {
-    const urls = getIndexNowSubmissionUrls("http://localhost:3000");
+  it("returns public sitemap URLs for the configured host", async () => {
+    const urls = await getIndexNowSubmissionUrls("http://localhost:3000");
 
     expect(urls).toContain("http://localhost:3000/");
     expect(urls).toContain("http://localhost:3000/blog");
@@ -14,8 +14,10 @@ describe("getIndexNowSubmissionUrls", () => {
     );
   });
 
-  it("rejects sitemap URLs from another host", () => {
-    expect(() => getIndexNowSubmissionUrls("https://clipstitchr.com")).toThrow(
+  it("rejects sitemap URLs from another host", async () => {
+    await expect(
+      getIndexNowSubmissionUrls("https://clipstitchr.com"),
+    ).rejects.toThrow(
       "IndexNow can only submit sitemap URLs from clipstitchr.com",
     );
   });

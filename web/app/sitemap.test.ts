@@ -1,9 +1,22 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import sitemap from "@/app/sitemap";
 
+const mocks = vi.hoisted(() => ({
+  fetchConvexBlogPosts: vi.fn(),
+}));
+
+vi.mock("@/lib/content/runtimeBlog/fetchConvexBlogPosts", () => ({
+  fetchConvexBlogPosts: mocks.fetchConvexBlogPosts,
+}));
+
 describe("sitemap", () => {
-  it("covers public pages and excludes authenticated dashboard pages", () => {
-    const entries = sitemap();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.fetchConvexBlogPosts.mockResolvedValue([]);
+  });
+
+  it("covers public pages and excludes authenticated dashboard pages", async () => {
+    const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
 
     expect(urls).toContain("http://localhost:3000/");
@@ -33,5 +46,33 @@ describe("sitemap", () => {
     expect(urls).not.toContain("http://localhost:3000/dashboard/uploads");
     expect(urls).not.toContain("http://localhost:3000/dashboard/swapr");
     expect(urls).not.toContain("http://localhost:3000/dashboard/stitches");
+  });
+
+  it("includes webhook-published blog posts", async () => {
+    mocks.fetchConvexBlogPosts.mockResolvedValue([
+      {
+        slug: "runtime-blog",
+        title: "Runtime Blog",
+        metaDescription: "A short summary.",
+        contentFormat: "markdown",
+        content: "# Runtime Blog\n\nBody",
+        contentHtml: undefined,
+        imageUrl: "http://localhost:3000/blog-images/runtime-blog/hero.jpg",
+        tags: ["keyword"],
+        source: "Blogger",
+        publishedAt: "2026-06-23T16:00:00.000Z",
+        createdAt: "2026-06-23T15:30:00.000Z",
+        updatedAt: "2026-06-23T15:45:00.000Z",
+      },
+    ]);
+
+    const entries = await sitemap();
+    const runtimeEntry = entries.find(
+      (entry) => entry.url === "http://localhost:3000/blog/runtime-blog",
+    );
+
+    expect(runtimeEntry).toMatchObject({
+      images: ["http://localhost:3000/blog-images/runtime-blog/hero.jpg"],
+    });
   });
 });

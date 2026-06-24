@@ -13,8 +13,8 @@ import {
   createFaqJsonLd,
 } from "@/lib/content/seo";
 import { mdxComponents } from "@/lib/content/mdx-components";
-import { createPageMetadata } from "@/lib/metadata";
 import { fetchConvexBlogPostBySlug } from "@/lib/content/runtimeBlog/fetchConvexBlogPosts";
+import { createRuntimeBlogPostMetadata } from "@/lib/content/runtimeBlog/createRuntimeBlogPostMetadata";
 import { toRuntimeBlogPostFromConvex } from "@/lib/content/runtimeBlog/toRuntimeBlogPostFromConvex";
 
 export const dynamic = "force-dynamic";
@@ -46,12 +46,7 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
 
   const runtimePost = toRuntimeBlogPostFromConvex(convexPost);
 
-  return createPageMetadata({
-    title: runtimePost.title,
-    description: runtimePost.description,
-    canonical: runtimePost.canonical,
-    keywords: runtimePost.tags,
-  });
+  return createRuntimeBlogPostMetadata(runtimePost);
 }
 
 type ArticleHeaderProps = {

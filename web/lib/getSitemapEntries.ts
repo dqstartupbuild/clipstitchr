@@ -4,9 +4,10 @@ import { createPublicVideoExamplePath } from "@/lib/clipstitchr/example-outputs/
 import { getPublicVideoExamples } from "@/lib/clipstitchr/example-outputs/getPublicVideoExamples";
 import { getPublishedCaseStudies } from "@/lib/content/caseStudyQueries";
 import { getPublishedBlogPosts } from "@/lib/content/queries";
+import { getRuntimeBlogSitemapEntries } from "@/lib/content/runtimeBlog/getRuntimeBlogSitemapEntries";
 import { createCanonicalUrl, site } from "@/lib/site";
 
-export function getSitemapEntries(): MetadataRoute.Sitemap {
+export async function getSitemapEntries(): Promise<MetadataRoute.Sitemap> {
   const staticEntries = site.staticPages.map((page) => ({
     url: createCanonicalUrl(page.pathname),
     lastModified: new Date(),
@@ -41,12 +42,14 @@ export function getSitemapEntries(): MetadataRoute.Sitemap {
     changeFrequency: "monthly" as const,
     priority: 0.8,
   }));
+  const runtimeBlogEntries = await getRuntimeBlogSitemapEntries();
 
   return [
     ...staticEntries,
     ...docsEntries,
     ...exampleEntries,
     ...postEntries,
+    ...runtimeBlogEntries,
     ...caseStudyEntries,
   ];
 }

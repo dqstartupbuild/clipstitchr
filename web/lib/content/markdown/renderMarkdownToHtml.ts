@@ -1,5 +1,11 @@
 import { escapeHtml } from "./escapeHtml";
+import { isMarkdownTableDelimiter } from "./isMarkdownTableDelimiter";
+import { isMarkdownTableRow } from "./isMarkdownTableRow";
+import { parseMarkdownHeadingText } from "./parseMarkdownHeadingText";
 import { renderInlineMarkdown } from "./renderInlineMarkdown";
+import { renderMarkdownTable } from "./renderMarkdownTable";
+import { renderYouTubeEmbedHtml } from "./renderYouTubeEmbedHtml";
+import { renderYouTubeIframeBlock } from "./renderYouTubeIframeBlock";
 import { stripFrontmatter } from "./stripFrontmatter";
 
 const headingPattern = /^(#{1,6})\s+(.*)$/;
@@ -8,12 +14,20 @@ const orderedItemPattern = /^\s*\d+[.)]\s+(.*)$/;
 const blockquotePattern = /^\s*>\s?(.*)$/;
 const horizontalRulePattern = /^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/;
 const fencePattern = /^\s*(?:```|~~~)(.*)$/;
+const iframeStartPattern = /^\s*<iframe\b/i;
+const iframeEndPattern = /<\/iframe\s*>|\/>\s*$/i;
 
 function renderParagraph(lines: string[]) {
   const text = lines.join("\n").trim();
 
   if (!text) {
     return "";
+  }
+
+  const youtubeEmbed = renderYouTubeEmbedHtml(text);
+
+  if (youtubeEmbed) {
+    return youtubeEmbed;
   }
 
   return `<p>${renderInlineMarkdown(text)}</p>`;
@@ -99,8 +113,43 @@ export function renderMarkdownToHtml(markdown: string) {
       continue;
     }
 
+    if (iframeStartPattern.test(line)) {
+      flushAll();
+
+      const iframeLines = [line];
+
+      while (index < lines.length - 1 && !iframeEndPattern.test(lines[index])) {
+        index += 1;
+        iframeLines.push(lines[index]);
+      }
+
+      const youtubeEmbed = renderYouTubeIframeBlock(iframeLines.join("\n"));
+      blocks.push(youtubeEmbed ?? renderParagraph(iframeLines));
+      continue;
+    }
+
     if (line.trim() === "") {
       flushAll();
+      continue;
+    }
+
+    if (
+      index < lines.length - 1 &&
+      isMarkdownTableRow(line) &&
+      isMarkdownTableDelimiter(lines[index + 1])
+    ) {
+      flushAll();
+
+      const tableLines = [line, lines[index + 1]];
+      index += 2;
+
+      while (index < lines.length && isMarkdownTableRow(lines[index])) {
+        tableLines.push(lines[index]);
+        index += 1;
+      }
+
+      index -= 1;
+      blocks.push(renderMarkdownTable(tableLines));
       continue;
     }
 
@@ -115,8 +164,10 @@ export function renderMarkdownToHtml(markdown: string) {
     if (headingMatch) {
       flushAll();
       const level = headingMatch[1].length;
-      const inner = renderInlineMarkdown(headingMatch[2].trim());
-      blocks.push(`<h${level}>${inner}</h${level}>`);
+      const heading = parseMarkdownHeadingText(headingMatch[2].trim());
+      const inner = renderInlineMarkdown(heading.text);
+      const id = heading.id ? ` id="${escapeHtml(heading.id)}"` : "";
+      blocks.push(`<h${level}${id}>${inner}</h${level}>`);
       continue;
     }
 

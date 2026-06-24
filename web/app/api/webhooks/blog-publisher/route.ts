@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { api } from "@/convex/_generated/api";
 import { createConvexHttpClient } from "@/lib/clipstitchr/server/convex/createConvexHttpClient";
+import { copyBlogArticleImages } from "@/lib/clipstitchr/server/blog/copyBlogArticleImages";
 import { createBlogPublishRateLimitKey } from "@/lib/clipstitchr/server/blog/createBlogPublishRateLimitKey";
 import { getIsAuthorizedBlogPublishRequest } from "@/lib/clipstitchr/server/blog/getIsAuthorizedBlogPublishRequest";
 import { normalizeBlogArticle } from "@/lib/clipstitchr/server/blog/normalizeBlogArticle";
@@ -44,7 +45,9 @@ export async function POST(request: Request) {
 
     const publishedSlugs: string[] = [];
 
-    for (const article of normalizedArticles) {
+    for (const normalizedArticle of normalizedArticles) {
+      const article = await copyBlogArticleImages(normalizedArticle);
+
       await convex.mutation(api.blogPosts.upsertPublishedArticle, {
         secret: rateLimitSecret,
         slug: article.slug,
@@ -65,6 +68,8 @@ export async function POST(request: Request) {
     }
 
     revalidatePath("/blog");
+    revalidatePath("/feed.xml");
+    revalidatePath("/sitemap.xml");
 
     for (const slug of publishedSlugs) {
       revalidatePath(`/blog/${slug}`);

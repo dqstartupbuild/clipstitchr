@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { type Blog, type CaseStudy } from "content-collections";
 import { createPageMetadata } from "@/lib/metadata";
 import { createCanonicalUrl, site } from "@/lib/site";
+import type { RssPost } from "./RssPost";
 
 type ContentArticle = Blog | CaseStudy;
 
@@ -94,12 +95,14 @@ export function createFaqJsonLd(post: ContentArticle) {
   };
 }
 
-export function createRssXml(posts: Blog[]) {
+export function createRssXml(posts: RssPost[]) {
   const items = posts
     .map((post) => {
+      const title = post.seoTitle ?? post.title;
+
       return [
         "<item>",
-        `<title>${escapeXml(post.seoTitle)}</title>`,
+        `<title>${escapeXml(title)}</title>`,
         `<link>${escapeXml(post.canonical)}</link>`,
         `<guid>${escapeXml(post.canonical)}</guid>`,
         `<pubDate>${new Date(post.date).toUTCString()}</pubDate>`,

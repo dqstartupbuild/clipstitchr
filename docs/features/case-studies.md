@@ -13,7 +13,10 @@ content collection named `caseStudy` validates the frontmatter, compiles the MDX
 body, calculates reading time, and derives the canonical URL.
 
 Case-study pages use the same article metadata and JSON-LD helpers as blog
-posts. The sitemap includes the index route and each published case study.
+posts. The sitemap includes the index route and each published case study. The
+hero feature image renders through Next Image without head preloading, and body
+evidence screenshots use native lazy loading so long screenshot-heavy stories do
+not emit unused image preload warnings.
 
 The reusable page pieces live under `web/app/_components/case-studies/`:
 
@@ -28,10 +31,12 @@ quick results box, and then the MDX narrative. This keeps the strongest visual
 and proof points visible before the reader reaches the first body section.
 
 Evidence screenshots can be placed directly inside the MDX body after the claim
-they support. The Guppy case study uses this pattern for Instagram reach,
-TikTok total reach, TikTok Promote, RevenueCat funnel results, Instagram top
-hooks, the 75-reel publishing milestone, individual RevenueCat trial receipts,
-and ClipStitchr production proof.
+they support. Raw JSX screenshots should include `loading="lazy"` and
+`decoding="async"`. Markdown-authored images are handled by the shared MDX image
+component. The Guppy case study uses this pattern for Instagram reach, TikTok
+total reach, TikTok Promote, RevenueCat funnel results, Instagram top hooks, the
+75-reel publishing milestone, individual RevenueCat trial receipts, and
+ClipStitchr production proof.
 
 The Guppy case study also explains why Hook Lab was added to onboarding: the
 best posts came from identity and transformation hooks chosen from real niche
