@@ -27,7 +27,7 @@ describe("renderRuntimeBlogContent", () => {
       content: "# Heading",
     });
 
-    expect(html).toContain("<h1>Heading</h1>");
+    expect(html).toContain('<h1 id="heading">Heading</h1>');
   });
 
   it("converts mdx body content to html", () => {
@@ -36,7 +36,7 @@ describe("renderRuntimeBlogContent", () => {
       content: "## Section\n\nBody",
     });
 
-    expect(html).toContain("<h2>Section</h2>");
+    expect(html).toContain('<h2 id="section">Section</h2>');
     expect(html).toContain("<p>Body</p>");
   });
 
@@ -58,6 +58,6 @@ describe("renderRuntimeBlogContent", () => {
       title: "Helpful Blog Title",
     });
 
-    expect(html).toContain("<h1>Different Heading</h1>");
+    expect(html).toContain('<h1 id="different-heading">Different Heading</h1>');
   });
 });

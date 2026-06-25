@@ -1,8 +1,14 @@
+"use client";
+
+import { BlogTableOfContents } from "@/app/_components/content/BlogTableOfContents";
+import { useBlogSmoothScroll } from "@/app/_components/content/useBlogSmoothScroll";
+import { extractBlogHeadings } from "@/lib/content/runtimeBlog/extractBlogHeadings";
+
 const proseClassName = [
   "space-y-6 text-base leading-8 text-text-secondary",
-  "[&_h2]:mt-12 [&_h2]:text-3xl [&_h2]:font-semibold [&_h2]:text-text-primary",
-  "[&_h3]:mt-10 [&_h3]:text-2xl [&_h3]:font-semibold [&_h3]:text-text-primary",
-  "[&_h4]:mt-8 [&_h4]:text-xl [&_h4]:font-semibold [&_h4]:text-text-primary",
+  "[&_h2]:mt-12 [&_h2]:text-3xl [&_h2]:font-semibold [&_h2]:text-text-primary [&_h2]:scroll-mt-24",
+  "[&_h3]:mt-10 [&_h3]:text-2xl [&_h3]:font-semibold [&_h3]:text-text-primary [&_h3]:scroll-mt-24",
+  "[&_h4]:mt-8 [&_h4]:text-xl [&_h4]:font-semibold [&_h4]:text-text-primary [&_h4]:scroll-mt-24",
   "[&_p]:text-base [&_p]:leading-8 [&_p]:text-text-secondary",
   "[&_ul]:ml-6 [&_ul]:list-disc [&_ul]:space-y-3 [&_ul]:text-text-secondary",
   "[&_ol]:ml-6 [&_ol]:list-decimal [&_ol]:space-y-3 [&_ol]:text-text-secondary",
@@ -24,10 +30,16 @@ type RuntimeBlogArticleProps = {
 };
 
 export function RuntimeBlogArticle({ html }: RuntimeBlogArticleProps) {
+  useBlogSmoothScroll();
+  const headings = extractBlogHeadings(html);
+
   return (
-    <article
-      className={`mt-12 ${proseClassName}`}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <>
+      <BlogTableOfContents headings={headings} />
+      <article
+        className={`mt-12 ${proseClassName}`}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    </>
   );
 }

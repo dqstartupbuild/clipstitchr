@@ -29,7 +29,7 @@ describe("toRuntimeBlogPostFromConvex", () => {
     expect(runtimePost.description).toBe("A short plain-language summary.");
     expect(runtimePost.image).toBe("https://example.com/image.jpg");
     expect(runtimePost.source).toBe("convex");
-    expect(runtimePost.bodyHtml).toContain("<h1>Heading</h1>");
+    expect(runtimePost.bodyHtml).toContain('<h1 id="heading">Heading</h1>');
     expect(runtimePost.date).toBe("2026-06-23");
     expect(runtimePost.readingTimeMinutes).toBeGreaterThanOrEqual(1);
   });

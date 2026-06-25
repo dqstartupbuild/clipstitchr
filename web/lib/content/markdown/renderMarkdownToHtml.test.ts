@@ -7,7 +7,7 @@ describe("renderMarkdownToHtml", () => {
       "# Title\n\nSome **bold** and *italic* text.",
     );
 
-    expect(html).toContain("<h1>Title</h1>");
+    expect(html).toContain('<h1 id="title">Title</h1>');
     expect(html).toContain("<strong>bold</strong>");
     expect(html).toContain("<em>italic</em>");
     expect(html).toContain("<p>");
@@ -85,7 +85,7 @@ describe("renderMarkdownToHtml", () => {
       "---\ntitle: x\n---\n\n# Body heading\n",
     );
 
-    expect(html).toContain("<h1>Body heading</h1>");
+    expect(html).toContain('<h1 id="body-heading">Body heading</h1>');
     expect(html).not.toContain("title: x");
   });
 
@@ -105,5 +105,33 @@ describe("renderMarkdownToHtml", () => {
     expect(html).toContain("<table>");
     expect(html).toContain("<th>Result</th>");
     expect(html).toContain("<td>161K</td>");
+  });
+
+  it("auto-slugifies headings when no explicit id is provided", () => {
+    const html = renderMarkdownToHtml("## Getting Started\n\nBody");
+
+    expect(html).toContain('<h2 id="getting-started">Getting Started</h2>');
+  });
+
+  it("auto-slugifies headings with punctuation and inline formatting", () => {
+    const html = renderMarkdownToHtml("## Hello, **World**!\n\nBody");
+
+    expect(html).toContain('<h2 id="hello-world">Hello, <strong>World</strong>!</h2>');
+  });
+
+  it("auto-slugifies headings across h1 through h6", () => {
+    const html = renderMarkdownToHtml(
+      "# Top Level\n\n## Second Level\n\n### Third Level",
+    );
+
+    expect(html).toContain('<h1 id="top-level">Top Level</h1>');
+    expect(html).toContain('<h2 id="second-level">Second Level</h2>');
+    expect(html).toContain('<h3 id="third-level">Third Level</h3>');
+  });
+
+  it("prefers explicit heading ids over auto-slugified ones", () => {
+    const html = renderMarkdownToHtml("## Getting Started {#custom-id}");
+
+    expect(html).toContain('<h2 id="custom-id">Getting Started</h2>');
   });
 });

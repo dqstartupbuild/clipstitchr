@@ -6,6 +6,7 @@ import { renderInlineMarkdown } from "./renderInlineMarkdown";
 import { renderMarkdownTable } from "./renderMarkdownTable";
 import { renderYouTubeEmbedHtml } from "./renderYouTubeEmbedHtml";
 import { renderYouTubeIframeBlock } from "./renderYouTubeIframeBlock";
+import { slugifyHeadingText } from "./slugifyHeadingText";
 import { stripFrontmatter } from "./stripFrontmatter";
 
 const headingPattern = /^(#{1,6})\s+(.*)$/;
@@ -166,7 +167,10 @@ export function renderMarkdownToHtml(markdown: string) {
       const level = headingMatch[1].length;
       const heading = parseMarkdownHeadingText(headingMatch[2].trim());
       const inner = renderInlineMarkdown(heading.text);
-      const id = heading.id ? ` id="${escapeHtml(heading.id)}"` : "";
+      const explicitId = heading.id;
+      const autoId = slugifyHeadingText(heading.text);
+      const idValue = explicitId ?? (autoId ? autoId : null);
+      const id = idValue ? ` id="${escapeHtml(idValue)}"` : "";
       blocks.push(`<h${level}${id}>${inner}</h${level}>`);
       continue;
     }
