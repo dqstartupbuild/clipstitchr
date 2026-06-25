@@ -7,7 +7,7 @@ import { site } from "@/lib/site";
 export const metadata = createPageMetadata({
   title: `Docs | ${site.name}`,
   description:
-    "Simple ClipStitchr docs for creating ad batches, improving saved clips, reusing templates, and checking usage limits.",
+    "Plain ClipStitchr docs for turning saved clips into ads, writing less fake overlay text, reusing templates, and checking limits.",
   canonical: "/docs",
 });
 
@@ -22,13 +22,13 @@ export default function DocsIndexPage() {
         <div className="max-w-3xl">
           <p className="text-sm font-semibold text-accent-dark">Docs</p>
           <h1 className="mt-4 text-4xl font-bold text-text-primary md:text-5xl">
-            Start with the batch, then use the helpers when you need them.
+            Start with the annoying part you want gone.
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
-            The fastest path is simple: upload clips, pick the product demo, and
-            create finished ad variants. Use the other guides when you want to
-            pick stronger clips, reuse a format, make more source footage, or
-            ship a carousel instead.
+            Most people should upload clips, pick the product demo, and make a
+            few finished ads first. Use the other guides when you need better
+            hooks, a cleaner clip, a reusable setup, more source material, or a
+            carousel instead.
           </p>
         </div>
 
@@ -81,7 +81,7 @@ export default function DocsIndexPage() {
         <section className="mt-16">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold text-accent-dark">
-              What helps your batch
+              What helps the next ad
             </p>
             <h2 className="mt-3 text-3xl font-bold text-text-primary">
               Choose the guide for the job in front of you.

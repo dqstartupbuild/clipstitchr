@@ -1,157 +1,176 @@
 # ClipStitchr Product Positioning
 
-ClipStitchr is for people who know they need to publish more short-form ad
-content, but hate the operational grind of making it.
+ClipStitchr is for indie app developers and mobile marketers who know
+short-form matters but hate the actual work of making content.
 
-The core product is not an AI playground. The core product is the Stitchr batch
-workflow: a simple way to turn saved UGC, b-roll, reaction clips, and product
-demos into batches of finished 9:16 ads without opening a timeline editor.
+The product is built from a simple founder truth: growing a mobile app often
+means doing content work you never wanted to become good at. Editing, captions,
+music, clip organization, drafts, exports, and posting cadence can start taking
+over the week.
 
-## The Customer Pain
+ClipStitchr exists so builders can grow on TikTok and Reels without becoming
+content people.
 
-Many small business owners, solo founders, and lean marketers understand the
-playbook:
+## Product Thesis
 
-- record product demos
-- buy or shoot UGC b-roll
-- collect reaction clips
-- test more creative angles
-- post consistently across short-form platforms
+ClipStitchr is not a creator tool for people who already enjoy making content.
+It is a practical content system for people who would rather be building.
 
-The problem is not always content supply. The problem is the editing bottleneck.
+The core product is Stitchr: a way to turn saved UGC, b-roll, reaction clips,
+and product demos into finished 9:16 ads without opening a timeline editor.
 
-After the clips exist, the user still has to open an editor, find the right
-files, import them, trim dead space, arrange UGC before the demo, add text,
-pick a thumbnail, export the result, name the file, save it somewhere, and
-remember what has already been used.
+Scores, templates, Hook Lab, Clipr, Swapr, Swipr, avatars, and daily drafts
+support that same job:
 
-For a user who dislikes social media work, that stack of tiny tasks becomes the
-actual blocker. The clips pile up, the content calendar stays empty, and the
-business gets less distribution than it should.
+> Remove the parts of content work that make users avoid starting.
 
-## The Solution
-
-ClipStitchr turns the messy middle of ad creation into a repeatable batch
-workflow:
-
-1. Upload UGC and product demos.
-2. Normalize everything to vertical 9:16 once.
-3. Keep the clips organized in a reusable content library.
-4. Pick the product demo.
-5. Click once to create a batch of finished ad variants.
-6. Review, download, and test the outputs.
-7. Reuse the same library and templates to make more variants.
-8. Use scoring when the user is unsure which clips are strongest.
-9. Use Clipr and Swapr when the library needs more source clips.
-10. Use Swipr when the next post should be a carousel instead of a video.
-11. Use automation when the user wants daily drafts prepared for review.
-
-The user should feel like they are operating a content machine, not performing
-video editing chores.
-
-## Primary Promise
-
-Make more ad variants from the clips you already have.
-
-Supporting copy:
-
-Upload your clips once. Pick the product demo. Click once to create a batch of
-finished vertical ads, ready to test across TikTok, Reels, and Shorts.
-
-## Product Category
-
-ClipStitchr is a lightweight ad-creation workflow tool for short-form paid and
-organic creative.
-
-It sits between:
-
-- a generic video editor, which is flexible but slow
-- a file manager, which stores assets but does not create output
-- an AI generator, which can create assets but does not solve workflow chaos
-
-## Target Users
+## Target User
 
 Primary users:
 
-- solo founders
-- small business owners
-- indie hackers
-- growth marketers
-- e-commerce operators
-- creators selling a product
+- indie app developers
+- solo app founders
+- mobile app marketers
+- small app teams
+- builders trying to grow with TikTok and Reels
 
-They are not necessarily professional editors. They may be competent marketers,
-but they dislike the repetitive production work required to ship content.
+They are not trying to become creators. They may understand the growth case for
+short-form, but the day-to-day work feels draining, foreign, or annoying.
 
 Secondary users:
 
-- agencies managing repeated ad variants
-- UGC buyers who need to turn raw clips into structured ad tests
-- teams with product demos and scattered creator clips
+- small businesses with app-like products
+- operators with saved demos and scattered UGC
+- agencies supporting app founders who need repeated short-form ads
+
+## Customer Pain
+
+The user may already have the pieces:
+
+- app demos
+- UGC or talking clips
+- b-roll
+- reaction clips
+- screenshots or product proof
+- a list of ideas they know they should test
+
+The blocker is the pile of small tasks after that:
+
+- find the right files
+- import them into an editor
+- trim dead space
+- put the opener before the demo
+- write overlay text that does not sound fake
+- add captions or hashtags
+- choose music
+- export
+- name the file
+- save it somewhere sane
+- remember what has already been used
+- show up tomorrow and do it again
+
+For someone who dislikes content work, those tasks become the whole problem.
+The clips pile up, the app still needs distribution, and the founder starts
+avoiding the channel.
+
+## Core Message
+
+You do not have to become a content person to grow on short-form.
+
+ClipStitchr handles the parts that make content painful so users can stay
+focused on building.
+
+## Public Hero
+
+Homepage headline:
+
+> Built by someone who hates making content. For everyone else who does too.
+
+Homepage subhead:
+
+> If you're trying to grow a mobile app on TikTok and Reels but the whole
+> content thing makes you want to quit — you're exactly who this is for.
+
+## Product Category
+
+ClipStitchr is a browser-based short-form ad workflow for mobile app builders
+who do not want content production to become their job.
+
+It sits between:
+
+- a generic video editor, which is flexible but asks the user to do too much
+- a file manager, which stores clips but does not turn them into ads
+- an AI generator, which can create source material but does not solve the
+  recurring content grind
+- a scheduler, which posts content but does not help make the assets worth
+  posting
 
 ## Feature Hierarchy
 
 Primary feature:
 
-- Stitchr Batch: create multiple finished 9:16 ad variants from saved clips and
-  one product demo.
+- Stitchr: make finished 9:16 UGC-then-demo ads from saved clips and one product
+  demo.
 
 Core supporting features:
 
-- upload and normalize UGC and demo assets
-- organize reusable content in the library
-- plan and queue a Stitchr batch from the saved library
-- score clips and finished Stitches when the user is unsure what to use or fix
-- save templates when a format works and reuse that structure in future batches
-- create, save, edit, and download Swipr carousels
-- create non-promotional Clipr engagement clips that feed the library
-- trim clips without destructive editing
-- preview the UGC-then-demo sequence
-- customize one text overlay per Stitchr output and copy it across a batch
-- export or save finished stitches
-- keep posters and metadata so clips are easy to recognize
+- Library: keep clips, demos, drafts, templates, carousels, avatars, and
+  finished ads in one place.
+- Hook Lab: help users write overlay text that does not sound fake.
+- Clip and Stitch Scores: catch weak clips or finished ads before the user posts
+  or runs them.
+- Templates: save a structure so the next ad does not start from zero.
+- Daily drafts: keep new drafts appearing when social falls off the real work
+  list.
+- Clipr and Swapr: create extra source clips when the library is thin.
+- Avatars: keep reusable people or characters ready for generated source clips.
+- Swipr: create carousel drafts when slides fit the idea better than another
+  video.
 
-Secondary AI features:
+AI features exist to fill gaps and reduce friction. They should not become the
+main story.
 
-- generate avatar photos
-- expand photos for better framing
-- generate Swapr videos from saved photos and clips
-- generate Clipr engagement clips from saved product and avatar context
-- generate carousel visuals for Swipr
+## Message Order
 
-AI features exist to help users create or extend source material when they do
-not have enough usable footage or visuals. They should not displace Stitchr as
-the main product story.
+Use this order for the public landing page:
 
-## Main Message
-
-Make more ad variants from the clips you already have.
+1. Founder truth: built by someone who hates making content.
+2. Output proof: show finished examples before explaining tools.
+3. Workflow relief: what the user no longer has to do.
+4. Stitchr: saved opener clips plus a demo become ads.
+5. Hook Lab: writing overlay text that does not sound fake is hard.
+6. Scores: find weak clips before wasting a post or ad.
+7. Templates: stop rebuilding the same structure.
+8. Source material helpers: fill a thin library without another shoot.
+9. Swipr: make slides when video is overkill.
+10. Daily drafts: stay consistent when social is not the work the user enjoys.
+11. Offer stack: summarize the system for people who do not want content to
+    become the job.
 
 ## Short Copy Options
 
-- Turn your UGC pile into finished ads.
-- Make more ad variants without opening a video editor.
-- Make more ad variants from the clips you already have.
-- Upload clips once. Create new ad batches whenever you need them.
-- Upload UGC and demos once. Stitch batches of new ads whenever you need them.
-- Stop collecting clips you never publish.
-- Build a reusable content library, then turn it into vertical ads.
-- One content library. Many ad variations.
+- Grow on short-form without becoming a content person.
+- For app builders who hate making content.
+- Turn saved clips and demos into ads without an editing day.
+- Stop letting clips die in folders.
+- Make the ad, review it, get back to building.
+- Use your demo more than once without dragging it into every video.
+- Keep content from becoming the job.
+- A short-form system for people who would rather build.
 
-## Longer Positioning Copy
+## Feature Angles
 
-ClipStitchr helps marketers who collect UGC, b-roll, reaction clips, and product
-demos but struggle to turn those assets into finished ads. Upload clips once,
-organize them, pick the product demo, and create a batch of vertical ad variants
-without opening a traditional editor.
-
-Clipr and Swipr extend the same library into reusable engagement clips and saved
-carousel posts. Swapr helps create more source footage when the library is thin.
-Scoring, templates, automation, Clipr, Swapr, and Swipr should be positioned as
-offer-stack bonuses that make the batch workflow easier, stronger, or more
-repeatable, not as separate reasons to choose ClipStitchr. Internal hook
-libraries can help generate editable Swipr and Stitchr text, but those mechanics
-should stay out of positioning copy.
+| Feature | Human reason |
+| --- | --- |
+| Stitchr | The user has clips but does not want to rebuild the same UGC-then-demo ad by hand. |
+| Hook Lab | Writing overlay text that does not sound fake is hard. |
+| Scores | Nobody wants to learn the clip was wrong after posting or running the ad. |
+| Templates | Rebuilding the same structure every time makes the next session feel heavy. |
+| Daily drafts | Showing up consistently on social is hard when the user does not like social. |
+| Clipr | The library needs more opener clips and the user does not want another shoot. |
+| Swapr | The user needs another usable source clip from material they already have. |
+| Swipr | Some ideas need slides, not another video timeline. |
+| Library | The user needs clips, demos, drafts, and finished ads somewhere findable. |
 
 ## What To Avoid
 
@@ -161,40 +180,39 @@ Avoid positioning ClipStitchr as:
 - a general-purpose video editor
 - a social media scheduler
 - a promise of viral growth
-- a replacement for strategy, hooks, or offer quality
+- a tool for content creators who already enjoy the process
+- a replacement for judgment, product quality, or a good offer
 
-The strongest positioning is practical: less editing friction, more finished ad
-variants, and less media chaos.
+Avoid copy built around:
 
-## Landing Page Message Order
+- batch
+- volume
+- scale
+- powerful
+- seamless
+- effortless
+- creator-first language
+- generic productivity claims
 
-Use this order for the public landing page:
-
-1. Hero: outcome first, "Make more ad variants from the clips you already have."
-2. Output: show finished ad examples before listing features.
-3. How it works: upload clips, pick the product demo, click once for a batch.
-4. Main workflow: one demo can turn the clip library into a creative test.
-5. Scoring: answer "What if I do not know which clips are good?"
-6. Templates: answer "What if I find a structure that works?"
-7. Clipr and Swapr: answer "What if I do not have enough clips?"
-8. Swipr: answer "What if I need posts that are not videos?"
-9. Automation: answer "What if I want this happening every day?"
-10. Offer stack: summarize the full bundle around repeatable ad creation.
+Use `Batch mode` only when naming the actual UI.
 
 ## Customer Language
 
 Use language that reflects the real frustration:
 
-- "I have hundreds of clips and still nothing ready to post."
-- "I know I should be testing more creative, but editing slows me down."
-- "I do not want to open a video editor just to make another ad variation."
-- "I need a system for turning raw UGC and demos into finished assets."
-- "I keep buying or shooting content, then letting it sit on my computer."
+- "I know I should post, but I do not want to open the editor again."
+- "I am a builder, not a content person."
+- "I have clips and still nothing ready to use."
+- "Writing the text is somehow the worst part."
+- "I do not want social to take over the week."
+- "I need this channel to work without becoming my whole personality."
 
 ## Product Outcome
 
-The desired outcome is not "AI-generated media." The desired outcome is a
-finished ad asset the user can actually publish, test, or hand off.
+The desired outcome is not AI-generated media. The desired outcome is a finished
+short-form asset the user can review, test, publish, or hand off without losing
+another day to content work.
 
-The product should make users feel that every uploaded clip has a job and every
-demo can become multiple ad variations.
+The product should make users feel that every saved clip has a job, every demo
+can become useful more than once, and content no longer has to be the thing that
+pulls them away from building.

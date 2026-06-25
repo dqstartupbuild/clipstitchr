@@ -11,8 +11,7 @@ export function PricingOfferStackSection() {
               What you get
             </p>
             <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-              Everything you need to turn saved clips into a repeatable ad
-              engine.
+              The parts of content work you keep putting off, bundled together.
             </h2>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">

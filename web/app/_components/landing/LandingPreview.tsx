@@ -10,13 +10,12 @@ export function LandingPreview() {
             Main workflow
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            One demo can turn your clip library into a full creative test.
+            Use one product demo without dragging it into every ad yourself.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Choose the demo you want to promote, then let the batch builder turn
-            saved clips into separate UGC-first ad variants. Text, captions,
-            trims, and export settings stay organized so every batch is easier
-            than the last one.
+            Choose the demo you want to promote. ClipStitchr puts saved opener
+            clips in front of it, keeps the text, captions, trims, and export
+            settings together, and gives you finished drafts to review.
           </p>
         </div>
         <Panel className="overflow-hidden p-2">

@@ -8,15 +8,15 @@ export function LandingSwiprSection() {
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
-            More ways to ship
+            For posts that should be slides
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            When a carousel fits better than a video, make that too.
+            When video feels like overkill, make the carousel and move on.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
             Swipr turns the same product context into editable carousel drafts.
-            Use it when the next post should be slides instead of another
-            vertical video.
+            Use it when the idea needs slides instead of another vertical
+            video.
           </p>
         </div>
         <div className="rounded-lg border border-border bg-surface-muted p-5 shadow-sm shadow-slate-200/60">

@@ -11,12 +11,12 @@ export function PricingCreditRulesSection() {
               How credits work
             </p>
             <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-              Credits are for generated extras, not your saved-clip batches.
+              Credits are for generated extras, not ads from your saved clips.
             </h2>
             <p className="mt-4 leading-7 text-text-secondary">
-              Making ad batches from clips you already uploaded is included.
-              Credits are used when ClipStitchr creates new media or draft
-              content for you.
+              Making ads from clips you already uploaded is included. Credits
+              are used when ClipStitchr creates new media or draft content for
+              you.
             </p>
           </div>
           <Panel className="overflow-hidden">

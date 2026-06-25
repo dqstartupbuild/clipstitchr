@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = createPageMetadata({
   title: `Blog | ${site.name}`,
-  description: `Articles and guides from ${site.name} on UGC video workflows, TikTok-ready 9:16 output, and product demo creation.`,
+  description: `Founder notes and practical guides from ${site.name} on making short-form ads when editing content is the part you hate.`,
   canonical: "/blog",
 });
 
@@ -26,11 +26,11 @@ export default async function BlogIndexPage() {
         <div className="max-w-3xl">
           <p className="text-sm font-semibold text-accent-dark">Resources</p>
           <h1 className="mt-4 text-4xl font-bold text-text-primary md:text-5xl">
-            The {site.name} Blog
+            Notes on doing content when you would rather not.
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
-            Practical notes on browser video processing and UGC-to-demo
-            production workflows.
+            Practical notes on clips, demos, short-form ads, and the parts of
+            content work that make builders procrastinate.
           </p>
           {categories.length > 0 && (
             <div className="mt-8 flex flex-wrap gap-3 text-sm text-text-tertiary">

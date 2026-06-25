@@ -1,9 +1,9 @@
 import { CheckCircle2 } from "lucide-react";
 
 const hookLabPoints = [
-  "Paste hooks from viral posts in your niche during setup.",
-  "Add hooks you already posted and would use again.",
-  "Tell ClipStitchr which hooks sound too bland, too fake, or off-brand.",
+  "Paste lines from posts that made you stop scrolling, including your own.",
+  "Add examples that sounded fake so ClipStitchr knows what not to write.",
+  "Review options before export instead of pretending the first line is fine.",
 ];
 
 export function LandingHookLabSection() {
@@ -13,12 +13,12 @@ export function LandingHookLabSection() {
         <div>
           <p className="text-sm font-semibold text-accent-dark">Hook Lab</p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Your hooks should sound like your best posts, not a prompt.
+            Writing overlay text that does not sound fake is annoyingly hard.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            During onboarding, ClipStitchr asks for hooks that already stop
-            people in your market. Stitchr uses that taste file to write better
-            overlay text and gives you options before you export.
+            Hook Lab exists because most builders are not natural copywriters.
+            Give ClipStitchr a few lines that feel right, a few that do not,
+            and it will write Stitchr options that sound less like a prompt.
           </p>
         </div>
         <div className="grid gap-3">

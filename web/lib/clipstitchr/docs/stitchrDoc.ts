@@ -4,9 +4,9 @@ export const stitchrDoc = {
   slug: "stitchr",
   title: "Stitchr",
   description:
-    "Create batches of finished vertical ads from saved clips and one product demo.",
+    "Use saved clips and one product demo to make finished vertical ads without rebuilding each video by hand or hunting through folders.",
   summary:
-    "Pick the product demo, create a batch, then review and export finished variants.",
+    "Pick the product demo, create drafts, then review and export the ads worth using.",
   category: "feature",
   order: 10,
   updated: "2026-06-23",
@@ -14,14 +14,14 @@ export const stitchrDoc = {
     {
       title: "What Stitchr does",
       body: [
-        "Use Stitchr when you have clips, but not finished ads. Batch mode turns saved footage into finished ad variants without making you rebuild each video by hand.",
+        "Use Stitchr when you have clips, but not finished ads. Batch mode is the UI label for making several drafts at once, but the point is simpler: stop rebuilding the same UGC-then-demo video by hand.",
         "Each finished stitch follows a simple order: source clip first, product demo second.",
       ],
     },
     {
-      title: "Create a batch",
+      title: "Create several drafts",
       body: [
-        "Batch mode is the default Stitchr flow. Pick the product demo you want to promote, choose text styling, and create the batch. ClipStitchr chooses useful clip pairings from your saved library and prepares finished drafts for review.",
+        "Batch mode is the default Stitchr flow. Pick the product demo you want to promote, choose text styling, and create drafts. ClipStitchr chooses useful clip pairings from your saved library and prepares finished work for review.",
         "When clips have scores, use them as quick guidance while you organize the library, trim weak moments, or decide what to use in Normal mode.",
         "Choose Any text styling for fresh variety, or pick exact text, background, and outline colors before you queue drafts.",
       ],
@@ -62,8 +62,8 @@ export const stitchrDoc = {
     {
       title: "Hooks",
       body: [
-        "Batch mode writes hooks for the whole batch together when it can. That helps the hooks feel less repetitive across the finished drafts.",
-        "Open Library, then Hooks, to copy hooks, save the ones you like, or add weak ones to the avoid list. Those choices help the next batch sound closer to your taste.",
+        "Writing overlay text that does not sound fake is harder than it should be. Batch mode writes hooks together when it can, so the finished drafts do not all open with the same bland line.",
+        "Open Library, then Hooks, to copy hooks, save the ones you like, or add weak ones to the avoid list. Those choices help the next drafts sound closer to your taste.",
       ],
     },
     {

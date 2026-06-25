@@ -4,9 +4,9 @@ export const automationDoc = {
   slug: "automation",
   title: "Automation",
   description:
-    "Let ClipStitchr prepare daily ad batches and content drafts you can review before using.",
+    "Let ClipStitchr prepare daily drafts when showing up on social keeps falling off your real work list, then review everything before use.",
   summary:
-    "Choose what ClipStitchr can prepare each day, then review everything before you use it.",
+    "Choose what ClipStitchr can prepare each day, then review everything before anything leaves the app.",
   category: "feature",
   order: 70,
   updated: "2026-06-22",
@@ -14,7 +14,7 @@ export const automationDoc = {
     {
       title: "What automation does",
       body: [
-        "Automation helps keep your library moving by preparing new ad batches, source clips, and carousel drafts in the background. It is built for review, not auto-posting.",
+        "Automation helps when consistency matters but social is not the work you woke up wanting to do. It prepares new Stitchr drafts, source clips, and carousel drafts in the background. It is built for review, not auto-posting.",
         "You stay in control. Pause it anytime, edit the drafts, and only use the ones that fit.",
       ],
     },
@@ -41,7 +41,7 @@ export const automationDoc = {
     {
       title: "Review before using",
       body: [
-        "Automation creates drafts so you have something to start from. Check the output, edit the parts that need work, and use it only when it feels ready.",
+        "Automation creates drafts so you have something to start from instead of a blank task on the calendar. Check the output, edit the parts that need work, and use it only when it feels ready.",
       ],
       bullets: [
         "Preview Stitchr drafts before exporting.",

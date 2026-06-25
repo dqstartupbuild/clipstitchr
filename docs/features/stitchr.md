@@ -2,30 +2,31 @@
 
 Stitchr is the primary ClipStitchr workflow.
 
-Its job is to turn UGC clips and product demo videos into finished
-short-form ad variants with as little editing friction as possible.
+Its job is to turn UGC clips and product demo videos into finished short-form
+ads without making the user become a content person for the day.
 
 ## Problem
 
 Users often have enough raw material to make ads, but not enough energy or time
-to assemble it:
+to assemble it again:
 
 - UGC clips are scattered across downloads, drives, and project folders.
 - Product demos exist, but are not paired with hooks or reactions.
 - Raw clips need trimming before they are usable.
 - Traditional editors require importing, sequencing, exporting, naming, and
   tracking files.
-- The user may collect more footage instead of publishing what they already
-  have.
+- Writing overlay text that does not sound fake becomes its own blocker.
+- The user may collect more footage instead of using what they already have.
 
-Stitchr should make that workflow feel like selecting ingredients from a
-library, not editing from scratch.
+Stitchr should make the work feel like choosing what to review, not editing
+from scratch.
 
 ## Core Promise
 
-Upload clips once, pick the product demo, and click once to create a batch of
-finished vertical ad variants. Normal mode still lets the user select up to 20
-UGC clips and one product demo when they want hands-on control.
+Upload clips once, pick the product demo, and create finished vertical ads from
+saved footage. Batch mode remains the in-app label for queued drafts. Normal
+mode still lets the user select up to 20 UGC clips and one product demo when
+they want hands-on control.
 
 ## Intended Sequence
 
@@ -40,8 +41,8 @@ UGC clip while reusing the same selected product demo. Each output can keep its
 own overlay settings, and the active overlay can be copied to every selected
 output.
 
-This sequence supports a common direct-response creative pattern: attention or
-social proof first, product proof immediately after.
+This sequence supports the practical pattern ClipStitchr is built around: earn
+attention first, show the product immediately after.
 
 ## Workflow
 
@@ -81,7 +82,7 @@ social proof first, product proof immediately after.
 12. Optionally attach selected shared music to each stitch.
 13. Create one stitched output per selected UGC clip.
 14. Render and save each finished Stitch video.
-15. Download the finished ad variants whenever needed.
+15. Download the finished ads whenever needed.
 16. Mark saved stitches as posted after they go live so the Stitches library can
     separate reusable drafts from already-published assets.
 17. Score a saved stitch when the user wants a quick retention estimate,
@@ -177,6 +178,6 @@ Stitchr is not meant to be:
 
 ## Success Criteria
 
-Stitchr is working when a user with a pile of clips can create multiple finished
-ad variants without opening a traditional editor or hunting through local file
-folders.
+Stitchr is working when a user with a pile of clips can make finished ads
+without opening a traditional editor, hunting through local file folders, or
+losing another work session to content.

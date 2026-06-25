@@ -5,19 +5,19 @@ const automationBenefits = [
   {
     title: "Choose what runs",
     description:
-      "Turn Stitchr, Clipr, or Swipr daily drafts on and off from Settings.",
+      "Pick which draft types ClipStitchr can prepare from Settings.",
     icon: SlidersHorizontal,
   },
   {
-    title: "Get daily drafts",
+    title: "Find new drafts waiting",
     description:
-      "Let ClipStitchr prepare new drafts during the daily window you already set.",
+      "Give it a daily window and review what it made when you are ready.",
     icon: CalendarClock,
   },
   {
-    title: "Stay in control",
+    title: "Keep final say",
     description:
-      "Pause automation anytime and keep every saved draft editable before you use it.",
+      "Pause it anytime and edit every draft before you use it.",
     icon: CirclePause,
   },
 ];
@@ -31,11 +31,12 @@ export function LandingAutomationSection() {
             Daily drafts
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Let ClipStitchr prepare new drafts while you work on everything else.
+            Showing up daily is hard when you do not like social.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Choose which tools can run, set a few defaults, and review the
-            drafts before anything leaves the app.
+            Daily drafts exist so consistency does not depend on you waking up
+            excited to make content. Choose the tools, set a few defaults, and
+            review everything before anything leaves the app.
           </p>
         </div>
         <div className="rounded-lg border border-border bg-white p-5 shadow-sm shadow-slate-200/60">
@@ -46,10 +47,10 @@ export function LandingAutomationSection() {
                 Daily drafts
               </p>
               <h3 className="mt-4 text-xl font-bold text-text-primary">
-                New drafts, ready to review.
+                Drafts you can review, not posts you have to trust.
               </h3>
               <p className="mt-2 text-sm leading-6 text-text-secondary">
-                Automation can prepare ad batches, new source clips, and
+                ClipStitchr can prepare stitched ads, source clips, and
                 carousel drafts based on the tools you choose.
               </p>
             </div>
@@ -68,7 +69,7 @@ export function LandingAutomationSection() {
             )}
           </div>
           <div className="mt-5 rounded-md bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary">
-            Review first. Edit anything. Post only when it feels right.
+            Review first. Edit anything. Use only the drafts that feel right.
           </div>
         </div>
         <div className="grid gap-4 lg:col-span-2 md:grid-cols-3">

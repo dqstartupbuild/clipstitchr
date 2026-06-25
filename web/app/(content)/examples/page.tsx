@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata = createPageMetadata({
   title: `Example Outputs | ${site.name}`,
   description:
-    "Watch example ClipStitchr outputs across Stitchr stitches, Clipr clips, and Swapr swaps.",
+    "Watch ClipStitchr examples made from saved clips, product demos, Clipr clips, and Swapr source material without starting from a blank editor.",
   canonical: "/examples",
   keywords: [
     "ClipStitchr examples",
@@ -28,12 +28,12 @@ export default function ExamplesIndexPage() {
             Example outputs
           </p>
           <h1 className="mt-4 text-4xl font-bold text-text-primary md:text-5xl">
-            Watch what ClipStitchr can make.
+            See what happens when clips finally leave the folder.
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
-            These are example outputs across Stitchr stitches, Clipr clips, and
-            Swapr swaps. Use them to see how creator hooks, source clips, and
-            product demos can turn into reusable short-form assets.
+            These are sample Stitchr, Clipr, and Swapr outputs. Use them to see
+            how saved source clips and product demos can turn into short-form
+            ads without starting from a blank editor.
           </p>
         </div>
 

@@ -4,25 +4,25 @@ import { Panel } from "@/app/_components/ui/Panel";
 const studios = [
   {
     eyebrow: "Clipr",
-    title: "Generate reaction and b-roll clips.",
+    title: "Make the reaction clip you do not want to film.",
     description:
-      "Choose a product and avatar, create a short source clip, and save it into the library for the next ad batch.",
+      "Choose a product and avatar, create a short source clip, and save it for the next Stitch.",
     caption: "Use it like any other saved clip.",
     icon: CirclePlay,
   },
   {
     eyebrow: "Swapr",
-    title: "Turn one saved clip into more source footage.",
+    title: "Squeeze another usable clip out of what you have.",
     description:
-      "Pick an avatar photo and an existing clip, create a new UGC-style variation, then save it for future batches.",
+      "Pick an avatar photo and an existing clip, create a new UGC-style variation, then save it for later.",
     caption: "Useful when the library is thin.",
     icon: Shuffle,
   },
   {
     eyebrow: "Avatars",
-    title: "Keep faces ready for new source clips.",
+    title: "Keep reusable faces ready.",
     description:
-      "Save avatar photos so Clipr and Swapr have reusable people to work with when you need fresh UGC.",
+      "Save avatar photos so Clipr and Swapr have people to work with when you need fresh UGC.",
     caption: "Source material stays reusable.",
     icon: UserRound,
   },
@@ -34,15 +34,14 @@ export function LandingStudioSection() {
       <div className="mx-auto max-w-6xl">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
-            Never start from an empty library
+            When the library is too thin
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Need more clips? Generate extra source material for the next batch.
+            Sometimes the problem is just not having enough usable clips.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Clipr, Swapr, and avatar photos are helpers for the same system.
-            They fill gaps in your library so the batch workflow has more clips
-            to work with.
+            Clipr, Swapr, and avatar photos fill gaps in your library, so you
+            are not stuck waiting on another shoot just to keep moving.
           </p>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-3">

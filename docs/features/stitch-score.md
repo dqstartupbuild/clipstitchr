@@ -1,11 +1,14 @@
 # Stitch Score Feature Guide
 
-Stitch scores help users decide whether a finished Stitch is ready to post or
-needs a quick edit first.
+Stitch scores help users avoid finding out a finished Stitch was weak only
+after they posted it or ran it as an ad.
 
 The product promise stays simple:
 
 > Know which finished stitches are worth posting before you waste time.
+
+Public copy should name the regret first: nobody wants to discover the clip was
+wrong after the ad has already left the app.
 
 ## What It Does
 
@@ -21,7 +24,7 @@ reviews the saved stitch and returns:
 - optional structured Quick Edit suggestions
 
 The score is guidance, not a performance guarantee. It helps the user decide
-what to trim, rewrite, or post first.
+what to trim, rewrite, or use first before they spend time on the wrong fix.
 
 ## Behavior
 

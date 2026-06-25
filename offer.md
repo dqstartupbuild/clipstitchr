@@ -2,29 +2,29 @@
 
 ## Core Positioning
 
-Turn the clips you already have into batches of finished ad variants.
+Grow on short-form without becoming a content person.
 
-Pricing should sell the ad engine, not credits. Credits are only the meter for
-extra generated material.
+Pricing should sell relief from the parts of content work the user keeps
+avoiding. Credits are only the meter for extra generated material.
 
 ## Main Offer
 
-Everything you need to turn saved clips into a repeatable ad engine:
+The parts of content work builders keep putting off, bundled together:
 
-- Stitchr batches from saved clips.
-- Clip scoring and video analysis.
-- Templates for winning formats.
-- Clipr, Swapr, Swipr, avatar generation, and draft helpers.
-- Clip library.
+- Stitchr ads from saved clips.
+- Clip scores and video reads.
+- Templates for structures users do not want to rebuild.
+- Clipr, Swapr, Swipr, avatars, and draft helpers.
+- One library for clips, demos, drafts, and finished ads.
 - Daily draft automation on higher plans.
-- Credit top-ups when you need more generated material.
+- Credit top-ups when the library is thin.
 
 ## Credit Rules
 
 | Action | Credits |
 | --- | ---: |
-| Stitchr batches from saved clips | Included |
-| Clip scoring / video analysis | Included |
+| Stitchr ads from saved clips | Included |
+| Clip scores / video reads | Included |
 | 1 generated video | 25 |
 | 1 generated photo/avatar/background | 1 |
 | 10 Swipr text/caption/hashtag drafts | 1 |
@@ -37,17 +37,17 @@ product limits, automation, storage, speed, and support.
 
 | Plan | Price | Best For | Products | Credits |
 | --- | ---: | --- | ---: | ---: |
-| Starter | $39/month | Testing the workflow with a few products | 3 | 50/month |
-| Pro | $99/month | Weekly ad testing across a real product catalog | 10 | 250/month |
-| Studio | $249/month | High-volume teams, agencies, and repeat testing | Unlimited | 750/month |
-| Agency | $499+/month | Custom volume, onboarding, and support | Custom | Custom |
+| Starter | $39/month | Trying ClipStitchr with a few products | 3 | 50/month |
+| Pro | $99/month | Regular ads without regular editing days | 10 | 250/month |
+| Studio | $249/month | Teams with more products and more clips to keep moving | Unlimited | 750/month |
+| Agency | $499+/month | Multiple brands, onboarding, and custom support | Custom | Custom |
 
 ## Plan Details
 
 Starter:
 
-- Included Stitchr batches from saved clips.
-- Included clip scoring and video analysis.
+- Included Stitchr ads from saved clips.
+- Included clip scores and video reads.
 - All creation tools included.
 - 3 products.
 - 50 monthly generation credits.
@@ -60,7 +60,7 @@ Pro:
 - Everything in Starter.
 - 10 products.
 - 250 monthly generation credits.
-- Larger clip library included.
+- More room for clips.
 - Daily drafts for 1 product.
 - Faster generation defaults.
 - Stronger challenge reward.
@@ -70,9 +70,9 @@ Studio:
 - Everything in Pro.
 - Unlimited products.
 - 750 monthly generation credits.
-- Team-scale clip library included.
+- More saved media included.
 - Daily drafts across multiple products.
-- Higher concurrency / faster queues.
+- More jobs can run at once.
 - Priority support.
 - Strongest challenge reward.
 
@@ -80,7 +80,7 @@ Agency:
 
 - Custom credits and storage.
 - Multi-brand workflows.
-- Custom automation limits.
+- Custom daily draft limits.
 - Onboarding help.
 - Priority support.
 - Custom challenge terms.
@@ -92,9 +92,9 @@ credits roll over for 12 months while the subscription stays active.
 
 | Pack | Price | Credits | Video Equivalent |
 | --- | ---: | ---: | ---: |
-| Boost | $29 | 150 | 6 videos |
-| Growth | $69 | 375 | 15 videos |
-| Scale | $129 | 750 | 30 videos |
+| Refill | $29 | 150 | 6 videos |
+| Busy Week | $69 | 375 | 15 videos |
+| Long Month | $129 | 750 | 30 videos |
 
 ## Storage
 
@@ -140,18 +140,18 @@ Terms:
 
 Headline:
 
-> Create more ad variants from the clips you already have.
+> Pay for the system that keeps content from eating your week.
 
 Subhead:
 
-> Stitchr batches, scoring, templates, and your clip library are included. Use
-> helper credits only when you want ClipStitchr to create new videos, visuals,
-> or draft content for you.
+> Stitchr, scoring, templates, and your clip library are included. Credits only
+> matter when ClipStitchr creates extra videos, visuals, or drafts because your
+> library is thin.
 
 Plan note:
 
 > All plans include every ClipStitchr tool. Choose based on how many products,
-> credits, automation, and storage you need.
+> credits, daily drafts, and saved media you need.
 
 Guarantee block:
 

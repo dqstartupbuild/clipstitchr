@@ -1,197 +1,240 @@
 # ClipStitchr Copywriting Guide
 
 Use this guide when writing landing pages, onboarding, empty states, plan copy,
-help text, or sales material for ClipStitchr.
+help text, sales material, docs, blog CTAs, or any other user-facing copy for
+ClipStitchr.
+
+## Founder Story
+
+ClipStitchr was built by someone who genuinely hates making content.
+
+The editing, captions, music, clip organization, separate uploads, and constant
+pressure to show up on TikTok and Instagram were not fun side quests. They were
+the price of trying to grow mobile apps.
+
+That is the brand. Do not sand it down.
+
+ClipStitchr should sound like a founder who built the tool because the whole
+content process was draining, awkward, and weirdly time-consuming. The copy
+should never sound like a marketing team trying to motivate creators.
+
+## Audience
+
+Primary users are indie app developers and mobile marketers who know short-form
+matters but do not identify as content people.
+
+They are builders, operators, and people trying to grow an app. They think in
+systems, outcomes, and time saved. They are not trying to become social media
+managers, creators, or trend forecasters.
+
+Speak to:
+
+- indie app developers
+- solo founders
+- mobile app marketers
+- small teams trying to grow apps
+- builders who need TikTok and Reels to work without taking over the week
+
+Do not write as if the user already likes content creation.
+
+## Enemy
+
+Most tools talk to people who already enjoy making content and just want to do
+it faster.
+
+ClipStitchr owns the opposite end: people who do not like content work, are not
+naturally good at it, and need the process to stop being a blocker.
+
+The enemy is not "slow editing" in the abstract. The enemy is the specific
+moment where the user thinks:
+
+> I know I should post, but I cannot make myself open the editor again.
+
+## Core Message
+
+You do not have to become a content person to grow on short-form.
+
+ClipStitchr handles the parts that make content painful so users can stay
+focused on building.
+
+## Final Hero
+
+Do not change the homepage hero unless the founder story changes.
+
+Headline:
+
+> Built by someone who hates making content. For everyone else who does too.
+
+Subhead:
+
+> If you're trying to grow a mobile app on TikTok and Reels but the whole
+> content thing makes you want to quit — you're exactly who this is for.
 
 ## Voice
 
-ClipStitchr should sound practical, direct, and empathetic. The user is not
-looking for vague creative inspiration. They are trying to get finished ads out
-the door without fighting a video editor.
+The voice is honest, dry, self-aware, and plain.
+
+It should feel like a founder talking from experience, not a SaaS homepage.
+Small jokes are fine when they name a real frustration. Hype is not.
 
 Default tone:
 
-- clear
-- specific
-- low-hype
-- founder-friendly
-- sympathetic to social media fatigue
+- practical
+- direct
+- human
+- a little tired of content
+- sympathetic to people who would rather build
+- specific about the annoying moment being removed
 
-## Core Copy Principle
+## Copy Pattern
 
-Lead with the work the user wants to avoid, then show the finished asset they
-get.
+Every section should name the painful moment first, then show how ClipStitchr
+removes it.
+
+Use this shape:
+
+1. Name the thing the user hates doing.
+2. Say what ClipStitchr does with that specific task.
+3. End with the calmer state the user gets.
 
 Weak:
 
-> AI-powered UGC video generation platform.
+> Make better content faster with one platform.
 
-Stronger:
+Strong:
 
-> Make more ad variants from the clips you already have.
->
-> Upload your clips once. Pick the product demo. Click once to create a batch of
-> finished vertical ads, ready to test across TikTok, Reels, and Shorts.
+> Rebuilding the same structure is what makes a new set feel heavy. Templates
+> keep the trims, text, captions, and timing from the Stitch you would rather
+> not rebuild.
 
-## Message Order
+## Section Guidance
 
-Use this order for most marketing pages:
+Workflow:
 
-1. Promise: make more ad variants from the clips the user already has.
-2. Output: show finished ad examples before listing tools.
-3. Workflow: upload clips, pick the product demo, click once for a batch.
-4. Main workflow: one demo can turn the library into a creative test.
-5. Objections: scoring, templates, source-material helpers, carousels, and
-   automation each answer one practical concern.
-6. Offer stack: summarize the bundle as a repeatable ad engine.
+Do not explain steps like a product tour. Explain what users no longer have to
+do: hunt for files, drag the same demo around, rewrite the same line, export
+one video at a time, or remember where the finished file went.
 
-## Primary Headline Patterns
+Hook Lab:
 
-Good headline directions:
+This exists because writing overlay text that does not sound fake is hard for
+people who are not natural copywriters. Say that directly.
 
-- Turn your UGC pile into finished ads.
-- Make ad variants without opening a video editor.
-- Make more ad variants from the clips you already have.
-- Upload clips once. Create new ad batches whenever you need them.
-- Stop collecting clips you never publish.
-- Upload UGC and demos once. Stitch batches of ads whenever you need them.
-- A content library that actually turns into ads.
+Scoring:
 
-Avoid headline directions:
+This exists because nobody wants to find out a clip was wrong after posting or
+running the ad. Say that directly.
 
-- The ultimate AI content platform.
-- Supercharge your social media.
-- Create viral videos instantly.
-- Revolutionize your marketing workflow.
-- AI video creation for everyone.
+Templates:
+
+This exists because rebuilding the same structure every time is what makes a new
+content session feel heavy. Say that directly.
+
+Daily drafts:
+
+This exists because showing up consistently on social is hard when the user does
+not like social. Say that directly.
+
+Source material helpers:
+
+Clipr, Swapr, and Avatars exist because sometimes the library is thin and the
+user does not want another shoot. Position them as helpers, not the reason to
+buy.
+
+Swipr:
+
+Swipr exists because sometimes a carousel is enough and forcing every idea into
+a video wastes energy.
 
 ## Product Description
 
 Default short description:
 
-ClipStitchr helps marketers upload clips once, pick a product demo, and create
-a batch of finished vertical ads ready to test across TikTok, Reels, and
-Shorts.
+ClipStitchr helps indie app builders turn saved clips and product demos into
+TikTok and Reels ads without becoming content people.
 
-## Feature Copy
+Longer description:
 
-Write feature copy around user outcomes:
-
-| Feature | User-facing angle |
-| --- | --- |
-| Upload normalization | Every clip becomes ready for vertical ad output. |
-| Library | Keep UGC, demos, avatars, templates, swaps, and stitches in one searchable place. |
-| Stitchr Batch | Create multiple finished vertical ads from saved clips and one product demo. |
-| Scores | Know which clips and finished ads are worth using before you post. |
-| Templates | Save the ad structure that worked and reuse it for future batches. |
-| Swipr | Create carousel posts, save the draft, and come back to revise or download it later. |
-| Clipr | Generate reusable reaction and b-roll UGC when the library needs fresh source footage. |
-| Trim ranges | Cut dead space without damaging the original clip. |
-| Posters | Recognize clips quickly without opening every file. |
-| AI avatar photos | Create more source material when you need it. |
-| Swapr | Turn a saved photo and clip into more UGC-style footage. |
-
-## AI Feature Positioning
-
-AI should be described as a helper for source material, not the main reason to
-buy.
-
-Use:
-
-- "Create more source material when your library is thin."
-- "Use AI to fill gaps in your content library."
-- "Generate optional UGC-style inputs, then stitch them into ads."
-- "Generate reaction and b-roll UGC when your library needs fresh material."
-
-Avoid:
-
-- "AI replaces content creation."
-- "Never shoot content again."
-- "Fully automated viral ad generation."
-
-## Pricing Copy
-
-Plans should be positioned around output capacity, storage, and workflow speed.
-AI credits are included resources, not the headline.
-
-Good plan framing:
-
-- Creator: build a small reusable content library and make occasional ad
-  variants.
-- Pro: make regular creative tests from a larger UGC and demo library.
-- Studio: manage high-volume ad production and larger asset libraries.
-
-Avoid framing plans only by:
-
-- AI credits
-- generated images
-- generated seconds
-- model quality tiers
-
-## Objections To Address
-
-### "I already have a video editor."
-
-ClipStitchr is not trying to replace a full editor. It removes the repetitive
-ad-variant workflow: find clips, normalize, pair clips with a demo, export, and
-keep the output organized.
-
-### "I do not have enough UGC yet."
-
-Start with product demos and the clips you already have. AI features can help
-create more source material later, but the core workflow works with real clips.
-
-### "Will this make better ads automatically?"
-
-ClipStitchr does not replace a good offer, hook, or product. It helps users ship
-more finished creative so they can test faster.
-
-## UI Copy Rules
-
-- Say "finished ad" or "ad variant" when the output is the value.
-- Say "UGC" and "product demo" instead of generic "asset" when space allows.
-- For batch Stitchr flows, lead with one-click batch creation before explaining
-  the one-demo-to-many-clips relationship.
-- For Swipr flows, say "carousel posts," "slides," "looks," and "ready to
-  publish" before naming implementation details.
-- For Clipr flows, say "UGC," "reaction," "b-roll," "avatar," and "Use in
-  Stitchr." Mention script mode only when the Clipr script flag is enabled.
-- Do not mention hidden hook styles, template IDs, risk labels, provider names,
-  or placeholder mechanics in user-facing Clipr copy.
-- Do not mention internal hook source names such as app hook library or
-  education viral patterns in user-facing copy.
-- Clipr copy must not include platform, sales, or app CTAs such as "comment,"
-  "follow," "buy," "book," "download it," or "sign up."
-- Describe Swipr as a way to create, save, edit, and download carousels.
-- Avoid naming internal storage or setup choices in marketing copy.
-- Keep buttons action-oriented: `Upload UGC`, `Create Stitch`, `Save Trim`.
-- Avoid making users feel judged for having messy files or inconsistent posting.
-- Avoid over-explaining AI in primary workflows.
+ClipStitchr is for builders who know short-form matters but hate the actual
+content process. Upload saved clips and demos, keep them organized, turn them
+into finished vertical ads, reuse structures that worked, score weak spots
+before posting, and let daily drafts keep the work from disappearing whenever
+social falls off the list.
 
 ## Words To Prefer
 
 - clips
 - demos
-- batches
-- ad variants
 - finished ads
-- content library
-- stitch
-- organize
+- drafts
+- source clips
+- opener clips
+- library
+- Stitch
+- review
 - reuse
 - export
-- test creative
-- carousel posts
-- slides
+- TikTok and Reels
+- mobile app
+- short-form
+- content person
+- editing day
 
 ## Words To Use Carefully
 
 - AI
 - automate
-- viral
-- effortless
-- studio
 - creator
-- magic
+- studio
+- UGC
+- ad variants
+- Batch
 
-These words can create the wrong expectation if they become the main message.
+Use `Batch` only when naming the in-app Stitchr mode. Do not make it the public
+message. Use `UGC` when the user needs the specific asset type, but explain it
+with plain words when possible.
+
+## Words And Phrases To Avoid
+
+Avoid:
+
+- batch
+- volume
+- scale
+- seamless
+- powerful
+- effortless
+- supercharge
+- unlock growth
+- game changer
+- viral
+- content creator
+- social media manager
+- creator economy
+- AI-powered platform
+- all-in-one studio
+- marketing workflow engine
+
+If a line could appear unchanged on a competitor homepage, rewrite it.
+
+## UI Copy Rules
+
+- Say what happens in plain words.
+- Keep buttons action-oriented: `Start with your clips`, `Save Template`,
+  `Score stitch`, `Review draft`.
+- Avoid making users feel judged for having messy files or inconsistent posting.
+- Avoid exposing provider names, prompt mechanics, hidden hook styles, template
+  IDs, or implementation details.
+- Keep AI secondary. It fills gaps; it does not replace taste, judgment, or the
+  user's app.
+- Do not promise performance, virality, or automatic growth.
+
+## One-Line Test
+
+Before shipping a line, ask:
+
+> Does this sound like it was written by someone who actually hated doing this?
+
+If yes, keep it.
+
+If no, rewrite it.

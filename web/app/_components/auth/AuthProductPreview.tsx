@@ -16,7 +16,7 @@ const featureLabels = [
   },
   {
     icon: UserRound,
-    label: "Avatar ad variants",
+    label: "Avatar source clips",
   },
 ];
 
@@ -26,7 +26,7 @@ export function AuthProductPreview() {
       <div className="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="border-b border-border bg-surface-elevated p-5 lg:border-b-0 lg:border-r">
           <p className="text-xs font-semibold uppercase text-text-tertiary">
-            Inside the studio
+            Inside ClipStitchr
           </p>
           <div className="mt-4 grid gap-3">
             {featureLabels.map(({ icon: Icon, label }) => (

@@ -13,8 +13,9 @@ export function PricingPlansSection() {
             All plans include every ClipStitchr tool.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Choose based on how many products, credits, automation, and storage
-            you need. Pro is the main plan for weekly ad testing.
+            Choose based on how many products, credits, daily drafts, and saved
+            media you need. Pro is the main plan for builders who need regular
+            ads without regular editing days.
           </p>
         </div>
         <div className="mt-10 grid gap-5 lg:grid-cols-4">

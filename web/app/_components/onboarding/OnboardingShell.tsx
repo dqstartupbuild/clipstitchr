@@ -17,14 +17,14 @@ export function OnboardingShell({
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
         <header className="min-w-0">
           <p className="text-sm font-semibold text-accent-dark">
-            First batch setup
+            First ads setup
           </p>
           <h1 className="mt-2 text-2xl font-bold tracking-normal text-text-primary md:text-3xl">
-            Create your first batch of ads
+            Turn your first clips into ads
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
-            Add the product, upload UGC and a demo, review the scores, then
-            create the first batch of finished stitches.
+            Add the product, upload UGC and a demo, review the scores, then make
+            your first finished stitches.
           </p>
         </header>
         <OnboardingProgressSteps activeStep={activeStep} />

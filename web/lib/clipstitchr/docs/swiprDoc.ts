@@ -4,9 +4,9 @@ export const swiprDoc = {
   slug: "swipr",
   title: "Swipr",
   description:
-    "Create carousel posts you can save, revise, and download later.",
+    "Create carousel posts for the moments when another video feels like too much work for the idea and slides will say it better.",
   summary:
-    "Build a Swipe with editable photos and text on each slide.",
+    "Build a Swipe with editable photos and text when slides make more sense than another video.",
   category: "feature",
   order: 30,
   updated: "2026-06-17",
@@ -14,7 +14,7 @@ export const swiprDoc = {
     {
       title: "What Swipr creates",
       body: [
-        "Swipr makes vertical carousel posts called Swipes. Save a Swipe when you want to come back later, revise the text, change slide photos, or download the latest version.",
+        "Swipr makes vertical carousel posts called Swipes. Use it when the idea needs space and you do not want to force it into another video. Save a Swipe when you want to come back later, revise the text, change slide photos, or download the latest version.",
       ],
     },
     {
@@ -34,7 +34,7 @@ export const swiprDoc = {
     {
       title: "Auto text",
       body: [
-        "Swipr can draft slide text from your product settings. The first slide opens the idea, and the rest of the slides support it. Edit the text before you save.",
+        "Swipr can draft slide text from your product settings. The first slide opens the idea, and the rest of the slides support it. Edit the text before you save so it still sounds like you.",
       ],
     },
     {

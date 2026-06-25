@@ -4,6 +4,10 @@ Stitchr Batch is the default Stitchr tab. It lets a signed-in user queue a
 daily Stitchr batch from the Stitchr page at any time. It is separate from
 scheduled Stitchr automation.
 
+`Batch` is the in-app mode name and implementation term. Public copy should use
+pain-led language such as "make several drafts" or "stop rebuilding the same
+ad" unless it is directly explaining the UI label.
+
 ## What It Does
 
 - Queues up to 10 Stitch drafts for the user's browser-local batch date.

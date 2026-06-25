@@ -10,7 +10,7 @@ export function PricingTopUpsSection() {
             Need more credits?
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Top up when you need more generated material.
+            Top up when the library is thin and you need more material.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
             Top-ups are available to active subscribers. Monthly credits are used

@@ -8,20 +8,20 @@
 
 ## 1. Vision
 
-**ClipStitchr** helps overwhelmed marketers turn the clips they already have
-into finished short-form ad videos without opening a traditional video editor.
+**ClipStitchr** helps indie app builders and mobile marketers grow on TikTok
+and Reels without becoming content people.
 
-The core pain is not just video processing. Many founders, small business
-owners, and lean marketers record product demos, buy UGC b-roll, collect
-reaction clips, and still publish very little because the editing workflow is
-too much: find files, import clips, trim dead space, sequence the ad, add
-metadata, export, save the output, and remember what was already used.
+The core pain is not just video processing. Many founders record product demos,
+buy UGC b-roll, collect reaction clips, and still publish very little because
+the content work feels like a second job: find files, import clips, trim dead
+space, sequence the ad, write overlay text, add metadata, export, save the
+output, and remember what was already used.
 
 ClipStitchr turns that pile of raw marketing footage into a reusable content
-library and a batch ad-creation workflow. Given up to **20 UGC clips** and **1
-product demo**, a user can produce matching unique 9:16 ad variants - each
-pairing a different UGC clip first with the same product demo second - in
-minutes, without leaving the app.
+library and a Stitchr creation workflow. Given up to **20 UGC clips** and **1
+product demo**, a user can produce matching unique 9:16 ads - each pairing a
+different UGC clip first with the same product demo second - in minutes, without
+leaving the app.
 
 The primary product is **Stitchr**. AI features like Clipr, Swapr, and Avatar Photo Generator are secondary helpers for
 creating or extending source material when a user does not have enough usable
@@ -30,12 +30,13 @@ clips.
 ### Product Thesis
 
 ClipStitchr is not a general video editor, AI playground, or social scheduler.
-It is a practical ad-production workflow for people who dislike the repetitive
-work of turning scattered UGC and product demos into finished short-form ads.
+It is a practical short-form system for people who dislike the repetitive work
+of turning scattered UGC and product demos into finished ads.
 
-The product should make users feel that every uploaded clip has a job, every
-demo can become multiple ad variations, and the content library is no longer a
-dead-end folder on their computer.
+The product should make users feel that they can grow on short-form without
+becoming content people. Every uploaded clip has a job, every demo can be useful
+more than once, and the content library is no longer a dead-end folder on their
+computer.
 
 See `docs/product/positioning.md`, `docs/product/copywriting-guide.md`, and
 `docs/features/stitchr.md` for reusable product, marketing, and copy guidance.
@@ -595,5 +596,5 @@ interface Stitch {
 - [ ] User can create stitched 9:16 videos where the Demo starts immediately after each UGC clip ends.
 - [ ] Multiple text overlays can be customized per selected UGC + Demo output and copied across the batch.
 - [ ] All resulting 9:16 videos can be downloaded.
-- [ ] User can create multiple finished ad variants from the same library without opening a traditional editor.
+- [ ] User can create multiple finished ads from the same library without opening a traditional editor.
 - [ ] Core media workflows work on `localhost`; AI helper workflows require configured provider, Convex, R2, Clerk, and rate-limit environment variables.

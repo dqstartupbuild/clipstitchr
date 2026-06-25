@@ -32,11 +32,11 @@ export function createLlmsTxt() {
     "## Key Sections",
     "- Public landing page for the ClipStitchr authenticated workspace",
     "- Blog articles and guides",
-    "- Case studies with real content workflow results",
+    "- Case studies with real short-form results",
     "- Customer docs for Stitchr, Clipr, Swipr, Swapr, avatars, and rate limits",
     "- RSS feed for content syndication",
     "",
     "## Site Context",
-    `${site.name} helps marketers make more ad variants from clips they already have. Users upload clips once, pick a product demo, and create a batch of finished vertical ads ready to test across TikTok, Reels, and Shorts. Stitchr includes a Longr mode for arranging multiple saved clips into one saved Stitch. The public site also keeps docs, a blog, case studies, and RSS feed.`,
+    `${site.name} helps indie app builders and mobile marketers grow on TikTok and Reels without becoming content people. Users upload clips once, pick a product demo, and turn saved footage into finished vertical ads. Stitchr includes a Longr mode for arranging multiple saved clips into one saved Stitch. The public site also keeps docs, a blog, case studies, and RSS feed.`,
   ].join("\n");
 }

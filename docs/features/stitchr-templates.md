@@ -1,7 +1,10 @@
 # Stitchr Templates
 
-Stitchr templates let a user save the setup from a finished stitch and reuse it
-later without copying the old finished video.
+Stitchr templates let a user save the setup from a finished stitch so the next
+ad does not start with rebuilding the same structure all over again.
+
+Public copy should lead with the reason templates matter: rebuilding the same
+structure is often the thing that makes a new content session feel heavy.
 
 ## What It Does
 
@@ -45,7 +48,7 @@ winning format while leaving the rest of the run fresh.
 
 The Library **Templates** tab opens at `/dashboard/library?tab=templates`,
 where users can see templates, rename them, delete them, and send one back into
-Stitchr.
+Stitchr when they do not want to start from zero.
 
 ## Implementation
 

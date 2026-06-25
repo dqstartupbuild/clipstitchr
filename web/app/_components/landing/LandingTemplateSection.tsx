@@ -5,19 +5,19 @@ const templateBenefits = [
   {
     title: "Save the setup",
     description:
-      "Keep the clips, trims, text, captions, and timing from a finished Stitch.",
+      "Keep the trims, text, captions, and timing from the Stitch you would rather not rebuild.",
     icon: LayoutTemplate,
   },
   {
-    title: "Start faster",
+    title: "Skip the blank start",
     description:
-      "Load a template in Stitchr instead of rebuilding the same ad from scratch.",
+      "Load a template instead of recreating the same structure again.",
     icon: RefreshCcw,
   },
   {
-    title: "Change what needs changing",
+    title: "Only change the new parts",
     description:
-      "Swap clips or edit the text while the useful parts stay ready.",
+      "Swap clips or edit the text while the useful parts stay put.",
     icon: PenLine,
   },
 ];
@@ -28,15 +28,15 @@ export function LandingTemplateSection() {
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
-            Keep winning structures
+            For the part you dread repeating
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            When a format works, reuse it without rebuilding everything.
+            Rebuilding the same structure is what makes a new set feel heavy.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
             Turn a finished Stitch into a template, then use it as the starting
-            point for the next batch. Keep the trims, text, captions, and timing
-            that worked while the clips stay easy to swap.
+            point next time. Keep the trims, text, captions, and timing that
+            worked while the clips stay easy to swap.
           </p>
         </div>
         <div className="rounded-lg border border-border bg-surface-muted p-5 shadow-sm shadow-slate-200/60">
@@ -69,7 +69,7 @@ export function LandingTemplateSection() {
             )}
           </div>
           <div className="mt-5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-text-primary">
-            Next time: load it, create the batch, review, export.
+            Next time: load it, swap clips, review, export.
           </div>
         </div>
         <div className="grid gap-4 lg:col-span-2 md:grid-cols-3">

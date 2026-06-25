@@ -2,10 +2,10 @@
 
 ## What It Does
 
-The pricing page presents the ClipStitchr paid offer around the main outcome:
-creating more ad variants from clips a user already has. It explains that
-Stitchr batches, scoring, templates, and the clip library are included, while
-credits are used only for generated media and draft content.
+The pricing page presents the paid offer around the pain ClipStitchr removes:
+content work should not eat the user's week. It explains that Stitchr, scores,
+templates, and the clip library are included, while credits are used only for
+generated media and draft content.
 
 ## User-Facing Offer
 
@@ -14,26 +14,26 @@ The page shows four plan levels:
 - Starter at $39/month for 3 products and 50 monthly credits.
 - Pro at $99/month for 10 products and 250 monthly credits.
 - Studio at $249/month for unlimited products and 750 monthly credits.
-- Agency at $499+/month for custom volume, onboarding, and support.
+- Agency at $499+/month for multiple brands, onboarding, and custom support.
 
 All plans include every ClipStitchr tool. Plans differ by credits, product
-limits, automation, storage, speed, and support.
+limits, daily drafts, saved media, speed, and support.
 
 ## Credit Model
 
 The public credit table is:
 
-- Stitchr batches from saved clips: Included.
-- Clip scoring and video analysis: Included.
+- Stitchr ads from saved clips: Included.
+- Clip scores and video reads: Included.
 - 1 generated video: 25 credits.
 - 1 generated photo/avatar/background: 1 credit.
 - 10 Swipr text/caption/hashtag drafts: 1 credit.
 
 Top-up credits are listed as active-subscriber packs:
 
-- Boost: $29 for 150 credits.
-- Growth: $69 for 375 credits.
-- Scale: $129 for 750 credits.
+- Refill: $29 for 150 credits.
+- Busy Week: $69 for 375 credits.
+- Long Month: $129 for 750 credits.
 
 ## Guarantee
 
@@ -42,8 +42,8 @@ ClipStitchr-made posts in 30 days. If those posts do not reach 10k total
 organic views, the page promises plan-based help to keep testing.
 
 The guarantee section now calls out Hook Lab setup so users understand they
-should add hooks from viral niche content and their own winners before running
-the challenge.
+should add lines from posts that made them stop scrolling and their own winners
+before running the challenge.
 
 ## Relevant Code
 

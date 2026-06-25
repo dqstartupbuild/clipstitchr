@@ -7,7 +7,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `Swipr | ${site.name}`,
   description:
-    "Create vertical TikTok carousel image sets with reusable backgrounds and text overlays.",
+    "Use Swipr to create editable TikTok and Reels carousel drafts when the idea needs slides instead of another video.",
   canonical: "/dashboard/swipr",
   noIndex: true,
 });

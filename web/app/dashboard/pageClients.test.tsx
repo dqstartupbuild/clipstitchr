@@ -495,7 +495,7 @@ describe("dashboard page clients", () => {
   it("renders first batch onboarding for the active product", () => {
     const markup = renderToStaticMarkup(<OnboardingPageClient />);
 
-    expect(markup).toContain("Create your first batch of ads");
+    expect(markup).toContain("Turn your first clips into ads");
     expect(markup).toContain("Review what ClipStitchr found");
     expect(markup).toContain("Continue to uploads");
   });

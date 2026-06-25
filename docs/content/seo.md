@@ -2,23 +2,30 @@
 
 ## Positioning
 
-ClipStitchr should target search demand around UGC, product demos, ad variants, and editing friction.
+ClipStitchr should target search demand around mobile app short-form ads, UGC
+clips, product demos, editing friction, and founders who do not want content
+work to take over the week.
 
 The strongest search wedge is:
 
-> I already have clips. How do I turn them into finished ads quickly?
+> I need TikTok and Reels to grow my app, but I hate making the content.
 
-Avoid competing only on broad "AI video generator" keywords. Those terms are crowded, less differentiated, and often imply that the tool creates everything from scratch. ClipStitchr is better positioned around turning existing UGC clips and product demos into finished 9:16 ad variants without opening a video editor.
+Avoid competing only on broad "AI video generator" keywords. Those terms are
+crowded, less differentiated, and often imply that the user wants synthetic
+content from scratch. ClipStitchr is better positioned around turning saved
+clips and product demos into finished 9:16 ads without asking the user to become
+a content person.
 
 ## Source Notes
 
 Public search results show crowded demand around:
 
 - AI UGC video generators
-- UGC ad generators
-- vertical video ad creators
-- TikTok and short-form ad workflows
-- creative iteration and ad variant production
+- UGC ad tools
+- vertical video ad makers
+- TikTok and Reels ad creation
+- app marketing creative
+- editing friction for short-form ads
 
 Useful public references:
 
@@ -29,22 +36,23 @@ Useful public references:
 - AutoShortAds: https://www.autoshortads.com/
 - UGCreate: https://www.ugcreate.studio/
 
-These references should be used to understand market language and content angles, not copied.
+Use these references to understand market language and content angles. Do not
+copy their tone.
 
 ## Best First Keywords
 
 | Keyword | Blog angle |
 | --- | --- |
-| UGC video ads | What they are, why they work, examples |
+| mobile app TikTok ads | How app builders can make ads without becoming content people |
+| TikTok ads for mobile apps | Practical setup for app demos plus UGC openers |
+| Reels ads for apps | How to turn app demos into short-form ads |
 | UGC ad maker | Tool comparison or workflow guide |
-| UGC ad generator | Explain generator vs workflow tool |
-| AI UGC video generator | High-intent comparison post |
+| UGC ad generator | Explain generator versus saved-clip workflow |
 | TikTok UGC ads | How to make TikTok-native UGC ads |
-| TikTok ad creative | Creative workflow for small brands |
-| TikTok video ad maker | How to make variants fast |
 | product demo video ads | Turn demos into short-form ads |
-| video ad variants | How many ad variants to test |
-| creative testing for TikTok ads | Workflow and cadence guide |
+| make video ads without editing | Pain-led product guide |
+| organize UGC clips for ads | Library and reuse angle |
+| short-form ads for app developers | Founder-led category page |
 
 ## ClipStitchr-Specific Long-Tail Keywords
 
@@ -52,14 +60,14 @@ These references should be used to understand market language and content angles
 | --- | --- |
 | how to turn UGC into ads | Direct product fit |
 | how to make UGC ads from existing clips | Strong Stitchr fit |
-| how to combine UGC and product demo videos | Very close to core workflow |
+| how to combine UGC and product demo videos | Core UGC-then-demo workflow |
 | UGC then product demo ad | Own this phrasing |
-| make ad variants from UGC clips | Batch Stitchr workflow |
-| turn product demos into TikTok ads | Demo-to-ad workflow |
 | make TikTok ads without editing | Pain-led SEO page |
 | make video ads without a video editor | Core positioning |
-| organize UGC clips for ads | Content library angle |
+| organize UGC clips for ads | Library angle |
 | reusable content library for ads | Differentiated workflow angle |
+| TikTok content for indie app developers | Founder-led audience page |
+| grow app on TikTok without making content | Sharpest founder-pain page |
 
 ## Educational Blog Keywords
 
@@ -74,22 +82,22 @@ These references should be used to understand market language and content angles
 | 9:16 video ad format | Technical explainer |
 | vertical video ads | General explainer |
 | short form video ads | Funnel overview |
-| creator style ads | Explain native-feeling ads |
+| app demo ads | Turn app recordings into ads |
 
 ## Pain-Point Keywords
 
 | Keyword | Blog angle |
 | --- | --- |
-| content editing bottleneck | Founder and marketer pain post |
-| too many clips not enough content | Strong positioning article |
-| how to make more ad creatives | Creative velocity post |
-| how to scale ad creative production | Growth marketer query |
+| I hate making content | Founder story and product-led page |
+| content editing bottleneck | Founder and mobile marketer pain post |
+| too many clips not enough ads | Strong positioning article |
+| how to make more ad creatives | Creative testing without editing day |
 | how to test more ad creatives | Testing workflow |
-| creative fatigue Meta ads | Ad refresh workflow |
 | TikTok creative fatigue | Refresh cadence |
 | ad creative workflow | Operational guide |
 | video ad production workflow | System or process post |
-| batch create video ads | Product-led guide |
+| content library for ads | Product-led guide |
+| app marketing content ideas | Ideas plus execution system |
 
 ## Comparison And Buyer Keywords
 
@@ -103,23 +111,33 @@ These references should be used to understand market language and content angles
 | video editor vs ad creative tool | Category framing |
 | AI video generator vs UGC ad tool | Differentiation |
 | best TikTok ad maker for small business | Buyer guide |
-| best video ad tools for ecommerce | Buyer guide |
-| tools for making ad variants | High-intent list |
+| best video ad tools for app developers | Buyer guide |
+| tools for making app video ads | High-intent list |
 
 ## First 10 Keywords To Prioritize
 
-1. how to turn UGC into ads
-2. make video ads without a video editor
-3. how to combine UGC and product demo videos
-4. UGC ad maker
-5. TikTok UGC ads
-6. make ad variants from UGC clips
-7. turn product demos into TikTok ads
-8. creative testing for TikTok ads
-9. best UGC ad tools
-10. organize UGC clips for ads
+1. grow app on TikTok without making content
+2. mobile app TikTok ads
+3. make video ads without editing
+4. how to turn UGC into ads
+5. how to combine UGC and product demo videos
+6. UGC ad maker
+7. TikTok UGC ads
+8. product demo video ads
+9. organize UGC clips for ads
+10. short-form ads for app developers
 
 ## Suggested First Posts
+
+### How To Grow A Mobile App On TikTok When You Hate Making Content
+
+Target keyword: `grow app on TikTok without making content`
+
+Intent: founder pain and product-led.
+
+Angle: Start with the honest problem: the founder knows short-form matters but
+does not want to become a content person. Show the practical system: collect
+clips, keep demos ready, reuse structures, check weak clips, and review drafts.
 
 ### How To Turn UGC Into Ads Without Opening A Video Editor
 
@@ -127,7 +145,9 @@ Target keyword: `how to turn UGC into ads`
 
 Intent: educational and product-led.
 
-Angle: Explain the repeatable workflow of collecting UGC, choosing a product demo, sequencing UGC before demo, adding simple text, exporting 9:16, and saving variants.
+Angle: Explain the repeatable workflow of collecting UGC, choosing a product
+demo, sequencing UGC before demo, adding simple text, exporting 9:16, and saving
+finished ads.
 
 ### How To Combine UGC And Product Demo Videos For Short-Form Ads
 
@@ -135,7 +155,8 @@ Target keyword: `how to combine UGC and product demo videos`
 
 Intent: high-fit workflow query.
 
-Angle: Show why UGC-first, demo-second sequencing works for short-form ads and how to create multiple versions from the same product demo.
+Angle: Show why UGC-first, demo-second sequencing works for short-form ads and
+how to create several versions from the same product demo.
 
 ### UGC Ad Maker Vs AI UGC Video Generator: Which Workflow Do You Need?
 
@@ -143,15 +164,8 @@ Target keyword: `UGC ad maker`
 
 Intent: buyer comparison.
 
-Angle: Contrast tools that generate synthetic ads from prompts with tools that turn existing clips into publishable ad variants.
-
-### Creative Testing For TikTok Ads: How Many Variants Should You Make?
-
-Target keyword: `creative testing for TikTok ads`
-
-Intent: marketer education.
-
-Angle: Explain why creative volume matters, how to avoid editing bottlenecks, and how to create batches from reusable UGC and demo assets.
+Angle: Contrast tools that generate synthetic ads from prompts with tools that
+turn saved clips into finished ads.
 
 ### How To Organize UGC Clips So They Actually Become Ads
 
@@ -159,15 +173,22 @@ Target keyword: `organize UGC clips for ads`
 
 Intent: pain-point workflow.
 
-Angle: Speak to the messy-folder problem and frame a reusable content library as the missing step between buying clips and shipping ads.
+Angle: Speak to the messy-folder problem and frame a reusable content library as
+the missing step between buying clips and using them.
 
 ## Content Rules
 
-- Lead with the editing bottleneck, not AI.
-- Use concrete language: clips, demos, finished ads, ad variants, content library, stitch, export.
-- Avoid promising viral growth or automatic performance improvement.
-- Include practical steps, examples, and checklists that work without the product.
+- Lead with the exact content task the user is avoiding.
+- Make the target user explicit when it helps: indie app developer, app founder,
+  mobile marketer, builder.
+- Use concrete language: clips, demos, finished ads, drafts, library, Stitch,
+  review, reuse, export.
+- Avoid promising virality, automatic performance improvement, or creator status.
+- Avoid generic homepage language that could belong to any AI video tool.
+- Include practical steps, examples, and checklists that work without the
+  product.
 - Add a product-led section only after the educational answer is complete.
 - Prefer comparison tables for buyer-intent posts.
 - Add FAQ sections that match natural search questions.
-- Keep claims sourced when referencing platform guidance, ad performance, or market trends.
+- Keep claims sourced when referencing platform guidance, ad performance, or
+  market trends.

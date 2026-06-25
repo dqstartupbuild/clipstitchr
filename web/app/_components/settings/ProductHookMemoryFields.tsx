@@ -36,11 +36,11 @@ export function ProductHookMemoryFields({
       <div>
         <p className="text-sm font-semibold text-accent-dark">Hook Lab</p>
         <h3 className="mt-1 text-base font-bold text-text-primary">
-          Teach ClipStitchr what a strong hook sounds like.
+          Teach ClipStitchr what does not sound fake.
         </h3>
         <p className="mt-2 text-sm leading-6 text-text-secondary">
-          Tip: copy hooks from viral content in your niche. Add your own winners
-          too, especially the ones you would actually post.
+          Tip: paste lines from posts that made you stop scrolling. Add your own
+          winners too, especially the ones you would actually post.
         </p>
       </div>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">

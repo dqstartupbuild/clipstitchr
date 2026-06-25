@@ -1,9 +1,16 @@
 # Stitchr Hook Lab
 
+Hook Lab exists because writing overlay text that does not sound fake is hard
+for people who are not natural copywriters.
+
+Public copy should lead with that painful moment, not with prompt memory or
+model behavior.
+
 ## What It Does
 
 Stitchr Hook Lab stores a small taste file on each product profile so generated
-Stitchr hooks sound closer to what already works for that account and niche.
+Stitchr hooks sound closer to what already works for that app, audience, and
+founder taste.
 
 New users must add at least one winning hook during onboarding before they move
 to uploads. Existing users can add or change the same hook memory from product
@@ -16,9 +23,9 @@ Hook Lab stores:
 - the main hook goal, such as views, clicks, comments, trust, or demo watches
 - the tone level: safe, punchy, or bold
 
-The onboarding copy explicitly tells users they can copy hooks from viral
-content in their niche. The writing prompt treats those examples as taste and
-emotional pattern, not as copy to reuse verbatim.
+The onboarding copy tells users they can paste lines from posts that made them
+stop scrolling, plus their own winners. The writing prompt treats those examples
+as taste and emotional pattern, not as copy to reuse verbatim.
 
 ## User Workflow
 
@@ -38,7 +45,7 @@ emotional pattern, not as copy to reuse verbatim.
    without asking the user again.
 
 This is mostly a one-time setup step. Users only revisit it when they learn
-which hooks performed better or when they want a different tone for a product.
+which hooks performed better or when the product needs a different tone.
 
 ## Implementation
 
@@ -117,11 +124,11 @@ Public copy appears on:
 ## Expected Results
 
 Hook Lab should reduce generic and repeated Stitchr hooks because the model gets
-account-specific taste examples and returns several ranked candidates instead
-of one final line. It should not be treated as a guarantee that every generated
+product-specific taste examples and returns several ranked candidates instead of
+one final line. It should not be treated as a guarantee that every generated
 hook will outperform a manually chosen caption. The practical expectation is
-less editing, more usable first drafts, and a clear place for users to feed
-real performance learnings back into future generations.
+less fake-sounding overlay text, fewer blank-page moments, and a clear place for
+users to feed real performance learnings back into future generations.
 
 ## Abuse Protection
 

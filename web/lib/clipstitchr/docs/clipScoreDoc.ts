@@ -4,9 +4,9 @@ export const clipScoreDoc = {
   slug: "clip-scores",
   title: "Clip Scores",
   description:
-    "See which clips are worth using before you spend a batch on them.",
+    "See which clips are worth using before you build ads around footage that was never going to work or needed a quick trim first.",
   summary:
-    "Upload a UGC clip or demo, then use the score and quick notes to decide what belongs in the next batch.",
+    "Upload a UGC clip or demo, then use the score and quick notes to decide what deserves your attention.",
   category: "feature",
   order: 15,
   updated: "2026-06-22",
@@ -14,7 +14,7 @@ export const clipScoreDoc = {
     {
       title: "What clip scores do",
       body: [
-        "Clip scores help you decide what to use before you build another batch. A score is a quick read on whether a clip has a strong opener, clear camera presence, good pacing, and a useful fit for short-form ads.",
+        "Clip scores help you decide what to use before you waste time building ads around the wrong footage. A score is a quick read on whether a clip has a strong opener, clear camera presence, good pacing, and a useful fit for short-form ads.",
         "The score is a guide, not a rule. Use it to find the clips that deserve your attention first.",
       ],
     },
@@ -50,7 +50,7 @@ export const clipScoreDoc = {
       title: "How to use the notes",
       body: [
         "Start with clips marked Worth using or Good with a trim. If a clip says Needs a quick fix, open the details and fix the simplest issue first, like trimming a pause or picking a clearer start.",
-        "Skip for now does not mean the clip is useless. It means it probably needs more work before it is the fastest choice for the next ad.",
+        "Skip for now does not mean the clip is useless. It means the clip probably needs more work than you want to give it today.",
       ],
     },
   ],

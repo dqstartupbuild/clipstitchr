@@ -4,9 +4,9 @@ export const swaprDoc = {
   slug: "swapr",
   title: "Swapr",
   description:
-    "Turn a saved photo and UGC into a new video.",
+    "Turn a saved photo and UGC into another source clip when the library needs more than you have and another shoot is not happening.",
   summary:
-    "Choose a person photo, choose UGC, and save the generated result for reuse.",
+    "Choose a person photo, choose UGC, and save the generated result for reuse in Stitchr.",
   category: "feature",
   order: 40,
   updated: "2026-05-12",
@@ -14,7 +14,7 @@ export const swaprDoc = {
     {
       title: "What Swapr does",
       body: [
-        "Use Swapr when you need more UGC-style footage from the material you already have. Pick a saved person or character photo, then pair it with UGC for motion.",
+        "Use Swapr when you need more UGC-style footage but do not want to start from nothing. Pick a saved person or character photo, then pair it with UGC for motion.",
         "Swapr creates a new generated clip. Treat it like fresh footage, not a perfect edit of the original video.",
       ],
     },

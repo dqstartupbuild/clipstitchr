@@ -3,21 +3,21 @@ import { Panel } from "@/app/_components/ui/Panel";
 
 const scoreBenefits = [
   {
-    title: "Choose stronger inputs",
+    title: "Find the wrong clips sooner",
     description:
-      "See which clips deserve a spot before you create the next batch.",
+      "See the clips that probably do not belong before you build ads around them.",
     icon: SearchCheck,
   },
   {
-    title: "Fix weak moments",
+    title: "Fix the obvious drag",
     description:
       "Get plain notes on the opener, pace, clarity, and short-form fit.",
     icon: Scissors,
   },
   {
-    title: "Check finished ads",
+    title: "Check the finished ad",
     description:
-      "Score a finished Stitch and see where to trim, what text to try, and whether the demo lands fast enough.",
+      "Score a saved Stitch before it becomes the thing you regret posting.",
     icon: WandSparkles,
   },
 ];
@@ -35,15 +35,15 @@ export function LandingScoreSection() {
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-accent-dark">
-            Make the batch better
+            Before you post the wrong thing
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Know which clips are worth putting into the batch.
+            Nobody wants to discover a clip was bad after running the ad.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Clip and Stitch scores help you spot strong openers, slow pacing,
-            unclear moments, and quick fixes before you spend a batch on the
-            wrong clips.
+            Clip and Stitch scores give you a quick read on weak openers, slow
+            pacing, unclear moments, and simple fixes before the ad leaves the
+            app.
           </p>
         </div>
         <div className="rounded-lg border border-border bg-white p-5 shadow-sm shadow-slate-200/60">
@@ -51,14 +51,14 @@ export function LandingScoreSection() {
             <div>
               <p className="inline-flex items-center gap-2 rounded-md border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-bold text-accent-dark">
                 <Gauge aria-hidden className="h-4 w-4" />
-                Worth using - 84
+                Worth checking - 84
               </p>
               <h3 className="mt-4 text-xl font-bold text-text-primary">
-                Strong opener, quick trim needed.
+                Strong opener, one annoying pause.
               </h3>
               <p className="mt-2 text-sm leading-6 text-text-secondary">
                 The first second is clear, the face stays easy to see, and the
-                product moment lands fast enough for the batch.
+                product moment shows up before the clip wanders.
               </p>
             </div>
             <p className="shrink-0 text-4xl font-bold text-accent-dark">84</p>

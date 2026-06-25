@@ -11,12 +11,12 @@ export function PricingHero() {
             ClipStitchr pricing
           </p>
           <h1 className="mt-4 text-4xl font-bold leading-tight text-text-primary md:text-6xl">
-            Create more ad variants from the clips you already have.
+            Pay for the system that keeps content from eating your week.
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
-            Stitchr batches, scoring, templates, and your clip library are
-            included. Use helper credits only when you want ClipStitchr to
-            create new videos, visuals, or draft content for you.
+            Stitchr, scoring, templates, and your clip library are included.
+            Credits only matter when ClipStitchr creates extra videos, visuals,
+            or drafts because your library is thin.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <PrimaryButtonLink href="/sign-up" icon={<ArrowRight aria-hidden className="h-4 w-4" />}>

@@ -2,8 +2,9 @@
 
 ## What This Adds
 
-ClipStitchr now has a public Case Studies section for sales-focused proof pages.
-The first case study is the Guppy 30-day growth story at
+ClipStitchr has a public Case Studies section for proof pages aimed at builders
+who want evidence without generic marketing claims. The first case study is the
+Guppy 30-day story at
 `/case-studies/fitness-app-growth-case-study-guppy`.
 
 ## How It Works
@@ -39,9 +40,9 @@ total reach, TikTok Promote, RevenueCat funnel results, Instagram top hooks, the
 ClipStitchr production proof.
 
 The Guppy case study also explains why Hook Lab was added to onboarding: the
-best posts came from identity and transformation hooks chosen from real niche
-content, so ClipStitchr now asks users to save examples before their first
-batch.
+best posts came from identity and transformation lines chosen from real niche
+posts, so ClipStitchr now asks users to save examples before their first
+Stitchr drafts.
 
 ## File Tree
 
@@ -73,8 +74,7 @@ web/public/case-studies/guppy-30-day-growth/clipstitchr-stitches-production.png
 - Publish customer or founder proof pages that are closer to buying intent than
   ordinary blog posts.
 - Show the main business metrics before the reader scrolls.
-- Reuse one case-study template for future SaaS, ecommerce, creator, and app
-  campaigns.
+- Reuse one case-study template for future SaaS, ecommerce, and app campaigns.
 - Add screenshots inside the MDX narrative without changing the route structure.
 
 ## Source References

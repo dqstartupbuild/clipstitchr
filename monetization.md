@@ -20,49 +20,48 @@ monthly credit, storage, and feature caps.
 
 ## Product Positioning Context
 
-ClipStitchr should be priced as an ad-production workflow tool, not as an
-AI-credit vending machine. The primary customer pain is that marketers collect
-UGC clips, b-roll, reaction clips, and product demos but do not turn them into
-finished ads because editing, organizing, exporting, and file management are
-too much friction.
+ClipStitchr should be priced as a short-form system for builders who hate
+making content, not as an AI-credit vending machine. The primary customer pain
+is that app builders and mobile marketers collect UGC clips, b-roll, reaction
+clips, and product demos but do not turn them into finished ads because editing,
+organizing, exporting, and file management become the work they avoid.
 
 The core paid value is:
 
 - a reusable content library for UGC and product demos
-- faster creation of finished 9:16 ad variants
+- finished 9:16 ads from saved clips and demos
 - less dependence on a traditional video editor for repetitive ad assembly
 - better organization of raw clips, generated clips, and finished stitches
 
 AI credits are part of the cost model because they create provider spend, but
 they should not be the headline value metric. Plans should lead with content
-library scale, ad-output workflow speed, and production volume. AI features
-should be positioned as additonal tools when the user needs
-more clips or avatar photos.
+library usefulness, daily drafts, and fewer editing days. AI features should be
+positioned as additional tools when the user needs more clips or avatar photos.
 
 | Plan | Price | Positioning | Shared AI Credits | Retained Storage Cap |
 | --- | ---: | --- | ---: | ---: |
-| Creator | $20/month | Entry plan for a small content library and occasional ad variants. | 50 | 25 GB |
-| Pro | $99/month | Main plan for solo operators turning UGC and demos into regular ad tests. | 250 | 250 GB |
-| Studio | $249/month | High-volume plan for larger libraries, teams, agencies, and frequent variants. | 500 | 500 GB |
+| Starter | $39/month | Trying ClipStitchr with a few products. | 50 | 25 GB |
+| Pro | $99/month | Regular ads without regular editing days. | 250 | 250 GB |
+| Studio | $249/month | Teams with more products and more clips to keep moving. | 750 | 500 GB |
 
 Positioning:
 
-- Creator: for validating the workflow, organizing a small clip library, and
-  creating occasional ad variants.
-- Pro: the highlighted default plan for serious solo content production from
-  real UGC and product demos.
-- Studio: for agencies, teams, and higher-volume accounts that need more
-  monthly production room, larger libraries, and faster workflows.
+- Starter: for trying ClipStitchr, organizing a small clip library, and making
+  first finished ads.
+- Pro: the highlighted default plan for builders who need regular ads without
+  regular editing days.
+- Studio: for agencies and teams that need more monthly room, larger libraries,
+  and faster queues.
 
 Marketing copy should avoid leading with AI limits. AI credits can appear in
-plan details, but the plan story should be about how much content chaos the
-user can turn into finished ads.
+plan details, but the plan story should be about how much content work the user
+no longer has to do by hand.
 
 ## Margin Targets
 
 | Plan | Revenue | 40% Cost Budget | Stripe Domestic Card Fee | Remaining Usage/Infra Budget |
 | --- | ---: | ---: | ---: | ---: |
-| Creator | $20.00 | $8.00 | about $0.88 | about $7.12 |
+| Starter | $39.00 | $15.60 | about $1.43 | about $14.17 |
 | Pro | $99.00 | $39.60 | about $3.17 | about $36.43 |
 | Studio | $249.00 | $99.60 | about $7.52 | about $92.08 |
 
@@ -111,9 +110,9 @@ Example usage:
 
 | Plan | Example Monthly Usage |
 | --- | --- |
-| Creator | 50 generated photos, or 50 Swapr seconds, or 25 generated photos plus 25 Swapr seconds. |
+| Starter | 50 generated photos, or 50 Swapr seconds, or 25 generated photos plus 25 Swapr seconds. |
 | Pro | 250 generated photos, or 250 Swapr seconds, or 125 generated photos plus 125 Swapr seconds. |
-| Studio | 500 generated photos, or 500 Swapr seconds, or 250 generated photos plus 250 Swapr seconds. |
+| Studio | 750 generated photos, or 750 Swapr seconds, or 375 generated photos plus 375 Swapr seconds. |
 
 Metadata analysis is intentionally low-cost. For example, 1,000 upload analyses
 consume 50 credits.
@@ -123,9 +122,9 @@ consume 50 credits.
 These plan limits use the current Studio hard ceilings as the upper bound. They
 are product limits, not just marketing claims.
 
-| Limit | Creator | Pro | Studio |
+| Limit | Starter | Pro | Studio |
 | --- | ---: | ---: | ---: |
-| Shared AI credits | 50/month | 250/month | 500/month |
+| Shared AI credits | 50/month | 250/month | 750/month |
 | Upload metadata analyses | 1,000/month | 5,000/month | 10,000/month |
 | Avatar generated photos | 50/month | 250/month | 500/month |
 | AI photo outpaint/expand | 35/month | 185/month | 375/month |
@@ -141,22 +140,22 @@ photos and another 250 credits on Swapr in the same billing period.
 
 Paid plans should be positioned by speed, monthly capacity, and concurrency, not
 by telling users that lower tiers create visibly worse outputs. All plans should
-produce the same deliverable format: normalized 9:16 media, the same creator
-workflow, and commercially usable UGC-style output.
+produce the same deliverable format: normalized 9:16 media, the same review
+flow, and commercially usable UGC-style output.
 
 Public positioning:
 
 | Plan | Public Speed Label | Product Promise |
 | --- | --- | --- |
-| Creator | Slow | Same creation workflow with lower monthly volume and slower generation. |
-| Pro | Fast | Faster generation defaults and enough credits for regular solo production. |
+| Starter | Slow | Same review flow with fewer monthly credits and slower generation. |
+| Pro | Fast | Faster generation defaults and enough credits for regular solo use. |
 | Studio | Faster | Fastest defaults, highest limits, and future priority/concurrency room. |
 
 Current implementation hooks:
 
 | Plan Tier | Avatar Image Generation | Swapr Default | Notes |
 | --- | --- | --- | --- |
-| Creator | 1 image job at a time, `quality: "auto"` | `Quality 1080p`, Match Photo | Slowest path. Good for occasional use. |
+| Starter | 1 image job at a time, `quality: "auto"` | `Quality 1080p`, Match Photo | Slowest path. Good for occasional use. |
 | Pro | 2 image jobs at a time, `quality: "medium"` | `Fast 720p`, Match Photo | Faster wall-clock time without changing the user-facing workflow. |
 | Studio | 4 image jobs at a time, `quality: "medium"` | `Fast 720p`, Match Photo | Fastest current avatar batch behavior; future queue priority belongs here. |
 
@@ -190,11 +189,11 @@ independent per-surface cap.
 
 | Plan | AI Credit Cost | Other Infra/Slack Budget | Stripe Fee | Estimated Total Cost | Gross Margin |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Creator | $4.25 | $2.75 | $0.88 | $7.88 | 60.6% |
+| Starter | $4.25 | $9.92 | $1.43 | $15.60 | 60.0% |
 | Pro | $21.25 | $15.00 | $3.17 | $39.42 | 60.2% |
 | Studio | $42.50 | $49.00 | $7.52 | $99.02 | 60.2% |
 
-The Studio plan intentionally has more non-AI budget because high-volume users
+The Studio plan intentionally has more non-AI budget because heavier accounts
 are more likely to stress storage, backend usage, retries, support, and provider
 variance.
 
@@ -217,12 +216,12 @@ Example balanced cohort:
 
 | Plan Mix | Users | Revenue |
 | --- | ---: | ---: |
-| Creator | 40 | $800 |
+| Starter | 40 | $1,560 |
 | Pro | 45 | $4,455 |
 | Studio | 15 | $3,735 |
-| Total | 100 | $8,990 |
+| Total | 100 | $9,750 |
 
-At the modeled 40% cost budget, this cohort can support about $3,596/month in
+At the modeled 40% cost budget, this cohort can support about $3,900/month in
 variable costs while preserving 60% gross margin.
 
 If all 100 users are on Pro:
@@ -257,12 +256,12 @@ Using R2 Standard storage at $0.015/GB-month:
 
 | Stored Data | Estimated Monthly Storage Cost |
 | --- | ---: |
-| Creator 25 GB/user | $0.38/user |
+| Starter 25 GB/user | $0.38/user |
 | Pro 250 GB/user | $3.75/user |
 | Studio 500 GB/user | $7.50/user |
 | 50 TB across 100 Studio users | about $750/month |
 
-R2 operations are usually less material at this scale, but they still matter:
+R2 operations are usually less material at this usage level, but they still matter:
 Standard Class A operations are $4.50/million, Class B operations are
 $0.36/million, and R2 has no egress fees for Standard storage. Add stored-data
 quotas, lifecycle cleanup, and orphan cleanup before launch.
@@ -278,7 +277,7 @@ Recommended storage controls:
 ## Current Studio Rate-Limit Mapping
 
 These limits are abuse and concurrency controls. Studio should map to the
-current hard ceilings, while Creator and Pro should enforce lower monthly
+current hard ceilings, while Starter and Pro should enforce lower monthly
 entitlements through the shared credit and quota ledger.
 
 | Surface | Studio Monthly Budget |
@@ -352,9 +351,9 @@ stable:
 - Failed paid prediction rate.
 - R2 storage growth per user.
 - R2 object count per user.
-- R2 egress, signed URL, Class A, and Class B volumes.
+- R2 egress, signed URL, Class A, and Class B operation counts.
 - Convex function calls, database storage, database I/O, and egress.
-- Vercel bandwidth, function duration, and request volume.
+- Vercel bandwidth, function duration, and request counts.
 - Gross margin by plan and user cohort.
 
 Tighten limits immediately if any cohort trends above the 40% usage-cost budget.

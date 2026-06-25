@@ -1,12 +1,13 @@
 # ClipStitchr
 
-ClipStitchr helps marketers turn UGC clips and product demo videos into
-finished 9:16 ad variants without opening a traditional video editor.
+ClipStitchr helps indie app builders and mobile marketers grow on TikTok and
+Reels without becoming content people.
 
 The primary workflow is Stitchr: upload clips once, keep them organized in a
-content library, then pair up to 20 UGC clips with one product demo to create
+content library, then pair saved UGC clips with one product demo to create
 finished ads. AI features such as avatar photo generation, photo expansion, and
-Swapr are secondary helpers for creating or extending source material.
+Swapr are secondary helpers for creating or extending source material when the
+library is thin.
 
 Built with [Next.js](https://nextjs.org), [Clerk](https://clerk.com), [Tailwind CSS](https://tailwindcss.com), [Content Collections](https://www.content-collections.dev), and [Media Bunny](https://mediabunny.dev).
 

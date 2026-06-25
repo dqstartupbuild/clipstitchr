@@ -1,22 +1,26 @@
 # Product Automation Settings
 
 Product automation settings let each product decide which daily tools run and
-how those drafts should look. Account settings such as appearance, support, and
-subscription remain shared across the whole account.
+how those drafts should look. This exists because showing up consistently on
+social is hard when the user does not like social.
+
+Public copy should describe daily drafts as reviewable starting points, not as
+autoposting or a promise that content runs itself. Account settings such as
+appearance, support, and subscription remain shared across the whole account.
 
 ## What It Does
 
 - Settings reads and saves automation preferences in the Product settings
   section for the active sidebar product.
 - Each product can enable a different set of daily tools.
-- Stitchr and Swipr can each generate 3, 5, or 10 automatic drafts per product.
+- Stitchr and Swipr can each prepare 3, 5, or 10 daily drafts per product.
 - Tool-specific controls only appear after that tool is selected, and each
   selected tool keeps its settings behind a `{Tool} Config` button.
 - Stitchr and Swipr each have their own text style, text color, background
   color, and outline color choices.
 - Outline color appears in Settings for outline-capable styles, matching the
   editor controls.
-- Stitchr automation can allocate drafts to saved templates. Any unallocated
+- Stitchr daily drafts can allocate work to saved templates. Any unallocated
   draft count stays Random, so a 3-draft run can use 2 template-matched drafts
   and 1 fresh random draft.
 - Swipr automation can use selected saved Pexels packs. If selected packs have

@@ -2,11 +2,11 @@ import type { CreditCost } from "@/lib/clipstitchr/pricing/CreditCost";
 
 export const creditCosts: CreditCost[] = [
   {
-    action: "Stitchr batches from saved clips",
+    action: "Stitchr ads from saved clips",
     credits: "Included",
   },
   {
-    action: "Clip scoring and video analysis",
+    action: "Clip scores and video reads",
     credits: "Included",
   },
   {

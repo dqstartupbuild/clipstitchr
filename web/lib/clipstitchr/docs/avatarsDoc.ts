@@ -4,9 +4,9 @@ export const avatarsDoc = {
   slug: "avatars",
   title: "Avatars",
   description:
-    "Save reusable people or characters for Clipr and Swapr.",
+    "Save reusable people or characters so Clipr and Swapr can make source clips without another shoot or another search for references.",
   summary:
-    "Upload avatar photos, browse them, and generate new photos when you need more material.",
+    "Upload avatar photos, browse them, and generate new photos when the source library needs more options.",
   category: "feature",
   order: 50,
   updated: "2026-05-12",
@@ -15,7 +15,7 @@ export const avatarsDoc = {
       title: "What an avatar is",
       body: [
         "An avatar is a saved person or character. Avatar photos are the different images you attach to that person.",
-        "One avatar can have many photos with different outfits, settings, poses, and lighting. That gives Clipr and Swapr more useful references without making you create a new person every time.",
+        "One avatar can have many photos with different outfits, settings, poses, and lighting. That gives Clipr and Swapr more useful references without making you create a new person every time you are already tired of the content task.",
       ],
     },
     {
@@ -32,7 +32,7 @@ export const avatarsDoc = {
     {
       title: "Generating avatar photos",
       body: [
-        "Generate new photos when you need more variety. Choose how many images to make, then guide the style, lighting, scene, or action.",
+        "Generate new photos when you need more variety. Choose how many images to make, then guide the style, lighting, scene, or action instead of hunting for another usable reference.",
       ],
     },
     {

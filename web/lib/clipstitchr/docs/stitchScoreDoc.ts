@@ -4,9 +4,9 @@ export const stitchScoreDoc = {
   slug: "stitch-scores",
   title: "Stitch Scores",
   description:
-    "Check a finished Stitch before you spend time posting or fixing the wrong thing.",
+    "Check a finished Stitch before you post it, fix the wrong thing, or find out too late that the opener dragged.",
   summary:
-    "Score a saved Stitch, see where people may drop off, and get quick trim and text ideas.",
+    "Score a saved Stitch, see where people may drop off, and get quick trim or text ideas before you use it.",
   category: "feature",
   order: 16,
   updated: "2026-06-14",
@@ -14,8 +14,8 @@ export const stitchScoreDoc = {
     {
       title: "What stitch scores do",
       body: [
-        "Stitch scores help you decide if a finished Stitch is ready to post. The score looks at the opener, how smoothly it moves into the demo, and where someone may lose interest.",
-        "Use it as a quick gut check before you download, post, or make another version.",
+        "Stitch scores help you decide if a finished Stitch is ready to post before it becomes a public mistake. The score looks at the opener, how smoothly it moves into the demo, and where someone may lose interest.",
+        "Use it as a quick gut check before you download, post, or make another version you did not need.",
       ],
     },
     {

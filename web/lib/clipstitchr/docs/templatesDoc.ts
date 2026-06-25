@@ -4,9 +4,9 @@ export const templatesDoc = {
   slug: "templates",
   title: "Templates",
   description:
-    "Save a Stitch setup and reuse it when the next batch should follow the same structure.",
+    "Save a Stitch setup so the next ad does not start with rebuilding the same structure all over again from memory.",
   summary:
-    "Turn a finished Stitch into a reusable setup, then use it to make future batches faster.",
+    "Turn a finished Stitch into a reusable setup, then use it when the blank start is the thing slowing you down.",
   category: "feature",
   order: 18,
   updated: "2026-06-22",
@@ -14,7 +14,7 @@ export const templatesDoc = {
     {
       title: "What templates save",
       body: [
-        "Templates save the setup from a finished Stitch. They are for the parts you want to reuse, not for storing another finished video file.",
+        "Templates save the setup from a finished Stitch. They are for the parts you do not want to rebuild, not for storing another finished video file.",
       ],
       bullets: [
         "The UGC and demo clip choices.",
@@ -27,7 +27,7 @@ export const templatesDoc = {
     {
       title: "Save a template",
       body: [
-        "Use templates when you make a Stitch that has a structure you know you will want again.",
+        "Use templates when you make a Stitch that has a structure you know you will want again and do not want to reconstruct from memory.",
       ],
       bullets: [
         "Open a saved Stitch.",
@@ -47,7 +47,7 @@ export const templatesDoc = {
       title: "What templates are best for",
       body: [
         "Templates are useful when a format keeps working: the same offer style, the same hook structure, the same caption style, or the same UGC-to-demo rhythm.",
-        "They help you make another version without rebuilding every small choice.",
+        "They help you make another version without rebuilding every small choice, which is usually the part that makes you put the task off.",
       ],
     },
   ],

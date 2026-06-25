@@ -19,25 +19,26 @@ export function LandingHero() {
       <div className="relative mx-auto flex min-h-[82svh] w-full max-w-6xl items-center px-6 py-28">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold text-accent-dark">
-            Batch ad creation from saved clips
+            For builders who hate content
           </p>
           <h1 className="mt-5 max-w-2xl text-5xl font-bold leading-[1.05] text-text-primary md:text-6xl">
-            Make more ad variants from the clips you already have.
+            Built by someone who hates making content. For everyone else who
+            does too.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-text-secondary">
-            Upload your clips once. Pick the product demo. Click once to create
-            a batch of finished vertical ads, ready to test across TikTok,
-            Reels, and Shorts.
+            If you&apos;re trying to grow a mobile app on TikTok and Reels but
+            the whole content thing makes you want to quit — you&apos;re exactly
+            who this is for.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <TrackedButtonLink
               href="/dashboard"
               className={PRIMARY_BUTTON_CLASS_NAME}
               contentCategory="Landing page"
-              contentId="hero_create_batch_button"
-              contentName="Hero create batch"
+              contentId="hero_start_clips_button"
+              contentName="Hero start clips"
             >
-              Create your first batch
+              Start with your clips
               <ArrowRight aria-hidden className="h-4 w-4" />
             </TrackedButtonLink>
           </div>

@@ -8,21 +8,21 @@ export function LandingBottomBand() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6 rounded-lg border border-border bg-surface-muted p-8 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-3xl font-bold text-text-primary">
-            Create the next batch from clips you already have.
+            You can grow on short-form without becoming a content person.
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-text-secondary">
-            Upload clips once, pick the demo, and create finished vertical ad
-            variants whenever you need new creative to test.
+            Start with the clips and demos you already have. ClipStitchr handles
+            the parts that make you avoid posting.
           </p>
         </div>
         <TrackedButtonLink
           href="/dashboard"
           className={PRIMARY_BUTTON_CLASS_NAME}
           contentCategory="Landing page"
-          contentId="bottom_dashboard_button"
-          contentName="Bottom dashboard"
+          contentId="bottom_start_clips_button"
+          contentName="Bottom start clips"
         >
-          Create your first batch
+          Start with your clips
           <ArrowRight aria-hidden className="h-4 w-4" />
         </TrackedButtonLink>
       </div>

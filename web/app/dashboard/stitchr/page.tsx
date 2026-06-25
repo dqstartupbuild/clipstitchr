@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `Stitchr | ${site.name}`,
   description:
-    "Create vertical ads by combining UGC with product demos using Stitchr.",
+    "Use Stitchr to turn saved UGC and product demos into finished vertical ads without rebuilding the same video by hand.",
   canonical: "/dashboard/stitchr",
   noIndex: true,
 });

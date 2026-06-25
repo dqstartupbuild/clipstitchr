@@ -2,19 +2,19 @@ import { Panel } from "@/app/_components/ui/Panel";
 
 const workflowSteps = [
   {
-    title: "Upload your clips",
+    title: "Stop hunting for files",
     description:
-      "Bring in the UGC, b-roll, reactions, and demos you already have. ClipStitchr keeps them ready for vertical ad batches.",
+      "Drop in the UGC, b-roll, reactions, and demos once. They stay in a library instead of whatever folder you swore you would organize later.",
   },
   {
-    title: "Pick the product demo",
+    title: "Stop rebuilding the same ad",
     description:
-      "Choose the demo you want to promote. That demo becomes the anchor for the batch, so every variant points to the same offer.",
+      "Pick the demo once. ClipStitchr pairs it with saved opener clips so you are not dragging the same product video around all afternoon.",
   },
   {
-    title: "Create the batch",
+    title: "Stop exporting one by one",
     description:
-      "Click once to turn saved clips into separate finished ad variants with the same demo, text, and export settings.",
+      "Create a set of finished vertical ads, review the ones worth using, and get back to the app you actually wanted to work on.",
   },
 ];
 
@@ -24,18 +24,18 @@ export function LandingWorkflow() {
       <div className="mx-auto max-w-6xl">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold text-accent-dark">
-            How it works
+            The part you can stop doing
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            One simple flow from saved clips to a finished ad batch.
+            No timeline archaeology. No naming files like final-final-2.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            Saved clips plus one demo become a set of ad variants you can
-            review, download, and test without rebuilding each video by hand.
+            ClipStitchr turns clips and a demo into finished short-form ads
+            without making you become an editor for the day.
           </p>
         </div>
         <div className="mt-8 rounded-lg border border-border bg-white p-5 text-center text-lg font-bold text-text-primary shadow-sm shadow-slate-200/60">
-          Saved clips + one demo = a batch of ad variants
+          Clips + product demo = ads you can actually test
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {workflowSteps.map((step, index) => (

@@ -51,35 +51,33 @@ describe("LandingPage", () => {
   it("renders the full landing page from the home route", () => {
     const markup = renderToStaticMarkup(<Home />);
 
+    expect(markup).toContain("Built by someone who hates making content");
     expect(markup).toContain(
-      "Make more ad variants from the clips you already have",
+      "whole content thing makes you want to quit",
+    );
+    expect(markup).toContain("Start with your clips");
+    expect(markup).toContain("No timeline archaeology");
+    expect(markup).toContain("Writing overlay text that does not sound fake");
+    expect(markup).toContain("Paste lines from posts that made you stop scrolling");
+    expect(markup).toContain(
+      "Clips + product demo = ads you can actually test",
     );
     expect(markup).toContain(
-      "Upload your clips once. Pick the product demo. Click once",
-    );
-    expect(markup).toContain("Create your first batch");
-    expect(markup).toContain("One simple flow from saved clips");
-    expect(markup).toContain("Your hooks should sound like your best posts");
-    expect(markup).toContain("Paste hooks from viral posts in your niche");
-    expect(markup).toContain(
-      "Saved clips + one demo = a batch of ad variants",
+      "Use one product demo without dragging it into every ad yourself",
     );
     expect(markup).toContain(
-      "One demo can turn your clip library into a full creative test",
-    );
-    expect(markup).toContain(
-      "Know which clips are worth putting into the batch",
+      "Nobody wants to discover a clip was bad after running the ad",
     );
     expect(markup).toContain("/example-outputs/clipstitchr-example-01.webm");
     expect(markup).toContain("/example-outputs/clipstitchr-example-21.webm");
     expect(markup).not.toContain("/examples/stitchr-fitness-score-reaction");
-    expect(markup).toContain("When a format works, reuse it");
-    expect(markup).toContain("Never start from an empty library");
-    expect(markup).toContain("When a carousel fits better than a video");
-    expect(markup).toContain("Let ClipStitchr prepare new drafts");
+    expect(markup).toContain("Rebuilding the same structure");
+    expect(markup).toContain("Sometimes the problem is just not having enough usable clips");
+    expect(markup).toContain("When video feels like overkill");
+    expect(markup).toContain("Showing up daily is hard when you do not like social");
     expect(markup).toContain("What you get");
-    expect(markup).toContain("repeatable ad engine");
-    expect(markup).toContain("Create the next batch from clips you already have");
+    expect(markup).toContain("people who do not want content to become the");
+    expect(markup).toContain("without becoming a content person");
     expect(markup).toContain("ClipStitchr dashboard and video stitching");
   });
 
@@ -97,12 +95,11 @@ describe("LandingPage", () => {
     expect(landingMarkup).toContain('href="/case-studies"');
     expect(landingMarkup).toContain('href="/pricing"');
     expect(landingMarkup).not.toContain("Features");
-    expect(landingMarkup).not.toContain("Scores");
     expect(landingMarkup).not.toContain("Real Stitchr output");
     expect(landingMarkup).not.toContain("Real output reel");
     expect(
       landingMarkup.indexOf("/example-outputs/clipstitchr-example-01.webm"),
-    ).toBeLessThan(landingMarkup.indexOf("One simple flow from saved clips"));
+    ).toBeLessThan(landingMarkup.indexOf("No timeline archaeology"));
     expect(contentHeaderMarkup).toContain("Home");
     expect(contentHeaderMarkup).toContain("Pricing");
     expect(contentHeaderMarkup).toContain("Dashboard");

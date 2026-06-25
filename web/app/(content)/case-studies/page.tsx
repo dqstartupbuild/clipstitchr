@@ -10,7 +10,7 @@ import { site } from "@/lib/site";
 export const metadata = createPageMetadata({
   title: `Case Studies | ${site.name}`,
   description:
-    "Real ClipStitchr case studies showing how founders and teams turn UGC footage into short-form content that drives attention and customers.",
+    "Real ClipStitchr case studies from app builders using short-form ads without pretending content is the fun part.",
   canonical: "/case-studies",
 });
 
@@ -27,11 +27,11 @@ export default function CaseStudiesIndexPage() {
             Case studies
           </p>
           <h1 className="mt-4 text-4xl font-bold text-text-primary md:text-5xl">
-            See how teams turn UGC into growth.
+            Proof from people who would rather build than edit content.
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
-            Real examples of the content systems, workflows, and results behind
-            ClipStitchr campaigns.
+            Real examples from apps using short-form without making content the
+            whole job.
           </p>
           {categories.length > 0 && (
             <div className="mt-8 flex flex-wrap gap-3 text-sm text-text-tertiary">

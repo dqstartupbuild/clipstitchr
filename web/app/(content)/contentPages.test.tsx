@@ -79,7 +79,7 @@ describe("content pages", () => {
     ).resolves.toEqual(expect.objectContaining({
       description: firstPost.description,
     }));
-    expect(indexMarkup).toContain("The ClipStitchr Blog");
+    expect(indexMarkup).toContain("Notes on doing content when you would rather not");
     expect(indexMarkup).toContain(firstPost.title);
     expect(articleMarkup).toContain(firstPost.title);
     expect(articleMarkup).toContain("Back to the blog");
@@ -168,8 +168,8 @@ describe("content pages", () => {
     ).resolves.toEqual(expect.objectContaining({
       title: expect.stringContaining(firstDoc.title),
     }));
-    expect(indexMarkup).toContain("Start with the batch");
-    expect(indexMarkup).toContain("What helps your batch");
+    expect(indexMarkup).toContain("Start with the annoying part you want gone");
+    expect(indexMarkup).toContain("What helps the next ad");
     expect(indexMarkup).toContain(firstDoc.title);
     expect(indexMarkup).toContain("Clip Scores");
     expect(indexMarkup).toContain("Templates");
@@ -254,14 +254,14 @@ describe("content pages", () => {
     expect(layoutMarkup).toContain("Case Studies");
     expect(layoutMarkup).toContain("Pricing");
     expect(pricingMarkup).toContain(
-      "Create more ad variants from the clips you already have",
+      "Pay for the system that keeps content from eating your week",
     );
-    expect(pricingMarkup).toContain("Stitchr batches from saved clips");
-    expect(pricingMarkup).toContain("Clip scoring and video analysis");
+    expect(pricingMarkup).toContain("Stitchr ads from saved clips");
+    expect(pricingMarkup).toContain("Clip scores and video reads");
     expect(pricingMarkup).toContain("$99");
     expect(pricingMarkup).toContain("250 credits/month");
     expect(pricingMarkup).toContain("10k Organic Views Challenge");
-    expect(pricingMarkup).toContain("Boost");
+    expect(pricingMarkup).toContain("Refill");
     expect(pricingMarkup).toContain("150 credits");
     expect(privacyMarkup).toContain("Privacy Policy");
     expect(privacyMarkup).toContain("Media Processing and Storage");

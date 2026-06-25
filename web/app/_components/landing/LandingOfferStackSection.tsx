@@ -11,31 +11,31 @@ import { Panel } from "@/app/_components/ui/Panel";
 
 const features = [
   {
-    title: "Batch ad creation",
+    title: "Finished ads from saved clips",
     description:
-      "Create multiple finished vertical ads from saved clips and one product demo.",
+      "Turn saved clips and one product demo into vertical ads without dragging pieces around by hand.",
     icon: Scissors,
   },
   {
-    title: "Clip library",
+    title: "One library instead of chaos",
     description:
-      "Keep UGC, demos, generated clips, carousels, and finished ads in one place.",
+      "Keep UGC, demos, generated clips, carousels, and finished ads where you can find them.",
     icon: FolderSearch,
   },
   {
-    title: "Clip and Stitch scoring",
+    title: "Scores before regrets",
     description:
-      "See which source clips and finished ads are strongest before you post.",
+      "Check source clips and finished ads before they waste a post or ad slot.",
     icon: Gauge,
   },
   {
-    title: "Reuse saved templates",
+    title: "Templates for repeat pain",
     description:
-      "Save the ad setup that worked and start future batches from that structure.",
+      "Save the setup that worked so the next one does not start from zero.",
     icon: LayoutTemplate,
   },
   {
-    title: "Extra UGC generation",
+    title: "Extra source clips",
     description:
       "Use Clipr and Swapr to create more source clips when the library is thin.",
     icon: CirclePlay,
@@ -47,7 +47,7 @@ const features = [
     icon: Images,
   },
   {
-    title: "Daily draft automation",
+    title: "Daily drafts",
     description:
       "Let ClipStitchr prepare drafts you can review before anything goes live.",
     icon: Bot,
@@ -63,12 +63,13 @@ export function LandingOfferStackSection() {
             What you get
           </p>
           <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            Everything you need to turn saved clips into a repeatable ad engine.
+            A content system for people who do not want content to become the
+            job.
           </h2>
           <p className="mt-4 leading-7 text-text-secondary">
-            The core batch builder creates the ads. The rest of the system helps
-            you pick better clips, reuse winners, fill the library, and keep new
-            drafts moving.
+            Stitchr handles the repetitive ads. The rest helps you pick better
+            clips, reuse what worked, fill the library, and keep new drafts
+            moving.
           </p>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">

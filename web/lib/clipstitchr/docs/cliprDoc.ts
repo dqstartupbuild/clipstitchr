@@ -21,9 +21,9 @@ export const cliprDoc = {
   slug: "clipr",
   title: "Clipr",
   description:
-    "Create reusable engagement clips when your library needs more footage.",
+    "Create reusable reaction and b-roll clips when your library is too thin and you do not want to film more footage from scratch.",
   summary:
-    "Make short reaction and b-roll clips, save them as UGC, and reuse them in Stitchr.",
+    "Make short reaction and b-roll clips, save them as UGC, and reuse them when Stitchr needs more openers.",
   category: "feature",
   order: 20,
   updated: "2026-06-16",
@@ -31,7 +31,7 @@ export const cliprDoc = {
     {
       title: "What Clipr is for",
       body: [
-        "Use Clipr when you need more material, but do not want to shoot another clip from scratch. It creates short reaction and b-roll clips you can use before a demo.",
+        "Use Clipr when you need more material, but the idea of shooting another clip from scratch makes you avoid the whole task. It creates short reaction and b-roll clips you can use before a demo.",
         "Clipr is not for direct product pitches. The clip should feel useful, not like a sales script.",
       ],
     },

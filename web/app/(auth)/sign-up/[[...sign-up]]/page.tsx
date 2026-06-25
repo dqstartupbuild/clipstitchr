@@ -4,7 +4,8 @@ import { createPageMetadata } from "@/lib/metadata";
 
 export const metadata = createPageMetadata({
   title: "Join the Waitlist | ClipStitchr",
-  description: "Join the ClipStitchr waitlist while sign ups are invite-only.",
+  description:
+    "Join the ClipStitchr waitlist if growing on short-form matters but making content is the part you keep avoiding.",
   canonical: "/sign-up",
   noIndex: true,
 });
@@ -13,8 +14,8 @@ export default function SignUpPage() {
   return (
     <AuthPageShell
       eyebrow="Private beta"
-      title="ClipStitchr is open by invitation right now."
-      description="The studio is already shaped around the real app experience: organize your media, build UGC-first ad variants, and keep finished exports ready for reuse."
+      title="Built by someone who hates making content. Access is still invite-only."
+      description="Join if you are trying to grow a mobile app on TikTok and Reels but do not want content work taking over the week."
     >
       <WaitlistForm />
     </AuthPageShell>

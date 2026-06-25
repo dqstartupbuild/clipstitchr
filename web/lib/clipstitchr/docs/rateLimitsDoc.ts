@@ -4,7 +4,7 @@ export const rateLimitsDoc = {
   slug: "rate-limits",
   title: "Rate Limits",
   description:
-    "The current usage limits for uploads, downloads, generation, and library actions.",
+    "The current usage limits for uploads, downloads, generation, and library actions so shared work stays reliable.",
   summary:
     "See how often you can run common actions before ClipStitchr asks you to wait.",
   category: "limits",
@@ -14,7 +14,7 @@ export const rateLimitsDoc = {
     {
       title: "Why limits exist",
       body: [
-        "Some actions do real work: uploading files, saving library items, downloading media, or generating new images and videos. Limits keep those actions reliable for everyone.",
+        "Some actions do real work: uploading files, saving library items, downloading media, or generating new images and videos. Limits keep those actions from getting slow or expensive for everyone.",
         "These are not pricing tiers. They are current safety limits while ClipStitchr is still shaping plan details.",
       ],
     },
