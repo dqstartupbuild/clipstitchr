@@ -128,11 +128,15 @@ describe("app route wrappers", () => {
       </>,
     );
 
-    expect(markup).toContain("Pick up right where your ad library left off.");
+    expect(markup).toContain(
+      "Back to the place where your clips actually turn into ads.",
+    );
     expect(markup).toContain("Clerk sign in");
-    expect(markup).toContain("ClipStitchr is open by invitation");
+    expect(markup).toContain(
+      "Built by someone who hates making content. Access is still invite-only.",
+    );
     expect(markup).toContain("Waitlist form");
-    expect(markup).toContain("Inside the studio");
+    expect(markup).toContain("Inside ClipStitchr");
   });
 
   it("renders dashboard page wrapper clients and provider layout", () => {
