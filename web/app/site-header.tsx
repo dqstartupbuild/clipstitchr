@@ -34,10 +34,10 @@ export function SiteHeader({
               href="#workflow"
               className="font-semibold transition-colors hover:text-text-primary"
             >
-              How it Works
+              How it works
             </a>
             <a
-              href="#example-output-reel"
+              href="#examples"
               className="font-semibold transition-colors hover:text-text-primary"
             >
               Examples
@@ -48,12 +48,6 @@ export function SiteHeader({
             >
               Case Studies
             </Link>
-            <a
-              href="#offer-stack"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              What you get
-            </a>
             <Link
               href="/pricing"
               className="font-semibold transition-colors hover:text-text-primary"
