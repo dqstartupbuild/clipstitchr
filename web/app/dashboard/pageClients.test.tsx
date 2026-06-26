@@ -80,6 +80,10 @@ vi.mock("@/convex/_generated/api", () => ({
     sharedMusicTracks: {
       list: "sharedMusicTracks.list",
     },
+    soundPreferences: {
+      acceptRights: "soundPreferences.acceptRights",
+      get: "soundPreferences.get",
+    },
     stitches: {
       updateRenderedVideo: "stitches.updateRenderedVideo",
     },

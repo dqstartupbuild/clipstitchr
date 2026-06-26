@@ -253,6 +253,12 @@ export default defineSchema({
     onboardingCompletedAt: v.optional(v.string()),
     updatedAt: v.string(),
   }).index("by_owner", ["ownerId"]),
+  soundPreferences: defineTable({
+    ownerId: v.string(),
+    rightsAcceptedAt: v.optional(v.string()),
+    rightsAgreementVersion: v.optional(v.string()),
+    updatedAt: v.string(),
+  }).index("by_owner", ["ownerId"]),
   stitches: defineTable({
     ownerId: v.string(),
     id: v.string(),
@@ -384,10 +390,14 @@ export default defineSchema({
     prompt: v.optional(v.string()),
     providerModel: v.optional(v.string()),
     providerPredictionId: v.optional(v.string()),
+    sourceUrl: v.optional(v.string()),
     source: musicTrackSourceValidator,
+    tiktokMusicId: v.optional(v.string()),
     createdAt: v.string(),
   })
     .index("by_created", ["createdAt"])
+    .index("by_uploaded_owner_created", ["uploadedByOwnerId", "createdAt"])
+    .index("by_uploaded_owner_music_id", ["uploadedByOwnerId", "id"])
     .index("by_music_id", ["id"]),
   swiprBackgrounds: defineTable({
     id: v.string(),

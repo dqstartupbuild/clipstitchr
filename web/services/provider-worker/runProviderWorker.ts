@@ -69,6 +69,7 @@ import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/S
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 import type { TextOverlayStyleId } from "@/lib/clipstitchr/types/TextOverlayStyleId";
 import { createCliprMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createCliprMusicMetadataFromSharedTrack";
+import { createStitchMusicMetadataFromSharedTrack } from "@/lib/clipstitchr/utils/createStitchMusicMetadataFromSharedTrack";
 import { createDefaultSwiprTextOverlay } from "@/lib/clipstitchr/utils/createDefaultSwiprTextOverlay";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 import { createStitchSocialCaption } from "@/lib/clipstitchr/utils/createStitchSocialCaption";
@@ -253,6 +254,7 @@ type StitchrAutomationTaskInput = {
   demoVideoDescription?: string;
   demoVideoObject: R2ObjectReference;
   product: ProductProfile;
+  soundTrack?: SharedMusicTrack | null;
   stitchrTextBackgroundColor?: string;
   stitchrTextColor?: string;
   stitchrTextStrokeColor?: string;
@@ -793,6 +795,10 @@ function parseStitchrAutomationTaskInput(
       "Stitchr Demo object",
     ),
     product,
+    soundTrack:
+      input.soundTrack && typeof input.soundTrack === "object"
+        ? (input.soundTrack as SharedMusicTrack)
+        : null,
     stitchrTextBackgroundColor: getOptionalString(
       input.stitchrTextBackgroundColor,
     ),
@@ -1886,6 +1892,9 @@ async function processStitchr({
         demoVideoObject: input.demoVideoObject,
         includeDemoAudio: false,
         includeUgcAudio: false,
+        music: input.soundTrack
+          ? createStitchMusicMetadataFromSharedTrack(input.soundTrack)
+          : undefined,
         sourceSummary: `${input.ugcClipName} + ${input.demoClipName}`,
         stitchId: `${task.id}:stitch`,
         stitchName: `${input.ugcClipName} + ${input.demoClipName}`,

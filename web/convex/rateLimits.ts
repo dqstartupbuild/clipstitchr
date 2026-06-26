@@ -113,6 +113,44 @@ export const consumeTikTokEventsApi = mutation({
   },
 });
 
+export const consumeTikTokSoundLookup = mutation({
+  args: {
+    secret: v.string(),
+  },
+  handler: async (ctx, { secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "tiktokSoundLookup", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "tiktokSoundLookupGlobal", {
+      throws: true,
+    });
+  },
+});
+
+export const consumeTikTokSoundImport = mutation({
+  args: {
+    secret: v.string(),
+  },
+  handler: async (ctx, { secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "tiktokSoundImport", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "tiktokSoundImportGlobal", {
+      throws: true,
+    });
+  },
+});
+
 export const consumeIndexNowSubmit = mutation({
   args: {
     key: v.string(),

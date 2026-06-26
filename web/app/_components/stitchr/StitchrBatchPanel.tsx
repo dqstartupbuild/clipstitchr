@@ -4,10 +4,12 @@ import { Scissors } from "lucide-react";
 import { StitchrBatchHookReviewList } from "@/app/_components/stitchr/StitchrBatchHookReviewList";
 import { StitchrModeToggle } from "@/app/_components/stitchr/StitchrModeToggle";
 import { StitchrBatchTextStylePanel } from "@/app/_components/stitchr/StitchrBatchTextStylePanel";
+import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import type { AutomationStitchrColorChoice } from "@/lib/clipstitchr/types/AutomationStitchrColorChoice";
 import type { AutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/types/AutomationStitchrTextStyleChoice";
+import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
 import type { StitchrMode } from "@/lib/clipstitchr/types/StitchrMode";
 
@@ -22,6 +24,7 @@ type StitchrBatchPanelProps = {
   savingHookPlanId?: string | null;
   message: string | null;
   mode: StitchrMode;
+  selectedSoundTrack: SharedMusicTrack | null;
   showModeToggle?: boolean;
   strokeColorChoice: AutomationStitchrColorChoice;
   textColorChoice: AutomationStitchrColorChoice;
@@ -31,6 +34,7 @@ type StitchrBatchPanelProps = {
   onGenerate: () => void;
   onModeChange: (mode: StitchrMode) => void;
   onRejectHookVariant?: (planId: string, hookText: string) => void;
+  onSelectSoundTrack: (track: SharedMusicTrack) => void | Promise<void>;
   onSelectHookVariant?: (planId: string, hookText: string) => void;
   onStrokeColorChoiceChange: (value: AutomationStitchrColorChoice) => void;
   onTextColorChoiceChange: (value: AutomationStitchrColorChoice) => void;
@@ -48,6 +52,7 @@ export function StitchrBatchPanel({
   savingHookPlanId = null,
   message,
   mode,
+  selectedSoundTrack,
   showModeToggle = true,
   strokeColorChoice,
   textColorChoice,
@@ -57,6 +62,7 @@ export function StitchrBatchPanel({
   onGenerate,
   onModeChange,
   onRejectHookVariant,
+  onSelectSoundTrack,
   onSelectHookVariant,
   onStrokeColorChoiceChange,
   onTextColorChoiceChange,
@@ -80,6 +86,12 @@ export function StitchrBatchPanel({
             {showModeToggle ? (
               <StitchrModeToggle value={mode} onChange={onModeChange} />
             ) : null}
+            <MusicSelectorButton
+              label={selectedSoundTrack ? "Change sound" : "Add sound"}
+              source="stitchr"
+              selectedTrackId={selectedSoundTrack?.id}
+              onSelectTrack={onSelectSoundTrack}
+            />
             <Button
               type="button"
               disabled={isDisabled}

@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { MusicSelectorDialog } from "@/app/_components/music/MusicSelectorDialog";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
+import type { TikTokSoundCandidate } from "@/lib/clipstitchr/types/TikTokSoundCandidate";
 
 vi.mock("@/app/_components/music/MusicTrackPreviewButton", () => ({
   MusicTrackPreviewButton: ({ track }: { track: SharedMusicTrack }) => (
@@ -33,62 +34,76 @@ function createTrack(overrides: Partial<SharedMusicTrack> = {}): SharedMusicTrac
   };
 }
 
+function renderDialog(
+  overrides: Partial<React.ComponentProps<typeof MusicSelectorDialog>> = {},
+) {
+  return renderToStaticMarkup(
+    <MusicSelectorDialog
+      error={null}
+      isLoading={false}
+      isRightsAccepted={true}
+      isRightsLoading={false}
+      isRightsSaving={false}
+      isSearchingTikTok={false}
+      isSavingTikTokSound={false}
+      isUploading={false}
+      tiktokCandidates={[]}
+      tracks={[]}
+      onAcceptRights={vi.fn()}
+      onClose={vi.fn()}
+      onImportTikTokSound={vi.fn()}
+      onSearchTikTokSounds={vi.fn()}
+      onSelect={vi.fn()}
+      onUpload={vi.fn()}
+      {...overrides}
+    />,
+  );
+}
+
 describe("MusicSelectorDialog", () => {
   it("renders matching tracks and selected state", () => {
-    const markup = renderToStaticMarkup(
-      <MusicSelectorDialog
-        error={null}
-        isLoading={false}
-        isUploading={false}
-        selectedTrackId="track_1"
-        tracks={[
-          createTrack(),
-          createTrack({
-            id: "track_2",
-            isOwnedByCurrentUser: false,
-            tags: [],
-            title: "Soft Demo",
-          }),
-        ]}
-        onClose={vi.fn()}
-        onSelect={vi.fn()}
-        onUpload={vi.fn()}
-      />,
-    );
+    const markup = renderDialog({
+      selectedTrackId: "track_1",
+      tracks: [
+        createTrack(),
+        createTrack({
+          id: "track_2",
+          source: "tiktok",
+          tags: [],
+          title: "Soft Demo",
+        }),
+      ],
+    });
 
-    expect(markup).toContain("Select music");
+    expect(markup).toContain("Add a sound");
     expect(markup).toContain("Bright Hook");
     expect(markup).toContain("Soft Demo");
     expect(markup).toContain("Selected");
-    expect(markup).toContain("Mine");
+    expect(markup).toContain("TikTok");
+  });
+
+  it("renders TikTok candidates", () => {
+    const candidates: TikTokSoundCandidate[] = [
+      {
+        author: "Creator",
+        playCount: 1200,
+        sourceUrl: "https://www.tiktok.com/@creator/video/1",
+        title: "Trend Sound",
+      },
+    ];
+    const markup = renderDialog({ tiktokCandidates: candidates });
+
+    expect(markup).toContain("Trend Sound");
+    expect(markup).toContain("Creator");
+    expect(markup).toContain("Save");
   });
 
   it("renders loading, error, and empty states", () => {
-    const loadingMarkup = renderToStaticMarkup(
-      <MusicSelectorDialog
-        error={null}
-        isLoading={true}
-        isUploading={true}
-        tracks={[]}
-        onClose={vi.fn()}
-        onSelect={vi.fn()}
-        onUpload={vi.fn()}
-      />,
-    );
-    const emptyMarkup = renderToStaticMarkup(
-      <MusicSelectorDialog
-        error="Unable to upload music."
-        isLoading={false}
-        isUploading={false}
-        tracks={[]}
-        onClose={vi.fn()}
-        onSelect={vi.fn()}
-        onUpload={vi.fn()}
-      />,
-    );
+    const loadingMarkup = renderDialog({ isLoading: true, isUploading: true });
+    const emptyMarkup = renderDialog({ error: "Unable to upload sound." });
 
-    expect(loadingMarkup).toContain("Loading music");
-    expect(emptyMarkup).toContain("Unable to upload music.");
-    expect(emptyMarkup).toContain("No tracks found");
+    expect(loadingMarkup).toContain("Loading sounds");
+    expect(emptyMarkup).toContain("Unable to upload sound.");
+    expect(emptyMarkup).toContain("No sounds found");
   });
 });

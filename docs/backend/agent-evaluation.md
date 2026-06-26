@@ -44,7 +44,7 @@ conversational or agentic product surface, such as:
 It should not be installed just to replace today's route-based generation
 helpers. The current app mostly uses structured, form-driven, single-purpose AI
 operations: product enrichment, upload analysis, text generation, avatar photo
-generation, background generation, shared music upload, and Swapr/Clipr provider
+generation, background generation, private sound upload/import, and Swapr/Clipr provider
 jobs. Those flows already have explicit inputs, deterministic ownership checks,
 rate limits, and typed persistence. Wrapping them in an agent abstraction would
 add thread/message state without solving the main reliability problem: durable
@@ -190,7 +190,7 @@ Do not use the Agent component now for:
 - avatar photo generation execution
 - Swipr background generation execution
 - Clipr provider orchestration as currently implemented
-- shared music upload and selection
+- private sound upload, TikTok import, and selection
 - product enrichment as a single-turn form submit
 - upload metadata analysis
 

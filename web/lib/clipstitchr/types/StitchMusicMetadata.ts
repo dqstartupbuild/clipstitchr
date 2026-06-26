@@ -9,7 +9,9 @@ export type StitchMusicMetadata = {
   providerModel: string;
   providerPredictionId: string;
   sharedTrackId?: string;
+  sourceUrl?: string;
   tags?: string[];
+  tiktokMusicId?: string;
   title?: string;
   updatedAt: string;
   volume: number;

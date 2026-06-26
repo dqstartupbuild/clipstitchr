@@ -23,7 +23,7 @@ vi.mock("@/app/_components/music/MusicSelectorButton", () => ({
     selectedTrackId,
   }: {
     selectedTrackId?: string;
-  }) => <button type="button">Select music {selectedTrackId}</button>,
+  }) => <button type="button">Select sound {selectedTrackId}</button>,
 }));
 
 function findElements(
@@ -365,7 +365,7 @@ describe("Clipr components", () => {
     expect(onClearTrack).toHaveBeenCalledOnce();
     expect(voiceMarkup).toContain("Rachel - Balanced creator");
     expect(musicMarkup).toContain("Bright Hook");
-    expect(musicMarkup).toContain("Select music track_1");
+    expect(musicMarkup).toContain("Select sound track_1");
   });
 
   it("forwards Clipr mode and script idea changes", () => {

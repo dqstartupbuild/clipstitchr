@@ -8,6 +8,9 @@ const mocks = vi.hoisted(() => ({
   stateQueue: [] as unknown[],
   tracks: [] as SharedMusicTrack[],
   uploadedTrack: null as SharedMusicTrack | null,
+  acceptRights: vi.fn(),
+  importTikTokSound: vi.fn(),
+  searchTikTokSounds: vi.fn(),
   uploadSharedMusicTrack: vi.fn(),
 }));
 
@@ -42,6 +45,22 @@ vi.mock("@/lib/clipstitchr/client/getAudioBlobDuration", () => ({
 
 vi.mock("@/lib/clipstitchr/client/uploadSharedMusicTrack", () => ({
   uploadSharedMusicTrack: mocks.uploadSharedMusicTrack,
+}));
+
+vi.mock("@/lib/clipstitchr/client/importTikTokSound", () => ({
+  importTikTokSound: mocks.importTikTokSound,
+}));
+
+vi.mock("@/lib/clipstitchr/client/searchTikTokSounds", () => ({
+  searchTikTokSounds: mocks.searchTikTokSounds,
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useSoundPreferences", () => ({
+  useSoundPreferences: () => ({
+    acceptRights: mocks.acceptRights,
+    hasAcceptedRights: true,
+    isLoading: false,
+  }),
 }));
 
 function findElements(
@@ -97,6 +116,14 @@ describe("MusicSelectorButton", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.uploadedTrack = createTrack({ id: "uploaded_track" });
+    mocks.acceptRights.mockResolvedValue(undefined);
+    mocks.importTikTokSound.mockResolvedValue(mocks.uploadedTrack);
+    mocks.searchTikTokSounds.mockResolvedValue([
+      {
+        sourceUrl: "https://www.tiktok.com/@creator/video/1",
+        title: "Trend Sound",
+      },
+    ]);
     mocks.getAudioBlobDuration.mockResolvedValue(32);
     mocks.uploadSharedMusicTrack.mockResolvedValue(mocks.uploadedTrack);
     mocks.setStateCalls = [];
@@ -105,7 +132,7 @@ describe("MusicSelectorButton", () => {
   });
 
   it("opens the selector dialog from the button", () => {
-    mocks.stateQueue = [false, false, null];
+    mocks.stateQueue = [false, [], false, false, false, false, null];
 
     const tree = MusicSelectorButton({
       onSelectTrack: vi.fn(),
@@ -126,7 +153,7 @@ describe("MusicSelectorButton", () => {
     const onSelectTrack = vi.fn();
     const uploadFile = new File(["audio"], "hook.mp3", { type: "audio/mpeg" });
 
-    mocks.stateQueue = [true, false, null];
+    mocks.stateQueue = [true, [], false, false, false, false, null];
 
     const tree = MusicSelectorButton({
       onSelectTrack,
@@ -158,8 +185,44 @@ describe("MusicSelectorButton", () => {
     });
     expect(onSelectTrack).toHaveBeenCalledWith(mocks.uploadedTrack);
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(false);
-    expect(mocks.setStateCalls[1]).toHaveBeenCalledWith(true);
-    expect(mocks.setStateCalls[1]).toHaveBeenCalledWith(false);
+    expect(mocks.setStateCalls[5]).toHaveBeenCalledWith(true);
+    expect(mocks.setStateCalls[5]).toHaveBeenCalledWith(false);
+  });
+
+  it("searches and imports TikTok sounds from the dialog", async () => {
+    const onSelectTrack = vi.fn();
+
+    mocks.stateQueue = [true, [], false, false, false, false, null];
+
+    const tree = MusicSelectorButton({
+      onSelectTrack,
+      selectedTrackId: "track_1",
+      source: "stitchr",
+    });
+    const [dialog] = findElements(
+      tree,
+      (element) =>
+        typeof element.type === "function" &&
+        element.type.name === "MusicSelectorDialog",
+    );
+
+    await (
+      dialog.props.onSearchTikTokSounds as (query: string) => Promise<void>
+    )("skin care");
+    await (
+      dialog.props.onImportTikTokSound as (sourceUrl: string) => Promise<void>
+    )("https://www.tiktok.com/@creator/video/1");
+
+    expect(mocks.searchTikTokSounds).toHaveBeenCalledWith("skin care");
+    expect(mocks.importTikTokSound).toHaveBeenCalledWith(
+      "https://www.tiktok.com/@creator/video/1",
+    );
+    expect(onSelectTrack).toHaveBeenCalledWith(mocks.uploadedTrack);
+    expect(mocks.setStateCalls[1]).toHaveBeenCalledWith([]);
+    expect(mocks.setStateCalls[3]).toHaveBeenCalledWith(true);
+    expect(mocks.setStateCalls[3]).toHaveBeenCalledWith(false);
+    expect(mocks.setStateCalls[4]).toHaveBeenCalledWith(true);
+    expect(mocks.setStateCalls[4]).toHaveBeenCalledWith(false);
   });
 
   it("keeps the dialog open and shows errors when selection fails", async () => {
@@ -167,7 +230,7 @@ describe("MusicSelectorButton", () => {
       throw new Error("Unable to save track.");
     });
 
-    mocks.stateQueue = [true, false, null];
+    mocks.stateQueue = [true, [], false, false, false, false, null];
 
     const tree = MusicSelectorButton({
       onSelectTrack,
@@ -184,7 +247,7 @@ describe("MusicSelectorButton", () => {
       mocks.tracks[0],
     );
 
-    expect(mocks.setStateCalls[2]).toHaveBeenCalledWith("Unable to save track.");
+    expect(mocks.setStateCalls[6]).toHaveBeenCalledWith("Unable to save track.");
     expect(mocks.setStateCalls[0]).not.toHaveBeenCalledWith(false);
   });
 });

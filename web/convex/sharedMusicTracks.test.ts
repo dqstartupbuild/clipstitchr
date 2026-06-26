@@ -121,7 +121,7 @@ describe("convex sharedMusicTracks", () => {
     mocks.rateLimiter.limit.mockResolvedValue(undefined);
   });
 
-  it("lists tracks and hides owner objects for tracks owned by others", async () => {
+  it("lists owner-scoped tracks and hides owner objects for tracks owned by others", async () => {
     const queryChain = createQueryChain({
       take: [
         createTrack(),
@@ -152,7 +152,10 @@ describe("convex sharedMusicTracks", () => {
         ownerAudioObject: undefined,
       }),
     ]);
-    expect(queryChain.withIndex).toHaveBeenCalledWith("by_created");
+    expect(queryChain.withIndex).toHaveBeenCalledWith(
+      "by_uploaded_owner_created",
+      expect.any(Function),
+    );
     expect(queryChain.order).toHaveBeenCalledWith("desc");
     expect(queryChain.take).toHaveBeenCalledWith(200);
   });
@@ -172,12 +175,12 @@ describe("convex sharedMusicTracks", () => {
       }),
     );
     expect(queryChain.withIndex).toHaveBeenCalledWith(
-      "by_music_id",
+      "by_uploaded_owner_music_id",
       expect.any(Function),
     );
   });
 
-  it("normalizes and saves a new shared music track", async () => {
+  it("normalizes and saves a new private sound track", async () => {
     const queryChain = createQueryChain();
     const ctx = {
       db: {
@@ -219,12 +222,12 @@ describe("convex sharedMusicTracks", () => {
 
     await expect(
       getHandler(save)(ctx, createSaveArgs({ title: "   " })),
-    ).rejects.toThrow("Music title is required.");
+    ).rejects.toThrow("Sound title is required.");
     expect(mocks.rateLimiter.limit).not.toHaveBeenCalled();
 
     ctx.db.query.mockReturnValueOnce(createQueryChain({ unique: createTrack() }));
     await expect(getHandler(save)(ctx, createSaveArgs())).rejects.toThrow(
-      "Music track already exists.",
+      "Sound already exists.",
     );
   });
 });

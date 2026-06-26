@@ -26,7 +26,7 @@ This document covers:
   is enabled.
 - Swipr AI background generation and future automated Swipe creation.
 - Avatar photo generation.
-- Shared music upload and selection.
+- Private sound upload, TikTok import, and selection.
 - Swapr provider prediction finalization.
 - Upload video/image analysis handoffs when provider calls are used.
 - Daily autopilot runs for eligible users.
@@ -54,7 +54,7 @@ Known examples:
 | Swipr background generation | The route waits for Replicate and streams the generated image back to the browser. The browser then analyzes, uploads, and saves. Refresh can lose the generated output before it becomes a saved background. |
 | Swipr background analysis | The analysis route returns metadata for the browser to save with the background. Refresh can still interrupt the generated/uploaded background save path. |
 | Standalone text suggestions | `POST /api/clipr/text` returns generated Clipr/Swipr/Stitchr text directly for the editor. It has no final asset save until the user applies/saves the result. |
-| Existing-asset music regeneration | Clip, Stitch, and shared-library music regeneration routes still wait for provider output, copy it to R2, and return the created track metadata in one request. |
+| Existing-asset sound selection | Sound upload and TikTok import are request-owned: the route validates quota, copies audio to R2, and returns created track metadata in one request. |
 | Product enrichment | Product create/update waits for provider enrichment before saving. If the request fails after quota consumption, no durable product-enrichment retry exists. |
 | Swapr photo expansion | The outpainted image is streamed back to the browser before the user saves it as a source photo. |
 | Legacy upload image analysis | Photo/avatar image upload metadata analysis still runs in the request path before the browser saves the asset metadata. |
@@ -219,7 +219,7 @@ fallback, not the preferred production path.
 Manual Clipr is now a server-owned workflow with recoverable steps:
 
 1. Create a `clipr` automation run with product/avatar/mode/model/voice/duration
-   and selected shared music snapshots.
+   and selected sound snapshots.
 2. Consume Clipr job, avatar still, and video limits before provider calls.
    Script mode also consumes hook/script and voice limits. Script mode is
    currently hidden unless `isCliprScriptModeEnabled` is `true`.
@@ -235,7 +235,7 @@ Manual Clipr is now a server-owned workflow with recoverable steps:
 consumption, Convex input loading, queued job persistence, and creation of one
 `manual-clipr` provider job. The provider worker owns Script-mode planning when
 enabled, visual-mode local plan creation, avatar still generation, avatar
-video generation, shared music metadata handling, and creation of the
+video generation, sound metadata handling, and creation of the
 `clipr-finalization` media job. The media worker saves non-demo Clipr output as
 UGC, strips audio for Reaction and B-roll, and marks the provider job complete.
 

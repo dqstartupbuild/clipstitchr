@@ -5,6 +5,7 @@ const MUSIC_TRACK_SOURCES = new Set<MusicTrackSource>([
   "library",
   "stitchr",
   "swipr",
+  "tiktok",
 ]);
 
 export function getMusicUploadSource(

@@ -130,7 +130,7 @@ describe("StitchMusicSettingsDialog", () => {
     expect(markup).toContain("80%");
 
     mocks.iconButtonProps?.onClick?.();
-    await mocks.buttons.find((button) => button.label === "Remove music")
+    await mocks.buttons.find((button) => button.label === "Remove sound")
       ?.onClick?.();
     await mocks.buttons.find((button) => button.label === "Save settings")
       ?.onClick?.();
@@ -153,7 +153,7 @@ describe("StitchMusicSettingsDialog", () => {
       />,
     );
 
-    expect(markup).toContain("No music is attached to this stitch.");
+    expect(markup).toContain("No sound is attached to this stitch.");
     expect(markup).toContain("MusicSelectorButton");
   });
 });

@@ -216,7 +216,7 @@ before treating it as production-complete:
    initial raw source upload from the user's browser.
 
 5. Complete audio-mixing support.
-   Longr jobs with shared music are currently rejected. Persisted Clip/Stitch
+   Longr jobs with selected sounds are currently rejected. Persisted Clip/Stitch
    music-mixed exports are also rejected instead of using browser-local Media
    Bunny rendering.
 

@@ -190,6 +190,7 @@ export async function POST(request?: Request) {
         ? { stitchrTextStyleChoice: input.stitchrTextStyleChoice }
         : {}),
       ...(input.templateId ? { templateId: input.templateId } : {}),
+      ...(input.soundTrackId ? { soundTrackId: input.soundTrackId } : {}),
     })) as StitchrBatchPlanResult;
     const hookPlan = await planBatchHooks({
       convex,

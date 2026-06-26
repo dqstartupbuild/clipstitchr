@@ -21,19 +21,18 @@ export function CliprMusicControl({
           <Music2 aria-hidden className="h-5 w-5" />
         </span>
         <div>
-          <p className="text-sm font-semibold text-accent-dark">Music</p>
+          <p className="text-sm font-semibold text-accent-dark">Sound</p>
           <h2 className="mt-0.5 text-base font-bold text-text-primary">
-            Export track
+            Export sound
           </h2>
         </div>
       </div>
       <div className="rounded-lg border border-border bg-surface-elevated p-3 text-sm leading-6 text-text-secondary">
-        Choose a shared track or upload one you have permission to use. Music
-        stays editable and is mixed only when you export.
+        Pick a sound now, then change or remove it before export.
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <MusicSelectorButton
-          label={selectedTrack ? "Change music" : "Add music"}
+          label={selectedTrack ? "Change sound" : "Add sound"}
           source="clipr"
           selectedTrackId={selectedTrack?.id}
           onSelectTrack={onSelectTrack}
@@ -45,7 +44,7 @@ export function CliprMusicControl({
             </span>
             <IconButton
               type="button"
-              label="Clear selected music"
+              label="Clear selected sound"
               icon={<X aria-hidden className="h-3.5 w-3.5" />}
               onClick={onClearTrack}
             />

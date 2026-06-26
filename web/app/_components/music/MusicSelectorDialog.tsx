@@ -1,21 +1,32 @@
 "use client";
 
-import { Upload, X } from "lucide-react";
+import { Search, Upload, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { MusicTrackListItem } from "@/app/_components/music/MusicTrackListItem";
+import { TikTokSoundCandidateListItem } from "@/app/_components/music/TikTokSoundCandidateListItem";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { ACCEPTED_MUSIC_TYPES } from "@/lib/clipstitchr/constants/acceptedMusicTypes";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
+import type { TikTokSoundCandidate } from "@/lib/clipstitchr/types/TikTokSoundCandidate";
 
 type MusicSelectorDialogProps = {
   error: string | null;
   isLoading: boolean;
+  isRightsAccepted: boolean;
+  isRightsLoading: boolean;
+  isRightsSaving: boolean;
+  isSearchingTikTok: boolean;
+  isSavingTikTokSound: boolean;
   isUploading: boolean;
   selectedTrackId?: string;
+  tiktokCandidates: TikTokSoundCandidate[];
   tracks: SharedMusicTrack[];
+  onAcceptRights: () => void | Promise<void>;
   onClose: () => void;
+  onImportTikTokSound: (sourceUrl: string) => void | Promise<void>;
+  onSearchTikTokSounds: (query: string) => void | Promise<void>;
   onSelect: (track: SharedMusicTrack) => void | Promise<void>;
   onUpload: (file: File, title: string) => void | Promise<void>;
 };
@@ -23,14 +34,25 @@ type MusicSelectorDialogProps = {
 export function MusicSelectorDialog({
   error,
   isLoading,
+  isRightsAccepted,
+  isRightsLoading,
+  isRightsSaving,
+  isSearchingTikTok,
+  isSavingTikTokSound,
   isUploading,
   selectedTrackId,
+  tiktokCandidates,
   tracks,
+  onAcceptRights,
   onClose,
+  onImportTikTokSound,
+  onSearchTikTokSounds,
   onSelect,
   onUpload,
 }: MusicSelectorDialogProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [tiktokSearchQuery, setTikTokSearchQuery] = useState("");
+  const [tiktokUrl, setTikTokUrl] = useState("");
   const [uploadTitle, setUploadTitle] = useState("");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const filteredTracks = useMemo(() => {
@@ -69,32 +91,113 @@ export function MusicSelectorDialog({
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-4">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-accent-dark">Music</p>
+            <p className="text-sm font-semibold text-accent-dark">Sound</p>
             <h2
               id="music-selector-title"
               className="mt-0.5 text-base font-bold text-text-primary"
             >
-              Select music
+              Add a sound
             </h2>
           </div>
           <IconButton
             type="button"
-            label="Close music selector"
+            label="Close sound selector"
             icon={<X aria-hidden className="h-4 w-4" />}
             onClick={onClose}
           />
         </div>
         <div className="grid gap-3 border-b border-border p-4">
+          {!isRightsAccepted ? (
+            <div className="grid gap-2 rounded-lg border border-accent/25 bg-surface-muted p-3">
+              <p className="text-sm font-semibold text-accent-dark">
+                Use sounds you can add to your videos.
+              </p>
+              <Button
+                type="button"
+                variant="secondary"
+                isLoading={isRightsLoading || isRightsSaving}
+                onClick={() => void onAcceptRights()}
+              >
+                Continue
+              </Button>
+            </div>
+          ) : null}
           <SearchInput
-            label="Search music"
+            label="Search saved sounds"
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search tracks or tags"
+            placeholder="Search your sounds"
           />
+          <div className="grid gap-2 rounded-lg border border-border bg-surface-elevated p-3">
+            <label className="block">
+              <span className="text-sm font-semibold text-text-primary">
+                Find a sound
+              </span>
+              <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                <input
+                  type="text"
+                  value={tiktokSearchQuery}
+                  className="h-10 w-full rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-primary outline-none transition focus:border-accent"
+                  placeholder="Niche, mood, or product"
+                  disabled={!isRightsAccepted}
+                  onChange={(event) =>
+                    setTikTokSearchQuery(event.currentTarget.value)
+                  }
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  icon={<Search aria-hidden className="h-4 w-4" />}
+                  isLoading={isSearchingTikTok}
+                  disabled={!isRightsAccepted || !tiktokSearchQuery.trim()}
+                  onClick={() => void onSearchTikTokSounds(tiktokSearchQuery)}
+                >
+                  Search
+                </Button>
+              </div>
+            </label>
+            <label className="block">
+              <span className="text-sm font-semibold text-text-primary">
+                Paste TikTok link
+              </span>
+              <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                <input
+                  type="url"
+                  value={tiktokUrl}
+                  className="h-10 w-full rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-primary outline-none transition focus:border-accent"
+                  placeholder="https://www.tiktok.com/@..."
+                  disabled={!isRightsAccepted}
+                  onChange={(event) => setTikTokUrl(event.currentTarget.value)}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  icon={<Upload aria-hidden className="h-4 w-4" />}
+                  isLoading={isSavingTikTokSound}
+                  disabled={!isRightsAccepted || !tiktokUrl.trim()}
+                  onClick={() => void onImportTikTokSound(tiktokUrl)}
+                >
+                  Save
+                </Button>
+              </div>
+            </label>
+            {tiktokCandidates.length ? (
+              <ul className="overflow-hidden rounded-lg border border-border bg-white">
+                {tiktokCandidates.map((candidate) => (
+                  <TikTokSoundCandidateListItem
+                    key={`${candidate.musicId ?? candidate.sourceUrl}:${candidate.title}`}
+                    candidate={candidate}
+                    isSaving={isSavingTikTokSound}
+                    onSave={onImportTikTokSound}
+                  />
+                ))}
+              </ul>
+            ) : null}
+          </div>
           <div className="grid gap-2 rounded-lg border border-dashed border-border bg-surface-elevated p-3">
             <label className="block">
               <span className="text-sm font-semibold text-text-primary">
-                Add music everyone can use
+                Upload a sound
               </span>
               <input
                 type="text"
@@ -119,7 +222,7 @@ export function MusicSelectorDialog({
                   type="file"
                   accept={ACCEPTED_MUSIC_TYPES.join(",")}
                   className="sr-only"
-                  disabled={isUploading}
+                  disabled={isUploading || !isRightsAccepted}
                   onChange={(event) => {
                     setUploadFile(event.currentTarget.files?.[0] ?? null);
                   }}
@@ -130,7 +233,7 @@ export function MusicSelectorDialog({
                 variant="secondary"
                 icon={<Upload aria-hidden className="h-4 w-4" />}
                 isLoading={isUploading}
-                disabled={!uploadFile}
+                disabled={!isRightsAccepted || !uploadFile}
                 onClick={() => {
                   if (uploadFile) {
                     void onUpload(uploadFile, uploadTitle);
@@ -140,10 +243,6 @@ export function MusicSelectorDialog({
                 Upload
               </Button>
             </div>
-            <p className="text-xs font-semibold text-text-tertiary">
-              Music you upload is added to the shared music pool. Only upload
-              tracks you have the rights to use.
-            </p>
           </div>
           {error ? (
             <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
@@ -154,7 +253,7 @@ export function MusicSelectorDialog({
         <div className="max-h-[420px] overflow-y-auto">
           {isLoading ? (
             <div className="p-4 text-sm font-semibold text-text-tertiary">
-              Loading music
+              Loading sounds
             </div>
           ) : filteredTracks.length ? (
             <ul>
@@ -169,7 +268,7 @@ export function MusicSelectorDialog({
             </ul>
           ) : (
             <div className="p-4 text-sm font-semibold text-text-tertiary">
-              No tracks found
+              No sounds found
             </div>
           )}
         </div>

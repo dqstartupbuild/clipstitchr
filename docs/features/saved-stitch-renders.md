@@ -61,7 +61,7 @@ Create flow:
 
 - `web/lib/clipstitchr/hooks/useStitchr.ts` renders/uploads new manual Stitches
   during creation.
-- If selected shared music is already known, it is included before the first
+- If selected sound metadata is already known, it is included before the first
   save and the saved render includes it.
 
 Library flow:

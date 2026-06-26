@@ -10,7 +10,7 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function PrivacyPage() {
-  const lastUpdated = "June 16, 2026";
+  const lastUpdated = "June 26, 2026";
 
   return (
     <article className="px-6 py-20 md:py-28">
@@ -53,9 +53,8 @@ export default function PrivacyPage() {
               data removes that local preview cache.
             </p>
             <p>
-              Music you upload is saved to the shared music pool so other
-              ClipStitchr users can find and use it in their own clips, swipes,
-              and stitches. Do not upload music if you do not want it shared.
+              Sounds you add are used to help you make and export your own
+              clips and stitches.
             </p>
             <p>
               You can delete clips, photos, and stitches in the dashboard. Those

@@ -59,7 +59,7 @@ Server-side product events:
 | `clipr_job_failed` | Clipr job creation fails after starting | Tracks job/product/avatar IDs, resolved mode/model, and error name only. |
 | `swapr_job_created` | Swapr job is created | Tracks prediction ID and generation options. |
 | `avatar_photos_generation_requested` | Avatar photo generation API starts | Tracks count, style, lighting, speed tier, and model. |
-| `music_uploaded` | Shared music upload succeeds | Tracks source, content type, and size. |
+| `sound_uploaded` | Private sound upload succeeds | Tracks source, content type, and size. |
 
 ## Data Rules
 

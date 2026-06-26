@@ -74,6 +74,7 @@ export function OnboardingBatchStep({
         isGenerating={isGenerating}
         message={message}
         mode="batch"
+        selectedSoundTrack={null}
         showModeToggle={false}
         strokeColorChoice={strokeColorChoice}
         textColorChoice={textColorChoice}
@@ -88,6 +89,7 @@ export function OnboardingBatchStep({
           })
         }
         onModeChange={() => undefined}
+        onSelectSoundTrack={() => undefined}
         onStrokeColorChoiceChange={setStrokeColorChoice}
         onTextColorChoiceChange={setTextColorChoice}
         onTextStyleChoiceChange={setTextStyleChoice}

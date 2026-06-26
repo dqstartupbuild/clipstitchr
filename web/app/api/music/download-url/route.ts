@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const id = typeof body.id === "string" ? body.id.trim() : "";
 
     if (!id) {
-      throw new Error("Missing music track ID.");
+      throw new Error("Missing sound ID.");
     }
 
     const convexToken = await getAuthenticatedConvexToken();
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     const track = await convex.query(api.sharedMusicTracks.get, { id });
 
     if (!track) {
-      throw new Error("Music track not found.");
+      throw new Error("Sound not found.");
     }
 
     await convex.mutation(api.rateLimits.consumeR2Download, {
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         error:
           error instanceof Error
             ? error.message
-            : "Unable to create a music download URL.",
+            : "Unable to create a sound download URL.",
       },
       { status: 400 },
     );

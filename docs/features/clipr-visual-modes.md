@@ -102,7 +102,7 @@ Manual and automated jobs use the same durable worker shape:
    queued. Script, Reaction, and B-roll also consume avatar-still limits; Demo
    mode skips avatar-still generation.
 3. Consume hook/script and voice limits only for Script mode.
-4. Snapshot any selected shared music so finalization can attach it.
+4. Snapshot any selected sound so finalization can attach it.
 5. Create a Clipr text plan. Script mode calls the hook/script model; visual
    modes create a local single-scene visual plan.
 6. Generate the avatar still with mode-specific still-image instructions unless

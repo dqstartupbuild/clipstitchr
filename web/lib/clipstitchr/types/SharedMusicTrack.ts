@@ -14,7 +14,9 @@ export type SharedMusicTrack = {
   prompt?: string;
   providerModel?: string;
   providerPredictionId?: string;
+  sourceUrl?: string;
   source: MusicTrackSource;
+  tiktokMusicId?: string;
   uploadedByOwnerId: string;
   isOwnedByCurrentUser: boolean;
   createdAt: string;

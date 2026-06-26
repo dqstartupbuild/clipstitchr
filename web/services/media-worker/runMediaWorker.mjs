@@ -366,6 +366,8 @@ function parseStitchrDraftFinalizationInput(inputSnapshotJson) {
     demoVideoObject: getR2Object(input.demoVideoObject, "Demo video object"),
     includeDemoAudio: input.includeDemoAudio === true,
     includeUgcAudio: input.includeUgcAudio === true,
+    music:
+      input.music && typeof input.music === "object" ? input.music : undefined,
     sourceSummary:
       typeof input.sourceSummary === "string" ? input.sourceSummary : undefined,
     socialCaption:
@@ -1052,6 +1054,7 @@ async function processStitchrDraftFinalization({ client, config, job }) {
     duration,
     includeDemoAudio: input.includeDemoAudio,
     includeUgcAudio: input.includeUgcAudio,
+    ...(input.music ? { music: input.music } : {}),
     demoPlaybackRate: input.demoPlaybackRate,
     ugcPlaybackRate: input.ugcPlaybackRate,
     ...(input.demoQuickEdit ? { demoQuickEdit: input.demoQuickEdit } : {}),

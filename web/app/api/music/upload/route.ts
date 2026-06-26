@@ -7,9 +7,10 @@ import { getMusicUploadDurationSeconds } from "@/lib/clipstitchr/server/music/ge
 import { getMusicUploadFile } from "@/lib/clipstitchr/server/music/getMusicUploadFile";
 import { getMusicUploadSource } from "@/lib/clipstitchr/server/music/getMusicUploadSource";
 import { getMusicUploadTitle } from "@/lib/clipstitchr/server/music/getMusicUploadTitle";
+import { assertSoundRightsAccepted } from "@/lib/clipstitchr/server/music/assertSoundRightsAccepted";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
-import { saveSharedMusicObject } from "@/lib/clipstitchr/server/saveSharedMusicObject";
+import { saveLibraryMusicObject } from "@/lib/clipstitchr/server/saveLibraryMusicObject";
 import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/capturePostHogServerEvent";
 import { createId } from "@/lib/clipstitchr/utils/createId";
 
@@ -39,16 +40,20 @@ export async function POST(request: Request) {
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const id = createId();
     const createdAt = new Date().toISOString();
+    const soundPreference = await convex.query(api.soundPreferences.get, {});
+
+    assertSoundRightsAccepted(soundPreference);
 
     await convex.mutation(api.rateLimits.consumeR2Upload, {
       secret: getRateLimitApiSecret(),
       sizeBytes: file.size,
     });
 
-    const audioObject = await saveSharedMusicObject({
+    const audioObject = await saveLibraryMusicObject({
       body: await file.arrayBuffer(),
       contentType: file.type || "application/octet-stream",
       trackId: id,
+      userId,
     });
 
     await convex.mutation(api.sharedMusicTracks.save, {
@@ -67,7 +72,7 @@ export async function POST(request: Request) {
 
     await capturePostHogServerEvent({
       distinctId: userId,
-      event: "music_uploaded",
+      event: "sound_uploaded",
       properties: {
         content_type: audioObject.contentType,
         size_bytes: audioObject.size,
@@ -87,7 +92,7 @@ export async function POST(request: Request) {
     return Response.json(
       {
         message:
-          error instanceof Error ? error.message : "Unable to upload music.",
+          error instanceof Error ? error.message : "Unable to upload sound.",
       },
       { status: 400 },
     );

@@ -39,9 +39,11 @@ function clientTrackFields(
     providerModel?: string;
     providerPredictionId?: string;
     size: number;
-    source: "clipr" | "stitchr" | "swipr" | "library";
+    sourceUrl?: string;
+    source: "clipr" | "stitchr" | "swipr" | "library" | "tiktok";
     style?: string;
     tags: string[];
+    tiktokMusicId?: string;
     title: string;
     uploadedByOwnerId: string;
   },
@@ -62,7 +64,9 @@ function clientTrackFields(
     prompt: track.prompt,
     providerModel: track.providerModel,
     providerPredictionId: track.providerPredictionId,
+    sourceUrl: track.sourceUrl,
     source: track.source,
+    tiktokMusicId: track.tiktokMusicId,
     uploadedByOwnerId: track.uploadedByOwnerId,
     isOwnedByCurrentUser,
     createdAt: track.createdAt,
@@ -75,7 +79,9 @@ export const list = query({
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const tracks = await ctx.db
       .query("sharedMusicTracks")
-      .withIndex("by_created")
+      .withIndex("by_uploaded_owner_created", (q) =>
+        q.eq("uploadedByOwnerId", ownerId),
+      )
       .order("desc")
       .take(200);
 
@@ -91,7 +97,9 @@ export const get = query({
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const track = await ctx.db
       .query("sharedMusicTracks")
-      .withIndex("by_music_id", (q) => q.eq("id", id))
+      .withIndex("by_uploaded_owner_music_id", (q) =>
+        q.eq("uploadedByOwnerId", ownerId).eq("id", id),
+      )
       .unique();
 
     return track ? clientTrackFields(track, ownerId) : null;
@@ -112,7 +120,9 @@ export const save = mutation({
     prompt: v.optional(v.string()),
     providerModel: v.optional(v.string()),
     providerPredictionId: v.optional(v.string()),
+    sourceUrl: v.optional(v.string()),
     source: musicTrackSourceValidator,
+    tiktokMusicId: v.optional(v.string()),
     createdAt: v.string(),
   },
   handler: async (ctx, args) => {
@@ -124,11 +134,11 @@ export const save = mutation({
     const title = normalizeText(args.title, MUSIC_TITLE_MAX_LENGTH);
 
     if (!title) {
-      throw new Error("Music title is required.");
+      throw new Error("Sound title is required.");
     }
 
     if (existingTrack) {
-      throw new Error("Music track already exists.");
+      throw new Error("Sound already exists.");
     }
 
     await rateLimiter.limit(ctx, "convexRecordSave", {
@@ -167,7 +177,9 @@ export const saveFromProvider = mutation({
     prompt: v.optional(v.string()),
     providerModel: v.optional(v.string()),
     providerPredictionId: v.optional(v.string()),
+    sourceUrl: v.optional(v.string()),
     source: musicTrackSourceValidator,
+    tiktokMusicId: v.optional(v.string()),
     createdAt: v.string(),
   },
   handler: async (ctx, { secret, ownerId, ...args }) => {
@@ -180,7 +192,7 @@ export const saveFromProvider = mutation({
     const title = normalizeText(args.title, MUSIC_TITLE_MAX_LENGTH);
 
     if (!title) {
-      throw new Error("Music title is required.");
+      throw new Error("Sound title is required.");
     }
 
     if (existingTrack) {

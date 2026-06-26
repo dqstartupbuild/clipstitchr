@@ -26,7 +26,7 @@ export function MusicTrackListItem({
           <p className="truncate text-sm font-bold text-text-primary">
             {track.title}
           </p>
-          {track.isOwnedByCurrentUser ? <Badge>Mine</Badge> : null}
+          {track.source === "tiktok" ? <Badge>TikTok</Badge> : null}
         </div>
         <p className="mt-1 truncate text-xs font-semibold text-text-tertiary">
           {formatDuration(track.durationSeconds)}

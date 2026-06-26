@@ -132,6 +132,14 @@ Pexels API variables:
   Swipr draft path in the Pexels `Authorization` header.
 - Keep it server-side only. Do not prefix it with `NEXT_PUBLIC_`.
 
+Apify API variables:
+
+- `APIFY_TOKEN` enables server-side TikTok sound search and TikTok-link sound
+  import from `POST /api/music/tiktok/search` and
+  `POST /api/music/tiktok/import`.
+- The key is sent only to Apify's API from Next.js route handlers.
+- Keep it server-side only. Do not prefix it with `NEXT_PUBLIC_`.
+
 Existing Convex auth variables still apply:
 
 - `NEXT_PUBLIC_CONVEX_URL` in Next.js.
@@ -186,10 +194,9 @@ Optional Replicate model overrides:
   `bytedance/latentsync:637ce1919f807ca20da3a448ddc2743535d2853649574cd52a933120e9b9e293`,
   and `pixverse/lipsync`. LatentSync runs as one pass. PixVerse uses two
   30 second provider-worker ffmpeg segments for the default 60 second Clipr jobs.
-- Music is upload and shared-library selection only. Uploaded music is stored in
-  the shared music pool, consumes the normal R2 upload byte limits and Convex
-  record-save limits, and must only be uploaded by users who have the rights to
-  share and use the track.
+- Sounds are private account-scoped selections. Uploaded and TikTok-imported
+  sounds consume the normal R2 upload byte limits and Convex record-save limits.
+  TikTok search and import are protected before Apify calls run.
 Firecrawl website import:
 
 - `FIRECRAWL_API_KEY` is required in the Next.js runtime environment when users
@@ -214,7 +221,7 @@ Firecrawl website import:
 | R2 deletes | `POST /api/r2/delete-objects` | 2,000 objects/hour/user, burst 500 |
 | Swipr photo R2 upload signed URL | `POST /api/swipr/backgrounds/upload-url` | Uses the R2 upload signed URL and byte limits before creating an owner-owned Swipr photo PUT URL |
 | Swipr photo R2 download signed URL | `POST /api/swipr/backgrounds/download-url` | Uses the R2 download signed URL limit after validating the private owner-owned Swipr photo or global Pexels pack photo exists. The browser caches the signed URL per background id until shortly before expiry. |
-| Shared music R2 download signed URL | `POST /api/music/download-url` | Uses the R2 download signed URL limit after validating the shared music track exists. The browser caches the signed URL per track id until shortly before expiry. |
+| Private sound R2 download signed URL | `POST /api/music/download-url` | Uses the R2 download signed URL limit after validating the sound track belongs to the user. The browser caches the signed URL per track id until shortly before expiry. |
 | Upload image metadata analysis | `POST /api/uploads/analyze` for avatar/photo images and video fallback posters | 300/hour/user, burst 100; 10,000/30 days/user; global 6,000/hour |
 | Swipr background metadata analysis | `POST /api/swipr/backgrounds/analyze` | Uses the upload image metadata analysis limits before calling the configured upload image analysis model through Replicate |
 | Upload video action analysis | `POST /api/uploads/analyze` for browser-normalized video uploads, `POST /api/uploads/jobs` for upload worker fallback, and `POST /api/video-clips/score` for saved UGC/demo clip scoring | 60/hour/user, burst 20; 1,500/30 days/user; global 1,000/hour. The browser-first path consumes this when the normalized video is sent for immediate analysis. The fallback worker path consumes this before creating the durable upload media job; after normalization, the media worker creates an `upload-video-analysis` provider job. Manual clip scoring consumes this before signing saved R2 media, running Quick Edit frame/audio detectors, or calling the provider. Gemini full-video analysis runs first for videos up to 100 MB; OpenAI poster analysis is the fallback when Gemini fails or the video exceeds the analysis size cap. |
@@ -239,7 +246,9 @@ Firecrawl website import:
 | Clipr avatar still generation | `POST /api/clipr/jobs` before queued worker generation | 20 images/hour/user, burst 6; global provider bucket counted once per still. The provider worker creates the avatar still for Script, Reaction, and B-roll modes, then R2 upload byte limits are consumed before personal avatar-photo and thumbnail copies are saved. Demo mode skips avatar-still generation. |
 | Clipr voice and Script-mode lip-sync generation | `POST /api/clipr/jobs` before queued worker generation | 600 estimated voice seconds/hour/user, burst 180; global provider bucket counted by estimated seconds. Manual Clipr job creation consumes this only for Script mode. It protects ElevenLabs v3 speech generation and optional second-pass lip-sync models before the provider job is queued. PixVerse lip-sync jobs create temporary provider-worker ffmpeg video/audio segments in R2 before stitching the lip-synced segment outputs. |
 | Clipr video generation | `POST /api/clipr/jobs` before queued worker generation | 600 estimated video seconds/hour/user, burst 180; global provider bucket counted by estimated seconds. Script mode uses `prunaai/p-video-avatar`; Reaction and B-roll use the selected visual model; Demo mode uses Seedance with the selected Demo clip as a reference video. Reaction, B-roll, and Demo skip voice, music, and PixVerse. |
-| Shared music upload | `POST /api/music/upload` from the music picker | Uses the R2 upload byte limits before storing the shared music object, then `sharedMusicTracks.save` consumes the shared Convex record-save limit. Uploads are capped at 30 MB and accepted audio MIME types only. |
+| Private sound upload | `POST /api/music/upload` from the sound picker | Uses the R2 upload byte limits before storing the owner-scoped sound object, then `sharedMusicTracks.save` consumes the shared Convex record-save limit. Uploads are capped at 30 MB and accepted audio MIME types only. |
+| TikTok sound search | `POST /api/music/tiktok/search` from the sound picker | 60 lookups/hour/user, burst 20; global 600 lookups/hour, burst 100 across 5 shards. The route consumes this before calling Apify's `clockworks/tiktok-scraper`. |
+| TikTok sound import | `POST /api/music/tiktok/import` from the sound picker | Consumes the TikTok sound lookup limit and 30 imports/hour/user, burst 10; global 300 imports/hour, burst 60 across 5 shards before calling Apify, downloading the selected sound, writing to R2, and saving the owner-scoped sound record. |
 | Removed music generation routes | `POST /api/music/generate`, `POST /api/clipr/music`, `POST /api/stitches/music` | These routes return `410 Gone` and do not consume provider, R2, or Convex write limits because music generation has been removed. |
 | Clipr job polling | Reserved Clipr polling route and Convex job refreshes | 600/minute/user, burst 150 |
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |
@@ -306,8 +315,9 @@ with its text overlay. The poster upload consumes the normal R2 upload signed
 URL and byte limits before `swipes.save`.
 
 Stitchr Longr-mode rendering is browser-local and has no provider cost. If the
-user opens the shared music picker and uploads a new track, `POST /api/music/upload`
-consumes the normal R2 upload limits and `sharedMusicTracks.save` consumes the
+user opens the sound picker and uploads or imports a new sound,
+`POST /api/music/upload` or `POST /api/music/tiktok/import` consumes the
+relevant lookup/import/R2 limits and `sharedMusicTracks.save` consumes the
 shared Convex record-save limit. Saving the finished output stores a normal
 Stitch, so it consumes the shared R2 upload limits and the shared Convex
 record-save limit for `stitches.save`.
@@ -352,13 +362,13 @@ When the dashboard automatically assigns old unscoped content to a user's first
 product, `products.assignLegacyContentToPrimary` consumes the shared Convex
 metadata-update limit before patching records.
 
-The shared music picker searches `sharedMusicTracks`. Selecting an existing
-track only creates an R2 download signed URL after Convex validation and uses
-the normal R2 download limit. Uploading a new track goes through
-`POST /api/music/upload`, consumes R2 upload bytes before storage, saves one
-shared object under `shared/music/...`, and writes a `sharedMusicTracks` record.
-Shared music objects are not user-deletable through the personal R2 delete
-route because uploaded music is intentionally shared.
+The sound picker searches the user's owner-scoped `sharedMusicTracks` records.
+Selecting an existing track only creates an R2 download signed URL after Convex
+ownership validation and uses the normal R2 download limit. Uploading a new
+track goes through `POST /api/music/upload`, consumes R2 upload bytes before
+storage, saves one owner-scoped audio object, and writes a `sharedMusicTracks`
+record. TikTok sound search and import go through Apify with `APIFY_TOKEN` and
+consume their dedicated lookup/import limits before any Apify or download work.
 
 Clipr final preparation is now worker-owned. `POST /api/clipr/jobs` consumes the
 job, mode-specific script/avatar-still/video/speech/lip-sync, and
@@ -366,7 +376,7 @@ generated-seconds limits before creating the `manual-clipr` provider job. The
 provider worker creates generated speech when enabled, passes it into
 `prunaai/p-video-avatar`, optionally runs a second lip-sync pass, copies
 generated still/video/speech outputs into R2, and creates the media job. Selected
-shared music remains separate metadata. Music is mixed into a fresh downloadable
+sound metadata remains separate. Sound is mixed into a fresh downloadable
 file only when the user exports/downloads. That export-time Media Bunny render
 is browser-local and is not separately rate-limited.
 
@@ -377,8 +387,7 @@ stitch has text, the browser renders and uploads one text-aware stitch poster
 through the normal R2 upload limits and records it with `stitches.save` or
 `stitches.updatePoster`; export-time stitching and music mixing are
 browser-local and are not separately rate-limited. Saved stitches can attach a
-selected shared music track, including tracks uploaded through the shared music
-picker.
+selected, uploaded, or TikTok-imported sound from the user's account.
 
 Marking a saved stitch, script Clipr clip, or Swipe as posted or active is
 metadata-only. The matching posted-status mutation authenticates the owner,

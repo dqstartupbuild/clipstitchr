@@ -1344,6 +1344,7 @@ export function StitchrPageClient() {
     setBatchMessage(null);
 
     void generateStitchrBatch({
+      soundTrackId: selectedMusicTrack?.id,
       stitchrTextBackgroundColorChoice: batchTextBackgroundColorChoice,
       stitchrTextColorChoice: batchTextColorChoice,
       stitchrTextStrokeColorChoice: batchTextStrokeColorChoice,
@@ -1381,6 +1382,7 @@ export function StitchrPageClient() {
     batchTextStrokeColorChoice,
     batchTextStyleChoice,
     selectedTemplateId,
+    selectedMusicTrack?.id,
   ]);
   const handleSelectBatchHookVariant = useCallback(
     (planId: string, hookText: string) => {
@@ -1896,17 +1898,21 @@ export function StitchrPageClient() {
             hookPlans={visibleBatchHookPlans}
             isDisabled={isGeneratingBatch}
             isGenerating={isGeneratingBatch}
-            message={batchMessage}
-            mode={mode}
-            savingHookPlanId={savingHookPlanId}
+                message={batchMessage}
+                mode={mode}
+                selectedSoundTrack={selectedMusicTrack}
+                savingHookPlanId={savingHookPlanId}
             strokeColorChoice={batchTextStrokeColorChoice}
             textColorChoice={batchTextColorChoice}
             textStyleChoice={batchTextStyleChoice}
             onAcceptHookVariant={handleAcceptBatchHookVariant}
             onBackgroundColorChoiceChange={setBatchTextBackgroundColorChoice}
             onGenerate={handleGenerateBatch}
-            onModeChange={handleModeChange}
-            onRejectHookVariant={handleRejectBatchHookVariant}
+                onModeChange={handleModeChange}
+                onSelectSoundTrack={(track) => {
+                  setSelectedMusicTrack(track);
+                }}
+                onRejectHookVariant={handleRejectBatchHookVariant}
             onSelectHookVariant={handleSelectBatchHookVariant}
             onStrokeColorChoiceChange={setBatchTextStrokeColorChoice}
             onTextColorChoiceChange={setBatchTextColorChoice}

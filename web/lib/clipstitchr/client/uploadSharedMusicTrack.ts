@@ -31,7 +31,7 @@ export async function uploadSharedMusicTrack({
       message?: string;
     } | null;
 
-    throw new Error(body?.message ?? "Unable to upload music.");
+    throw new Error(body?.message ?? "Unable to upload sound.");
   }
 
   return ((await response.json()) as { track: SharedMusicTrack }).track;

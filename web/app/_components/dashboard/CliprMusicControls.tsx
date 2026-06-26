@@ -44,7 +44,7 @@ export function CliprMusicControls({
     <div className="min-w-0 max-w-full overflow-hidden rounded-lg border border-border bg-surface-elevated p-3">
       <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
         <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
-          Music
+          Sound
         </p>
         {isLoadingPreview ? (
           <span className="text-xs font-semibold text-text-tertiary">
@@ -69,12 +69,12 @@ export function CliprMusicControls({
               onChange={(event) => onEnabledChange(event.currentTarget.checked)}
             />
             <span className="min-w-0 text-sm leading-6 text-text-secondary">
-              Include music when exporting this Clip.
+              Include sound when exporting this Clip.
             </span>
           </label>
           <label className="block min-w-0 rounded-lg border border-border bg-white p-3">
             <span className="text-sm font-semibold text-text-primary">
-              Music volume
+              Sound volume
             </span>
             <input
               type="range"
@@ -93,7 +93,7 @@ export function CliprMusicControls({
         </div>
       ) : (
         <div className="mt-3 rounded-lg border border-dashed border-border bg-white p-4 text-sm font-semibold text-text-tertiary">
-          No music is attached to this Clip.
+          No sound is attached to this Clip.
         </div>
       )}
 
@@ -106,7 +106,7 @@ export function CliprMusicControls({
             isLoading={isSaving}
             onClick={onRemove}
           >
-            Remove music
+            Remove sound
           </Button>
         ) : null}
         {shouldShowSaveButton ? (
@@ -118,11 +118,11 @@ export function CliprMusicControls({
             isLoading={isSaving}
             onClick={onSave}
           >
-            Save music
+            Save sound
           </Button>
         ) : null}
         <MusicSelectorButton
-          label={music ? "Change music" : "Add music"}
+          label={music ? "Change sound" : "Add sound"}
           source="clipr"
           selectedTrackId={music?.sharedTrackId}
           onSelectTrack={onSelectTrack}

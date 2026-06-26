@@ -173,7 +173,7 @@ Do not cache these by default:
 - Swipr background image generation
 - Swapr video jobs
 - Clipr avatar still/video generation
-- Clipr, Stitchr, Longr, and shared-library music upload metadata
+- Clipr, Stitchr, Longr, and private sound upload/import metadata
 
 Reasons:
 

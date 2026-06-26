@@ -8,6 +8,7 @@ import { mutation } from "./_generated/server";
 import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
 import { createQuickEditSuggestionsFromMetadata } from "./createQuickEditSuggestionsFromMetadata";
 import { getQuickEditOverlayText } from "./getQuickEditOverlayText";
+import { createSoundTrackSnapshot } from "./createSoundTrackSnapshot";
 import { rateLimiter } from "./rateLimiter";
 import { requestWorkerLaunch } from "./workerLaunch";
 import { createStitchrBatchRunId } from "./stitchrBatchRunId";
@@ -129,6 +130,7 @@ export const plan = mutation({
     stitchrTextColorChoice: v.optional(v.string()),
     stitchrTextStrokeColorChoice: v.optional(v.string()),
     stitchrTextStyleChoice: v.optional(automationStitchrTextStyleChoiceValidator),
+    soundTrackId: v.optional(v.string()),
     templateId: v.optional(v.string()),
   },
   handler: async (
@@ -143,6 +145,7 @@ export const plan = mutation({
       stitchrTextColorChoice,
       stitchrTextStrokeColorChoice,
       stitchrTextStyleChoice,
+      soundTrackId,
       templateId,
     },
   ) => {
@@ -245,6 +248,22 @@ export const plan = mutation({
       : undefined;
     const templateSocialCaption =
       batchTemplate?.socialCaption?.trim() || undefined;
+    const soundTrack = soundTrackId
+      ? await ctx.db
+          .query("sharedMusicTracks")
+          .withIndex("by_uploaded_owner_music_id", (q) =>
+            q.eq("uploadedByOwnerId", ownerId).eq("id", soundTrackId),
+          )
+          .unique()
+      : null;
+
+    if (soundTrackId && !soundTrack) {
+      throw new Error("Unable to find that sound.");
+    }
+
+    const soundTrackSnapshot = soundTrack
+      ? createSoundTrackSnapshot(soundTrack)
+      : undefined;
     const ugcClips = clips.filter((clip) => clip.clipType === "ugc");
     const demoClips = clips.filter((clip) => clip.clipType === "demo");
 
@@ -483,6 +502,7 @@ export const plan = mutation({
           templateName: batchTemplate?.name,
           templateTextOverlay,
           templateSocialCaption,
+          soundTrack: soundTrackSnapshot,
           stitchrTextStyleChoice: selectedStitchrTextStyleChoice,
           stitchrTextStyleId,
           stitchrTextColorChoice: selectedStitchrTextColorChoice,

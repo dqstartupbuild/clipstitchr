@@ -5,4 +5,5 @@ export const musicTrackSourceValidator = v.union(
   v.literal("stitchr"),
   v.literal("swipr"),
   v.literal("library"),
+  v.literal("tiktok"),
 );

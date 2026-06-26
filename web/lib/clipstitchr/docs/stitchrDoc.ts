@@ -48,8 +48,8 @@ export const stitchrDoc = {
     {
       title: "Music",
       body: [
-        "You can add a shared music track when creating stitches or later from a saved stitch card. Uploads are added to the shared music pool, so only upload tracks you have the rights to share and use.",
-        "When you download a stitch with music enabled, ClipStitchr renders a fresh export with the current music settings. You can remove music, choose another track, or change volume later.",
+        "You can add a sound when creating stitches or later from a saved stitch card.",
+        "When you download a stitch with sound enabled, ClipStitchr renders a fresh export with the current sound settings. You can remove the sound, choose another one, or change volume later.",
       ],
     },
     {
