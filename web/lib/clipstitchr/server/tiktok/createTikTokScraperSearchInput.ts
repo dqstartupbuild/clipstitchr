@@ -3,6 +3,7 @@ import { createTikTokScraperBaseInput } from "@/lib/clipstitchr/server/tiktok/cr
 export function createTikTokScraperSearchInput(query: string, limit: number) {
   return {
     ...createTikTokScraperBaseInput(limit),
-    search: [query],
+    searchQueries: [query],
+    searchSection: "/video",
   };
 }

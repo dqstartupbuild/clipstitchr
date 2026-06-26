@@ -35,4 +35,13 @@ describe("createTikTokSoundCandidate", () => {
     expect(createTikTokSoundCandidate({ musicMeta: { musicName: "No URL" } }))
       .toBeNull();
   });
+
+  it("returns null for Apify error rows", () => {
+    expect(
+      createTikTokSoundCandidate({
+        error: "Video not found",
+        url: "https://www.tiktok.com/@creator/video/missing",
+      }),
+    ).toBeNull();
+  });
 });

@@ -8,6 +8,13 @@ import { getTikTokVideoDuration } from "@/lib/clipstitchr/server/tiktok/getTikTo
 export function createTikTokSoundCandidate(
   item: unknown,
 ): TikTokSoundCandidate | null {
+  if (
+    getTikTokItemString(item, "error") ||
+    getTikTokItemString(item, "errorCode")
+  ) {
+    return null;
+  }
+
   const title =
     getTikTokMusicMetaString(item, "musicName") ??
     getTikTokMusicMetaString(item, "title") ??
@@ -17,7 +24,8 @@ export function createTikTokSoundCandidate(
     getTikTokMusicMetaString(item, "authorName");
   const sourceUrl =
     getTikTokItemString(item, "webVideoUrl") ??
-    getTikTokItemString(item, "url");
+    getTikTokItemString(item, "submittedVideoUrl") ??
+    getTikTokItemString(item, "input");
 
   if (!sourceUrl) {
     return null;
