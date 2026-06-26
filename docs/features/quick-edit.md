@@ -18,7 +18,6 @@ Applying the action can save:
 - a tighter start trim
 - a tighter end trim
 - internal remove ranges that playback and export skip
-- replacement overlay text for saved Stitches
 - crop/framing metadata for future render support
 - a short explanation from the AI
 
@@ -66,11 +65,9 @@ UGC and Demo Quick Edit updates the clip's global default trim metadata. This
 affects future Stitchr selections and source clip preview/export, but it does
 not mutate existing saved Stitches.
 
-If the clip score includes an overlay text suggestion, that text is stored on
-the clip as a future hook hint. Stitchr auto-text sends the hint to the writing
-prompt as optional direction when generating overlay hooks and captions. The
-generated hook can use, ignore, or improve the hint, and the user can still edit
-the result before export.
+Score analysis no longer creates overlay text suggestions. Hook Lab owns hook
+and overlay writing so generated copy can keep learning from the user's saved
+winning and rejected examples.
 
 When a new Stitch is created, Stitchr copies the current source clip Quick Edit
 metadata into the saved Stitch as `ugcQuickEdit` and `demoQuickEdit`. Later
@@ -91,8 +88,6 @@ to a scored Stitch:
 - maps finished-stitch timeline cuts back into that Stitch's saved UGC/Demo
   edit metadata
 - updates the saved UGC/Demo trim ranges for that Stitch only
-- replaces the first saved text overlay when the AI suggests stronger overlay
-  text
 - clears stale saved render fields so the next preview or download uses the
   updated video
 - keeps the existing Stitch Score visible until the user chooses to rescore
@@ -112,11 +107,10 @@ and Demo sections.
 
 ## Automation Behavior
 
-Automated Stitchr uses the same source clip context as manual Stitchr. When a
-UGC or Demo clip has a score overlay suggestion, the provider worker passes that
-line to Stitchr auto-text as a soft hook hint. If Quick Edit has already been
-applied to the source clip, the applied Quick Edit overlay text wins over the
-raw score suggestion.
+Automated Stitchr uses the same source clip context as manual Stitchr. Raw score
+overlay suggestions are ignored. If a source clip already has applied Quick Edit
+overlay metadata from older records, that applied metadata can still be passed as
+a soft hook hint, but new score analysis does not create those hints.
 
 Automation also copies active source Quick Edit metadata into the saved Stitch
 as `ugcQuickEdit` and `demoQuickEdit`. The media worker stores those edits on
@@ -177,16 +171,12 @@ Score parsers accept optional `quickEditSuggestions`:
       "stats": "Screen stays mostly unchanged."
     }
   ],
-  "overlayText": {
-    "replaceWith": "The moment I realized my landing page was the problem",
-    "reason": "Makes the emotional hook clearer."
-  },
   "crop": {
     "mode": "smart-9x16",
     "removeBlackBars": true,
     "reason": "Current framing has black bars."
   },
-  "summary": "Cut the slow loading section and tightened the hook text."
+  "summary": "Cut the slow loading section and improve vertical framing."
 }
 ```
 
@@ -195,6 +185,10 @@ Applied metadata uses the same suggestion fields plus:
 - `appliedAt`
 - `source: "ai-score"` or `source: "manual-cut"`
 - `baseline` for undo/reset
+
+`overlayText` remains supported for historical or already-applied Quick Edit
+metadata, but score parsers strip provider-returned overlay text from new clip
+and Stitch scores.
 
 ## File Tree
 

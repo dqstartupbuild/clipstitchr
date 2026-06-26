@@ -1,5 +1,6 @@
 import type { ClipPerformanceScore } from "@/lib/clipstitchr/types/ClipPerformanceScore";
 import { parseQuickEditSuggestions } from "@/lib/clipstitchr/utils/parseQuickEditSuggestions";
+import { removeQuickEditOverlayText } from "@/lib/clipstitchr/utils/removeQuickEditOverlayText";
 
 function parseScore(value: unknown) {
   const score = Number(value);
@@ -45,8 +46,8 @@ export function parseClipPerformanceScore(
   const clarity = parseScore(source.clarity);
   const platformFit = parseScore(source.platformFit);
   const stitchFit = parseScore(source.stitchFit);
-  const quickEditSuggestions = parseQuickEditSuggestions(
-    source.quickEditSuggestions,
+  const quickEditSuggestions = removeQuickEditOverlayText(
+    parseQuickEditSuggestions(source.quickEditSuggestions),
   );
 
   return {

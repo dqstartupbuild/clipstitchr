@@ -71,11 +71,11 @@ attention first, show the product immediately after.
 11. Optionally generate ranked overlay hook options, a caption hook, and 3-5
    hashtags from saved product context, Hook Lab examples, and the selected
    UGC/demo clip descriptions. Stitchr auto-text can draw from product/ad
-   hook-library templates, but source names and template IDs stay hidden. When
-   selected clips have Quick Edit overlay text suggestions from score analysis,
-   auto-text treats those suggestions as soft hook direction, not required
-   copy. The top hook is applied automatically, alternate hooks stay selectable,
-   and the generated overlay and caption field stay editable. The backend
+   hook-library templates, but source names and template IDs stay hidden. Hook
+   Lab handles generated text; if selected clips have already-applied Quick
+   Edit overlay metadata from older records, auto-text can treat that metadata
+   as soft direction. The top hook is applied automatically, alternate hooks
+   stay selectable, and the generated overlay and caption field stay editable. The backend
    writing call uses `TEXT_WRITING_MODEL_ID`, which defaults to
    `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` is supported for
    higher-cost writing tests.
@@ -86,8 +86,8 @@ attention first, show the product immediately after.
 16. Mark saved stitches as posted after they go live so the Stitches library can
     separate reusable drafts from already-published assets.
 17. Score a saved stitch when the user wants a quick retention estimate,
-    hook-to-demo flow read, drop-off risks, trim ideas, overlay ideas, and a
-    stronger opening line before posting.
+    hook-to-demo flow read, drop-off risks, trim/cut ideas, and a posting
+    readiness recheck before posting.
 
 Saved stitch music is stored separately from the stitch so it can still be
 edited later. The saved finished video includes the current music choice when
@@ -135,9 +135,9 @@ Quick Edit is documented separately in `docs/features/quick-edit.md`. Applying
 Quick Edit to a source UGC or Demo clip affects future Stitchr selections only.
 Existing saved Stitches keep their own copied trim and Quick Edit metadata so
 the user can control each Stitch individually. Automated Stitchr drafts follow
-the same rule: they treat score overlay suggestions as soft text-generation
-hints and copy active source Quick Edit metadata into the saved automated
-Stitch.
+the same rule: they ignore raw score overlay suggestions, let Hook Lab handle
+generated text, and copy active source Quick Edit metadata into the saved
+automated Stitch.
 
 ## Product Principles
 

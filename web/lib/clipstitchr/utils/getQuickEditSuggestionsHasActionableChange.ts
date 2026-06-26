@@ -8,7 +8,6 @@ export function getQuickEditSuggestionsHasActionableChange(
       (quickEdit.trimStart !== undefined ||
         quickEdit.trimEnd !== undefined ||
         quickEdit.removeRanges.length ||
-        quickEdit.overlayText ||
         quickEdit.crop),
   );
 }

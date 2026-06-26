@@ -7,6 +7,11 @@ const score: StitchScore = {
   dropOffRiskPoints: ["2-4s: demo starts late"],
   hookToDemoFlow: 82,
   overallRetentionEstimate: 76,
+  reassessment: {
+    completedImprovements: ["The slow pause was cut"],
+    remainingImprovements: ["Demo could still start sooner"],
+    postingReadiness: "Almost ready after one more trim.",
+  },
   suggestedOpeningLine: "Wait for this part",
   suggestedOverlayText: ["Wait for this part"],
   suggestedTrims: ["Cut the quiet pause"],
@@ -22,7 +27,12 @@ describe("StitchScoreDetails", () => {
     expect(markup).toContain("Hook to demo flow");
     expect(markup).toContain("Drop-off risks");
     expect(markup).toContain("Cut the quiet pause");
+    expect(markup).toContain("Recheck");
+    expect(markup).toContain("The slow pause was cut");
+    expect(markup).toContain("Demo could still start sooner");
+    expect(markup).toContain("Almost ready after one more trim.");
     expect(markup).toContain("Stronger opening");
+    expect(markup).not.toContain("Overlay ideas");
     expect(markup).toContain("bg-surface-elevated");
     expect(markup).not.toContain("bg-purple-50/70");
     expect(markup).not.toContain("bg-white/80");

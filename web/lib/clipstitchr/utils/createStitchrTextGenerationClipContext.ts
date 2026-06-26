@@ -6,7 +6,6 @@ export function createStitchrTextGenerationClipContext(
   clip: VideoClipMetadata,
 ): StitchrTextGenerationClipContext {
   const overlayText = getQuickEditOverlayText({
-    performanceScore: clip.performanceScore,
     quickEdit: clip.quickEdit,
   });
 

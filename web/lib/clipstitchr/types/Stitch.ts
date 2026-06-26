@@ -43,6 +43,7 @@ export type Stitch = {
   textOverlays?: TextOverlay[];
   socialCaption?: string;
   stitchScore?: StitchScore;
+  firstStitchScore?: StitchScore;
   isPosted?: boolean;
   postedAt?: string;
   createdAt: string;

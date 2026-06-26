@@ -316,6 +316,9 @@ describe("convex stitches", () => {
     expect(setup.ctx.db.patch).toHaveBeenCalledWith(
       "doc_1",
       expect.objectContaining({
+        firstStitchScore: expect.objectContaining({
+          overallRetentionEstimate: 78,
+        }),
         stitchScore: expect.objectContaining({
           overallRetentionEstimate: 78,
         }),
@@ -347,6 +350,49 @@ describe("convex stitches", () => {
     );
     await expect(getHandler(remove)(setup.ctx, { id: "missing" })).resolves.toBeNull();
     expect(setup.ctx.db.delete).toHaveBeenCalledWith("doc_1");
+  });
+
+  it("archives the existing first Stitch score when rescoring legacy records", async () => {
+    const firstScore = {
+      dropOffRiskPoints: ["Slow middle"],
+      hookToDemoFlow: 70,
+      overallRetentionEstimate: 68,
+      suggestedOpeningLine: "Start closer to the result",
+      suggestedOverlayText: [],
+      suggestedTrims: ["Cut 3-5s"],
+      summary: "Needs a tighter middle.",
+    };
+    const nextScore = {
+      dropOffRiskPoints: ["Demo still lands a little late"],
+      hookToDemoFlow: 82,
+      overallRetentionEstimate: 84,
+      reassessment: {
+        completedImprovements: ["The 3-5s cut is gone"],
+        remainingImprovements: ["Demo can still arrive sooner"],
+        postingReadiness: "Much closer and ready after one last trim.",
+      },
+      suggestedOpeningLine: "Open on the result",
+      suggestedOverlayText: [],
+      suggestedTrims: ["Trim the demo handoff"],
+      summary: "The cut improved retention.",
+    };
+    const setup = createCtx([
+      {
+        _id: "doc_1",
+        id: "stitch_1",
+        stitchScore: firstScore,
+      },
+    ]);
+
+    await getHandler(updateScore)(setup.ctx, {
+      id: "stitch_1",
+      stitchScore: nextScore,
+    });
+
+    expect(setup.ctx.db.patch).toHaveBeenCalledWith("doc_1", {
+      firstStitchScore: firstScore,
+      stitchScore: nextScore,
+    });
   });
 
   it("preserves Stitch score when applying and resetting Quick Edit", async () => {

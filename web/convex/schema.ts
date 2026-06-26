@@ -286,6 +286,7 @@ export default defineSchema({
     textOverlays: v.optional(textOverlaysValidator),
     socialCaption: v.optional(v.string()),
     stitchScore: v.optional(stitchScoreValidator),
+    firstStitchScore: v.optional(stitchScoreValidator),
     isPosted: v.optional(v.boolean()),
     postedAt: v.optional(v.string()),
     automation: v.optional(automationProvenanceValidator),

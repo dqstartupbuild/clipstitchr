@@ -18,7 +18,13 @@ export function StitchScoreDetails({ score }: StitchScoreDetailsProps) {
   const noteItems = [
     { label: "Drop-off risks", values: score.dropOffRiskPoints },
     { label: "Suggested trims", values: score.suggestedTrims },
-    { label: "Overlay ideas", values: score.suggestedOverlayText },
+  ].filter((item) => item.values.length);
+  const reassessmentItems = [
+    { label: "Fixed", values: score.reassessment?.completedImprovements ?? [] },
+    {
+      label: "Still needs work",
+      values: score.reassessment?.remainingImprovements ?? [],
+    },
   ].filter((item) => item.values.length);
 
   return (
@@ -85,6 +91,36 @@ export function StitchScoreDetails({ score }: StitchScoreDetailsProps) {
         <p className="mt-4 rounded-md border border-border bg-surface px-3 py-2 text-sm font-semibold text-text-primary">
           Stronger opening: {score.suggestedOpeningLine}
         </p>
+      ) : null}
+      {score.reassessment ? (
+        <div className="mt-4 border-t border-border pt-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
+            Recheck
+          </p>
+          {score.reassessment.postingReadiness ? (
+            <p className="mt-2 text-sm leading-6 text-text-secondary">
+              {score.reassessment.postingReadiness}
+            </p>
+          ) : null}
+          {reassessmentItems.length ? (
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {reassessmentItems.map((item) => (
+                <div key={item.label} className="min-w-0">
+                  <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
+                    {item.label}
+                  </p>
+                  <ul className="mt-2 space-y-1 text-sm leading-6 text-text-secondary">
+                    {item.values.map((value) => (
+                      <li key={value} className="break-words">
+                        {value}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
       ) : null}
     </section>
   );

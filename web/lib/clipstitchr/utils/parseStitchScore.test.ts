@@ -10,6 +10,17 @@ describe("parseStitchScore", () => {
             dropOffRiskPoints: [" 0-2s pause "],
             hookToDemoFlow: 101,
             overallRetentionEstimate: 72.4,
+            quickEditSuggestions: {
+              overlayText: {
+                replaceWith: "Do not save this",
+              },
+              removeRanges: [],
+            },
+            reassessment: {
+              completedImprovements: [" Cut tightened "],
+              remainingImprovements: [" Crop still feels loose "],
+              postingReadiness: " Closer, but check the demo handoff. ",
+            },
             suggestedOpeningLine: " Wait for it ",
             suggestedOverlayText: [" This changed fast "],
             suggestedTrims: [" Cut the first pause "],
@@ -21,8 +32,13 @@ describe("parseStitchScore", () => {
       dropOffRiskPoints: ["0-2s pause"],
       hookToDemoFlow: 100,
       overallRetentionEstimate: 72,
+      reassessment: {
+        completedImprovements: ["Cut tightened"],
+        remainingImprovements: ["Crop still feels loose"],
+        postingReadiness: "Closer, but check the demo handoff.",
+      },
       suggestedOpeningLine: "Wait for it",
-      suggestedOverlayText: ["This changed fast"],
+      suggestedOverlayText: [],
       suggestedTrims: ["Cut the first pause"],
       summary: "Good handoff",
     });

@@ -472,11 +472,9 @@ export const planDaily = mutation({
       const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(ugc.quickEdit);
       const demoQuickEdit = createQuickEditSuggestionsFromMetadata(demo.quickEdit);
       const ugcOverlayText = getQuickEditOverlayText({
-        performanceScore: ugc.performanceScore,
         quickEdit: ugc.quickEdit,
       });
       const demoOverlayText = getQuickEditOverlayText({
-        performanceScore: demo.performanceScore,
         quickEdit: demo.quickEdit,
       });
 

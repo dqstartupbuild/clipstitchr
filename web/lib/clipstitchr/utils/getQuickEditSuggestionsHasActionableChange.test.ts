@@ -18,6 +18,17 @@ describe("getQuickEditSuggestionsHasActionableChange", () => {
     ).toBe(false);
   });
 
+  it("returns false for overlay-only suggestions", () => {
+    expect(
+      getQuickEditSuggestionsHasActionableChange({
+        overlayText: {
+          replaceWith: "This should come from Hook Lab",
+        },
+        removeRanges: [],
+      }),
+    ).toBe(false);
+  });
+
   it("returns true for edits that can change playback or framing", () => {
     expect(
       getQuickEditSuggestionsHasActionableChange({

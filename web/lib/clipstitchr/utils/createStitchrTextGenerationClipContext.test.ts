@@ -3,7 +3,7 @@ import { createStitchrTextGenerationClipContext } from "@/lib/clipstitchr/utils/
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
 describe("createStitchrTextGenerationClipContext", () => {
-  it("includes score overlay suggestions as hook hints", () => {
+  it("ignores raw score overlay suggestions as hook hints", () => {
     const context = createStitchrTextGenerationClipContext({
       clipType: "ugc",
       id: "ugc_1",
@@ -27,14 +27,9 @@ describe("createStitchrTextGenerationClipContext", () => {
       videoDescription: "A founder pauses after seeing a messy landing page.",
     } as unknown as VideoClipMetadata);
 
-    expect(context).toEqual(
-      expect.objectContaining({
-        id: "ugc_1",
-        quickEditOverlayTextHint: "The moment I saw the real problem",
-        quickEditOverlayTextReason: "The suggestion matches the visual reaction.",
-        role: "ugc",
-      }),
-    );
+    expect(context.quickEditOverlayTextHint).toBeUndefined();
+    expect(context.quickEditOverlayTextReason).toBeUndefined();
+    expect(context.role).toBe("ugc");
   });
 
   it("prefers applied Quick Edit overlay text over score suggestions", () => {

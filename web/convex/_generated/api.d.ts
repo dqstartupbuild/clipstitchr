@@ -61,6 +61,7 @@ import type * as getCompletedRunToolLabel from "../getCompletedRunToolLabel.js";
 import type * as getDefaultAvatarForOwner from "../getDefaultAvatarForOwner.js";
 import type * as getDefaultProductForOwner from "../getDefaultProductForOwner.js";
 import type * as getEnabledAutomationToolsForPreference from "../getEnabledAutomationToolsForPreference.js";
+import type * as getFirstStitchScoreUpdate from "../getFirstStitchScoreUpdate.js";
 import type * as getOwnerHasContent from "../getOwnerHasContent.js";
 import type * as getOwnerHasLegacyProductRecords from "../getOwnerHasLegacyProductRecords.js";
 import type * as getOwnerHasStitches from "../getOwnerHasStitches.js";
@@ -154,6 +155,7 @@ import type * as validators_replicateJobPurpose from "../validators/replicateJob
 import type * as validators_replicatePredictionStatus from "../validators/replicatePredictionStatus.js";
 import type * as validators_stitchMusicMetadata from "../validators/stitchMusicMetadata.js";
 import type * as validators_stitchScore from "../validators/stitchScore.js";
+import type * as validators_stitchScoreReassessment from "../validators/stitchScoreReassessment.js";
 import type * as validators_stitchSequenceSegment from "../validators/stitchSequenceSegment.js";
 import type * as validators_stitchrHookFeedbackStatus from "../validators/stitchrHookFeedbackStatus.js";
 import type * as validators_stitchrHookPlanSource from "../validators/stitchrHookPlanSource.js";
@@ -234,6 +236,7 @@ declare const fullApi: ApiFromModules<{
   getDefaultAvatarForOwner: typeof getDefaultAvatarForOwner;
   getDefaultProductForOwner: typeof getDefaultProductForOwner;
   getEnabledAutomationToolsForPreference: typeof getEnabledAutomationToolsForPreference;
+  getFirstStitchScoreUpdate: typeof getFirstStitchScoreUpdate;
   getOwnerHasContent: typeof getOwnerHasContent;
   getOwnerHasLegacyProductRecords: typeof getOwnerHasLegacyProductRecords;
   getOwnerHasStitches: typeof getOwnerHasStitches;
@@ -327,6 +330,7 @@ declare const fullApi: ApiFromModules<{
   "validators/replicatePredictionStatus": typeof validators_replicatePredictionStatus;
   "validators/stitchMusicMetadata": typeof validators_stitchMusicMetadata;
   "validators/stitchScore": typeof validators_stitchScore;
+  "validators/stitchScoreReassessment": typeof validators_stitchScoreReassessment;
   "validators/stitchSequenceSegment": typeof validators_stitchSequenceSegment;
   "validators/stitchrHookFeedbackStatus": typeof validators_stitchrHookFeedbackStatus;
   "validators/stitchrHookPlanSource": typeof validators_stitchrHookPlanSource;

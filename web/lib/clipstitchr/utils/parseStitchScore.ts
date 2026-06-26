@@ -1,5 +1,7 @@
 import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
 import { parseQuickEditSuggestions } from "@/lib/clipstitchr/utils/parseQuickEditSuggestions";
+import { parseStitchScoreReassessment } from "@/lib/clipstitchr/utils/parseStitchScoreReassessment";
+import { removeQuickEditOverlayText } from "@/lib/clipstitchr/utils/removeQuickEditOverlayText";
 
 function parseScore(value: unknown) {
   const score = Number(value);
@@ -64,9 +66,10 @@ export function parseStitchScore(value: unknown): StitchScore | undefined {
 
   const hookToDemoFlow =
     parseScore(source.hookToDemoFlow) ?? overallRetentionEstimate;
-  const quickEditSuggestions = parseQuickEditSuggestions(
-    source.quickEditSuggestions,
+  const quickEditSuggestions = removeQuickEditOverlayText(
+    parseQuickEditSuggestions(source.quickEditSuggestions),
   );
+  const reassessment = parseStitchScoreReassessment(source.reassessment);
 
   return {
     overallRetentionEstimate,
@@ -74,8 +77,9 @@ export function parseStitchScore(value: unknown): StitchScore | undefined {
     summary: parseText(source.summary, 240),
     dropOffRiskPoints: parseTextList(source.dropOffRiskPoints, 4, 180),
     suggestedTrims: parseTextList(source.suggestedTrims, 4, 180),
-    suggestedOverlayText: parseTextList(source.suggestedOverlayText, 3, 120),
+    suggestedOverlayText: [],
     suggestedOpeningLine: parseText(source.suggestedOpeningLine, 140),
     ...(quickEditSuggestions ? { quickEditSuggestions } : {}),
+    ...(reassessment ? { reassessment } : {}),
   };
 }

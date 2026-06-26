@@ -6,10 +6,10 @@ export const stitchScoreDoc = {
   description:
     "Check a finished Stitch before you post it, fix the wrong thing, or find out too late that the opener dragged.",
   summary:
-    "Score a saved Stitch, see where people may drop off, and get quick trim or text ideas before you use it.",
+    "Score a saved Stitch, see where people may drop off, and get quick trim ideas before you use it.",
   category: "feature",
   order: 16,
-  updated: "2026-06-14",
+  updated: "2026-06-26",
   sections: [
     {
       title: "What stitch scores do",
@@ -21,14 +21,15 @@ export const stitchScoreDoc = {
     {
       title: "How to score a Stitch",
       body: [
-        "Open your saved Stitches, choose the Stitch menu, and select Score stitch. ClipStitchr saves the score on that Stitch when it is done.",
+        "Open your saved Stitches, choose the Stitch menu, and select Score stitch. ClipStitchr saves the first score on that Stitch and keeps it as the original read.",
+        "When you rescore, ClipStitchr checks whether the first score's fixes were actually handled and shows the new score as the main one.",
       ],
       bullets: [
         "Open the Library.",
         "Go to Stitches.",
         "Open the Stitch menu.",
         "Choose Score stitch.",
-        "Open the details to see the risks, trims, overlay ideas, and stronger opening line.",
+        "Open the details to see the risks, trims, and posting recheck.",
       ],
     },
     {
@@ -41,8 +42,7 @@ export const stitchScoreDoc = {
         "Hook to demo flow: how well the opener earns the demo.",
         "Drop-off risks: moments where viewers may leave.",
         "Suggested trims: what to cut or start sooner.",
-        "Overlay ideas: short text that may make the Stitch easier to watch.",
-        "Stronger opening line: one cleaner first line to try.",
+        "Posting recheck: what was fixed, what still needs work, and whether it feels ready.",
       ],
     },
   ],

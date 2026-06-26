@@ -6,6 +6,7 @@ import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { createNotification } from "./createNotification";
+import { getFirstStitchScoreUpdate } from "./getFirstStitchScoreUpdate";
 import { getQuickEditWithRemoveRanges } from "./getQuickEditWithRemoveRanges";
 import { getStitchProductId } from "./getStitchProductId";
 import { getStitchNotificationCopy } from "./getStitchNotificationCopy";
@@ -923,6 +924,7 @@ export const updateScore = mutation({
     }
 
     await ctx.db.patch(stitch._id, {
+      firstStitchScore: getFirstStitchScoreUpdate({ stitch, stitchScore }),
       stitchScore,
     });
     const updatedStitch = await ctx.db.get(stitch._id);
@@ -961,6 +963,7 @@ export const updateScoreFromProvider = mutation({
     }
 
     await ctx.db.patch(stitch._id, {
+      firstStitchScore: getFirstStitchScoreUpdate({ stitch, stitchScore }),
       stitchScore,
     });
     const updatedStitch = await ctx.db.get(stitch._id);

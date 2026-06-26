@@ -7,19 +7,12 @@ type QuickEditLike = {
   overlayText?: QuickEditOverlayTextLike;
 };
 
-type PerformanceScoreLike = {
-  quickEditSuggestions?: QuickEditLike;
-};
-
 export function getQuickEditOverlayText({
-  performanceScore,
   quickEdit,
 }: {
-  performanceScore?: PerformanceScoreLike | null;
   quickEdit?: QuickEditLike | null;
 }) {
-  const overlayText =
-    quickEdit?.overlayText ?? performanceScore?.quickEditSuggestions?.overlayText;
+  const overlayText = quickEdit?.overlayText;
   const replaceWith = overlayText?.replaceWith?.trim();
   const reason = overlayText?.reason?.trim();
 

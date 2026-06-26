@@ -47,6 +47,11 @@ Stored fields:
 - `fixes`: up to 3 short fixes
 - `quickEditSuggestions`: optional structured non-destructive edit suggestions
 
+New clip scores do not save text overlay suggestions. Hook Lab owns hook and
+overlay writing so generated copy can adapt to each product's saved examples.
+Historical `quickEditSuggestions.overlayText` data remains readable, but score
+parsers strip provider-returned overlay text from new scoring responses.
+
 The UI turns `overall` into simple labels:
 
 - `80+`: Worth using
@@ -195,6 +200,7 @@ Analysis prompts, parsing, and types:
 - `web/lib/clipstitchr/utils/parseQuickEditSuggestions.ts`
 - `web/lib/clipstitchr/utils/parseQuickEditCandidate.ts`
 - `web/lib/clipstitchr/utils/parseQuickEditCandidates.ts`
+- `web/lib/clipstitchr/utils/removeQuickEditOverlayText.ts`
 - `web/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange.ts`
 - `web/lib/clipstitchr/utils/mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis.ts`
 

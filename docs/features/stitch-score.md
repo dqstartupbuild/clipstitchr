@@ -19,23 +19,34 @@ reviews the saved stitch and returns:
 - a hook-to-demo flow score from 0 to 100
 - drop-off risk points
 - suggested trims
-- suggested overlay text
-- a stronger opening line
+- a posting-readiness recheck when the Stitch is rescored
 - optional structured Quick Edit suggestions
 
 The score is guidance, not a performance guarantee. It helps the user decide
-what to trim, rewrite, or use first before they spend time on the wrong fix.
+what to trim, cut, crop, or use first before they spend time on the wrong fix.
+Score analysis does not suggest new text overlays. Hook Lab owns hook and
+overlay writing so generated copy can keep learning from user feedback.
 
 ## Behavior
 
-Stitch scores are stored on the stitch record as `stitchScore`.
+The current primary score is stored on the stitch record as `stitchScore`.
+The first score is also stored as `firstStitchScore` and is never replaced by
+later rescoring. On the first score, both fields point at the same score. On a
+rescore, `stitchScore` becomes the new primary score while `firstStitchScore`
+stays as the original read. Legacy records that already had `stitchScore`
+without `firstStitchScore` backfill the existing score into `firstStitchScore`
+the next time they are rescored.
 
 Existing manually saved stitches will not have a score until the user chooses
 **Score stitch**. Normal user-created batches also start unscored so large
 batches do not automatically spend provider quota. Automated Stitchr outputs can
 queue a background `stitch-score-analysis` provider job after the media worker
 saves the Stitch, because the automation budget has already gated that output.
-The user can score or rescore any saved stitch from the card menu.
+The user can score or rescore any saved stitch from the card menu. Rescoring is
+treated as a reassessment instead of a totally new critique: the prompt includes
+the archived first score, the current saved trims/cuts/crop metadata, and asks
+which original fixes were actually handled before judging whether the Stitch is
+ready to post.
 
 Before scoring, the client makes sure the Stitch has a saved rendered MP4 when
 the browser can create one. The full-video model receives that finished video.
@@ -53,7 +64,7 @@ because those edits can change the finished video and the score.
 
 When a normal saved Stitch score includes `quickEditSuggestions`, the Stitch
 card can show **Improve stitch**. Applying it updates only that saved Stitch's
-trim, internal cut, overlay text, and Quick Edit metadata. Reset restores the
+trim, internal cut, crop, and Quick Edit metadata. Reset restores the
 saved Stitch baseline from before the action and does not pull the latest UGC
 or Demo clip defaults. Applying or resetting Quick Edit keeps the visible score
 until the user chooses to rescore.
@@ -62,8 +73,7 @@ Stitch Score can also return hybrid Quick Edit `candidates` for likely weak
 ranges, using signals such as loading text, low motion, static frames, silence,
 no words, and long pauses. Candidate-only scores are stored for review but do
 not show **Improve stitch**. The action appears only when the suggestion also
-contains an actual editable change such as a trim, cut range, overlay text, or
-crop metadata.
+contains an actual editable change such as a trim, cut range, or crop metadata.
 
 When a saved rendered Stitch MP4 is available, Quick Edit detectors sample its
 frames and audio before provider scoring and merge the resulting candidate
@@ -73,14 +83,18 @@ evidence into the saved score. See `docs/features/quick-edit-detectors.md`.
 
 Stored fields:
 
+- `firstStitchScore`: archived first score, kept forever
+- `stitchScore`: current primary score
 - `overallRetentionEstimate`: 0-100
 - `hookToDemoFlow`: 0-100
 - `summary`: one short reason for the score
 - `dropOffRiskPoints`: up to 4 short risk notes
 - `suggestedTrims`: up to 4 specific trim notes
-- `suggestedOverlayText`: up to 3 short overlay ideas
-- `suggestedOpeningLine`: one stronger first line
+- `suggestedOverlayText`: legacy field kept as an empty array for new scores
+- `suggestedOpeningLine`: optional stronger opening beat note
 - `quickEditSuggestions`: optional non-destructive edit instructions
+- `reassessment`: optional rescore details with completed improvements,
+  remaining improvements, and posting readiness
 
 ## Backend Flow
 
@@ -98,7 +112,8 @@ Manual scoring:
    `createStitchScoreFallbackOutputText` sends the same scoring prompt through
    the poster/image analysis model with the saved stitch poster when available.
 7. `parseStitchScore` validates and clamps the provider response.
-8. `stitches.updateScore` saves the score on the stitch.
+8. `stitches.updateScore` saves the score on the stitch, preserving the first
+   score in `firstStitchScore` and replacing `stitchScore` as the primary score.
 9. The dashboard library refreshes and shows the score badge/details.
 
 Automated scoring:
@@ -109,7 +124,8 @@ Automated scoring:
 3. The provider worker claims that job when the `stitchr` worker tool is
    enabled.
 4. The provider worker runs the same Stitch Score prompt and saves the parsed
-   score through `stitches.updateScoreFromProvider`.
+   score through `stitches.updateScoreFromProvider`, which uses the same first
+   score preservation behavior.
 
 ## Model Decision
 
@@ -147,7 +163,9 @@ Backend and data model:
 
 - `web/convex/schema.ts`
 - `web/convex/stitches.ts`
+- `web/convex/getFirstStitchScoreUpdate.ts`
 - `web/convex/validators/stitchScore.ts`
+- `web/convex/validators/stitchScoreReassessment.ts`
 - `web/convex/rateLimiter.ts`
 - `web/convex/rateLimits.ts`
 - `web/convex/providerJobs.ts`
@@ -170,17 +188,20 @@ API, prompt, parsing, and client call:
 - `web/lib/clipstitchr/server/formatStitchScoreSourceClipContext.ts`
 - `web/lib/clipstitchr/server/readStitchScoreRequest.ts`
 - `web/lib/clipstitchr/types/StitchScore.ts`
+- `web/lib/clipstitchr/types/StitchScoreReassessment.ts`
 - `web/lib/clipstitchr/types/QuickEditSuggestions.ts`
 - `web/lib/clipstitchr/types/QuickEditCandidate.ts`
 - `web/lib/clipstitchr/types/QuickEditCandidateSignal.ts`
 - `web/lib/clipstitchr/utils/getStitchScoreLabel.ts`
 - `web/lib/clipstitchr/utils/getStitchScoreSourceClipIds.ts`
 - `web/lib/clipstitchr/utils/parseStitchScore.ts`
+- `web/lib/clipstitchr/utils/parseStitchScoreReassessment.ts`
 - `web/lib/clipstitchr/utils/parseQuickEditSuggestions.ts`
 - `web/lib/clipstitchr/utils/parseQuickEditCandidate.ts`
 - `web/lib/clipstitchr/utils/parseQuickEditCandidates.ts`
 - `web/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange.ts`
 - `web/lib/clipstitchr/utils/mergeQuickEditDetectorCandidatesIntoStitchScore.ts`
+- `web/lib/clipstitchr/utils/removeQuickEditOverlayText.ts`
 
 UI:
 

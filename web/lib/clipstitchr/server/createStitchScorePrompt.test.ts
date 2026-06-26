@@ -63,12 +63,69 @@ describe("createStitchScorePrompt", () => {
     expect(prompt).toContain("hookToDemoFlow");
     expect(prompt).toContain("dropOffRiskPoints");
     expect(prompt).toContain("suggestedTrims");
-    expect(prompt).toContain("suggestedOverlayText");
     expect(prompt).toContain("suggestedOpeningLine");
     expect(prompt).toContain("quickEditSuggestions.candidates");
     expect(prompt).toContain("loading-text");
     expect(prompt).toContain("manual cut editor");
     expect(prompt).toContain("Wait for it");
     expect(prompt).toContain("Person reacts in the first second.");
+    expect(prompt).toContain("first-score");
+    expect(prompt).toContain("Hook Lab handles hook and overlay writing.");
+    expect(prompt).toContain("Do not return suggestedOverlayText");
+    expect(prompt).not.toContain('"suggestedOverlayText"');
+    expect(prompt).not.toContain('"overlayText":{"replaceWith"');
+  });
+
+  it("includes archived first-score context for rescoring", () => {
+    const prompt = createStitchScorePrompt({
+      sourceClips: [],
+      stitch: {
+        createdAt: "2026-06-14T00:00:00.000Z",
+        demoClipId: "demo_1",
+        demoClipName: "Demo",
+        duration: 10,
+        firstStitchScore: {
+          dropOffRiskPoints: ["3-5s loading screen"],
+          hookToDemoFlow: 70,
+          overallRetentionEstimate: 66,
+          quickEditSuggestions: {
+            removeRanges: [{ start: 3, end: 5 }],
+          },
+          suggestedOpeningLine: "Start on the reaction",
+          suggestedOverlayText: [],
+          suggestedTrims: ["Cut the loading screen"],
+          summary: "Cut the slow middle before posting.",
+        },
+        height: 1920,
+        id: "stitch_1",
+        name: "Reaction + Demo",
+        ownerId: "user_123",
+        quickEdit: {
+          appliedAt: "2026-06-15T00:00:00.000Z",
+          removeRanges: [{ start: 3, end: 5 }],
+          source: "ai-score",
+        },
+        stitchScore: {
+          dropOffRiskPoints: ["3-5s loading screen"],
+          hookToDemoFlow: 70,
+          overallRetentionEstimate: 66,
+          suggestedOpeningLine: "Start on the reaction",
+          suggestedOverlayText: [],
+          suggestedTrims: ["Cut the loading screen"],
+          summary: "Cut the slow middle before posting.",
+        },
+        ugcClipId: "ugc_1",
+        ugcClipName: "Reaction",
+        width: 1080,
+      } as never,
+      videoInputDescription: "Rendered video attached.",
+    });
+
+    expect(prompt).toContain("Reassess this finished ClipStitchr");
+    expect(prompt).toContain("rescore-reassessment");
+    expect(prompt).toContain("firstScore");
+    expect(prompt).toContain("completedImprovements");
+    expect(prompt).toContain("remainingImprovements");
+    expect(prompt).toContain("Cut the loading screen");
   });
 });
