@@ -92,8 +92,6 @@ export function MusicSelectorButton({
       const track = await importTikTokSound(sourceUrl);
 
       await onSelectTrack(track);
-      setIsOpen(false);
-      setTikTokCandidates([]);
     } catch (nextError) {
       setError(
         nextError instanceof Error

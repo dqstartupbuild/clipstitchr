@@ -218,7 +218,14 @@ describe("MusicSelectorButton", () => {
       "https://www.tiktok.com/@creator/video/1",
     );
     expect(onSelectTrack).toHaveBeenCalledWith(mocks.uploadedTrack);
-    expect(mocks.setStateCalls[1]).toHaveBeenCalledWith([]);
+    expect(mocks.setStateCalls[0]).not.toHaveBeenCalledWith(false);
+    expect(mocks.setStateCalls[1]).toHaveBeenCalledWith([
+      {
+        sourceUrl: "https://www.tiktok.com/@creator/video/1",
+        title: "Trend Sound",
+      },
+    ]);
+    expect(mocks.setStateCalls[1]).toHaveBeenCalledTimes(1);
     expect(mocks.setStateCalls[3]).toHaveBeenCalledWith(true);
     expect(mocks.setStateCalls[3]).toHaveBeenCalledWith(false);
     expect(mocks.setStateCalls[4]).toHaveBeenCalledWith(true);

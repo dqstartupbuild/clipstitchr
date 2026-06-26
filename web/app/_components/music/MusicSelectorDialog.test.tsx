@@ -94,16 +94,31 @@ describe("MusicSelectorDialog", () => {
     const candidates: TikTokSoundCandidate[] = [
       {
         author: "Creator",
+        musicId: "music_1",
         playCount: 1200,
+        playUrl: "https://example.com/sound.mp3",
         sourceUrl: "https://www.tiktok.com/@creator/video/1",
         title: "Trend Sound",
       },
     ];
     const markup = renderDialog({ tiktokCandidates: candidates });
+    const savedMarkup = renderDialog({
+      tiktokCandidates: candidates,
+      tracks: [
+        createTrack({
+          id: "saved_tiktok",
+          source: "tiktok",
+          sourceUrl: "https://www.tiktok.com/@creator/video/1",
+          tiktokMusicId: "music_1",
+        }),
+      ],
+    });
 
     expect(markup).toContain("Trend Sound");
     expect(markup).toContain("Creator");
+    expect(markup).toContain("Preview Trend Sound");
     expect(markup).toContain("Save");
+    expect(savedMarkup).toContain("Saved");
   });
 
   it("renders loading, error, and empty states", () => {

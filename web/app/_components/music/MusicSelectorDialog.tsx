@@ -10,6 +10,7 @@ import { SearchInput } from "@/app/_components/ui/SearchInput";
 import { ACCEPTED_MUSIC_TYPES } from "@/lib/clipstitchr/constants/acceptedMusicTypes";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { TikTokSoundCandidate } from "@/lib/clipstitchr/types/TikTokSoundCandidate";
+import { getTikTokSoundCandidateIsSaved } from "@/lib/clipstitchr/utils/getTikTokSoundCandidateIsSaved";
 
 type MusicSelectorDialogProps = {
   error: string | null;
@@ -188,6 +189,10 @@ export function MusicSelectorDialog({
                     <TikTokSoundCandidateListItem
                       key={`${candidate.musicId ?? candidate.sourceUrl}:${candidate.title}`}
                       candidate={candidate}
+                      isSaved={getTikTokSoundCandidateIsSaved(
+                        candidate,
+                        tracks,
+                      )}
                       isSaving={isSavingTikTokSound}
                       onSave={onImportTikTokSound}
                     />
