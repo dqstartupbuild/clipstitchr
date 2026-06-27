@@ -1,4 +1,5 @@
 import { createPostBridgeUploadUrl } from "@/lib/clipstitchr/server/postBridge/createPostBridgeUploadUrl";
+import { normalizePostBridgeMediaMimeType } from "@/lib/clipstitchr/server/postBridge/normalizePostBridgeMediaMimeType";
 
 type UploadPostBridgeMediaOptions = {
   apiKey: string;
@@ -11,16 +12,17 @@ export async function uploadPostBridgeMedia({
   file,
   name,
 }: UploadPostBridgeMediaOptions) {
+  const mimeType = normalizePostBridgeMediaMimeType(file.type);
   const upload = await createPostBridgeUploadUrl({
     apiKey,
-    mimeType: file.type,
+    mimeType,
     name,
     sizeBytes: file.size,
   });
   const response = await fetch(upload.upload_url, {
     body: await file.arrayBuffer(),
     headers: {
-      "Content-Type": file.type,
+      "Content-Type": mimeType,
     },
     method: "PUT",
   });

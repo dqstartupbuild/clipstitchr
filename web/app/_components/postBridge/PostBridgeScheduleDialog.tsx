@@ -13,6 +13,8 @@ import { fetchPostBridgeAccountOptions } from "@/lib/clipstitchr/client/fetchPos
 import { schedulePostBridgePost } from "@/lib/clipstitchr/client/schedulePostBridgePost";
 import { useAutomaticPostBridgeSound } from "@/lib/clipstitchr/hooks/useAutomaticPostBridgeSound";
 import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
+import type { PostBridgePlatform } from "@/lib/clipstitchr/types/PostBridgePlatform";
+import type { PostBridgeScheduleMediaFile } from "@/lib/clipstitchr/types/PostBridgeScheduleMediaFile";
 import type { PostBridgeSoundMode } from "@/lib/clipstitchr/types/PostBridgeSoundMode";
 import type { PostBridgeSocialAccount } from "@/lib/clipstitchr/types/PostBridgeSocialAccount";
 import type { PostBridgeSourceType } from "@/lib/clipstitchr/types/PostBridgeSourceType";
@@ -20,16 +22,16 @@ import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack"
 import { convertLocalDateTimeToIsoString } from "@/lib/clipstitchr/utils/convertLocalDateTimeToIsoString";
 import { createAutomaticSoundSearchQuery } from "@/lib/clipstitchr/utils/createAutomaticSoundSearchQuery";
 import { getDefaultPostBridgeScheduleTime } from "@/lib/clipstitchr/utils/getDefaultPostBridgeScheduleTime";
-import { getPostBridgeMediaFileName } from "@/lib/clipstitchr/utils/getPostBridgeMediaFileName";
 
 type PostBridgeScheduleRenderOptions = {
   musicTrack: SharedMusicTrack | null;
   onProgress: (progress: number) => void;
+  platforms: PostBridgePlatform[];
 };
 
 type PostBridgeScheduleRenderResult = {
-  blob: Blob;
   hasAudio: boolean;
+  mediaFiles: PostBridgeScheduleMediaFile[];
 };
 
 type PostBridgeScheduleDialogProps = {
@@ -95,14 +97,16 @@ export function PostBridgeScheduleDialog({
     status === "rendering" ||
     status === "sending" ||
     isSoundBusy;
-  const isAutomaticSoundUnavailable =
-    allowMusic &&
-    soundMode === "automatic" &&
-    !automaticSound.isLoading &&
-    !automaticSound.canResolve;
   const selectedAccountIdSet = useMemo(
     () => new Set(selectedAccountIds),
     [selectedAccountIds],
+  );
+  const selectedPlatforms = useMemo(
+    () =>
+      accounts
+        .filter((account) => selectedAccountIdSet.has(account.id))
+        .map((account) => account.platform),
+    [accounts, selectedAccountIdSet],
   );
   const statusMessage =
     status === "loading"
@@ -167,37 +171,44 @@ export function PostBridgeScheduleDialog({
       setStatus("rendering");
       setProgress(0);
 
-      const selectedMusicTrack =
-        allowMusic && soundMode === "automatic"
-          ? await Promise.resolve()
-              .then(() => {
-                setStatus("findingSound");
-                setProgress(0.05);
+      let selectedMusicTrack: SharedMusicTrack | null = null;
 
-                return automaticSound.resolveSound();
-              })
-          : allowMusic && soundMode === "manual"
-            ? musicTrack
-            : null;
+      if (
+        allowMusic &&
+        soundMode === "automatic" &&
+        automaticSound.canResolve
+      ) {
+        setStatus("findingSound");
+        setProgress(0.05);
+
+        try {
+          selectedMusicTrack = await automaticSound.resolveSound();
+        } catch {
+          selectedMusicTrack = null;
+        }
+      } else if (allowMusic && soundMode === "manual") {
+        selectedMusicTrack = musicTrack;
+      }
 
       setStatus("rendering");
 
       const renderResult = await onRenderMedia({
         musicTrack: selectedMusicTrack,
         onProgress: (nextProgress) => setProgress(nextProgress * 0.8),
+        platforms: selectedPlatforms,
       });
-      const mediaBlob = renderResult.blob.type
-        ? renderResult.blob
-        : new Blob([renderResult.blob], { type: "video/mp4" });
+
+      if (!renderResult.mediaFiles.length) {
+        throw new Error("Choose media before scheduling.");
+      }
 
       setStatus("sending");
       setProgress(0.86);
 
       const result = await schedulePostBridgePost({
         caption,
-        fileName: getPostBridgeMediaFileName(sourceTitle),
         hasAudio: Boolean(selectedMusicTrack) || renderResult.hasAudio,
-        mediaBlob,
+        mediaFiles: renderResult.mediaFiles,
         scheduledAt: convertLocalDateTimeToIsoString(scheduledAt),
         socialAccountIds: selectedAccountIds,
         sourceId,
@@ -376,9 +387,7 @@ export function PostBridgeScheduleDialog({
               type="button"
               isLoading={isBusy}
               disabled={
-                !accounts.length ||
-                !selectedAccountIds.length ||
-                isAutomaticSoundUnavailable
+                !accounts.length || !selectedAccountIds.length
               }
               onClick={() => void handleSchedule()}
             >

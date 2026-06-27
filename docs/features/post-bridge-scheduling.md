@@ -23,14 +23,22 @@ an existing rendered video, that video is used. Otherwise the browser renders
 the stitch from its saved source clips, text, trim, crop, cut, and music
 settings before sending the MP4 to the server.
 
-Swipes are scheduled as a 9:16 MP4 slideshow, not as separate image uploads.
-That keeps the same media shape for TikTok, Instagram, and YouTube Shorts and
-allows sound to be baked into the video. Swipe scheduling defaults to automatic
-sound. It first uses a matching saved sound. If no saved sound is available and
-the one-time sound confirmation has been accepted, it searches TikTok from the
-Swipe title, product context, and caption, imports the best result, and mixes it
-into the rendered Swipe video in the browser before upload. The user can still
-switch to choosing a sound manually or using no sound.
+Swipes can schedule either as a rendered image carousel or as a 9:16 MP4
+slideshow. When the user schedules to TikTok and Instagram without sound,
+ClipStitchr renders each Swipe slide to a PNG and uploads the ordered images to
+Post Bridge, matching the carousel approach used by SlideSmith. When a sound is
+selected, automatic sound resolves, or YouTube Shorts is selected, ClipStitchr
+renders the Swipe as a 9:16 MP4 instead so the post has a video asset and any
+sound is baked in.
+
+Swipe scheduling defaults to automatic sound. It first uses a matching saved
+sound. If no saved sound is available and the one-time sound confirmation has
+been accepted, it searches TikTok from the Swipe title, product context, and
+caption, imports the best result, and mixes it into the rendered Swipe video in
+the browser before upload. If automatic sound cannot resolve a usable track, the
+post can still continue without sound and use the image-carousel path when the
+selected platforms allow images. The user can still switch to choosing a sound
+manually or using no sound.
 
 Post Bridge accepts uploaded media files, not a separate audio attachment for a
 post. Because of that, Swipe audio must be included in the rendered video before
@@ -41,18 +49,20 @@ the schedule request is sent.
 `POST /api/post-bridge/schedule` handles scheduling:
 
 1. Confirms the user is signed in.
-2. Reads the rendered MP4 and schedule form data.
+2. Reads the uploaded media files and schedule form data.
 3. Validates that the source stitch or swipe belongs to the user.
 4. Resolves the source product and linked default social account IDs.
-5. Rejects unsupported media types and oversized files.
+5. Rejects unsupported media types, mixed image/video uploads, multiple-video
+   uploads, image uploads for Stitch posts, image uploads to YouTube Shorts, and
+   files above `POST_BRIDGE_MAX_MEDIA_BYTES`.
 6. Consumes Post Bridge schedule and upload-byte rate limits.
 7. Loads the user's encrypted Post Bridge API key from Convex and decrypts it
    only in the Next.js route.
 8. Loads connected Post Bridge accounts and keeps only TikTok, Instagram, and
    YouTube accounts.
 9. Verifies the selected account IDs exist on that user's Post Bridge account.
-10. Uploads the MP4 through `POST /v1/media/create-upload-url` and the returned
-   signed upload URL.
+10. Uploads the rendered PNG image carousel or MP4 video through
+   `POST /v1/media/create-upload-url` and the returned signed upload URLs.
 11. Creates the scheduled Post Bridge post with `POST /v1/posts`.
 12. Saves the returned Post Bridge post reference back onto the source stitch or
    swipe.
@@ -97,6 +107,7 @@ calling Post Bridge.
 - `web/app/api/post-bridge/analytics/route.ts`
 - `web/app/api/post-bridge/analytics/sync/route.ts`
 - `web/app/dashboard/analytics/PostBridgeAnalyticsPageClient.tsx`
+- `web/lib/clipstitchr/media/renderSwiprSlideBlob.ts`
 - `web/lib/clipstitchr/media/renderSwiprSwipeVideoBlob.ts`
 - `web/lib/clipstitchr/hooks/useAutomaticPostBridgeSound.ts`
 - `web/lib/clipstitchr/server/postBridge/`

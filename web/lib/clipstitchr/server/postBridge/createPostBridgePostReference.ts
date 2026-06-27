@@ -1,4 +1,5 @@
 import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
+import type { PostBridgeMediaKind } from "@/lib/clipstitchr/types/PostBridgeMediaKind";
 import type { PostBridgePost } from "@/lib/clipstitchr/types/PostBridgePost";
 import type { PostBridgePlatform } from "@/lib/clipstitchr/types/PostBridgePlatform";
 import type { PostBridgeSourceType } from "@/lib/clipstitchr/types/PostBridgeSourceType";
@@ -6,6 +7,7 @@ import type { PostBridgeSourceType } from "@/lib/clipstitchr/types/PostBridgeSou
 type CreatePostBridgePostReferenceOptions = {
   hasAudio: boolean;
   mediaIds: string[];
+  mediaKind: PostBridgeMediaKind;
   platforms: PostBridgePlatform[];
   post: PostBridgePost;
   scheduledAt: string;
@@ -16,6 +18,7 @@ type CreatePostBridgePostReferenceOptions = {
 export function createPostBridgePostReference({
   hasAudio,
   mediaIds,
+  mediaKind,
   platforms,
   post,
   scheduledAt,
@@ -29,7 +32,7 @@ export function createPostBridgePostReference({
     hasAudio,
     isDraft: post.is_draft,
     mediaIds,
-    mediaKind: "video",
+    mediaKind,
     platforms,
     postId: post.id,
     scheduledAt,

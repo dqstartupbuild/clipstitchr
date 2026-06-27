@@ -1,1 +1,1 @@
-export type PostBridgeMediaKind = "video";
+export type PostBridgeMediaKind = "image" | "video";

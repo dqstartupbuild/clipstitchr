@@ -1,13 +1,14 @@
 import { readPostBridgeClientErrorMessage } from "@/lib/clipstitchr/client/readPostBridgeClientErrorMessage";
 import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
 import type { PostBridgePost } from "@/lib/clipstitchr/types/PostBridgePost";
+import type { PostBridgeScheduleMediaFile } from "@/lib/clipstitchr/types/PostBridgeScheduleMediaFile";
 import type { PostBridgeSourceType } from "@/lib/clipstitchr/types/PostBridgeSourceType";
+import { createPostBridgeMediaUploadBlob } from "@/lib/clipstitchr/utils/createPostBridgeMediaUploadBlob";
 
 type SchedulePostBridgePostOptions = {
   caption: string;
-  fileName: string;
   hasAudio: boolean;
-  mediaBlob: Blob;
+  mediaFiles: PostBridgeScheduleMediaFile[];
   scheduledAt: string;
   socialAccountIds: number[];
   sourceId: string;
@@ -17,9 +18,8 @@ type SchedulePostBridgePostOptions = {
 
 export async function schedulePostBridgePost({
   caption,
-  fileName,
   hasAudio,
-  mediaBlob,
+  mediaFiles,
   scheduledAt,
   socialAccountIds,
   sourceId,
@@ -30,7 +30,13 @@ export async function schedulePostBridgePost({
 
   formData.set("caption", caption);
   formData.set("hasAudio", String(hasAudio));
-  formData.set("media", mediaBlob, fileName);
+  for (const mediaFile of mediaFiles) {
+    formData.append(
+      "media",
+      createPostBridgeMediaUploadBlob(mediaFile),
+      mediaFile.fileName,
+    );
+  }
   formData.set("scheduledAt", scheduledAt);
   formData.set("socialAccountIds", JSON.stringify(socialAccountIds));
   formData.set("sourceId", sourceId);

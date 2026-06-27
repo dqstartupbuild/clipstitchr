@@ -1,5 +1,5 @@
 import { getPostBridgeFormText } from "@/lib/clipstitchr/server/postBridge/getPostBridgeFormText";
-import { getPostBridgeScheduleFile } from "@/lib/clipstitchr/server/postBridge/getPostBridgeScheduleFile";
+import { getPostBridgeScheduleFiles } from "@/lib/clipstitchr/server/postBridge/getPostBridgeScheduleFiles";
 import { getPostBridgeSourceType } from "@/lib/clipstitchr/server/postBridge/getPostBridgeSourceType";
 import { normalizePostBridgeCaption } from "@/lib/clipstitchr/server/postBridge/normalizePostBridgeCaption";
 import { normalizePostBridgeScheduledAt } from "@/lib/clipstitchr/server/postBridge/normalizePostBridgeScheduledAt";
@@ -9,7 +9,7 @@ import type { PostBridgeSourceType } from "@/lib/clipstitchr/types/PostBridgeSou
 
 export type PostBridgeScheduleFormData = {
   caption: string;
-  file: File;
+  files: File[];
   hasAudio: boolean;
   scheduledAt: string;
   socialAccountIds: number[];
@@ -32,7 +32,7 @@ export async function readPostBridgeScheduleFormData(
     caption: normalizePostBridgeCaption(
       getPostBridgeFormText(formData, "caption"),
     ),
-    file: getPostBridgeScheduleFile(formData),
+    files: getPostBridgeScheduleFiles(formData),
     hasAudio: getPostBridgeFormText(formData, "hasAudio") === "true",
     scheduledAt: normalizePostBridgeScheduledAt(
       getPostBridgeFormText(formData, "scheduledAt"),

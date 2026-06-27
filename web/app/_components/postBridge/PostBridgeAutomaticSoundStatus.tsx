@@ -39,7 +39,8 @@ export function PostBridgeAutomaticSoundStatus({
   if (hasAcceptedRights) {
     return (
       <p className="rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text-secondary">
-        A sound will be found when you schedule.
+        ClipStitchr will look for a sound when you schedule. If nothing fits,
+        the post can still go without one.
       </p>
     );
   }
@@ -47,7 +48,8 @@ export function PostBridgeAutomaticSoundStatus({
   return (
     <div className="grid gap-2 rounded-lg border border-accent/25 bg-surface-muted p-3">
       <p className="text-sm font-semibold text-accent-dark">
-        Continue once to let ClipStitchr find sounds for you.
+        Continue once to let ClipStitchr find sounds for you, or schedule
+        without one.
       </p>
       <Button
         type="button"

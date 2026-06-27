@@ -89,6 +89,10 @@ vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
   },
 }));
 
+vi.mock("convex/react", () => ({
+  useMutation: () => vi.fn(async () => undefined),
+}));
+
 vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({
   useSwiprLibrary: () => ({
     backgrounds: [],

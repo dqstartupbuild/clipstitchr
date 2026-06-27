@@ -49,6 +49,7 @@ import { getReuseStitchHref } from "@/lib/clipstitchr/utils/getReuseStitchHref";
 import { getQuickEditSuggestionsHasActionableChange } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange";
 import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
 import { getStitchrHookPlanMatchesStitch } from "@/lib/clipstitchr/utils/getStitchrHookPlanMatchesStitch";
+import { getPostBridgeMediaFileName } from "@/lib/clipstitchr/utils/getPostBridgeMediaFileName";
 import { capturePostHogException } from "@/lib/clipstitchr/analytics/capturePostHogException";
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 
@@ -362,14 +363,18 @@ export function StitchCard({
     setStitchVideoBlob(renderedBlob);
 
     return {
-      blob: renderedBlob.type
-        ? renderedBlob
-        : new Blob([renderedBlob], { type: "video/mp4" }),
       hasAudio: Boolean(
         stitch.music?.enabled ||
           stitch.includeUgcAudio !== false ||
           stitch.includeDemoAudio !== false,
       ),
+      mediaFiles: [
+        {
+          blob: renderedBlob,
+          fileName: getPostBridgeMediaFileName(stitch.name, "video"),
+          mediaKind: "video" as const,
+        },
+      ],
     };
   };
   const handleScore = async () => {
