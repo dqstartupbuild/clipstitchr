@@ -117,6 +117,7 @@ describe("dashboard shell sections", () => {
     expect(shellMarkup).toContain("Workspace child");
     expect(sidebarMarkup).toContain("Library");
     expect(sidebarMarkup).toContain("Stitchr");
+    expect(sidebarMarkup).toContain("Schedule");
     expect(sidebarMarkup).not.toContain("Templates");
     expect(sidebarMarkup).not.toContain("Avatars");
     expect(sidebarMarkup).toContain("Settings");

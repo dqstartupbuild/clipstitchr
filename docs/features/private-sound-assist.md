@@ -32,7 +32,9 @@ shown before a user first uploads or imports a sound.
    TikTok from the Swipe title, product context, and caption, imports the best
    result, and mixes that sound into the scheduled MP4.
 7. The last selected sound is stored as editable music metadata on the Clip or
-   Stitch and mixed during browser export or worker finalization.
+   Stitch and mixed during browser export or worker finalization. When a sound
+   is shorter than the rendered video, the browser mixer repeats it until the
+   video ends.
 
 ## Implementation
 
@@ -57,6 +59,8 @@ shown before a user first uploads or imports a sound.
   metadata into media finalization.
 - `web/services/media-worker/runMediaWorker.mjs` saves Batch drafts with the
   selected sound metadata.
+- `web/lib/clipstitchr/media/scheduleLoopingAudioBuffer.ts` repeats short
+  sounds across the full browser-rendered video duration.
 
 ## Rate Limits And Cost
 
@@ -87,6 +91,8 @@ web/app/api/music/
   tiktok/import/route.ts
 web/lib/clipstitchr/hooks/
   useAutomaticPostBridgeSound.ts
+web/lib/clipstitchr/media/
+  scheduleLoopingAudioBuffer.ts
 web/convex/
   soundPreferences.ts
   sharedMusicTracks.ts

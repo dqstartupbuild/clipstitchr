@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CliprPageClient } from "@/app/dashboard/clipr/CliprPageClient";
 import { LibraryPageClient } from "@/app/dashboard/library/LibraryPageClient";
 import { OnboardingPageClient } from "@/app/dashboard/onboarding/OnboardingPageClient";
+import { SchedulePageClient } from "@/app/dashboard/schedule/SchedulePageClient";
 import { StitchrPageClient } from "@/app/dashboard/stitchr/StitchrPageClient";
 import { SwaprPageClient } from "@/app/dashboard/swapr/SwaprPageClient";
 import { SwiprPageClient } from "@/app/dashboard/swipr/SwiprPageClient";
@@ -535,5 +536,13 @@ describe("dashboard page clients", () => {
     expect(markup).toContain("Create more UGC");
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Avatar");
+  });
+
+  it("renders the Schedule page with scheduled content controls", () => {
+    const markup = renderToStaticMarkup(<SchedulePageClient />);
+
+    expect(markup).toContain("Schedule");
+    expect(markup).toContain("Scheduled content");
+    expect(markup).toContain("Config/accounts");
   });
 });

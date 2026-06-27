@@ -2,6 +2,7 @@
 
 import { UserButton } from "@clerk/nextjs";
 import {
+  CalendarClock,
   Home,
   Images,
   Library,
@@ -28,6 +29,7 @@ const links = [
   { href: "/dashboard/clipr", label: "Clipr", icon: CirclePlay },
   { href: "/dashboard/swipr", label: "Swipr", icon: Images },
   { href: "/dashboard/swapr", label: "Swapr", icon: Shuffle },
+  { href: "/dashboard/schedule", label: "Schedule", icon: CalendarClock },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];

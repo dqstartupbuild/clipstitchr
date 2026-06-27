@@ -12,7 +12,9 @@ Bridge. The user can still choose a specific saved sound or select no sound.
 3. If no saved sound is available and the one-time sound confirmation is
    accepted, scheduling searches TikTok and imports the best usable candidate.
 4. The selected or imported sound is downloaded in the browser and mixed into
-   the 9:16 Swipe MP4 before `POST /api/post-bridge/schedule` uploads it.
+   the 9:16 Swipe MP4 before `POST /api/post-bridge/schedule` uploads it. If
+   the sound is shorter than the rendered Swipe video, it repeats until the
+   video ends.
 5. If automatic sound cannot run yet, the dialog asks the user to continue once
    for sound use. They can switch to `No sound` at any time.
 
@@ -26,6 +28,8 @@ Bridge. The user can still choose a specific saved sound or select no sound.
 - `web/lib/clipstitchr/utils/selectAutomaticSharedMusicTrack.ts`
 - `web/lib/clipstitchr/utils/selectAutomaticTikTokSoundCandidate.ts`
 - `web/lib/clipstitchr/media/renderSwiprSwipeVideoBlob.ts`
+- `web/lib/clipstitchr/media/createSwiprMusicAudioBuffer.ts`
+- `web/lib/clipstitchr/media/scheduleLoopingAudioBuffer.ts`
 
 ## Rate Limits
 

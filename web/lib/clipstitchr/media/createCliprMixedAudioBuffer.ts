@@ -6,6 +6,7 @@ import {
 import { CLIPR_MUSIC_AD_GAIN } from "@/lib/clipstitchr/constants/cliprMusicMix";
 import { decodeAudioBlob } from "@/lib/clipstitchr/media/decodeAudioBlob";
 import { getCliprMusicGain } from "@/lib/clipstitchr/media/getCliprMusicGain";
+import { scheduleLoopingAudioBuffer } from "@/lib/clipstitchr/media/scheduleLoopingAudioBuffer";
 
 type CreateCliprMixedAudioBufferOptions = {
   duration: number;
@@ -29,16 +30,19 @@ export async function createCliprMixedAudioBuffer({
   const audioTrack = await videoInput.getPrimaryAudioTrack();
   const sourceOffset = audioTrack ? await audioTrack.getFirstTimestamp() : 0;
   const musicBuffer = await decodeAudioBlob(musicBlob);
-  const musicSource = context.createBufferSource();
   const musicGain = context.createGain();
 
-  musicSource.buffer = musicBuffer;
   musicGain.gain.value = getCliprMusicGain({
     hasSourceAudio: Boolean(audioTrack),
     volume,
   });
-  musicSource.connect(musicGain).connect(context.destination);
-  musicSource.start(0, 0, Math.min(duration, musicBuffer.duration));
+  musicGain.connect(context.destination);
+  scheduleLoopingAudioBuffer({
+    buffer: musicBuffer,
+    context,
+    destination: musicGain,
+    duration,
+  });
 
   if (audioTrack) {
     const sink = new AudioBufferSink(audioTrack);

@@ -1,5 +1,4 @@
 import { ProductSettingsList } from "@/app/_components/settings/ProductSettingsList";
-import { ProductPostBridgeAccountsPanel } from "@/app/_components/settings/ProductPostBridgeAccountsPanel";
 import { SettingsHookLabPanel } from "@/app/_components/settings/SettingsHookLabPanel";
 import { SettingsAutomationPanel } from "@/app/_components/settings/SettingsAutomationPanel";
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
@@ -81,10 +80,6 @@ export function SettingsProductSection({
         onDelete={onDeleteProduct}
         onSetDefault={onSetActiveProduct}
         onUpdate={onUpdateProduct}
-      />
-      <ProductPostBridgeAccountsPanel
-        isDisabled={isProductActionDisabled}
-        product={activeProduct}
       />
       <SettingsHookLabPanel
         isSaving={isProductActionDisabled}

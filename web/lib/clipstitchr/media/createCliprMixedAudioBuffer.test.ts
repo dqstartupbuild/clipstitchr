@@ -133,4 +133,28 @@ describe("createCliprMixedAudioBuffer", () => {
     expect(context.starts).toEqual([[0, 0, 4]]);
     expect(context.gains).toEqual([0.35]);
   });
+
+  it("loops music when the selected sound is shorter than the video", async () => {
+    const context = createOfflineAudioContextMock();
+    const videoInput = {
+      getPrimaryAudioTrack: vi.fn(async () => null),
+    };
+
+    mocks.decodeAudioBlob.mockResolvedValue({ duration: 1.25 });
+    vi.stubGlobal("OfflineAudioContext", context.OfflineAudioContextMock);
+
+    await createCliprMixedAudioBuffer({
+      duration: 3,
+      musicBlob: new Blob(["music"], { type: "audio/mpeg" }),
+      videoInput: videoInput as never,
+      volume: 1,
+    });
+
+    expect(context.starts).toEqual([
+      [0, 0, 1.25],
+      [1.25, 0, 1.25],
+      [2.5, 0, 0.5],
+    ]);
+    expect(context.gains).toEqual([0.35]);
+  });
 });

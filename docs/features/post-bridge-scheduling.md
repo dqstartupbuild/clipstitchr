@@ -11,8 +11,9 @@ API source reference: `https://api.post-bridge.com/reference#description/introdu
 Saved Stitches and Swipes show a `Schedule post` action in their card menu.
 Users add their own Post Bridge API key in Account settings. The key is tested
 against Post Bridge, encrypted server-side, and stored in Convex with only the
-last four characters shown back to the browser. Product settings then let the
-user link default TikTok, Instagram, and YouTube accounts to each product.
+last four characters shown back to the browser. The Schedule page's
+`Config/accounts` tab lets the user link default TikTok, Instagram, and YouTube
+accounts to each product.
 
 The schedule dialog loads connected Post Bridge accounts from the server,
 filters them to TikTok, Instagram, and YouTube, preselects the accounts linked
@@ -43,7 +44,9 @@ manually or using no sound.
 
 Post Bridge accepts uploaded media files, not a separate audio attachment for a
 post. Because of that, Swipe audio must be included in the rendered video before
-the schedule request is sent.
+the schedule request is sent. When selected sound audio is shorter than the
+rendered Swipe or Stitch video, the browser mixer repeats that sound until the
+video ends.
 
 ## Server Flow
 
@@ -79,7 +82,12 @@ which are separately authenticated and rate-limited before Apify and R2 work.
 
 ## Analytics
 
-The dashboard sidebar includes `Analytics` at `/dashboard/analytics`.
+The dashboard sidebar includes `Schedule` at `/dashboard/schedule` and
+`Analytics` at `/dashboard/analytics`.
+
+The Schedule page shows Post Bridge posts and their scheduled, processing,
+posted, or failed status. Its `Config/accounts` tab owns the product-level
+default posting account picker.
 
 The page shows:
 
@@ -102,6 +110,11 @@ calling Post Bridge.
 - `web/app/_components/postBridge/PostBridgeSoundModePicker.tsx`
 - `web/app/_components/settings/SettingsPostBridgePanel.tsx`
 - `web/app/_components/settings/ProductPostBridgeAccountsPanel.tsx`
+- `web/app/_components/schedule/`
+- `web/app/dashboard/schedule/SchedulePageClient.tsx`
+- `web/lib/clipstitchr/media/createCliprMixedAudioBuffer.ts`
+- `web/lib/clipstitchr/media/createSwiprMusicAudioBuffer.ts`
+- `web/lib/clipstitchr/media/scheduleLoopingAudioBuffer.ts`
 - `web/app/api/post-bridge/settings/route.ts`
 - `web/app/api/post-bridge/schedule/route.ts`
 - `web/app/api/post-bridge/accounts/route.ts`
