@@ -8,7 +8,7 @@ type CreatePostBridgePostOptions = {
   caption: string;
   mediaIds: string[];
   platforms: PostBridgePlatform[];
-  scheduledAt: string;
+  scheduledAt: string | null;
   socialAccountIds: number[];
   title: string;
 };

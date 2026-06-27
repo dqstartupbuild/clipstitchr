@@ -1,4 +1,8 @@
 export function normalizePostBridgeScheduledAt(value: string) {
+  if (!value) {
+    return null;
+  }
+
   const timestamp = Date.parse(value);
 
   if (!Number.isFinite(timestamp)) {

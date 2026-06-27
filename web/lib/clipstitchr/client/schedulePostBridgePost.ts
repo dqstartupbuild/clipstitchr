@@ -9,7 +9,7 @@ type SchedulePostBridgePostOptions = {
   caption: string;
   hasAudio: boolean;
   mediaFiles: PostBridgeScheduleMediaFile[];
-  scheduledAt: string;
+  scheduledAt: string | null;
   socialAccountIds: number[];
   sourceId: string;
   sourceType: PostBridgeSourceType;
@@ -37,7 +37,9 @@ export async function schedulePostBridgePost({
       mediaFile.fileName,
     );
   }
-  formData.set("scheduledAt", scheduledAt);
+  if (scheduledAt) {
+    formData.set("scheduledAt", scheduledAt);
+  }
   formData.set("socialAccountIds", JSON.stringify(socialAccountIds));
   formData.set("sourceId", sourceId);
   formData.set("sourceType", sourceType);

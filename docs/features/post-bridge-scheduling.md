@@ -1,7 +1,8 @@
 # Post Bridge Scheduling
 
-ClipStitchr can schedule saved Stitches and saved Swipes through Post Bridge.
-The supported posting targets are TikTok, Instagram, and YouTube Shorts.
+ClipStitchr can post now or schedule saved Stitches and saved Swipes through
+Post Bridge. The supported posting targets are TikTok, Instagram, and YouTube
+Shorts.
 
 API source reference: `https://api.post-bridge.com/reference#description/introduction`.
 
@@ -16,7 +17,7 @@ user link default TikTok, Instagram, and YouTube accounts to each product.
 The schedule dialog loads connected Post Bridge accounts from the server,
 filters them to TikTok, Instagram, and YouTube, preselects the accounts linked
 to the source product, and still lets the user adjust accounts for that one
-post before choosing the caption and post time.
+post before choosing whether to post now or schedule a future post time.
 
 Stitches use the same browser export path as downloads. If the saved stitch has
 an existing rendered video, that video is used. Otherwise the browser renders
@@ -63,7 +64,8 @@ the schedule request is sent.
 9. Verifies the selected account IDs exist on that user's Post Bridge account.
 10. Uploads the rendered PNG image carousel or MP4 video through
    `POST /v1/media/create-upload-url` and the returned signed upload URLs.
-11. Creates the scheduled Post Bridge post with `POST /v1/posts`.
+11. Creates the Post Bridge post with `POST /v1/posts`. Scheduled posts send an
+   ISO `scheduled_at`; immediate posts send `scheduled_at: null`.
 12. Saves the returned Post Bridge post reference back onto the source stitch or
    swipe.
 13. Captures a consent-gated PostHog server event.

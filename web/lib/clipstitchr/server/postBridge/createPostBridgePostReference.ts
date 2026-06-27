@@ -10,7 +10,7 @@ type CreatePostBridgePostReferenceOptions = {
   mediaKind: PostBridgeMediaKind;
   platforms: PostBridgePlatform[];
   post: PostBridgePost;
-  scheduledAt: string;
+  scheduledAt: string | null;
   socialAccountIds: number[];
   sourceType: PostBridgeSourceType;
 };
@@ -35,7 +35,7 @@ export function createPostBridgePostReference({
     mediaKind,
     platforms,
     postId: post.id,
-    scheduledAt,
+    ...(scheduledAt ? { scheduledAt } : {}),
     socialAccountIds,
     sourceType,
     status: post.status,

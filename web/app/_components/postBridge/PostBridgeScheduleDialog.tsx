@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
 import { PostBridgeAccountCheckbox } from "@/app/_components/postBridge/PostBridgeAccountCheckbox";
 import { PostBridgeAutomaticSoundStatus } from "@/app/_components/postBridge/PostBridgeAutomaticSoundStatus";
+import { PostBridgePublishModePicker } from "@/app/_components/postBridge/PostBridgePublishModePicker";
 import { PostBridgeSoundModePicker } from "@/app/_components/postBridge/PostBridgeSoundModePicker";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
@@ -14,6 +15,7 @@ import { schedulePostBridgePost } from "@/lib/clipstitchr/client/schedulePostBri
 import { useAutomaticPostBridgeSound } from "@/lib/clipstitchr/hooks/useAutomaticPostBridgeSound";
 import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
 import type { PostBridgePlatform } from "@/lib/clipstitchr/types/PostBridgePlatform";
+import type { PostBridgePublishMode } from "@/lib/clipstitchr/types/PostBridgePublishMode";
 import type { PostBridgeScheduleMediaFile } from "@/lib/clipstitchr/types/PostBridgeScheduleMediaFile";
 import type { PostBridgeSoundMode } from "@/lib/clipstitchr/types/PostBridgeSoundMode";
 import type { PostBridgeSocialAccount } from "@/lib/clipstitchr/types/PostBridgeSocialAccount";
@@ -64,6 +66,8 @@ export function PostBridgeScheduleDialog({
   const [accounts, setAccounts] = useState<PostBridgeSocialAccount[]>([]);
   const [selectedAccountIds, setSelectedAccountIds] = useState<number[]>([]);
   const [caption, setCaption] = useState(defaultCaption);
+  const [publishMode, setPublishMode] =
+    useState<PostBridgePublishMode>("schedule");
   const [scheduledAt, setScheduledAt] = useState(
     getDefaultPostBridgeScheduleTime,
   );
@@ -118,7 +122,9 @@ export function PostBridgeScheduleDialog({
         : status === "sending"
           ? "Sending it to Post Bridge..."
           : status === "complete"
-            ? "Scheduled."
+            ? publishMode === "now"
+              ? "Sent."
+              : "Scheduled."
             : "";
 
   useEffect(() => {
@@ -209,7 +215,10 @@ export function PostBridgeScheduleDialog({
         caption,
         hasAudio: Boolean(selectedMusicTrack) || renderResult.hasAudio,
         mediaFiles: renderResult.mediaFiles,
-        scheduledAt: convertLocalDateTimeToIsoString(scheduledAt),
+        scheduledAt:
+          publishMode === "schedule"
+            ? convertLocalDateTimeToIsoString(scheduledAt)
+            : null,
         socialAccountIds: selectedAccountIds,
         sourceId,
         sourceType,
@@ -225,7 +234,7 @@ export function PostBridgeScheduleDialog({
       setError(
         nextError instanceof Error
           ? nextError.message
-          : "Unable to schedule this post.",
+          : "Unable to send this post.",
       );
     }
   };
@@ -244,9 +253,7 @@ export function PostBridgeScheduleDialog({
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-accent-dark">
-              Schedule post
-            </p>
+            <p className="text-sm font-semibold text-accent-dark">Post</p>
             <h2
               id="post-bridge-schedule-dialog-title"
               className="mt-1 truncate text-xl font-bold text-text-primary"
@@ -300,16 +307,26 @@ export function PostBridgeScheduleDialog({
             />
           </label>
 
-          <label className="block">
-            <span className="text-sm font-bold text-text-primary">Post time</span>
-            <input
-              type="datetime-local"
-              className="mt-2 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-primary outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
-              value={scheduledAt}
-              disabled={isBusy}
-              onChange={(event) => setScheduledAt(event.target.value)}
-            />
-          </label>
+          <PostBridgePublishModePicker
+            disabled={isBusy}
+            value={publishMode}
+            onChange={setPublishMode}
+          />
+
+          {publishMode === "schedule" ? (
+            <label className="block">
+              <span className="text-sm font-bold text-text-primary">
+                Post time
+              </span>
+              <input
+                type="datetime-local"
+                className="mt-2 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-primary outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
+                value={scheduledAt}
+                disabled={isBusy}
+                onChange={(event) => setScheduledAt(event.target.value)}
+              />
+            </label>
+          ) : null}
 
           {allowMusic ? (
             <div className="grid gap-3">
@@ -386,12 +403,10 @@ export function PostBridgeScheduleDialog({
             <Button
               type="button"
               isLoading={isBusy}
-              disabled={
-                !accounts.length || !selectedAccountIds.length
-              }
+              disabled={!accounts.length || !selectedAccountIds.length}
               onClick={() => void handleSchedule()}
             >
-              Schedule post
+              {publishMode === "now" ? "Post now" : "Schedule post"}
             </Button>
           </div>
         </div>

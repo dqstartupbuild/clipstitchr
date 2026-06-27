@@ -11,7 +11,7 @@ export type PostBridgeScheduleFormData = {
   caption: string;
   files: File[];
   hasAudio: boolean;
-  scheduledAt: string;
+  scheduledAt: string | null;
   socialAccountIds: number[];
   sourceId: string;
   sourceType: PostBridgeSourceType;

@@ -52,4 +52,39 @@ describe("schedulePostBridgePost", () => {
     expect((mediaFiles[0] as File).type).toBe("image/png");
     expect(formData.get("socialAccountIds")).toBe("[1,2]");
   });
+
+  it("omits the schedule time for immediate posts", async () => {
+    const bodies: FormData[] = [];
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url, init?: RequestInit) => {
+        bodies.push(init?.body as FormData);
+
+        return Response.json({
+          post: { id: "post_1" },
+          postReference: { postId: "post_1" },
+        });
+      }),
+    );
+
+    await schedulePostBridgePost({
+      caption: "Launch",
+      hasAudio: true,
+      mediaFiles: [
+        {
+          blob: new Blob(["video"], { type: "video/mp4" }),
+          fileName: "launch.mp4",
+          mediaKind: "video",
+        },
+      ],
+      scheduledAt: null,
+      socialAccountIds: [1],
+      sourceId: "stitch_1",
+      sourceType: "stitch",
+      title: "Launch Stitch",
+    });
+
+    expect(bodies[0].has("scheduledAt")).toBe(false);
+  });
 });
