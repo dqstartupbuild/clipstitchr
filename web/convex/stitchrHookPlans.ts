@@ -4,6 +4,8 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
+import { createAutomaticStitchTemplateFromAcceptedHookPlan } from "./stitchTemplates/createAutomaticStitchTemplateFromAcceptedHookPlan";
+import { createAutomaticStitchTemplateFromAcceptedHookStitch } from "./stitchTemplates/createAutomaticStitchTemplateFromAcceptedHookStitch";
 import { stitchrHookVariantValidator } from "./validators/stitchrHookVariant";
 
 const HOOK_TEXT_MAX_LENGTH = 240;
@@ -659,6 +661,13 @@ export const attachStitch = mutation({
       updatedAt,
     });
 
+    await createAutomaticStitchTemplateFromAcceptedHookStitch({
+      ctx,
+      ownerId,
+      stitchId: stitch.id,
+      updatedAt,
+    }).catch(() => null);
+
     return plan.id;
   },
 });
@@ -886,6 +895,14 @@ export const accept = mutation({
       ownerId,
       productId: plan.productId,
       status: "accepted",
+      updatedAt,
+    });
+
+    await createAutomaticStitchTemplateFromAcceptedHookPlan({
+      ctx,
+      hookText: acceptedHook,
+      ownerId,
+      stitchId: plan.stitchId,
       updatedAt,
     });
 

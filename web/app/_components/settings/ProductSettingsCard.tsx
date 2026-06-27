@@ -43,7 +43,6 @@ export function ProductSettingsCard({
     product.audienceDetails ||
     "Saved product";
   const hookStyleName = getCliprHookStyleName(product.preferredCliprHookStyleKey);
-  const hookExampleCount = (product.winningHookExamples ?? []).length;
   const handleDelete = async () => {
     const didConfirm = window.confirm(
       `Delete "${product.name}"?\n\nExisting saved Swipes and generated clips keep their saved snapshots. This cannot be undone.`,
@@ -84,7 +83,6 @@ export function ProductSettingsCard({
             </span>
             <span className="mt-1 block text-xs font-semibold text-text-tertiary">
               Hook style: {hookStyleName}
-              {hookExampleCount ? ` - ${hookExampleCount} hooks saved` : ""}
             </span>
             {isDefault ? (
               <span className="mt-1 block text-xs font-bold text-accent-dark">

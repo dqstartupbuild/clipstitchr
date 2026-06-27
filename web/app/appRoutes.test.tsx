@@ -9,6 +9,7 @@ import DashboardPage from "@/app/dashboard/page";
 import DashboardLayout from "@/app/dashboard/layout";
 import AvatarsPage from "@/app/dashboard/avatars/page";
 import CliprPage from "@/app/dashboard/clipr/page";
+import HookLabPage from "@/app/dashboard/hooks/page";
 import LibraryPage from "@/app/dashboard/library/page";
 import OnboardingPage from "@/app/dashboard/onboarding/page";
 import SettingsPage from "@/app/dashboard/settings/page";
@@ -83,6 +84,10 @@ vi.mock("@/app/dashboard/clipr/CliprPageClient", () => ({
   CliprPageClient: () => <main>Clipr client</main>,
 }));
 
+vi.mock("@/app/dashboard/hooks/HookLabPageClient", () => ({
+  HookLabPageClient: () => <main>Hook Lab client</main>,
+}));
+
 vi.mock("@/app/dashboard/library/LibraryPageClient", () => ({
   LibraryPageClient: () => <main>Library client</main>,
 }));
@@ -144,6 +149,7 @@ describe("app route wrappers", () => {
       <DashboardLayout>
         <DashboardPage />
         <CliprPage />
+        <HookLabPage />
         <LibraryPage />
         <OnboardingPage />
         <SettingsPage />
@@ -155,6 +161,7 @@ describe("app route wrappers", () => {
 
     expect(markup).toContain("Dashboard client");
     expect(markup).toContain("Clipr client");
+    expect(markup).toContain("Hook Lab client");
     expect(markup).toContain("Library client");
     expect(markup).toContain("Onboarding client");
     expect(markup).toContain("Settings client");

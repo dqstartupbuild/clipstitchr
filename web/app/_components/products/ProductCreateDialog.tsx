@@ -2,7 +2,7 @@
 
 import { PackagePlus, X } from "lucide-react";
 import { useState } from "react";
-import { ProductHookMemoryFields } from "@/app/_components/settings/ProductHookMemoryFields";
+import { ProductHookMemoryFields } from "@/app/_components/hooks/ProductHookMemoryFields";
 import { Button } from "@/app/_components/ui/Button";
 import { IconButton } from "@/app/_components/ui/IconButton";
 import type { HookEdgeLevel } from "@/lib/clipstitchr/types/HookEdgeLevel";

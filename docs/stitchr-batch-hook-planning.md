@@ -47,18 +47,19 @@ for only that task and saves the fallback hook into the same history table.
 - source: batch planner, worker fallback, or manual
 - feedback: accepted or rejected
 
-The Library `Hooks` tab reads this table, filters by product, and lets the user
-copy, save as winner, or add to avoid list.
+The dashboard Hook Lab page reads this table, filters by product, and lets the
+user copy, save as winner, or add to avoid list.
 
 Accepting a hook adds it to the product's winning hook examples. Rejecting a hook
 adds it to the product's rejected hook examples. The next Stitchr writing prompt
-uses those product examples as prompt memory.
+uses those product examples as prompt memory. When an accepted hook is tied to a
+finished Stitch, ClipStitchr also saves that Stitch setup as a Template.
 
-## Settings Hook Lab
+## Hook Lab Page
 
-Settings now shows Hook Lab directly under Product settings for the active
-product. The product edit dialog still exists for full product edits, but Hook
-Lab is visible because it is active writing memory, not a hidden product detail.
+Hook Lab now has its own dashboard page at `/dashboard/hooks`. Settings keeps
+product and automation controls, while Hook Lab owns product hook memory and
+the saved hook history list.
 
 ## File Tree
 
@@ -77,10 +78,14 @@ Lab is visible because it is active writing memory, not a hidden product detail.
   per-task plans.
 - `web/services/provider-worker/runProviderWorker.ts` uses saved plans and
   saves worker fallbacks.
-- `web/app/_components/library/HookLibraryTabSection.tsx` renders Library
-  Hooks.
-- `web/app/_components/settings/SettingsHookLabPanel.tsx` renders the visible
-  Settings Hook Lab.
+- `web/app/dashboard/hooks/HookLabPageClient.tsx` renders the dashboard Hook Lab
+  page.
+- `web/app/_components/hooks/HookLabHistorySection.tsx` renders saved hook
+  history.
+- `web/app/_components/hooks/HookLabMemoryPanel.tsx` renders active product hook
+  memory.
+- `web/convex/stitchTemplates/createAutomaticStitchTemplateFromAcceptedHookPlan.ts`
+  creates Templates from accepted hook winners when a finished Stitch exists.
 
 ## Failure Behavior
 

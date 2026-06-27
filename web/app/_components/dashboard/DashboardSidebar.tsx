@@ -3,6 +3,7 @@
 import { UserButton } from "@clerk/nextjs";
 import {
   CalendarClock,
+  FlaskConical,
   Home,
   Images,
   Library,
@@ -26,6 +27,7 @@ const links = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/dashboard/library", label: "Library", icon: Library },
   { href: "/dashboard/stitchr", label: "Stitchr", icon: Scissors },
+  { href: "/dashboard/hooks", label: "Hook Lab", icon: FlaskConical },
   { href: "/dashboard/clipr", label: "Clipr", icon: CirclePlay },
   { href: "/dashboard/swipr", label: "Swipr", icon: Images },
   { href: "/dashboard/swapr", label: "Swapr", icon: Shuffle },

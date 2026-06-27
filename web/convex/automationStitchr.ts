@@ -17,6 +17,7 @@ import { createQuickEditSuggestionsFromMetadata } from "./createQuickEditSuggest
 import { getQuickEditOverlayText } from "./getQuickEditOverlayText";
 import { getVideoClipIsAccountWideUgc } from "./getVideoClipIsAccountWideUgc";
 import { createCompletedRunNotification } from "./createCompletedRunNotification";
+import { createAutomaticStitchTemplateFromAcceptedHookStitch } from "./stitchTemplates/createAutomaticStitchTemplateFromAcceptedHookStitch";
 import { getStitchTemplateBatchTextOverlay } from "./stitchTemplates/getStitchTemplateBatchTextOverlay";
 import { defaultAutomationGenerationCount } from "../lib/clipstitchr/constants/defaultAutomationGenerationCount";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
@@ -698,6 +699,13 @@ export const recordOutput = mutation({
       updatedAt: completedAt,
     });
 
+    await createAutomaticStitchTemplateFromAcceptedHookStitch({
+      ctx,
+      ownerId,
+      stitchId,
+      updatedAt: completedAt,
+    }).catch(() => null);
+
     const runTasks = await ctx.db
       .query("automationTasks")
       .withIndex("by_run", (q) => q.eq("runId", task.runId))
@@ -845,6 +853,13 @@ export const recordOutputFromMediaWorker = mutation({
       completedAt,
       updatedAt: completedAt,
     });
+
+    await createAutomaticStitchTemplateFromAcceptedHookStitch({
+      ctx,
+      ownerId,
+      stitchId,
+      updatedAt: completedAt,
+    }).catch(() => null);
 
     const runTasks = await ctx.db
       .query("automationTasks")

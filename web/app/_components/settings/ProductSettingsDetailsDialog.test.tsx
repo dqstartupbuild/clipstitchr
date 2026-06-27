@@ -50,14 +50,8 @@ describe("ProductSettingsDetailsDialog", () => {
     expect(markup).toContain("https://launchkit.example.com/");
     expect(markup).toContain("Founders struggle to turn launch plans into posts.");
     expect(markup).toContain("Launch work feels scattered");
-    expect(markup).toContain("Hook goal");
-    expect(markup).toContain("Get more comments");
-    expect(markup).toContain("Hook tone");
-    expect(markup).toContain("Bold");
-    expect(markup).toContain("Hooks to learn from");
-    expect(markup).toContain("I thought launch day would feel calmer");
-    expect(markup).toContain("Hooks to avoid");
-    expect(markup).toContain("This changes everything");
+    expect(markup).not.toContain("Hook goal");
+    expect(markup).not.toContain("Hooks to learn from");
     expect(markup).toContain("Writing angles");
     expect(markup).toContain("Phrase bank");
     expect(markup).toContain("solo founders");

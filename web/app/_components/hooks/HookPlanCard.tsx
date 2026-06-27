@@ -3,7 +3,7 @@
 import { Check, Copy, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useState } from "react";
 import { HookOptionFeedbackBadge } from "@/app/_components/hooks/HookOptionFeedbackBadge";
-import { HookPlanStatusBadge } from "@/app/_components/library/HookPlanStatusBadge";
+import { HookPlanStatusBadge } from "@/app/_components/hooks/HookPlanStatusBadge";
 import { Button } from "@/app/_components/ui/Button";
 import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";

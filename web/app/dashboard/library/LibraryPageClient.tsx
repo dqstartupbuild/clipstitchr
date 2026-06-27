@@ -8,7 +8,6 @@ import { SwiprSwipesSection } from "@/app/_components/dashboard/SwiprSwipesSecti
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
 import { VideoLibrarySection } from "@/app/_components/dashboard/VideoLibrarySection";
 import { AvatarLibraryTabSection } from "@/app/_components/library/AvatarLibraryTabSection";
-import { HookLibraryTabSection } from "@/app/_components/library/HookLibraryTabSection";
 import { LibraryTabs } from "@/app/_components/library/LibraryTabs";
 import { PexelsLibraryTabSection } from "@/app/_components/library/PexelsLibraryTabSection";
 import { TemplateLibraryTabSection } from "@/app/_components/library/TemplateLibraryTabSection";
@@ -108,7 +107,6 @@ export function LibraryPageClient() {
     useState<StitchLibraryStatusFilter>("active");
   const [swipeStatusFilter, setSwipeStatusFilter] =
     useState<LibraryPostedStatusFilter>("active");
-  const [hookProductFilterId, setHookProductFilterId] = useState("");
   const hookPlans = useStitchrHookPlans();
   const activeProductId = products.activeProductId ?? "";
   const ugcClips = useMemo(
@@ -231,7 +229,7 @@ export function LibraryPageClient() {
     swiprLibrary.error ??
     products.error ??
     stitchTemplates.error ??
-    hookPlans.error;
+    (selectedTab === "stitches" ? hookPlans.error : null);
   const hasDemoProductFilter = false;
   const canUseLibraryTotals = !hasSearchQuery;
   const selectedVideoTotalCount =
@@ -251,8 +249,7 @@ export function LibraryPageClient() {
   const canSortSelectedTab =
     selectedTab !== "avatars" &&
     selectedTab !== "templates" &&
-    selectedTab !== "pexels" &&
-    selectedTab !== "hooks";
+    selectedTab !== "pexels";
   const searchPlaceholder =
     selectedTab === "avatars"
       ? "Search avatars"
@@ -260,8 +257,6 @@ export function LibraryPageClient() {
         ? "Search templates"
         : selectedTab === "pexels"
           ? "Search Pexels packs"
-          : selectedTab === "hooks"
-            ? "Search hooks"
           : "Search library";
   const selectedVideoSection =
     selectedTab === "ugc"
@@ -387,8 +382,7 @@ export function LibraryPageClient() {
         {showUploadControls &&
         selectedTab !== "avatars" &&
         selectedTab !== "templates" &&
-        selectedTab !== "pexels" &&
-        selectedTab !== "hooks" ? (
+        selectedTab !== "pexels" ? (
           <UploadPanel
             allowedAssetTypes={["ugc", "demo"]}
             key={selectedTab}
@@ -565,21 +559,6 @@ export function LibraryPageClient() {
             onDelete={swiprLibrary.removeSwipe}
             onStatusFilterChange={setSwipeStatusFilter}
             onUpdatePostedStatus={swiprLibrary.updateSwipePostedStatus}
-          />
-        ) : null}
-        {selectedTab === "hooks" ? (
-          <HookLibraryTabSection
-            error={hookPlans.error}
-            isLoading={hookPlans.isLoading}
-            plans={hookPlans.plans}
-            productFilterId={hookProductFilterId}
-            products={products.products}
-            savingPlanId={hookPlans.savingPlanId}
-            searchQuery={searchQuery}
-            onAccept={hookPlans.accept}
-            onProductFilterChange={setHookProductFilterId}
-            onReject={hookPlans.reject}
-            onSelectOption={hookPlans.selectOption}
           />
         ) : null}
         {selectedTab === "pexels" ? (

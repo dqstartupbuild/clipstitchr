@@ -2,7 +2,7 @@
 
 import { Save } from "lucide-react";
 import { useState } from "react";
-import { ProductHookMemoryFields } from "@/app/_components/settings/ProductHookMemoryFields";
+import { ProductHookMemoryFields } from "@/app/_components/hooks/ProductHookMemoryFields";
 import { Button } from "@/app/_components/ui/Button";
 import type { HookEdgeLevel } from "@/lib/clipstitchr/types/HookEdgeLevel";
 import type { HookGenerationGoal } from "@/lib/clipstitchr/types/HookGenerationGoal";
@@ -12,17 +12,17 @@ import { createProductProfileInputFromProduct } from "@/lib/clipstitchr/utils/cr
 import { formatProductHookExamplesText } from "@/lib/clipstitchr/utils/formatProductHookExamplesText";
 import { parseProductHookExamplesText } from "@/lib/clipstitchr/utils/parseProductHookExamplesText";
 
-type SettingsHookLabFormProps = {
+type HookLabMemoryFormProps = {
   isSaving: boolean;
   product: ProductProfile;
   onUpdate: (id: string, input: ProductProfileCreateInput) => Promise<unknown>;
 };
 
-export function SettingsHookLabForm({
+export function HookLabMemoryForm({
   isSaving,
   product,
   onUpdate,
-}: SettingsHookLabFormProps) {
+}: HookLabMemoryFormProps) {
   const [winningHookExamplesText, setWinningHookExamplesText] = useState(
     formatProductHookExamplesText(product.winningHookExamples),
   );

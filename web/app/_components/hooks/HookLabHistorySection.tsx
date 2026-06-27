@@ -1,14 +1,14 @@
 "use client";
 
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
-import { HookPlanCard } from "@/app/_components/library/HookPlanCard";
+import { HookPlanCard } from "@/app/_components/hooks/HookPlanCard";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
 import { filterStitchrHookPlansByProductId } from "@/lib/clipstitchr/utils/filterStitchrHookPlansByProductId";
 import { filterStitchrHookPlansBySearchQuery } from "@/lib/clipstitchr/utils/filterStitchrHookPlansBySearchQuery";
 
-type HookLibraryTabSectionProps = {
+type HookLabHistorySectionProps = {
   error: string | null;
   isLoading: boolean;
   productFilterId: string;
@@ -22,7 +22,7 @@ type HookLibraryTabSectionProps = {
   onSelectOption: (id: string, hookText: string) => Promise<void>;
 };
 
-export function HookLibraryTabSection({
+export function HookLabHistorySection({
   error,
   isLoading,
   productFilterId,
@@ -34,7 +34,7 @@ export function HookLibraryTabSection({
   onProductFilterChange,
   onReject,
   onSelectOption,
-}: HookLibraryTabSectionProps) {
+}: HookLabHistorySectionProps) {
   const visiblePlans = filterStitchrHookPlansBySearchQuery(
     filterStitchrHookPlansByProductId(plans, productFilterId),
     searchQuery,
@@ -45,10 +45,10 @@ export function HookLibraryTabSection({
     <div className="flex max-w-6xl flex-col gap-6">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-end">
         <div className="grid gap-2">
-          <h2 className="text-2xl font-bold text-text-primary">Hooks</h2>
+          <h2 className="text-2xl font-bold text-text-primary">Hook history</h2>
           <p className="max-w-2xl text-sm leading-6 text-text-secondary">
             Review the hooks ClipStitchr made, keep the ones you like, and block
-            the ones you would never post.
+            the ones that feel wrong.
           </p>
         </div>
         <SelectInput

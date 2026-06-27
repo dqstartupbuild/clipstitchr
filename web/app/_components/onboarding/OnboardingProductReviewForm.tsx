@@ -3,7 +3,7 @@
 import { ArrowRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { OnboardingStepHeader } from "@/app/_components/onboarding/OnboardingStepHeader";
-import { ProductHookMemoryFields } from "@/app/_components/settings/ProductHookMemoryFields";
+import { ProductHookMemoryFields } from "@/app/_components/hooks/ProductHookMemoryFields";
 import { ProductHookStyleSelect } from "@/app/_components/settings/ProductHookStyleSelect";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";

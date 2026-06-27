@@ -2,6 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CliprPageClient } from "@/app/dashboard/clipr/CliprPageClient";
+import { HookLabPageClient } from "@/app/dashboard/hooks/HookLabPageClient";
 import { LibraryPageClient } from "@/app/dashboard/library/LibraryPageClient";
 import { OnboardingPageClient } from "@/app/dashboard/onboarding/OnboardingPageClient";
 import { SchedulePageClient } from "@/app/dashboard/schedule/SchedulePageClient";
@@ -528,6 +529,14 @@ describe("dashboard page clients", () => {
 
     expect(markup).toContain("Library");
     expect(markup).toContain("UGC clip");
+  });
+
+  it("renders Hook Lab with memory and history controls", () => {
+    const markup = renderToStaticMarkup(<HookLabPageClient />);
+
+    expect(markup).toContain("Hook Lab");
+    expect(markup).toContain("Active product memory");
+    expect(markup).toContain("Hook history");
   });
 
   it("renders the Clipr generator with product and avatar selectors", () => {

@@ -13,8 +13,8 @@ Stitchr hooks sound closer to what already works for that app, audience, and
 founder taste.
 
 New users must add at least one winning hook during onboarding before they move
-to uploads. Existing users can add or change the same hook memory from product
-Settings.
+to uploads. Existing users can add or change the same hook memory from the
+dashboard Hook Lab page.
 
 Hook Lab stores:
 
@@ -37,11 +37,13 @@ as taste and emotional pattern, not as copy to reuse verbatim.
    saves the ranked hook options.
 6. In Normal mode, the user can switch generated hooks from the Hook dropdown,
    save a hook as a winner, or add a hook to the avoid list.
-7. In Batch mode, recent generated hook plans appear with the same dropdown and
-   accept/reject controls.
+7. In Batch mode, hook plans from the current generation appear with the same
+   dropdown and accept/reject controls.
 8. Saved normal and batch Stitches can be edited from the Library Stitches tab,
    where the user can choose another saved hook option for that Stitch.
-9. Batch and scheduled Stitchr drafts use the same saved product hook memory
+9. Accepted hooks are saved as product winners. When the hook has a finished
+   Stitch, ClipStitchr also saves that Stitch setup as a Template.
+10. Batch and scheduled Stitchr drafts use the same saved product hook memory
    without asking the user again.
 
 This is mostly a one-time setup step. Users only revisit it when they learn
@@ -65,18 +67,18 @@ The product API reads and normalizes those fields through:
 
 Product forms reuse one focused component:
 
-- `web/app/_components/settings/ProductHookMemoryFields.tsx`
+- `web/app/_components/hooks/ProductHookMemoryFields.tsx`
 
 It appears in:
 
+- `web/app/dashboard/hooks/HookLabPageClient.tsx`
+- `web/app/_components/hooks/HookLabMemoryPanel.tsx`
+- `web/app/_components/hooks/HookLabMemoryForm.tsx`
 - `web/app/_components/onboarding/OnboardingProductReviewForm.tsx`
 - `web/app/_components/products/ProductCreateDialog.tsx`
-- `web/app/_components/settings/ProductSettingsForm.tsx`
-- `web/app/_components/settings/ProductSettingsEditDialog.tsx`
-- `web/app/_components/settings/ProductSettingsDetailsDialog.tsx`
 
 Stitchr text generation now returns ranked hook candidates and saves manual
-generations to the Hook Library through:
+generations to Hook Lab history through:
 
 - `web/lib/clipstitchr/types/StitchrHookVariant.ts`
 - `web/lib/clipstitchr/types/CliprTextGeneration.ts`
@@ -104,9 +106,15 @@ Batch and manual generations both store one selected hook plus the full ranked
 option list in `stitchrHookPlans`. Each option can be marked as a winner or
 added to the avoid list independently. Accepting a hook adds that exact option
 to `winningHookExamples`; rejecting one adds that exact option to
-`rejectedHookExamples`. The Library Hooks tab shows the same option-level
+`rejectedHookExamples`. The dashboard Hook Lab page shows the same option-level
 controls, so batch-generated hooks no longer require accepting or rejecting the
 single selected hook only.
+
+Accepted hooks also try to create a Template automatically when the hook plan is
+linked to a finished Stitch. The template uses the saved Stitch source clips,
+trims, playback rates, audio settings, caption, and overlay styling, with the
+accepted hook placed into the first text overlay. Duplicate templates for the
+same source Stitch are skipped.
 
 Normal Stitchr creation links the generated hook plan to the finished Stitch
 after the render saves. Batch hook plans store the deterministic final Stitch id
@@ -144,9 +152,11 @@ before Firecrawl or Replicate work starts.
 
 Generating Stitchr hook options still uses `POST /api/clipr/text` and the
 existing Clipr hook/script generation limit before provider writing work starts.
-Saving manual hook options uses the shared Convex record-save limit, and
-linking, switching, accepting, or rejecting hook options uses the shared Convex
-metadata-update limit. None of those selector actions call a provider.
+Saving manual hook options uses the shared Convex record-save limit. Linking,
+switching, accepting, or rejecting hook options uses the shared Convex
+metadata-update limit. Accepting a hook that creates a Template also consumes
+the shared Convex record-save limit before inserting the template. None of those
+selector actions call a provider.
 
 ## Maintenance Notes
 

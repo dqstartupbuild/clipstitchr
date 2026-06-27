@@ -2,15 +2,10 @@
 
 import { Save, X } from "lucide-react";
 import { useState } from "react";
-import { ProductHookMemoryFields } from "@/app/_components/settings/ProductHookMemoryFields";
 import { ProductHookStyleSelect } from "@/app/_components/settings/ProductHookStyleSelect";
 import { Button } from "@/app/_components/ui/Button";
-import type { HookEdgeLevel } from "@/lib/clipstitchr/types/HookEdgeLevel";
-import type { HookGenerationGoal } from "@/lib/clipstitchr/types/HookGenerationGoal";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
-import { formatProductHookExamplesText } from "@/lib/clipstitchr/utils/formatProductHookExamplesText";
-import { parseProductHookExamplesText } from "@/lib/clipstitchr/utils/parseProductHookExamplesText";
 
 type ProductSettingsEditDialogProps = {
   product: ProductProfile;
@@ -37,17 +32,6 @@ export function ProductSettingsEditDialog({
   const [preferredCliprHookStyleKey, setPreferredCliprHookStyleKey] = useState(
     product.preferredCliprHookStyleKey ?? "",
   );
-  const [winningHookExamplesText, setWinningHookExamplesText] = useState(
-    formatProductHookExamplesText(product.winningHookExamples),
-  );
-  const [rejectedHookExamplesText, setRejectedHookExamplesText] = useState(
-    formatProductHookExamplesText(product.rejectedHookExamples),
-  );
-  const [hookGenerationGoal, setHookGenerationGoal] =
-    useState<HookGenerationGoal>(product.hookGenerationGoal ?? "views");
-  const [hookEdgeLevel, setHookEdgeLevel] = useState<HookEdgeLevel>(
-    product.hookEdgeLevel ?? "punchy",
-  );
   const canSave = name.trim().length > 0 && !isSaving;
 
   return (
@@ -73,14 +57,10 @@ export function ProductSettingsEditDialog({
               emotionalNarrative: emotionalNarrative || undefined,
               preferredCliprHookStyleKey:
                 preferredCliprHookStyleKey || undefined,
-              winningHookExamples: parseProductHookExamplesText(
-                winningHookExamplesText,
-              ),
-              rejectedHookExamples: parseProductHookExamplesText(
-                rejectedHookExamplesText,
-              ),
-              hookGenerationGoal,
-              hookEdgeLevel,
+              winningHookExamples: product.winningHookExamples,
+              rejectedHookExamples: product.rejectedHookExamples,
+              hookGenerationGoal: product.hookGenerationGoal,
+              hookEdgeLevel: product.hookEdgeLevel,
             });
           } catch {
             return;
@@ -121,16 +101,6 @@ export function ProductSettingsEditDialog({
           <ProductHookStyleSelect
             value={preferredCliprHookStyleKey}
             onChange={setPreferredCliprHookStyleKey}
-          />
-          <ProductHookMemoryFields
-            hookEdgeLevel={hookEdgeLevel}
-            hookGenerationGoal={hookGenerationGoal}
-            rejectedHookExamplesText={rejectedHookExamplesText}
-            winningHookExamplesText={winningHookExamplesText}
-            onHookEdgeLevelChange={setHookEdgeLevel}
-            onHookGenerationGoalChange={setHookGenerationGoal}
-            onRejectedHookExamplesTextChange={setRejectedHookExamplesText}
-            onWinningHookExamplesTextChange={setWinningHookExamplesText}
           />
           <label className="block">
             <span className="text-sm font-semibold text-text-primary">

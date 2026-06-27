@@ -247,6 +247,9 @@ export function StitchrPageClient() {
   );
   const [isGeneratingBatch, setIsGeneratingBatch] = useState(false);
   const [batchMessage, setBatchMessage] = useState<string | null>(null);
+  const [activeBatchHookTaskIds, setActiveBatchHookTaskIds] = useState<
+    string[]
+  >([]);
   const activeSelectedUgcIds = useMemo(() => {
     const validUgcIds = new Set(ugcClips.map((clip) => clip.id));
 
@@ -471,11 +474,24 @@ export function StitchrPageClient() {
   );
   const savedAutoTextHookPlan = autoTextHookPlansForActivePair[0];
   const visibleBatchHookPlans = useMemo(
-    () =>
-      hookPlanList
-        .filter((plan) => plan.source !== "manual" && plan.hookOptions.length)
-        .slice(0, 6),
-    [hookPlanList],
+    () => {
+      if (!activeBatchHookTaskIds.length) {
+        return [];
+      }
+
+      const activeTaskIds = new Set(activeBatchHookTaskIds);
+
+      return hookPlanList
+        .filter(
+          (plan) =>
+            plan.source !== "manual" &&
+            plan.hookOptions.length &&
+            Boolean(plan.automationTaskId) &&
+            activeTaskIds.has(plan.automationTaskId ?? ""),
+        )
+        .slice(0, 6);
+    },
+    [activeBatchHookTaskIds, hookPlanList],
   );
   const hasCurrentAutoTextHookState =
     autoTextHookVariantState.contextKey === hookVariantContextKey &&
@@ -1342,6 +1358,7 @@ export function StitchrPageClient() {
   const handleGenerateBatch = useCallback(() => {
     setIsGeneratingBatch(true);
     setBatchMessage(null);
+    setActiveBatchHookTaskIds([]);
 
     void generateStitchrBatch({
       soundTrackId: selectedMusicTrack?.id,
@@ -1353,6 +1370,7 @@ export function StitchrPageClient() {
     })
       .then((result) => {
         if (result.count > 0) {
+          setActiveBatchHookTaskIds(result.taskIds);
           setBatchMessage(
             result.message ??
               `Queued ${result.count} Stitch drafts. ` +

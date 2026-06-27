@@ -265,6 +265,7 @@ selected slides.
 /                → Landing page (marketing + "Go to Dashboard" CTA)
 /dashboard       → Authenticated main workspace
 /dashboard/stitchr → Authenticated Stitchr video stitching interface
+/dashboard/hooks → Authenticated Hook Lab for product hook memory and saved hook review
 /dashboard/clipr → Authenticated Clipr engagement clip generator
 /dashboard/swipr → Authenticated TikTok carousel image generator
 /dashboard/swapr → Authenticated AI motion-transfer studio using saved photos with UGC clips or finished stitches

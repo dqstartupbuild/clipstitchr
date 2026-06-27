@@ -52,9 +52,18 @@ function getHandler<Args, Result>(convexFunction: unknown) {
 function createQueryChain(results: QueryResult[] = []) {
   const indexQuery = {
     eq: vi.fn(() => indexQuery),
+    field: vi.fn((fieldName: string) => fieldName),
   };
   const chain = {
     collect: vi.fn(async () => results.shift()?.collect ?? []),
+    filter: vi.fn(
+      (callback: (q: typeof indexQuery) => void) => {
+        callback(indexQuery);
+
+        return chain;
+      },
+    ),
+    first: vi.fn(async () => results.shift()?.unique ?? null),
     order: vi.fn(() => chain),
     take: vi.fn(async () => results.shift()?.take ?? []),
     unique: vi.fn(async () => results.shift()?.unique ?? null),
@@ -388,6 +397,88 @@ describe("convex stitchrHookPlans", () => {
       "doc_product",
       expect.objectContaining({
         rejectedHookExamples: ["Hook A", "Old miss"],
+      }),
+    );
+  });
+
+  it("saves an accepted hook with a finished stitch as a template", async () => {
+    const { ctx } = createCtx({
+      products: [
+        {
+          unique: {
+            _id: "doc_product",
+            id: "product_1",
+            winningHookExamples: [],
+          },
+        },
+      ],
+      stitches: [
+        {
+          unique: {
+            _id: "doc_stitch",
+            createdAt: "2026-06-23T00:00:00.000Z",
+            demoClipId: "demo_1",
+            demoClipName: "Demo",
+            duration: 12,
+            height: 1920,
+            id: "stitch_1",
+            name: "Launch Stitch",
+            ownerId: "owner_123",
+            textOverlay: {
+              endTime: 3,
+              fontSize: 0.045,
+              startTime: 0,
+              styleId: "clean",
+              text: "Old hook",
+              width: 0.68,
+              x: 0.16,
+              y: 0.36,
+            },
+            ugcClipId: "ugc_1",
+            ugcClipName: "UGC",
+            updatedAt: "2026-06-23T00:00:00.000Z",
+            width: 1080,
+          },
+        },
+      ],
+      stitchrHookPlans: [
+        {
+          unique: createPlan({
+            stitchId: "stitch_1",
+          }),
+        },
+      ],
+      stitchTemplates: [{ unique: null }],
+    });
+
+    await getHandler(accept)(ctx, {
+      hookText: "Hook B",
+      id: "hook_plan_1",
+      updatedAt: "2026-06-23T00:00:00.000Z",
+    });
+
+    expect(mocks.rateLimiter.limit).toHaveBeenCalledWith(
+      ctx,
+      "convexRecordSave",
+      {
+        key: "owner_123",
+        throws: true,
+      },
+    );
+    expect(ctx.db.insert).toHaveBeenCalledWith(
+      "stitchTemplates",
+      expect.objectContaining({
+        id: "accepted-hook-template:owner_123:stitch_1",
+        name: "Winner: Hook B",
+        sourceStitchId: "stitch_1",
+        textOverlay: expect.objectContaining({
+          text: "Hook B",
+        }),
+        textOverlays: expect.arrayContaining([
+          expect.objectContaining({
+            text: "Hook B",
+          }),
+        ]),
       }),
     );
   });

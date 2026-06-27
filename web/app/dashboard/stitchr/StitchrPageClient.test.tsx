@@ -512,6 +512,14 @@ describe("StitchrPageClient", () => {
       stitchrTextStyleChoice: "any",
       templateId: "template_1",
     });
+    expect(
+      mocks.stateSetters.some((setter) =>
+        setter.mock.calls.some(
+          ([value]) =>
+            Array.isArray(value) && value.join("|") === "task_1|task_2",
+        ),
+      ),
+    ).toBe(true);
   });
 
   it("passes selected Batch text styling into generation", async () => {
@@ -548,7 +556,7 @@ describe("StitchrPageClient", () => {
     });
   });
 
-  it("passes recent batch hook options through review callbacks", async () => {
+  it("keeps saved batch hook options hidden until the current generation", async () => {
     const batchPlan = {
       createdAt: "2026-06-17T00:00:00.000Z",
       demoClipId: "demo_1",
@@ -579,7 +587,7 @@ describe("StitchrPageClient", () => {
 
     expect(mocks.batchPanelProps).toEqual(
       expect.objectContaining({
-        hookPlans: [batchPlan],
+        hookPlans: [],
         savingHookPlanId: null,
       }),
     );

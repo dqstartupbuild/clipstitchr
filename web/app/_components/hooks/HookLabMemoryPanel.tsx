@@ -1,19 +1,19 @@
-import { SettingsHookLabForm } from "@/app/_components/settings/SettingsHookLabForm";
+import { HookLabMemoryForm } from "@/app/_components/hooks/HookLabMemoryForm";
 import { Panel } from "@/app/_components/ui/Panel";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { ProductProfileCreateInput } from "@/lib/clipstitchr/types/ProductProfileCreateInput";
 
-type SettingsHookLabPanelProps = {
+type HookLabMemoryPanelProps = {
   isSaving: boolean;
   product?: ProductProfile;
   onUpdate: (id: string, input: ProductProfileCreateInput) => Promise<unknown>;
 };
 
-export function SettingsHookLabPanel({
+export function HookLabMemoryPanel({
   isSaving,
   product,
   onUpdate,
-}: SettingsHookLabPanelProps) {
+}: HookLabMemoryPanelProps) {
   return (
     <Panel className="p-4">
       <div className="mb-4">
@@ -26,7 +26,7 @@ export function SettingsHookLabPanel({
         </p>
       </div>
       {product ? (
-        <SettingsHookLabForm
+        <HookLabMemoryForm
           key={product.id}
           isSaving={isSaving}
           product={product}
