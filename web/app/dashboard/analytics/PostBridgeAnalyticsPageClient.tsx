@@ -15,6 +15,7 @@ import { formatPostBridgeNumber } from "@/lib/clipstitchr/utils/formatPostBridge
 import { getPostBridgeAnalyticsEngagementTotal } from "@/lib/clipstitchr/utils/getPostBridgeAnalyticsEngagementTotal";
 import { getPostBridgeAnalyticsViewTotal } from "@/lib/clipstitchr/utils/getPostBridgeAnalyticsViewTotal";
 import { getPostBridgePlatformLabel } from "@/lib/clipstitchr/utils/getPostBridgePlatformLabel";
+import { getPostBridgePostTimeLabel } from "@/lib/clipstitchr/utils/getPostBridgePostTimeLabel";
 import { getPostBridgeScheduledAtLabel } from "@/lib/clipstitchr/utils/getPostBridgeScheduledAtLabel";
 import { getPostBridgeUnknownString } from "@/lib/clipstitchr/utils/getPostBridgeUnknownString";
 
@@ -191,7 +192,7 @@ export function PostBridgeAnalyticsPageClient() {
                       {post.caption || "Untitled post"}
                     </p>
                     <p className="mt-1 text-xs font-semibold text-text-tertiary">
-                      {getPostBridgeScheduledAtLabel(post.scheduled_at)}
+                      {getPostBridgePostTimeLabel(post)}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">

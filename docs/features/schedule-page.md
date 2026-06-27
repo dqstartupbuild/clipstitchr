@@ -10,7 +10,9 @@ The page has two tabs:
 - `Scheduled content` loads the signed-in user's Post Bridge posts through
   `GET /api/post-bridge/posts`. It also tries to load supported TikTok,
   Instagram, and YouTube accounts through `GET /api/post-bridge/accounts` so
-  scheduled rows can show account names when possible.
+  scheduled rows can show account names when possible. Scheduled rows display
+  `scheduled_at`, while immediate post-now rows fall back to Post Bridge's
+  `created_at` time instead of showing an empty schedule time.
 - `Config/accounts` shows the product-level Post Bridge account picker for the
   active product. This is the same account linking control that used to live in
   product settings. It saves default Post Bridge social account IDs to the
@@ -42,6 +44,7 @@ choices.
 - `web/app/_components/settings/ProductPostBridgeAccountsPanel.tsx`
 - `web/lib/clipstitchr/types/SchedulePageTab.ts`
 - `web/lib/clipstitchr/utils/getInitialSchedulePageTab.ts`
+- `web/lib/clipstitchr/utils/getPostBridgePostTimeLabel.ts`
 - `web/lib/clipstitchr/utils/getSchedulePageTabFromSearchParams.ts`
 
 ## Rate Limits

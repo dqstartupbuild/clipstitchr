@@ -86,8 +86,10 @@ The dashboard sidebar includes `Schedule` at `/dashboard/schedule` and
 `Analytics` at `/dashboard/analytics`.
 
 The Schedule page shows Post Bridge posts and their scheduled, processing,
-posted, or failed status. Its `Config/accounts` tab owns the product-level
-default posting account picker.
+posted, or failed status. Scheduled posts display their `scheduled_at` time.
+Immediate post-now rows display the Post Bridge `created_at` time, because those
+posts intentionally have `scheduled_at: null`. Its `Config/accounts` tab owns
+the product-level default posting account picker.
 
 The page shows:
 
@@ -112,6 +114,7 @@ calling Post Bridge.
 - `web/app/_components/settings/ProductPostBridgeAccountsPanel.tsx`
 - `web/app/_components/schedule/`
 - `web/app/dashboard/schedule/SchedulePageClient.tsx`
+- `web/lib/clipstitchr/utils/getPostBridgePostTimeLabel.ts`
 - `web/lib/clipstitchr/media/createCliprMixedAudioBuffer.ts`
 - `web/lib/clipstitchr/media/createSwiprMusicAudioBuffer.ts`
 - `web/lib/clipstitchr/media/scheduleLoopingAudioBuffer.ts`

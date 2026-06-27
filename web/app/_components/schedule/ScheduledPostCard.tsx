@@ -2,7 +2,7 @@ import { ScheduledPostAccountList } from "@/app/_components/schedule/ScheduledPo
 import { ScheduledPostStatusBadge } from "@/app/_components/schedule/ScheduledPostStatusBadge";
 import type { PostBridgePost } from "@/lib/clipstitchr/types/PostBridgePost";
 import type { PostBridgeSocialAccount } from "@/lib/clipstitchr/types/PostBridgeSocialAccount";
-import { getPostBridgeScheduledAtLabel } from "@/lib/clipstitchr/utils/getPostBridgeScheduledAtLabel";
+import { getPostBridgePostTimeLabel } from "@/lib/clipstitchr/utils/getPostBridgePostTimeLabel";
 import { getPostBridgeUnknownString } from "@/lib/clipstitchr/utils/getPostBridgeUnknownString";
 
 type ScheduledPostCardProps = {
@@ -28,7 +28,7 @@ export function ScheduledPostCard({ accounts, post }: ScheduledPostCardProps) {
           {caption}
         </h2>
         <p className="mt-1 text-sm font-semibold text-text-tertiary">
-          {getPostBridgeScheduledAtLabel(post.scheduled_at)}
+          {getPostBridgePostTimeLabel(post)}
         </p>
         {post.warnings?.length ? (
           <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700">
