@@ -18,6 +18,7 @@ import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { quickEditCropValidator } from "./validators/quickEditCrop";
 import { quickEditRemoveRangeValidator } from "./validators/quickEditRemoveRange";
 import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
+import { postBridgePostReferenceValidator } from "./validators/postBridgePostReference";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchScoreValidator } from "./validators/stitchScore";
 import { stitchrModeValidator } from "./validators/stitchrMode";
@@ -1194,6 +1195,39 @@ export const updatePostedStatus = mutation({
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
       ]);
     }
+  },
+});
+
+export const addPostBridgePost = mutation({
+  args: {
+    id: v.string(),
+    post: postBridgePostReferenceValidator,
+  },
+  handler: async (ctx, { id, post }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const stitch = await ctx.db
+      .query("stitches")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!stitch) {
+      throw new Error("Stitch not found.");
+    }
+
+    await ctx.db.patch(stitch._id, {
+      postBridgePosts: [
+        ...(stitch.postBridgePosts ?? []).filter(
+          (existingPost) => existingPost.postId !== post.postId,
+        ),
+        post,
+      ],
+    });
   },
 });
 

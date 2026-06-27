@@ -3,6 +3,7 @@
 import {
   CheckCircle2,
   BookmarkPlus,
+  CalendarClock,
   Download,
   Edit3,
   Gauge,
@@ -16,6 +17,7 @@ import { useCallback, useState } from "react";
 import { StitchDetailsDialog } from "@/app/_components/dashboard/StitchDetailsDialog";
 import { StitchEditDialog } from "@/app/_components/dashboard/StitchEditDialog";
 import { StitchScoreBadge } from "@/app/_components/dashboard/StitchScoreBadge";
+import { PostBridgeScheduleDialog } from "@/app/_components/postBridge/PostBridgeScheduleDialog";
 import {
   MediaCardActionMenu,
   type MediaCardActionMenuItem,
@@ -173,6 +175,7 @@ export function StitchCard({
   });
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isScoring, setIsScoring] = useState(false);
@@ -342,6 +345,32 @@ export function StitchCard({
     } finally {
       setIsDownloading(false);
     }
+  };
+  const renderPostBridgeMedia = async ({
+    onProgress,
+  }: {
+    onProgress: (progress: number) => void;
+  }) => {
+    const renderedBlob =
+      (await onLoadVideo?.(stitch)) ??
+      (await createStitchExportBlob(stitch, {
+        includePosterMetadata: false,
+        loadClip: onLoadClip,
+        onProgress,
+      }));
+
+    setStitchVideoBlob(renderedBlob);
+
+    return {
+      blob: renderedBlob.type
+        ? renderedBlob
+        : new Blob([renderedBlob], { type: "video/mp4" }),
+      hasAudio: Boolean(
+        stitch.music?.enabled ||
+          stitch.includeUgcAudio !== false ||
+          stitch.includeDemoAudio !== false,
+      ),
+    };
   };
   const handleScore = async () => {
     if (!onScore) {
@@ -651,6 +680,11 @@ export function StitchCard({
       onClick: () => void handleDownload(),
     },
     {
+      label: "Schedule post",
+      icon: <CalendarClock aria-hidden className="h-4 w-4" />,
+      onClick: () => setIsScheduleOpen(true),
+    },
+    {
       label: "Edit stitch",
       icon: <Edit3 aria-hidden className="h-4 w-4" />,
       onClick: openEdit,
@@ -841,6 +875,24 @@ export function StitchCard({
           onSaveTextOverlay={handleUpdateTextOverlay}
           onRejectHookVariant={onRejectHookVariant}
           onSelectHookVariant={onSelectHookVariant}
+        />
+      ) : null}
+      {isScheduleOpen ? (
+        <PostBridgeScheduleDialog
+          defaultCaption={stitch.socialCaption}
+          sourceId={stitch.id}
+          sourceProductId={stitch.productId}
+          sourceTitle={stitch.name}
+          sourceType="stitch"
+          onClose={() => setIsScheduleOpen(false)}
+          onRenderMedia={renderPostBridgeMedia}
+          onScheduled={(post) => {
+            trackPostHogEvent("stitch_scheduled", {
+              platform_count: post.platforms.length,
+              post_bridge_post_id: post.postId,
+              stitch_id: stitch.id,
+            });
+          }}
         />
       ) : null}
     </>

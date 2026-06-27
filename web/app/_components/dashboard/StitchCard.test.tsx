@@ -304,6 +304,7 @@ describe("StitchCard", () => {
     expect(mocks.actionItems.map((item) => item.label)).toEqual([
       "Reuse in Stitchr",
       "Download stitch",
+      "Schedule post",
       "Edit stitch",
       "Mark as posted",
       "Delete stitch",

@@ -140,6 +140,19 @@ Apify API variables:
 - The key is sent only to Apify's API from Next.js route handlers.
 - Keep it server-side only. Do not prefix it with `NEXT_PUBLIC_`.
 
+Post Bridge API variables:
+
+- `POST_BRIDGE_API_KEY_ENCRYPTION_SECRET` is required in the Next.js runtime to
+  save user-supplied Post Bridge API keys. Keys are tested against Post Bridge,
+  encrypted with this secret, stored in Convex, and decrypted only inside
+  server-side Post Bridge API routes.
+- `POST_BRIDGE_API_BASE_URL` optionally overrides the API base URL. It defaults
+  to `https://api.post-bridge.com`.
+- `POST_BRIDGE_MAX_MEDIA_BYTES` optionally caps rendered schedule-upload media
+  size. It defaults to 250 MB.
+- User Post Bridge keys must not be sent to the browser after save. Only masked
+  status and last-four metadata are returned to account settings.
+
 Existing Convex auth variables still apply:
 
 - `NEXT_PUBLIC_CONVEX_URL` in Next.js.
@@ -247,8 +260,11 @@ Firecrawl website import:
 | Clipr voice and Script-mode lip-sync generation | `POST /api/clipr/jobs` before queued worker generation | 600 estimated voice seconds/hour/user, burst 180; global provider bucket counted by estimated seconds. Manual Clipr job creation consumes this only for Script mode. It protects ElevenLabs v3 speech generation and optional second-pass lip-sync models before the provider job is queued. PixVerse lip-sync jobs create temporary provider-worker ffmpeg video/audio segments in R2 before stitching the lip-synced segment outputs. |
 | Clipr video generation | `POST /api/clipr/jobs` before queued worker generation | 600 estimated video seconds/hour/user, burst 180; global provider bucket counted by estimated seconds. Script mode uses `prunaai/p-video-avatar`; Reaction and B-roll use the selected visual model; Demo mode uses Seedance with the selected Demo clip as a reference video. Reaction, B-roll, and Demo skip voice, music, and PixVerse. |
 | Private sound upload | `POST /api/music/upload` from the sound picker | Uses the R2 upload byte limits before storing the owner-scoped sound object, then `sharedMusicTracks.save` consumes the shared Convex record-save limit. Uploads are capped at 30 MB and accepted audio MIME types only. |
-| TikTok sound search | `POST /api/music/tiktok/search` from the sound picker | 60 lookups/hour/user, burst 20; global 600 lookups/hour, burst 100 across 5 shards. The route consumes this before calling Apify's `clockworks/tiktok-scraper`. |
-| TikTok sound import | `POST /api/music/tiktok/import` from the sound picker | Consumes the TikTok sound lookup limit and 30 imports/hour/user, burst 10; global 300 imports/hour, burst 60 across 5 shards before calling Apify, downloading the selected sound, writing to R2, and saving the owner-scoped sound record. |
+| TikTok sound search | `POST /api/music/tiktok/search` from the sound picker and automatic Swipe schedule sound resolution | 60 lookups/hour/user, burst 20; global 600 lookups/hour, burst 100 across 5 shards. The route consumes this before calling Apify's `clockworks/tiktok-scraper`. |
+| TikTok sound import | `POST /api/music/tiktok/import` from the sound picker and automatic Swipe schedule sound resolution | Consumes the TikTok sound lookup limit and 30 imports/hour/user, burst 10; global 300 imports/hour, burst 60 across 5 shards before calling Apify, downloading the selected sound, writing to R2, and saving the owner-scoped sound record. |
+| Post Bridge account/post/analytics reads and key tests | `GET /api/post-bridge/accounts`, `GET /api/post-bridge/posts`, `GET /api/post-bridge/analytics`, `POST /api/post-bridge/settings` | 120 reads/hour/user, burst 30; global 1,000 reads/hour, burst 200 across 5 shards. The route consumes this before calling Post Bridge. Account reads can include a product ID so the response also returns that product's linked account defaults. Account and post reads are filtered to TikTok, Instagram, and YouTube. Analytics rows are filtered to those supported platforms after Post Bridge returns them. |
+| Post Bridge schedule create | `POST /api/post-bridge/schedule` from saved Stitch and Swipe cards | 10 schedules/hour/user, burst 5; 30 schedules/day/user; 2 GB uploaded schedule media/day/user; global 1,000 schedules/day, burst 200 across 5 shards; global 50 GB uploaded schedule media/day across 10 shards. The route validates ownership of the source stitch or swipe, resolves the source product and product-linked account IDs, rejects non-video media and files above `POST_BRIDGE_MAX_MEDIA_BYTES`, consumes quota, decrypts the user's saved Post Bridge key, verifies selected accounts belong to that key, uploads the rendered MP4 to Post Bridge, creates the scheduled post, then records the returned Post Bridge post ID on the source asset. Swipe audio is mixed into the browser-rendered MP4 before this route is called. |
+| Post Bridge analytics sync | `POST /api/post-bridge/analytics/sync` from `/dashboard/analytics` | 12 syncs/hour/user, burst 3; global 200 syncs/hour, burst 40 across 5 shards. The route consumes this before calling Post Bridge analytics sync, then reloads analytics rows. |
 | Removed music generation routes | `POST /api/music/generate`, `POST /api/clipr/music`, `POST /api/stitches/music` | These routes return `410 Gone` and do not consume provider, R2, or Convex write limits because music generation has been removed. |
 | Clipr job polling | Reserved Clipr polling route and Convex job refreshes | 600/minute/user, burst 150 |
 | Clipr job cancellation | `cliprJobs.cancel` | 100/hour/user, burst 20 |

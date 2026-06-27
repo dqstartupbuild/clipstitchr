@@ -7,6 +7,7 @@ import { getOwnerHasLegacyProductRecords } from "./getOwnerHasLegacyProductRecor
 import { getPrimaryProductForOwner } from "./getPrimaryProductForOwner";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
+import { normalizePostBridgeSocialAccountIds } from "../lib/clipstitchr/utils/normalizePostBridgeSocialAccountIds";
 
 const PRODUCT_TEXT_MAX_LENGTH = 2000;
 const PRODUCT_NAME_MAX_LENGTH = 120;
@@ -458,6 +459,38 @@ export const get = query({
       .query("products")
       .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
       .unique();
+  },
+});
+
+export const updatePostBridgeSocialAccountIds = mutation({
+  args: {
+    id: v.string(),
+    socialAccountIds: v.array(v.number()),
+    updatedAt: v.string(),
+  },
+  handler: async (ctx, { id, socialAccountIds, updatedAt }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const product = await ctx.db
+      .query("products")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!product) {
+      throw new Error("Product not found.");
+    }
+
+    await ctx.db.patch(product._id, {
+      postBridgeSocialAccountIds: normalizePostBridgeSocialAccountIds(
+        socialAccountIds,
+      ),
+      updatedAt,
+    });
   },
 });
 

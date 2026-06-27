@@ -32,6 +32,7 @@ import { providerJobStatusValidator } from "./validators/providerJobStatus";
 import { providerJobTypeValidator } from "./validators/providerJobType";
 import { quickEditMetadataValidator } from "./validators/quickEditMetadata";
 import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
+import { postBridgePostReferenceValidator } from "./validators/postBridgePostReference";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
 import { replicatePredictionStatusValidator } from "./validators/replicatePredictionStatus";
@@ -242,11 +243,20 @@ export default defineSchema({
     rejectedHookExamples: v.optional(v.array(v.string())),
     hookGenerationGoal: v.optional(v.string()),
     hookEdgeLevel: v.optional(v.string()),
+    postBridgeSocialAccountIds: v.optional(v.array(v.number())),
     createdAt: v.string(),
     updatedAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
+  postBridgeSettings: defineTable({
+    ownerId: v.string(),
+    encryptedApiKey: v.string(),
+    apiKeyLast4: v.string(),
+    lastVerifiedAt: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  }).index("by_owner", ["ownerId"]),
   productPreferences: defineTable({
     ownerId: v.string(),
     defaultProductId: v.optional(v.string()),
@@ -293,6 +303,7 @@ export default defineSchema({
     socialCaption: v.optional(v.string()),
     stitchScore: v.optional(stitchScoreValidator),
     firstStitchScore: v.optional(stitchScoreValidator),
+    postBridgePosts: v.optional(v.array(postBridgePostReferenceValidator)),
     isPosted: v.optional(v.boolean()),
     postedAt: v.optional(v.string()),
     automation: v.optional(automationProvenanceValidator),
@@ -463,6 +474,7 @@ export default defineSchema({
     slides: v.array(swiprSlideValidator),
     posterObject: v.optional(r2ObjectValidator),
     posterVersion: v.optional(v.number()),
+    postBridgePosts: v.optional(v.array(postBridgePostReferenceValidator)),
     isPosted: v.optional(v.boolean()),
     postedAt: v.optional(v.string()),
     automation: v.optional(automationProvenanceValidator),

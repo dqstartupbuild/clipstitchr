@@ -2,6 +2,7 @@
 
 import {
   CheckCircle2,
+  CalendarClock,
   Download,
   Edit3,
   Eye,
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SwiprSwipeDetailsDialog } from "@/app/_components/dashboard/SwiprSwipeDetailsDialog";
+import { PostBridgeScheduleDialog } from "@/app/_components/postBridge/PostBridgeScheduleDialog";
 import { Badge } from "@/app/_components/ui/Badge";
 import {
   MediaCardActionMenu,
@@ -21,6 +23,9 @@ import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxB
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
+import { downloadMusicBlob } from "@/lib/clipstitchr/client/r2/downloadMusicBlob";
+import { renderSwiprSwipeVideoBlob } from "@/lib/clipstitchr/media/renderSwiprSwipeVideoBlob";
+import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import { createSwiprSwipeSocialDescription } from "@/lib/clipstitchr/utils/createSwiprSwipeSocialDescription";
@@ -58,6 +63,7 @@ export function SwiprSwipeCard({
   onUpdatePostedStatus,
 }: SwiprSwipeCardProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isSavingPostedStatus, setIsSavingPostedStatus] = useState(false);
   const [loadedBackground, setLoadedBackground] = useState<{
     blob: Blob;
@@ -222,6 +228,64 @@ export function SwiprSwipeCard({
         });
       });
   };
+  const renderPostBridgeMedia = async ({
+    musicTrack,
+    onProgress,
+  }: {
+    musicTrack: SharedMusicTrack | null;
+    onProgress: (progress: number) => void;
+  }) => {
+    const currentBackground = background;
+
+    if (hasMissingBackground || !currentBackground) {
+      throw new Error("This Swipe is missing a photo.");
+    }
+
+    const primaryBlob =
+      backgroundBlob ?? (await onLoadBackgroundBlob(currentBackground.id));
+    const slideBackgroundBlobs: Record<string, Blob> = {};
+
+    setLoadedBackground({
+      id: currentBackground.id,
+      blob: primaryBlob,
+    });
+
+    for (const slide of swipe.slides) {
+      const backgroundId = getSwiprSlideBackgroundId(slide, swipe.backgroundId);
+      const slideBackgroundAsset =
+        backgroundId === currentBackground.id
+          ? currentBackground
+          : backgroundsById.get(backgroundId);
+
+      if (!slideBackgroundAsset) {
+        throw new Error("Unable to load this Swipe photo.");
+      }
+
+      slideBackgroundBlobs[slide.id] =
+        backgroundId === currentBackground.id
+          ? primaryBlob
+          : slideBackgroundAsset.blob ??
+            (await onLoadBackgroundBlob(slideBackgroundAsset.id));
+    }
+
+    const musicBlob = musicTrack
+      ? await downloadMusicBlob({
+          audioObject: musicTrack.audioObject,
+          sharedTrackId: musicTrack.id,
+        })
+      : null;
+    const renderResult = await renderSwiprSwipeVideoBlob({
+      musicBlob,
+      onProgress,
+      slideBackgroundBlobs,
+      slides: swipe.slides,
+    });
+
+    return {
+      blob: renderResult.blob,
+      hasAudio: Boolean(musicTrack),
+    };
+  };
   const handleUpdatePostedStatus = async (nextIsPosted: boolean) => {
     if (!onUpdatePostedStatus) {
       return;
@@ -253,6 +317,12 @@ export function SwiprSwipeCard({
       icon: <Download aria-hidden className="h-4 w-4" />,
       disabled: exporter.status === "rendering" || hasMissingBackground,
       onClick: downloadSwipe,
+    },
+    {
+      label: "Schedule post",
+      icon: <CalendarClock aria-hidden className="h-4 w-4" />,
+      disabled: hasMissingBackground,
+      onClick: () => setIsScheduleOpen(true),
     },
     {
       label: "Edit Swipe",
@@ -413,6 +483,25 @@ export function SwiprSwipeCard({
           }}
           onDownload={downloadSwipe}
           onLoadBackgroundBlob={onLoadBackgroundBlob}
+        />
+      ) : null}
+      {isScheduleOpen ? (
+        <PostBridgeScheduleDialog
+          allowMusic
+          defaultCaption={swipe.socialCaption ?? socialDescription}
+          soundSearchContext={[
+            swipe.productName,
+            swipe.productContext,
+            socialDescription,
+          ]
+            .filter(Boolean)
+            .join("\n")}
+          sourceId={swipe.id}
+          sourceProductId={swipe.productSourceId}
+          sourceTitle={swipe.name}
+          sourceType="swipe"
+          onClose={() => setIsScheduleOpen(false)}
+          onRenderMedia={renderPostBridgeMedia}
         />
       ) : null}
     </>

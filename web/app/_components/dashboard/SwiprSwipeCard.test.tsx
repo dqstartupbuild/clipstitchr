@@ -191,13 +191,14 @@ describe("SwiprSwipeCard", () => {
     await Promise.resolve();
 
     expect(onLoadBackgroundBlob).toHaveBeenCalledWith("bg_1");
-    expect(mocks.setStateCalls[2]).toHaveBeenCalledWith({
+    expect(mocks.setStateCalls[3]).toHaveBeenCalledWith({
       blob: loadedBlob,
       id: "bg_1",
     });
     expect(actionItems.map((item) => item.label)).toEqual([
       "View Swipe details",
       "Download Swipe",
+      "Schedule post",
       "Edit Swipe",
       "Delete Swipe",
     ]);
@@ -205,7 +206,7 @@ describe("SwiprSwipeCard", () => {
     (previewButton.props.onClick as () => void)();
     actionItems[0].onClick?.();
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(true);
-    expect(actionItems[2].href).toBe(
+    expect(actionItems[3].href).toBe(
       "/dashboard/swipr?mode=edit&swipe=swipe_1",
     );
 
@@ -230,7 +231,7 @@ describe("SwiprSwipeCard", () => {
       }),
     );
 
-    actionItems[3].onClick?.();
+    actionItems[4].onClick?.();
     expect(onDelete).toHaveBeenCalledWith("swipe_1");
   });
 
@@ -333,7 +334,7 @@ describe("SwiprSwipeCard", () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(mocks.setStateCalls[3]).toHaveBeenCalledWith({
+    expect(mocks.setStateCalls[4]).toHaveBeenCalledWith({
       id: "bg_1",
       message: "Load failed",
     });
@@ -343,7 +344,7 @@ describe("SwiprSwipeCard", () => {
     await Promise.resolve();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(mocks.setStateCalls[3]).toHaveBeenCalledWith({
+    expect(mocks.setStateCalls[4]).toHaveBeenCalledWith({
       id: "bg_1",
       message: "Unable to load this Swipe background.",
     });

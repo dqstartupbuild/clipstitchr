@@ -1,6 +1,6 @@
 # PostHog Analytics
 
-Last updated: May 16, 2026
+Last updated: June 26, 2026
 
 ## Consent
 
@@ -46,6 +46,7 @@ Core browser tracking:
 | `upload_destination_selected` | Upload type chosen | Tracks asset type and destination. |
 | `stitch_preview_viewed` | Stitch details/preview opened | Tracks stitch ID and non-content metadata. |
 | `stitch_downloaded` | Stitch export download succeeds | Tracks stitch ID, duration, size, and option flags. |
+| `stitch_scheduled` | Stitch schedule request succeeds in the browser | Tracks stitch ID, Post Bridge post ID, and platform count. |
 | `stitch_deleted` | Stitch deletion is requested | Tracks stitch ID and non-content metadata. |
 | `avatar_photos_generate_clicked` | Avatar photo generation button clicked | Tracks avatar ID, count, style, and lighting. |
 | `avatar_created_from_clip` | Clip-to-avatar creation succeeds | Tracks clip ID and generation options. |
@@ -60,6 +61,8 @@ Server-side product events:
 | `swapr_job_created` | Swapr job is created | Tracks prediction ID and generation options. |
 | `avatar_photos_generation_requested` | Avatar photo generation API starts | Tracks count, style, lighting, speed tier, and model. |
 | `sound_uploaded` | Private sound upload succeeds | Tracks source, content type, and size. |
+| `post_bridge_post_scheduled` | Post Bridge schedule API succeeds | Tracks source type, source ID, Post Bridge post ID, platform count, media size, and audio flag. |
+| `post_bridge_analytics_synced` | Post Bridge analytics sync succeeds | No user-entered content is sent. |
 
 ## Data Rules
 

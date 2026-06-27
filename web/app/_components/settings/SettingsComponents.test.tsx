@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => ({
   localStorageGetItem: vi.fn(),
   localStorageRemoveItem: vi.fn(),
   localStorageSetItem: vi.fn(),
+  mutation: vi.fn(),
   setStateCalls: [] as Array<ReturnType<typeof vi.fn>>,
   stateQueue: [] as unknown[],
 }));
@@ -51,6 +52,10 @@ vi.mock("react", async (importOriginal) => {
     ) => getServerSnapshot(),
   };
 });
+
+vi.mock("convex/react", () => ({
+  useMutation: () => mocks.mutation,
+}));
 
 function findElements(
   value: unknown,

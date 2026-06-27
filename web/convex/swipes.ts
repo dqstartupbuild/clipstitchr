@@ -7,6 +7,7 @@ import { createNotification } from "./createNotification";
 import { getSwipeNotificationCopy } from "./getSwipeNotificationCopy";
 import { rateLimiter } from "./rateLimiter";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
+import { postBridgePostReferenceValidator } from "./validators/postBridgePostReference";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { swiprProductSourceTypeValidator } from "./validators/swiprProductSourceType";
 import { swiprSlideValidator } from "./validators/swiprSlide";
@@ -399,6 +400,40 @@ export const updatePostedStatus = mutation({
     await ctx.db.patch(swipe._id, {
       isPosted: isPosted ? true : undefined,
       postedAt: isPosted ? new Date().toISOString() : undefined,
+    });
+  },
+});
+
+export const addPostBridgePost = mutation({
+  args: {
+    id: v.string(),
+    post: postBridgePostReferenceValidator,
+  },
+  handler: async (ctx, { id, post }) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "convexMetadataUpdate", {
+      key: ownerId,
+      throws: true,
+    });
+
+    const swipe = await ctx.db
+      .query("swipes")
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", id))
+      .unique();
+
+    if (!swipe) {
+      throw new Error("Swipe not found.");
+    }
+
+    await ctx.db.patch(swipe._id, {
+      postBridgePosts: [
+        ...(swipe.postBridgePosts ?? []).filter(
+          (existingPost) => existingPost.postId !== post.postId,
+        ),
+        post,
+      ],
+      updatedAt: new Date().toISOString(),
     });
   },
 });

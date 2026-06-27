@@ -1,6 +1,7 @@
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { QuickEditMetadata } from "@/lib/clipstitchr/types/QuickEditMetadata";
 import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
+import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
 import type { SavedStitchrMode } from "@/lib/clipstitchr/types/SavedStitchrMode";
 import type { StitchScore } from "@/lib/clipstitchr/types/StitchScore";
 import type { StitchSequenceSegment } from "@/lib/clipstitchr/types/StitchSequenceSegment";
@@ -44,6 +45,7 @@ export type Stitch = {
   socialCaption?: string;
   stitchScore?: StitchScore;
   firstStitchScore?: StitchScore;
+  postBridgePosts?: PostBridgePostReference[];
   isPosted?: boolean;
   postedAt?: string;
   createdAt: string;

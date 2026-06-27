@@ -1,0 +1,1 @@
+export const SWIPR_VIDEO_SECONDS_PER_SLIDE = 2.5;
