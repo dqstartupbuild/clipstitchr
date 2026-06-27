@@ -47,8 +47,10 @@ for only that task and saves the fallback hook into the same history table.
 - source: batch planner, worker fallback, or manual
 - feedback: accepted or rejected
 
-The dashboard Hook Lab page reads this table, filters by product, and lets the
-user copy, save as winner, or add to avoid list.
+The dashboard Hook Lab page reads this table, filters by product, paginates the
+history, and lets the user copy, save as winner, or add to avoid list. Each
+history card keeps the full hook option list inside a dropdown so generated
+batches do not dominate the page.
 
 Accepting a hook adds it to the product's winning hook examples. Rejecting a hook
 adds it to the product's rejected hook examples. The next Stitchr writing prompt
@@ -82,6 +84,10 @@ the saved hook history list.
   page.
 - `web/app/_components/hooks/HookLabHistorySection.tsx` renders saved hook
   history.
+- `web/app/_components/hooks/HookLabPaginatedHistoryGrid.tsx` paginates saved
+  hook batches.
+- `web/app/_components/hooks/HookPlanOptionsDetails.tsx` keeps a batch's full
+  option list collapsed until the user opens it.
 - `web/app/_components/hooks/HookLabMemoryPanel.tsx` renders active product hook
   memory.
 - `web/convex/stitchTemplates/createAutomaticStitchTemplateFromAcceptedHookPlan.ts`

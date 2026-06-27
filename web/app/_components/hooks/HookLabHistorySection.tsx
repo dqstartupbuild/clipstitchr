@@ -1,7 +1,7 @@
 "use client";
 
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
-import { HookPlanCard } from "@/app/_components/hooks/HookPlanCard";
+import { HookLabPaginatedHistoryGrid } from "@/app/_components/hooks/HookLabPaginatedHistoryGrid";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { StitchrHookPlan } from "@/lib/clipstitchr/types/StitchrHookPlan";
@@ -74,18 +74,14 @@ export function HookLabHistorySection({
           Loading hooks...
         </div>
       ) : visiblePlans.length ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {visiblePlans.map((plan) => (
-            <HookPlanCard
-              key={plan.id}
-              plan={plan}
-              isSaving={savingPlanId === plan.id}
-              onAccept={onAccept}
-              onReject={onReject}
-              onSelectOption={onSelectOption}
-            />
-          ))}
-        </div>
+        <HookLabPaginatedHistoryGrid
+          key={`${productFilterId}:${searchQuery.trim().toLowerCase()}`}
+          plans={visiblePlans}
+          savingPlanId={savingPlanId}
+          onAccept={onAccept}
+          onReject={onReject}
+          onSelectOption={onSelectOption}
+        />
       ) : (
         <DashboardEmptyState
           title={hasSearchQuery ? "No matching hooks" : "No hooks yet"}

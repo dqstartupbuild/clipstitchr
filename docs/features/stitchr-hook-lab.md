@@ -39,11 +39,13 @@ as taste and emotional pattern, not as copy to reuse verbatim.
    save a hook as a winner, or add a hook to the avoid list.
 7. In Batch mode, hook plans from the current generation appear with the same
    dropdown and accept/reject controls.
-8. Saved normal and batch Stitches can be edited from the Library Stitches tab,
+8. The Hook Lab history page paginates saved batches and keeps each batch's
+   full option list inside a dropdown so review stays compact.
+9. Saved normal and batch Stitches can be edited from the Library Stitches tab,
    where the user can choose another saved hook option for that Stitch.
-9. Accepted hooks are saved as product winners. When the hook has a finished
+10. Accepted hooks are saved as product winners. When the hook has a finished
    Stitch, ClipStitchr also saves that Stitch setup as a Template.
-10. Batch and scheduled Stitchr drafts use the same saved product hook memory
+11. Batch and scheduled Stitchr drafts use the same saved product hook memory
    without asking the user again.
 
 This is mostly a one-time setup step. Users only revisit it when they learn
@@ -94,6 +96,10 @@ generations to Hook Lab history through:
 - `web/app/dashboard/stitchr/StitchrPageClient.tsx`
 - `web/app/_components/dashboard/StitchEditDialog.tsx`
 - `web/app/_components/dashboard/StitchCard.tsx`
+- `web/app/_components/hooks/HookLabPaginatedHistoryGrid.tsx`
+- `web/app/_components/hooks/HookPlanOptionsDetails.tsx`
+- `web/app/_components/hooks/HookPlanOptionItem.tsx`
+- `web/lib/clipstitchr/constants/hookHistoryPageSize.ts`
 
 Batch and automation task snapshots include the Hook Lab fields so provider
 worker drafts match manual Stitchr generation:
