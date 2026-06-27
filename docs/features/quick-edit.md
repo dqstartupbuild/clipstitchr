@@ -72,6 +72,9 @@ winning and rejected examples.
 When a new Stitch is created, Stitchr copies the current source clip Quick Edit
 metadata into the saved Stitch as `ugcQuickEdit` and `demoQuickEdit`. Later
 changes to the source UGC or Demo clip do not rewrite that saved Stitch.
+The Stitchr picker shows the same effective playback duration from the selected
+trim range and saved source cuts, so selecting a clip starts from the saved edit
+instead of appearing to use the full source length.
 
 Resetting a source clip restores the default trim snapshot that existed before
 Quick Edit was applied and clears the clip's `quickEdit` metadata.

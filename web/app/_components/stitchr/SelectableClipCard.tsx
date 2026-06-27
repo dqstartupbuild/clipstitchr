@@ -5,7 +5,7 @@ import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPrevi
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
-import { getVideoTrimDisplayDuration } from "@/lib/clipstitchr/utils/getVideoTrimDisplayDuration";
+import { getVideoClipPlaybackDuration } from "@/lib/clipstitchr/utils/getVideoClipPlaybackDuration";
 
 type SelectableClipCardProps = {
   clip: VideoClipMetadata;
@@ -33,7 +33,7 @@ export function SelectableClipCard({
   onSelect,
   onUpdateTrim,
 }: SelectableClipCardProps) {
-  const displayDuration = getVideoTrimDisplayDuration(clip.duration, trimRange);
+  const displayDuration = getVideoClipPlaybackDuration(clip, trimRange);
 
   return (
     <VideoClipPreviewCard
