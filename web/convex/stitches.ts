@@ -1205,6 +1205,7 @@ export const addPostBridgePost = mutation({
   },
   handler: async (ctx, { id, post }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const postedAt = new Date().toISOString();
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
       key: ownerId,
@@ -1221,13 +1222,23 @@ export const addPostBridgePost = mutation({
     }
 
     await ctx.db.patch(stitch._id, {
+      isPosted: true,
       postBridgePosts: [
         ...(stitch.postBridgePosts ?? []).filter(
           (existingPost) => existingPost.postId !== post.postId,
         ),
         post,
       ],
+      postedAt: stitch.postedAt ?? postedAt,
     });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await Promise.all([
+        stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+      ]);
+    }
   },
 });
 

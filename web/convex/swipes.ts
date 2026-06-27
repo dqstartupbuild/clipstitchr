@@ -411,6 +411,7 @@ export const addPostBridgePost = mutation({
   },
   handler: async (ctx, { id, post }) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
+    const now = new Date().toISOString();
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
       key: ownerId,
@@ -427,13 +428,15 @@ export const addPostBridgePost = mutation({
     }
 
     await ctx.db.patch(swipe._id, {
+      isPosted: true,
       postBridgePosts: [
         ...(swipe.postBridgePosts ?? []).filter(
           (existingPost) => existingPost.postId !== post.postId,
         ),
         post,
       ],
-      updatedAt: new Date().toISOString(),
+      postedAt: swipe.postedAt ?? now,
+      updatedAt: now,
     });
   },
 });

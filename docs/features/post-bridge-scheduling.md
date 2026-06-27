@@ -70,7 +70,7 @@ video ends.
 11. Creates the Post Bridge post with `POST /v1/posts`. Scheduled posts send an
    ISO `scheduled_at`; immediate posts send `scheduled_at: null`.
 12. Saves the returned Post Bridge post reference back onto the source stitch or
-   swipe.
+   swipe and marks that source content posted so it moves out of active drafts.
 13. Captures a consent-gated PostHog server event.
 
 The Post Bridge API uses bearer-token authentication. Because each request uses

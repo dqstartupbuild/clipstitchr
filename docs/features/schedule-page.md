@@ -30,6 +30,9 @@ choices.
 - Choose the default TikTok, Instagram, and YouTube accounts for the active
   product before posting or scheduling new Stitches and Swipes.
 
+When Post Bridge accepts a post-now or scheduled submission, ClipStitchr marks
+the source Stitch or Swipe as posted automatically.
+
 ## Source Files
 
 - `web/app/dashboard/schedule/page.tsx`
