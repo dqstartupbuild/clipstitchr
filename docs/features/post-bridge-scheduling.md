@@ -93,17 +93,19 @@ the product-level default posting account picker.
 
 The page shows:
 
-- Scheduled and posted Post Bridge post counts.
 - Total synced views.
-- Total likes, comments, and shares.
-- Recent Post Bridge post statuses.
-- Synced TikTok, Instagram, and YouTube Shorts analytics rows.
+- Total synced likes.
+- Total synced comments.
+- Total synced shares.
+- Synced TikTok, Instagram, and YouTube Shorts analytics rows with an `Open
+  post` link when Post Bridge provides one.
 
 `Sync analytics` calls `POST /api/post-bridge/analytics/sync`, which triggers
 Post Bridge analytics sync, then reloads the returned analytics rows. Regular
-refreshes use `GET /api/post-bridge/posts` and `GET /api/post-bridge/analytics`.
-Those routes resolve the signed-in user's saved Post Bridge API key before
-calling Post Bridge.
+refreshes use `GET /api/post-bridge/analytics`. The Analytics page defaults to
+`Last 30 days` and can filter all-time data to the last 12 months, 90 days, 30
+days, 7 days, or 24 hours by each synced row's platform-created date. The
+Schedule page owns scheduled and posted post status counts.
 
 ## Source Files
 
@@ -125,6 +127,7 @@ calling Post Bridge.
 - `web/app/api/post-bridge/analytics/route.ts`
 - `web/app/api/post-bridge/analytics/sync/route.ts`
 - `web/app/dashboard/analytics/PostBridgeAnalyticsPageClient.tsx`
+- `docs/features/post-bridge-analytics.md`
 - `web/lib/clipstitchr/media/renderSwiprSlideBlob.ts`
 - `web/lib/clipstitchr/media/renderSwiprSwipeVideoBlob.ts`
 - `web/lib/clipstitchr/hooks/useAutomaticPostBridgeSound.ts`
