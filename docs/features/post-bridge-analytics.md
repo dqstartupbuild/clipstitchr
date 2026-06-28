@@ -11,12 +11,12 @@ status already belongs on the Schedule page.
 
 Analytics defaults to `Last 30 days`. The user can filter the page by:
 
-- All time
-- Last 12 months
-- Last 90 days
-- Last 30 days
-- Last 7 days
 - Last 24 hours
+- Last 7 days
+- Last 30 days
+- Last 90 days
+- Last 12 months
+- All time
 
 ClipStitchr requests the all-time analytics list from Post Bridge, then filters
 the visible stats and results locally by each row's `platform_created_at` value.

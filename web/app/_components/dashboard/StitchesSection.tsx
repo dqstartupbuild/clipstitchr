@@ -42,6 +42,7 @@ type StitchesSectionProps = {
   onLoadMoreItems?: () => void;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
+  onPostBridgeScheduled?: () => void | Promise<void>;
   onSaveTemplate?: (stitch: Stitch) => void | Promise<unknown>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
   onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
@@ -103,6 +104,7 @@ export function StitchesSection({
   onLoadMoreItems,
   onLoadPoster,
   onLoadVideo,
+  onPostBridgeScheduled,
   onSaveTemplate,
   onScore,
   onApplyQuickEdit,
@@ -214,6 +216,7 @@ export function StitchesSection({
                 onLoadClip={onLoadClip}
                 onLoadPoster={onLoadPoster}
                 onLoadVideo={onLoadVideo}
+                onPostBridgeScheduled={onPostBridgeScheduled}
                 onSaveTemplate={onSaveTemplate}
                 onScore={onScore}
                 onApplyQuickEdit={onApplyQuickEdit}

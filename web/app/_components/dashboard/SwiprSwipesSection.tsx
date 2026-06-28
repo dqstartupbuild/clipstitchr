@@ -24,6 +24,7 @@ type SwiprSwipesSectionProps = {
   onLoadBackgroundBlob: (id: string) => Promise<Blob>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
+  onPostBridgeScheduled?: () => void | Promise<void>;
   onStatusFilterChange?: (status: LibraryPostedStatusFilter) => void;
   onUpdatePostedStatus?: (
     swipe: SwiprSwipe,
@@ -43,6 +44,7 @@ export function SwiprSwipesSection({
   onLoadBackgroundBlob,
   onLoadPoster,
   onDelete,
+  onPostBridgeScheduled,
   onStatusFilterChange,
   onUpdatePostedStatus,
 }: SwiprSwipesSectionProps) {
@@ -142,6 +144,7 @@ export function SwiprSwipesSection({
                   onLoadBackgroundBlob={onLoadBackgroundBlob}
                   onLoadPoster={onLoadPoster}
                   onDelete={onDelete}
+                  onPostBridgeScheduled={onPostBridgeScheduled}
                   onSelect={
                     batchDelete.isSelecting
                       ? () => batchDelete.toggleItemSelection(swipe.id)

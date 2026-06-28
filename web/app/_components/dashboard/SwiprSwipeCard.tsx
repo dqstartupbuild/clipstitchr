@@ -50,6 +50,7 @@ type SwiprSwipeCardProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onDelete: (id: string) => void | Promise<void>;
   onSelect?: () => void;
+  onPostBridgeScheduled?: () => void | Promise<void>;
   onUpdatePostedStatus?: (
     swipe: SwiprSwipe,
     isPosted: boolean,
@@ -66,6 +67,7 @@ export function SwiprSwipeCard({
   onLoadPoster,
   onDelete,
   onSelect,
+  onPostBridgeScheduled,
   onUpdatePostedStatus,
 }: SwiprSwipeCardProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -115,6 +117,9 @@ export function SwiprSwipeCard({
   const [postedStatusError, setPostedStatusError] = useState<string | null>(
     null,
   );
+  const [hasScheduledPostBridgePost, setHasScheduledPostBridgePost] =
+    useState(false);
+  const displayIsPosted = isPosted || hasScheduledPostBridgePost;
   const loadPosterBlob = useCallback(
     () => onLoadPoster?.(swipe.id) ?? Promise.resolve(null),
     [onLoadPoster, swipe.id],
@@ -339,6 +344,7 @@ export function SwiprSwipeCard({
 
     try {
       await onUpdatePostedStatus(swipe, nextIsPosted);
+      setHasScheduledPostBridgePost(nextIsPosted);
     } catch (error) {
       setPostedStatusError(
         error instanceof Error
@@ -375,14 +381,14 @@ export function SwiprSwipeCard({
     ...(onUpdatePostedStatus
       ? [
           {
-            label: isPosted ? "Mark as active" : "Mark as posted",
-            icon: isPosted ? (
+            label: displayIsPosted ? "Mark as active" : "Mark as posted",
+            icon: displayIsPosted ? (
               <RotateCcw aria-hidden className="h-4 w-4" />
             ) : (
               <CheckCircle2 aria-hidden className="h-4 w-4" />
             ),
             disabled: isSavingPostedStatus,
-            onClick: () => void handleUpdatePostedStatus(!isPosted),
+            onClick: () => void handleUpdatePostedStatus(!displayIsPosted),
           },
         ]
       : []),
@@ -483,7 +489,11 @@ export function SwiprSwipeCard({
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <Badge>
-                {hasMissingBackground ? "MISSING" : isPosted ? "POSTED" : "SWIPE"}
+                {hasMissingBackground
+                  ? "MISSING"
+                  : displayIsPosted
+                    ? "POSTED"
+                    : "SWIPE"}
               </Badge>
               <MediaCardActionMenu
                 label={`Actions for ${swipe.name}`}
@@ -545,6 +555,10 @@ export function SwiprSwipeCard({
           sourceType="swipe"
           onClose={() => setIsScheduleOpen(false)}
           onRenderMedia={renderPostBridgeMedia}
+          onScheduled={() => {
+            setHasScheduledPostBridgePost(true);
+            void onPostBridgeScheduled?.();
+          }}
         />
       ) : null}
     </>

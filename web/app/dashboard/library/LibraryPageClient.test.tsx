@@ -861,6 +861,7 @@ describe("LibraryPageClient", () => {
           all: 2,
           posted: 1,
         },
+        onPostBridgeScheduled: mocks.library.refresh,
         stitches: expect.arrayContaining([
           expect.objectContaining({
             id: "posted_stitch_1",
@@ -907,6 +908,7 @@ describe("LibraryPageClient", () => {
           posted: 1,
         },
         statusFilter: "posted",
+        onPostBridgeScheduled: mocks.swiprLibrary.refresh,
         swipes: [
           expect.objectContaining({
             id: "posted_swipe_1",

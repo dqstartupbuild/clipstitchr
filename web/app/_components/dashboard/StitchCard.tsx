@@ -67,6 +67,7 @@ type StitchCardProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onLoadVideo?: (stitch: Stitch) => Promise<Blob | null>;
   onScore?: (stitch: Stitch) => Promise<StitchScore>;
+  onPostBridgeScheduled?: () => void | Promise<void>;
   onApplyQuickEdit?: (stitch: Stitch) => Promise<void>;
   onResetQuickEdit?: (stitch: Stitch) => Promise<void>;
   onRejectHookVariant?: (planId: string, hookText: string) => void;
@@ -120,6 +121,7 @@ export function StitchCard({
   onLoadPoster,
   onLoadVideo,
   onScore,
+  onPostBridgeScheduled,
   onApplyQuickEdit,
   onResetQuickEdit,
   onRejectHookVariant,
@@ -202,10 +204,12 @@ export function StitchCard({
   const [sourceSettingsError, setSourceSettingsError] = useState<string | null>(
     null,
   );
+  const [hasScheduledPostBridgePost, setHasScheduledPostBridgePost] =
+    useState(false);
   const fileSizeLabel = stitch.size
     ? formatBytes(stitch.size)
     : "Ready to download";
-  const isPosted = Boolean(stitch.isPosted);
+  const isPosted = Boolean(stitch.isPosted) || hasScheduledPostBridgePost;
   const canUseQuickEdit = !getStitchIsLongr(stitch);
   const matchingHookPlans = hookPlans.filter((plan) =>
     getStitchrHookPlanMatchesStitch(plan, stitch),
@@ -588,6 +592,7 @@ export function StitchCard({
 
     try {
       await onUpdatePostedStatus(stitch, nextIsPosted);
+      setHasScheduledPostBridgePost(nextIsPosted);
       trackPostHogEvent(
         nextIsPosted ? "stitch_marked_posted" : "stitch_marked_unposted",
         {
@@ -892,6 +897,8 @@ export function StitchCard({
           onClose={() => setIsScheduleOpen(false)}
           onRenderMedia={renderPostBridgeMedia}
           onScheduled={(post) => {
+            setHasScheduledPostBridgePost(true);
+            void onPostBridgeScheduled?.();
             trackPostHogEvent("stitch_scheduled", {
               platform_count: post.platforms.length,
               post_bridge_post_id: post.postId,
