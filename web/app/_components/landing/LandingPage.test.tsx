@@ -77,6 +77,8 @@ describe("LandingPage", () => {
     expect(markup).toContain("Showing up daily is hard when you do not like social");
     expect(markup).toContain("What you get");
     expect(markup).toContain("people who do not want content to become the");
+    expect(markup).toContain("Scheduling after the draft is ready");
+    expect(markup).toContain("/docs/post-bridge");
     expect(markup).toContain("without becoming a content person");
     expect(markup).toContain("ClipStitchr dashboard and video stitching");
   });

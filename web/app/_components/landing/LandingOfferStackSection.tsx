@@ -1,4 +1,6 @@
 import {
+  ArrowRight,
+  BarChart3,
   Bot,
   CirclePlay,
   FolderSearch,
@@ -6,10 +8,20 @@ import {
   Images,
   LayoutTemplate,
   Scissors,
+  type LucideIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { Panel } from "@/app/_components/ui/Panel";
 
-const features = [
+type LandingOfferFeature = {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  href?: string;
+  actionLabel?: string;
+};
+
+const features: LandingOfferFeature[] = [
   {
     title: "Finished ads from saved clips",
     description:
@@ -52,6 +64,14 @@ const features = [
       "Let ClipStitchr prepare drafts you can review before anything goes live.",
     icon: Bot,
   },
+  {
+    title: "Scheduling after the draft is ready",
+    description:
+      "Send finished work through Post Bridge and bring simple results back to guide the next version.",
+    icon: BarChart3,
+    href: "/docs/post-bridge",
+    actionLabel: "Read the Post Bridge guide",
+  },
 ];
 
 export function LandingOfferStackSection() {
@@ -87,6 +107,15 @@ export function LandingOfferStackSection() {
                 <p className="mt-2 text-sm leading-6 text-text-secondary">
                   {feature.description}
                 </p>
+                {feature.href ? (
+                  <Link
+                    href={feature.href}
+                    className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-accent transition-colors hover:text-accent-dark"
+                  >
+                    {feature.actionLabel}
+                    <ArrowRight aria-hidden className="h-4 w-4" />
+                  </Link>
+                ) : null}
               </Panel>
             );
           })}

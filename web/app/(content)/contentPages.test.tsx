@@ -174,8 +174,20 @@ describe("content pages", () => {
     expect(indexMarkup).toContain("Clip Scores");
     expect(indexMarkup).toContain("Templates");
     expect(indexMarkup).toContain("Automation");
+    expect(indexMarkup).toContain("Post Bridge");
+    expect(generateDocsArticleStaticParams()).toContainEqual({
+      slug: "post-bridge",
+    });
     expect(articleMarkup).toContain(firstDoc.title);
     expect(articleMarkup).toContain("Back to docs");
+
+    const postBridgeArticleMarkup = renderToStaticMarkup(
+      await DocsArticlePage({
+        params: Promise.resolve({ slug: "post-bridge" }),
+      }),
+    );
+    expect(postBridgeArticleMarkup).toContain("What Post Bridge adds");
+    expect(postBridgeArticleMarkup).toContain("Check what happened");
   });
 
   it("returns empty metadata and notFound for missing docs", async () => {

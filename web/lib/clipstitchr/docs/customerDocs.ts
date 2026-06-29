@@ -3,6 +3,7 @@ import { automationDoc } from "@/lib/clipstitchr/docs/automationDoc";
 import { cliprDoc } from "@/lib/clipstitchr/docs/cliprDoc";
 import { clipScoreDoc } from "@/lib/clipstitchr/docs/clipScoreDoc";
 import { gettingStartedDoc } from "@/lib/clipstitchr/docs/gettingStartedDoc";
+import { postBridgeDoc } from "@/lib/clipstitchr/docs/postBridgeDoc";
 import { rateLimitsDoc } from "@/lib/clipstitchr/docs/rateLimitsDoc";
 import { stitchScoreDoc } from "@/lib/clipstitchr/docs/stitchScoreDoc";
 import { stitchrDoc } from "@/lib/clipstitchr/docs/stitchrDoc";
@@ -22,5 +23,6 @@ export const customerDocs: CustomerDocPage[] = [
   swaprDoc,
   avatarsDoc,
   automationDoc,
+  postBridgeDoc,
   rateLimitsDoc,
 ];
