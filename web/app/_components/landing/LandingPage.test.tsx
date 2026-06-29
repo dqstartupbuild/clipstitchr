@@ -57,9 +57,7 @@ describe("LandingPage", () => {
     expect(markup).toContain(
       "whole content thing makes you want to quit",
     );
-    expect(markup).toContain(
-      "saved clips and product demos into finished ads",
-    );
+    expect(markup).toContain("ClipStitchr is built for you");
     expect(markup).toContain("Start with your clips");
     expect(markup).toContain("No timeline archaeology");
     expect(markup).toContain("Writing overlay text that does not sound fake");

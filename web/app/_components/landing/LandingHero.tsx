@@ -5,7 +5,7 @@ import { PRIMARY_BUTTON_CLASS_NAME } from "@/app/_components/ui/primaryButtonCla
 
 export function LandingHero() {
   return (
-    <section className="relative min-h-[82svh] overflow-hidden border-b border-border">
+    <section className="relative min-h-[72svh] overflow-hidden border-b border-border md:min-h-[82svh]">
       <Image
         src="/mockups/clipstitchr-product-mockup.png"
         alt=""
@@ -16,20 +16,20 @@ export function LandingHero() {
       />
       <div className="landing-hero-scrim absolute inset-0" />
 
-      <div className="relative mx-auto flex min-h-[82svh] w-full max-w-6xl items-center px-6 py-28">
+      <div className="relative mx-auto flex min-h-[72svh] w-full max-w-6xl items-start px-6 pb-16 pt-24 md:min-h-[82svh] md:items-center md:py-28">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold text-accent-dark">
             For builders who hate content
           </p>
-          <h1 className="mt-5 max-w-2xl text-5xl font-bold leading-[1.05] text-text-primary md:text-6xl">
+          <h1 className="mt-4 max-w-2xl text-4xl font-bold leading-[1.08] text-text-primary sm:text-5xl md:mt-5 md:text-6xl">
             Make short-form ads without becoming a content person.
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-text-secondary">
+          <p className="mt-5 max-w-xl text-base leading-7 text-text-secondary md:mt-6 md:max-w-2xl md:text-lg md:leading-8">
             If you&apos;re trying to grow a mobile app on TikTok and Reels but
-            the whole content thing makes you want to quit, ClipStitchr turns
-            your saved clips and product demos into finished ads.
+            the whole content thing makes you want to quit, ClipStitchr is
+            built for you.
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div className="mt-6 flex flex-wrap items-center gap-3 md:mt-8">
             <TrackedButtonLink
               href="/dashboard"
               className={PRIMARY_BUTTON_CLASS_NAME}

@@ -20,21 +20,21 @@ const workflowSteps = [
 
 export function LandingWorkflow() {
   return (
-    <section id="workflow" className="scroll-mt-24 px-6 py-16">
+    <section id="workflow" className="scroll-mt-24 px-6 py-12 md:py-16">
       <div className="mx-auto max-w-6xl">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold text-accent-dark">
             The part you can stop doing
           </p>
-          <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
+          <h2 className="mt-3 text-2xl font-bold text-text-primary md:text-4xl">
             No timeline archaeology. No naming files like final-final-2.
           </h2>
-          <p className="mt-4 leading-7 text-text-secondary">
+          <p className="mt-3 text-sm leading-6 text-text-secondary md:mt-4 md:text-base md:leading-7">
             ClipStitchr turns clips and a demo into finished short-form ads
             without making you become an editor for the day.
           </p>
         </div>
-        <div className="mt-8 rounded-lg border border-border bg-white p-5 text-center text-lg font-bold text-text-primary shadow-sm shadow-slate-200/60">
+        <div className="mt-6 rounded-lg border border-border bg-white p-4 text-center text-base font-bold text-text-primary shadow-sm shadow-slate-200/60 md:mt-8 md:p-5 md:text-lg">
           Clips + product demo = ads you can actually test
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
