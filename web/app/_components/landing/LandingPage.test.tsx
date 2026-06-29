@@ -51,9 +51,14 @@ describe("LandingPage", () => {
   it("renders the full landing page from the home route", () => {
     const markup = renderToStaticMarkup(<Home />);
 
-    expect(markup).toContain("Built by someone who hates making content");
+    expect(markup).toContain(
+      "Make short-form ads without becoming a content person",
+    );
     expect(markup).toContain(
       "whole content thing makes you want to quit",
+    );
+    expect(markup).toContain(
+      "saved clips and product demos into finished ads",
     );
     expect(markup).toContain("Start with your clips");
     expect(markup).toContain("No timeline archaeology");

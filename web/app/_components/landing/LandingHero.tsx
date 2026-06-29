@@ -22,13 +22,12 @@ export function LandingHero() {
             For builders who hate content
           </p>
           <h1 className="mt-5 max-w-2xl text-5xl font-bold leading-[1.05] text-text-primary md:text-6xl">
-            Built by someone who hates making content. For everyone else who
-            does too.
+            Make short-form ads without becoming a content person.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-text-secondary">
             If you&apos;re trying to grow a mobile app on TikTok and Reels but
-            the whole content thing makes you want to quit — you&apos;re exactly
-            who this is for.
+            the whole content thing makes you want to quit, ClipStitchr turns
+            your saved clips and product demos into finished ads.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <TrackedButtonLink
