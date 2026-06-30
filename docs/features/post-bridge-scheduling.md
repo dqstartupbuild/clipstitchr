@@ -42,6 +42,18 @@ post can still continue without sound and use the image-carousel path when the
 selected platforms allow images. The user can still switch to choosing a sound
 manually or using no sound.
 
+For saved Swipes, the TikTok and YouTube post title comes from the first
+non-empty line of the Swipe's combined caption, description, and hashtag copy.
+This keeps the public post title aligned with the headline-style first line users
+see in the Swipr copy field. If that copy is empty or only hashtags, ClipStitchr
+falls back to the internal saved Swipe name.
+
+When a Swipe is sent to TikTok, ClipStitchr removes that title line from the
+TikTok-specific caption configuration before creating the Post Bridge post. This
+prevents TikTok from showing the same line as both the title and the first
+caption sentence. The schedule dialog still shows the full copy so the user can
+edit it in one place before sending.
+
 Post Bridge accepts uploaded media files, not a separate audio attachment for a
 post. Because of that, Swipe audio must be included in the rendered video before
 the schedule request is sent. When selected sound audio is shorter than the
@@ -139,6 +151,8 @@ Schedule page owns scheduled and posted post status counts.
 - `web/app/_components/schedule/`
 - `web/app/dashboard/schedule/SchedulePageClient.tsx`
 - `web/lib/clipstitchr/utils/getPostBridgePostTimeLabel.ts`
+- `web/lib/clipstitchr/utils/getSwiprPostBridgeTitle.ts`
+- `web/lib/clipstitchr/server/postBridge/removePostBridgeTitleLineFromCaption.ts`
 - `web/lib/clipstitchr/media/createCliprMixedAudioBuffer.ts`
 - `web/lib/clipstitchr/media/createSwiprMusicAudioBuffer.ts`
 - `web/lib/clipstitchr/media/scheduleLoopingAudioBuffer.ts`

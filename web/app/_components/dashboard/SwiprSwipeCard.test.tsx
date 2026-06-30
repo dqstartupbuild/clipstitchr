@@ -16,7 +16,9 @@ const mocks = vi.hoisted(() => ({
   lazyPosterUrl: null as string | null,
   refValue: { current: null },
   scheduleProps: null as null | {
+    defaultCaption?: string;
     onScheduled: (post: PostBridgePostReference) => void;
+    sourceTitle?: string;
   },
   setStateCalls: [] as Array<ReturnType<typeof vi.fn>>,
   stateQueue: [] as unknown[],
@@ -64,7 +66,9 @@ vi.mock("@/lib/clipstitchr/hooks/useSwiprExport", () => ({
 
 vi.mock("@/app/_components/postBridge/PostBridgeScheduleDialog", () => ({
   PostBridgeScheduleDialog: (props: {
+    defaultCaption?: string;
     onScheduled: (post: PostBridgePostReference) => void;
+    sourceTitle?: string;
   }) => {
     mocks.scheduleProps = props;
     return "PostBridgeScheduleDialog";
@@ -444,5 +448,36 @@ describe("SwiprSwipeCard", () => {
 
     expect(onPostBridgeScheduled).toHaveBeenCalledTimes(1);
     expect(mocks.setStateCalls.at(-1)).toHaveBeenCalledWith(true);
+  });
+
+  it("uses the first Swipe post copy line as the Post Bridge title", () => {
+    mocks.stateQueue = [false, true, false, null, null, null, false];
+
+    const tree = SwiprSwipeCard({
+      background: createBackground({ blob: new Blob(["background"]) }),
+      backgrounds: [createBackground()],
+      onDelete: vi.fn(),
+      onLoadBackgroundBlob: vi.fn(),
+      swipe: createSwipe({
+        description:
+          "The gym usually is not the answer.\n\nHere is what fixes it.",
+        name: "Guppy carousel",
+        socialCaption:
+          "Skinny-fat is solvable. The gym just usually isn't the solution.\n\nThe gym usually is not the answer.",
+      }),
+    });
+    const scheduleDialog = findElements(
+      tree,
+      (element) =>
+        element.props?.sourceType === "swipe" &&
+        typeof element.props?.onScheduled === "function",
+    )[0];
+
+    expect(scheduleDialog.props.defaultCaption).toBe(
+      "Skinny-fat is solvable. The gym just usually isn't the solution.\n\nThe gym usually is not the answer.",
+    );
+    expect(scheduleDialog.props.sourceTitle).toBe(
+      "Skinny-fat is solvable. The gym just usually isn't the solution.",
+    );
   });
 });

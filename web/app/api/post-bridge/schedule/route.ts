@@ -14,6 +14,7 @@ import { getPostBridgeSourceProductId } from "@/lib/clipstitchr/server/postBridg
 import { getSelectedPostBridgeAccounts } from "@/lib/clipstitchr/server/postBridge/getSelectedPostBridgeAccounts";
 import { listPostBridgeSocialAccounts } from "@/lib/clipstitchr/server/postBridge/listPostBridgeSocialAccounts";
 import { readPostBridgeScheduleRequest } from "@/lib/clipstitchr/server/postBridge/readPostBridgeScheduleRequest";
+import { removePostBridgeTitleLineFromCaption } from "@/lib/clipstitchr/server/postBridge/removePostBridgeTitleLineFromCaption";
 import { resolvePostBridgeApiKey } from "@/lib/clipstitchr/server/postBridge/resolvePostBridgeApiKey";
 import { resolvePostBridgeMediaKindForUploadedMedia } from "@/lib/clipstitchr/server/postBridge/resolvePostBridgeMediaKindForUploadedMedia";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
@@ -81,6 +82,13 @@ export async function POST(request: Request) {
       platforms,
       scheduledAt: input.scheduledAt,
       socialAccountIds: selectedAccounts.map((account) => account.id),
+      tiktokCaption:
+        input.sourceType === "swipe"
+          ? removePostBridgeTitleLineFromCaption({
+              caption: input.caption,
+              title: input.title,
+            })
+          : undefined,
       title: input.title,
     });
     const postReference = createPostBridgePostReference({

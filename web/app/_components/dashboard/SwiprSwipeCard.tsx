@@ -36,6 +36,7 @@ import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
 import { getPostBridgeMediaFileName } from "@/lib/clipstitchr/utils/getPostBridgeMediaFileName";
 import { getSwiprBackgroundFromAsset } from "@/lib/clipstitchr/utils/getSwiprBackgroundFromAsset";
 import { getSwiprPostBridgeMediaKind } from "@/lib/clipstitchr/utils/getSwiprPostBridgeMediaKind";
+import { getSwiprPostBridgeTitle } from "@/lib/clipstitchr/utils/getSwiprPostBridgeTitle";
 import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
 import { getSwiprSlideFileName } from "@/lib/clipstitchr/utils/getSwiprSlideFileName";
 import { getSwiprSwipeEditHref } from "@/lib/clipstitchr/utils/getSwiprSwipeEditHref";
@@ -134,6 +135,7 @@ export function SwiprSwipeCard({
   const exporter = useSwiprExport();
   const editHref = getSwiprSwipeEditHref(swipe.id);
   const socialDescription = createSwiprSwipeSocialDescription(swipe);
+  const postBridgeTitle = getSwiprPostBridgeTitle(swipe);
 
   useEffect(() => {
     let isCancelled = false;
@@ -551,7 +553,7 @@ export function SwiprSwipeCard({
             .join("\n")}
           sourceId={swipe.id}
           sourceProductId={swipe.productSourceId}
-          sourceTitle={swipe.name}
+          sourceTitle={postBridgeTitle}
           sourceType="swipe"
           onClose={() => setIsScheduleOpen(false)}
           onRenderMedia={renderPostBridgeMedia}

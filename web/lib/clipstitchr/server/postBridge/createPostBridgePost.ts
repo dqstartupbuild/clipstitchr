@@ -10,6 +10,7 @@ type CreatePostBridgePostOptions = {
   platforms: PostBridgePlatform[];
   scheduledAt: string | null;
   socialAccountIds: number[];
+  tiktokCaption?: string;
   title: string;
 };
 
@@ -20,6 +21,7 @@ export async function createPostBridgePost({
   platforms,
   scheduledAt,
   socialAccountIds,
+  tiktokCaption,
   title,
 }: CreatePostBridgePostOptions) {
   return await requestPostBridge<PostBridgePost>("/v1/posts", {
@@ -31,6 +33,7 @@ export async function createPostBridgePost({
         caption,
         mediaIds,
         platforms,
+        tiktokCaption,
         title,
       }),
       processing_enabled: true,
