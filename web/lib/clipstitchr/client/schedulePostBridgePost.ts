@@ -1,9 +1,10 @@
 import { readPostBridgeClientErrorMessage } from "@/lib/clipstitchr/client/readPostBridgeClientErrorMessage";
+import { uploadPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/uploadPostBridgeScheduleMedia";
 import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
 import type { PostBridgePost } from "@/lib/clipstitchr/types/PostBridgePost";
 import type { PostBridgeScheduleMediaFile } from "@/lib/clipstitchr/types/PostBridgeScheduleMediaFile";
 import type { PostBridgeSourceType } from "@/lib/clipstitchr/types/PostBridgeSourceType";
-import { createPostBridgeMediaUploadBlob } from "@/lib/clipstitchr/utils/createPostBridgeMediaUploadBlob";
+import type { PostBridgeUploadedMedia } from "@/lib/clipstitchr/types/PostBridgeUploadedMedia";
 
 type SchedulePostBridgePostOptions = {
   caption: string;
@@ -26,27 +27,32 @@ export async function schedulePostBridgePost({
   sourceType,
   title,
 }: SchedulePostBridgePostOptions) {
-  const formData = new FormData();
+  const uploadedMediaFiles: PostBridgeUploadedMedia[] = [];
 
-  formData.set("caption", caption);
-  formData.set("hasAudio", String(hasAudio));
   for (const mediaFile of mediaFiles) {
-    formData.append(
-      "media",
-      createPostBridgeMediaUploadBlob(mediaFile),
-      mediaFile.fileName,
+    uploadedMediaFiles.push(
+      await uploadPostBridgeScheduleMedia({
+        mediaFile,
+        sourceId,
+        sourceType,
+      }),
     );
   }
-  if (scheduledAt) {
-    formData.set("scheduledAt", scheduledAt);
-  }
-  formData.set("socialAccountIds", JSON.stringify(socialAccountIds));
-  formData.set("sourceId", sourceId);
-  formData.set("sourceType", sourceType);
-  formData.set("title", title);
 
   const response = await fetch("/api/post-bridge/schedule", {
-    body: formData,
+    body: JSON.stringify({
+      caption,
+      hasAudio,
+      mediaFiles: uploadedMediaFiles,
+      scheduledAt,
+      socialAccountIds,
+      sourceId,
+      sourceType,
+      title,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
     method: "POST",
   });
 

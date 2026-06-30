@@ -50,28 +50,44 @@ video ends.
 
 ## Server Flow
 
-`POST /api/post-bridge/schedule` handles scheduling:
+`POST /api/post-bridge/media/upload-url` prepares each media upload:
 
 1. Confirms the user is signed in.
-2. Reads the uploaded media files and schedule form data.
-3. Validates that the source stitch or swipe belongs to the user.
+2. Reads small JSON metadata for one rendered media file.
+3. Validates that the source Stitch or Swipe belongs to the user.
+4. Rejects unsupported media types, image uploads for Stitch posts, and files
+   above `POST_BRIDGE_MAX_MEDIA_BYTES`.
+5. Consumes Post Bridge upload-byte rate limits before any upload URL is issued.
+6. Loads the user's encrypted Post Bridge API key from Convex and decrypts it
+   only in the Next.js route.
+7. Calls `POST /v1/media/create-upload-url`.
+8. Returns the Post Bridge `media_id` and signed upload URL to the browser.
+
+The browser uploads the rendered PNG image or MP4 video directly to that signed
+Post Bridge upload URL. This avoids sending large media through the Next.js
+function request body.
+
+`POST /api/post-bridge/schedule` handles final scheduling:
+
+1. Confirms the user is signed in.
+2. Reads small JSON schedule data and the already uploaded Post Bridge media
+   IDs.
+3. Validates that the source Stitch or Swipe belongs to the user.
 4. Resolves the source product and linked default social account IDs.
-5. Rejects unsupported media types, mixed image/video uploads, multiple-video
-   uploads, image uploads for Stitch posts, image uploads to YouTube Shorts, and
-   files above `POST_BRIDGE_MAX_MEDIA_BYTES`.
-6. Consumes Post Bridge schedule and upload-byte rate limits.
+5. Rejects mixed image/video submissions, multiple-video submissions, image
+   uploads for Stitch posts, image uploads to YouTube Shorts, and files above
+   `POST_BRIDGE_MAX_MEDIA_BYTES`.
+6. Consumes Post Bridge post-create rate limits.
 7. Loads the user's encrypted Post Bridge API key from Convex and decrypts it
    only in the Next.js route.
 8. Loads connected Post Bridge accounts and keeps only TikTok, Instagram, and
    YouTube accounts.
 9. Verifies the selected account IDs exist on that user's Post Bridge account.
-10. Uploads the rendered PNG image carousel or MP4 video through
-   `POST /v1/media/create-upload-url` and the returned signed upload URLs.
-11. Creates the Post Bridge post with `POST /v1/posts`. Scheduled posts send an
+10. Creates the Post Bridge post with `POST /v1/posts`. Scheduled posts send an
    ISO `scheduled_at`; immediate posts send `scheduled_at: null`.
-12. Saves the returned Post Bridge post reference back onto the source stitch or
+11. Saves the returned Post Bridge post reference back onto the source stitch or
    swipe and marks that source content posted so it moves out of active drafts.
-13. Captures a consent-gated PostHog server event.
+12. Captures a consent-gated PostHog server event.
 
 The Post Bridge API uses bearer-token authentication. Because each request uses
 the saved user's key, account lists, posts, analytics, media uploads, and
@@ -121,6 +137,7 @@ Schedule page owns scheduled and posted post status counts.
 - `web/lib/clipstitchr/media/createSwiprMusicAudioBuffer.ts`
 - `web/lib/clipstitchr/media/scheduleLoopingAudioBuffer.ts`
 - `web/app/api/post-bridge/settings/route.ts`
+- `web/app/api/post-bridge/media/upload-url/route.ts`
 - `web/app/api/post-bridge/schedule/route.ts`
 - `web/app/api/post-bridge/accounts/route.ts`
 - `web/app/api/post-bridge/posts/route.ts`

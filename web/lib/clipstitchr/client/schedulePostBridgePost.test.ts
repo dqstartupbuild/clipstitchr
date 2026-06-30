@@ -6,13 +6,38 @@ describe("schedulePostBridgePost", () => {
     vi.unstubAllGlobals();
   });
 
-  it("sends multiple media files in schedule form data", async () => {
-    const bodies: FormData[] = [];
+  it("uploads media before sending a small schedule request", async () => {
+    const uploadUrlBodies: object[] = [];
+    const directUploadBodies: BodyInit[] = [];
+    const scheduleBodies: object[] = [];
 
     vi.stubGlobal(
       "fetch",
-      vi.fn(async (_url, init?: RequestInit) => {
-        bodies.push(init?.body as FormData);
+      vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+        const requestUrl = String(url);
+
+        if (requestUrl === "/api/post-bridge/media/upload-url") {
+          uploadUrlBodies.push(JSON.parse(String(init?.body)) as object);
+
+          return Response.json({
+            media: {
+              mediaId: `media_${uploadUrlBodies.length}`,
+              mediaKind: "image",
+              mimeType: "image/png",
+              name: `slide-${uploadUrlBodies.length}.png`,
+              sizeBytes: uploadUrlBodies.length,
+            },
+            uploadUrl: `https://uploads.example/${uploadUrlBodies.length}`,
+          });
+        }
+
+        if (requestUrl.startsWith("https://uploads.example/")) {
+          directUploadBodies.push(init?.body as BodyInit);
+
+          return new Response(null, { status: 204 });
+        }
+
+        scheduleBodies.push(JSON.parse(String(init?.body)) as object);
 
         return Response.json({
           post: { id: "post_1" },
@@ -43,23 +68,78 @@ describe("schedulePostBridgePost", () => {
       title: "Launch Swipe",
     });
 
-    const formData = bodies[0];
-    const mediaFiles = formData.getAll("media");
-
-    expect(mediaFiles).toHaveLength(2);
-    expect(mediaFiles[0]).toEqual(expect.any(File));
-    expect((mediaFiles[0] as File).name).toBe("slide-1.png");
-    expect((mediaFiles[0] as File).type).toBe("image/png");
-    expect(formData.get("socialAccountIds")).toBe("[1,2]");
+    expect(uploadUrlBodies).toEqual([
+      {
+        mimeType: "image/png",
+        name: "slide-1.png",
+        sizeBytes: 3,
+        sourceId: "swipe_1",
+        sourceType: "swipe",
+      },
+      {
+        mimeType: "image/png",
+        name: "slide-2.png",
+        sizeBytes: 3,
+        sourceId: "swipe_1",
+        sourceType: "swipe",
+      },
+    ]);
+    expect(directUploadBodies).toHaveLength(2);
+    expect(scheduleBodies).toEqual([
+      {
+        caption: "Launch",
+        hasAudio: false,
+        mediaFiles: [
+          {
+            mediaId: "media_1",
+            mediaKind: "image",
+            mimeType: "image/png",
+            name: "slide-1.png",
+            sizeBytes: 1,
+          },
+          {
+            mediaId: "media_2",
+            mediaKind: "image",
+            mimeType: "image/png",
+            name: "slide-2.png",
+            sizeBytes: 2,
+          },
+        ],
+        scheduledAt: "2026-06-27T12:00:00.000Z",
+        socialAccountIds: [1, 2],
+        sourceId: "swipe_1",
+        sourceType: "swipe",
+        title: "Launch Swipe",
+      },
+    ]);
   });
 
   it("omits the schedule time for immediate posts", async () => {
-    const bodies: FormData[] = [];
+    const scheduleBodies: object[] = [];
 
     vi.stubGlobal(
       "fetch",
-      vi.fn(async (_url, init?: RequestInit) => {
-        bodies.push(init?.body as FormData);
+      vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+        const requestUrl = String(url);
+
+        if (requestUrl === "/api/post-bridge/media/upload-url") {
+          return Response.json({
+            media: {
+              mediaId: "media_1",
+              mediaKind: "video",
+              mimeType: "video/mp4",
+              name: "launch.mp4",
+              sizeBytes: 5,
+            },
+            uploadUrl: "https://uploads.example/video",
+          });
+        }
+
+        if (requestUrl === "https://uploads.example/video") {
+          return new Response(null, { status: 204 });
+        }
+
+        scheduleBodies.push(JSON.parse(String(init?.body)) as object);
 
         return Response.json({
           post: { id: "post_1" },
@@ -85,6 +165,8 @@ describe("schedulePostBridgePost", () => {
       title: "Launch Stitch",
     });
 
-    expect(bodies[0].has("scheduledAt")).toBe(false);
+    expect(scheduleBodies[0]).toMatchObject({
+      scheduledAt: null,
+    });
   });
 });

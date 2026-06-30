@@ -172,14 +172,12 @@ export const consumePostBridgeRead = mutation({
 
 export const consumePostBridgeSchedule = mutation({
   args: {
-    mediaSizeBytes: v.number(),
     secret: v.string(),
   },
-  handler: async (ctx, { mediaSizeBytes, secret }) => {
+  handler: async (ctx, { secret }) => {
     assertRateLimitApiSecret(secret);
 
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const uploadBytes = getPositiveCount(mediaSizeBytes, "Media size");
 
     await rateLimiter.limit(ctx, "postBridgeSchedule", {
       key: ownerId,
@@ -189,12 +187,26 @@ export const consumePostBridgeSchedule = mutation({
       key: ownerId,
       throws: true,
     });
+    await rateLimiter.limit(ctx, "postBridgeScheduleGlobalDaily", {
+      throws: true,
+    });
+  },
+});
+
+export const consumePostBridgeMediaUpload = mutation({
+  args: {
+    mediaSizeBytes: v.number(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { mediaSizeBytes, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+    const uploadBytes = getPositiveCount(mediaSizeBytes, "Media size");
+
     await rateLimiter.limit(ctx, "postBridgeUploadBytesDaily", {
       count: uploadBytes,
       key: ownerId,
-      throws: true,
-    });
-    await rateLimiter.limit(ctx, "postBridgeScheduleGlobalDaily", {
       throws: true,
     });
     await rateLimiter.limit(ctx, "postBridgeUploadBytesGlobalDaily", {

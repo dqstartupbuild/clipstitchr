@@ -4,20 +4,18 @@ import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/c
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
-import { assertPostBridgeMediaFiles } from "@/lib/clipstitchr/server/postBridge/assertPostBridgeMediaFiles";
 import { assertPostBridgePlatformMediaKind } from "@/lib/clipstitchr/server/postBridge/assertPostBridgePlatformMediaKind";
 import { assertPostBridgeSourceMediaKind } from "@/lib/clipstitchr/server/postBridge/assertPostBridgeSourceMediaKind";
 import { createPostBridgePost } from "@/lib/clipstitchr/server/postBridge/createPostBridgePost";
 import { createPostBridgePostReference } from "@/lib/clipstitchr/server/postBridge/createPostBridgePostReference";
 import { getPostBridgeAccountPlatforms } from "@/lib/clipstitchr/server/postBridge/getPostBridgeAccountPlatforms";
-import { getPostBridgeMediaSizeBytes } from "@/lib/clipstitchr/server/postBridge/getPostBridgeMediaSizeBytes";
+import { getPostBridgeUploadedMediaSizeBytes } from "@/lib/clipstitchr/server/postBridge/getPostBridgeUploadedMediaSizeBytes";
 import { getPostBridgeSourceProductId } from "@/lib/clipstitchr/server/postBridge/getPostBridgeSourceProductId";
 import { getSelectedPostBridgeAccounts } from "@/lib/clipstitchr/server/postBridge/getSelectedPostBridgeAccounts";
 import { listPostBridgeSocialAccounts } from "@/lib/clipstitchr/server/postBridge/listPostBridgeSocialAccounts";
-import { readPostBridgeScheduleFormData } from "@/lib/clipstitchr/server/postBridge/readPostBridgeScheduleFormData";
+import { readPostBridgeScheduleRequest } from "@/lib/clipstitchr/server/postBridge/readPostBridgeScheduleRequest";
 import { resolvePostBridgeApiKey } from "@/lib/clipstitchr/server/postBridge/resolvePostBridgeApiKey";
-import { resolvePostBridgeMediaKindForFiles } from "@/lib/clipstitchr/server/postBridge/resolvePostBridgeMediaKindForFiles";
-import { uploadPostBridgeMedia } from "@/lib/clipstitchr/server/postBridge/uploadPostBridgeMedia";
+import { resolvePostBridgeMediaKindForUploadedMedia } from "@/lib/clipstitchr/server/postBridge/resolvePostBridgeMediaKindForUploadedMedia";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 
@@ -38,7 +36,7 @@ export async function POST(request: Request) {
     }
 
     const convex = createAuthenticatedConvexHttpClient(convexToken);
-    const input = await readPostBridgeScheduleFormData(request);
+    const input = await readPostBridgeScheduleRequest(request);
     const source =
       input.sourceType === "stitch"
         ? await convex.query(api.stitches.get, { id: input.sourceId })
@@ -48,13 +46,11 @@ export async function POST(request: Request) {
       throw new Error("That saved post was not found.");
     }
 
-    assertPostBridgeMediaFiles(input.files);
-    const mediaKind = resolvePostBridgeMediaKindForFiles(input.files);
+    const mediaKind = resolvePostBridgeMediaKindForUploadedMedia(input.mediaFiles);
     assertPostBridgeSourceMediaKind(input.sourceType, mediaKind);
-    const mediaSizeBytes = getPostBridgeMediaSizeBytes(input.files);
+    const mediaSizeBytes = getPostBridgeUploadedMediaSizeBytes(input.mediaFiles);
 
     await convex.mutation(api.rateLimits.consumePostBridgeSchedule, {
-      mediaSizeBytes,
       secret: getRateLimitApiSecret(),
     });
 
@@ -76,18 +72,7 @@ export async function POST(request: Request) {
     );
     const platforms = getPostBridgeAccountPlatforms(selectedAccounts);
     assertPostBridgePlatformMediaKind(mediaKind, platforms);
-
-    const mediaIds: string[] = [];
-
-    for (const [index, file] of input.files.entries()) {
-      mediaIds.push(
-        await uploadPostBridgeMedia({
-          apiKey,
-          file,
-          name: file.name || `${input.sourceId}-${index + 1}`,
-        }),
-      );
-    }
+    const mediaIds = input.mediaFiles.map((mediaFile) => mediaFile.mediaId);
 
     const post = await createPostBridgePost({
       apiKey,
