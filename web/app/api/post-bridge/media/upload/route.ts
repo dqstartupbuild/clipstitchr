@@ -4,10 +4,9 @@ import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/co
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { assertPostBridgeSourceMediaKind } from "@/lib/clipstitchr/server/postBridge/assertPostBridgeSourceMediaKind";
-import { createPostBridgeUploadedMedia } from "@/lib/clipstitchr/server/postBridge/createPostBridgeUploadedMedia";
-import { createPostBridgeUploadUrl } from "@/lib/clipstitchr/server/postBridge/createPostBridgeUploadUrl";
-import { readPostBridgeMediaUploadUrlRequest } from "@/lib/clipstitchr/server/postBridge/readPostBridgeMediaUploadUrlRequest";
+import { readPostBridgeMediaUploadRequest } from "@/lib/clipstitchr/server/postBridge/readPostBridgeMediaUploadRequest";
 import { resolvePostBridgeApiKey } from "@/lib/clipstitchr/server/postBridge/resolvePostBridgeApiKey";
+import { uploadPostBridgeMediaFromR2Object } from "@/lib/clipstitchr/server/postBridge/uploadPostBridgeMediaFromR2Object";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 
@@ -21,7 +20,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const input = await readPostBridgeMediaUploadUrlRequest(request);
+    const input = await readPostBridgeMediaUploadRequest(request);
     const convexToken = await getAuthenticatedConvexToken();
 
     if (!convexToken) {
@@ -45,24 +44,14 @@ export async function POST(request: Request) {
       secret: getRateLimitApiSecret(),
     });
 
-    const apiKey = await resolvePostBridgeApiKey(convex);
-    const upload = await createPostBridgeUploadUrl({
-      apiKey,
-      mimeType: input.media.mimeType,
-      name: input.media.name,
-      sizeBytes: input.media.sizeBytes,
-    });
-    const media = createPostBridgeUploadedMedia({
-      mediaId: upload.media_id,
-      mimeType: input.media.mimeType,
-      name: upload.name || input.media.name,
-      sizeBytes: input.media.sizeBytes,
+    const media = await uploadPostBridgeMediaFromR2Object({
+      apiKey: await resolvePostBridgeApiKey(convex),
+      media: input.media,
+      sourceObject: input.sourceObject,
+      userId,
     });
 
-    return Response.json({
-      media,
-      uploadUrl: upload.upload_url,
-    });
+    return Response.json({ media });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);
 
@@ -75,7 +64,7 @@ export async function POST(request: Request) {
         error:
           error instanceof Error
             ? error.message
-            : "Unable to prepare this media upload.",
+            : "Unable to upload this media to Post Bridge.",
       },
       { status: 400 },
     );

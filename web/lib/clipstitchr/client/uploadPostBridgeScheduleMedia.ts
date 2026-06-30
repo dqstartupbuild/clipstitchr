@@ -1,4 +1,5 @@
 import { readPostBridgeClientErrorMessage } from "@/lib/clipstitchr/client/readPostBridgeClientErrorMessage";
+import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import type { PostBridgeScheduleMediaFile } from "@/lib/clipstitchr/types/PostBridgeScheduleMediaFile";
 import type { PostBridgeSourceType } from "@/lib/clipstitchr/types/PostBridgeSourceType";
 import type { PostBridgeUploadedMedia } from "@/lib/clipstitchr/types/PostBridgeUploadedMedia";
@@ -10,9 +11,8 @@ type UploadPostBridgeScheduleMediaOptions = {
   sourceType: PostBridgeSourceType;
 };
 
-type PostBridgeMediaUploadUrlResponse = {
+type PostBridgeMediaUploadResponse = {
   media: PostBridgeUploadedMedia;
-  uploadUrl: string;
 };
 
 export async function uploadPostBridgeScheduleMedia({
@@ -21,12 +21,20 @@ export async function uploadPostBridgeScheduleMedia({
   sourceType,
 }: UploadPostBridgeScheduleMediaOptions): Promise<PostBridgeUploadedMedia> {
   const blob = createPostBridgeMediaUploadBlob(mediaFile);
-  const uploadUrlResponse = await fetch("/api/post-bridge/media/upload-url", {
+  const [sourceObject] = await uploadBlobsToR2([
+    {
+      blob,
+      kind: "post-bridge-media",
+      recordId: `${sourceId}-${crypto.randomUUID()}`,
+    },
+  ]);
+  const uploadResponse = await fetch("/api/post-bridge/media/upload", {
     body: JSON.stringify({
       mimeType: blob.type,
       name: mediaFile.fileName,
       sizeBytes: blob.size,
       sourceId,
+      sourceObject,
       sourceType,
     }),
     headers: {
@@ -35,27 +43,14 @@ export async function uploadPostBridgeScheduleMedia({
     method: "POST",
   });
 
-  if (!uploadUrlResponse.ok) {
+  if (!uploadResponse.ok) {
     throw new Error(
       await readPostBridgeClientErrorMessage(
-        uploadUrlResponse,
-        "Unable to prepare this media upload.",
+        uploadResponse,
+        "Unable to upload this media to Post Bridge.",
       ),
     );
   }
 
-  const upload = (await uploadUrlResponse.json()) as PostBridgeMediaUploadUrlResponse;
-  const mediaUploadResponse = await fetch(upload.uploadUrl, {
-    body: blob,
-    headers: {
-      "Content-Type": upload.media.mimeType,
-    },
-    method: "PUT",
-  });
-
-  if (!mediaUploadResponse.ok) {
-    throw new Error("Unable to upload this media to Post Bridge.");
-  }
-
-  return upload.media;
+  return ((await uploadResponse.json()) as PostBridgeMediaUploadResponse).media;
 }

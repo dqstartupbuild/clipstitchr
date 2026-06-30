@@ -50,22 +50,28 @@ video ends.
 
 ## Server Flow
 
-`POST /api/post-bridge/media/upload-url` prepares each media upload:
+The browser first uploads each rendered PNG image or MP4 video to a temporary
+ClipStitchr R2 object through the existing signed R2 upload flow. This keeps
+large media out of the Next.js function request body while using ClipStitchr's
+own browser-safe R2 CORS configuration.
+
+`POST /api/post-bridge/media/upload` copies each temporary media object to Post
+Bridge:
 
 1. Confirms the user is signed in.
-2. Reads small JSON metadata for one rendered media file.
+2. Reads small JSON metadata and the temporary R2 object reference for one
+   rendered media file.
 3. Validates that the source Stitch or Swipe belongs to the user.
 4. Rejects unsupported media types, image uploads for Stitch posts, and files
    above `POST_BRIDGE_MAX_MEDIA_BYTES`.
-5. Consumes Post Bridge upload-byte rate limits before any upload URL is issued.
+5. Consumes Post Bridge upload-byte rate limits before any Post Bridge upload
+   starts.
 6. Loads the user's encrypted Post Bridge API key from Convex and decrypts it
    only in the Next.js route.
 7. Calls `POST /v1/media/create-upload-url`.
-8. Returns the Post Bridge `media_id` and signed upload URL to the browser.
-
-The browser uploads the rendered PNG image or MP4 video directly to that signed
-Post Bridge upload URL. This avoids sending large media through the Next.js
-function request body.
+8. Streams the temporary R2 object to the returned Post Bridge upload URL
+   server-side, where browser CORS preflight does not apply.
+9. Returns the Post Bridge `media_id` to the browser.
 
 `POST /api/post-bridge/schedule` handles final scheduling:
 
@@ -137,7 +143,7 @@ Schedule page owns scheduled and posted post status counts.
 - `web/lib/clipstitchr/media/createSwiprMusicAudioBuffer.ts`
 - `web/lib/clipstitchr/media/scheduleLoopingAudioBuffer.ts`
 - `web/app/api/post-bridge/settings/route.ts`
-- `web/app/api/post-bridge/media/upload-url/route.ts`
+- `web/app/api/post-bridge/media/upload/route.ts`
 - `web/app/api/post-bridge/schedule/route.ts`
 - `web/app/api/post-bridge/accounts/route.ts`
 - `web/app/api/post-bridge/posts/route.ts`

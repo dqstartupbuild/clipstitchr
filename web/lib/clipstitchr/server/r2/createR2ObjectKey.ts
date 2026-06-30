@@ -46,6 +46,11 @@ const objectKindConfig: Record<
     baseName: "thumbnail",
     fallbackExtension: "jpg",
   },
+  "post-bridge-media": {
+    directory: "post-bridge-media",
+    baseName: "media",
+    fallbackExtension: "bin",
+  },
   "swapr-segment-video": {
     directory: "swapr-segments",
     baseName: "segment",

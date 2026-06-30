@@ -2,25 +2,55 @@ import { createPostBridgeMediaUploadDescriptor } from "@/lib/clipstitchr/server/
 import { getPostBridgeSourceType } from "@/lib/clipstitchr/server/postBridge/getPostBridgeSourceType";
 import type { PostBridgeMediaUploadDescriptor } from "@/lib/clipstitchr/types/PostBridgeMediaUploadDescriptor";
 import type { PostBridgeSourceType } from "@/lib/clipstitchr/types/PostBridgeSourceType";
+import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 
-type PostBridgeMediaUploadUrlRequestBody = {
+type PostBridgeMediaUploadRequestBody = {
   mimeType?: unknown;
   name?: unknown;
   sizeBytes?: unknown;
   sourceId?: unknown;
+  sourceObject?: unknown;
   sourceType?: unknown;
 };
 
-export type PostBridgeMediaUploadUrlRequest = {
+type SourceObjectBody = {
+  contentType?: unknown;
+  key?: unknown;
+  size?: unknown;
+};
+
+export type PostBridgeMediaUploadRequest = {
   media: PostBridgeMediaUploadDescriptor;
   sourceId: string;
+  sourceObject: R2ObjectReference;
   sourceType: PostBridgeSourceType;
 };
 
-export async function readPostBridgeMediaUploadUrlRequest(
+function readSourceObject(value: unknown): R2ObjectReference {
+  const sourceObject = value as SourceObjectBody | null;
+
+  if (
+    !sourceObject ||
+    typeof sourceObject.key !== "string" ||
+    typeof sourceObject.contentType !== "string" ||
+    typeof sourceObject.size !== "number" ||
+    !Number.isFinite(sourceObject.size) ||
+    sourceObject.size <= 0
+  ) {
+    throw new Error("Unable to load the rendered media upload.");
+  }
+
+  return {
+    contentType: sourceObject.contentType,
+    key: sourceObject.key,
+    size: Math.ceil(sourceObject.size),
+  };
+}
+
+export async function readPostBridgeMediaUploadRequest(
   request: Request,
-): Promise<PostBridgeMediaUploadUrlRequest> {
-  const body = (await request.json()) as PostBridgeMediaUploadUrlRequestBody;
+): Promise<PostBridgeMediaUploadRequest> {
+  const body = (await request.json()) as PostBridgeMediaUploadRequestBody;
   const sourceId = typeof body.sourceId === "string" ? body.sourceId.trim() : "";
 
   if (!sourceId) {
@@ -42,6 +72,7 @@ export async function readPostBridgeMediaUploadUrlRequest(
       sizeBytes: body.sizeBytes,
     }),
     sourceId,
+    sourceObject: readSourceObject(body.sourceObject),
     sourceType: getPostBridgeSourceType(
       typeof body.sourceType === "string" ? body.sourceType : null,
     ),

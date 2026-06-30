@@ -7,8 +7,9 @@ describe("schedulePostBridgePost", () => {
   });
 
   it("uploads media before sending a small schedule request", async () => {
-    const uploadUrlBodies: object[] = [];
-    const directUploadBodies: BodyInit[] = [];
+    const r2UploadUrlBodies: object[] = [];
+    const r2UploadBodies: BodyInit[] = [];
+    const postBridgeUploadBodies: object[] = [];
     const scheduleBodies: object[] = [];
 
     vi.stubGlobal(
@@ -16,32 +17,47 @@ describe("schedulePostBridgePost", () => {
       vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
         const requestUrl = String(url);
 
-        if (requestUrl === "/api/post-bridge/media/upload-url") {
-          uploadUrlBodies.push(JSON.parse(String(init?.body)) as object);
+        if (requestUrl === "/api/r2/upload-url") {
+          r2UploadUrlBodies.push(JSON.parse(String(init?.body)) as object);
 
           return Response.json({
-            media: {
-              mediaId: `media_${uploadUrlBodies.length}`,
-              mediaKind: "image",
-              mimeType: "image/png",
-              name: `slide-${uploadUrlBodies.length}.png`,
-              sizeBytes: uploadUrlBodies.length,
-            },
-            uploadUrl: `https://uploads.example/${uploadUrlBodies.length}`,
+            key: `users/user_123/post-bridge-media/swipe_1/media-${r2UploadUrlBodies.length}.png`,
+            url: `https://r2.example/${r2UploadUrlBodies.length}`,
           });
         }
 
-        if (requestUrl.startsWith("https://uploads.example/")) {
-          directUploadBodies.push(init?.body as BodyInit);
+        if (requestUrl.startsWith("https://r2.example/")) {
+          r2UploadBodies.push(init?.body as BodyInit);
 
           return new Response(null, { status: 204 });
         }
 
-        scheduleBodies.push(JSON.parse(String(init?.body)) as object);
+        if (requestUrl === "/api/post-bridge/media/upload") {
+          postBridgeUploadBodies.push(JSON.parse(String(init?.body)) as object);
+
+          return Response.json({
+            media: {
+              mediaId: `media_${postBridgeUploadBodies.length}`,
+              mediaKind: "image",
+              mimeType: "image/png",
+              name: `slide-${postBridgeUploadBodies.length}.png`,
+              sizeBytes: postBridgeUploadBodies.length,
+            },
+          });
+        }
+
+        if (requestUrl === "/api/post-bridge/schedule") {
+          scheduleBodies.push(JSON.parse(String(init?.body)) as object);
+
+          return Response.json({
+            post: { id: "post_1" },
+            postReference: { postId: "post_1" },
+          });
+        }
 
         return Response.json({
-          post: { id: "post_1" },
-          postReference: { postId: "post_1" },
+          error: "Unexpected request",
+          requestUrl,
         });
       }),
     );
@@ -68,12 +84,32 @@ describe("schedulePostBridgePost", () => {
       title: "Launch Swipe",
     });
 
-    expect(uploadUrlBodies).toEqual([
+    expect(r2UploadUrlBodies).toEqual([
+      {
+        contentType: "image/png",
+        kind: "post-bridge-media",
+        recordId: expect.stringMatching(/^swipe_1-/),
+        sizeBytes: 3,
+      },
+      {
+        contentType: "image/png",
+        kind: "post-bridge-media",
+        recordId: expect.stringMatching(/^swipe_1-/),
+        sizeBytes: 3,
+      },
+    ]);
+    expect(r2UploadBodies).toHaveLength(2);
+    expect(postBridgeUploadBodies).toEqual([
       {
         mimeType: "image/png",
         name: "slide-1.png",
         sizeBytes: 3,
         sourceId: "swipe_1",
+        sourceObject: {
+          contentType: "image/png",
+          key: "users/user_123/post-bridge-media/swipe_1/media-1.png",
+          size: 3,
+        },
         sourceType: "swipe",
       },
       {
@@ -81,10 +117,14 @@ describe("schedulePostBridgePost", () => {
         name: "slide-2.png",
         sizeBytes: 3,
         sourceId: "swipe_1",
+        sourceObject: {
+          contentType: "image/png",
+          key: "users/user_123/post-bridge-media/swipe_1/media-2.png",
+          size: 3,
+        },
         sourceType: "swipe",
       },
     ]);
-    expect(directUploadBodies).toHaveLength(2);
     expect(scheduleBodies).toEqual([
       {
         caption: "Launch",
@@ -122,7 +162,18 @@ describe("schedulePostBridgePost", () => {
       vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
         const requestUrl = String(url);
 
-        if (requestUrl === "/api/post-bridge/media/upload-url") {
+        if (requestUrl === "/api/r2/upload-url") {
+          return Response.json({
+            key: "users/user_123/post-bridge-media/stitch_1/media.mp4",
+            url: "https://r2.example/video",
+          });
+        }
+
+        if (requestUrl === "https://r2.example/video") {
+          return new Response(null, { status: 204 });
+        }
+
+        if (requestUrl === "/api/post-bridge/media/upload") {
           return Response.json({
             media: {
               mediaId: "media_1",
@@ -131,20 +182,19 @@ describe("schedulePostBridgePost", () => {
               name: "launch.mp4",
               sizeBytes: 5,
             },
-            uploadUrl: "https://uploads.example/video",
           });
         }
 
-        if (requestUrl === "https://uploads.example/video") {
-          return new Response(null, { status: 204 });
+        if (requestUrl === "/api/post-bridge/schedule") {
+          scheduleBodies.push(JSON.parse(String(init?.body)) as object);
+
+          return Response.json({
+            post: { id: "post_1" },
+            postReference: { postId: "post_1" },
+          });
         }
 
-        scheduleBodies.push(JSON.parse(String(init?.body)) as object);
-
-        return Response.json({
-          post: { id: "post_1" },
-          postReference: { postId: "post_1" },
-        });
+        return Response.json({ error: "Unexpected request", requestUrl });
       }),
     );
 
