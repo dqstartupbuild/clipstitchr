@@ -149,6 +149,19 @@ describe("useStitchTemplates", () => {
     );
   });
 
+  it("skips template loading when the caller only needs mutations", () => {
+    mocks.useQuery.mockReturnValue(undefined);
+
+    const state = useStitchTemplates(false);
+
+    expect(state.templates).toEqual([]);
+    expect(state.isLoading).toBe(false);
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      api.stitchTemplates.list.list,
+      "skip",
+    );
+  });
+
   it("waits while authentication is loading", () => {
     mocks.useConvexAuth.mockReturnValue({
       isAuthenticated: false,

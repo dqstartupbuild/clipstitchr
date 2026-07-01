@@ -6,7 +6,7 @@ import type { Doc } from "./_generated/dataModel";
 import { getSwiprSwipeReferencedBackgroundIds } from "./getSwiprSwipeReferencedBackgroundIds";
 
 const RECENT_ITEM_LIMIT = 4;
-const SOURCE_CLIP_LIMIT = 30;
+const SOURCE_CLIP_LIMIT = 12;
 
 function sortByCreatedAtDesc<T extends { createdAt: string }>(items: T[]) {
   return [...items].sort(

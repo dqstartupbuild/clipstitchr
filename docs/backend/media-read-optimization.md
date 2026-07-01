@@ -22,19 +22,26 @@ reads across every mounted subscription.
   backgrounds needed by those cards. The Swipe background set includes the
   top-level Swipe background plus any per-slide background IDs used by those
   recent cards, so the dashboard does not need the full Swipr background
-  library subscription. It no longer mounts full clip, photo, avatar, Swipr
-  background, or Swipe library subscriptions just to render the home widgets.
+  library subscription. Dashboard source clip fan-out is capped to a small
+  picker-sized set, and the home page uses a mutation-only Stitch template hook
+  instead of subscribing to the full template list.
 - `useClipLibraryState` subscribes only on dashboard routes that render clip or
   stitch media directly. The dashboard home keeps only aggregate counts loaded.
   Settings, Clipr, Avatars, and Swipr do not open hidden clip-list
-  subscriptions.
+  subscriptions. Initial media pages load 24 rows and server paginated clip and
+  stitch queries enforce maximum row and byte read ceilings.
 - `usePhotoLibraryState` subscribes to photo/avatar documents only on Avatars,
   Library, Clipr, Swapr, and Swipr. Uploads keeps only avatar/voice preferences
   loaded for the UGC-to-avatar action.
 - `useSwiprLibraryState` subscribes only on Library, Settings, Swipr, and
   Uploads. Dashboard home Swipr cards use `dashboardSummary.get`; draft
   generation uses `swiprBackgrounds.listByLibraryQueryKeys` instead of loading
-  every saved/global background.
+  every saved/global background. Swipr UI background lists use separate,
+  smaller caps than provider-worker pack lookups, and per-pack exclusions are
+  read only for the visible pack keys.
+- Public blog index, RSS, and sitemap routes read compact `blogPostCards`
+  records and use hourly route revalidation. Full `blogPosts` body documents are
+  read only for article detail pages and one-time card backfills.
 - `DashboardNotificationBell` always reads only `notifications.unreadCount`.
   It loads `notifications.listRecent` only while the popover is open.
 - `ActiveWorkerJobsBanner` reads `activeWorkerJobs.summary`, a single bounded
@@ -73,6 +80,8 @@ npx convex run aggregateBackfills:backfillSwiprBackgroundLibraryQueryKeys \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
 npx convex run aggregateBackfills:backfillNotificationSummaries \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
+npx convex run blogPosts:rebuildPublishedBlogPostCards \
+  '{"secret":"<RATE_LIMIT_API_SECRET>"}'
 ```
 
 For production, append `--prod` after deploying the Convex functions to

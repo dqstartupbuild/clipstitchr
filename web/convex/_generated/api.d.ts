@@ -38,6 +38,8 @@ import type * as automationSwipr from "../automationSwipr.js";
 import type * as automationTasks from "../automationTasks.js";
 import type * as avatarPreferences from "../avatarPreferences.js";
 import type * as avatars from "../avatars.js";
+import type * as blogPostCards_estimateBlogPostReadingTimeMinutes from "../blogPostCards/estimateBlogPostReadingTimeMinutes.js";
+import type * as blogPostCards_getBlogPostCardFields from "../blogPostCards/getBlogPostCardFields.js";
 import type * as blogPosts from "../blogPosts.js";
 import type * as cliprJobs from "../cliprJobs.js";
 import type * as cliprPreferences from "../cliprPreferences.js";
@@ -71,6 +73,7 @@ import type * as getPrimaryProductForOwner from "../getPrimaryProductForOwner.js
 import type * as getProductNameFromAutomationTasks from "../getProductNameFromAutomationTasks.js";
 import type * as getQuickEditOverlayText from "../getQuickEditOverlayText.js";
 import type * as getQuickEditWithRemoveRanges from "../getQuickEditWithRemoveRanges.js";
+import type * as getReadLimitedPaginationOpts from "../getReadLimitedPaginationOpts.js";
 import type * as getStitchNotificationCopy from "../getStitchNotificationCopy.js";
 import type * as getStitchProductId from "../getStitchProductId.js";
 import type * as getSwipeNotificationCopy from "../getSwipeNotificationCopy.js";
@@ -227,6 +230,8 @@ declare const fullApi: ApiFromModules<{
   automationTasks: typeof automationTasks;
   avatarPreferences: typeof avatarPreferences;
   avatars: typeof avatars;
+  "blogPostCards/estimateBlogPostReadingTimeMinutes": typeof blogPostCards_estimateBlogPostReadingTimeMinutes;
+  "blogPostCards/getBlogPostCardFields": typeof blogPostCards_getBlogPostCardFields;
   blogPosts: typeof blogPosts;
   cliprJobs: typeof cliprJobs;
   cliprPreferences: typeof cliprPreferences;
@@ -260,6 +265,7 @@ declare const fullApi: ApiFromModules<{
   getProductNameFromAutomationTasks: typeof getProductNameFromAutomationTasks;
   getQuickEditOverlayText: typeof getQuickEditOverlayText;
   getQuickEditWithRemoveRanges: typeof getQuickEditWithRemoveRanges;
+  getReadLimitedPaginationOpts: typeof getReadLimitedPaginationOpts;
   getStitchNotificationCopy: typeof getStitchNotificationCopy;
   getStitchProductId: typeof getStitchProductId;
   getSwipeNotificationCopy: typeof getSwipeNotificationCopy;

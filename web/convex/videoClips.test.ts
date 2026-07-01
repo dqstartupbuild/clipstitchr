@@ -159,6 +159,8 @@ describe("convex videoClips", () => {
     expect(chain.order).toHaveBeenCalledWith("asc");
     expect(chain.paginate).toHaveBeenCalledWith({
       cursor: null,
+      maximumBytesRead: 524288,
+      maximumRowsRead: 120,
       numItems: 20,
     });
   });
@@ -182,6 +184,8 @@ describe("convex videoClips", () => {
     expect(chain.order).toHaveBeenCalledWith("desc");
     expect(chain.paginate).toHaveBeenCalledWith({
       cursor: null,
+      maximumBytesRead: 524288,
+      maximumRowsRead: 120,
       numItems: 20,
     });
   });

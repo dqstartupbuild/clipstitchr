@@ -4,25 +4,20 @@ import { useCallback, useMemo, useState } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { createStitchTemplateFromConvexDocument } from "@/lib/clipstitchr/backend/createStitchTemplateFromConvexDocument";
-import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
-import { createId } from "@/lib/clipstitchr/utils/createId";
-import { getStitchTemplateDefaultName } from "@/lib/clipstitchr/utils/getStitchTemplateDefaultName";
+import { useCreateStitchTemplate } from "@/lib/clipstitchr/hooks/useCreateStitchTemplate";
 
-export function useStitchTemplates() {
+export function useStitchTemplates(shouldLoadTemplates = true) {
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const documents = useQuery(
     api.stitchTemplates.list.list,
-    isAuthenticated ? { sortOrder: "newest" } : "skip",
-  );
-  const createFromStitchMutation = useMutation(
-    api.stitchTemplates.createFromStitch.createFromStitch,
+    isAuthenticated && shouldLoadTemplates ? { sortOrder: "newest" } : "skip",
   );
   const updateNameMutation = useMutation(
     api.stitchTemplates.updateName.updateName,
   );
   const removeMutation = useMutation(api.stitchTemplates.remove.remove);
+  const templateCreator = useCreateStitchTemplate();
   const [error, setError] = useState<string | null>(null);
-  const [savingStitchId, setSavingStitchId] = useState<string | null>(null);
   const [savingTemplateId, setSavingTemplateId] = useState<string | null>(null);
   const [deletingTemplateId, setDeletingTemplateId] = useState<string | null>(
     null,
@@ -30,33 +25,6 @@ export function useStitchTemplates() {
   const templates = useMemo(
     () => documents?.map(createStitchTemplateFromConvexDocument) ?? [],
     [documents],
-  );
-  const createTemplateFromStitch = useCallback(
-    async (stitch: Stitch) => {
-      const templateId = createId();
-
-      setError(null);
-      setSavingStitchId(stitch.id);
-
-      try {
-        await createFromStitchMutation({
-          id: templateId,
-          name: getStitchTemplateDefaultName(stitch),
-          stitchId: stitch.id,
-        });
-        return templateId;
-      } catch (nextError) {
-        setError(
-          nextError instanceof Error
-            ? nextError.message
-            : "Could not save that template.",
-        );
-        throw nextError;
-      } finally {
-        setSavingStitchId(null);
-      }
-    },
-    [createFromStitchMutation],
   );
   const renameTemplate = useCallback(
     async (id: string, name: string) => {
@@ -101,12 +69,14 @@ export function useStitchTemplates() {
 
   return {
     deletingTemplateId,
-    error,
-    isLoading: isAuthLoading || (isAuthenticated && documents === undefined),
-    savingStitchId,
+    error: error ?? templateCreator.error,
+    isLoading:
+      isAuthLoading ||
+      (isAuthenticated && shouldLoadTemplates && documents === undefined),
+    savingStitchId: templateCreator.savingStitchId,
     savingTemplateId,
     templates,
-    createTemplateFromStitch,
+    createTemplateFromStitch: templateCreator.createTemplateFromStitch,
     deleteTemplate,
     renameTemplate,
   };

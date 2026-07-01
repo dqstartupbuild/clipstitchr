@@ -343,17 +343,17 @@ describe("useClipLibraryState", () => {
     expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
       "videoClips.list",
       "skip",
-      { initialNumItems: 48 },
+      { initialNumItems: 24 },
     );
     expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
       "videoClips.listByLibraryKind",
       "skip",
-      { initialNumItems: 48 },
+      { initialNumItems: 24 },
     );
     expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
       "stitches.list",
       "skip",
-      { initialNumItems: 48 },
+      { initialNumItems: 24 },
     );
     expect(mocks.useQuery).toHaveBeenCalledWith("libraryCounts.get", "skip");
   });
@@ -366,7 +366,7 @@ describe("useClipLibraryState", () => {
     expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
       "videoClips.listByLibraryKind",
       { kind: "demo", sortOrder: "newest" },
-      { initialNumItems: 48 },
+      { initialNumItems: 24 },
     );
   });
 
@@ -378,12 +378,12 @@ describe("useClipLibraryState", () => {
     expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
       "videoClips.listByLibraryKind",
       { kind: "ugc", sortOrder: "newest" },
-      { initialNumItems: 48 },
+      { initialNumItems: 24 },
     );
     expect(mocks.usePaginatedQuery).toHaveBeenCalledWith(
       "videoClips.listByLibraryKind",
       { kind: "demo", sortOrder: "newest" },
-      { initialNumItems: 48 },
+      { initialNumItems: 24 },
     );
   });
 
@@ -1187,8 +1187,8 @@ describe("useClipLibraryState", () => {
     state.loadMoreClips();
     state.loadMoreStitches();
 
-    expect(loadMoreClips).toHaveBeenCalledWith(48);
-    expect(loadMoreStitches).toHaveBeenCalledWith(48);
+    expect(loadMoreClips).toHaveBeenCalledWith(24);
+    expect(loadMoreStitches).toHaveBeenCalledWith(24);
   });
 
   it("ignores load-more requests when each paginated query is exhausted", () => {

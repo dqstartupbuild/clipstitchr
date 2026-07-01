@@ -190,8 +190,13 @@ vi.mock("@/lib/clipstitchr/hooks/useDashboardProduct", () => ({
   },
 }));
 
-vi.mock("@/lib/clipstitchr/hooks/useStitchTemplates", () => ({
-  useStitchTemplates: () => mocks.stitchTemplateState,
+vi.mock("@/lib/clipstitchr/hooks/useCreateStitchTemplate", () => ({
+  useCreateStitchTemplate: () => ({
+    createTemplateFromStitch:
+      mocks.stitchTemplateState.createTemplateFromStitch,
+    error: mocks.stitchTemplateState.error,
+    savingStitchId: mocks.stitchTemplateState.savingStitchId,
+  }),
 }));
 
 vi.mock("@/lib/clipstitchr/hooks/useSwiprLibrary", () => ({

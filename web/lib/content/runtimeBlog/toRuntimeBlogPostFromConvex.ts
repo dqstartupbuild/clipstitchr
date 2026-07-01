@@ -1,6 +1,7 @@
 import { createCanonicalUrl } from "@/lib/site";
 import { renderRuntimeBlogContent } from "./renderRuntimeBlogContent";
 import { estimateReadingTimeMinutes } from "./estimateReadingTimeMinutes";
+import { getRuntimeBlogDateString } from "./getRuntimeBlogDateString";
 import type { RuntimeBlogPost } from "./runtimeBlogPost";
 
 export type ConvexBlogPost = {
@@ -18,16 +19,6 @@ export type ConvexBlogPost = {
   updatedAt: string;
 };
 
-function toDateString(value: string) {
-  const parsed = new Date(value);
-
-  if (Number.isNaN(parsed.getTime())) {
-    return new Date().toISOString().slice(0, 10);
-  }
-
-  return parsed.toISOString().slice(0, 10);
-}
-
 export function toRuntimeBlogPostFromConvex(
   post: ConvexBlogPost,
 ): RuntimeBlogPost {
@@ -41,8 +32,8 @@ export function toRuntimeBlogPostFromConvex(
     category: post.source?.trim() || "Articles",
     tags: post.tags,
     author: post.source?.trim() || "ClipStitchr",
-    date: toDateString(post.createdAt ?? post.publishedAt),
-    updated: toDateString(post.updatedAt),
+    date: getRuntimeBlogDateString(post.createdAt ?? post.publishedAt),
+    updated: getRuntimeBlogDateString(post.updatedAt),
     image: post.imageUrl,
     readingTimeMinutes: estimateReadingTimeMinutes(post.content),
     bodyHtml: renderRuntimeBlogContent({

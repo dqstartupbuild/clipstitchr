@@ -1,7 +1,7 @@
 import { getPublishedBlogPosts } from "@/lib/content/queries";
 import type { BlogPostCard } from "./blogPostCard";
-import { fetchConvexBlogPosts } from "./fetchConvexBlogPosts";
-import { toRuntimeBlogPostFromConvex } from "./toRuntimeBlogPostFromConvex";
+import { fetchConvexBlogPostCards } from "./fetchConvexBlogPostCards";
+import { toBlogPostCardFromConvexBlogPostCard } from "./toBlogPostCardFromConvexBlogPostCard";
 
 function sortCardsByDateDescending(cards: BlogPostCard[]) {
   return [...cards].sort(
@@ -25,27 +25,12 @@ export async function getBlogPostCards(): Promise<BlogPostCard[]> {
     featured: post.featured,
   }));
 
-  const convexPosts = await fetchConvexBlogPosts();
+  const convexPosts = await fetchConvexBlogPostCards();
   const mdxSlugs = new Set(mdxCards.map((card) => card.slug));
 
   const convexCards: BlogPostCard[] = convexPosts
     .filter((post) => !mdxSlugs.has(post.slug))
-    .map((post) => {
-      const runtimePost = toRuntimeBlogPostFromConvex(post);
-
-      return {
-        slug: runtimePost.slug,
-        url: runtimePost.url,
-        title: runtimePost.title,
-        description: runtimePost.description,
-        category: runtimePost.category,
-        tags: runtimePost.tags,
-        date: runtimePost.date,
-        updated: runtimePost.updated,
-        readingTimeMinutes: runtimePost.readingTimeMinutes,
-        featured: false,
-      };
-    });
+    .map(toBlogPostCardFromConvexBlogPostCard);
 
   return sortCardsByDateDescending([...mdxCards, ...convexCards]);
 }

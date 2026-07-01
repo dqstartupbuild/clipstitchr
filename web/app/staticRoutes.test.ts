@@ -4,31 +4,29 @@ import { GET as getLlmsTxt } from "@/app/llms.txt/route";
 import { GET as getVideoSitemap } from "@/app/video-sitemap.xml/route";
 
 const mocks = vi.hoisted(() => ({
-  fetchConvexBlogPosts: vi.fn(),
+  fetchConvexBlogPostCards: vi.fn(),
 }));
 
-vi.mock("@/lib/content/runtimeBlog/fetchConvexBlogPosts", () => ({
-  fetchConvexBlogPosts: mocks.fetchConvexBlogPosts,
+vi.mock("@/lib/content/runtimeBlog/fetchConvexBlogPostCards", () => ({
+  fetchConvexBlogPostCards: mocks.fetchConvexBlogPostCards,
 }));
 
 describe("static metadata routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.fetchConvexBlogPosts.mockResolvedValue([]);
+    mocks.fetchConvexBlogPostCards.mockResolvedValue([]);
   });
 
   it("serves the RSS feed with XML cache headers", async () => {
-    mocks.fetchConvexBlogPosts.mockResolvedValue([
+    mocks.fetchConvexBlogPostCards.mockResolvedValue([
       {
         slug: "runtime-blog",
         title: "Runtime Blog",
         metaDescription: "A short summary.",
-        contentFormat: "markdown",
-        content: "# Runtime Blog\n\nBody",
-        contentHtml: undefined,
         imageUrl: undefined,
         tags: ["keyword"],
         source: "Blogger",
+        readingTimeMinutes: 1,
         publishedAt: "2026-06-23T16:00:00.000Z",
         createdAt: "2026-06-23T15:30:00.000Z",
         updatedAt: "2026-06-23T15:45:00.000Z",

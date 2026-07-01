@@ -158,6 +158,8 @@ describe("convex stitches", () => {
     expect(setup.chain.order).toHaveBeenCalledWith("asc");
     expect(setup.chain.paginate).toHaveBeenCalledWith({
       cursor: null,
+      maximumBytesRead: 524288,
+      maximumRowsRead: 120,
       numItems: 20,
     });
 

@@ -88,6 +88,8 @@ for future updates from the publisher.
 
 - Posts are upserted by `slug`. Publishing the same blog again updates the
   existing page instead of creating a duplicate.
+- Each upsert also writes a compact `blogPostCards` row. Blog index, RSS, and
+  sitemap reads use that small row instead of reading full article bodies.
 - `content_mdx` is the source of truth for the body. When `content_mdx` is
   empty, `content_markdown` is used. When both are empty, `content_html` is used.
 - `content_html` is not saved for MDX or Markdown posts. This prevents stale
@@ -115,12 +117,14 @@ for future updates from the publisher.
 
 ## Rendering
 
-- Webhook posts are stored in the Convex `blogPosts` table and rendered at
-  request time. `markdown` and `mdx` bodies are converted to sanitized HTML with
-  the dependency-free renderer in `web/lib/content/markdown`. The renderer
-  supports headings, heading anchors such as `{#section-id}`, paragraphs, lists,
-  links, lazy images, blockquotes, fenced code, horizontal rules, Markdown
-  tables, and YouTube embeds from either plain YouTube URLs or iframe blocks.
+- Webhook post bodies are stored in the Convex `blogPosts` table and rendered
+  on detail pages. Compact index metadata is stored in `blogPostCards` so
+  `/blog`, `/feed.xml`, and `/sitemap.xml` do not read full article bodies.
+  `markdown` and `mdx` bodies are converted to sanitized HTML with the
+  dependency-free renderer in `web/lib/content/markdown`. The renderer supports
+  headings, heading anchors such as `{#section-id}`, paragraphs, lists, links,
+  lazy images, blockquotes, fenced code, horizontal rules, Markdown tables, and
+  YouTube embeds from either plain YouTube URLs or iframe blocks.
 - Runtime Markdown images are rendered with `loading="lazy"` and
   `decoding="async"`. Generated image and link HTML is protected before inline
   emphasis is applied so signed R2 URLs containing underscores are not rewritten
@@ -168,8 +172,11 @@ web/
         MdxFigure.tsx
         MdxFigcaption.tsx
   convex/
-    schema.ts                          # adds blogPosts table (by_slug, by_published)
-    blogPosts.ts                       # upsertPublishedArticle + public queries
+    schema.ts                          # adds blogPosts and blogPostCards tables
+    blogPosts.ts                       # upsertPublishedArticle + public queries + card rebuild
+    blogPostCards/
+      estimateBlogPostReadingTimeMinutes.ts
+      getBlogPostCardFields.ts
     rateLimiter.ts                     # blogPublishWebhook buckets
     rateLimits.ts                      # consumeBlogPublishWebhook mutation
     validators/
@@ -205,15 +212,20 @@ web/
         renderMarkdownToHtml.ts
         renderMarkdownTable.ts
       runtimeBlog/
+        ConvexBlogPostCard.ts
         runtimeBlogPost.ts
         blogPostCard.ts
         createRuntimeBlogPostMetadata.ts
         decodeBasicHtmlEntities.ts
         estimateReadingTimeMinutes.ts
+        fetchConvexBlogPostBySlug.ts
+        fetchConvexBlogPostCards.ts
+        getRuntimeBlogDateString.ts
         renderRuntimeBlogContent.ts
         stripRuntimeBlogTitleHeading.ts
+        toBlogPostCardFromConvexBlogPostCard.ts
+        toRssPostFromConvexBlogPostCard.ts
         toRuntimeBlogPostFromConvex.ts
-        fetchConvexBlogPosts.ts
         getBlogPostCards.ts
         getRuntimeBlogSitemapEntries.ts
 docs/
@@ -223,6 +235,18 @@ docs/
 ```
 
 ## How to Test
+
+### Existing-post card backfill
+
+After deploying the `blogPostCards` table, backfill existing webhook posts:
+
+```bash
+cd web
+npx convex run blogPosts:rebuildPublishedBlogPostCards \
+  '{"secret":"<RATE_LIMIT_API_SECRET>"}'
+```
+
+For production, append `--prod`.
 
 ### Local request
 

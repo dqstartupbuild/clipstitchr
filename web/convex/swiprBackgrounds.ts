@@ -15,9 +15,14 @@ const BACKGROUND_NAME_MAX_LENGTH = 120;
 const BACKGROUND_DESCRIPTION_MAX_LENGTH = 1200;
 const BACKGROUND_DETAILS_MAX_LENGTH = 3000;
 const BACKGROUND_LIBRARY_QUERY_MAX_LENGTH = 120;
-const GLOBAL_PEXELS_BACKGROUND_LIMIT = 500;
 const LIBRARY_PACK_ACCOUNT_LIMIT = 100;
-const LIBRARY_PACK_EXCLUSION_LIMIT = 1000;
+const GLOBAL_PEXELS_BACKGROUND_LOOKUP_LIMIT = 500;
+const GLOBAL_PEXELS_LIBRARY_LIST_LIMIT = 48;
+const SWIPR_LIBRARY_OWNED_BACKGROUND_LIMIT = 72;
+const SWIPR_LIBRARY_PACK_ACCOUNT_LIMIT = 12;
+const SWIPR_LIBRARY_PACK_BACKGROUND_LIMIT = 24;
+const LIBRARY_PACK_EXCLUSION_PER_QUERY_LIMIT = 250;
+const LIBRARY_QUERY_BACKGROUND_LOOKUP_LIMIT = 120;
 const LIBRARY_QUERY_KEY_LOOKUP_LIMIT = 20;
 const PEXELS_PHOTO_ID_LOOKUP_LIMIT = 120;
 
@@ -62,11 +67,12 @@ async function getOwnerLibraryPackAccount(
 async function getOwnerLibraryPackAccountKeys(
   ctx: MutationCtx | QueryCtx,
   ownerId: string,
+  limit = LIBRARY_PACK_ACCOUNT_LIMIT,
 ) {
   const packAccounts = await ctx.db
     .query("swiprLibraryPackAccounts")
     .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-    .take(LIBRARY_PACK_ACCOUNT_LIMIT);
+    .take(limit);
 
   return new Set(
     packAccounts.map((packAccount) => packAccount.libraryQueryKey),
@@ -91,17 +97,21 @@ function getBackgroundBelongsToOwnerPack(
   return background.uploadedByOwnerId === ownerId;
 }
 
-async function getGlobalPexelsPackBackgrounds(ctx: MutationCtx | QueryCtx) {
+async function getGlobalPexelsPackBackgrounds(
+  ctx: MutationCtx | QueryCtx,
+  limit = GLOBAL_PEXELS_BACKGROUND_LOOKUP_LIMIT,
+) {
   return await ctx.db
     .query("swiprBackgrounds")
     .withIndex("by_source_created", (q) => q.eq("source", "pexels"))
     .order("desc")
-    .take(GLOBAL_PEXELS_BACKGROUND_LIMIT);
+    .take(limit);
 }
 
 async function getGlobalPexelsPackByQueryKey(
   ctx: MutationCtx | QueryCtx,
   libraryQueryKey: string,
+  limit = GLOBAL_PEXELS_BACKGROUND_LOOKUP_LIMIT,
 ) {
   const packBackgrounds = await ctx.db
     .query("swiprBackgrounds")
@@ -109,11 +119,11 @@ async function getGlobalPexelsPackByQueryKey(
       q.eq("source", "pexels").eq("libraryQueryKey", libraryQueryKey),
     )
     .order("desc")
-    .take(GLOBAL_PEXELS_BACKGROUND_LIMIT);
+    .take(limit);
   const backgrounds =
     packBackgrounds.length > 0
       ? packBackgrounds
-      : (await getGlobalPexelsPackBackgrounds(ctx)).filter(
+      : (await getGlobalPexelsPackBackgrounds(ctx, limit)).filter(
           (background) =>
             getBackgroundLibraryQueryKey(background) === libraryQueryKey,
         );
@@ -154,14 +164,29 @@ async function ensureOwnerLibraryPackAccount(
   });
 }
 
-async function getOwnerLibraryPackPhotoExclusionBackgroundIds(
+async function getOwnerLibraryPackPhotoExclusionBackgroundIdsForQueryKeys(
   ctx: MutationCtx | QueryCtx,
   ownerId: string,
+  libraryQueryKeys: Iterable<string>,
 ) {
-  const exclusions = await ctx.db
-    .query("swiprLibraryPackPhotoExclusions")
-    .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-    .take(LIBRARY_PACK_EXCLUSION_LIMIT);
+  const normalizedKeys = Array.from(new Set(libraryQueryKeys)).filter(Boolean);
+
+  if (!normalizedKeys.length) {
+    return new Set<string>();
+  }
+
+  const exclusions = (
+    await Promise.all(
+      normalizedKeys.map((libraryQueryKey) =>
+        ctx.db
+          .query("swiprLibraryPackPhotoExclusions")
+          .withIndex("by_owner_query", (q) =>
+            q.eq("ownerId", ownerId).eq("libraryQueryKey", libraryQueryKey),
+          )
+          .take(LIBRARY_PACK_EXCLUSION_PER_QUERY_LIMIT),
+      ),
+    )
+  ).flat();
 
   return new Set(exclusions.map((exclusion) => exclusion.backgroundId));
 }
@@ -213,16 +238,24 @@ export const list = query({
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const ownerLibraryPackAccountKeys =
-      await getOwnerLibraryPackAccountKeys(ctx, ownerId);
+      await getOwnerLibraryPackAccountKeys(
+        ctx,
+        ownerId,
+        SWIPR_LIBRARY_PACK_ACCOUNT_LIMIT,
+      );
     const excludedBackgroundIds =
-      await getOwnerLibraryPackPhotoExclusionBackgroundIds(ctx, ownerId);
+      await getOwnerLibraryPackPhotoExclusionBackgroundIdsForQueryKeys(
+        ctx,
+        ownerId,
+        ownerLibraryPackAccountKeys,
+      );
     const ownedBackgrounds = await ctx.db
       .query("swiprBackgrounds")
       .withIndex("by_uploaded_owner_created", (q) =>
         q.eq("uploadedByOwnerId", ownerId),
       )
       .order("desc")
-      .take(GLOBAL_PEXELS_BACKGROUND_LIMIT);
+      .take(SWIPR_LIBRARY_OWNED_BACKGROUND_LIMIT);
     const packBackgrounds = (
       await Promise.all(
         [...ownerLibraryPackAccountKeys].map((libraryQueryKey) =>
@@ -232,7 +265,7 @@ export const list = query({
               q.eq("source", "pexels").eq("libraryQueryKey", libraryQueryKey),
             )
             .order("desc")
-            .take(GLOBAL_PEXELS_BACKGROUND_LIMIT),
+            .take(SWIPR_LIBRARY_PACK_BACKGROUND_LIMIT),
         ),
       )
     ).flat();
@@ -262,7 +295,10 @@ export const listGlobalPexels = query({
   args: {},
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const backgrounds = await getGlobalPexelsPackBackgrounds(ctx);
+    const backgrounds = await getGlobalPexelsPackBackgrounds(
+      ctx,
+      GLOBAL_PEXELS_LIBRARY_LIST_LIMIT,
+    );
 
     return backgrounds.map((background) => ({
       ...background,
@@ -292,7 +328,11 @@ export const listByLibraryQueryKeys = query({
     const ownerLibraryPackAccountKeys =
       await getOwnerLibraryPackAccountKeys(ctx, ownerId);
     const excludedBackgroundIds =
-      await getOwnerLibraryPackPhotoExclusionBackgroundIds(ctx, ownerId);
+      await getOwnerLibraryPackPhotoExclusionBackgroundIdsForQueryKeys(
+        ctx,
+        ownerId,
+        normalizedKeys,
+      );
     const backgrounds = (
       await Promise.all(
         normalizedKeys.map((libraryQueryKey) =>
@@ -302,7 +342,7 @@ export const listByLibraryQueryKeys = query({
               q.eq("source", "pexels").eq("libraryQueryKey", libraryQueryKey),
             )
             .order("desc")
-            .take(GLOBAL_PEXELS_BACKGROUND_LIMIT),
+            .take(LIBRARY_QUERY_BACKGROUND_LOOKUP_LIMIT),
         ),
       )
     ).flat();
@@ -438,7 +478,11 @@ export const listForProviderByLibraryPackNames = query({
     const ownerLibraryPackAccountKeys =
       await getOwnerLibraryPackAccountKeys(ctx, ownerId);
     const excludedBackgroundIds =
-      await getOwnerLibraryPackPhotoExclusionBackgroundIds(ctx, ownerId);
+      await getOwnerLibraryPackPhotoExclusionBackgroundIdsForQueryKeys(
+        ctx,
+        ownerId,
+        selectedPackKeys,
+      );
 
     if (selectedPackKeys.size === 0) {
       return [];

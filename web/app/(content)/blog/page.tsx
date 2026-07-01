@@ -4,7 +4,7 @@ import { createPageMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 import { getBlogPostCards } from "@/lib/content/runtimeBlog/getBlogPostCards";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export const metadata = createPageMetadata({
   title: `Blog | ${site.name}`,

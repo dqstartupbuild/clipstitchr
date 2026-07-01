@@ -7,6 +7,7 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { createNotification } from "./createNotification";
 import { getFirstStitchScoreUpdate } from "./getFirstStitchScoreUpdate";
+import { getReadLimitedPaginationOpts } from "./getReadLimitedPaginationOpts";
 import { getQuickEditWithRemoveRanges } from "./getQuickEditWithRemoveRanges";
 import { getStitchProductId } from "./getStitchProductId";
 import { getStitchNotificationCopy } from "./getStitchNotificationCopy";
@@ -91,6 +92,8 @@ export const list = query({
   ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const productFilterId = productId?.trim() || undefined;
+    const readLimitedPaginationOpts =
+      getReadLimitedPaginationOpts(paginationOpts);
 
     if (postedStatus === "active") {
       if (productFilterId) {
@@ -103,7 +106,7 @@ export const list = query({
               .eq("isPosted", undefined),
           )
           .order(sortOrder === "oldest" ? "asc" : "desc")
-          .paginate(paginationOpts);
+          .paginate(readLimitedPaginationOpts);
       }
 
       return await ctx.db
@@ -112,7 +115,7 @@ export const list = query({
           q.eq("ownerId", ownerId).eq("isPosted", undefined),
         )
         .order(sortOrder === "oldest" ? "asc" : "desc")
-        .paginate(paginationOpts);
+        .paginate(readLimitedPaginationOpts);
     }
 
     if (postedStatus === "posted") {
@@ -126,7 +129,7 @@ export const list = query({
               .eq("isPosted", true),
           )
           .order(sortOrder === "oldest" ? "asc" : "desc")
-          .paginate(paginationOpts);
+          .paginate(readLimitedPaginationOpts);
       }
 
       return await ctx.db
@@ -135,7 +138,7 @@ export const list = query({
           q.eq("ownerId", ownerId).eq("isPosted", true),
         )
         .order(sortOrder === "oldest" ? "asc" : "desc")
-        .paginate(paginationOpts);
+        .paginate(readLimitedPaginationOpts);
     }
 
     if (productFilterId) {
@@ -145,14 +148,14 @@ export const list = query({
           q.eq("ownerId", ownerId).eq("productId", productFilterId),
         )
         .order(sortOrder === "oldest" ? "asc" : "desc")
-        .paginate(paginationOpts);
+        .paginate(readLimitedPaginationOpts);
     }
 
     return await ctx.db
       .query("stitches")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order(sortOrder === "oldest" ? "asc" : "desc")
-      .paginate(paginationOpts);
+      .paginate(readLimitedPaginationOpts);
   },
 });
 

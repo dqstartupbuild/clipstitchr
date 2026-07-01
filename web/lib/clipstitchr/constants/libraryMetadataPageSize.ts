@@ -1,1 +1,1 @@
-export const libraryMetadataPageSize = 48;
+export const libraryMetadataPageSize = 24;

@@ -91,7 +91,6 @@ export function LibraryPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
   const products = useDashboardProduct();
-  const stitchTemplates = useStitchTemplates();
   const swiprLibrary = useSwiprLibrary();
   const showUploadControls = useShowUploadControls();
   const avatarCreator = useCreateAvatarFromUgcClip({
@@ -101,6 +100,9 @@ export function LibraryPageClient() {
   });
   const [selectedTab, setSelectedTab] = useState<LibraryTab>(
     getInitialLibraryTab,
+  );
+  const stitchTemplates = useStitchTemplates(
+    selectedTab === "stitches" || selectedTab === "templates",
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [stitchStatusFilter, setStitchStatusFilter] =

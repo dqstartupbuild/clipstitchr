@@ -84,6 +84,20 @@ export default defineSchema({
   })
     .index("by_slug", ["slug"])
     .index("by_published", ["publishedAt"]),
+  blogPostCards: defineTable({
+    slug: v.string(),
+    title: v.string(),
+    metaDescription: v.string(),
+    imageUrl: v.optional(v.string()),
+    tags: v.array(v.string()),
+    source: v.optional(v.string()),
+    readingTimeMinutes: v.number(),
+    publishedAt: v.string(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_published", ["publishedAt"]),
   videoClips: defineTable({
     ownerId: v.string(),
     id: v.string(),

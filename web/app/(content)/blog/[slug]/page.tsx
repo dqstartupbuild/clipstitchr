@@ -13,11 +13,11 @@ import {
   createFaqJsonLd,
 } from "@/lib/content/seo";
 import { mdxComponents } from "@/lib/content/mdx-components";
-import { fetchConvexBlogPostBySlug } from "@/lib/content/runtimeBlog/fetchConvexBlogPosts";
+import { fetchConvexBlogPostBySlug } from "@/lib/content/runtimeBlog/fetchConvexBlogPostBySlug";
 import { createRuntimeBlogPostMetadata } from "@/lib/content/runtimeBlog/createRuntimeBlogPostMetadata";
 import { toRuntimeBlogPostFromConvex } from "@/lib/content/runtimeBlog/toRuntimeBlogPostFromConvex";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 export const dynamicParams = true;
 
 type BlogPostPageProps = {

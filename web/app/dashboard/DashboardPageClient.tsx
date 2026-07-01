@@ -16,9 +16,9 @@ import { createSwiprSwipeFromConvexDocument } from "@/lib/clipstitchr/backend/cr
 import { createVideoClipMetadataFromConvexDocument } from "@/lib/clipstitchr/backend/createVideoClipMetadataFromConvexDocument";
 import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFromR2";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
+import { useCreateStitchTemplate } from "@/lib/clipstitchr/hooks/useCreateStitchTemplate";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import { usePhotoLibrary } from "@/lib/clipstitchr/hooks/usePhotoLibrary";
-import { useStitchTemplates } from "@/lib/clipstitchr/hooks/useStitchTemplates";
 import { useSwiprLibrary } from "@/lib/clipstitchr/hooks/useSwiprLibrary";
 
 export function DashboardPageClient() {
@@ -26,7 +26,7 @@ export function DashboardPageClient() {
   const library = useClipLibrary();
   const photoLibrary = usePhotoLibrary();
   const products = useDashboardProduct();
-  const stitchTemplates = useStitchTemplates();
+  const stitchTemplateCreator = useCreateStitchTemplate();
   const swiprLibrary = useSwiprLibrary();
   const productQueryArgs = products.activeProductId
     ? { productId: products.activeProductId }
@@ -94,7 +94,7 @@ export function DashboardPageClient() {
     photoLibrary.error ??
     swiprLibrary.error ??
     products.error ??
-    stitchTemplates.error;
+    stitchTemplateCreator.error;
 
   return (
     <DashboardShell>
@@ -127,14 +127,14 @@ export function DashboardPageClient() {
         />
         <RecentStitchesSection
           demoClips={demoClips}
-          savingTemplateStitchId={stitchTemplates.savingStitchId}
+          savingTemplateStitchId={stitchTemplateCreator.savingStitchId}
           stitches={recentStitches}
           onDelete={library.removeStitch}
           onLoadClip={library.loadClip}
           onLoadPoster={library.loadStitchPoster}
           onLoadVideo={library.loadStitchVideo}
           onPostBridgeScheduled={library.refresh}
-          onSaveTemplate={stitchTemplates.createTemplateFromStitch}
+          onSaveTemplate={stitchTemplateCreator.createTemplateFromStitch}
           onScore={library.scoreStitch}
           onApplyQuickEdit={library.applyStitchQuickEdit}
           onResetQuickEdit={library.resetStitchQuickEdit}
