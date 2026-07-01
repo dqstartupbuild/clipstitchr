@@ -529,6 +529,10 @@ describe("LibraryPageClient", () => {
       loadClip: mocks.library.loadClip,
       saveGeneratedPhotos: mocks.photoLibrary.saveGeneratedPhotos,
     });
+    expect(mocks.useStitchrHookPlans).toHaveBeenCalledWith(
+      "product_1",
+      false,
+    );
     expect(uploadPanel?.props).toEqual(
       expect.objectContaining({
         canUploadDemo: true,
@@ -795,9 +799,18 @@ describe("LibraryPageClient", () => {
     const stitches = renderLibraryPage({
       stateValues: ["stitches", "stitch", "all", ""],
     }).elements;
+    expect(mocks.useStitchrHookPlans).toHaveBeenLastCalledWith(
+      "product_1",
+      true,
+    );
+
     const swipes = renderLibraryPage({
       stateValues: ["swipes", "swipe", "all", ""],
     }).elements;
+    expect(mocks.useStitchrHookPlans).toHaveBeenLastCalledWith(
+      "product_1",
+      false,
+    );
 
     const stitchSection = stitches.find(
       (element) => "stitches" in (element.props ?? {}),

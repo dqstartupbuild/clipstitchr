@@ -42,6 +42,8 @@ reads across every mounted subscription.
   Swipes load only for the active Swipes/Pexels tabs. Swipr UI background lists
   use separate, smaller caps than provider-worker pack lookups, and per-pack
   exclusions are read only for the visible pack keys.
+- `useStitchrHookPlans` can be disabled by callers. The Library page enables it
+  only on the active Stitches tab and scopes the query to the active product.
 - Public blog index, RSS, and sitemap routes read compact `blogPostCards`
   records and use hourly route revalidation. Full `blogPosts` body documents are
   read only for article detail pages and one-time card backfills.

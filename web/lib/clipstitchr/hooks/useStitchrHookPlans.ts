@@ -22,11 +22,11 @@ type SaveManualHookGenerationInput = {
   ugcClipName?: string;
 };
 
-export function useStitchrHookPlans(productId?: string) {
+export function useStitchrHookPlans(productId?: string, enabled = true) {
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const documents = useQuery(
     api.stitchrHookPlans.list,
-    isAuthenticated
+    isAuthenticated && enabled
       ? {
           ...(productId ? { productId } : {}),
         }
@@ -176,7 +176,8 @@ export function useStitchrHookPlans(productId?: string) {
     accept,
     attachStitch,
     error,
-    isLoading: isAuthLoading || (isAuthenticated && documents === undefined),
+    isLoading:
+      isAuthLoading || (isAuthenticated && enabled && documents === undefined),
     plans,
     reject,
     saveManualGeneration,

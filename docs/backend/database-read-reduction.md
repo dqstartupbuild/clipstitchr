@@ -17,6 +17,8 @@ hydration away from large documents wherever possible.
   need them.
 - Dashboard library providers now track the active Library tab and skip hidden
   clip, photo, avatar, Swipr, Swipe, Stitch, and Pexels subscriptions.
+- Library Hook Plan reads are active-product scoped and load only for the
+  Stitches tab where hook review controls are rendered.
 - Clip and Stitch paginated queries apply server-side row and byte ceilings via
   `getReadLimitedPaginationOpts`.
 - Initial media library pages load 24 rows.

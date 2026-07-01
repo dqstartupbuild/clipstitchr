@@ -110,8 +110,11 @@ export function LibraryPageClient() {
     useState<StitchLibraryStatusFilter>("active");
   const [swipeStatusFilter, setSwipeStatusFilter] =
     useState<LibraryPostedStatusFilter>("active");
-  const hookPlans = useStitchrHookPlans();
   const activeProductId = products.activeProductId ?? "";
+  const hookPlans = useStitchrHookPlans(
+    activeProductId || undefined,
+    selectedTab === "stitches",
+  );
   const ugcClips = useMemo(
     () => filterClipsBySearchQuery(library.videoGroups.ugc.clips, searchQuery),
     [library.videoGroups.ugc.clips, searchQuery],
