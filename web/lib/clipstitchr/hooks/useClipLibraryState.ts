@@ -70,8 +70,7 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
   const activeLibraryTab = useActiveLibraryTab();
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const [error, setError] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] =
-    useState<ClipLibrarySortOrder>("newest");
+  const [sortOrder, setSortOrder] = useState<ClipLibrarySortOrder>("newest");
   const isDashboardHome = pathname === "/dashboard";
   const isLibraryRoute = pathname.startsWith("/dashboard/library");
   const isOnboardingRoute = pathname.startsWith("/dashboard/onboarding");
@@ -232,7 +231,10 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
   const queuedPosterBlobLoadKeysRef = useRef(new Set<string>());
   const isPosterBlobFlushScheduledRef = useRef(false);
   const clips = useMemo(
-    () => clipDocuments.map((clip) => createVideoClipMetadataFromConvexDocument(clip)),
+    () =>
+      clipDocuments.map((clip) =>
+        createVideoClipMetadataFromConvexDocument(clip),
+      ),
     [clipDocuments],
   );
   const ugcClips = useMemo(
@@ -295,13 +297,11 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
       demoClips: clips.filter((clip) => clip.clipType === "demo").length,
       postedStitches: postedStitches.length,
       stitches: stitches.length + postedStitches.length,
-      swapClips: clips.filter(
-        (clip) => clip.swaprMetadata?.source === "swapr",
-      ).length,
+      swapClips: clips.filter((clip) => clip.swaprMetadata?.source === "swapr")
+        .length,
       ugcClips: clips.filter(
         (clip) =>
-          clip.clipType === "ugc" &&
-          clip.swaprMetadata?.source !== "swapr",
+          clip.clipType === "ugc" && clip.swaprMetadata?.source !== "swapr",
       ).length,
     }),
     [clips, postedStitches.length, stitches.length],
@@ -411,80 +411,90 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
     [schedulePosterBlobLoadFlush],
   );
 
-  const loadClip = useCallback(async (id: string) => {
-    const cachedClip = clipCacheRef.current.get(id);
+  const loadClip = useCallback(
+    async (id: string) => {
+      const cachedClip = clipCacheRef.current.get(id);
 
-    if (cachedClip) {
-      return cachedClip;
-    }
+      if (cachedClip) {
+        return cachedClip;
+      }
 
-    const clipDocument =
-      clipDocuments?.find((clip) => clip.id === id) ??
-      (await convex.query(api.videoClips.get, { id }));
+      const clipDocument = await convex.query(api.videoClips.get, { id });
 
-    if (!clipDocument) {
-      return null;
-    }
+      if (!clipDocument) {
+        return null;
+      }
 
-    const [blob, posterBlob] = await Promise.all([
-      downloadBlobFromR2(clipDocument.videoObject),
-      loadPosterBlob(clipDocument.posterObject),
-    ]);
-    const clip = createVideoClipFromConvexDocument({
-      clip: clipDocument,
-      blob,
-      posterBlob: posterBlob ?? undefined,
-    });
+      const [blob, posterBlob] = await Promise.all([
+        downloadBlobFromR2(clipDocument.videoObject),
+        loadPosterBlob(clipDocument.posterObject),
+      ]);
+      const clip = createVideoClipFromConvexDocument({
+        clip: clipDocument,
+        blob,
+        posterBlob: posterBlob ?? undefined,
+      });
 
-    clipCacheRef.current.set(id, clip);
-    return clip;
-  }, [convex, clipDocuments, loadPosterBlob]);
+      clipCacheRef.current.set(id, clip);
+      return clip;
+    },
+    [convex, loadPosterBlob],
+  );
 
-  const loadClipPoster = useCallback(async (id: string) => {
-    const clipDocument =
-      clipDocuments.find((clip) => clip.id === id) ??
-      (await convex.query(api.videoClips.get, { id }));
+  const loadClipPoster = useCallback(
+    async (id: string) => {
+      const clipDocument =
+        clipDocuments.find((clip) => clip.id === id) ??
+        (await convex.query(api.videoClips.get, { id }));
 
-    if (!clipDocument) {
-      return null;
-    }
+      if (!clipDocument) {
+        return null;
+      }
 
-    return await loadPosterBlob(clipDocument.posterObject);
-  }, [clipDocuments, convex, loadPosterBlob]);
+      return await loadPosterBlob(clipDocument.posterObject);
+    },
+    [clipDocuments, convex, loadPosterBlob],
+  );
 
-  const loadStitch = useCallback(async (id: string) => {
-    const stitchDocument =
-      allStitchDocuments.find((stitch) => stitch.id === id) ??
-      (await convex.query(api.stitches.get, { id }));
+  const loadStitch = useCallback(
+    async (id: string) => {
+      const stitchDocument =
+        allStitchDocuments.find((stitch) => stitch.id === id) ??
+        (await convex.query(api.stitches.get, { id }));
 
-    if (!stitchDocument) {
-      return null;
-    }
+      if (!stitchDocument) {
+        return null;
+      }
 
-    return createStitchFromConvexDocument({ stitch: stitchDocument });
-  }, [allStitchDocuments, convex]);
+      return createStitchFromConvexDocument({ stitch: stitchDocument });
+    },
+    [allStitchDocuments, convex],
+  );
 
-  const loadStitchPoster = useCallback(async (id: string) => {
-    const stitchDocument =
-      allStitchDocuments.find((stitch) => stitch.id === id) ??
-      (await convex.query(api.stitches.get, { id }));
+  const loadStitchPoster = useCallback(
+    async (id: string) => {
+      const stitchDocument =
+        allStitchDocuments.find((stitch) => stitch.id === id) ??
+        (await convex.query(api.stitches.get, { id }));
 
-    if (!stitchDocument) {
-      return null;
-    }
+      if (!stitchDocument) {
+        return null;
+      }
 
-    if (stitchDocument.posterObject) {
-      return await loadPosterBlob(stitchDocument.posterObject);
-    }
+      if (stitchDocument.posterObject) {
+        return await loadPosterBlob(stitchDocument.posterObject);
+      }
 
-    const ugcClipDocument =
-      clipDocuments.find((clip) => clip.id === stitchDocument.ugcClipId) ??
-      (await convex.query(api.videoClips.get, {
-        id: stitchDocument.ugcClipId,
-      }));
+      const ugcClipDocument =
+        clipDocuments.find((clip) => clip.id === stitchDocument.ugcClipId) ??
+        (await convex.query(api.videoClips.get, {
+          id: stitchDocument.ugcClipId,
+        }));
 
-    return await loadPosterBlob(ugcClipDocument?.posterObject);
-  }, [allStitchDocuments, clipDocuments, convex, loadPosterBlob]);
+      return await loadPosterBlob(ugcClipDocument?.posterObject);
+    },
+    [allStitchDocuments, clipDocuments, convex, loadPosterBlob],
+  );
 
   const loadStitchVideo = useCallback(
     async (stitch: Stitch) => {
@@ -748,10 +758,7 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
   );
 
   const updateClipCuts = useCallback(
-    async (
-      clip: VideoClipMetadata,
-      removeRanges: QuickEditRemoveRange[],
-    ) => {
+    async (clip: VideoClipMetadata, removeRanges: QuickEditRemoveRange[]) => {
       await updateClipCutsMutation({
         id: clip.id,
         removeRanges: normalizeQuickEditRemoveRanges(
@@ -859,7 +866,9 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
           loadClip(update.demoClipId),
         ]);
         const ugcQuickEdit =
-          stitch.ugcClipId === update.ugcClipId ? stitch.ugcQuickEdit : undefined;
+          stitch.ugcClipId === update.ugcClipId
+            ? stitch.ugcQuickEdit
+            : undefined;
         const demoQuickEdit =
           stitch.demoClipId === update.demoClipId
             ? stitch.demoQuickEdit
@@ -897,7 +906,10 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
         posterVersion: posterObject ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
       });
 
-      if (previousPosterObject && previousPosterObject.key !== posterObject?.key) {
+      if (
+        previousPosterObject &&
+        previousPosterObject.key !== posterObject?.key
+      ) {
         await deleteObjectsFromR2([previousPosterObject]).catch(() => null);
         posterBlobCacheRef.current.delete(previousPosterObject.key);
       }
@@ -952,7 +964,8 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
           ugcClip,
           ugcPlaybackRate: stitch.ugcPlaybackRate ?? 1,
           ugcQuickEdit,
-          ugcTrimRange: stitch.ugcTrimRange ?? getDefaultVideoTrimRange(ugcClip),
+          ugcTrimRange:
+            stitch.ugcTrimRange ?? getDefaultVideoTrimRange(ugcClip),
         });
 
         posterObject = await uploadStitchPosterBlob({
@@ -972,7 +985,10 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
         source,
       });
 
-      if (previousPosterObject && previousPosterObject.key !== posterObject?.key) {
+      if (
+        previousPosterObject &&
+        previousPosterObject.key !== posterObject?.key
+      ) {
         await deleteObjectsFromR2([previousPosterObject]).catch(() => null);
         posterBlobCacheRef.current.delete(previousPosterObject.key);
       }
@@ -1076,7 +1092,10 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
         source,
       });
 
-      if (previousPosterObject && previousPosterObject.key !== posterObject?.key) {
+      if (
+        previousPosterObject &&
+        previousPosterObject.key !== posterObject?.key
+      ) {
         await deleteObjectsFromR2([previousPosterObject]).catch(() => null);
         posterBlobCacheRef.current.delete(previousPosterObject.key);
       }
@@ -1092,10 +1111,7 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
   );
 
   const updateStitchTextOverlay = useCallback(
-    async (
-      stitch: Stitch,
-      textOverlay: TextOverlay | TextOverlay[] | null,
-    ) => {
+    async (stitch: Stitch, textOverlay: TextOverlay | TextOverlay[] | null) => {
       const previousPosterObject = stitch.posterObject;
       const nextTextOverlays = getNonEmptyTextOverlays(
         clampTextOverlays(
@@ -1151,7 +1167,10 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
         textOverlays: nextTextOverlays,
       });
 
-      if (previousPosterObject && previousPosterObject.key !== posterObject?.key) {
+      if (
+        previousPosterObject &&
+        previousPosterObject.key !== posterObject?.key
+      ) {
         await deleteObjectsFromR2([previousPosterObject]).catch(() => null);
         posterBlobCacheRef.current.delete(previousPosterObject.key);
       }
@@ -1259,7 +1278,10 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
         posterVersion: posterObject ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
       });
 
-      if (previousPosterObject && previousPosterObject.key !== posterObject?.key) {
+      if (
+        previousPosterObject &&
+        previousPosterObject.key !== posterObject?.key
+      ) {
         await deleteObjectsFromR2([previousPosterObject]).catch(() => null);
         posterBlobCacheRef.current.delete(previousPosterObject.key);
       }
@@ -1324,7 +1346,10 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
         posterVersion: posterObject ? VIDEO_POSTER_CAPTURE_VERSION : undefined,
       });
 
-      if (previousPosterObject && previousPosterObject.key !== posterObject?.key) {
+      if (
+        previousPosterObject &&
+        previousPosterObject.key !== posterObject?.key
+      ) {
         await deleteObjectsFromR2([previousPosterObject]).catch(() => null);
         posterBlobCacheRef.current.delete(previousPosterObject.key);
       }
@@ -1411,8 +1436,7 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
   }, [postedStitchDocumentsQuery]);
   const isLoadingFirstPage =
     isAuthenticated &&
-    ((shouldLoadAllClips &&
-      clipDocumentsQuery.status === "LoadingFirstPage") ||
+    ((shouldLoadAllClips && clipDocumentsQuery.status === "LoadingFirstPage") ||
       (shouldLoadUgcClips &&
         ugcClipDocumentsQuery.status === "LoadingFirstPage") ||
       (shouldLoadCliprClips &&

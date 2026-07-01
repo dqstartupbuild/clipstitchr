@@ -1,4 +1,5 @@
 import { createCompletedRunNotification } from "./createCompletedRunNotification";
+import { upsertAutomationRunSummary } from "./upsertAutomationRunSummary";
 import type { Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 
@@ -34,6 +35,11 @@ export async function markAutomationRunStatus(
     ...(error === undefined ? {} : { error }),
     updatedAt,
   });
+  const updatedRun = await ctx.db.get(runDocumentId);
+
+  if (updatedRun) {
+    await upsertAutomationRunSummary(ctx, updatedRun);
+  }
 
   if (status === "completed" && run.status !== "completed") {
     await createCompletedRunNotification(ctx, {

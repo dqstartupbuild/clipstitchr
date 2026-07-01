@@ -25,9 +25,10 @@ export const get = query({
 
     return await ctx.db
       .query("avatarPreferences")
-      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-      .filter((q) => q.eq(q.field("productId"), undefined))
-      .first();
+      .withIndex("by_owner_product", (q) =>
+        q.eq("ownerId", ownerId).eq("productId", undefined),
+      )
+      .unique();
   },
 });
 

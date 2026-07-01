@@ -84,13 +84,13 @@ describe("dashboardSummary", () => {
       ],
     };
     const ctx = createCtx({
-      stitches: [{ take: [] }],
-      swipes: [{ take: [recentSwipe] }],
-      swiprBackgrounds: [
+      stitchCards: [{ take: [] }],
+      swipeCards: [{ take: [recentSwipe] }],
+      swiprBackgroundCards: [
         { unique: { id: "background_base" } },
         { unique: { id: "background_slide" } },
       ],
-      videoClips: [
+      videoClipCards: [
         { take: [] },
         { take: [] },
         { take: [] },
@@ -108,11 +108,11 @@ describe("dashboardSummary", () => {
       "background_base",
       "background_slide",
     ]);
-    expect(ctx.db.query).toHaveBeenCalledWith("swiprBackgrounds");
+    expect(ctx.db.query).toHaveBeenCalledWith("swiprBackgroundCards");
     expect(
       vi
         .mocked(ctx.db.query)
-        .mock.calls.filter(([table]) => table === "swiprBackgrounds"),
+        .mock.calls.filter(([table]) => table === "swiprBackgroundCards"),
     ).toHaveLength(2);
   });
 });

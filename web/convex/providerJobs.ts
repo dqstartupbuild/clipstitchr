@@ -6,6 +6,8 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { providerJobStatusValidator } from "./validators/providerJobStatus";
 import { providerJobTypeValidator } from "./validators/providerJobType";
+import { listActiveWorkerJobSummaries } from "./listActiveWorkerJobSummaries";
+import { upsertWorkerJobSummary } from "./upsertWorkerJobSummary";
 import { requestWorkerLaunch } from "./workerLaunch";
 
 const PROVIDER_JOB_MAX_ATTEMPTS = 3;
@@ -16,10 +18,10 @@ function clientJobFields(job: {
   error?: string;
   id: string;
   jobType: string;
-  mediaJobIds: string[];
+  mediaJobIds?: string[];
   outputAssetIds: string[];
-  progress: number;
-  providerJobIds: string[];
+  progress?: number;
+  providerJobIds?: string[];
   stage: string;
   status: string;
   updatedAt: string;
@@ -29,9 +31,9 @@ function clientJobFields(job: {
     jobType: job.jobType,
     status: job.status,
     stage: job.stage,
-    progress: job.progress,
-    providerJobIds: job.providerJobIds,
-    mediaJobIds: job.mediaJobIds,
+    progress: job.progress ?? 0,
+    providerJobIds: job.providerJobIds ?? [],
+    mediaJobIds: job.mediaJobIds ?? [],
     outputAssetIds: job.outputAssetIds,
     error: job.error,
     createdAt: job.createdAt,
@@ -59,25 +61,7 @@ export const listActive = query({
   args: {},
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const [queuedJobs, runningJobs] = await Promise.all([
-      ctx.db
-        .query("providerJobs")
-        .withIndex("by_owner_status_created", (q) =>
-          q.eq("ownerId", ownerId).eq("status", "queued"),
-        )
-        .order("desc")
-        .take(25),
-      ctx.db
-        .query("providerJobs")
-        .withIndex("by_owner_status_created", (q) =>
-          q.eq("ownerId", ownerId).eq("status", "running"),
-        )
-        .order("desc")
-        .take(25),
-    ]);
-    const jobs = [...queuedJobs, ...runningJobs].sort(
-      (left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt),
-    );
+    const jobs = await listActiveWorkerJobSummaries(ctx, ownerId, "provider");
 
     return jobs.map(clientJobFields);
   },
@@ -105,6 +89,8 @@ export const create = mutation({
       .unique();
 
     if (existing) {
+      await upsertWorkerJobSummary(ctx, "provider", existing);
+
       return clientJobFields(existing);
     }
 
@@ -123,6 +109,8 @@ export const create = mutation({
     if (!created) {
       throw new Error("Unable to create provider job.");
     }
+
+    await upsertWorkerJobSummary(ctx, "provider", created);
 
     await requestWorkerLaunch({
       ctx,
@@ -156,6 +144,8 @@ export const createFromMediaWorker = mutation({
       .unique();
 
     if (existing) {
+      await upsertWorkerJobSummary(ctx, "provider", existing);
+
       return clientJobFields(existing);
     }
 
@@ -174,6 +164,8 @@ export const createFromMediaWorker = mutation({
     if (!created) {
       throw new Error("Unable to create provider job.");
     }
+
+    await upsertWorkerJobSummary(ctx, "provider", created);
 
     await requestWorkerLaunch({
       ctx,
@@ -245,7 +237,13 @@ export const claimNextForProvider = mutation({
         updatedAt,
       });
 
-      return await ctx.db.get(job._id);
+      const reclaimedJob = await ctx.db.get(job._id);
+
+      if (reclaimedJob) {
+        await upsertWorkerJobSummary(ctx, "provider", reclaimedJob);
+      }
+
+      return reclaimedJob;
     }
 
     const queuedJobs = jobType
@@ -273,6 +271,11 @@ export const claimNextForProvider = mutation({
         error: "Provider job reached the retry limit.",
         updatedAt,
       });
+      const failedJob = await ctx.db.get(job._id);
+
+      if (failedJob) {
+        await upsertWorkerJobSummary(ctx, "provider", failedJob);
+      }
 
       return null;
     }
@@ -285,7 +288,13 @@ export const claimNextForProvider = mutation({
       updatedAt,
     });
 
-    return await ctx.db.get(job._id);
+    const claimedJob = await ctx.db.get(job._id);
+
+    if (claimedJob) {
+      await upsertWorkerJobSummary(ctx, "provider", claimedJob);
+    }
+
+    return claimedJob;
   },
 });
 
@@ -359,6 +368,11 @@ export const markProviderStatus = mutation({
       ...(status === "completed" ? { completedAt: updatedAt } : {}),
       updatedAt,
     });
+    const updatedJob = await ctx.db.get(job._id);
+
+    if (updatedJob) {
+      await upsertWorkerJobSummary(ctx, "provider", updatedJob);
+    }
 
     if (status === "queued") {
       await requestWorkerLaunch({
@@ -439,5 +453,10 @@ export const markMediaStatus = mutation({
       lockedUntil: undefined,
       updatedAt,
     });
+    const updatedJob = await ctx.db.get(job._id);
+
+    if (updatedJob) {
+      await upsertWorkerJobSummary(ctx, "provider", updatedJob);
+    }
   },
 });

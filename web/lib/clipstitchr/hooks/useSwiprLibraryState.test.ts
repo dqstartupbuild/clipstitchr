@@ -90,6 +90,7 @@ vi.mock("@/convex/_generated/api", () => ({
       addLibraryPackToAccount: "swiprBackgrounds.addLibraryPackToAccount",
       get: "swiprBackgrounds.get",
       list: "swiprBackgrounds.list",
+      listByIds: "swiprBackgrounds.listByIds",
       listGlobalPexels: "swiprBackgrounds.listGlobalPexels",
       removeFromLibraryPack: "swiprBackgrounds.removeFromLibraryPack",
       removeLibraryPack: "swiprBackgrounds.removeLibraryPack",
@@ -247,6 +248,10 @@ describe("useSwiprLibraryState", () => {
         ];
       }
 
+      if (queryId === "swiprBackgrounds.listByIds") {
+        return [];
+      }
+
       if (queryId === "swipes.list") {
         if (args?.postedStatus === "posted") {
           return [];
@@ -322,6 +327,9 @@ describe("useSwiprLibraryState", () => {
     expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", {
       postedStatus: "posted",
     });
+    expect(mocks.useQuery).toHaveBeenCalledWith("swiprBackgrounds.listByIds", {
+      ids: ["background_1"],
+    });
   });
 
   it("loads global Pexels backgrounds only on the Pexels Library tab", () => {
@@ -339,6 +347,10 @@ describe("useSwiprLibraryState", () => {
       {},
     );
     expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", "skip");
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      "swiprBackgrounds.listByIds",
+      "skip",
+    );
   });
 
   it("skips library queries while signed out", () => {
@@ -356,6 +368,10 @@ describe("useSwiprLibraryState", () => {
     );
     expect(mocks.useQuery).toHaveBeenCalledWith(
       "swiprBackgrounds.listGlobalPexels",
+      "skip",
+    );
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      "swiprBackgrounds.listByIds",
       "skip",
     );
     expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", "skip");

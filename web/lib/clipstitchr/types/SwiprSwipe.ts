@@ -6,6 +6,7 @@ import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridge
 export type SwiprSwipe = {
   id: string;
   name: string;
+  searchText?: string;
   productSourceType: SwiprProductSourceType;
   productSourceId: string;
   productContext: string;

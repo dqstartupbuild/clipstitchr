@@ -3,6 +3,7 @@ import { consumeAutomationBudget } from "./automationBudget";
 import { createAutomationRun } from "./automationCreateRun";
 import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
+import { markAutomationRunStatus } from "./markAutomationRunStatus";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
 import { defaultAutomationCliprVoiceId } from "./defaultAutomationCliprVoiceId";
@@ -10,6 +11,9 @@ import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForP
 import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
 import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
+import { getProductForOwner } from "./getProductForOwner";
+import { listProductsForOwnerByIds } from "./listProductsForOwnerByIds";
+import { listRecentAvatarPhotoAssets } from "./listRecentAvatarPhotoAssets";
 import { defaultAutomationCliprGenerationMode } from "../lib/clipstitchr/constants/defaultAutomationCliprGenerationMode";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { defaultCliprDurationSeconds } from "../lib/clipstitchr/constants/defaultCliprDurationSeconds";
@@ -20,7 +24,10 @@ import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow
 
 const AUTOMATION_CLIPR_ADD_MUSIC = false;
 const AUTOMATION_CLIPR_DURATION_SECONDS = defaultCliprDurationSeconds;
+const AUTOMATION_CLIPR_PRODUCT_PHOTO_SCAN_LIMIT = 20;
+const AUTOMATION_CLIPR_SELECTED_PRODUCT_LOOKUP_LIMIT = 20;
 const AUTOMATION_CLIPR_VISUAL_MODEL_ID = "kwaivgi/kling-v3-video";
+const AUTOMATION_CLIPR_AVATAR_PHOTO_SCAN_LIMIT = 50;
 
 export const planDaily = mutation({
   args: {
@@ -72,33 +79,43 @@ export const planDaily = mutation({
       return { runId, status: run.status, taskIds: [] };
     }
 
-    const products = await ctx.db
-      .query("products")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .collect();
     const selectedProductIds = new Set(
       productId ? [productId] : preferences.selectedProductIds,
     );
     const defaultProduct = await getDefaultProductForOwner(ctx, ownerId);
+    const selectedProducts =
+      !productId && preferences.productSelectionMode === "selected"
+        ? await listProductsForOwnerByIds(
+            ctx,
+            ownerId,
+            [...selectedProductIds],
+            AUTOMATION_CLIPR_SELECTED_PRODUCT_LOOKUP_LIMIT,
+          )
+        : [];
     const product = productId
-      ? products.find((candidate) => candidate.id === productId)
+      ? await getProductForOwner(ctx, ownerId, productId)
       : preferences.productSelectionMode === "selected"
-        ? products.find((candidate) => selectedProductIds.has(candidate.id))
-        : defaultProduct ?? products[0];
-    const defaultAvatar = await getDefaultAvatarForOwner(ctx, ownerId, productId);
+        ? selectedProducts[0]
+        : defaultProduct;
+    const defaultAvatar = await getDefaultAvatarForOwner(
+      ctx,
+      ownerId,
+      productId,
+    );
     const avatar = defaultAvatar;
-    const photos = await ctx.db
-      .query("photoAssets")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .collect();
+    const photos = avatar
+      ? await listRecentAvatarPhotoAssets(ctx, {
+          avatarId: avatar.id,
+          limit: productId
+            ? AUTOMATION_CLIPR_PRODUCT_PHOTO_SCAN_LIMIT
+            : AUTOMATION_CLIPR_AVATAR_PHOTO_SCAN_LIMIT,
+          ownerId,
+          productId,
+        })
+      : [];
     const avatarPhoto = avatar
-      ? photos.find(
-          (photo) =>
-            photo.avatarId === avatar.id &&
-            (!productId || photo.productId === productId) &&
-            photo.photoObject.contentType.startsWith("image/"),
+      ? photos.find((photo) =>
+          photo.photoObject.contentType.startsWith("image/"),
         )
       : undefined;
 
@@ -175,9 +192,9 @@ export const planDaily = mutation({
       }),
       createdAt: now,
     });
-    await ctx.db.patch(run._id, {
+    await markAutomationRunStatus(ctx, {
+      runDocumentId: run._id,
       status: "running",
-      startedAt: now,
       updatedAt: now,
     });
 

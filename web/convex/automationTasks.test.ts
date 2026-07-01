@@ -164,6 +164,7 @@ describe("automationTasks", () => {
         updatedAt: now,
       }),
     );
-    expect(ctx.db.get).not.toHaveBeenCalled();
+    expect(ctx.db.get).toHaveBeenCalledWith("task_doc");
+    expect(ctx.db.get).toHaveBeenCalledWith("run_doc");
   });
 });

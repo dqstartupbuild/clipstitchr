@@ -6,6 +6,7 @@ import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { createNotification } from "./createNotification";
+import { deleteStitchCard } from "./deleteStitchCard";
 import { getFirstStitchScoreUpdate } from "./getFirstStitchScoreUpdate";
 import { getReadLimitedPaginationOpts } from "./getReadLimitedPaginationOpts";
 import { getQuickEditWithRemoveRanges } from "./getQuickEditWithRemoveRanges";
@@ -14,6 +15,7 @@ import { getStitchNotificationCopy } from "./getStitchNotificationCopy";
 import { stitchCounts, stitchProductCounts } from "./aggregateCounts";
 import { normalizeQuickEditRemoveRanges } from "./normalizeQuickEditRemoveRanges";
 import { rateLimiter } from "./rateLimiter";
+import { upsertStitchCard } from "./upsertStitchCard";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { librarySortOrderValidator } from "./validators/librarySortOrder";
 import { quickEditCropValidator } from "./validators/quickEditCrop";
@@ -98,7 +100,7 @@ export const list = query({
     if (postedStatus === "active") {
       if (productFilterId) {
         return await ctx.db
-          .query("stitches")
+          .query("stitchCards")
           .withIndex("by_owner_product_is_posted_created", (q) =>
             q
               .eq("ownerId", ownerId)
@@ -110,7 +112,7 @@ export const list = query({
       }
 
       return await ctx.db
-        .query("stitches")
+        .query("stitchCards")
         .withIndex("by_owner_is_posted_created", (q) =>
           q.eq("ownerId", ownerId).eq("isPosted", undefined),
         )
@@ -121,7 +123,7 @@ export const list = query({
     if (postedStatus === "posted") {
       if (productFilterId) {
         return await ctx.db
-          .query("stitches")
+          .query("stitchCards")
           .withIndex("by_owner_product_is_posted_created", (q) =>
             q
               .eq("ownerId", ownerId)
@@ -133,7 +135,7 @@ export const list = query({
       }
 
       return await ctx.db
-        .query("stitches")
+        .query("stitchCards")
         .withIndex("by_owner_is_posted_created", (q) =>
           q.eq("ownerId", ownerId).eq("isPosted", true),
         )
@@ -143,7 +145,7 @@ export const list = query({
 
     if (productFilterId) {
       return await ctx.db
-        .query("stitches")
+        .query("stitchCards")
         .withIndex("by_owner_product_created", (q) =>
           q.eq("ownerId", ownerId).eq("productId", productFilterId),
         )
@@ -152,7 +154,7 @@ export const list = query({
     }
 
     return await ctx.db
-      .query("stitches")
+      .query("stitchCards")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order(sortOrder === "oldest" ? "asc" : "desc")
       .paginate(readLimitedPaginationOpts);
@@ -218,9 +220,14 @@ export const save = mutation({
 
       if (updatedStitch) {
         await Promise.all([
-        stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
-        stitchProductCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
-      ]);
+          stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
+          stitchProductCounts.replaceOrInsert(
+            ctx,
+            existingStitch,
+            updatedStitch,
+          ),
+          upsertStitchCard(ctx, updatedStitch),
+        ]);
       }
 
       return existingStitch._id;
@@ -231,9 +238,10 @@ export const save = mutation({
 
     if (insertedStitch) {
       await Promise.all([
-      stitchCounts.insertIfDoesNotExist(ctx, insertedStitch),
-      stitchProductCounts.insertIfDoesNotExist(ctx, insertedStitch),
-    ]);
+        stitchCounts.insertIfDoesNotExist(ctx, insertedStitch),
+        stitchProductCounts.insertIfDoesNotExist(ctx, insertedStitch),
+        upsertStitchCard(ctx, insertedStitch),
+      ]);
     }
 
     const notificationCopy = getStitchNotificationCopy(args);
@@ -311,9 +319,14 @@ export const saveFromAutomation = mutation({
 
       if (updatedStitch) {
         await Promise.all([
-        stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
-        stitchProductCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
-      ]);
+          stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
+          stitchProductCounts.replaceOrInsert(
+            ctx,
+            existingStitch,
+            updatedStitch,
+          ),
+          upsertStitchCard(ctx, updatedStitch),
+        ]);
       }
 
       return existingStitch._id;
@@ -324,9 +337,10 @@ export const saveFromAutomation = mutation({
 
     if (insertedStitch) {
       await Promise.all([
-      stitchCounts.insertIfDoesNotExist(ctx, insertedStitch),
-      stitchProductCounts.insertIfDoesNotExist(ctx, insertedStitch),
-    ]);
+        stitchCounts.insertIfDoesNotExist(ctx, insertedStitch),
+        stitchProductCounts.insertIfDoesNotExist(ctx, insertedStitch),
+        upsertStitchCard(ctx, insertedStitch),
+      ]);
     }
 
     return stitchId;
@@ -407,9 +421,14 @@ export const saveFromMediaWorker = mutation({
 
       if (updatedStitch) {
         await Promise.all([
-        stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
-        stitchProductCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
-      ]);
+          stitchCounts.replaceOrInsert(ctx, existingStitch, updatedStitch),
+          stitchProductCounts.replaceOrInsert(
+            ctx,
+            existingStitch,
+            updatedStitch,
+          ),
+          upsertStitchCard(ctx, updatedStitch),
+        ]);
       }
 
       return existingStitch._id;
@@ -420,9 +439,10 @@ export const saveFromMediaWorker = mutation({
 
     if (insertedStitch) {
       await Promise.all([
-      stitchCounts.insertIfDoesNotExist(ctx, insertedStitch),
-      stitchProductCounts.insertIfDoesNotExist(ctx, insertedStitch),
-    ]);
+        stitchCounts.insertIfDoesNotExist(ctx, insertedStitch),
+        stitchProductCounts.insertIfDoesNotExist(ctx, insertedStitch),
+        upsertStitchCard(ctx, insertedStitch),
+      ]);
     }
 
     return stitchId;
@@ -462,6 +482,7 @@ export const updatePoster = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
       ]);
     }
   },
@@ -502,6 +523,7 @@ export const updateRenderedVideo = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
       ]);
     }
   },
@@ -542,6 +564,7 @@ export const updateMusic = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
       ]);
     }
   },
@@ -596,7 +619,9 @@ export const updateSourceSettings = mutation({
     }
 
     if (stitch.mode === "longr" && stitch.sequenceSegments?.length) {
-      throw new Error("Longr stitches do not support UGC and demo source edits.");
+      throw new Error(
+        "Longr stitches do not support UGC and demo source edits.",
+      );
     }
 
     const [ugcClip, demoClip] = await Promise.all([
@@ -651,6 +676,7 @@ export const updateSourceSettings = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
       ]);
     }
   },
@@ -674,16 +700,14 @@ function getQuickEditWithCrop(
         summary?: string;
       }
     | undefined,
-  crop:
-    | {
-        mode: "smart-9x16";
-        removeBlackBars?: boolean;
-        positionX?: number;
-        positionY?: number;
-        scale?: number;
-        reason?: string;
-      }
-    | null,
+  crop: {
+    mode: "smart-9x16";
+    removeBlackBars?: boolean;
+    positionX?: number;
+    positionY?: number;
+    scale?: number;
+    reason?: string;
+  } | null,
 ) {
   if (crop) {
     return {
@@ -757,6 +781,7 @@ export const updateSourceCrop = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
       ]);
     }
   },
@@ -792,10 +817,13 @@ export const updateSourceCuts = mutation({
     }
 
     if (stitch.mode === "longr" && stitch.sequenceSegments?.length) {
-      throw new Error("Longr stitches do not support UGC and demo source cuts.");
+      throw new Error(
+        "Longr stitches do not support UGC and demo source cuts.",
+      );
     }
 
-    const sourceClipId = source === "ugc" ? stitch.ugcClipId : stitch.demoClipId;
+    const sourceClipId =
+      source === "ugc" ? stitch.ugcClipId : stitch.demoClipId;
     const sourceClip = await ctx.db
       .query("videoClips")
       .withIndex("by_owner_id", (q) =>
@@ -844,6 +872,7 @@ export const updateSourceCuts = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
       ]);
     }
   },
@@ -857,7 +886,10 @@ export const updateTextOverlay = mutation({
     textOverlay: v.optional(v.union(textOverlayValidator, v.null())),
     textOverlays: v.optional(textOverlaysValidator),
   },
-  handler: async (ctx, { id, posterObject, posterVersion, textOverlay, textOverlays }) => {
+  handler: async (
+    ctx,
+    { id, posterObject, posterVersion, textOverlay, textOverlays },
+  ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
     await rateLimiter.limit(ctx, "convexMetadataUpdate", {
@@ -900,6 +932,7 @@ export const updateTextOverlay = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
       ]);
     }
   },
@@ -937,6 +970,7 @@ export const updateScore = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
       ]);
     }
   },
@@ -976,6 +1010,7 @@ export const updateScoreFromProvider = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
       ]);
     }
   },
@@ -1076,6 +1111,7 @@ export const applyQuickEdit = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
       ]);
     }
   },
@@ -1131,6 +1167,7 @@ export const resetQuickEdit = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
       ]);
     }
   },
@@ -1161,6 +1198,11 @@ export const updateSocialCaption = mutation({
     await ctx.db.patch(stitch._id, {
       socialCaption: socialCaption?.trim() || undefined,
     });
+    const updatedStitch = await ctx.db.get(stitch._id);
+
+    if (updatedStitch) {
+      await upsertStitchCard(ctx, updatedStitch);
+    }
   },
 });
 
@@ -1196,6 +1238,7 @@ export const updatePostedStatus = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
       ]);
     }
   },
@@ -1240,6 +1283,7 @@ export const addPostBridgePost = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
       ]);
     }
   },
@@ -1270,6 +1314,7 @@ export const remove = mutation({
     await Promise.all([
       stitchCounts.deleteIfExists(ctx, stitch),
       stitchProductCounts.deleteIfExists(ctx, stitch),
+      deleteStitchCard(ctx, stitch),
     ]);
     return stitch;
   },

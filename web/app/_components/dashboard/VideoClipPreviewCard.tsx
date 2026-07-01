@@ -113,6 +113,7 @@ export function VideoClipPreviewCard({
   ].join(":");
   const loadedClip =
     loadedClipState?.cacheKey === clipCacheKey ? loadedClipState.clip : null;
+  const displayClip = loadedClip ?? clip;
   const videoUrl = useObjectUrl(loadedClip?.blob);
   const loadPosterBlob = useCallback(
     () => onLoadPoster?.(clip.id) ?? Promise.resolve(null),
@@ -146,14 +147,21 @@ export function VideoClipPreviewCard({
     }
   };
   const openDetails = (options?: OpenVideoClipDetailsOptions) => {
-    setDetailsMode(
-      options?.showEditDialog
-        ? "edit"
-        : options?.showControlsEditor
-          ? "controls"
-          : "details",
-    );
-    void loadFullClip();
+    const nextMode = options?.showEditDialog
+      ? "edit"
+      : options?.showControlsEditor
+        ? "controls"
+        : "details";
+
+    if (nextMode === "details") {
+      setDetailsMode(nextMode);
+      void loadFullClip();
+      return;
+    }
+
+    void loadFullClip().finally(() => {
+      setDetailsMode(nextMode);
+    });
   };
   const closeDetails = () => {
     setDetailsMode(null);
@@ -243,11 +251,13 @@ export function VideoClipPreviewCard({
       {detailsMode === "details" || detailsMode === "controls" ? (
         <VideoClipDetailsDialog
           actionItems={actionItems}
-          clip={clip}
+          clip={displayClip}
           productName={productName}
           initialControlsEditorOpen={detailsMode === "controls"}
           isLoading={isClipLoading}
-          musicEditor={detailsMode === "controls" ? cliprMusicEditor : undefined}
+          musicEditor={
+            detailsMode === "controls" ? cliprMusicEditor : undefined
+          }
           posterUrl={posterUrl}
           quickEdit={quickEdit}
           cutEditor={detailsMode === "controls" ? cutEditor : undefined}
@@ -261,7 +271,7 @@ export function VideoClipPreviewCard({
       ) : null}
       {detailsMode === "edit" && metadataEditor ? (
         <VideoClipEditDialog
-          clip={clip}
+          clip={displayClip}
           productName={productName}
           products={metadataEditor.products}
           isLoading={isClipLoading}

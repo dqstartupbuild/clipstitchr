@@ -1,5 +1,6 @@
 import type { MutationCtx } from "./_generated/server";
 import { getAutomationToolDisabledReason } from "./getAutomationToolDisabledReason";
+import { upsertAutomationTaskSummary } from "./upsertAutomationTaskSummary";
 
 type AutomationTaskType =
   | "avatar-photo"
@@ -55,6 +56,8 @@ export async function createAutomationTask(
     .unique();
 
   if (existing) {
+    await upsertAutomationTaskSummary(ctx, existing);
+
     return existing;
   }
 
@@ -81,6 +84,8 @@ export async function createAutomationTask(
   if (!inserted) {
     throw new Error("Failed to create automation task.");
   }
+
+  await upsertAutomationTaskSummary(ctx, inserted);
 
   return inserted;
 }

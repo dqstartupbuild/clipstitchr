@@ -35,9 +35,10 @@ export async function createAutomaticStitchTemplateFromAcceptedHookPlan({
 
   const existingTemplate = await ctx.db
     .query("stitchTemplates")
-    .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-    .filter((q) => q.eq(q.field("sourceStitchId"), stitch.id))
-    .first();
+    .withIndex("by_owner_source_stitch", (q) =>
+      q.eq("ownerId", ownerId).eq("sourceStitchId", stitch.id),
+    )
+    .unique();
 
   if (existingTemplate) {
     return existingTemplate.id;

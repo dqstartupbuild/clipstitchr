@@ -11,6 +11,7 @@ import type { Id } from "./_generated/dataModel";
 import { mutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
+import { getProductForOwner } from "./getProductForOwner";
 import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForProduct";
 import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
 import { createQuickEditSuggestionsFromMetadata } from "./createQuickEditSuggestionsFromMetadata";
@@ -34,7 +35,18 @@ import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow
 import { recordStitchrBatchPairHistory } from "./recordStitchrBatchPairHistory";
 import { getIsStitchrBatchRunId } from "./stitchrBatchRunId";
 import { markAutomationRunStatus } from "./markAutomationRunStatus";
+import { listProductsForOwnerByIds } from "./listProductsForOwnerByIds";
+import { listRecentVideoClipsByLibraryKind } from "./listRecentVideoClipsByLibraryKind";
 import { requestWorkerLaunch } from "./workerLaunch";
+import { upsertAutomationRunSummary } from "./upsertAutomationRunSummary";
+import { upsertAutomationTaskSummary } from "./upsertAutomationTaskSummary";
+
+const AUTOMATION_STITCHR_COMPLETION_TASK_SCAN_LIMIT =
+  automationDailyLimits.stitchr + 20;
+const AUTOMATION_STITCHR_HISTORY_SCAN_LIMIT = 1000;
+const AUTOMATION_STITCHR_SELECTED_PRODUCT_LOOKUP_LIMIT = 20;
+const AUTOMATION_STITCHR_SOURCE_CLIP_SCAN_LIMIT = 240;
+const AUTOMATION_STITCHR_TEMPLATE_LOOKUP_LIMIT = 20;
 
 function createRunId(
   ownerId: string,
@@ -92,6 +104,8 @@ async function createRun(
     .unique();
 
   if (existing) {
+    await upsertAutomationRunSummary(ctx, existing);
+
     return existing;
   }
 
@@ -116,6 +130,8 @@ async function createRun(
     throw new Error("Failed to create Stitchr automation run.");
   }
 
+  await upsertAutomationRunSummary(ctx, inserted);
+
   return inserted;
 }
 
@@ -125,9 +141,9 @@ async function markRunSkipped(
   reason: string,
   updatedAt: string,
 ) {
-  await ctx.db.patch(runDocumentId, {
+  await markAutomationRunStatus(ctx, {
+    runDocumentId,
     status: "skipped",
-    skippedAt: updatedAt,
     error: reason,
     updatedAt,
   });
@@ -169,7 +185,10 @@ export const planDaily = mutation({
       };
     }
 
-    if (!preferences?.enabled || !preferences.enabledTools.includes("stitchr")) {
+    if (
+      !preferences?.enabled ||
+      !preferences.enabledTools.includes("stitchr")
+    ) {
       return {
         runId: createRunId(ownerId, automationDate, productId),
         status: "skipped",
@@ -190,7 +209,9 @@ export const planDaily = mutation({
         )
       : defaultAutomationStitchrColorChoice;
     const stitchrTextStrokeColorChoice = preferences
-      ? getAutomationStitchrColorChoice(preferences.stitchrTextStrokeColorChoice)
+      ? getAutomationStitchrColorChoice(
+          preferences.stitchrTextStrokeColorChoice,
+        )
       : defaultAutomationStitchrColorChoice;
     const stitchrGenerationCount = getAutomationGenerationCount(
       preferences?.stitchrGenerationCount ?? defaultAutomationGenerationCount,
@@ -228,24 +249,28 @@ export const planDaily = mutation({
       };
     }
 
-    const clips = await ctx.db
-      .query("videoClips")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .collect();
-    const products = await ctx.db
-      .query("products")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .collect();
-    const defaultProduct = await getDefaultProductForOwner(ctx, ownerId);
-    const productClips = productId
-      ? clips.filter(
+    const [allUgcClips, allDemoClips, defaultProduct] = await Promise.all([
+      listRecentVideoClipsByLibraryKind(ctx, {
+        libraryKind: "ugc",
+        limit: AUTOMATION_STITCHR_SOURCE_CLIP_SCAN_LIMIT,
+        ownerId,
+      }),
+      listRecentVideoClipsByLibraryKind(ctx, {
+        libraryKind: "demo",
+        limit: AUTOMATION_STITCHR_SOURCE_CLIP_SCAN_LIMIT,
+        ownerId,
+      }),
+      getDefaultProductForOwner(ctx, ownerId),
+    ]);
+    const ugcClips = productId
+      ? allUgcClips.filter(
           (clip) =>
             clip.productId === productId || getVideoClipIsAccountWideUgc(clip),
         )
-      : clips;
-    const ugcClips = productClips.filter((clip) => clip.clipType === "ugc");
-    const demoClips = productClips.filter((clip) => clip.clipType === "demo");
+      : allUgcClips;
+    const demoClips = productId
+      ? allDemoClips.filter((clip) => clip.productId === productId)
+      : allDemoClips;
 
     if (ugcClips.length === 0 || demoClips.length === 0) {
       await markRunSkipped(
@@ -267,18 +292,31 @@ export const planDaily = mutation({
     const selectedProductIds = new Set(
       productId ? [productId] : preferences.selectedProductIds,
     );
-    const productById = new Map(products.map((product) => [product.id, product]));
-    const selectedProducts = products.filter((product) =>
-      selectedProductIds.has(product.id),
-    );
+    const explicitProduct = productId
+      ? await getProductForOwner(ctx, ownerId, productId)
+      : null;
+    const selectedProducts =
+      !productId && preferences.productSelectionMode === "selected"
+        ? await listProductsForOwnerByIds(
+            ctx,
+            ownerId,
+            [...selectedProductIds],
+            AUTOMATION_STITCHR_SELECTED_PRODUCT_LOOKUP_LIMIT,
+          )
+        : [];
     const defaultProducts = defaultProduct ? [defaultProduct] : [];
     const eligibleProducts =
-      (productId || preferences.productSelectionMode === "selected") &&
-      selectedProducts.length > 0
-        ? selectedProducts
-        : defaultProducts.length > 0
-          ? defaultProducts
-        : products;
+      productId && explicitProduct
+        ? [explicitProduct]
+        : preferences.productSelectionMode === "selected" &&
+            selectedProducts.length > 0
+          ? selectedProducts
+          : defaultProducts.length > 0
+            ? defaultProducts
+            : [];
+    const productById = new Map(
+      eligibleProducts.map((product) => [product.id, product]),
+    );
     const defaultProductIds =
       productId || preferences.productSelectionMode === "selected"
         ? new Set<string>()
@@ -291,7 +329,8 @@ export const planDaily = mutation({
     const productFilteredDemos =
       demoProductFilterIds.size > 0
         ? demoClips.filter(
-            (demo) => demo.productId && demoProductFilterIds.has(demo.productId),
+            (demo) =>
+              demo.productId && demoProductFilterIds.has(demo.productId),
           )
         : demoClips;
     const eligibleDemos =
@@ -303,7 +342,8 @@ export const planDaily = mutation({
     const histories = await ctx.db
       .query("automationPairHistory")
       .withIndex("by_owner_last_used", (q) => q.eq("ownerId", ownerId))
-      .collect();
+      .order("desc")
+      .take(AUTOMATION_STITCHR_HISTORY_SCAN_LIMIT);
     const historyByPair = new Map(
       histories.map((history) => [
         `${history.ugcClipId}:${history.demoClipId}`,
@@ -321,7 +361,10 @@ export const planDaily = mutation({
         ugcLastUsedAt.set(history.ugcClipId, history.lastUsedAt);
       }
 
-      if (!currentDemoLastUsedAt || history.lastUsedAt > currentDemoLastUsedAt) {
+      if (
+        !currentDemoLastUsedAt ||
+        history.lastUsedAt > currentDemoLastUsedAt
+      ) {
         demoLastUsedAt.set(history.demoClipId, history.lastUsedAt);
       }
     }
@@ -378,14 +421,23 @@ export const planDaily = mutation({
     const allocatedTemplateIds = new Set(
       stitchrTemplateAllocations.map((allocation) => allocation.templateId),
     );
-    const stitchTemplates = allocatedTemplateIds.size
-      ? (
-          await ctx.db
-            .query("stitchTemplates")
-            .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-            .collect()
-        ).filter((template) => allocatedTemplateIds.has(template.id))
-      : [];
+    const stitchTemplates = [];
+
+    for (const templateId of [...allocatedTemplateIds].slice(
+      0,
+      AUTOMATION_STITCHR_TEMPLATE_LOOKUP_LIMIT,
+    )) {
+      const template = await ctx.db
+        .query("stitchTemplates")
+        .withIndex("by_owner_id", (q) =>
+          q.eq("ownerId", ownerId).eq("id", templateId),
+        )
+        .unique();
+
+      if (template) {
+        stitchTemplates.push(template);
+      }
+    }
     const stitchTemplateById = new Map(
       stitchTemplates.map((template) => [template.id, template]),
     );
@@ -470,8 +522,12 @@ export const planDaily = mutation({
               `${ownerId}:${productScopeKey}:${automationDate}:stitchr:${index + 1}:${ugc.id}:${demo.id}:stroke`,
             )
           : undefined);
-      const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(ugc.quickEdit);
-      const demoQuickEdit = createQuickEditSuggestionsFromMetadata(demo.quickEdit);
+      const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(
+        ugc.quickEdit,
+      );
+      const demoQuickEdit = createQuickEditSuggestionsFromMetadata(
+        demo.quickEdit,
+      );
       const ugcOverlayText = getQuickEditOverlayText({
         quickEdit: ugc.quickEdit,
       });
@@ -479,7 +535,7 @@ export const planDaily = mutation({
         quickEdit: demo.quickEdit,
       });
 
-      await ctx.db.insert("automationTasks", {
+      const insertedTaskId = await ctx.db.insert("automationTasks", {
         ownerId,
         productId,
         id: taskId,
@@ -521,7 +577,8 @@ export const planDaily = mutation({
           demoDuration: demo.duration,
           ugcHasAudio: ugc.hasAudio,
           demoHasAudio: demo.hasAudio,
-          ugcTrimRange: ugc.defaultTrimRange ?? createDefaultTrimRange(ugc.duration),
+          ugcTrimRange:
+            ugc.defaultTrimRange ?? createDefaultTrimRange(ugc.duration),
           demoTrimRange:
             demo.defaultTrimRange ?? createDefaultTrimRange(demo.duration),
           ugcVideoObject: ugc.videoObject,
@@ -564,12 +621,18 @@ export const planDaily = mutation({
         createdAt: now,
         updatedAt: now,
       });
+      const insertedTask = await ctx.db.get(insertedTaskId);
+
+      if (insertedTask) {
+        await upsertAutomationTaskSummary(ctx, insertedTask);
+      }
+
       taskIds.push(taskId);
     }
 
-    await ctx.db.patch(run._id, {
+    await markAutomationRunStatus(ctx, {
+      runDocumentId: run._id,
       status: "running",
-      startedAt: now,
       updatedAt: now,
     });
 
@@ -619,8 +682,9 @@ export const recordOutput = mutation({
 
     const task = await ctx.db
       .query("automationTasks")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .filter((q) => q.eq(q.field("id"), taskId))
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", taskId),
+      )
       .unique();
 
     if (!task) {
@@ -633,6 +697,11 @@ export const recordOutput = mutation({
           mediaJobIds: [...task.mediaJobIds, mediaJobId],
           updatedAt: completedAt,
         });
+        const updatedTask = await ctx.db.get(task._id);
+
+        if (updatedTask) {
+          await upsertAutomationTaskSummary(ctx, updatedTask);
+        }
       }
 
       return;
@@ -698,6 +767,11 @@ export const recordOutput = mutation({
       completedAt,
       updatedAt: completedAt,
     });
+    const updatedTask = await ctx.db.get(task._id);
+
+    if (updatedTask) {
+      await upsertAutomationTaskSummary(ctx, updatedTask);
+    }
 
     await createAutomaticStitchTemplateFromAcceptedHookStitch({
       ctx,
@@ -707,9 +781,9 @@ export const recordOutput = mutation({
     }).catch(() => null);
 
     const runTasks = await ctx.db
-      .query("automationTasks")
+      .query("automationTaskSummaries")
       .withIndex("by_run", (q) => q.eq("runId", task.runId))
-      .collect();
+      .take(AUTOMATION_STITCHR_COMPLETION_TASK_SCAN_LIMIT);
     const allTasksCompleted = runTasks.every((runTask) =>
       runTask.id === task.id ? true : runTask.status === "completed",
     );
@@ -774,8 +848,9 @@ export const recordOutputFromMediaWorker = mutation({
 
     const task = await ctx.db
       .query("automationTasks")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .filter((q) => q.eq(q.field("id"), taskId))
+      .withIndex("by_owner_id", (q) =>
+        q.eq("ownerId", ownerId).eq("id", taskId),
+      )
       .unique();
 
     if (!task) {
@@ -788,6 +863,11 @@ export const recordOutputFromMediaWorker = mutation({
           mediaJobIds: [...task.mediaJobIds, mediaJobId],
           updatedAt: completedAt,
         });
+        const updatedTask = await ctx.db.get(task._id);
+
+        if (updatedTask) {
+          await upsertAutomationTaskSummary(ctx, updatedTask);
+        }
       }
 
       return;
@@ -853,6 +933,11 @@ export const recordOutputFromMediaWorker = mutation({
       completedAt,
       updatedAt: completedAt,
     });
+    const updatedTask = await ctx.db.get(task._id);
+
+    if (updatedTask) {
+      await upsertAutomationTaskSummary(ctx, updatedTask);
+    }
 
     await createAutomaticStitchTemplateFromAcceptedHookStitch({
       ctx,
@@ -862,9 +947,9 @@ export const recordOutputFromMediaWorker = mutation({
     }).catch(() => null);
 
     const runTasks = await ctx.db
-      .query("automationTasks")
+      .query("automationTaskSummaries")
       .withIndex("by_run", (q) => q.eq("runId", task.runId))
-      .collect();
+      .take(AUTOMATION_STITCHR_COMPLETION_TASK_SCAN_LIMIT);
     const allTasksCompleted = runTasks.every((runTask) =>
       runTask.id === task.id ? true : runTask.status === "completed",
     );

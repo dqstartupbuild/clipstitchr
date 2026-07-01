@@ -2,12 +2,13 @@ import type { Doc } from "@/convex/_generated/dataModel";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 
 export function createSwiprSwipeFromConvexDocument(
-  swipe: Doc<"swipes">,
+  swipe: Doc<"swipes"> | Doc<"swipeCards">,
   posterBlob?: Blob,
 ): SwiprSwipe {
   return {
     id: swipe.id,
     name: swipe.name,
+    searchText: "searchText" in swipe ? swipe.searchText : undefined,
     productSourceType: swipe.productSourceType,
     productSourceId: swipe.productSourceId,
     productContext: swipe.productContext,
@@ -16,7 +17,7 @@ export function createSwiprSwipeFromConvexDocument(
     caption: swipe.caption,
     description: swipe.description,
     hashtags: swipe.hashtags,
-    rationale: swipe.rationale,
+    rationale: "rationale" in swipe ? swipe.rationale : undefined,
     socialCaption: swipe.socialCaption,
     slides: swipe.slides,
     posterObject: swipe.posterObject,

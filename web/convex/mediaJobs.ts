@@ -7,6 +7,8 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { mediaJobStatusValidator } from "./validators/mediaJobStatus";
 import { mediaJobTypeValidator } from "./validators/mediaJobType";
+import { listActiveWorkerJobSummaries } from "./listActiveWorkerJobSummaries";
+import { upsertWorkerJobSummary } from "./upsertWorkerJobSummary";
 import { requestWorkerLaunch } from "./workerLaunch";
 
 const mediaMaxJobAttempts = 3;
@@ -39,25 +41,7 @@ export const listActive = query({
   args: {},
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
-    const [queuedJobs, runningJobs] = await Promise.all([
-      ctx.db
-        .query("mediaJobs")
-        .withIndex("by_owner_status_created", (q) =>
-          q.eq("ownerId", ownerId).eq("status", "queued"),
-        )
-        .order("desc")
-        .take(25),
-      ctx.db
-        .query("mediaJobs")
-        .withIndex("by_owner_status_created", (q) =>
-          q.eq("ownerId", ownerId).eq("status", "running"),
-        )
-        .order("desc")
-        .take(25),
-    ]);
-    const jobs = [...queuedJobs, ...runningJobs].sort(
-      (left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt),
-    );
+    const jobs = await listActiveWorkerJobSummaries(ctx, ownerId, "media");
 
     return jobs.map(clientJobFields);
   },
@@ -86,6 +70,8 @@ export const createUploadNormalization = mutation({
       .unique();
 
     if (existing) {
+      await upsertWorkerJobSummary(ctx, "media", existing);
+
       return existing;
     }
 
@@ -107,6 +93,8 @@ export const createUploadNormalization = mutation({
     if (!mediaJob) {
       throw new Error("Unable to create media job.");
     }
+
+    await upsertWorkerJobSummary(ctx, "media", mediaJob);
 
     await requestWorkerLaunch({
       ctx,
@@ -141,6 +129,8 @@ export const createCliprFinalizationFromAutomation = mutation({
       .unique();
 
     if (existing) {
+      await upsertWorkerJobSummary(ctx, "media", existing);
+
       return existing;
     }
 
@@ -162,6 +152,8 @@ export const createCliprFinalizationFromAutomation = mutation({
     if (!mediaJob) {
       throw new Error("Unable to create media job.");
     }
+
+    await upsertWorkerJobSummary(ctx, "media", mediaJob);
 
     await requestWorkerLaunch({
       ctx,
@@ -196,6 +188,8 @@ export const createCliprFinalizationFromProvider = mutation({
       .unique();
 
     if (existing) {
+      await upsertWorkerJobSummary(ctx, "media", existing);
+
       return existing;
     }
 
@@ -217,6 +211,8 @@ export const createCliprFinalizationFromProvider = mutation({
     if (!mediaJob) {
       throw new Error("Unable to create media job.");
     }
+
+    await upsertWorkerJobSummary(ctx, "media", mediaJob);
 
     await requestWorkerLaunch({
       ctx,
@@ -251,6 +247,8 @@ export const createSwaprFinalizationFromAutomation = mutation({
       .unique();
 
     if (existing) {
+      await upsertWorkerJobSummary(ctx, "media", existing);
+
       return existing;
     }
 
@@ -272,6 +270,8 @@ export const createSwaprFinalizationFromAutomation = mutation({
     if (!mediaJob) {
       throw new Error("Unable to create media job.");
     }
+
+    await upsertWorkerJobSummary(ctx, "media", mediaJob);
 
     await requestWorkerLaunch({
       ctx,
@@ -306,6 +306,8 @@ export const createSwaprFinalizationFromProvider = mutation({
       .unique();
 
     if (existing) {
+      await upsertWorkerJobSummary(ctx, "media", existing);
+
       return existing;
     }
 
@@ -327,6 +329,8 @@ export const createSwaprFinalizationFromProvider = mutation({
     if (!mediaJob) {
       throw new Error("Unable to create media job.");
     }
+
+    await upsertWorkerJobSummary(ctx, "media", mediaJob);
 
     await requestWorkerLaunch({
       ctx,
@@ -382,8 +386,14 @@ export const createStitchrDraftFinalizationFromProvider = mutation({
           worker: "media",
         });
 
-        return (await ctx.db.get(existing._id)) ?? existing;
+        const retriedJob = (await ctx.db.get(existing._id)) ?? existing;
+
+        await upsertWorkerJobSummary(ctx, "media", retriedJob);
+
+        return retriedJob;
       }
+
+      await upsertWorkerJobSummary(ctx, "media", existing);
 
       return existing;
     }
@@ -407,6 +417,8 @@ export const createStitchrDraftFinalizationFromProvider = mutation({
       throw new Error("Unable to create media job.");
     }
 
+    await upsertWorkerJobSummary(ctx, "media", mediaJob);
+
     await requestWorkerLaunch({
       ctx,
       now: createdAt,
@@ -425,7 +437,10 @@ export const claimNext = mutation({
     updatedAt: v.string(),
     jobType: v.optional(mediaJobTypeValidator),
   },
-  handler: async (ctx, { secret, workerId, lockedUntil, updatedAt, jobType }) => {
+  handler: async (
+    ctx,
+    { secret, workerId, lockedUntil, updatedAt, jobType },
+  ) => {
     assertMediaWorkerSecret(secret);
 
     const matchesJobType = (candidate: { jobType: string }) =>
@@ -486,6 +501,11 @@ export const claimNext = mutation({
         error: "Media job reached the retry limit.",
         updatedAt,
       });
+      const failedJob = await ctx.db.get(job._id);
+
+      if (failedJob) {
+        await upsertWorkerJobSummary(ctx, "media", failedJob);
+      }
 
       return null;
     }
@@ -499,7 +519,13 @@ export const claimNext = mutation({
       updatedAt,
     });
 
-    return await ctx.db.get(job._id);
+    const claimedJob = await ctx.db.get(job._id);
+
+    if (claimedJob) {
+      await upsertWorkerJobSummary(ctx, "media", claimedJob);
+    }
+
+    return claimedJob;
   },
 });
 
@@ -516,16 +542,7 @@ export const markStatus = mutation({
   },
   handler: async (
     ctx,
-    {
-      secret,
-      ownerId,
-      id,
-      status,
-      stage,
-      error,
-      outputAssetId,
-      updatedAt,
-    },
+    { secret, ownerId, id, status, stage, error, outputAssetId, updatedAt },
   ) => {
     assertMediaWorkerSecret(secret);
 
@@ -554,6 +571,11 @@ export const markStatus = mutation({
       ...(error === undefined ? {} : { error }),
       updatedAt,
     });
+    const updatedJob = await ctx.db.get(job._id);
+
+    if (updatedJob) {
+      await upsertWorkerJobSummary(ctx, "media", updatedJob);
+    }
   },
 });
 

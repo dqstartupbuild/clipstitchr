@@ -11,10 +11,14 @@ export function filterClipsBySearchQuery(
     return clips;
   }
 
-  return clips.filter((clip) =>
-    getAssetSearchText({
-      ...clip,
-      tags: [clip.clipType, ...(clip.tags ?? [])],
-    }).includes(normalizedSearchQuery),
-  );
+  return clips.filter((clip) => {
+    const searchText =
+      clip.searchText ??
+      getAssetSearchText({
+        ...clip,
+        tags: [clip.clipType, ...(clip.tags ?? [])],
+      });
+
+    return searchText.toLowerCase().includes(normalizedSearchQuery);
+  });
 }

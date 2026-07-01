@@ -15,8 +15,10 @@ export async function createAutomaticStitchTemplateFromAcceptedHookStitch({
 }) {
   const acceptedHookPlans = await ctx.db
     .query("stitchrHookPlans")
-    .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-    .filter((q) => q.eq(q.field("stitchId"), stitchId))
+    .withIndex("by_owner_stitch_created", (q) =>
+      q.eq("ownerId", ownerId).eq("stitchId", stitchId),
+    )
+    .order("desc")
     .take(10);
   const acceptedPlan = acceptedHookPlans.find((plan) =>
     Boolean(getAcceptedHookTextFromPlan(plan)),

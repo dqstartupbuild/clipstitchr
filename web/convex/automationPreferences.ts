@@ -125,12 +125,6 @@ export const save = mutation({
     const ownerId = await getAuthenticatedOwnerId(ctx);
     await assertProductBelongsToOwner(ctx, ownerId, args.productId);
 
-    const ownerPreferences = args.productId
-      ? []
-      : await ctx.db
-          .query("automationPreferences")
-          .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-          .collect();
     const existing = args.productId
       ? await ctx.db
           .query("automationPreferences")
@@ -138,7 +132,12 @@ export const save = mutation({
             q.eq("ownerId", ownerId).eq("productId", args.productId),
           )
           .unique()
-      : (ownerPreferences.find((preference) => !preference.productId) ?? null);
+      : await ctx.db
+          .query("automationPreferences")
+          .withIndex("by_owner_product", (q) =>
+            q.eq("ownerId", ownerId).eq("productId", undefined),
+          )
+          .unique();
 
     await rateLimiter.limit(
       ctx,
@@ -166,15 +165,23 @@ export const save = mutation({
       ),
     );
     const ownedStitchTemplateIds = requestedTemplateIds.size
-      ? new Set(
-          (
-            await ctx.db
-              .query("stitchTemplates")
-              .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-              .collect()
-          ).map((template) => template.id),
-        )
+      ? new Set<string>()
       : undefined;
+
+    if (ownedStitchTemplateIds) {
+      for (const templateId of requestedTemplateIds) {
+        const template = await ctx.db
+          .query("stitchTemplates")
+          .withIndex("by_owner_id", (q) =>
+            q.eq("ownerId", ownerId).eq("id", templateId),
+          )
+          .unique();
+
+        if (template) {
+          ownedStitchTemplateIds.add(template.id);
+        }
+      }
+    }
 
     if (
       ownedStitchTemplateIds &&
@@ -204,14 +211,14 @@ export const save = mutation({
           defaultAutomationStitchrColorChoice,
       ),
       stitchrTextStrokeColorChoice: getAutomationStitchrColorChoice(
-        args.stitchrTextStrokeColorChoice ?? defaultAutomationStitchrColorChoice,
+        args.stitchrTextStrokeColorChoice ??
+          defaultAutomationStitchrColorChoice,
       ),
-      stitchrTemplateAllocations:
-        normalizeAutomationStitchrTemplateAllocations(
-          requestedStitchrTemplateAllocations,
-          stitchrGenerationCount,
-          ownedStitchTemplateIds,
-        ),
+      stitchrTemplateAllocations: normalizeAutomationStitchrTemplateAllocations(
+        requestedStitchrTemplateAllocations,
+        stitchrGenerationCount,
+        ownedStitchTemplateIds,
+      ),
       swiprGenerationCount: getAutomationGenerationCount(
         args.swiprGenerationCount ?? defaultAutomationGenerationCount,
       ),
@@ -231,13 +238,16 @@ export const save = mutation({
       swiprTextStrokeColorChoice: getAutomationStitchrColorChoice(
         args.swiprTextStrokeColorChoice ?? defaultAutomationStitchrColorChoice,
       ),
-      productSelectionMode: args.productId ? "selected" : args.productSelectionMode,
+      productSelectionMode: args.productId
+        ? "selected"
+        : args.productSelectionMode,
       selectedProductIds:
         args.productId || args.productSelectionMode === "selected"
           ? selectedProductIds
           : [],
       avatarSelectionMode: args.avatarSelectionMode,
-      selectedAvatarIds: args.avatarSelectionMode === "selected" ? avatarIds : [],
+      selectedAvatarIds:
+        args.avatarSelectionMode === "selected" ? avatarIds : [],
       preferenceVersion: (existing?.preferenceVersion ?? 0) + 1,
       createdAt: existing?.createdAt ?? args.updatedAt,
       updatedAt: args.updatedAt,

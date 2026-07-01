@@ -6,7 +6,7 @@ export async function getOwnerHasLegacyProductRecords(
 ) {
   const [clip, photo, avatar, stitch, avatarPreference] = await Promise.all([
     ctx.db
-      .query("videoClips")
+      .query("videoClipCards")
       .withIndex("by_owner_product_created", (q) =>
         q.eq("ownerId", ownerId).eq("productId", undefined),
       )
@@ -24,7 +24,7 @@ export async function getOwnerHasLegacyProductRecords(
       )
       .first(),
     ctx.db
-      .query("stitches")
+      .query("stitchCards")
       .withIndex("by_owner_product_created", (q) =>
         q.eq("ownerId", ownerId).eq("productId", undefined),
       )

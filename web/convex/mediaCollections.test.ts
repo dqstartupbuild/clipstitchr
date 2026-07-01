@@ -653,7 +653,8 @@ describe("convex media collections", () => {
   it("normalizes Swipr records after validating background and product", async () => {
     const listSwipe = { _id: "swipe_doc_1", id: "swipe_1" };
     const queryCtx = createCtx({
-      swipes: [{ collect: [listSwipe] }, { unique: listSwipe }],
+      swipeCards: [{ take: [listSwipe] }],
+      swipes: [{ unique: listSwipe }],
     });
 
     await expect(

@@ -39,6 +39,7 @@ function createQueryChain(result: QueryResult = {}) {
   const chain = {
     collect: vi.fn(async () => result.collect ?? []),
     order: vi.fn(() => chain),
+    take: vi.fn(async () => result.collect ?? []),
     unique: vi.fn(async () => result.unique ?? null),
     withIndex: vi.fn(
       (_index: string, callback?: (q: typeof indexQuery) => void) => {

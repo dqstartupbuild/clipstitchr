@@ -4,6 +4,7 @@ import type { SwiprBackgroundSource } from "@/lib/clipstitchr/types/SwiprBackgro
 export type SwiprBackgroundAsset = {
   id: string;
   name: string;
+  searchText?: string;
   tags: string[];
   description?: string;
   details?: string;

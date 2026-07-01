@@ -1,4 +1,8 @@
 import type { MutationCtx } from "./_generated/server";
+import { upsertStitchCard } from "./upsertStitchCard";
+import { upsertVideoClipCard } from "./upsertVideoClipCard";
+
+const LEGACY_ASSIGNMENT_SCAN_LIMIT = 1000;
 
 export async function assignLegacyRecordsToProduct(
   ctx: MutationCtx,
@@ -11,23 +15,23 @@ export async function assignLegacyRecordsToProduct(
       ctx.db
         .query("videoClips")
         .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-        .collect(),
+        .take(LEGACY_ASSIGNMENT_SCAN_LIMIT),
       ctx.db
         .query("photoAssets")
         .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-        .collect(),
+        .take(LEGACY_ASSIGNMENT_SCAN_LIMIT),
       ctx.db
         .query("avatars")
         .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-        .collect(),
+        .take(LEGACY_ASSIGNMENT_SCAN_LIMIT),
       ctx.db
         .query("stitches")
         .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-        .collect(),
+        .take(LEGACY_ASSIGNMENT_SCAN_LIMIT),
       ctx.db
         .query("avatarPreferences")
         .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-        .collect(),
+        .take(LEGACY_ASSIGNMENT_SCAN_LIMIT),
     ]);
 
   let updatedCount = 0;
@@ -35,6 +39,7 @@ export async function assignLegacyRecordsToProduct(
   for (const clip of clips) {
     if (!clip.productId) {
       await ctx.db.patch(clip._id, { productId });
+      await upsertVideoClipCard(ctx, { ...clip, productId });
       updatedCount += 1;
     }
   }
@@ -56,6 +61,7 @@ export async function assignLegacyRecordsToProduct(
   for (const stitch of stitches) {
     if (!stitch.productId) {
       await ctx.db.patch(stitch._id, { productId });
+      await upsertStitchCard(ctx, { ...stitch, productId });
       updatedCount += 1;
     }
   }

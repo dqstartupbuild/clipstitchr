@@ -5,7 +5,7 @@ export async function getAutomationRunHasTasks(
   runId: string,
 ) {
   const task = await ctx.db
-    .query("automationTasks")
+    .query("automationTaskSummaries")
     .withIndex("by_run", (q) => q.eq("runId", runId))
     .first();
 

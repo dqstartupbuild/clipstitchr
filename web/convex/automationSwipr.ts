@@ -3,6 +3,7 @@ import { consumeAutomationBudget } from "./automationBudget";
 import { createAutomationRun } from "./automationCreateRun";
 import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
+import { markAutomationRunStatus } from "./markAutomationRunStatus";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
 import { defaultAutomationGenerationCount } from "../lib/clipstitchr/constants/defaultAutomationGenerationCount";
@@ -11,12 +12,16 @@ import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/cons
 import { getDefaultProductForOwner } from "./getDefaultProductForOwner";
 import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForProduct";
 import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
+import { getProductForOwner } from "./getProductForOwner";
+import { listProductsForOwnerByIds } from "./listProductsForOwnerByIds";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { getAutomationGenerationCount } from "../lib/clipstitchr/utils/getAutomationGenerationCount";
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { normalizeAutomationSwiprSelectedLibraryPackNames } from "../lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
+
+const AUTOMATION_SWIPR_SELECTED_PRODUCT_LOOKUP_LIMIT = 20;
 
 export const planDaily = mutation({
   args: {
@@ -68,20 +73,24 @@ export const planDaily = mutation({
       return { runId, status: run.status, taskIds: [] };
     }
 
-    const products = await ctx.db
-      .query("products")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .collect();
     const selectedProductIds = new Set(
       productId ? [productId] : preferences.selectedProductIds,
     );
     const defaultProduct = await getDefaultProductForOwner(ctx, ownerId);
+    const selectedProducts =
+      !productId && preferences.productSelectionMode === "selected"
+        ? await listProductsForOwnerByIds(
+            ctx,
+            ownerId,
+            [...selectedProductIds],
+            AUTOMATION_SWIPR_SELECTED_PRODUCT_LOOKUP_LIMIT,
+          )
+        : [];
     const product = productId
-      ? products.find((candidate) => candidate.id === productId)
+      ? await getProductForOwner(ctx, ownerId, productId)
       : preferences.productSelectionMode === "selected"
-        ? products.find((candidate) => selectedProductIds.has(candidate.id))
-        : defaultProduct ?? products[0];
+        ? selectedProducts[0]
+        : defaultProduct;
     if (!product) {
       await markAutomationRunSkipped(
         ctx,
@@ -100,7 +109,8 @@ export const planDaily = mutation({
         preferences.swiprSelectedLibraryPackNames ?? [],
       );
     const swiprTextStyleChoice = getAutomationStitchrTextStyleChoice(
-      preferences.swiprTextStyleChoice ?? defaultAutomationStitchrTextStyleChoice,
+      preferences.swiprTextStyleChoice ??
+        defaultAutomationStitchrTextStyleChoice,
     );
     const swiprTextColorChoice = getAutomationStitchrColorChoice(
       preferences.swiprTextColorChoice ?? defaultAutomationStitchrColorChoice,
@@ -110,7 +120,8 @@ export const planDaily = mutation({
         defaultAutomationStitchrColorChoice,
     );
     const swiprTextStrokeColorChoice = getAutomationStitchrColorChoice(
-      preferences.swiprTextStrokeColorChoice ?? defaultAutomationStitchrColorChoice,
+      preferences.swiprTextStrokeColorChoice ??
+        defaultAutomationStitchrColorChoice,
     );
 
     await consumeAutomationBudget(ctx, {
@@ -156,9 +167,9 @@ export const planDaily = mutation({
       taskIds.push(task.id);
     }
 
-    await ctx.db.patch(run._id, {
+    await markAutomationRunStatus(ctx, {
+      runDocumentId: run._id,
       status: "running",
-      startedAt: now,
       updatedAt: now,
     });
 

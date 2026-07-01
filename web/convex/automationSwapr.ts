@@ -3,6 +3,7 @@ import { consumeAutomationBudget } from "./automationBudget";
 import { createAutomationRun } from "./automationCreateRun";
 import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
+import { markAutomationRunStatus } from "./markAutomationRunStatus";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
 import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForProduct";
@@ -10,14 +11,19 @@ import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
+import { listRecentAvatarPhotoAssets } from "./listRecentAvatarPhotoAssets";
+import { listRecentVideoClipCardsByLibraryKind } from "./listRecentVideoClipCardsByLibraryKind";
 
 const AUTOMATION_SWAPR_CHARACTER_ORIENTATION = "image";
+const AUTOMATION_SWAPR_PRODUCT_PHOTO_SCAN_LIMIT = 20;
 const AUTOMATION_SWAPR_KEEP_ORIGINAL_SOUND = false;
 const AUTOMATION_SWAPR_MODE = "std";
+const AUTOMATION_SWAPR_REFERENCE_CLIP_SCAN_LIMIT = 100;
 const AUTOMATION_SWAPR_PROMPT =
   "Keep the creator in a natural phone-camera UGC style with the same casual setting and lighting.";
 const AUTOMATION_SWAPR_REFERENCE_DURATION_LIMIT_SECONDS = 10;
 const AUTOMATION_SWAPR_REFERENCE_MAX_SIZE_BYTES = 100 * 1024 * 1024;
+const AUTOMATION_SWAPR_AVATAR_PHOTO_SCAN_LIMIT = 50;
 
 export const planDaily = mutation({
   args: {
@@ -69,7 +75,11 @@ export const planDaily = mutation({
       return { runId, status: run.status, taskIds: [] };
     }
 
-    const defaultAvatar = await getDefaultAvatarForOwner(ctx, ownerId, productId);
+    const defaultAvatar = await getDefaultAvatarForOwner(
+      ctx,
+      ownerId,
+      productId,
+    );
     if (!defaultAvatar) {
       await markAutomationRunSkipped(
         ctx,
@@ -80,26 +90,26 @@ export const planDaily = mutation({
       return { runId, status: "skipped", taskIds: [] };
     }
 
-    const photos = await ctx.db
-      .query("photoAssets")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .collect();
-    const sourcePhoto = photos.find(
-      (photo) =>
-        photo.avatarId === defaultAvatar.id &&
-        (!productId || photo.productId === productId) &&
-        photo.photoObject.contentType.startsWith("image/"),
+    const photos = await listRecentAvatarPhotoAssets(ctx, {
+      avatarId: defaultAvatar.id,
+      limit: productId
+        ? AUTOMATION_SWAPR_PRODUCT_PHOTO_SCAN_LIMIT
+        : AUTOMATION_SWAPR_AVATAR_PHOTO_SCAN_LIMIT,
+      ownerId,
+      productId,
+    });
+    const sourcePhoto = photos.find((photo) =>
+      photo.photoObject.contentType.startsWith("image/"),
     );
-    const clips = await ctx.db
-      .query("videoClips")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .collect();
+    const clips = await listRecentVideoClipCardsByLibraryKind(ctx, {
+      libraryKind: "ugc",
+      limit: AUTOMATION_SWAPR_REFERENCE_CLIP_SCAN_LIMIT,
+      ownerId,
+      productId,
+    });
     const referenceClip = clips.find(
       (clip) =>
         clip.clipType === "ugc" &&
-        (!productId || clip.productId === productId) &&
         clip.videoObject.contentType.startsWith("video/") &&
         clip.videoObject.size <= AUTOMATION_SWAPR_REFERENCE_MAX_SIZE_BYTES &&
         clip.duration >= 3 &&
@@ -149,9 +159,9 @@ export const planDaily = mutation({
       }),
       createdAt: now,
     });
-    await ctx.db.patch(run._id, {
+    await markAutomationRunStatus(ctx, {
+      runDocumentId: run._id,
       status: "running",
-      startedAt: now,
       updatedAt: now,
     });
 

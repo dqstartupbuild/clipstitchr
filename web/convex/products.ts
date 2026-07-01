@@ -7,6 +7,8 @@ import { getOwnerHasLegacyProductRecords } from "./getOwnerHasLegacyProductRecor
 import { getPrimaryProductForOwner } from "./getPrimaryProductForOwner";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
+import { deleteProductCard } from "./deleteProductCard";
+import { upsertProductCard } from "./upsertProductCard";
 import { normalizePostBridgeSocialAccountIds } from "../lib/clipstitchr/utils/normalizePostBridgeSocialAccountIds";
 
 const PRODUCT_TEXT_MAX_LENGTH = 2000;
@@ -95,6 +97,19 @@ export const list = query({
 
     return await ctx.db
       .query("products")
+      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+      .order("desc")
+      .take(PRODUCT_LIST_LIMIT);
+  },
+});
+
+export const listCards = query({
+  args: {},
+  handler: async (ctx) => {
+    const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    return await ctx.db
+      .query("productCards")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order("desc")
       .take(PRODUCT_LIST_LIMIT);
@@ -200,7 +215,7 @@ export const create = mutation({
       ownerId,
     );
 
-    const productId = await ctx.db.insert("products", {
+    const productFields = {
       ownerId,
       id,
       name: normalizedName,
@@ -263,7 +278,9 @@ export const create = mutation({
       ),
       createdAt,
       updatedAt,
-    });
+    };
+    const productId = await ctx.db.insert("products", productFields);
+    await upsertProductCard(ctx, productFields);
 
     if (!existingPrimaryProduct) {
       const existingPreferences = await ctx.db
@@ -384,7 +401,7 @@ export const update = mutation({
       throw new Error("Product not found.");
     }
 
-    await ctx.db.patch(product._id, {
+    const productPatch = {
       name: normalizedName,
       productDetails: normalizeText(productDetails, PRODUCT_TEXT_MAX_LENGTH),
       audienceDetails: normalizeText(audienceDetails, PRODUCT_TEXT_MAX_LENGTH),
@@ -444,7 +461,10 @@ export const update = mutation({
         HOOK_EDGE_LEVEL_MAX_LENGTH,
       ),
       updatedAt,
-    });
+    };
+
+    await ctx.db.patch(product._id, productPatch);
+    await upsertProductCard(ctx, { ...product, ...productPatch });
   },
 });
 
@@ -486,11 +506,15 @@ export const updatePostBridgeSocialAccountIds = mutation({
     }
 
     await ctx.db.patch(product._id, {
-      postBridgeSocialAccountIds: normalizePostBridgeSocialAccountIds(
-        socialAccountIds,
-      ),
+      postBridgeSocialAccountIds:
+        normalizePostBridgeSocialAccountIds(socialAccountIds),
       updatedAt,
     });
+    const updatedProduct = await ctx.db.get(product._id);
+
+    if (updatedProduct) {
+      await upsertProductCard(ctx, updatedProduct);
+    }
   },
 });
 
@@ -528,6 +552,8 @@ export const remove = mutation({
     }
 
     await ctx.db.delete(product._id);
+    await deleteProductCard(ctx, product);
+
     return product;
   },
 });

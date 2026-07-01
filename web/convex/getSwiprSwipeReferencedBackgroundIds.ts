@@ -1,13 +1,18 @@
-import type { Doc } from "./_generated/dataModel";
+type SwiprSwipeReferenceSource = {
+  backgroundId: string;
+  slides: Array<{ backgroundId?: string }>;
+};
 
 export function getSwiprSwipeReferencedBackgroundIds(
-  swipes: Pick<Doc<"swipes">, "backgroundId" | "slides">[],
+  swipes: SwiprSwipeReferenceSource[],
 ) {
   return [
     ...new Set(
       swipes.flatMap((swipe) => [
         swipe.backgroundId,
-        ...swipe.slides.map((slide) => slide.backgroundId ?? swipe.backgroundId),
+        ...swipe.slides.map(
+          (slide) => slide.backgroundId ?? swipe.backgroundId,
+        ),
       ]),
     ),
   ].filter((backgroundId) => backgroundId.length > 0);

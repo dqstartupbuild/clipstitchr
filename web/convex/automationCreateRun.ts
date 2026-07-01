@@ -1,5 +1,6 @@
 import { automationDailyLimits } from "./automationLimits";
 import type { MutationCtx } from "./_generated/server";
+import { upsertAutomationRunSummary } from "./upsertAutomationRunSummary";
 
 type AutomationTool = "avatar-photo" | "clipr" | "stitchr" | "swapr" | "swipr";
 
@@ -33,6 +34,8 @@ export async function createAutomationRun(
     .unique();
 
   if (existing) {
+    await upsertAutomationRunSummary(ctx, existing);
+
     return existing;
   }
 
@@ -55,6 +58,8 @@ export async function createAutomationRun(
   if (!inserted) {
     throw new Error("Failed to create automation run.");
   }
+
+  await upsertAutomationRunSummary(ctx, inserted);
 
   return inserted;
 }

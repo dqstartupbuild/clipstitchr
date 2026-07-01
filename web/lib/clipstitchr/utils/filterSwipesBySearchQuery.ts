@@ -10,20 +10,23 @@ export function filterSwipesBySearchQuery(
     return swipes;
   }
 
-  return swipes.filter((swipe) =>
-    [
-      swipe.name,
-      swipe.productName,
-      swipe.productContext,
-      swipe.caption,
-      swipe.description,
-      swipe.hashtags?.join(" "),
-      swipe.rationale,
-      swipe.socialCaption,
-      ...swipe.slides.map((slide) => slide.textOverlay.text),
-    ]
-      .join(" ")
-      .toLowerCase()
-      .includes(normalizedSearchQuery),
-  );
+  return swipes.filter((swipe) => {
+    const searchText =
+      swipe.searchText ??
+      [
+        swipe.name,
+        swipe.productName,
+        swipe.productContext,
+        swipe.caption,
+        swipe.description,
+        swipe.hashtags?.join(" "),
+        swipe.rationale,
+        swipe.socialCaption,
+        ...swipe.slides.map((slide) => slide.textOverlay.text),
+      ]
+        .join(" ")
+        .toLowerCase();
+
+    return searchText.toLowerCase().includes(normalizedSearchQuery);
+  });
 }

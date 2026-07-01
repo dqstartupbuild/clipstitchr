@@ -7,6 +7,7 @@ type ConvexFunction<Args, Result> = {
 
 type QueryResult = {
   collect?: unknown[];
+  take?: unknown[];
   unique?: unknown;
 };
 
@@ -19,6 +20,7 @@ const mocks = vi.hoisted(() => ({
   getDefaultProductForOwner: vi.fn(),
   getIsAutomationToolEnabled: vi.fn(),
   isWithinAutomationGlobalWindow: vi.fn(),
+  markAutomationRunStatus: vi.fn(),
   markAutomationRunSkipped: vi.fn(),
   mutation: vi.fn((definition) => definition),
 }));
@@ -45,6 +47,10 @@ vi.mock("./automationCreateTask", () => ({
 
 vi.mock("./automationMarkRunSkipped", () => ({
   markAutomationRunSkipped: mocks.markAutomationRunSkipped,
+}));
+
+vi.mock("./markAutomationRunStatus", () => ({
+  markAutomationRunStatus: mocks.markAutomationRunStatus,
 }));
 
 vi.mock("./getDefaultAvatarForOwner", () => ({
@@ -74,6 +80,7 @@ function createQueryChain(result: QueryResult = {}) {
   const chain = {
     collect: vi.fn(async () => result.collect ?? []),
     order: vi.fn(() => chain),
+    take: vi.fn(async () => result.take ?? result.collect ?? []),
     unique: vi.fn(async () => result.unique ?? null),
     withIndex: vi.fn(
       (_indexName: string, callback: (q: typeof indexQuery) => unknown) => {
@@ -149,6 +156,13 @@ describe("automationClipr", () => {
       _id: "task_doc",
       ...args,
     }));
+    mocks.markAutomationRunStatus.mockImplementation(async (ctx, args) => {
+      await ctx.db.patch(args.runDocumentId, {
+        status: args.status,
+        startedAt: args.updatedAt,
+        updatedAt: args.updatedAt,
+      });
+    });
     mocks.getDefaultProductForOwner.mockResolvedValue(product);
     mocks.getDefaultAvatarForOwner.mockResolvedValue(avatar);
   });
@@ -157,14 +171,14 @@ describe("automationClipr", () => {
     const ctx = createCtx({
       automationPreferences: [
         {
-          collect: [{
+          unique: {
             enabled: true,
             enabledTools: ["clipr"],
             cliprGenerationMode: "script",
             preferenceVersion: 3,
             productSelectionMode: "default",
             selectedProductIds: [],
-          }],
+          },
         },
       ],
       photoAssets: [{ collect: [avatarPhoto] }],
@@ -226,14 +240,14 @@ describe("automationClipr", () => {
     const ctx = createCtx({
       automationPreferences: [
         {
-          collect: [{
+          unique: {
             enabled: true,
             enabledTools: ["clipr"],
             cliprGenerationMode: "broll",
             preferenceVersion: 3,
             productSelectionMode: "default",
             selectedProductIds: [],
-          }],
+          },
         },
       ],
       photoAssets: [{ collect: [avatarPhoto] }],

@@ -231,14 +231,21 @@ describe("convex stitches", () => {
   it("updates poster, rendered video, source settings, music, score, text, and posted status", async () => {
     const setup = createCtx([
       { _id: "doc_1", id: "stitch_1" },
+      null,
       { _id: "doc_1", id: "stitch_1" },
+      null,
       { _id: "doc_1", id: "stitch_1" },
+      null,
       { _id: "doc_1", id: "stitch_1" },
       { id: "ugc_2", clipType: "ugc", name: "UGC 2" },
       { id: "demo_2", clipType: "demo", name: "Demo 2" },
+      null,
       { _id: "doc_1", id: "stitch_1" },
+      null,
       { _id: "doc_1", id: "stitch_1" },
+      null,
       { _id: "doc_1", id: "stitch_1" },
+      null,
     ]);
 
     await getHandler(updatePoster)(setup.ctx, {
@@ -474,6 +481,7 @@ describe("convex stitches", () => {
         },
         ugcTrimRange: { start: 0, end: 4 },
       },
+      null,
       {
         _id: "doc_1",
         duration: 10,
@@ -497,6 +505,7 @@ describe("convex stitches", () => {
           summary: "Good but can be tighter.",
         },
       },
+      null,
     ]);
 
     await getHandler(applyQuickEdit)(setup.ctx, {

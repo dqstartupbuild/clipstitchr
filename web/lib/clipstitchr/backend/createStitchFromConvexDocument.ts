@@ -2,7 +2,7 @@ import type { Doc } from "@/convex/_generated/dataModel";
 import type { Stitch } from "@/lib/clipstitchr/types/Stitch";
 
 type CreateStitchFromConvexDocumentOptions = {
-  stitch: Doc<"stitches">;
+  stitch: Doc<"stitches"> | Doc<"stitchCards">;
   blob?: Blob;
   posterBlob?: Blob;
 };

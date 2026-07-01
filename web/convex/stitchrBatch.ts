@@ -12,6 +12,9 @@ import { createSoundTrackSnapshot } from "./createSoundTrackSnapshot";
 import { rateLimiter } from "./rateLimiter";
 import { requestWorkerLaunch } from "./workerLaunch";
 import { createStitchrBatchRunId } from "./stitchrBatchRunId";
+import { listRecentProductsForOwner } from "./listRecentProductsForOwner";
+import { listRecentVideoClipsByLibraryKind } from "./listRecentVideoClipsByLibraryKind";
+import { upsertAutomationTaskSummary } from "./upsertAutomationTaskSummary";
 import { getStitchTemplateBatchTextOverlay } from "./stitchTemplates/getStitchTemplateBatchTextOverlay";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
@@ -23,6 +26,11 @@ import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/ge
 import { resolveAutomationStitchrColor } from "../lib/clipstitchr/utils/resolveAutomationStitchrColor";
 import { resolveAutomationStitchrTextStyleId } from "../lib/clipstitchr/utils/resolveAutomationStitchrTextStyleId";
 import { automationStitchrTextStyleChoiceValidator } from "./validators/automationStitchrTextStyleChoice";
+
+const STITCHR_BATCH_EXISTING_TASK_SCAN_LIMIT = STITCHR_BATCH_DAILY_LIMIT + 20;
+const STITCHR_BATCH_HISTORY_SCAN_LIMIT = 1000;
+const STITCHR_BATCH_PRODUCT_SCAN_LIMIT = 100;
+const STITCHR_BATCH_SOURCE_CLIP_SCAN_LIMIT = 240;
 
 function createTaskId(ownerId: string, batchDate: string, index: number) {
   return `stitchr-batch:${ownerId}:${batchDate}:${index}`;
@@ -129,7 +137,9 @@ export const plan = mutation({
     stitchrTextBackgroundColorChoice: v.optional(v.string()),
     stitchrTextColorChoice: v.optional(v.string()),
     stitchrTextStrokeColorChoice: v.optional(v.string()),
-    stitchrTextStyleChoice: v.optional(automationStitchrTextStyleChoiceValidator),
+    stitchrTextStyleChoice: v.optional(
+      automationStitchrTextStyleChoiceValidator,
+    ),
     soundTrackId: v.optional(v.string()),
     templateId: v.optional(v.string()),
   },
@@ -155,7 +165,7 @@ export const plan = mutation({
     const existingTasks = await ctx.db
       .query("automationTasks")
       .withIndex("by_run", (q) => q.eq("runId", runId))
-      .collect();
+      .take(STITCHR_BATCH_EXISTING_TASK_SCAN_LIMIT);
 
     if (existingTasks.length > 0) {
       const status = getExistingRunStatus(existingTasks);
@@ -178,8 +188,8 @@ export const plan = mutation({
             (task) =>
               task.status === "completed" && task.outputAssetIds.length === 0,
           )
-          .map((task) =>
-            ctx.db.patch(task._id, {
+          .map(async (task) => {
+            await ctx.db.patch(task._id, {
               status: "queued",
               stage: "awaiting-text-provider",
               lockedBy: undefined,
@@ -187,8 +197,13 @@ export const plan = mutation({
               completedAt: undefined,
               error: undefined,
               updatedAt: now,
-            }),
-          ),
+            });
+            const updatedTask = await ctx.db.get(task._id);
+
+            if (updatedTask) {
+              await upsertAutomationTaskSummary(ctx, updatedTask);
+            }
+          }),
       );
 
       if (shouldLaunchProvider) {
@@ -220,15 +235,23 @@ export const plan = mutation({
       };
     }
 
-    const clips = await ctx.db
-      .query("videoClips")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .collect();
-    const products = await ctx.db
-      .query("products")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .collect();
+    const [ugcClips, demoClips, products] = await Promise.all([
+      listRecentVideoClipsByLibraryKind(ctx, {
+        libraryKind: "ugc",
+        limit: STITCHR_BATCH_SOURCE_CLIP_SCAN_LIMIT,
+        ownerId,
+      }),
+      listRecentVideoClipsByLibraryKind(ctx, {
+        libraryKind: "demo",
+        limit: STITCHR_BATCH_SOURCE_CLIP_SCAN_LIMIT,
+        ownerId,
+      }),
+      listRecentProductsForOwner(
+        ctx,
+        ownerId,
+        STITCHR_BATCH_PRODUCT_SCAN_LIMIT,
+      ),
+    ]);
     const defaultProduct = await getDefaultProductForOwner(ctx, ownerId);
     const batchTemplate = templateId
       ? await ctx.db
@@ -264,9 +287,6 @@ export const plan = mutation({
     const soundTrackSnapshot = soundTrack
       ? createSoundTrackSnapshot(soundTrack)
       : undefined;
-    const ugcClips = clips.filter((clip) => clip.clipType === "ugc");
-    const demoClips = clips.filter((clip) => clip.clipType === "demo");
-
     if (ugcClips.length === 0 || demoClips.length === 0) {
       return {
         runId,
@@ -276,11 +296,14 @@ export const plan = mutation({
       };
     }
 
-    const productById = new Map(products.map((product) => [product.id, product]));
+    const productById = new Map(
+      products.map((product) => [product.id, product]),
+    );
     const histories = await ctx.db
       .query("stitchrBatchPairHistory")
       .withIndex("by_owner_last_used", (q) => q.eq("ownerId", ownerId))
-      .collect();
+      .order("desc")
+      .take(STITCHR_BATCH_HISTORY_SCAN_LIMIT);
     const historyByPair = new Map(
       histories.map((history) => [
         `${history.ugcClipId}:${history.demoClipId}`,
@@ -298,7 +321,10 @@ export const plan = mutation({
         ugcLastUsedAt.set(history.ugcClipId, history.lastUsedAt);
       }
 
-      if (!currentDemoLastUsedAt || history.lastUsedAt > currentDemoLastUsedAt) {
+      if (
+        !currentDemoLastUsedAt ||
+        history.lastUsedAt > currentDemoLastUsedAt
+      ) {
         demoLastUsedAt.set(history.demoClipId, history.lastUsedAt);
       }
     }
@@ -425,8 +451,12 @@ export const plan = mutation({
               `${ownerId}:${batchDate}:stitchr-batch:${index + 1}:${ugc.id}:${demo.id}:stroke`,
             )
           : undefined);
-      const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(ugc.quickEdit);
-      const demoQuickEdit = createQuickEditSuggestionsFromMetadata(demo.quickEdit);
+      const ugcQuickEdit = createQuickEditSuggestionsFromMetadata(
+        ugc.quickEdit,
+      );
+      const demoQuickEdit = createQuickEditSuggestionsFromMetadata(
+        demo.quickEdit,
+      );
       const ugcOverlayText = getQuickEditOverlayText({
         quickEdit: ugc.quickEdit,
       });
@@ -434,7 +464,7 @@ export const plan = mutation({
         quickEdit: demo.quickEdit,
       });
 
-      await ctx.db.insert("automationTasks", {
+      const insertedTaskId = await ctx.db.insert("automationTasks", {
         ownerId,
         id: taskId,
         runId,
@@ -475,7 +505,8 @@ export const plan = mutation({
           demoDuration: demo.duration,
           ugcHasAudio: ugc.hasAudio,
           demoHasAudio: demo.hasAudio,
-          ugcTrimRange: ugc.defaultTrimRange ?? createDefaultTrimRange(ugc.duration),
+          ugcTrimRange:
+            ugc.defaultTrimRange ?? createDefaultTrimRange(ugc.duration),
           demoTrimRange:
             demo.defaultTrimRange ?? createDefaultTrimRange(demo.duration),
           ugcVideoObject: ugc.videoObject,
@@ -520,6 +551,12 @@ export const plan = mutation({
         createdAt: now,
         updatedAt: now,
       });
+      const insertedTask = await ctx.db.get(insertedTaskId);
+
+      if (insertedTask) {
+        await upsertAutomationTaskSummary(ctx, insertedTask);
+      }
+
       taskIds.push(taskId);
     }
 

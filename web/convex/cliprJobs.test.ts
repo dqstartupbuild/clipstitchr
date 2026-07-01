@@ -204,7 +204,7 @@ describe("convex cliprJobs", () => {
       completedAt: now,
       finalClipId: "clip_1",
     });
-    const listCtx = createCtx({ cliprJobs: [{ take: [job] }] });
+    const listCtx = createCtx({ cliprJobSummaries: [{ take: [job] }] });
 
     await expect(
       getHandler<Record<string, never>, unknown[]>(cliprJobs.list)(
@@ -220,7 +220,7 @@ describe("convex cliprJobs", () => {
         id: "job_1",
       }),
     ]);
-    expect(listCtx.ctx.db.query).toHaveBeenCalledWith("cliprJobs");
+    expect(listCtx.ctx.db.query).toHaveBeenCalledWith("cliprJobSummaries");
     expect(listCtx.queryChains[0].chain.order).toHaveBeenCalledWith("desc");
     expect(listCtx.queryChains[0].chain.take).toHaveBeenCalledWith(20);
 

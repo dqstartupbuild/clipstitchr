@@ -9,6 +9,7 @@ import { mutation, query } from "./_generated/server";
 import { createNotification } from "./createNotification";
 import { getReadLimitedPaginationOpts } from "./getReadLimitedPaginationOpts";
 import { videoClipCounts, videoClipProductCounts } from "./aggregateCounts";
+import { logConvexTransactionMetrics } from "./logConvexTransactionMetrics";
 import { getVideoClipCanBePosted } from "./getVideoClipCanBePosted";
 import { getVideoClipLibraryKind } from "./getVideoClipLibraryKind";
 import { getVideoClipNotificationCopy } from "./getVideoClipNotificationCopy";
@@ -16,6 +17,8 @@ import { getVideoClipProductScopeFilter } from "./getVideoClipProductScopeFilter
 import { getQuickEditWithRemoveRanges } from "./getQuickEditWithRemoveRanges";
 import { normalizeQuickEditRemoveRanges } from "./normalizeQuickEditRemoveRanges";
 import { rateLimiter } from "./rateLimiter";
+import { deleteVideoClipCard } from "./deleteVideoClipCard";
+import { upsertVideoClipCard } from "./upsertVideoClipCard";
 import { assetTagsValidator } from "./validators/assetTags";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { cliprMetadataValidator } from "./validators/cliprMetadata";
@@ -84,6 +87,17 @@ const postedStatusValidator = v.union(
   v.literal("posted"),
 );
 
+async function withVideoClipListMetrics<T>(
+  ctx: unknown,
+  label: string,
+  resultPromise: Promise<T>,
+) {
+  const result = await resultPromise;
+  await logConvexTransactionMetrics(ctx, label);
+
+  return result;
+}
+
 export const list = query({
   args: {
     paginationOpts: paginationOptsValidator,
@@ -102,65 +116,89 @@ export const list = query({
 
     if (postedStatus === "active") {
       if (productFilterId) {
-        return await ctx.db
-          .query("videoClips")
-          .withIndex("by_owner_product_is_posted_created", (q) =>
-            q
-              .eq("ownerId", ownerId)
-              .eq("productId", productFilterId)
-              .eq("isPosted", undefined),
-          )
-          .order(sortOrder === "oldest" ? "asc" : "desc")
-          .paginate(readLimitedPaginationOpts);
+        return await withVideoClipListMetrics(
+          ctx,
+          "videoClips.list",
+          ctx.db
+            .query("videoClipCards")
+            .withIndex("by_owner_product_is_posted_created", (q) =>
+              q
+                .eq("ownerId", ownerId)
+                .eq("productId", productFilterId)
+                .eq("isPosted", undefined),
+            )
+            .order(sortOrder === "oldest" ? "asc" : "desc")
+            .paginate(readLimitedPaginationOpts),
+        );
       }
 
-      return await ctx.db
-        .query("videoClips")
-        .withIndex("by_owner_is_posted_created", (q) =>
-          q.eq("ownerId", ownerId).eq("isPosted", undefined),
-        )
-        .order(sortOrder === "oldest" ? "asc" : "desc")
-        .paginate(readLimitedPaginationOpts);
+      return await withVideoClipListMetrics(
+        ctx,
+        "videoClips.list",
+        ctx.db
+          .query("videoClipCards")
+          .withIndex("by_owner_is_posted_created", (q) =>
+            q.eq("ownerId", ownerId).eq("isPosted", undefined),
+          )
+          .order(sortOrder === "oldest" ? "asc" : "desc")
+          .paginate(readLimitedPaginationOpts),
+      );
     }
 
     if (postedStatus === "posted") {
       if (productFilterId) {
-        return await ctx.db
-          .query("videoClips")
-          .withIndex("by_owner_product_is_posted_created", (q) =>
-            q
-              .eq("ownerId", ownerId)
-              .eq("productId", productFilterId)
-              .eq("isPosted", true),
-          )
-          .order(sortOrder === "oldest" ? "asc" : "desc")
-          .paginate(readLimitedPaginationOpts);
+        return await withVideoClipListMetrics(
+          ctx,
+          "videoClips.list",
+          ctx.db
+            .query("videoClipCards")
+            .withIndex("by_owner_product_is_posted_created", (q) =>
+              q
+                .eq("ownerId", ownerId)
+                .eq("productId", productFilterId)
+                .eq("isPosted", true),
+            )
+            .order(sortOrder === "oldest" ? "asc" : "desc")
+            .paginate(readLimitedPaginationOpts),
+        );
       }
 
-      return await ctx.db
-        .query("videoClips")
-        .withIndex("by_owner_is_posted_created", (q) =>
-          q.eq("ownerId", ownerId).eq("isPosted", true),
-        )
-        .order(sortOrder === "oldest" ? "asc" : "desc")
-        .paginate(readLimitedPaginationOpts);
+      return await withVideoClipListMetrics(
+        ctx,
+        "videoClips.list",
+        ctx.db
+          .query("videoClipCards")
+          .withIndex("by_owner_is_posted_created", (q) =>
+            q.eq("ownerId", ownerId).eq("isPosted", true),
+          )
+          .order(sortOrder === "oldest" ? "asc" : "desc")
+          .paginate(readLimitedPaginationOpts),
+      );
     }
 
     if (productFilterId) {
-      return await ctx.db
-        .query("videoClips")
-        .withIndex("by_owner_product_created", (q) =>
-          q.eq("ownerId", ownerId).eq("productId", productFilterId),
-        )
-        .order(sortOrder === "oldest" ? "asc" : "desc")
-        .paginate(readLimitedPaginationOpts);
+      return await withVideoClipListMetrics(
+        ctx,
+        "videoClips.list",
+        ctx.db
+          .query("videoClipCards")
+          .withIndex("by_owner_product_created", (q) =>
+            q.eq("ownerId", ownerId).eq("productId", productFilterId),
+          )
+          .order(sortOrder === "oldest" ? "asc" : "desc")
+          .paginate(readLimitedPaginationOpts),
+      );
     }
 
-    return await ctx.db
-      .query("videoClips")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order(sortOrder === "oldest" ? "asc" : "desc")
-      .paginate(readLimitedPaginationOpts);
+    return await withVideoClipListMetrics(
+      ctx,
+      "videoClips.list",
+      ctx.db
+        .query("videoClipCards")
+        .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
+        .order(sortOrder === "oldest" ? "asc" : "desc")
+        .paginate(readLimitedPaginationOpts),
+    );
   },
 });
 
@@ -183,21 +221,25 @@ export const listByLibraryKind = query({
 
     if (postedStatus === "active") {
       if (productFilterId && kind !== "ugc") {
-        return await ctx.db
-          .query("videoClips")
-          .withIndex("by_owner_product_library_kind_is_posted_created", (q) =>
-            q
-              .eq("ownerId", ownerId)
-              .eq("productId", productFilterId)
-              .eq("libraryKind", kind)
-              .eq("isPosted", undefined),
-          )
-          .order(sortOrder === "oldest" ? "asc" : "desc")
-          .paginate(readLimitedPaginationOpts);
+        return await withVideoClipListMetrics(
+          ctx,
+          "videoClips.listByLibraryKind",
+          ctx.db
+            .query("videoClipCards")
+            .withIndex("by_owner_product_library_kind_is_posted_created", (q) =>
+              q
+                .eq("ownerId", ownerId)
+                .eq("productId", productFilterId)
+                .eq("libraryKind", kind)
+                .eq("isPosted", undefined),
+            )
+            .order(sortOrder === "oldest" ? "asc" : "desc")
+            .paginate(readLimitedPaginationOpts),
+        );
       }
 
       const query = ctx.db
-        .query("videoClips")
+        .query("videoClipCards")
         .withIndex("by_owner_library_kind_is_posted_created", (q) =>
           q
             .eq("ownerId", ownerId)
@@ -206,68 +248,90 @@ export const listByLibraryKind = query({
         )
         .order(sortOrder === "oldest" ? "asc" : "desc");
 
-      return await (productFilterId
-        ? query.filter((q) =>
-            getVideoClipProductScopeFilter(q, productFilterId),
-          )
-        : query
-      ).paginate(readLimitedPaginationOpts);
+      return await withVideoClipListMetrics(
+        ctx,
+        "videoClips.listByLibraryKind",
+        (productFilterId
+          ? query.filter((q) =>
+              getVideoClipProductScopeFilter(q, productFilterId),
+            )
+          : query
+        ).paginate(readLimitedPaginationOpts),
+      );
     }
 
     if (postedStatus === "posted") {
       if (productFilterId && kind !== "ugc") {
-        return await ctx.db
-          .query("videoClips")
-          .withIndex("by_owner_product_library_kind_is_posted_created", (q) =>
-            q
-              .eq("ownerId", ownerId)
-              .eq("productId", productFilterId)
-              .eq("libraryKind", kind)
-              .eq("isPosted", true),
-          )
-          .order(sortOrder === "oldest" ? "asc" : "desc")
-          .paginate(readLimitedPaginationOpts);
+        return await withVideoClipListMetrics(
+          ctx,
+          "videoClips.listByLibraryKind",
+          ctx.db
+            .query("videoClipCards")
+            .withIndex("by_owner_product_library_kind_is_posted_created", (q) =>
+              q
+                .eq("ownerId", ownerId)
+                .eq("productId", productFilterId)
+                .eq("libraryKind", kind)
+                .eq("isPosted", true),
+            )
+            .order(sortOrder === "oldest" ? "asc" : "desc")
+            .paginate(readLimitedPaginationOpts),
+        );
       }
 
       const query = ctx.db
-        .query("videoClips")
+        .query("videoClipCards")
         .withIndex("by_owner_library_kind_is_posted_created", (q) =>
           q.eq("ownerId", ownerId).eq("libraryKind", kind).eq("isPosted", true),
         )
         .order(sortOrder === "oldest" ? "asc" : "desc");
 
-      return await (productFilterId
-        ? query.filter((q) =>
-            getVideoClipProductScopeFilter(q, productFilterId),
-          )
-        : query
-      ).paginate(readLimitedPaginationOpts);
+      return await withVideoClipListMetrics(
+        ctx,
+        "videoClips.listByLibraryKind",
+        (productFilterId
+          ? query.filter((q) =>
+              getVideoClipProductScopeFilter(q, productFilterId),
+            )
+          : query
+        ).paginate(readLimitedPaginationOpts),
+      );
     }
 
     if (productFilterId && kind !== "ugc") {
-      return await ctx.db
-        .query("videoClips")
-        .withIndex("by_owner_product_library_kind_created", (q) =>
-          q
-            .eq("ownerId", ownerId)
-            .eq("productId", productFilterId)
-            .eq("libraryKind", kind),
-        )
-        .order(sortOrder === "oldest" ? "asc" : "desc")
-        .paginate(readLimitedPaginationOpts);
+      return await withVideoClipListMetrics(
+        ctx,
+        "videoClips.listByLibraryKind",
+        ctx.db
+          .query("videoClipCards")
+          .withIndex("by_owner_product_library_kind_created", (q) =>
+            q
+              .eq("ownerId", ownerId)
+              .eq("productId", productFilterId)
+              .eq("libraryKind", kind),
+          )
+          .order(sortOrder === "oldest" ? "asc" : "desc")
+          .paginate(readLimitedPaginationOpts),
+      );
     }
 
     const query = ctx.db
-      .query("videoClips")
+      .query("videoClipCards")
       .withIndex("by_owner_library_kind_created", (q) =>
         q.eq("ownerId", ownerId).eq("libraryKind", kind),
       )
       .order(sortOrder === "oldest" ? "asc" : "desc");
 
-    return await (productFilterId
-      ? query.filter((q) => getVideoClipProductScopeFilter(q, productFilterId))
-      : query
-    ).paginate(readLimitedPaginationOpts);
+    return await withVideoClipListMetrics(
+      ctx,
+      "videoClips.listByLibraryKind",
+      (productFilterId
+        ? query.filter((q) =>
+            getVideoClipProductScopeFilter(q, productFilterId),
+          )
+        : query
+      ).paginate(readLimitedPaginationOpts),
+    );
   },
 });
 
@@ -343,7 +407,12 @@ export const save = mutation({
       if (updatedClip) {
         await Promise.all([
           videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip),
-          videoClipProductCounts.replaceOrInsert(ctx, existingClip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(
+            ctx,
+            existingClip,
+            updatedClip,
+          ),
+          upsertVideoClipCard(ctx, updatedClip),
         ]);
       }
 
@@ -357,6 +426,7 @@ export const save = mutation({
       await Promise.all([
         videoClipCounts.insertIfDoesNotExist(ctx, insertedClip),
         videoClipProductCounts.insertIfDoesNotExist(ctx, insertedClip),
+        upsertVideoClipCard(ctx, insertedClip),
       ]);
     }
 
@@ -419,7 +489,12 @@ export const saveFromAutomation = mutation({
       if (updatedClip) {
         await Promise.all([
           videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip),
-          videoClipProductCounts.replaceOrInsert(ctx, existingClip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(
+            ctx,
+            existingClip,
+            updatedClip,
+          ),
+          upsertVideoClipCard(ctx, updatedClip),
         ]);
       }
 
@@ -433,6 +508,7 @@ export const saveFromAutomation = mutation({
       await Promise.all([
         videoClipCounts.insertIfDoesNotExist(ctx, insertedClip),
         videoClipProductCounts.insertIfDoesNotExist(ctx, insertedClip),
+        upsertVideoClipCard(ctx, insertedClip),
       ]);
     }
 
@@ -489,7 +565,12 @@ export const saveFromMediaWorker = mutation({
       if (updatedClip) {
         await Promise.all([
           videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip),
-          videoClipProductCounts.replaceOrInsert(ctx, existingClip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(
+            ctx,
+            existingClip,
+            updatedClip,
+          ),
+          upsertVideoClipCard(ctx, updatedClip),
         ]);
       }
 
@@ -503,6 +584,7 @@ export const saveFromMediaWorker = mutation({
       await Promise.all([
         videoClipCounts.insertIfDoesNotExist(ctx, insertedClip),
         videoClipProductCounts.insertIfDoesNotExist(ctx, insertedClip),
+        upsertVideoClipCard(ctx, insertedClip),
       ]);
     }
 
@@ -582,9 +664,7 @@ export const updateMetadataFromProvider = mutation({
       ...(name === undefined ? {} : { name }),
       ...(tags === undefined ? {} : { tags }),
       ...(videoDescription === undefined ? {} : { videoDescription }),
-      ...(mainPersonDescription === undefined
-        ? {}
-        : { mainPersonDescription }),
+      ...(mainPersonDescription === undefined ? {} : { mainPersonDescription }),
       ...(outfitDescription === undefined ? {} : { outfitDescription }),
       ...(locationDescription === undefined ? {} : { locationDescription }),
       ...(poseDescription === undefined ? {} : { poseDescription }),
@@ -593,6 +673,11 @@ export const updateMetadataFromProvider = mutation({
       ...(productId === undefined ? {} : { productId }),
       updatedAt,
     });
+    const updatedClip = await ctx.db.get(clip._id);
+
+    if (updatedClip) {
+      await upsertVideoClipCard(ctx, updatedClip);
+    }
   },
 });
 
@@ -677,9 +762,10 @@ export const updateMetadata = mutation({
 
     if (updatedClip) {
       await Promise.all([
-          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
-          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
-        ]);
+        videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+        videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        upsertVideoClipCard(ctx, updatedClip),
+      ]);
     }
   },
 });
@@ -711,6 +797,11 @@ export const updatePerformanceScore = mutation({
       performanceScore,
       updatedAt,
     });
+    const updatedClip = await ctx.db.get(clip._id);
+
+    if (updatedClip) {
+      await upsertVideoClipCard(ctx, updatedClip);
+    }
   },
 });
 
@@ -778,9 +869,10 @@ export const updateCrop = mutation({
 
     if (updatedClip) {
       await Promise.all([
-          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
-          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
-        ]);
+        videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+        videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        upsertVideoClipCard(ctx, updatedClip),
+      ]);
     }
   },
 });
@@ -846,6 +938,7 @@ export const updateCuts = mutation({
       await Promise.all([
         videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
         videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        upsertVideoClipCard(ctx, updatedClip),
       ]);
     }
   },
@@ -891,9 +984,10 @@ export const applyQuickEdit = mutation({
 
     if (updatedClip) {
       await Promise.all([
-          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
-          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
-        ]);
+        videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+        videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        upsertVideoClipCard(ctx, updatedClip),
+      ]);
     }
   },
 });
@@ -929,9 +1023,10 @@ export const resetQuickEdit = mutation({
 
     if (updatedClip) {
       await Promise.all([
-          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
-          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
-        ]);
+        videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+        videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        upsertVideoClipCard(ctx, updatedClip),
+      ]);
     }
   },
 });
@@ -969,9 +1064,10 @@ export const updatePoster = mutation({
 
     if (updatedClip) {
       await Promise.all([
-          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
-          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
-        ]);
+        videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+        videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        upsertVideoClipCard(ctx, updatedClip),
+      ]);
     }
   },
 });
@@ -1021,9 +1117,10 @@ export const updateCliprMusic = mutation({
 
     if (updatedClip) {
       await Promise.all([
-          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
-          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
-        ]);
+        videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+        videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        upsertVideoClipCard(ctx, updatedClip),
+      ]);
     }
   },
 });
@@ -1062,9 +1159,10 @@ export const updatePostedStatus = mutation({
 
     if (updatedClip) {
       await Promise.all([
-          videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
-          videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
-        ]);
+        videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+        videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        upsertVideoClipCard(ctx, updatedClip),
+      ]);
     }
   },
 });
@@ -1094,6 +1192,7 @@ export const remove = mutation({
     await Promise.all([
       videoClipCounts.deleteIfExists(ctx, clip),
       videoClipProductCounts.deleteIfExists(ctx, clip),
+      deleteVideoClipCard(ctx, clip),
     ]);
     return clip;
   },

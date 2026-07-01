@@ -6,6 +6,7 @@ import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { markAutomationRunCompletedIfAllTasksDone } from "./markAutomationRunCompletedIfAllTasksDone";
 import { markAutomationRunStatus } from "./markAutomationRunStatus";
+import { upsertAutomationRunSummary } from "./upsertAutomationRunSummary";
 import { automationRunStatusValidator } from "./validators/automationRunStatus";
 import { automationToolValidator } from "./validators/automationTool";
 
@@ -18,7 +19,7 @@ export const listRecent = query({
     const cappedLimit = Math.max(1, Math.min(50, Math.floor(limit)));
 
     return await ctx.db
-      .query("automationRuns")
+      .query("automationRunSummaries")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order("desc")
       .take(cappedLimit);
@@ -48,15 +49,24 @@ export const create = mutation({
       .unique();
 
     if (existing) {
+      await upsertAutomationRunSummary(ctx, existing);
+
       return existing._id;
     }
 
-    return await ctx.db.insert("automationRuns", {
+    const runId = await ctx.db.insert("automationRuns", {
       ...run,
       status: "queued",
       attempt: 0,
       updatedAt: run.createdAt,
     });
+    const insertedRun = await ctx.db.get(runId);
+
+    if (insertedRun) {
+      await upsertAutomationRunSummary(ctx, insertedRun);
+    }
+
+    return runId;
   },
 });
 

@@ -4,8 +4,10 @@ import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { createNotification } from "./createNotification";
+import { deleteSwipeCard } from "./deleteSwipeCard";
 import { getSwipeNotificationCopy } from "./getSwipeNotificationCopy";
 import { rateLimiter } from "./rateLimiter";
+import { upsertSwipeCard } from "./upsertSwipeCard";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { postBridgePostReferenceValidator } from "./validators/postBridgePostReference";
 import { r2ObjectValidator } from "./validators/r2Object";
@@ -59,7 +61,7 @@ export const list = query({
     if (postedStatus === "active") {
       if (productFilterId) {
         return await ctx.db
-          .query("swipes")
+          .query("swipeCards")
           .withIndex("by_owner_product_is_posted_updated", (q) =>
             q
               .eq("ownerId", ownerId)
@@ -71,7 +73,7 @@ export const list = query({
       }
 
       return await ctx.db
-        .query("swipes")
+        .query("swipeCards")
         .withIndex("by_owner_is_posted_updated", (q) =>
           q.eq("ownerId", ownerId).eq("isPosted", undefined),
         )
@@ -82,7 +84,7 @@ export const list = query({
     if (postedStatus === "posted") {
       if (productFilterId) {
         return await ctx.db
-          .query("swipes")
+          .query("swipeCards")
           .withIndex("by_owner_product_is_posted_updated", (q) =>
             q
               .eq("ownerId", ownerId)
@@ -94,7 +96,7 @@ export const list = query({
       }
 
       return await ctx.db
-        .query("swipes")
+        .query("swipeCards")
         .withIndex("by_owner_is_posted_updated", (q) =>
           q.eq("ownerId", ownerId).eq("isPosted", true),
         )
@@ -104,7 +106,7 @@ export const list = query({
 
     if (productFilterId) {
       return await ctx.db
-        .query("swipes")
+        .query("swipeCards")
         .withIndex("by_owner_product_updated", (q) =>
           q.eq("ownerId", ownerId).eq("productSourceId", productFilterId),
         )
@@ -113,7 +115,7 @@ export const list = query({
     }
 
     return await ctx.db
-      .query("swipes")
+      .query("swipeCards")
       .withIndex("by_owner_updated", (q) => q.eq("ownerId", ownerId))
       .order("desc")
       .take(SWIPE_LIST_LIMIT);
@@ -210,10 +212,22 @@ export const save = mutation({
 
     if (existingSwipe) {
       await ctx.db.patch(existingSwipe._id, swipe);
+      const updatedSwipe = await ctx.db.get(existingSwipe._id);
+
+      if (updatedSwipe) {
+        await upsertSwipeCard(ctx, updatedSwipe);
+      }
+
       return existingSwipe._id;
     }
 
     const swipeDocumentId = await ctx.db.insert("swipes", swipe);
+    const insertedSwipe = await ctx.db.get(swipeDocumentId);
+
+    if (insertedSwipe) {
+      await upsertSwipeCard(ctx, insertedSwipe);
+    }
+
     const notificationCopy = getSwipeNotificationCopy({
       name: normalizedFields.name,
       productName: normalizedFields.productName,
@@ -298,10 +312,23 @@ export const saveFromAutomation = mutation({
 
     if (existingSwipe) {
       await ctx.db.patch(existingSwipe._id, swipe);
+      const updatedSwipe = await ctx.db.get(existingSwipe._id);
+
+      if (updatedSwipe) {
+        await upsertSwipeCard(ctx, updatedSwipe);
+      }
+
       return existingSwipe._id;
     }
 
-    return await ctx.db.insert("swipes", swipe);
+    const swipeDocumentId = await ctx.db.insert("swipes", swipe);
+    const insertedSwipe = await ctx.db.get(swipeDocumentId);
+
+    if (insertedSwipe) {
+      await upsertSwipeCard(ctx, insertedSwipe);
+    }
+
+    return swipeDocumentId;
   },
 });
 
@@ -368,10 +395,23 @@ export const saveFromProvider = mutation({
 
     if (existingSwipe) {
       await ctx.db.patch(existingSwipe._id, swipe);
+      const updatedSwipe = await ctx.db.get(existingSwipe._id);
+
+      if (updatedSwipe) {
+        await upsertSwipeCard(ctx, updatedSwipe);
+      }
+
       return existingSwipe._id;
     }
 
-    return await ctx.db.insert("swipes", swipe);
+    const swipeDocumentId = await ctx.db.insert("swipes", swipe);
+    const insertedSwipe = await ctx.db.get(swipeDocumentId);
+
+    if (insertedSwipe) {
+      await upsertSwipeCard(ctx, insertedSwipe);
+    }
+
+    return swipeDocumentId;
   },
 });
 
@@ -401,6 +441,11 @@ export const updatePostedStatus = mutation({
       isPosted: isPosted ? true : undefined,
       postedAt: isPosted ? new Date().toISOString() : undefined,
     });
+    const updatedSwipe = await ctx.db.get(swipe._id);
+
+    if (updatedSwipe) {
+      await upsertSwipeCard(ctx, updatedSwipe);
+    }
   },
 });
 
@@ -438,6 +483,11 @@ export const addPostBridgePost = mutation({
       postedAt: swipe.postedAt ?? now,
       updatedAt: now,
     });
+    const updatedSwipe = await ctx.db.get(swipe._id);
+
+    if (updatedSwipe) {
+      await upsertSwipeCard(ctx, updatedSwipe);
+    }
   },
 });
 
@@ -463,6 +513,8 @@ export const remove = mutation({
     }
 
     await ctx.db.delete(swipe._id);
+    await deleteSwipeCard(ctx, swipe);
+
     return swipe;
   },
 });

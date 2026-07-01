@@ -2,7 +2,7 @@ import type { ExpressionOrValue, FilterBuilder } from "convex/server";
 import type { DataModel } from "./_generated/dataModel";
 
 type VideoClipFilterBuilder = Pick<
-  FilterBuilder<DataModel["videoClips"]>,
+  FilterBuilder<DataModel["videoClipCards"]>,
   "and" | "eq" | "field" | "or"
 >;
 

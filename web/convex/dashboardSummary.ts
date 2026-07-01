@@ -4,9 +4,14 @@ import { query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { getSwiprSwipeReferencedBackgroundIds } from "./getSwiprSwipeReferencedBackgroundIds";
+import { logConvexTransactionMetrics } from "./logConvexTransactionMetrics";
 
 const RECENT_ITEM_LIMIT = 4;
 const SOURCE_CLIP_LIMIT = 12;
+
+type VideoClipCardDocument = Doc<"videoClipCards">;
+type SwipeCardDocument = Doc<"swipeCards">;
+type SwiprBackgroundCardDocument = Doc<"swiprBackgroundCards">;
 
 function sortByCreatedAtDesc<T extends { createdAt: string }>(items: T[]) {
   return [...items].sort(
@@ -14,20 +19,20 @@ function sortByCreatedAtDesc<T extends { createdAt: string }>(items: T[]) {
   );
 }
 
-function dedupeVideoClips(clips: Doc<"videoClips">[]) {
+function dedupeVideoClips(clips: VideoClipCardDocument[]) {
   return [...new Map(clips.map((clip) => [clip.id, clip])).values()];
 }
 
 async function takeVideoClipsByLibraryKind(
   ctx: QueryCtx,
   ownerId: string,
-  kind: Doc<"videoClips">["libraryKind"],
+  kind: VideoClipCardDocument["libraryKind"],
   productId: string | undefined,
   limit: number,
 ) {
   if (productId) {
     return await ctx.db
-      .query("videoClips")
+      .query("videoClipCards")
       .withIndex("by_owner_product_library_kind_created", (q) =>
         q
           .eq("ownerId", ownerId)
@@ -39,7 +44,7 @@ async function takeVideoClipsByLibraryKind(
   }
 
   return await ctx.db
-    .query("videoClips")
+    .query("videoClipCards")
     .withIndex("by_owner_library_kind_created", (q) =>
       q.eq("ownerId", ownerId).eq("libraryKind", kind),
     )
@@ -53,7 +58,7 @@ async function takeAccountUgcVideoClips(
   limit: number,
 ) {
   return await ctx.db
-    .query("videoClips")
+    .query("videoClipCards")
     .withIndex("by_owner_product_library_kind_created", (q) =>
       q
         .eq("ownerId", ownerId)
@@ -71,7 +76,7 @@ async function getRecentVideoClips(
 ) {
   if (!productId) {
     return await ctx.db
-      .query("videoClips")
+      .query("videoClipCards")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order("desc")
       .take(RECENT_ITEM_LIMIT);
@@ -79,7 +84,7 @@ async function getRecentVideoClips(
 
   const [productClips, accountUgcClips] = await Promise.all([
     ctx.db
-      .query("videoClips")
+      .query("videoClipCards")
       .withIndex("by_owner_product_created", (q) =>
         q.eq("ownerId", ownerId).eq("productId", productId),
       )
@@ -149,7 +154,7 @@ async function getRecentStitches(
 ) {
   if (productId) {
     return await ctx.db
-      .query("stitches")
+      .query("stitchCards")
       .withIndex("by_owner_product_is_posted_created", (q) =>
         q
           .eq("ownerId", ownerId)
@@ -161,7 +166,7 @@ async function getRecentStitches(
   }
 
   return await ctx.db
-    .query("stitches")
+    .query("stitchCards")
     .withIndex("by_owner_is_posted_created", (q) =>
       q.eq("ownerId", ownerId).eq("isPosted", undefined),
     )
@@ -176,7 +181,7 @@ async function getRecentSwipes(
 ) {
   if (productId) {
     return await ctx.db
-      .query("swipes")
+      .query("swipeCards")
       .withIndex("by_owner_product_is_posted_updated", (q) =>
         q
           .eq("ownerId", ownerId)
@@ -188,7 +193,7 @@ async function getRecentSwipes(
   }
 
   return await ctx.db
-    .query("swipes")
+    .query("swipeCards")
     .withIndex("by_owner_is_posted_updated", (q) =>
       q.eq("ownerId", ownerId).eq("isPosted", undefined),
     )
@@ -196,19 +201,20 @@ async function getRecentSwipes(
     .take(RECENT_ITEM_LIMIT);
 }
 
-async function getSwipeBackgrounds(ctx: QueryCtx, swipes: Doc<"swipes">[]) {
+async function getSwipeBackgrounds(ctx: QueryCtx, swipes: SwipeCardDocument[]) {
   const backgroundIds = getSwiprSwipeReferencedBackgroundIds(swipes);
   const backgrounds = await Promise.all(
     backgroundIds.map((backgroundId) =>
       ctx.db
-        .query("swiprBackgrounds")
+        .query("swiprBackgroundCards")
         .withIndex("by_background_id", (q) => q.eq("id", backgroundId))
         .unique(),
     ),
   );
 
   return backgrounds.filter(
-    (background): background is Doc<"swiprBackgrounds"> => Boolean(background),
+    (background): background is SwiprBackgroundCardDocument =>
+      Boolean(background),
   );
 }
 
@@ -239,6 +245,7 @@ export const get = query({
       getRecentSwipes(ctx, ownerId, productFilterId),
     ]);
     const swipeBackgrounds = await getSwipeBackgrounds(ctx, recentSwipes);
+    await logConvexTransactionMetrics(ctx, "dashboardSummary.get");
 
     return {
       demoClips,

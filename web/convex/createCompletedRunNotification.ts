@@ -14,6 +14,9 @@ type CreateCompletedRunNotificationArgs = {
   tool: string;
 };
 
+const COMPLETED_RUN_TASK_SUMMARY_LIMIT = 200;
+const COMPLETED_RUN_PRODUCT_NAME_TASK_LIMIT = 10;
+
 export async function createCompletedRunNotification(
   ctx: MutationCtx,
   {
@@ -26,14 +29,14 @@ export async function createCompletedRunNotification(
     tool,
   }: CreateCompletedRunNotificationArgs,
 ) {
-  const tasks = await ctx.db
-    .query("automationTasks")
+  const taskSummaries = await ctx.db
+    .query("automationTaskSummaries")
     .withIndex("by_run", (q) => q.eq("runId", runId))
-    .collect();
+    .take(COMPLETED_RUN_TASK_SUMMARY_LIMIT);
   const outputAssetIds = new Set(
-    tasks.flatMap((task) => task.outputAssetIds ?? []),
+    taskSummaries.flatMap((task) => task.outputAssetIds ?? []),
   );
-  const completedTaskCount = tasks.filter(
+  const completedTaskCount = taskSummaries.filter(
     (task) => task.status === "completed",
   ).length;
   const count = Math.max(outputAssetIds.size, completedTaskCount);
@@ -43,7 +46,13 @@ export async function createCompletedRunNotification(
       ? "Stitchr Batch"
       : getCompletedRunToolLabel(tool);
   const assetLabel = getCompletedRunAssetLabel(tool, safeCount);
-  const productName = getProductNameFromAutomationTasks(tasks);
+  const productNameTasks = await ctx.db
+    .query("automationTasks")
+    .withIndex("by_run_status", (q) =>
+      q.eq("runId", runId).eq("status", "completed"),
+    )
+    .take(COMPLETED_RUN_PRODUCT_NAME_TASK_LIMIT);
+  const productName = getProductNameFromAutomationTasks(productNameTasks);
   const productText = productName ? ` for ${productName}` : "";
 
   return await createNotification(ctx, {

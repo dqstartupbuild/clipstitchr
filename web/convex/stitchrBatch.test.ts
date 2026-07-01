@@ -8,6 +8,7 @@ type ConvexFunction<Args, Result> = {
 type QueryResult = {
   collect?: unknown[];
   first?: unknown;
+  take?: unknown[];
   unique?: unknown;
 };
 
@@ -48,6 +49,7 @@ function createQueryChain(result: QueryResult = {}) {
     collect: vi.fn(async () => result.collect ?? []),
     first: vi.fn(async () => result.first ?? null),
     order: vi.fn(() => chain),
+    take: vi.fn(async () => result.take ?? result.collect ?? []),
     unique: vi.fn(async () => result.unique ?? null),
     withIndex: vi.fn(
       (_indexName: string, callback: (q: typeof indexQuery) => unknown) => {
@@ -71,6 +73,7 @@ function createCtx(resultsByTable: Record<string, QueryResult[]> = {}) {
 
   return {
     db: {
+      get: vi.fn(async (_id: string) => createTask({ _id })),
       insert: vi.fn(async () => "inserted_doc"),
       patch: vi.fn(async () => undefined),
       query: vi.fn((table: string) => {
@@ -287,12 +290,13 @@ describe("stitchrBatch.plan existing runs", () => {
   it("keys the user quota by the local batch date when planning a new run", async () => {
     const product = createProduct();
     const ctx = createCtx({
-      automationTasks: [{ collect: [] }, { unique: null }],
+      automationTasks: [{ take: [] }, { unique: null }],
       productPreferences: [{ unique: null }],
-      products: [{ collect: [product] }, { first: product }],
-      stitchrBatchPairHistory: [{ collect: [] }],
+      products: [{ take: [product] }, { first: product }],
+      stitchrBatchPairHistory: [{ take: [] }],
       videoClips: [
-        { collect: [createClip("ugc_1", "ugc"), createClip("demo_1", "demo")] },
+        { take: [createClip("ugc_1", "ugc")] },
+        { take: [createClip("demo_1", "demo")] },
       ],
     });
 

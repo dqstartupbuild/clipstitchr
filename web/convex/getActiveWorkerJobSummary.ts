@@ -1,4 +1,5 @@
 import type { QueryCtx } from "./_generated/server";
+import { listActiveWorkerJobSummaries } from "./listActiveWorkerJobSummaries";
 
 type WorkerJobDocument = {
   createdAt: string;
@@ -24,43 +25,21 @@ export async function getActiveWorkerJobSummary(
   ctx: QueryCtx,
   ownerId: string,
 ) {
-  const [providerQueued, providerRunning, mediaQueued, mediaRunning] =
-    await Promise.all([
-      ctx.db
-        .query("providerJobs")
-        .withIndex("by_owner_status_created", (q) =>
-          q.eq("ownerId", ownerId).eq("status", "queued"),
-        )
-        .order("desc")
-        .take(ACTIVE_JOB_SAMPLE_LIMIT),
-      ctx.db
-        .query("providerJobs")
-        .withIndex("by_owner_status_created", (q) =>
-          q.eq("ownerId", ownerId).eq("status", "running"),
-        )
-        .order("desc")
-        .take(ACTIVE_JOB_SAMPLE_LIMIT),
-      ctx.db
-        .query("mediaJobs")
-        .withIndex("by_owner_status_created", (q) =>
-          q.eq("ownerId", ownerId).eq("status", "queued"),
-        )
-        .order("desc")
-        .take(ACTIVE_JOB_SAMPLE_LIMIT),
-      ctx.db
-        .query("mediaJobs")
-        .withIndex("by_owner_status_created", (q) =>
-          q.eq("ownerId", ownerId).eq("status", "running"),
-        )
-        .order("desc")
-        .take(ACTIVE_JOB_SAMPLE_LIMIT),
-    ]);
-  const jobs = [
-    ...providerQueued,
-    ...providerRunning,
-    ...mediaQueued,
-    ...mediaRunning,
-  ].sort(
+  const [providerJobs, mediaJobs] = await Promise.all([
+    listActiveWorkerJobSummaries(
+      ctx,
+      ownerId,
+      "provider",
+      ACTIVE_JOB_SAMPLE_LIMIT,
+    ),
+    listActiveWorkerJobSummaries(
+      ctx,
+      ownerId,
+      "media",
+      ACTIVE_JOB_SAMPLE_LIMIT,
+    ),
+  ]);
+  const jobs = [...providerJobs, ...mediaJobs].sort(
     (left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt),
   );
 

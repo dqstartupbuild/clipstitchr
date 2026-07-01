@@ -489,7 +489,10 @@ describe("useClipLibraryState", () => {
     expect(stitchPoster).toBeInstanceOf(Blob);
     expect(fallbackPoster).toBeInstanceOf(Blob);
     expect(missingFallbackPoster).toBeNull();
-    expect(mocks.convex.query).not.toHaveBeenCalled();
+    expect(mocks.convex.query).toHaveBeenCalledWith("videoClips.get", {
+      id: "clip_1",
+    });
+    expect(mocks.convex.query).toHaveBeenCalledTimes(1);
   });
 
   it("resolves poster loads to null when cached R2 downloads fail", async () => {

@@ -18,18 +18,37 @@ import { getAutomationTaskProductId } from "./getAutomationTaskProductId";
 import { getIsStitchrBatchRunId } from "./stitchrBatchRunId";
 import { markAutomationRunCompletedWhenTasksDone } from "./markAutomationRunCompletedWhenTasksDone";
 import { requestWorkerLaunch } from "./workerLaunch";
+import { upsertAutomationRunSummary } from "./upsertAutomationRunSummary";
+import { upsertAutomationTaskSummary } from "./upsertAutomationTaskSummary";
 
 type AutomationTaskDocument = Doc<"automationTasks">;
 
+const AUTOMATION_TASKS_BY_RUN_SCAN_LIMIT = 200;
+
+async function patchAutomationTaskAndSummary(
+  ctx: MutationCtx,
+  task: AutomationTaskDocument,
+  patch: Partial<AutomationTaskDocument>,
+) {
+  await ctx.db.patch(task._id, patch);
+  const updatedTask = await ctx.db.get(task._id);
+
+  if (updatedTask) {
+    await upsertAutomationTaskSummary(ctx, updatedTask);
+  }
+
+  return updatedTask;
+}
+
 async function countActiveTasks(ctx: MutationCtx, ownerId: string) {
   const queued = await ctx.db
-    .query("automationTasks")
+    .query("automationTaskSummaries")
     .withIndex("by_owner_status", (q) =>
       q.eq("ownerId", ownerId).eq("status", "queued"),
     )
     .take(automationMaxActiveTasksPerUser + 1);
   const running = await ctx.db
-    .query("automationTasks")
+    .query("automationTaskSummaries")
     .withIndex("by_owner_status", (q) =>
       q.eq("ownerId", ownerId).eq("status", "running"),
     )
@@ -44,7 +63,7 @@ async function markTaskSkippedForDisabledTool(
   reason: string,
   updatedAt: string,
 ) {
-  await ctx.db.patch(task._id, {
+  await patchAutomationTaskAndSummary(ctx, task, {
     status: "skipped",
     stage: "disabled",
     error: reason,
@@ -67,6 +86,11 @@ async function markTaskSkippedForDisabledTool(
       error: reason,
       updatedAt,
     });
+    const updatedRun = await ctx.db.get(run._id);
+
+    if (updatedRun) {
+      await upsertAutomationRunSummary(ctx, updatedRun);
+    }
   }
 }
 
@@ -91,7 +115,12 @@ async function getClaimableTask(
         );
 
     if (disabledReason) {
-      await markTaskSkippedForDisabledTool(ctx, task, disabledReason, updatedAt);
+      await markTaskSkippedForDisabledTool(
+        ctx,
+        task,
+        disabledReason,
+        updatedAt,
+      );
       continue;
     }
 
@@ -109,9 +138,7 @@ export const listByRun = query({
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const run = await ctx.db
       .query("automationRuns")
-      .withIndex("by_owner_id", (q) =>
-        q.eq("ownerId", ownerId).eq("id", runId),
-      )
+      .withIndex("by_owner_id", (q) => q.eq("ownerId", ownerId).eq("id", runId))
       .unique();
 
     if (!run) {
@@ -119,9 +146,9 @@ export const listByRun = query({
     }
 
     return await ctx.db
-      .query("automationTasks")
+      .query("automationTaskSummaries")
       .withIndex("by_run", (q) => q.eq("runId", runId))
-      .collect();
+      .take(AUTOMATION_TASKS_BY_RUN_SCAN_LIMIT);
   },
 });
 
@@ -161,6 +188,8 @@ export const create = mutation({
       .unique();
 
     if (existing) {
+      await upsertAutomationTaskSummary(ctx, existing);
+
       return existing._id;
     }
 
@@ -179,6 +208,11 @@ export const create = mutation({
       attempt: 0,
       updatedAt: task.createdAt,
     });
+    const insertedTask = await ctx.db.get(taskId);
+
+    if (insertedTask) {
+      await upsertAutomationTaskSummary(ctx, insertedTask);
+    }
 
     await requestWorkerLaunch({
       ctx,
@@ -226,7 +260,7 @@ export const claimNext = mutation({
     }
 
     if (task.attempt >= automationMaxTaskAttempts) {
-      await ctx.db.patch(task._id, {
+      await patchAutomationTaskAndSummary(ctx, task, {
         status: "failed",
         error: "Automation task reached the retry limit.",
         updatedAt,
@@ -235,7 +269,7 @@ export const claimNext = mutation({
       return null;
     }
 
-    await ctx.db.patch(task._id, {
+    const updatedTask = await patchAutomationTaskAndSummary(ctx, task, {
       status: "running",
       attempt: task.attempt + 1,
       lockedBy: workerId,
@@ -243,7 +277,7 @@ export const claimNext = mutation({
       updatedAt,
     });
 
-    return await ctx.db.get(task._id);
+    return updatedTask;
   },
 });
 
@@ -293,13 +327,13 @@ export const claimNextByStage = mutation({
       return null;
     }
 
-    await ctx.db.patch(task._id, {
+    const updatedTask = await patchAutomationTaskAndSummary(ctx, task, {
       lockedBy: workerId,
       lockedUntil,
       updatedAt,
     });
 
-    return await ctx.db.get(task._id);
+    return updatedTask;
   },
 });
 
@@ -353,13 +387,13 @@ export const claimNextForProvider = mutation({
         return null;
       }
 
-      await ctx.db.patch(task._id, {
+      const updatedTask = await patchAutomationTaskAndSummary(ctx, task, {
         lockedBy: workerId,
         lockedUntil,
         updatedAt,
       });
 
-      return await ctx.db.get(task._id);
+      return updatedTask;
     }
 
     const queuedTasks = tool
@@ -387,7 +421,7 @@ export const claimNextForProvider = mutation({
     }
 
     if (task.attempt >= automationMaxTaskAttempts) {
-      await ctx.db.patch(task._id, {
+      await patchAutomationTaskAndSummary(ctx, task, {
         status: "failed",
         error: "Automation task reached the retry limit.",
         updatedAt,
@@ -396,7 +430,7 @@ export const claimNextForProvider = mutation({
       return null;
     }
 
-    await ctx.db.patch(task._id, {
+    const updatedTask = await patchAutomationTaskAndSummary(ctx, task, {
       status: "running",
       attempt: task.attempt + 1,
       lockedBy: workerId,
@@ -404,7 +438,7 @@ export const claimNextForProvider = mutation({
       updatedAt,
     });
 
-    return await ctx.db.get(task._id);
+    return updatedTask;
   },
 });
 
@@ -462,7 +496,7 @@ export const markStatus = mutation({
         ? [...task.mediaJobIds, mediaJobId]
         : task.mediaJobIds;
 
-    await ctx.db.patch(task._id, {
+    await patchAutomationTaskAndSummary(ctx, task, {
       status,
       ...(stage === undefined ? {} : { stage }),
       outputAssetIds,
@@ -541,7 +575,7 @@ export const markProviderStatus = mutation({
         ? [...task.mediaJobIds, mediaJobId]
         : task.mediaJobIds;
 
-    await ctx.db.patch(task._id, {
+    await patchAutomationTaskAndSummary(ctx, task, {
       status,
       ...(stage === undefined ? {} : { stage }),
       outputAssetIds,
@@ -637,7 +671,7 @@ export const markMediaStatus = mutation({
         ? [...task.mediaJobIds, mediaJobId]
         : task.mediaJobIds;
 
-    await ctx.db.patch(task._id, {
+    await patchAutomationTaskAndSummary(ctx, task, {
       status,
       ...(stage === undefined ? {} : { stage }),
       outputAssetIds,

@@ -3,6 +3,7 @@ import {
   addLibraryPackToAccount,
   get,
   list,
+  listByIds,
   listGlobalPexels,
   removeFromLibraryPack,
   removeLibraryPack,
@@ -223,6 +224,51 @@ describe("convex swiprBackgrounds", () => {
     await expect(getHandler(listGlobalPexels)(ctx, {})).resolves.toStrictEqual([
       { ...backgrounds[0], isOwnedByCurrentUser: false },
       { ...backgrounds[1], isOwnedByCurrentUser: false },
+    ]);
+  });
+
+  it("hydrates referenced Swipe backgrounds by id without exposing private uploads", async () => {
+    const ownedBackground = createBackground({
+      id: "owned_background",
+      source: "upload",
+      uploadedByOwnerId: "owner_123",
+    });
+    const sharedPexelsBackground = createBackground({
+      id: "pexels_background",
+      libraryQuery: "Desk Setup",
+      source: "pexels",
+      uploadedByOwnerId: "other_owner",
+    });
+    const privateBackground = createBackground({
+      id: "private_background",
+      libraryQuery: undefined,
+      source: "upload",
+      uploadedByOwnerId: "other_owner",
+    });
+    const backgroundQueries = [
+      createQueryChain({ unique: ownedBackground }),
+      createQueryChain({ unique: sharedPexelsBackground }),
+      createQueryChain({ unique: privateBackground }),
+    ];
+    const ctx = {
+      db: {
+        query: vi.fn(() => backgroundQueries.shift() ?? createQueryChain()),
+      },
+    };
+
+    await expect(
+      getHandler(listByIds)(ctx, {
+        ids: [
+          "owned_background",
+          "pexels_background",
+          "private_background",
+          "owned_background",
+          " ",
+        ],
+      }),
+    ).resolves.toStrictEqual([
+      { ...ownedBackground, isOwnedByCurrentUser: true },
+      { ...sharedPexelsBackground, isOwnedByCurrentUser: false },
     ]);
   });
 

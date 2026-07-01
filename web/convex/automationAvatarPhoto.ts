@@ -3,6 +3,7 @@ import { consumeAutomationBudget } from "./automationBudget";
 import { createAutomationRun } from "./automationCreateRun";
 import { createAutomationTask } from "./automationCreateTask";
 import { markAutomationRunSkipped } from "./automationMarkRunSkipped";
+import { markAutomationRunStatus } from "./markAutomationRunStatus";
 import { assertAutomationWorkerSecret } from "./auth/assertAutomationWorkerSecret";
 import { mutation } from "./_generated/server";
 import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForProduct";
@@ -10,6 +11,10 @@ import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
 import { getDefaultAvatarForOwner } from "./getDefaultAvatarForOwner";
 import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automationToolFeatureFlags";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
+import { listRecentAvatarPhotoAssets } from "./listRecentAvatarPhotoAssets";
+
+const AUTOMATION_AVATAR_PHOTO_PRODUCT_SOURCE_SCAN_LIMIT = 20;
+const AUTOMATION_AVATAR_PHOTO_SOURCE_SCAN_LIMIT = 50;
 
 export const planDaily = mutation({
   args: {
@@ -43,14 +48,21 @@ export const planDaily = mutation({
       };
     }
 
-    if (!preferences?.enabled || !preferences.enabledTools.includes("avatar-photo")) {
+    if (
+      !preferences?.enabled ||
+      !preferences.enabledTools.includes("avatar-photo")
+    ) {
       return {
         status: "skipped",
         taskIds: [],
       };
     }
 
-    const defaultAvatar = await getDefaultAvatarForOwner(ctx, ownerId, productId);
+    const defaultAvatar = await getDefaultAvatarForOwner(
+      ctx,
+      ownerId,
+      productId,
+    );
     const eligibleAvatars = defaultAvatar ? [defaultAvatar] : [];
 
     if (eligibleAvatars.length === 0) {
@@ -60,17 +72,19 @@ export const planDaily = mutation({
       };
     }
 
-    const photos = await ctx.db
-      .query("photoAssets")
-      .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
-      .order("desc")
-      .collect();
     const taskIds: string[] = [];
 
     for (const avatar of eligibleAvatars) {
-      const sourcePhoto = photos.find(
-        (photo) =>
-          photo.avatarId === avatar.id && (!productId || photo.productId === productId),
+      const photos = await listRecentAvatarPhotoAssets(ctx, {
+        avatarId: avatar.id,
+        limit: productId
+          ? AUTOMATION_AVATAR_PHOTO_PRODUCT_SOURCE_SCAN_LIMIT
+          : AUTOMATION_AVATAR_PHOTO_SOURCE_SCAN_LIMIT,
+        ownerId,
+        productId,
+      });
+      const sourcePhoto = photos.find((photo) =>
+        photo.photoObject.contentType.startsWith("image/"),
       );
       const runId = `automation:avatar-photo:${ownerId}:${productScopeKey}:${automationDate}:${avatar.id}`;
       const idempotencyKey = `${ownerId}:${productScopeKey}:${automationDate}:avatar-photo:${avatar.id}`;
@@ -133,9 +147,9 @@ export const planDaily = mutation({
         }),
         createdAt: now,
       });
-      await ctx.db.patch(run._id, {
+      await markAutomationRunStatus(ctx, {
+        runDocumentId: run._id,
         status: "running",
-        startedAt: now,
         updatedAt: now,
       });
       taskIds.push(task.id);

@@ -25,6 +25,7 @@ import type {
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
 
 export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   const pathname = usePathname() ?? "";
@@ -127,6 +128,45 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     () => [...(swipeDocuments ?? []), ...(postedSwipeDocuments ?? [])],
     [postedSwipeDocuments, swipeDocuments],
   );
+  const referencedSwipeBackgroundIds = useMemo(() => {
+    const backgroundIds = new Set<string>();
+
+    for (const swipe of allSwipeDocuments) {
+      backgroundIds.add(swipe.backgroundId);
+
+      for (const slide of swipe.slides) {
+        backgroundIds.add(getSwiprSlideBackgroundId(slide, swipe.backgroundId));
+      }
+    }
+
+    return Array.from(backgroundIds).filter(Boolean);
+  }, [allSwipeDocuments]);
+  const shouldLoadReferencedSwipeBackgrounds =
+    shouldLoadSwipes && referencedSwipeBackgroundIds.length > 0;
+  const referencedBackgroundDocuments = useQuery(
+    api.swiprBackgrounds.listByIds,
+    shouldLoadReferencedSwipeBackgrounds
+      ? { ids: referencedSwipeBackgroundIds }
+      : "skip",
+  );
+  const mergedBackgroundDocuments = useMemo(() => {
+    if (!backgroundDocuments && !referencedBackgroundDocuments) {
+      return undefined;
+    }
+
+    const documentsById = new Map(
+      (backgroundDocuments ?? []).map((background) => [
+        background.id,
+        background,
+      ]),
+    );
+
+    for (const background of referencedBackgroundDocuments ?? []) {
+      documentsById.set(background.id, background);
+    }
+
+    return [...documentsById.values()];
+  }, [backgroundDocuments, referencedBackgroundDocuments]);
 
   const refresh = useCallback(async () => {
     setError(null);
@@ -146,7 +186,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     }
 
     const backgroundObject =
-      backgroundDocuments?.find((background) => background.id === id)
+      mergedBackgroundDocuments?.find((background) => background.id === id)
         ?.imageObject ??
       globalPexelsBackgroundDocuments?.find((background) => background.id === id)
         ?.imageObject;
@@ -186,12 +226,12 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
     } finally {
       backgroundDownloadPromisesRef.current.delete(id);
     }
-  }, [backgroundDocuments, globalPexelsBackgroundDocuments]);
+  }, [globalPexelsBackgroundDocuments, mergedBackgroundDocuments]);
 
   const loadBackgroundAsset = useCallback(
     async (id: string) => {
       const backgroundDocument =
-        backgroundDocuments?.find((background) => background.id === id) ??
+        mergedBackgroundDocuments?.find((background) => background.id === id) ??
         (await convex.query(api.swiprBackgrounds.get, { id }));
 
       if (!backgroundDocument) {
@@ -219,7 +259,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
 
       return loadedBackgroundAsset;
     },
-    [backgroundDocuments, convex, loadBackgroundBlob],
+    [convex, loadBackgroundBlob, mergedBackgroundDocuments],
   );
 
   const loadSwipePosterBlob = useCallback(
@@ -556,7 +596,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
       return;
     }
 
-    if (isAuthLoading || !isAuthenticated || !backgroundDocuments) {
+    if (isAuthLoading || !isAuthenticated || !mergedBackgroundDocuments) {
       if (!isAuthLoading && !isAuthenticated) {
         void Promise.resolve().then(() => {
           backgroundBlobCacheRef.current.clear();
@@ -583,7 +623,7 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
 
       setError(null);
       setBackgrounds(
-        backgroundDocuments.map((background) =>
+        mergedBackgroundDocuments.map((background) =>
           createSwiprBackgroundAssetFromConvexDocument(
             background,
             backgroundBlobsById.get(background.id),
@@ -596,10 +636,10 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
       isCancelled = true;
     };
   }, [
-    backgroundDocuments,
     backgroundBlobsById,
     isAuthenticated,
     isAuthLoading,
+    mergedBackgroundDocuments,
     shouldLoadBackgrounds,
   ]);
 
@@ -613,6 +653,8 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
       (shouldLoadBackgrounds && backgroundDocuments === undefined) ||
       (shouldLoadGlobalPexelsBackgrounds &&
         globalPexelsBackgroundDocuments === undefined) ||
+      (shouldLoadReferencedSwipeBackgrounds &&
+        referencedBackgroundDocuments === undefined) ||
       (shouldLoadSwipes && swipeDocuments === undefined) ||
       (shouldLoadPostedSwipes && postedSwipeDocuments === undefined),
     isSavingBackground,

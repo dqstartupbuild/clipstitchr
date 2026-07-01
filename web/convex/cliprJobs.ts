@@ -5,9 +5,13 @@ import { assertProviderWorkerSecret } from "./auth/assertProviderWorkerSecret";
 import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
+import type { MutationCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { videoClipCounts, videoClipProductCounts } from "./aggregateCounts";
 import { getCliprGeneratedClipStorageFields } from "./getCliprGeneratedClipStorageFields";
 import { rateLimiter } from "./rateLimiter";
+import { upsertCliprJobSummary } from "./upsertCliprJobSummary";
+import { upsertVideoClipCard } from "./upsertVideoClipCard";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
 import { cliprDurationSecondsValidator } from "./validators/cliprDurationSeconds";
 import { cliprGenerationModeValidator } from "./validators/cliprGenerationMode";
@@ -16,6 +20,8 @@ import { cliprResolvedGenerationModeValidator } from "./validators/cliprResolved
 import { cliprScenePlanValidator } from "./validators/cliprScenePlan";
 import { cliprVideoModelIdValidator } from "./validators/cliprVideoModelId";
 import { r2ObjectValidator } from "./validators/r2Object";
+
+type CliprJobDocument = Doc<"cliprJobs">;
 
 const clientJobFields = (job: {
   avatarId: string;
@@ -68,7 +74,7 @@ const clientJobFields = (job: {
     | "openai/sora-2"
     | "openai/sora-2-pro";
   scriptIdea?: string;
-  scenePlan: {
+  scenePlan?: {
     estimatedDurationSeconds: number;
     generatedImageObject?: { contentType: string; key: string; size: number };
     generatedVideoObject?: { contentType: string; key: string; size: number };
@@ -110,7 +116,7 @@ const clientJobFields = (job: {
   targetDurationSeconds: job.targetDurationSeconds,
   filledHook: job.filledHook,
   script: job.script,
-  scenePlan: job.scenePlan,
+  scenePlan: job.scenePlan ?? [],
   status: job.status,
   stage: job.stage,
   progress: job.progress,
@@ -121,12 +127,27 @@ const clientJobFields = (job: {
   completedAt: job.completedAt,
 });
 
+async function patchCliprJobAndSummary(
+  ctx: MutationCtx,
+  job: CliprJobDocument,
+  patch: Partial<CliprJobDocument>,
+) {
+  await ctx.db.patch(job._id, patch);
+  const updatedJob = await ctx.db.get(job._id);
+
+  if (updatedJob) {
+    await upsertCliprJobSummary(ctx, updatedJob);
+  }
+
+  return updatedJob;
+}
+
 export const list = query({
   args: {},
   handler: async (ctx) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
     const jobs = await ctx.db
-      .query("cliprJobs")
+      .query("cliprJobSummaries")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .order("desc")
       .take(20);
@@ -207,7 +228,8 @@ export const createQueued = mutation({
       ...job,
       requestedGenerationMode: job.requestedGenerationMode ?? "script",
       generationMode: job.generationMode ?? "script",
-      requestedVideoModelId: job.requestedVideoModelId ?? "prunaai/p-video-avatar",
+      requestedVideoModelId:
+        job.requestedVideoModelId ?? "prunaai/p-video-avatar",
       videoModelId: job.videoModelId ?? "prunaai/p-video-avatar",
       scenePlan: [],
       providerModels: [],
@@ -221,6 +243,8 @@ export const createQueued = mutation({
     if (!createdJob) {
       throw new Error("Unable to create Clipr job.");
     }
+
+    await upsertCliprJobSummary(ctx, createdJob);
 
     return clientJobFields(createdJob);
   },
@@ -262,6 +286,8 @@ export const createQueuedFromAutomation = mutation({
       .unique();
 
     if (existingJob) {
+      await upsertCliprJobSummary(ctx, existingJob);
+
       return clientJobFields(existingJob);
     }
 
@@ -270,7 +296,8 @@ export const createQueuedFromAutomation = mutation({
       ...job,
       requestedGenerationMode: job.requestedGenerationMode ?? "script",
       generationMode: job.generationMode ?? "script",
-      requestedVideoModelId: job.requestedVideoModelId ?? "prunaai/p-video-avatar",
+      requestedVideoModelId:
+        job.requestedVideoModelId ?? "prunaai/p-video-avatar",
       videoModelId: job.videoModelId ?? "prunaai/p-video-avatar",
       scenePlan: [],
       providerModels: [],
@@ -284,6 +311,8 @@ export const createQueuedFromAutomation = mutation({
     if (!insertedJob) {
       throw new Error("Unable to create Clipr automation job.");
     }
+
+    await upsertCliprJobSummary(ctx, insertedJob);
 
     return clientJobFields(insertedJob);
   },
@@ -325,6 +354,8 @@ export const createQueuedFromProvider = mutation({
       .unique();
 
     if (existingJob) {
+      await upsertCliprJobSummary(ctx, existingJob);
+
       return clientJobFields(existingJob);
     }
 
@@ -333,7 +364,8 @@ export const createQueuedFromProvider = mutation({
       ...job,
       requestedGenerationMode: job.requestedGenerationMode ?? "script",
       generationMode: job.generationMode ?? "script",
-      requestedVideoModelId: job.requestedVideoModelId ?? "prunaai/p-video-avatar",
+      requestedVideoModelId:
+        job.requestedVideoModelId ?? "prunaai/p-video-avatar",
       videoModelId: job.videoModelId ?? "prunaai/p-video-avatar",
       scenePlan: [],
       providerModels: [],
@@ -347,6 +379,8 @@ export const createQueuedFromProvider = mutation({
     if (!insertedJob) {
       throw new Error("Unable to create Clipr automation job.");
     }
+
+    await upsertCliprJobSummary(ctx, insertedJob);
 
     return clientJobFields(insertedJob);
   },
@@ -397,14 +431,16 @@ export const applyScriptPlan = mutation({
       throws: true,
     });
 
-    await ctx.db.patch(job._id, {
+    await patchCliprJobAndSummary(ctx, job, {
       hookStyleKey,
       hookTemplateId,
       filledHook,
       variablesUsed,
       script,
       scenePlan,
-      providerModels: Array.from(new Set([...job.providerModels, providerModel])),
+      providerModels: Array.from(
+        new Set([...job.providerModels, providerModel]),
+      ),
       status: "generating-avatar-image",
       stage: "avatar-image",
       progress: 0.25,
@@ -461,14 +497,16 @@ export const applyScriptPlanFromAutomation = mutation({
       variablesUsed,
       script,
       scenePlan,
-      providerModels: Array.from(new Set([...job.providerModels, providerModel])),
+      providerModels: Array.from(
+        new Set([...job.providerModels, providerModel]),
+      ),
       status: "generating-avatar-image" as const,
       stage: "avatar-image" as const,
       progress: 0.25,
       updatedAt,
     };
 
-    await ctx.db.patch(job._id, patch);
+    await patchCliprJobAndSummary(ctx, job, patch);
 
     return clientJobFields({
       ...job,
@@ -525,14 +563,16 @@ export const applyScriptPlanFromProvider = mutation({
       variablesUsed,
       script,
       scenePlan,
-      providerModels: Array.from(new Set([...job.providerModels, providerModel])),
+      providerModels: Array.from(
+        new Set([...job.providerModels, providerModel]),
+      ),
       status: "generating-avatar-image" as const,
       stage: "avatar-image" as const,
       progress: 0.25,
       updatedAt,
     };
 
-    await ctx.db.patch(job._id, patch);
+    await patchCliprJobAndSummary(ctx, job, patch);
 
     return clientJobFields({
       ...job,
@@ -580,7 +620,7 @@ export const recordAvatarImageOutput = mutation({
       throws: true,
     });
 
-    await ctx.db.patch(job._id, {
+    await patchCliprJobAndSummary(ctx, job, {
       avatarImageObject,
       avatarImageProviderPredictionId,
       providerModels: Array.from(
@@ -641,7 +681,7 @@ export const recordAvatarImageOutputFromAutomation = mutation({
       updatedAt,
     };
 
-    await ctx.db.patch(job._id, patch);
+    await patchCliprJobAndSummary(ctx, job, patch);
 
     return clientJobFields({
       ...job,
@@ -697,7 +737,7 @@ export const recordAvatarImageOutputFromProvider = mutation({
       updatedAt,
     };
 
-    await ctx.db.patch(job._id, patch);
+    await patchCliprJobAndSummary(ctx, job, patch);
 
     return clientJobFields({
       ...job,
@@ -760,7 +800,7 @@ export const recordAvatarVideoOutput = mutation({
       updatedAt,
     };
 
-    await ctx.db.patch(job._id, patch);
+    await patchCliprJobAndSummary(ctx, job, patch);
 
     return clientJobFields({
       ...job,
@@ -819,7 +859,7 @@ export const recordAvatarVideoOutputFromAutomation = mutation({
       updatedAt,
     };
 
-    await ctx.db.patch(job._id, patch);
+    await patchCliprJobAndSummary(ctx, job, patch);
 
     return clientJobFields({
       ...job,
@@ -878,7 +918,7 @@ export const recordAvatarVideoOutputFromProvider = mutation({
       updatedAt,
     };
 
-    await ctx.db.patch(job._id, patch);
+    await patchCliprJobAndSummary(ctx, job, patch);
 
     return clientJobFields({
       ...job,
@@ -903,7 +943,7 @@ export const markBrowserSaving = mutation({
       throw new Error("Clipr job not found.");
     }
 
-    await ctx.db.patch(job._id, {
+    await patchCliprJobAndSummary(ctx, job, {
       status: "saving",
       stage: "browser-save",
       progress: Math.max(job.progress, 0.72),
@@ -969,7 +1009,7 @@ export const finalizeWithClip = mutation({
 
     const clipStorageFields = getCliprGeneratedClipStorageFields(job);
 
-    await ctx.db.insert("videoClips", {
+    const insertedClipId = await ctx.db.insert("videoClips", {
       ownerId,
       id: args.clipId,
       productId: job.productId,
@@ -1018,8 +1058,17 @@ export const finalizeWithClip = mutation({
       createdAt: args.updatedAt,
       updatedAt: args.updatedAt,
     });
+    const insertedClip = await ctx.db.get(insertedClipId);
 
-    await ctx.db.patch(job._id, {
+    if (insertedClip) {
+      await Promise.all([
+        videoClipCounts.insertIfDoesNotExist(ctx, insertedClip),
+        videoClipProductCounts.insertIfDoesNotExist(ctx, insertedClip),
+        upsertVideoClipCard(ctx, insertedClip),
+      ]);
+    }
+
+    await patchCliprJobAndSummary(ctx, job, {
       finalClipId: args.clipId,
       status: "completed",
       stage: "finalized",
@@ -1156,7 +1205,12 @@ export const finalizeWithClipFromMediaWorker = mutation({
       if (updatedClip) {
         await Promise.all([
           videoClipCounts.replaceOrInsert(ctx, existingClip, updatedClip),
-          videoClipProductCounts.replaceOrInsert(ctx, existingClip, updatedClip),
+          videoClipProductCounts.replaceOrInsert(
+            ctx,
+            existingClip,
+            updatedClip,
+          ),
+          upsertVideoClipCard(ctx, updatedClip),
         ]);
       }
     } else {
@@ -1165,13 +1219,14 @@ export const finalizeWithClipFromMediaWorker = mutation({
 
       if (insertedClip) {
         await Promise.all([
-        videoClipCounts.insertIfDoesNotExist(ctx, insertedClip),
-        videoClipProductCounts.insertIfDoesNotExist(ctx, insertedClip),
-      ]);
+          videoClipCounts.insertIfDoesNotExist(ctx, insertedClip),
+          videoClipProductCounts.insertIfDoesNotExist(ctx, insertedClip),
+          upsertVideoClipCard(ctx, insertedClip),
+        ]);
       }
     }
 
-    await ctx.db.patch(job._id, {
+    await patchCliprJobAndSummary(ctx, job, {
       finalClipId: args.clipId,
       status: "completed",
       stage: "finalized",
@@ -1205,7 +1260,7 @@ export const fail = mutation({
       return null;
     }
 
-    await ctx.db.patch(job._id, {
+    await patchCliprJobAndSummary(ctx, job, {
       status: "failed",
       stage: "failed",
       error,
@@ -1236,7 +1291,7 @@ export const failFromAutomation = mutation({
       return null;
     }
 
-    await ctx.db.patch(job._id, {
+    await patchCliprJobAndSummary(ctx, job, {
       status: "failed",
       stage: "failed",
       error,
@@ -1267,7 +1322,7 @@ export const failFromProvider = mutation({
       return null;
     }
 
-    await ctx.db.patch(job._id, {
+    await patchCliprJobAndSummary(ctx, job, {
       status: "failed",
       stage: "failed",
       error,
@@ -1298,7 +1353,7 @@ export const failFromMediaWorker = mutation({
       return null;
     }
 
-    await ctx.db.patch(job._id, {
+    await patchCliprJobAndSummary(ctx, job, {
       status: "failed",
       stage: "failed",
       error,
@@ -1331,7 +1386,7 @@ export const cancel = mutation({
       return null;
     }
 
-    await ctx.db.patch(job._id, {
+    await patchCliprJobAndSummary(ctx, job, {
       status: "canceled",
       stage: "canceled",
       updatedAt,

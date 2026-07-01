@@ -2,21 +2,28 @@ import type { Doc } from "@/convex/_generated/dataModel";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 
 export function createVideoClipMetadataFromConvexDocument(
-  clip: Doc<"videoClips">,
+  clip: Doc<"videoClips"> | Doc<"videoClipCards">,
   posterBlob?: Blob,
 ): VideoClipMetadata {
   return {
     id: clip.id,
     name: clip.name,
     tags: clip.tags,
-    videoDescription: clip.videoDescription,
-    mainPersonDescription: clip.mainPersonDescription,
-    outfitDescription: clip.outfitDescription,
-    locationDescription: clip.locationDescription,
-    poseDescription: clip.poseDescription,
+    searchText: "searchText" in clip ? clip.searchText : undefined,
+    videoDescription:
+      "videoDescription" in clip ? clip.videoDescription : undefined,
+    mainPersonDescription:
+      "mainPersonDescription" in clip ? clip.mainPersonDescription : undefined,
+    outfitDescription:
+      "outfitDescription" in clip ? clip.outfitDescription : undefined,
+    locationDescription:
+      "locationDescription" in clip ? clip.locationDescription : undefined,
+    poseDescription:
+      "poseDescription" in clip ? clip.poseDescription : undefined,
     performanceScore: clip.performanceScore,
     quickEdit: clip.quickEdit,
-    productDescription: clip.productDescription,
+    productDescription:
+      "productDescription" in clip ? clip.productDescription : undefined,
     productId: clip.productId,
     originalName: clip.originalName,
     clipType: clip.clipType,

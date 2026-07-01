@@ -6,7 +6,7 @@ export async function getOwnerHasContent(
 ) {
   const [clip, photo, avatar, stitch, swipe] = await Promise.all([
     ctx.db
-      .query("videoClips")
+      .query("videoClipCards")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .first(),
     ctx.db
@@ -18,11 +18,11 @@ export async function getOwnerHasContent(
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .first(),
     ctx.db
-      .query("stitches")
+      .query("stitchCards")
       .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
       .first(),
     ctx.db
-      .query("swipes")
+      .query("swipeCards")
       .withIndex("by_owner_updated", (q) => q.eq("ownerId", ownerId))
       .first(),
   ]);

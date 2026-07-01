@@ -9,6 +9,9 @@ import { rateLimiter } from "./rateLimiter";
 import { avatarWardrobeStyleValidator } from "./validators/avatarWardrobeStyle";
 
 const AVATAR_LIST_LIMIT = 120;
+const AVATAR_PHOTO_BUNDLE_LIMIT = 200;
+const AVATAR_PHOTO_PRODUCT_UPDATE_LIMIT = 1000;
+const AVATAR_PREFERENCE_DELETE_LIMIT = 100;
 
 export const list = query({
   args: {
@@ -116,7 +119,15 @@ export const update = mutation({
   },
   handler: async (
     ctx,
-    { id, name, description, productId, wardrobeStyle, cliprVoiceId, updatedAt },
+    {
+      id,
+      name,
+      description,
+      productId,
+      wardrobeStyle,
+      cliprVoiceId,
+      updatedAt,
+    },
   ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
@@ -161,7 +172,7 @@ export const update = mutation({
         .withIndex("by_owner_avatar_created", (q) =>
           q.eq("ownerId", ownerId).eq("avatarId", id),
         )
-        .collect();
+        .take(AVATAR_PHOTO_PRODUCT_UPDATE_LIMIT);
 
       for (const photo of avatarPhotos) {
         await ctx.db.patch(photo._id, {
@@ -193,7 +204,7 @@ export const getDeleteBundle = query({
       .withIndex("by_owner_avatar_created", (q) =>
         q.eq("ownerId", ownerId).eq("avatarId", id),
       )
-      .collect();
+      .take(AVATAR_PHOTO_BUNDLE_LIMIT);
 
     return {
       avatar,
@@ -229,7 +240,7 @@ export const removeWithPhotos = mutation({
       .withIndex("by_owner_avatar_created", (q) =>
         q.eq("ownerId", ownerId).eq("avatarId", id),
       )
-      .collect();
+      .take(photoIds.length + 1);
     const avatarPhotos = ownerPhotos;
     const expectedPhotoIds = new Set(photoIds);
     const hasUncleanedPhoto = avatarPhotos.some(
@@ -249,7 +260,7 @@ export const removeWithPhotos = mutation({
     const preferences = await ctx.db
       .query("avatarPreferences")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-      .collect();
+      .take(AVATAR_PREFERENCE_DELETE_LIMIT);
 
     for (const preference of preferences) {
       if (preference.defaultAvatarId === id) {

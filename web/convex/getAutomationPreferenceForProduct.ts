@@ -18,10 +18,10 @@ export async function getAutomationPreferenceForProduct(
     }
   }
 
-  const ownerPreferences = await ctx.db
+  return await ctx.db
     .query("automationPreferences")
-    .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-    .collect();
-
-  return ownerPreferences.find((preference) => !preference.productId) ?? null;
+    .withIndex("by_owner_product", (q) =>
+      q.eq("ownerId", ownerId).eq("productId", undefined),
+    )
+    .unique();
 }

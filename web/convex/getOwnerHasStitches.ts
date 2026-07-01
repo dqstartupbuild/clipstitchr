@@ -5,7 +5,7 @@ export async function getOwnerHasStitches(
   ownerId: string,
 ) {
   const stitch = await ctx.db
-    .query("stitches")
+    .query("stitchCards")
     .withIndex("by_owner_created", (q) => q.eq("ownerId", ownerId))
     .first();
 

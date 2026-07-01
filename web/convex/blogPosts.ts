@@ -1,9 +1,13 @@
+import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
-import { getBlogPostCardFields } from "./blogPostCards/getBlogPostCardFields";
+import { upsertBlogPostCardBySlug } from "./blogPostCards/upsertBlogPostCardBySlug";
 import { blogPostContentFormatValidator } from "./validators/blogPostContentFormat";
+
+const BLOG_POST_CARD_LIST_LIMIT = 100;
+const BLOG_POST_CARD_REBUILD_LIMIT = 500;
 
 const upsertArgs = {
   secret: v.string(),
@@ -88,24 +92,6 @@ async function upsertBlogPostBySlug(ctx: MutationCtx, args: UpsertArgs) {
   return { slug: args.slug, status: "created" as const };
 }
 
-async function upsertBlogPostCardBySlug(
-  ctx: MutationCtx,
-  post: Parameters<typeof getBlogPostCardFields>[0],
-) {
-  const existingCard = await ctx.db
-    .query("blogPostCards")
-    .withIndex("by_slug", (q) => q.eq("slug", post.slug))
-    .unique();
-  const cardFields = getBlogPostCardFields(post);
-
-  if (existingCard) {
-    await ctx.db.patch(existingCard._id, cardFields);
-    return;
-  }
-
-  await ctx.db.insert("blogPostCards", cardFields);
-}
-
 export const upsertPublishedArticle = mutation({
   args: upsertArgs,
   handler: async (ctx, { secret, ...args }) => {
@@ -122,7 +108,7 @@ export const listPublishedBlogPostCards = query({
       .query("blogPostCards")
       .withIndex("by_published")
       .order("desc")
-      .collect();
+      .take(BLOG_POST_CARD_LIST_LIMIT);
 
     return cards.map((card) => ({
       slug: card.slug,
@@ -141,15 +127,33 @@ export const listPublishedBlogPostCards = query({
 
 export const rebuildPublishedBlogPostCards = mutation({
   args: {
+    paginationOpts: v.optional(paginationOptsValidator),
     secret: v.string(),
   },
-  handler: async (ctx, { secret }) => {
+  handler: async (ctx, { paginationOpts, secret }) => {
     assertRateLimitApiSecret(secret);
+
+    if (paginationOpts) {
+      const page = await ctx.db
+        .query("blogPosts")
+        .withIndex("by_published")
+        .paginate(paginationOpts);
+
+      for (const post of page.page) {
+        await upsertBlogPostCardBySlug(ctx, post);
+      }
+
+      return {
+        continueCursor: page.continueCursor,
+        count: page.page.length,
+        isDone: page.isDone,
+      };
+    }
 
     const posts = await ctx.db
       .query("blogPosts")
       .withIndex("by_published")
-      .collect();
+      .take(BLOG_POST_CARD_REBUILD_LIMIT);
 
     for (const post of posts) {
       await upsertBlogPostCardBySlug(ctx, post);

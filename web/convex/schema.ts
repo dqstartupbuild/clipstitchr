@@ -170,6 +170,73 @@ export default defineSchema({
       "createdAt",
     ])
     .index("by_owner_id", ["ownerId", "id"]),
+  videoClipCards: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    name: v.string(),
+    tags: assetTagsValidator,
+    searchText: v.string(),
+    performanceScore: v.optional(clipPerformanceScoreValidator),
+    quickEdit: v.optional(quickEditMetadataValidator),
+    productId: v.optional(v.string()),
+    originalName: v.string(),
+    clipType: clipTypeValidator,
+    libraryKind: v.optional(videoClipLibraryKindValidator),
+    videoObject: r2ObjectValidator,
+    posterObject: v.optional(r2ObjectValidator),
+    posterVersion: v.optional(v.number()),
+    mimeType: v.string(),
+    sourceMimeType: v.string(),
+    size: v.number(),
+    originalSize: v.number(),
+    width: v.number(),
+    height: v.number(),
+    aspectRatio: v.number(),
+    duration: v.number(),
+    defaultTrimRange: v.optional(videoTrimRangeValidator),
+    hasAudio: v.boolean(),
+    swaprMetadata: v.optional(swaprMetadataValidator),
+    cliprMetadata: v.optional(cliprMetadataValidator),
+    isPosted: v.optional(v.boolean()),
+    postedAt: v.optional(v.string()),
+    automation: v.optional(automationProvenanceValidator),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
+    .index("by_owner_is_posted_created", ["ownerId", "isPosted", "createdAt"])
+    .index("by_owner_product_is_posted_created", [
+      "ownerId",
+      "productId",
+      "isPosted",
+      "createdAt",
+    ])
+    .index("by_owner_library_kind_created", [
+      "ownerId",
+      "libraryKind",
+      "createdAt",
+    ])
+    .index("by_owner_product_library_kind_created", [
+      "ownerId",
+      "productId",
+      "libraryKind",
+      "createdAt",
+    ])
+    .index("by_owner_library_kind_is_posted_created", [
+      "ownerId",
+      "libraryKind",
+      "isPosted",
+      "createdAt",
+    ])
+    .index("by_owner_product_library_kind_is_posted_created", [
+      "ownerId",
+      "productId",
+      "libraryKind",
+      "isPosted",
+      "createdAt",
+    ])
+    .index("by_owner_id", ["ownerId", "id"]),
   photoAssets: defineTable({
     ownerId: v.string(),
     id: v.string(),
@@ -263,6 +330,17 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
+  productCards: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    name: v.string(),
+    websiteUrl: v.optional(v.string()),
+    postBridgeSocialAccountIds: v.optional(v.array(v.number())),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"]),
   postBridgeSettings: defineTable({
     ownerId: v.string(),
     encryptedApiKey: v.string(),
@@ -284,6 +362,56 @@ export default defineSchema({
     updatedAt: v.string(),
   }).index("by_owner", ["ownerId"]),
   stitches: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    productId: v.optional(v.string()),
+    mode: v.optional(stitchrModeValidator),
+    name: v.string(),
+    ugcClipId: v.string(),
+    demoClipId: v.string(),
+    ugcClipName: v.string(),
+    demoClipName: v.string(),
+    ugcTrimRange: v.optional(videoTrimRangeValidator),
+    demoTrimRange: v.optional(videoTrimRangeValidator),
+    demoQuickEdit: v.optional(quickEditSuggestionsValidator),
+    quickEdit: v.optional(quickEditMetadataValidator),
+    ugcQuickEdit: v.optional(quickEditSuggestionsValidator),
+    sequenceSegments: v.optional(v.array(stitchSequenceSegmentValidator)),
+    stitchObject: v.optional(r2ObjectValidator),
+    posterObject: v.optional(r2ObjectValidator),
+    posterVersion: v.optional(v.number()),
+    mimeType: v.optional(v.string()),
+    size: v.optional(v.number()),
+    width: v.number(),
+    height: v.number(),
+    duration: v.number(),
+    includeDemoAudio: v.optional(v.boolean()),
+    includeUgcAudio: v.optional(v.boolean()),
+    demoPlaybackRate: v.optional(videoPlaybackRateValidator),
+    ugcPlaybackRate: v.optional(videoPlaybackRateValidator),
+    music: v.optional(stitchMusicMetadataValidator),
+    textOverlay: v.optional(textOverlayValidator),
+    textOverlays: v.optional(textOverlaysValidator),
+    socialCaption: v.optional(v.string()),
+    stitchScore: v.optional(stitchScoreValidator),
+    firstStitchScore: v.optional(stitchScoreValidator),
+    postBridgePosts: v.optional(v.array(postBridgePostReferenceValidator)),
+    isPosted: v.optional(v.boolean()),
+    postedAt: v.optional(v.string()),
+    automation: v.optional(automationProvenanceValidator),
+    createdAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
+    .index("by_owner_is_posted_created", ["ownerId", "isPosted", "createdAt"])
+    .index("by_owner_product_is_posted_created", [
+      "ownerId",
+      "productId",
+      "isPosted",
+      "createdAt",
+    ])
+    .index("by_owner_id", ["ownerId", "id"]),
+  stitchCards: defineTable({
     ownerId: v.string(),
     id: v.string(),
     productId: v.optional(v.string()),
@@ -361,6 +489,7 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_source_stitch", ["ownerId", "sourceStitchId"])
     .index("by_owner_id", ["ownerId", "id"]),
   stitchrHookPlans: defineTable({
     ownerId: v.string(),
@@ -400,6 +529,7 @@ export default defineSchema({
       "createdAt",
     ])
     .index("by_owner_id", ["ownerId", "id"])
+    .index("by_owner_stitch_created", ["ownerId", "stitchId", "createdAt"])
     .index("by_owner_task", ["ownerId", "automationTaskId"]),
   sharedMusicTracks: defineTable({
     id: v.string(),
@@ -431,6 +561,34 @@ export default defineSchema({
     tags: assetTagsValidator,
     description: v.optional(v.string()),
     details: v.optional(v.string()),
+    libraryQuery: v.optional(v.string()),
+    libraryQueryKey: v.optional(v.string()),
+    pexelsPhotoId: v.optional(v.number()),
+    source: swiprBackgroundSourceValidator,
+    imageObject: r2ObjectValidator,
+    mimeType: v.string(),
+    size: v.number(),
+    width: v.number(),
+    height: v.number(),
+    createdAt: v.string(),
+  })
+    .index("by_created", ["createdAt"])
+    .index("by_uploaded_owner_created", ["uploadedByOwnerId", "createdAt"])
+    .index("by_source_created", ["source", "createdAt"])
+    .index("by_source_library_query_created", [
+      "source",
+      "libraryQueryKey",
+      "createdAt",
+    ])
+    .index("by_source_pexels_photo", ["source", "pexelsPhotoId"])
+    .index("by_background_id", ["id"]),
+  swiprBackgroundCards: defineTable({
+    id: v.string(),
+    uploadedByOwnerId: v.string(),
+    name: v.string(),
+    tags: assetTagsValidator,
+    description: v.optional(v.string()),
+    searchText: v.string(),
     libraryQuery: v.optional(v.string()),
     libraryQueryKey: v.optional(v.string()),
     pexelsPhotoId: v.optional(v.number()),
@@ -486,6 +644,44 @@ export default defineSchema({
     rationale: v.optional(v.string()),
     socialCaption: v.optional(v.string()),
     slides: v.array(swiprSlideValidator),
+    posterObject: v.optional(r2ObjectValidator),
+    posterVersion: v.optional(v.number()),
+    postBridgePosts: v.optional(v.array(postBridgePostReferenceValidator)),
+    isPosted: v.optional(v.boolean()),
+    postedAt: v.optional(v.string()),
+    automation: v.optional(automationProvenanceValidator),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_updated", ["ownerId", "updatedAt"])
+    .index("by_owner_is_posted_updated", ["ownerId", "isPosted", "updatedAt"])
+    .index("by_owner_product_updated", [
+      "ownerId",
+      "productSourceId",
+      "updatedAt",
+    ])
+    .index("by_owner_product_is_posted_updated", [
+      "ownerId",
+      "productSourceId",
+      "isPosted",
+      "updatedAt",
+    ])
+    .index("by_owner_id", ["ownerId", "id"]),
+  swipeCards: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    name: v.string(),
+    productSourceType: swiprProductSourceTypeValidator,
+    productSourceId: v.string(),
+    productContext: v.string(),
+    productName: v.string(),
+    backgroundId: v.string(),
+    caption: v.optional(v.string()),
+    description: v.optional(v.string()),
+    hashtags: v.optional(v.array(v.string())),
+    socialCaption: v.optional(v.string()),
+    slides: v.array(swiprSlideValidator),
+    searchText: v.string(),
     posterObject: v.optional(r2ObjectValidator),
     posterVersion: v.optional(v.number()),
     postBridgePosts: v.optional(v.array(postBridgePostReferenceValidator)),
@@ -567,6 +763,39 @@ export default defineSchema({
   })
     .index("by_owner_created", ["ownerId", "createdAt"])
     .index("by_owner_id", ["ownerId", "id"]),
+  cliprJobSummaries: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    productId: v.string(),
+    productName: v.string(),
+    avatarId: v.string(),
+    avatarPhotoId: v.string(),
+    demoClipId: v.optional(v.string()),
+    demoClipName: v.optional(v.string()),
+    avatarImageObject: v.optional(r2ObjectValidator),
+    avatarVideoObject: v.optional(r2ObjectValidator),
+    avatarImageProviderPredictionId: v.optional(v.string()),
+    avatarVideoProviderPredictionId: v.optional(v.string()),
+    music: v.optional(cliprMusicMetadataValidator),
+    voiceId: v.string(),
+    requestedGenerationMode: v.optional(cliprGenerationModeValidator),
+    generationMode: v.optional(cliprResolvedGenerationModeValidator),
+    requestedVideoModelId: v.optional(cliprVideoModelIdValidator),
+    videoModelId: v.optional(cliprVideoModelIdValidator),
+    scriptIdea: v.optional(v.string()),
+    targetDurationSeconds: cliprDurationSecondsValidator,
+    filledHook: v.optional(v.string()),
+    status: cliprJobStatusValidator,
+    stage: cliprJobStageValidator,
+    progress: v.number(),
+    finalClipId: v.optional(v.string()),
+    error: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    completedAt: v.optional(v.string()),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"]),
   cliprUserPreferences: defineTable({
     ownerId: v.string(),
     defaultVoiceId: v.string(),
@@ -634,6 +863,30 @@ export default defineSchema({
       "createdAt",
     ])
     .index("by_idempotency_key", ["idempotencyKey"]),
+  workerJobSummaries: defineTable({
+    ownerId: v.string(),
+    id: v.string(),
+    worker: v.union(v.literal("media"), v.literal("provider")),
+    jobType: v.string(),
+    status: v.string(),
+    stage: v.string(),
+    outputAssetIds: v.array(v.string()),
+    providerJobIds: v.optional(v.array(v.string())),
+    mediaJobIds: v.optional(v.array(v.string())),
+    progress: v.optional(v.number()),
+    error: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    completedAt: v.optional(v.string()),
+  })
+    .index("by_owner_worker_status_created", [
+      "ownerId",
+      "worker",
+      "status",
+      "createdAt",
+    ])
+    .index("by_worker_job_id", ["worker", "id"])
+    .index("by_owner_id", ["ownerId", "id"]),
   workerLaunchState: defineTable({
     worker: v.union(v.literal("media"), v.literal("provider")),
     lastRequestedAt: v.string(),
@@ -696,7 +949,8 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_owner", ["ownerId"])
-    .index("by_owner_product", ["ownerId", "productId"]),
+    .index("by_owner_product", ["ownerId", "productId"])
+    .index("by_enabled_owner_product", ["enabled", "ownerId", "productId"]),
   automationRuns: defineTable({
     ownerId: v.string(),
     productId: v.optional(v.string()),
@@ -721,6 +975,27 @@ export default defineSchema({
     .index("by_owner_id", ["ownerId", "id"])
     .index("by_owner_date_tool", ["ownerId", "automationDate", "tool"])
     .index("by_idempotency_key", ["idempotencyKey"]),
+  automationRunSummaries: defineTable({
+    ownerId: v.string(),
+    productId: v.optional(v.string()),
+    id: v.string(),
+    automationDate: v.string(),
+    tool: automationToolValidator,
+    status: automationRunStatusValidator,
+    dailyLimit: v.number(),
+    attempt: v.number(),
+    startedAt: v.optional(v.string()),
+    completedAt: v.optional(v.string()),
+    skippedAt: v.optional(v.string()),
+    failedAt: v.optional(v.string()),
+    error: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_product_created", ["ownerId", "productId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"])
+    .index("by_owner_date_tool", ["ownerId", "automationDate", "tool"]),
   automationTasks: defineTable({
     ownerId: v.string(),
     productId: v.optional(v.string()),
@@ -757,6 +1032,29 @@ export default defineSchema({
     .index("by_run", ["runId"])
     .index("by_run_status", ["runId", "status"])
     .index("by_idempotency_key", ["idempotencyKey"]),
+  automationTaskSummaries: defineTable({
+    ownerId: v.string(),
+    productId: v.optional(v.string()),
+    id: v.string(),
+    runId: v.string(),
+    tool: automationToolValidator,
+    taskType: automationTaskTypeValidator,
+    status: automationTaskStatusValidator,
+    stage: v.string(),
+    outputAssetIds: v.array(v.string()),
+    providerJobIds: v.array(v.string()),
+    mediaJobIds: v.array(v.string()),
+    attempt: v.number(),
+    error: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    completedAt: v.optional(v.string()),
+  })
+    .index("by_owner_created", ["ownerId", "createdAt"])
+    .index("by_owner_id", ["ownerId", "id"])
+    .index("by_owner_status", ["ownerId", "status"])
+    .index("by_run", ["runId"])
+    .index("by_run_status", ["runId", "status"]),
   automationPairHistory: defineTable({
     ownerId: v.string(),
     ugcClipId: v.string(),

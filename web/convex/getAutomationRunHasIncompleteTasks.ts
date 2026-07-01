@@ -6,25 +6,25 @@ export async function getAutomationRunHasIncompleteTasks(
 ) {
   const [queuedTask, runningTask, failedTask, skippedTask] = await Promise.all([
     ctx.db
-      .query("automationTasks")
+      .query("automationTaskSummaries")
       .withIndex("by_run_status", (q) =>
         q.eq("runId", runId).eq("status", "queued"),
       )
       .first(),
     ctx.db
-      .query("automationTasks")
+      .query("automationTaskSummaries")
       .withIndex("by_run_status", (q) =>
         q.eq("runId", runId).eq("status", "running"),
       )
       .first(),
     ctx.db
-      .query("automationTasks")
+      .query("automationTaskSummaries")
       .withIndex("by_run_status", (q) =>
         q.eq("runId", runId).eq("status", "failed"),
       )
       .first(),
     ctx.db
-      .query("automationTasks")
+      .query("automationTaskSummaries")
       .withIndex("by_run_status", (q) =>
         q.eq("runId", runId).eq("status", "skipped"),
       )

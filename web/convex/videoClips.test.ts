@@ -340,6 +340,7 @@ describe("convex videoClips", () => {
   it("updates poster and Clipr music, then removes clips", async () => {
     const setup = createCtx([
       { _id: "doc_1", id: "clip_1" },
+      null,
       {
         _id: "doc_1",
         cliprMetadata: {
@@ -347,7 +348,9 @@ describe("convex videoClips", () => {
         },
         id: "clip_1",
       },
+      null,
       { _id: "doc_1", id: "clip_1" },
+      null,
       null,
     ]);
 
@@ -400,7 +403,9 @@ describe("convex videoClips", () => {
   it("updates posted status using Stitch active semantics", async () => {
     const setup = createCtx([
       { _id: "doc_1", cliprMetadata: {}, id: "clip_1" },
+      null,
       { _id: "doc_1", cliprMetadata: {}, id: "clip_1" },
+      null,
       { _id: "doc_1", id: "clip_1" },
     ]);
 

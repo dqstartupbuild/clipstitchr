@@ -1,0 +1,35 @@
+import type { Doc } from "./_generated/dataModel";
+
+export function createCliprJobSummaryFields(job: Doc<"cliprJobs">) {
+  return {
+    ownerId: job.ownerId,
+    id: job.id,
+    productId: job.productId,
+    productName: job.productName,
+    avatarId: job.avatarId,
+    avatarPhotoId: job.avatarPhotoId,
+    demoClipId: job.demoClipId,
+    demoClipName: job.demoClipName,
+    avatarImageObject: job.avatarImageObject,
+    avatarVideoObject: job.avatarVideoObject,
+    avatarImageProviderPredictionId: job.avatarImageProviderPredictionId,
+    avatarVideoProviderPredictionId: job.avatarVideoProviderPredictionId,
+    music: job.music,
+    voiceId: job.voiceId,
+    requestedGenerationMode: job.requestedGenerationMode,
+    generationMode: job.generationMode,
+    requestedVideoModelId: job.requestedVideoModelId,
+    videoModelId: job.videoModelId,
+    scriptIdea: job.scriptIdea,
+    targetDurationSeconds: job.targetDurationSeconds,
+    filledHook: job.filledHook,
+    status: job.status,
+    stage: job.stage,
+    progress: job.progress,
+    finalClipId: job.finalClipId,
+    error: job.error,
+    createdAt: job.createdAt,
+    updatedAt: job.updatedAt,
+    completedAt: job.completedAt,
+  };
+}

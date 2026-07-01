@@ -281,6 +281,7 @@ describe("VideoClipPreviewCard", () => {
     await expect(mocks.lazyOptions?.loadBlob()).resolves.toBeInstanceOf(Blob);
     await expect(mocks.actionContext?.loadFullClip()).resolves.toBe(fullClip);
     mocks.actionContext?.openDetails({ showControlsEditor: true });
+    await Promise.resolve();
 
     const buttons = findElements(tree, (element) => element.type === "button");
     (buttons[0].props.onClick as () => void)();
