@@ -7,12 +7,16 @@ hydration away from large documents wherever possible.
 
 - Blog list-style routes now read `blogPostCards`, a compact Convex read model
   maintained by `blogPosts.upsertPublishedArticle`.
+- The old full-body `blogPosts.listPublishedBlogPosts` list query was removed
+  so public list consumers cannot accidentally read every article body.
 - `/blog`, `/blog/[slug]`, and `/sitemap.xml` use hourly revalidation instead
   of forced dynamic rendering.
 - Dashboard home saves Stitch templates through `useCreateStitchTemplate`
   without subscribing to the full template list.
 - Library template rows load only when the Library Stitches or Templates tabs
   need them.
+- Dashboard library providers now track the active Library tab and skip hidden
+  clip, photo, avatar, Swipr, Swipe, Stitch, and Pexels subscriptions.
 - Clip and Stitch paginated queries apply server-side row and byte ceilings via
   `getReadLimitedPaginationOpts`.
 - Initial media library pages load 24 rows.

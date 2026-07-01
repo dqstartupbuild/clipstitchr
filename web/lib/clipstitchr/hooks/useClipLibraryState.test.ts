@@ -28,6 +28,7 @@ const mocks = vi.hoisted(() => {
     uploadVideoClipPosterBlob: vi.fn(),
     useConvex: vi.fn(),
     useConvexAuth: vi.fn(),
+    useActiveLibraryTab: vi.fn(),
     useMutation: vi.fn((mutationId: string) => {
       const mutation = mutationFns.get(mutationId) ?? vi.fn();
 
@@ -77,6 +78,10 @@ vi.mock("convex/react", () => ({
 
 vi.mock("next/navigation", () => ({
   usePathname: mocks.usePathname,
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useActiveLibraryTab", () => ({
+  useActiveLibraryTab: mocks.useActiveLibraryTab,
 }));
 
 vi.mock("@/convex/_generated/api", () => ({
@@ -234,6 +239,7 @@ describe("useClipLibraryState", () => {
       isAuthenticated: true,
       isLoading: false,
     });
+    mocks.useActiveLibraryTab.mockReturnValue("ugc");
     mocks.usePathname.mockReturnValue("/dashboard");
     mocks.usePaginatedQuery.mockImplementation(() => {
       return {

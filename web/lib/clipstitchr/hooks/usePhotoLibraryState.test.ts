@@ -27,6 +27,7 @@ const mocks = vi.hoisted(() => {
     uploadBlobsToR2: vi.fn(),
     useConvex: vi.fn(),
     useConvexAuth: vi.fn(),
+    useActiveLibraryTab: vi.fn(),
     useEffect: vi.fn(),
     useMutation: vi.fn((mutationId: string) => {
       const mutation = mutationFns.get(mutationId) ?? vi.fn();
@@ -73,6 +74,10 @@ vi.mock("convex/react", () => ({
   useConvexAuth: mocks.useConvexAuth,
   useMutation: mocks.useMutation,
   useQuery: mocks.useQuery,
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useActiveLibraryTab", () => ({
+  useActiveLibraryTab: mocks.useActiveLibraryTab,
 }));
 
 vi.mock("next/navigation", () => ({
@@ -238,6 +243,7 @@ describe("usePhotoLibraryState", () => {
       isAuthenticated: true,
       isLoading: false,
     });
+    mocks.useActiveLibraryTab.mockReturnValue("avatars");
     mocks.usePathname.mockReturnValue("/dashboard/library");
     mocks.useQuery.mockImplementation((queryId: string) => {
       if (queryId === "photoAssets.list") {
@@ -326,6 +332,22 @@ describe("usePhotoLibraryState", () => {
     const state = usePhotoLibraryState();
 
     expect(state.isLoading).toBe(false);
+    expect(mocks.useQuery).toHaveBeenCalledWith("photoAssets.list", "skip");
+    expect(mocks.useQuery).toHaveBeenCalledWith("avatars.list", "skip");
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      "avatarPreferences.get",
+      "skip",
+    );
+    expect(mocks.useQuery).toHaveBeenCalledWith("cliprPreferences.get", "skip");
+  });
+
+  it("skips avatar library rows on non-avatar Library tabs", () => {
+    mocks.useActiveLibraryTab.mockReturnValue("ugc");
+
+    const state = usePhotoLibraryState();
+
+    expect(state.avatars).toEqual([]);
+    expect(state.photos).toEqual([]);
     expect(mocks.useQuery).toHaveBeenCalledWith("photoAssets.list", "skip");
     expect(mocks.useQuery).toHaveBeenCalledWith("avatars.list", "skip");
     expect(mocks.useQuery).toHaveBeenCalledWith(

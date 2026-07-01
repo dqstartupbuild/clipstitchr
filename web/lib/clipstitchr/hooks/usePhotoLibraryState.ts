@@ -10,6 +10,7 @@ import { createPhotoAssetMetadataFromConvexDocument } from "@/lib/clipstitchr/ba
 import { getDefinedR2Objects } from "@/lib/clipstitchr/backend/getDefinedR2Objects";
 import { ACCEPTED_PHOTO_TYPES } from "@/lib/clipstitchr/constants/acceptedPhotoTypes";
 import { defaultCliprVoiceId } from "@/lib/clipstitchr/constants/defaultCliprVoiceId";
+import { useActiveLibraryTab } from "@/lib/clipstitchr/hooks/useActiveLibraryTab";
 import {
   TIKTOK_OUTPUT_HEIGHT,
   TIKTOK_OUTPUT_WIDTH,
@@ -62,6 +63,7 @@ type AvatarDeleteResponse = {
 export function usePhotoLibraryState(productId?: string): PhotoLibraryValue {
   const convex = useConvex();
   const pathname = usePathname() ?? "";
+  const activeLibraryTab = useActiveLibraryTab();
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const isAvatarsRoute = pathname.startsWith("/dashboard/avatars");
   const isLibraryRoute = pathname.startsWith("/dashboard/library");
@@ -72,20 +74,20 @@ export function usePhotoLibraryState(productId?: string): PhotoLibraryValue {
   const shouldLoadPhotoDocuments =
     isAuthenticated &&
     (isAvatarsRoute ||
-      isLibraryRoute ||
+      (isLibraryRoute && activeLibraryTab === "avatars") ||
       isCliprRoute ||
       isSwaprRoute ||
       isSwiprRoute);
   const shouldLoadAvatarDocuments =
     isAuthenticated &&
     (isAvatarsRoute ||
-      isLibraryRoute ||
+      (isLibraryRoute && activeLibraryTab === "avatars") ||
       isCliprRoute ||
       isSwaprRoute ||
       isSwiprRoute);
   const shouldLoadPhotoPreferences =
     isAuthenticated &&
-    (shouldLoadAvatarDocuments || isLibraryRoute || isUploadsRoute);
+    (shouldLoadAvatarDocuments || isUploadsRoute);
   const productQueryArgs = productId ? { productId } : {};
   const photoDocuments = useQuery(
     api.photoAssets.list,

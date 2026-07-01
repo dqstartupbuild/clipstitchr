@@ -13,6 +13,7 @@ import { downloadBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadBlobFrom
 import { downloadSwiprBackgroundBlobFromR2 } from "@/lib/clipstitchr/client/r2/downloadSwiprBackgroundBlobFromR2";
 import { uploadBlobsToR2 } from "@/lib/clipstitchr/client/r2/uploadBlobsToR2";
 import { SWIPR_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/swiprPosterCaptureVersion";
+import { useActiveLibraryTab } from "@/lib/clipstitchr/hooks/useActiveLibraryTab";
 import { uploadSwiprBackgroundBlobToR2 } from "@/lib/clipstitchr/client/r2/uploadSwiprBackgroundBlobToR2";
 import { getImageDimensions } from "@/lib/clipstitchr/media/getImageDimensions";
 import { renderSwiprSlideBlob } from "@/lib/clipstitchr/media/renderSwiprSlideBlob";
@@ -27,6 +28,7 @@ import { createId } from "@/lib/clipstitchr/utils/createId";
 
 export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   const pathname = usePathname() ?? "";
+  const activeLibraryTab = useActiveLibraryTab();
   const convex = useConvex();
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const isLibraryRoute = pathname.startsWith("/dashboard/library");
@@ -35,13 +37,19 @@ export function useSwiprLibraryState(productId?: string): SwiprLibraryValue {
   const isUploadsRoute = pathname.startsWith("/dashboard/uploads");
   const shouldLoadBackgrounds =
     isAuthenticated &&
-    (isLibraryRoute || isSettingsRoute || isSwiprRoute || isUploadsRoute);
+    (isLibraryRoute
+      ? activeLibraryTab === "pexels" || activeLibraryTab === "swipes"
+      : isSettingsRoute || isSwiprRoute || isUploadsRoute);
   const shouldLoadSwipes =
     isAuthenticated &&
-    (isLibraryRoute || isSwiprRoute || isUploadsRoute);
+    (isLibraryRoute
+      ? activeLibraryTab === "swipes"
+      : isSwiprRoute || isUploadsRoute);
   const shouldLoadPostedSwipes =
-    isAuthenticated && (isLibraryRoute || isUploadsRoute);
-  const shouldLoadGlobalPexelsBackgrounds = isAuthenticated && isLibraryRoute;
+    isAuthenticated &&
+    (isLibraryRoute ? activeLibraryTab === "swipes" : isUploadsRoute);
+  const shouldLoadGlobalPexelsBackgrounds =
+    isAuthenticated && isLibraryRoute && activeLibraryTab === "pexels";
   const productQueryArgs = productId ? { productId } : {};
   const backgroundDocuments = useQuery(
     api.swiprBackgrounds.list,

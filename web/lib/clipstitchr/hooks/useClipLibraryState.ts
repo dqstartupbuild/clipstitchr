@@ -23,6 +23,7 @@ import { scoreStitch as requestStitchScore } from "@/lib/clipstitchr/client/scor
 import { scoreVideoClip as requestVideoClipScore } from "@/lib/clipstitchr/client/scoreVideoClip";
 import { saveRenderedStitchVideo } from "@/lib/clipstitchr/client/saveRenderedStitchVideo";
 import { libraryMetadataPageSize } from "@/lib/clipstitchr/constants/libraryMetadataPageSize";
+import { useActiveLibraryTab } from "@/lib/clipstitchr/hooks/useActiveLibraryTab";
 import { VIDEO_POSTER_CAPTURE_VERSION } from "@/lib/clipstitchr/constants/videoPosterCaptureVersion";
 import { createStitchPosterBlob } from "@/lib/clipstitchr/media/createStitchPosterBlob";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
@@ -66,6 +67,7 @@ type PendingPosterBlobLoad = {
 export function useClipLibraryState(productId?: string): ClipLibraryValue {
   const convex = useConvex();
   const pathname = usePathname() ?? "";
+  const activeLibraryTab = useActiveLibraryTab();
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const [error, setError] = useState<string | null>(null);
   const [sortOrder, setSortOrder] =
@@ -80,26 +82,33 @@ export function useClipLibraryState(productId?: string): ClipLibraryValue {
   const shouldLoadAllClips = isAuthenticated && isSwaprRoute;
   const shouldLoadUgcClips =
     isAuthenticated &&
-    (isLibraryRoute || isOnboardingRoute || isUploadsRoute || isStitchrRoute);
+    (isLibraryRoute
+      ? activeLibraryTab === "ugc" || activeLibraryTab === "stitches"
+      : isOnboardingRoute || isUploadsRoute || isStitchrRoute);
   const shouldLoadCliprClips =
     isAuthenticated &&
-    (isLibraryRoute || isOnboardingRoute || isUploadsRoute || isStitchrRoute);
+    (isLibraryRoute
+      ? activeLibraryTab === "stitches"
+      : isOnboardingRoute || isUploadsRoute || isStitchrRoute);
   const shouldLoadPostedCliprClips = false;
   const shouldLoadDemoClips =
     isAuthenticated &&
-    (isLibraryRoute ||
-      isOnboardingRoute ||
-      isUploadsRoute ||
-      isStitchrRoute ||
-      isCliprRoute);
+    (isLibraryRoute
+      ? activeLibraryTab === "demo" || activeLibraryTab === "stitches"
+      : isOnboardingRoute || isUploadsRoute || isStitchrRoute || isCliprRoute);
   const shouldLoadSwapClips =
     isAuthenticated &&
-    (isLibraryRoute || isUploadsRoute || isStitchrRoute);
+    (isLibraryRoute
+      ? activeLibraryTab === "swaps" || activeLibraryTab === "stitches"
+      : isUploadsRoute || isStitchrRoute);
   const shouldLoadStitches =
     isAuthenticated &&
-    (isLibraryRoute || isUploadsRoute || isSwaprRoute);
+    (isLibraryRoute
+      ? activeLibraryTab === "stitches"
+      : isUploadsRoute || isSwaprRoute);
   const shouldLoadPostedStitches =
-    isAuthenticated && (isLibraryRoute || isUploadsRoute);
+    isAuthenticated &&
+    (isLibraryRoute ? activeLibraryTab === "stitches" : isUploadsRoute);
   const shouldLoadCounts =
     isAuthenticated && (isDashboardHome || isLibraryRoute || isUploadsRoute);
   const productQueryArgs = productId ? { productId } : {};

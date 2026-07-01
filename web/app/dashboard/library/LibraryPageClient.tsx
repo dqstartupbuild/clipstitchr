@@ -32,6 +32,7 @@ import { filterClipsBySearchQuery } from "@/lib/clipstitchr/utils/filterClipsByS
 import { filterStitchesByName } from "@/lib/clipstitchr/utils/filterStitchesByName";
 import { filterSwipesBySearchQuery } from "@/lib/clipstitchr/utils/filterSwipesBySearchQuery";
 import { dispatchHideUploadControlsEvent } from "@/lib/clipstitchr/utils/dispatchHideUploadControlsEvent";
+import { dispatchLibraryTabChangeEvent } from "@/lib/clipstitchr/utils/dispatchLibraryTabChangeEvent";
 import { getInitialLibraryTab } from "@/lib/clipstitchr/utils/getInitialLibraryTab";
 import { getLibraryTabFromAssetType } from "@/lib/clipstitchr/utils/getLibraryTabFromAssetType";
 import { getStitchrUgcSourceClips } from "@/lib/clipstitchr/utils/getStitchrUgcSourceClips";
@@ -314,6 +315,8 @@ export function LibraryPageClient() {
       url.searchParams.set("tab", nextTab);
       window.history.replaceState(null, "", url.toString());
     }
+
+    dispatchLibraryTabChangeEvent(nextTab);
   }, []);
   const handleCreateAvatarFromClip = useCallback(
     async (

@@ -115,32 +115,6 @@ export const upsertPublishedArticle = mutation({
   },
 });
 
-export const listPublishedBlogPosts = query({
-  args: {},
-  handler: async (ctx) => {
-    const posts = await ctx.db
-      .query("blogPosts")
-      .withIndex("by_published")
-      .order("desc")
-      .collect();
-
-    return posts.map((post) => ({
-      slug: post.slug,
-      title: post.title,
-      metaDescription: post.metaDescription,
-      contentFormat: post.contentFormat,
-      content: post.content,
-      contentHtml: post.contentHtml,
-      imageUrl: post.imageUrl,
-      tags: post.tags,
-      source: post.source,
-      publishedAt: post.publishedAt,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
-    }));
-  },
-});
-
 export const listPublishedBlogPostCards = query({
   args: {},
   handler: async (ctx) => {

@@ -23,6 +23,7 @@ const mocks = vi.hoisted(() => {
     uploadSwiprBackgroundBlobToR2: vi.fn(),
     useConvex: vi.fn(),
     useConvexAuth: vi.fn(),
+    useActiveLibraryTab: vi.fn(),
     useEffect: vi.fn(),
     useMutation: vi.fn((mutationId: string) => {
       const mutation = mutationFns.get(mutationId) ?? vi.fn();
@@ -71,6 +72,10 @@ vi.mock("convex/react", () => ({
 
 vi.mock("next/navigation", () => ({
   usePathname: mocks.usePathname,
+}));
+
+vi.mock("@/lib/clipstitchr/hooks/useActiveLibraryTab", () => ({
+  useActiveLibraryTab: mocks.useActiveLibraryTab,
 }));
 
 vi.mock("@/convex/_generated/api", () => ({
@@ -218,6 +223,7 @@ describe("useSwiprLibraryState", () => {
     mocks.useConvex.mockReturnValue({
       query: mocks.convexQuery,
     });
+    mocks.useActiveLibraryTab.mockReturnValue("swipes");
     mocks.convexQuery.mockResolvedValue(
       createBackgroundDocument({ id: "background_2" }),
     );
@@ -302,15 +308,13 @@ describe("useSwiprLibraryState", () => {
     const state = useSwiprLibraryState();
 
     expect(state.swipes).toEqual([{ id: "swipe_1", name: "Mapped swipe" }]);
-    expect(state.globalPexelsBackgrounds).toEqual([
-      { id: "background_1", name: "Mapped background" },
-    ]);
+    expect(state.globalPexelsBackgrounds).toEqual([]);
     expect(state.postedSwipes).toEqual([]);
     expect(state.isLoading).toBe(false);
     expect(mocks.useQuery).toHaveBeenCalledWith("swiprBackgrounds.list", {});
     expect(mocks.useQuery).toHaveBeenCalledWith(
       "swiprBackgrounds.listGlobalPexels",
-      {},
+      "skip",
     );
     expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", {
       postedStatus: "active",
@@ -318,6 +322,23 @@ describe("useSwiprLibraryState", () => {
     expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", {
       postedStatus: "posted",
     });
+  });
+
+  it("loads global Pexels backgrounds only on the Pexels Library tab", () => {
+    mocks.useActiveLibraryTab.mockReturnValue("pexels");
+
+    const state = useSwiprLibraryState();
+
+    expect(state.globalPexelsBackgrounds).toEqual([
+      { id: "background_1", name: "Mapped background" },
+    ]);
+    expect(state.swipes).toEqual([]);
+    expect(mocks.useQuery).toHaveBeenCalledWith("swiprBackgrounds.list", {});
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      "swiprBackgrounds.listGlobalPexels",
+      {},
+    );
+    expect(mocks.useQuery).toHaveBeenCalledWith("swipes.list", "skip");
   });
 
   it("skips library queries while signed out", () => {

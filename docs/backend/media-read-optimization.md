@@ -28,17 +28,20 @@ reads across every mounted subscription.
 - `useClipLibraryState` subscribes only on dashboard routes that render clip or
   stitch media directly. The dashboard home keeps only aggregate counts loaded.
   Settings, Clipr, Avatars, and Swipr do not open hidden clip-list
-  subscriptions. Initial media pages load 24 rows and server paginated clip and
-  stitch queries enforce maximum row and byte read ceilings.
+  subscriptions. On `/dashboard/library`, hidden tabs do not load their clip or
+  Stitch pages until the active tab changes. Initial media pages load 24 rows
+  and server paginated clip and stitch queries enforce maximum row and byte read
+  ceilings.
 - `usePhotoLibraryState` subscribes to photo/avatar documents only on Avatars,
-  Library, Clipr, Swapr, and Swipr. Uploads keeps only avatar/voice preferences
-  loaded for the UGC-to-avatar action.
+  Clipr, Swapr, Swipr, and the active Library Avatars tab. Uploads keeps only
+  avatar/voice preferences loaded for the UGC-to-avatar action.
 - `useSwiprLibraryState` subscribes only on Library, Settings, Swipr, and
   Uploads. Dashboard home Swipr cards use `dashboardSummary.get`; draft
   generation uses `swiprBackgrounds.listByLibraryQueryKeys` instead of loading
-  every saved/global background. Swipr UI background lists use separate,
-  smaller caps than provider-worker pack lookups, and per-pack exclusions are
-  read only for the visible pack keys.
+  every saved/global background. On `/dashboard/library`, saved backgrounds and
+  Swipes load only for the active Swipes/Pexels tabs. Swipr UI background lists
+  use separate, smaller caps than provider-worker pack lookups, and per-pack
+  exclusions are read only for the visible pack keys.
 - Public blog index, RSS, and sitemap routes read compact `blogPostCards`
   records and use hourly route revalidation. Full `blogPosts` body documents are
   read only for article detail pages and one-time card backfills.
