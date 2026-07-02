@@ -19,6 +19,13 @@ Post Bridge rows are labeled `Post Bridge`. Apify rows are labeled `Manual` and
 are deduped against Post Bridge rows by platform post ID and canonical post URL
 before the response is returned.
 
+Manual analytics are partial-success only. If Post Bridge analytics refresh but
+Apify cannot sync one account, cannot read the account list, or cannot normalize
+some actor items, the API returns the Post Bridge rows plus any valid manual
+rows and a warning for the manual side. The client keeps the last known good
+analytics visible and leaves Sync analytics available for another user-triggered
+retry.
+
 Analytics defaults to `Last 30 days`. The user can filter the page by:
 
 - Last 24 hours
@@ -82,6 +89,7 @@ these actor settings:
 - `web/lib/clipstitchr/types/ContentAnalytics.ts`
 - `web/lib/clipstitchr/types/ContentAnalyticsSource.ts`
 - `web/lib/clipstitchr/types/ContentAnalyticsSourceFilter.ts`
+- `web/lib/clipstitchr/types/PostBridgeAnalyticsSyncResponse.ts`
 - `web/lib/clipstitchr/types/PostBridgeAnalyticsTimeRange.ts`
 - `web/lib/clipstitchr/types/PostBridgeAnalyticsTimeRangeOption.ts`
 - `web/lib/clipstitchr/utils/filterContentAnalyticsBySource.ts`
@@ -93,3 +101,4 @@ these actor settings:
 - `web/lib/clipstitchr/utils/postBridgeAnalyticsTimeRangeOptions.ts`
 - `web/lib/clipstitchr/utils/contentAnalyticsSourceFilterOptions.ts`
 - `web/lib/clipstitchr/utils/defaultPostBridgeAnalyticsTimeRange.ts`
+- `web/lib/clipstitchr/utils/mergeSyncedContentAnalytics.ts`
