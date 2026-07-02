@@ -3,12 +3,14 @@ import { getApifyApiToken } from "@/lib/clipstitchr/server/apify/getApifyApiToke
 
 type RunApifyActorDatasetOptions = {
   actorId: string;
+  errorMessage?: string;
   input: Record<string, unknown>;
   timeoutMs?: number;
 };
 
 export async function runApifyActorDataset({
   actorId,
+  errorMessage = "Unable to use Apify right now.",
   input,
   timeoutMs = 120000,
 }: RunApifyActorDatasetOptions) {
@@ -27,7 +29,7 @@ export async function runApifyActorDataset({
     );
 
     if (!response.ok) {
-      throw new Error("Unable to find TikTok sounds right now.");
+      throw new Error(errorMessage);
     }
 
     const items = (await response.json()) as unknown;

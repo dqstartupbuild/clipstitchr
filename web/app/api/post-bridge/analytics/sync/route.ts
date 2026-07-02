@@ -1,14 +1,18 @@
 import { api } from "@/convex/_generated/api";
 import { capturePostHogServerEvent } from "@/lib/clipstitchr/server/analytics/capturePostHogServerEvent";
+import { syncManualContentAnalyticsForAccounts } from "@/lib/clipstitchr/server/apify/syncManualContentAnalyticsForAccounts";
 import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/createAuthenticationRequiredResponse";
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { listPostBridgeAnalytics } from "@/lib/clipstitchr/server/postBridge/listPostBridgeAnalytics";
+import { listPostBridgeSocialAccounts } from "@/lib/clipstitchr/server/postBridge/listPostBridgeSocialAccounts";
 import { resolvePostBridgeApiKey } from "@/lib/clipstitchr/server/postBridge/resolvePostBridgeApiKey";
 import { syncPostBridgeAnalytics } from "@/lib/clipstitchr/server/postBridge/syncPostBridgeAnalytics";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
+import { sortContentAnalyticsByCreatedAt } from "@/lib/clipstitchr/utils/sortContentAnalyticsByCreatedAt";
+import { toContentAnalyticsFromPostBridgeAnalytics } from "@/lib/clipstitchr/utils/toContentAnalyticsFromPostBridgeAnalytics";
 
 export const runtime = "nodejs";
 
@@ -32,17 +36,34 @@ export async function POST(request: Request) {
       secret: getRateLimitApiSecret(),
     });
     const apiKey = await resolvePostBridgeApiKey(convex);
+    const accounts = await listPostBridgeSocialAccounts(apiKey);
 
     await syncPostBridgeAnalytics(apiKey);
+
+    const postBridgeAnalytics = await listPostBridgeAnalytics(apiKey);
+    const manualAnalytics = await syncManualContentAnalyticsForAccounts({
+      accounts,
+      postBridgeAnalytics,
+    });
+    const postBridgeContentAnalytics = postBridgeAnalytics.map(
+      toContentAnalyticsFromPostBridgeAnalytics,
+    );
+    const analytics = sortContentAnalyticsByCreatedAt([
+      ...postBridgeContentAnalytics,
+      ...manualAnalytics,
+    ]);
+
     await capturePostHogServerEvent({
       distinctId: userId,
       event: "post_bridge_analytics_synced",
+      properties: {
+        manualAnalyticsCount: manualAnalytics.length,
+        postBridgeAnalyticsCount: postBridgeContentAnalytics.length,
+      },
       request,
     });
 
-    return Response.json({
-      analytics: await listPostBridgeAnalytics(apiKey),
-    });
+    return Response.json({ analytics });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);
 

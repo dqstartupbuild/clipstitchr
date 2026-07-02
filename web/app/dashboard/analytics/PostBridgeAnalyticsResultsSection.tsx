@@ -1,8 +1,8 @@
 import { PostBridgeAnalyticsResultRow } from "@/app/dashboard/analytics/PostBridgeAnalyticsResultRow";
-import type { PostBridgeAnalytics } from "@/lib/clipstitchr/types/PostBridgeAnalytics";
+import type { ContentAnalytics } from "@/lib/clipstitchr/types/ContentAnalytics";
 
 type PostBridgeAnalyticsResultsSectionProps = {
-  analytics: PostBridgeAnalytics[];
+  analytics: ContentAnalytics[];
 };
 
 export function PostBridgeAnalyticsResultsSection({
@@ -20,7 +20,7 @@ export function PostBridgeAnalyticsResultsSection({
           ))
         ) : (
           <p className="p-4 text-sm font-semibold text-text-secondary">
-            No post results in this time range.
+            No post results in this view.
           </p>
         )}
       </div>

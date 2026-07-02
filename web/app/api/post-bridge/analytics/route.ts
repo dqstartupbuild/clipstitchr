@@ -7,6 +7,8 @@ import { listPostBridgeAnalytics } from "@/lib/clipstitchr/server/postBridge/lis
 import { resolvePostBridgeApiKey } from "@/lib/clipstitchr/server/postBridge/resolvePostBridgeApiKey";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
+import { sortContentAnalyticsByCreatedAt } from "@/lib/clipstitchr/utils/sortContentAnalyticsByCreatedAt";
+import { toContentAnalyticsFromPostBridgeAnalytics } from "@/lib/clipstitchr/utils/toContentAnalyticsFromPostBridgeAnalytics";
 
 export const runtime = "nodejs";
 
@@ -31,9 +33,12 @@ export async function GET() {
     });
 
     const apiKey = await resolvePostBridgeApiKey(convex);
+    const analytics = await listPostBridgeAnalytics(apiKey);
 
     return Response.json({
-      analytics: await listPostBridgeAnalytics(apiKey),
+      analytics: sortContentAnalyticsByCreatedAt(
+        analytics.map(toContentAnalyticsFromPostBridgeAnalytics),
+      ),
     });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

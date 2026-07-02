@@ -1,13 +1,14 @@
 import { Badge } from "@/app/_components/ui/Badge";
-import type { PostBridgeAnalytics } from "@/lib/clipstitchr/types/PostBridgeAnalytics";
+import { PostBridgeAnalyticsMetricCell } from "@/app/dashboard/analytics/PostBridgeAnalyticsMetricCell";
+import type { ContentAnalytics } from "@/lib/clipstitchr/types/ContentAnalytics";
+import { getContentAnalyticsSourceLabel } from "@/lib/clipstitchr/utils/getContentAnalyticsSourceLabel";
 import { getPostBridgeAnalyticsCreatedAtLabel } from "@/lib/clipstitchr/utils/getPostBridgeAnalyticsCreatedAtLabel";
 import { getPostBridgePlatformLabel } from "@/lib/clipstitchr/utils/getPostBridgePlatformLabel";
 import { getPostBridgeScheduledAtLabel } from "@/lib/clipstitchr/utils/getPostBridgeScheduledAtLabel";
 import { getPostBridgeUnknownString } from "@/lib/clipstitchr/utils/getPostBridgeUnknownString";
-import { PostBridgeAnalyticsMetricCell } from "@/app/dashboard/analytics/PostBridgeAnalyticsMetricCell";
 
 type PostBridgeAnalyticsResultRowProps = {
-  item: PostBridgeAnalytics;
+  item: ContentAnalytics;
 };
 
 export function PostBridgeAnalyticsResultRow({
@@ -26,6 +27,12 @@ export function PostBridgeAnalyticsResultRow({
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <Badge>{getPostBridgePlatformLabel(item.platform)}</Badge>
+          <Badge>{getContentAnalyticsSourceLabel(item.analytics_source)}</Badge>
+          {item.account_username ? (
+            <span className="text-xs font-semibold text-text-tertiary">
+              @{item.account_username}
+            </span>
+          ) : null}
           <span className="text-xs font-semibold text-text-tertiary">
             {getPostBridgeAnalyticsCreatedAtLabel(item)}
           </span>
