@@ -42,6 +42,7 @@ import type * as blogPostCards_estimateBlogPostReadingTimeMinutes from "../blogP
 import type * as blogPostCards_getBlogPostCardFields from "../blogPostCards/getBlogPostCardFields.js";
 import type * as blogPostCards_upsertBlogPostCardBySlug from "../blogPostCards/upsertBlogPostCardBySlug.js";
 import type * as blogPosts from "../blogPosts.js";
+import type * as clearPostBridgeSocialAccountIdsForOwner from "../clearPostBridgeSocialAccountIdsForOwner.js";
 import type * as cliprJobs from "../cliprJobs.js";
 import type * as cliprPreferences from "../cliprPreferences.js";
 import type * as createAutomationRunSummaryFields from "../createAutomationRunSummaryFields.js";
@@ -274,6 +275,7 @@ declare const fullApi: ApiFromModules<{
   "blogPostCards/getBlogPostCardFields": typeof blogPostCards_getBlogPostCardFields;
   "blogPostCards/upsertBlogPostCardBySlug": typeof blogPostCards_upsertBlogPostCardBySlug;
   blogPosts: typeof blogPosts;
+  clearPostBridgeSocialAccountIdsForOwner: typeof clearPostBridgeSocialAccountIdsForOwner;
   cliprJobs: typeof cliprJobs;
   cliprPreferences: typeof cliprPreferences;
   createAutomationRunSummaryFields: typeof createAutomationRunSummaryFields;
