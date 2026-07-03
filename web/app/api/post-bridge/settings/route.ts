@@ -4,6 +4,7 @@ import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/co
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
 import { encryptPostBridgeApiKey } from "@/lib/clipstitchr/server/postBridge/encryptPostBridgeApiKey";
+import { getPostBridgeApiKeyHasChanged } from "@/lib/clipstitchr/server/postBridge/getPostBridgeApiKeyHasChanged";
 import { listPostBridgeSocialAccounts } from "@/lib/clipstitchr/server/postBridge/listPostBridgeSocialAccounts";
 import { readPostBridgeApiKeyInput } from "@/lib/clipstitchr/server/postBridge/readPostBridgeApiKeyInput";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
@@ -60,9 +61,13 @@ export async function POST(request: Request) {
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const apiKey = await readPostBridgeApiKeyInput(request);
     const encryptedApiKey = encryptPostBridgeApiKey(apiKey);
+    const rateLimitApiSecret = getRateLimitApiSecret();
+    const currentSecret = await convex.query(api.postBridgeSettings.getSecret, {
+      secret: rateLimitApiSecret,
+    });
 
     await convex.mutation(api.rateLimits.consumePostBridgeRead, {
-      secret: getRateLimitApiSecret(),
+      secret: rateLimitApiSecret,
     });
 
     const accounts = await listPostBridgeSocialAccounts(apiKey);
@@ -76,6 +81,10 @@ export async function POST(request: Request) {
 
     await convex.mutation(api.postBridgeSettings.saveSecret, {
       apiKeyLast4: settings.apiKeyLast4,
+      clearLinkedAccountIds: getPostBridgeApiKeyHasChanged(
+        currentSecret?.encryptedApiKey,
+        apiKey,
+      ),
       encryptedApiKey,
       lastVerifiedAt: now,
       updatedAt: now,

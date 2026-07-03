@@ -15,6 +15,12 @@ last four characters shown back to the browser. The Schedule page's
 `Config/accounts` tab lets the user link default TikTok, Instagram, and YouTube
 accounts to each product.
 
+Disconnecting Post Bridge removes the saved key and clears product-linked
+account defaults from products and product cards. That keeps old account IDs
+from being reused when someone reconnects with a different Post Bridge account.
+Saving a different Post Bridge key also clears those defaults so product picks
+do not point at accounts from the previous key.
+
 The schedule dialog loads connected Post Bridge accounts from the server,
 filters them to TikTok, Instagram, and YouTube, preselects the accounts linked
 to the source product, and still lets the user adjust accounts for that one
@@ -164,6 +170,8 @@ Schedule page owns scheduled and posted post status counts.
 - `web/app/api/post-bridge/analytics/route.ts`
 - `web/app/api/post-bridge/analytics/sync/route.ts`
 - `web/app/dashboard/analytics/PostBridgeAnalyticsPageClient.tsx`
+- `web/convex/clearPostBridgeSocialAccountIdsForOwner.ts`
+- `web/lib/clipstitchr/server/postBridge/getPostBridgeApiKeyHasChanged.ts`
 - `docs/features/post-bridge-analytics.md`
 - `web/lib/clipstitchr/media/renderSwiprSlideBlob.ts`
 - `web/lib/clipstitchr/media/renderSwiprSwipeVideoBlob.ts`

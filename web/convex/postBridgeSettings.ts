@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { assertRateLimitApiSecret } from "./auth/assertRateLimitApiSecret";
+import { clearPostBridgeSocialAccountIdsForOwner } from "./clearPostBridgeSocialAccountIdsForOwner";
 import { getAuthenticatedOwnerId } from "./auth/getAuthenticatedOwnerId";
 import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./rateLimiter";
@@ -46,13 +47,20 @@ export const getSecret = query({
 export const saveSecret = mutation({
   args: {
     apiKeyLast4: v.string(),
+    clearLinkedAccountIds: v.boolean(),
     encryptedApiKey: v.string(),
     lastVerifiedAt: v.string(),
     updatedAt: v.string(),
   },
   handler: async (
     ctx,
-    { apiKeyLast4, encryptedApiKey, lastVerifiedAt, updatedAt },
+    {
+      apiKeyLast4,
+      clearLinkedAccountIds,
+      encryptedApiKey,
+      lastVerifiedAt,
+      updatedAt,
+    },
   ) => {
     const ownerId = await getAuthenticatedOwnerId(ctx);
 
@@ -65,6 +73,10 @@ export const saveSecret = mutation({
       .query("postBridgeSettings")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
       .unique();
+
+    if (settings && clearLinkedAccountIds) {
+      await clearPostBridgeSocialAccountIdsForOwner(ctx, ownerId, updatedAt);
+    }
 
     if (settings) {
       await ctx.db.patch(settings._id, {
@@ -101,6 +113,12 @@ export const clearSecret = mutation({
       .query("postBridgeSettings")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
       .unique();
+
+    await clearPostBridgeSocialAccountIdsForOwner(
+      ctx,
+      ownerId,
+      new Date().toISOString(),
+    );
 
     if (!settings) {
       return null;
