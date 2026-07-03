@@ -17,20 +17,11 @@ When the user presses Sync analytics on `/dashboard/analytics`, ClipStitchr:
 Apify sync is user-triggered only. There is no cron, background worker, or hidden
 periodic refresh.
 
-Post Bridge analytics stay on the page even when manual analytics cannot fully
-sync. If Post Bridge refreshes successfully but Apify, connected-account
-loading, or item normalization fails, the API still returns the Post Bridge rows
-with a manual analytics warning. Valid Apify rows are kept, malformed Apify
-items are skipped, and skipped or failed manual work is counted without turning
-the whole sync into a failed analytics page.
-
 ## User Flow
 
 Users connect Post Bridge first, then choose the accounts they already use for
 posting. The analytics page can use those same account usernames for manual
 TikTok and Instagram sync. Manual posts appear after Sync analytics finishes.
-When a later manual sync has a warning, the page keeps the last known good
-manual rows that do not duplicate fresh Post Bridge or fresh manual rows.
 
 The source filter lets users switch between:
 
@@ -60,14 +51,8 @@ returned directly to the client.
 - `web/app/api/post-bridge/analytics/sync/route.ts`
 - `web/lib/clipstitchr/server/apify/createApifyProfileAnalyticsInput.ts`
 - `web/lib/clipstitchr/server/apify/createInstagramManualContentAnalytics.ts`
-- `web/lib/clipstitchr/server/apify/createManualContentAnalyticsSyncWarning.ts`
 - `web/lib/clipstitchr/server/apify/createManualContentAnalyticsFromApifyItem.ts`
 - `web/lib/clipstitchr/server/apify/createTikTokManualContentAnalytics.ts`
-- `web/lib/clipstitchr/server/apify/syncManualContentAnalyticsForAccount.ts`
 - `web/lib/clipstitchr/server/apify/syncManualContentAnalyticsForAccounts.ts`
 - `web/lib/clipstitchr/types/ContentAnalytics.ts`
-- `web/lib/clipstitchr/types/ManualContentAnalyticsAccountSyncResult.ts`
-- `web/lib/clipstitchr/types/ManualContentAnalyticsSyncResult.ts`
-- `web/lib/clipstitchr/types/PostBridgeAnalyticsSyncResponse.ts`
 - `web/lib/clipstitchr/utils/filterManualContentAnalyticsAgainstPostBridge.ts`
-- `web/lib/clipstitchr/utils/mergeSyncedContentAnalytics.ts`

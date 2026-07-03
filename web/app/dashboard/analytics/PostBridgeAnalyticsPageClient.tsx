@@ -16,9 +16,10 @@ import type { ContentAnalyticsSourceFilter as ContentAnalyticsSourceFilterValue 
 import type { PostBridgeAnalyticsTimeRange } from "@/lib/clipstitchr/types/PostBridgeAnalyticsTimeRange";
 import { defaultPostBridgeAnalyticsTimeRange } from "@/lib/clipstitchr/utils/defaultPostBridgeAnalyticsTimeRange";
 import { filterContentAnalyticsBySource } from "@/lib/clipstitchr/utils/filterContentAnalyticsBySource";
+import { filterManualContentAnalyticsAgainstPostBridge } from "@/lib/clipstitchr/utils/filterManualContentAnalyticsAgainstPostBridge";
 import { filterPostBridgeAnalyticsByTimeRange } from "@/lib/clipstitchr/utils/filterPostBridgeAnalyticsByTimeRange";
 import { getPostBridgeAnalyticsTotals } from "@/lib/clipstitchr/utils/getPostBridgeAnalyticsTotals";
-import { mergeSyncedContentAnalytics } from "@/lib/clipstitchr/utils/mergeSyncedContentAnalytics";
+import { sortContentAnalyticsByCreatedAt } from "@/lib/clipstitchr/utils/sortContentAnalyticsByCreatedAt";
 
 export function PostBridgeAnalyticsPageClient() {
   const [analytics, setAnalytics] = useState<ContentAnalytics[]>([]);
@@ -30,9 +31,6 @@ export function PostBridgeAnalyticsPageClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [manualSyncWarning, setManualSyncWarning] = useState<string | null>(
-    null,
-  );
   const timeFilteredAnalytics = useMemo(
     () => filterPostBridgeAnalyticsByTimeRange(analytics, timeRange),
     [analytics, timeRange],
@@ -49,17 +47,20 @@ export function PostBridgeAnalyticsPageClient() {
   const loadDashboard = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    setManualSyncWarning(null);
 
     try {
       const postBridgeAnalytics = await fetchPostBridgeAnalytics();
 
       setAnalytics((currentAnalytics) =>
-        mergeSyncedContentAnalytics({
-          currentAnalytics,
-          keepCurrentManualAnalytics: true,
-          syncedAnalytics: postBridgeAnalytics,
-        }),
+        sortContentAnalyticsByCreatedAt([
+          ...postBridgeAnalytics,
+          ...filterManualContentAnalyticsAgainstPostBridge(
+            currentAnalytics.filter(
+              (item) => item.analytics_source === "manual",
+            ),
+            postBridgeAnalytics,
+          ),
+        ]),
       );
     } catch (nextError) {
       setError(
@@ -111,21 +112,9 @@ export function PostBridgeAnalyticsPageClient() {
   const handleSync = async () => {
     setIsSyncing(true);
     setError(null);
-    setManualSyncWarning(null);
 
     try {
-      const syncResponse = await syncPostBridgeAnalytics();
-
-      setAnalytics((currentAnalytics) =>
-        mergeSyncedContentAnalytics({
-          currentAnalytics,
-          keepCurrentManualAnalytics: Boolean(
-            syncResponse.manualAnalyticsWarning,
-          ),
-          syncedAnalytics: syncResponse.analytics,
-        }),
-      );
-      setManualSyncWarning(syncResponse.manualAnalyticsWarning);
+      setAnalytics(await syncPostBridgeAnalytics());
     } catch (nextError) {
       setError(
         nextError instanceof Error
@@ -170,12 +159,6 @@ export function PostBridgeAnalyticsPageClient() {
         {error ? (
           <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
             {error}
-          </p>
-        ) : null}
-
-        {manualSyncWarning ? (
-          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
-            {manualSyncWarning}
           </p>
         ) : null}
 

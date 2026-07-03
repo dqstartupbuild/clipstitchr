@@ -11,7 +11,6 @@ import { resolvePostBridgeApiKey } from "@/lib/clipstitchr/server/postBridge/res
 import { syncPostBridgeAnalytics } from "@/lib/clipstitchr/server/postBridge/syncPostBridgeAnalytics";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
-import type { ManualContentAnalyticsSyncResult } from "@/lib/clipstitchr/types/ManualContentAnalyticsSyncResult";
 import { sortContentAnalyticsByCreatedAt } from "@/lib/clipstitchr/utils/sortContentAnalyticsByCreatedAt";
 import { toContentAnalyticsFromPostBridgeAnalytics } from "@/lib/clipstitchr/utils/toContentAnalyticsFromPostBridgeAnalytics";
 
@@ -37,63 +36,34 @@ export async function POST(request: Request) {
       secret: getRateLimitApiSecret(),
     });
     const apiKey = await resolvePostBridgeApiKey(convex);
+    const accounts = await listPostBridgeSocialAccounts(apiKey);
 
     await syncPostBridgeAnalytics(apiKey);
 
     const postBridgeAnalytics = await listPostBridgeAnalytics(apiKey);
-    let manualAnalyticsSync: ManualContentAnalyticsSyncResult = {
-      analytics: [],
-      failedAccountCount: 0,
-      skippedItemCount: 0,
-      warning: null,
-    };
-
-    try {
-      const accounts = await listPostBridgeSocialAccounts(apiKey);
-
-      manualAnalyticsSync = await syncManualContentAnalyticsForAccounts({
-        accounts,
-        postBridgeAnalytics,
-      });
-    } catch {
-      manualAnalyticsSync = {
-        analytics: [],
-        failedAccountCount: 0,
-        skippedItemCount: 0,
-        warning:
-          "Manual analytics could not sync right now. Your Post Bridge results are still here, and you can try again.",
-      };
-    }
-
+    const manualAnalytics = await syncManualContentAnalyticsForAccounts({
+      accounts,
+      postBridgeAnalytics,
+    });
     const postBridgeContentAnalytics = postBridgeAnalytics.map(
       toContentAnalyticsFromPostBridgeAnalytics,
     );
     const analytics = sortContentAnalyticsByCreatedAt([
       ...postBridgeContentAnalytics,
-      ...manualAnalyticsSync.analytics,
+      ...manualAnalytics,
     ]);
 
     await capturePostHogServerEvent({
       distinctId: userId,
       event: "post_bridge_analytics_synced",
       properties: {
-        manualAnalyticsCount: manualAnalyticsSync.analytics.length,
-        manualAnalyticsFailedAccountCount:
-          manualAnalyticsSync.failedAccountCount,
-        manualAnalyticsSkippedItemCount: manualAnalyticsSync.skippedItemCount,
-        manualAnalyticsWarning: Boolean(manualAnalyticsSync.warning),
+        manualAnalyticsCount: manualAnalytics.length,
         postBridgeAnalyticsCount: postBridgeContentAnalytics.length,
       },
       request,
     });
 
-    return Response.json({
-      analytics,
-      manualAnalyticsFailedAccountCount:
-        manualAnalyticsSync.failedAccountCount,
-      manualAnalyticsSkippedItemCount: manualAnalyticsSync.skippedItemCount,
-      manualAnalyticsWarning: manualAnalyticsSync.warning,
-    });
+    return Response.json({ analytics });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);
 
