@@ -5,39 +5,28 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { Button } from "@/app/_components/ui/Button";
-import { ContentAnalyticsSourceFilter } from "@/app/dashboard/analytics/ContentAnalyticsSourceFilter";
 import { PostBridgeAnalyticsResultsSection } from "@/app/dashboard/analytics/PostBridgeAnalyticsResultsSection";
 import { PostBridgeAnalyticsStatsGrid } from "@/app/dashboard/analytics/PostBridgeAnalyticsStatsGrid";
 import { PostBridgeAnalyticsTimeRangeFilter } from "@/app/dashboard/analytics/PostBridgeAnalyticsTimeRangeFilter";
 import { fetchPostBridgeAnalytics } from "@/lib/clipstitchr/client/fetchPostBridgeAnalytics";
 import { syncPostBridgeAnalytics } from "@/lib/clipstitchr/client/syncPostBridgeAnalytics";
-import type { ContentAnalytics } from "@/lib/clipstitchr/types/ContentAnalytics";
-import type { ContentAnalyticsSourceFilter as ContentAnalyticsSourceFilterValue } from "@/lib/clipstitchr/types/ContentAnalyticsSourceFilter";
+import type { PostBridgeAnalytics } from "@/lib/clipstitchr/types/PostBridgeAnalytics";
 import type { PostBridgeAnalyticsTimeRange } from "@/lib/clipstitchr/types/PostBridgeAnalyticsTimeRange";
 import { defaultPostBridgeAnalyticsTimeRange } from "@/lib/clipstitchr/utils/defaultPostBridgeAnalyticsTimeRange";
-import { filterContentAnalyticsBySource } from "@/lib/clipstitchr/utils/filterContentAnalyticsBySource";
-import { filterManualContentAnalyticsAgainstPostBridge } from "@/lib/clipstitchr/utils/filterManualContentAnalyticsAgainstPostBridge";
 import { filterPostBridgeAnalyticsByTimeRange } from "@/lib/clipstitchr/utils/filterPostBridgeAnalyticsByTimeRange";
 import { getPostBridgeAnalyticsTotals } from "@/lib/clipstitchr/utils/getPostBridgeAnalyticsTotals";
-import { sortContentAnalyticsByCreatedAt } from "@/lib/clipstitchr/utils/sortContentAnalyticsByCreatedAt";
 
 export function PostBridgeAnalyticsPageClient() {
-  const [analytics, setAnalytics] = useState<ContentAnalytics[]>([]);
+  const [analytics, setAnalytics] = useState<PostBridgeAnalytics[]>([]);
   const [timeRange, setTimeRange] = useState<PostBridgeAnalyticsTimeRange>(
     defaultPostBridgeAnalyticsTimeRange,
   );
-  const [sourceFilter, setSourceFilter] =
-    useState<ContentAnalyticsSourceFilterValue>("all");
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const timeFilteredAnalytics = useMemo(
+  const filteredAnalytics = useMemo(
     () => filterPostBridgeAnalyticsByTimeRange(analytics, timeRange),
     [analytics, timeRange],
-  );
-  const filteredAnalytics = useMemo(
-    () => filterContentAnalyticsBySource(timeFilteredAnalytics, sourceFilter),
-    [sourceFilter, timeFilteredAnalytics],
   );
   const totals = useMemo(
     () => getPostBridgeAnalyticsTotals(filteredAnalytics),
@@ -49,19 +38,7 @@ export function PostBridgeAnalyticsPageClient() {
     setError(null);
 
     try {
-      const postBridgeAnalytics = await fetchPostBridgeAnalytics();
-
-      setAnalytics((currentAnalytics) =>
-        sortContentAnalyticsByCreatedAt([
-          ...postBridgeAnalytics,
-          ...filterManualContentAnalyticsAgainstPostBridge(
-            currentAnalytics.filter(
-              (item) => item.analytics_source === "manual",
-            ),
-            postBridgeAnalytics,
-          ),
-        ]),
-      );
+      setAnalytics(await fetchPostBridgeAnalytics());
     } catch (nextError) {
       setError(
         nextError instanceof Error
@@ -132,7 +109,7 @@ export function PostBridgeAnalyticsPageClient() {
         <DashboardPageHeader
           eyebrow="Analytics"
           title="Analytics"
-          description="See how your posted videos are doing across TikTok, Instagram, and YouTube Shorts. Sync to include posts you shared outside ClipStitchr."
+          description="See how your posted videos are doing across TikTok, Instagram, and YouTube Shorts."
           actions={
             <div className="flex flex-wrap gap-2">
               <Button
@@ -163,16 +140,10 @@ export function PostBridgeAnalyticsPageClient() {
         ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <PostBridgeAnalyticsTimeRangeFilter
-              onChange={setTimeRange}
-              value={timeRange}
-            />
-            <ContentAnalyticsSourceFilter
-              onChange={setSourceFilter}
-              value={sourceFilter}
-            />
-          </div>
+          <PostBridgeAnalyticsTimeRangeFilter
+            onChange={setTimeRange}
+            value={timeRange}
+          />
           <p className="text-sm font-semibold text-text-secondary">
             {filteredAnalytics.length} posts with results
           </p>

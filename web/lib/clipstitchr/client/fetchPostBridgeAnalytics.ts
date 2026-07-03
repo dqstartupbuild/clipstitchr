@@ -1,5 +1,5 @@
 import { readPostBridgeClientErrorMessage } from "@/lib/clipstitchr/client/readPostBridgeClientErrorMessage";
-import type { ContentAnalytics } from "@/lib/clipstitchr/types/ContentAnalytics";
+import type { PostBridgeAnalytics } from "@/lib/clipstitchr/types/PostBridgeAnalytics";
 
 export async function fetchPostBridgeAnalytics() {
   const response = await fetch("/api/post-bridge/analytics");
@@ -13,6 +13,6 @@ export async function fetchPostBridgeAnalytics() {
     );
   }
 
-  return ((await response.json()) as { analytics: ContentAnalytics[] })
+  return ((await response.json()) as { analytics: PostBridgeAnalytics[] })
     .analytics;
 }

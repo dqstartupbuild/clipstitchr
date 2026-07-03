@@ -2,8 +2,8 @@ import type { PostBridgeAnalytics } from "@/lib/clipstitchr/types/PostBridgeAnal
 import type { PostBridgeAnalyticsTimeRange } from "@/lib/clipstitchr/types/PostBridgeAnalyticsTimeRange";
 import { getPostBridgeAnalyticsIsInTimeRange } from "@/lib/clipstitchr/utils/getPostBridgeAnalyticsIsInTimeRange";
 
-export function filterPostBridgeAnalyticsByTimeRange<T extends PostBridgeAnalytics>(
-  analytics: T[],
+export function filterPostBridgeAnalyticsByTimeRange(
+  analytics: PostBridgeAnalytics[],
   timeRange: PostBridgeAnalyticsTimeRange,
   nowMs = Date.now(),
 ) {
