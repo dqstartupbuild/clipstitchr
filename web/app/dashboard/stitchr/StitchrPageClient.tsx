@@ -59,6 +59,8 @@ import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoCl
 import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchrUgcSelection";
 import { StickyPreviewColumn } from "@/app/_components/workflow/StickyPreviewColumn";
 import { WorkflowLayout } from "@/app/_components/workflow/WorkflowLayout";
+import { WorkflowPageFrame } from "@/app/_components/workflow/WorkflowPageFrame";
+import { WorkflowStatusPanel } from "@/app/_components/workflow/WorkflowStatusPanel";
 import { WorkflowStepList } from "@/app/_components/workflow/WorkflowStepList";
 
 export function StitchrPageClient() {
@@ -1939,10 +1941,26 @@ export function StitchrPageClient() {
       status: hasCreatedStitches ? "complete" : "upcoming",
     },
   ] as const;
+  const batchHookPlanCount = visibleBatchHookPlans.length;
+  const batchStatusTitle = isGeneratingBatch
+    ? "Generating batch"
+    : batchHookPlanCount > 0
+      ? "Hooks ready"
+      : "Ready for batch";
+  const batchStatusMessage =
+    batchMessage ??
+    (batchHookPlanCount > 0
+      ? "Review the hooks, pick winners, then keep creating from the same workspace."
+      : `Creates up to ${STITCHR_BATCH_DAILY_LIMIT} Stitches from your saved clips.`);
+  const batchStatusLabel = isGeneratingBatch
+    ? "Running"
+    : batchHookPlanCount > 0
+      ? `${batchHookPlanCount} hooks`
+      : "Ready";
 
   return (
-    <StitchrShell>
-      <div className="mx-auto flex max-w-7xl flex-col gap-8">
+    <StitchrShell variant="workspace">
+      <WorkflowPageFrame>
         <StitchrHeader />
         <StitchTemplatePicker
           isLoading={stitchTemplates.isLoading}
@@ -1954,68 +1972,85 @@ export function StitchrPageClient() {
           <DashboardAlert variant="error">{library.error}</DashboardAlert>
         ) : null}
         {hasStitchrInputs && mode === "batch" ? (
-          <StitchrBatchPanel
-            backgroundColorChoice={batchTextBackgroundColorChoice}
-            dailyLimit={STITCHR_BATCH_DAILY_LIMIT}
-            hookPlans={visibleBatchHookPlans}
-            isDisabled={isGeneratingBatch}
-            isGenerating={isGeneratingBatch}
-            message={batchMessage}
-            mode={mode}
-            selectedSoundTrack={selectedMusicTrack}
-            savingHookPlanId={savingHookPlanId}
-            strokeColorChoice={batchTextStrokeColorChoice}
-            textColorChoice={batchTextColorChoice}
-            textStyleChoice={batchTextStyleChoice}
-            onAcceptHookVariant={handleAcceptBatchHookVariant}
-            onBackgroundColorChoiceChange={setBatchTextBackgroundColorChoice}
-            onGenerate={handleGenerateBatch}
-            onModeChange={handleModeChange}
-            onSelectSoundTrack={(track) => {
-              setSelectedMusicTrack(track);
-            }}
-            onRejectHookVariant={handleRejectBatchHookVariant}
-            onSelectHookVariant={handleSelectBatchHookVariant}
-            onStrokeColorChoiceChange={setBatchTextStrokeColorChoice}
-            onTextColorChoiceChange={setBatchTextColorChoice}
-            onTextStyleChoiceChange={setBatchTextStyleChoice}
-          />
+          <WorkflowLayout
+            className="flex-1"
+            variant="editor"
+            aside={
+              <StickyPreviewColumn variant="editor">
+                <WorkflowStatusPanel
+                  eyebrow="Batch status"
+                  message={batchStatusMessage}
+                  statusLabel={batchStatusLabel}
+                  title={batchStatusTitle}
+                />
+              </StickyPreviewColumn>
+            }
+          >
+            <StitchrBatchPanel
+              backgroundColorChoice={batchTextBackgroundColorChoice}
+              dailyLimit={STITCHR_BATCH_DAILY_LIMIT}
+              hookPlans={visibleBatchHookPlans}
+              isDisabled={isGeneratingBatch}
+              isGenerating={isGeneratingBatch}
+              message={batchMessage}
+              mode={mode}
+              selectedSoundTrack={selectedMusicTrack}
+              savingHookPlanId={savingHookPlanId}
+              strokeColorChoice={batchTextStrokeColorChoice}
+              textColorChoice={batchTextColorChoice}
+              textStyleChoice={batchTextStyleChoice}
+              onAcceptHookVariant={handleAcceptBatchHookVariant}
+              onBackgroundColorChoiceChange={setBatchTextBackgroundColorChoice}
+              onGenerate={handleGenerateBatch}
+              onModeChange={handleModeChange}
+              onSelectSoundTrack={(track) => {
+                setSelectedMusicTrack(track);
+              }}
+              onRejectHookVariant={handleRejectBatchHookVariant}
+              onSelectHookVariant={handleSelectBatchHookVariant}
+              onStrokeColorChoiceChange={setBatchTextStrokeColorChoice}
+              onTextColorChoiceChange={setBatchTextColorChoice}
+              onTextStyleChoiceChange={setBatchTextStyleChoice}
+            />
+          </WorkflowLayout>
         ) : hasStitchrInputs ? (
-          <>
+          <WorkflowLayout
+            className="flex-1"
+            contentClassName="space-y-4"
+            variant="editor"
+            aside={
+              <StickyPreviewColumn variant="editor">
+                <SequencePreviewPanel
+                  mode={mode}
+                  previewUgcClips={selectedUgcMetadata}
+                  activeUgcId={activeUgcMetadata?.id ?? null}
+                  ugcClip={selectedUgcClip}
+                  demoClip={selectedDemoClip}
+                  sequenceClips={loadedLongrSequenceClips}
+                  sequenceIncludeAudioFlags={longrSequenceIncludeAudioFlags}
+                  sequencePlaybackRates={longrSequencePlaybackRates}
+                  sequenceTrimRanges={longrSequenceTrimRanges}
+                  ugcTrimRange={selectedUgcTrimRange}
+                  demoTrimRange={selectedDemoTrimRange}
+                  demoPlaybackRate={demoPlaybackRate}
+                  includeDemoAudio={includeDemoAudio}
+                  includeUgcAudio={includeUgcAudio}
+                  textOverlays={clampedTextOverlays}
+                  ugcPlaybackRate={ugcPlaybackRate}
+                  canCopyTextOverlayToAll={
+                    mode === "normal" && selectedUgcMetadata.length > 1
+                  }
+                  onActiveUgcChange={handleActiveUgcChange}
+                  onCopyTextOverlayToAll={handleCopyTextOverlayToAll}
+                  onTextOverlaysChange={handleTextOverlaysChange}
+                />
+              </StickyPreviewColumn>
+            }
+          >
             <WorkflowStepList
               label="Stitchr workflow"
               steps={stitchrWorkflowSteps}
             />
-            <WorkflowLayout
-              aside={
-                <StickyPreviewColumn>
-                  <SequencePreviewPanel
-                    mode={mode}
-                    previewUgcClips={selectedUgcMetadata}
-                    activeUgcId={activeUgcMetadata?.id ?? null}
-                    ugcClip={selectedUgcClip}
-                    demoClip={selectedDemoClip}
-                    sequenceClips={loadedLongrSequenceClips}
-                    sequenceIncludeAudioFlags={longrSequenceIncludeAudioFlags}
-                    sequencePlaybackRates={longrSequencePlaybackRates}
-                    sequenceTrimRanges={longrSequenceTrimRanges}
-                    ugcTrimRange={selectedUgcTrimRange}
-                    demoTrimRange={selectedDemoTrimRange}
-                    demoPlaybackRate={demoPlaybackRate}
-                    includeDemoAudio={includeDemoAudio}
-                    includeUgcAudio={includeUgcAudio}
-                    textOverlays={clampedTextOverlays}
-                    ugcPlaybackRate={ugcPlaybackRate}
-                    canCopyTextOverlayToAll={
-                      mode === "normal" && selectedUgcMetadata.length > 1
-                    }
-                    onActiveUgcChange={handleActiveUgcChange}
-                    onCopyTextOverlayToAll={handleCopyTextOverlayToAll}
-                    onTextOverlaysChange={handleTextOverlaysChange}
-                  />
-                </StickyPreviewColumn>
-              }
-            >
             <div className="flex min-w-0 flex-col gap-5">
               <ClipPickerPanel
                 mode={mode}
@@ -2105,8 +2140,7 @@ export function StitchrPageClient() {
                 onLoadClip={loadClip}
               />
             </div>
-            </WorkflowLayout>
-          </>
+          </WorkflowLayout>
         ) : library.isLoading ? (
           <div className="rounded-lg border border-border bg-surface p-5 text-sm text-text-secondary">
             Loading Stitchr clips...
@@ -2114,7 +2148,7 @@ export function StitchrPageClient() {
         ) : (
           <StitchrEmptyState />
         )}
-      </div>
+      </WorkflowPageFrame>
     </StitchrShell>
   );
 }

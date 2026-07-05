@@ -126,6 +126,19 @@ describe("dashboard shell sections", () => {
     expect(statsMarkup).toContain("4");
   });
 
+  it("renders the workspace shell as a viewport-bounded editor surface", () => {
+    const markup = renderToStaticMarkup(
+      <DashboardShell variant="workspace">
+        <p>Workspace child</p>
+      </DashboardShell>,
+    );
+
+    expect(markup).toContain("h-dvh");
+    expect(markup).toContain("overflow-hidden");
+    expect(markup).toContain("flex-1");
+    expect(markup).toContain("Workspace child");
+  });
+
   it("hides dashboard navigation while onboarding is required", () => {
     mocks.requiresOnboarding = true;
 

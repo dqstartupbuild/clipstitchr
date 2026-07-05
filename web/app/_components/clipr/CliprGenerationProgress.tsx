@@ -1,4 +1,4 @@
-import { ProgressBar } from "@/app/_components/ui/ProgressBar";
+import { WorkflowStatusPanel } from "@/app/_components/workflow/WorkflowStatusPanel";
 import type { ProcessingStatus } from "@/lib/clipstitchr/types/ProcessingStatus";
 
 type CliprGenerationProgressProps = {
@@ -36,22 +36,12 @@ export function CliprGenerationProgress({
   status,
 }: CliprGenerationProgressProps) {
   return (
-    <section className="rounded-lg border border-border bg-white p-4">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="text-base font-bold text-text-primary">
-          {getStatusLabel(status)}
-        </h2>
-        <span className="text-xs font-semibold text-text-tertiary">
-          {status === "queued" ? "Queued" : `${Math.round(progress * 100)}%`}
-        </span>
-      </div>
-      <ProgressBar value={progress} />
-      <p className="mt-2 text-sm font-semibold text-text-secondary">
-        {message}
-      </p>
-      {error ? (
-        <p className="mt-3 text-sm font-semibold text-red-600">{error}</p>
-      ) : null}
-    </section>
+    <WorkflowStatusPanel
+      error={error}
+      message={message}
+      progress={progress}
+      statusLabel={status === "queued" ? "Queued" : `${Math.round(progress * 100)}%`}
+      title={getStatusLabel(status)}
+    />
   );
 }
