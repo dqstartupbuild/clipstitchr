@@ -1,34 +1,26 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import type { ReactNode } from "react";
 import { HeaderAuthActions } from "@/app/_components/HeaderAuthActions";
 
 const mocks = vi.hoisted(() => ({
-  linkProps: null as { onClick?: () => void } | null,
-  redirectToSignIn: vi.fn(),
-  redirectToSignUp: vi.fn(),
+  linkProps: [] as Array<{
+    className?: string;
+    href: string;
+    onClick?: () => void;
+  }>,
   trackPostHogEvent: vi.fn(),
   trackTikTokButtonClick: vi.fn(),
-  userState: {
-    isLoaded: true,
-    isSignedIn: false,
-  },
-}));
-
-vi.mock("@clerk/nextjs", () => ({
-  UserButton: () => "UserButton",
-  useClerk: () => ({
-    redirectToSignIn: mocks.redirectToSignIn,
-    redirectToSignUp: mocks.redirectToSignUp,
-  }),
-  useUser: () => mocks.userState,
 }));
 
 vi.mock("next/link", () => ({
-  default: (props: { children: unknown; href: string; onClick?: () => void }) => {
-    mocks.linkProps = props;
-    return {
-      props,
-      type: "a",
-    };
+  default: (props: {
+    children: ReactNode;
+    href: string;
+    onClick?: () => void;
+  }) => {
+    mocks.linkProps.push(props);
+    return <a {...props}>{props.children}</a>;
   },
 }));
 
@@ -40,64 +32,22 @@ vi.mock("@/lib/clipstitchr/analytics/trackTikTokButtonClick", () => ({
   trackTikTokButtonClick: mocks.trackTikTokButtonClick,
 }));
 
-function findElements(
-  value: unknown,
-  predicate: (element: { props?: Record<string, unknown>; type?: unknown }) => boolean,
-): Array<{ props: Record<string, unknown>; type?: unknown }> {
-  if (!value || typeof value !== "object") {
-    return [];
-  }
-
-  if (Array.isArray(value)) {
-    return value.flatMap((child) => findElements(child, predicate));
-  }
-
-  const element = value as {
-    props?: { children?: unknown };
-    type?: unknown;
-  };
-  const matches = predicate(element as { props?: Record<string, unknown>; type?: unknown })
-    ? [element as { props: Record<string, unknown>; type?: unknown }]
-    : [];
-
-  return [
-    ...matches,
-    ...findElements(element.props?.children, predicate),
-  ];
-}
-
 describe("HeaderAuthActions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.linkProps = null;
-    mocks.userState.isLoaded = true;
-    mocks.userState.isSignedIn = false;
+    mocks.linkProps = [];
   });
 
-  it("returns a loading skeleton while Clerk is loading", () => {
-    mocks.userState.isLoaded = false;
+  it("renders public auth links and tracks sign-in/sign-up actions", () => {
+    renderToStaticMarkup(<HeaderAuthActions variant="desktop" />);
+    const [signInLink, signUpLink] = mocks.linkProps;
 
-    const element = HeaderAuthActions({ variant: "mobile" }) as {
-      props: { className: string };
-    };
+    expect(signInLink.href).toBe("/sign-in");
+    expect(signUpLink.href).toBe("/sign-up");
 
-    expect(element.props.className).toContain("h-9");
-  });
+    signInLink.onClick?.();
+    signUpLink.onClick?.();
 
-  it("tracks and redirects signed-out sign-in/sign-up actions", () => {
-    const element = HeaderAuthActions({ variant: "desktop" }) as {
-      props: { children: unknown };
-    };
-    const [signInButton, signUpButton] = findElements(
-      element,
-      (child) => child.type === "button",
-    );
-
-    (signInButton.props.onClick as () => void)();
-    (signUpButton.props.onClick as () => void)();
-
-    expect(mocks.redirectToSignIn).toHaveBeenCalled();
-    expect(mocks.redirectToSignUp).toHaveBeenCalled();
     expect(mocks.trackPostHogEvent).toHaveBeenCalledWith("auth_cta_clicked", {
       action: "sign_in",
       location: "header",
@@ -110,28 +60,11 @@ describe("HeaderAuthActions", () => {
     );
   });
 
-  it("renders signed-in dashboard actions and tracks dashboard clicks", () => {
-    mocks.userState.isSignedIn = true;
+  it("uses compact classes for mobile actions", () => {
+    renderToStaticMarkup(<HeaderAuthActions variant="mobile" />);
+    const [signInLink, signUpLink] = mocks.linkProps;
 
-    const element = HeaderAuthActions({ variant: "mobile" });
-    const [dashboardLink] = findElements(
-      element,
-      (child) => typeof child.props?.href === "string",
-    );
-
-    (dashboardLink.props.onClick as () => void)();
-
-    expect(mocks.trackPostHogEvent).toHaveBeenCalledWith(
-      "dashboard_cta_clicked",
-      {
-        location: "header",
-        variant: "mobile",
-      },
-    );
-    expect(mocks.trackTikTokButtonClick).toHaveBeenCalledWith(
-      expect.objectContaining({
-        contentId: "header_dashboard",
-      }),
-    );
+    expect(signInLink.className).toContain("h-9");
+    expect(signUpLink.className).toContain("h-9");
   });
 });

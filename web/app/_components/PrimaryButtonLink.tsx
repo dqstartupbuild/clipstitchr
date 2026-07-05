@@ -18,6 +18,7 @@ export function PrimaryButtonLink({
   return (
     <Link
       href={href}
+      prefetch={false}
       className={[
         PRIMARY_BUTTON_CLASS_NAME,
         className,

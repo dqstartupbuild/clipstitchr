@@ -25,15 +25,24 @@ The shared public layout applies the shell to `/pricing`, `/examples`, `/docs`,
 `/blog`, `/case-studies`, `/privacy`, and `/terms`. The homepage applies the
 same shell directly through `LandingPage`.
 
+Public pages intentionally stay outside Clerk and Convex providers. Header auth
+actions are normal links, and auth/dashboard CTAs disable Next prefetch so local
+development does not compile protected or Clerk-owned routes while someone is
+just scrolling the marketing page.
+
 ## Relevant Code
 
 - `web/app/globals.css` defines `marketing-shell`, `marketing-heading`,
   `marketing-subheading`, `marketing-eyebrow`, `marketing-card`, and
   `marketing-grid-bg`.
 - `web/app/layout.tsx` loads Barlow Condensed and DM Sans for the marketing
-  shell.
+  shell and keeps public pages outside authenticated providers.
 - `web/app/site-header.tsx` and `web/app/site-footer.tsx` provide the shared
   public navigation and footer.
+- `web/app/_components/auth/AuthenticatedAppProviders.tsx` scopes Clerk and
+  Convex to auth and dashboard route layouts.
+- `web/proxy.ts` only runs Clerk middleware for auth, dashboard, API, and Clerk
+  internal routes.
 - `web/app/_components/landing/*` contains the homepage sections.
 - `web/app/_components/pricing/*` contains the pricing page sections.
 - `web/app/(content)/*` contains the public content routes.
@@ -48,12 +57,14 @@ web/app/globals.css
 web/app/layout.tsx
 web/app/site-header.tsx
 web/app/site-footer.tsx
+web/app/_components/auth/AuthenticatedAppProviders.tsx
 web/app/_components/landing/
 web/app/_components/pricing/
 web/app/_components/examples/
 web/app/_components/case-studies/
 web/app/_components/content/ArticleHeader.tsx
 web/app/(content)/
+web/proxy.ts
 docs/product/copywriting-guide.md
 docs/product/positioning.md
 ```

@@ -100,7 +100,11 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
                   <li key={tool}>{tool}</li>
                 ))}
               </ul>
-              <Link href="/dashboard" className="btn-secondary mt-6 w-full">
+              <Link
+                href="/dashboard"
+                prefetch={false}
+                className="btn-secondary mt-6 w-full"
+              >
                 Open Dashboard
               </Link>
             </div>

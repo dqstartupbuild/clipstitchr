@@ -64,6 +64,12 @@ vi.mock("@/app/_components/auth/WaitlistForm", () => ({
   WaitlistForm: () => <form>Waitlist form</form>,
 }));
 
+vi.mock("@/app/_components/auth/AuthenticatedAppProviders", () => ({
+  AuthenticatedAppProviders: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+}));
+
 vi.mock("@/app/dashboard/DashboardPageClient", () => ({
   DashboardPageClient: () => <main>Dashboard client</main>,
 }));

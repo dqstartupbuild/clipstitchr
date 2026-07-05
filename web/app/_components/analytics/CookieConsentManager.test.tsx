@@ -74,16 +74,8 @@ vi.mock("@/app/_components/analytics/CookiePreferencesDialog", () => ({
   },
 }));
 
-vi.mock("@/app/_components/analytics/PostHogIdentityReporter", () => ({
-  PostHogIdentityReporter: () => "PostHogIdentityReporter",
-}));
-
 vi.mock("@/app/_components/analytics/PostHogPageViewTracker", () => ({
   PostHogPageViewTracker: () => "PostHogPageViewTracker",
-}));
-
-vi.mock("@/app/_components/analytics/TikTokIdentityReporter", () => ({
-  TikTokIdentityReporter: () => "TikTokIdentityReporter",
 }));
 
 vi.mock("@/app/_components/analytics/TikTokPixelScript", () => ({
@@ -133,10 +125,8 @@ describe("CookieConsentManager", () => {
 
     const markup = renderToStaticMarkup(<CookieConsentManager />);
 
-    expect(markup).toContain("PostHogIdentityReporter");
     expect(markup).toContain("PostHogPageViewTracker");
     expect(markup).toContain("TikTokPixelScript");
-    expect(markup).toContain("TikTokIdentityReporter");
     expect(markup).toContain("TikTokViewContentTracker");
   });
 

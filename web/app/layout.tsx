@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
 import {
   Barlow_Condensed,
   DM_Sans,
@@ -9,7 +8,6 @@ import {
 import { Analytics } from "@vercel/analytics/next";
 import { CookieConsentManager } from "@/app/_components/analytics/CookieConsentManager";
 import { ThemeModeScript } from "@/app/_components/theme/ThemeModeScript";
-import { ConvexClientProvider } from "@/app/ConvexClientProvider";
 import { createPageMetadata } from "@/lib/metadata";
 import {
   createOrganizationJsonLd,
@@ -79,30 +77,21 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ThemeModeScript />
-        <ClerkProvider
-          signInUrl="/sign-in"
-          signUpUrl="/sign-up"
-          signInFallbackRedirectUrl="/dashboard"
-          signUpFallbackRedirectUrl="/dashboard"
-        >
-          <CookieConsentManager />
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(createWebsiteJsonLd()),
-            }}
-          />
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(createOrganizationJsonLd()),
-            }}
-          />
-          <ConvexClientProvider>
-            {children}
-            <Analytics />
-          </ConvexClientProvider>
-        </ClerkProvider>
+        <CookieConsentManager />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(createWebsiteJsonLd()),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(createOrganizationJsonLd()),
+          }}
+        />
+        {children}
+        <Analytics />
       </body>
     </html>
   );

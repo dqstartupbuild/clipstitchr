@@ -457,7 +457,7 @@ Command meanings:
 
 | Command | What it does |
 | --- | --- |
-| `npm run dev` | Watches content collections and starts Next.js dev server |
+| `npm run dev` | Watches content collections and starts the webpack Next.js dev server |
 | `npm run build` | Builds content collections and production Next.js app |
 | `npm run start` | Starts the production Next.js server |
 | `npm run lint` | Builds content collections and runs ESLint |
