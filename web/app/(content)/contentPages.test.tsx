@@ -263,10 +263,10 @@ describe("content pages", () => {
 
     expect(layoutMarkup).toContain("Content child");
     expect(layoutMarkup).toContain("Blog");
-    expect(layoutMarkup).toContain("Case Studies");
+    expect(layoutMarkup).toContain("Case studies");
     expect(layoutMarkup).toContain("Pricing");
     expect(pricingMarkup).toContain(
-      "Pay for the system that keeps content from eating your week",
+      "Simple pricing for content that stops eating your week",
     );
     expect(pricingMarkup).toContain("Stitchr ads from saved clips");
     expect(pricingMarkup).toContain("Clip scores and video reads");
@@ -275,6 +275,7 @@ describe("content pages", () => {
     expect(pricingMarkup).toContain("10k Organic Views Challenge");
     expect(pricingMarkup).toContain("Refill");
     expect(pricingMarkup).toContain("150 credits");
+    expect(pricingMarkup).toContain("Start free");
     expect(privacyMarkup).toContain("Privacy Policy");
     expect(privacyMarkup).toContain("Media Processing and Storage");
     expect(termsMarkup).toContain("Terms of Use");

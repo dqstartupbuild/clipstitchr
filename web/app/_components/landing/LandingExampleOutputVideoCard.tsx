@@ -10,7 +10,7 @@ export function LandingExampleOutputVideoCard({
   index,
 }: LandingExampleOutputVideoCardProps) {
   return (
-    <article className="w-40 shrink-0 overflow-hidden rounded-lg bg-surface shadow-sm ring-1 ring-border sm:w-44 md:w-48">
+    <article className="w-40 shrink-0 overflow-hidden rounded-[1.5rem] bg-surface shadow-[0_20px_50px_rgba(0,0,0,0.28)] ring-1 ring-white/10 sm:w-44 md:w-48">
       <div className="aspect-[9/16] bg-surface-elevated">
         <video
           aria-label={example.title}

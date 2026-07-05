@@ -262,7 +262,7 @@ selected slides.
 ## 5. Pages / Routes (MVP)
 
 ```
-/                → Landing page (marketing + "Go to Dashboard" CTA)
+/                → Landing page (marketing + "Start free" CTA)
 /dashboard       → Authenticated main workspace
 /dashboard/stitchr → Authenticated Stitchr video stitching interface
 /dashboard/hooks → Authenticated Hook Lab for product hook memory and saved hook review

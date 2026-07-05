@@ -42,19 +42,19 @@ export default async function DocsArticlePage({ params }: DocsArticlePageProps) 
   }
 
   return (
-    <div className="px-6 py-16 md:py-24">
+    <div className="marketing-grid-bg px-6 py-20 md:py-28">
       <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <article className="min-w-0">
           <Link
             href="/docs"
-            className="text-sm font-semibold text-text-tertiary transition-colors hover:text-accent"
+            className="text-sm font-semibold text-text-tertiary transition-colors hover:text-accent-dark"
           >
             Back to docs
           </Link>
 
           <header className="mt-8 max-w-3xl">
-            <p className="text-sm font-semibold text-accent-dark">Docs</p>
-            <h1 className="mt-4 text-4xl font-bold text-text-primary md:text-5xl">
+            <p className="marketing-eyebrow">Docs</p>
+            <h1 className="marketing-heading mt-6 text-5xl text-text-primary md:text-7xl">
               {doc.title}
             </h1>
             <p className="mt-6 text-lg leading-8 text-text-secondary">
@@ -68,7 +68,7 @@ export default async function DocsArticlePage({ params }: DocsArticlePageProps) 
           <div className="mt-12 space-y-12">
             {doc.sections.map((section) => (
               <section key={section.title}>
-                <h2 className="text-2xl font-bold text-text-primary">
+                <h2 className="marketing-subheading text-3xl text-text-primary">
                   {section.title}
                 </h2>
 
@@ -109,14 +109,14 @@ export default async function DocsArticlePage({ params }: DocsArticlePageProps) 
                         <Link
                           key={card.title}
                           href={card.href}
-                          className="rounded-lg border border-border bg-white p-5 shadow-sm transition-colors hover:border-accent"
+                          className="marketing-card p-5 transition-colors hover:border-accent"
                         >
                           {cardContent}
                         </Link>
                       ) : (
                         <div
                           key={card.title}
-                          className="rounded-lg border border-border bg-white p-5 shadow-sm"
+                          className="marketing-card p-5"
                         >
                           {cardContent}
                         </div>
@@ -129,7 +129,7 @@ export default async function DocsArticlePage({ params }: DocsArticlePageProps) 
 
             {doc.rateLimitGroups ? (
               <section>
-                <h2 className="text-2xl font-bold text-text-primary">
+                <h2 className="marketing-subheading text-3xl text-text-primary">
                   Current Limits
                 </h2>
                 <div className="mt-6 space-y-8">
@@ -138,7 +138,7 @@ export default async function DocsArticlePage({ params }: DocsArticlePageProps) 
                       <h3 className="text-xl font-bold text-text-primary">
                         {group.title}
                       </h3>
-                      <div className="mt-4 overflow-hidden rounded-lg border border-border bg-white">
+                      <div className="mt-4 overflow-hidden rounded-lg border border-border bg-surface">
                         <div className="overflow-x-auto">
                           <table className="min-w-full divide-y divide-border text-left text-sm">
                             <thead className="bg-surface-elevated text-text-primary">
@@ -175,7 +175,7 @@ export default async function DocsArticlePage({ params }: DocsArticlePageProps) 
         </article>
 
         <aside className="lg:pt-24">
-          <div className="sticky top-8 rounded-lg border border-border bg-white p-5 shadow-sm">
+            <div className="marketing-card sticky top-8 p-5">
             <p className="text-sm font-bold text-text-primary">More docs</p>
             <nav className="mt-4 space-y-2">
               {relatedDocs.map((relatedDoc) => (

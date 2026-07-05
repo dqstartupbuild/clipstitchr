@@ -21,13 +21,13 @@ export default function ExamplesIndexPage() {
   const examples = getPublicVideoExamples();
 
   return (
-    <div className="px-6 py-16 md:py-24">
+    <div className="marketing-grid-bg px-6 py-20 md:py-28">
       <div className="mx-auto max-w-6xl">
         <div className="max-w-3xl">
-          <p className="text-sm font-semibold text-accent-dark">
+          <p className="marketing-eyebrow">
             Example outputs
           </p>
-          <h1 className="mt-4 text-4xl font-bold text-text-primary md:text-5xl">
+          <h1 className="marketing-heading mt-6 text-5xl text-text-primary md:text-7xl">
             See what happens when clips finally leave the folder.
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">

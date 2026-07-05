@@ -52,19 +52,17 @@ describe("LandingPage", () => {
     const markup = renderToStaticMarkup(<Home />);
 
     expect(markup).toContain(
-      "Make short-form ads without becoming a content person",
+      "Turn raw footage into finished ads",
     );
     expect(markup).toContain(
-      "whole content thing makes you want to quit",
+      "Upload UGC clips and product demos once",
     );
-    expect(markup).toContain("ClipStitchr is built for you");
-    expect(markup).toContain("Start with your clips");
-    expect(markup).toContain("No timeline archaeology");
+    expect(markup).toContain("Start for free");
+    expect(markup).toContain("Watch examples");
+    expect(markup).toContain("Three steps. Zero timelines");
+    expect(markup).toContain("Every tool feeds one library");
     expect(markup).toContain("Writing overlay text that does not sound fake");
     expect(markup).toContain("Paste lines from posts that made you stop scrolling");
-    expect(markup).toContain(
-      "Clips + product demo = ads you can actually test",
-    );
     expect(markup).toContain(
       "Use one product demo without dragging it into every ad yourself",
     );
@@ -78,11 +76,10 @@ describe("LandingPage", () => {
     expect(markup).toContain("Sometimes the problem is just not having enough usable clips");
     expect(markup).toContain("When video feels like overkill");
     expect(markup).toContain("Showing up daily is hard when you do not like social");
-    expect(markup).toContain("What you get");
-    expect(markup).toContain("people who do not want content to become the");
     expect(markup).toContain("Scheduling after the draft is ready");
     expect(markup).toContain("/docs/post-bridge");
-    expect(markup).toContain("without becoming a content person");
+    expect(markup).toContain("Upload once");
+    expect(markup).toContain("Create everything");
     expect(markup).toContain("ClipStitchr dashboard and video stitching");
   });
 
@@ -92,19 +89,17 @@ describe("LandingPage", () => {
       <SiteHeader variant="content" />,
     );
 
-    expect(landingMarkup).toContain("How it Works");
+    expect(landingMarkup).toContain("How it works");
+    expect(landingMarkup).toContain("Features");
     expect(landingMarkup).toContain("Examples");
-    expect(landingMarkup).toContain("Case Studies");
-    expect(landingMarkup).toContain("What you get");
     expect(landingMarkup).toContain("Pricing");
-    expect(landingMarkup).toContain('href="/case-studies"');
+    expect(landingMarkup).toContain('href="/examples"');
     expect(landingMarkup).toContain('href="/pricing"');
-    expect(landingMarkup).not.toContain("Features");
     expect(landingMarkup).not.toContain("Real Stitchr output");
     expect(landingMarkup).not.toContain("Real output reel");
     expect(
       landingMarkup.indexOf("/example-outputs/clipstitchr-example-01.webm"),
-    ).toBeLessThan(landingMarkup.indexOf("No timeline archaeology"));
+    ).toBeLessThan(landingMarkup.indexOf("Three steps. Zero timelines"));
     expect(contentHeaderMarkup).toContain("Home");
     expect(contentHeaderMarkup).toContain("Pricing");
     expect(contentHeaderMarkup).toContain("Dashboard");

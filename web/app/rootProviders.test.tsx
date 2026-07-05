@@ -23,6 +23,8 @@ describe("root providers", () => {
       ),
     }));
     vi.doMock("next/font/google", () => ({
+      Barlow_Condensed: () => ({ variable: "font-display" }),
+      DM_Sans: () => ({ variable: "font-body" }),
       Geist_Mono: () => ({ variable: "font-mono" }),
       Plus_Jakarta_Sans: () => ({ variable: "font-sans" }),
     }));

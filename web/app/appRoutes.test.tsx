@@ -138,7 +138,7 @@ describe("app route wrappers", () => {
     );
     expect(markup).toContain("Clerk sign in");
     expect(markup).toContain(
-      "Built by someone who hates making content. Access is still invite-only.",
+      "Turn raw footage into finished ads while access is still private.",
     );
     expect(markup).toContain("Waitlist form");
     expect(markup).toContain("Inside ClipStitchr");

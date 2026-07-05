@@ -4,22 +4,22 @@ const swiprSteps = ["Pick product", "Choose a look", "Edit slides", "Download"];
 
 export function LandingSwiprSection() {
   return (
-    <section className="bg-white px-6 py-16">
+    <section className="bg-background px-6 py-24">
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div className="max-w-2xl">
-          <p className="text-sm font-semibold text-accent-dark">
+          <p className="marketing-eyebrow">
             For posts that should be slides
           </p>
-          <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
+          <h2 className="marketing-heading mt-5 text-4xl text-text-primary md:text-6xl">
             When video feels like overkill, make the carousel and move on.
           </h2>
-          <p className="mt-4 leading-7 text-text-secondary">
+          <p className="mt-5 leading-7 text-text-secondary">
             Swipr turns the same product context into editable carousel drafts.
             Use it when the idea needs slides instead of another vertical
             video.
           </p>
         </div>
-        <div className="rounded-lg border border-border bg-surface-muted p-5 shadow-sm shadow-slate-200/60">
+        <div className="marketing-card p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="inline-flex items-center gap-2 rounded-md border border-purple-200 bg-white px-2 py-1 text-xs font-bold text-accent-dark">

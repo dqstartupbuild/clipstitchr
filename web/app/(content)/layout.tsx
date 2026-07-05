@@ -7,7 +7,7 @@ export default function ContentLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-full flex flex-col bg-background text-foreground">
+    <div className="marketing-shell min-h-full flex flex-col bg-background text-foreground">
       <SiteHeader variant="content" />
 
       <main className="flex-1">{children}</main>

@@ -14,8 +14,8 @@ export default function SignUpPage() {
   return (
     <AuthPageShell
       eyebrow="Private beta"
-      title="Built by someone who hates making content. Access is still invite-only."
-      description="Join if you are trying to grow a mobile app on TikTok and Reels but do not want content work taking over the week."
+      title="Turn raw footage into finished ads while access is still private."
+      description="Join if you are trying to grow a mobile app on TikTok and Reels without rebuilding the same editing workflow every week."
     >
       <WaitlistForm />
     </AuthPageShell>

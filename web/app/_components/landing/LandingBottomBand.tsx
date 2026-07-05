@@ -4,27 +4,31 @@ import { PRIMARY_BUTTON_CLASS_NAME } from "@/app/_components/ui/primaryButtonCla
 
 export function LandingBottomBand() {
   return (
-    <section className="px-6 py-16">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 rounded-lg border border-border bg-surface-muted p-8 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-text-primary">
-            You can grow on short-form without becoming a content person.
+    <section className="bg-surface-muted/45 px-6 py-24">
+      <div className="marketing-card relative mx-auto max-w-6xl overflow-hidden p-10 text-center md:p-16">
+        <div className="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(ellipse_at_50%_0%,rgba(139,92,246,0.24),transparent_68%)]" />
+        <div className="relative mx-auto flex max-w-3xl flex-col items-center">
+          <p className="marketing-eyebrow mx-auto">Ready to ship?</p>
+          <h2 className="marketing-heading mt-6 text-5xl text-text-primary md:text-7xl">
+            Upload once.
+            <br />
+            <span className="text-accent-dark">Create everything.</span>
           </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-text-secondary">
+          <p className="mt-6 max-w-xl text-base leading-7 text-text-secondary">
             Start with the clips and demos you already have. ClipStitchr handles
-            the parts that make you avoid posting.
+            the repetitive parts that make you avoid posting.
           </p>
+          <TrackedButtonLink
+            href="/dashboard"
+            className={`${PRIMARY_BUTTON_CLASS_NAME} mt-8`}
+            contentCategory="Landing page"
+            contentId="bottom_start_clips_button"
+            contentName="Bottom start clips"
+          >
+            Start for free
+            <ArrowRight aria-hidden className="h-4 w-4" />
+          </TrackedButtonLink>
         </div>
-        <TrackedButtonLink
-          href="/dashboard"
-          className={PRIMARY_BUTTON_CLASS_NAME}
-          contentCategory="Landing page"
-          contentId="bottom_start_clips_button"
-          contentName="Bottom start clips"
-        >
-          Start with your clips
-          <ArrowRight aria-hidden className="h-4 w-4" />
-        </TrackedButtonLink>
       </div>
     </section>
   );

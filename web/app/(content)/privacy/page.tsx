@@ -13,13 +13,13 @@ export default function PrivacyPage() {
   const lastUpdated = "June 26, 2026";
 
   return (
-    <article className="px-6 py-20 md:py-28">
-      <div className="mx-auto max-w-3xl rounded-lg border border-border bg-white p-6 shadow-sm md:p-10">
+    <article className="marketing-grid-bg px-6 py-20 md:py-28">
+      <div className="marketing-card mx-auto max-w-3xl p-6 md:p-10">
         <header className="mb-12">
-          <p className="mb-4 text-sm font-semibold text-accent-dark">
+          <p className="marketing-eyebrow mb-5">
             Legal
           </p>
-          <h1 className="mb-4 text-3xl font-bold text-text-primary md:text-5xl">
+          <h1 className="marketing-heading mb-4 text-5xl text-text-primary md:text-7xl">
             Privacy Policy
           </h1>
           <p className="text-sm text-text-tertiary">

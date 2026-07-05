@@ -15,16 +15,16 @@ type CallToActionProps = {
 
 function CallToAction({
   href = site.ctaUrl,
-  label = site.ctaLabel,
+  label = "Start free",
 }: CallToActionProps) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
-      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">
+      <p className="text-sm font-bold uppercase text-accent-dark">
         {label}
       </p>
       <p className="mt-3 text-base leading-7 text-text-secondary">
-        Interested in what we&apos;re building? We&apos;d love to hear from you.
-        Click the link below to get started.
+        Start with the clips you already have. Make the ad, review it, and get
+        back to building.
       </p>
       <a href={href} className="btn-primary mt-5">
         {label}
@@ -45,10 +45,16 @@ function InlineLink(props: ComponentPropsWithoutRef<"a">) {
 export const mdxComponents = {
   a: InlineLink,
   h2: (props: ComponentPropsWithoutRef<"h2">) => (
-    <h2 {...props} className="mt-12 text-3xl font-semibold text-text-primary" />
+    <h2
+      {...props}
+      className="marketing-subheading mt-12 text-3xl text-text-primary"
+    />
   ),
   h3: (props: ComponentPropsWithoutRef<"h3">) => (
-    <h3 {...props} className="mt-10 text-2xl font-semibold text-text-primary" />
+    <h3
+      {...props}
+      className="marketing-subheading mt-10 text-2xl text-text-primary"
+    />
   ),
   p: (props: ComponentPropsWithoutRef<"p">) => (
     <p {...props} className="text-base leading-8 text-text-secondary" />

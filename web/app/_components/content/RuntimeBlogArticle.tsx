@@ -6,8 +6,8 @@ import { extractBlogHeadings } from "@/lib/content/runtimeBlog/extractBlogHeadin
 
 const proseClassName = [
   "space-y-6 text-base leading-8 text-text-secondary",
-  "[&_h2]:mt-12 [&_h2]:text-3xl [&_h2]:font-semibold [&_h2]:text-text-primary [&_h2]:scroll-mt-24",
-  "[&_h3]:mt-10 [&_h3]:text-2xl [&_h3]:font-semibold [&_h3]:text-text-primary [&_h3]:scroll-mt-24",
+  "[&_h2]:mt-12 [&_h2]:font-[var(--font-barlow-condensed)] [&_h2]:text-3xl [&_h2]:font-extrabold [&_h2]:uppercase [&_h2]:text-text-primary [&_h2]:scroll-mt-24",
+  "[&_h3]:mt-10 [&_h3]:font-[var(--font-barlow-condensed)] [&_h3]:text-2xl [&_h3]:font-extrabold [&_h3]:uppercase [&_h3]:text-text-primary [&_h3]:scroll-mt-24",
   "[&_h4]:mt-8 [&_h4]:text-xl [&_h4]:font-semibold [&_h4]:text-text-primary [&_h4]:scroll-mt-24",
   "[&_p]:text-base [&_p]:leading-8 [&_p]:text-text-secondary",
   "[&_ul]:ml-6 [&_ul]:list-disc [&_ul]:space-y-3 [&_ul]:text-text-secondary",

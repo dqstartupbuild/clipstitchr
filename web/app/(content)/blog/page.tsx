@@ -21,11 +21,11 @@ export default async function BlogIndexPage() {
   const isEmpty = posts.length === 0;
 
   return (
-    <div className="px-6 py-16 md:py-24">
+    <div className="marketing-grid-bg px-6 py-20 md:py-28">
       <div className="mx-auto max-w-6xl">
         <div className="max-w-3xl">
-          <p className="text-sm font-semibold text-accent-dark">Resources</p>
-          <h1 className="mt-4 text-4xl font-bold text-text-primary md:text-5xl">
+          <p className="marketing-eyebrow">Resources</p>
+          <h1 className="marketing-heading mt-6 text-5xl text-text-primary md:text-7xl">
             Notes on doing content when you would rather not.
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
@@ -37,7 +37,7 @@ export default async function BlogIndexPage() {
               {categories.map((category) => (
                 <span
                   key={category}
-                  className="rounded-md border border-border bg-white px-3 py-1.5"
+                  className="rounded-md border border-border bg-surface px-3 py-1.5"
                 >
                   {category}
                 </span>
@@ -55,12 +55,12 @@ export default async function BlogIndexPage() {
                 <p className="text-sm font-semibold text-accent-dark">
                   Featured article
                 </p>
-                <article className="mt-5 rounded-lg border border-border bg-surface p-8 shadow-sm">
+                <article className="marketing-card mt-5 p-8">
                   <p className="text-sm text-text-tertiary">
                     {featured.category} . {featured.readingTimeMinutes} min read
                   </p>
-                  <h2 className="mt-3 text-3xl font-bold text-text-primary">
-                    <Link href={featured.url} className="hover:text-accent">
+                  <h2 className="marketing-subheading mt-3 text-4xl text-text-primary">
+                    <Link href={featured.url} className="hover:text-accent-dark">
                       {featured.title}
                     </Link>
                   </h2>
@@ -71,7 +71,7 @@ export default async function BlogIndexPage() {
                     {featured.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-md border border-border bg-slate-50 px-3 py-1 text-xs text-text-tertiary"
+                        className="rounded-md border border-border bg-surface-muted px-3 py-1 text-xs text-text-tertiary"
                       >
                         {tag}
                       </span>
@@ -85,13 +85,13 @@ export default async function BlogIndexPage() {
               {posts.map((post) => (
                 <article
                   key={post.slug}
-                  className="rounded-lg border border-border bg-surface p-7 transition-colors hover:border-accent"
+                  className="marketing-card p-7 transition-colors hover:border-accent"
                 >
                   <p className="text-sm text-text-tertiary">
                     {post.category} . {post.readingTimeMinutes} min read
                   </p>
-                  <h2 className="mt-3 text-2xl font-bold text-text-primary">
-                    <Link href={post.url} className="hover:text-accent">
+                  <h2 className="marketing-subheading mt-3 text-3xl text-text-primary">
+                    <Link href={post.url} className="hover:text-accent-dark">
                       {post.title}
                     </Link>
                   </h2>
@@ -102,7 +102,7 @@ export default async function BlogIndexPage() {
                     {post.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-md border border-border bg-slate-50 px-3 py-1 text-xs text-text-tertiary"
+                        className="rounded-md border border-border bg-surface-muted px-3 py-1 text-xs text-text-tertiary"
                       >
                         {tag}
                       </span>

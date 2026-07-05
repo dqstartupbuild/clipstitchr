@@ -31,22 +31,25 @@ const scorePreviewMetrics = [
 
 export function LandingScoreSection() {
   return (
-    <section id="scores" className="scroll-mt-24 bg-surface-muted px-6 py-16">
+    <section
+      id="scores"
+      className="scroll-mt-24 bg-surface-muted/45 px-6 py-24"
+    >
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
         <div className="max-w-2xl">
-          <p className="text-sm font-semibold text-accent-dark">
+          <p className="marketing-eyebrow">
             Before you post the wrong thing
           </p>
-          <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
+          <h2 className="marketing-heading mt-5 text-4xl text-text-primary md:text-6xl">
             Nobody wants to discover a clip was bad after running the ad.
           </h2>
-          <p className="mt-4 leading-7 text-text-secondary">
+          <p className="mt-5 leading-7 text-text-secondary">
             Clip and Stitch scores give you a quick read on weak openers, slow
             pacing, unclear moments, and simple fixes before the ad leaves the
             app.
           </p>
         </div>
-        <div className="rounded-lg border border-border bg-white p-5 shadow-sm shadow-slate-200/60">
+        <div className="marketing-card p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="inline-flex items-center gap-2 rounded-md border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-bold text-accent-dark">

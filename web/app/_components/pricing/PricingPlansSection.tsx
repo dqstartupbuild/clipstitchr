@@ -3,16 +3,16 @@ import { pricingPlans } from "@/lib/clipstitchr/pricing/pricingPlans";
 
 export function PricingPlansSection() {
   return (
-    <section className="bg-white px-6 py-16">
+    <section className="bg-surface-muted/45 px-6 py-24">
       <div className="mx-auto max-w-6xl">
         <div className="max-w-3xl">
-          <p className="text-sm font-semibold text-accent-dark">
+          <p className="marketing-eyebrow">
             Pick a plan
           </p>
-          <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
+          <h2 className="marketing-heading mt-5 text-4xl text-text-primary md:text-6xl">
             All plans include every ClipStitchr tool.
           </h2>
-          <p className="mt-4 leading-7 text-text-secondary">
+          <p className="mt-5 leading-7 text-text-secondary">
             Choose based on how many products, credits, daily drafts, and saved
             media you need. Pro is the main plan for builders who need regular
             ads without regular editing days.

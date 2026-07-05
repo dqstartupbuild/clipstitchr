@@ -11,8 +11,10 @@ export function PricingPlanCard({ plan }: PricingPlanCardProps) {
   return (
     <Panel
       className={[
-        "relative flex h-full flex-col p-6",
-        plan.isFeatured ? "border-accent shadow-md shadow-accent/10" : "",
+        "relative flex h-full flex-col rounded-2xl p-6",
+        plan.isFeatured
+          ? "border-accent/50 bg-accent/5 shadow-[0_0_60px_rgba(139,92,246,0.16)]"
+          : "",
       ].join(" ")}
     >
       {plan.isFeatured ? (
@@ -21,12 +23,14 @@ export function PricingPlanCard({ plan }: PricingPlanCardProps) {
         </p>
       ) : null}
       <div>
-        <h2 className="text-2xl font-bold text-text-primary">{plan.name}</h2>
+        <h2 className="marketing-subheading text-3xl text-text-primary">
+          {plan.name}
+        </h2>
         <p className="mt-3 text-sm leading-6 text-text-secondary">
           {plan.bestFor}
         </p>
         <div className="mt-6 flex items-end gap-1">
-          <span className="text-4xl font-bold text-text-primary">
+          <span className="marketing-heading text-5xl text-text-primary">
             {plan.price}
           </span>
           <span className="pb-1 text-sm font-semibold text-text-tertiary">

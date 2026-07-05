@@ -535,6 +535,7 @@ Start here:
 - `web/README.md` for app-level setup notes
 - `docs/product/positioning.md` for product positioning
 - `docs/product/copywriting-guide.md` for user-facing language
+- `docs/features/public-marketing-pages.md` for public landing-page UI and copy
 - `docs/features/stitchr.md` for the primary workflow
 - `docs/features/library.md` for the unified Library
 - `docs/features/clipr.md` for Clipr generation rules

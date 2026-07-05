@@ -19,10 +19,10 @@ export function SiteHeader({
   return (
     <nav
       id="navbar"
-      className={`z-50 flex items-center justify-between px-6 py-4 ${
+      className={`z-50 flex items-center justify-between px-6 py-3 ${
         isLanding
           ? "site-header-translucent fixed left-0 right-0 top-0 border-b border-border backdrop-blur-xl"
-          : "border-b border-border bg-surface"
+          : "border-b border-border bg-surface/95 backdrop-blur-xl"
       }`}
     >
       <BrandMark />
@@ -31,29 +31,23 @@ export function SiteHeader({
         {isLanding ? (
           <>
             <a
+              href="#features"
+              className="font-semibold transition-colors hover:text-text-primary"
+            >
+              Features
+            </a>
+            <a
               href="#workflow"
               className="font-semibold transition-colors hover:text-text-primary"
             >
-              How it Works
+              How it works
             </a>
-            <a
-              href="#example-output-reel"
+            <Link
+              href="/examples"
               className="font-semibold transition-colors hover:text-text-primary"
             >
               Examples
-            </a>
-            <Link
-              href="/case-studies"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              Case Studies
             </Link>
-            <a
-              href="#offer-stack"
-              className="font-semibold transition-colors hover:text-text-primary"
-            >
-              What you get
-            </a>
             <Link
               href="/pricing"
               className="font-semibold transition-colors hover:text-text-primary"
@@ -79,7 +73,7 @@ export function SiteHeader({
               href="/case-studies"
               className="font-semibold transition-colors hover:text-text-primary"
             >
-              Case Studies
+              Case studies
             </Link>
             <Link
               href="/examples"

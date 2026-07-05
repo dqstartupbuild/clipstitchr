@@ -57,18 +57,31 @@ You do not have to become a content person to grow on short-form.
 ClipStitchr handles the parts that make content painful so users can stay
 focused on building.
 
-## Final Hero
+The current public-page hero says this more directly:
 
-Do not change the homepage hero unless the founder story changes.
+> Turn raw footage into finished ads. Fast.
 
-Headline:
+Use the founder truth as the emotional spine, not as a fixed headline that must
+appear on every page.
 
-> Built by someone who hates making content. For everyone else who does too.
+## Public Hero Pattern
 
-Subhead:
+Homepage headline:
 
-> If you're trying to grow a mobile app on TikTok and Reels but the whole
-> content thing makes you want to quit — you're exactly who this is for.
+> Turn raw footage into finished ads. Fast.
+
+Homepage subhead:
+
+> Upload UGC clips and product demos once. Build a reusable library. Create
+> polished TikTok and Reels verticals without rebuilding the same workflow every
+> week.
+
+Good supporting lines:
+
+- Every tool feeds one library.
+- Three steps. Zero timelines.
+- Start with the clips you already have.
+- Make the ad, review it, get back to building.
 
 ## Voice
 
@@ -76,6 +89,10 @@ The voice is honest, dry, self-aware, and plain.
 
 It should feel like a founder talking from experience, not a SaaS homepage.
 Small jokes are fine when they name a real frustration. Hype is not.
+
+The Figma landing direction is tighter than the older copy: fewer confessional
+lines, more direct product sentences, and shorter page headings. Keep the human
+frustration, but do not make every section a joke about hating content.
 
 Default tone:
 
@@ -151,7 +168,7 @@ a video wastes energy.
 Default short description:
 
 ClipStitchr helps indie app builders turn saved clips and product demos into
-TikTok and Reels ads without becoming content people.
+TikTok and Reels ads without rebuilding the same editing workflow every week.
 
 Longer description:
 
@@ -169,6 +186,7 @@ social falls off the list.
 - drafts
 - source clips
 - opener clips
+- raw footage
 - library
 - Stitch
 - review
@@ -179,6 +197,8 @@ social falls off the list.
 - short-form
 - content person
 - editing day
+- finished verticals
+- start free
 
 ## Words To Use Carefully
 
@@ -220,8 +240,8 @@ If a line could appear unchanged on a competitor homepage, rewrite it.
 ## UI Copy Rules
 
 - Say what happens in plain words.
-- Keep buttons action-oriented: `Start with your clips`, `Save Template`,
-  `Score stitch`, `Review draft`.
+- Keep buttons action-oriented: `Start free`, `Watch examples`, `Save
+  Template`, `Score stitch`, `Review draft`.
 - Avoid making users feel judged for having messy files or inconsistent posting.
 - Avoid exposing provider names, prompt mechanics, hidden hook styles, template
   IDs, or implementation details.

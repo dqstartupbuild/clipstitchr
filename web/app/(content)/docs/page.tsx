@@ -17,11 +17,11 @@ export default function DocsIndexPage() {
   const limitDocs = getCustomerDocsByCategory("limits");
 
   return (
-    <div className="px-6 py-16 md:py-24">
+    <div className="marketing-grid-bg px-6 py-20 md:py-28">
       <div className="mx-auto max-w-6xl">
         <div className="max-w-3xl">
-          <p className="text-sm font-semibold text-accent-dark">Docs</p>
-          <h1 className="mt-4 text-4xl font-bold text-text-primary md:text-5xl">
+          <p className="marketing-eyebrow">Docs</p>
+          <h1 className="marketing-heading mt-6 text-5xl text-text-primary md:text-7xl">
             Start with the annoying part you want gone.
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
@@ -37,12 +37,12 @@ export default function DocsIndexPage() {
             <Link
               key={doc.slug}
               href={`/docs/${doc.slug}`}
-              className="rounded-lg border border-border bg-white p-7 shadow-sm transition-colors hover:border-accent"
+              className="marketing-card p-7 transition-colors hover:border-accent"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-muted text-accent">
                 <PlayCircle aria-hidden className="h-5 w-5" />
               </div>
-              <h2 className="mt-5 text-2xl font-bold text-text-primary">
+              <h2 className="marketing-subheading mt-5 text-3xl text-text-primary">
                 {doc.title}
               </h2>
               <p className="mt-3 leading-7 text-text-secondary">
@@ -59,12 +59,12 @@ export default function DocsIndexPage() {
             <Link
               key={doc.slug}
               href={`/docs/${doc.slug}`}
-              className="rounded-lg border border-border bg-white p-7 shadow-sm transition-colors hover:border-accent"
+              className="marketing-card p-7 transition-colors hover:border-accent"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-muted text-accent">
                 <Gauge aria-hidden className="h-5 w-5" />
               </div>
-              <h2 className="mt-5 text-2xl font-bold text-text-primary">
+              <h2 className="marketing-subheading mt-5 text-3xl text-text-primary">
                 {doc.title}
               </h2>
               <p className="mt-3 leading-7 text-text-secondary">
@@ -80,10 +80,10 @@ export default function DocsIndexPage() {
 
         <section className="mt-16">
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold text-accent-dark">
+            <p className="marketing-eyebrow">
               What helps the next ad
             </p>
-            <h2 className="mt-3 text-3xl font-bold text-text-primary">
+            <h2 className="marketing-heading mt-5 text-4xl text-text-primary md:text-6xl">
               Choose the guide for the job in front of you.
             </h2>
           </div>
@@ -92,12 +92,12 @@ export default function DocsIndexPage() {
               <Link
                 key={doc.slug}
                 href={`/docs/${doc.slug}`}
-                className="rounded-lg border border-border bg-white p-6 shadow-sm transition-colors hover:border-accent"
+                className="marketing-card p-6 transition-colors hover:border-accent"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-muted text-accent">
                   <BookOpen aria-hidden className="h-5 w-5" />
                 </div>
-                <h3 className="mt-5 text-xl font-bold text-text-primary">
+                <h3 className="marketing-subheading mt-5 text-2xl text-text-primary">
                   {doc.title}
                 </h3>
                 <p className="mt-3 text-sm leading-6 text-text-secondary">

@@ -1,56 +1,66 @@
-import { Panel } from "@/app/_components/ui/Panel";
+import { ChevronRight, Library, Scissors, Upload } from "lucide-react";
 
 const workflowSteps = [
   {
-    title: "Stop hunting for files",
+    title: "Upload once",
     description:
-      "Drop in the UGC, b-roll, reactions, and demos once. They stay in a library instead of whatever folder you swore you would organize later.",
+      "Drop UGC clips and product demos into one place. ClipStitchr keeps originals untouched and normalizes the working versions for short-form.",
+    icon: Upload,
   },
   {
-    title: "Stop rebuilding the same ad",
+    title: "Build your library",
     description:
-      "Pick the demo once. ClipStitchr pairs it with saved opener clips so you are not dragging the same product video around all afternoon.",
+      "Browse, tag, trim, and keep source clips findable. Your library gets easier to use instead of becoming another folder you avoid.",
+    icon: Library,
   },
   {
-    title: "Stop exporting one by one",
+    title: "Stitch and ship",
     description:
-      "Create a set of finished vertical ads, review the ones worth using, and get back to the app you actually wanted to work on.",
+      "Pair attention-first opener clips with your product demo. One session can turn a set of clips into finished ads ready to review.",
+    icon: Scissors,
   },
 ];
 
 export function LandingWorkflow() {
   return (
-    <section id="workflow" className="scroll-mt-24 px-6 py-12 md:py-16">
+    <section id="workflow" className="scroll-mt-24 px-6 py-24">
       <div className="mx-auto max-w-6xl">
-        <div className="max-w-3xl">
-          <p className="text-sm font-semibold text-accent-dark">
-            The part you can stop doing
-          </p>
-          <h2 className="mt-3 text-2xl font-bold text-text-primary md:text-4xl">
-            No timeline archaeology. No naming files like final-final-2.
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="marketing-eyebrow mx-auto">How it works</p>
+          <h2 className="marketing-heading mt-5 text-4xl text-text-primary md:text-6xl">
+            Three steps. Zero timelines.
           </h2>
-          <p className="mt-3 text-sm leading-6 text-text-secondary md:mt-4 md:text-base md:leading-7">
+          <p className="mt-5 text-base leading-7 text-text-secondary">
             ClipStitchr turns clips and a demo into finished short-form ads
-            without making you become an editor for the day.
+            without making content production the thing that eats your day.
           </p>
         </div>
-        <div className="mt-6 rounded-lg border border-border bg-white p-4 text-center text-base font-bold text-text-primary shadow-sm shadow-slate-200/60 md:mt-8 md:p-5 md:text-lg">
-          Clips + product demo = ads you can actually test
-        </div>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {workflowSteps.map((step, index) => (
-            <Panel key={step.title} className="p-6">
-              <span className="text-xs font-semibold text-text-tertiary">
-                Step {index + 1}
-              </span>
-              <h3 className="mt-3 text-xl font-bold text-text-primary">
-                {step.title}
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-text-secondary">
-                {step.description}
-              </p>
-            </Panel>
-          ))}
+        <div className="mt-14 grid gap-5 md:grid-cols-3">
+          {workflowSteps.map((step, index) => {
+            const Icon = step.icon;
+
+            return (
+              <article className="marketing-card relative p-6" key={step.title}>
+                <p className="marketing-heading absolute right-5 top-4 text-6xl text-accent/10">
+                  {String(index + 1).padStart(2, "0")}
+                </p>
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-accent/25 bg-accent/10 text-accent-dark">
+                  <Icon aria-hidden className="h-5 w-5" />
+                </div>
+                <h3 className="marketing-subheading mt-5 text-2xl text-text-primary">
+                  {step.title}
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-text-secondary">
+                  {step.description}
+                </p>
+                {index < workflowSteps.length - 1 ? (
+                  <div className="absolute -right-3 top-1/2 z-10 hidden -translate-y-1/2 rounded-full border border-border bg-background p-1 text-text-tertiary md:block">
+                    <ChevronRight aria-hidden className="h-4 w-4" />
+                  </div>
+                ) : null}
+              </article>
+            );
+          })}
         </div>
       </div>
     </section>

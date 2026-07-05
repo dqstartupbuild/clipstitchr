@@ -7,12 +7,12 @@ type CaseStudyIndexCardProps = {
 
 export function CaseStudyIndexCard({ caseStudy }: CaseStudyIndexCardProps) {
   return (
-    <article className="rounded-lg border border-border bg-surface p-7 shadow-sm transition-colors hover:border-accent">
+    <article className="marketing-card p-7 transition-colors hover:border-accent">
       <p className="text-sm text-text-tertiary">
         {caseStudy.companyName} . {caseStudy.category}
       </p>
-      <h2 className="mt-3 text-2xl font-bold text-text-primary">
-        <Link href={caseStudy.url} className="hover:text-accent">
+      <h2 className="marketing-subheading mt-3 text-3xl text-text-primary">
+        <Link href={caseStudy.url} className="hover:text-accent-dark">
           {caseStudy.title}
         </Link>
       </h2>
@@ -23,7 +23,7 @@ export function CaseStudyIndexCard({ caseStudy }: CaseStudyIndexCardProps) {
         {caseStudy.metrics.slice(0, 4).map((metric) => (
           <div
             key={metric.label}
-            className="rounded-lg border border-border bg-white p-3"
+            className="rounded-lg border border-border bg-surface-muted p-3"
           >
             <p className="text-lg font-bold text-text-primary">
               {metric.value}

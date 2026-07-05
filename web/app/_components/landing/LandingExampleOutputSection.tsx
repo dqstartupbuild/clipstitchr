@@ -9,7 +9,7 @@ export function LandingExampleOutputSection() {
   return (
     <section
       aria-label="Example ClipStitchr outputs"
-      className="overflow-hidden px-0 py-8 md:py-12"
+      className="overflow-hidden border-y border-border bg-surface-muted/45 px-0 py-10 md:py-12"
       id="example-output-reel"
     >
       <div className="landing-example-output-marquee flex w-max">

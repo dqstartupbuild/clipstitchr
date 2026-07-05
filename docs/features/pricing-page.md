@@ -7,6 +7,12 @@ content work should not eat the user's week. It explains that Stitchr, scores,
 templates, and the clip library are included, while credits are used only for
 generated media and draft content.
 
+The page now uses the public marketing shell from the Figma redesign: dark
+backgrounds, condensed uppercase headings, compact purple CTAs, and plain
+pricing copy. The hero line is:
+
+> Simple pricing for content that stops eating your week.
+
 ## User-Facing Offer
 
 The page shows four plan levels:
@@ -53,6 +59,8 @@ before running the challenge.
   component per file.
 - `web/lib/clipstitchr/pricing/*` contains pricing plan, credit, top-up, and
   guarantee data.
+- `web/app/globals.css` provides the shared marketing shell classes used by the
+  pricing page.
 - `web/app/site-header.tsx` points the Pricing header link to `/pricing`.
 - `web/app/site-footer.tsx` links the public footer to `/pricing`.
 - `web/lib/site.ts` adds `/pricing` to public sitemap static pages.

@@ -7,6 +7,10 @@ who want evidence without generic marketing claims. The first case study is the
 Guppy 30-day story at
 `/case-studies/fitness-app-growth-case-study-guppy`.
 
+The case-study index and detail pages now use the shared public marketing shell:
+dark background, condensed headings, dark proof cards, and the same direct voice
+as the redesigned homepage.
+
 ## How It Works
 
 Case studies are authored as MDX files in `web/content/case-studies/`. The
@@ -49,6 +53,7 @@ Stitchr drafts.
 ```text
 web/app/(content)/case-studies/page.tsx
 web/app/(content)/case-studies/[slug]/page.tsx
+web/app/globals.css
 web/app/_components/case-studies/CaseStudyFeatureImage.tsx
 web/app/_components/case-studies/CaseStudyHeroMetric.tsx
 web/app/_components/case-studies/CaseStudyIndexCard.tsx

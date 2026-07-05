@@ -26,7 +26,7 @@ export function HeaderAuthActions({
     : "inline-flex h-10 items-center rounded-lg px-3 text-sm font-semibold text-text-secondary transition-colors hover:text-text-primary";
   const primaryButtonClassName = isMobile
     ? "inline-flex h-9 items-center rounded-lg bg-accent px-3 text-xs font-semibold text-white"
-    : "inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-dark";
+    : "inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white shadow-[0_0_24px_rgba(139,92,246,0.28)] transition-colors hover:bg-accent-light";
 
   if (!isLoaded) {
     return (
@@ -105,7 +105,7 @@ export function HeaderAuthActions({
             className={primaryButtonClassName}
             onClick={handleSignUp}
           >
-            Sign up
+            Start free
           </button>
         </>
       )}

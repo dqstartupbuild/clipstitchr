@@ -4,14 +4,12 @@ import { SecondaryButtonLink } from "@/app/_components/SecondaryButtonLink";
 
 export function PricingHero() {
   return (
-    <section className="px-6 py-16 md:py-24">
+    <section className="marketing-grid-bg border-b border-border px-6 py-20 md:py-28">
       <div className="mx-auto max-w-6xl">
-        <div className="max-w-3xl">
-          <p className="text-sm font-semibold text-accent-dark">
-            ClipStitchr pricing
-          </p>
-          <h1 className="mt-4 text-4xl font-bold leading-tight text-text-primary md:text-6xl">
-            Pay for the system that keeps content from eating your week.
+        <div className="max-w-4xl">
+          <p className="marketing-eyebrow">ClipStitchr pricing</p>
+          <h1 className="marketing-heading mt-6 text-5xl text-text-primary md:text-7xl">
+            Simple pricing for content that stops eating your week.
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
             Stitchr, scoring, templates, and your clip library are included.
@@ -20,7 +18,7 @@ export function PricingHero() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <PrimaryButtonLink href="/sign-up" icon={<ArrowRight aria-hidden className="h-4 w-4" />}>
-              Join the waitlist
+              Start free
             </PrimaryButtonLink>
             <SecondaryButtonLink href="/case-studies">
               See case studies

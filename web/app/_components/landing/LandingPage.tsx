@@ -15,11 +15,12 @@ import { LandingWorkflow } from "@/app/_components/landing/LandingWorkflow";
 
 export function LandingPage() {
   return (
-    <div className="min-h-full bg-background text-foreground">
+    <div className="marketing-shell min-h-full bg-background text-foreground">
       <SiteHeader variant="landing" />
       <LandingHero />
       <LandingExampleOutputSection />
       <LandingWorkflow />
+      <LandingOfferStackSection />
       <LandingHookLabSection />
       <LandingPreview />
       <LandingScoreSection />
@@ -27,7 +28,6 @@ export function LandingPage() {
       <LandingStudioSection />
       <LandingSwiprSection />
       <LandingAutomationSection />
-      <LandingOfferStackSection />
       <LandingBottomBand />
       <SiteFooter />
     </div>

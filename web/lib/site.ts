@@ -32,9 +32,9 @@ export const site = {
   name: "ClipStitchr",
   url: configuredSiteUrl.replace(/\/$/, ""),
   publisherName: "ClipStitchr",
-  defaultTitle: "ClipStitchr | For People Who Hate Making Content",
+  defaultTitle: "ClipStitchr | Turn Raw Footage Into Finished Ads",
   defaultDescription:
-    "ClipStitchr helps indie app builders turn saved clips and demos into TikTok and Reels ads without becoming content people.",
+    "ClipStitchr helps indie app builders turn saved clips and product demos into TikTok and Reels ads without rebuilding the same editing workflow every week.",
   keywords: [
     "mobile app TikTok ads",
     "mobile app Reels ads",
@@ -46,7 +46,7 @@ export const site = {
     "video ads without editing",
   ],
   ctaUrl: "/dashboard",
-  ctaLabel: "Go to Dashboard",
+  ctaLabel: "Open Dashboard",
   staticPages: [
     {
       pathname: "/",

@@ -3,17 +3,17 @@ import { guaranteeRewards } from "@/lib/clipstitchr/pricing/guaranteeRewards";
 
 export function PricingGuaranteeSection() {
   return (
-    <section className="bg-white px-6 py-16">
+    <section className="bg-background px-6 py-24">
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
-            <p className="text-sm font-semibold text-accent-dark">
+            <p className="marketing-eyebrow">
               10k Organic Views Challenge
             </p>
-            <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
+            <h2 className="marketing-heading mt-5 text-4xl text-text-primary md:text-6xl">
               Publish 30 ClipStitchr-made posts in 30 days.
             </h2>
-            <p className="mt-4 leading-7 text-text-secondary">
+            <p className="mt-5 leading-7 text-text-secondary">
               If they do not reach 10k total organic views, your next month is
               on us, with extra credits to keep testing.
             </p>
@@ -28,7 +28,7 @@ export function PricingGuaranteeSection() {
               after the challenge window.
             </p>
           </div>
-          <Panel className="overflow-hidden">
+          <Panel className="overflow-hidden rounded-2xl">
             {guaranteeRewards.map((reward) => (
               <div
                 className="grid gap-2 border-b border-border px-5 py-4 last:border-b-0 sm:grid-cols-[8rem_1fr]"

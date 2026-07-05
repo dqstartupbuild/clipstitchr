@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import {
+  Barlow_Condensed,
+  DM_Sans,
+  Geist_Mono,
+  Plus_Jakarta_Sans,
+} from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { CookieConsentManager } from "@/app/_components/analytics/CookieConsentManager";
 import { ThemeModeScript } from "@/app/_components/theme/ThemeModeScript";
@@ -15,6 +20,17 @@ import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
+  subsets: ["latin"],
+});
+
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-barlow-condensed",
+  subsets: ["latin"],
+  weight: ["600", "700", "800", "900"],
+});
+
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
 });
 
@@ -59,7 +75,7 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
-      className={`${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${plusJakartaSans.variable} ${barlowCondensed.variable} ${dmSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <ThemeModeScript />

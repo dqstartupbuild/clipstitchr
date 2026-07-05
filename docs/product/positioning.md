@@ -84,12 +84,16 @@ focused on building.
 
 Homepage headline:
 
-> Built by someone who hates making content. For everyone else who does too.
+> Turn raw footage into finished ads. Fast.
 
 Homepage subhead:
 
-> If you're trying to grow a mobile app on TikTok and Reels but the whole
-> content thing makes you want to quit — you're exactly who this is for.
+> Upload UGC clips and product demos once. Build a reusable library. Create
+> polished TikTok and Reels verticals without rebuilding the same workflow every
+> week.
+
+The older "built by someone who hates making content" line remains useful brand
+context, but it should not be treated as the required public headline.
 
 ## Product Category
 
@@ -134,18 +138,18 @@ main story.
 
 Use this order for the public landing page:
 
-1. Founder truth: built by someone who hates making content.
+1. Direct promise: turn raw footage into finished ads fast.
 2. Output proof: show finished examples before explaining tools.
-3. Workflow relief: what the user no longer has to do.
-4. Stitchr: saved opener clips plus a demo become ads.
+3. How it works: upload once, build the library, stitch and ship.
+4. Toolkit: every tool feeds one library.
 5. Hook Lab: writing overlay text that does not sound fake is hard.
-6. Scores: find weak clips before wasting a post or ad.
-7. Templates: stop rebuilding the same structure.
-8. Source material helpers: fill a thin library without another shoot.
-9. Swipr: make slides when video is overkill.
-10. Daily drafts: stay consistent when social is not the work the user enjoys.
-11. Offer stack: summarize the system for people who do not want content to
-    become the job.
+6. Stitchr: saved opener clips plus a demo become ads.
+7. Scores: find weak clips before wasting a post or ad.
+8. Templates: stop rebuilding the same structure.
+9. Source material helpers: fill a thin library without another shoot.
+10. Swipr: make slides when video is overkill.
+11. Daily drafts: stay consistent when social is not the work the user enjoys.
+12. Final CTA: upload once, create everything.
 
 ## Short Copy Options
 
@@ -157,6 +161,9 @@ Use this order for the public landing page:
 - Use your demo more than once without dragging it into every video.
 - Keep content from becoming the job.
 - A short-form system for people who would rather build.
+- Turn raw footage into finished ads.
+- Every tool feeds one library.
+- Three steps. Zero timelines.
 
 ## Feature Angles
 

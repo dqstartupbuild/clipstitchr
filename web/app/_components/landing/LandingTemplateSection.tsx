@@ -24,22 +24,22 @@ const templateBenefits = [
 
 export function LandingTemplateSection() {
   return (
-    <section id="templates" className="scroll-mt-24 bg-white px-6 py-16">
+    <section id="templates" className="scroll-mt-24 bg-background px-6 py-24">
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div className="max-w-2xl">
-          <p className="text-sm font-semibold text-accent-dark">
+          <p className="marketing-eyebrow">
             For the part you dread repeating
           </p>
-          <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
+          <h2 className="marketing-heading mt-5 text-4xl text-text-primary md:text-6xl">
             Rebuilding the same structure is what makes a new set feel heavy.
           </h2>
-          <p className="mt-4 leading-7 text-text-secondary">
+          <p className="mt-5 leading-7 text-text-secondary">
             Turn a finished Stitch into a template, then use it as the starting
             point next time. Keep the trims, text, captions, and timing that
             worked while the clips stay easy to swap.
           </p>
         </div>
-        <div className="rounded-lg border border-border bg-surface-muted p-5 shadow-sm shadow-slate-200/60">
+        <div className="marketing-card p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="inline-flex items-center gap-2 rounded-md border border-purple-200 bg-white px-2 py-1 text-xs font-bold text-accent-dark">

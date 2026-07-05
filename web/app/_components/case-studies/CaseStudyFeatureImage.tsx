@@ -12,7 +12,7 @@ export function CaseStudyFeatureImage({
   src,
 }: CaseStudyFeatureImageProps) {
   return (
-    <figure className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
+    <figure className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
       <Image
         src={src}
         alt={alt}

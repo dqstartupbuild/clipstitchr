@@ -49,7 +49,7 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
   ].filter(Boolean);
 
   return (
-    <div className="px-6 py-16 md:py-24">
+    <div className="marketing-grid-bg px-6 py-20 md:py-28">
       {structuredData.map((data, index) => (
         <script
           key={index}
@@ -61,17 +61,17 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
       <div className="mx-auto max-w-6xl">
         <Link
           href="/case-studies"
-          className="text-sm font-semibold text-text-tertiary hover:text-accent"
+          className="text-sm font-semibold text-text-tertiary hover:text-accent-dark"
         >
           Back to case studies
         </Link>
 
         <header className="mt-8 space-y-8">
           <div className="max-w-4xl">
-            <p className="text-sm font-semibold text-accent-dark">
+            <p className="marketing-eyebrow">
               {caseStudy.companyName} case study
             </p>
-            <h1 className="mt-4 text-4xl font-bold text-text-primary md:text-5xl">
+            <h1 className="marketing-heading mt-6 text-5xl text-text-primary md:text-7xl">
               {caseStudy.title}
             </h1>
           </div>
@@ -91,7 +91,7 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
           </article>
 
           <aside className="lg:pt-4">
-            <div className="sticky top-8 rounded-lg border border-border bg-white p-5 shadow-sm">
+            <div className="marketing-card sticky top-8 p-5">
               <p className="text-sm font-bold text-text-primary">
                 Tools used
               </p>
@@ -108,8 +108,8 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
         </div>
 
         {caseStudy.faq?.length ? (
-          <section className="mt-16 rounded-lg border border-border bg-surface p-8">
-            <h2 className="text-2xl font-bold text-text-primary">
+          <section className="marketing-card mt-16 p-8">
+            <h2 className="marketing-subheading text-3xl text-text-primary">
               Frequently asked questions
             </h2>
             <div className="mt-8 space-y-6">

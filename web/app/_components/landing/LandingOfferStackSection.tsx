@@ -11,7 +11,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { Panel } from "@/app/_components/ui/Panel";
 
 type LandingOfferFeature = {
   title: string;
@@ -76,47 +75,70 @@ const features: LandingOfferFeature[] = [
 
 export function LandingOfferStackSection() {
   return (
-    <section id="offer-stack" className="scroll-mt-24 bg-white px-6 py-16">
+    <section
+      id="features"
+      className="relative scroll-mt-24 bg-surface-muted/45 px-6 py-24"
+    >
+      <span id="offer-stack" className="absolute -top-24" />
       <div className="mx-auto max-w-6xl">
-        <div className="max-w-2xl">
-          <p className="text-sm font-semibold text-accent-dark">
-            What you get
-          </p>
-          <h2 className="mt-3 text-3xl font-bold text-text-primary md:text-4xl">
-            A content system for people who do not want content to become the
-            job.
-          </h2>
-          <p className="mt-4 leading-7 text-text-secondary">
-            Stitchr handles the repetitive ads. The rest helps you pick better
-            clips, reuse what worked, fill the library, and keep new drafts
-            moving.
-          </p>
+        <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
+          <div className="max-w-2xl">
+            <p className="marketing-eyebrow">The toolkit</p>
+            <h2 className="marketing-heading mt-5 text-4xl text-text-primary md:text-6xl">
+              Every tool feeds one library.
+            </h2>
+            <p className="mt-5 max-w-xl leading-7 text-text-secondary">
+              AI helps fill gaps, but the point is simpler: keep clips, drafts,
+              carousels, and finished ads in one place so nothing gets lost
+              between sessions.
+            </p>
+          </div>
+          <Link
+            href="/docs"
+            className="hidden items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-semibold text-text-secondary transition-colors hover:border-accent hover:text-text-primary md:inline-flex"
+          >
+            See all features
+            <ArrowRight aria-hidden className="h-4 w-4" />
+          </Link>
         </div>
-        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => {
             const Icon = feature.icon;
 
             return (
-              <Panel key={feature.title} className="p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-muted text-accent">
-                  <Icon aria-hidden className="h-5 w-5" />
+              <article
+                key={feature.title}
+                className="marketing-card p-6 transition-transform duration-200 hover:-translate-y-0.5 hover:border-accent/45"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-accent/25 bg-accent/10 text-accent-dark">
+                    <Icon aria-hidden className="h-5 w-5" />
+                  </div>
+                  {feature.href ? (
+                    <Link
+                      href={feature.href}
+                      className="text-xs font-bold text-accent-dark transition-colors hover:text-accent-light"
+                    >
+                      Guide
+                    </Link>
+                  ) : null}
                 </div>
-                <h3 className="mt-5 text-lg font-bold text-text-primary">
+                <h3 className="marketing-subheading mt-5 text-2xl text-text-primary">
                   {feature.title}
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">
+                <p className="mt-3 text-sm leading-6 text-text-secondary">
                   {feature.description}
                 </p>
                 {feature.href ? (
                   <Link
                     href={feature.href}
-                    className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-accent transition-colors hover:text-accent-dark"
+                    className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-accent-dark transition-colors hover:text-accent-light"
                   >
                     {feature.actionLabel}
                     <ArrowRight aria-hidden className="h-4 w-4" />
                   </Link>
                 ) : null}
-              </Panel>
+              </article>
             );
           })}
         </div>

@@ -16,7 +16,7 @@ export const pricingPlans: PricingPlan[] = [
       "Buy more credits anytime",
       "10k Organic Views Challenge included",
     ],
-    ctaLabel: "Join the waitlist",
+    ctaLabel: "Start free",
     ctaHref: "/sign-up",
   },
   {
@@ -34,7 +34,7 @@ export const pricingPlans: PricingPlan[] = [
       "More room for clips",
       "Stronger challenge reward",
     ],
-    ctaLabel: "Join the waitlist",
+    ctaLabel: "Start free",
     ctaHref: "/sign-up",
     isFeatured: true,
   },
@@ -53,7 +53,7 @@ export const pricingPlans: PricingPlan[] = [
       "Priority support",
       "Strongest challenge reward",
     ],
-    ctaLabel: "Join the waitlist",
+    ctaLabel: "Start free",
     ctaHref: "/sign-up",
   },
   {
