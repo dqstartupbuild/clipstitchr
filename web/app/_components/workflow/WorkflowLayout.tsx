@@ -11,11 +11,15 @@ export function WorkflowLayout({
   children,
   className = "",
 }: WorkflowLayoutProps) {
+  const columnClassName = aside
+    ? "xl:grid-cols-[minmax(0,1fr)_340px]"
+    : "xl:grid-cols-1";
+
   return (
     <div
       className={[
-        "grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start",
-        aside ? "" : "xl:grid-cols-1",
+        "grid gap-5 xl:items-start",
+        columnClassName,
         className,
       ]
         .filter(Boolean)

@@ -1,9 +1,9 @@
 "use client";
 
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
+import { useEffect } from "react";
+import { ActiveWorkerJobsTrayItem } from "@/app/_components/dashboard/ActiveWorkerJobsTrayItem";
 import type { ActiveWorkerJob } from "@/lib/clipstitchr/types/ActiveWorkerJob";
-import { getActiveWorkerJobLabel } from "@/lib/clipstitchr/utils/getActiveWorkerJobLabel";
-import { getActiveWorkerJobStatusLabel } from "@/lib/clipstitchr/utils/getActiveWorkerJobStatusLabel";
 
 type ActiveWorkerJobsTrayProps = {
   hiddenCount: number;
@@ -16,6 +16,18 @@ export function ActiveWorkerJobsTray({
   jobs,
   onClose,
 }: ActiveWorkerJobsTrayProps) {
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   return (
     <>
       <button
@@ -47,35 +59,7 @@ export function ActiveWorkerJobsTray({
         </div>
         <div className="mt-4 grid gap-2">
           {jobs.map((job) => (
-            <div
-              key={job.id}
-              className="rounded-lg border border-border bg-surface-elevated p-3"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-bold text-text-primary">
-                    {getActiveWorkerJobLabel(job)}
-                  </p>
-                  <p className="mt-1 text-xs font-semibold text-text-secondary">
-                    {getActiveWorkerJobStatusLabel(job)}
-                  </p>
-                </div>
-                <Loader2
-                  aria-hidden
-                  className="h-4 w-4 shrink-0 animate-spin text-accent"
-                />
-              </div>
-              {typeof job.progress === "number" ? (
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className="h-full rounded-full bg-accent"
-                    style={{
-                      width: `${Math.max(0, Math.min(100, job.progress))}%`,
-                    }}
-                  />
-                </div>
-              ) : null}
-            </div>
+            <ActiveWorkerJobsTrayItem job={job} key={job.id} />
           ))}
           {hiddenCount > 0 ? (
             <p className="rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text-secondary">

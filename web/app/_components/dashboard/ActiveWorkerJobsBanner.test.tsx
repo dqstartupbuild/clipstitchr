@@ -54,6 +54,7 @@ describe("ActiveWorkerJobsBanner", () => {
         {
           id: "media_1",
           jobType: "upload-video-analysis",
+          progress: 0.68,
           stage: "running",
           status: "running",
         },
@@ -66,7 +67,7 @@ describe("ActiveWorkerJobsBanner", () => {
     expect(mocks.useQuery).toHaveBeenCalledWith("activeWorkerJobs.summary", {});
     expect(markup).toContain("Background work is running");
     expect(markup).toContain("Swapr generation queued");
-    expect(markup).toContain("Upload analysis running");
+    expect(markup).toContain("Upload analysis 68%");
     expect(markup).toContain("View jobs");
   });
 });
