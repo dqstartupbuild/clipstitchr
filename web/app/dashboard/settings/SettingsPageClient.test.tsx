@@ -191,7 +191,6 @@ describe("SettingsPageClient", () => {
     expect(markup).toContain("Keep ClipStitchr pointed at the right app");
     expect(markup).toContain("Product settings");
     expect(markup).toContain("Edit saved products");
-    expect(markup).toContain("Color mode");
     expect(markup).toContain("Account settings");
     expect(markup).toContain("Daily drafts");
     expect(markup).toContain("Launch Kit");

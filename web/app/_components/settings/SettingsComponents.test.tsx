@@ -9,9 +9,6 @@ import { SettingsAccountSection } from "@/app/_components/settings/SettingsAccou
 import { AutomationCliprModePicker } from "@/app/_components/settings/AutomationCliprModePicker";
 import { SettingsAutomationPanel } from "@/app/_components/settings/SettingsAutomationPanel";
 import { SettingsProductSection } from "@/app/_components/settings/SettingsProductSection";
-import { ThemeModeSelect } from "@/app/_components/settings/ThemeModeSelect";
-import { themeModeChangeEventName } from "@/lib/clipstitchr/theme/themeModeChangeEventName";
-import { themeModeStorageKey } from "@/lib/clipstitchr/theme/themeModeStorageKey";
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { StitchTemplate } from "@/lib/clipstitchr/types/StitchTemplate";
@@ -20,8 +17,6 @@ const mocks = vi.hoisted(() => ({
   confirm: vi.fn(),
   dispatchEvent: vi.fn(),
   localStorageGetItem: vi.fn(),
-  localStorageRemoveItem: vi.fn(),
-  localStorageSetItem: vi.fn(),
   mutation: vi.fn(),
   setStateCalls: [] as Array<ReturnType<typeof vi.fn>>,
   stateQueue: [] as unknown[],
@@ -160,8 +155,6 @@ describe("settings components", () => {
       dispatchEvent: mocks.dispatchEvent,
       localStorage: {
         getItem: mocks.localStorageGetItem,
-        removeItem: mocks.localStorageRemoveItem,
-        setItem: mocks.localStorageSetItem,
       },
     });
   });
@@ -209,7 +202,6 @@ describe("settings components", () => {
       />,
     );
 
-    expect(emptyMarkup).toContain("Color mode");
     expect(emptyMarkup).toContain("Daily drafts");
     expect(emptyMarkup).toContain("Clipr Config");
     expect(emptyMarkup).toContain("Stitchr Config");
@@ -352,27 +344,6 @@ describe("settings components", () => {
 
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({ enabled: true }),
-    );
-  });
-
-  it("forwards theme selector changes", () => {
-    const selectTree = ThemeModeSelect();
-    const [selectInput] = findElements(
-      selectTree,
-      (element) =>
-        typeof element.type === "function" && element.type.name === "SelectInput",
-    );
-
-    (selectInput.props.onChange as (event: {
-      currentTarget: { value: string };
-    }) => void)({ currentTarget: { value: "dark" } });
-
-    expect(mocks.localStorageSetItem).toHaveBeenCalledWith(
-      themeModeStorageKey,
-      "dark",
-    );
-    expect(mocks.dispatchEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ type: themeModeChangeEventName }),
     );
   });
 

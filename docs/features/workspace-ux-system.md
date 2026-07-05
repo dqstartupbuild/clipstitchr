@@ -62,6 +62,10 @@ Condensed page titles, DM Sans body copy, restrained purple accents, and
 surface-based cards. The sidebar groups the product into Home base, Make, and
 Ship so users can quickly get back to the job they were doing.
 
+The product and public app shell are dark-only. There is no theme selector,
+system preference switch, or light-mode token branch; shared UI should be
+checked against the dark root tokens and the scoped `dashboard-shell` tokens.
+
 Media cards use `MediaPrimaryAction` for the clearest next action:
 
 - Clips: Use in Stitchr

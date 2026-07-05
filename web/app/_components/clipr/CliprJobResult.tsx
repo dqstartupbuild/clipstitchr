@@ -68,7 +68,7 @@ export function CliprJobResult({ finalClipId, job }: CliprJobResultProps) {
           className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
         >
           <CirclePlay aria-hidden className="h-4 w-4" />
-          View UGC clips
+          View opener clips
         </Link>
       ) : null}
     </section>

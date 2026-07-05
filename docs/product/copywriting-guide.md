@@ -167,6 +167,8 @@ a video wastes energy.
 
 The dashboard should feel like the same brand as the public pages, but calmer
 and more useful. It is a workspace people return to, not another sales pitch.
+The interface is dark-only, so avoid copy that asks users to choose a theme or
+switch appearance modes.
 
 Default dashboard language:
 

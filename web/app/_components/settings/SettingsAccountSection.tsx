@@ -1,4 +1,3 @@
-import { SettingsAppearancePanel } from "@/app/_components/settings/SettingsAppearancePanel";
 import { SettingsPostBridgePanel } from "@/app/_components/settings/SettingsPostBridgePanel";
 import { SettingsSubscriptionPanel } from "@/app/_components/settings/SettingsSubscriptionPanel";
 import { SettingsSupportPanel } from "@/app/_components/settings/SettingsSupportPanel";
@@ -21,7 +20,6 @@ export function SettingsAccountSection() {
         </p>
       </div>
       <SettingsPostBridgePanel />
-      <SettingsAppearancePanel />
       <div className="grid gap-4 md:grid-cols-2">
         <SettingsSupportPanel />
         <SettingsSubscriptionPanel />

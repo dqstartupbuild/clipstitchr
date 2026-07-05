@@ -8,7 +8,6 @@ import {
 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { CookieConsentManager } from "@/app/_components/analytics/CookieConsentManager";
-import { ThemeModeScript } from "@/app/_components/theme/ThemeModeScript";
 import { ConvexClientProvider } from "@/app/ConvexClientProvider";
 import { createPageMetadata } from "@/lib/metadata";
 import {
@@ -51,13 +50,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/icon.png",
-        sizes: "548x550",
-        type: "image/png",
-      },
-      {
         url: "/brand/icon-dark.png",
-        media: "(prefers-color-scheme: dark)",
         sizes: "548x550",
         type: "image/png",
       },
@@ -73,12 +66,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      suppressHydrationWarning
       data-scroll-behavior="smooth"
       className={`${plusJakartaSans.variable} ${barlowCondensed.variable} ${dmSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ThemeModeScript />
         <ClerkProvider
           signInUrl="/sign-in"
           signUpUrl="/sign-up"

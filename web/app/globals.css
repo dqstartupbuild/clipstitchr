@@ -1,81 +1,6 @@
 @import "tailwindcss";
 
-:root,
-:root[data-theme="light"] {
-  color-scheme: light;
-  --background: #f3f4f6;
-  --foreground: #111827;
-  --surface: #ffffff;
-  --surface-muted: #f8f7ff;
-  --surface-elevated: #f9fafb;
-  --border: #e5e7eb;
-  --border-hover: #c7d2fe;
-  --accent: #6c47ff;
-  --accent-light: #8d68ff;
-  --accent-dark: #4f2ee8;
-  --text-primary: #111827;
-  --text-secondary: #64748b;
-  --text-tertiary: #94a3b8;
-  --text-inverse: #ffffff;
-  --brand-mark-logo-dark-opacity: 0;
-  --brand-mark-logo-light-opacity: 1;
-  --success: var(--accent);
-  --warning: #d97706;
-  --utility-bg-white: #ffffff;
-  --utility-bg-slate-50: #f8fafc;
-  --utility-bg-slate-100: #f1f5f9;
-  --utility-bg-slate-200: #e2e8f0;
-  --utility-bg-red-50: #fef2f2;
-  --utility-border-red-200: #fecaca;
-  --utility-text-red-500: #ef4444;
-  --utility-text-red-600: #dc2626;
-  --utility-text-red-700: #b91c1c;
-  --utility-bg-amber-50: #fffbeb;
-  --utility-border-amber-200: #fde68a;
-  --utility-text-amber-800: #92400e;
-  --utility-bg-purple-50: #faf5ff;
-  --utility-border-purple-200: #e9d5ff;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --background: #101114;
-    --foreground: #f8fafc;
-    --surface: #181a20;
-    --surface-muted: #252133;
-    --surface-elevated: #20232a;
-    --border: #303541;
-    --border-hover: #7668ff;
-    --accent: #9b7cff;
-    --accent-light: #b59bff;
-    --accent-dark: #d8ccff;
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-tertiary: #94a3b8;
-    --text-inverse: #0f1117;
-    --brand-mark-logo-dark-opacity: 1;
-    --brand-mark-logo-light-opacity: 0;
-    --success: var(--accent);
-    --warning: #f59e0b;
-    --utility-bg-white: var(--surface);
-    --utility-bg-slate-50: var(--surface-elevated);
-    --utility-bg-slate-100: #262b35;
-    --utility-bg-slate-200: #343a47;
-    --utility-bg-red-50: rgba(127, 29, 29, 0.28);
-    --utility-border-red-200: rgba(248, 113, 113, 0.36);
-    --utility-text-red-500: #fca5a5;
-    --utility-text-red-600: #fca5a5;
-    --utility-text-red-700: #fecaca;
-    --utility-bg-amber-50: rgba(120, 53, 15, 0.28);
-    --utility-border-amber-200: rgba(251, 191, 36, 0.36);
-    --utility-text-amber-800: #fcd34d;
-    --utility-bg-purple-50: rgba(76, 29, 149, 0.3);
-    --utility-border-purple-200: rgba(167, 139, 250, 0.4);
-  }
-}
-
-:root[data-theme="dark"] {
+:root {
   color-scheme: dark;
   --background: #101114;
   --foreground: #f8fafc;
@@ -91,8 +16,6 @@
   --text-secondary: #cbd5e1;
   --text-tertiary: #94a3b8;
   --text-inverse: #0f1117;
-  --brand-mark-logo-dark-opacity: 1;
-  --brand-mark-logo-light-opacity: 0;
   --success: var(--accent);
   --warning: #f59e0b;
   --utility-bg-white: var(--surface);
@@ -127,8 +50,6 @@
   --text-secondary: #b9b6d8;
   --text-tertiary: #7d7aa1;
   --text-inverse: #080812;
-  --brand-mark-logo-dark-opacity: 1;
-  --brand-mark-logo-light-opacity: 0;
   --success: #34d399;
   --warning: #fbbf24;
   --utility-bg-white: var(--surface);
@@ -216,8 +137,6 @@
   --text-secondary: #bbb7d7;
   --text-tertiary: #817d9f;
   --text-inverse: #080812;
-  --brand-mark-logo-dark-opacity: 1;
-  --brand-mark-logo-light-opacity: 0;
   --success: #34d399;
   --warning: #fbbf24;
   --utility-bg-white: var(--surface-elevated);
@@ -403,14 +322,6 @@ body {
 
 .landing-example-output-marquee {
   animation: landing-example-output-marquee 56s linear infinite;
-}
-
-.brand-mark-logo-dark {
-  opacity: var(--brand-mark-logo-dark-opacity);
-}
-
-.brand-mark-logo-light {
-  opacity: var(--brand-mark-logo-light-opacity);
 }
 
 .landing-hero-scrim {
