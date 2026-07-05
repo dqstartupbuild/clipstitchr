@@ -8,7 +8,7 @@ const featureLabels = [
   },
   {
     icon: Scissors,
-    label: "Opener + demo Stitches",
+    label: "UGC + demo Stitches",
   },
   {
     icon: Images,
