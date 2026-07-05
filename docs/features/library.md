@@ -6,16 +6,11 @@ The authenticated Library lives at `/dashboard/library`. It is the single place
 for saved source clips, generated outputs, finished work, avatar photos, and
 Stitchr templates.
 
-Library tabs:
+Library tabs are grouped by the way users think about the work:
 
-- UGC
-- Demo
-- Swaps
-- Swipes
-- Pexels
-- Stitches
-- Avatars
-- Templates
+- Videos: UGC, Product demos, Swaps
+- Finished: Stitches, Carousels
+- Assets: Avatars, Templates, Pexels
 
 UGC is the default tab when no `tab` query is present. The old All tab is no
 longer shown. Old dashboard URLs stay as compatibility redirects:
@@ -31,8 +26,10 @@ The Library page is implemented by
 `web/app/dashboard/library/LibraryPageClient.tsx` and rendered from
 `web/app/dashboard/library/page.tsx`.
 
-The tab bar is `web/app/_components/library/LibraryTabs.tsx`. The selected tab
-is read from the `tab` search param through:
+The grouped tab bar is `web/app/_components/library/LibraryTabs.tsx`. It uses
+`web/app/_components/ui/SegmentedControl.tsx` so Library tabs, status filters,
+and mode toggles share the same behavior. The selected tab is read from the
+`tab` search param through:
 
 - `web/lib/clipstitchr/types/LibraryTab.ts`
 - `web/lib/clipstitchr/utils/getInitialLibraryTab.ts`
@@ -109,6 +106,9 @@ Add new Library tabs to `LibraryTab`, `LibraryTabs`, and
 `getLibraryTabFromSearchParams` together. If a tab needs upload controls, update
 `getLibraryTabFromAssetType` and `UploadDestinationMenuButton` in the same
 change.
+
+Place new tabs in the clearest Library group: Videos, Finished, or Assets. If a
+new group is needed, keep the label plain and user-facing.
 
 Do not add new standalone dashboard pages for Library-owned asset management.
 Add the UI as an atomic tab section under `web/app/_components/library/` and

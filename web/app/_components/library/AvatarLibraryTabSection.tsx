@@ -6,6 +6,7 @@ import { AvatarGenerationPanel } from "@/app/_components/avatars/AvatarGeneratio
 import { AvatarLibrarySection } from "@/app/_components/avatars/AvatarLibrarySection";
 import { AvatarPhotoUploadControls } from "@/app/_components/avatars/AvatarPhotoUploadControls";
 import { SelectedAvatarActions } from "@/app/_components/avatars/SelectedAvatarActions";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { UploadPanel } from "@/app/_components/dashboard/UploadPanel";
 import { ACCEPTED_PHOTO_TYPES } from "@/lib/clipstitchr/constants/acceptedPhotoTypes";
 import { DEFAULT_AVATAR_STYLE_OPTION } from "@/lib/clipstitchr/constants/defaultAvatarStyleOption";
@@ -191,119 +192,117 @@ export function AvatarLibraryTabSection({
           Save people you can reuse in Swapr, Clipr, and AI photo generation.
         </p>
       </div>
-        {error ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
-        ) : null}
-        {generator.generatedCount ? (
-          <div className="rounded-lg border border-accent/25 bg-surface-muted p-4 text-sm font-semibold text-accent-dark">
-            Queued {generator.generatedCount} generated photos.
-          </div>
-        ) : null}
-        {showUploadControls ? (
-          <UploadPanel
-            allowedAssetTypes={["photo"]}
-            initialAssetType="photo"
-            isPhotoUploading={photoLibrary.isSaving}
-            onDismiss={dispatchHideUploadControlsEvent}
-            photoControls={
-              <AvatarPhotoUploadControls
-                avatars={photoLibrary.avatars}
-                canSave={canSavePendingPhotoUpload}
-                isSaving={photoLibrary.isSaving}
-                newAvatarName={newAvatarName}
-                pendingFileCount={pendingPhotoFiles.length}
-                selectedAvatarId={activeUploadAvatarId}
-                onNewAvatarNameChange={setNewAvatarName}
-                onSave={() => void savePendingPhotoUpload()}
-                onSelectedAvatarIdChange={setUploadAvatarId}
-              />
-            }
-            onPhotoExpandPreferenceChange={setPendingPhotoShouldExpandWithAi}
-            onPhotoUploaded={handlePhotoFilesSelected}
-            onUploaded={photoLibrary.refresh}
-          />
-        ) : null}
-        <div className="grid gap-3">
-          <div className="max-w-sm">
-            <AvatarFilterSelect
+      {error ? (
+        <DashboardAlert variant="error">{error}</DashboardAlert>
+      ) : null}
+      {generator.generatedCount ? (
+        <DashboardAlert variant="success">
+          Queued {generator.generatedCount} generated photos.
+        </DashboardAlert>
+      ) : null}
+      {showUploadControls ? (
+        <UploadPanel
+          allowedAssetTypes={["photo"]}
+          initialAssetType="photo"
+          isPhotoUploading={photoLibrary.isSaving}
+          onDismiss={dispatchHideUploadControlsEvent}
+          photoControls={
+            <AvatarPhotoUploadControls
               avatars={photoLibrary.avatars}
-              label="Avatar"
-              value={activeAvatarFilterId}
-              onChange={setAvatarFilterId}
+              canSave={canSavePendingPhotoUpload}
+              isSaving={photoLibrary.isSaving}
+              newAvatarName={newAvatarName}
+              pendingFileCount={pendingPhotoFiles.length}
+              selectedAvatarId={activeUploadAvatarId}
+              onNewAvatarNameChange={setNewAvatarName}
+              onSave={() => void savePendingPhotoUpload()}
+              onSelectedAvatarIdChange={setUploadAvatarId}
             />
-          </div>
-          <SelectedAvatarActions
-            key={selectedFilterAvatar?.id ?? "all"}
-            avatar={selectedFilterAvatar}
-            favoriteVoiceId={photoLibrary.defaultCliprVoiceId}
-            isDefaultAvatar={
-              Boolean(selectedFilterAvatar) &&
-              selectedFilterAvatar?.id === photoLibrary.defaultAvatarId
-            }
-            isSaving={photoLibrary.isSaving}
-            photoCount={selectedFilterAvatarPhotoCount}
-            products={products.products}
-            onDelete={deleteAvatar}
-            onProductChange={photoLibrary.updateAvatarProduct}
-            onRename={photoLibrary.renameAvatar}
-            onSetDefault={photoLibrary.setDefaultAvatar}
-            onWardrobeStyleChange={photoLibrary.updateAvatarWardrobeStyle}
-            onFavoriteVoiceChange={photoLibrary.setDefaultCliprVoice}
-            onVoiceChange={photoLibrary.updateAvatarCliprVoice}
+          }
+          onPhotoExpandPreferenceChange={setPendingPhotoShouldExpandWithAi}
+          onPhotoUploaded={handlePhotoFilesSelected}
+          onUploaded={photoLibrary.refresh}
+        />
+      ) : null}
+      <div className="grid gap-3">
+        <div className="max-w-sm">
+          <AvatarFilterSelect
+            avatars={photoLibrary.avatars}
+            label="Avatar"
+            value={activeAvatarFilterId}
+            onChange={setAvatarFilterId}
           />
         </div>
-        <AvatarGenerationPanel
-          count={count}
-          context={context}
-          isGenerating={generator.isGenerating || photoLibrary.isSaving}
-          lighting={lighting}
-          location={location}
-          outfit={outfit}
-          selectedAvatar={selectedPhotoAvatar}
-          selectedPhoto={selectedPhoto}
-          style={style}
-          onCountChange={setCount}
-          onGenerate={() => {
-            if (selectedPhotoAvatar && selectedPhoto) {
-              void generator.generate({
-                avatar: selectedPhotoAvatar,
-                count,
-                context,
-                lighting,
-                location,
-                outfit,
-                referencePhoto: selectedPhoto,
-                style,
-              });
-            }
-          }}
-          onContextChange={setContext}
-          onLightingChange={setLighting}
-          onLocationChange={setLocation}
-          onOutfitChange={setOutfit}
-          onStyleChange={setStyle}
-        />
-        <AvatarLibrarySection
-          avatars={photoLibrary.avatars}
-          photos={photos}
-          selectedPhotoId={activeSelectedPhotoId}
-          emptyTitle={hasSearchQuery ? "No matching avatars" : undefined}
-          emptyDescription={
-            hasSearchQuery
-              ? "No avatars match that name, tag, or description."
-              : "Upload photos of a person to make them available as avatars."
+        <SelectedAvatarActions
+          key={selectedFilterAvatar?.id ?? "all"}
+          avatar={selectedFilterAvatar}
+          favoriteVoiceId={photoLibrary.defaultCliprVoiceId}
+          isDefaultAvatar={
+            Boolean(selectedFilterAvatar) &&
+            selectedFilterAvatar?.id === photoLibrary.defaultAvatarId
           }
-          onLoadPhoto={photoLibrary.loadPhoto}
-          onDelete={photoLibrary.removePhoto}
-          onSelect={(photo) =>
-            setSelectedPhotoId((currentPhotoId) =>
-              currentPhotoId === photo.id ? undefined : photo.id,
-            )
-          }
-          onUpdateMetadata={photoLibrary.updatePhotoMetadata}
+          isSaving={photoLibrary.isSaving}
+          photoCount={selectedFilterAvatarPhotoCount}
+          products={products.products}
+          onDelete={deleteAvatar}
+          onProductChange={photoLibrary.updateAvatarProduct}
+          onRename={photoLibrary.renameAvatar}
+          onSetDefault={photoLibrary.setDefaultAvatar}
+          onWardrobeStyleChange={photoLibrary.updateAvatarWardrobeStyle}
+          onFavoriteVoiceChange={photoLibrary.setDefaultCliprVoice}
+          onVoiceChange={photoLibrary.updateAvatarCliprVoice}
         />
+      </div>
+      <AvatarGenerationPanel
+        count={count}
+        context={context}
+        isGenerating={generator.isGenerating || photoLibrary.isSaving}
+        lighting={lighting}
+        location={location}
+        outfit={outfit}
+        selectedAvatar={selectedPhotoAvatar}
+        selectedPhoto={selectedPhoto}
+        style={style}
+        onCountChange={setCount}
+        onGenerate={() => {
+          if (selectedPhotoAvatar && selectedPhoto) {
+            void generator.generate({
+              avatar: selectedPhotoAvatar,
+              count,
+              context,
+              lighting,
+              location,
+              outfit,
+              referencePhoto: selectedPhoto,
+              style,
+            });
+          }
+        }}
+        onContextChange={setContext}
+        onLightingChange={setLighting}
+        onLocationChange={setLocation}
+        onOutfitChange={setOutfit}
+        onStyleChange={setStyle}
+      />
+      <AvatarLibrarySection
+        avatars={photoLibrary.avatars}
+        photos={photos}
+        selectedPhotoId={activeSelectedPhotoId}
+        emptyTitle={hasSearchQuery ? "No matching avatars" : undefined}
+        emptyDescription={
+          hasSearchQuery
+            ? "No avatars match that name, tag, or description."
+            : "Upload photos of a person to make them available as avatars."
+        }
+        onLoadPhoto={photoLibrary.loadPhoto}
+        onDelete={photoLibrary.removePhoto}
+        onSelect={(photo) =>
+          setSelectedPhotoId((currentPhotoId) =>
+            currentPhotoId === photo.id ? undefined : photo.id,
+          )
+        }
+        onUpdateMetadata={photoLibrary.updatePhotoMetadata}
+      />
     </div>
   );
 }

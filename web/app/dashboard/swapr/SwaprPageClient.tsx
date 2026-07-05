@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { AvatarFilterSelect } from "@/app/_components/avatars/AvatarFilterSelect";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { SwaprControlsPanel } from "@/app/_components/swapr/SwaprControlsPanel";
@@ -12,6 +13,9 @@ import { SwaprOutputPanel } from "@/app/_components/swapr/SwaprOutputPanel";
 import { SwaprPhotoSelector } from "@/app/_components/swapr/SwaprPhotoSelector";
 import { SwaprSourceClipSelector } from "@/app/_components/swapr/SwaprSourceClipSelector";
 import { Panel } from "@/app/_components/ui/Panel";
+import { PanelHeader } from "@/app/_components/ui/PanelHeader";
+import { StickyPreviewColumn } from "@/app/_components/workflow/StickyPreviewColumn";
+import { WorkflowLayout } from "@/app/_components/workflow/WorkflowLayout";
 import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExportBlob";
 import { createTemporarySwaprReferenceVideoSegments } from "@/lib/clipstitchr/client/createTemporarySwaprReferenceVideoSegments";
 import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
@@ -307,31 +311,40 @@ export function SwaprPageClient() {
         />
 
         {library.error || photoLibrary.error || assetLoadError ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <DashboardAlert variant="error">
             {library.error ?? photoLibrary.error ?? assetLoadError}
-          </div>
+          </DashboardAlert>
         ) : null}
 
         {hasSwaprInputs ? (
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
+          <WorkflowLayout
+            aside={
+              <StickyPreviewColumn>
+                <SwaprOutputPanel
+                  status={generator.status}
+                  progress={generator.progress}
+                  error={generator.error}
+                  generatedClip={generator.generatedClip}
+                />
+              </StickyPreviewColumn>
+            }
+          >
             <Panel className="min-w-0 p-4">
               <div className="grid gap-4">
-                <div className="grid gap-3 border-b border-border pb-4 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-end">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-accent-dark">
-                      Swapr
-                    </p>
-                    <h2 className="mt-0.5 text-base font-bold text-text-primary">
-                      Choose two inputs
-                    </h2>
-                  </div>
-                  <AvatarFilterSelect
-                    avatars={photoLibrary.avatars}
-                    label="Avatar"
-                    value={activePhotoAvatarFilterId}
-                    onChange={setPhotoAvatarFilterId}
-                  />
-                </div>
+                <PanelHeader
+                  eyebrow="Swapr"
+                  title="Choose two inputs"
+                  actions={
+                    <div className="w-full sm:w-60">
+                      <AvatarFilterSelect
+                        avatars={photoLibrary.avatars}
+                        label="Avatar"
+                        value={activePhotoAvatarFilterId}
+                        onChange={setPhotoAvatarFilterId}
+                      />
+                    </div>
+                  }
+                />
                 <div className="grid gap-4 lg:grid-cols-2">
                   <SwaprPhotoSelector
                     avatars={photoLibrary.avatars}
@@ -366,16 +379,7 @@ export function SwaprPageClient() {
                 />
               </div>
             </Panel>
-
-            <div className="min-w-0 w-full max-w-[340px] justify-self-center xl:sticky xl:top-5 xl:justify-self-end">
-              <SwaprOutputPanel
-                status={generator.status}
-                progress={generator.progress}
-                error={generator.error}
-                generatedClip={generator.generatedClip}
-              />
-            </div>
-          </div>
+          </WorkflowLayout>
         ) : (
           <SwaprEmptyState
             hasPhotos={hasPhotos}

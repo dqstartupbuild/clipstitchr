@@ -1,5 +1,6 @@
 "use client";
 
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { HookLabPaginatedHistoryGrid } from "@/app/_components/hooks/HookLabPaginatedHistoryGrid";
 import { SelectInput } from "@/app/_components/ui/SelectInput";
@@ -65,9 +66,7 @@ export function HookLabHistorySection({
         />
       </div>
       {error ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {error}
-        </div>
+        <DashboardAlert variant="error">{error}</DashboardAlert>
       ) : null}
       {isLoading ? (
         <div className="rounded-lg border border-border bg-surface p-5 text-sm text-text-secondary">

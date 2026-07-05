@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import { useConvexAuth, useQuery } from "convex/react";
 import { StitchrCallout } from "@/app/_components/dashboard/StitchrCallout";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
@@ -101,9 +102,7 @@ export function DashboardPageClient() {
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <DashboardHeader />
         {error ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
+          <DashboardAlert variant="error">{error}</DashboardAlert>
         ) : null}
         <DashboardStats
           ugcCount={library.counts.ugcClips}

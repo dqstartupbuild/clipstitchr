@@ -11,10 +11,15 @@ import { CliprMusicControl } from "@/app/_components/clipr/CliprMusicControl";
 import { CliprScriptIdeaPanel } from "@/app/_components/clipr/CliprScriptIdeaPanel";
 import { CliprSceneControls } from "@/app/_components/clipr/CliprSceneControls";
 import { CliprVoiceSelect } from "@/app/_components/clipr/CliprVoiceSelect";
+import { BlockedActionMessage } from "@/app/_components/dashboard/BlockedActionMessage";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
+import { PanelHeader } from "@/app/_components/ui/PanelHeader";
+import { StickyPreviewColumn } from "@/app/_components/workflow/StickyPreviewColumn";
+import { WorkflowLayout } from "@/app/_components/workflow/WorkflowLayout";
 import { defaultCliprGenerationMode } from "@/lib/clipstitchr/constants/defaultCliprGenerationMode";
 import { defaultCliprDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprDurationSeconds";
 import { defaultCliprVisualDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprVisualDurationSeconds";
@@ -94,6 +99,15 @@ export function CliprPageClient() {
       : Boolean(activeAvatarId) && selectedAvatarPhotoCount > 0);
 
   const error = products.error ?? photoLibrary.error ?? library.error;
+  const blockedMessage = !activeProductId
+    ? "Create or choose a product before generating clips."
+    : isDemoMode && !activeDemoClipId
+      ? "Add a product demo before remixing one."
+      : !isDemoMode && !activeAvatarId
+        ? "Add an avatar before generating UGC."
+        : !isDemoMode && selectedAvatarPhotoCount === 0
+          ? "Add avatar photos before generating UGC."
+          : null;
 
   return (
     <DashboardShell>
@@ -109,31 +123,42 @@ export function CliprPageClient() {
         />
 
         {error ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
+          <DashboardAlert variant="error">{error}</DashboardAlert>
         ) : null}
 
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
+        <WorkflowLayout
+          aside={
+            <StickyPreviewColumn className="flex flex-col gap-5">
+              <CliprGenerationProgress
+                error={generator.error}
+                message={generator.message}
+                progress={generator.progress}
+                status={generator.status}
+              />
+              <CliprJobResult
+                finalClipId={generator.finalClipId}
+                job={generator.job}
+              />
+            </StickyPreviewColumn>
+          }
+        >
           <Panel className="p-4">
-            <div className="mb-4 flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-accent-dark">Clipr</p>
-                <h2 className="mt-0.5 text-base font-bold text-text-primary">
-                  {mode === "reaction"
-                    ? "Generate a reaction"
-                    : mode === "broll"
-                      ? "Generate b-roll"
-                      : mode === "script"
-                        ? "Generate a talking clip"
-                      : mode === "demo"
-                        ? "Remix a demo"
-                        : "Generate a Clip"}
-                </h2>
-              </div>
-              <CliprModeToggle value={mode} onChange={setMode} />
-            </div>
-            <div className="grid gap-5 lg:grid-cols-2">
+            <PanelHeader
+              eyebrow="Clipr"
+              title={
+                mode === "reaction"
+                  ? "Generate a reaction"
+                  : mode === "broll"
+                    ? "Generate b-roll"
+                    : mode === "script"
+                      ? "Generate a talking clip"
+                    : mode === "demo"
+                      ? "Remix a demo"
+                      : "Generate a Clip"
+              }
+              actions={<CliprModeToggle value={mode} onChange={setMode} />}
+            />
+            <div className="mt-4 grid gap-5 lg:grid-cols-2">
               {mode === "script" ? (
                 <CliprScriptIdeaPanel
                   value={scriptIdea}
@@ -186,11 +211,15 @@ export function CliprPageClient() {
               ) : null}
             </div>
             <div className="mt-5 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm leading-6 text-text-secondary">
-                {isDemoMode
-                  ? "Clipr saves finished remixed demos into the Demo library."
-                  : "Clipr saves finished reactions and b-roll into UGC."}
-              </p>
+              {blockedMessage ? (
+                <BlockedActionMessage message={blockedMessage} />
+              ) : (
+                <p className="text-sm leading-6 text-text-secondary">
+                  {isDemoMode
+                    ? "Clipr saves finished remixed demos into the Demo library."
+                    : "Clipr saves finished reactions and b-roll into UGC."}
+                </p>
+              )}
               <Button
                 type="button"
                 icon={<CirclePlay aria-hidden className="h-4 w-4" />}
@@ -220,20 +249,7 @@ export function CliprPageClient() {
               </Button>
             </div>
           </Panel>
-
-          <div className="flex flex-col gap-5 xl:sticky xl:top-5">
-            <CliprGenerationProgress
-              error={generator.error}
-              message={generator.message}
-              progress={generator.progress}
-              status={generator.status}
-            />
-            <CliprJobResult
-              finalClipId={generator.finalClipId}
-              job={generator.job}
-            />
-          </div>
-        </div>
+        </WorkflowLayout>
       </div>
     </DashboardShell>
   );

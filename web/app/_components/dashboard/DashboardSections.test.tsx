@@ -170,9 +170,10 @@ describe("dashboard shell sections", () => {
       </DashboardShell>,
     );
 
-    expect(markup).toContain("Background AI work is running");
+    expect(markup).toContain("Background work is running");
     expect(markup).toContain("Swapr generation queued");
     expect(markup).toContain("Upload processing running");
+    expect(markup).toContain("View jobs");
   });
 
   it("renders empty states for recent dashboard sections", () => {

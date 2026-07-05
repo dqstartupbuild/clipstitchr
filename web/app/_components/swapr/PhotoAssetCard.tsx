@@ -2,6 +2,7 @@
 
 import { Download, Edit3, Shuffle, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { MediaPrimaryAction } from "@/app/_components/dashboard/MediaPrimaryAction";
 import { PhotoAssetDetailsDialog } from "@/app/_components/swapr/PhotoAssetDetailsDialog";
 import { AssetMetadataEditDialog } from "@/app/_components/uploads/AssetMetadataEditDialog";
 import {
@@ -183,6 +184,15 @@ export function PhotoAssetCard({
           items={actionItems}
         />
       </div>
+      {showUseInSwapr ? (
+        <div className="mt-3">
+          <MediaPrimaryAction
+            href={getUseInSwaprPhotoHref(photo)}
+            icon={<Shuffle aria-hidden className="h-4 w-4" />}
+            label="Use in Swapr"
+          />
+        </div>
+      ) : null}
       {isDetailsOpen ? (
         <PhotoAssetDetailsDialog
           actionItems={actionItems}

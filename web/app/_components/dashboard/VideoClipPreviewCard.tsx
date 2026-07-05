@@ -66,6 +66,7 @@ type VideoClipPreviewCardProps = {
   isSelectionDisabled?: boolean;
   actions?: (actions: VideoClipPreviewCardActions) => MediaCardActionMenuItem[];
   footer?: (actions: VideoClipPreviewCardActions) => ReactNode;
+  primaryAction?: ReactNode;
   onLoadClip: (id: string) => Promise<VideoClip | null>;
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect?: () => void;
@@ -83,6 +84,7 @@ export function VideoClipPreviewCard({
   isSelectionDisabled = false,
   actions,
   footer,
+  primaryAction,
   onLoadClip,
   onLoadPoster,
   onSelect,
@@ -246,6 +248,7 @@ export function VideoClipPreviewCard({
             />
           ) : null}
         </div>
+        {primaryAction ? <div className="mt-3">{primaryAction}</div> : null}
         {footerContent ? <div className="mt-4">{footerContent}</div> : null}
       </div>
       {detailsMode === "details" || detailsMode === "controls" ? (

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { CreateAvatarFromClipDialog } from "@/app/_components/dashboard/CreateAvatarFromClipDialog";
+import { MediaPrimaryAction } from "@/app/_components/dashboard/MediaPrimaryAction";
 import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPreviewCard";
 import type { MediaCardActionMenuItem } from "@/app/_components/ui/MediaCardActionMenu";
 import { downloadMusicBlob } from "@/lib/clipstitchr/client/r2/downloadMusicBlob";
@@ -308,6 +309,13 @@ export function VideoClipCard({
         onLoadClip={onLoadClip}
         onLoadPoster={onLoadPoster}
         onSelect={onSelect}
+        primaryAction={
+          <MediaPrimaryAction
+            href={getUseInStitchrHref(clip)}
+            icon={<Scissors aria-hidden className="h-4 w-4" />}
+            label="Use in Stitchr"
+          />
+        }
         trimEditor={{
           initialTrimRange: defaultTrimRange,
           saveLabel: "Save trim",

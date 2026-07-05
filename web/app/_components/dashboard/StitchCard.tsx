@@ -16,6 +16,7 @@ import {
 import { useCallback, useState } from "react";
 import { StitchDetailsDialog } from "@/app/_components/dashboard/StitchDetailsDialog";
 import { StitchEditDialog } from "@/app/_components/dashboard/StitchEditDialog";
+import { MediaPrimaryAction } from "@/app/_components/dashboard/MediaPrimaryAction";
 import { StitchScoreBadge } from "@/app/_components/dashboard/StitchScoreBadge";
 import { PostBridgeScheduleDialog } from "@/app/_components/postBridge/PostBridgeScheduleDialog";
 import {
@@ -796,6 +797,14 @@ export function StitchCard({
           <MediaCardActionMenu
             label={`Actions for ${stitch.name}`}
             items={actionItems}
+          />
+        </div>
+        <div className="mt-3">
+          <MediaPrimaryAction
+            disabled={isDownloading}
+            icon={<Download aria-hidden className="h-4 w-4" />}
+            label={isDownloading ? "Downloading" : "Download"}
+            onClick={() => void handleDownload()}
           />
         </div>
         {downloadError ? (

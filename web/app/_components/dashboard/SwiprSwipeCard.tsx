@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { MediaPrimaryAction } from "@/app/_components/dashboard/MediaPrimaryAction";
 import { SwiprSwipeDetailsDialog } from "@/app/_components/dashboard/SwiprSwipeDetailsDialog";
 import { PostBridgeScheduleDialog } from "@/app/_components/postBridge/PostBridgeScheduleDialog";
 import { Badge } from "@/app/_components/ui/Badge";
@@ -502,6 +503,13 @@ export function SwiprSwipeCard({
                 items={actionItems}
               />
             </div>
+          </div>
+          <div className="mt-3">
+            <MediaPrimaryAction
+              href={editHref}
+              icon={<Edit3 aria-hidden className="h-4 w-4" />}
+              label={hasMissingBackground ? "Fix photos" : "Continue editing"}
+            />
           </div>
           {backgroundErrorMessage || exporter.error ? (
             <p className="mt-3 text-xs font-semibold text-red-600">

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { SwiprBackgroundPanel } from "@/app/_components/swipr/SwiprBackgroundPanel";
@@ -16,6 +17,8 @@ import { SwiprSocialCaptionField } from "@/app/_components/swipr/SwiprSocialCapt
 import { SwiprSlideStrip } from "@/app/_components/swipr/SwiprSlideStrip";
 import { SwiprTextOverlayPanel } from "@/app/_components/swipr/SwiprTextOverlayPanel";
 import { Panel } from "@/app/_components/ui/Panel";
+import { StickyPreviewColumn } from "@/app/_components/workflow/StickyPreviewColumn";
+import { WorkflowLayout } from "@/app/_components/workflow/WorkflowLayout";
 import { SWIPR_BATCH_DRAFT_COUNT } from "@/lib/clipstitchr/constants/swiprBatchDraftCount";
 import {
   SWIPR_MAX_SLIDE_COUNT,
@@ -297,7 +300,7 @@ export function SwiprPageClient() {
   const generateAiBackgrounds = useCallback(async () => {
     if (!selectedSavedProduct) {
       setBackgroundError(
-        "Choose a product from the sidebar before generating photos.",
+        "Create or choose a product before generating photos.",
       );
       return;
     }
@@ -720,7 +723,7 @@ export function SwiprPageClient() {
   const handleGenerateDrafts = () => {
     if (!selectedSavedProductId) {
       setAutoTextMessage(
-        "Choose a product from the sidebar before generating drafts.",
+        "Create or choose a product before generating drafts.",
       );
       return;
     }
@@ -766,7 +769,7 @@ export function SwiprPageClient() {
   const handleGenerateAutoText = () => {
     if (!selectedSavedProductId) {
       setAutoTextMessage(
-        "Choose a product from the sidebar before generating text.",
+        "Create or choose a product before generating text.",
       );
       return;
     }
@@ -850,7 +853,7 @@ export function SwiprPageClient() {
     }
 
     if (!selectedSavedProductId) {
-      setSaveMessage("Choose a product from the sidebar before saving.");
+      setSaveMessage("Create or choose a product before saving.");
       return;
     }
 
@@ -1036,28 +1039,45 @@ export function SwiprPageClient() {
         swiprLibrary.error ||
         photoLibrary.error ||
         backgroundError ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <DashboardAlert variant="error">
             {products.error ??
               swiprLibrary.error ??
               photoLibrary.error ??
               backgroundError}
-          </div>
+          </DashboardAlert>
         ) : null}
         {autoTextMessage ? (
-          <div className="rounded-lg border border-accent/25 bg-surface-muted p-4 text-sm font-semibold text-accent-dark">
-            {autoTextMessage}
-          </div>
+          <DashboardAlert variant="info">{autoTextMessage}</DashboardAlert>
         ) : null}
 
-        <div
-          className={[
-            "grid gap-5 xl:items-start",
-            activeSwiprMode === "manual"
-              ? "xl:grid-cols-[minmax(0,1fr)_340px]"
-              : "",
-          ].join(" ")}
+        <WorkflowLayout
+          aside={
+            activeSwiprMode === "manual" ? (
+              <StickyPreviewColumn>
+                <SwiprPreviewPanel
+                  background={activeBackground}
+                  activeSlide={activeSlide}
+                  activeSlideIndex={activeSlideIndex}
+                  saveMessage={saveMessage}
+                  isSaveDisabled={
+                    !selectedSavedProduct ||
+                    !hasSlidePhotos ||
+                    isCreatingBackground
+                  }
+                  isSaving={swiprLibrary.isSavingSwipe}
+                  exportStatus={exporter.status}
+                  exportProgress={exporter.progress}
+                  exportError={exporter.error}
+                  isExportDisabled={!isSavedExportReady || isCreatingBackground}
+                  onSave={handleSave}
+                  onExport={handleExport}
+                  onTextOverlayChange={handleTextOverlayChange}
+                />
+              </StickyPreviewColumn>
+            ) : undefined
+          }
         >
-          <Panel className="order-2 min-w-0 p-4 xl:order-1">
+          <Panel className="min-w-0 p-4">
             <div
               className={[
                 "grid gap-4",
@@ -1191,30 +1211,7 @@ export function SwiprPageClient() {
               ) : null}
               </div>
           </Panel>
-          {activeSwiprMode === "manual" ? (
-            <div className="order-1 min-w-0 w-full max-w-[340px] justify-self-center xl:sticky xl:top-5 xl:order-2 xl:justify-self-end">
-              <SwiprPreviewPanel
-                background={activeBackground}
-                activeSlide={activeSlide}
-                activeSlideIndex={activeSlideIndex}
-                saveMessage={saveMessage}
-                isSaveDisabled={
-                  !selectedSavedProduct ||
-                  !hasSlidePhotos ||
-                  isCreatingBackground
-                }
-                isSaving={swiprLibrary.isSavingSwipe}
-                exportStatus={exporter.status}
-                exportProgress={exporter.progress}
-                exportError={exporter.error}
-                isExportDisabled={!isSavedExportReady || isCreatingBackground}
-                onSave={handleSave}
-                onExport={handleExport}
-                onTextOverlayChange={handleTextOverlayChange}
-              />
-            </div>
-          ) : null}
-        </div>
+        </WorkflowLayout>
       </div>
     </DashboardShell>
   );

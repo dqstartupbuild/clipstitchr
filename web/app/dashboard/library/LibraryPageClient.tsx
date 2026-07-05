@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { LibraryPageHeader } from "@/app/_components/dashboard/LibraryPageHeader";
 import { StitchesSection } from "@/app/_components/dashboard/StitchesSection";
@@ -251,7 +252,7 @@ export function LibraryPageClient() {
   const canUploadDemo = activeProductId.length > 0;
   const demoUploadBlockedMessage = products.isLoading
     ? "Products are loading."
-    : "Create a product from the sidebar before uploading demo videos.";
+    : "Create a product before uploading demo videos.";
   const canSortSelectedTab =
     selectedTab !== "avatars" &&
     selectedTab !== "templates" &&
@@ -377,15 +378,13 @@ export function LibraryPageClient() {
           description="Keep your clips, demos, avatars, templates, Swipes, and finished stitches in one place."
         />
         {error ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
+          <DashboardAlert variant="error">{error}</DashboardAlert>
         ) : null}
         {avatarCreator.createdAvatar && avatarCreator.generatedCount ? (
-          <div className="rounded-lg border border-accent/25 bg-surface-muted p-4 text-sm font-semibold text-accent-dark">
+          <DashboardAlert variant="success">
             Queued {avatarCreator.generatedCount} generated photos for{" "}
             {avatarCreator.createdAvatar.name}.
-          </div>
+          </DashboardAlert>
         ) : null}
         {showUploadControls &&
         selectedTab !== "avatars" &&

@@ -5,6 +5,7 @@ import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyS
 import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { SwiprSwipeCard } from "@/app/_components/dashboard/SwiprSwipeCard";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
+import { StatusFilterTabs } from "@/app/_components/ui/StatusFilterTabs";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
@@ -85,31 +86,13 @@ export function SwiprSwipesSection({
         </div>
         <div className="flex flex-col gap-2 sm:items-end">
           {onStatusFilterChange ? (
-            <div
-              className="inline-flex flex-wrap gap-1 rounded-lg border border-border bg-slate-100 p-1"
-              aria-label={`${title} status filter`}
-            >
-              {statusFilterOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => onStatusFilterChange(option.value)}
-                  className={[
-                    "h-8 rounded-md px-3 text-sm font-semibold transition-colors",
-                    statusFilter === option.value
-                      ? "bg-white text-accent shadow-sm"
-                      : "text-text-secondary hover:text-text-primary",
-                  ].join(" ")}
-                >
-                  {option.label}
-                  {statusCounts ? (
-                    <span className="ml-1 text-xs text-text-tertiary">
-                      {statusCounts[option.value]}
-                    </span>
-                  ) : null}
-                </button>
-              ))}
-            </div>
+            <StatusFilterTabs
+              ariaLabel={`${title} status filter`}
+              counts={statusCounts}
+              options={statusFilterOptions}
+              value={statusFilter}
+              onChange={onStatusFilterChange}
+            />
           ) : null}
           {swipes.length ? (
             <LibraryBatchActionBar

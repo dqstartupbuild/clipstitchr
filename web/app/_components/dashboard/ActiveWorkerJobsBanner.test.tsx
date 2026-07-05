@@ -64,8 +64,9 @@ describe("ActiveWorkerJobsBanner", () => {
     const markup = renderToStaticMarkup(<ActiveWorkerJobsBanner />);
 
     expect(mocks.useQuery).toHaveBeenCalledWith("activeWorkerJobs.summary", {});
-    expect(markup).toContain("Background AI work is running");
+    expect(markup).toContain("Background work is running");
     expect(markup).toContain("Swapr generation queued");
     expect(markup).toContain("Upload analysis running");
+    expect(markup).toContain("View jobs");
   });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { HookLabHistorySection } from "@/app/_components/hooks/HookLabHistorySection";
@@ -28,9 +29,7 @@ export function HookLabPageClient() {
           actions={null}
         />
         {error ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
+          <DashboardAlert variant="error">{error}</DashboardAlert>
         ) : null}
         <HookLabMemoryPanel
           isSaving={products.isSaving}

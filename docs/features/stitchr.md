@@ -89,6 +89,15 @@ attention first, show the product immediately after.
     hook-to-demo flow read, drop-off risks, trim/cut ideas, and a posting
     readiness recheck before posting.
 
+The hands-on Stitchr view shows a four-step workflow strip: Pick clips, Add
+text, Preview, and Create. The strip is guidance, not a hard wizard, so users
+can still adjust clips, text, captions, music, and preview state in the order
+that fits the job.
+
+Saved Stitch cards expose Download as the visible primary action while keeping
+reuse, edit, scheduling, scoring, posted-state, template, and delete actions in
+the action menu.
+
 Saved stitch music is stored separately from the stitch so it can still be
 edited later. The saved finished video includes the current music choice when
 music is enabled. If the user changes text, music, source clips, trims, playback

@@ -834,7 +834,7 @@ describe("SwiprPageClient", () => {
       mocks.stateSetters.some((setter) =>
         setter.mock.calls.some(
           (call) =>
-            call[0] === "Choose a product from the sidebar before saving.",
+            call[0] === "Create or choose a product before saving.",
         ),
       ),
     ).toBe(true);

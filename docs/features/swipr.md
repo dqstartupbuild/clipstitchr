@@ -89,6 +89,10 @@ should become the version available from the library.
 The Library includes a Swipes tab alongside UGC, Demo, Swaps, Stitches,
 Avatars, and Templates.
 
+In the grouped Library navigation, saved Swipes are labeled as Carousels under
+Finished so users can find finished image posts without knowing the internal
+tool name first.
+
 The Swipes tab shows saved Swipe cards with:
 
 - Swipe title.
@@ -102,6 +106,10 @@ The Swipes tab shows saved Swipe cards with:
 - Detail action.
 - Continue editing action.
 - Delete action for the saved Swipe record.
+
+Saved Swipe cards expose Continue editing as the visible primary action. The
+details, download, schedule, posted-state, and delete actions remain available
+from the card action menu.
 
 Swipe posted status is stored on the saved Swipe record and is separate from
 video clip posted status.

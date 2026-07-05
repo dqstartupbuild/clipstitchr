@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { ClipPickerPanel } from "@/app/_components/stitchr/ClipPickerPanel";
 import { StitchrProgressPanel } from "@/app/_components/stitchr/StitchrProgressPanel";
 import { StitchrEmptyState } from "@/app/_components/stitchr/StitchrEmptyState";
@@ -56,6 +57,9 @@ import { getStitchrTextOverlaysForUgcId } from "@/lib/clipstitchr/utils/getStitc
 import { getTextOverlayList } from "@/lib/clipstitchr/utils/getTextOverlayList";
 import { mergeVideoClipMetadataById } from "@/lib/clipstitchr/utils/mergeVideoClipMetadataById";
 import { toggleStitchrUgcSelection } from "@/lib/clipstitchr/utils/toggleStitchrUgcSelection";
+import { StickyPreviewColumn } from "@/app/_components/workflow/StickyPreviewColumn";
+import { WorkflowLayout } from "@/app/_components/workflow/WorkflowLayout";
+import { WorkflowStepList } from "@/app/_components/workflow/WorkflowStepList";
 
 export function StitchrPageClient() {
   const library = useClipLibrary();
@@ -1443,7 +1447,7 @@ export function StitchrPageClient() {
 
   const handleGenerateAutoText = useCallback(() => {
     if (!activeAutoTextProductId) {
-      setAutoTextMessage("Choose a product from the sidebar before generating text.");
+      setAutoTextMessage("Create or choose a product before generating text.");
       return;
     }
 
@@ -1893,6 +1897,48 @@ export function StitchrPageClient() {
     stitchrState.status === "saving" ||
     stitchrState.status === "stitching";
   const hasStitchrInputs = ugcClips.length > 0 && demoClips.length > 0;
+  const hasPickedStitchrClips =
+    mode === "longr"
+      ? selectedLongrMetadata.length > 0
+      : Boolean(selectedUgcMetadata.length && selectedDemoMetadata);
+  const hasFinishingDetails =
+    getNonEmptyTextOverlays(clampedTextOverlays).length > 0 ||
+    activeSocialCaption.trim().length > 0 ||
+    Boolean(selectedMusicTrack);
+  const hasCreatedStitches = stitchrState.stitches.length > 0;
+  const stitchrWorkflowSteps = [
+    {
+      label: "Pick clips",
+      description:
+        mode === "longr" ? "Build the sequence." : "Choose UGC and a demo.",
+      status: hasPickedStitchrClips ? "complete" : "current",
+    },
+    {
+      label: "Add text",
+      description: "Generate or edit overlay and post copy.",
+      status: !hasPickedStitchrClips
+        ? "upcoming"
+        : hasFinishingDetails
+          ? "complete"
+          : "current",
+    },
+    {
+      label: "Preview",
+      description: "Check the exact output.",
+      status: !hasPickedStitchrClips
+        ? "upcoming"
+        : hasCreatedStitches
+          ? "complete"
+          : hasFinishingDetails
+            ? "current"
+            : "upcoming",
+    },
+    {
+      label: "Create",
+      description: "Save and download finished ads.",
+      status: hasCreatedStitches ? "complete" : "upcoming",
+    },
+  ] as const;
 
   return (
     <StitchrShell>
@@ -1905,9 +1951,7 @@ export function StitchrPageClient() {
           onTemplateChange={handleTemplateChange}
         />
         {library.error ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {library.error}
-          </div>
+          <DashboardAlert variant="error">{library.error}</DashboardAlert>
         ) : null}
         {hasStitchrInputs && mode === "batch" ? (
           <StitchrBatchPanel
@@ -1916,28 +1960,62 @@ export function StitchrPageClient() {
             hookPlans={visibleBatchHookPlans}
             isDisabled={isGeneratingBatch}
             isGenerating={isGeneratingBatch}
-                message={batchMessage}
-                mode={mode}
-                selectedSoundTrack={selectedMusicTrack}
-                savingHookPlanId={savingHookPlanId}
+            message={batchMessage}
+            mode={mode}
+            selectedSoundTrack={selectedMusicTrack}
+            savingHookPlanId={savingHookPlanId}
             strokeColorChoice={batchTextStrokeColorChoice}
             textColorChoice={batchTextColorChoice}
             textStyleChoice={batchTextStyleChoice}
             onAcceptHookVariant={handleAcceptBatchHookVariant}
             onBackgroundColorChoiceChange={setBatchTextBackgroundColorChoice}
             onGenerate={handleGenerateBatch}
-                onModeChange={handleModeChange}
-                onSelectSoundTrack={(track) => {
-                  setSelectedMusicTrack(track);
-                }}
-                onRejectHookVariant={handleRejectBatchHookVariant}
+            onModeChange={handleModeChange}
+            onSelectSoundTrack={(track) => {
+              setSelectedMusicTrack(track);
+            }}
+            onRejectHookVariant={handleRejectBatchHookVariant}
             onSelectHookVariant={handleSelectBatchHookVariant}
             onStrokeColorChoiceChange={setBatchTextStrokeColorChoice}
             onTextColorChoiceChange={setBatchTextColorChoice}
             onTextStyleChoiceChange={setBatchTextStyleChoice}
           />
         ) : hasStitchrInputs ? (
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
+          <>
+            <WorkflowStepList
+              label="Stitchr workflow"
+              steps={stitchrWorkflowSteps}
+            />
+            <WorkflowLayout
+              aside={
+                <StickyPreviewColumn>
+                  <SequencePreviewPanel
+                    mode={mode}
+                    previewUgcClips={selectedUgcMetadata}
+                    activeUgcId={activeUgcMetadata?.id ?? null}
+                    ugcClip={selectedUgcClip}
+                    demoClip={selectedDemoClip}
+                    sequenceClips={loadedLongrSequenceClips}
+                    sequenceIncludeAudioFlags={longrSequenceIncludeAudioFlags}
+                    sequencePlaybackRates={longrSequencePlaybackRates}
+                    sequenceTrimRanges={longrSequenceTrimRanges}
+                    ugcTrimRange={selectedUgcTrimRange}
+                    demoTrimRange={selectedDemoTrimRange}
+                    demoPlaybackRate={demoPlaybackRate}
+                    includeDemoAudio={includeDemoAudio}
+                    includeUgcAudio={includeUgcAudio}
+                    textOverlays={clampedTextOverlays}
+                    ugcPlaybackRate={ugcPlaybackRate}
+                    canCopyTextOverlayToAll={
+                      mode === "normal" && selectedUgcMetadata.length > 1
+                    }
+                    onActiveUgcChange={handleActiveUgcChange}
+                    onCopyTextOverlayToAll={handleCopyTextOverlayToAll}
+                    onTextOverlaysChange={handleTextOverlaysChange}
+                  />
+                </StickyPreviewColumn>
+              }
+            >
             <div className="flex min-w-0 flex-col gap-5">
               <ClipPickerPanel
                 mode={mode}
@@ -2027,33 +2105,8 @@ export function StitchrPageClient() {
                 onLoadClip={loadClip}
               />
             </div>
-            <div className="min-w-0 w-full max-w-[340px] justify-self-center xl:sticky xl:top-5 xl:justify-self-end">
-              <SequencePreviewPanel
-                mode={mode}
-                previewUgcClips={selectedUgcMetadata}
-                activeUgcId={activeUgcMetadata?.id ?? null}
-                ugcClip={selectedUgcClip}
-                demoClip={selectedDemoClip}
-                sequenceClips={loadedLongrSequenceClips}
-                sequenceIncludeAudioFlags={longrSequenceIncludeAudioFlags}
-                sequencePlaybackRates={longrSequencePlaybackRates}
-                sequenceTrimRanges={longrSequenceTrimRanges}
-                ugcTrimRange={selectedUgcTrimRange}
-                demoTrimRange={selectedDemoTrimRange}
-                demoPlaybackRate={demoPlaybackRate}
-                includeDemoAudio={includeDemoAudio}
-                includeUgcAudio={includeUgcAudio}
-                textOverlays={clampedTextOverlays}
-                ugcPlaybackRate={ugcPlaybackRate}
-                canCopyTextOverlayToAll={
-                  mode === "normal" && selectedUgcMetadata.length > 1
-                }
-                onActiveUgcChange={handleActiveUgcChange}
-                onCopyTextOverlayToAll={handleCopyTextOverlayToAll}
-                onTextOverlaysChange={handleTextOverlaysChange}
-              />
-            </div>
-          </div>
+            </WorkflowLayout>
+          </>
         ) : library.isLoading ? (
           <div className="rounded-lg border border-border bg-surface p-5 text-sm text-text-secondary">
             Loading Stitchr clips...

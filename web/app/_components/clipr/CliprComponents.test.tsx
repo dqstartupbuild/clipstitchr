@@ -10,6 +10,7 @@ import { CliprMusicControl } from "@/app/_components/clipr/CliprMusicControl";
 import { CliprProductPanel } from "@/app/_components/clipr/CliprProductPanel";
 import { CliprScriptIdeaPanel } from "@/app/_components/clipr/CliprScriptIdeaPanel";
 import { CliprVoiceSelect } from "@/app/_components/clipr/CliprVoiceSelect";
+import { SegmentedControl } from "@/app/_components/ui/SegmentedControl";
 import { cliprScriptIdeaMaxLength } from "@/lib/clipstitchr/constants/cliprScriptIdeaMaxLength";
 import type { Avatar } from "@/lib/clipstitchr/types/Avatar";
 import type { CliprClientJob } from "@/lib/clipstitchr/types/CliprClientJob";
@@ -379,10 +380,9 @@ describe("Clipr components", () => {
       onChange: onScriptIdeaChange,
       value: "Founder confession",
     });
-    const [reactionButton] = findElements(
+    const [modeControl] = findElements(
       modeTree,
-      (element) =>
-        element.type === "button" && element.props?.children === "Reaction",
+      (element) => element.type === SegmentedControl,
     );
     const [textarea] = findElements(
       scriptIdeaTree,
@@ -396,7 +396,7 @@ describe("Clipr components", () => {
     );
     const modeMarkup = renderToStaticMarkup(modeTree);
 
-    (reactionButton.props.onClick as () => void)();
+    (modeControl.props.onChange as (value: string) => void)("reaction");
     (textarea.props.onChange as (event: {
       currentTarget: { value: string };
     }) => void)({ currentTarget: { value: "New idea" } });
