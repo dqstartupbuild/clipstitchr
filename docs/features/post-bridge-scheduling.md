@@ -24,7 +24,9 @@ do not point at accounts from the previous key.
 The schedule dialog loads connected Post Bridge accounts from the server,
 filters them to TikTok, Instagram, and YouTube, preselects the accounts linked
 to the source product, and still lets the user adjust accounts for that one
-post before choosing whether to post now or schedule a future post time.
+post before choosing whether to post now or add it to their Post Bridge queue.
+Queued posts use Post Bridge's saved queue settings instead of a ClipStitchr
+date picker.
 
 Stitches use the same browser export path as downloads. If the saved stitch has
 an existing rendered video, that video is used. Otherwise the browser renders
@@ -107,8 +109,9 @@ Bridge:
 8. Loads connected Post Bridge accounts and keeps only TikTok, Instagram, and
    YouTube accounts.
 9. Verifies the selected account IDs exist on that user's Post Bridge account.
-10. Creates the Post Bridge post with `POST /v1/posts`. Scheduled posts send an
-   ISO `scheduled_at`; immediate posts send `scheduled_at: null`.
+10. Creates the Post Bridge post with `POST /v1/posts`. Queued posts send
+   `use_queue: true` and omit `scheduled_at`; immediate posts send
+   `scheduled_at: null`.
 11. Saves the returned Post Bridge post reference back onto the source stitch or
    swipe and marks that source content posted so it moves out of active drafts.
 12. Captures a consent-gated PostHog server event.
@@ -126,10 +129,11 @@ The dashboard sidebar includes `Schedule` at `/dashboard/schedule` and
 `Analytics` at `/dashboard/analytics`.
 
 The Schedule page shows Post Bridge posts and their scheduled, processing,
-posted, or failed status. Scheduled posts display their `scheduled_at` time.
-Immediate post-now rows display the Post Bridge `created_at` time, because those
-posts intentionally have `scheduled_at: null`. Its `Config/accounts` tab owns
-the product-level default posting account picker.
+posted, or failed status. Queued posts display the `scheduled_at` time returned
+by Post Bridge when a queue slot is assigned. Immediate post-now rows display
+the Post Bridge `created_at` time, because those posts intentionally have
+`scheduled_at: null`. Its `Config/accounts` tab owns the product-level default
+posting account picker.
 
 The page shows:
 

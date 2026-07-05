@@ -49,4 +49,28 @@ describe("createPostBridgePostReference", () => {
       }).scheduledAt,
     ).toBeUndefined();
   });
+
+  it("stores the scheduled_at returned by Post Bridge for queued posts", () => {
+    expect(
+      createPostBridgePostReference({
+        hasAudio: false,
+        mediaIds: ["media_1"],
+        mediaKind: "video",
+        platforms: ["instagram"],
+        post: {
+          caption: "Launch",
+          created_at: "2026-06-26T00:00:00.000Z",
+          id: "post_1",
+          is_draft: false,
+          scheduled_at: "2026-06-28T15:00:00.000Z",
+          social_accounts: [1],
+          status: "scheduled",
+          updated_at: "2026-06-26T00:00:00.000Z",
+        },
+        scheduledAt: null,
+        socialAccountIds: [1],
+        sourceType: "swipe",
+      }).scheduledAt,
+    ).toBe("2026-06-28T15:00:00.000Z");
+  });
 });

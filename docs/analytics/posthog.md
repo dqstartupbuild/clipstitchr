@@ -61,7 +61,7 @@ Server-side product events:
 | `swapr_job_created` | Swapr job is created | Tracks prediction ID and generation options. |
 | `avatar_photos_generation_requested` | Avatar photo generation API starts | Tracks count, style, lighting, speed tier, and model. |
 | `sound_uploaded` | Private sound upload succeeds | Tracks source, content type, and size. |
-| `post_bridge_post_scheduled` | Post Bridge schedule API succeeds | Tracks source type, source ID, Post Bridge post ID, platform count, media size, and audio flag. |
+| `post_bridge_post_scheduled` | Post Bridge schedule API succeeds | Tracks source type, source ID, Post Bridge post ID, platform count, queue mode, media size, and audio flag. |
 | `post_bridge_analytics_synced` | Post Bridge analytics sync succeeds | No user-entered content is sent. |
 
 ## Data Rules

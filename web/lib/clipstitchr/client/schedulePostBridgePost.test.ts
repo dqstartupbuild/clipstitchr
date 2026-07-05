@@ -6,7 +6,7 @@ describe("schedulePostBridgePost", () => {
     vi.unstubAllGlobals();
   });
 
-  it("uploads media before sending a small schedule request", async () => {
+  it("uploads media before sending a small queue request", async () => {
     const r2UploadUrlBodies: object[] = [];
     const r2UploadBodies: BodyInit[] = [];
     const postBridgeUploadBodies: object[] = [];
@@ -77,11 +77,11 @@ describe("schedulePostBridgePost", () => {
           mediaKind: "image",
         },
       ],
-      scheduledAt: "2026-06-27T12:00:00.000Z",
       socialAccountIds: [1, 2],
       sourceId: "swipe_1",
       sourceType: "swipe",
       title: "Launch Swipe",
+      useQueue: true,
     });
 
     expect(r2UploadUrlBodies).toEqual([
@@ -145,11 +145,11 @@ describe("schedulePostBridgePost", () => {
             sizeBytes: 2,
           },
         ],
-        scheduledAt: "2026-06-27T12:00:00.000Z",
         socialAccountIds: [1, 2],
         sourceId: "swipe_1",
         sourceType: "swipe",
         title: "Launch Swipe",
+        useQueue: true,
       },
     ]);
   });
@@ -208,15 +208,15 @@ describe("schedulePostBridgePost", () => {
           mediaKind: "video",
         },
       ],
-      scheduledAt: null,
       socialAccountIds: [1],
       sourceId: "stitch_1",
       sourceType: "stitch",
       title: "Launch Stitch",
+      useQueue: false,
     });
 
     expect(scheduleBodies[0]).toMatchObject({
-      scheduledAt: null,
+      useQueue: false,
     });
   });
 });

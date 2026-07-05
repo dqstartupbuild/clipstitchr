@@ -10,22 +10,22 @@ type SchedulePostBridgePostOptions = {
   caption: string;
   hasAudio: boolean;
   mediaFiles: PostBridgeScheduleMediaFile[];
-  scheduledAt: string | null;
   socialAccountIds: number[];
   sourceId: string;
   sourceType: PostBridgeSourceType;
   title: string;
+  useQueue: boolean;
 };
 
 export async function schedulePostBridgePost({
   caption,
   hasAudio,
   mediaFiles,
-  scheduledAt,
   socialAccountIds,
   sourceId,
   sourceType,
   title,
+  useQueue,
 }: SchedulePostBridgePostOptions) {
   const uploadedMediaFiles: PostBridgeUploadedMedia[] = [];
 
@@ -44,11 +44,11 @@ export async function schedulePostBridgePost({
       caption,
       hasAudio,
       mediaFiles: uploadedMediaFiles,
-      scheduledAt,
       socialAccountIds,
       sourceId,
       sourceType,
       title,
+      useQueue,
     }),
     headers: {
       "Content-Type": "application/json",

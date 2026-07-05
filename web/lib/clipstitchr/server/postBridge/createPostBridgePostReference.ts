@@ -26,6 +26,10 @@ export function createPostBridgePostReference({
   sourceType,
 }: CreatePostBridgePostReferenceOptions): PostBridgePostReference {
   const now = new Date().toISOString();
+  const postScheduledAt =
+    typeof post.scheduled_at === "string" && post.scheduled_at
+      ? post.scheduled_at
+      : scheduledAt;
 
   return {
     createdAt: now,
@@ -35,7 +39,7 @@ export function createPostBridgePostReference({
     mediaKind,
     platforms,
     postId: post.id,
-    ...(scheduledAt ? { scheduledAt } : {}),
+    ...(postScheduledAt ? { scheduledAt: postScheduledAt } : {}),
     socialAccountIds,
     sourceType,
     status: post.status,

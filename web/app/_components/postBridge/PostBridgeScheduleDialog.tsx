@@ -21,9 +21,7 @@ import type { PostBridgeSoundMode } from "@/lib/clipstitchr/types/PostBridgeSoun
 import type { PostBridgeSocialAccount } from "@/lib/clipstitchr/types/PostBridgeSocialAccount";
 import type { PostBridgeSourceType } from "@/lib/clipstitchr/types/PostBridgeSourceType";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
-import { convertLocalDateTimeToIsoString } from "@/lib/clipstitchr/utils/convertLocalDateTimeToIsoString";
 import { createAutomaticSoundSearchQuery } from "@/lib/clipstitchr/utils/createAutomaticSoundSearchQuery";
-import { getDefaultPostBridgeScheduleTime } from "@/lib/clipstitchr/utils/getDefaultPostBridgeScheduleTime";
 
 type PostBridgeScheduleRenderOptions = {
   musicTrack: SharedMusicTrack | null;
@@ -68,9 +66,6 @@ export function PostBridgeScheduleDialog({
   const [caption, setCaption] = useState(defaultCaption);
   const [publishMode, setPublishMode] =
     useState<PostBridgePublishMode>("schedule");
-  const [scheduledAt, setScheduledAt] = useState(
-    getDefaultPostBridgeScheduleTime,
-  );
   const [musicTrack, setMusicTrack] = useState<SharedMusicTrack | null>(null);
   const [soundMode, setSoundMode] = useState<PostBridgeSoundMode>(
     allowMusic ? "automatic" : "none",
@@ -124,7 +119,7 @@ export function PostBridgeScheduleDialog({
           : status === "complete"
             ? publishMode === "now"
               ? "Sent."
-              : "Scheduled."
+              : "Added to your queue."
             : "";
 
   useEffect(() => {
@@ -215,14 +210,11 @@ export function PostBridgeScheduleDialog({
         caption,
         hasAudio: Boolean(selectedMusicTrack) || renderResult.hasAudio,
         mediaFiles: renderResult.mediaFiles,
-        scheduledAt:
-          publishMode === "schedule"
-            ? convertLocalDateTimeToIsoString(scheduledAt)
-            : null,
         socialAccountIds: selectedAccountIds,
         sourceId,
         sourceType,
         title: sourceTitle,
+        useQueue: publishMode === "schedule",
       });
 
       setStatus("complete");
@@ -313,21 +305,6 @@ export function PostBridgeScheduleDialog({
             onChange={setPublishMode}
           />
 
-          {publishMode === "schedule" ? (
-            <label className="block">
-              <span className="text-sm font-bold text-text-primary">
-                Post time
-              </span>
-              <input
-                type="datetime-local"
-                className="mt-2 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-primary outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
-                value={scheduledAt}
-                disabled={isBusy}
-                onChange={(event) => setScheduledAt(event.target.value)}
-              />
-            </label>
-          ) : null}
-
           {allowMusic ? (
             <div className="grid gap-3">
               <PostBridgeSoundModePicker
@@ -406,7 +383,7 @@ export function PostBridgeScheduleDialog({
               disabled={!accounts.length || !selectedAccountIds.length}
               onClick={() => void handleSchedule()}
             >
-              {publishMode === "now" ? "Post now" : "Schedule post"}
+              {publishMode === "now" ? "Post now" : "Add to queue"}
             </Button>
           </div>
         </div>

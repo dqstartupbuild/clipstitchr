@@ -15,6 +15,7 @@ type PostBridgeScheduleRequestBody = {
   sourceId?: unknown;
   sourceType?: unknown;
   title?: unknown;
+  useQueue?: unknown;
 };
 
 type PostBridgeUploadedMediaBody = {
@@ -33,6 +34,7 @@ export type PostBridgeScheduleRequest = {
   sourceId: string;
   sourceType: PostBridgeSourceType;
   title: string;
+  useQueue: boolean;
 };
 
 export async function readPostBridgeScheduleRequest(
@@ -40,6 +42,9 @@ export async function readPostBridgeScheduleRequest(
 ): Promise<PostBridgeScheduleRequest> {
   const body = (await request.json()) as PostBridgeScheduleRequestBody;
   const sourceId = typeof body.sourceId === "string" ? body.sourceId.trim() : "";
+  const useQueue = body.useQueue === true;
+  const scheduledAtInput =
+    typeof body.scheduledAt === "string" ? body.scheduledAt : "";
 
   if (!sourceId) {
     throw new Error("Choose a stitch or Swipe before scheduling.");
@@ -47,6 +52,10 @@ export async function readPostBridgeScheduleRequest(
 
   if (!Array.isArray(body.mediaFiles) || !body.mediaFiles.length) {
     throw new Error("Choose media before scheduling.");
+  }
+
+  if (useQueue && scheduledAtInput) {
+    throw new Error("Use either the queue or a custom post time, not both.");
   }
 
   return {
@@ -72,9 +81,9 @@ export async function readPostBridgeScheduleRequest(
         sizeBytes: item.sizeBytes,
       });
     }),
-    scheduledAt: normalizePostBridgeScheduledAt(
-      typeof body.scheduledAt === "string" ? body.scheduledAt : "",
-    ),
+    scheduledAt: useQueue
+      ? null
+      : normalizePostBridgeScheduledAt(scheduledAtInput),
     socialAccountIds: Array.isArray(body.socialAccountIds)
       ? body.socialAccountIds.filter(
           (accountId): accountId is number =>
@@ -89,5 +98,6 @@ export async function readPostBridgeScheduleRequest(
       typeof body.title === "string" ? body.title : "",
       sourceId,
     ),
+    useQueue,
   };
 }

@@ -11,7 +11,7 @@ const postBridgePublishModes: Array<{
   value: PostBridgePublishMode;
 }> = [
   { label: "Post now", value: "now" },
-  { label: "Schedule", value: "schedule" },
+  { label: "Add to queue", value: "schedule" },
 ];
 
 export function PostBridgePublishModePicker({

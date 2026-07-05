@@ -12,6 +12,7 @@ type CreatePostBridgePostOptions = {
   socialAccountIds: number[];
   tiktokCaption?: string;
   title: string;
+  useQueue: boolean;
 };
 
 export async function createPostBridgePost({
@@ -23,6 +24,7 @@ export async function createPostBridgePost({
   socialAccountIds,
   tiktokCaption,
   title,
+  useQueue,
 }: CreatePostBridgePostOptions) {
   return await requestPostBridge<PostBridgePost>("/v1/posts", {
     apiKey,
@@ -37,8 +39,8 @@ export async function createPostBridgePost({
         title,
       }),
       processing_enabled: true,
-      scheduled_at: scheduledAt,
       social_accounts: socialAccountIds,
+      ...(useQueue ? { use_queue: true } : { scheduled_at: scheduledAt }),
     },
     method: "POST",
   });

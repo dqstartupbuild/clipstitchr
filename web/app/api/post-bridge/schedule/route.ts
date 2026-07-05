@@ -90,6 +90,7 @@ export async function POST(request: Request) {
             })
           : undefined,
       title: input.title,
+      useQueue: input.useQueue,
     });
     const postReference = createPostBridgePostReference({
       hasAudio: input.hasAudio,
@@ -125,6 +126,7 @@ export async function POST(request: Request) {
         post_bridge_post_id: post.id,
         source_id: input.sourceId,
         source_type: input.sourceType,
+        use_queue: input.useQueue,
       },
       request,
     });
