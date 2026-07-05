@@ -6,8 +6,8 @@ export function StitchrHeader() {
   return (
     <DashboardPageHeader
       eyebrow="Stitchr"
-      title="Make the ad without opening a timeline."
-      description="Pick opener clips and a product demo. Stitchr puts them together, keeps the text editable, and saves the results."
+      title="Stitchr"
+      description="Pair opener clips with a product demo and save finished ads."
     />
   );
 }

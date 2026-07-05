@@ -1027,11 +1027,7 @@ export function SwiprPageClient() {
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <DashboardPageHeader
           eyebrow={isEditingSavedSwipe ? "Swipe editor" : "Swipr"}
-          title={
-            isEditingSavedSwipe
-              ? "Polish this Swipe."
-              : "Make slides when video is overkill."
-          }
+          title={isEditingSavedSwipe ? "Edit Swipe" : "Swipr"}
           description={
             isEditingSavedSwipe
               ? "Change the photos or text, then save the latest version."

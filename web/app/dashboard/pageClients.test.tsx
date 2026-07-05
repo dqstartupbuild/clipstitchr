@@ -509,7 +509,7 @@ describe("dashboard page clients", () => {
   it("renders the Swapr workflow with photo and source clip inputs", () => {
     const markup = renderToStaticMarkup(<SwaprPageClient />);
 
-    expect(markup).toContain("Make another source clip from what you have");
+    expect(markup).toContain("Create reusable opener clips");
     expect(markup).toContain("Avatar photo");
     expect(markup).toContain("UGC clip");
   });
@@ -517,7 +517,7 @@ describe("dashboard page clients", () => {
   it("renders the Swipr carousel workflow with saved product and background data", () => {
     const markup = renderToStaticMarkup(<SwiprPageClient />);
 
-    expect(markup).toContain("Make slides when video is overkill");
+    expect(markup).toContain("Build vertical carousel drafts");
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Batch");
     expect(markup).toContain("Generate Swipes");
@@ -542,7 +542,7 @@ describe("dashboard page clients", () => {
   it("renders the Clipr generator with product and avatar selectors", () => {
     const markup = renderToStaticMarkup(<CliprPageClient />);
 
-    expect(markup).toContain("Fill the thin spots in your library");
+    expect(markup).toContain("Generate source clips");
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Avatar");
   });

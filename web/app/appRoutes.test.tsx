@@ -133,9 +133,7 @@ describe("app route wrappers", () => {
       </>,
     );
 
-    expect(markup).toContain(
-      "Back to the place where your clips actually turn into ads.",
-    );
+    expect(markup).toContain("Sign in to ClipStitchr.");
     expect(markup).toContain("Clerk sign in");
     expect(markup).toContain(
       "Turn raw footage into finished ads while access is still private.",

@@ -85,8 +85,8 @@ export function SchedulePageClient() {
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <DashboardPageHeader
           eyebrow="Posts"
-          title="Keep posting from becoming another chore."
-          description="See what is queued and choose where this product can post."
+          title="Schedule"
+          description="Plan where finished ads go next."
           actions={<SchedulePageTabs value={selectedTab} onChange={handleTabChange} />}
         />
         {selectedTab === "accounts" ? (

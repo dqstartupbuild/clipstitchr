@@ -184,14 +184,17 @@ compatibility, technical docs, or places where changing the label would make the
 data model harder to understand. In visible workflow copy, explain it in plain
 language first.
 
-Good dashboard lines:
+Dashboard page headings should be stable product or section names, not slogans.
+Use names like `Dashboard`, `Library`, `Stitchr`, `Clipr`, `Swapr`, `Swipr`,
+`Hook Lab`, `Schedule`, `Analytics`, and `Settings`.
 
-- Pick up where the content mess left off.
-- Stop hunting for the clips.
-- Make the ad without opening a timeline.
-- Fill the thin spots in your library.
-- Make slides when video is overkill.
-- Check what was worth posting.
+Keep the human voice in the supporting sentence, empty states, blockers, and
+button labels. Good dashboard descriptions are short and practical:
+
+- Your clips, demos, Stitches, and carousel drafts in one place.
+- Pair opener clips with a product demo and save finished ads.
+- Generate source clips when the library needs more options.
+- Plan where finished ads go next.
 
 Avoid dashboard lines that sound like generic SaaS command centers:
 
@@ -199,6 +202,8 @@ Avoid dashboard lines that sound like generic SaaS command centers:
 - Supercharge your content operations.
 - Create UGC at scale.
 - Manage all assets in one powerful hub.
+- Old frustrated one-liners that try to make every page sound like a campaign.
+- Sentence-length H1s for core workspace pages.
 
 ## Product Description
 

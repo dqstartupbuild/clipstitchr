@@ -116,7 +116,7 @@ describe("dashboard shell sections", () => {
       <DashboardStats ugcCount={1} demoCount={2} stitchesCount={4} />,
     );
 
-    expect(headerMarkup).toContain("Pick up where the content mess left off");
+    expect(headerMarkup).toContain("Dashboard");
     expect(customHeaderMarkup).toContain("Custom action");
     expect(shellMarkup).toContain("Workspace child");
     expect(sidebarMarkup).toContain("Library");

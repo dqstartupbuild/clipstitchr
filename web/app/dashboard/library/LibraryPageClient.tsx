@@ -374,8 +374,8 @@ export function LibraryPageClient() {
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <LibraryPageHeader
           eyebrow="Library"
-          title="Stop hunting for the clips."
-          description="Keep opener clips, demos, avatars, templates, carousels, and Stitches where you can actually find them."
+          title="Library"
+          description="Browse saved clips, demos, avatars, templates, Stitches, and Swipes."
         />
         {error ? (
           <DashboardAlert variant="error">{error}</DashboardAlert>

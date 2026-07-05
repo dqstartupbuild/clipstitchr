@@ -24,7 +24,6 @@ import { defaultCliprGenerationMode } from "@/lib/clipstitchr/constants/defaultC
 import { defaultCliprDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprDurationSeconds";
 import { defaultCliprVisualDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprVisualDurationSeconds";
 import { defaultCliprVoiceId } from "@/lib/clipstitchr/constants/defaultCliprVoiceId";
-import { isCliprScriptModeEnabled } from "@/lib/clipstitchr/constants/isCliprScriptModeEnabled";
 import { useClipLibrary } from "@/lib/clipstitchr/hooks/useClipLibrary";
 import { useCliprGeneration } from "@/lib/clipstitchr/hooks/useCliprGeneration";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
@@ -114,12 +113,8 @@ export function CliprPageClient() {
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <DashboardPageHeader
           eyebrow="Clip generator"
-          title="Fill the thin spots in your library."
-          description={
-            isCliprScriptModeEnabled
-              ? "Generate reactions, b-roll, talking clips, or demo remixes when you need more source footage for Stitchr."
-              : "Generate reactions or b-roll when you need more source footage for Stitchr."
-          }
+          title="Clipr"
+          description="Generate source clips when the library needs more options."
         />
 
         {error ? (

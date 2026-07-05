@@ -306,8 +306,8 @@ export function SwaprPageClient() {
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <DashboardPageHeader
           eyebrow="Swapr"
-          title="Make another source clip from what you have."
-          description="Choose an avatar photo and a saved video. Swapr turns them into a reusable opener clip."
+          title="Swapr"
+          description="Create reusable opener clips from an avatar photo and a saved video."
         />
 
         {library.error || photoLibrary.error || assetLoadError ? (

@@ -319,7 +319,7 @@ describe("SwaprPageClient", () => {
   it("renders the Swapr input and output workspace when assets exist", () => {
     const markup = renderToStaticMarkup(<SwaprPageClient />);
 
-    expect(markup).toContain("Header:Make another source clip from what you have.");
+    expect(markup).toContain("Header:Swapr");
     expect(markup).toContain("Choose the photo and motion");
     expect(markup).toContain("AvatarFilterSelect");
     expect(markup).toContain("SwaprPhotoSelector");

@@ -108,8 +108,8 @@ export function PostBridgeAnalyticsPageClient() {
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <DashboardPageHeader
           eyebrow="Analytics"
-          title="Check what was worth posting."
-          description="See how posted videos are doing across TikTok, Instagram, and YouTube Shorts."
+          title="Analytics"
+          description="Review post performance across connected channels."
           actions={
             <div className="flex flex-wrap gap-2">
               <Button
