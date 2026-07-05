@@ -5,26 +5,13 @@ import { DashboardTopBar } from "@/app/_components/dashboard/DashboardTopBar";
 
 type DashboardShellProps = {
   children: ReactNode;
-  variant?: "page" | "workspace";
 };
 
-export function DashboardShell({
-  children,
-  variant = "page",
-}: DashboardShellProps) {
-  const shellClassName =
-    variant === "workspace"
-      ? "flex h-dvh flex-col overflow-hidden bg-background text-foreground lg:grid lg:grid-cols-[260px_1fr]"
-      : "min-h-screen bg-background text-foreground lg:grid lg:grid-cols-[260px_1fr]";
-  const mainClassName =
-    variant === "workspace"
-      ? "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-4 py-3 md:px-8 lg:py-5"
-      : "min-w-0 px-4 py-5 md:px-8";
-
+export function DashboardShell({ children }: DashboardShellProps) {
   return (
-    <div className={shellClassName}>
+    <div className="min-h-screen bg-background text-foreground lg:grid lg:grid-cols-[260px_1fr]">
       <DashboardSidebar />
-      <main className={mainClassName}>
+      <main className="min-w-0 px-4 py-5 md:px-8">
         <DashboardTopBar />
         <ActiveWorkerJobsBanner />
         {children}

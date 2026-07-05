@@ -16,7 +16,6 @@ import { Panel } from "@/app/_components/ui/Panel";
 import { PanelHeader } from "@/app/_components/ui/PanelHeader";
 import { StickyPreviewColumn } from "@/app/_components/workflow/StickyPreviewColumn";
 import { WorkflowLayout } from "@/app/_components/workflow/WorkflowLayout";
-import { WorkflowPageFrame } from "@/app/_components/workflow/WorkflowPageFrame";
 import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExportBlob";
 import { createTemporarySwaprReferenceVideoSegments } from "@/lib/clipstitchr/client/createTemporarySwaprReferenceVideoSegments";
 import { deleteObjectsFromR2 } from "@/lib/clipstitchr/client/r2/deleteObjectsFromR2";
@@ -303,8 +302,8 @@ export function SwaprPageClient() {
   };
 
   return (
-    <DashboardShell variant="workspace">
-      <WorkflowPageFrame>
+    <DashboardShell>
+      <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <DashboardPageHeader
           eyebrow="UGC swapping"
           title="Create UGC"
@@ -319,10 +318,8 @@ export function SwaprPageClient() {
 
         {hasSwaprInputs ? (
           <WorkflowLayout
-            className="flex-1"
-            variant="editor"
             aside={
-              <StickyPreviewColumn variant="editor">
+              <StickyPreviewColumn>
                 <SwaprOutputPanel
                   status={generator.status}
                   progress={generator.progress}
@@ -389,7 +386,7 @@ export function SwaprPageClient() {
             hasSourceClips={hasSourceClips}
           />
         )}
-      </WorkflowPageFrame>
+      </div>
     </DashboardShell>
   );
 }

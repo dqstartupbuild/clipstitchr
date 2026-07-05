@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import { ProgressBar } from "@/app/_components/ui/ProgressBar";
+import { Panel } from "@/app/_components/ui/Panel";
 import { VideoPreview } from "@/app/_components/ui/VideoPreview";
-import { WorkflowStatusPanel } from "@/app/_components/workflow/WorkflowStatusPanel";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import type { SwaprGenerationStatus } from "@/lib/clipstitchr/types/SwaprGenerationStatus";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
@@ -27,16 +28,33 @@ export function SwaprOutputPanel({
   const posterUrl = useObjectUrl(generatedClip?.posterBlob);
 
   return (
-    <WorkflowStatusPanel
-      className="mx-auto w-full max-w-[340px] xl:mx-0"
-      error={error}
-      eyebrow="Results"
-      progress={progress}
-      statusLabel={status}
-      title={getSwaprGenerationMessage(status)}
-    >
+    <Panel className="mx-auto w-full max-w-[340px] p-4 xl:mx-0">
+      <div>
+        <p className="text-sm font-semibold text-accent-dark">Results</p>
+      </div>
+
+      <div className="mt-3 rounded-lg border border-border bg-surface-elevated p-3">
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <p className="min-w-0 truncate text-sm font-semibold text-text-primary">
+            {getSwaprGenerationMessage(status)}
+          </p>
+          <span className="shrink-0 text-xs font-semibold uppercase text-text-tertiary">
+            {status}
+          </span>
+        </div>
+        <div className="mt-3">
+          <ProgressBar value={progress} />
+        </div>
+      </div>
+
+      {error ? (
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {error}
+        </div>
+      ) : null}
+
       {generatedClip ? (
-        <div>
+        <div className="mt-4">
           <div className="mx-auto max-w-[260px]">
             <VideoPreview
               src={videoUrl}
@@ -74,10 +92,10 @@ export function SwaprOutputPanel({
           </div>
         </div>
       ) : (
-        <div className="mx-auto flex aspect-[9/16] w-full max-w-[260px] items-center justify-center rounded-lg border border-dashed border-border bg-slate-50 px-6 text-center text-sm text-text-secondary">
+        <div className="mx-auto mt-4 flex aspect-[9/16] w-full max-w-[260px] items-center justify-center rounded-lg border border-dashed border-border bg-slate-50 px-6 text-center text-sm text-text-secondary">
           Your swap will appear here.
         </div>
       )}
-    </WorkflowStatusPanel>
+    </Panel>
   );
 }

@@ -19,8 +19,6 @@ import { SwiprTextOverlayPanel } from "@/app/_components/swipr/SwiprTextOverlayP
 import { Panel } from "@/app/_components/ui/Panel";
 import { StickyPreviewColumn } from "@/app/_components/workflow/StickyPreviewColumn";
 import { WorkflowLayout } from "@/app/_components/workflow/WorkflowLayout";
-import { WorkflowPageFrame } from "@/app/_components/workflow/WorkflowPageFrame";
-import { WorkflowStatusPanel } from "@/app/_components/workflow/WorkflowStatusPanel";
 import { SWIPR_BATCH_DRAFT_COUNT } from "@/lib/clipstitchr/constants/swiprBatchDraftCount";
 import {
   SWIPR_MAX_SLIDE_COUNT,
@@ -1024,27 +1022,9 @@ export function SwiprPageClient() {
     swiprLibrary.swipes,
   ]);
 
-  const swiprBatchPackCount = selectedLibraryQueries.length;
-  const swiprBatchPhotoCount = selectedLibraryBackgrounds.length;
-  const swiprBatchStatusTitle = isGeneratingDrafts
-    ? "Generating Swipes"
-    : swiprBatchPackCount > 0
-      ? "Packs selected"
-      : "Ready for batch";
-  const swiprBatchStatusMessage = isGeneratingDrafts
-    ? "Your Swipes will land in the library when the batch finishes."
-    : swiprBatchPackCount > 0
-      ? `${swiprBatchPhotoCount} saved photos are ready for batch Swipes.`
-      : "Choose photo packs, then generate a batch from this workspace.";
-  const swiprBatchStatusLabel = isGeneratingDrafts
-    ? "Running"
-    : swiprBatchPackCount > 0
-      ? `${swiprBatchPackCount} packs`
-      : "Ready";
-
   return (
-    <DashboardShell variant="workspace">
-      <WorkflowPageFrame>
+    <DashboardShell>
+      <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <DashboardPageHeader
           eyebrow={isEditingSavedSwipe ? "Swipe editor" : "Carousel generator"}
           title={isEditingSavedSwipe ? "Edit Swipe" : "Create TikTok carousels"}
@@ -1071,11 +1051,9 @@ export function SwiprPageClient() {
         ) : null}
 
         <WorkflowLayout
-          className="flex-1"
-          variant="editor"
           aside={
             activeSwiprMode === "manual" ? (
-              <StickyPreviewColumn variant="editor">
+              <StickyPreviewColumn>
                 <SwiprPreviewPanel
                   background={activeBackground}
                   activeSlide={activeSlide}
@@ -1096,16 +1074,7 @@ export function SwiprPageClient() {
                   onTextOverlayChange={handleTextOverlayChange}
                 />
               </StickyPreviewColumn>
-            ) : (
-              <StickyPreviewColumn variant="editor">
-                <WorkflowStatusPanel
-                  eyebrow="Batch status"
-                  message={swiprBatchStatusMessage}
-                  statusLabel={swiprBatchStatusLabel}
-                  title={swiprBatchStatusTitle}
-                />
-              </StickyPreviewColumn>
-            )
+            ) : undefined
           }
         >
           <Panel className="min-w-0 p-4">
@@ -1243,7 +1212,7 @@ export function SwiprPageClient() {
               </div>
           </Panel>
         </WorkflowLayout>
-      </WorkflowPageFrame>
+      </div>
     </DashboardShell>
   );
 }

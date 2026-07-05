@@ -20,7 +20,6 @@ import { Panel } from "@/app/_components/ui/Panel";
 import { PanelHeader } from "@/app/_components/ui/PanelHeader";
 import { StickyPreviewColumn } from "@/app/_components/workflow/StickyPreviewColumn";
 import { WorkflowLayout } from "@/app/_components/workflow/WorkflowLayout";
-import { WorkflowPageFrame } from "@/app/_components/workflow/WorkflowPageFrame";
 import { defaultCliprGenerationMode } from "@/lib/clipstitchr/constants/defaultCliprGenerationMode";
 import { defaultCliprDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprDurationSeconds";
 import { defaultCliprVisualDurationSeconds } from "@/lib/clipstitchr/constants/defaultCliprVisualDurationSeconds";
@@ -111,8 +110,8 @@ export function CliprPageClient() {
           : null;
 
   return (
-    <DashboardShell variant="workspace">
-      <WorkflowPageFrame>
+    <DashboardShell>
+      <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <DashboardPageHeader
           eyebrow="Clip generator"
           title="Create more UGC"
@@ -128,13 +127,8 @@ export function CliprPageClient() {
         ) : null}
 
         <WorkflowLayout
-          className="flex-1"
-          variant="editor"
           aside={
-            <StickyPreviewColumn
-              className="flex flex-col gap-4"
-              variant="editor"
-            >
+            <StickyPreviewColumn className="flex flex-col gap-5">
               <CliprGenerationProgress
                 error={generator.error}
                 message={generator.message}
@@ -256,7 +250,7 @@ export function CliprPageClient() {
             </div>
           </Panel>
         </WorkflowLayout>
-      </WorkflowPageFrame>
+      </div>
     </DashboardShell>
   );
 }
