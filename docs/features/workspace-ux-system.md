@@ -85,8 +85,8 @@ Dashboard copy should use the same human voice as the public pages, but with
 product-screen clarity. Page H1s should be stable names such as `Dashboard`,
 `Library`, `Stitchr`, `Clipr`, `Swapr`, `Swipr`, `Hook Lab`, `Schedule`,
 `Analytics`, and `Settings`; put human context in the description, empty state,
-or blocker copy. Prefer `opener clips`, `product demos`, `Stitches`, `carousel
-drafts`, `source clips`, `review`, `reuse`, and `post`. Use `UGC` only when the
+or blocker copy. Prefer `Hook/UGC clips`, `product demos`, `Stitches`, `carousel
+drafts`, `review`, `reuse`, and `post`. Use `UGC` only when the
 interface needs the exact asset type or when internal data naming is being
 documented.
 

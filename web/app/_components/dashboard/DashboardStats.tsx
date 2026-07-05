@@ -16,8 +16,8 @@ export function DashboardStats({
     <section className="grid gap-4 md:grid-cols-3">
       <DashboardStatCard
         icon={<Film aria-hidden className="h-5 w-5" />}
-        label="UGC clips"
-        description="Creator clips ready to pair with a demo."
+        label="Hook/UGC clips"
+        description="Hooks, reactions, and creator clips ready to pair with a demo."
         value={ugcCount}
       />
       <DashboardStatCard

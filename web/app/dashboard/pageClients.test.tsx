@@ -506,12 +506,12 @@ describe("dashboard page clients", () => {
     expect(markup).toContain("Continue to uploads");
   });
 
-  it("renders the Swapr workflow with photo and source clip inputs", () => {
+  it("renders the Swapr workflow with photo and Hook/UGC clip inputs", () => {
     const markup = renderToStaticMarkup(<SwaprPageClient />);
 
-    expect(markup).toContain("Create reusable opener clips");
+    expect(markup).toContain("Create reusable Hook/UGC clips");
     expect(markup).toContain("Avatar photo");
-    expect(markup).toContain("UGC clip");
+    expect(markup).toContain("Hook/UGC clip");
   });
 
   it("renders the Swipr carousel workflow with saved product and background data", () => {
@@ -524,11 +524,11 @@ describe("dashboard page clients", () => {
     expect(markup).toContain("Choose packs");
   });
 
-  it("renders the Library with UGC as the default tab", () => {
+  it("renders the Library with Hook/UGC as the default tab", () => {
     const markup = renderToStaticMarkup(<LibraryPageClient />);
 
     expect(markup).toContain("Library");
-    expect(markup).toContain("UGC clip");
+    expect(markup).toContain("Hook/UGC clips");
   });
 
   it("renders Hook Lab with memory and history controls", () => {
@@ -542,7 +542,7 @@ describe("dashboard page clients", () => {
   it("renders the Clipr generator with product and avatar selectors", () => {
     const markup = renderToStaticMarkup(<CliprPageClient />);
 
-    expect(markup).toContain("Generate source clips");
+    expect(markup).toContain("Generate Hook/UGC clips");
     expect(markup).toContain("Launch Kit");
     expect(markup).toContain("Avatar");
   });

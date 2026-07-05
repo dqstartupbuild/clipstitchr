@@ -16,8 +16,9 @@ content people.
 ClipStitchr is not a creator tool for people who already enjoy making content.
 It is a practical content system for people who would rather be building.
 
-The core product is Stitchr: a way to turn saved UGC, b-roll, reaction clips,
-and product demos into finished 9:16 ads without opening a timeline editor.
+The core product is Stitchr: a way to turn saved Hook/UGC clips, b-roll,
+reaction clips, and product demos into finished 9:16 ads without opening a
+timeline editor.
 
 Scores, templates, Hook Lab, Clipr, Swapr, Swipr, avatars, and daily drafts
 support that same job:
@@ -88,7 +89,7 @@ Homepage headline:
 
 Homepage subhead:
 
-> Upload UGC clips and product demos once. Build a reusable library. Create
+> Upload Hook/UGC clips and product demos once. Build a reusable library. Create
 > polished TikTok and Reels verticals without rebuilding the same workflow every
 > week.
 
@@ -126,8 +127,9 @@ Core supporting features:
 - Templates: save a structure so the next ad does not start from zero.
 - Daily drafts: keep new drafts appearing when social falls off the real work
   list.
-- Clipr and Swapr: create extra source clips when the library is thin.
-- Avatars: keep reusable people or characters ready for generated source clips.
+- Clipr and Swapr: create extra Hook/UGC clips when the library is thin.
+- Avatars: keep reusable people or characters ready for generated Hook/UGC
+  clips.
 - Swipr: create carousel drafts when slides fit the idea better than another
   video.
 
@@ -143,10 +145,10 @@ Use this order for the public landing page:
 3. How it works: upload once, build the library, stitch and ship.
 4. Toolkit: every tool feeds one library.
 5. Hook Lab: writing overlay text that does not sound fake is hard.
-6. Stitchr: saved opener clips plus a demo become ads.
+6. Stitchr: saved Hook/UGC clips plus a demo become ads.
 7. Scores: find weak clips before wasting a post or ad.
 8. Templates: stop rebuilding the same structure.
-9. Source material helpers: fill a thin library without another shoot.
+9. Hook/UGC helpers: fill a thin library without another shoot.
 10. Swipr: make slides when video is overkill.
 11. Daily drafts: stay consistent when social is not the work the user enjoys.
 12. Final CTA: upload once, create everything.
@@ -174,8 +176,8 @@ Use this order for the public landing page:
 | Scores | Nobody wants to learn the clip was wrong after posting or running the ad. |
 | Templates | Rebuilding the same structure every time makes the next session feel heavy. |
 | Daily drafts | Showing up consistently on social is hard when the user does not like social. |
-| Clipr | The library needs more opener clips and the user does not want another shoot. |
-| Swapr | The user needs another usable source clip from material they already have. |
+| Clipr | The library needs more Hook/UGC clips and the user does not want another shoot. |
+| Swapr | The user needs another usable Hook/UGC clip from material they already have. |
 | Swipr | Some ideas need slides, not another video timeline. |
 | Library | The user needs clips, demos, drafts, and finished ads somewhere findable. |
 

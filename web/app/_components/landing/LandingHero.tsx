@@ -20,7 +20,7 @@ export function LandingHero() {
             <span className="text-accent-dark">Fast.</span>
           </h1>
           <p className="mt-6 max-w-xl text-base leading-7 text-text-secondary md:text-lg md:leading-8">
-            Upload UGC clips and product demos once. Build a reusable library.
+            Upload Hook/UGC clips and product demos once. Build a reusable library.
             Create polished TikTok and Reels verticals without rebuilding the
             same workflow every week.
           </p>
@@ -78,7 +78,7 @@ export function LandingHero() {
                 </div>
               </div>
             </div>
-            <p className="text-[11px] text-text-tertiary">UGC clip</p>
+            <p className="text-[11px] text-text-tertiary">Hook/UGC clip</p>
           </div>
 
           <div className="z-10 flex scale-105 flex-col items-center gap-3 lg:scale-110">
@@ -95,7 +95,7 @@ export function LandingHero() {
                 <div className="flex flex-1 flex-col gap-2 p-2.5">
                   <div className="flex h-14 items-center justify-center rounded-lg border border-white/5 bg-gradient-to-br from-orange-500/60 to-rose-600/40">
                     <span className="text-[9px] font-semibold text-white">
-                      UGC hook
+                      Hook/UGC
                     </span>
                   </div>
                   <div className="flex items-center justify-center gap-1">

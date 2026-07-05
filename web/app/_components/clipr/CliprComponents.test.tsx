@@ -272,7 +272,7 @@ describe("Clipr components", () => {
     expect(populatedMarkup).toContain("Stop losing demo viewers");
     expect(populatedMarkup).toContain("Music generated for export.");
     expect(populatedMarkup).toContain("Here is the generated avatar line.");
-    expect(populatedMarkup).toContain("View opener clips");
+    expect(populatedMarkup).toContain("View Hook/UGC clips");
     expect(fallbackTitleMarkup).toContain("Talking avatar clip");
   });
 

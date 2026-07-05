@@ -72,7 +72,7 @@ Homepage headline:
 
 Homepage subhead:
 
-> Upload UGC clips and product demos once. Build a reusable library. Create
+> Upload Hook/UGC clips and product demos once. Build a reusable library. Create
 > polished TikTok and Reels verticals without rebuilding the same workflow every
 > week.
 
@@ -172,17 +172,16 @@ switch appearance modes.
 
 Default dashboard language:
 
-- `opener clips` for the UGC-style clips that start a Stitch.
+- `Hook/UGC clips` for clips that start a Stitch.
 - `product demos` for walkthroughs and screen recordings that show the app.
 - `Stitches` for saved finished video ads.
 - `carousel drafts` or `Swipes` for saved Swipr outputs.
-- `source clips` when talking about clips that can feed Stitchr, Clipr, or
-  Swapr.
 
 Use `UGC` only when the user needs the exact asset type, such as import
 compatibility, technical docs, or places where changing the label would make the
 data model harder to understand. In visible workflow copy, explain it in plain
-language first.
+language first. Keep `source clip` for implementation docs and low-level edit
+metadata, not primary UI labels.
 
 Dashboard page headings should be stable product or section names, not slogans.
 Use names like `Dashboard`, `Library`, `Stitchr`, `Clipr`, `Swapr`, `Swipr`,
@@ -192,8 +191,8 @@ Keep the human voice in the supporting sentence, empty states, blockers, and
 button labels. Good dashboard descriptions are short and practical:
 
 - Your clips, demos, Stitches, and carousel drafts in one place.
-- Pair opener clips with a product demo and save finished ads.
-- Generate source clips when the library needs more options.
+- Pair Hook/UGC clips with a product demo and save finished ads.
+- Generate Hook/UGC clips when the library needs more options.
 - Plan where finished ads go next.
 
 Avoid dashboard lines that sound like generic SaaS command centers:
@@ -226,8 +225,7 @@ social falls off the list.
 - demos
 - finished ads
 - drafts
-- source clips
-- opener clips
+- Hook/UGC clips
 - raw footage
 - library
 - Stitch

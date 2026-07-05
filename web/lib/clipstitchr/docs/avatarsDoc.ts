@@ -4,7 +4,7 @@ export const avatarsDoc = {
   slug: "avatars",
   title: "Avatars",
   description:
-    "Save reusable people or characters so Clipr and Swapr can make source clips without another shoot or another search for references.",
+    "Save reusable people or characters so Clipr and Swapr can make Hook/UGC clips without another shoot or another search for references.",
   summary:
     "Upload avatar photos, browse them, and generate new photos when the source library needs more options.",
   category: "feature",
@@ -38,7 +38,7 @@ export const avatarsDoc = {
     {
       title: "Where avatars are used",
       body: [
-        "Clipr can use an avatar as the person in a generated Clip. Swapr can use avatar photos as the person or character reference for new UGC-style footage.",
+        "Clipr can use an avatar as the person in a generated Clip. Swapr can use avatar photos as the person or character reference for new Hook/UGC footage.",
       ],
     },
   ],

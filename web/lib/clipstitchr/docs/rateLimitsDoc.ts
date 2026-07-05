@@ -71,9 +71,9 @@ export const rateLimitsDoc = {
           note: "Applies before the batch starts provider work.",
         },
         {
-          action: "Stitchr Normal mode UGC selection",
-          limit: "20 UGC per batch",
-          note: "Each selected UGC creates one finished stitch with the selected demo in Normal mode.",
+          action: "Stitchr Normal mode Hook/UGC selection",
+          limit: "20 Hook/UGC clips per batch",
+          note: "Each selected Hook/UGC clip creates one finished stitch with the selected demo in Normal mode.",
         },
         {
           action: "Stitchr Longr-mode duration",
@@ -93,7 +93,7 @@ export const rateLimitsDoc = {
         {
           action: "Video descriptions",
           limit: "60 per hour and 1,500 per 30 days",
-          note: "Used to describe what happens in UGC and demo clips.",
+          note: "Used to describe what happens in Hook/UGC and demo clips.",
         },
         {
           action: "Swapr photo expansion",

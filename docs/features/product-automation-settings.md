@@ -51,7 +51,7 @@ remain product-scoped.
 
 The shared count type is `3 | 5 | 10`. The default remains 10.
 
-- Stitchr uses the selected count when choosing UGC/Demo pairs.
+- Stitchr uses the selected count when choosing Hook/UGC and Demo pairs.
 - Swipr creates one provider task per selected draft count.
 - Counts are capped by the existing maximum so new settings cannot exceed the
   current automation limit.

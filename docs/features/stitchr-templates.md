@@ -31,13 +31,13 @@ downloaded media blobs. They are setup records only.
 5. Use the Template picker. **None** is the default.
 6. Pick a template to load its clips, trims, audio settings, playback rates,
    text, and caption copy.
-7. Select different UGC clips if needed. The reused text and caption stay
-   available for new UGC clips unless the user gives a specific clip its own
+7. Select different Hook/UGC clips if needed. The reused text and caption stay
+   available for new Hook/UGC clips unless the user gives a specific clip its own
    edit.
 
 In Stitchr Batch mode, the same picker chooses text and caption copy for the
 daily batch without loading the template clips into the manual editor. Batch
-drafts still pick fresh UGC/Demo pairs, but each queued draft uses the selected
+drafts still pick fresh Hook/UGC and Demo pairs, but each queued draft uses the selected
 template's first non-empty text overlay style and saved caption copy.
 
 In automation settings, templates are allocated by count instead of by one
@@ -102,9 +102,10 @@ storage, bandwidth, provider, or third-party API cost.
 
 Template application intentionally mirrors the existing "Reuse in Stitchr"
 behavior. Normal Stitchr templates place copied text into the reusable text
-and caption state instead of tying it to the original UGC clip. That means a
-user can deselect the original UGC, move through picker pages, choose new UGC
-clips, and still keep the same text and caption on the new stitch outputs.
+and caption state instead of tying it to the original Hook/UGC clip. That means
+a user can deselect the original Hook/UGC clip, move through picker pages,
+choose new Hook/UGC clips, and still keep the same text and caption on the new
+stitch outputs.
 
 The URL sync on `/dashboard/stitchr` must only run on initial load and browser
 history changes. The in-page Template picker does not rewrite the URL, so reruns

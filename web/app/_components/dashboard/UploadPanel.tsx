@@ -45,17 +45,17 @@ const contentByAssetType: Record<
   }
 > = {
   ugc: {
-    title: "Add opener clips",
+    title: "Add Hook/UGC clips",
     description:
       "Use these as hooks, reactions, b-roll, or social proof before the product demo.",
-    dropTitle: "Drop opener clips here",
+    dropTitle: "Drop Hook/UGC clips here",
     dropDescription: "Drag in videos, or choose files below.",
     acceptedTypes: ACCEPTED_VIDEO_TYPES,
   },
   demo: {
     title: "Add product demos",
     description:
-      "Use these as the product walkthrough that comes after the opener.",
+      "Use these as the product walkthrough that comes after Hook/UGC.",
     dropTitle: "Drop demo videos here",
     dropDescription: "Drag in videos, or choose files below.",
     acceptedTypes: ACCEPTED_VIDEO_TYPES,
@@ -63,7 +63,7 @@ const contentByAssetType: Record<
   photo: {
     title: "Add avatar photos",
     description:
-      "Use avatar photos when you need more source clips without another shoot.",
+      "Use avatar photos when you need more Hook/UGC clips without another shoot.",
     dropTitle: "Drop photos here",
     dropDescription: "Use JPG or PNG photos.",
     acceptedTypes: ACCEPTED_PHOTO_TYPES,

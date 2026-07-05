@@ -12,7 +12,7 @@ ad" unless it is directly explaining the UI label.
 
 - Queues up to 10 Stitch drafts for the user's browser-local batch date.
 - Works even when scheduled automation is turned off in Settings.
-- Uses its own Stitchr Batch pair history so recent UGC and Demo pairings are
+- Uses its own Stitchr Batch pair history so recent Hook/UGC and Demo pairings are
   avoided when better options exist.
 - Can use a selected Stitchr template so every queued draft uses that
   template's saved text overlay style and caption copy instead of generated
@@ -32,7 +32,7 @@ ad" unless it is directly explaining the UI label.
 
 1. The user opens `/dashboard/stitchr`.
 2. The page starts on Batch mode unless the URL is launching a saved stitch,
-   template, UGC clip, or Demo clip for direct editing.
+   template, Hook/UGC clip, or Demo clip for direct editing.
 3. The Template picker stays available in Batch mode. **None** is the default.
    Selecting a template in Batch mode does not switch the page into manual
    editing.
@@ -71,7 +71,7 @@ to the signed-in user and copies its first non-empty text overlay plus saved
 caption copy into every queued task. The provider worker skips Stitchr text
 generation for those tasks, stretches the saved overlay across each new draft's
 duration, and preserves the overlay text, placement, font size, style, and
-colors. Pair selection still uses the user's current UGC and Demo library.
+colors. Pair selection still uses the user's current Hook/UGC and Demo library.
 
 When no template provides copy, `stitchrBatch.plan` snapshots the product's Hook
 Lab fields into each provider task. The provider worker reconstructs the product
@@ -80,7 +80,7 @@ prompt.
 
 ## Pair History Behavior
 
-The batch planner builds eligible UGC/Demo candidates from the user's clip
+The batch planner builds eligible Hook/UGC and Demo candidates from the user's clip
 library. It scores candidates using `stitchrBatchPairHistory`, then picks a
 batch in this order:
 
@@ -88,7 +88,7 @@ batch in this order:
 2. If needed, use pairs where one clip has not been used in the current batch.
 3. Reuse pieces only when the library does not have enough variety.
 
-Each completed Batch draft updates Batch pair history with the UGC clip, Demo
+Each completed Batch draft updates Batch pair history with the Hook/UGC clip, Demo
 clip, batch date, and last-used time. This keeps future user-triggered batches
 from repeating the same pieces over and over when there are other clips
 available.

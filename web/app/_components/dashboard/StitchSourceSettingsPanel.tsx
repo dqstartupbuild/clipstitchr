@@ -88,7 +88,7 @@ export function StitchSourceSettingsPanel({
         <StitchSourceClipSelect
           clips={ugcClips}
           fallbackClip={ugcFallbackClip}
-          label="UGC clip"
+          label="Hook/UGC clip"
           value={selectedUgcClipId}
           onChange={onUgcClipChange}
         />
@@ -103,7 +103,7 @@ export function StitchSourceSettingsPanel({
       <div className="mt-4 grid min-w-0 gap-3 sm:grid-cols-2">
         <StitchSourceTrimControl
           duration={ugcTrimDuration}
-          title="UGC trim"
+          title="Hook/UGC trim"
           value={ugcTrimRange}
           onChange={onUgcTrimChange}
         />
@@ -118,7 +118,7 @@ export function StitchSourceSettingsPanel({
         <VideoCutEditor
           duration={ugcTrimDuration}
           showActions={false}
-          title="UGC cuts"
+          title="Hook/UGC cuts"
           trimRange={ugcTrimRange}
           value={ugcRemoveRanges}
           onChange={onUgcRemoveRangesChange}

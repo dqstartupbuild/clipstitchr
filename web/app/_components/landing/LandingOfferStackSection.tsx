@@ -30,13 +30,13 @@ const features: LandingOfferFeature[] = [
   {
     title: "One library instead of chaos",
     description:
-      "Keep UGC, demos, generated clips, carousels, and finished ads where you can find them.",
+      "Keep Hook/UGC clips, demos, generated clips, carousels, and finished ads where you can find them.",
     icon: FolderSearch,
   },
   {
     title: "Scores before regrets",
     description:
-      "Check source clips and finished ads before they waste a post or ad slot.",
+      "Check clips and finished ads before they waste a post or ad slot.",
     icon: Gauge,
   },
   {
@@ -46,9 +46,9 @@ const features: LandingOfferFeature[] = [
     icon: LayoutTemplate,
   },
   {
-    title: "Extra source clips",
+    title: "More Hook/UGC clips",
     description:
-      "Use Clipr and Swapr to create more source clips when the library is thin.",
+      "Use Clipr and Swapr when the library is thin.",
     icon: CirclePlay,
   },
   {

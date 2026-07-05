@@ -37,7 +37,7 @@ export function ClipAudioControls({
                 onIncludeUgcAudioChange(event.currentTarget.checked)
               }
             />
-            UGC audio
+            Hook/UGC audio
           </label>
           <label className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-white px-3 text-sm font-semibold text-text-secondary">
             <input

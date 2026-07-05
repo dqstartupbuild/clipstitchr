@@ -42,7 +42,7 @@ export function OnboardingUploadStep({
     <div className="flex flex-col gap-5">
       <Panel className="p-5">
         <OnboardingStepHeader
-          eyebrow={assetType === "ugc" ? "UGC clips" : "Product demo"}
+          eyebrow={assetType === "ugc" ? "Hook/UGC clips" : "Product demo"}
           title={title}
           description={description}
         />

@@ -79,7 +79,7 @@ export function SwaprSourceClipSelector({
             No source videos yet
           </h3>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Upload an opener clip or create a Stitch before using Swapr.
+            Upload a Hook/UGC clip or create a Stitch before using Swapr.
           </p>
           <Link
             href="/dashboard/library?tab=ugc&upload=open#upload-panel"

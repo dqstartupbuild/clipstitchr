@@ -14,7 +14,7 @@ export const automationDoc = {
     {
       title: "What automation does",
       body: [
-        "Automation helps when consistency matters but social is not the work you woke up wanting to do. It prepares new Stitchr drafts, source clips, and carousel drafts in the background. It is built for review, not auto-posting.",
+        "Automation helps when consistency matters but social is not the work you woke up wanting to do. It prepares new Stitchr drafts, Hook/UGC clips, and carousel drafts in the background. It is built for review, not auto-posting.",
         "You stay in control. Pause it anytime, edit the drafts, and only use the ones that fit.",
       ],
     },
@@ -26,7 +26,7 @@ export const automationDoc = {
       bullets: [
         "Enable or pause daily drafts.",
         "Choose Stitchr, Clipr, or Swipr.",
-        "Pick Any, Reaction, or B-roll for generated UGC.",
+        "Pick Any, Reaction, or B-roll for generated Hook/UGC.",
         "Choose the default text style, colors, and template mix for Stitchr drafts.",
         "Save your changes.",
       ],
@@ -35,7 +35,7 @@ export const automationDoc = {
       title: "Daily window",
       body: [
         "Daily drafts run during the app's daily window. The current window shown in Settings is 09:00-13:00 UTC.",
-        "If a draft needs source clips, saved product settings, or saved avatar choices, ClipStitchr uses what is available in your account.",
+        "If a draft needs Hook/UGC clips, saved product settings, or saved avatar choices, ClipStitchr uses what is available in your account.",
       ],
     },
     {
@@ -45,7 +45,7 @@ export const automationDoc = {
       ],
       bullets: [
         "Preview Stitchr drafts before exporting.",
-        "Edit generated UGC or use it as source footage.",
+        "Edit generated Hook/UGC or use it as source footage.",
         "Open saved Swipes and change the text before downloading.",
       ],
     },

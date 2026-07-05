@@ -6,7 +6,7 @@ export const clipScoreDoc = {
   description:
     "See which clips are worth using before you build ads around footage that was never going to work or needed a quick trim first.",
   summary:
-    "Upload a UGC clip or demo, then use the score and quick notes to decide what deserves your attention.",
+    "Upload a Hook/UGC clip or demo, then use the score and quick notes to decide what deserves your attention.",
   category: "feature",
   order: 15,
   updated: "2026-06-22",
@@ -25,7 +25,7 @@ export const clipScoreDoc = {
       ],
       bullets: [
         "Open the Library.",
-        "Upload UGC or product demo clips.",
+        "Upload Hook/UGC or product demo clips.",
         "Wait for ClipStitchr to finish describing the clip.",
         "Look for the simple score badge on the clip card.",
         "Open the clip details to see the reason, best use, strengths, and quick fixes.",
@@ -43,7 +43,7 @@ export const clipScoreDoc = {
         "Pace: does the clip move quickly enough?",
         "Clarity: is it obvious what is happening?",
         "Platform fit: does it feel right for short-form feeds?",
-        "Stitch fit: will it pair cleanly with a source clip or product demo?",
+        "Stitch fit: will it pair cleanly with a Hook/UGC clip or product demo?",
       ],
     },
     {

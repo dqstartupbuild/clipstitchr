@@ -1457,7 +1457,7 @@ export function StitchrPageClient() {
     }
 
     if (mode !== "longr" && !activeUgcMetadata) {
-      setAutoTextMessage("Select an opener clip before generating text.");
+      setAutoTextMessage("Select a Hook/UGC clip before generating text.");
       return;
     }
 
@@ -1910,7 +1910,7 @@ export function StitchrPageClient() {
     {
       label: "Pick clips",
       description:
-        mode === "longr" ? "Build the sequence." : "Choose UGC and a demo.",
+        mode === "longr" ? "Build the sequence." : "Choose Hook/UGC and a demo.",
       status: hasPickedStitchrClips ? "complete" : "current",
     },
     {

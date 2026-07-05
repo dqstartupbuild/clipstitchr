@@ -26,10 +26,10 @@ export function SourcePlaybackRateControls({
         <div className="flex min-w-0 flex-wrap items-center gap-3 lg:justify-end">
           <div className="flex min-w-0 items-center gap-2">
             <span className="text-xs font-bold uppercase text-text-tertiary">
-              UGC
+              Hook/UGC
             </span>
             <div
-              aria-label="UGC playback speed"
+              aria-label="Hook/UGC playback speed"
               className="inline-flex rounded-lg border border-border bg-white p-0.5"
               role="group"
             >

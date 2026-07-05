@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `Clipr | ${site.name}`,
   description:
-    "Use Clipr to make reusable reaction and b-roll source clips when your library is thin and you do not want another shoot.",
+    "Use Clipr to make reusable Hook/UGC reaction and b-roll clips when your library is thin and you do not want another shoot.",
   canonical: "/dashboard/clipr",
   noIndex: true,
 });

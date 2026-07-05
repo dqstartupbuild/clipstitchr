@@ -8,12 +8,14 @@ The first batch onboarding flow gives new users one direct path into ClipStitchr
 2. Review and edit the generated product profile.
 3. Add at least one Hook Lab example so Stitchr has a real hook style to learn
    from.
-4. Upload UGC clips and review their scores.
+4. Upload Hook/UGC clips and review their scores.
 5. Upload a product demo and review its score.
 6. Choose Stitchr batch text style and colors.
 7. Queue the first batch and land on the Library Stitches tab.
 
-The flow intentionally skips a dashboard tour. It assumes the user already has UGC and a product demo, which is the only supported onboarding segment for now.
+The flow intentionally skips a dashboard tour. It assumes the user already has
+Hook/UGC clips and a product demo, which is the only supported onboarding
+segment for now.
 
 ## Route
 
@@ -26,9 +28,9 @@ The route renders inside the normal dashboard shell. Users who have not complete
 - `web/app/dashboard/onboarding/page.tsx` defines the route metadata and renders the client.
 - `web/app/dashboard/onboarding/OnboardingPageClient.tsx` owns the step state, product creation/update calls, upload review state, and final batch redirect.
 - `web/app/_components/onboarding/` contains the focused onboarding UI pieces.
-- `web/app/_components/dashboard/UploadPanel.tsx` is reused for UGC and demo uploads.
+- `web/app/_components/dashboard/UploadPanel.tsx` is reused for Hook/UGC and demo uploads.
 - `web/app/_components/stitchr/StitchrBatchPanel.tsx` is reused for the batch style and color controls.
-- `web/lib/clipstitchr/hooks/useClipLibraryState.ts` loads UGC and demo metadata on the onboarding route so review cards update as background jobs finish.
+- `web/lib/clipstitchr/hooks/useClipLibraryState.ts` loads Hook/UGC and demo metadata on the onboarding route so review cards update as background jobs finish.
 - `web/app/dashboard/DashboardProductProvider.tsx` redirects incomplete users to `/dashboard/onboarding`, blocks normal dashboard pages while the gate is loading or redirecting, and suppresses the old required product dialog while onboarding is required.
 - `web/app/_components/dashboard/DashboardGateState.tsx` shows the brief waiting message while the dashboard gate is checking or redirecting.
 - `web/app/_components/dashboard/DashboardSidebar.tsx` hides the normal dashboard navigation while onboarding is required.
@@ -60,7 +62,7 @@ generation.
 
 ## Upload Review
 
-UGC and demo uploads use the existing upload job pipeline:
+Hook/UGC and demo uploads use the existing upload job pipeline:
 
 - Source file uploads to R2.
 - Media worker normalizes the video.

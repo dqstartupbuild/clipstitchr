@@ -23,7 +23,7 @@ export function OnboardingShell({
             Turn your first clips into ads
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
-            Add the product, upload UGC and a demo, review the scores, then make
+            Add the product, upload Hook/UGC and a demo, review the scores, then make
             your first finished stitches.
           </p>
         </header>

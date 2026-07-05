@@ -14,12 +14,12 @@ When Stitchr auto-text runs, the writing model now returns:
 - one combined caption/hashtag text block for editing and copying
 
 The caption is meant to be another hook for TikTok, Reels, or Shorts. It should
-feel connected to the overlay hook and to what appears in the selected UGC and
+feel connected to the overlay hook and to what appears in the selected Hook/UGC and
 demo clips.
 
 The Stitchr writing prompt intentionally follows the simpler Swipr-style prompt
 shape: account context, Hook Lab memory, source context, a compact JSON
-contract, and short viewer-first copy rules. Selected UGC/demo descriptions and
+contract, and short viewer-first copy rules. Selected Hook/UGC/demo descriptions and
 hook hints are used when they add real context, but the prompt avoids heavy
 internal hook framework lists and falls back to product/audience context when
 source details are thin.
@@ -39,9 +39,9 @@ after the clipboard write succeeds.
 7. Open the saved stitch editor later to edit or copy the same field.
 
 For reused stitches and templates, normal Stitchr mode treats the saved caption
-like reused overlay text. It stays available even if the original UGC is
-deselected, and newly selected UGC clips inherit it unless they get their own
-caption edit.
+like reused overlay text. It stays available even if the original Hook/UGC clip
+is deselected, and newly selected Hook/UGC clips inherit it unless they get
+their own caption edit.
 
 ## Implementation
 
@@ -54,12 +54,12 @@ uses clip context from:
 - `web/lib/clipstitchr/server/readStitchrTextGenerationClipContexts.ts`
 - `web/lib/clipstitchr/server/formatStitchrTextGenerationClipContext.ts`
 
-`web/app/dashboard/stitchr/StitchrPageClient.tsx` sends selected UGC/demo
-context to `POST /api/clipr/text`, stores generated captions by UGC id, and
+`web/app/dashboard/stitchr/StitchrPageClient.tsx` sends selected Hook/UGC/demo
+context to `POST /api/clipr/text`, stores generated captions by Hook/UGC id, and
 passes each caption into `useStitchr` when the output is created.
 
 Automated Stitchr generation uses the same writing contract through the
-provider worker. `web/convex/automationStitchr.ts` snapshots UGC/Demo clip
+provider worker. `web/convex/automationStitchr.ts` snapshots Hook/UGC and Demo clip
 descriptions and tags, `web/services/provider-worker/runProviderWorker.ts`
 passes that context into `createCliprTextGeneration`, and
 `web/services/media-worker/runMediaWorker.mjs` persists the generated caption

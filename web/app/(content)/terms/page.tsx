@@ -40,9 +40,9 @@ export default function TermsPage() {
           <section>
             <h2>Description of Service</h2>
             <p>
-              {site.name} provides an MVP for uploading UGC
+              {site.name} provides an MVP for uploading Hook/UGC clips
               and product demo videos, normalizing them to TikTok-ready 9:16,
-              previewing UGC-then-demo sequences, and creating downloadable
+              previewing Hook/UGC-then-demo sequences, and creating downloadable
               MP4 files. Media processing runs in the browser, while saved
               media and metadata use backend storage. The Site also provides
               articles and resources.

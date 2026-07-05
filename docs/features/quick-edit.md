@@ -9,7 +9,7 @@ music feature, or full video editor is introduced.
 
 ## What It Does
 
-After a UGC clip, Demo clip, or saved normal Stitch has a score with structured
+After a Hook/UGC clip, Demo clip, or saved normal Stitch has a score with structured
 `quickEditSuggestions`, the card action menu can show **Improve clip** or
 **Improve stitch**.
 
@@ -61,7 +61,7 @@ human-corrected timing without modifying the uploaded video.
 
 ## Source Clip Behavior
 
-UGC and Demo Quick Edit updates the clip's global default trim metadata. This
+Hook/UGC and Demo Quick Edit updates the clip's global default trim metadata. This
 affects future Stitchr selections and source clip preview/export, but it does
 not mutate existing saved Stitches.
 
@@ -71,7 +71,7 @@ winning and rejected examples.
 
 When a new Stitch is created, Stitchr copies the current source clip Quick Edit
 metadata into the saved Stitch as `ugcQuickEdit` and `demoQuickEdit`. Later
-changes to the source UGC or Demo clip do not rewrite that saved Stitch.
+changes to the source Hook/UGC or Demo clip do not rewrite that saved Stitch.
 The Stitchr picker shows the same effective playback duration from the selected
 trim range and saved source cuts, so selecting a clip starts from the saved edit
 instead of appearing to use the full source length.
@@ -88,9 +88,9 @@ metadata such as crop, overlay text, summary, and baseline data.
 Saved normal Stitches get their own `quickEdit` metadata. Applying Quick Edit
 to a scored Stitch:
 
-- maps finished-stitch timeline cuts back into that Stitch's saved UGC/Demo
+- maps finished-stitch timeline cuts back into that Stitch's saved Hook/UGC and Demo
   edit metadata
-- updates the saved UGC/Demo trim ranges for that Stitch only
+- updates the saved Hook/UGC and Demo trim ranges for that Stitch only
 - clears stale saved render fields so the next preview or download uses the
   updated video
 - keeps the existing Stitch Score visible until the user chooses to rescore
@@ -105,8 +105,8 @@ render fields so the next preview or download uses the current source timing.
 
 Longr exports inherit source clip Quick Edit metadata through sequence segments,
 but the one-click scored-Stitch remap is intentionally limited to normal
-two-source Stitches because the current score suggestions are mapped across UGC
-and Demo sections.
+two-source Stitches because the current score suggestions are mapped across
+Hook/UGC and Demo sections.
 
 ## Automation Behavior
 
@@ -138,7 +138,7 @@ The same range metadata is used for:
 - saved Stitch render/export
 - Stitchr-created Stitches after source clip Quick Edit defaults are copied
 
-Poster generation uses the same edited playback ranges. When source UGC or Demo
+Poster generation uses the same edited playback ranges. When source Hook/UGC or Demo
 clips have active Quick Edit metadata, Stitch poster capture maps the chosen
 edited timeline moment back to the correct original source timestamp before
 drawing the video frame and text. Applying or resetting Quick Edit on a saved

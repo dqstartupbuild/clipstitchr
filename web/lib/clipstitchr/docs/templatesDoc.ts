@@ -17,7 +17,7 @@ export const templatesDoc = {
         "Templates save the setup from a finished Stitch. They are for the parts you do not want to rebuild, not for storing another finished video file.",
       ],
       bullets: [
-        "The UGC and demo clip choices.",
+        "The Hook/UGC and demo clip choices.",
         "Clip trims and sequence settings.",
         "Text overlay timing and style.",
         "Caption and hashtag copy.",
@@ -40,13 +40,13 @@ export const templatesDoc = {
       title: "Use a template",
       body: [
         "Open Stitchr and choose a saved template from the Template picker. In Batch mode, the template supplies the saved text and caption style while ClipStitchr still picks fresh clip pairings from your library.",
-        "In Normal mode, ClipStitchr fills in the saved setup so you can preview faster. You can still change the UGC, demo, text, trims, caption, and audio choices before creating the next Stitch.",
+        "In Normal mode, ClipStitchr fills in the saved setup so you can preview faster. You can still change the Hook/UGC, demo, text, trims, caption, and audio choices before creating the next Stitch.",
       ],
     },
     {
       title: "What templates are best for",
       body: [
-        "Templates are useful when a format keeps working: the same offer style, the same hook structure, the same caption style, or the same UGC-to-demo rhythm.",
+        "Templates are useful when a format keeps working: the same offer style, the same hook structure, the same caption style, or the same Hook/UGC-to-demo rhythm.",
         "They help you make another version without rebuilding every small choice, which is usually the part that makes you put the task off.",
       ],
     },

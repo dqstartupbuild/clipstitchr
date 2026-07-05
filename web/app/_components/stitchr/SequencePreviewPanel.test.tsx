@@ -239,7 +239,7 @@ describe("SequencePreviewPanel", () => {
       />,
     );
 
-    expect(emptyMarkup).toContain("Select opener clips and a product demo");
+    expect(emptyMarkup).toContain("Select Hook/UGC clips and a product demo");
     expect(mocks.navigatorProps).toBeNull();
     expect(mocks.swipeOptions).toMatchObject({ isEnabled: false });
 

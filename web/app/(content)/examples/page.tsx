@@ -32,7 +32,7 @@ export default function ExamplesIndexPage() {
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
             These are sample Stitchr, Clipr, and Swapr outputs. Use them to see
-            how saved source clips and product demos can turn into short-form
+            how saved Hook/UGC clips and product demos can turn into short-form
             ads without starting from a blank editor.
           </p>
         </div>

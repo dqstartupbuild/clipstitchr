@@ -114,7 +114,7 @@ export function CliprPageClient() {
         <DashboardPageHeader
           eyebrow="Clip generator"
           title="Clipr"
-          description="Generate source clips when the library needs more options."
+          description="Generate Hook/UGC clips when the library needs more options."
         />
 
         {error ? (
@@ -212,7 +212,7 @@ export function CliprPageClient() {
                 <p className="text-sm leading-6 text-text-secondary">
                   {isDemoMode
                     ? "Clipr saves finished remixed demos into the Demo library."
-                    : "Clipr saves finished reactions and b-roll as opener clips."}
+                    : "Clipr saves finished reactions and b-roll as Hook/UGC clips."}
                 </p>
               )}
               <Button

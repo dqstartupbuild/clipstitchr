@@ -26,12 +26,12 @@ const uploadDestinations = [
     description: "Creator hooks, reactions, b-roll, or anything you want up front.",
     href: `/dashboard/library?tab=ugc&${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
     icon: Video,
-    label: "Opener clip",
+    label: "Hook/UGC clip",
     page: "/dashboard/library",
   },
   {
     assetType: "demo",
-    description: "The app walkthrough or screen recording that comes after the opener.",
+    description: "The app walkthrough or screen recording that comes after Hook/UGC.",
     href: `/dashboard/library?tab=demo&${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
     icon: MonitorPlay,
     label: "Product demo",
@@ -39,7 +39,7 @@ const uploadDestinations = [
   },
   {
     assetType: "photo",
-    description: "Photos for making more source clips when the library is thin.",
+    description: "Photos for making more Hook/UGC clips when the library is thin.",
     href: `/dashboard/library?tab=avatars&${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
     icon: ImagePlus,
     label: "Avatar photo",

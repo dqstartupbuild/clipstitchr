@@ -13,7 +13,7 @@ export function LandingPreview() {
             Use one product demo without dragging it into every ad yourself.
           </h2>
           <p className="mt-5 leading-7 text-text-secondary">
-            Choose the demo you want to promote. ClipStitchr puts saved opener
+            Choose the demo you want to promote. ClipStitchr puts saved Hook/UGC
             clips in front of it, keeps the text, captions, trims, and export
             settings together, and gives you finished drafts to review.
           </p>

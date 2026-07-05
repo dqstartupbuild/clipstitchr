@@ -10,7 +10,7 @@ export function StitchrCallout() {
             Need another ad?
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Pair an opener with a demo and save a finished Stitch without
+            Pair a Hook/UGC clip with a demo and save a finished Stitch without
             rebuilding the workflow.
           </p>
         </div>

@@ -307,7 +307,7 @@ export function SwaprPageClient() {
         <DashboardPageHeader
           eyebrow="Swapr"
           title="Swapr"
-          description="Create reusable opener clips from an avatar photo and a saved video."
+          description="Create reusable Hook/UGC clips from an avatar photo and a saved video."
         />
 
         {library.error || photoLibrary.error || assetLoadError ? (

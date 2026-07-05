@@ -44,12 +44,12 @@ export function OnboardingBatchStep({
         <OnboardingStepHeader
           eyebrow="Batch"
           title="Create the first batch"
-          description="Choose how the text should look. ClipStitchr will pair your UGC with the demo and send the finished drafts to your library."
+          description="Choose how the text should look. ClipStitchr will pair your Hook/UGC with the demo and send the finished drafts to your library."
         />
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div className="rounded-lg border border-border bg-surface-muted p-3">
             <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
-              UGC ready
+              Hook/UGC ready
             </p>
             <p className="mt-1 text-2xl font-bold text-text-primary">
               {ugcCount}

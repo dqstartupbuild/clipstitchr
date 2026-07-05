@@ -58,20 +58,20 @@ const videoLibraryContent: Record<
   }
 > = {
   ugc: {
-    title: "Opener clips",
-    emptyTitle: "No opener clips yet",
+    title: "Hook/UGC clips",
+    emptyTitle: "No Hook/UGC clips yet",
     emptyDescription:
       "Upload or generate hooks, reactions, b-roll, or creator footage to pair with demos.",
     sectionId: "ugc-clips",
-    searchEmptyTitle: "No matching opener clips",
+    searchEmptyTitle: "No matching Hook/UGC clips",
     searchEmptyDescription:
-      "No saved opener clips match that title or tag.",
+      "No saved Hook/UGC clips match that title or tag.",
   },
   demo: {
     title: "Product demos",
     emptyTitle: "No demo videos yet",
     emptyDescription:
-      "Upload product walkthroughs or screen recordings to use after opener clips.",
+      "Upload product walkthroughs or screen recordings to use after Hook/UGC clips.",
     sectionId: "demo-videos",
     searchEmptyTitle: "No matching demo videos",
     searchEmptyDescription:
@@ -81,7 +81,7 @@ const videoLibraryContent: Record<
     title: "Swaps",
     emptyTitle: "No swaps yet",
     emptyDescription:
-      "Create new source clips when your library needs more material.",
+      "Create new Hook/UGC clips when your library needs more material.",
     sectionId: "swaps",
     searchEmptyTitle: "No matching swaps",
     searchEmptyDescription:

@@ -93,7 +93,7 @@ export function RecentUploadsSection({
       ) : (
         <DashboardEmptyState
           title="No clips here yet"
-          description="Upload the opener clips or product demos you already have. Future you will be grateful."
+          description="Upload the Hook/UGC clips or product demos you already have."
         />
       )}
     </section>

@@ -3,19 +3,19 @@
 ## What It Does
 
 The authenticated Library lives at `/dashboard/library`. It is the single place
-for saved source clips, generated outputs, finished work, avatar photos, and
-Stitchr templates.
+for saved Hook/UGC clips, product demos, generated outputs, finished work,
+avatar photos, and Stitchr templates.
 
 Library tabs are grouped by the way users think about the work:
 
-- Videos: UGC, Product demos, Swaps
+- Videos: Hook/UGC, Product demos, Swaps
 - Finished: Stitches, Carousels
 - Assets: Avatars, Templates, Pexels
 
-The UGC tab is backed by the `ugc` tab value because those clips remain the
-UGC-compatible source clips in the data model. UGC is the visible label so
-the product UI sounds more like the user's actual job: pick the first half of an
-ad. The old All tab is no longer shown. Old dashboard URLs stay as
+The Hook/UGC tab is backed by the `ugc` tab value because those clips remain the
+UGC-compatible source clips in the data model. Hook/UGC is the visible label so
+the product UI keeps the hook role and the UGC asset type together. The old All
+tab is no longer shown. Old dashboard URLs stay as
 compatibility redirects:
 
 - `/dashboard/uploads` -> `/dashboard/library`
@@ -72,11 +72,11 @@ load the data needed by `/dashboard/library`:
 The dashboard upload selector routes users to the matching Library tab with
 upload controls open:
 
-- Opener clip -> `/dashboard/library?tab=ugc&upload=open#upload-panel`
+- Hook/UGC clip -> `/dashboard/library?tab=ugc&upload=open#upload-panel`
 - Demo -> `/dashboard/library?tab=demo&upload=open#upload-panel`
 - Avatar photo -> `/dashboard/library?tab=avatars&upload=open#upload-panel`
 
-Opener and Demo uploads render in the main Library page. Avatar uploads render
+Hook/UGC and Demo uploads render in the main Library page. Avatar uploads render
 inside the Avatars tab so the assignment controls remain next to avatar
 management.
 

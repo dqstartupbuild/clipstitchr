@@ -51,19 +51,19 @@ export function StitchDetailsDialog({
     ? formatBytes(stitch.size)
     : "Ready to download";
   const detailItems = [
-    { label: "UGC clip", value: stitch.ugcClipName },
+    { label: "Hook/UGC clip", value: stitch.ugcClipName },
     { label: "Demo clip", value: stitch.demoClipName },
-    { label: "UGC trim", value: getStitchTrimRangeLabel(stitch.ugcTrimRange) },
+    { label: "Hook/UGC trim", value: getStitchTrimRangeLabel(stitch.ugcTrimRange) },
     { label: "Demo trim", value: getStitchTrimRangeLabel(stitch.demoTrimRange) },
     {
-      label: "UGC audio",
+      label: "Hook/UGC audio",
       value: stitch.includeUgcAudio === false ? "Muted" : "Included",
     },
     {
       label: "Demo audio",
       value: stitch.includeDemoAudio === false ? "Muted" : "Included",
     },
-    { label: "UGC speed", value: `${stitch.ugcPlaybackRate ?? 1}x` },
+    { label: "Hook/UGC speed", value: `${stitch.ugcPlaybackRate ?? 1}x` },
     { label: "Demo speed", value: `${stitch.demoPlaybackRate ?? 1}x` },
     { label: "Music", value: musicLabel },
     { label: "Text overlay", value: textOverlayText },

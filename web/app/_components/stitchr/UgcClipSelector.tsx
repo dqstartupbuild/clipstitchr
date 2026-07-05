@@ -42,7 +42,7 @@ export function UgcClipSelector({
           </span>
           <div>
             <p className="text-sm font-semibold text-accent-dark">
-              Opener clips
+              Hook/UGC clips
             </p>
             <h2 className="mt-0.5 text-base font-bold text-text-primary">
               Pick the first half
@@ -99,7 +99,7 @@ export function UgcClipSelector({
         </>
       ) : (
         <p className="mt-3 rounded-lg border border-dashed border-border bg-slate-50 p-4 text-sm font-semibold text-text-tertiary">
-          No opener clips match this search.
+          No Hook/UGC clips match this search.
         </p>
       )}
     </section>

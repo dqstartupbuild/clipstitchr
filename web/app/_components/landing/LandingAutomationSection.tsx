@@ -53,7 +53,7 @@ export function LandingAutomationSection() {
                 Drafts you can review, not posts you have to trust.
               </h3>
               <p className="mt-2 text-sm leading-6 text-text-secondary">
-                ClipStitchr can prepare stitched ads, source clips, and
+                ClipStitchr can prepare stitched ads, Hook/UGC clips, and
                 carousel drafts based on the tools you choose.
               </p>
             </div>

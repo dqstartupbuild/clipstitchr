@@ -14,7 +14,7 @@ const progressSteps: {
     steps: ["product-start", "product-review"],
   },
   {
-    label: "UGC",
+    label: "Hook/UGC",
     steps: ["ugc-upload"],
   },
   {

@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
     if (!getClipCanBeScored(clip)) {
       return NextResponse.json(
-        { message: "Only UGC and demo videos can be scored." },
+        { message: "Only Hook/UGC and demo videos can be scored." },
         { status: 400 },
       );
     }

@@ -7,7 +7,7 @@ export function StitchrHeader() {
     <DashboardPageHeader
       eyebrow="Stitchr"
       title="Stitchr"
-      description="Pair opener clips with a product demo and save finished ads."
+      description="Pair Hook/UGC clips with a product demo and save finished ads."
     />
   );
 }

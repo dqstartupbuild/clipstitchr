@@ -23,7 +23,7 @@ export const cliprDoc = {
   description:
     "Create reusable reaction and b-roll clips when your library is too thin and you do not want to film more footage from scratch.",
   summary:
-    "Make short reaction and b-roll clips, save them as UGC, and reuse them when Stitchr needs more UGC.",
+    "Make short reaction and b-roll clips, save them as Hook/UGC, and reuse them when Stitchr needs more Hook/UGC.",
   category: "feature",
   order: 20,
   updated: "2026-06-16",
@@ -45,7 +45,7 @@ export const cliprDoc = {
         ...cliprModeBullets,
         "Choose an avatar to appear in the clip.",
         "Generate the avatar video.",
-        "Save the result into UGC.",
+        "Save the result into Hook/UGC.",
       ],
     },
     {
@@ -65,7 +65,7 @@ export const cliprDoc = {
     {
       title: "Where Clipr videos appear",
       body: [
-        "Generated reaction and b-roll clips appear in the Library under UGC. Preview them, download them, or select them in Stitchr.",
+        "Generated reaction and b-roll clips appear in the Library under Hook/UGC. Preview them, download them, or select them in Stitchr.",
       ],
     },
     {

@@ -89,7 +89,7 @@ export function StitchesSection({
   hookPlans = [],
   savingHookPlanId = null,
   stitches,
-  emptyDescription = "Create a Stitch after you have at least one opener clip and one product demo.",
+  emptyDescription = "Create a Stitch after you have at least one Hook/UGC clip and one product demo.",
   emptyTitle = "No Stitches yet",
   hasMoreItems = false,
   id = "stitches",

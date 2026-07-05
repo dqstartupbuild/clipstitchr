@@ -6,7 +6,7 @@ const studios = [
     eyebrow: "Clipr",
     title: "Make the reaction clip you do not want to film.",
     description:
-      "Choose a product and avatar, create a short source clip, and save it for the next Stitch.",
+      "Choose a product and avatar, create a short Hook/UGC clip, and save it for the next Stitch.",
     caption: "Use it like any other saved clip.",
     icon: CirclePlay,
   },
@@ -14,7 +14,7 @@ const studios = [
     eyebrow: "Swapr",
     title: "Squeeze another usable clip out of what you have.",
     description:
-      "Pick an avatar photo and an existing clip, create a new UGC-style variation, then save it for later.",
+      "Pick an avatar photo and an existing clip, create a new Hook/UGC variation, then save it for later.",
     caption: "Useful when the library is thin.",
     icon: Shuffle,
   },
@@ -22,8 +22,8 @@ const studios = [
     eyebrow: "Avatars",
     title: "Keep reusable faces ready.",
     description:
-      "Save avatar photos so Clipr and Swapr have people to work with when you need fresh UGC.",
-    caption: "Source material stays reusable.",
+      "Save avatar photos so Clipr and Swapr have people to work with when you need fresh Hook/UGC clips.",
+    caption: "Saved for reuse.",
     icon: UserRound,
   },
 ];

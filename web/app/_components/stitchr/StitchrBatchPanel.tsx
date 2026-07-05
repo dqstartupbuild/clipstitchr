@@ -79,7 +79,7 @@ export function StitchrBatchPanel({
             </h2>
             <p className="mt-1 max-w-2xl text-sm text-text-secondary">
               {description ??
-                `Creates up to ${dailyLimit} fresh Stitches from opener and demo clips.`}
+                `Creates up to ${dailyLimit} fresh Stitches from Hook/UGC and demo clips.`}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

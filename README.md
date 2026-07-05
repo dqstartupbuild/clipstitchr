@@ -1,11 +1,11 @@
 # ClipStitchr
 
 ClipStitchr is a short-form content workspace for indie app builders, mobile
-marketers, and small teams that have product demos, UGC, avatar photos, and
+marketers, and small teams that have product demos, Hook/UGC clips, avatar photos, and
 raw ideas but do not want to spend every week inside a traditional video
 editor.
 
-The main product is Stitchr. Users upload UGC-style clips and product demos
+The main product is Stitchr. Users upload Hook/UGC clips and product demos
 once, keep them organized in a reusable library, then create finished vertical
 ads by pairing attention-first clips with product demos. AI-assisted tools such
 as Clipr, Swapr, Swipr, avatar photos, Hook Lab, Quick Edit, and automation help
@@ -29,7 +29,7 @@ The product should make users feel like they can:
 ## Core Workflow
 
 ```text
-Upload UGC clips and product demos
+Upload Hook/UGC clips and product demos
         |
         v
 Normalize uploads to 9:16 vertical media
@@ -56,12 +56,12 @@ Download, reuse, mark posted, or schedule
 ### Library
 
 The authenticated Library at `/dashboard/library` is the single place for
-saved source clips, generated outputs, finished work, avatar photos, templates,
-and imported Pexels packs.
+saved Hook/UGC clips, product demos, generated outputs, finished work, avatar
+photos, templates, and imported Pexels packs.
 
 Library groups:
 
-- Videos: UGC, Product demos, Swaps
+- Videos: Hook/UGC, Product demos, Swaps
 - Finished: Stitches, Carousels
 - Assets: Avatars, Templates, Pexels
 
@@ -75,23 +75,23 @@ Compatibility redirects keep older dashboard URLs working:
 ### Stitchr
 
 Stitchr is the primary workflow. It creates finished vertical videos from saved
-source clips.
+Hook/UGC clips and product demos.
 
 Normal Stitchr behavior:
 
-- select up to 20 UGC-compatible clips
+- select up to 20 Hook/UGC clips
 - select one product-linked Demo clip
-- preview each UGC-then-Demo sequence
+- preview each Hook/UGC-then-Demo sequence
 - copy source trims and Quick Edit metadata into the Stitchr session
 - adjust trims, playback speed, source audio, music, captions, and text
-- create one finished Stitch per selected UGC clip
+- create one finished Stitch per selected Hook/UGC clip
 - save renders, posters, metadata, and editable settings
 - download finished 9:16 videos whenever needed
 
 Every standard Stitch output follows this sequence:
 
 ```text
-UGC clip first -> Product demo second -> One saved vertical video
+Hook/UGC clip first -> Product demo second -> One saved vertical video
 ```
 
 Stitchr also supports:
@@ -149,7 +149,7 @@ Swapr outputs:
 
 - are saved to the Library Swaps tab
 - keep provenance back to the source photo, source clip, model, and prompt
-- remain reusable as UGC-style clips
+- remain reusable as Hook/UGC clips
 - can feed future Stitchr and Swapr workflows
 
 ### Swipr
@@ -563,7 +563,7 @@ Important coverage areas:
 - poster generation
 - R2 signed URL flows
 - Convex metadata behavior
-- Stitchr UGC-then-Demo export
+- Stitchr Hook/UGC-then-Demo export
 - Stitchr batch selection
 - text overlay rendering
 - Quick Edit behavior

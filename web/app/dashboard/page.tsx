@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `Dashboard | ${site.name}`,
   description:
-    "Open the ClipStitchr dashboard to manage opener clips, product demos, drafts, and finished Stitches.",
+    "Open the ClipStitchr dashboard to manage Hook/UGC clips, product demos, drafts, and finished Stitches.",
   canonical: "/dashboard",
   noIndex: true,
 });

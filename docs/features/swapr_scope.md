@@ -11,13 +11,13 @@
 **Swapr** is an AI-powered ClipStitchr feature that lets a user choose:
 
 1. a saved photo of a person or character, and
-2. a saved UGC-style video from the existing ClipStitchr library,
+2. a saved Hook/UGC video from the existing ClipStitchr library,
 
-then generate a new AI video where the person from the photo appears to follow the action, pose, motion, or performance from the selected UGC video.
+then generate a new AI video where the person from the photo appears to follow the action, pose, motion, or performance from the selected Hook/UGC video.
 
-The intended user-facing language is "swap the person in the video with the person from the photo." Technically, the first version should be scoped as **motion and appearance transfer**, not guaranteed frame-perfect face replacement. The selected UGC video acts as the reference motion video. The selected photo acts as the reference identity or character image.
+The intended user-facing language is "swap the person in the video with the person from the photo." Technically, the first version should be scoped as **motion and appearance transfer**, not guaranteed frame-perfect face replacement. The selected Hook/UGC video acts as the reference motion video. The selected photo acts as the reference identity or character image.
 
-The generated output should be saved back into ClipStitchr as a usable UGC-style asset so it can be previewed, downloaded, and selected in the existing UGC-then-Demo Stitchr workflow.
+The generated output should be saved back into ClipStitchr as a usable Hook/UGC asset so it can be previewed, downloaded, and selected in the existing Hook/UGC-then-Demo Stitchr workflow.
 
 ---
 
@@ -28,7 +28,7 @@ The generated output should be saved back into ClipStitchr as a usable UGC-style
 | User phrase | Product interpretation | Implementation meaning |
 |-------------|------------------------|-------------------------|
 | Select a photo | Choose the person, face, character, or appearance to use in the output | Pick a saved `PhotoAsset` |
-| Select a video | Choose the UGC-style clip whose motion should drive the output | Pick a saved UGC, Clipr, or Swapr `VideoClip`; Demo clips are excluded |
+| Select a video | Choose the Hook/UGC clip whose motion should drive the output | Pick a saved Hook/UGC, Clipr, or Swapr `VideoClip`; Demo clips are excluded |
 | Swap the person | Replace the visible performer conceptually | Generate a new video where the photo subject follows the reference motion |
 | Swap locations | Optionally influence background or scene | Add scene controls or prompt fields, but do not guarantee exact background replacement in v1 |
 | Use Replicate | Run the AI generation through Replicate server-side | Next.js API route calls Replicate with a secret token |
@@ -48,7 +48,7 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
            |
            v
 +---------------------+
-| Select UGC-style video |
+| Select Hook/UGC video |
 | from ClipStitchr library  |
 | Demo videos hidden  |
 +----------+----------+
@@ -56,7 +56,7 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
            v
 +---------------------+
 | Configure Swapr     |
-| photo + UGC + scene |
+| photo + Hook/UGC + scene |
 +----------+----------+
            |
            v
@@ -80,7 +80,7 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
            v
 +---------------------+
 | Save output as      |
-| UGC-style clip      |
+| Hook/UGC clip       |
 +---------------------+
 ```
 
@@ -100,27 +100,27 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
 | 6 | Validate accepted image types and size limits | Yes | Yes |
 | 7 | Record user consent/ownership acknowledgement before AI use | Basic UI acknowledgement | Account-level policy and audit metadata |
 
-### 4.2 UGC Video Selection
+### 4.2 Hook/UGC Video Selection
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
-| 1 | Show uploaded UGC videos plus generated Clipr and Swapr clips as selectable motion references | Yes | Yes |
+| 1 | Show uploaded Hook/UGC videos plus generated Clipr and Swapr clips as selectable motion references | Yes | Yes |
 | 2 | Exclude Demo clips from Swapr selection | Yes | Yes |
-| 3 | Use normalized 9:16 UGC-style blobs as the default reference video source | Yes | Yes |
+| 3 | Use normalized 9:16 Hook/UGC blobs as the default reference video source | Yes | Yes |
 | 4 | Respect default trim ranges where model duration limits require shorter clips | Yes | Yes |
-| 5 | Allow a Swapr-specific trim range without changing the source UGC default trim | Yes | Yes |
+| 5 | Allow a Swapr-specific trim range without changing the source Hook/UGC default trim | Yes | Yes |
 
 ### 4.3 Swapr Generation
 
 | # | Feature | MVP | Prod |
 |---|---------|-----|------|
-| 1 | Select one photo and one UGC video | Yes | Yes |
+| 1 | Select one photo and one Hook/UGC video | Yes | Yes |
 | 2 | Optional text prompt to guide motion, style, and scene | Yes | Yes |
 | 3 | Optional scene mode: keep video scene, keep photo scene, or prompt new scene | Prototype | Yes, if model supports it reliably |
 | 4 | Choose quality mode such as standard or pro when the selected model supports it | Yes | Yes |
 | 5 | Create asynchronous Replicate prediction from server-side API route | Yes | Yes |
 | 6 | Show queued, processing, succeeded, failed, and canceled states | Yes | Yes |
-| 7 | Save successful output as a reusable UGC-style clip | Yes | Yes |
+| 7 | Save successful output as a reusable Hook/UGC clip | Yes | Yes |
 | 8 | Generate a poster image for the generated output | Yes | Yes |
 | 9 | Normalize generated output to TikTok 9:16 if the model output is not already correct | Yes | Yes |
 
@@ -130,9 +130,9 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
 |---|---------|-----|------|
 | 1 | Preview generated Swapr output in the app | Yes | Yes |
 | 2 | Download generated Swapr output directly | Yes | Yes |
-| 3 | Make generated Swapr output selectable as a UGC clip in `/dashboard/stitchr` | Yes | Yes |
+| 3 | Make generated Swapr output selectable as a Hook/UGC clip in `/dashboard/stitchr` | Yes | Yes |
 | 4 | Preserve provenance showing the output came from Swapr | Yes | Yes |
-| 5 | Link back to source photo, source UGC clip, model, and prompt metadata | Yes | Yes |
+| 5 | Link back to source photo, source Hook/UGC clip, model, and prompt metadata | Yes | Yes |
 | 6 | Make generated Swapr output selectable as a future Swapr reference clip | Yes | Yes |
 
 ---
@@ -140,15 +140,15 @@ Working assumption: "clean models" means **Kling models**, based on the referenc
 ## 5. Pages / Routes
 
 ```
-/dashboard/swapr                 -> Swapr studio: choose photo, choose UGC video, configure, generate
+/dashboard/swapr                 -> Swapr studio: choose photo, choose Hook/UGC video, configure, generate
 /dashboard/library?tab=avatars   -> Avatar photo upload, avatar descriptions, and generated avatar scenario photos
-/dashboard/library?tab=ugc       -> Existing UGC library; UGC-style clips can feed Swapr
-/dashboard/library?tab=swaps     -> Generated Swapr outputs; outputs are saved as reusable UGC-style clips and can feed Swapr again
+/dashboard/library?tab=ugc       -> Existing Hook/UGC library; Hook/UGC clips can feed Swapr
+/dashboard/library?tab=swaps     -> Generated Swapr outputs; outputs are saved as reusable Hook/UGC clips and can feed Swapr again
 /dashboard/library?tab=stitches  -> Existing stitches library inside the unified Library
 /dashboard/stitches              -> Compatibility redirect to `/dashboard/library?tab=stitches`
 ```
 
-Avatar photos are uploaded, deleted, downloaded, described, and expanded into new scenario photos from `/dashboard/library?tab=avatars`. Successful Swapr outputs are saved to the Swaps tab and remain selectable in Stitchr as UGC-style clips. The dashboard upload action routes UGC, Demo, and Avatar uploads into the matching Library tab. Avatar photos are only selected for Swapr from `/dashboard/swapr`, matching the way UGC videos are uploaded in the Library but selected inside the Swapr studio. Photo AI expansion must be an explicit opt-in upload option, deselected by default.
+Avatar photos are uploaded, deleted, downloaded, described, and expanded into new scenario photos from `/dashboard/library?tab=avatars`. Successful Swapr outputs are saved to the Swaps tab and remain selectable in Stitchr as Hook/UGC clips. The dashboard upload action routes Hook/UGC, Demo, and Avatar uploads into the matching Library tab. Avatar photos are only selected for Swapr from `/dashboard/swapr`, matching the way Hook/UGC videos are uploaded in the Library but selected inside the Swapr studio. Photo AI expansion must be an explicit opt-in upload option, deselected by default.
 
 ---
 
@@ -162,7 +162,7 @@ Current candidates checked on 2026-05-07:
 
 | Candidate | Replicate model | Fit |
 |-----------|-----------------|-----|
-| Preferred | `kwaivgi/kling-v3-motion-control` | Transfers character motion from a reference video to a reference image. Better fit for "photo person follows UGC video motion." |
+| Preferred | `kwaivgi/kling-v3-motion-control` | Transfers character motion from a reference video to a reference image. Better fit for "photo person follows Hook/UGC video motion." |
 | Fallback / comparison | `kwaivgi/kling-v2.6-motion-control` | Motion-control model that may support reference-video or brush/path workflows depending on the exact API schema. Use only after schema verification. |
 
 The selected model must be configurable through environment variables or server config so ClipStitchr can switch models without rewriting the feature.
@@ -176,10 +176,10 @@ Use these input keys:
 | Key | Type | Swapr meaning |
 |-----|------|---------------|
 | `image` | file URI | Uploaded source photo / character image |
-| `video` | file URI | Selected UGC motion reference video |
+| `video` | file URI | Selected Hook/UGC motion reference video |
 | `prompt` | string | Optional guidance for scene, motion, and style |
 | `mode` | `std` or `pro` | Standard 720p or professional 1080p generation |
-| `keep_original_sound` | boolean | Preserve audio from the selected UGC reference when possible |
+| `keep_original_sound` | boolean | Preserve audio from the selected Hook/UGC reference when possible |
 | `character_orientation` | `image` or `video` | Use photo-facing direction, max 10s, or match video orientation, max 30s |
 
 The implementation should not use outdated placeholder keys such as `reference_image` or `reference_video`.
@@ -225,8 +225,8 @@ Possible modes:
 
 | Scene mode | Meaning | MVP confidence |
 |------------|---------|----------------|
-| Keep reference video scene | Try to preserve the background/camera context of the selected UGC clip | Medium |
-| Keep photo scene | Try to preserve the photo background while applying UGC motion | Low to medium |
+| Keep reference video scene | Try to preserve the background/camera context of the selected Hook/UGC clip | Medium |
+| Keep photo scene | Try to preserve the photo background while applying Hook/UGC motion | Low to medium |
 | Prompt new scene | Prompt a new location such as "in a modern kitchen" or "on a city sidewalk" | Medium |
 | No scene control | Let the model infer the scene from the photo, video, and prompt | High |
 
@@ -248,13 +248,13 @@ the Replicate API token must remain secret.
 |                                          |
 | Next.js UI                               |
 | - Photo library                          |
-| - UGC video selector                     |
+| - Hook/UGC video selector                |
 | - Swapr studio                           |
 | - Job status UI                          |
 |                                          |
 | Convex + R2                              |
 | - Photo metadata and object refs         |
-| - Normalized UGC video object refs       |
+| - Normalized Hook/UGC video object refs  |
 | - Swapr output objects and metadata      |
 +-------------------+----------------------+
                     |
@@ -294,7 +294,7 @@ the Replicate API token must remain secret.
 +------------------------------------------+
 | Cloudflare R2                            |
 | - Photo files                            |
-| - UGC reference files                    |
+| - Hook/UGC reference files               |
 | - Generated Swapr outputs                |
 | - Poster images                          |
 +------------------------------------------+
@@ -355,7 +355,7 @@ interface SwaprOutputMetadata {
 }
 ```
 
-Generated Swapr outputs should be stored as normal `VideoClip` records with `type: 'ugc'` plus `SwaprOutputMetadata`. This keeps the existing UGC picker useful without introducing a third clip type into the main UGC-then-Demo Stitchr flow.
+Generated Swapr outputs should be stored as normal `VideoClip` records with `type: 'ugc'` plus `SwaprOutputMetadata`. This keeps the existing Hook/UGC picker useful without introducing a third clip type into the main Hook/UGC-then-Demo Stitchr flow.
 
 ### Production Data
 
@@ -372,11 +372,11 @@ In production:
 
 Swapr should continue ClipStitchr's TikTok-first media rules:
 
-- Source UGC clips must already be normalized to 9:16 before they are selectable.
+- Source Hook/UGC clips must already be normalized to 9:16 before they are selectable.
 - Source photos must be normalized to 1080 x 1920 portrait references on upload. If AI expansion is deselected, use local crop-to-fill. If AI expansion is selected, use the image outpainting flow.
-- If the model requires a shorter reference clip, create a temporary trimmed reference clip from the selected UGC using Media Bunny.
-- Do not modify the original UGC video blob when making a Swapr reference clip.
-- Generated Swapr output must be normalized to 9:16 before it is saved as a reusable UGC clip. Use crop-to-fill normalization for Swapr outputs so square or landscape model results do not become letterboxed videos.
+- If the model requires a shorter reference clip, create a temporary trimmed reference clip from the selected Hook/UGC using Media Bunny.
+- Do not modify the original Hook/UGC video blob when making a Swapr reference clip.
+- Generated Swapr output must be normalized to 9:16 before it is saved as a reusable Hook/UGC clip. Use crop-to-fill normalization for Swapr outputs so square or landscape model results do not become letterboxed videos.
 - Generate a poster image for the output using the same generated-poster strategy as other ClipStitchr videos.
 - Store output duration, dimensions, MIME type, and aspect ratio.
 - If the AI model returns audio, preserve it unless the output must be transcoded and browser support prevents audio preservation.
@@ -440,24 +440,24 @@ The Swapr screen should be a work-focused generation interface, not a marketing 
 Primary areas:
 
 - Photo selector: grid/list of saved avatar photos, with upload and scenario generation handled from `/dashboard/library?tab=avatars`.
-- UGC selector: filtered list of UGC clips only.
+- Hook/UGC selector: filtered list of Hook/UGC clips only.
 - Preview column: selected photo, selected reference video, and generated output when ready.
 - Controls: prompt, scene mode, quality mode, orientation/motion mode if supported.
 - Job status: queued, processing, complete, failed, canceled.
-- Output actions: save as UGC, download, use in Stitchr flow.
+- Output actions: save as Hook/UGC, download, use in Stitchr flow.
 
 ### Empty States
 
 - No avatars: invite the user to upload a person/reference avatar photo.
-- No UGC clips: link to the UGC upload tab.
-- No selection: show side-by-side placeholders for photo and UGC video.
+- No Hook/UGC clips: link to the Hook/UGC upload tab.
+- No selection: show side-by-side placeholders for photo and Hook/UGC video.
 - Failed job: show the model error and allow retry with the same inputs.
 
 ### Copy Rules
 
 Use careful language:
 
-- Say "generate a new video using this photo and UGC motion."
+- Say "generate a new video using this photo and Hook/UGC motion."
 - Say "scene prompt" or "background guidance" instead of guaranteeing a location swap.
 - Avoid "perfect face swap", "deepfake", or "undetectable replacement."
 
@@ -468,7 +468,7 @@ Use careful language:
 ### Phase 0 - Model Research
 
 - [ ] Confirm current Replicate schemas for `kwaivgi/kling-v3-motion-control` and `kwaivgi/kling-v2.6-motion-control`.
-- [ ] Run sample generations with one portrait photo and one normalized UGC clip.
+- [ ] Run sample generations with one portrait photo and one normalized Hook/UGC clip.
 - [ ] Test duration limits, orientation modes, quality modes, output dimensions, output audio, and average latency.
 - [ ] Decide whether v3 is the default or whether v2.6 has a needed scene-control advantage.
 - [ ] Document exact model input keys before implementation.
@@ -477,14 +477,14 @@ Use careful language:
 
 - [ ] Add photo upload and local photo library.
 - [ ] Add `/dashboard/swapr`.
-- [ ] Select one saved photo and one saved UGC clip.
+- [ ] Select one saved photo and one saved Hook/UGC clip.
 - [ ] Exclude Demo videos from Swapr.
 - [ ] Add optional prompt and basic scene mode.
 - [ ] Add server-side Replicate API route using `REPLICATE_API_TOKEN`.
 - [ ] Poll job status from the client.
 - [ ] Persist successful output to R2 and Convex.
 - [ ] Generate output poster image.
-- [ ] Save output as a UGC-style clip for reuse in `/dashboard/stitchr`.
+- [ ] Save output as a Hook/UGC clip for reuse in `/dashboard/stitchr`.
 
 ### Phase 2 - Backend Persistence
 
@@ -516,7 +516,7 @@ Use careful language:
 - No custom model training.
 - No multi-person swapping in MVP.
 - No public-figure or non-consensual identity workflows.
-- No destructive edits to original photos or UGC videos.
+- No destructive edits to original photos or Hook/UGC videos.
 - No promise that generated output will be longer than the selected model supports.
 
 ---
@@ -527,7 +527,7 @@ Use careful language:
 2. **External dependency:** Swapr is outside the browser-local media processing
    path and requires configured provider credentials, server auth, and rate
    limits.
-3. **UGC-only video source:** only UGC clips can drive Swapr motion; Demo clips are excluded.
+3. **Hook/UGC-only video source:** only Hook/UGC clips can drive Swapr motion; Demo clips are excluded.
 4. **TikTok-first output:** final saved output should be normalized to 9:16.
 5. **Temporary AI outputs:** Replicate API outputs must be copied into app storage quickly.
 6. **Consent-aware UX:** users must acknowledge rights to use identity/reference media.
@@ -539,14 +539,14 @@ Use careful language:
 
 - [ ] User can upload and save at least one photo.
 - [ ] User can open Swapr and select a saved photo.
-- [ ] User can select a saved UGC video as the motion reference.
+- [ ] User can select a saved Hook/UGC video as the motion reference.
 - [ ] Demo videos are not selectable in Swapr.
 - [ ] User can submit a Swapr job through a server-side Replicate integration.
 - [ ] User can see job progress and completion/failure state.
 - [ ] Successful output is persisted in ClipStitchr storage, not just linked from Replicate.
 - [ ] Successful output has a generated poster image.
-- [ ] Successful output appears as a UGC-style clip and can be used in the existing UGC-then-Demo Stitchr flow.
-- [ ] The app records enough provenance to identify the source photo, source UGC clip, model, prompt, and generation time.
+- [ ] Successful output appears as a Hook/UGC clip and can be used in the existing Hook/UGC-then-Demo Stitchr flow.
+- [ ] The app records enough provenance to identify the source photo, source Hook/UGC clip, model, prompt, and generation time.
 
 ---
 

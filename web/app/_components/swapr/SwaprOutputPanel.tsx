@@ -68,7 +68,7 @@ export function SwaprOutputPanel({
                 {generatedClip.name}
               </h3>
               <p className="mt-1 text-xs text-text-tertiary">
-                {formatDuration(generatedClip.duration)} saved as an opener clip
+                {formatDuration(generatedClip.duration)} saved as a Hook/UGC clip
               </p>
             </div>
             <div className="grid min-w-0 grid-cols-2 gap-2">

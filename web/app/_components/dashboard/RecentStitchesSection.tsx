@@ -125,7 +125,7 @@ export function RecentStitchesSection({
       ) : (
         <DashboardEmptyState
           title="No Stitches yet"
-          description="Create your first Stitch after you have at least one opener clip and one product demo."
+          description="Create your first Stitch after you have at least one Hook/UGC clip and one product demo."
         />
       )}
     </section>

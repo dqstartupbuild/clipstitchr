@@ -1,6 +1,6 @@
 # Manual Cuts Feature Guide
 
-Manual cuts let users skip slow parts inside a UGC or Demo clip without changing
+Manual cuts let users skip slow parts inside a Hook/UGC or Demo clip without changing
 the original uploaded video. The workflow is meant for moments like loading
 screens, long pauses, and dead air where AI Quick Edit may suggest the right
 idea but choose the wrong exact timestamps.
@@ -23,17 +23,17 @@ with AI-suggested cut blocks already placed. The user can tighten, move, remove,
 or save those blocks before anything becomes active.
 
 The same control is available in saved normal Stitches. When a saved Stitch is
-edited, the user can add UGC cuts and Demo cuts on the source settings panel.
+edited, the user can add Hook/UGC cuts and Demo cuts on the source settings panel.
 Those cuts apply only to that saved Stitch, regenerate its poster, and clear any
 stale rendered MP4 so the next preview or download is rebuilt from the current
 metadata.
 
-Longr sequence Stitches do not expose the UGC/Demo source cut workflow because
+Longr sequence Stitches do not expose the Hook/UGC and Demo source cut workflow because
 their source timing is sequence-segment based.
 
 ## Source Clip Behavior
 
-UGC and Demo source clips store manual cuts in `quickEdit.removeRanges`. Saving
+Hook/UGC and Demo source clips store manual cuts in `quickEdit.removeRanges`. Saving
 cuts uses `videoClips.updateCuts`, which validates ownership, normalizes and
 merges ranges against the clip duration, stores `source: "manual-cut"`, and
 preserves any existing trim, crop, overlay text, summary, and baseline metadata.
@@ -50,14 +50,14 @@ copied metadata until the user edits that saved Stitch directly.
 Saved normal Stitches store manual source cuts in `ugcQuickEdit.removeRanges` or
 `demoQuickEdit.removeRanges`. Saving a cut from the Stitch edit dialog:
 
-- loads the current UGC and Demo source media
+- loads the current Hook/UGC and Demo source media
 - replaces the edited source's remove ranges without appending duplicates
 - recalculates Stitch duration after trim, cuts, and playback speed
 - regenerates the saved Stitch poster from the edited timeline
 - clears stale `stitchObject`, `mimeType`, `size`, and Stitch-level Quick Edit
   output so future render/export uses the current source metadata
 
-The operation does not mutate the original UGC or Demo source clip.
+The operation does not mutate the original Hook/UGC or Demo source clip.
 
 ## Preview And Export
 

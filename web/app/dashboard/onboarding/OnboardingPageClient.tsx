@@ -150,10 +150,10 @@ export function OnboardingPageClient() {
           clips={ugcClips}
           continueLabel="Continue to demos"
           description="Upload the creator clips you already have. Each saved clip becomes a possible first half of an ad."
-          emptyDescription="Upload opener clips and keep this page open while ClipStitchr normalizes and scores them."
-          emptyTitle="No opener clips ready yet"
-          reviewTitle="Review opener scores"
-          title="Upload opener clips"
+          emptyDescription="Upload Hook/UGC clips and keep this page open while ClipStitchr normalizes and scores them."
+          emptyTitle="No Hook/UGC clips ready yet"
+          reviewTitle="Review Hook/UGC scores"
+          title="Upload Hook/UGC clips"
           onContinue={() => setStep("demo-upload")}
           onUploaded={library.refresh}
         />
@@ -163,7 +163,7 @@ export function OnboardingPageClient() {
           assetType="demo"
           clips={demoClips}
           continueLabel="Continue to batch"
-          description="Upload the product walkthrough or screen recording that should come after the opener."
+          description="Upload the product walkthrough or screen recording that should come after Hook/UGC."
           emptyDescription="Upload a demo and keep this page open while ClipStitchr normalizes and scores it."
           emptyTitle="No demo ready yet"
           productId={product?.id}

@@ -55,7 +55,7 @@ describe("LandingPage", () => {
       "Turn raw footage into finished ads",
     );
     expect(markup).toContain(
-      "Upload UGC clips and product demos once",
+      "Upload Hook/UGC clips and product demos once",
     );
     expect(markup).toContain("Start for free");
     expect(markup).toContain("Watch examples");

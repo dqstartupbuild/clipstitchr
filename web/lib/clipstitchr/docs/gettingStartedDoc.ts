@@ -19,7 +19,7 @@ export const gettingStartedDoc = {
       bullets: [
         "Create or sign in to your account.",
         "Open Settings and save the product you want to grow.",
-        "Upload UGC and product demos into the Library.",
+        "Upload Hook/UGC clips and product demos into the Library.",
         "Open Stitchr, leave Batch mode selected, and pick the product demo you want to promote.",
         "Choose text style settings or leave them on Any.",
         "Create the drafts, then review and download the finished ads.",
@@ -28,11 +28,11 @@ export const gettingStartedDoc = {
     {
       title: "What to add first",
       body: [
-        "Start with clips that already have a job. UGC earns attention. Product demos show what the app does. Avatar photos help when you need more source clips later.",
+        "Start with clips that already have a job. Hook/UGC clips earn attention. Product demos show what the app does. Avatar photos help when you need more Hook/UGC clips later.",
       ],
       cards: [
         {
-          title: "UGC",
+          title: "Hook/UGC",
           description:
             "Reactions, testimonials, quick demos, or talking clips that can open an ad.",
           href: "/docs/stitchr",
@@ -54,7 +54,7 @@ export const gettingStartedDoc = {
     {
       title: "How the library stays organized",
       body: [
-        "The Library keeps your UGC, demos, avatar photos, templates, carousels, and finished ads in one place. Use the tabs when you need to find UGC, Demos, Swaps, Swipes, Stitches, Avatars, or Templates.",
+        "The Library keeps your Hook/UGC clips, demos, avatar photos, templates, carousels, and finished ads in one place. Use the tabs when you need to find Hook/UGC, Demos, Swaps, Swipes, Stitches, Avatars, or Templates.",
         "ClipStitchr prepares uploads for vertical posts before they enter the library, so you do not have to fix the same clip every time you use it.",
       ],
     },
@@ -77,9 +77,9 @@ export const gettingStartedDoc = {
           href: "/docs/clip-scores",
         },
         {
-          title: "Create source clips",
+          title: "Create Hook/UGC clips",
           description:
-            "Use Clipr or Swapr when your library needs fresh UGC-style material.",
+            "Use Clipr or Swapr when your library needs fresh Hook/UGC material.",
           href: "/docs/clipr",
         },
         {

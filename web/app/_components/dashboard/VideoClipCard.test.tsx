@@ -270,14 +270,14 @@ describe("VideoClipCard", () => {
       "Use in Swapr",
       "Download clip",
       "Edit clip",
-      "Create avatar from UGC",
+      "Create avatar from Hook/UGC",
       "Delete clip",
     ]);
 
     mocks.actionItems.find((item) => item.label === "Download clip")?.onClick?.();
     mocks.actionItems.find((item) => item.label === "Edit clip")?.onClick?.();
     mocks.actionItems
-      .find((item) => item.label === "Create avatar from UGC")
+      .find((item) => item.label === "Create avatar from Hook/UGC")
       ?.onClick?.();
     mocks.actionItems.find((item) => item.label === "Delete clip")?.onClick?.();
     await mocks.trimEditor?.onSave({ start: 1, end: 3 });

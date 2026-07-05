@@ -728,7 +728,7 @@ export function StitchEditDialog({
                       }
                     }}
                   >
-                    Crop UGC
+                    Crop Hook/UGC
                   </Button>
                   <Button
                     type="button"
@@ -748,7 +748,7 @@ export function StitchEditDialog({
                 {isUgcCropOpen ? (
                   <VideoCropEditor
                     crop={ugcCrop}
-                    label="Crop UGC source"
+                    label="Crop Hook/UGC source"
                     mediaSrc={ugcCropVideoUrl}
                     posterSrc={posterUrl}
                     onChange={setUgcCrop}
@@ -792,7 +792,7 @@ export function StitchEditDialog({
                 {draftStitch.ugcClipName} to {draftStitch.demoClipName}
               </p>
               <p className="mt-2 break-words text-xs font-semibold text-text-tertiary [overflow-wrap:anywhere]">
-                UGC {getStitchTrimRangeLabel(draftStitch.ugcTrimRange)} . Demo{" "}
+                Hook/UGC {getStitchTrimRangeLabel(draftStitch.ugcTrimRange)} . Demo{" "}
                 {getStitchTrimRangeLabel(draftStitch.demoTrimRange)}
               </p>
               <p className="mt-2 break-words text-xs text-text-tertiary [overflow-wrap:anywhere]">

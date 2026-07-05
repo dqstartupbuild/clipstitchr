@@ -4,19 +4,19 @@ const workflowSteps = [
   {
     title: "Upload once",
     description:
-      "Drop UGC clips and product demos into one place. ClipStitchr keeps originals untouched and normalizes the working versions for short-form.",
+      "Drop Hook/UGC clips and product demos into one place. ClipStitchr keeps originals untouched and normalizes the working versions for short-form.",
     icon: Upload,
   },
   {
     title: "Build your library",
     description:
-      "Browse, tag, trim, and keep source clips findable. Your library gets easier to use instead of becoming another folder you avoid.",
+      "Browse, tag, trim, and keep Hook/UGC clips findable. Your library gets easier to use instead of becoming another folder you avoid.",
     icon: Library,
   },
   {
     title: "Stitch and ship",
     description:
-      "Pair attention-first opener clips with your product demo. One session can turn a set of clips into finished ads ready to review.",
+      "Pair Hook/UGC clips with your product demo. One session can turn a set of clips into finished ads ready to review.",
     icon: Scissors,
   },
 ];

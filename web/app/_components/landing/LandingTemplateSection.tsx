@@ -50,14 +50,14 @@ export function LandingTemplateSection() {
                 Weekend offer opener
               </h3>
               <p className="mt-2 text-sm leading-6 text-text-secondary">
-                UGC first, demo second, quick trim, text hook, and caption ready
+                Hook/UGC first, demo second, quick trim, text hook, and caption ready
                 to reuse.
               </p>
             </div>
             <Scissors aria-hidden className="h-9 w-9 shrink-0 text-accent" />
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {["UGC opener", "Product demo", "Text hook", "Caption"].map(
+            {["Hook/UGC", "Product demo", "Text hook", "Caption"].map(
               (item) => (
                 <div
                   key={item}

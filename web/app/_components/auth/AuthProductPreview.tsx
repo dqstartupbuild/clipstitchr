@@ -8,7 +8,7 @@ const featureLabels = [
   },
   {
     icon: Scissors,
-    label: "UGC + demo Stitches",
+    label: "Hook/UGC + demo Stitches",
   },
   {
     icon: Images,
@@ -16,7 +16,7 @@ const featureLabels = [
   },
   {
     icon: UserRound,
-    label: "Avatar source clips",
+    label: "Avatar-made clips",
   },
 ];
 

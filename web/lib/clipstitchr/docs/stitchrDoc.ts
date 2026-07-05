@@ -14,8 +14,8 @@ export const stitchrDoc = {
     {
       title: "What Stitchr does",
       body: [
-        "Use Stitchr when you have clips, but not finished ads. Batch mode is the UI label for making several drafts at once, but the point is simpler: stop rebuilding the same UGC-then-demo video by hand.",
-        "Each finished stitch follows a simple order: source clip first, product demo second.",
+        "Use Stitchr when you have clips, but not finished ads. Batch mode is the UI label for making several drafts at once, but the point is simpler: stop rebuilding the same Hook/UGC-then-demo video by hand.",
+        "Each finished stitch follows a simple order: Hook/UGC clip first, product demo second.",
       ],
     },
     {
@@ -36,13 +36,13 @@ export const stitchrDoc = {
     {
       title: "When to use Normal mode",
       body: [
-        "Normal mode is for hands-on control. Use it when you want to manually select the UGC clips, preview each exact UGC-then-demo pairing, and customize text per selected output before export.",
+        "Normal mode is for hands-on control. Use it when you want to manually select the Hook/UGC clips, preview each exact Hook/UGC-then-demo pairing, and customize text per selected output before export.",
       ],
       bullets: [
-        "Select up to 20 UGC clips.",
+        "Select up to 20 Hook/UGC clips.",
         "Select one product demo.",
         "Preview each pairing.",
-        "Create one finished stitch for each selected UGC.",
+        "Create one finished stitch for each selected Hook/UGC clip.",
       ],
     },
     {
@@ -69,7 +69,7 @@ export const stitchrDoc = {
     {
       title: "Saved outputs",
       body: [
-        "Finished stitches appear in the Library under Stitches. Your original UGC and demo clips stay unchanged, so you can reuse them in the next batch.",
+        "Finished stitches appear in the Library under Stitches. Your original Hook/UGC and demo clips stay unchanged, so you can reuse them in the next batch.",
         "Open the Stitch menu to score a saved Stitch before posting, save the setup as a Template, or load it in Stitchr later.",
       ],
     },

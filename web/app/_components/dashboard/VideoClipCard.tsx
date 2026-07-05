@@ -436,7 +436,7 @@ export function VideoClipCard({
 
           if (clip.clipType === "ugc" && onCreateAvatarFromClip) {
             items.push({
-              label: "Create avatar from UGC",
+              label: "Create avatar from Hook/UGC",
               icon: <UserRound aria-hidden className="h-4 w-4" />,
               disabled: isLoading || isCreatingAvatarFromClip,
               onClick: () => {

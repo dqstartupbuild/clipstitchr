@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `Library | ${site.name}`,
   description:
-    "Browse opener clips, demos, templates, carousel drafts, and finished Stitches without hunting through folders.",
+    "Browse Hook/UGC clips, demos, templates, carousel drafts, and finished Stitches.",
   canonical: "/dashboard/library",
   noIndex: true,
 });
