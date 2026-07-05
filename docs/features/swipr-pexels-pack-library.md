@@ -157,6 +157,10 @@ automatic Swipe.
 - Consumes the counted Clipr hook/script writing limit before provider work.
 - Loads the selected product and the user's account-added Swipr backgrounds.
 - Uses Pexels backgrounds from the selected account-added pack names.
+- Randomizes Pexels background assignment instead of walking pack photos in
+  saved order. Batch generation picks a random first-slide/preview-photo order
+  across drafts, and each draft uses a shuffled non-repeating cycle before any
+  selected photo repeats.
 - Generates multiple slideshow text drafts through the existing text-writing
   provider.
 - Saves each draft through `swipes.save`, including the generated caption,

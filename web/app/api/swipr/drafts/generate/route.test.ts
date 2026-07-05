@@ -206,10 +206,17 @@ describe("POST /api/swipr/drafts/generate", () => {
       api.swiprBackgrounds.listByLibraryQueryKeys,
       { libraryQueryKeys: ["desk setup"] },
     );
-    expect(mocks.convex.mutation).toHaveBeenCalledWith(
-      api.swipes.save,
+    const saveCall = mocks.convex.mutation.mock.calls.find(([mutation]) => {
+      return mutation === api.swipes.save;
+    });
+    const savedSwipe = saveCall?.[1] as {
+      backgroundId: string;
+      slides: Array<{ backgroundId: string; id: string }>;
+    };
+
+    expect(saveCall).toBeDefined();
+    expect(savedSwipe).toEqual(
       expect.objectContaining({
-        backgroundId: "background_1",
         caption: "caption",
         description: "Long post description",
         hashtags: ["#launch"],
@@ -217,14 +224,87 @@ describe("POST /api/swipr/drafts/generate", () => {
         productSourceId: "product_1",
         rationale: "rationale",
         socialCaption: "caption\n\nLong post description\n\n#launch",
-        slides: Array.from({ length: 8 }, (_, index) =>
-          expect.objectContaining({
-            backgroundId: index % 2 === 0 ? "background_1" : "background_2",
-            id: `slide_${index + 1}`,
-          }),
-        ),
       }),
     );
+    expect(savedSwipe.backgroundId).toBe(savedSwipe.slides[0]?.backgroundId);
+    expect(savedSwipe.slides.map((slide) => slide.id)).toEqual(
+      Array.from({ length: 8 }, (_, index) => `slide_${index + 1}`),
+    );
+    expect(new Set(savedSwipe.slides.map((slide) => slide.backgroundId))).toEqual(
+      new Set(["background_1", "background_2"]),
+    );
+    expect(
+      savedSwipe.slides.every((slide, index) => {
+        return (
+          index === 0 ||
+          slide.backgroundId !== savedSwipe.slides[index - 1]?.backgroundId
+        );
+      }),
+    ).toBe(true);
+  });
+
+  it("spreads draft preview backgrounds across the generated batch", async () => {
+    mocks.convex.query.mockImplementation((query) => {
+      if (query === api.products.get) {
+        return Promise.resolve(createProductDocument());
+      }
+
+      return Promise.resolve([
+        createBackground("background_1", "desk setup"),
+        createBackground("background_2", "desk setup"),
+        createBackground("background_3", "desk setup"),
+      ]);
+    });
+    mocks.createSwiprBatchTextGeneration.mockResolvedValue({
+      providerModel: "text-model",
+      providerPredictionId: "prediction_1",
+      slideshows: Array.from({ length: 3 }, (_, index) => ({
+        caption: `caption ${index + 1}`,
+        description: `Long post description ${index + 1}`,
+        hashtags: ["#launch"],
+        hook: `Hook ${index + 1}`,
+        rationale: `rationale ${index + 1}`,
+        slides: [
+          "Stop messy launches",
+          "Try this instead",
+          "Pick one clear owner",
+          "Use tiny launch lists",
+          "Ship before it feels perfect",
+          "Save proof as you go",
+          "Repeat what worked",
+          "Save this launch checklist",
+        ],
+        socialCaption: `caption ${index + 1}\n\nLong post description ${
+          index + 1
+        }\n\n#launch`,
+      })),
+    });
+
+    const response = await POST(
+      createRequest({
+        productId: "product_1",
+        selectedLibraryQueries: ["desk setup"],
+      }),
+    );
+    const savedSwipes = mocks.convex.mutation.mock.calls
+      .filter(([mutation]) => {
+        return mutation === api.swipes.save;
+      })
+      .map(([, payload]) => {
+        return payload as {
+          backgroundId: string;
+          slides: Array<{ backgroundId: string }>;
+        };
+      });
+
+    expect(response.status).toBe(200);
+    expect(savedSwipes).toHaveLength(3);
+    expect(new Set(savedSwipes.map((swipe) => swipe.backgroundId)).size).toBe(3);
+    expect(
+      savedSwipes.every((swipe) => {
+        return swipe.backgroundId === swipe.slides[0]?.backgroundId;
+      }),
+    ).toBe(true);
   });
 
   it("requires imported Pexels library backgrounds before provider generation", async () => {

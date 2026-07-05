@@ -101,14 +101,19 @@ export async function POST(request: Request) {
       replicate: createReplicateClient(),
       slideCount,
     });
+    const availableBackgroundIds = libraryBackgrounds.map(
+      (background) => background.id,
+    );
+    const coverBackgroundIds = pickSwiprDraftBackgroundIds({
+      availableBackgroundIds,
+      slideCount: textGeneration.slideshows.length,
+    });
     const createdSwipeIds: string[] = [];
 
     for (const [index, slideshow] of textGeneration.slideshows.entries()) {
       const backgroundIds = pickSwiprDraftBackgroundIds({
-        availableBackgroundIds: libraryBackgrounds.map(
-          (background) => background.id,
-        ),
-        offset: index * slideCount,
+        availableBackgroundIds,
+        preferredFirstBackgroundId: coverBackgroundIds[index],
         slideCount,
       });
       const slides = createSwiprDraftSlides({

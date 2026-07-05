@@ -19,6 +19,7 @@ import { createCliprJobTextGeneration } from "@/lib/clipstitchr/server/createCli
 import { createCliprJobVideoOutput } from "@/lib/clipstitchr/server/createCliprJobVideoOutput";
 import { createCliprSceneAvatarImage } from "@/lib/clipstitchr/server/createCliprSceneAvatarImage";
 import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
+import { pickSwiprDraftBackgroundIds } from "@/lib/clipstitchr/server/pickSwiprDraftBackgroundIds";
 import { createStitchrTemplateTextOverlay } from "./createStitchrTemplateTextOverlay";
 import { getOptionalStitchrTextOverlay } from "./getOptionalStitchrTextOverlay";
 import { processManualCliprDemo } from "./processManualCliprDemo";
@@ -80,6 +81,7 @@ import { getGenerationSpeedTierProfile } from "@/lib/clipstitchr/utils/getGenera
 import { getImageNeedsSwaprOutpaint } from "@/lib/clipstitchr/utils/getImageNeedsSwaprOutpaint";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
+import { getSeededIndex } from "@/lib/clipstitchr/utils/getSeededIndex";
 import { getStitchScoreSourceClipIds } from "@/lib/clipstitchr/utils/getStitchScoreSourceClipIds";
 import { getSwaprPredictionOutputUrl } from "@/lib/clipstitchr/utils/getSwaprPredictionOutputUrl";
 import { getSwaprSegmentDurationLimit } from "@/lib/clipstitchr/utils/getSwaprSegmentDurationLimit";
@@ -2176,11 +2178,26 @@ async function processSwipr({
     slideCount: SWIPR_MAX_SLIDE_COUNT,
   });
 
-  let backgroundIds = selectedPackBackgrounds.map((background) => background.id);
+  const selectedBackgroundIds = selectedPackBackgrounds.map(
+    (background) => background.id,
+  );
+  const preferredSelectedBackgroundId = selectedBackgroundIds.length
+    ? selectedBackgroundIds[
+        (getSeededIndex(`${task.runId}:swipr:backgrounds`, selectedBackgroundIds.length) +
+          input.draftIndex -
+          1) %
+          selectedBackgroundIds.length
+      ]
+    : undefined;
+  let backgroundIds = pickSwiprDraftBackgroundIds({
+    availableBackgroundIds: selectedBackgroundIds,
+    preferredFirstBackgroundId: preferredSelectedBackgroundId,
+    slideCount: SWIPR_MAX_SLIDE_COUNT,
+  });
 
   if (!backgroundIds.length) {
     const pexelsPhotos = await searchPexelsPhotoResults({
-      perPage: SWIPR_MAX_SLIDE_COUNT,
+      perPage: SWIPR_MAX_SLIDE_COUNT * 3,
       query: createSwiprAutomationPexelsQuery(product),
     });
 
@@ -2190,8 +2207,19 @@ async function processSwipr({
 
     const pexelsBackgroundIds: string[] = [];
 
-    for (let index = 0; index < SWIPR_MAX_SLIDE_COUNT; index += 1) {
-      const photo = pexelsPhotos[index % pexelsPhotos.length];
+    const pexelsPhotoIndexes = pickSwiprDraftBackgroundIds({
+      availableBackgroundIds: pexelsPhotos.map((_, index) => String(index)),
+      preferredFirstBackgroundId: String(
+        (getSeededIndex(`${task.runId}:swipr:pexels`, pexelsPhotos.length) +
+          input.draftIndex -
+          1) %
+          pexelsPhotos.length,
+      ),
+      slideCount: SWIPR_MAX_SLIDE_COUNT,
+    });
+
+    for (const pexelsPhotoIndex of pexelsPhotoIndexes) {
+      const photo = pexelsPhotos[Number(pexelsPhotoIndex)];
       const backgroundId = createId();
       const { bytes, contentType } = await downloadPexelsPhotoBytes(photo);
       const dimensions = readImageDimensionsFromBytes(bytes, contentType);

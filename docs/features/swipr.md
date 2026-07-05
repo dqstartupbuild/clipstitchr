@@ -302,7 +302,10 @@ The route:
 - Requires selected Pexels query packs.
 - Generates multiple slideshow text drafts with a SlideSmith-style prompt that
   writes complete, distinct slide decks without exposing internal template IDs.
-- Assigns saved Pexels background IDs across each deck.
+- Randomizes saved Pexels background IDs for each deck. The batch first picks a
+  random preview-photo order, then each Swipe uses a shuffled non-repeating
+  background cycle. If a selected pack has fewer photos than the slide count,
+  repeats only happen after the available photos have been used.
 - Saves every generated deck through `swipes.save`, so it can be reopened and
   edited like a manually saved Swipe.
 
@@ -315,10 +318,11 @@ the currently open Swipe.
 
 Automatic Swipr generation can use selected Mine Pexels packs for slide photos.
 The planner queues the task when the user has an eligible product. If selected
-packs are available, the provider worker uses those saved background IDs. If no
-selected pack backgrounds are available, it searches Pexels from the product and
-audience context, saves private one-off Pexels photo records, generates text for
-the max 8 slides, and saves an editable Swipe draft.
+packs are available, the provider worker randomizes those saved background IDs
+with the same non-repeating cycle used by batch generation. If no selected pack
+backgrounds are available, it searches a larger Pexels candidate set from the
+product and audience context, randomly picks the max 8 photos, saves private
+one-off Pexels photo records, generates text, and saves an editable Swipe draft.
 
 ## Abuse Protection
 
