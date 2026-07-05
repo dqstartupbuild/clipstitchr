@@ -9,7 +9,9 @@ import { openCookiePreferencesEventName } from "@/lib/clipstitchr/analytics/open
 import { setStoredCookieConsent } from "@/lib/clipstitchr/analytics/setStoredCookieConsent";
 import { CookieConsentBanner } from "@/app/_components/analytics/CookieConsentBanner";
 import { CookiePreferencesDialog } from "@/app/_components/analytics/CookiePreferencesDialog";
+import { PostHogIdentityReporter } from "@/app/_components/analytics/PostHogIdentityReporter";
 import { PostHogPageViewTracker } from "@/app/_components/analytics/PostHogPageViewTracker";
+import { TikTokIdentityReporter } from "@/app/_components/analytics/TikTokIdentityReporter";
 import { TikTokPixelScript } from "@/app/_components/analytics/TikTokPixelScript";
 import { TikTokViewContentTracker } from "@/app/_components/analytics/TikTokViewContentTracker";
 
@@ -104,8 +106,10 @@ export function CookieConsentManager() {
 
   return (
     <>
+      {preferences?.analytics && <PostHogIdentityReporter />}
       {preferences?.analytics && <PostHogPageViewTracker />}
       {preferences?.marketing && <TikTokPixelScript />}
+      {preferences?.marketing && <TikTokIdentityReporter />}
       {preferences?.marketing && <TikTokViewContentTracker />}
       {activePanel === "banner" && (
         <CookieConsentBanner

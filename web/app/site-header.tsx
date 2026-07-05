@@ -89,7 +89,6 @@ export function SiteHeader({
             </Link>
             <Link
               href="/dashboard"
-              prefetch={false}
               className="font-semibold transition-colors hover:text-text-primary"
             >
               Dashboard

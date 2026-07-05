@@ -9,7 +9,6 @@ describe("root providers", () => {
     vi.doUnmock("next/font/google");
     vi.doUnmock("@vercel/analytics/next");
     vi.doUnmock("@/app/_components/analytics/CookieConsentManager");
-    vi.doUnmock("@/app/_components/analytics/CookieConsentIdentityReporters");
     vi.doUnmock("@/app/ConvexClientProvider");
     vi.doUnmock("convex/react");
     vi.doUnmock("convex/react-clerk");
@@ -18,6 +17,11 @@ describe("root providers", () => {
   });
 
   it("renders RootLayout with app-level providers and structured data", async () => {
+    vi.doMock("@clerk/nextjs", () => ({
+      ClerkProvider: ({ children }: { children: React.ReactNode }) => (
+        <div data-provider="clerk">{children}</div>
+      ),
+    }));
     vi.doMock("next/font/google", () => ({
       Barlow_Condensed: () => ({ variable: "font-display" }),
       DM_Sans: () => ({ variable: "font-body" }),
@@ -29,6 +33,11 @@ describe("root providers", () => {
     }));
     vi.doMock("@/app/_components/analytics/CookieConsentManager", () => ({
       CookieConsentManager: () => <span>Cookie manager</span>,
+    }));
+    vi.doMock("@/app/ConvexClientProvider", () => ({
+      ConvexClientProvider: ({ children }: { children: React.ReactNode }) => (
+        <div data-provider="convex">{children}</div>
+      ),
     }));
 
     const { default: RootLayout, metadata } = await import("@/app/layout");
@@ -42,40 +51,8 @@ describe("root providers", () => {
     expect(markup).toContain("Cookie manager");
     expect(markup).toContain("App child");
     expect(markup).toContain("Analytics");
-    expect(markup).not.toContain("data-provider=\"clerk\"");
-    expect(markup).not.toContain("data-provider=\"convex\"");
     expect(markup).toContain("Organization");
     expect(markup).toContain("WebSite");
-  });
-
-  it("wraps authenticated app routes with Clerk, identity reporters, and Convex", async () => {
-    vi.doMock("@clerk/nextjs", () => ({
-      ClerkProvider: ({ children }: { children: React.ReactNode }) => (
-        <div data-provider="clerk">{children}</div>
-      ),
-    }));
-    vi.doMock("@/app/_components/analytics/CookieConsentIdentityReporters", () => ({
-      CookieConsentIdentityReporters: () => <span>Identity reporters</span>,
-    }));
-    vi.doMock("@/app/ConvexClientProvider", () => ({
-      ConvexClientProvider: ({ children }: { children: React.ReactNode }) => (
-        <div data-provider="convex">{children}</div>
-      ),
-    }));
-
-    const { AuthenticatedAppProviders } = await import(
-      "@/app/_components/auth/AuthenticatedAppProviders"
-    );
-    const markup = renderToStaticMarkup(
-      <AuthenticatedAppProviders>
-        <main>Authenticated child</main>
-      </AuthenticatedAppProviders>,
-    );
-
-    expect(markup).toContain("data-provider=\"clerk\"");
-    expect(markup).toContain("Identity reporters");
-    expect(markup).toContain("data-provider=\"convex\"");
-    expect(markup).toContain("Authenticated child");
   });
 
   it("creates the Convex provider with Clerk auth", async () => {

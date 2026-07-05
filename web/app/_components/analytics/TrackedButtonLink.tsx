@@ -37,12 +37,7 @@ export function TrackedButtonLink({
   };
 
   return (
-    <Link
-      href={href}
-      className={className}
-      onClick={handleClick}
-      prefetch={false}
-    >
+    <Link href={href} className={className} onClick={handleClick}>
       {children}
     </Link>
   );

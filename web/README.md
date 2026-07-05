@@ -42,7 +42,7 @@ TEXT_WRITING_MODEL_ID=anthropic/claude-sonnet-4.6
 
 | Command | Description |
 |---|---|
-| `npm run dev` | Start the webpack dev server with content watching |
+| `npm run dev` | Start dev server with content watching |
 | `npm run build` | Production build |
 | `npm run start` | Serve production build |
 | `npm run lint` | Run ESLint |
@@ -143,7 +143,6 @@ The app processes media in the browser and stores durable data in Convex and Clo
 │   └── case-studies/            # MDX case studies
 ├── scripts/
 │   ├── build-content-collections.mjs
-│   ├── run-dev.mjs
 │   └── watch-content-collections.mjs
 ├── proxy.ts                     # Clerk middleware and dashboard route protection
 └── public/
@@ -164,9 +163,7 @@ Update `NEXT_PUBLIC_SITE_URL` in `.env.local` before deploying to production. Da
 
 ## Authentication
 
-Clerk is mounted only inside authenticated route layouts through `AuthenticatedAppProviders`, initialized by `proxy.ts`, and used by auth and dashboard pages. Public marketing and content pages stay outside Clerk so they do not trigger development auth handshakes while browsing. `/dashboard` and nested dashboard pages are protected by Clerk middleware. App API routes under `/api` call `auth()` server-side and return `401` JSON responses when no signed-in user is present.
-
-`npm run dev` intentionally starts Next with `--webpack`. The current Turbopack dev server can panic while compiling the Clerk sign-in route in this app; production builds still use the normal `next build` path.
+Clerk is mounted in `app/layout.tsx`, initialized by `proxy.ts`, and used by the shared site header for sign-in, sign-up, and the profile menu. `/dashboard` and nested dashboard pages are protected by Clerk middleware. App API routes under `/api` call `auth()` server-side and return `401` JSON responses when no signed-in user is present.
 
 ## Writing Blog Posts
 
