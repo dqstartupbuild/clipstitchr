@@ -254,7 +254,7 @@ export function SequencePreviewPanel({
         </>
       ) : (
         <div className="rounded-lg border border-dashed border-border bg-slate-50 p-8 text-center text-sm text-text-secondary">
-          Select UGC and a product demo to preview the ads.
+          Select opener clips and a product demo to preview the ads.
         </div>
       )}
     </Panel>

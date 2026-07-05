@@ -163,6 +163,41 @@ Swipr:
 Swipr exists because sometimes a carousel is enough and forcing every idea into
 a video wastes energy.
 
+## Dashboard And Product UI
+
+The dashboard should feel like the same brand as the public pages, but calmer
+and more useful. It is a workspace people return to, not another sales pitch.
+
+Default dashboard language:
+
+- `opener clips` for the UGC-style clips that start a Stitch.
+- `product demos` for walkthroughs and screen recordings that show the app.
+- `Stitches` for saved finished video ads.
+- `carousel drafts` or `Swipes` for saved Swipr outputs.
+- `source clips` when talking about clips that can feed Stitchr, Clipr, or
+  Swapr.
+
+Use `UGC` only when the user needs the exact asset type, such as import
+compatibility, technical docs, or places where changing the label would make the
+data model harder to understand. In visible workflow copy, explain it in plain
+language first.
+
+Good dashboard lines:
+
+- Pick up where the content mess left off.
+- Stop hunting for the clips.
+- Make the ad without opening a timeline.
+- Fill the thin spots in your library.
+- Make slides when video is overkill.
+- Check what was worth posting.
+
+Avoid dashboard lines that sound like generic SaaS command centers:
+
+- Unlock your workspace.
+- Supercharge your content operations.
+- Create UGC at scale.
+- Manage all assets in one powerful hub.
+
 ## Product Description
 
 Default short description:

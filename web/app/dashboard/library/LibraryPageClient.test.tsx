@@ -517,7 +517,7 @@ describe("LibraryPageClient", () => {
     mocks.useSwiprLibrary.mockReturnValue(mocks.swiprLibrary);
   });
 
-  it("renders the UGC library tab by default and wires upload controls", async () => {
+  it("renders the opener library tab by default and wires upload controls", async () => {
     const { elements, testWindow } = renderLibraryPage();
     const uploadPanel = elements.find((element) =>
       Array.isArray(element.props?.allowedAssetTypes),
@@ -615,7 +615,7 @@ describe("LibraryPageClient", () => {
     );
   });
 
-  it("renders a searched UGC tab with avatar generation controls", async () => {
+  it("renders a searched opener tab with avatar generation controls", async () => {
     const { elements } = renderLibraryPage({
       stateValues: ["ugc", "match", "all", ""],
     });
@@ -626,7 +626,7 @@ describe("LibraryPageClient", () => {
     expect(section?.props).toEqual(
       expect.objectContaining({
         avatarCreatorError: "Avatar error",
-        emptyTitle: "No matching UGC",
+        emptyTitle: "No matching opener clips",
         isCreatingAvatarFromClip: true,
         totalCount: undefined,
       }),
@@ -754,7 +754,7 @@ describe("LibraryPageClient", () => {
     expect(section?.props).toEqual(
       expect.objectContaining({
         emptyDescription:
-          "Upload product walkthroughs or screen recordings to use after UGC.",
+          "Upload product walkthroughs or screen recordings to use after opener clips.",
         emptyTitle: "No demo videos yet",
         totalCount: 30,
       }),
@@ -889,7 +889,7 @@ describe("LibraryPageClient", () => {
     expect(mocks.library.loadMoreStitches).not.toHaveBeenCalled();
   });
 
-  it("maps old Clips tab links to UGC", () => {
+  it("maps old Clips tab links to opener clips", () => {
     const { elements } = renderLibraryPage({
       search: "?tab=clips",
     });
@@ -902,7 +902,7 @@ describe("LibraryPageClient", () => {
             id: "clipr_1",
           }),
         ]),
-        title: "UGC",
+        title: "Opener clips",
       }),
     );
   });
@@ -931,7 +931,7 @@ describe("LibraryPageClient", () => {
     );
   });
 
-  it("renders UGC and swap tabs without upload controls", () => {
+  it("renders opener and swap tabs without upload controls", () => {
     mocks.useShowUploadControls.mockReturnValue(false);
 
     const ugc = renderLibraryPage({
@@ -941,7 +941,9 @@ describe("LibraryPageClient", () => {
       stateValues: ["swaps", "", "all", ""],
     }).elements;
 
-    expect(findByProp(ugc, "id", "ugc-clips")?.props?.title).toBe("UGC");
+    expect(findByProp(ugc, "id", "ugc-clips")?.props?.title).toBe(
+      "Opener clips",
+    );
     expect(findByProp(swaps, "id", "swaps")?.props?.title).toBe("Swaps");
     expect(
       ugc.some((element) => Array.isArray(element.props?.allowedAssetTypes)),

@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { BrandMark } from "@/app/_components/BrandMark";
 import { DashboardNotificationBell } from "@/app/_components/dashboard/DashboardNotificationBell";
@@ -23,26 +24,42 @@ import { DashboardProductSwitcher } from "@/app/_components/dashboard/DashboardP
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 
-const links = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/dashboard/library", label: "Library", icon: Library },
-  { href: "/dashboard/stitchr", label: "Stitchr", icon: Scissors },
-  { href: "/dashboard/clipr", label: "Clipr", icon: CirclePlay },
-  { href: "/dashboard/swipr", label: "Swipr", icon: Images },
-  { href: "/dashboard/swapr", label: "Swapr", icon: Shuffle },
-  { href: "/dashboard/hooks", label: "Hook Lab", icon: FlaskConical },
-  { href: "/dashboard/schedule", label: "Schedule", icon: CalendarClock },
-  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+const navigationSections = [
+  {
+    label: "Home base",
+    links: [
+      { href: "/dashboard", label: "Dashboard", icon: Home },
+      { href: "/dashboard/library", label: "Library", icon: Library },
+    ],
+  },
+  {
+    label: "Make",
+    links: [
+      { href: "/dashboard/stitchr", label: "Stitchr", icon: Scissors },
+      { href: "/dashboard/clipr", label: "Clipr", icon: CirclePlay },
+      { href: "/dashboard/swipr", label: "Swipr", icon: Images },
+      { href: "/dashboard/swapr", label: "Swapr", icon: Shuffle },
+      { href: "/dashboard/hooks", label: "Hook Lab", icon: FlaskConical },
+    ],
+  },
+  {
+    label: "Ship",
+    links: [
+      { href: "/dashboard/schedule", label: "Schedule", icon: CalendarClock },
+      { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
+      { href: "/dashboard/settings", label: "Settings", icon: Settings },
+    ],
+  },
 ];
 
 export function DashboardSidebar() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { requiresOnboarding } = useDashboardProduct();
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-surface px-4 py-3 lg:hidden">
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
         <BrandMark />
         <div className="flex items-center gap-2">
           <DashboardNotificationBell />
@@ -50,7 +67,7 @@ export function DashboardSidebar() {
           <button
             type="button"
             aria-label="Open navigation"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border text-text-primary transition-colors hover:bg-surface-muted"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface-muted text-text-primary transition-colors hover:border-border-hover hover:text-accent-dark"
             onClick={() => setIsOpen(true)}
           >
             <Menu aria-hidden className="h-5 w-5" />
@@ -69,7 +86,7 @@ export function DashboardSidebar() {
 
       <aside
         className={[
-          "fixed inset-y-0 left-0 z-50 flex h-dvh w-72 max-w-[85vw] flex-col border-r border-border bg-surface px-4 py-4 shadow-xl transition-transform duration-200 lg:sticky lg:inset-auto lg:top-0 lg:z-auto lg:h-screen lg:w-auto lg:max-w-none lg:translate-x-0 lg:shadow-none",
+          "fixed inset-y-0 left-0 z-50 flex h-dvh w-72 max-w-[85vw] flex-col border-r border-border bg-surface/95 px-4 py-4 shadow-2xl shadow-black/35 backdrop-blur-xl transition-transform duration-200 lg:sticky lg:inset-auto lg:top-0 lg:z-auto lg:h-screen lg:w-auto lg:max-w-none lg:translate-x-0 lg:shadow-none",
           isOpen ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
       >
@@ -78,7 +95,7 @@ export function DashboardSidebar() {
           <button
             type="button"
             aria-label="Close navigation"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border text-text-primary transition-colors hover:bg-surface-muted lg:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface-muted text-text-primary transition-colors hover:border-border-hover hover:text-accent-dark lg:hidden"
             onClick={() => setIsOpen(false)}
           >
             <X aria-hidden className="h-5 w-5" />
@@ -91,32 +108,49 @@ export function DashboardSidebar() {
         )}
         <nav className="mt-6 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
           {requiresOnboarding ? (
-            <p className="rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm font-semibold leading-6 text-text-secondary">
-              Finish your first batch to unlock the workspace.
+            <p className="rounded-lg border border-border bg-surface-muted px-3 py-3 text-sm font-semibold leading-6 text-text-secondary">
+              Finish your first set of ads to open the rest of ClipStitchr.
             </p>
-          ) : links.map((item) => {
-            const Icon = item.icon;
+          ) : navigationSections.map((section) => (
+            <div key={section.label} className="grid gap-1">
+              <p className="px-3 pt-3 text-[11px] font-bold uppercase text-text-tertiary">
+                {section.label}
+              </p>
+              {section.links.map((item) => {
+                const Icon = item.icon;
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/dashboard" &&
+                    pathname.startsWith(`${item.href}/`));
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="inline-flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-text-secondary transition-colors hover:bg-surface-muted hover:text-accent"
-                onClick={() => {
-                  trackPostHogEvent("dashboard_navigation_clicked", {
-                    destination: item.href,
-                    label: item.label,
-                  });
-                  setIsOpen(false);
-                }}
-              >
-                <Icon aria-hidden className="h-4 w-4" />
-                {item.label}
-              </Link>
-            );
-          })}
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={[
+                      "inline-flex items-center gap-3 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors",
+                      isActive
+                        ? "border-border-hover bg-surface-muted text-accent-dark"
+                        : "border-transparent text-text-secondary hover:border-border hover:bg-surface-muted hover:text-accent-dark",
+                    ].join(" ")}
+                    onClick={() => {
+                      trackPostHogEvent("dashboard_navigation_clicked", {
+                        destination: item.href,
+                        label: item.label,
+                      });
+                      setIsOpen(false);
+                    }}
+                  >
+                    <Icon aria-hidden className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
-        <div className="mt-4 flex items-center gap-3 border-t border-border pt-4 text-sm font-semibold text-text-secondary">
+        <div className="mt-4 flex items-center gap-3 rounded-lg border border-border bg-surface-muted px-3 py-3 text-sm font-semibold text-text-secondary">
           <UserButton />
           Account
         </div>

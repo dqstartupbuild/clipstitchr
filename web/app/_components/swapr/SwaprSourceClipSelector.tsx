@@ -34,7 +34,7 @@ export function SwaprSourceClipSelector({
           B
         </span>
         <div>
-          <p className="text-sm font-semibold text-accent-dark">UGC</p>
+          <p className="text-sm font-semibold text-accent-dark">Source video</p>
           <h2 className="mt-0.5 text-base font-bold text-text-primary">
             Pick the motion
           </h2>
@@ -79,13 +79,13 @@ export function SwaprSourceClipSelector({
             No source videos yet
           </h3>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
-            Upload UGC or create a stitch before using Swapr.
+            Upload an opener clip or create a Stitch before using Swapr.
           </p>
           <Link
             href="/dashboard/library?tab=ugc&upload=open#upload-panel"
             className="btn-secondary mt-4"
           >
-            Upload Video
+            Upload video
           </Link>
         </div>
       )}

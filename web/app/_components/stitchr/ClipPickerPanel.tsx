@@ -135,7 +135,7 @@ export function ClipPickerPanel({
             label="Search clip picker videos"
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search UGC and demo videos"
+            placeholder="Search opener clips and demos"
           />
         </div>
       </div>

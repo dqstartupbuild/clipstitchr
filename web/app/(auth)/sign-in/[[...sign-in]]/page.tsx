@@ -5,7 +5,7 @@ import { createPageMetadata } from "@/lib/metadata";
 export const metadata = createPageMetadata({
   title: "Sign in | ClipStitchr",
   description:
-    "Sign in to ClipStitchr to manage saved clips, product demos, drafts, and finished ads without reopening the whole content mess.",
+    "Sign in to ClipStitchr to manage opener clips, product demos, drafts, and finished Stitches without reopening the whole content mess.",
   canonical: "/sign-in",
   noIndex: true,
 });
@@ -15,7 +15,7 @@ export default function SignInPage() {
     <AuthPageShell
       eyebrow="ClipStitchr access"
       title="Back to the place where your clips actually turn into ads."
-      description="Sign in to manage UGC clips, product demos, avatar photos, stitches, swipes, and longer vertical exports from one workspace."
+      description="Sign in to manage opener clips, product demos, avatar photos, Stitches, Swipes, and longer vertical exports without opening five folders first."
     >
       <SignIn
         routing="path"

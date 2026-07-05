@@ -58,20 +58,20 @@ const videoLibraryContent: Record<
   }
 > = {
   ugc: {
-    title: "UGC",
-    emptyTitle: "No UGC yet",
+    title: "Opener clips",
+    emptyTitle: "No opener clips yet",
     emptyDescription:
       "Upload or generate hooks, reactions, b-roll, or creator footage to pair with demos.",
     sectionId: "ugc-clips",
-    searchEmptyTitle: "No matching UGC",
+    searchEmptyTitle: "No matching opener clips",
     searchEmptyDescription:
-      "No saved UGC matches that title or tag.",
+      "No saved opener clips match that title or tag.",
   },
   demo: {
-    title: "Demo Videos",
+    title: "Product demos",
     emptyTitle: "No demo videos yet",
     emptyDescription:
-      "Upload product walkthroughs or screen recordings to use after UGC.",
+      "Upload product walkthroughs or screen recordings to use after opener clips.",
     sectionId: "demo-videos",
     searchEmptyTitle: "No matching demo videos",
     searchEmptyDescription:
@@ -81,7 +81,7 @@ const videoLibraryContent: Record<
     title: "Swaps",
     emptyTitle: "No swaps yet",
     emptyDescription:
-      "Create new UGC when your library needs more material.",
+      "Create new source clips when your library needs more material.",
     sectionId: "swaps",
     searchEmptyTitle: "No matching swaps",
     searchEmptyDescription:
@@ -374,8 +374,8 @@ export function LibraryPageClient() {
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <LibraryPageHeader
           eyebrow="Library"
-          title="Library"
-          description="Keep your clips, demos, avatars, templates, Swipes, and finished stitches in one place."
+          title="Stop hunting for the clips."
+          description="Keep opener clips, demos, avatars, templates, carousels, and Stitches where you can actually find them."
         />
         {error ? (
           <DashboardAlert variant="error">{error}</DashboardAlert>
@@ -501,7 +501,7 @@ export function LibraryPageClient() {
                 : stitchStatusFilter === "posted"
                   ? "No posted stitches"
                   : stitchStatusFilter === "all"
-                    ? "No stitches yet"
+                    ? "No Stitches yet"
                     : undefined
             }
             emptyDescription={
@@ -550,7 +550,7 @@ export function LibraryPageClient() {
                 : swipeStatusFilter === "posted"
                   ? "No posted Swipes"
                   : swipeStatusFilter === "all"
-                    ? "No Swipes yet"
+                    ? "No carousel drafts yet"
                     : undefined
             }
             emptyDescription={

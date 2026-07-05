@@ -3,9 +3,9 @@ import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHe
 export function DashboardHeader() {
   return (
     <DashboardPageHeader
-      eyebrow="Workspace"
-      title="Welcome to ClipStitchr! 👋"
-      description="Track the clips, demos, and stitches ready to turn into ads."
+      eyebrow="Home"
+      title="Pick up where the content mess left off."
+      description="Check your clips, demos, Stitches, and carousel drafts without opening five folders first."
     />
   );
 }

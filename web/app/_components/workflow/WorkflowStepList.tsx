@@ -12,7 +12,7 @@ type WorkflowStepListProps = {
 export function WorkflowStepList({ label, steps }: WorkflowStepListProps) {
   return (
     <nav aria-label={label}>
-      <ol className="grid gap-2 rounded-lg border border-border bg-surface p-2 shadow-sm shadow-slate-200/60 sm:grid-cols-4">
+      <ol className="grid gap-2 rounded-lg border border-border bg-surface p-2 shadow-[0_18px_60px_rgba(0,0,0,0.16)] sm:grid-cols-4">
         {steps.map((step, index) => (
           <li
             key={step.label}
@@ -21,7 +21,7 @@ export function WorkflowStepList({ label, steps }: WorkflowStepListProps) {
               step.status === "current"
                 ? "bg-surface-muted"
                 : step.status === "complete"
-                  ? "bg-white"
+                  ? "bg-surface-elevated"
                   : "",
             ].join(" ")}
           >

@@ -305,9 +305,9 @@ export function SwaprPageClient() {
     <DashboardShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <DashboardPageHeader
-          eyebrow="UGC swapping"
-          title="Create UGC"
-          description="Create new UGC from an avatar photo and existing UGC."
+          eyebrow="Swapr"
+          title="Make another source clip from what you have."
+          description="Choose an avatar photo and a saved video. Swapr turns them into a reusable opener clip."
         />
 
         {library.error || photoLibrary.error || assetLoadError ? (
@@ -333,7 +333,7 @@ export function SwaprPageClient() {
               <div className="grid gap-4">
                 <PanelHeader
                   eyebrow="Swapr"
-                  title="Choose two inputs"
+                  title="Choose the photo and motion"
                   actions={
                     <div className="w-full sm:w-60">
                       <AvatarFilterSelect

@@ -1457,7 +1457,7 @@ export function StitchrPageClient() {
     }
 
     if (mode !== "longr" && !activeUgcMetadata) {
-      setAutoTextMessage("Select UGC before generating text.");
+      setAutoTextMessage("Select an opener clip before generating text.");
       return;
     }
 
@@ -1935,7 +1935,7 @@ export function StitchrPageClient() {
     },
     {
       label: "Create",
-      description: "Save and download finished ads.",
+      description: "Save and download the results.",
       status: hasCreatedStitches ? "complete" : "upcoming",
     },
   ] as const;

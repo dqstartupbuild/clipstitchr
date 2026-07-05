@@ -104,9 +104,9 @@ export function CliprPageClient() {
     : isDemoMode && !activeDemoClipId
       ? "Add a product demo before remixing one."
       : !isDemoMode && !activeAvatarId
-        ? "Add an avatar before generating UGC."
+        ? "Add an avatar before generating clips."
         : !isDemoMode && selectedAvatarPhotoCount === 0
-          ? "Add avatar photos before generating UGC."
+          ? "Add avatar photos before generating clips."
           : null;
 
   return (
@@ -114,11 +114,11 @@ export function CliprPageClient() {
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <DashboardPageHeader
           eyebrow="Clip generator"
-          title="Create more UGC"
+          title="Fill the thin spots in your library."
           description={
             isCliprScriptModeEnabled
-              ? "Generate reactions, b-roll, or quick talking clips when you need more footage for Stitchr."
-              : "Generate reactions or b-roll when you need more footage for Stitchr."
+              ? "Generate reactions, b-roll, talking clips, or demo remixes when you need more source footage for Stitchr."
+              : "Generate reactions or b-roll when you need more source footage for Stitchr."
           }
         />
 
@@ -151,10 +151,10 @@ export function CliprPageClient() {
                   : mode === "broll"
                     ? "Generate b-roll"
                     : mode === "script"
-                      ? "Generate a talking clip"
-                    : mode === "demo"
-                      ? "Remix a demo"
-                      : "Generate a Clip"
+                  ? "Generate a talking clip"
+                  : mode === "demo"
+                    ? "Remix a demo"
+                    : "Generate a clip"
               }
               actions={<CliprModeToggle value={mode} onChange={setMode} />}
             />
@@ -217,7 +217,7 @@ export function CliprPageClient() {
                 <p className="text-sm leading-6 text-text-secondary">
                   {isDemoMode
                     ? "Clipr saves finished remixed demos into the Demo library."
-                    : "Clipr saves finished reactions and b-roll into UGC."}
+                    : "Clipr saves finished reactions and b-roll as opener clips."}
                 </p>
               )}
               <Button
@@ -245,7 +245,7 @@ export function CliprPageClient() {
                   })
                 }
               >
-                {isDemoMode ? "Generate Demo" : "Generate UGC"}
+                {isDemoMode ? "Generate demo" : "Generate clip"}
               </Button>
             </div>
           </Panel>

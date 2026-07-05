@@ -35,8 +35,8 @@ type SwiprSwipesSectionProps = {
 
 export function SwiprSwipesSection({
   backgrounds,
-  emptyDescription = "Save a carousel from Swipr to reuse and download it later.",
-  emptyTitle = "No Swipes yet",
+  emptyDescription = "Save a Swipe from Swipr when slides fit the idea better than another video.",
+  emptyTitle = "No carousel drafts yet",
   id = "swipes",
   statusCounts,
   statusFilter = "active",

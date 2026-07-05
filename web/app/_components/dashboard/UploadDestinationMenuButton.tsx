@@ -23,23 +23,23 @@ const uploadControlsSearch = `${UPLOAD_CONTROLS_SEARCH_PARAM}=${UPLOAD_CONTROLS_
 const uploadDestinations = [
   {
     assetType: "ugc",
-    description: "Creator hooks, reactions, b-roll, and social proof.",
+    description: "Creator hooks, reactions, b-roll, or anything you want up front.",
     href: `/dashboard/library?tab=ugc&${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
     icon: Video,
-    label: "UGC",
+    label: "Opener clip",
     page: "/dashboard/library",
   },
   {
     assetType: "demo",
-    description: "Product walkthroughs, screen recordings, and demos.",
+    description: "The app walkthrough or screen recording that comes after the opener.",
     href: `/dashboard/library?tab=demo&${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
     icon: MonitorPlay,
-    label: "Demo video",
+    label: "Product demo",
     page: "/dashboard/library",
   },
   {
     assetType: "photo",
-    description: "Avatar photos for Swapr and AI photo generation.",
+    description: "Photos for making more source clips when the library is thin.",
     href: `/dashboard/library?tab=avatars&${uploadControlsSearch}${UPLOAD_CONTROLS_HASH}`,
     icon: ImagePlus,
     label: "Avatar photo",
@@ -79,7 +79,6 @@ export function UploadDestinationMenuButton() {
         icon={<UploadCloud aria-hidden className="h-4 w-4" />}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        className="bg-white"
         onClick={() => {
           if (!isOpen) {
             trackPostHogEvent("upload_menu_opened", {
@@ -104,9 +103,9 @@ export function UploadDestinationMenuButton() {
           <div
             role="dialog"
             aria-label="Choose upload type"
-            className="absolute right-0 top-12 z-50 w-[min(20rem,calc(100vw-2rem))] rounded-lg border border-border bg-white p-2 shadow-xl shadow-slate-900/10"
+            className="absolute right-0 top-12 z-50 w-[min(21rem,calc(100vw-2rem))] rounded-lg border border-border bg-surface p-2 shadow-2xl shadow-black/30"
           >
-            <p className="px-2 py-2 text-xs font-bold uppercase tracking-wide text-text-tertiary">
+            <p className="px-2 py-2 text-xs font-bold uppercase text-text-tertiary">
               Upload
             </p>
             <div className="flex flex-col gap-1">
@@ -132,7 +131,7 @@ export function UploadDestinationMenuButton() {
                       }
                     }}
                   >
-                    <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent">
+                    <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-surface-muted text-accent-dark">
                       <Icon aria-hidden className="h-4 w-4" />
                     </span>
                     <span className="min-w-0">

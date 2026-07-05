@@ -167,7 +167,7 @@ describe("CliprPageClient", () => {
   it("selects the default product before falling back to the first product", () => {
     const markup = renderToStaticMarkup(<CliprPageClient />);
 
-    expect(markup).toContain("Header:Create more UGC");
+    expect(markup).toContain("Header:Fill the thin spots in your library.");
     expect(markup).toContain("CliprSceneControls");
     expect(mocks.sceneControlsProps).toEqual(
       expect.objectContaining({

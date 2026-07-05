@@ -188,7 +188,7 @@ describe("SettingsPageClient", () => {
   it("renders the settings workspace with active product automation", () => {
     const markup = renderToStaticMarkup(<SettingsPageClient />);
 
-    expect(markup).toContain("Settings");
+    expect(markup).toContain("Keep ClipStitchr pointed at the right app");
     expect(markup).toContain("Product settings");
     expect(markup).toContain("Edit saved products");
     expect(markup).toContain("Color mode");

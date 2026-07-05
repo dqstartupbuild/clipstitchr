@@ -25,9 +25,9 @@ export function SettingsPageClient() {
     <DashboardShell>
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
         <DashboardPageHeader
-          eyebrow="Workspace"
-          title="Settings"
-          description="Edit product details, automation, and account preferences."
+          eyebrow="Product setup"
+          title="Keep ClipStitchr pointed at the right app."
+          description="Edit product details, posting preferences, and the defaults that save you from repeating yourself."
           actions={null}
         />
         <SettingsProductSection

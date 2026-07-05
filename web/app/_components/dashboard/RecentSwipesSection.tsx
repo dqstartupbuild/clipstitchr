@@ -34,12 +34,14 @@ export function RecentSwipesSection({
   return (
     <section id="recent-swipes">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-bold text-text-primary">Recent Swipes</h2>
+        <h2 className="text-xl font-bold text-text-primary">
+          Carousel drafts
+        </h2>
         <SecondaryButtonLink
           href="/dashboard/library?tab=swipes"
           className="h-9 px-3 text-xs"
         >
-          See all
+          See Swipes
         </SecondaryButtonLink>
       </div>
       {swipes.length ? (
@@ -62,8 +64,8 @@ export function RecentSwipesSection({
         </div>
       ) : (
         <DashboardEmptyState
-          title="No Swipes yet"
-          description="Save a carousel from Swipr to reuse and download it later."
+          title="No carousel drafts yet"
+          description="Save a Swipe from Swipr when an idea works better as slides than another video."
         />
       )}
     </section>

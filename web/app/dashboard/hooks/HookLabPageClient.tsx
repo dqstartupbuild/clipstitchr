@@ -25,7 +25,7 @@ export function HookLabPageClient() {
         <DashboardPageHeader
           eyebrow="Writing"
           title="Hook Lab"
-          description="Keep the lines that sound like you, block the ones that do not, and use that taste in new stitches."
+          description="Keep the lines that sound like you, block the ones that feel like template copy, and reuse that taste in new Stitches."
           actions={null}
         />
         {error ? (

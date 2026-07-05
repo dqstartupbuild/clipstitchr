@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = createPageMetadata({
   title: `First Ads Setup | ${site.name}`,
   description:
-    "Set up a product, upload UGC and demo clips, review the scores, and make your first ClipStitchr ads without starting in an editor.",
+    "Set up a product, upload opener and demo clips, review the scores, and make your first ClipStitchr ads without starting in an editor.",
   canonical: "/dashboard/onboarding",
   noIndex: true,
 });

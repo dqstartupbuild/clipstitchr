@@ -61,14 +61,12 @@ export function RecentUploadsSection({
   return (
     <section id="recent-uploads">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-bold text-text-primary">
-          Recent Uploads
-        </h2>
+        <h2 className="text-xl font-bold text-text-primary">Fresh footage</h2>
         <SecondaryButtonLink
           href="/dashboard/library"
           className="h-9 px-3 text-xs"
         >
-          See all
+          See library
         </SecondaryButtonLink>
       </div>
       {clips.length ? (
@@ -94,8 +92,8 @@ export function RecentUploadsSection({
         </div>
       ) : (
         <DashboardEmptyState
-          title="No uploads yet"
-          description="Upload UGC or product demos to start building your ad library."
+          title="No clips here yet"
+          description="Upload the opener clips or product demos you already have. Future you will be grateful."
         />
       )}
     </section>

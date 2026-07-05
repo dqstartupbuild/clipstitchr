@@ -8,11 +8,11 @@ export function StitchrEmptyState() {
     <Panel className="p-8 text-center">
       <UploadCloud aria-hidden className="mx-auto h-10 w-10 text-accent" />
       <h2 className="mt-4 text-xl font-bold text-text-primary">
-        Upload at least one UGC and one demo video.
+        Add one opener clip and one product demo.
       </h2>
       <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-text-secondary">
-        Add both clip types to your library, then come back to create your
-        first ad variant.
+        Once both are in the Library, Stitchr can turn them into a finished ad
+        you can review.
       </p>
       <SecondaryButtonLink href={UPLOAD_CONTROLS_HREF} className="mt-5">
         Go to Library

@@ -11,8 +11,8 @@ type DashboardAlertProps = {
 
 const variantClasses: Record<DashboardAlertVariant, string> = {
   error: "border-red-200 bg-red-50 text-red-700",
-  info: "border-accent/25 bg-surface-muted text-accent-dark",
-  success: "border-accent/25 bg-surface-muted text-accent-dark",
+  info: "border-accent/30 bg-surface-muted text-accent-dark",
+  success: "border-accent/30 bg-surface-muted text-accent-dark",
   warning: "border-amber-200 bg-amber-50 text-amber-800",
 };
 
@@ -33,7 +33,7 @@ export function DashboardAlert({
   return (
     <div
       className={[
-        "rounded-lg border p-4 text-sm",
+        "rounded-lg border p-4 text-sm shadow-[0_14px_42px_rgba(0,0,0,0.12)]",
         variantClasses[variant],
       ].join(" ")}
     >

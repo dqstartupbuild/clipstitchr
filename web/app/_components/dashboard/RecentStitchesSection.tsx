@@ -85,13 +85,13 @@ export function RecentStitchesSection({
     <section id="recent-stitches">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold text-text-primary">
-          Recent Stitches
+          Ads ready to review
         </h2>
         <SecondaryButtonLink
           href="/dashboard/library?tab=stitches"
           className="h-9 px-3 text-xs"
         >
-          See all
+          See Stitches
         </SecondaryButtonLink>
       </div>
       {stitches.length ? (
@@ -124,8 +124,8 @@ export function RecentStitchesSection({
         </div>
       ) : (
         <DashboardEmptyState
-          title="No stitches yet"
-          description="Create your first stitch after you have at least one UGC and one product demo."
+          title="No Stitches yet"
+          description="Create your first Stitch after you have at least one opener clip and one product demo."
         />
       )}
     </section>

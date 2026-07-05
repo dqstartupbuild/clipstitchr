@@ -8,12 +8,15 @@ Stitchr templates.
 
 Library tabs are grouped by the way users think about the work:
 
-- Videos: UGC, Product demos, Swaps
+- Videos: Openers, Product demos, Swaps
 - Finished: Stitches, Carousels
 - Assets: Avatars, Templates, Pexels
 
-UGC is the default tab when no `tab` query is present. The old All tab is no
-longer shown. Old dashboard URLs stay as compatibility redirects:
+The Openers tab is backed by the `ugc` tab value because those clips remain the
+UGC-compatible source clips in the data model. Openers is the visible label so
+the product UI sounds more like the user's actual job: pick the first half of an
+ad. The old All tab is no longer shown. Old dashboard URLs stay as
+compatibility redirects:
 
 - `/dashboard/uploads` -> `/dashboard/library`
 - `/dashboard/avatars` -> `/dashboard/library?tab=avatars`
@@ -69,11 +72,11 @@ load the data needed by `/dashboard/library`:
 The dashboard upload selector routes users to the matching Library tab with
 upload controls open:
 
-- UGC -> `/dashboard/library?tab=ugc&upload=open#upload-panel`
+- Opener clip -> `/dashboard/library?tab=ugc&upload=open#upload-panel`
 - Demo -> `/dashboard/library?tab=demo&upload=open#upload-panel`
 - Avatar photo -> `/dashboard/library?tab=avatars&upload=open#upload-panel`
 
-UGC and Demo uploads render in the main Library page. Avatar uploads render
+Opener and Demo uploads render in the main Library page. Avatar uploads render
 inside the Avatars tab so the assignment controls remain next to avatar
 management.
 

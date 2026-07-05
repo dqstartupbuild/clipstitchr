@@ -268,11 +268,11 @@ describe("Clipr components", () => {
       />,
     );
 
-    expect(emptyMarkup).toContain("Queued UGC will appear");
+    expect(emptyMarkup).toContain("Queued clips will appear");
     expect(populatedMarkup).toContain("Stop losing demo viewers");
     expect(populatedMarkup).toContain("Music generated for export.");
     expect(populatedMarkup).toContain("Here is the generated avatar line.");
-    expect(populatedMarkup).toContain("View UGC");
+    expect(populatedMarkup).toContain("View opener clips");
     expect(fallbackTitleMarkup).toContain("Talking avatar clip");
   });
 

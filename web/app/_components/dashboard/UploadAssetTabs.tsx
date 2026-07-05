@@ -9,7 +9,7 @@ type UploadAssetTabsProps = {
 };
 
 const tabs: { label: string; value: UploadAssetType }[] = [
-  { label: "UGC", value: "ugc" },
+  { label: "Openers", value: "ugc" },
   { label: "Demo", value: "demo" },
   { label: "Photo", value: "photo" },
 ];
@@ -24,7 +24,7 @@ export function UploadAssetTabs({
     : tabs;
 
   return (
-    <div className="inline-flex rounded-lg border border-border bg-slate-100 p-1">
+    <div className="inline-flex rounded-lg border border-border bg-surface-muted p-1">
       {visibleTabs.map((tab) => (
         <button
           key={tab.value}
@@ -33,7 +33,7 @@ export function UploadAssetTabs({
           className={[
             "h-8 rounded-md px-3 text-sm font-semibold transition-colors",
             value === tab.value
-              ? "bg-white text-accent shadow-sm"
+              ? "bg-surface text-accent-dark shadow-sm"
               : "text-text-secondary hover:text-text-primary",
           ].join(" ")}
         >

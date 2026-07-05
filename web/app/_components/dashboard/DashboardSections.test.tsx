@@ -24,6 +24,10 @@ vi.mock("@clerk/nextjs", () => ({
   UserButton: () => <span>User menu</span>,
 }));
 
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/dashboard/library",
+}));
+
 vi.mock("convex/react", () => ({
   useConvexAuth: vi.fn(() => ({
     isAuthenticated: true,
@@ -112,7 +116,7 @@ describe("dashboard shell sections", () => {
       <DashboardStats ugcCount={1} demoCount={2} stitchesCount={4} />,
     );
 
-    expect(headerMarkup).toContain("Welcome to ClipStitchr");
+    expect(headerMarkup).toContain("Pick up where the content mess left off");
     expect(customHeaderMarkup).toContain("Custom action");
     expect(shellMarkup).toContain("Workspace child");
     expect(sidebarMarkup).toContain("Library");
@@ -122,7 +126,7 @@ describe("dashboard shell sections", () => {
     expect(sidebarMarkup).not.toContain("Templates");
     expect(sidebarMarkup).not.toContain("Avatars");
     expect(sidebarMarkup).toContain("Settings");
-    expect(statsMarkup).toContain("Demo Videos");
+    expect(statsMarkup).toContain("Product demos");
     expect(statsMarkup).toContain("4");
   });
 
@@ -131,7 +135,7 @@ describe("dashboard shell sections", () => {
 
     const sidebarMarkup = renderToStaticMarkup(<DashboardSidebar />);
 
-    expect(sidebarMarkup).toContain("Finish your first batch");
+    expect(sidebarMarkup).toContain("Finish your first set of ads");
     expect(sidebarMarkup).not.toContain('href="/dashboard/library"');
     expect(sidebarMarkup).not.toContain('href="/dashboard/stitchr"');
     expect(sidebarMarkup).not.toContain('href="/dashboard/settings"');
@@ -207,9 +211,9 @@ describe("dashboard shell sections", () => {
       </>,
     );
 
-    expect(markup).toContain("No stitches yet");
-    expect(markup).toContain("No Swipes yet");
-    expect(markup).toContain("No uploads yet");
+    expect(markup).toContain("No Stitches yet");
+    expect(markup).toContain("No carousel drafts yet");
+    expect(markup).toContain("No clips here yet");
   });
 
   it("renders populated recent dashboard cards and keeps missing-background Swipes visible", () => {

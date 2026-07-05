@@ -17,9 +17,11 @@ export function PanelHeader({
     <div className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0">
         {eyebrow ? (
-          <p className="text-sm font-semibold text-accent-dark">{eyebrow}</p>
+          <p className="text-xs font-bold uppercase text-accent-dark">
+            {eyebrow}
+          </p>
         ) : null}
-        <h2 className="mt-0.5 text-base font-bold text-text-primary">
+        <h2 className="mt-1 text-lg font-bold text-text-primary">
           {title}
         </h2>
         {description ? (

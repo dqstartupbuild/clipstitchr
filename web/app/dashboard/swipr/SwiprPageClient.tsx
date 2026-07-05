@@ -1026,12 +1026,16 @@ export function SwiprPageClient() {
     <DashboardShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <DashboardPageHeader
-          eyebrow={isEditingSavedSwipe ? "Swipe editor" : "Carousel generator"}
-          title={isEditingSavedSwipe ? "Edit Swipe" : "Create TikTok carousels"}
+          eyebrow={isEditingSavedSwipe ? "Swipe editor" : "Swipr"}
+          title={
+            isEditingSavedSwipe
+              ? "Polish this Swipe."
+              : "Make slides when video is overkill."
+          }
           description={
             isEditingSavedSwipe
               ? "Change the photos or text, then save the latest version."
-              : "Build vertical slides with a different photo and text on each one."
+              : "Build vertical carousel drafts from saved photos, Pexels packs, and plain text."
           }
         />
 

@@ -200,6 +200,73 @@
   background-size: 56px 56px;
 }
 
+.dashboard-shell {
+  color-scheme: dark;
+  --background: #07070d;
+  --foreground: #f4f2ff;
+  --surface: #0f101a;
+  --surface-muted: #171524;
+  --surface-elevated: #1c1b2b;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(167, 139, 250, 0.5);
+  --accent: #8b5cf6;
+  --accent-light: #a78bfa;
+  --accent-dark: #ddd6fe;
+  --text-primary: #f5f3ff;
+  --text-secondary: #bbb7d7;
+  --text-tertiary: #817d9f;
+  --text-inverse: #080812;
+  --brand-mark-logo-dark-opacity: 1;
+  --brand-mark-logo-light-opacity: 0;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --utility-bg-white: var(--surface-elevated);
+  --utility-bg-slate-50: var(--surface-muted);
+  --utility-bg-slate-100: #242235;
+  --utility-bg-slate-200: #302d45;
+  --utility-bg-red-50: rgba(127, 29, 29, 0.28);
+  --utility-border-red-200: rgba(248, 113, 113, 0.36);
+  --utility-text-red-500: #fca5a5;
+  --utility-text-red-600: #fca5a5;
+  --utility-text-red-700: #fecaca;
+  --utility-bg-amber-50: rgba(120, 53, 15, 0.28);
+  --utility-border-amber-200: rgba(251, 191, 36, 0.36);
+  --utility-text-amber-800: #fcd34d;
+  --utility-bg-purple-50: rgba(139, 92, 246, 0.14);
+  --utility-border-purple-200: rgba(139, 92, 246, 0.34);
+  background:
+    linear-gradient(rgba(139, 92, 246, 0.042) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.042) 1px, transparent 1px),
+    var(--background);
+  background-size: 52px 52px;
+  color: var(--foreground);
+  font-family: var(--font-dm-sans), system-ui, -apple-system, sans-serif;
+}
+
+.dashboard-heading {
+  font-family: var(--font-barlow-condensed), var(--font-dm-sans), system-ui,
+    sans-serif;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.dashboard-eyebrow {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 9999px;
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--accent-dark);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  padding: 0.375rem 0.75rem;
+}
+
 .bg-white {
   background-color: var(--utility-bg-white);
 }

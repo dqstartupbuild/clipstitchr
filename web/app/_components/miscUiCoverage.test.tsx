@@ -44,8 +44,8 @@ describe("misc UI coverage", () => {
       </>,
     );
 
-    expect(markup).toContain("Create Stitch");
-    expect(markup).toContain("Upload at least one UGC and one demo video");
+    expect(markup).toContain("Open Stitchr");
+    expect(markup).toContain("Add one opener clip and one product demo");
     expect(markup).toContain("No avatars or source videos yet");
     expect(markup).toContain("No avatars yet");
     expect(markup).toContain("No source videos yet");

@@ -40,11 +40,11 @@ export function DashboardProductSwitcher() {
     <div ref={containerRef} className="relative min-w-0">
       <button
         type="button"
-        className="flex w-full min-w-0 items-center gap-3 rounded-lg border border-border bg-white px-3 py-2 text-left transition-colors hover:border-accent"
+        className="flex w-full min-w-0 items-center gap-3 rounded-lg border border-border bg-surface-muted px-3 py-2 text-left transition-colors hover:border-border-hover"
         disabled={isLoading}
         onClick={() => setIsOpen((current) => !current)}
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-muted text-sm font-bold text-accent-dark">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-sm font-bold text-accent-dark">
           {activeProduct ? (
             getProductInitials(activeProduct.name)
           ) : (
@@ -53,16 +53,16 @@ export function DashboardProductSwitcher() {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-xs font-semibold text-text-tertiary">
-            Product
+            Active product
           </span>
           <span className="block truncate text-sm font-bold text-text-primary">
-            {activeProduct?.name ?? (isLoading ? "Loading" : "No product")}
+            {activeProduct?.name ?? (isLoading ? "Loading" : "No product yet")}
           </span>
         </span>
         <ChevronDown aria-hidden className="h-4 w-4 shrink-0 text-text-tertiary" />
       </button>
       {isOpen ? (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-border bg-white shadow-xl">
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-border bg-surface shadow-2xl shadow-black/30">
           <div className="max-h-72 overflow-y-auto py-1">
             {products.map((product) => {
               const isActive = activeProduct?.id === product.id;
@@ -79,7 +79,7 @@ export function DashboardProductSwitcher() {
                     }
                   }}
                 >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-muted text-xs font-bold text-accent-dark">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-surface-muted text-xs font-bold text-accent-dark">
                     {getProductInitials(product.name)}
                   </span>
                   <span className="min-w-0 flex-1 truncate">{product.name}</span>

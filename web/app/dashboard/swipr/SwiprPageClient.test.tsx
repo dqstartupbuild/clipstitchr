@@ -498,7 +498,7 @@ describe("SwiprPageClient", () => {
   it("renders the Swipr creation workspace in batch mode by default", () => {
     const markup = renderToStaticMarkup(<SwiprPageClient />);
 
-    expect(markup).toContain("Header:Create TikTok carousels");
+    expect(markup).toContain("Header:Make slides when video is overkill.");
     expect(markup).toContain("SwiprModeToggle");
     expect(markup).toContain("SwiprBatchControls");
     expect(markup).toContain("SwiprPexelsPanel");
@@ -523,7 +523,7 @@ describe("SwiprPageClient", () => {
 
     const markup = renderToStaticMarkup(<SwiprPageClient />);
 
-    expect(markup).toContain("Header:Edit Swipe");
+    expect(markup).toContain("Header:Polish this Swipe.");
     expect(markup).toContain("Edit mode");
     expect(markup).toContain("SwiprManualControls");
     expect(markup).toContain("SwiprPreviewPanel");
