@@ -9,7 +9,7 @@ type UploadAssetTabsProps = {
 };
 
 const tabs: { label: string; value: UploadAssetType }[] = [
-  { label: "Openers", value: "ugc" },
+  { label: "UGC", value: "ugc" },
   { label: "Demo", value: "demo" },
   { label: "Photo", value: "photo" },
 ];

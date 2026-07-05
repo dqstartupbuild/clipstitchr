@@ -23,7 +23,7 @@ export const cliprDoc = {
   description:
     "Create reusable reaction and b-roll clips when your library is too thin and you do not want to film more footage from scratch.",
   summary:
-    "Make short reaction and b-roll clips, save them as UGC, and reuse them when Stitchr needs more openers.",
+    "Make short reaction and b-roll clips, save them as UGC, and reuse them when Stitchr needs more UGC.",
   category: "feature",
   order: 20,
   updated: "2026-06-16",

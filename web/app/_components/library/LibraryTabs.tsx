@@ -15,7 +15,7 @@ const tabGroups: {
   {
     label: "Videos",
     tabs: [
-      { label: "Openers", value: "ugc" },
+      { label: "UGC", value: "ugc" },
       { label: "Product demos", value: "demo" },
       { label: "Swaps", value: "swaps" },
     ],

@@ -8,12 +8,12 @@ Stitchr templates.
 
 Library tabs are grouped by the way users think about the work:
 
-- Videos: Openers, Product demos, Swaps
+- Videos: UGC, Product demos, Swaps
 - Finished: Stitches, Carousels
 - Assets: Avatars, Templates, Pexels
 
-The Openers tab is backed by the `ugc` tab value because those clips remain the
-UGC-compatible source clips in the data model. Openers is the visible label so
+The UGC tab is backed by the `ugc` tab value because those clips remain the
+UGC-compatible source clips in the data model. UGC is the visible label so
 the product UI sounds more like the user's actual job: pick the first half of an
 ad. The old All tab is no longer shown. Old dashboard URLs stay as
 compatibility redirects:
