@@ -75,11 +75,19 @@ The CLI uses a first-party device flow instead of storing a Clerk browser token.
 2. The server creates a short-lived device authorization in Convex and returns a
    user code plus `/cli/connect?code=...`.
 3. The CLI opens that URL.
-4. The user signs in with Clerk in the normal web app and approves the code.
-5. The CLI polls `POST /api/cli/auth/token`.
-6. After approval, the server creates a 90-day CLI session and returns one
+4. If the user is signed out, `/cli/connect` sends them to Clerk sign-in and
+   back to the same connect URL.
+5. The user confirms the browser code matches the terminal code and clicks
+   Connect this machine. If the URL was opened without a code, the page lets
+   the user type the terminal code in the browser.
+6. The CLI polls `POST /api/cli/auth/token`.
+7. After approval, the server creates a 90-day CLI session and returns one
    bearer token.
-7. The CLI stores the token in `~/.clipstitchr/credentials.json`.
+8. The CLI stores the token in `~/.clipstitchr/credentials.json`.
+
+The terminal never asks the user to type the code back in. The code exists so
+the user can confirm that the browser approval is for the same CLI session that
+is waiting in Terminal.
 
 Convex stores only hashed device codes and hashed session tokens. Raw bearer
 tokens are only shown to the CLI once.

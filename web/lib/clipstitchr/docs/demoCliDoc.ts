@@ -40,7 +40,7 @@ export const demoCliDoc = {
     {
       title: "Connect your account",
       body: [
-        "Login connects this machine to your ClipStitchr account. Logout removes the saved machine session.",
+        "Login connects this machine to your ClipStitchr account. The CLI shows a short code, opens ClipStitchr in your browser, and waits while you sign in. In the browser, make sure the code matches the one in Terminal, then connect the machine. Logout removes the saved machine session.",
       ],
       commands: ["clipstitchr login", "clipstitchr logout"],
     },
