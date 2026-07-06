@@ -85,6 +85,8 @@ npx convex run aggregateBackfills:backfillSwiprBackgroundLibraryQueryKeys \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
 npx convex run aggregateBackfills:backfillNotificationSummaries \
   '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
+npx convex run readModelBackfills:backfillVideoClipCards \
+  '{"secret":"<RATE_LIMIT_API_SECRET>","paginationOpts":{"numItems":100,"cursor":null}}'
 npx convex run blogPosts:rebuildPublishedBlogPostCards \
   '{"secret":"<RATE_LIMIT_API_SECRET>"}'
 ```

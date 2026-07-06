@@ -66,6 +66,10 @@ Clipr scripts/scene plans, and worker lock/idempotency internals. List search
 uses precomputed `searchText` fields where a compact table omits searchable
 source text.
 
+Video clip cards derive `libraryKind` from the source clip when an older source
+row does not yet store that field. This keeps `videoClipCards` rebuilds usable
+for local and production deployments that have older upload data.
+
 Full source rows are still used for detail/edit/export flows, provider and media
 worker claims, and prompt-building paths that need the omitted payloads.
 
@@ -92,6 +96,11 @@ npx convex run readModelBackfills:backfillAutomationTaskSummaries '{"secret":"<R
 Append `--prod` when running against production.
 
 Use each response's `continueCursor` as the next `paginationOpts.cursor`.
+
+If the library counters show UGC or Demo clips but the matching tab is empty,
+the aggregate counts are newer than the compact card read model. Run
+`readModelBackfills:backfillVideoClipCards` to completion for that Convex
+deployment, then refresh `/dashboard/library`.
 
 ## Intentional Full Reads
 

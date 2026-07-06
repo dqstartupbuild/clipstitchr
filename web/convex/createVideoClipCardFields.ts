@@ -1,7 +1,10 @@
 import type { Doc } from "./_generated/dataModel";
 import { getVideoClipCardSearchText } from "./getVideoClipCardSearchText";
+import { getVideoClipLibraryKind } from "./getVideoClipLibraryKind";
 
 export function createVideoClipCardFields(clip: Doc<"videoClips">) {
+  const libraryKind = clip.libraryKind ?? getVideoClipLibraryKind(clip);
+
   return {
     ownerId: clip.ownerId,
     id: clip.id,
@@ -13,7 +16,7 @@ export function createVideoClipCardFields(clip: Doc<"videoClips">) {
     productId: clip.productId,
     originalName: clip.originalName,
     clipType: clip.clipType,
-    libraryKind: clip.libraryKind,
+    libraryKind,
     videoObject: clip.videoObject,
     posterObject: clip.posterObject,
     posterVersion: clip.posterVersion,
