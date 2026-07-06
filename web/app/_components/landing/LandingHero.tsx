@@ -1,5 +1,5 @@
-import { ArrowRight, Check, Download, Play, Scissors, Zap } from "lucide-react";
-import { TrackedButtonLink } from "@/app/_components/analytics/TrackedButtonLink";
+import { Check, Download, Play, Scissors, Zap } from "lucide-react";
+import { LandingDashboardCta } from "@/app/_components/landing/LandingDashboardCta";
 import { PRIMARY_BUTTON_CLASS_NAME } from "@/app/_components/ui/primaryButtonClassName";
 
 export function LandingHero() {
@@ -25,16 +25,12 @@ export function LandingHero() {
             same workflow every week.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            <TrackedButtonLink
-              href="/dashboard"
+            <LandingDashboardCta
               className={PRIMARY_BUTTON_CLASS_NAME}
-              contentCategory="Landing page"
               contentId="hero_start_clips_button"
               contentName="Hero start clips"
-            >
-              Start for free
-              <ArrowRight aria-hidden className="h-4 w-4" />
-            </TrackedButtonLink>
+              signedOutLabel="Start for free"
+            />
             <a
               href="#example-output-reel"
               className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-semibold text-text-primary transition-colors hover:border-accent hover:bg-surface-elevated"

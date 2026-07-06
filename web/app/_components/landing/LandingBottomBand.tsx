@@ -1,5 +1,4 @@
-import { ArrowRight } from "lucide-react";
-import { TrackedButtonLink } from "@/app/_components/analytics/TrackedButtonLink";
+import { LandingDashboardCta } from "@/app/_components/landing/LandingDashboardCta";
 import { PRIMARY_BUTTON_CLASS_NAME } from "@/app/_components/ui/primaryButtonClassName";
 
 export function LandingBottomBand() {
@@ -18,16 +17,12 @@ export function LandingBottomBand() {
             Start with the clips and demos you already have. ClipStitchr handles
             the repetitive parts that make you avoid posting.
           </p>
-          <TrackedButtonLink
-            href="/dashboard"
+          <LandingDashboardCta
             className={`${PRIMARY_BUTTON_CLASS_NAME} mt-8`}
-            contentCategory="Landing page"
             contentId="bottom_start_clips_button"
             contentName="Bottom start clips"
-          >
-            Start for free
-            <ArrowRight aria-hidden className="h-4 w-4" />
-          </TrackedButtonLink>
+            signedOutLabel="Start for free"
+          />
         </div>
       </div>
     </section>

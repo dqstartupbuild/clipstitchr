@@ -39,6 +39,20 @@ vi.mock("@/app/_components/HeaderAuthActions", () => ({
   ),
 }));
 
+vi.mock("@/app/_components/landing/LandingDashboardCta", () => ({
+  LandingDashboardCta: ({
+    className,
+    signedOutLabel,
+  }: {
+    className: string;
+    signedOutLabel: string;
+  }) => (
+    <a className={className} href="/dashboard">
+      {signedOutLabel}
+    </a>
+  ),
+}));
+
 vi.mock("@/lib/clipstitchr/analytics/trackPostHogEvent", () => ({
   trackPostHogEvent: vi.fn(),
 }));

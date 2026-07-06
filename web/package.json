@@ -6,6 +6,7 @@
     "content:build": "node ./scripts/build-content-collections.mjs",
     "content:watch": "node ./scripts/watch-content-collections.mjs",
     "dev": "node ./scripts/run-dev-server.mjs",
+    "dev:webpack": "node ./scripts/run-dev-server.mjs --webpack",
     "build": "npm run content:build && next build",
     "start": "next start",
     "lint": "npm run content:build && eslint .",
