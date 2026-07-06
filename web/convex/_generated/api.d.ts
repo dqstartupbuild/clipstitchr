@@ -43,6 +43,15 @@ import type * as blogPostCards_getBlogPostCardFields from "../blogPostCards/getB
 import type * as blogPostCards_upsertBlogPostCardBySlug from "../blogPostCards/upsertBlogPostCardBySlug.js";
 import type * as blogPosts from "../blogPosts.js";
 import type * as clearPostBridgeSocialAccountIdsForOwner from "../clearPostBridgeSocialAccountIdsForOwner.js";
+import type * as cliAuth_approveDeviceAuthorization from "../cliAuth/approveDeviceAuthorization.js";
+import type * as cliAuth_createDeviceAuthorization from "../cliAuth/createDeviceAuthorization.js";
+import type * as cliAuth_exchangeDeviceAuthorization from "../cliAuth/exchangeDeviceAuthorization.js";
+import type * as cliAuth_getActiveSessionByTokenHash from "../cliAuth/getActiveSessionByTokenHash.js";
+import type * as cliAuth_revokeSessionByTokenHash from "../cliAuth/revokeSessionByTokenHash.js";
+import type * as cliProducts_createCliProduct from "../cliProducts/createCliProduct.js";
+import type * as cliProducts_getCliProduct from "../cliProducts/getCliProduct.js";
+import type * as cliProducts_listCliProducts from "../cliProducts/listCliProducts.js";
+import type * as cliUploads_getCliUploadStatus from "../cliUploads/getCliUploadStatus.js";
 import type * as cliprJobs from "../cliprJobs.js";
 import type * as cliprPreferences from "../cliprPreferences.js";
 import type * as createAutomationRunSummaryFields from "../createAutomationRunSummaryFields.js";
@@ -177,6 +186,7 @@ import type * as validators_automationTaskType from "../validators/automationTas
 import type * as validators_automationTool from "../validators/automationTool.js";
 import type * as validators_avatarWardrobeStyle from "../validators/avatarWardrobeStyle.js";
 import type * as validators_blogPostContentFormat from "../validators/blogPostContentFormat.js";
+import type * as validators_cliDeviceAuthorizationStatus from "../validators/cliDeviceAuthorizationStatus.js";
 import type * as validators_clipPerformanceScore from "../validators/clipPerformanceScore.js";
 import type * as validators_clipType from "../validators/clipType.js";
 import type * as validators_cliprDurationSeconds from "../validators/cliprDurationSeconds.js";
@@ -276,6 +286,15 @@ declare const fullApi: ApiFromModules<{
   "blogPostCards/upsertBlogPostCardBySlug": typeof blogPostCards_upsertBlogPostCardBySlug;
   blogPosts: typeof blogPosts;
   clearPostBridgeSocialAccountIdsForOwner: typeof clearPostBridgeSocialAccountIdsForOwner;
+  "cliAuth/approveDeviceAuthorization": typeof cliAuth_approveDeviceAuthorization;
+  "cliAuth/createDeviceAuthorization": typeof cliAuth_createDeviceAuthorization;
+  "cliAuth/exchangeDeviceAuthorization": typeof cliAuth_exchangeDeviceAuthorization;
+  "cliAuth/getActiveSessionByTokenHash": typeof cliAuth_getActiveSessionByTokenHash;
+  "cliAuth/revokeSessionByTokenHash": typeof cliAuth_revokeSessionByTokenHash;
+  "cliProducts/createCliProduct": typeof cliProducts_createCliProduct;
+  "cliProducts/getCliProduct": typeof cliProducts_getCliProduct;
+  "cliProducts/listCliProducts": typeof cliProducts_listCliProducts;
+  "cliUploads/getCliUploadStatus": typeof cliUploads_getCliUploadStatus;
   cliprJobs: typeof cliprJobs;
   cliprPreferences: typeof cliprPreferences;
   createAutomationRunSummaryFields: typeof createAutomationRunSummaryFields;
@@ -410,6 +429,7 @@ declare const fullApi: ApiFromModules<{
   "validators/automationTool": typeof validators_automationTool;
   "validators/avatarWardrobeStyle": typeof validators_avatarWardrobeStyle;
   "validators/blogPostContentFormat": typeof validators_blogPostContentFormat;
+  "validators/cliDeviceAuthorizationStatus": typeof validators_cliDeviceAuthorizationStatus;
   "validators/clipPerformanceScore": typeof validators_clipPerformanceScore;
   "validators/clipType": typeof validators_clipType;
   "validators/cliprDurationSeconds": typeof validators_cliprDurationSeconds;

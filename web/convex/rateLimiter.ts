@@ -295,6 +295,32 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 1000,
     shards: 10,
   },
+  cliDeviceAuthorizationByClient: {
+    kind: "token bucket",
+    rate: 20,
+    period: HOUR,
+    capacity: 5,
+  },
+  cliDeviceAuthorizationGlobal: {
+    kind: "token bucket",
+    rate: 1000,
+    period: HOUR,
+    capacity: 200,
+    shards: 5,
+  },
+  cliDeviceTokenExchangeByClient: {
+    kind: "token bucket",
+    rate: 120,
+    period: MINUTE,
+    capacity: 30,
+  },
+  cliDeviceTokenExchangeGlobal: {
+    kind: "token bucket",
+    rate: 10000,
+    period: MINUTE,
+    capacity: 1000,
+    shards: 10,
+  },
   tiktokSoundLookup: {
     kind: "token bucket",
     rate: 60,

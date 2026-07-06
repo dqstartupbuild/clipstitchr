@@ -60,6 +60,34 @@ export const consumeR2Upload = mutation({
   },
 });
 
+export const consumeCliR2Upload = mutation({
+  args: {
+    ownerId: v.string(),
+    secret: v.string(),
+    sizeBytes: v.number(),
+  },
+  handler: async (ctx, { ownerId, secret, sizeBytes }) => {
+    assertRateLimitApiSecret(secret);
+
+    const uploadBytes = getPositiveCount(sizeBytes, "Upload size");
+
+    await rateLimiter.limit(ctx, "r2UploadUrl", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "r2UploadBytes", {
+      key: ownerId,
+      count: uploadBytes,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "r2UploadBytesMonthly", {
+      key: ownerId,
+      count: uploadBytes,
+      throws: true,
+    });
+  },
+});
+
 export const consumeR2Download = mutation({
   args: {
     secret: v.string(),
@@ -357,6 +385,28 @@ export const consumeUploadVideoAnalysis = mutation({
     assertRateLimitApiSecret(secret);
 
     const ownerId = await getAuthenticatedOwnerId(ctx);
+
+    await rateLimiter.limit(ctx, "replicateUploadVideoAnalysis", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateUploadVideoAnalysisMonthly", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "replicateUploadVideoAnalysisGlobal", {
+      throws: true,
+    });
+  },
+});
+
+export const consumeCliUploadVideoAnalysis = mutation({
+  args: {
+    ownerId: v.string(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { ownerId, secret }) => {
+    assertRateLimitApiSecret(secret);
 
     await rateLimiter.limit(ctx, "replicateUploadVideoAnalysis", {
       key: ownerId,

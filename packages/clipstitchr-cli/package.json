@@ -1,0 +1,44 @@
+{
+  "name": "clipstitchr",
+  "version": "0.1.0",
+  "description": "Record and upload product demos to ClipStitchr from your terminal.",
+  "type": "module",
+  "bin": {
+    "clipstitchr": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "prepack": "npm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "engines": {
+    "node": ">=20.11"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.8.7",
+    "commander": "^14.0.2",
+    "ffmpeg-static": "^5.2.0",
+    "open": "^10.2.0",
+    "playwright": "^1.57.0",
+    "yaml": "^2.8.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.26",
+    "tsx": "^4.22.4",
+    "typescript": "^5.9.3"
+  },
+  "keywords": [
+    "clipstitchr",
+    "product-demo",
+    "cli",
+    "video",
+    "ugc"
+  ],
+  "license": "UNLICENSED"
+}

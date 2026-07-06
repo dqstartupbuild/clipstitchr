@@ -1,162 +1,167 @@
-# Demo CLI Tool Scope
+# Demo CLI Tool
 
-Use **one command**:
-
-```bash
-clipstitchr
-```
-
-That should open an interactive CLI where the user can go from zero to finished imported Demo without knowing subcommands.
-
-`npx` is not a requirement. It is only one install/run path. You can support all of these:
-
-```bash
-npx clipstitchr
-npm install -g clipstitchr
-brew install clipstitchr
-clipstitchr
-```
-
-The npm package can expose a binary named `clipstitchr`, so after install the user just types `clipstitchr`.
-
-**Recommended CLI Shape**
-
-Default interactive mode:
+The Demo CLI lets a user type one command, record or choose a product demo, and
+send it to the ClipStitchr Demo library.
 
 ```bash
 clipstitchr
 ```
 
-Then inside:
+The npm package lives outside the web app at `packages/clipstitchr-cli`. The web
+app only owns the production API surfaces the CLI needs: machine login, product
+selection/creation, R2 upload signing, upload completion, and upload status.
+
+## What It Does
+
+- `clipstitchr` opens a guided prompt for making a demo, uploading an existing
+  demo, connecting the repo, or checking setup.
+- `clipstitchr login` opens the browser and connects the machine to the user's
+  ClipStitchr account.
+- `clipstitchr init` writes `.clipstitchr.yml` with the product, local app URL,
+  start command, and vertical recording defaults.
+- `clipstitchr scan` detects likely demo flows from local app routes.
+- `clipstitchr demo make` records a local web/Expo-web app in a vertical
+  Chromium viewport, converts the recording to MP4, and offers to upload it.
+- `clipstitchr demo upload ./demo.mp4` uploads an existing MP4/MOV/WebM file to
+  the Demo library.
+- `clipstitchr products list` prints saved product IDs and names for scripting.
+
+## Auth Flow
+
+The CLI uses a first-party device flow instead of storing a Clerk browser token.
+
+1. The CLI calls `POST /api/cli/auth/device`.
+2. The server creates a short-lived device authorization in Convex and returns a
+   user code plus `/cli/connect?code=...`.
+3. The CLI opens that URL.
+4. The user signs in with Clerk in the normal web app and approves the code.
+5. The CLI polls `POST /api/cli/auth/token`.
+6. After approval, the server creates a 90-day CLI session and returns one
+   bearer token.
+7. The CLI stores the token in `~/.clipstitchr/credentials.json`.
+
+Convex stores only hashed device codes and hashed session tokens. Raw bearer
+tokens are only shown to the CLI once.
+
+## Upload Flow
+
+The CLI does not stream large videos through the Next.js server.
+
+1. The CLI calls `POST /api/cli/uploads/demo` with the chosen product, file
+   size, and content type.
+2. The server verifies the CLI session, verifies the product belongs to the
+   session owner, consumes the normal R2 upload rate limits, and returns a signed
+   R2 PUT URL.
+3. The CLI uploads the local file directly to R2.
+4. The CLI calls `POST /api/cli/uploads/demo/complete`.
+5. The server consumes upload video-analysis limits and queues the same
+   `upload-normalization` media job used by browser uploads.
+6. The CLI polls `GET /api/cli/uploads/{clipId}` until the normalized Demo
+   appears in the Library.
+
+## Recording Behavior
+
+The first built-in recorder supports web apps and Expo web targets. It starts
+the inferred or configured command, waits for the local URL, opens Chromium at
+390x844, records the browser session with Playwright, then converts the WebM to
+a 1080x1920 MP4 with ffmpeg.
+
+Native iOS, Android, React Native device, and Electron projects are detected so
+the CLI can explain the next step. Those projects can still ship demos through
+`clipstitchr demo upload ./demo.mp4` after the user exports a screen recording.
+
+## File Tree
 
 ```text
-Welcome to ClipStitchr
+packages/clipstitchr-cli/
+  package.json
+  src/api/
+  src/auth/
+  src/commands/
+  src/config/
+  src/interactive/
+  src/project/
+  src/recording/
+  src/upload/
+  src/cli.ts
 
-/login      Connect your ClipStitchr account
-/init       Set up this app
-/scan       Find demo-worthy flows
-/record     Make a demo
-/upload     Send demo to ClipStitchr
-/products   Pick a product
-/settings   Change recording settings
-/help       Show commands
-/exit
+web/app/api/cli/
+  auth/device/route.ts
+  auth/approve/route.ts
+  auth/token/route.ts
+  auth/revoke/route.ts
+  me/route.ts
+  products/route.ts
+  uploads/demo/route.ts
+  uploads/demo/complete/route.ts
+  uploads/[clipId]/route.ts
+
+web/app/cli/connect/
+  CliConnectPageClient.tsx
+  page.tsx
+
+web/convex/cliAuth/
+web/convex/cliProducts/
+web/convex/cliUploads/
 ```
 
-But the user should not need to type those first. The default flow should guide them:
+## Local Development
 
-```text
-What do you want to do?
-
-1. Make a product demo
-2. Upload an existing demo
-3. Connect this repo to ClipStitchr
-4. Change settings
-```
-
-If they choose “Make a product demo,” the CLI walks them through:
-
-1. Detect app type: web, iOS, Android, React Native, Expo, Electron.
-2. Ask or infer start command.
-3. Ask which ClipStitchr product to use.
-4. Scan for likely flows.
-5. Generate demo recipe.
-6. Let user approve/edit.
-7. Record.
-8. Export vertical MP4.
-9. Upload to Demo library.
-
-**Still Keep Direct Commands**
-
-For power users and CI:
+Run the web app from `web/`:
 
 ```bash
-clipstitchr login
-clipstitchr init
-clipstitchr scan
-clipstitchr demo make
-clipstitchr demo upload ./demo.mp4
-clipstitchr products list
+npm run dev
 ```
 
-So the mental model is:
-
-- `clipstitchr` = friendly guided app
-- `clipstitchr demo make` = scriptable direct action
-
-**Best First-Run Experience**
+Run the CLI against the local web app:
 
 ```bash
-clipstitchr
+cd packages/clipstitchr-cli
+CLIPSTITCHR_API_URL=http://localhost:3000 npm run dev
 ```
 
-CLI says:
-
-```text
-No ClipStitchr account connected.
-
-Press Enter to connect your account.
-```
-
-It opens the browser, user signs in with Clerk, authorizes the machine, returns to CLI.
-
-Then:
-
-```text
-Which product is this demo for?
-> LaunchKit
-```
-
-Then:
-
-```text
-I found a Next.js app.
-
-Start command:
-> npm run dev
-
-Local URL:
-> http://localhost:3000
-```
-
-Then:
-
-```text
-I found 4 possible demo flows.
-
-1. Sign up and create first project
-2. Upload a clip
-3. Build a stitch
-4. Export a video
-
-Record all, choose some, or write your own?
-```
-
-**Config File**
-
-The CLI can save a local config:
-
-```yaml
-productId: prod_123
-target:
-  type: web
-  start: npm run dev
-  url: http://localhost:3000
-recording:
-  format: vertical
-  durationLimitSeconds: 60
-```
-
-But the user should not have to touch it.
-
-**My Strong Recommendation**
-
-Name the CLI package `clipstitchr`, expose the binary `clipstitchr`, and make the bare command the whole product experience.
-
-`npx clipstitchr` is just the “try it without installing” path. The real UX should be:
+Useful direct commands:
 
 ```bash
-clipstitchr
+npm run dev -- login
+npm run dev -- init
+npm run dev -- scan
+npm run dev -- demo make
+npm run dev -- demo upload ./demo.mp4
 ```
 
-From there, slash commands plus guided prompts can take a user all the way to a finished Demo imported into ClipStitchr.
+## Publishing
+
+The package name `clipstitchr` was available on npm when checked on
+July 5, 2026. Check again before publishing because package availability can
+change.
+
+First-time npm publish flow:
+
+```bash
+cd packages/clipstitchr-cli
+npm login
+npm whoami
+npm run typecheck
+npm pack --dry-run
+npm publish
+```
+
+The package runs `npm run build` during `prepack`, so `dist/` is created for the
+published package without committing build output.
+
+## Production Checklist
+
+- Deploy the web app with the CLI API routes and Convex schema/functions.
+- Run Convex codegen/deploy so `cliDeviceAuthorizations` and `cliSessions`
+  exist.
+- Keep `RATE_LIMIT_API_SECRET`, Clerk, Convex, and R2 environment variables set
+  in production.
+- Confirm `/cli/connect` works after Clerk sign-in redirects.
+- Run `clipstitchr login --api https://your-production-domain`.
+- Run `clipstitchr demo upload ./demo.mp4` against production.
+- Run `npm pack --dry-run` and inspect the package contents.
+- Publish to npm from `packages/clipstitchr-cli`.
+- Reserve the package name quickly if the production launch date is later.
+- Add a Homebrew tap only after the npm package is stable; npm is the first
+  supported distribution path.
