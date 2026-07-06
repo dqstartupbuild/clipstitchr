@@ -155,40 +155,6 @@ all-time data to the last 12 months, 90 days, 30 days, 7 days, or 24 hours by
 each synced row's platform-created date. The Schedule page owns scheduled and
 posted post status counts.
 
-## Legacy Product Mapping Backfill
-
-Post Bridge posts scheduled before product-scoped Schedule and Analytics were
-added still exist on their source Stitchr or Swipr records, but they may not yet
-have rows in `postBridgePostProductMappings`. Run the operator-only backfill for
-both source types after deploying the mapping code. Repeat each command with the
-returned `continueCursor` until `isDone` is `true`.
-
-Development deployment:
-
-```bash
-cd web
-npx convex run postBridgePostProductMappingBackfills:backfillLegacyPostBridgePostProductMappings \
-  '{"secret":"<RATE_LIMIT_API_SECRET>","sourceType":"stitch","paginationOpts":{"numItems":100,"cursor":null}}'
-npx convex run postBridgePostProductMappingBackfills:backfillLegacyPostBridgePostProductMappings \
-  '{"secret":"<RATE_LIMIT_API_SECRET>","sourceType":"swipe","paginationOpts":{"numItems":100,"cursor":null}}'
-```
-
-Production deployment:
-
-```bash
-cd web
-npx convex run postBridgePostProductMappingBackfills:backfillLegacyPostBridgePostProductMappings \
-  '{"secret":"<RATE_LIMIT_API_SECRET>","sourceType":"stitch","paginationOpts":{"numItems":100,"cursor":null}}' \
-  --prod
-npx convex run postBridgePostProductMappingBackfills:backfillLegacyPostBridgePostProductMappings \
-  '{"secret":"<RATE_LIMIT_API_SECRET>","sourceType":"swipe","paginationOpts":{"numItems":100,"cursor":null}}' \
-  --prod
-```
-
-The backfill is idempotent. It upserts mappings by owner and Post Bridge post ID,
-trims product IDs, skips source rows without a product, and reports
-`mappedPosts`, `skippedPosts`, `processed`, `continueCursor`, and `isDone`.
-
 ## Source Files
 
 - `web/app/_components/postBridge/PostBridgeScheduleDialog.tsx`
@@ -213,7 +179,6 @@ trims product IDs, skips source rows without a product, and reports
 - `web/app/api/post-bridge/analytics/sync/route.ts`
 - `web/app/dashboard/analytics/PostBridgeAnalyticsPageClient.tsx`
 - `web/convex/postBridgePostProductMappings.ts`
-- `web/convex/postBridgePostProductMappingBackfills.ts`
 - `web/lib/clipstitchr/server/postBridge/filterPostBridgePostsByMappedPostIds.ts`
 - `web/lib/clipstitchr/server/postBridge/filterPostBridgeAnalyticsByPostResultIds.ts`
 - `web/lib/clipstitchr/server/postBridge/listPostBridgePostResults.ts`

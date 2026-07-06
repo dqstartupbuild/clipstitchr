@@ -49,7 +49,6 @@ each product's posting activity separate.
 - `web/app/_components/schedule/ScheduleAccountsPanel.tsx`
 - `web/app/_components/settings/ProductPostBridgeAccountsPanel.tsx`
 - `web/convex/postBridgePostProductMappings.ts`
-- `web/convex/postBridgePostProductMappingBackfills.ts`
 - `web/lib/clipstitchr/server/postBridge/filterPostBridgePostsByMappedPostIds.ts`
 - `web/lib/clipstitchr/types/SchedulePageTab.ts`
 - `web/lib/clipstitchr/utils/getInitialSchedulePageTab.ts`
@@ -62,8 +61,3 @@ The page uses existing Post Bridge read routes. Both account and post reads are
 authenticated, resolve the user's encrypted Post Bridge key server-side, read
 the local product mapping, and consume the Post Bridge read rate limit before
 calling Post Bridge.
-
-Legacy posts scheduled before product-scoped Schedule existed need the
-operator-only `postBridgePostProductMappingBackfills` backfill documented in
-`docs/features/post-bridge-scheduling.md` before they appear under the active
-product.
