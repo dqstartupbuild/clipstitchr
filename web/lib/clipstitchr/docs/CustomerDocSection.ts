@@ -5,4 +5,5 @@ export type CustomerDocSection = {
   body: string[];
   bullets?: string[];
   cards?: CustomerDocCard[];
+  commands?: string[];
 };

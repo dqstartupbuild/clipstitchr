@@ -75,6 +75,9 @@ describe("LandingPage", () => {
     expect(markup).toContain("Watch examples");
     expect(markup).toContain("Three steps. Zero timelines");
     expect(markup).toContain("Every tool feeds one library");
+    expect(markup).toContain("Record your app without turning it into another editing job");
+    expect(markup).toContain("npm install -g clipstitchr");
+    expect(markup).toContain("/docs/demo-cli");
     expect(markup).toContain("Writing overlay text that does not sound fake");
     expect(markup).toContain("Paste lines from posts that made you stop scrolling");
     expect(markup).toContain(
@@ -106,8 +109,10 @@ describe("LandingPage", () => {
     expect(landingMarkup).toContain("How it works");
     expect(landingMarkup).toContain("Features");
     expect(landingMarkup).toContain("Examples");
+    expect(landingMarkup).toContain("Docs");
     expect(landingMarkup).toContain("Pricing");
     expect(landingMarkup).toContain('href="/examples"');
+    expect(landingMarkup).toContain('href="/docs"');
     expect(landingMarkup).toContain('href="/pricing"');
     expect(landingMarkup).not.toContain("Real Stitchr output");
     expect(landingMarkup).not.toContain("Real output reel");

@@ -171,10 +171,14 @@ describe("content pages", () => {
     expect(indexMarkup).toContain("Start with the annoying part you want gone");
     expect(indexMarkup).toContain("What helps the next ad");
     expect(indexMarkup).toContain(firstDoc.title);
+    expect(indexMarkup).toContain("Demo CLI");
     expect(indexMarkup).toContain("Clip Scores");
     expect(indexMarkup).toContain("Templates");
     expect(indexMarkup).toContain("Automation");
     expect(indexMarkup).toContain("Post Bridge");
+    expect(generateDocsArticleStaticParams()).toContainEqual({
+      slug: "demo-cli",
+    });
     expect(generateDocsArticleStaticParams()).toContainEqual({
       slug: "post-bridge",
     });
@@ -188,6 +192,14 @@ describe("content pages", () => {
     );
     expect(postBridgeArticleMarkup).toContain("What Post Bridge adds");
     expect(postBridgeArticleMarkup).toContain("Check what happened");
+
+    const demoCliArticleMarkup = renderToStaticMarkup(
+      await DocsArticlePage({
+        params: Promise.resolve({ slug: "demo-cli" }),
+      }),
+    );
+    expect(demoCliArticleMarkup).toContain("npm install -g clipstitchr");
+    expect(demoCliArticleMarkup).toContain("clipstitchr demo make");
   });
 
   it("returns empty metadata and notFound for missing docs", async () => {

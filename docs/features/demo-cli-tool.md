@@ -34,6 +34,23 @@ selection/creation, R2 upload signing, upload completion, and upload status.
   the Demo library.
 - `clipstitchr products list` prints saved product IDs and names for scripting.
 
+## Customer Education Surfaces
+
+The CLI is now part of the public product offer, not only a terminal tool for
+existing users.
+
+- The main landing page includes `LandingDemoCliSection`, which explains the
+  CLI as the simplest way to record local product demos and links to
+  `/docs/demo-cli`.
+- The toolkit grid includes a "Product demos from your repo" feature card that
+  points to the same guide.
+- `/docs/demo-cli` is backed by `demoCliDoc` in the customer docs collection,
+  so the guide gets static metadata, sitemap coverage, and the normal docs
+  sidebar.
+- The dashboard home includes `DemoCliDashboardCallout`, which shows the npm
+  install command and links signed-in users to the setup guide without adding a
+  sidebar item.
+
 ## Auth Flow
 
 The CLI uses a first-party device flow instead of storing a Clerk browser token.
@@ -132,6 +149,7 @@ and connected Android device.
 
 ```text
 packages/clipstitchr-cli/
+  LICENSE
   package.json
   src/api/
   src/auth/
@@ -158,6 +176,18 @@ web/app/api/cli/
 web/app/cli/connect/
   CliConnectPageClient.tsx
   page.tsx
+
+web/app/_components/dashboard/
+  DemoCliDashboardCallout.tsx
+
+web/app/_components/docs/
+  CustomerDocCommandBlock.tsx
+
+web/app/_components/landing/
+  LandingDemoCliSection.tsx
+
+web/lib/clipstitchr/docs/
+  demoCliDoc.ts
 
 web/convex/cliAuth/
 web/convex/cliProducts/
@@ -208,6 +238,9 @@ npm publish
 
 The package runs `npm run build` during `prepack`, so `dist/` is created for the
 published package without committing build output.
+
+The CLI package is MIT licensed. Keep `packages/clipstitchr-cli/LICENSE` in the
+npm tarball so users receive the license text with the package.
 
 ## Production Checklist
 

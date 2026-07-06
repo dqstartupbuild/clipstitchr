@@ -8,6 +8,7 @@ import {
   Images,
   LayoutTemplate,
   Scissors,
+  Terminal,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -56,6 +57,14 @@ const features: LandingOfferFeature[] = [
     description:
       "Use Swipr when the next post should be slides instead of another video.",
     icon: Images,
+  },
+  {
+    title: "Product demos from your repo",
+    description:
+      "Record the app locally and send the demo to your library without exporting from another tool.",
+    icon: Terminal,
+    href: "/docs/demo-cli",
+    actionLabel: "Set up the CLI",
   },
   {
     title: "Daily drafts",

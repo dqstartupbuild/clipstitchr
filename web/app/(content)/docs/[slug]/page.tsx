@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CustomerDocCommandBlock } from "@/app/_components/docs/CustomerDocCommandBlock";
 import { createPageMetadata } from "@/lib/metadata";
 import { getCustomerDocBySlug } from "@/lib/clipstitchr/docs/getCustomerDocBySlug";
 import { getCustomerDocs } from "@/lib/clipstitchr/docs/getCustomerDocs";
@@ -89,6 +90,10 @@ export default async function DocsArticlePage({ params }: DocsArticlePageProps) 
                       <li key={bullet}>{bullet}</li>
                     ))}
                   </ul>
+                ) : null}
+
+                {section.commands ? (
+                  <CustomerDocCommandBlock commands={section.commands} />
                 ) : null}
 
                 {section.cards ? (

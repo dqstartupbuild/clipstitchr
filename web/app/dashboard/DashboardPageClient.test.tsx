@@ -133,6 +133,10 @@ vi.mock("@/app/_components/dashboard/DashboardStats", () => ({
   }) => `DashboardStats:${ugcCount}:${demoCount}:${stitchesCount}`,
 }));
 
+vi.mock("@/app/_components/dashboard/DemoCliDashboardCallout", () => ({
+  DemoCliDashboardCallout: () => "DemoCliDashboardCallout",
+}));
+
 vi.mock("@/app/_components/dashboard/RecentStitchesSection", () => ({
   RecentStitchesSection: () => "RecentStitchesSection",
 }));
@@ -296,6 +300,7 @@ describe("DashboardPageClient", () => {
 
     expect(markup).toContain("DashboardHeader");
     expect(markup).toContain("DashboardStats:40:20:40");
+    expect(markup).toContain("DemoCliDashboardCallout");
     expect(markup).toContain("RecentUploadsSection");
     expect(markup).toContain("RecentStitchesSection");
     expect(markup).toContain("RecentSwipesSection");

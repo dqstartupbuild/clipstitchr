@@ -2,6 +2,7 @@ import { SiteFooter } from "@/app/site-footer";
 import { SiteHeader } from "@/app/site-header";
 import { LandingAutomationSection } from "@/app/_components/landing/LandingAutomationSection";
 import { LandingBottomBand } from "@/app/_components/landing/LandingBottomBand";
+import { LandingDemoCliSection } from "@/app/_components/landing/LandingDemoCliSection";
 import { LandingHero } from "@/app/_components/landing/LandingHero";
 import { LandingHookLabSection } from "@/app/_components/landing/LandingHookLabSection";
 import { LandingOfferStackSection } from "@/app/_components/landing/LandingOfferStackSection";
@@ -21,6 +22,7 @@ export function LandingPage() {
       <LandingExampleOutputSection />
       <LandingWorkflow />
       <LandingOfferStackSection />
+      <LandingDemoCliSection />
       <LandingHookLabSection />
       <LandingPreview />
       <LandingScoreSection />

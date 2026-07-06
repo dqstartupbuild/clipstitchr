@@ -7,7 +7,7 @@ import { site } from "@/lib/site";
 export const metadata = createPageMetadata({
   title: `Docs | ${site.name}`,
   description:
-    "Plain ClipStitchr docs for turning saved clips into ads, writing less fake overlay text, reusing templates, and checking limits.",
+    "Plain ClipStitchr docs for recording product demos, turning saved clips into ads, writing better hooks, reusing templates, and checking limits.",
   canonical: "/docs",
 });
 
@@ -25,10 +25,10 @@ export default function DocsIndexPage() {
             Start with the annoying part you want gone.
           </h1>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
-            Most people should upload clips, pick the product demo, and make a
-            few finished ads first. Use the other guides when you need better
-            hooks, a cleaner clip, a reusable setup, more source material, or a
-            carousel instead.
+            Most people should add a product demo, upload a few clips, and make
+            finished ads first. Use the other guides when you need the CLI,
+            better hooks, a cleaner clip, a reusable setup, more source
+            material, or a carousel instead.
           </p>
         </div>
 
