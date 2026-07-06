@@ -85,6 +85,11 @@ login, the user can sign in during the first recording and reuse that browser
 session on later recordings. The `.clipstitchr/` folder is ignored by Git so
 target-app cookies and local browser state stay off the repo.
 
+If Playwright's Chromium browser is missing, `clipstitchr demo make` asks the
+user whether to install the recording browser now, runs the matching Playwright
+install command, then retries browser launch. `clipstitchr doctor` also reports
+whether the recording browser is installed.
+
 Native iOS, Android, React Native device, and Electron projects are detected so
 the CLI can explain the next step. Those projects can still ship demos through
 `clipstitchr demo upload ./demo.mp4` after the user exports a screen recording.

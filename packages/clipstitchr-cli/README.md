@@ -13,6 +13,9 @@ If your app requires login, sign in inside the recorder browser once. The CLI
 keeps that app browser session in `.clipstitchr/browser-profile` so future
 recordings can stay signed in.
 
+If the recording browser is not installed yet, the CLI asks to install it before
+recording starts.
+
 Setup detects common nested app folders like `web/`, infers the start command,
 skips the product picker when your account only has one product, and prefers a
 localhost URL that is already running.

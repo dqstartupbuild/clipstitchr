@@ -7,16 +7,18 @@ import { runLoginCommand } from "./runLoginCommand.js";
 import { runLogoutCommand } from "./runLogoutCommand.js";
 import { runProductsListCommand } from "./runProductsListCommand.js";
 import { runScanCommand } from "./runScanCommand.js";
+import { readCliPackageVersion } from "../config/readCliPackageVersion.js";
 import { runInteractiveCommand } from "../interactive/runInteractiveCommand.js";
 
 export async function runCli(argv: string[]) {
+  const packageVersion = await readCliPackageVersion();
   const program = new Command();
 
   program
     .name("clipstitchr")
     .description("Record and upload product demos to ClipStitchr.")
     .option("--api <url>", "Use a ClipStitchr app URL")
-    .version("0.1.0");
+    .version(packageVersion);
 
   program
     .command("login")

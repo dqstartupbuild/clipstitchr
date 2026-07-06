@@ -2,12 +2,12 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { input } from "@inquirer/prompts";
-import { chromium } from "playwright";
 import type { RecordingResult } from "./RecordingResult.js";
 import type { WebRecordingOptions } from "./WebRecordingOptions.js";
 import { convertVideoToVerticalMp4 } from "./convertVideoToVerticalMp4.js";
 import { createBrowserProfileDirectory } from "./createBrowserProfileDirectory.js";
 import { createRecordingOutputPath } from "./createRecordingOutputPath.js";
+import { openRecordingBrowserContext } from "./openRecordingBrowserContext.js";
 import { runShellCommand } from "./runShellCommand.js";
 import { stopShellCommand } from "./stopShellCommand.js";
 import { waitForHttpUrl } from "./waitForHttpUrl.js";
@@ -26,19 +26,9 @@ export async function recordWebDemo(
   try {
     await waitForHttpUrl(options.url);
 
-    const context = await chromium.launchPersistentContext(userDataDir, {
-      headless: false,
-      recordVideo: {
-        dir: videoDirectory,
-        size: {
-          height: 844,
-          width: 390,
-        },
-      },
-      viewport: {
-        height: 844,
-        width: 390,
-      },
+    const context = await openRecordingBrowserContext({
+      userDataDir,
+      videoDirectory,
     });
     const page = await context.newPage();
 
