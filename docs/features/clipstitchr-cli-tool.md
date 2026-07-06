@@ -1,20 +1,23 @@
-# Demo CLI Tool
+# ClipStitchr CLI Tool
 
-The Demo CLI lets a user type one command, record or choose a product demo, and
-send it to the ClipStitchr Demo library.
+The ClipStitchr CLI lets a user type one command from a product repo, record or
+upload a product demo, start batch content creation, inspect saved library
+items, and add finished Stitches to the Post Bridge queue.
 
 ```bash
 clipstitchr
 ```
 
 The npm package lives outside the web app at `packages/clipstitchr-cli`. The web
-app only owns the production API surfaces the CLI needs: machine login, product
-selection/creation, R2 upload signing, upload completion, and upload status.
+app owns the production API surfaces the CLI needs: machine login, product
+selection/creation, R2 upload signing, upload completion, upload status, batch
+creation, library listing, and queueing finished Stitches.
 
 ## What It Does
 
 - `clipstitchr` opens a guided prompt for making a demo, uploading an existing
-  demo, connecting the repo, or checking setup.
+  demo, connecting the repo, starting batch work, queueing a Stitch, or checking
+  setup.
 - `clipstitchr --help`, `clipstitchr help`, and
   `clipstitchr help demo make` show the available command options.
 - `clipstitchr --version` prints the installed CLI version.
@@ -43,6 +46,14 @@ selection/creation, R2 upload signing, upload completion, and upload status.
   Android device/emulator for iOS, Android, and React Native projects.
 - `clipstitchr demo upload ./demo.mp4` uploads an existing MP4/MOV/WebM file to
   the Demo library.
+- `clipstitchr stitchr batch` starts today's Stitchr Batch from the terminal.
+- `clipstitchr swipr batch` queues Swipr draft creation from the user's saved
+  dashboard batch settings.
+- `clipstitchr library clips`, `clipstitchr library stitches`, and
+  `clipstitchr library swipes` list saved assets for scripts and queue
+  selection.
+- `clipstitchr queue stitch` adds a finished Stitch to the user's Post Bridge
+  queue without asking for a date or time.
 - `clipstitchr products list` prints saved product IDs and names for scripting.
 - `clipstitchr products create` creates a product from the terminal, and
   `clipstitchr products create --use` also saves it to the repo config.
@@ -56,18 +67,19 @@ selection/creation, R2 upload signing, upload completion, and upload status.
 The CLI is now part of the public product offer, not only a terminal tool for
 existing users.
 
-- The main landing page includes `LandingDemoCliSection`, which explains the
-  CLI as the simplest way to record local product demos and links to
-  `/docs/demo-cli`.
-- The toolkit grid includes a "Product demos from your repo" feature card that
-  points to the same guide.
-- `/docs/demo-cli` is backed by `demoCliDoc` in the customer docs collection,
-  so the guide gets static metadata, sitemap coverage, and the normal docs
-  sidebar. Command blocks use `CustomerDocCommandBlock` and include a copy
-  button.
-- Account settings includes `SettingsDemoCliPanel`, which shows the npm install
-  command with a copy button and opens the setup guide in a new tab without
-  adding a sidebar item.
+- The main landing page includes `LandingCliSection`, which explains the CLI as
+  the repo-side way to record demos, start batches, and queue finished work.
+- The toolkit grid includes a "CLI for repo-side work" feature card that points
+  to the same guide.
+- `/docs/clipstitchr-cli` is backed by `clipstitchrCliDoc` in the customer docs
+  collection, so the guide gets static metadata, sitemap coverage, and the
+  normal docs sidebar. Command blocks use `CustomerDocCommandBlock` and include
+  a copy button.
+- `/docs/demo-cli` remains a legacy lookup alias through `legacyCustomerDocSlugs`
+  so older links still resolve to the current guide.
+- Account settings includes `SettingsClipstitchrCliPanel`, which shows the npm
+  install command with a copy button and opens the setup guide in a new tab
+  without adding a sidebar item.
 
 ## Auth Flow
 
@@ -111,6 +123,33 @@ The CLI does not stream large videos through the Next.js server.
    can include `layout: "smart-screen-demo"` plus click/cursor timing metadata.
 6. The CLI polls `GET /api/cli/uploads/{clipId}` until the normalized Demo
    appears in the Library.
+
+## Batch And Queue Flow
+
+Batch and queue commands are documented in
+`docs/features/cli-batch-and-queue.md`.
+
+`clipstitchr stitchr batch` calls `POST /api/cli/stitchr/batches`, which
+verifies the CLI bearer token, creates owner-scoped Stitchr Batch tasks through
+`stitchrBatch.plan`, and dispatches the provider worker. The CLI route does not
+run the browser-session foreground hook planner; the provider worker still
+creates fallback hook text and finalization jobs for tasks that need text.
+
+`clipstitchr swipr batch` calls `POST /api/cli/swipr/batches`, which verifies
+the CLI bearer token, creates a unique on-demand Swipr batch through
+`cliSwipr.planCliSwiprBatch`, and dispatches the provider worker. This keeps
+Swipr CLI creation aligned with the dashboard's saved batch settings instead of
+asking the user to hand-build slides in the terminal.
+
+`clipstitchr queue stitch` calls `POST /api/cli/queue/stitches`. The route
+verifies the Stitch belongs to the CLI session owner, requires a finished saved
+Stitch video, uploads that video to Post Bridge without deleting the saved R2
+asset, creates a queued Post Bridge post with `useQueue`, and attaches the post
+reference back to the Stitch.
+
+Saved Swipes are still queued from the dashboard because Swipr media is rendered
+in the browser before scheduling. CLI Swipr queueing needs a server-side Swipe
+renderer before it can faithfully match the dashboard output.
 
 ## Recording Behavior
 
@@ -208,10 +247,16 @@ packages/clipstitchr-cli/
   src/auth/
   src/commands/
     findCliHelpCommand.ts
+    runLibraryClipsCommand.ts
+    runLibraryStitchesCommand.ts
+    runLibrarySwipesCommand.ts
     runProductsCreateCommand.ts
     runProductsUseCommand.ts
+    runQueueStitchCommand.ts
     runHelpCommand.ts
     runStatusCommand.ts
+    runStitchrBatchCommand.ts
+    runSwiprBatchCommand.ts
     runUnlinkCommand.ts
     runUpdateCommand.ts
   src/config/
@@ -242,8 +287,14 @@ web/app/api/cli/
   auth/approve/route.ts
   auth/token/route.ts
   auth/revoke/route.ts
+  library/clips/route.ts
+  library/stitches/route.ts
+  library/swipes/route.ts
   me/route.ts
   products/route.ts
+  queue/stitches/route.ts
+  stitchr/batches/route.ts
+  swipr/batches/route.ts
   uploads/demo/route.ts
   uploads/demo/complete/route.ts
   uploads/[clipId]/route.ts
@@ -256,19 +307,24 @@ web/app/_components/docs/
   CustomerDocCommandBlock.tsx
 
 web/app/_components/landing/
-  LandingDemoCliSection.tsx
+  LandingCliSection.tsx
 
 web/app/_components/settings/
-  SettingsDemoCliPanel.tsx
+  SettingsClipstitchrCliPanel.tsx
 
 web/app/_components/ui/
   CopyTextButton.tsx
 
 web/lib/clipstitchr/docs/
-  demoCliDoc.ts
+  clipstitchrCliDoc.ts
+  legacyCustomerDocSlugs.ts
 
 web/convex/cliAuth/
+web/convex/cliLibrary/
+web/convex/cliPostBridge/
 web/convex/cliProducts/
+web/convex/cliRateLimits/
+web/convex/cliSwipr/
 web/convex/cliUploads/
 ```
 

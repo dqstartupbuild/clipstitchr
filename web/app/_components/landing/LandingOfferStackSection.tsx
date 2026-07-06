@@ -59,11 +59,11 @@ const features: LandingOfferFeature[] = [
     icon: Images,
   },
   {
-    title: "Product demos from your repo",
+    title: "CLI for repo-side work",
     description:
-      "Record the app locally and send the demo to your library without exporting from another tool.",
+      "Record demos, start batches, list saved work, and queue ready Stitches from the terminal.",
     icon: Terminal,
-    href: "/docs/demo-cli",
+    href: "/docs/clipstitchr-cli",
     actionLabel: "Set up the CLI",
   },
   {

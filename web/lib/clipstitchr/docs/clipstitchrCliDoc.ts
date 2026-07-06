@@ -1,12 +1,12 @@
 import type { CustomerDocPage } from "@/lib/clipstitchr/docs/CustomerDocPage";
 
-export const demoCliDoc = {
-  slug: "demo-cli",
-  title: "Demo CLI",
+export const clipstitchrCliDoc = {
+  slug: "clipstitchr-cli",
+  title: "ClipStitchr CLI",
   description:
-    "Record a product demo from your local app and send it to ClipStitchr without opening a video editor first.",
+    "Record demos, start batch content, check your library, and queue finished Stitches from your terminal.",
   summary:
-    "Install one command, connect your account, record the product flow, and save the demo in your library.",
+    "Install one command, connect your account, capture demos, create batches, and send ready work to the queue.",
   category: "start",
   order: 1,
   updated: "2026-07-06",
@@ -14,8 +14,8 @@ export const demoCliDoc = {
     {
       title: "What it does",
       body: [
-        "The ClipStitchr CLI records your local product in a clean browser window, uploads the take, and saves it as a Demo clip. It is built for app founders who need fresh product footage without exporting files from a screen recorder.",
-        "Use it when you changed the product, need a cleaner walkthrough, or want ClipStitchr to turn a wide web demo into a vertical-ready clip with a background instead of cutting off the screen.",
+        "The ClipStitchr CLI brings the parts of ClipStitchr that fit naturally in Terminal into the repo you already have open. You can record local product demos, upload existing demos, start batch content, list saved work, and add finished Stitches to the queue.",
+        "Use it when you changed the product, need a cleaner walkthrough, want to kick off a batch without opening the dashboard, or need a finished Stitch queued from a script.",
       ],
     },
     {
@@ -88,6 +88,42 @@ export const demoCliDoc = {
         "clipstitchr products create --use",
         "clipstitchr products use",
         "clipstitchr products use product_123",
+      ],
+    },
+    {
+      title: "Create batch drafts",
+      body: [
+        "You can start batch content from Terminal after your clips, demos, products, and batch settings are ready in ClipStitchr. Stitchr uses recent Hook/UGC clips and Demo clips. Swipr uses your saved dashboard batch settings.",
+      ],
+      bullets: [
+        "Stitchr creates finished Stitch tasks in the background.",
+        "Swipr queues editable Swipe drafts in the background.",
+        "Open the dashboard to review, edit, and approve the finished drafts.",
+      ],
+      commands: [
+        "clipstitchr stitchr batch",
+        "clipstitchr stitchr batch --template template_123",
+        "clipstitchr swipr batch",
+        "clipstitchr swipr batch --product product_123",
+      ],
+    },
+    {
+      title: "Find and queue content",
+      body: [
+        "Library commands show the IDs you need for scripts. Queue adds a finished Stitch to your Post Bridge queue, using the connected accounts saved on the product unless you pass account IDs yourself.",
+      ],
+      bullets: [
+        "Queue does not ask for a date or time.",
+        "The Stitch needs a finished rendered video before it can be queued.",
+        "Swipe queueing still happens in the dashboard because Swipes are rendered in the browser before posting.",
+      ],
+      commands: [
+        "clipstitchr library clips --kind demo",
+        "clipstitchr library stitches --ready",
+        "clipstitchr library swipes",
+        "clipstitchr queue stitch",
+        "clipstitchr queue stitch stitch_123 --caption \"New demo is live\"",
+        "clipstitchr queue stitch stitch_123 --accounts 123,456",
       ],
     },
     {

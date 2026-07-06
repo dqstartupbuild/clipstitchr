@@ -5,13 +5,19 @@ import { runDemoMakeCommand } from "./runDemoMakeCommand.js";
 import { runDemoUploadCommand } from "./runDemoUploadCommand.js";
 import { runHelpCommand } from "./runHelpCommand.js";
 import { runInitCommand } from "./runInitCommand.js";
+import { runLibraryClipsCommand } from "./runLibraryClipsCommand.js";
+import { runLibraryStitchesCommand } from "./runLibraryStitchesCommand.js";
+import { runLibrarySwipesCommand } from "./runLibrarySwipesCommand.js";
 import { runLoginCommand } from "./runLoginCommand.js";
 import { runLogoutCommand } from "./runLogoutCommand.js";
 import { runProductsCreateCommand } from "./runProductsCreateCommand.js";
 import { runProductsListCommand } from "./runProductsListCommand.js";
 import { runProductsUseCommand } from "./runProductsUseCommand.js";
+import { runQueueStitchCommand } from "./runQueueStitchCommand.js";
 import { runScanCommand } from "./runScanCommand.js";
 import { runStatusCommand } from "./runStatusCommand.js";
+import { runStitchrBatchCommand } from "./runStitchrBatchCommand.js";
+import { runSwiprBatchCommand } from "./runSwiprBatchCommand.js";
 import { runUnlinkCommand } from "./runUnlinkCommand.js";
 import { runUpdateCommand } from "./runUpdateCommand.js";
 import { readCliPackageVersion } from "../config/readCliPackageVersion.js";
@@ -110,6 +116,72 @@ export async function runCli(argv: string[]) {
     .option("--product <id>", "Use this product ID")
     .action(async (filePath, options) => {
       await runDemoUploadCommand(filePath, { ...program.opts(), ...options });
+    });
+
+  const stitchr = program.command("stitchr").description("Create Stitch drafts");
+
+  stitchr
+    .command("batch")
+    .description("Start a Stitchr batch")
+    .option("--sound <id>", "Use a saved sound ID")
+    .option("--template <id>", "Use a saved Stitch template ID")
+    .option("--time-zone <name>", "Use this time zone for today's batch")
+    .action(async (options) => {
+      await runStitchrBatchCommand({ ...program.opts(), ...options });
+    });
+
+  const swipr = program.command("swipr").description("Create Swipe drafts");
+
+  swipr
+    .command("batch")
+    .description("Queue Swipr batch drafts")
+    .option("--product <id>", "Use this product ID")
+    .action(async (options) => {
+      await runSwiprBatchCommand({ ...program.opts(), ...options });
+    });
+
+  const library = program.command("library").description("List saved assets");
+
+  library
+    .command("clips")
+    .description("List saved clips and demos")
+    .option("--kind <kind>", "Filter by ugc, demo, clipr, or swapr")
+    .option("--limit <count>", "Limit the number of rows")
+    .option("--product <id>", "Filter by product ID")
+    .action(async (options) => {
+      await runLibraryClipsCommand({ ...program.opts(), ...options });
+    });
+
+  library
+    .command("stitches")
+    .description("List saved Stitches")
+    .option("--limit <count>", "Limit the number of rows")
+    .option("--product <id>", "Filter by product ID")
+    .option("--ready", "Only show Stitches with finished videos")
+    .action(async (options) => {
+      await runLibraryStitchesCommand({ ...program.opts(), ...options });
+    });
+
+  library
+    .command("swipes")
+    .description("List saved Swipes")
+    .option("--limit <count>", "Limit the number of rows")
+    .option("--product <id>", "Filter by product ID")
+    .action(async (options) => {
+      await runLibrarySwipesCommand({ ...program.opts(), ...options });
+    });
+
+  const queue = program.command("queue").description("Add content to your queue");
+
+  queue
+    .command("stitch")
+    .argument("[stitchId]", "Finished Stitch ID")
+    .description("Add a finished Stitch to your Post Bridge queue")
+    .option("--accounts <ids>", "Comma-separated Post Bridge account IDs")
+    .option("--caption <text>", "Post caption")
+    .option("--title <text>", "Post title")
+    .action(async (stitchId, options) => {
+      await runQueueStitchCommand(stitchId, { ...program.opts(), ...options });
     });
 
   const products = program.command("products").description("Manage products");

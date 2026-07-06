@@ -34,7 +34,7 @@ describe("sitemap", () => {
       "http://localhost:3000/examples/stitchr-boyfriend-ten-out-of-ten",
     );
     expect(urls).toContain("http://localhost:3000/docs/getting-started");
-    expect(urls).toContain("http://localhost:3000/docs/demo-cli");
+    expect(urls).toContain("http://localhost:3000/docs/clipstitchr-cli");
     expect(urls).toContain("http://localhost:3000/docs/stitchr");
     expect(urls).toContain("http://localhost:3000/docs/clipr");
     expect(urls).toContain("http://localhost:3000/docs/swipr");

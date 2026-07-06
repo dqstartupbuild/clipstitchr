@@ -34,13 +34,14 @@ export async function generateMetadata({ params }: DocsArticlePageProps) {
 export default async function DocsArticlePage({ params }: DocsArticlePageProps) {
   const { slug } = await params;
   const doc = getCustomerDocBySlug(slug);
-  const relatedDocs = getCustomerDocs().filter(
-    (candidate) => candidate.slug !== slug,
-  );
 
   if (!doc) {
     notFound();
   }
+
+  const relatedDocs = getCustomerDocs().filter(
+    (candidate) => candidate.slug !== doc.slug,
+  );
 
   return (
     <div className="marketing-grid-bg px-6 py-20 md:py-28">

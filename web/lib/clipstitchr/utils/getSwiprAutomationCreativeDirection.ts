@@ -1,4 +1,4 @@
-import { swiprAutomationCreativeDirections } from "@/lib/clipstitchr/constants/swiprAutomationCreativeDirections";
+import { swiprAutomationCreativeDirections } from "../constants/swiprAutomationCreativeDirections";
 
 export function getSwiprAutomationCreativeDirection(draftIndex: number) {
   const normalizedIndex =

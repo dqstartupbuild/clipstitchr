@@ -1,6 +1,6 @@
 {
   "name": "clipstitchr",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Record and upload product demos to ClipStitchr from your terminal.",
   "type": "module",
   "bin": {

@@ -10,6 +10,7 @@ import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReferenc
 
 type UploadPostBridgeMediaFromR2ObjectOptions = {
   apiKey: string;
+  deleteSourceObject?: boolean;
   media: PostBridgeMediaUploadDescriptor;
   sourceObject: R2ObjectReference;
   userId: string;
@@ -21,6 +22,7 @@ type StreamingRequestInit = RequestInit & {
 
 export async function uploadPostBridgeMediaFromR2Object({
   apiKey,
+  deleteSourceObject: shouldDeleteSourceObject = true,
   media,
   sourceObject,
   userId,
@@ -65,7 +67,9 @@ export async function uploadPostBridgeMediaFromR2Object({
     );
   }
 
-  await deleteR2Object(sourceObject.key).catch(() => undefined);
+  if (shouldDeleteSourceObject) {
+    await deleteR2Object(sourceObject.key).catch(() => undefined);
+  }
 
   return createPostBridgeUploadedMedia({
     mediaId: upload.media_id,

@@ -1,43 +1,44 @@
-import { ArrowRight, MonitorUp, MousePointerClick, Terminal } from "lucide-react";
+import { ArrowRight, ListVideo, MonitorUp, Terminal } from "lucide-react";
 import Link from "next/link";
 
-const demoCliSteps = [
+const cliSteps = [
   {
-    title: "Run one command",
+    title: "Connect your repo",
     description:
-      "Install the CLI, connect the repo, and let it find the local app setup.",
+      "Install the command, sign in once, and let ClipStitchr remember the product this repo belongs to.",
     icon: Terminal,
   },
   {
-    title: "Walk through the product",
+    title: "Record or create",
     description:
-      "The recorder opens your app so you can show the flow the way a customer would see it.",
-    icon: MousePointerClick,
+      "Capture a product demo, start Stitchr batches, or prepare Swipr drafts from the terminal.",
+    icon: MonitorUp,
   },
   {
-    title: "Save it as a Demo",
+    title: "Queue finished work",
     description:
-      "The recording lands in ClipStitchr ready to pair with Hook/UGC clips.",
-    icon: MonitorUp,
+      "Send ready Stitches to the posting queue without picking a date or time by hand.",
+    icon: ListVideo,
   },
 ];
 
-export function LandingDemoCliSection() {
+export function LandingCliSection() {
   return (
-    <section className="scroll-mt-24 px-6 py-24" id="demo-cli">
+    <section className="scroll-mt-24 px-6 py-24" id="clipstitchr-cli">
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div className="max-w-2xl">
-          <p className="marketing-eyebrow">Product demos</p>
+          <p className="marketing-eyebrow">ClipStitchr CLI</p>
           <h2 className="marketing-heading mt-5 text-4xl text-text-primary md:text-6xl">
-            Record your app without turning it into another editing job.
+            Run product work from the repo you already have open.
           </h2>
           <p className="mt-5 leading-7 text-text-secondary">
-            The ClipStitchr CLI helps founders capture clean product demos from
-            a local app and send them straight to the Demo library.
+            The ClipStitchr CLI records local demos, starts batch content, checks
+            your library, and queues finished Stitches without making you jump
+            between tools.
           </p>
           <Link
             className="mt-7 inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-bold text-text-inverse transition-colors hover:bg-accent-light"
-            href="/docs/demo-cli"
+            href="/docs/clipstitchr-cli"
           >
             Set up the CLI
             <ArrowRight aria-hidden className="h-4 w-4" />
@@ -52,12 +53,16 @@ export function LandingDemoCliSection() {
             </div>
           </div>
           <pre className="overflow-x-auto px-5 py-5 text-sm font-semibold leading-7 text-text-primary">
-            <code>{"npm install -g clipstitchr\nclipstitchr"}</code>
+            <code>
+              {
+                "npm install -g clipstitchr\nclipstitchr\nclipstitchr stitchr batch"
+              }
+            </code>
           </pre>
         </div>
 
         <div className="grid gap-4 lg:col-span-2 md:grid-cols-3">
-          {demoCliSteps.map((step) => {
+          {cliSteps.map((step) => {
             const Icon = step.icon;
 
             return (

@@ -171,13 +171,13 @@ describe("content pages", () => {
     expect(indexMarkup).toContain("Start with the annoying part you want gone");
     expect(indexMarkup).toContain("What helps the next ad");
     expect(indexMarkup).toContain(firstDoc.title);
-    expect(indexMarkup).toContain("Demo CLI");
+    expect(indexMarkup).toContain("ClipStitchr CLI");
     expect(indexMarkup).toContain("Clip Scores");
     expect(indexMarkup).toContain("Templates");
     expect(indexMarkup).toContain("Automation");
     expect(indexMarkup).toContain("Post Bridge");
     expect(generateDocsArticleStaticParams()).toContainEqual({
-      slug: "demo-cli",
+      slug: "clipstitchr-cli",
     });
     expect(generateDocsArticleStaticParams()).toContainEqual({
       slug: "post-bridge",
@@ -195,7 +195,7 @@ describe("content pages", () => {
 
     const demoCliArticleMarkup = renderToStaticMarkup(
       await DocsArticlePage({
-        params: Promise.resolve({ slug: "demo-cli" }),
+        params: Promise.resolve({ slug: "clipstitchr-cli" }),
       }),
     );
     expect(demoCliArticleMarkup).toContain("npm install -g clipstitchr");
@@ -204,11 +204,20 @@ describe("content pages", () => {
     expect(demoCliArticleMarkup).toContain("clipstitchr link");
     expect(demoCliArticleMarkup).toContain("clipstitchr status");
     expect(demoCliArticleMarkup).toContain("clipstitchr update");
+    expect(demoCliArticleMarkup).toContain("clipstitchr stitchr batch");
+    expect(demoCliArticleMarkup).toContain("clipstitchr queue stitch");
     expect(demoCliArticleMarkup).toContain("clipstitchr products list");
     expect(demoCliArticleMarkup).toContain("clipstitchr products create --use");
     expect(demoCliArticleMarkup).toContain("clipstitchr unlink");
     expect(demoCliArticleMarkup).toContain("Copy");
     expect(demoCliArticleMarkup).toContain("clipstitchr demo make");
+
+    const legacyDemoCliArticleMarkup = renderToStaticMarkup(
+      await DocsArticlePage({
+        params: Promise.resolve({ slug: "demo-cli" }),
+      }),
+    );
+    expect(legacyDemoCliArticleMarkup).toContain("ClipStitchr CLI");
   });
 
   it("returns empty metadata and notFound for missing docs", async () => {

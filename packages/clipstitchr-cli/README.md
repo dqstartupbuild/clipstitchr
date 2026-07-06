@@ -17,6 +17,12 @@ clipstitchr status
 clipstitchr update
 clipstitchr demo make
 clipstitchr demo upload ./demo.mp4
+clipstitchr stitchr batch
+clipstitchr swipr batch
+clipstitchr library clips --kind demo
+clipstitchr library stitches --ready
+clipstitchr library swipes
+clipstitchr queue stitch
 clipstitchr products list
 clipstitchr products create --use
 clipstitchr products use
@@ -37,6 +43,12 @@ ClipStitchr can cut pauses and waiting time during Quick Edit.
 
 If the recording browser is not installed yet, the CLI asks to install it before
 recording starts.
+
+Batch commands let you start Stitchr and Swipr draft creation from Terminal.
+`clipstitchr stitchr batch` creates today's Stitchr batch from recent UGC and
+Demo clips. `clipstitchr swipr batch` queues Swipr drafts using your dashboard
+batch settings. `clipstitchr queue stitch` adds a finished Stitch to your Post
+Bridge queue without asking for a date or time.
 
 The CLI uses light branded terminal output for guided flows, setup checks,
 recording progress, upload progress, success states, warnings, and next

@@ -75,9 +75,9 @@ describe("LandingPage", () => {
     expect(markup).toContain("Watch examples");
     expect(markup).toContain("Three steps. Zero timelines");
     expect(markup).toContain("Every tool feeds one library");
-    expect(markup).toContain("Record your app without turning it into another editing job");
+    expect(markup).toContain("Run product work from the repo you already have open");
     expect(markup).toContain("npm install -g clipstitchr");
-    expect(markup).toContain("/docs/demo-cli");
+    expect(markup).toContain("/docs/clipstitchr-cli");
     expect(markup).toContain("Writing overlay text that does not sound fake");
     expect(markup).toContain("Paste lines from posts that made you stop scrolling");
     expect(markup).toContain(
