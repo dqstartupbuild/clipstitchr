@@ -6,6 +6,7 @@ import { mutation, query } from "./_generated/server";
 import { createNotification } from "./createNotification";
 import { deleteSwipeCard } from "./deleteSwipeCard";
 import { getSwipeNotificationCopy } from "./getSwipeNotificationCopy";
+import { upsertPostBridgePostProductMapping } from "./postBridgePostProductMappings";
 import { rateLimiter } from "./rateLimiter";
 import { upsertSwipeCard } from "./upsertSwipeCard";
 import { automationProvenanceValidator } from "./validators/automationProvenance";
@@ -486,7 +487,16 @@ export const addPostBridgePost = mutation({
     const updatedSwipe = await ctx.db.get(swipe._id);
 
     if (updatedSwipe) {
-      await upsertSwipeCard(ctx, updatedSwipe);
+      await Promise.all([
+        upsertPostBridgePostProductMapping(ctx, {
+          ownerId,
+          post,
+          productId: updatedSwipe.productSourceId,
+          sourceId: updatedSwipe.id,
+          sourceType: "swipe",
+        }),
+        upsertSwipeCard(ctx, updatedSwipe),
+      ]);
     }
   },
 });

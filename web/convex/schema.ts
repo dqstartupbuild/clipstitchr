@@ -34,6 +34,7 @@ import { providerJobTypeValidator } from "./validators/providerJobType";
 import { quickEditMetadataValidator } from "./validators/quickEditMetadata";
 import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
 import { postBridgePostReferenceValidator } from "./validators/postBridgePostReference";
+import { postBridgeSourceTypeValidator } from "./validators/postBridgeSourceType";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { replicateJobPurposeValidator } from "./validators/replicateJobPurpose";
 import { replicatePredictionStatusValidator } from "./validators/replicatePredictionStatus";
@@ -350,6 +351,18 @@ export default defineSchema({
     createdAt: v.string(),
     updatedAt: v.string(),
   }).index("by_owner", ["ownerId"]),
+  postBridgePostProductMappings: defineTable({
+    ownerId: v.string(),
+    productId: v.string(),
+    postId: v.string(),
+    sourceId: v.string(),
+    sourceType: postBridgeSourceTypeValidator,
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_owner_product", ["ownerId", "productId"])
+    .index("by_owner_post", ["ownerId", "postId"])
+    .index("by_owner_source", ["ownerId", "sourceType", "sourceId"]),
   productPreferences: defineTable({
     ownerId: v.string(),
     defaultProductId: v.optional(v.string()),

@@ -10,6 +10,7 @@ import { PostBridgeAnalyticsStatsGrid } from "@/app/dashboard/analytics/PostBrid
 import { PostBridgeAnalyticsTimeRangeFilter } from "@/app/dashboard/analytics/PostBridgeAnalyticsTimeRangeFilter";
 import { fetchPostBridgeAnalytics } from "@/lib/clipstitchr/client/fetchPostBridgeAnalytics";
 import { syncPostBridgeAnalytics } from "@/lib/clipstitchr/client/syncPostBridgeAnalytics";
+import { useDashboardProduct } from "@/lib/clipstitchr/hooks/useDashboardProduct";
 import type { PostBridgeAnalytics } from "@/lib/clipstitchr/types/PostBridgeAnalytics";
 import type { PostBridgeAnalyticsTimeRange } from "@/lib/clipstitchr/types/PostBridgeAnalyticsTimeRange";
 import { defaultPostBridgeAnalyticsTimeRange } from "@/lib/clipstitchr/utils/defaultPostBridgeAnalyticsTimeRange";
@@ -17,6 +18,7 @@ import { filterPostBridgeAnalyticsByTimeRange } from "@/lib/clipstitchr/utils/fi
 import { getPostBridgeAnalyticsTotals } from "@/lib/clipstitchr/utils/getPostBridgeAnalyticsTotals";
 
 export function PostBridgeAnalyticsPageClient() {
+  const products = useDashboardProduct();
   const [analytics, setAnalytics] = useState<PostBridgeAnalytics[]>([]);
   const [timeRange, setTimeRange] = useState<PostBridgeAnalyticsTimeRange>(
     defaultPostBridgeAnalyticsTimeRange,
@@ -32,13 +34,24 @@ export function PostBridgeAnalyticsPageClient() {
     () => getPostBridgeAnalyticsTotals(filteredAnalytics),
     [filteredAnalytics],
   );
+  const activeProductId = products.activeProduct?.id;
 
   const loadDashboard = useCallback(async () => {
+    if (!activeProductId) {
+      setAnalytics([]);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
+    setAnalytics([]);
     setError(null);
 
     try {
-      setAnalytics(await fetchPostBridgeAnalytics());
+      setAnalytics(
+        await fetchPostBridgeAnalytics({ productId: activeProductId }),
+      );
     } catch (nextError) {
       setError(
         nextError instanceof Error
@@ -48,14 +61,25 @@ export function PostBridgeAnalyticsPageClient() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [activeProductId]);
 
   useEffect(() => {
     let isActive = true;
 
     const loadInitialDashboard = async () => {
       try {
-        const nextAnalytics = await fetchPostBridgeAnalytics();
+        setIsLoading(true);
+        setAnalytics([]);
+        setError(null);
+
+        if (!activeProductId) {
+          setAnalytics([]);
+          return;
+        }
+
+        const nextAnalytics = await fetchPostBridgeAnalytics({
+          productId: activeProductId,
+        });
 
         if (!isActive) {
           return;
@@ -84,14 +108,21 @@ export function PostBridgeAnalyticsPageClient() {
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [activeProductId]);
 
   const handleSync = async () => {
+    if (!activeProductId) {
+      setError("Choose a product before syncing analytics.");
+      return;
+    }
+
     setIsSyncing(true);
     setError(null);
 
     try {
-      setAnalytics(await syncPostBridgeAnalytics());
+      setAnalytics(
+        await syncPostBridgeAnalytics({ productId: activeProductId }),
+      );
     } catch (nextError) {
       setError(
         nextError instanceof Error

@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { assertRateLimitApiSecret } from "../auth/assertRateLimitApiSecret";
 import { mutation } from "../_generated/server";
 import { postBridgePostReferenceValidator } from "../validators/postBridgePostReference";
+import { upsertPostBridgePostProductMapping } from "../postBridgePostProductMappings";
 import { stitchCounts, stitchProductCounts } from "../aggregateCounts";
 import { upsertStitchCard } from "../upsertStitchCard";
 import { rateLimiter } from "../rateLimiter";
@@ -49,6 +50,13 @@ export const addCliStitchPostBridgePost = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertPostBridgePostProductMapping(ctx, {
+          ownerId,
+          post,
+          productId: updatedStitch.productId,
+          sourceId: updatedStitch.id,
+          sourceType: "stitch",
+        }),
         upsertStitchCard(ctx, updatedStitch),
       ]);
     }

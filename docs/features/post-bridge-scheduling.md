@@ -113,7 +113,8 @@ Bridge:
    `use_queue: true` and omit `scheduled_at`; immediate posts send
    `scheduled_at: null`.
 11. Saves the returned Post Bridge post reference back onto the source stitch or
-   swipe and marks that source content posted so it moves out of active drafts.
+   swipe, marks that source content posted so it moves out of active drafts,
+   and stores a local product mapping for the returned Post Bridge post ID.
 12. Captures a consent-gated PostHog server event.
 
 The Post Bridge API uses bearer-token authentication. Because each request uses
@@ -128,12 +129,13 @@ which are separately authenticated and rate-limited before Apify and R2 work.
 The dashboard sidebar includes `Schedule` at `/dashboard/schedule` and
 `Analytics` at `/dashboard/analytics`.
 
-The Schedule page shows Post Bridge posts and their scheduled, processing,
-posted, or failed status. Queued posts display the `scheduled_at` time returned
-by Post Bridge when a queue slot is assigned. Immediate post-now rows display
-the Post Bridge `created_at` time, because those posts intentionally have
-`scheduled_at: null`. Its `Config/accounts` tab owns the product-level default
-posting account picker.
+The Schedule page shows Post Bridge posts for the active product and their
+scheduled, processing, posted, or failed status. It filters Post Bridge posts
+through the local post-to-product mapping saved when ClipStitchr schedules the
+post. Queued posts display the `scheduled_at` time returned by Post Bridge when
+a queue slot is assigned. Immediate post-now rows display the Post Bridge
+`created_at` time, because those posts intentionally have `scheduled_at: null`.
+Its `Config/accounts` tab owns the product-level default posting account picker.
 
 The page shows:
 
@@ -144,12 +146,14 @@ The page shows:
 - Synced TikTok, Instagram, and YouTube Shorts analytics rows with an `Open
   post` link when Post Bridge provides one.
 
-`Sync analytics` calls `POST /api/post-bridge/analytics/sync`, which triggers
-Post Bridge analytics sync, then reloads the returned analytics rows. Regular
-refreshes use `GET /api/post-bridge/analytics`. The Analytics page defaults to
-`Last 30 days` and can filter all-time data to the last 12 months, 90 days, 30
-days, 7 days, or 24 hours by each synced row's platform-created date. The
-Schedule page owns scheduled and posted post status counts.
+`Sync analytics` calls `POST /api/post-bridge/analytics/sync?productId=...`,
+which triggers Post Bridge analytics sync, resolves the active product's mapped
+Post Bridge post IDs to Post Bridge post-result IDs, then reloads only matching
+analytics rows. Regular refreshes use `GET /api/post-bridge/analytics` with the
+same product ID. The Analytics page defaults to `Last 30 days` and can filter
+all-time data to the last 12 months, 90 days, 30 days, 7 days, or 24 hours by
+each synced row's platform-created date. The Schedule page owns scheduled and
+posted post status counts.
 
 ## Source Files
 
@@ -174,6 +178,10 @@ Schedule page owns scheduled and posted post status counts.
 - `web/app/api/post-bridge/analytics/route.ts`
 - `web/app/api/post-bridge/analytics/sync/route.ts`
 - `web/app/dashboard/analytics/PostBridgeAnalyticsPageClient.tsx`
+- `web/convex/postBridgePostProductMappings.ts`
+- `web/lib/clipstitchr/server/postBridge/filterPostBridgePostsByMappedPostIds.ts`
+- `web/lib/clipstitchr/server/postBridge/filterPostBridgeAnalyticsByPostResultIds.ts`
+- `web/lib/clipstitchr/server/postBridge/listPostBridgePostResults.ts`
 - `web/convex/clearPostBridgeSocialAccountIdsForOwner.ts`
 - `web/lib/clipstitchr/server/postBridge/getPostBridgeApiKeyHasChanged.ts`
 - `docs/features/post-bridge-analytics.md`

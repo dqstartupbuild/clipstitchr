@@ -22,6 +22,7 @@ import { quickEditCropValidator } from "./validators/quickEditCrop";
 import { quickEditRemoveRangeValidator } from "./validators/quickEditRemoveRange";
 import { quickEditSuggestionsValidator } from "./validators/quickEditSuggestions";
 import { postBridgePostReferenceValidator } from "./validators/postBridgePostReference";
+import { upsertPostBridgePostProductMapping } from "./postBridgePostProductMappings";
 import { r2ObjectValidator } from "./validators/r2Object";
 import { stitchScoreValidator } from "./validators/stitchScore";
 import { stitchrModeValidator } from "./validators/stitchrMode";
@@ -1283,6 +1284,13 @@ export const addPostBridgePost = mutation({
       await Promise.all([
         stitchCounts.replaceOrInsert(ctx, stitch, updatedStitch),
         stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertPostBridgePostProductMapping(ctx, {
+          ownerId,
+          post,
+          productId: updatedStitch.productId,
+          sourceId: updatedStitch.id,
+          sourceType: "stitch",
+        }),
         upsertStitchCard(ctx, updatedStitch),
       ]);
     }

@@ -3,14 +3,17 @@ import { createAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/c
 import { createAuthenticatedConvexHttpClient } from "@/lib/clipstitchr/server/convex/createAuthenticatedConvexHttpClient";
 import { getAuthenticatedConvexToken } from "@/lib/clipstitchr/server/convex/getAuthenticatedConvexToken";
 import { getAuthenticatedUserId } from "@/lib/clipstitchr/server/getAuthenticatedUserId";
+import { filterPostBridgeAnalyticsByPostResultIds } from "@/lib/clipstitchr/server/postBridge/filterPostBridgeAnalyticsByPostResultIds";
 import { listPostBridgeAnalytics } from "@/lib/clipstitchr/server/postBridge/listPostBridgeAnalytics";
+import { listPostBridgePostResults } from "@/lib/clipstitchr/server/postBridge/listPostBridgePostResults";
+import { readPostBridgeProductIdFromRequest } from "@/lib/clipstitchr/server/postBridge/readPostBridgeProductIdFromRequest";
 import { resolvePostBridgeApiKey } from "@/lib/clipstitchr/server/postBridge/resolvePostBridgeApiKey";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request: Request) {
   const userId = await getAuthenticatedUserId();
 
   if (!userId) {
@@ -31,9 +34,35 @@ export async function GET() {
     });
 
     const apiKey = await resolvePostBridgeApiKey(convex);
+    const productId = readPostBridgeProductIdFromRequest(request);
+    const mappedPostIds = productId
+      ? await convex.query(
+          api.postBridgePostProductMappings.listPostIdsByProduct,
+          {
+            productId,
+          },
+        )
+      : null;
+
+    if (mappedPostIds && mappedPostIds.length === 0) {
+      return Response.json({ analytics: [] });
+    }
+
+    const postResults = mappedPostIds
+      ? await listPostBridgePostResults(apiKey, mappedPostIds)
+      : null;
+    const postResultIds = postResults?.map((postResult) => postResult.id);
+
+    if (postResultIds && postResultIds.length === 0) {
+      return Response.json({ analytics: [] });
+    }
+
+    const analytics = await listPostBridgeAnalytics(apiKey, postResultIds ?? []);
 
     return Response.json({
-      analytics: await listPostBridgeAnalytics(apiKey),
+      analytics: postResultIds
+        ? filterPostBridgeAnalyticsByPostResultIds(analytics, postResultIds)
+        : analytics,
     });
   } catch (error) {
     const rateLimitResponse = createRateLimitExceededResponse(error);

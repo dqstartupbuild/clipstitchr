@@ -36,11 +36,20 @@ export function SchedulePageClient() {
   }, [activeProductId]);
 
   const loadPosts = useCallback(async () => {
+    if (!activeProductId) {
+      setPosts([]);
+      setAccounts([]);
+      setPostsError(null);
+      setIsLoadingPosts(false);
+      return;
+    }
+
     setIsLoadingPosts(true);
+    setPosts([]);
     setPostsError(null);
 
     try {
-      setPosts(await fetchPostBridgePosts());
+      setPosts(await fetchPostBridgePosts({ productId: activeProductId }));
       await loadAccounts();
     } catch (nextError) {
       setPostsError(
@@ -51,7 +60,7 @@ export function SchedulePageClient() {
     } finally {
       setIsLoadingPosts(false);
     }
-  }, [loadAccounts]);
+  }, [activeProductId, loadAccounts]);
 
   const handleTabChange = useCallback((nextTab: SchedulePageTab) => {
     setSelectedTab(nextTab);

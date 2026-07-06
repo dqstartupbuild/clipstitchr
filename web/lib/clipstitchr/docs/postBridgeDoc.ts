@@ -9,7 +9,7 @@ export const postBridgeDoc = {
     "Schedule finished work through Post Bridge, then check how posted content is doing without making scheduling the whole point.",
   category: "feature",
   order: 80,
-  updated: "2026-06-29",
+  updated: "2026-07-06",
   sections: [
     {
       title: "What Post Bridge adds",
@@ -47,7 +47,7 @@ export const postBridgeDoc = {
     {
       title: "Check what happened",
       body: [
-        "After posts go live, the Analytics page can sync Post Bridge results so you can see simple performance numbers in ClipStitchr. Use that read to decide what to reuse, what to fix, and what should stay in the library but not get another slot.",
+        "After posts go live, the Analytics page can sync Post Bridge results for the active product so you can see simple performance numbers in ClipStitchr. Use that read to decide what to reuse, what to fix, and what should stay in the library but not get another slot.",
         "Analytics are there to help the next creative decision. They are not the main product promise, and they should not replace looking at the actual post and audience response.",
       ],
       bullets: [

@@ -63,7 +63,8 @@ Bridge receives the media.
 The queue route consumes the same Post Bridge upload-byte and schedule-create
 limits as the dashboard before the expensive external calls. After Post Bridge
 returns a post, the route records the post reference on the Stitch and marks it
-posted.
+posted. It also stores the local Post Bridge post-to-product mapping so
+Schedule and Analytics can show the queued post under the Stitch's product.
 
 ## Current Swipe Limitation
 

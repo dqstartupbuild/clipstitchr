@@ -5,9 +5,10 @@ performance data synced from Post Bridge.
 
 ## How It Works
 
-The page loads synced analytics rows through `GET /api/post-bridge/analytics`.
-It no longer loads the Post Bridge posts list because scheduled and posted post
-status already belongs on the Schedule page.
+The page loads synced analytics rows for the active product through
+`GET /api/post-bridge/analytics?productId=...`. It no longer loads the Post
+Bridge posts list because scheduled and posted post status already belongs on
+the Schedule page.
 
 Analytics defaults to `Last 30 days`. The user can filter the page by:
 
@@ -18,11 +19,13 @@ Analytics defaults to `Last 30 days`. The user can filter the page by:
 - Last 12 months
 - All time
 
-ClipStitchr requests the all-time analytics list from Post Bridge, then filters
-the visible stats and results locally by each row's `platform_created_at` value.
-Rows without a valid platform-created date remain visible in `All time`, but
-they are excluded from date-limited ranges because ClipStitchr cannot safely
-place them in time.
+ClipStitchr stores a local product mapping when it schedules a Post Bridge post.
+Analytics uses that mapping to fetch Post Bridge post-result IDs for the active
+product, then asks Post Bridge for analytics rows matching those result IDs.
+After that product filter, the page filters visible stats and results locally by
+each row's `platform_created_at` value. Rows without a valid platform-created
+date remain visible in `All time`, but they are excluded from date-limited
+ranges because ClipStitchr cannot safely place them in time.
 
 ## Visible Metrics
 
@@ -53,6 +56,9 @@ hours` and `Last 12 months` with the same behavior.
 - `web/app/dashboard/analytics/PostBridgeAnalyticsResultsSection.tsx`
 - `web/app/dashboard/analytics/PostBridgeAnalyticsResultRow.tsx`
 - `web/app/dashboard/analytics/PostBridgeAnalyticsMetricCell.tsx`
+- `web/convex/postBridgePostProductMappings.ts`
+- `web/lib/clipstitchr/server/postBridge/filterPostBridgeAnalyticsByPostResultIds.ts`
+- `web/lib/clipstitchr/server/postBridge/listPostBridgePostResults.ts`
 - `web/lib/clipstitchr/types/PostBridgeAnalyticsTimeRange.ts`
 - `web/lib/clipstitchr/types/PostBridgeAnalyticsTimeRangeOption.ts`
 - `web/lib/clipstitchr/utils/filterPostBridgeAnalyticsByTimeRange.ts`

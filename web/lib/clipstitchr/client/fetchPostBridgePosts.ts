@@ -1,8 +1,17 @@
+import { createPostBridgeProductUrl } from "@/lib/clipstitchr/client/createPostBridgeProductUrl";
 import { readPostBridgeClientErrorMessage } from "@/lib/clipstitchr/client/readPostBridgeClientErrorMessage";
 import type { PostBridgePost } from "@/lib/clipstitchr/types/PostBridgePost";
 
-export async function fetchPostBridgePosts() {
-  const response = await fetch("/api/post-bridge/posts");
+type FetchPostBridgePostsOptions = {
+  productId?: string;
+};
+
+export async function fetchPostBridgePosts({
+  productId,
+}: FetchPostBridgePostsOptions = {}) {
+  const response = await fetch(
+    createPostBridgeProductUrl("/api/post-bridge/posts", productId),
+  );
 
   if (!response.ok) {
     throw new Error(
