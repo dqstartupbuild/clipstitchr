@@ -20,6 +20,7 @@ import { runStitchrBatchCommand } from "./runStitchrBatchCommand.js";
 import { runSwiprBatchCommand } from "./runSwiprBatchCommand.js";
 import { runUnlinkCommand } from "./runUnlinkCommand.js";
 import { runUpdateCommand } from "./runUpdateCommand.js";
+import { clipstitchrCliDescription } from "../config/clipstitchrCliDescription.js";
 import { readCliPackageVersion } from "../config/readCliPackageVersion.js";
 import { runInteractiveCommand } from "../interactive/runInteractiveCommand.js";
 
@@ -29,7 +30,7 @@ export async function runCli(argv: string[]) {
 
   program
     .name("clipstitchr")
-    .description("Record and upload product demos to ClipStitchr.")
+    .description(clipstitchrCliDescription)
     .option("--api <url>", "Use a ClipStitchr app URL")
     .option("--plain", "Print plain output without terminal colors")
     .version(packageVersion);

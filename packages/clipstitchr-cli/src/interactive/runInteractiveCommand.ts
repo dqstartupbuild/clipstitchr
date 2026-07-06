@@ -7,10 +7,11 @@ import { runDoctorCommand } from "../commands/runDoctorCommand.js";
 import { runQueueStitchCommand } from "../commands/runQueueStitchCommand.js";
 import { runStitchrBatchCommand } from "../commands/runStitchrBatchCommand.js";
 import { runSwiprBatchCommand } from "../commands/runSwiprBatchCommand.js";
+import { clipstitchrCliDescription } from "../config/clipstitchrCliDescription.js";
 import { logBrandHeader } from "../terminal/logBrandHeader.js";
 
 export async function runInteractiveCommand(options: CliGlobalOptions) {
-  logBrandHeader("Record and upload product demos from your terminal.");
+  logBrandHeader(clipstitchrCliDescription);
 
   const action = await select({
     choices: [
