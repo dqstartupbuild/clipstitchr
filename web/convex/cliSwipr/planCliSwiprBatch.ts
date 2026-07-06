@@ -124,6 +124,7 @@ export const planCliSwiprBatch = mutation({
         tool: "swipr",
         taskType: "swipr-draft",
         stage: "awaiting-text-provider",
+        skipAutomationPreferenceCheck: true,
         idempotencyKey: `${runId}:swipr:${index + 1}`,
         inputSnapshotJson: JSON.stringify({
           automationDate,

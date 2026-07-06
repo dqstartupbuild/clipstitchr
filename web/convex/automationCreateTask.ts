@@ -21,6 +21,7 @@ export async function createAutomationTask(
     ownerId,
     productId,
     runId,
+    skipAutomationPreferenceCheck,
     stage,
     taskType,
     tool,
@@ -32,6 +33,7 @@ export async function createAutomationTask(
     ownerId: string;
     productId?: string;
     runId: string;
+    skipAutomationPreferenceCheck?: boolean;
     stage: string;
     taskType: AutomationTaskType;
     tool: AutomationTool;
@@ -42,6 +44,7 @@ export async function createAutomationTask(
     ownerId,
     tool,
     productId,
+    { skipPreferenceCheck: skipAutomationPreferenceCheck },
   );
 
   if (disabledReason) {

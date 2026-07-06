@@ -16,11 +16,16 @@ export async function getAutomationToolDisabledReason(
   ownerId: string,
   tool: AutomationTool,
   productId?: string,
+  options: { skipPreferenceCheck?: boolean } = {},
 ) {
   const label = automationToolLabels[tool];
 
   if (!getIsAutomationToolEnabled(tool)) {
     return `${label} automation is disabled by the code flag.`;
+  }
+
+  if (options.skipPreferenceCheck) {
+    return null;
   }
 
   const preferences = await getAutomationPreferenceForProduct(

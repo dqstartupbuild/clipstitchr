@@ -15,6 +15,7 @@ import { automationTaskTypeValidator } from "./validators/automationTaskType";
 import { automationToolValidator } from "./validators/automationTool";
 import { getAutomationToolDisabledReason } from "./getAutomationToolDisabledReason";
 import { getAutomationTaskProductId } from "./getAutomationTaskProductId";
+import { getIsCliSwiprBatchRunId } from "./cliSwipr/getIsCliSwiprBatchRunId";
 import { getIsStitchrBatchRunId } from "./stitchrBatchRunId";
 import { markAutomationRunCompletedWhenTasksDone } from "./markAutomationRunCompletedWhenTasksDone";
 import { requestWorkerLaunch } from "./workerLaunch";
@@ -105,7 +106,9 @@ async function getClaimableTask(
       continue;
     }
 
-    const disabledReason = getIsStitchrBatchRunId(task.runId)
+    const disabledReason =
+      getIsStitchrBatchRunId(task.runId) ||
+      getIsCliSwiprBatchRunId(task.runId)
       ? null
       : await getAutomationToolDisabledReason(
           ctx,

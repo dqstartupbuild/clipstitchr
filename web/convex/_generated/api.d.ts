@@ -60,6 +60,7 @@ import type * as cliProducts_getCliProduct from "../cliProducts/getCliProduct.js
 import type * as cliProducts_listCliProducts from "../cliProducts/listCliProducts.js";
 import type * as cliRateLimits_consumeCliPostBridgeMediaUpload from "../cliRateLimits/consumeCliPostBridgeMediaUpload.js";
 import type * as cliRateLimits_consumeCliPostBridgeSchedule from "../cliRateLimits/consumeCliPostBridgeSchedule.js";
+import type * as cliSwipr_getIsCliSwiprBatchRunId from "../cliSwipr/getIsCliSwiprBatchRunId.js";
 import type * as cliSwipr_planCliSwiprBatch from "../cliSwipr/planCliSwiprBatch.js";
 import type * as cliUploads_getCliUploadStatus from "../cliUploads/getCliUploadStatus.js";
 import type * as cliprJobs from "../cliprJobs.js";
@@ -313,6 +314,7 @@ declare const fullApi: ApiFromModules<{
   "cliProducts/listCliProducts": typeof cliProducts_listCliProducts;
   "cliRateLimits/consumeCliPostBridgeMediaUpload": typeof cliRateLimits_consumeCliPostBridgeMediaUpload;
   "cliRateLimits/consumeCliPostBridgeSchedule": typeof cliRateLimits_consumeCliPostBridgeSchedule;
+  "cliSwipr/getIsCliSwiprBatchRunId": typeof cliSwipr_getIsCliSwiprBatchRunId;
   "cliSwipr/planCliSwiprBatch": typeof cliSwipr_planCliSwiprBatch;
   "cliUploads/getCliUploadStatus": typeof cliUploads_getCliUploadStatus;
   cliprJobs: typeof cliprJobs;

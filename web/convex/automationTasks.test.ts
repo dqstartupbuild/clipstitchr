@@ -107,6 +107,14 @@ const queuedTask = {
   tool: "stitchr",
   updatedAt: "2026-06-21T09:00:00.000Z",
 };
+const cliSwiprQueuedTask = {
+  ...queuedTask,
+  id: "cli_swipr_task_1",
+  idempotencyKey: "cli_swipr_task_1:key",
+  runId: "cli:swipr:owner_1:product_1:2026-07-06:batch_1",
+  taskType: "swipr-draft",
+  tool: "swipr",
+};
 const productRun = {
   _id: "run_doc",
   id: "run_1",
@@ -166,5 +174,41 @@ describe("automationTasks", () => {
     );
     expect(ctx.db.get).toHaveBeenCalledWith("task_doc");
     expect(ctx.db.get).toHaveBeenCalledWith("run_doc");
+  });
+
+  it("claims CLI Swipr tasks when daily Swipr automation is disabled", async () => {
+    const ctx = createCtx({
+      automationPreferences: [{ unique: disabledProductPreference }],
+      automationTasks: [{ take: [cliSwiprQueuedTask] }],
+    });
+
+    await expect(
+      getHandler<Record<string, string>, unknown>(claimNextForProvider)(ctx, {
+        lockedUntil: "2026-06-21T10:05:00.000Z",
+        secret: "provider_secret",
+        tool: "swipr",
+        updatedAt: now,
+        workerId: "provider_worker_1",
+      }),
+    ).resolves.toBeNull();
+
+    expect(ctx.db.patch).toHaveBeenCalledWith(
+      "task_doc",
+      expect.objectContaining({
+        attempt: 1,
+        lockedBy: "provider_worker_1",
+        lockedUntil: "2026-06-21T10:05:00.000Z",
+        status: "running",
+        updatedAt: now,
+      }),
+    );
+    expect(ctx.db.patch).not.toHaveBeenCalledWith(
+      "task_doc",
+      expect.objectContaining({
+        error: "Swipr automation is disabled.",
+        stage: "disabled",
+        status: "skipped",
+      }),
+    );
   });
 });
