@@ -6,6 +6,7 @@ import { chromium } from "playwright";
 import type { RecordingResult } from "./RecordingResult.js";
 import type { WebRecordingOptions } from "./WebRecordingOptions.js";
 import { convertVideoToVerticalMp4 } from "./convertVideoToVerticalMp4.js";
+import { createBrowserProfileDirectory } from "./createBrowserProfileDirectory.js";
 import { createRecordingOutputPath } from "./createRecordingOutputPath.js";
 import { runShellCommand } from "./runShellCommand.js";
 import { stopShellCommand } from "./stopShellCommand.js";
@@ -20,12 +21,13 @@ export async function recordWebDemo(
   const videoDirectory = await mkdtemp(join(tmpdir(), "clipstitchr-video-"));
   const outputPath =
     options.outputPath ?? (await createRecordingOutputPath(process.cwd()));
+  const userDataDir = await createBrowserProfileDirectory(process.cwd());
 
   try {
     await waitForHttpUrl(options.url);
 
-    const browser = await chromium.launch({ headless: false });
-    const context = await browser.newContext({
+    const context = await chromium.launchPersistentContext(userDataDir, {
+      headless: false,
       recordVideo: {
         dir: videoDirectory,
         size: {
@@ -49,7 +51,6 @@ export async function recordWebDemo(
     const video = page.video();
 
     await context.close();
-    await browser.close();
 
     const rawVideoPath = await video?.path();
 

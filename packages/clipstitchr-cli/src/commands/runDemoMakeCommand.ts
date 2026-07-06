@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { confirm, input, select } from "@inquirer/prompts";
 import type { CliGlobalOptions } from "./CliGlobalOptions.js";
 import { ensureCredentialsOrLogin } from "./ensureCredentialsOrLogin.js";
@@ -6,6 +7,8 @@ import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
 import { selectProduct } from "../interactive/selectProduct.js";
 import { detectProject } from "../project/detectProject.js";
+import { findRunningLocalAppUrl } from "../project/findRunningLocalAppUrl.js";
+import { isHttpUrlReachable } from "../project/isHttpUrlReachable.js";
 import { scanProjectFlows } from "../project/scanProjectFlows.js";
 import { recordWebDemo } from "../recording/recordWebDemo.js";
 import { uploadDemoFile } from "../upload/uploadDemoFile.js";
@@ -34,21 +37,26 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
     credentials,
     options.product ?? config.productId,
   );
+  const runningUrl = await findRunningLocalAppUrl(
+    options.url ?? config.target?.url,
+  );
   const startCommand =
     options.start ??
     config.target?.start ??
     (await input({
       default: project.startCommand,
-      message: "Start command:",
+      message: "How do you run this app locally?",
     }));
   const url =
     options.url ??
+    runningUrl ??
     config.target?.url ??
     (await input({
       default: "http://localhost:3000",
-      message: "Local URL:",
+      message: "What local URL should I record?",
     }));
-  const flows = await scanProjectFlows();
+  const shouldStartApp = !(await isHttpUrlReachable(url));
+  const flows = await scanProjectFlows(join(process.cwd(), project.directory));
 
   if (flows.length) {
     await select({
@@ -62,7 +70,7 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
 
   const recording = await recordWebDemo({
     outputPath: options.output,
-    startCommand,
+    startCommand: shouldStartApp ? startCommand : undefined,
     url,
   });
 

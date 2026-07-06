@@ -6,6 +6,7 @@ import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
 import { selectProduct } from "../interactive/selectProduct.js";
 import { detectProject } from "../project/detectProject.js";
+import { findRunningLocalAppUrl } from "../project/findRunningLocalAppUrl.js";
 
 export async function runInitCommand(options: CliGlobalOptions) {
   const config = await readProjectConfig();
@@ -13,13 +14,21 @@ export async function runInitCommand(options: CliGlobalOptions) {
   const credentials = await ensureCredentialsOrLogin(apiBaseUrl);
   const detectedProject = await detectProject();
   const product = await selectProduct(credentials, config.productId);
+  const runningUrl = await findRunningLocalAppUrl(config.target?.url);
+
+  if (detectedProject.startCommand) {
+    console.log(
+      `I found a ${detectedProject.type} app in ${detectedProject.displayName}.`,
+    );
+  }
+
   const start = await input({
     default: config.target?.start ?? detectedProject.startCommand,
-    message: "Start command:",
+    message: "How do you run this app locally?",
   });
   const url = await input({
-    default: config.target?.url ?? "http://localhost:3000",
-    message: "Local URL:",
+    default: runningUrl ?? config.target?.url ?? "http://localhost:3000",
+    message: "What local URL should I record?",
   });
 
   await writeProjectConfig({

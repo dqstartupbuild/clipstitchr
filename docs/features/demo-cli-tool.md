@@ -19,6 +19,9 @@ selection/creation, R2 upload signing, upload completion, and upload status.
   ClipStitchr account.
 - `clipstitchr init` writes `.clipstitchr.yml` with the product, local app URL,
   start command, and vertical recording defaults.
+- `clipstitchr init` detects common nested app folders like `web/`, skips the
+  product picker when the account has one product, and prefers a localhost URL
+  that is already running.
 - `clipstitchr scan` detects likely demo flows from local app routes.
 - `clipstitchr demo make` records a local web/Expo-web app in a vertical
   Chromium viewport, converts the recording to MP4, and offers to upload it.
@@ -61,10 +64,22 @@ The CLI does not stream large videos through the Next.js server.
 
 ## Recording Behavior
 
-The first built-in recorder supports web apps and Expo web targets. It starts
-the inferred or configured command, waits for the local URL, opens Chromium at
-390x844, records the browser session with Playwright, then converts the WebM to
-a 1080x1920 MP4 with ffmpeg.
+The first built-in recorder supports web apps and Expo web targets. It detects
+common app folders such as `web/`, infers the start command from the app package
+manager, checks common localhost ports, opens Chromium at 390x844, records the
+browser session with Playwright, then converts the WebM to a 1080x1920 MP4 with
+ffmpeg.
+
+Recording is manual by default. The CLI opens the app in Chromium, the user
+clicks through the demo, and the user presses Enter in the terminal when the
+take is done. This keeps the first shipped recorder predictable and avoids an AI
+agent clicking through private or destructive flows without explicit guardrails.
+
+Target app authentication is handled through a persistent Playwright browser
+profile in `.clipstitchr/browser-profile`. If the app being recorded requires a
+login, the user can sign in during the first recording and reuse that browser
+session on later recordings. The `.clipstitchr/` folder is ignored by Git so
+target-app cookies and local browser state stay off the repo.
 
 Native iOS, Android, React Native device, and Electron projects are detected so
 the CLI can explain the next step. Those projects can still ship demos through

@@ -22,6 +22,11 @@ export async function selectProduct(
     return await createProductPrompt(credentials);
   }
 
+  if (products.length === 1) {
+    console.log(`Using product: ${products[0].name}`);
+    return products[0];
+  }
+
   const selectedId = await select({
     choices: [
       ...products.map((product) => ({
