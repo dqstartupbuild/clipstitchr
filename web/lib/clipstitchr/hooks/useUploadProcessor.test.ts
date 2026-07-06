@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   deleteObjectsFromR2: vi.fn(),
   normalizeUploadedVideo: vi.fn(),
   queueUploadVideoWorkerFallback: vi.fn(),
+  readFileClipMetadata: vi.fn(),
   saveClip: vi.fn(),
   uploadNormalizedVideoClipObjects: vi.fn(),
   useStateSetter: vi.fn(),
@@ -57,6 +58,10 @@ vi.mock("@/lib/clipstitchr/media/normalizeUploadedVideo", () => ({
   normalizeUploadedVideo: mocks.normalizeUploadedVideo,
 }));
 
+vi.mock("@/lib/clipstitchr/media/readFileClipMetadata", () => ({
+  readFileClipMetadata: mocks.readFileClipMetadata,
+}));
+
 vi.mock("@/lib/clipstitchr/utils/createId", () => ({
   createId: mocks.createId,
 }));
@@ -101,6 +106,17 @@ describe("useUploadProcessor", () => {
         },
         mimeType: "video/mp4",
       };
+    });
+    mocks.readFileClipMetadata.mockResolvedValue({
+      aspectRatio: 1080 / 1920,
+      audioCanDecode: true,
+      duration: 12,
+      hasAudio: true,
+      height: 1920,
+      mimeType: "video/quicktime",
+      rotation: 0,
+      videoCanDecode: true,
+      width: 1080,
     });
     mocks.createVideoPosterBlob.mockResolvedValue(
       new Blob(["poster"], { type: "image/jpeg" }),
@@ -234,6 +250,7 @@ describe("useUploadProcessor", () => {
       clipId: "clip_1",
       clipType: "ugc",
       file,
+      layout: undefined,
       productId: undefined,
     });
     expect(mocks.saveClip).not.toHaveBeenCalled();
@@ -261,5 +278,36 @@ describe("useUploadProcessor", () => {
     state.clearQueue();
 
     expect(mocks.useStateSetter).toHaveBeenCalledWith([]);
+  });
+
+  it("queues wide demo uploads to the worker background layout", async () => {
+    const state = useUploadProcessor({
+      demoProductId: "product_1",
+      initialClipType: "demo",
+    });
+    const file = createVideoFile("wide-demo.mp4");
+
+    mocks.readFileClipMetadata.mockResolvedValueOnce({
+      aspectRatio: 16 / 9,
+      audioCanDecode: true,
+      duration: 12,
+      hasAudio: true,
+      height: 1080,
+      mimeType: "video/mp4",
+      rotation: 0,
+      videoCanDecode: true,
+      width: 1920,
+    });
+
+    await state.processFiles([file]);
+
+    expect(mocks.normalizeUploadedVideo).not.toHaveBeenCalled();
+    expect(mocks.queueUploadVideoWorkerFallback).toHaveBeenCalledWith({
+      clipId: "clip_1",
+      clipType: "demo",
+      file,
+      layout: "fit-with-background",
+      productId: "product_1",
+    });
   });
 });

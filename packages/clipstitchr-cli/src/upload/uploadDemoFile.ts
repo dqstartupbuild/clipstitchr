@@ -3,7 +3,9 @@ import { basename } from "node:path";
 import { completeDemoUpload } from "../api/completeDemoUpload.js";
 import { createDemoUpload } from "../api/createDemoUpload.js";
 import type { ClipstitchrCredentials } from "../config/ClipstitchrCredentials.js";
+import type { RecordingInteractionEvent } from "../recording/RecordingInteractionEvent.js";
 import { getVideoContentType } from "./getVideoContentType.js";
+import type { UploadNormalizationLayout } from "./UploadNormalizationLayout.js";
 import { uploadFileToSignedUrl } from "./uploadFileToSignedUrl.js";
 import { waitForUploadCompletion } from "./waitForUploadCompletion.js";
 
@@ -11,6 +13,8 @@ export async function uploadDemoFile(
   credentials: ClipstitchrCredentials,
   input: {
     filePath: string;
+    interactionEvents?: RecordingInteractionEvent[];
+    layout?: UploadNormalizationLayout;
     productId: string;
     wait: boolean;
   },
@@ -32,7 +36,9 @@ export async function uploadDemoFile(
   await completeDemoUpload(credentials, {
     clipId: upload.clipId,
     contentType,
+    interactionEvents: input.interactionEvents,
     key: upload.sourceVideoObject.key,
+    layout: input.layout,
     originalName: basename(input.filePath),
     productId: input.productId,
     size: fileStats.size,

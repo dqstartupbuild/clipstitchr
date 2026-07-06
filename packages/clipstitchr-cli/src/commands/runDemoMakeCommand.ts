@@ -42,6 +42,7 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
     options.product ?? config.productId,
   );
   let recording: RecordingResult;
+  let recordingLayout: "fit-with-background" | "smart-screen-demo" | undefined;
   let startCommand = options.start ?? config.target?.start;
   let url = options.url ?? config.target?.url;
 
@@ -81,6 +82,9 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
       startCommand: shouldStartApp ? startCommand : undefined,
       url,
     });
+    recordingLayout = recording.interactionEvents?.length
+      ? "smart-screen-demo"
+      : "fit-with-background";
   } else {
     recording = await recordNativeDemo({
       outputPath: options.output,
@@ -118,6 +122,8 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
 
   await uploadDemoFile(credentials, {
     filePath: recording.outputPath,
+    interactionEvents: recording.interactionEvents,
+    layout: recordingLayout,
     productId: product.id,
     wait: true,
   });

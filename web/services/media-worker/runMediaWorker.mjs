@@ -6,8 +6,12 @@ import { promisify } from "node:util";
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { ConvexHttpClient } from "convex/browser";
 import { anyApi } from "convex/server";
+import { createUploadNormalizationFilter } from "./createUploadNormalizationFilter.mjs";
 import { getQuickEditPlaybackDuration } from "./getQuickEditPlaybackDuration.mjs";
+import { readUploadInteractionEvents } from "./readUploadInteractionEvents.mjs";
+import { readUploadNormalizationLayout } from "./readUploadNormalizationLayout.mjs";
 import { readQuickEditSuggestions } from "./readQuickEditSuggestions.mjs";
+import { selectUploadNormalizationLayout } from "./selectUploadNormalizationLayout.mjs";
 
 const execFileAsync = promisify(execFile);
 const api = anyApi;
@@ -336,6 +340,8 @@ function parseUploadNormalizationInput(inputSnapshotJson) {
   return {
     clipId: getString(input.clipId, "clip ID"),
     clipType: input.clipType === "demo" ? "demo" : "ugc",
+    interactionEvents: readUploadInteractionEvents(input.interactionEvents),
+    layout: readUploadNormalizationLayout(input.layout ?? input.normalizationLayout),
     originalName: getString(input.originalName, "original name"),
     productId:
       typeof input.productId === "string" && input.productId.trim()
@@ -633,19 +639,28 @@ async function assertFfmpegAvailable(config) {
   await runFfprobe(config, ["-version"]);
 }
 
-async function normalizeVideo({ config, inputPath, outputPath, stripAudio = false }) {
+async function normalizeVideo({
+  config,
+  inputPath,
+  outputPath,
+  stripAudio = false,
+  videoFilter =
+    "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1",
+  videoFilterMode = "vf",
+}) {
   const audioArgs = stripAudio
     ? ["-an"]
     : ["-map", "0:a:0?", "-c:a", "aac", "-b:a", "128k"];
+  const videoFilterArgs =
+    videoFilterMode === "filter-complex"
+      ? ["-filter_complex", videoFilter, "-map", "[v]"]
+      : ["-map", "0:v:0", "-vf", videoFilter];
 
   await runFfmpeg(config, [
     "-y",
     "-i",
     inputPath,
-    "-map",
-    "0:v:0",
-    "-vf",
-    "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1",
+    ...videoFilterArgs,
     "-r",
     "30",
     "-c:v",
@@ -699,13 +714,13 @@ async function readVideoMetadata({ config, inputPath }) {
   );
 
   if (!videoStream?.width || !videoStream?.height) {
-    throw new Error("Unable to read normalized video dimensions.");
+    throw new Error("Unable to read video dimensions.");
   }
 
   const duration = Number(metadata.format?.duration || videoStream.duration);
 
   if (!Number.isFinite(duration) || duration <= 0) {
-    throw new Error("Unable to read normalized video duration.");
+    throw new Error("Unable to read video duration.");
   }
 
   return {
@@ -905,6 +920,20 @@ async function processUploadNormalization({ client, config, job, r2 }) {
       key: input.sourceVideoObject.key,
       outputPath: sourcePath,
     });
+    const sourceMetadata = await readVideoMetadata({
+      config,
+      inputPath: sourcePath,
+    });
+    const layout = selectUploadNormalizationLayout({
+      clipType: input.clipType,
+      requestedLayout: input.layout,
+      sourceAspectRatio: sourceMetadata.aspectRatio,
+    });
+    const uploadVideoFilter = createUploadNormalizationFilter({
+      interactionEvents: input.interactionEvents,
+      layout,
+      sourceMetadata,
+    });
 
     await client.mutation(api.mediaJobs.markStatus, {
       secret: config.mediaWorkerSecret,
@@ -914,7 +943,13 @@ async function processUploadNormalization({ client, config, job, r2 }) {
       stage: "normalizing",
       updatedAt: new Date().toISOString(),
     });
-    await normalizeVideo({ config, inputPath: sourcePath, outputPath });
+    await normalizeVideo({
+      config,
+      inputPath: sourcePath,
+      outputPath,
+      videoFilter: uploadVideoFilter.value,
+      videoFilterMode: uploadVideoFilter.mode,
+    });
     await createPoster({ config, inputPath: outputPath, outputPath: posterPath });
 
     const [videoBody, posterBody] = await Promise.all([

@@ -9,12 +9,14 @@ import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRa
 import { assertR2ObjectKeyBelongsToUser } from "@/lib/clipstitchr/server/r2/assertR2ObjectKeyBelongsToUser";
 import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
+import type { UploadNormalizationLayout } from "@/lib/clipstitchr/types/UploadNormalizationLayout";
 
 export const runtime = "nodejs";
 
 type UploadVideoJobRequestBody = {
   clipId?: unknown;
   clipType?: unknown;
+  layout?: unknown;
   originalName?: unknown;
   productId?: unknown;
   sourceVideoObject?: unknown;
@@ -30,6 +32,20 @@ function getString(value: unknown, label: string) {
 
 function getClipType(value: unknown): ClipType {
   return value === "demo" ? "demo" : "ugc";
+}
+
+function getUploadNormalizationLayout(
+  value: unknown,
+): UploadNormalizationLayout | undefined {
+  if (
+    value === "crop-fill" ||
+    value === "fit-with-background" ||
+    value === "smart-screen-demo"
+  ) {
+    return value;
+  }
+
+  return undefined;
 }
 
 function getR2ObjectReference(value: unknown): R2ObjectReference {
@@ -79,6 +95,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as UploadVideoJobRequestBody;
     const clipId = getString(body.clipId, "clip ID");
     const clipType = getClipType(body.clipType);
+    const layout = getUploadNormalizationLayout(body.layout);
     const originalName = getString(body.originalName, "original name");
     const productId =
       typeof body.productId === "string" && body.productId.trim()
@@ -121,6 +138,7 @@ export async function POST(request: Request) {
       inputSnapshotJson: JSON.stringify({
         clipId,
         clipType,
+        layout,
         originalName,
         productId,
         sourceVideoObject,

@@ -25,6 +25,9 @@ selection/creation, R2 upload signing, upload completion, and upload status.
 - `clipstitchr scan` detects likely demo flows from local app routes.
 - `clipstitchr demo make` records a local web/Expo-web app in a normal desktop
   Chromium window, converts the recording to MP4, and offers to upload it.
+- `clipstitchr demo make` captures click and cursor timing while recording web
+  demos so the media worker can add smart zooms around the parts the user
+  interacts with.
 - `clipstitchr demo make` can also record an already-running iOS Simulator or
   Android device/emulator for iOS, Android, and React Native projects.
 - `clipstitchr demo upload ./demo.mp4` uploads an existing MP4/MOV/WebM file to
@@ -61,7 +64,8 @@ The CLI does not stream large videos through the Next.js server.
    `Content-Length` headers.
 4. The CLI calls `POST /api/cli/uploads/demo/complete`.
 5. The server consumes upload video-analysis limits and queues the same
-   `upload-normalization` media job used by browser uploads.
+   `upload-normalization` media job used by browser uploads. CLI web recordings
+   can include `layout: "smart-screen-demo"` plus click/cursor timing metadata.
 6. The CLI polls `GET /api/cli/uploads/{clipId}` until the normalized Demo
    appears in the Library.
 
@@ -72,6 +76,12 @@ common app folders such as `web/`, infers the start command from the app package
 manager, checks common localhost ports, opens Chromium as a normal maximized
 desktop browser, records the browser session with Playwright, then converts the
 WebM to an MP4 while preserving the recorded dimensions.
+
+During web recordings, the CLI captures clicks and throttled cursor movement in
+the recording browser. Those events are sent with the upload completion request
+so the media worker can render the Demo with a fit-with-background layout and
+smooth zooms around interaction points. The captured metadata does not include
+typed text, cookies, form values, screenshots, page HTML, or app data.
 
 When the CLI starts the local app, it runs the start command in its own process
 group and stops that group after recording. This prevents orphaned local dev

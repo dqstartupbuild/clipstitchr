@@ -10,10 +10,12 @@ import { uploadNormalizedVideoClipObjects } from "@/lib/clipstitchr/client/r2/up
 import { queueUploadVideoWorkerFallback } from "@/lib/clipstitchr/client/queueUploadVideoWorkerFallback";
 import { createVideoPosterBlob } from "@/lib/clipstitchr/media/createVideoPosterBlob";
 import { normalizeUploadedVideo } from "@/lib/clipstitchr/media/normalizeUploadedVideo";
+import { readFileClipMetadata } from "@/lib/clipstitchr/media/readFileClipMetadata";
 import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
 import type { UploadQueueItem } from "@/lib/clipstitchr/types/UploadQueueItem";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { getClipShouldUseUploadBackgroundLayout } from "@/lib/clipstitchr/utils/getClipShouldUseUploadBackgroundLayout";
 import { getUploadBatchLimit } from "@/lib/clipstitchr/utils/getUploadBatchLimit";
 import { getUploadBatchLimitMessage } from "@/lib/clipstitchr/utils/getUploadBatchLimitMessage";
 
@@ -105,6 +107,36 @@ export function useUploadProcessor({
             const clipId = createId();
             let normalizedVideo: Awaited<ReturnType<typeof normalizeUploadedVideo>>;
             let posterBlob: Blob;
+            const sourceMetadata = await readFileClipMetadata(file).catch(
+              () => null,
+            );
+            const shouldUseWorkerNormalization =
+              sourceMetadata &&
+              getClipShouldUseUploadBackgroundLayout({
+                clipType: item.clipType,
+                sourceAspectRatio: sourceMetadata.aspectRatio,
+              });
+
+            if (shouldUseWorkerNormalization) {
+              updateQueueItem(item.id, {
+                status: "reading",
+                progress: 0.05,
+              });
+              await queueUploadVideoWorkerFallback({
+                clipId,
+                clipType: item.clipType,
+                file,
+                layout: "fit-with-background",
+                productId: item.productId,
+              });
+              await onClipSaved?.();
+
+              updateQueueItem(item.id, {
+                status: "queued",
+                progress: 0.25,
+              });
+              continue;
+            }
 
             try {
               updateQueueItem(item.id, {
@@ -134,6 +166,7 @@ export function useUploadProcessor({
                 clipId,
                 clipType: item.clipType,
                 file,
+                layout: undefined,
                 productId: item.productId,
               });
               await onClipSaved?.();

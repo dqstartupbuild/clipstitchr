@@ -7,7 +7,9 @@ import type { WebRecordingOptions } from "./WebRecordingOptions.js";
 import { convertVideoToMp4 } from "./convertVideoToMp4.js";
 import { createBrowserProfileDirectory } from "./createBrowserProfileDirectory.js";
 import { createRecordingOutputPath } from "./createRecordingOutputPath.js";
+import { installBrowserInteractionCapture } from "./installBrowserInteractionCapture.js";
 import { openRecordingBrowserContext } from "./openRecordingBrowserContext.js";
+import { readBrowserInteractionEvents } from "./readBrowserInteractionEvents.js";
 import { runShellCommand } from "./runShellCommand.js";
 import { stopShellCommand } from "./stopShellCommand.js";
 import { waitForHttpUrl } from "./waitForHttpUrl.js";
@@ -36,11 +38,13 @@ export async function recordWebDemo(
     });
     const page = await context.newPage();
 
+    await installBrowserInteractionCapture(page);
     await page.goto(options.url, { waitUntil: "domcontentloaded" });
     await input({
       message: "Press Enter when you are done recording.",
     });
 
+    const interactionEvents = await readBrowserInteractionEvents(page);
     const video = page.video();
 
     await context.close();
@@ -54,6 +58,7 @@ export async function recordWebDemo(
     await convertVideoToMp4(rawVideoPath, outputPath);
 
     return {
+      interactionEvents,
       outputPath,
       rawVideoPath,
     };

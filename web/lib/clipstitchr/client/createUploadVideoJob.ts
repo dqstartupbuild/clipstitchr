@@ -2,10 +2,12 @@
 
 import type { ClipType } from "@/lib/clipstitchr/types/ClipType";
 import type { R2ObjectReference } from "@/lib/clipstitchr/types/R2ObjectReference";
+import type { UploadNormalizationLayout } from "@/lib/clipstitchr/types/UploadNormalizationLayout";
 
 type CreateUploadVideoJobOptions = {
   clipId: string;
   clipType: ClipType;
+  layout?: UploadNormalizationLayout;
   originalName: string;
   productId?: string;
   sourceVideoObject: R2ObjectReference;
@@ -14,6 +16,7 @@ type CreateUploadVideoJobOptions = {
 export async function createUploadVideoJob({
   clipId,
   clipType,
+  layout,
   originalName,
   productId,
   sourceVideoObject,
@@ -26,6 +29,7 @@ export async function createUploadVideoJob({
     body: JSON.stringify({
       clipId,
       clipType,
+      layout,
       originalName,
       productId,
       sourceVideoObject,

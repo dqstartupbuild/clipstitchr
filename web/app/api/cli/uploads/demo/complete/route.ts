@@ -33,6 +33,15 @@ export async function POST(request: Request) {
       "originalName",
       "original file name",
     );
+    const layout =
+      body.layout === "crop-fill" ||
+      body.layout === "fit-with-background" ||
+      body.layout === "smart-screen-demo"
+        ? body.layout
+        : undefined;
+    const interactionEvents = Array.isArray(body.interactionEvents)
+      ? body.interactionEvents.slice(-5000)
+      : undefined;
     const productId = readCliRequiredString(body, "productId", "product ID");
     const size = readCliPositiveNumber(body, "size", "file size");
 
@@ -70,6 +79,8 @@ export async function POST(request: Request) {
       inputSnapshotJson: JSON.stringify({
         clipId,
         clipType: "demo",
+        interactionEvents,
+        layout,
         originalName,
         productId,
         sourceVideoObject: {

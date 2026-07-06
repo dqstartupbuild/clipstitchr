@@ -1,4 +1,6 @@
 import type { ClipstitchrCredentials } from "../config/ClipstitchrCredentials.js";
+import type { RecordingInteractionEvent } from "../recording/RecordingInteractionEvent.js";
+import type { UploadNormalizationLayout } from "../upload/UploadNormalizationLayout.js";
 import { requestJson } from "./requestJson.js";
 
 export async function completeDemoUpload(
@@ -7,6 +9,8 @@ export async function completeDemoUpload(
     clipId: string;
     contentType: string;
     key: string;
+    interactionEvents?: RecordingInteractionEvent[];
+    layout?: UploadNormalizationLayout;
     originalName: string;
     productId: string;
     size: number;
