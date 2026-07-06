@@ -70,6 +70,10 @@ manager, checks common localhost ports, opens Chromium at 390x844, records the
 browser session with Playwright, then converts the WebM to a 1080x1920 MP4 with
 ffmpeg.
 
+When the CLI starts the local app, it runs the start command in its own process
+group and stops that group after recording. This prevents orphaned local dev
+servers from keeping ports like `3000` busy after a recording is canceled.
+
 Recording is manual by default. The CLI opens the app in Chromium, the user
 clicks through the demo, and the user presses Enter in the terminal when the
 take is done. This keeps the first shipped recorder predictable and avoids an AI
