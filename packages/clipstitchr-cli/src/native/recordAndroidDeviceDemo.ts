@@ -4,6 +4,7 @@ import { basename } from "node:path";
 import { input } from "@inquirer/prompts";
 import type { RecordingResult } from "../recording/RecordingResult.js";
 import { createRecordingOutputPath } from "../recording/createRecordingOutputPath.js";
+import { warnIfNativeRecordingLooksUnusual } from "../recording/warnIfNativeRecordingLooksUnusual.js";
 import { getConnectedAndroidDevice } from "./getConnectedAndroidDevice.js";
 import { isCommandAvailable } from "./isCommandAvailable.js";
 import { runNativeCommand } from "./runNativeCommand.js";
@@ -53,6 +54,7 @@ export async function recordAndroidDeviceDemo(
     () => undefined,
   );
   await stat(outputPath);
+  await warnIfNativeRecordingLooksUnusual(outputPath);
 
   return {
     outputPath,

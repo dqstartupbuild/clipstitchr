@@ -12,6 +12,7 @@ import { openRecordingBrowserContext } from "./openRecordingBrowserContext.js";
 import { readBrowserInteractionEvents } from "./readBrowserInteractionEvents.js";
 import { runShellCommand } from "./runShellCommand.js";
 import { stopShellCommand } from "./stopShellCommand.js";
+import { warnIfWebRecordingSizeUnexpected } from "./warnIfWebRecordingSizeUnexpected.js";
 import { waitForHttpUrl } from "./waitForHttpUrl.js";
 
 export async function recordWebDemo(
@@ -56,6 +57,7 @@ export async function recordWebDemo(
     }
 
     await convertVideoToMp4(rawVideoPath, outputPath);
+    await warnIfWebRecordingSizeUnexpected(outputPath);
 
     return {
       interactionEvents,

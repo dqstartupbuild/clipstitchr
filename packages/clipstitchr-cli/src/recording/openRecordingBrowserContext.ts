@@ -2,6 +2,7 @@ import { confirm } from "@inquirer/prompts";
 import { chromium } from "playwright";
 import { installPlaywrightChromium } from "./installPlaywrightChromium.js";
 import { isMissingPlaywrightBrowserError } from "./isMissingPlaywrightBrowserError.js";
+import { webRecordingViewport } from "./webRecordingViewport.js";
 
 type OpenRecordingBrowserContextOptions = {
   userDataDir: string;
@@ -12,12 +13,18 @@ async function launchRecordingBrowserContext(
   options: OpenRecordingBrowserContextOptions,
 ) {
   return await chromium.launchPersistentContext(options.userDataDir, {
-    args: ["--start-maximized"],
+    args: [
+      `--window-size=${webRecordingViewport.width},${webRecordingViewport.height}`,
+      "--force-device-scale-factor=1",
+    ],
+    deviceScaleFactor: 1,
     headless: false,
     recordVideo: {
       dir: options.videoDirectory,
+      size: webRecordingViewport,
     },
-    viewport: null,
+    screen: webRecordingViewport,
+    viewport: webRecordingViewport,
   });
 }
 

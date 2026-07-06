@@ -73,9 +73,11 @@ The CLI does not stream large videos through the Next.js server.
 
 The first built-in recorder supports web apps and Expo web targets. It detects
 common app folders such as `web/`, infers the start command from the app package
-manager, checks common localhost ports, opens Chromium as a normal maximized
-desktop browser, records the browser session with Playwright, then converts the
-WebM to an MP4 while preserving the recorded dimensions.
+manager, checks common localhost ports, opens Chromium with a fixed 1440x900
+desktop viewport, records that same 1440x900 frame with Playwright, then
+converts the WebM to an MP4 while preserving the recorded dimensions. The fixed
+viewport prevents browser chrome or window-maximize behavior from creating empty
+padding below the recorded page.
 
 During web recordings, the CLI captures clicks and throttled cursor movement in
 the recording browser. Those events are sent with the upload completion request
@@ -114,11 +116,13 @@ walk through the demo, stops recording, and uploads the resulting MP4.
 
 For iOS, the CLI uses `xcrun simctl io <device> recordVideo` against a booted
 iOS Simulator. If no simulator is running, it can open Simulator and asks the
-user to boot a simulator and open the app.
+user to boot a simulator and open the app. After recording, the CLI checks the
+saved dimensions and warns if the capture looks landscape for a mobile demo.
 
 For Android and React Native Android, the CLI uses `adb shell screenrecord`,
 pulls the MP4 back to the local `.clipstitchr/recordings` folder, and removes
-the temporary device file.
+the temporary device file. After recording, the CLI checks the saved dimensions
+and warns if the capture looks landscape for a mobile demo.
 
 `clipstitchr doctor` reports native setup status when the project is iOS,
 Android, or React Native: Xcode command line tools, booted iOS Simulator, ADB,
