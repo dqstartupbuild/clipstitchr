@@ -11,6 +11,7 @@ import { Panel } from "@/app/_components/ui/Panel";
 import { ProductFilterSelect } from "@/app/_components/products/ProductFilterSelect";
 import { SearchInput } from "@/app/_components/ui/SearchInput";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoPlaybackRate } from "@/lib/clipstitchr/types/VideoPlaybackRate";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
@@ -53,6 +54,14 @@ type ClipPickerPanelProps = {
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void;
+  onUpdateUgcCuts?: (
+    clip: VideoClipMetadata,
+    removeRanges: QuickEditRemoveRange[],
+  ) => void | Promise<void>;
+  onUpdateDemoCuts?: (
+    clip: VideoClipMetadata,
+    removeRanges: QuickEditRemoveRange[],
+  ) => void | Promise<void>;
   canStitch: boolean;
   isStitching: boolean;
   onDemoPlaybackRateChange: (playbackRate: VideoPlaybackRate) => void;
@@ -92,6 +101,8 @@ export function ClipPickerPanel({
   onModeChange,
   onUpdateUgcTrim,
   onUpdateDemoTrim,
+  onUpdateUgcCuts,
+  onUpdateDemoCuts,
   canStitch,
   isStitching,
   onDemoPlaybackRateChange,
@@ -148,6 +159,7 @@ export function ClipPickerPanel({
           onLoadClip={onLoadClip}
           onLoadPoster={onLoadPoster}
           onSelect={onSelectUgc}
+          onUpdateCuts={onUpdateUgcCuts}
           onUpdateTrim={onUpdateUgcTrim}
         />
         <DemoClipSelector
@@ -162,6 +174,7 @@ export function ClipPickerPanel({
           onLoadClip={onLoadClip}
           onLoadPoster={onLoadPoster}
           onSelect={onSelectDemo}
+          onUpdateCuts={onUpdateDemoCuts}
           onUpdateTrim={onUpdateDemoTrim}
         />
       </div>

@@ -8,6 +8,7 @@ import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVideoTrimRange";
 
 type UgcClipSelectorProps = {
@@ -18,6 +19,10 @@ type UgcClipSelectorProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect: (id: string) => void;
   onUpdateTrim: (clip: VideoClipMetadata, trimRange: VideoTrimRange) => void;
+  onUpdateCuts?: (
+    clip: VideoClipMetadata,
+    removeRanges: QuickEditRemoveRange[],
+  ) => void | Promise<void>;
 };
 
 export function UgcClipSelector({
@@ -27,6 +32,7 @@ export function UgcClipSelector({
   onLoadClip,
   onLoadPoster,
   onSelect,
+  onUpdateCuts,
   onUpdateTrim,
 }: UgcClipSelectorProps) {
   const pagination = usePagination(clips, {
@@ -77,6 +83,7 @@ export function UgcClipSelector({
                     onLoadClip={onLoadClip}
                     onLoadPoster={onLoadPoster}
                     onSelect={onSelect}
+                    onUpdateCuts={onUpdateCuts}
                     onUpdateTrim={onUpdateTrim}
                   />
                 </div>

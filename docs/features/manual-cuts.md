@@ -19,8 +19,10 @@ timestamps in the selected-cut inspector.
 
 When clip scoring finds likely dead space, the card can show **Review AI cuts**
 instead of applying the edit immediately. That opens this same timeline editor
-with AI-suggested cut blocks already placed. The user can tighten, move, remove,
-or save those blocks before anything becomes active.
+with AI-suggested cut blocks already placed. Explicit `removeRanges` suggestions
+are used first; candidate-only findings are converted into temporary review
+blocks. The user can tighten, move, remove, or save those blocks before anything
+becomes active.
 
 The same control is available in saved normal Stitches. When a saved Stitch is
 edited, the user can add Hook/UGC cuts and Demo cuts on the source settings panel.
@@ -33,12 +35,13 @@ their source timing is sequence-segment based.
 
 ## Source Clip Behavior
 
-Hook/UGC and Demo source clips store manual cuts in `quickEdit.removeRanges`. Saving
-cuts uses `videoClips.updateCuts`, which validates ownership, normalizes and
-merges ranges against the clip duration, stores `source: "manual-cut"`, and
-preserves any existing trim, crop, overlay text, summary, and baseline metadata.
-If the saved score had hybrid Quick Edit candidates, the source clip save keeps
-that candidate evidence with the user-corrected manual cut ranges.
+Hook/UGC and Demo source clips store manual cuts in `quickEdit.removeRanges`.
+Saving cuts from the Library or Stitchr picker uses `videoClips.updateCuts`,
+which validates ownership, normalizes and merges ranges against the clip
+duration, stores `source: "manual-cut"`, and preserves any existing trim, crop,
+overlay text, summary, and baseline metadata. If the saved score had hybrid
+Quick Edit candidates, the source clip save keeps that candidate evidence with
+the user-corrected manual cut ranges.
 
 Changing source clip cuts is global for future use of that clip. New Stitches
 copy the current source clip Quick Edit metadata into `ugcQuickEdit` and
@@ -150,6 +153,7 @@ Helpers:
 - `web/lib/clipstitchr/utils/normalizeQuickEditRemoveRanges.ts`
 - `web/lib/clipstitchr/utils/getQuickEditPlaybackDuration.ts`
 - `web/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange.ts`
+- `web/lib/clipstitchr/utils/getQuickEditReviewRemoveRanges.ts`
 
 Tests:
 

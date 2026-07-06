@@ -19,9 +19,10 @@ place:
 - Detected ranges are normalized, merged, capped, and passed to the scoring
   prompt.
 
-The detector candidates are evidence only. They do not become real cuts unless
-the model also returns a conservative `removeRanges` value, or the user saves a
-manual cut from the editor.
+The detector candidates are evidence only. They do not change playback or
+export on their own. When a score only has candidates, the Library and Stitchr
+picker can open **Review AI cuts** with those candidates as temporary cut blocks.
+They become real cuts only if the user saves them in the manual cut editor.
 
 ## OpenCV Path
 

@@ -6,6 +6,7 @@ import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { clipSelectorPageSize } from "@/lib/clipstitchr/constants/clipSelectorPageSize";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
@@ -23,6 +24,10 @@ type DemoClipSelectorProps = {
   onLoadPoster?: (id: string) => Promise<Blob | null>;
   onSelect: (id: string) => void;
   onUpdateTrim: (clip: VideoClipMetadata, trimRange: VideoTrimRange) => void;
+  onUpdateCuts?: (
+    clip: VideoClipMetadata,
+    removeRanges: QuickEditRemoveRange[],
+  ) => void | Promise<void>;
 };
 
 export function DemoClipSelector({
@@ -36,6 +41,7 @@ export function DemoClipSelector({
   onLoadClip,
   onLoadPoster,
   onSelect,
+  onUpdateCuts,
   onUpdateTrim,
 }: DemoClipSelectorProps) {
   const productNamesById = useMemo(
@@ -87,6 +93,7 @@ export function DemoClipSelector({
                   onLoadClip={onLoadClip}
                   onLoadPoster={onLoadPoster}
                   onSelect={onSelect}
+                  onUpdateCuts={onUpdateCuts}
                   onUpdateTrim={onUpdateTrim}
                 />
               </div>

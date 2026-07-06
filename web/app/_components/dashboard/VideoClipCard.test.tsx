@@ -441,6 +441,53 @@ describe("VideoClipCard", () => {
     });
   });
 
+  it("opens candidate-only demo suggestions in the manual cut editor", () => {
+    const candidateRange = {
+      start: 2,
+      end: 6,
+      confidence: 0.82,
+      signals: ["static-frame" as const],
+      reason: "The demo stays on the same screen.",
+    };
+
+    renderToStaticMarkup(
+      <VideoClipCard
+        clip={createClipMetadata({
+          clipType: "demo",
+          cliprMetadata: undefined,
+          libraryKind: "demo",
+          performanceScore: {
+            ...createPerformanceScore(),
+            quickEditSuggestions: {
+              candidates: [candidateRange],
+              removeRanges: [],
+            },
+          },
+        })}
+        onApplyQuickEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onLoadClip={vi.fn()}
+        onUpdateCuts={vi.fn()}
+        onUpdateMetadata={vi.fn()}
+        onUpdateTrim={vi.fn()}
+      />,
+    );
+
+    expect(mocks.actionItems.map((item) => item.label)).toContain(
+      "Review AI cuts",
+    );
+    expect(mocks.actionItems.map((item) => item.label)).not.toContain(
+      "Improve clip",
+    );
+    expect(mocks.cutEditor?.initialRemoveRanges).toEqual([
+      {
+        start: candidateRange.start,
+        end: candidateRange.end,
+        reason: candidateRange.reason,
+      },
+    ]);
+  });
+
   it("marks script clips as posted and active", async () => {
     const onUpdatePostedStatus = vi.fn(async () => undefined);
 

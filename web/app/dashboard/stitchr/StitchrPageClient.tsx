@@ -2047,6 +2047,8 @@ export function StitchrPageClient() {
                 onModeChange={handleModeChange}
                 onUpdateUgcTrim={handleUpdateUgcTrim}
                 onUpdateDemoTrim={handleUpdateDemoTrim}
+                onUpdateUgcCuts={library.updateClipCuts}
+                onUpdateDemoCuts={library.updateClipCuts}
                 canStitch={canStitch}
                 isStitching={isStitching}
                 onDemoPlaybackRateChange={setDemoPlaybackRate}

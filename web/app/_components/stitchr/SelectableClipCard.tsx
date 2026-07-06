@@ -2,9 +2,12 @@
 
 import { SlidersHorizontal } from "lucide-react";
 import { VideoClipPreviewCard } from "@/app/_components/dashboard/VideoClipPreviewCard";
+import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
 import type { VideoClip } from "@/lib/clipstitchr/types/VideoClip";
 import type { VideoClipMetadata } from "@/lib/clipstitchr/types/VideoClipMetadata";
 import type { VideoTrimRange } from "@/lib/clipstitchr/types/VideoTrimRange";
+import { createQuickEditSuggestionsFromMetadata } from "@/lib/clipstitchr/utils/createQuickEditSuggestionsFromMetadata";
+import { getQuickEditReviewRemoveRanges } from "@/lib/clipstitchr/utils/getQuickEditReviewRemoveRanges";
 import { getVideoClipPlaybackDuration } from "@/lib/clipstitchr/utils/getVideoClipPlaybackDuration";
 
 type SelectableClipCardProps = {
@@ -20,6 +23,10 @@ type SelectableClipCardProps = {
     clip: VideoClipMetadata,
     trimRange: VideoTrimRange,
   ) => void | Promise<void>;
+  onUpdateCuts?: (
+    clip: VideoClipMetadata,
+    removeRanges: QuickEditRemoveRange[],
+  ) => void | Promise<void>;
 };
 
 export function SelectableClipCard({
@@ -31,9 +38,23 @@ export function SelectableClipCard({
   onLoadClip,
   onLoadPoster,
   onSelect,
+  onUpdateCuts,
   onUpdateTrim,
 }: SelectableClipCardProps) {
   const displayDuration = getVideoClipPlaybackDuration(clip, trimRange);
+  const quickEdit = createQuickEditSuggestionsFromMetadata(clip.quickEdit);
+  const reviewRemoveRanges = getQuickEditReviewRemoveRanges(
+    clip.performanceScore?.quickEditSuggestions,
+  );
+  const hasReviewableAiCuts =
+    !quickEdit?.removeRanges.length && reviewRemoveRanges.length > 0;
+  const controlsLabel = hasReviewableAiCuts
+    ? "Review AI cuts"
+    : onUpdateTrim && onUpdateCuts
+      ? "Edit trim and cuts"
+      : onUpdateCuts
+        ? "Edit cuts"
+        : "Edit selected trim";
 
   return (
     <VideoClipPreviewCard
@@ -55,11 +76,19 @@ export function SelectableClipCard({
             }
           : undefined
       }
+      cutEditor={
+        isSelected && onUpdateCuts
+          ? {
+              initialRemoveRanges: quickEdit?.removeRanges ?? reviewRemoveRanges,
+              onSave: (removeRanges) => onUpdateCuts(clip, removeRanges),
+            }
+          : undefined
+      }
       actions={({ openDetails }) =>
-        isSelected && onUpdateTrim
+        isSelected && (onUpdateTrim || onUpdateCuts)
           ? [
               {
-                label: "Edit selected trim",
+                label: controlsLabel,
                 icon: <SlidersHorizontal aria-hidden className="h-4 w-4" />,
                 onClick: () => openDetails({ showControlsEditor: true }),
               },

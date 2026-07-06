@@ -140,10 +140,10 @@ trim and Quick Edit metadata and are not rewritten by later source clip changes.
 Quick Edit suggestions can include hybrid `candidates` for likely weak ranges:
 loading text, loading spinners, static or repeated frames, low motion, black
 frames, silence, no words, long pauses, and scene changes. Candidates are
-stored as evidence with confidence and short stats. They only become a visible
-cut workflow when the score also includes conservative `removeRanges`; the clip
-card then opens the manual cut editor with **Review AI cuts** so the user can
-adjust the exact timing before saving.
+stored as evidence with confidence and short stats. If the score includes
+conservative `removeRanges`, those ranges open the manual cut editor with
+**Review AI cuts**. Candidate-only scores can also open **Review AI cuts** as
+temporary review blocks so the user can adjust the exact timing before saving.
 
 Before video scoring calls the provider, Quick Edit detectors sample frames and
 audio to add deterministic candidate evidence. See

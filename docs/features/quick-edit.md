@@ -50,9 +50,14 @@ change playback or export by themselves.
 When a candidate is strong enough, the score can also include a conservative
 `removeRanges` suggestion. Clip cards show **Review AI cuts** for those cases
 and open the manual cut editor with the suggested ranges already placed on the
-timeline. The user can drag, resize, delete, or save them like any other manual
-cut. Candidate-only scores are preserved for review, but they do not show the
-one-click **Improve clip** or **Improve stitch** action.
+timeline. Candidate-only clip scores also show **Review AI cuts** when the cut
+editor is available; those candidates are converted into temporary review blocks
+that the user can drag, resize, delete, or save. They still do not change
+playback or export unless the user saves them.
+
+Candidate-only scores do not show the one-click **Improve clip** or
+**Improve stitch** action because that action is reserved for edits the app can
+apply directly, such as trim, saved remove ranges, or crop metadata.
 
 When a user saves source clip cuts after reviewing AI suggestions, ClipStitchr
 keeps the score candidates alongside the corrected manual range metadata. That
@@ -80,8 +85,10 @@ Resetting a source clip restores the default trim snapshot that existed before
 Quick Edit was applied and clears the clip's `quickEdit` metadata.
 
 Manual source clip cuts are saved through the same `quickEdit.removeRanges`
-field with `source: "manual-cut"`. They can coexist with other Quick Edit
-metadata such as crop, overlay text, summary, and baseline data.
+field with `source: "manual-cut"`. The Library and Stitchr picker both use this
+source-level save path for Hook/UGC and Demo clips, so reviewing AI cuts in
+Stitchr updates the clip's future default cuts. They can coexist with other
+Quick Edit metadata such as crop, overlay text, summary, and baseline data.
 
 ## Saved Stitch Behavior
 
@@ -218,6 +225,7 @@ Types and parsers:
 - `web/lib/clipstitchr/utils/parseQuickEditCandidateSignals.ts`
 - `web/lib/clipstitchr/utils/quickEditCandidateSignalValues.ts`
 - `web/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange.ts`
+- `web/lib/clipstitchr/utils/getQuickEditReviewRemoveRanges.ts`
 - `web/lib/clipstitchr/utils/createQuickEditSuggestionsFromMetadata.ts`
 
 Prompts:
@@ -279,6 +287,10 @@ UI:
 - `web/app/_components/dashboard/VideoClipCard.tsx`
 - `web/app/_components/dashboard/StitchCard.tsx`
 - `web/app/_components/dashboard/VideoClipMusicPreview.tsx`
+- `web/app/_components/stitchr/SelectableClipCard.tsx`
+- `web/app/_components/stitchr/UgcClipSelector.tsx`
+- `web/app/_components/stitchr/DemoClipSelector.tsx`
+- `web/app/_components/stitchr/ClipPickerPanel.tsx`
 - `web/app/_components/stitchr/SequenceVideoPlayer.tsx`
 - `web/app/_components/stitchr/StitchrSequenceVideoPlayer.tsx`
 

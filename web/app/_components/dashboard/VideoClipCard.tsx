@@ -40,6 +40,7 @@ import { getDefaultVideoTrimRange } from "@/lib/clipstitchr/utils/getDefaultVide
 import { getClipCanUseInSwapr } from "@/lib/clipstitchr/utils/getClipCanUseInSwapr";
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
+import { getQuickEditReviewRemoveRanges } from "@/lib/clipstitchr/utils/getQuickEditReviewRemoveRanges";
 import { getQuickEditSuggestionsHasActionableChange } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange";
 import { getUseInStitchrHref } from "@/lib/clipstitchr/utils/getUseInStitchrHref";
 import { getUseInSwaprClipHref } from "@/lib/clipstitchr/utils/getUseInSwaprClipHref";
@@ -130,7 +131,8 @@ export function VideoClipCard({
   const quickEditSuggestions = clip.performanceScore?.quickEditSuggestions;
   const hasActionableQuickEditSuggestions =
     getQuickEditSuggestionsHasActionableChange(quickEditSuggestions);
-  const suggestedRemoveRanges = quickEditSuggestions?.removeRanges ?? [];
+  const reviewRemoveRanges =
+    getQuickEditReviewRemoveRanges(quickEditSuggestions);
   const isPosted = Boolean(clip.isPosted);
   const canUpdatePostedStatus = getVideoClipCanBePosted(clip);
   const displayDuration = getQuickEditPlaybackDuration(
@@ -325,8 +327,7 @@ export function VideoClipCard({
         cutEditor={
           onUpdateCuts
             ? {
-                initialRemoveRanges:
-                  quickEdit?.removeRanges ?? suggestedRemoveRanges,
+                initialRemoveRanges: quickEdit?.removeRanges ?? reviewRemoveRanges,
                 onSave: (removeRanges) => onUpdateCuts(clip, removeRanges),
               }
             : undefined
@@ -418,7 +419,7 @@ export function VideoClipCard({
               disabled: isLoading || isApplyingQuickEdit,
               onClick: () => void handleResetQuickEdit(),
             });
-          } else if (suggestedRemoveRanges.length && onUpdateCuts) {
+          } else if (reviewRemoveRanges.length && onUpdateCuts) {
             items.push({
               label: "Review AI cuts",
               icon: <WandSparkles aria-hidden className="h-4 w-4" />,

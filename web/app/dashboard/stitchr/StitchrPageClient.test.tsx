@@ -25,6 +25,7 @@ const mocks = vi.hoisted(() => ({
     loadStitch: vi.fn(),
     loadMoreClips: vi.fn(),
     refresh: vi.fn(),
+    updateClipCuts: vi.fn(),
     videoGroups: {
       clipr: {
         clips: [] as VideoClipMetadata[],
@@ -419,6 +420,7 @@ describe("StitchrPageClient", () => {
       createClip(id, id.startsWith("demo") ? "demo" : "ugc"),
     );
     mocks.clipLibraryState.loadStitch.mockResolvedValue(null);
+    mocks.clipLibraryState.updateClipCuts.mockResolvedValue(undefined);
     setClipLibraryVideoGroups();
     mocks.productState.defaultProductId = undefined;
     mocks.productState.products = [createProduct()];
@@ -772,10 +774,18 @@ describe("StitchrPageClient", () => {
         clip: VideoClipMetadata,
         trimRange: { start: number; end: number },
       ) => void;
+      onUpdateDemoCuts: (
+        clip: VideoClipMetadata,
+        removeRanges: { start: number; end: number; reason?: string }[],
+      ) => Promise<void>;
       onUpdateUgcTrim: (
         clip: VideoClipMetadata,
         trimRange: { start: number; end: number },
       ) => void;
+      onUpdateUgcCuts: (
+        clip: VideoClipMetadata,
+        removeRanges: { start: number; end: number; reason?: string }[],
+      ) => Promise<void>;
     };
     const autoTextProps = mocks.autoTextPanelProps as {
       onGenerate: () => void;
@@ -793,6 +803,12 @@ describe("StitchrPageClient", () => {
     clipPickerProps.onSelectDemo(demoClip.id);
     clipPickerProps.onUpdateUgcTrim(ugcClip, { start: -3, end: 20 });
     clipPickerProps.onUpdateDemoTrim(demoClip, { start: 1, end: 3 });
+    await clipPickerProps.onUpdateUgcCuts(ugcClip, [
+      { start: 2, end: 4, reason: "Pause" },
+    ]);
+    await clipPickerProps.onUpdateDemoCuts(demoClip, [
+      { start: 3, end: 5, reason: "Loading" },
+    ]);
     clipPickerProps.onIncludeDemoAudioChange(false);
     clipPickerProps.onIncludeUgcAudioChange(false);
     clipPickerProps.onSelectMusicTrack({
@@ -836,6 +852,12 @@ describe("StitchrPageClient", () => {
     await Promise.resolve();
     await Promise.resolve();
 
+    expect(mocks.clipLibraryState.updateClipCuts).toHaveBeenCalledWith(ugcClip, [
+      { start: 2, end: 4, reason: "Pause" },
+    ]);
+    expect(mocks.clipLibraryState.updateClipCuts).toHaveBeenCalledWith(demoClip, [
+      { start: 3, end: 5, reason: "Loading" },
+    ]);
     expect(mocks.generateCliprText).toHaveBeenCalledWith(
       expect.objectContaining({
         productId: "product_1",
