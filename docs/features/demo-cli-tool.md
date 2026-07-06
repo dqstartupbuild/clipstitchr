@@ -57,7 +57,8 @@ The CLI does not stream large videos through the Next.js server.
 2. The server verifies the CLI session, verifies the product belongs to the
    session owner, consumes the normal R2 upload rate limits, and returns a signed
    R2 PUT URL.
-3. The CLI uploads the local file directly to R2.
+3. The CLI uploads the local file directly to R2 with `Content-Type` and
+   `Content-Length` headers.
 4. The CLI calls `POST /api/cli/uploads/demo/complete`.
 5. The server consumes upload video-analysis limits and queues the same
    `upload-normalization` media job used by browser uploads.
@@ -80,6 +81,8 @@ Recording is manual by default. The CLI opens the app in Chromium, the user
 clicks through the demo, and the user presses Enter in the terminal when the
 take is done. This keeps the first shipped recorder predictable and avoids an AI
 agent clicking through private or destructive flows without explicit guardrails.
+The CLI prints the recording instructions before Chromium opens so the user
+knows to return to the terminal after finishing the browser walkthrough.
 
 Target app authentication is handled through a persistent Playwright browser
 profile in `.clipstitchr/browser-profile`. If the app being recorded requires a

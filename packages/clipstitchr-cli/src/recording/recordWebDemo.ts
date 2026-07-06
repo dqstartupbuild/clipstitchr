@@ -26,6 +26,10 @@ export async function recordWebDemo(
   try {
     await waitForHttpUrl(options.url);
 
+    console.log(
+      "The recording browser is about to open. Walk through your demo there, then come back to this terminal and press Enter to finish.",
+    );
+
     const context = await openRecordingBrowserContext({
       userDataDir,
       videoDirectory,
@@ -34,8 +38,7 @@ export async function recordWebDemo(
 
     await page.goto(options.url, { waitUntil: "domcontentloaded" });
     await input({
-      message:
-        "Walk through the demo in the browser, then press Enter here to finish.",
+      message: "Press Enter when you are done recording.",
     });
 
     const video = page.video();

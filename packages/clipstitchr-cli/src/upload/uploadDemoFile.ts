@@ -23,7 +23,12 @@ export async function uploadDemoFile(
     sizeBytes: fileStats.size,
   });
 
-  await uploadFileToSignedUrl(upload.uploadUrl, input.filePath, contentType);
+  await uploadFileToSignedUrl(
+    upload.uploadUrl,
+    input.filePath,
+    contentType,
+    fileStats.size,
+  );
   await completeDemoUpload(credentials, {
     clipId: upload.clipId,
     contentType,
