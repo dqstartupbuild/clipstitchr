@@ -338,7 +338,9 @@ Swipr persistence adds new cost surfaces:
 - Batch Swipr draft generation, including counted text-writing provider calls
   and Convex Swipe saves.
 - Provider-worker Pexels searches and private Swipr photo saves for
-  automatic Swipr drafts.
+  automatic Swipr drafts. Automatic draft tasks store a per-draft creative
+  direction so each saved Swipe has a different angle instead of repeating the
+  same product prompt.
 - Convex record saves for private and global Swipr photos.
 - Convex record saves, updates, and deletes for user-owned Swipes.
 

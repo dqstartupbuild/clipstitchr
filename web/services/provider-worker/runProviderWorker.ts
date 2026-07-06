@@ -82,6 +82,7 @@ import { getImageNeedsSwaprOutpaint } from "@/lib/clipstitchr/utils/getImageNeed
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getSeededIndex } from "@/lib/clipstitchr/utils/getSeededIndex";
+import { getSwiprAutomationCreativeDirection } from "@/lib/clipstitchr/utils/getSwiprAutomationCreativeDirection";
 import { getStitchScoreSourceClipIds } from "@/lib/clipstitchr/utils/getStitchScoreSourceClipIds";
 import { getSwaprPredictionOutputUrl } from "@/lib/clipstitchr/utils/getSwaprPredictionOutputUrl";
 import { getSwaprSegmentDurationLimit } from "@/lib/clipstitchr/utils/getSwaprSegmentDurationLimit";
@@ -293,14 +294,10 @@ type AvatarPhotoAutomationTaskInput = {
 };
 
 type SwiprAutomationTaskInput = {
-  audienceDetails: string;
   automationDate: string;
   draftIndex: number;
-  inferredPainPoints: string[];
-  inferredProblem?: string;
-  productDetails: string;
-  productId: string;
-  productName: string;
+  product: ProductProfile;
+  swiprCreativeDirection: string;
   swiprSelectedLibraryPackNames: string[];
   swiprTextBackgroundColorChoice: AutomationStitchrColorChoice;
   swiprTextColorChoice: AutomationStitchrColorChoice;
@@ -878,18 +875,49 @@ function parseSwiprAutomationTaskInput(
     typeof input.draftIndex === "number" && Number.isFinite(input.draftIndex)
       ? Math.max(1, Math.floor(input.draftIndex))
       : 1;
+  const productCreatedAt = getOptionalString(input.productCreatedAt) ?? "";
+  const productUpdatedAt =
+    getOptionalString(input.productUpdatedAt) ?? productCreatedAt;
 
   return {
-    audienceDetails: getString(input.audienceDetails, "Swipr audience details"),
     automationDate: getString(input.automationDate, "Swipr automation date"),
     draftIndex,
-    inferredPainPoints: getStringArray(input.inferredPainPoints),
-    inferredProblem: getOptionalString(input.inferredProblem),
-    productDetails: stripWebsiteSourcedProductDetails(
-      getString(input.productDetails, "Swipr product details"),
-    ),
-    productId: getString(input.productId, "Swipr product ID"),
-    productName: getString(input.productName, "Swipr product name"),
+    product: {
+      id: getString(input.productId, "Swipr product ID"),
+      name: getString(input.productName, "Swipr product name"),
+      productDetails: stripWebsiteSourcedProductDetails(
+        getString(input.productDetails, "Swipr product details"),
+      ),
+      audienceDetails: getString(input.audienceDetails, "Swipr audience details"),
+      emotionalNarrative: getOptionalString(input.emotionalNarrative),
+      cliprPlaceholderFillers: getStringArrayRecord(
+        input.cliprPlaceholderFillers,
+      ),
+      eligibleCliprHookStyleKeys: getStringArray(
+        input.eligibleCliprHookStyleKeys,
+      ),
+      eligibleCliprHookTemplateIds: getStringArray(
+        input.eligibleCliprHookTemplateIds,
+      ),
+      hookEdgeLevel: getOptionalString(
+        input.hookEdgeLevel,
+      ) as ProductProfile["hookEdgeLevel"],
+      hookGenerationGoal: getOptionalString(
+        input.hookGenerationGoal,
+      ) as ProductProfile["hookGenerationGoal"],
+      inferredProblem: getOptionalString(input.inferredProblem),
+      inferredPainPoints: getStringArray(input.inferredPainPoints),
+      preferredCliprHookStyleKey: getOptionalString(
+        input.preferredCliprHookStyleKey,
+      ),
+      rejectedHookExamples: getStringArray(input.rejectedHookExamples),
+      winningHookExamples: getStringArray(input.winningHookExamples),
+      createdAt: productCreatedAt,
+      updatedAt: productUpdatedAt,
+    },
+    swiprCreativeDirection:
+      getOptionalString(input.swiprCreativeDirection) ??
+      getSwiprAutomationCreativeDirection(draftIndex),
     swiprSelectedLibraryPackNames: getStringArray(
       input.swiprSelectedLibraryPackNames,
     ),
@@ -2148,16 +2176,7 @@ async function processSwipr({
 
   const input = parseSwiprAutomationTaskInput(task.inputSnapshotJson);
   const now = getNow();
-  const product: ProductProfile = {
-    id: input.productId,
-    name: input.productName,
-    productDetails: input.productDetails,
-    audienceDetails: input.audienceDetails,
-    inferredProblem: input.inferredProblem,
-    inferredPainPoints: input.inferredPainPoints,
-    createdAt: now,
-    updatedAt: now,
-  };
+  const product = input.product;
   const selectedPackBackgrounds = input.swiprSelectedLibraryPackNames.length
     ? ((await client.query(
         api.swiprBackgrounds.listForProviderByLibraryPackNames,
@@ -2175,6 +2194,7 @@ async function processSwipr({
     product,
     purpose: "swipr",
     replicate,
+    scriptIdea: input.swiprCreativeDirection,
     slideCount: SWIPR_MAX_SLIDE_COUNT,
   });
 
@@ -2318,14 +2338,14 @@ async function processSwipr({
       taskId: task.id,
       tool: "swipr",
       automationDate: input.automationDate,
-      sourceSummary: input.productName,
+      sourceSummary: input.product.name,
     },
     id: swipeId,
-    name: `${input.productName} - Automation Swipe ${input.draftIndex}`,
+    name: `${input.product.name} - Automation Swipe ${input.draftIndex}`,
     productSourceType: "saved-product",
-    productSourceId: input.productId,
-    productContext: `${input.productDetails}\n\nAudience: ${input.audienceDetails}`,
-    productName: input.productName,
+    productSourceId: input.product.id,
+    productContext: `${input.product.productDetails}\n\nAudience: ${input.product.audienceDetails}`,
+    productName: input.product.name,
     backgroundId: backgroundIds[0],
     caption: textGeneration.caption,
     description: textGeneration.description,

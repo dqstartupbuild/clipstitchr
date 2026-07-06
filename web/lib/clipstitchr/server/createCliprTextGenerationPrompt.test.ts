@@ -163,4 +163,20 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("Do not default to a bookmark-style CTA");
     expect(prompt).toContain("Return only the JSON object");
   });
+
+  it("includes Swipr creative direction when provided", () => {
+    const prompt = createCliprTextGenerationPrompt({
+      candidates: [candidate],
+      durationSeconds: 30,
+      fillers: { topic: ["launches"] },
+      product,
+      purpose: "swipr",
+      scriptIdea: "Use a myth-busting angle for this automation draft.",
+      slideCount: 4,
+    });
+
+    expect(prompt).toContain(
+      "User creative direction: Use a myth-busting angle for this automation draft.",
+    );
+  });
 });

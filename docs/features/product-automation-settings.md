@@ -26,6 +26,9 @@ appearance, support, and subscription remain shared across the whole account.
 - Swipr automation can use selected saved Pexels packs. If selected packs have
   usable images, the provider worker reuses those saved backgrounds. If no
   selected pack image is available, it falls back to Pexels search.
+- Swipr automation assigns each daily draft a different creative direction, so
+  a multi-draft run avoids asking the text model for the same carousel idea over
+  and over.
 
 ## Product Scope
 
@@ -52,7 +55,8 @@ remain product-scoped.
 The shared count type is `3 | 5 | 10`. The default remains 10.
 
 - Stitchr uses the selected count when choosing Hook/UGC and Demo pairs.
-- Swipr creates one provider task per selected draft count.
+- Swipr creates one provider task per selected draft count and stores a
+  repeatable creative direction in each task snapshot.
 - Counts are capped by the existing maximum so new settings cannot exceed the
   current automation limit.
 

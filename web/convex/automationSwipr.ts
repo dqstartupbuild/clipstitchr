@@ -19,6 +19,7 @@ import { getAutomationGenerationCount } from "../lib/clipstitchr/utils/getAutoma
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { normalizeAutomationSwiprSelectedLibraryPackNames } from "../lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
+import { getSwiprAutomationCreativeDirection } from "../lib/clipstitchr/utils/getSwiprAutomationCreativeDirection";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 const AUTOMATION_SWIPR_SELECTED_PRODUCT_LOOKUP_LIMIT = 20;
@@ -153,8 +154,20 @@ export const planDaily = mutation({
           productName: product.name,
           productDetails: product.productDetails,
           audienceDetails: product.audienceDetails,
+          emotionalNarrative: product.emotionalNarrative,
+          cliprPlaceholderFillers: product.cliprPlaceholderFillers,
+          eligibleCliprHookStyleKeys: product.eligibleCliprHookStyleKeys,
+          eligibleCliprHookTemplateIds: product.eligibleCliprHookTemplateIds,
           inferredProblem: product.inferredProblem,
           inferredPainPoints: product.inferredPainPoints,
+          preferredCliprHookStyleKey: product.preferredCliprHookStyleKey,
+          winningHookExamples: product.winningHookExamples,
+          rejectedHookExamples: product.rejectedHookExamples,
+          hookGenerationGoal: product.hookGenerationGoal,
+          hookEdgeLevel: product.hookEdgeLevel,
+          productCreatedAt: product.createdAt,
+          productUpdatedAt: product.updatedAt,
+          swiprCreativeDirection: getSwiprAutomationCreativeDirection(index + 1),
           swiprSelectedLibraryPackNames,
           swiprTextStyleChoice,
           swiprTextColorChoice,
