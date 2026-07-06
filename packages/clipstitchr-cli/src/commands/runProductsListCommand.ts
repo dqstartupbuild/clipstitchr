@@ -3,6 +3,7 @@ import { listProducts } from "../api/listProducts.js";
 import { readProjectConfig } from "../config/readProjectConfig.js";
 import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { ensureCredentialsOrLogin } from "./ensureCredentialsOrLogin.js";
+import { logInfo } from "../terminal/logInfo.js";
 
 export async function runProductsListCommand(options: CliGlobalOptions) {
   const config = await readProjectConfig();
@@ -11,7 +12,7 @@ export async function runProductsListCommand(options: CliGlobalOptions) {
   const { products } = await listProducts(credentials);
 
   if (!products.length) {
-    console.log("No products yet.");
+    logInfo("No products yet.");
     return;
   }
 

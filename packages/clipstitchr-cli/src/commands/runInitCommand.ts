@@ -7,8 +7,14 @@ import { writeProjectConfig } from "../config/writeProjectConfig.js";
 import { selectProduct } from "../interactive/selectProduct.js";
 import { detectProject } from "../project/detectProject.js";
 import { findRunningLocalAppUrl } from "../project/findRunningLocalAppUrl.js";
+import { logBrandHeader } from "../terminal/logBrandHeader.js";
+import { logInfo } from "../terminal/logInfo.js";
+import { logKeyValue } from "../terminal/logKeyValue.js";
+import { logSuccess } from "../terminal/logSuccess.js";
 
 export async function runInitCommand(options: CliGlobalOptions) {
+  logBrandHeader("Connect this repo");
+
   const config = await readProjectConfig();
   const apiBaseUrl = resolveApiBaseUrl(config, options.api);
   const credentials = await ensureCredentialsOrLogin(apiBaseUrl);
@@ -17,7 +23,7 @@ export async function runInitCommand(options: CliGlobalOptions) {
   const runningUrl = await findRunningLocalAppUrl(config.target?.url);
 
   if (detectedProject.startCommand) {
-    console.log(
+    logInfo(
       `I found a ${detectedProject.type} app in ${detectedProject.displayName}.`,
     );
   }
@@ -46,5 +52,6 @@ export async function runInitCommand(options: CliGlobalOptions) {
     },
   });
 
-  console.log("Saved .clipstitchr.yml.");
+  logSuccess("Saved repo settings.");
+  logKeyValue("Config", ".clipstitchr.yml");
 }

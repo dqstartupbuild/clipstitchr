@@ -2,6 +2,8 @@ import { select } from "@inquirer/prompts";
 import { listProducts } from "../api/listProducts.js";
 import type { ProductSummary } from "../api/ProductSummary.js";
 import type { ClipstitchrCredentials } from "../config/ClipstitchrCredentials.js";
+import { logInfo } from "../terminal/logInfo.js";
+import { logSuccess } from "../terminal/logSuccess.js";
 import { createProductPrompt } from "./createProductPrompt.js";
 
 export async function selectProduct(
@@ -18,12 +20,12 @@ export async function selectProduct(
   }
 
   if (!products.length) {
-    console.log("No products yet. Add one now.");
+    logInfo("No products yet. Add one now.");
     return await createProductPrompt(credentials);
   }
 
   if (products.length === 1) {
-    console.log(`Using product: ${products[0].name}`);
+    logSuccess(`Using product ${products[0].name}.`);
     return products[0];
   }
 

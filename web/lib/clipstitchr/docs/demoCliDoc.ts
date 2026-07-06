@@ -28,13 +28,14 @@ export const demoCliDoc = {
     {
       title: "Help and version",
       body: [
-        "Use these when you want to check what is installed or see the latest command options from your terminal.",
+        "Use these when you want to check what is installed or see the latest command options from your terminal. Add --plain when you want uncolored output for logs or screenshots.",
       ],
       commands: [
         "clipstitchr --help",
         "clipstitchr help",
         "clipstitchr help demo make",
         "clipstitchr --version",
+        "clipstitchr --plain status",
       ],
     },
     {

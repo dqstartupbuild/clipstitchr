@@ -4,9 +4,10 @@ import { runDemoMakeCommand } from "../commands/runDemoMakeCommand.js";
 import { runDemoUploadCommand } from "../commands/runDemoUploadCommand.js";
 import { runInitCommand } from "../commands/runInitCommand.js";
 import { runDoctorCommand } from "../commands/runDoctorCommand.js";
+import { logBrandHeader } from "../terminal/logBrandHeader.js";
 
 export async function runInteractiveCommand(options: CliGlobalOptions) {
-  console.log("Welcome to ClipStitchr");
+  logBrandHeader("Record and upload product demos from your terminal.");
 
   const action = await select({
     choices: [

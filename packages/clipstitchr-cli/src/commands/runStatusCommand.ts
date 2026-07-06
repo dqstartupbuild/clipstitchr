@@ -4,6 +4,10 @@ import { hasProjectConfig } from "../config/hasProjectConfig.js";
 import { readProjectConfig } from "../config/readProjectConfig.js";
 import { detectProject } from "../project/detectProject.js";
 import { isRecordingBrowserInstalled } from "../recording/isRecordingBrowserInstalled.js";
+import { formatSuccessText } from "../terminal/formatSuccessText.js";
+import { formatWarningText } from "../terminal/formatWarningText.js";
+import { logBrandHeader } from "../terminal/logBrandHeader.js";
+import { logKeyValue } from "../terminal/logKeyValue.js";
 
 export async function runStatusCommand() {
   const [
@@ -24,16 +28,31 @@ export async function runStatusCommand() {
   const isAccountConnected =
     credentials && new Date(credentials.expiresAt).getTime() > Date.now();
 
-  console.log(`CLI version: ${version}`);
-  console.log(`Account: ${isAccountConnected ? "connected" : "not connected"}`);
-  console.log(`Repo: ${isLinked ? "linked" : "not linked"}`);
-  console.log(`Product: ${config.productId ?? "not set"}`);
-  console.log(`Project type: ${project.type}`);
-  console.log(
-    `Start command: ${config.target?.start ?? project.startCommand ?? "not found"}`,
+  logBrandHeader("Setup status");
+  logKeyValue("CLI version", version);
+  logKeyValue(
+    "Account",
+    isAccountConnected
+      ? formatSuccessText("connected")
+      : formatWarningText("not connected"),
   );
-  console.log(`Local URL: ${config.target?.url ?? "not set"}`);
-  console.log(
-    `Recording browser: ${recordingBrowserInstalled ? "installed" : "missing"}`,
+  logKeyValue(
+    "Repo",
+    isLinked ? formatSuccessText("linked") : formatWarningText("not linked"),
+  );
+  logKeyValue("Product", config.productId ?? formatWarningText("not set"));
+  logKeyValue("Project type", project.type);
+  logKeyValue(
+    "Start command",
+    config.target?.start ??
+      project.startCommand ??
+      formatWarningText("not found"),
+  );
+  logKeyValue("Local URL", config.target?.url ?? formatWarningText("not set"));
+  logKeyValue(
+    "Recording browser",
+    recordingBrowserInstalled
+      ? formatSuccessText("installed")
+      : formatWarningText("missing"),
   );
 }

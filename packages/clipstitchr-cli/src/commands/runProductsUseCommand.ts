@@ -6,6 +6,9 @@ import { readProjectConfig } from "../config/readProjectConfig.js";
 import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
 import { createProductPrompt } from "../interactive/createProductPrompt.js";
+import { logBrandHeader } from "../terminal/logBrandHeader.js";
+import { logInfo } from "../terminal/logInfo.js";
+import { logSuccess } from "../terminal/logSuccess.js";
 
 type ProductsUseOptions = CliGlobalOptions;
 
@@ -13,6 +16,8 @@ export async function runProductsUseCommand(
   productId: string | undefined,
   options: ProductsUseOptions,
 ) {
+  logBrandHeader("Choose repo product");
+
   const config = await readProjectConfig();
   const apiBaseUrl = resolveApiBaseUrl(config, options.api);
   const credentials = await ensureCredentialsOrLogin(apiBaseUrl);
@@ -29,7 +34,7 @@ export async function runProductsUseCommand(
     selectedProduct ??
     (await (async () => {
       if (!products.length) {
-        console.log("No products yet. Add one now.");
+        logInfo("No products yet. Add one now.");
         return await createProductPrompt(credentials);
       }
 
@@ -61,5 +66,5 @@ export async function runProductsUseCommand(
     apiBaseUrl,
     productId: product.id,
   });
-  console.log(`This repo now uses: ${product.name}`);
+  logSuccess(`This repo now uses ${product.name}.`);
 }

@@ -48,6 +48,8 @@ selection/creation, R2 upload signing, upload completion, and upload status.
   `clipstitchr products create --use` also saves it to the repo config.
 - `clipstitchr products use` lets the user pick or create the product this repo
   should use.
+- `clipstitchr --plain ...` disables branded terminal colors for logs,
+  screenshots, and CI. `NO_COLOR=1` does the same thing.
 
 ## Customer Education Surfaces
 
@@ -169,6 +171,18 @@ and warns if the capture looks landscape for a mobile demo.
 Android, or React Native: Xcode command line tools, booted iOS Simulator, ADB,
 and connected Android device.
 
+## Terminal UX
+
+The CLI uses light branded terminal output instead of a full-screen terminal UI.
+Guided flows show a ClipStitchr header, progress states, setup key/value rows,
+success confirmations, warnings, and copyable next commands. This makes normal
+flows easier to follow while keeping command output readable.
+
+Color is only applied when stdout is an interactive terminal. `--plain` sets
+`CLIPSTITCHR_PLAIN=1` inside the process, and `NO_COLOR=1` is respected by the
+shared terminal helpers. `clipstitchr products list` stays tab-separated so it
+remains useful for scripting.
+
 ## File Tree
 
 ```text
@@ -194,6 +208,10 @@ packages/clipstitchr-cli/
   src/recording/
     getBrowserProfileDirectoryPath.ts
     getRecordingsDirectoryPath.ts
+  src/terminal/
+    colorize.ts
+    logBrandHeader.ts
+    logSuccess.ts
   src/update/
   src/upload/
   src/cli.ts

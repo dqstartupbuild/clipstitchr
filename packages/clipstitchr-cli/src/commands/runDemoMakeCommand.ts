@@ -13,6 +13,11 @@ import { scanProjectFlows } from "../project/scanProjectFlows.js";
 import { recordNativeDemo } from "../native/recordNativeDemo.js";
 import type { RecordingResult } from "../recording/RecordingResult.js";
 import { recordWebDemo } from "../recording/recordWebDemo.js";
+import { logBrandHeader } from "../terminal/logBrandHeader.js";
+import { logKeyValue } from "../terminal/logKeyValue.js";
+import { logNextCommand } from "../terminal/logNextCommand.js";
+import { logStep } from "../terminal/logStep.js";
+import { logSuccess } from "../terminal/logSuccess.js";
 import { uploadDemoFile } from "../upload/uploadDemoFile.js";
 
 export type DemoMakeCommandOptions = CliGlobalOptions & {
@@ -24,6 +29,8 @@ export type DemoMakeCommandOptions = CliGlobalOptions & {
 };
 
 export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
+  logBrandHeader("Make a product demo");
+
   const config = await readProjectConfig();
   const apiBaseUrl = resolveApiBaseUrl(config, options.api);
   const credentials = await ensureCredentialsOrLogin(apiBaseUrl);
@@ -77,6 +84,7 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
       });
     }
 
+    logStep("Opening the recording browser.");
     recording = await recordWebDemo({
       outputPath: options.output,
       startCommand: shouldStartApp ? startCommand : undefined,
@@ -86,6 +94,7 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
       ? "smart-screen-demo"
       : "fit-with-background";
   } else {
+    logStep("Starting mobile device recording.");
     recording = await recordNativeDemo({
       outputPath: options.output,
       projectType: project.type,
@@ -107,7 +116,8 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
     },
   });
 
-  console.log(`Saved MP4: ${recording.outputPath}`);
+  logSuccess("Saved the recording.");
+  logKeyValue("MP4", recording.outputPath);
 
   const shouldUpload =
     options.upload ??
@@ -117,9 +127,11 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
     }));
 
   if (!shouldUpload) {
+    logNextCommand(`clipstitchr demo upload "${recording.outputPath}"`);
     return;
   }
 
+  logStep("Uploading the demo to ClipStitchr.");
   await uploadDemoFile(credentials, {
     filePath: recording.outputPath,
     interactionEvents: recording.interactionEvents,
@@ -127,5 +139,5 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
     productId: product.id,
     wait: true,
   });
-  console.log("Uploaded to your Demo library.");
+  logSuccess("Uploaded to your Demo library.");
 }

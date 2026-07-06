@@ -12,6 +12,8 @@ import { openRecordingBrowserContext } from "./openRecordingBrowserContext.js";
 import { readBrowserInteractionEvents } from "./readBrowserInteractionEvents.js";
 import { runShellCommand } from "./runShellCommand.js";
 import { stopShellCommand } from "./stopShellCommand.js";
+import { logInfo } from "../terminal/logInfo.js";
+import { logStep } from "../terminal/logStep.js";
 import { warnIfWebRecordingSizeUnexpected } from "./warnIfWebRecordingSizeUnexpected.js";
 import { waitForHttpUrl } from "./waitForHttpUrl.js";
 
@@ -27,9 +29,10 @@ export async function recordWebDemo(
   const userDataDir = await createBrowserProfileDirectory(process.cwd());
 
   try {
+    logStep("Waiting for the local app to be ready.");
     await waitForHttpUrl(options.url);
 
-    console.log(
+    logInfo(
       "The recording browser is about to open. Walk through your demo there, then come back to this terminal and press Enter to finish.",
     );
 

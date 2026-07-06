@@ -4,16 +4,21 @@ import { deleteProjectConfig } from "../config/deleteProjectConfig.js";
 import { hasProjectConfig } from "../config/hasProjectConfig.js";
 import { getBrowserProfileDirectoryPath } from "../recording/getBrowserProfileDirectoryPath.js";
 import { getRecordingsDirectoryPath } from "../recording/getRecordingsDirectoryPath.js";
+import { logBrandHeader } from "../terminal/logBrandHeader.js";
+import { logInfo } from "../terminal/logInfo.js";
+import { logSuccess } from "../terminal/logSuccess.js";
 
 export async function runUnlinkCommand() {
+  logBrandHeader("Disconnect this repo");
+
   const wasLinked = await hasProjectConfig();
 
   await deleteProjectConfig();
 
   if (wasLinked) {
-    console.log("Removed .clipstitchr.yml.");
+    logSuccess("Removed .clipstitchr.yml.");
   } else {
-    console.log("This repo was not linked.");
+    logInfo("This repo was not linked.");
   }
 
   const shouldRemoveBrowserProfile = await confirm({
@@ -23,7 +28,7 @@ export async function runUnlinkCommand() {
 
   if (shouldRemoveBrowserProfile) {
     await rm(getBrowserProfileDirectoryPath(), { force: true, recursive: true });
-    console.log("Removed .clipstitchr/browser-profile.");
+    logSuccess("Removed .clipstitchr/browser-profile.");
   }
 
   const shouldRemoveRecordings = await confirm({
@@ -33,6 +38,6 @@ export async function runUnlinkCommand() {
 
   if (shouldRemoveRecordings) {
     await rm(getRecordingsDirectoryPath(), { force: true, recursive: true });
-    console.log("Removed .clipstitchr/recordings.");
+    logSuccess("Removed .clipstitchr/recordings.");
   }
 }

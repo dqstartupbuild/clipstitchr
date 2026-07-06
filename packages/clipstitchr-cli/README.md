@@ -21,6 +21,7 @@ clipstitchr products list
 clipstitchr products create --use
 clipstitchr products use
 clipstitchr unlink
+clipstitchr --plain status
 ```
 
 The built-in recorder is manual by default: it opens your app in Chromium, you
@@ -31,6 +32,11 @@ recordings can stay signed in.
 
 If the recording browser is not installed yet, the CLI asks to install it before
 recording starts.
+
+The CLI uses light branded terminal output for guided flows, setup checks,
+recording progress, upload progress, success states, warnings, and next
+commands. Use `--plain` or `NO_COLOR=1` when you want uncolored output for logs
+or screenshots.
 
 Setup detects common nested app folders like `web/`, infers the start command,
 skips the product picker when your account only has one product, and prefers a

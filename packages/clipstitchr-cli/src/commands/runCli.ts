@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import type { CliGlobalOptions } from "./CliGlobalOptions.js";
 import { runDoctorCommand } from "./runDoctorCommand.js";
 import { runDemoMakeCommand } from "./runDemoMakeCommand.js";
 import { runDemoUploadCommand } from "./runDemoUploadCommand.js";
@@ -24,7 +25,14 @@ export async function runCli(argv: string[]) {
     .name("clipstitchr")
     .description("Record and upload product demos to ClipStitchr.")
     .option("--api <url>", "Use a ClipStitchr app URL")
+    .option("--plain", "Print plain output without terminal colors")
     .version(packageVersion);
+
+  program.hook("preAction", () => {
+    if (program.opts<CliGlobalOptions>().plain) {
+      process.env.CLIPSTITCHR_PLAIN = "1";
+    }
+  });
 
   program
     .command("help")

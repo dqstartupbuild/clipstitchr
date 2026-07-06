@@ -3,6 +3,10 @@ import { readProjectConfig } from "../config/readProjectConfig.js";
 import { detectProject } from "../project/detectProject.js";
 import { getNativeDoctorStatus } from "../native/getNativeDoctorStatus.js";
 import { isRecordingBrowserInstalled } from "../recording/isRecordingBrowserInstalled.js";
+import { formatSuccessText } from "../terminal/formatSuccessText.js";
+import { formatWarningText } from "../terminal/formatWarningText.js";
+import { logBrandHeader } from "../terminal/logBrandHeader.js";
+import { logKeyValue } from "../terminal/logKeyValue.js";
 
 export async function runDoctorCommand() {
   const [
@@ -12,39 +16,59 @@ export async function runDoctorCommand() {
     recordingBrowserInstalled,
     nativeDoctorStatus,
   ] = await Promise.all([
-      readProjectConfig(),
-      readCredentials(),
-      detectProject(),
-      isRecordingBrowserInstalled(),
-      getNativeDoctorStatus(),
-    ]);
+    readProjectConfig(),
+    readCredentials(),
+    detectProject(),
+    isRecordingBrowserInstalled(),
+    getNativeDoctorStatus(),
+  ]);
 
-  console.log(`Project type: ${project.type}`);
-  console.log(
-    `Start command: ${config.target?.start ?? project.startCommand ?? "not found"}`,
+  logBrandHeader("Recorder check");
+  logKeyValue("Project type", project.type);
+  logKeyValue(
+    "Start command",
+    config.target?.start ??
+      project.startCommand ??
+      formatWarningText("not found"),
   );
-  console.log(`Local URL: ${config.target?.url ?? "not set"}`);
-  console.log(
-    `Recording browser: ${recordingBrowserInstalled ? "installed" : "missing"}`,
+  logKeyValue("Local URL", config.target?.url ?? formatWarningText("not set"));
+  logKeyValue(
+    "Recording browser",
+    recordingBrowserInstalled
+      ? formatSuccessText("installed")
+      : formatWarningText("missing"),
   );
 
   if (["ios", "react-native"].includes(project.type)) {
-    console.log(
-      `Xcode tools: ${nativeDoctorStatus.xcrunAvailable ? "installed" : "missing"}`,
+    logKeyValue(
+      "Xcode tools",
+      nativeDoctorStatus.xcrunAvailable
+        ? formatSuccessText("installed")
+        : formatWarningText("missing"),
     );
-    console.log(
-      `iOS Simulator: ${nativeDoctorStatus.iosSimulatorName ?? "not running"}`,
+    logKeyValue(
+      "iOS Simulator",
+      nativeDoctorStatus.iosSimulatorName ?? formatWarningText("not running"),
     );
   }
 
   if (["android", "react-native"].includes(project.type)) {
-    console.log(
-      `ADB: ${nativeDoctorStatus.adbAvailable ? "installed" : "missing"}`,
+    logKeyValue(
+      "ADB",
+      nativeDoctorStatus.adbAvailable
+        ? formatSuccessText("installed")
+        : formatWarningText("missing"),
     );
-    console.log(
-      `Android device: ${nativeDoctorStatus.androidDeviceName ?? "not connected"}`,
+    logKeyValue(
+      "Android device",
+      nativeDoctorStatus.androidDeviceName ?? formatWarningText("not connected"),
     );
   }
 
-  console.log(`Account: ${credentials ? "connected" : "not connected"}`);
+  logKeyValue(
+    "Account",
+    credentials
+      ? formatSuccessText("connected")
+      : formatWarningText("not connected"),
+  );
 }
