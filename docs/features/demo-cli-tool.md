@@ -25,6 +25,8 @@ selection/creation, R2 upload signing, upload completion, and upload status.
 - `clipstitchr scan` detects likely demo flows from local app routes.
 - `clipstitchr demo make` records a local web/Expo-web app in a normal desktop
   Chromium window, converts the recording to MP4, and offers to upload it.
+- `clipstitchr demo make` can also record an already-running iOS Simulator or
+  Android device/emulator for iOS, Android, and React Native projects.
 - `clipstitchr demo upload ./demo.mp4` uploads an existing MP4/MOV/WebM file to
   the Demo library.
 - `clipstitchr products list` prints saved product IDs and names for scripting.
@@ -90,9 +92,24 @@ user whether to install the recording browser now, runs the matching Playwright
 install command, then retries browser launch. `clipstitchr doctor` also reports
 whether the recording browser is installed.
 
-Native iOS, Android, React Native device, and Electron projects are detected so
-the CLI can explain the next step. Those projects can still ship demos through
-`clipstitchr demo upload ./demo.mp4` after the user exports a screen recording.
+Native iOS, Android, and React Native projects use manual device recording. The
+CLI does not build, sign, or launch native apps because those flows depend on
+local schemes, signing teams, Expo dev builds, Metro state, and connected
+devices. Instead, it checks the local recording tools, asks the user to open the
+app in the simulator/emulator/device, starts recording, waits for the user to
+walk through the demo, stops recording, and uploads the resulting MP4.
+
+For iOS, the CLI uses `xcrun simctl io <device> recordVideo` against a booted
+iOS Simulator. If no simulator is running, it can open Simulator and asks the
+user to boot a simulator and open the app.
+
+For Android and React Native Android, the CLI uses `adb shell screenrecord`,
+pulls the MP4 back to the local `.clipstitchr/recordings` folder, and removes
+the temporary device file.
+
+`clipstitchr doctor` reports native setup status when the project is iOS,
+Android, or React Native: Xcode command line tools, booted iOS Simulator, ADB,
+and connected Android device.
 
 ## File Tree
 
@@ -104,6 +121,7 @@ packages/clipstitchr-cli/
   src/commands/
   src/config/
   src/interactive/
+  src/native/
   src/project/
   src/recording/
   src/upload/

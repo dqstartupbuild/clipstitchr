@@ -10,6 +10,8 @@ import { detectProject } from "../project/detectProject.js";
 import { findRunningLocalAppUrl } from "../project/findRunningLocalAppUrl.js";
 import { isHttpUrlReachable } from "../project/isHttpUrlReachable.js";
 import { scanProjectFlows } from "../project/scanProjectFlows.js";
+import { recordNativeDemo } from "../native/recordNativeDemo.js";
+import type { RecordingResult } from "../recording/RecordingResult.js";
 import { recordWebDemo } from "../recording/recordWebDemo.js";
 import { uploadDemoFile } from "../upload/uploadDemoFile.js";
 
@@ -27,7 +29,9 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
   const credentials = await ensureCredentialsOrLogin(apiBaseUrl);
   const project = await detectProject();
 
-  if (!["web", "expo"].includes(project.type)) {
+  if (
+    !["android", "expo", "ios", "react-native", "web"].includes(project.type)
+  ) {
     throw new Error(
       `Recording ${project.type} apps is not built into this recorder yet. Export an MP4 and run \`clipstitchr demo upload ./demo.mp4\`.`,
     );
@@ -37,42 +41,52 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
     credentials,
     options.product ?? config.productId,
   );
-  const runningUrl = await findRunningLocalAppUrl(
-    options.url ?? config.target?.url,
-  );
-  const startCommand =
-    options.start ??
-    config.target?.start ??
-    (await input({
-      default: project.startCommand,
-      message: "How do you run this app locally?",
-    }));
-  const url =
-    options.url ??
-    runningUrl ??
-    config.target?.url ??
-    (await input({
-      default: "http://localhost:3000",
-      message: "What local URL should I record?",
-    }));
-  const shouldStartApp = !(await isHttpUrlReachable(url));
-  const flows = await scanProjectFlows(join(process.cwd(), project.directory));
+  let recording: RecordingResult;
+  let startCommand = options.start ?? config.target?.start;
+  let url = options.url ?? config.target?.url;
 
-  if (flows.length) {
-    await select({
-      choices: flows.map((flow) => ({
-        name: `${flow.name}${flow.path ? ` (${flow.path})` : ""}`,
-        value: flow.name,
-      })),
-      message: "Pick the flow you want to record first:",
+  if (["web", "expo"].includes(project.type)) {
+    const runningUrl = await findRunningLocalAppUrl(
+      options.url ?? config.target?.url,
+    );
+    startCommand =
+      startCommand ??
+      (await input({
+        default: project.startCommand,
+        message: "How do you run this app locally?",
+      }));
+    url =
+      options.url ??
+      runningUrl ??
+      config.target?.url ??
+      (await input({
+        default: "http://localhost:3000",
+        message: "What local URL should I record?",
+      }));
+    const shouldStartApp = !(await isHttpUrlReachable(url));
+    const flows = await scanProjectFlows(join(process.cwd(), project.directory));
+
+    if (flows.length) {
+      await select({
+        choices: flows.map((flow) => ({
+          name: `${flow.name}${flow.path ? ` (${flow.path})` : ""}`,
+          value: flow.name,
+        })),
+        message: "Pick the flow you want to record first:",
+      });
+    }
+
+    recording = await recordWebDemo({
+      outputPath: options.output,
+      startCommand: shouldStartApp ? startCommand : undefined,
+      url,
+    });
+  } else {
+    recording = await recordNativeDemo({
+      outputPath: options.output,
+      projectType: project.type,
     });
   }
-
-  const recording = await recordWebDemo({
-    outputPath: options.output,
-    startCommand: shouldStartApp ? startCommand : undefined,
-    url,
-  });
 
   await writeProjectConfig({
     ...config,

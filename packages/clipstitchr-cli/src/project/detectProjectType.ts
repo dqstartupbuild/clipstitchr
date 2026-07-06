@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import type { ProjectPackageJson } from "./readPackageJson.js";
+import { hasXcodeProject } from "./hasXcodeProject.js";
 import { pathExists } from "./pathExists.js";
 
 export async function detectProjectType(
@@ -24,6 +25,10 @@ export async function detectProjectType(
   }
 
   if (await pathExists(join(cwd, "ios"))) {
+    return "ios" as const;
+  }
+
+  if (await hasXcodeProject(cwd)) {
     return "ios" as const;
   }
 

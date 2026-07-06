@@ -20,6 +20,10 @@ Setup detects common nested app folders like `web/`, infers the start command,
 skips the product picker when your account only has one product, and prefers a
 localhost URL that is already running.
 
+For native demos, the CLI records an already-running iOS Simulator or Android
+device/emulator. Open the app to the screen you want, then let the CLI start and
+stop the recording.
+
 For local development against a preview app:
 
 ```bash
