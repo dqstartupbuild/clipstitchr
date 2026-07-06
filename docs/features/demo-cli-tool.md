@@ -15,6 +15,17 @@ selection/creation, R2 upload signing, upload completion, and upload status.
 
 - `clipstitchr` opens a guided prompt for making a demo, uploading an existing
   demo, connecting the repo, or checking setup.
+- `clipstitchr --help`, `clipstitchr help`, and
+  `clipstitchr help demo make` show the available command options.
+- `clipstitchr --version` prints the installed CLI version.
+- `clipstitchr link` connects the current repo to a ClipStitchr product.
+- `clipstitchr init` remains as a developer-friendly alias for repo setup.
+- `clipstitchr unlink` removes the repo link and can optionally remove
+  repo-local browser profile and recording files.
+- `clipstitchr status` prints the current account, repo, product, local app,
+  and recording browser status.
+- `clipstitchr update` checks npm for the latest published CLI version and can
+  run the global npm update.
 - `clipstitchr login` opens the browser and connects the machine to the user's
   ClipStitchr account.
 - `clipstitchr init` writes `.clipstitchr.yml` with the product, local app URL,
@@ -33,6 +44,10 @@ selection/creation, R2 upload signing, upload completion, and upload status.
 - `clipstitchr demo upload ./demo.mp4` uploads an existing MP4/MOV/WebM file to
   the Demo library.
 - `clipstitchr products list` prints saved product IDs and names for scripting.
+- `clipstitchr products create` creates a product from the terminal, and
+  `clipstitchr products create --use` also saves it to the repo config.
+- `clipstitchr products use` lets the user pick or create the product this repo
+  should use.
 
 ## Customer Education Surfaces
 
@@ -46,10 +61,11 @@ existing users.
   points to the same guide.
 - `/docs/demo-cli` is backed by `demoCliDoc` in the customer docs collection,
   so the guide gets static metadata, sitemap coverage, and the normal docs
-  sidebar.
-- The dashboard home includes `DemoCliDashboardCallout`, which shows the npm
-  install command and links signed-in users to the setup guide without adding a
-  sidebar item.
+  sidebar. Command blocks use `CustomerDocCommandBlock` and include a copy
+  button.
+- Account settings includes `SettingsDemoCliPanel`, which shows the npm install
+  command with a copy button and opens the setup guide in a new tab without
+  adding a sidebar item.
 
 ## Auth Flow
 
@@ -154,11 +170,23 @@ packages/clipstitchr-cli/
   src/api/
   src/auth/
   src/commands/
+    findCliHelpCommand.ts
+    runProductsCreateCommand.ts
+    runProductsUseCommand.ts
+    runHelpCommand.ts
+    runStatusCommand.ts
+    runUnlinkCommand.ts
+    runUpdateCommand.ts
   src/config/
+    deleteProjectConfig.ts
+    hasProjectConfig.ts
   src/interactive/
   src/native/
   src/project/
   src/recording/
+    getBrowserProfileDirectoryPath.ts
+    getRecordingsDirectoryPath.ts
+  src/update/
   src/upload/
   src/cli.ts
 
@@ -177,14 +205,17 @@ web/app/cli/connect/
   CliConnectPageClient.tsx
   page.tsx
 
-web/app/_components/dashboard/
-  DemoCliDashboardCallout.tsx
-
 web/app/_components/docs/
   CustomerDocCommandBlock.tsx
 
 web/app/_components/landing/
   LandingDemoCliSection.tsx
+
+web/app/_components/settings/
+  SettingsDemoCliPanel.tsx
+
+web/app/_components/ui/
+  CopyTextButton.tsx
 
 web/lib/clipstitchr/docs/
   demoCliDoc.ts

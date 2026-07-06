@@ -7,7 +7,6 @@ import { DashboardAlert } from "@/app/_components/dashboard/DashboardAlert";
 import { DashboardHeader } from "@/app/_components/dashboard/DashboardHeader";
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
-import { DemoCliDashboardCallout } from "@/app/_components/dashboard/DemoCliDashboardCallout";
 import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitchesSection";
 import { RecentSwipesSection } from "@/app/_components/dashboard/RecentSwipesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
@@ -110,7 +109,6 @@ export function DashboardPageClient() {
           demoCount={library.counts.demoClips}
           stitchesCount={library.counts.stitches}
         />
-        <DemoCliDashboardCallout />
         <RecentUploadsSection
           clips={recentUploads}
           products={products.products}

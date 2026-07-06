@@ -1,3 +1,4 @@
+import { SettingsDemoCliPanel } from "@/app/_components/settings/SettingsDemoCliPanel";
 import { SettingsPostBridgePanel } from "@/app/_components/settings/SettingsPostBridgePanel";
 import { SettingsSubscriptionPanel } from "@/app/_components/settings/SettingsSubscriptionPanel";
 import { SettingsSupportPanel } from "@/app/_components/settings/SettingsSupportPanel";
@@ -19,6 +20,7 @@ export function SettingsAccountSection() {
           These stay the same no matter which product is active.
         </p>
       </div>
+      <SettingsDemoCliPanel />
       <SettingsPostBridgePanel />
       <div className="grid gap-4 md:grid-cols-2">
         <SettingsSupportPanel />

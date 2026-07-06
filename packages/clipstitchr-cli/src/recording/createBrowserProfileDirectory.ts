@@ -1,8 +1,8 @@
 import { mkdir } from "node:fs/promises";
-import { join } from "node:path";
+import { getBrowserProfileDirectoryPath } from "./getBrowserProfileDirectoryPath.js";
 
 export async function createBrowserProfileDirectory(cwd = process.cwd()) {
-  const directory = join(cwd, ".clipstitchr", "browser-profile");
+  const directory = getBrowserProfileDirectoryPath(cwd);
 
   await mkdir(directory, { recursive: true });
 

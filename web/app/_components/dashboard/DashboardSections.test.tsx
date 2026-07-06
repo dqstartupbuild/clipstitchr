@@ -8,7 +8,6 @@ import { DashboardPageHeader } from "@/app/_components/dashboard/DashboardPageHe
 import { DashboardShell } from "@/app/_components/dashboard/DashboardShell";
 import { DashboardSidebar } from "@/app/_components/dashboard/DashboardSidebar";
 import { DashboardStats } from "@/app/_components/dashboard/DashboardStats";
-import { DemoCliDashboardCallout } from "@/app/_components/dashboard/DemoCliDashboardCallout";
 import { RecentStitchesSection } from "@/app/_components/dashboard/RecentStitchesSection";
 import { RecentSwipesSection } from "@/app/_components/dashboard/RecentSwipesSection";
 import { RecentUploadsSection } from "@/app/_components/dashboard/RecentUploadsSection";
@@ -116,7 +115,6 @@ describe("dashboard shell sections", () => {
     const statsMarkup = renderToStaticMarkup(
       <DashboardStats ugcCount={1} demoCount={2} stitchesCount={4} />,
     );
-    const demoCliMarkup = renderToStaticMarkup(<DemoCliDashboardCallout />);
 
     expect(headerMarkup).toContain("Dashboard");
     expect(customHeaderMarkup).toContain("Custom action");
@@ -130,9 +128,6 @@ describe("dashboard shell sections", () => {
     expect(sidebarMarkup).toContain("Settings");
     expect(statsMarkup).toContain("Product demos");
     expect(statsMarkup).toContain("4");
-    expect(demoCliMarkup).toContain("Record product demos from your local app");
-    expect(demoCliMarkup).toContain("npm install -g clipstitchr");
-    expect(demoCliMarkup).toContain('href="/docs/demo-cli"');
   });
 
   it("hides dashboard navigation while onboarding is required", () => {

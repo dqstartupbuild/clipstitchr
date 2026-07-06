@@ -176,3 +176,4 @@ Required workflow:
 - Return a clear `429` response with retry timing for HTTP routes where a rate limit is exceeded.
 - Update `docs/backend/rate-limits.md` whenever limits, enforcement points, environment variables, or verification steps change.
 - If a backend operation is intentionally not rate-limited, document the reason in `docs/backend/rate-limits.md`.
+- Kill the dev server after you finish all testing, never leave dev servers running unless explicitly requested.

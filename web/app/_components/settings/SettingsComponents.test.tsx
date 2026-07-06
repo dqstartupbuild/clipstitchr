@@ -209,6 +209,11 @@ describe("settings components", () => {
     expect(emptyMarkup).toContain("Swipr");
     expect(emptyMarkup).toContain("Product settings");
     expect(emptyMarkup).toContain("Account settings");
+    expect(emptyMarkup).toContain("Record product demos from your local app");
+    expect(emptyMarkup).toContain("npm install -g clipstitchr");
+    expect(emptyMarkup).toContain("Copy");
+    expect(emptyMarkup).toContain('href="/docs/demo-cli"');
+    expect(emptyMarkup).toContain('target="_blank"');
     expect(emptyMarkup).toContain("Contact support");
     expect(emptyMarkup).toContain("Coming soon");
     expect(emptyMarkup).toContain("Use the product switcher");

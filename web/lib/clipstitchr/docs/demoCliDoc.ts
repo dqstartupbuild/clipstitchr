@@ -19,11 +19,30 @@ export const demoCliDoc = {
       ],
     },
     {
-      title: "Install it",
+      title: "Install and open it",
       body: [
-        "Install the command once from npm. After that, you can run it from any product repo you want to connect.",
+        "Install the command once from npm. After that, run clipstitchr from any product repo you want to connect.",
       ],
       commands: ["npm install -g clipstitchr", "clipstitchr"],
+    },
+    {
+      title: "Help and version",
+      body: [
+        "Use these when you want to check what is installed or see the latest command options from your terminal.",
+      ],
+      commands: [
+        "clipstitchr --help",
+        "clipstitchr help",
+        "clipstitchr help demo make",
+        "clipstitchr --version",
+      ],
+    },
+    {
+      title: "Connect your account",
+      body: [
+        "Login connects this machine to your ClipStitchr account. Logout removes the saved machine session.",
+      ],
+      commands: ["clipstitchr login", "clipstitchr logout"],
     },
     {
       title: "Connect a repo",
@@ -36,6 +55,39 @@ export const demoCliDoc = {
         "Confirm the start command if the CLI found one.",
         "Confirm the local URL to record.",
       ],
+      commands: ["clipstitchr link", "clipstitchr init"],
+    },
+    {
+      title: "Check and update setup",
+      body: [
+        "Status shows the account, repo, product, local app, and recording browser in one quick view. Scan looks for likely product flows in the local app. Doctor checks the pieces the recorder needs, including native recording tools when the repo looks like iOS, Android, or React Native. Update checks npm for a newer CLI.",
+      ],
+      commands: [
+        "clipstitchr status",
+        "clipstitchr scan",
+        "clipstitchr doctor",
+        "clipstitchr update",
+      ],
+    },
+    {
+      title: "Change the linked repo",
+      body: [
+        "Unlink removes this repo connection without logging the whole machine out of ClipStitchr. It can also remove this repo's saved recording browser session and local recordings if you choose that during the prompt.",
+      ],
+      commands: ["clipstitchr unlink"],
+    },
+    {
+      title: "Manage products",
+      body: [
+        "List products when you need the IDs for scripting. Create adds a new product to your ClipStitchr account. Use saves the product this repo should record against.",
+      ],
+      commands: [
+        "clipstitchr products list",
+        "clipstitchr products create",
+        "clipstitchr products create --use",
+        "clipstitchr products use",
+        "clipstitchr products use product_123",
+      ],
     },
     {
       title: "Record a demo",
@@ -43,14 +95,44 @@ export const demoCliDoc = {
         "Choose Make a product demo. The CLI starts your local app, opens the recording browser, and tells you when to walk through the product. When the take is done, return to the terminal and press Enter.",
         "If the app asks you to sign in, log in inside the recording browser. The CLI keeps that browser session for the same repo, so the next recording is faster.",
       ],
-      commands: ["clipstitchr demo make"],
+      bullets: [
+        "Use --no-upload when you only want the local MP4.",
+        "Use --output when you want to choose where the MP4 is saved.",
+        "Use --product, --start, or --url when you want to skip prompts.",
+      ],
+      commands: [
+        "clipstitchr demo make",
+        "clipstitchr demo make --no-upload",
+        "clipstitchr demo make --output ./demo.mp4",
+        "clipstitchr demo make --product product_123 --url http://localhost:3000",
+        "clipstitchr demo make --start \"cd web && npm run dev\"",
+      ],
     },
     {
       title: "Upload an existing demo",
       body: [
         "Already have a recording? Upload the file directly and ClipStitchr will process it like any other Demo clip.",
       ],
-      commands: ["clipstitchr demo upload ./demo.mp4"],
+      bullets: [
+        "Use --no-wait when you want to leave processing running in ClipStitchr.",
+        "Use --product when you already know the product ID.",
+      ],
+      commands: [
+        "clipstitchr demo upload ./demo.mp4",
+        "clipstitchr demo upload ./demo.mp4 --no-wait",
+        "clipstitchr demo upload ./demo.mp4 --product product_123",
+      ],
+    },
+    {
+      title: "Use another ClipStitchr app URL",
+      body: [
+        "Most users do not need this. Use --api when testing against a local or preview ClipStitchr web app.",
+      ],
+      commands: [
+        "clipstitchr --api http://localhost:3000 login",
+        "clipstitchr --api https://your-preview-url.example.com link",
+        "clipstitchr --api https://your-preview-url.example.com products list",
+      ],
     },
     {
       title: "What to expect",

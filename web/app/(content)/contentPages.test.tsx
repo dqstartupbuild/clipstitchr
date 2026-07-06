@@ -199,6 +199,15 @@ describe("content pages", () => {
       }),
     );
     expect(demoCliArticleMarkup).toContain("npm install -g clipstitchr");
+    expect(demoCliArticleMarkup).toContain("clipstitchr help demo make");
+    expect(demoCliArticleMarkup).toContain("clipstitchr --version");
+    expect(demoCliArticleMarkup).toContain("clipstitchr link");
+    expect(demoCliArticleMarkup).toContain("clipstitchr status");
+    expect(demoCliArticleMarkup).toContain("clipstitchr update");
+    expect(demoCliArticleMarkup).toContain("clipstitchr products list");
+    expect(demoCliArticleMarkup).toContain("clipstitchr products create --use");
+    expect(demoCliArticleMarkup).toContain("clipstitchr unlink");
+    expect(demoCliArticleMarkup).toContain("Copy");
     expect(demoCliArticleMarkup).toContain("clipstitchr demo make");
   });
 
