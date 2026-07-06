@@ -80,7 +80,7 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
     productId: product.id,
     recording: {
       durationLimitSeconds: config.recording?.durationLimitSeconds ?? 60,
-      format: "vertical",
+      format: "full-size",
     },
     target: {
       start: startCommand,

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { input } from "@inquirer/prompts";
 import type { RecordingResult } from "./RecordingResult.js";
 import type { WebRecordingOptions } from "./WebRecordingOptions.js";
-import { convertVideoToVerticalMp4 } from "./convertVideoToVerticalMp4.js";
+import { convertVideoToMp4 } from "./convertVideoToMp4.js";
 import { createBrowserProfileDirectory } from "./createBrowserProfileDirectory.js";
 import { createRecordingOutputPath } from "./createRecordingOutputPath.js";
 import { openRecordingBrowserContext } from "./openRecordingBrowserContext.js";
@@ -48,7 +48,7 @@ export async function recordWebDemo(
       throw new Error("No recording was saved.");
     }
 
-    await convertVideoToVerticalMp4(rawVideoPath, outputPath);
+    await convertVideoToMp4(rawVideoPath, outputPath);
 
     return {
       outputPath,

@@ -12,18 +12,12 @@ async function launchRecordingBrowserContext(
   options: OpenRecordingBrowserContextOptions,
 ) {
   return await chromium.launchPersistentContext(options.userDataDir, {
+    args: ["--start-maximized"],
     headless: false,
     recordVideo: {
       dir: options.videoDirectory,
-      size: {
-        height: 844,
-        width: 390,
-      },
     },
-    viewport: {
-      height: 844,
-      width: 390,
-    },
+    viewport: null,
   });
 }
 

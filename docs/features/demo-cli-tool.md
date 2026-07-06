@@ -18,13 +18,13 @@ selection/creation, R2 upload signing, upload completion, and upload status.
 - `clipstitchr login` opens the browser and connects the machine to the user's
   ClipStitchr account.
 - `clipstitchr init` writes `.clipstitchr.yml` with the product, local app URL,
-  start command, and vertical recording defaults.
+  start command, and full-size recording defaults.
 - `clipstitchr init` detects common nested app folders like `web/`, skips the
   product picker when the account has one product, and prefers a localhost URL
   that is already running.
 - `clipstitchr scan` detects likely demo flows from local app routes.
-- `clipstitchr demo make` records a local web/Expo-web app in a vertical
-  Chromium viewport, converts the recording to MP4, and offers to upload it.
+- `clipstitchr demo make` records a local web/Expo-web app in a normal desktop
+  Chromium window, converts the recording to MP4, and offers to upload it.
 - `clipstitchr demo upload ./demo.mp4` uploads an existing MP4/MOV/WebM file to
   the Demo library.
 - `clipstitchr products list` prints saved product IDs and names for scripting.
@@ -66,9 +66,9 @@ The CLI does not stream large videos through the Next.js server.
 
 The first built-in recorder supports web apps and Expo web targets. It detects
 common app folders such as `web/`, infers the start command from the app package
-manager, checks common localhost ports, opens Chromium at 390x844, records the
-browser session with Playwright, then converts the WebM to a 1080x1920 MP4 with
-ffmpeg.
+manager, checks common localhost ports, opens Chromium as a normal maximized
+desktop browser, records the browser session with Playwright, then converts the
+WebM to an MP4 while preserving the recorded dimensions.
 
 When the CLI starts the local app, it runs the start command in its own process
 group and stops that group after recording. This prevents orphaned local dev

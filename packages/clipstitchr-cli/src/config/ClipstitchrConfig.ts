@@ -3,7 +3,7 @@ export type ClipstitchrConfig = {
   productId?: string;
   recording?: {
     durationLimitSeconds?: number;
-    format?: "vertical";
+    format?: "full-size" | "vertical";
   };
   target?: {
     start?: string;

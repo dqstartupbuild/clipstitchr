@@ -37,7 +37,7 @@ export async function runInitCommand(options: CliGlobalOptions) {
     productId: product.id,
     recording: {
       durationLimitSeconds: config.recording?.durationLimitSeconds ?? 60,
-      format: "vertical",
+      format: "full-size",
     },
     target: {
       start,
