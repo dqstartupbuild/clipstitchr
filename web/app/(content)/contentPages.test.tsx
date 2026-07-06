@@ -128,6 +128,8 @@ describe("content pages", () => {
     expect(detailMarkup).toContain(firstCaseStudy.title);
     expect(detailMarkup).toContain("Back to case studies");
     expect(detailMarkup).toContain("Tools used");
+    expect(detailMarkup).toContain('href="https://dansugc.com"');
+    expect(detailMarkup).toContain('href="https://post-bridge.com"');
   });
 
   it("returns empty metadata and notFound for missing case studies", async () => {

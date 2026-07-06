@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CaseStudyFeatureImage } from "@/app/_components/case-studies/CaseStudyFeatureImage";
 import { CaseStudyQuickResults } from "@/app/_components/case-studies/CaseStudyQuickResults";
+import { CaseStudyToolListItem } from "@/app/_components/case-studies/CaseStudyToolListItem";
 import {
   getCaseStudyBySlug,
   getPublishedCaseStudies,
@@ -97,7 +98,7 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
               </p>
               <ul className="mt-4 space-y-2 text-sm text-text-secondary">
                 {caseStudy.tools.map((tool) => (
-                  <li key={tool}>{tool}</li>
+                  <CaseStudyToolListItem key={tool.label} tool={tool} />
                 ))}
               </ul>
               <Link href="/dashboard" className="btn-secondary mt-6 w-full">

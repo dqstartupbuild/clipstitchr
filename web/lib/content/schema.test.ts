@@ -56,7 +56,7 @@ describe("caseStudyDocumentSchema", () => {
     companyName: "Guppy",
     productName: "Guppy",
     metrics: [{ label: "Total views", value: "161K+" }],
-    tools: ["ClipStitchr"],
+    tools: [{ label: "ClipStitchr", url: "https://clipstitchr.com" }],
   };
 
   it("accepts a valid case study document payload", () => {

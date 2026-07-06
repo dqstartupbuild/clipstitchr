@@ -37,7 +37,9 @@ Case studies use the shared content fields plus:
 - `companyName`: customer, app, or brand name
 - `productName`: product or campaign name
 - `metrics`: label/value pairs shown in the case-study hero and index card
-- `tools`: workflow tools shown in the case-study sidebar
+- `tools`: workflow tools shown in the case-study sidebar. Each item has a
+  `label` and can include an absolute `url` when the sidebar should link to the
+  tool.
 
 ## MDX Rules
 
