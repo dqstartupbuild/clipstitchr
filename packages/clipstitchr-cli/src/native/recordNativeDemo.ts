@@ -5,6 +5,7 @@ import { recordIosSimulatorDemo } from "./recordIosSimulatorDemo.js";
 import { selectNativeRecordingTarget } from "./selectNativeRecordingTarget.js";
 
 type RecordNativeDemoOptions = {
+  longRecordingWarningSeconds?: number;
   outputPath?: string;
   projectType: DetectedProject["type"];
 };
@@ -16,11 +17,13 @@ export async function recordNativeDemo(
 
   if (target === "ios-simulator") {
     return await recordIosSimulatorDemo({
+      longRecordingWarningSeconds: options.longRecordingWarningSeconds,
       outputPath: options.outputPath,
     });
   }
 
   return await recordAndroidDeviceDemo({
+    longRecordingWarningSeconds: options.longRecordingWarningSeconds,
     outputPath: options.outputPath,
   });
 }

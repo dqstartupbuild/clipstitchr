@@ -3,6 +3,7 @@ import { stat } from "node:fs/promises";
 import { confirm, input } from "@inquirer/prompts";
 import type { RecordingResult } from "../recording/RecordingResult.js";
 import { createRecordingOutputPath } from "../recording/createRecordingOutputPath.js";
+import { startLongRecordingWarningTimer } from "../recording/startLongRecordingWarningTimer.js";
 import { warnIfNativeRecordingLooksUnusual } from "../recording/warnIfNativeRecordingLooksUnusual.js";
 import { getBootedIosSimulator } from "./getBootedIosSimulator.js";
 import { isCommandAvailable } from "./isCommandAvailable.js";
@@ -10,6 +11,7 @@ import { openIosSimulatorApp } from "./openIosSimulatorApp.js";
 import { waitForChildProcessExit } from "./waitForChildProcessExit.js";
 
 type RecordIosSimulatorDemoOptions = {
+  longRecordingWarningSeconds?: number;
   outputPath?: string;
 };
 
@@ -59,10 +61,18 @@ export async function recordIosSimulatorDemo(
     },
   );
 
-  await input({
-    message:
-      "Walk through the demo in the Simulator, then press Enter here to finish.",
-  });
+  const stopLongRecordingWarning = startLongRecordingWarningTimer(
+    options.longRecordingWarningSeconds ?? 0,
+  );
+
+  try {
+    await input({
+      message:
+        "Walk through the demo in the Simulator, then press Enter here to finish.",
+    });
+  } finally {
+    stopLongRecordingWarning();
+  }
 
   recordingProcess.kill("SIGINT");
   await waitForChildProcessExit(recordingProcess);

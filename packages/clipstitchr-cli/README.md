@@ -30,6 +30,11 @@ If your app requires login, sign in inside the recorder browser once. The CLI
 keeps that app browser session in `.clipstitchr/browser-profile` so future
 recordings can stay signed in.
 
+Most demos work best around 30-90 seconds. Longer recordings are allowed, and
+the CLI warns after about 2 minutes without stopping the recording. That is
+useful for apps with longer loading, AI generation, or processing steps because
+ClipStitchr can cut pauses and waiting time during Quick Edit.
+
 If the recording browser is not installed yet, the CLI asks to install it before
 recording starts.
 
@@ -48,7 +53,8 @@ unlink` removes the repo connection without logging the whole machine out.
 
 For native demos, the CLI records an already-running iOS Simulator or Android
 device/emulator. Open the app to the screen you want, then let the CLI start and
-stop the recording.
+stop the recording. Android recording depends on `adb screenrecord`, which may
+stop around 3 minutes.
 
 For local development against a preview app:
 

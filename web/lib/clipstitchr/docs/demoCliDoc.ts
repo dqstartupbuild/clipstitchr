@@ -95,6 +95,7 @@ export const demoCliDoc = {
       body: [
         "Choose Make a product demo. The CLI starts your local app, opens the recording browser, and tells you when to walk through the product. When the take is done, return to the terminal and press Enter.",
         "If the app asks you to sign in, log in inside the recording browser. The CLI keeps that browser session for the same repo, so the next recording is faster.",
+        "Most demos work best around 30-90 seconds, but longer recordings are allowed. If your app needs time for loading, AI generation, or processing, keep recording and ClipStitchr can cut waiting time later.",
       ],
       bullets: [
         "Use --no-upload when you only want the local MP4.",
@@ -139,6 +140,7 @@ export const demoCliDoc = {
       title: "What to expect",
       body: [
         "Web app demos are recorded at a full desktop size, then prepared for vertical ads with a fit-with-background layout. ClipStitchr can also use your clicks to add smooth zooms around the parts of the product you touched.",
+        "The CLI warns when a recording gets long, but it does not stop web or iOS recordings for you. Android recording may stop around 3 minutes because of the device recorder.",
         "iOS, Android, and React Native demos record from an already-open simulator, emulator, or device. Open the app where you want to start, then let the CLI start and stop the recording.",
       ],
     },

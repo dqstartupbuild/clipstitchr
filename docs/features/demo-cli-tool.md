@@ -139,6 +139,19 @@ agent clicking through private or destructive flows without explicit guardrails.
 The CLI prints the recording instructions before Chromium opens so the user
 knows to return to the terminal after finishing the browser walkthrough.
 
+Recording duration is guidance, not a hard stop. The CLI saves
+`recommendedDurationSeconds` and `longRecordingWarningSeconds` in
+`.clipstitchr.yml`; older `durationLimitSeconds` values are read as the
+recommended duration for backward compatibility. New recordings warn after the
+long-recording threshold, defaulting to 2 minutes, but continue until the user
+presses Enter. After the MP4 is saved, the CLI reads the final duration, prints
+the length, and warns before upload when the recording is long.
+
+Most demos are easiest to edit when they are 30-90 seconds. Longer takes are
+valid for apps with loading screens, AI generation, exports, or other processing
+steps. ClipStitchr can use Quick Edit to remove pauses, waiting time, and dead
+space while preserving the before/after result.
+
 Target app authentication is handled through a persistent Playwright browser
 profile in `.clipstitchr/browser-profile`. If the app being recorded requires a
 login, the user can sign in during the first recording and reuse that browser
@@ -165,7 +178,9 @@ saved dimensions and warns if the capture looks landscape for a mobile demo.
 For Android and React Native Android, the CLI uses `adb shell screenrecord`,
 pulls the MP4 back to the local `.clipstitchr/recordings` folder, and removes
 the temporary device file. After recording, the CLI checks the saved dimensions
-and warns if the capture looks landscape for a mobile demo.
+and warns if the capture looks landscape for a mobile demo. Android's platform
+recorder may stop around 3 minutes even though ClipStitchr does not impose its
+own 60-second cutoff.
 
 `clipstitchr doctor` reports native setup status when the project is iOS,
 Android, or React Native: Xcode command line tools, booted iOS Simulator, ADB,
@@ -206,8 +221,14 @@ packages/clipstitchr-cli/
   src/native/
   src/project/
   src/recording/
+    defaultLongRecordingWarningSeconds.ts
+    defaultRecommendedRecordingDurationSeconds.ts
+    formatRecordingDuration.ts
     getBrowserProfileDirectoryPath.ts
     getRecordingsDirectoryPath.ts
+    readRecordingVideoDuration.ts
+    resolveRecordingGuidance.ts
+    startLongRecordingWarningTimer.ts
   src/terminal/
     colorize.ts
     logBrandHeader.ts

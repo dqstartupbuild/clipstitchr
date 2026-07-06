@@ -4,6 +4,8 @@ export type ClipstitchrConfig = {
   recording?: {
     durationLimitSeconds?: number;
     format?: "full-size" | "vertical";
+    longRecordingWarningSeconds?: number;
+    recommendedDurationSeconds?: number;
   };
   target?: {
     start?: string;

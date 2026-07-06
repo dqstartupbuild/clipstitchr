@@ -4,6 +4,7 @@ import { basename } from "node:path";
 import { input } from "@inquirer/prompts";
 import type { RecordingResult } from "../recording/RecordingResult.js";
 import { createRecordingOutputPath } from "../recording/createRecordingOutputPath.js";
+import { startLongRecordingWarningTimer } from "../recording/startLongRecordingWarningTimer.js";
 import { warnIfNativeRecordingLooksUnusual } from "../recording/warnIfNativeRecordingLooksUnusual.js";
 import { getConnectedAndroidDevice } from "./getConnectedAndroidDevice.js";
 import { isCommandAvailable } from "./isCommandAvailable.js";
@@ -11,6 +12,7 @@ import { runNativeCommand } from "./runNativeCommand.js";
 import { waitForChildProcessExit } from "./waitForChildProcessExit.js";
 
 type RecordAndroidDeviceDemoOptions = {
+  longRecordingWarningSeconds?: number;
   outputPath?: string;
 };
 
@@ -42,10 +44,18 @@ export async function recordAndroidDeviceDemo(
     },
   );
 
-  await input({
-    message:
-      "Walk through the demo on the device, then press Enter here to finish.",
-  });
+  const stopLongRecordingWarning = startLongRecordingWarningTimer(
+    options.longRecordingWarningSeconds ?? 0,
+  );
+
+  try {
+    await input({
+      message:
+        "Walk through the demo on the device, then press Enter here to finish.",
+    });
+  } finally {
+    stopLongRecordingWarning();
+  }
 
   recordingProcess.kill("SIGINT");
   await waitForChildProcessExit(recordingProcess);

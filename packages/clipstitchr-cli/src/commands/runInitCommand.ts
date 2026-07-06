@@ -7,6 +7,7 @@ import { writeProjectConfig } from "../config/writeProjectConfig.js";
 import { selectProduct } from "../interactive/selectProduct.js";
 import { detectProject } from "../project/detectProject.js";
 import { findRunningLocalAppUrl } from "../project/findRunningLocalAppUrl.js";
+import { resolveRecordingGuidance } from "../recording/resolveRecordingGuidance.js";
 import { logBrandHeader } from "../terminal/logBrandHeader.js";
 import { logInfo } from "../terminal/logInfo.js";
 import { logKeyValue } from "../terminal/logKeyValue.js";
@@ -16,6 +17,7 @@ export async function runInitCommand(options: CliGlobalOptions) {
   logBrandHeader("Connect this repo");
 
   const config = await readProjectConfig();
+  const recordingGuidance = resolveRecordingGuidance(config.recording);
   const apiBaseUrl = resolveApiBaseUrl(config, options.api);
   const credentials = await ensureCredentialsOrLogin(apiBaseUrl);
   const detectedProject = await detectProject();
@@ -42,8 +44,10 @@ export async function runInitCommand(options: CliGlobalOptions) {
     apiBaseUrl,
     productId: product.id,
     recording: {
-      durationLimitSeconds: config.recording?.durationLimitSeconds ?? 60,
       format: "full-size",
+      longRecordingWarningSeconds:
+        recordingGuidance.longRecordingWarningSeconds,
+      recommendedDurationSeconds: recordingGuidance.recommendedDurationSeconds,
     },
     target: {
       start,

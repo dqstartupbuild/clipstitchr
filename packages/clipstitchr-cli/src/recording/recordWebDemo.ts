@@ -11,6 +11,7 @@ import { installBrowserInteractionCapture } from "./installBrowserInteractionCap
 import { openRecordingBrowserContext } from "./openRecordingBrowserContext.js";
 import { readBrowserInteractionEvents } from "./readBrowserInteractionEvents.js";
 import { runShellCommand } from "./runShellCommand.js";
+import { startLongRecordingWarningTimer } from "./startLongRecordingWarningTimer.js";
 import { stopShellCommand } from "./stopShellCommand.js";
 import { logInfo } from "../terminal/logInfo.js";
 import { logStep } from "../terminal/logStep.js";
@@ -44,9 +45,17 @@ export async function recordWebDemo(
 
     await installBrowserInteractionCapture(page);
     await page.goto(options.url, { waitUntil: "domcontentloaded" });
-    await input({
-      message: "Press Enter when you are done recording.",
-    });
+    const stopLongRecordingWarning = startLongRecordingWarningTimer(
+      options.longRecordingWarningSeconds ?? 0,
+    );
+
+    try {
+      await input({
+        message: "Press Enter when you are done recording.",
+      });
+    } finally {
+      stopLongRecordingWarning();
+    }
 
     const interactionEvents = await readBrowserInteractionEvents(page);
     const video = page.video();

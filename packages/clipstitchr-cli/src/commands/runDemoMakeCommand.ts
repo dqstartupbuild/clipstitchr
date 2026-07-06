@@ -12,12 +12,18 @@ import { isHttpUrlReachable } from "../project/isHttpUrlReachable.js";
 import { scanProjectFlows } from "../project/scanProjectFlows.js";
 import { recordNativeDemo } from "../native/recordNativeDemo.js";
 import type { RecordingResult } from "../recording/RecordingResult.js";
+import { formatRecordingDuration } from "../recording/formatRecordingDuration.js";
+import { isLongRecordingDuration } from "../recording/isLongRecordingDuration.js";
+import { readRecordingVideoDuration } from "../recording/readRecordingVideoDuration.js";
 import { recordWebDemo } from "../recording/recordWebDemo.js";
+import { resolveRecordingGuidance } from "../recording/resolveRecordingGuidance.js";
 import { logBrandHeader } from "../terminal/logBrandHeader.js";
+import { logInfo } from "../terminal/logInfo.js";
 import { logKeyValue } from "../terminal/logKeyValue.js";
 import { logNextCommand } from "../terminal/logNextCommand.js";
 import { logStep } from "../terminal/logStep.js";
 import { logSuccess } from "../terminal/logSuccess.js";
+import { logWarning } from "../terminal/logWarning.js";
 import { uploadDemoFile } from "../upload/uploadDemoFile.js";
 
 export type DemoMakeCommandOptions = CliGlobalOptions & {
@@ -32,6 +38,7 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
   logBrandHeader("Make a product demo");
 
   const config = await readProjectConfig();
+  const recordingGuidance = resolveRecordingGuidance(config.recording);
   const apiBaseUrl = resolveApiBaseUrl(config, options.api);
   const credentials = await ensureCredentialsOrLogin(apiBaseUrl);
   const project = await detectProject();
@@ -86,6 +93,8 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
 
     logStep("Opening the recording browser.");
     recording = await recordWebDemo({
+      longRecordingWarningSeconds:
+        recordingGuidance.longRecordingWarningSeconds,
       outputPath: options.output,
       startCommand: shouldStartApp ? startCommand : undefined,
       url,
@@ -96,6 +105,8 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
   } else {
     logStep("Starting mobile device recording.");
     recording = await recordNativeDemo({
+      longRecordingWarningSeconds:
+        recordingGuidance.longRecordingWarningSeconds,
       outputPath: options.output,
       projectType: project.type,
     });
@@ -106,8 +117,10 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
     apiBaseUrl,
     productId: product.id,
     recording: {
-      durationLimitSeconds: config.recording?.durationLimitSeconds ?? 60,
       format: "full-size",
+      longRecordingWarningSeconds:
+        recordingGuidance.longRecordingWarningSeconds,
+      recommendedDurationSeconds: recordingGuidance.recommendedDurationSeconds,
     },
     target: {
       start: startCommand,
@@ -118,12 +131,29 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
 
   logSuccess("Saved the recording.");
   logKeyValue("MP4", recording.outputPath);
+  const durationSeconds = await readRecordingVideoDuration(recording.outputPath);
+  const isLongRecording = isLongRecordingDuration(
+    durationSeconds,
+    recordingGuidance.longRecordingWarningSeconds,
+  );
+
+  if (durationSeconds !== null) {
+    logKeyValue("Length", formatRecordingDuration(durationSeconds));
+  }
+
+  if (isLongRecording) {
+    logInfo(
+      "ClipStitchr will look for pauses, waiting time, and dead space during Quick Edit.",
+    );
+  }
 
   const shouldUpload =
     options.upload ??
     (await confirm({
       default: true,
-      message: "Upload this demo to ClipStitchr?",
+      message: isLongRecording
+        ? "This is a longer recording and may take more time to upload and process. Upload anyway?"
+        : "Upload this demo to ClipStitchr?",
     }));
 
   if (!shouldUpload) {
@@ -132,6 +162,9 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
   }
 
   logStep("Uploading the demo to ClipStitchr.");
+  if (isLongRecording) {
+    logWarning("Longer demos may take more time to upload and process.");
+  }
   await uploadDemoFile(credentials, {
     filePath: recording.outputPath,
     interactionEvents: recording.interactionEvents,
