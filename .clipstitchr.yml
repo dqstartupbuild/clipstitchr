@@ -1,0 +1,9 @@
+apiBaseUrl: https://clipstitchr.com
+productId: 167548fd-b3c4-4f47-bc0b-43dccdf33760
+recording:
+  durationLimitSeconds: 60
+  format: vertical
+target:
+  start: cd web && npm run dev
+  type: web
+  url: http://localhost:3000
