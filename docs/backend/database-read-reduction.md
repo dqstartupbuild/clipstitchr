@@ -115,10 +115,8 @@ These paths still read source tables by design:
 - Stitchr and Stitchr Batch planning read bounded full UGC/Demo/product windows
   because the task snapshot includes descriptive fields used by provider prompt
   generation.
-- Product-scoped UGC library pagination still uses a bounded compact-card filter
-  to merge product-specific UGC and account-wide UGC into one paginated stream.
-  Removing that filter cleanly would require a dedicated union read model or a
-  changed pagination contract.
+- Product-scoped UGC library pagination uses the same product/library-kind
+  compact-card index shape as the other video tabs.
 
 ## Maintenance Notes
 

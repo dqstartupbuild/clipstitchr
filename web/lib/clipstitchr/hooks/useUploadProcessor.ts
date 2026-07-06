@@ -21,14 +21,14 @@ import { getUploadBatchLimitMessage } from "@/lib/clipstitchr/utils/getUploadBat
 
 type UseUploadProcessorOptions = {
   initialClipType?: ClipType;
-  demoProductId?: string;
+  productId?: string;
   onClipSaved?: () => void | Promise<void>;
 };
 
 export function useUploadProcessor({
-  demoProductId,
   initialClipType = "ugc",
   onClipSaved,
+  productId,
 }: UseUploadProcessorOptions) {
   const [clipType, setClipType] = useState<ClipType>(initialClipType);
   const [queue, setQueue] = useState<UploadQueueItem[]>([]);
@@ -55,13 +55,10 @@ export function useUploadProcessor({
         return;
       }
 
-      const activeDemoProductId =
-        clipType === "demo" ? demoProductId?.trim() : undefined;
-      const activeProductId =
-        clipType === "demo" ? activeDemoProductId : undefined;
+      const activeProductId = productId?.trim();
 
-      if (clipType === "demo" && !activeDemoProductId) {
-        setError("Choose a product before uploading demo videos.");
+      if (!activeProductId) {
+        setError("Choose a product before uploading videos.");
         return;
       }
 
@@ -249,7 +246,7 @@ export function useUploadProcessor({
         setIsProcessing(false);
       }
     },
-    [clipType, demoProductId, onClipSaved, saveClip, updateQueueItem],
+    [clipType, onClipSaved, productId, saveClip, updateQueueItem],
   );
 
   const clearQueue = useCallback(() => setQueue([]), []);

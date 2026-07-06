@@ -249,10 +249,10 @@ export function LibraryPageClient() {
           : selectedTab === "swaps"
             ? library.counts.swapClips
             : undefined;
-  const canUploadDemo = activeProductId.length > 0;
-  const demoUploadBlockedMessage = products.isLoading
+  const canUploadVideo = activeProductId.length > 0;
+  const videoUploadBlockedMessage = products.isLoading
     ? "Products are loading."
-    : "Create a product before uploading demo videos.";
+    : "Create a product before uploading videos.";
   const canSortSelectedTab =
     selectedTab !== "avatars" &&
     selectedTab !== "templates" &&
@@ -395,9 +395,9 @@ export function LibraryPageClient() {
             key={selectedTab}
             initialAssetType={getUploadAssetTypeFromLibraryTab(selectedTab)}
             isPhotoUploading={photoLibrary.isSaving}
-            canUploadDemo={canUploadDemo}
-            demoProductId={activeProductId}
-            demoUploadBlockedMessage={demoUploadBlockedMessage}
+            canUploadVideo={canUploadVideo}
+            videoProductId={activeProductId}
+            videoUploadBlockedMessage={videoUploadBlockedMessage}
             onDismiss={dispatchHideUploadControlsEvent}
             onAssetTypeChange={(assetType) =>
               handleTabChange(getLibraryTabFromAssetType(assetType))

@@ -73,9 +73,9 @@ The read query lives in `web/convex/libraryCounts.ts`. It returns:
 Generated non-demo Clipr output now counts as UGC. Legacy aggregate rows with
 `libraryKind: "clipr"` are added into the returned `ugcClips` count and
 `cliprClips` is returned as `0` for visible dashboard/library surfaces.
-Product-filtered count reads combine product-scoped aggregates with the
-account-wide UGC namespace, preserving shared UGC behavior without owner-wide
-document scans.
+Product-filtered count reads use product-scoped aggregate namespaces for UGC,
+Demo, Clipr, Swapr, and Stitch counts, so dashboard totals match the active
+product without owner-wide document scans.
 
 The client reads this query in `useClipLibraryState`. Display counts use the
 larger value between the aggregate and the currently loaded page count so a

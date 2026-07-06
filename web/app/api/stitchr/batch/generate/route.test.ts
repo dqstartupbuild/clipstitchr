@@ -112,6 +112,16 @@ function createTaskInputSnapshot(taskId: string, hasTemplateTextOverlay = true) 
   };
 }
 
+function createBatchGenerateRequest(
+  body: Record<string, unknown> = {},
+) {
+  return new Request("https://clipstitchr.test/api/stitchr/batch/generate", {
+    body: JSON.stringify({ productId: "product_1", ...body }),
+    headers: { "content-type": "application/json" },
+    method: "POST",
+  });
+}
+
 describe("POST /api/stitchr/batch/generate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -151,14 +161,14 @@ describe("POST /api/stitchr/batch/generate", () => {
   it("returns 401 before planning when authentication is missing", async () => {
     mocks.getAuthenticatedUserId.mockResolvedValue(null);
 
-    const response = await POST();
+    const response = await POST(createBatchGenerateRequest());
 
     expect(response.status).toBe(401);
     expect(mocks.createAuthenticatedConvexHttpClient).not.toHaveBeenCalled();
   });
 
   it("plans a Stitchr batch for the signed-in user", async () => {
-    const response = await POST();
+    const response = await POST(createBatchGenerateRequest());
     const body = await response.json();
 
     expect(response.status).toBe(200);
@@ -206,7 +216,7 @@ describe("POST /api/stitchr/batch/generate", () => {
       return Promise.resolve(undefined);
     });
 
-    const response = await POST();
+    const response = await POST(createBatchGenerateRequest());
     const body = await response.json();
 
     expect(response.status).toBe(200);
@@ -265,7 +275,7 @@ describe("POST /api/stitchr/batch/generate", () => {
       providerPredictionId: "prediction_1",
     });
 
-    const response = await POST();
+    const response = await POST(createBatchGenerateRequest());
     const body = await response.json();
 
     expect(response.status).toBe(200);
@@ -298,7 +308,7 @@ describe("POST /api/stitchr/batch/generate", () => {
   it("keeps the batch response successful when direct provider dispatch fails", async () => {
     mocks.convex.action.mockRejectedValueOnce(new Error("Cloud Run is busy"));
 
-    const response = await POST();
+    const response = await POST(createBatchGenerateRequest());
     const body = await response.json();
 
     expect(response.status).toBe(200);
@@ -311,11 +321,7 @@ describe("POST /api/stitchr/batch/generate", () => {
   });
 
   it("passes a selected Stitch template into planning", async () => {
-    const request = new Request("https://clipstitchr.test/api/stitchr/batch/generate", {
-      body: JSON.stringify({ templateId: "template_1" }),
-      headers: { "content-type": "application/json" },
-      method: "POST",
-    });
+    const request = createBatchGenerateRequest({ templateId: "template_1" });
 
     const response = await POST(request);
 
@@ -333,14 +339,9 @@ describe("POST /api/stitchr/batch/generate", () => {
     vi.setSystemTime(new Date("2026-06-23T01:02:03.034Z"));
 
     try {
-      const request = new Request(
-        "https://clipstitchr.test/api/stitchr/batch/generate",
-        {
-          body: JSON.stringify({ timeZone: "America/Detroit" }),
-          headers: { "content-type": "application/json" },
-          method: "POST",
-        },
-      );
+      const request = createBatchGenerateRequest({
+        timeZone: "America/Detroit",
+      });
 
       const response = await POST(request);
       const body = await response.json();
@@ -364,15 +365,11 @@ describe("POST /api/stitchr/batch/generate", () => {
   });
 
   it("passes selected Batch text styling into planning", async () => {
-    const request = new Request("https://clipstitchr.test/api/stitchr/batch/generate", {
-      body: JSON.stringify({
-        stitchrTextBackgroundColorChoice: "#111111",
-        stitchrTextColorChoice: "#f97316",
-        stitchrTextStrokeColorChoice: "#ffffff",
-        stitchrTextStyleChoice: "outline",
-      }),
-      headers: { "content-type": "application/json" },
-      method: "POST",
+    const request = createBatchGenerateRequest({
+      stitchrTextBackgroundColorChoice: "#111111",
+      stitchrTextColorChoice: "#f97316",
+      stitchrTextStrokeColorChoice: "#ffffff",
+      stitchrTextStyleChoice: "outline",
     });
 
     const response = await POST(request);
@@ -418,7 +415,7 @@ describe("POST /api/stitchr/batch/generate", () => {
       return Promise.resolve({ savedCount: 2 });
     });
 
-    const response = await POST();
+    const response = await POST(createBatchGenerateRequest());
     const body = await response.json();
 
     expect(response.status).toBe(200);
@@ -451,7 +448,7 @@ describe("POST /api/stitchr/batch/generate", () => {
       }),
     );
 
-    const response = await POST();
+    const response = await POST(createBatchGenerateRequest());
 
     expect(response.status).toBe(429);
     await expect(response.json()).resolves.toEqual(

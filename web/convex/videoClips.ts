@@ -13,7 +13,7 @@ import { logConvexTransactionMetrics } from "./logConvexTransactionMetrics";
 import { getVideoClipCanBePosted } from "./getVideoClipCanBePosted";
 import { getVideoClipLibraryKind } from "./getVideoClipLibraryKind";
 import { getVideoClipNotificationCopy } from "./getVideoClipNotificationCopy";
-import { getVideoClipProductScopeFilter } from "./getVideoClipProductScopeFilter";
+import { getRequiredVideoClipProductId } from "./getRequiredVideoClipProductId";
 import { getQuickEditWithRemoveRanges } from "./getQuickEditWithRemoveRanges";
 import { normalizeQuickEditRemoveRanges } from "./normalizeQuickEditRemoveRanges";
 import { rateLimiter } from "./rateLimiter";
@@ -220,7 +220,7 @@ export const listByLibraryKind = query({
       getReadLimitedPaginationOpts(paginationOpts);
 
     if (postedStatus === "active") {
-      if (productFilterId && kind !== "ugc") {
+      if (productFilterId) {
         return await withVideoClipListMetrics(
           ctx,
           "videoClips.listByLibraryKind",
@@ -251,17 +251,12 @@ export const listByLibraryKind = query({
       return await withVideoClipListMetrics(
         ctx,
         "videoClips.listByLibraryKind",
-        (productFilterId
-          ? query.filter((q) =>
-              getVideoClipProductScopeFilter(q, productFilterId),
-            )
-          : query
-        ).paginate(readLimitedPaginationOpts),
+        query.paginate(readLimitedPaginationOpts),
       );
     }
 
     if (postedStatus === "posted") {
-      if (productFilterId && kind !== "ugc") {
+      if (productFilterId) {
         return await withVideoClipListMetrics(
           ctx,
           "videoClips.listByLibraryKind",
@@ -289,16 +284,11 @@ export const listByLibraryKind = query({
       return await withVideoClipListMetrics(
         ctx,
         "videoClips.listByLibraryKind",
-        (productFilterId
-          ? query.filter((q) =>
-              getVideoClipProductScopeFilter(q, productFilterId),
-            )
-          : query
-        ).paginate(readLimitedPaginationOpts),
+        query.paginate(readLimitedPaginationOpts),
       );
     }
 
-    if (productFilterId && kind !== "ugc") {
+    if (productFilterId) {
       return await withVideoClipListMetrics(
         ctx,
         "videoClips.listByLibraryKind",
@@ -325,12 +315,7 @@ export const listByLibraryKind = query({
     return await withVideoClipListMetrics(
       ctx,
       "videoClips.listByLibraryKind",
-      (productFilterId
-        ? query.filter((q) =>
-            getVideoClipProductScopeFilter(q, productFilterId),
-          )
-        : query
-      ).paginate(readLimitedPaginationOpts),
+      query.paginate(readLimitedPaginationOpts),
     );
   },
 });
@@ -375,11 +360,7 @@ export const save = mutation({
       throws: true,
     });
 
-    const requestedProductId = args.productId?.trim() || undefined;
-
-    if (args.clipType === "demo" && !requestedProductId) {
-      throw new Error("Choose a product before saving a demo video.");
-    }
+    const requestedProductId = getRequiredVideoClipProductId(args.productId);
 
     await assertProductBelongsToOwner(ctx, ownerId, requestedProductId);
 
@@ -475,11 +456,19 @@ export const saveFromAutomation = mutation({
       throws: true,
     });
 
+    const requestedProductId = getRequiredVideoClipProductId(args.productId);
+
+    await assertProductBelongsToOwner(ctx, ownerId, requestedProductId);
+
+    const clipArgs = {
+      ...args,
+      productId: requestedProductId,
+    };
     const clip = {
       ownerId,
-      ...args,
+      ...clipArgs,
       automation,
-      libraryKind: getVideoClipLibraryKind(args),
+      libraryKind: getVideoClipLibraryKind(clipArgs),
     };
 
     if (existingClip) {
@@ -551,10 +540,18 @@ export const saveFromMediaWorker = mutation({
       });
     }
 
+    const requestedProductId = getRequiredVideoClipProductId(args.productId);
+
+    await assertProductBelongsToOwner(ctx, ownerId, requestedProductId);
+
+    const clipArgs = {
+      ...args,
+      productId: requestedProductId,
+    };
     const clip = {
       ownerId,
-      ...args,
-      libraryKind: getVideoClipLibraryKind(args),
+      ...clipArgs,
+      libraryKind: getVideoClipLibraryKind(clipArgs),
       ...(automation ? { automation } : {}),
     };
 
@@ -593,7 +590,7 @@ export const saveFromMediaWorker = mutation({
 
       await createNotification(ctx, {
         ownerId,
-        productId: args.productId,
+        productId: requestedProductId,
         sourceType: "video-clip",
         sourceId: args.id,
         dedupeKey: `video-clip:${args.id}:created`,
@@ -660,6 +657,15 @@ export const updateMetadataFromProvider = mutation({
       throw new Error("Video clip not found.");
     }
 
+    const requestedProductId =
+      productId === undefined
+        ? undefined
+        : getRequiredVideoClipProductId(productId);
+
+    if (requestedProductId) {
+      await assertProductBelongsToOwner(ctx, ownerId, requestedProductId);
+    }
+
     await ctx.db.patch(clip._id, {
       ...(name === undefined ? {} : { name }),
       ...(tags === undefined ? {} : { tags }),
@@ -670,13 +676,17 @@ export const updateMetadataFromProvider = mutation({
       ...(poseDescription === undefined ? {} : { poseDescription }),
       ...(performanceScore === undefined ? {} : { performanceScore }),
       ...(productDescription === undefined ? {} : { productDescription }),
-      ...(productId === undefined ? {} : { productId }),
+      ...(productId === undefined ? {} : { productId: requestedProductId }),
       updatedAt,
     });
     const updatedClip = await ctx.db.get(clip._id);
 
     if (updatedClip) {
-      await upsertVideoClipCard(ctx, updatedClip);
+      await Promise.all([
+        videoClipCounts.replaceOrInsert(ctx, clip, updatedClip),
+        videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        upsertVideoClipCard(ctx, updatedClip),
+      ]);
     }
   },
 });
@@ -732,16 +742,7 @@ export const updateMetadata = mutation({
     let requestedProductId: string | undefined;
 
     if (productId !== undefined) {
-      requestedProductId = productId.trim();
-
-      if (!requestedProductId) {
-        throw new Error("Choose a product before saving this video.");
-      }
-
-      if (clip.clipType !== "demo") {
-        throw new Error("Only demo videos can be linked to products.");
-      }
-
+      requestedProductId = getRequiredVideoClipProductId(productId);
       await assertProductBelongsToOwner(ctx, ownerId, requestedProductId);
     }
 

@@ -17,9 +17,10 @@ Stitchr, Clipr, Swipr, and Swapr.
   edited from Settings.
 - Automation settings are saved for the active product, so each product can run
   its own daily tools and draft counts.
-- Uploaded UGC is account-wide, so users can reuse the same raw UGC across
-  products. Demo clips, generated Clipr clips, generated Swapr clips, stitches,
-  avatars, avatar photos, and saved Swipes are scoped to the active product.
+- Uploaded UGC is scoped to the active product, so each Hook/UGC clip belongs
+  to one product. Demo clips, generated Clipr clips, generated Swapr clips,
+  stitches, avatars, avatar photos, and saved Swipes are also scoped to the
+  active product.
 - Swipr background packs remain account-wide so they can be used across
   products.
 - Favorite avatars are product-specific, so each product can have its own main
@@ -49,7 +50,7 @@ Stitchr, Clipr, Swipr, and Swapr.
   legacy content to the primary product.
 - `web/convex/assignLegacyRecordsToProduct.ts` patches old records that do not
   have a product ID.
-- `web/convex/videoClips.ts`, `web/convex/getVideoClipIsAccountWideUgc.ts`,
+- `web/convex/videoClips.ts`, `web/convex/getRequiredVideoClipProductId.ts`,
   `web/convex/stitches.ts`,
   `web/convex/photoAssets.ts`, `web/convex/avatars.ts`, and
   `web/convex/swipes.ts` filter and save product-scoped records.
@@ -74,8 +75,7 @@ Stitchr, Clipr, Swipr, and Swapr.
 - `web/lib/clipstitchr/hooks/useDashboardProduct.ts`
 - `web/lib/clipstitchr/types/DashboardProductContextValue.ts`
 - `web/convex/assignLegacyRecordsToProduct.ts`
-- `web/convex/getVideoClipIsAccountWideUgc.ts`
-- `web/convex/getVideoClipProductScopeFilter.ts`
+- `web/convex/getRequiredVideoClipProductId.ts`
 - `web/convex/getOwnerHasContent.ts`
 - `web/convex/getOwnerHasLegacyProductRecords.ts`
 - `web/convex/getPrimaryProductForOwner.ts`

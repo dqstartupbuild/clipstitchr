@@ -167,12 +167,19 @@ export async function POST(request?: Request) {
     const convex = createAuthenticatedConvexHttpClient(convexToken);
     const now = new Date().toISOString();
     const input = request ? await readStitchrBatchGenerateRequest(request) : {};
+    const productId = input.productId?.trim();
+
+    if (!productId) {
+      throw new Error("Choose a product before generating Stitch drafts.");
+    }
+
     const batchDate = getStitchrBatchDate(now, input.timeZone);
     const result = (await convex.mutation(api.stitchrBatch.plan, {
       secret: getAutomationWorkerSecret(),
       ownerId: userId,
       batchDate,
       now,
+      productId,
       providerLaunchDelayMs: stitchrBatchProviderFallbackLaunchDelayMs,
       ...(input.stitchrTextBackgroundColorChoice
         ? {

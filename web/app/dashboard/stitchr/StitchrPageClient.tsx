@@ -1360,11 +1360,17 @@ export function StitchrPageClient() {
   };
 
   const handleGenerateBatch = useCallback(() => {
+    if (!products.activeProductId) {
+      setBatchMessage("Choose a product before generating Stitch drafts.");
+      return;
+    }
+
     setIsGeneratingBatch(true);
     setBatchMessage(null);
     setActiveBatchHookTaskIds([]);
 
     void generateStitchrBatch({
+      productId: products.activeProductId,
       soundTrackId: selectedMusicTrack?.id,
       stitchrTextBackgroundColorChoice: batchTextBackgroundColorChoice,
       stitchrTextColorChoice: batchTextColorChoice,
@@ -1405,6 +1411,7 @@ export function StitchrPageClient() {
     batchTextStyleChoice,
     selectedTemplateId,
     selectedMusicTrack?.id,
+    products.activeProductId,
   ]);
   const handleSelectBatchHookVariant = useCallback(
     (planId: string, hookText: string) => {

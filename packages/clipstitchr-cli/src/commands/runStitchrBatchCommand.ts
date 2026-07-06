@@ -4,8 +4,10 @@ import { logInfo } from "../terminal/logInfo.js";
 import { logKeyValue } from "../terminal/logKeyValue.js";
 import { logSuccess } from "../terminal/logSuccess.js";
 import { getCommandCredentials } from "./getCommandCredentials.js";
+import { getProjectProductId } from "./getProjectProductId.js";
 
 type StitchrBatchCommandOptions = CliGlobalOptions & {
+  product?: string;
   sound?: string;
   template?: string;
   timeZone?: string;
@@ -19,7 +21,9 @@ export async function runStitchrBatchCommand(
   options: StitchrBatchCommandOptions,
 ) {
   const credentials = await getCommandCredentials(options);
+  const productId = options.product ?? (await getProjectProductId());
   const result = await createStitchrBatch(credentials, {
+    productId,
     soundTrackId: options.sound,
     templateId: options.template,
     timeZone: options.timeZone ?? getLocalTimeZone(),

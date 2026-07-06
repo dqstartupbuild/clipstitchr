@@ -49,10 +49,10 @@ export function OnboardingUploadStep({
       </Panel>
       <UploadPanel
         allowedAssetTypes={[assetType]}
-        canUploadDemo={assetType !== "demo" || Boolean(productId)}
-        demoProductId={productId}
+        canUploadVideo={Boolean(productId)}
         initialAssetType={assetType}
         isPhotoUploading={false}
+        videoProductId={productId}
         onPhotoUploaded={async () => false}
         onUploaded={onUploaded}
       />

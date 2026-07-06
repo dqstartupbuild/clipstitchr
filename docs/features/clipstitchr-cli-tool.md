@@ -130,10 +130,11 @@ Batch and queue commands are documented in
 `docs/features/cli-batch-and-queue.md`.
 
 `clipstitchr stitchr batch` calls `POST /api/cli/stitchr/batches`, which
-verifies the CLI bearer token, creates owner-scoped Stitchr Batch tasks through
-`stitchrBatch.plan`, and dispatches the provider worker. The CLI route does not
-run the browser-session foreground hook planner; the provider worker still
-creates fallback hook text and finalization jobs for tasks that need text.
+verifies the CLI bearer token, requires the saved or passed product ID, creates
+product-scoped Stitchr Batch tasks through `stitchrBatch.plan`, and dispatches
+the provider worker. The CLI route does not run the browser-session foreground
+hook planner; the provider worker still creates fallback hook text and
+finalization jobs for tasks that need text.
 
 `clipstitchr swipr batch` calls `POST /api/cli/swipr/batches`, which verifies
 the CLI bearer token, creates a unique on-demand Swipr batch through

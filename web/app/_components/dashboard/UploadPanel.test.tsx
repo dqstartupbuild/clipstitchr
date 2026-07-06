@@ -183,18 +183,18 @@ describe("UploadPanel", () => {
     });
   });
 
-  it("blocks demo uploads when a product is required", () => {
+  it("blocks video uploads when a product is required", () => {
     const videoFile = createFile("video/mp4");
 
     mocks.stateQueue = [false, null, false];
 
     const tree = UploadPanel({
-      canUploadDemo: false,
-      demoUploadBlockedMessage: "Choose a product first.",
+      canUploadVideo: false,
       initialAssetType: "demo",
       isPhotoUploading: false,
       onPhotoUploaded: vi.fn(),
       onUploaded: vi.fn(),
+      videoUploadBlockedMessage: "Choose a product first.",
     });
     const [fileInput] = findElements(
       tree,

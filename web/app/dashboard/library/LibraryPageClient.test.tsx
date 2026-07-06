@@ -535,9 +535,9 @@ describe("LibraryPageClient", () => {
     );
     expect(uploadPanel?.props).toEqual(
       expect.objectContaining({
-        canUploadDemo: true,
-        demoProductId: "product_1",
+        canUploadVideo: true,
         initialAssetType: "ugc",
+        videoProductId: "product_1",
       }),
     );
     expect(ugcSection?.props?.totalCount).toBe(30);
@@ -641,7 +641,7 @@ describe("LibraryPageClient", () => {
     ).resolves.toBe(false);
   });
 
-  it("renders demo tab product filters and blocked upload copy", () => {
+  it("renders demo tab product filters and blocked video upload copy", () => {
     mocks.products = {
       defaultProductId: undefined,
       error: null,
@@ -665,14 +665,14 @@ describe("LibraryPageClient", () => {
     );
     expect(uploadPanel?.props).toEqual(
       expect.objectContaining({
-        canUploadDemo: false,
-        demoProductId: "",
-        demoUploadBlockedMessage: "Products are loading.",
+        canUploadVideo: false,
+        videoProductId: "",
+        videoUploadBlockedMessage: "Products are loading.",
       }),
     );
   });
 
-  it("uses the default product for demo upload and demo filtering", () => {
+  it("uses the default product for video upload and demo filtering", () => {
     const secondProduct = createProduct({
       id: "product_2",
       name: "Second Product",
@@ -720,7 +720,7 @@ describe("LibraryPageClient", () => {
       Array.isArray(element.props?.allowedAssetTypes),
     );
 
-    expect(uploadPanel?.props?.demoProductId).toBe("product_2");
+    expect(uploadPanel?.props?.videoProductId).toBe("product_2");
     expect(section?.props?.clips).toEqual([
       expect.objectContaining({ id: "demo_1" }),
       defaultDemoClip,

@@ -22,19 +22,13 @@ export const get = query({
         ownerId,
         productFilterId,
       );
-      const accountNamespace = getProductAggregateNamespace(ownerId, undefined);
       const [
-        accountWideUgcClips,
         productUgcClips,
         demoClips,
         swapClips,
         activeStitches,
         postedStitches,
       ] = await Promise.all([
-        videoClipProductCounts.count(ctx, {
-          bounds: { eq: "ugc" },
-          namespace: accountNamespace,
-        }),
         videoClipProductCounts.count(ctx, {
           bounds: { eq: "ugc" },
           namespace: productNamespace,
@@ -64,7 +58,7 @@ export const get = query({
         postedStitches,
         stitches: activeStitches + postedStitches,
         swapClips,
-        ugcClips: accountWideUgcClips + productUgcClips,
+        ugcClips: productUgcClips,
       };
     }
 

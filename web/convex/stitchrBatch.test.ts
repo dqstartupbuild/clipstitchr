@@ -112,8 +112,9 @@ function createTask(
     mediaJobIds: overrides.mediaJobIds ?? [],
     outputAssetIds: overrides.outputAssetIds ?? [],
     ownerId: "user_123",
+    productId: "product_1",
     providerJobIds: [],
-    runId: "stitchr-batch:user_123:2026-06-23",
+    runId: "stitchr-batch:user_123:product_1:2026-06-23",
     stage: overrides.stage ?? "awaiting-text-provider",
     status: overrides.status ?? "queued",
     taskType: "stitchr-draft",
@@ -137,6 +138,7 @@ function createClip(id: string, clipType: "demo" | "ugc") {
     libraryKind: "user",
     name: clipType === "ugc" ? "UGC" : "Demo",
     ownerId: "user_123",
+    productId: "product_1",
     videoObject: {
       contentType: "video/mp4",
       key: `users/user_123/${id}.mp4`,
@@ -163,6 +165,7 @@ async function planBatch(
 ) {
   const ctx = createCtx({
     automationTasks: [{ collect: existingTasks }],
+    products: [{ unique: createProduct() }],
   });
   const result = await getHandler<Record<string, string | number>, unknown>(
     plan,
@@ -170,6 +173,7 @@ async function planBatch(
     batchDate: "2026-06-23",
     now,
     ownerId: "user_123",
+    productId: "product_1",
     ...overrides,
     secret: "automation-secret",
   });
@@ -292,7 +296,7 @@ describe("stitchrBatch.plan existing runs", () => {
     const ctx = createCtx({
       automationTasks: [{ take: [] }, { unique: null }],
       productPreferences: [{ unique: null }],
-      products: [{ take: [product] }, { first: product }],
+      products: [{ unique: product }],
       stitchrBatchPairHistory: [{ take: [] }],
       videoClips: [
         { take: [createClip("ugc_1", "ugc")] },
@@ -304,6 +308,7 @@ describe("stitchrBatch.plan existing runs", () => {
       batchDate: "2026-06-22",
       now,
       ownerId: "user_123",
+      productId: "product_1",
       providerLaunchDelayMs: 60000,
       secret: "automation-secret",
     });

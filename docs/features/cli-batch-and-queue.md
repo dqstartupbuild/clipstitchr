@@ -6,7 +6,7 @@ Post Bridge queue without opening the dashboard first.
 ## User Commands
 
 ```bash
-clipstitchr stitchr batch
+clipstitchr stitchr batch --product product_123
 clipstitchr swipr batch
 clipstitchr library clips --kind demo
 clipstitchr library stitches --ready
@@ -15,9 +15,11 @@ clipstitchr queue stitch
 ```
 
 `clipstitchr stitchr batch` starts today's Stitchr Batch for the connected
-account. It uses the existing backend Stitchr Batch planner, recent UGC/Demo
-clips, optional template/sound IDs, the user's local time zone, and the provider
-worker to finish text and media.
+account and product. It uses the existing backend Stitchr Batch planner, recent
+UGC/Demo clips from that product, optional template/sound IDs, the user's local
+time zone, and the provider worker to finish text and media. The command uses
+the saved project product from `clipstitchr init` or `clipstitchr products use`;
+`--product` overrides it for one run.
 
 `clipstitchr swipr batch` starts Swipr draft creation through an on-demand
 durable CLI planner. This uses the user's saved dashboard batch settings for

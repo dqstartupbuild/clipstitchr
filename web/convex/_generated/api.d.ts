@@ -115,6 +115,7 @@ import type * as getProductNameFromAutomationTasks from "../getProductNameFromAu
 import type * as getQuickEditOverlayText from "../getQuickEditOverlayText.js";
 import type * as getQuickEditWithRemoveRanges from "../getQuickEditWithRemoveRanges.js";
 import type * as getReadLimitedPaginationOpts from "../getReadLimitedPaginationOpts.js";
+import type * as getRequiredVideoClipProductId from "../getRequiredVideoClipProductId.js";
 import type * as getStitchNotificationCopy from "../getStitchNotificationCopy.js";
 import type * as getStitchProductId from "../getStitchProductId.js";
 import type * as getSwipeCardSearchText from "../getSwipeCardSearchText.js";
@@ -123,10 +124,8 @@ import type * as getSwiprBackgroundCardSearchText from "../getSwiprBackgroundCar
 import type * as getSwiprSwipeReferencedBackgroundIds from "../getSwiprSwipeReferencedBackgroundIds.js";
 import type * as getVideoClipCanBePosted from "../getVideoClipCanBePosted.js";
 import type * as getVideoClipCardSearchText from "../getVideoClipCardSearchText.js";
-import type * as getVideoClipIsAccountWideUgc from "../getVideoClipIsAccountWideUgc.js";
 import type * as getVideoClipLibraryKind from "../getVideoClipLibraryKind.js";
 import type * as getVideoClipNotificationCopy from "../getVideoClipNotificationCopy.js";
-import type * as getVideoClipProductScopeFilter from "../getVideoClipProductScopeFilter.js";
 import type * as isWithinAutomationGlobalWindow from "../isWithinAutomationGlobalWindow.js";
 import type * as libraryCounts from "../libraryCounts.js";
 import type * as listActiveWorkerJobSummaries from "../listActiveWorkerJobSummaries.js";
@@ -369,6 +368,7 @@ declare const fullApi: ApiFromModules<{
   getQuickEditOverlayText: typeof getQuickEditOverlayText;
   getQuickEditWithRemoveRanges: typeof getQuickEditWithRemoveRanges;
   getReadLimitedPaginationOpts: typeof getReadLimitedPaginationOpts;
+  getRequiredVideoClipProductId: typeof getRequiredVideoClipProductId;
   getStitchNotificationCopy: typeof getStitchNotificationCopy;
   getStitchProductId: typeof getStitchProductId;
   getSwipeCardSearchText: typeof getSwipeCardSearchText;
@@ -377,10 +377,8 @@ declare const fullApi: ApiFromModules<{
   getSwiprSwipeReferencedBackgroundIds: typeof getSwiprSwipeReferencedBackgroundIds;
   getVideoClipCanBePosted: typeof getVideoClipCanBePosted;
   getVideoClipCardSearchText: typeof getVideoClipCardSearchText;
-  getVideoClipIsAccountWideUgc: typeof getVideoClipIsAccountWideUgc;
   getVideoClipLibraryKind: typeof getVideoClipLibraryKind;
   getVideoClipNotificationCopy: typeof getVideoClipNotificationCopy;
-  getVideoClipProductScopeFilter: typeof getVideoClipProductScopeFilter;
   isWithinAutomationGlobalWindow: typeof isWithinAutomationGlobalWindow;
   libraryCounts: typeof libraryCounts;
   listActiveWorkerJobSummaries: typeof listActiveWorkerJobSummaries;

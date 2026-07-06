@@ -1,4 +1,8 @@
 import type { MutationCtx } from "./_generated/server";
+import {
+  stitchProductCounts,
+  videoClipProductCounts,
+} from "./aggregateCounts";
 import { upsertStitchCard } from "./upsertStitchCard";
 import { upsertVideoClipCard } from "./upsertVideoClipCard";
 
@@ -38,8 +42,13 @@ export async function assignLegacyRecordsToProduct(
 
   for (const clip of clips) {
     if (!clip.productId) {
+      const updatedClip = { ...clip, productId };
+
       await ctx.db.patch(clip._id, { productId });
-      await upsertVideoClipCard(ctx, { ...clip, productId });
+      await Promise.all([
+        videoClipProductCounts.replaceOrInsert(ctx, clip, updatedClip),
+        upsertVideoClipCard(ctx, updatedClip),
+      ]);
       updatedCount += 1;
     }
   }
@@ -60,8 +69,13 @@ export async function assignLegacyRecordsToProduct(
 
   for (const stitch of stitches) {
     if (!stitch.productId) {
+      const updatedStitch = { ...stitch, productId };
+
       await ctx.db.patch(stitch._id, { productId });
-      await upsertStitchCard(ctx, { ...stitch, productId });
+      await Promise.all([
+        stitchProductCounts.replaceOrInsert(ctx, stitch, updatedStitch),
+        upsertStitchCard(ctx, updatedStitch),
+      ]);
       updatedCount += 1;
     }
   }

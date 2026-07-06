@@ -16,7 +16,6 @@ import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForP
 import { getAutomationProductScopeKey } from "./getAutomationProductScopeKey";
 import { createQuickEditSuggestionsFromMetadata } from "./createQuickEditSuggestionsFromMetadata";
 import { getQuickEditOverlayText } from "./getQuickEditOverlayText";
-import { getVideoClipIsAccountWideUgc } from "./getVideoClipIsAccountWideUgc";
 import { createCompletedRunNotification } from "./createCompletedRunNotification";
 import { createAutomaticStitchTemplateFromAcceptedHookStitch } from "./stitchTemplates/createAutomaticStitchTemplateFromAcceptedHookStitch";
 import { getStitchTemplateBatchTextOverlay } from "./stitchTemplates/getStitchTemplateBatchTextOverlay";
@@ -254,20 +253,19 @@ export const planDaily = mutation({
         libraryKind: "ugc",
         limit: AUTOMATION_STITCHR_SOURCE_CLIP_SCAN_LIMIT,
         ownerId,
+        productId,
       }),
       listRecentVideoClipsByLibraryKind(ctx, {
         libraryKind: "demo",
         limit: AUTOMATION_STITCHR_SOURCE_CLIP_SCAN_LIMIT,
         ownerId,
+        productId,
       }),
       getDefaultProductForOwner(ctx, ownerId),
     ]);
     const ugcClips = productId
-      ? allUgcClips.filter(
-          (clip) =>
-            clip.productId === productId || getVideoClipIsAccountWideUgc(clip),
-        )
-      : allUgcClips;
+      ? allUgcClips.filter((clip) => clip.productId === productId)
+      : allUgcClips.filter((clip) => Boolean(clip.productId));
     const demoClips = productId
       ? allDemoClips.filter((clip) => clip.productId === productId)
       : allDemoClips;
@@ -371,20 +369,22 @@ export const planDaily = mutation({
 
     const previousWindowKey = previousAutomationDate(automationDate);
     const candidates: StitchrPairCandidate[] = ugcClips.flatMap((ugc) =>
-      eligibleDemos.map((demo) => {
-        const history = historyByPair.get(`${ugc.id}:${demo.id}`);
+      eligibleDemos
+        .filter((demo) => ugc.productId && ugc.productId === demo.productId)
+        .map((demo) => {
+          const history = historyByPair.get(`${ugc.id}:${demo.id}`);
 
-        return {
-          ugcClipId: ugc.id,
-          demoClipId: demo.id,
-          ugcLastUsedAt: ugcLastUsedAt.get(ugc.id),
-          demoLastUsedAt: demoLastUsedAt.get(demo.id),
-          pairLastUsedAt: history?.lastUsedAt,
-          pairUseCount: history?.useCount ?? 0,
-          wasUsedInPreviousRun:
-            history?.recentUseWindowKey === previousWindowKey,
-        };
-      }),
+          return {
+            ugcClipId: ugc.id,
+            demoClipId: demo.id,
+            ugcLastUsedAt: ugcLastUsedAt.get(ugc.id),
+            demoLastUsedAt: demoLastUsedAt.get(demo.id),
+            pairLastUsedAt: history?.lastUsedAt,
+            pairUseCount: history?.useCount ?? 0,
+            wasUsedInPreviousRun:
+              history?.recentUseWindowKey === previousWindowKey,
+          };
+        }),
     );
     const selectedPairs = selectStitchrPairs(
       candidates,

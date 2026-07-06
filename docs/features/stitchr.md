@@ -46,8 +46,8 @@ attention first, show the product immediately after.
 
 ## Workflow
 
-1. Upload Hook/UGC and demo videos. Uploaded Hook/UGC is account-wide, and product demos
-   must be linked to a saved product.
+1. Upload Hook/UGC and demo videos. Both clip types must be linked to the active
+   product before they enter the library.
 2. Normalize every video to 9:16 before it enters the library.
 3. Save generated posters so clips are recognizable at a glance.
 4. Store non-destructive default trims on each clip.
@@ -59,10 +59,10 @@ attention first, show the product immediately after.
    and spreads a batch across different Hook/UGC and Demo clips before reusing
    pieces.
 7. Switch to Normal mode to select up to 20 Hook/UGC clips and one demo clip inside
-   Stitchr. Hook/UGC stays account-wide, while demo selection uses the product
-   filter when the library contains demos for multiple products. When
-   upload analysis has scored a clip, show that score in the picker so the user
-   can spot clips worth using before building the batch.
+   Stitchr. Hook/UGC and demo selection both use the active product, so clips
+   from another product stay out of the picker. When upload analysis has scored
+   a clip, show that score in the picker so the user can spot clips worth using
+   before building the batch.
 8. Copy clip default trims and active source Quick Edit metadata into the
    Stitchr session.
 9. Tap or swipe through each exact Hook/UGC-then-demo preview.

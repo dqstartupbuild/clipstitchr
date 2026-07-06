@@ -109,18 +109,16 @@ export async function POST(request: Request) {
       throw new Error("Upload source must be a video.");
     }
 
-    if (clipType === "demo" && !productId) {
-      throw new Error("Choose a product before uploading demo videos.");
+    if (!productId) {
+      throw new Error("Choose a product before uploading videos.");
     }
 
     const convex = createAuthenticatedConvexHttpClient(convexToken);
 
-    if (productId) {
-      const product = await convex.query(api.products.get, { id: productId });
+    const product = await convex.query(api.products.get, { id: productId });
 
-      if (!product) {
-        throw new Error("Product not found.");
-      }
+    if (!product) {
+      throw new Error("Product not found.");
     }
 
     const secret = getRateLimitApiSecret();

@@ -19,6 +19,7 @@ export type GenerateStitchrBatchOptions = {
   stitchrTextColorChoice?: AutomationStitchrColorChoice;
   stitchrTextStrokeColorChoice?: AutomationStitchrColorChoice;
   stitchrTextStyleChoice?: AutomationStitchrTextStyleChoice;
+  productId?: string;
   soundTrackId?: string;
   templateId?: string;
   timeZone?: string;
@@ -27,6 +28,7 @@ export type GenerateStitchrBatchOptions = {
 export async function generateStitchrBatch(
   options: GenerateStitchrBatchOptions = {},
 ) {
+  const productId = options.productId?.trim();
   const templateId = options.templateId?.trim();
   const soundTrackId = options.soundTrackId?.trim();
   const timeZone = options.timeZone?.trim() || getBrowserTimeZone();
@@ -46,6 +48,7 @@ export async function generateStitchrBatch(
     ...(options.stitchrTextStyleChoice
       ? { stitchrTextStyleChoice: options.stitchrTextStyleChoice }
       : {}),
+    ...(productId ? { productId } : {}),
     ...(templateId ? { templateId } : {}),
     ...(soundTrackId ? { soundTrackId } : {}),
     ...(timeZone ? { timeZone } : {}),

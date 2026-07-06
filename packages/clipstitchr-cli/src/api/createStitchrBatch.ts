@@ -2,6 +2,7 @@ import type { ClipstitchrCredentials } from "../config/ClipstitchrCredentials.js
 import { requestJson } from "./requestJson.js";
 
 type CreateStitchrBatchOptions = {
+  productId?: string;
   soundTrackId?: string;
   stitchrTextBackgroundColorChoice?: string;
   stitchrTextColorChoice?: string;

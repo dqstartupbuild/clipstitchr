@@ -190,9 +190,9 @@ describe("convex videoClips", () => {
     });
   });
 
-  it("includes account-wide uploaded UGC in product-filtered clip lists", async () => {
+  it("uses product indexes for product-filtered UGC clip lists", async () => {
     const clips = [{ _id: "doc_1", id: "clip_1" }];
-    const { chain, ctx, filterQuery } = createCtx([], clips);
+    const { chain, ctx } = createCtx([], clips);
 
     await expect(
       getHandler(listByLibraryKind)(ctx, {
@@ -202,33 +202,21 @@ describe("convex videoClips", () => {
       }),
     ).resolves.toBe(clips);
 
-    expect(chain.filter).toHaveBeenCalledTimes(1);
-    expect(filterQuery.field.mock.calls.map((call) => call[0])).toEqual(
-      expect.arrayContaining([
-        "productId",
-        "clipType",
-        "cliprMetadata",
-        "swaprMetadata",
-      ]),
+    expect(chain.withIndex).toHaveBeenCalledWith(
+      "by_owner_product_library_kind_created",
+      expect.any(Function),
     );
-    expect(filterQuery.eq).toHaveBeenCalledWith("productId", "product_1");
-    expect(filterQuery.eq).toHaveBeenCalledWith("clipType", "ugc");
-    expect(filterQuery.eq).toHaveBeenCalledWith("cliprMetadata", undefined);
-    expect(filterQuery.eq).toHaveBeenCalledWith("swaprMetadata", undefined);
-    expect(filterQuery.and).toHaveBeenCalledTimes(1);
-    expect(filterQuery.or).toHaveBeenCalledTimes(1);
+    expect(chain.filter).not.toHaveBeenCalled();
   });
 
-  it("requires valid products for demo saves and inserts or patches clips", async () => {
+  it("requires valid products for video saves and inserts or patches clips", async () => {
     let setup = createCtx([null]);
 
     await expect(
       getHandler(save)(
         setup.ctx,
         createSaveArgs({
-          clipType: "demo",
           productId: "missing_product",
-          tags: ["demo"],
         }),
       ),
     ).rejects.toThrow("Product not found.");
@@ -256,32 +244,41 @@ describe("convex videoClips", () => {
       }),
     );
 
-    setup = createCtx([{ _id: "doc_existing", id: "clip_1" }]);
-    await expect(getHandler(save)(setup.ctx, createSaveArgs())).resolves.toBe(
-      "doc_existing",
-    );
+    setup = createCtx([
+      { id: "product_1" },
+      { _id: "doc_existing", id: "clip_1" },
+    ]);
+    await expect(
+      getHandler(save)(
+        setup.ctx,
+        createSaveArgs({
+          productId: "product_1",
+        }),
+      ),
+    ).resolves.toBe("doc_existing");
     expect(setup.ctx.db.patch).toHaveBeenCalledWith(
       "doc_existing",
       expect.objectContaining({
         libraryKind: "ugc",
         ownerId: "owner_123",
+        productId: "product_1",
       }),
     );
   });
 
-  it("updates metadata with demo product validation", async () => {
+  it("updates metadata with video product validation", async () => {
     let setup = createCtx([{ _id: "doc_1", clipType: "ugc", id: "clip_1" }]);
 
     await expect(
       getHandler(updateMetadata)(setup.ctx, {
         id: "clip_1",
-        productId: "product_1",
+        productId: " ",
         updatedAt: "2026-05-20T00:00:00.000Z",
       }),
-    ).rejects.toThrow("Only demo videos can be linked to products.");
+    ).rejects.toThrow("Choose a product before saving this video.");
 
     setup = createCtx([
-      { _id: "doc_1", clipType: "demo", id: "clip_1" },
+      { _id: "doc_1", clipType: "ugc", id: "clip_1" },
       { id: "product_1" },
     ]);
     await getHandler(updateMetadata)(setup.ctx, {

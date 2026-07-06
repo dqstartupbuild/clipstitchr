@@ -46,9 +46,9 @@ that do not have task-level product scope fall back to their parent run's
 Legacy owner-level automation preferences still work as a fallback until a user
 saves settings for a product.
 
-Uploaded UGC is account-wide and can be used by any product's Stitchr
-automation. Product demos, generated Clipr clips, and generated Swapr clips
-remain product-scoped.
+Uploaded UGC, product demos, generated Clipr clips, and generated Swapr clips
+are product-scoped. Stitchr automation only pairs Hook/UGC and Demo clips that
+belong to the same product.
 
 ## Generation Counts
 

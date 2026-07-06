@@ -26,9 +26,9 @@ type UploadPanelProps = {
   initialAssetType?: UploadAssetType;
   onAssetTypeChange?: (assetType: UploadAssetType) => void;
   onDismiss?: () => void;
-  canUploadDemo?: boolean;
-  demoProductId?: string;
-  demoUploadBlockedMessage?: string;
+  canUploadVideo?: boolean;
+  videoProductId?: string;
+  videoUploadBlockedMessage?: string;
   demoControls?: ReactNode;
   onPhotoExpandPreferenceChange?: (shouldExpandWithAi: boolean) => void;
   photoControls?: ReactNode;
@@ -78,9 +78,9 @@ export function UploadPanel({
   initialAssetType = "ugc",
   onAssetTypeChange,
   onDismiss,
-  canUploadDemo = true,
-  demoProductId,
-  demoUploadBlockedMessage = "Choose a product before uploading demo videos.",
+  canUploadVideo = true,
+  videoProductId,
+  videoUploadBlockedMessage = "Choose a product before uploading videos.",
   demoControls,
   onPhotoExpandPreferenceChange,
   photoControls,
@@ -94,9 +94,9 @@ export function UploadPanel({
   const shouldShowAssetTabs =
     !allowedAssetTypes || allowedAssetTypes.length > 1;
   const uploadProcessor = useUploadProcessor({
-    demoProductId,
     initialClipType: initialAssetType === "demo" ? "demo" : "ugc",
     onClipSaved: onUploaded,
+    productId: videoProductId,
   });
   const setClipType = uploadProcessor.setClipType;
   const content = contentByAssetType[assetType];
@@ -137,8 +137,8 @@ export function UploadPanel({
       return;
     }
 
-    if (assetType === "demo" && !canUploadDemo) {
-      setUploadError(demoUploadBlockedMessage);
+    if (!isPhoto && !canUploadVideo) {
+      setUploadError(videoUploadBlockedMessage);
       return;
     }
 
@@ -228,7 +228,7 @@ export function UploadPanel({
           type="button"
           className="mt-5"
           isLoading={isProcessing}
-          disabled={assetType === "demo" && !canUploadDemo}
+          disabled={!isPhoto && !canUploadVideo}
           onClick={() => inputRef.current?.click()}
         >
           Choose Files

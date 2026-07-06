@@ -508,6 +508,8 @@ describe("StitchrPageClient", () => {
 
     expect(mocks.generateStitchrBatch).toHaveBeenCalledTimes(1);
     expect(mocks.generateStitchrBatch).toHaveBeenCalledWith({
+      productId: "product_1",
+      soundTrackId: undefined,
       stitchrTextBackgroundColorChoice: "any",
       stitchrTextColorChoice: "any",
       stitchrTextStrokeColorChoice: "any",
@@ -550,6 +552,8 @@ describe("StitchrPageClient", () => {
     await Promise.resolve();
 
     expect(mocks.generateStitchrBatch).toHaveBeenCalledWith({
+      productId: "product_1",
+      soundTrackId: undefined,
       stitchrTextBackgroundColorChoice: "#111111",
       stitchrTextColorChoice: "#f97316",
       stitchrTextStrokeColorChoice: "#ffffff",

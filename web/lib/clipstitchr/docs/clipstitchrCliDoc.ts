@@ -102,7 +102,8 @@ export const clipstitchrCliDoc = {
       ],
       commands: [
         "clipstitchr stitchr batch",
-        "clipstitchr stitchr batch --template template_123",
+        "clipstitchr stitchr batch --product product_123",
+        "clipstitchr stitchr batch --template template_123 --product product_123",
         "clipstitchr swipr batch",
         "clipstitchr swipr batch --product product_123",
       ],

@@ -96,12 +96,20 @@ export function OnboardingPageClient() {
 
   const handleGenerateBatch = useCallback(
     async (options: GenerateStitchrBatchOptions) => {
+      if (!product?.id) {
+        setError("Choose a product before generating Stitch drafts.");
+        return;
+      }
+
       setError(null);
       setBatchMessage(null);
       setIsGeneratingBatch(true);
 
       try {
-        const result = await generateStitchrBatch(options);
+        const result = await generateStitchrBatch({
+          ...options,
+          productId: product.id,
+        });
 
         if (result.count > 0) {
           const completedAt = new Date().toISOString();
@@ -125,7 +133,7 @@ export function OnboardingPageClient() {
         setIsGeneratingBatch(false);
       }
     },
-    [completeOnboarding, products, router],
+    [completeOnboarding, product, products, router],
   );
 
   return (
@@ -152,6 +160,7 @@ export function OnboardingPageClient() {
           description="Upload the creator clips you already have. Each saved clip becomes a possible first half of an ad."
           emptyDescription="Upload Hook/UGC clips and keep this page open while ClipStitchr normalizes and scores them."
           emptyTitle="No Hook/UGC clips ready yet"
+          productId={product?.id}
           reviewTitle="Review Hook/UGC scores"
           title="Upload Hook/UGC clips"
           onContinue={() => setStep("demo-upload")}

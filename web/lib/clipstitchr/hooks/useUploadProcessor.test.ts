@@ -153,20 +153,20 @@ describe("useUploadProcessor", () => {
     expect(mocks.queueUploadVideoWorkerFallback).not.toHaveBeenCalled();
   });
 
-  it("requires a product before processing demo uploads", async () => {
-    const state = useUploadProcessor({ initialClipType: "demo" });
+  it("requires a product before processing video uploads", async () => {
+    const state = useUploadProcessor({});
 
     await state.processFiles([createVideoFile()]);
 
     expect(mocks.useStateSetter).toHaveBeenCalledWith(
-      "Choose a product before uploading demo videos.",
+      "Choose a product before uploading videos.",
     );
     expect(mocks.normalizeUploadedVideo).not.toHaveBeenCalled();
   });
 
   it("links demo uploads to the selected product", async () => {
     const state = useUploadProcessor({
-      demoProductId: " product_1 ",
+      productId: " product_1 ",
       initialClipType: "demo",
     });
     const file = createVideoFile("demo.mov");
@@ -190,7 +190,7 @@ describe("useUploadProcessor", () => {
   });
 
   it("rejects upload batches over the clip limit", async () => {
-    const state = useUploadProcessor({});
+    const state = useUploadProcessor({ productId: "product_1" });
     const files = Array.from({ length: 21 }, (_, index) =>
       createVideoFile(`clip-${index}.mp4`),
     );
@@ -205,7 +205,7 @@ describe("useUploadProcessor", () => {
 
   it("normalizes, uploads, analyzes, and saves video uploads in the browser path", async () => {
     const onClipSaved = vi.fn();
-    const state = useUploadProcessor({ onClipSaved });
+    const state = useUploadProcessor({ onClipSaved, productId: "product_1" });
     const file = createVideoFile();
 
     await state.processFiles([file]);
@@ -227,6 +227,13 @@ describe("useUploadProcessor", () => {
       posterBlob: expect.any(Blob),
       videoObject,
     });
+    expect(mocks.createBrowserUploadVideoClipSaveArgs).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clipId: "clip_1",
+        clipType: "ugc",
+        productId: "product_1",
+      }),
+    );
     expect(mocks.saveClip).toHaveBeenCalledWith({
       id: "clip_1",
       name: "Analyzed clip",
@@ -241,7 +248,7 @@ describe("useUploadProcessor", () => {
     mocks.normalizeUploadedVideo.mockRejectedValueOnce(
       new Error("unsupported browser codec"),
     );
-    const state = useUploadProcessor({ onClipSaved });
+    const state = useUploadProcessor({ onClipSaved, productId: "product_1" });
     const file = createVideoFile();
 
     await state.processFiles([file]);
@@ -251,7 +258,7 @@ describe("useUploadProcessor", () => {
       clipType: "ugc",
       file,
       layout: undefined,
-      productId: undefined,
+      productId: "product_1",
     });
     expect(mocks.saveClip).not.toHaveBeenCalled();
     expect(onClipSaved).toHaveBeenCalledTimes(1);
@@ -261,7 +268,7 @@ describe("useUploadProcessor", () => {
     mocks.analyzeNormalizedVideoUpload.mockRejectedValueOnce(
       new Error("analysis down"),
     );
-    const state = useUploadProcessor({});
+    const state = useUploadProcessor({ productId: "product_1" });
 
     await state.processFiles([createVideoFile()]);
 
@@ -282,7 +289,7 @@ describe("useUploadProcessor", () => {
 
   it("queues wide demo uploads to the worker background layout", async () => {
     const state = useUploadProcessor({
-      demoProductId: "product_1",
+      productId: "product_1",
       initialClipType: "demo",
     });
     const file = createVideoFile("wide-demo.mp4");

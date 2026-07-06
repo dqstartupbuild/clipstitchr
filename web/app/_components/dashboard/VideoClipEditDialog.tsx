@@ -111,9 +111,9 @@ export function VideoClipEditDialog({
       : "",
   );
   const musicState = useVideoClipDetailsMusic({ clip, musicEditor });
-  const shouldShowProductFields = clip.clipType === "demo";
+  const shouldShowProductDescription = clip.clipType === "demo";
   const shouldShowPersonFields = clip.clipType === "ugc";
-  const shouldShowProductSelect = shouldShowProductFields && products.length > 0;
+  const shouldShowProductSelect = products.length > 0;
   const trimmedName = name.trim();
   const currentMetadata: AssetMetadataUpdate = {
     locationDescription: locationDescription.trim(),
@@ -125,10 +125,10 @@ export function VideoClipEditDialog({
       ? outfitDescription.trim()
       : undefined,
     poseDescription: poseDescription.trim(),
-    productDescription: shouldShowProductFields
+    productDescription: shouldShowProductDescription
       ? productDescription.trim()
       : undefined,
-    ...(shouldShowProductFields && shouldShowProductSelect ? { productId } : {}),
+    ...(shouldShowProductSelect ? { productId } : {}),
     tags: normalizeAssetTagsWithRequiredTag(tags, clip.clipType),
     videoDescription: videoDescription.trim(),
   };
@@ -360,7 +360,7 @@ export function VideoClipEditDialog({
                 ) : null}
                 <label className="block md:col-span-2">
                   <span className="text-sm font-semibold text-text-primary">
-                    {shouldShowProductFields
+                    {shouldShowProductDescription
                       ? "Demo description"
                       : "Video description"}
                   </span>
@@ -373,7 +373,7 @@ export function VideoClipEditDialog({
                     }
                   />
                 </label>
-                {shouldShowProductFields ? (
+                {shouldShowProductDescription ? (
                   <label className="block md:col-span-2">
                     <span className="text-sm font-semibold text-text-primary">
                       Product description
@@ -420,7 +420,7 @@ export function VideoClipEditDialog({
                 ) : null}
                 <label className="block">
                   <span className="text-sm font-semibold text-text-primary">
-                    {shouldShowProductFields ? "Demo action" : "Pose or action"}
+                    {shouldShowProductDescription ? "Demo action" : "Pose or action"}
                   </span>
                   <textarea
                     value={poseDescription}

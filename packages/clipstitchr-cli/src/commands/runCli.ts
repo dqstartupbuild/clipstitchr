@@ -124,6 +124,7 @@ export async function runCli(argv: string[]) {
   stitchr
     .command("batch")
     .description("Start a Stitchr batch")
+    .option("--product <id>", "Use this product ID")
     .option("--sound <id>", "Use a saved sound ID")
     .option("--template <id>", "Use a saved Stitch template ID")
     .option("--time-zone <name>", "Use this time zone for today's batch")

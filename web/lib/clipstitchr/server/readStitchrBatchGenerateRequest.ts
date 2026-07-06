@@ -8,6 +8,7 @@ type StitchrBatchGenerateRequest = {
   stitchrTextColorChoice?: AutomationStitchrColorChoice;
   stitchrTextStrokeColorChoice?: AutomationStitchrColorChoice;
   stitchrTextStyleChoice?: AutomationStitchrTextStyleChoice;
+  productId?: string;
   soundTrackId?: string;
   templateId?: string;
   timeZone?: string;
@@ -33,10 +34,13 @@ export async function readStitchrBatchGenerateRequest(
     stitchrTextColorChoice,
     stitchrTextStrokeColorChoice,
     stitchrTextStyleChoice,
+    productId,
     soundTrackId,
     templateId,
     timeZone,
   } = body as Record<string, unknown>;
+  const normalizedProductId =
+    typeof productId === "string" ? productId.trim() : "";
   const normalizedSoundTrackId =
     typeof soundTrackId === "string" ? soundTrackId.trim() : "";
   const normalizedTemplateId =
@@ -72,6 +76,7 @@ export async function readStitchrBatchGenerateRequest(
           ),
         }
       : {}),
+    ...(normalizedProductId ? { productId: normalizedProductId } : {}),
     ...(normalizedTemplateId ? { templateId: normalizedTemplateId } : {}),
     ...(normalizedSoundTrackId ? { soundTrackId: normalizedSoundTrackId } : {}),
     ...(normalizedTimeZone ? { timeZone: normalizedTimeZone } : {}),
