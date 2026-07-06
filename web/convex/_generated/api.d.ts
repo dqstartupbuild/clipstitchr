@@ -143,6 +143,7 @@ import type * as mediaWorkerLaunch from "../mediaWorkerLaunch.js";
 import type * as normalizeQuickEditRemoveRanges from "../normalizeQuickEditRemoveRanges.js";
 import type * as notifications from "../notifications.js";
 import type * as photoAssets from "../photoAssets.js";
+import type * as postBridgePostProductMappingBackfills from "../postBridgePostProductMappingBackfills.js";
 import type * as postBridgePostProductMappings from "../postBridgePostProductMappings.js";
 import type * as postBridgeSettings from "../postBridgeSettings.js";
 import type * as productPreferences from "../productPreferences.js";
@@ -397,6 +398,7 @@ declare const fullApi: ApiFromModules<{
   normalizeQuickEditRemoveRanges: typeof normalizeQuickEditRemoveRanges;
   notifications: typeof notifications;
   photoAssets: typeof photoAssets;
+  postBridgePostProductMappingBackfills: typeof postBridgePostProductMappingBackfills;
   postBridgePostProductMappings: typeof postBridgePostProductMappings;
   postBridgeSettings: typeof postBridgeSettings;
   productPreferences: typeof productPreferences;

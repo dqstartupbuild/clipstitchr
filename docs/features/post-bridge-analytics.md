@@ -57,6 +57,7 @@ hours` and `Last 12 months` with the same behavior.
 - `web/app/dashboard/analytics/PostBridgeAnalyticsResultRow.tsx`
 - `web/app/dashboard/analytics/PostBridgeAnalyticsMetricCell.tsx`
 - `web/convex/postBridgePostProductMappings.ts`
+- `web/convex/postBridgePostProductMappingBackfills.ts`
 - `web/lib/clipstitchr/server/postBridge/filterPostBridgeAnalyticsByPostResultIds.ts`
 - `web/lib/clipstitchr/server/postBridge/listPostBridgePostResults.ts`
 - `web/lib/clipstitchr/types/PostBridgeAnalyticsTimeRange.ts`
@@ -68,3 +69,8 @@ hours` and `Last 12 months` with the same behavior.
 - `web/lib/clipstitchr/utils/getPostBridgeAnalyticsTotals.ts`
 - `web/lib/clipstitchr/utils/postBridgeAnalyticsTimeRangeOptions.ts`
 - `web/lib/clipstitchr/utils/defaultPostBridgeAnalyticsTimeRange.ts`
+
+Legacy posts scheduled before product-scoped Analytics existed need the
+operator-only `postBridgePostProductMappingBackfills` backfill documented in
+`docs/features/post-bridge-scheduling.md` before their analytics can be matched
+to the active product.

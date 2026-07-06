@@ -323,6 +323,13 @@ idempotent. They are intentionally not exposed in the UI and are not
 rate-limited; operators should run them in bounded pages and stop when
 `isDone` is `true`.
 
+The Post Bridge product mapping backfill in
+`postBridgePostProductMappingBackfills.ts` follows the same operator-only shape:
+it is gated by `RATE_LIMIT_API_SECRET`, paginated by source table, idempotent,
+and not exposed through a user-triggered route. It is intentionally not
+rate-limited; operators should run the `stitch` and `swipe` source types in
+bounded pages until `isDone` is `true`.
+
 Public copied blog images served by `GET /blog-images/[...path]` are
 intentionally not per-request rate-limited because they are public article
 assets that need to be crawlable and cacheable. Abuse protection happens before
