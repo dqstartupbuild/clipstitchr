@@ -66,6 +66,11 @@ Clipr scripts/scene plans, and worker lock/idempotency internals. List search
 uses precomputed `searchText` fields where a compact table omits searchable
 source text.
 
+`activeWorkerJobs.summary` reads active provider/media summaries and groups
+active CLI Stitchr/Swipr batch tasks from `automationTaskSummaries` by run ID.
+This shows terminal-started batch progress in the existing dashboard job tray
+without subscribing to full automation task documents.
+
 Video clip cards derive `libraryKind` from the source clip when an older source
 row does not yet store that field. This keeps `videoClipCards` rebuilds usable
 for local and production deployments that have older upload data.

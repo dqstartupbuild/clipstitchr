@@ -51,7 +51,9 @@ reads across every mounted subscription.
   It loads `notifications.listRecent` only while the popover is open.
 - `ActiveWorkerJobsBanner` reads `activeWorkerJobs.summary`, a single bounded
   summary query, instead of subscribing to provider and media job lists
-  separately.
+  separately. The summary also folds in active CLI Stitchr/Swipr batch task
+  groups from automation task summaries so terminal-started batches show
+  progress in the same dashboard banner.
 - `MusicSelectorButton` loads `sharedMusicTracks.list` only while the picker is
   open.
 - Clip category queries use `videoClips.libraryKind` with owner/status indexes

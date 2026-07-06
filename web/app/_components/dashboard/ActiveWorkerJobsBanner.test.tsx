@@ -52,9 +52,9 @@ describe("ActiveWorkerJobsBanner", () => {
           status: "queued",
         },
         {
-          id: "media_1",
-          jobType: "upload-video-analysis",
-          progress: 0.68,
+          id: "stitchr_batch_1",
+          jobType: "stitchr-batch",
+          progress: 0.5,
           stage: "running",
           status: "running",
         },
@@ -67,7 +67,7 @@ describe("ActiveWorkerJobsBanner", () => {
     expect(mocks.useQuery).toHaveBeenCalledWith("activeWorkerJobs.summary", {});
     expect(markup).toContain("Background work is running");
     expect(markup).toContain("Swapr generation queued");
-    expect(markup).toContain("Upload analysis 68%");
+    expect(markup).toContain("Stitchr Batch 50%");
     expect(markup).toContain("View jobs");
   });
 });

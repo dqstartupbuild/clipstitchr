@@ -65,6 +65,7 @@ import type * as cliSwipr_planCliSwiprBatch from "../cliSwipr/planCliSwiprBatch.
 import type * as cliUploads_getCliUploadStatus from "../cliUploads/getCliUploadStatus.js";
 import type * as cliprJobs from "../cliprJobs.js";
 import type * as cliprPreferences from "../cliprPreferences.js";
+import type * as createActiveAutomationBatchJobSummary from "../createActiveAutomationBatchJobSummary.js";
 import type * as createAutomationRunSummaryFields from "../createAutomationRunSummaryFields.js";
 import type * as createAutomationTaskSummaryFields from "../createAutomationTaskSummaryFields.js";
 import type * as createCliprJobSummaryFields from "../createCliprJobSummaryFields.js";
@@ -91,6 +92,10 @@ import type * as deleteSwiprBackgroundCard from "../deleteSwiprBackgroundCard.js
 import type * as deleteVideoClipCard from "../deleteVideoClipCard.js";
 import type * as deleteWorkerJobSummary from "../deleteWorkerJobSummary.js";
 import type * as getActiveWorkerJobSummary from "../getActiveWorkerJobSummary.js";
+import type * as getAutomationBatchJobProgress from "../getAutomationBatchJobProgress.js";
+import type * as getAutomationBatchJobStage from "../getAutomationBatchJobStage.js";
+import type * as getAutomationBatchJobStatus from "../getAutomationBatchJobStatus.js";
+import type * as getAutomationBatchJobType from "../getAutomationBatchJobType.js";
 import type * as getAutomationPreferenceForProduct from "../getAutomationPreferenceForProduct.js";
 import type * as getAutomationProductScopeKey from "../getAutomationProductScopeKey.js";
 import type * as getAutomationRunHasIncompleteTasks from "../getAutomationRunHasIncompleteTasks.js";
@@ -128,6 +133,7 @@ import type * as getVideoClipLibraryKind from "../getVideoClipLibraryKind.js";
 import type * as getVideoClipNotificationCopy from "../getVideoClipNotificationCopy.js";
 import type * as isWithinAutomationGlobalWindow from "../isWithinAutomationGlobalWindow.js";
 import type * as libraryCounts from "../libraryCounts.js";
+import type * as listActiveAutomationBatchJobSummaries from "../listActiveAutomationBatchJobSummaries.js";
 import type * as listActiveWorkerJobSummaries from "../listActiveWorkerJobSummaries.js";
 import type * as listProductsForOwnerByIds from "../listProductsForOwnerByIds.js";
 import type * as listRecentAvatarPhotoAssets from "../listRecentAvatarPhotoAssets.js";
@@ -319,6 +325,7 @@ declare const fullApi: ApiFromModules<{
   "cliUploads/getCliUploadStatus": typeof cliUploads_getCliUploadStatus;
   cliprJobs: typeof cliprJobs;
   cliprPreferences: typeof cliprPreferences;
+  createActiveAutomationBatchJobSummary: typeof createActiveAutomationBatchJobSummary;
   createAutomationRunSummaryFields: typeof createAutomationRunSummaryFields;
   createAutomationTaskSummaryFields: typeof createAutomationTaskSummaryFields;
   createCliprJobSummaryFields: typeof createCliprJobSummaryFields;
@@ -345,6 +352,10 @@ declare const fullApi: ApiFromModules<{
   deleteVideoClipCard: typeof deleteVideoClipCard;
   deleteWorkerJobSummary: typeof deleteWorkerJobSummary;
   getActiveWorkerJobSummary: typeof getActiveWorkerJobSummary;
+  getAutomationBatchJobProgress: typeof getAutomationBatchJobProgress;
+  getAutomationBatchJobStage: typeof getAutomationBatchJobStage;
+  getAutomationBatchJobStatus: typeof getAutomationBatchJobStatus;
+  getAutomationBatchJobType: typeof getAutomationBatchJobType;
   getAutomationPreferenceForProduct: typeof getAutomationPreferenceForProduct;
   getAutomationProductScopeKey: typeof getAutomationProductScopeKey;
   getAutomationRunHasIncompleteTasks: typeof getAutomationRunHasIncompleteTasks;
@@ -382,6 +393,7 @@ declare const fullApi: ApiFromModules<{
   getVideoClipNotificationCopy: typeof getVideoClipNotificationCopy;
   isWithinAutomationGlobalWindow: typeof isWithinAutomationGlobalWindow;
   libraryCounts: typeof libraryCounts;
+  listActiveAutomationBatchJobSummaries: typeof listActiveAutomationBatchJobSummaries;
   listActiveWorkerJobSummaries: typeof listActiveWorkerJobSummaries;
   listProductsForOwnerByIds: typeof listProductsForOwnerByIds;
   listRecentAvatarPhotoAssets: typeof listRecentAvatarPhotoAssets;

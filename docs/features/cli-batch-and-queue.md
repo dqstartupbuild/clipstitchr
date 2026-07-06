@@ -26,6 +26,12 @@ durable CLI planner. This uses the user's saved dashboard batch settings for
 Pexels packs, draft count, and text styling. The CLI can pass a product ID, but
 it does not ask for manual slide details because the agreed UX is batch-only.
 
+CLI-started Stitchr and Swipr batches appear in the dashboard background-work
+banner and job tray while they are active. The banner reuses the same active job
+UI as uploads, but the rows are read from automation task summaries and grouped
+by batch run. Progress is the share of batch tasks that have reached a terminal
+state.
+
 `clipstitchr queue stitch` adds a finished Stitch to the user's Post Bridge
 queue. If no Stitch ID is passed, the CLI lists ready, unposted Stitches and
 lets the user pick one. The command never asks for a date or time; the backend
@@ -41,6 +47,12 @@ web/app/api/cli/stitchr/batches/route.ts
 web/app/api/cli/swipr/batches/route.ts
 web/app/api/cli/queue/stitches/route.ts
 
+web/convex/createActiveAutomationBatchJobSummary.ts
+web/convex/getAutomationBatchJobProgress.ts
+web/convex/getAutomationBatchJobStage.ts
+web/convex/getAutomationBatchJobStatus.ts
+web/convex/getAutomationBatchJobType.ts
+web/convex/listActiveAutomationBatchJobSummaries.ts
 web/convex/cliLibrary/
 web/convex/cliPostBridge/
 web/convex/cliRateLimits/
@@ -51,6 +63,16 @@ The CLI routes use the existing machine bearer token from
 `getCliSessionFromRequest`. Convex helpers stay owner-scoped and require the
 server rate-limit secret, so a CLI token can only read or update the signed-in
 owner's records.
+
+`activeWorkerJobs.summary` combines active provider jobs, media jobs, and active
+CLI batch automation task groups. This keeps CLI-started batch progress visible
+without adding another dashboard subscription.
+
+## Notifications
+
+Completed Swipr CLI batches use the normal automation-run notification path.
+Completed Stitchr Batch tasks use the existing Stitchr Batch notification path,
+so the user gets a notification when the whole batch finishes.
 
 ## Queue Behavior
 

@@ -43,6 +43,7 @@ web/app/_components/dashboard/ActiveWorkerJobsTray.tsx
 Active job labels are shared through:
 
 ```text
+web/convex/listActiveAutomationBatchJobSummaries.ts
 web/lib/clipstitchr/types/ActiveWorkerJob.ts
 web/lib/clipstitchr/constants/activeWorkerJobLabels.ts
 web/lib/clipstitchr/utils/getActiveWorkerJobLabel.ts
