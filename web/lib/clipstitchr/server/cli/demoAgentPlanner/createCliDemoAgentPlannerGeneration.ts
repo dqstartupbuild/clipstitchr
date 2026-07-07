@@ -5,7 +5,7 @@ import { parseCliDemoAgentPlannerAction } from "@/lib/clipstitchr/server/cli/dem
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createTextWritingPredictionInput } from "@/lib/clipstitchr/server/createTextWritingPredictionInput";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
-import { getTextWritingModelId } from "@/lib/clipstitchr/server/getTextWritingModelId";
+import { getCliDemoAgentPlannerModelId } from "@/lib/clipstitchr/server/getCliDemoAgentPlannerModelId";
 
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
@@ -16,7 +16,7 @@ export async function createCliDemoAgentPlannerGeneration({
   replicate: ReplicateClient;
   request: CliDemoAgentPlanRequest;
 }) {
-  const providerModel = getTextWritingModelId();
+  const providerModel = getCliDemoAgentPlannerModelId();
   const prediction = await replicate.predictions.create({
     model: providerModel,
     input: createTextWritingPredictionInput({

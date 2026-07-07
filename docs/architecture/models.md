@@ -51,16 +51,14 @@ Default: `anthropic/claude-sonnet-4.6`
 
 | Model ID | Status | Workflow |
 | --- | --- | --- |
-| `anthropic/claude-sonnet-4.6` | Default | Sends `prompt`, `system_prompt`, and `max_tokens` to Replicate for Clipr hook/script generation, Swipr auto-text, Stitchr auto-text, provider-worker Clipr script jobs, and automation text drafts. |
+| `anthropic/claude-sonnet-4.6` | Default | Sends `prompt`, `system_prompt`, and `max_tokens` to Replicate for Clipr hook/script generation, Swipr auto-text, Stitchr auto-text, provider-worker Clipr script jobs, automation text drafts, and CLI AI walkthrough guide generation. |
 | `anthropic/claude-opus-4.6` | Supported | Uses the same Replicate input schema as Sonnet 4.6 for higher-cost writing tests. |
 
 Claude text models on Replicate use `max_tokens`, while the older OpenAI text
 path used `max_completion_tokens`. The shared
 `createTextWritingPredictionInput` helper also keeps Claude requests at
-Replicate's 1024-token minimum, so small JSON planning calls such as the CLI demo
-agent can ask for compact output without sending an invalid provider payload.
-Keep new writing calls on that helper so future tools inherit the correct
-provider input shape.
+Replicate's 1024-token minimum. Keep new writing calls on that helper so future
+tools inherit the correct provider input shape.
 
 ## Other AI Usage
 
@@ -72,6 +70,7 @@ provider input shape.
 | Stitch score analysis | `REPLICATE_UPLOAD_VIDEO_ANALYSIS_MODEL_ID`; backup `REPLICATE_UPLOAD_VIDEO_FALLBACK_MODEL_ID` | `google/gemini-3-flash`; backup `lucataco/qwen2-vl-7b-instruct:bf57361c75677fc33d480d0c5f02926e621b2caa2000347cb74aeae9d2ca07ee` | Scores saved Stitches from the rendered MP4 when available. If Gemini fails, tries the Qwen video fallback before falling back to poster/context analysis. |
 | Product enrichment | `PRODUCT_ENRICHMENT_MODEL_ID` | `openai/gpt-4.1` | Generates hidden product strategy metadata when saving Settings products. |
 | Clipr hook, script, Swipr auto-text, and Stitchr auto-text | `TEXT_WRITING_MODEL_ID`; legacy `CLIPR_HOOK_MODEL_ID` fallback | `anthropic/claude-sonnet-4.6` | Text generation returns structured JSON or short-form copy. `anthropic/claude-opus-4.6` is also supported for higher-cost writing tests. |
+| CLI demo agent planning | `CLI_DEMO_AGENT_PLANNER_MODEL_ID` | `openai/gpt-5-mini` | Proposes one safe browser-action DSL item from simplified page observation. If the provider call fails, the CLI switches to the deterministic local planner for the rest of that run. |
 | Clipr avatar still image | `AVATAR_PHOTO_MODEL_ID` | `openai/gpt-image-2` | Uses the same avatar photo generation model, prompt builder, and input parameters as avatar photo generation, but creates one source still for the full-script avatar video. |
 | Clipr avatar video | `CLIPR_AVATAR_VIDEO_MODEL_ID` | `prunaai/p-video-avatar` | Generates the full-script talking avatar video. When TTS is enabled, Clipr passes generated speech audio into this model. |
 | Clipr visual video | `CLIPR_VISUAL_VIDEO_MODEL_ID` | `kwaivgi/kling-v3-video` | Generates silent Reaction and B-roll clips. `google/veo-3.1` is supported as an override. Unsupported or stale model values fall back to Kling. |

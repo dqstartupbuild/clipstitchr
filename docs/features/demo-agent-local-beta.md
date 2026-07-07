@@ -92,11 +92,13 @@ planner remains the default. With `--ai-planner`, the CLI asks
 the simplified observation only. The server parser rejects unsupported action
 types and CSS selectors, and the CLI policy validator still decides whether the
 proposed action can run. The endpoint uses the shared text-writing provider
-payload helper, including the Replicate Anthropic token minimum guard, before it
-asks the configured writing model for the next action. Planner prompts include
-the action keys already tried during the current step, and the model is told not
-to repeat screenshots or other actions that have already failed to move the
-page forward.
+payload helper, but selects a dedicated planner model through
+`CLI_DEMO_AGENT_PLANNER_MODEL_ID`, defaulting to `openai/gpt-5-mini`. If that
+provider call fails, the CLI logs the provider error once and uses the
+deterministic local planner for the rest of the run. Planner prompts include the
+action keys already tried during the current step, and the model is told not to
+repeat screenshots or other actions that have already failed to move the page
+forward.
 
 ## One-Command AI Recording
 

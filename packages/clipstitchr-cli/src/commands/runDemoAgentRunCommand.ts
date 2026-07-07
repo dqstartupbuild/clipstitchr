@@ -5,6 +5,7 @@ import { ensureCredentialsOrLogin } from "./ensureCredentialsOrLogin.js";
 import { planDemoAgentActionWithAi } from "../api/planDemoAgentActionWithAi.js";
 import { readProjectConfig } from "../config/readProjectConfig.js";
 import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
+import { createDemoAgentPlannerWithFallback } from "../demoAgent/createDemoAgentPlannerWithFallback.js";
 import { readDemoAgentPolicy } from "../demoAgent/readDemoAgentPolicy.js";
 import { runDemoAgentDryRun } from "../demoAgent/runDemoAgentDryRun.js";
 import { runDemoAgentRecording } from "../demoAgent/runDemoAgentRecording.js";
@@ -73,8 +74,18 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
     ? await ensureCredentialsOrLogin(apiBaseUrl)
     : undefined;
   const planner = plannerCredentials
-    ? (plannerInput: Parameters<typeof planDemoAgentActionWithAi>[1]) =>
-        planDemoAgentActionWithAi(plannerCredentials, plannerInput)
+    ? createDemoAgentPlannerWithFallback({
+        aiPlanner: (plannerInput) =>
+          planDemoAgentActionWithAi(plannerCredentials, plannerInput),
+        onFallback: (error) => {
+          logWarning(
+            "AI planner failed. Using the local planner for the rest of this run.",
+          );
+          logInfo(
+            error instanceof Error ? error.message : "Unknown planner error.",
+          );
+        },
+      })
     : undefined;
 
   try {

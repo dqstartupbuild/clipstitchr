@@ -38,6 +38,10 @@ Already implemented:
 - Opt-in `--ai-planner` mode that calls `POST /api/cli/demo-agent/plan` for one
   model-proposed action at a time, after rate limiting and before local policy
   validation.
+- Dedicated `CLI_DEMO_AGENT_PLANNER_MODEL_ID` support for model-backed browser
+  planning, defaulting to `openai/gpt-5-mini`.
+- CLI fallback from model-backed planning to the deterministic local planner
+  after the first provider failure in a run.
 - Guarded local recording from an agent run with mandatory review before upload.
 - Safe optional `walkthrough.agentRun` metadata parsing.
 
@@ -365,6 +369,11 @@ The executor should support only a narrow action set:
 Every action must be checked by the policy layer before execution. The agent
 planner should propose actions, but the policy layer decides what is allowed.
 
+Model-backed planning uses `CLI_DEMO_AGENT_PLANNER_MODEL_ID`, which defaults to
+`openai/gpt-5-mini`. The route still consumes planner quota before calling the
+provider. If the provider call fails during a CLI run, the CLI logs the error
+once and uses the deterministic local planner for the rest of that run.
+
 ### Stuck Detection
 
 Stop the run when any of these happen:
@@ -470,7 +479,8 @@ Required before the autonomous agent ships:
   unsupported action types, selector rejection, approved test-value keys, and
   policy rejection before execution.
 - `--ai-planner` uses the same action parser and local policy validator after
-  the backend returns one model-proposed action.
+  the backend returns one model-proposed action, and CLI tests cover fallback to
+  the deterministic planner after a provider failure.
 - Playwright fixture app tests for dashboard walkthrough, auth-required flow,
   modal flow, long loading flow, stuck loop, 404 route, and external redirect
   are now covered by CLI-local tests. Full-loop file-upload coverage should be

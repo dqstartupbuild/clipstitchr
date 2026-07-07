@@ -5,6 +5,7 @@ import { planDemoAgentActionWithAi } from "../api/planDemoAgentActionWithAi.js";
 import { readProjectConfig } from "../config/readProjectConfig.js";
 import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
+import { createDemoAgentPlannerWithFallback } from "../demoAgent/createDemoAgentPlannerWithFallback.js";
 import { runDemoAgentRecording } from "../demoAgent/runDemoAgentRecording.js";
 import { writeDemoWalkthroughGuide } from "../demoGuide/writeDemoWalkthroughGuide.js";
 import { detectProject } from "../project/detectProject.js";
@@ -116,8 +117,18 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
       flows,
       startPath: startUrl.pathname,
     });
-    const planner = (plannerInput: Parameters<typeof planDemoAgentActionWithAi>[1]) =>
-      planDemoAgentActionWithAi(credentials, plannerInput);
+    const planner = createDemoAgentPlannerWithFallback({
+      aiPlanner: (plannerInput) =>
+        planDemoAgentActionWithAi(credentials, plannerInput),
+      onFallback: (error) => {
+        logWarning(
+          "AI planner failed. Using the local planner for the rest of this run.",
+        );
+        logInfo(
+          error instanceof Error ? error.message : "Unknown planner error.",
+        );
+      },
+    });
 
     logStep("Recording the demo with the guarded AI agent.");
     const recording = await runDemoAgentRecording({

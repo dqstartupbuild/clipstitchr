@@ -83,7 +83,7 @@ function createGeneration() {
       target: { name: "Upload", role: "button" },
       type: "click",
     },
-    providerModel: "anthropic/claude-sonnet-4.6",
+    providerModel: "openai/gpt-5-mini",
     providerPredictionId: "prediction_123",
   };
 }
