@@ -199,6 +199,11 @@ predictable and avoids an AI agent clicking through private or destructive flows
 without explicit guardrails. `--no-guide` records one free-form take, and
 `--guide <id-or-path>` reuses a guide by saved ID or JSON file path.
 
+AI-assisted guide generation and the future autonomous browser agent are
+planned in `docs/features/demo-ai-guide-and-agent-plan.md`. The current shipped
+CLI intentionally keeps recording manual so the user stays in control while the
+guide, click, and timing metadata mature.
+
 Recording duration is guidance, not a hard stop. The CLI saves
 `recommendedDurationSeconds` and `longRecordingWarningSeconds` in
 `.clipstitchr.yml`; older `durationLimitSeconds` values are read as the

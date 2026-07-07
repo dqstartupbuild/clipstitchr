@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import type { DemoWalkthroughGuide } from "./DemoWalkthroughGuide.js";
 import { demoWalkthroughGuideVersion } from "./demoWalkthroughGuideVersion.js";
+import { readDemoWalkthroughGuideSource } from "./readDemoWalkthroughGuideSource.js";
 import { readDemoWalkthroughGuideStep } from "./readDemoWalkthroughGuideStep.js";
 import { readDemoWalkthroughGuideString } from "./readDemoWalkthroughGuideString.js";
 
@@ -39,7 +40,7 @@ export async function readDemoWalkthroughGuide(filePath: string) {
     id,
     productId: readDemoWalkthroughGuideString(guide.productId),
     productName: readDemoWalkthroughGuideString(guide.productName),
-    source: "cli-template",
+    source: readDemoWalkthroughGuideSource(guide.source),
     steps,
     title,
     updatedAt,

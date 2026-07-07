@@ -82,9 +82,11 @@ clipstitchr demo make --no-upload
 }
 ```
 
-Guide files live under `.clipstitchr/demo-guides`. The `.clipstitchr` directory
-should stay ignored by Git because it can also contain recordings and browser
-login state.
+Guide files live under `.clipstitchr/demo-guides`. The `source` value is
+`cli-template` for local deterministic guides, `ai-assisted` for future
+ClipStitchr-generated guides, and `agent-authored` for future imported agent
+instructions. The `.clipstitchr` directory should stay ignored by Git because it
+can also contain recordings and browser login state.
 
 ## Upload Metadata
 
@@ -135,6 +137,9 @@ The walkthrough guide is the shared contract for every phase:
 The same `walkthrough` upload metadata works for all phases. The difference is
 who advances the step: the user in Phase 2, an AI-written checklist in Phase 3,
 and an autonomous browser driver in Phase 4.
+
+The full Phase 3 and Phase 4 build plan lives in
+`docs/features/demo-ai-guide-and-agent-plan.md`.
 
 ## Full Agent Guardrails
 
@@ -187,6 +192,7 @@ and media jobs already understand.
 ```text
 packages/clipstitchr-cli/src/demoGuide/
   DemoWalkthroughGuide.ts
+  DemoWalkthroughGuideSource.ts
   DemoWalkthroughStep.ts
   DemoWalkthroughTiming.ts
   DemoWalkthroughUploadMetadata.ts
@@ -198,6 +204,7 @@ packages/clipstitchr-cli/src/demoGuide/
   listDemoWalkthroughGuides.ts
   printDemoWalkthroughGuide.ts
   readDemoWalkthroughGuide.ts
+  readDemoWalkthroughGuideSource.ts
   readDemoWalkthroughGuideStep.ts
   readDemoWalkthroughGuideString.ts
   resolveDemoWalkthroughGuide.ts

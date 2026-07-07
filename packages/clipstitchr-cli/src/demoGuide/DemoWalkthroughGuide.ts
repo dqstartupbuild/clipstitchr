@@ -1,4 +1,5 @@
 import type { DemoWalkthroughStep } from "./DemoWalkthroughStep.js";
+import type { DemoWalkthroughGuideSource } from "./DemoWalkthroughGuideSource.js";
 
 export type DemoWalkthroughGuide = {
   appType?: string;
@@ -9,7 +10,7 @@ export type DemoWalkthroughGuide = {
   id: string;
   productId?: string;
   productName?: string;
-  source: "cli-template";
+  source: DemoWalkthroughGuideSource;
   steps: DemoWalkthroughStep[];
   title: string;
   updatedAt: string;
