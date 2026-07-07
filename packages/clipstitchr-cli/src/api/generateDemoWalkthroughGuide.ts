@@ -1,9 +1,11 @@
 import type { ClipstitchrCredentials } from "../config/ClipstitchrCredentials.js";
 import type { DemoWalkthroughGuide } from "../demoGuide/DemoWalkthroughGuide.js";
+import type { ScannedAppContext } from "../project/ScannedAppContext.js";
 import type { ScannedFlow } from "../project/ScannedFlow.js";
 import { requestJson } from "./requestJson.js";
 
 type GenerateDemoWalkthroughGuideInput = {
+  appContext?: ScannedAppContext;
   appType: string;
   availableFlows?: ScannedFlow[];
   flowName?: string;

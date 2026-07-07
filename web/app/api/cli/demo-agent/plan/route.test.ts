@@ -57,10 +57,30 @@ function createRequest(body: object) {
 
 function createBody() {
   return {
+    appContext: {
+      projectDirectory: "web",
+      projectType: "web",
+      routes: [
+        { confidence: "low", name: "Show /dashboard/hooks", path: "/dashboard/hooks" },
+      ],
+      workflowHints: [
+        {
+          actions: ["Hooks to learn from", "Save Hook Lab"],
+          buttons: ["Save Hook Lab"],
+          inputs: ["Hooks to learn from", "Hooks to avoid"],
+          routePath: "/dashboard/hooks",
+          sourceFiles: ["app/_components/hooks/ProductHookMemoryFields.tsx"],
+          summary: "Inputs: Hooks to learn from. Buttons: Save Hook Lab",
+          title: "Hooks workflow",
+        },
+      ],
+    },
     approvedTestValueKeys: ["testEmail"],
     attemptedActionKeys: [],
     guide: {
       goal: "Demonstrate running a batch Stitch in Stitchr.",
+      productId: "product_123",
+      productName: "ClipStitchr",
       steps: [
         {
           id: "step-1",
@@ -138,6 +158,15 @@ describe("POST /api/cli/demo-agent/plan", () => {
         approvedTestValueKeys: ["testEmail"],
         guide: expect.objectContaining({
           goal: "Demonstrate running a batch Stitch in Stitchr.",
+          productName: "ClipStitchr",
+        }),
+        appContext: expect.objectContaining({
+          workflowHints: [
+            expect.objectContaining({
+              inputs: ["Hooks to learn from", "Hooks to avoid"],
+              routePath: "/dashboard/hooks",
+            }),
+          ],
         }),
         step: expect.objectContaining({ id: "step-1" }),
       }),

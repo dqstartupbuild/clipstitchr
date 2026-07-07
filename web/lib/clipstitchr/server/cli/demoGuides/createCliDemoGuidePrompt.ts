@@ -65,6 +65,8 @@ export function createCliDemoGuidePrompt({
           "If demo.goal names a visible tool and a matching route exists in availableFlows, build the guide around that route.",
         missingSetup:
           "When the goal depends on existing media, connected accounts, saved clips, generated results, or product setup, make steps that open the relevant page and use visible assets. Do not claim unavailable setup exists.",
+        useAppContext:
+          "Use appContext workflow hints to choose real routes, field labels, and button names from the app. If the user says to add something and appContext lists a matching input, write a step around that visible input and the matching save/create button instead of inventing a new flow.",
       },
       examples: {
         good: [
@@ -91,6 +93,7 @@ export function createCliDemoGuidePrompt({
         inferredPainPoints: product.inferredPainPoints,
       },
       demo: {
+        appContext: request.appContext,
         appType: request.appType,
         availableFlows: request.availableFlows,
         flowName: request.flowName,

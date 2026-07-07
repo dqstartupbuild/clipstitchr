@@ -1,0 +1,9 @@
+export function humanizeAppContextName(value: string) {
+  return value
+    .replace(/\.[jt]sx?$/, "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[-_/]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}

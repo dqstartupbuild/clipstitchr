@@ -35,6 +35,10 @@ whether approval is required before upload. It can also store approved test
 values for safe form typing. `.clipstitchr/` is ignored by Git, so local sample
 paths and test-account notes stay out of the repository.
 
+`clipstitchr demo agent init` also refreshes `.clipstitchr/app-context.json`.
+That file gives the planner source-derived route, field, and button hints before
+the browser run starts.
+
 ## Dry-Run Behavior
 
 The dry-run opens the saved Playwright browser profile, navigates to the guide
@@ -116,7 +120,9 @@ policy if one does not exist, verifies the page in a non-recorded browser,
 records with the model-backed planner, and skips upload prompts by default. The
 generated guide receives scanned route context and is rejected if it asks for
 presenter-only behavior, such as pointing out or highlighting UI without a
-browser action the agent can perform. If the model-backed planner cannot
+browser action the agent can perform. The guide writer and planner also receive
+capped app context from `.clipstitchr/app-context.json`, including source-derived
+inputs and buttons for workflows such as Hook Lab. If the model-backed planner cannot
 continue because required clips, connected accounts, selected assets, generated
 results, or permissions are missing, it can stop with a plain-language reason
 explaining what setup is needed.
@@ -168,7 +174,10 @@ smoke for model-backed planning.
 - `packages/clipstitchr-cli/src/commands/runDemoAgentRunCommand.ts`
 - `packages/clipstitchr-cli/src/commands/runDemoAutoCommand.ts`
 - `packages/clipstitchr-cli/src/commands/runDemoAgentExportLogCommand.ts`
+- `packages/clipstitchr-cli/src/project/scanAndWriteAppContext.ts`
+- `packages/clipstitchr-cli/src/project/scanProjectWorkflowHints.ts`
 - `web/app/api/cli/demo-agent/plan/route.ts`
+- `web/lib/clipstitchr/server/cli/appContext/*`
 - `web/lib/clipstitchr/server/cli/demoAgentPlanner/*`
 - `web/lib/clipstitchr/server/createTextWritingPredictionInput.ts`
 - `web/lib/clipstitchr/server/cli/demoWalkthrough/readCliDemoWalkthroughAgentRunMetadata.ts`

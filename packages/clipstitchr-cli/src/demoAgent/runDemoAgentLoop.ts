@@ -14,6 +14,7 @@ import type { DemoAgentPlanner } from "./DemoAgentPlanner.js";
 import type { DemoAgentPolicy } from "./DemoAgentPolicy.js";
 import type { DemoAgentRunPaths } from "./DemoAgentRunPaths.js";
 import type { DemoAgentValidatedAction } from "./DemoAgentValidatedAction.js";
+import type { ScannedAppContext } from "../project/ScannedAppContext.js";
 import { executeDemoAgentAction } from "./executeDemoAgentAction.js";
 import { getDemoAgentObservationHasNotFoundState } from "./getDemoAgentObservationHasNotFoundState.js";
 import { getDemoAgentRecordingTimeLimitReached } from "./getDemoAgentRecordingTimeLimitReached.js";
@@ -25,6 +26,7 @@ import { writeDemoAgentActionLogEntry } from "./writeDemoAgentActionLogEntry.js"
 import { writeDemoAgentLoopStopEntry } from "./writeDemoAgentLoopStopEntry.js";
 
 export async function runDemoAgentLoop(input: {
+  appContext?: ScannedAppContext;
   guide: DemoWalkthroughGuide;
   initialActionCount?: number;
   initialScreenshotCount?: number;
@@ -181,6 +183,7 @@ export async function runDemoAgentLoop(input: {
       }
 
       const plannedAction = await (input.planner ?? planDemoAgentAction)({
+        appContext: input.appContext,
         guide: input.guide,
         observation,
         policy: input.policy,

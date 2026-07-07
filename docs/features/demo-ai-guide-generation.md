@@ -18,9 +18,9 @@ with the existing `clipstitchr demo make --guide <id>` stepper.
 ## How It Works
 
 The CLI picks the current product, detects the local app type, scans local
-routes, and asks what the demo should show. It sends product, app, selected
-flow, available route context, goal, audience, and desired step count to the web
-API.
+routes, refreshes `.clipstitchr/app-context.json`, and asks what the demo should
+show. It sends product, app, selected flow, available route context, capped app
+workflow context, goal, audience, and desired step count to the web API.
 
 The API verifies the CLI session, checks that the product belongs to the
 session owner, consumes `cliDemoGuideGenerate`,
@@ -39,7 +39,10 @@ For `clipstitchr demo auto`, the CLI asks what the demo should show unless the
 user passes `--goal`. The guide prompt treats that goal as the primary direction
 and prefers matching scanned routes when available, so specific requests stay
 focused on the requested tool or workflow instead of falling back to a generic
-workspace tour.
+workspace tour. App context adds real source-derived labels, so a request to
+add hooks in Hook Lab can become a guide that opens `/dashboard/hooks`, types
+approved examples into `Hooks to learn from`, and saves with `Save Hook Lab`
+when those controls exist.
 
 ## File Tree
 
@@ -50,8 +53,11 @@ workspace tour.
 - `packages/clipstitchr-cli/src/commands/runDemoGuideDeleteCommand.ts`
 - `packages/clipstitchr-cli/src/commands/runDemoGuideExportInstructionsCommand.ts`
 - `packages/clipstitchr-cli/src/api/generateDemoWalkthroughGuide.ts`
+- `packages/clipstitchr-cli/src/project/scanAndWriteAppContext.ts`
+- `packages/clipstitchr-cli/src/project/scanProjectWorkflowHints.ts`
 - `packages/clipstitchr-cli/src/demoGuide/*`
 - `web/app/api/cli/demo-guides/generate/route.ts`
+- `web/lib/clipstitchr/server/cli/appContext/*`
 - `web/lib/clipstitchr/server/cli/demoGuides/*`
 - `web/convex/cliProducts/getCliProductDocument.ts`
 - `web/convex/rateLimiter.ts`

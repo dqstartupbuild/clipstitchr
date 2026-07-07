@@ -23,6 +23,25 @@ function createRequest(
 ): CliDemoGuideGenerateRequest {
   return {
     appType: "web",
+    appContext: {
+      projectDirectory: "web",
+      projectType: "web",
+      routes: [
+        { confidence: "low", name: "Show /dashboard/hooks", path: "/dashboard/hooks" },
+      ],
+      workflowHints: [
+        {
+          actions: ["Hooks to learn from", "Save Hook Lab", "Accept hook"],
+          buttons: ["Save Hook Lab", "Accept hook"],
+          inputs: ["Hooks to learn from", "Hooks to avoid", "Main goal", "Tone"],
+          routePath: "/dashboard/hooks",
+          sourceFiles: ["app/_components/hooks/ProductHookMemoryFields.tsx"],
+          summary:
+            "Inputs: Hooks to learn from, Hooks to avoid. Buttons: Save Hook Lab, Accept hook",
+          title: "Hooks workflow",
+        },
+      ],
+    },
     availableFlows: [
       { confidence: "medium", name: "Open the product", path: "/" },
       { confidence: "medium", name: "Show the main workspace", path: "/dashboard" },
@@ -99,6 +118,10 @@ describe("createCliDemoGuidePrompt", () => {
     expect(prompt.rules.primaryGoal).toContain("demo.goal");
     expect(prompt.rules.routeChoice).toContain("matching route");
     expect(prompt.rules.missingSetup).toContain("existing media");
+    expect(prompt.rules.useAppContext).toContain("field labels");
+    expect(prompt.demo.appContext.workflowHints[0].inputs).toContain(
+      "Hooks to learn from",
+    );
     expect(prompt.demo.availableFlows).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ path: "/dashboard" }),

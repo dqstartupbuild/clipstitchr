@@ -5,6 +5,7 @@ import { ensureCredentialsOrLogin } from "./ensureCredentialsOrLogin.js";
 import { planDemoAgentActionWithAi } from "../api/planDemoAgentActionWithAi.js";
 import { readProjectConfig } from "../config/readProjectConfig.js";
 import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
+import { writeProjectConfig } from "../config/writeProjectConfig.js";
 import { createDemoAgentPlannerWithFallback } from "../demoAgent/createDemoAgentPlannerWithFallback.js";
 import { readDemoAgentPolicy } from "../demoAgent/readDemoAgentPolicy.js";
 import { runDemoAgentDryRun } from "../demoAgent/runDemoAgentDryRun.js";
@@ -12,8 +13,10 @@ import { runDemoAgentRecording } from "../demoAgent/runDemoAgentRecording.js";
 import { resolveDemoWalkthroughGuide } from "../demoGuide/resolveDemoWalkthroughGuide.js";
 import { selectProduct } from "../interactive/selectProduct.js";
 import { detectProject } from "../project/detectProject.js";
+import { createAppContextConfig } from "../project/createAppContextConfig.js";
 import { findRunningLocalAppUrl } from "../project/findRunningLocalAppUrl.js";
 import { isHttpUrlReachable } from "../project/isHttpUrlReachable.js";
+import { scanAndWriteAppContext } from "../project/scanAndWriteAppContext.js";
 import { runShellCommand } from "../recording/runShellCommand.js";
 import { stopShellCommand } from "../recording/stopShellCommand.js";
 import { logBrandHeader } from "../terminal/logBrandHeader.js";
@@ -51,6 +54,12 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
   if (!["expo", "web"].includes(project.type)) {
     throw new Error("The local demo agent only supports web and Expo web apps.");
   }
+
+  const appContext = await scanAndWriteAppContext({ project });
+  await writeProjectConfig({
+    ...config,
+    appContext: createAppContextConfig(appContext),
+  });
 
   const guide = await resolveDemoWalkthroughGuide(options.guide);
 
@@ -96,6 +105,7 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
 
     if (options.dryRun) {
       const summary = await runDemoAgentDryRun({
+        appContext,
         guide,
         policy,
         policyHash: hash,
@@ -112,6 +122,7 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
     }
 
     const recording = await runDemoAgentRecording({
+      appContext,
       guide,
       policy,
       policyHash: hash,

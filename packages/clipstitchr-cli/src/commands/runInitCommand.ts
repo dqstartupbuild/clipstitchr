@@ -4,9 +4,12 @@ import { ensureCredentialsOrLogin } from "./ensureCredentialsOrLogin.js";
 import { readProjectConfig } from "../config/readProjectConfig.js";
 import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
+import { createProductConfigSummary } from "../config/createProductConfigSummary.js";
 import { selectProduct } from "../interactive/selectProduct.js";
 import { detectProject } from "../project/detectProject.js";
 import { findRunningLocalAppUrl } from "../project/findRunningLocalAppUrl.js";
+import { createAppContextConfig } from "../project/createAppContextConfig.js";
+import { scanAndWriteAppContext } from "../project/scanAndWriteAppContext.js";
 import { resolveRecordingGuidance } from "../recording/resolveRecordingGuidance.js";
 import { logBrandHeader } from "../terminal/logBrandHeader.js";
 import { logInfo } from "../terminal/logInfo.js";
@@ -23,6 +26,9 @@ export async function runInitCommand(options: CliGlobalOptions) {
   const detectedProject = await detectProject();
   const product = await selectProduct(credentials, config.productId);
   const runningUrl = await findRunningLocalAppUrl(config.target?.url);
+  const appContext = await scanAndWriteAppContext({
+    project: detectedProject,
+  });
 
   if (detectedProject.startCommand) {
     logInfo(
@@ -42,6 +48,8 @@ export async function runInitCommand(options: CliGlobalOptions) {
   await writeProjectConfig({
     ...config,
     apiBaseUrl,
+    appContext: createAppContextConfig(appContext),
+    product: createProductConfigSummary(product),
     productId: product.id,
     recording: {
       format: "full-size",
@@ -58,4 +66,5 @@ export async function runInitCommand(options: CliGlobalOptions) {
 
   logSuccess("Saved repo settings.");
   logKeyValue("Config", ".clipstitchr.yml");
+  logKeyValue("App context", ".clipstitchr/app-context.json");
 }

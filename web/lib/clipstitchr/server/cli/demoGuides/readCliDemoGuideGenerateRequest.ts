@@ -3,6 +3,7 @@ import {
   cliDemoGuideMaxStepCount,
   cliDemoGuideMinStepCount,
 } from "@/lib/clipstitchr/server/cli/demoGuides/cliDemoGuideStepCountBounds";
+import { readCliDemoAppContext } from "@/lib/clipstitchr/server/cli/appContext/readCliDemoAppContext";
 import { readCliDemoGuideFlowContexts } from "@/lib/clipstitchr/server/cli/demoGuides/readCliDemoGuideFlowContexts";
 import { readCliRequiredString } from "@/lib/clipstitchr/server/cli/readCliRequiredString";
 
@@ -29,6 +30,7 @@ export function readCliDemoGuideGenerateRequest(
       : undefined;
 
   return {
+    appContext: readCliDemoAppContext(body.appContext),
     appType: readCliRequiredString(body, "appType", "app type").slice(0, 40),
     availableFlows: readCliDemoGuideFlowContexts(body.availableFlows),
     flowName,

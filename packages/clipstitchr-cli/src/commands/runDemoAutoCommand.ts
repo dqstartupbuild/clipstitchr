@@ -5,12 +5,15 @@ import { planDemoAgentActionWithAi } from "../api/planDemoAgentActionWithAi.js";
 import { readProjectConfig } from "../config/readProjectConfig.js";
 import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
+import { createProductConfigSummary } from "../config/createProductConfigSummary.js";
 import { createDemoAgentPlannerWithFallback } from "../demoAgent/createDemoAgentPlannerWithFallback.js";
 import { runDemoAgentRecording } from "../demoAgent/runDemoAgentRecording.js";
 import { writeDemoWalkthroughGuide } from "../demoGuide/writeDemoWalkthroughGuide.js";
 import { detectProject } from "../project/detectProject.js";
 import { findRunningLocalAppUrl } from "../project/findRunningLocalAppUrl.js";
 import { isHttpUrlReachable } from "../project/isHttpUrlReachable.js";
+import { createAppContextConfig } from "../project/createAppContextConfig.js";
+import { scanAndWriteAppContext } from "../project/scanAndWriteAppContext.js";
 import { scanProjectFlows } from "../project/scanProjectFlows.js";
 import { runShellCommand } from "../recording/runShellCommand.js";
 import { stopShellCommand } from "../recording/stopShellCommand.js";
@@ -52,6 +55,7 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
     preferredProductId: options.product ?? config.productId,
   });
   const flows = await scanProjectFlows(join(process.cwd(), project.directory));
+  const appContext = await scanAndWriteAppContext({ flows, project });
   const runningUrl = await findRunningLocalAppUrl(
     options.url ?? config.target?.url,
   );
@@ -83,6 +87,7 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
     logStep("Writing the guide with ClipStitchr AI.");
     const guide = (
       await generateDemoWalkthroughGuide(credentials, {
+        appContext,
         appType: project.type,
         availableFlows: flows,
         flowName: selectedFlow?.name,
@@ -98,6 +103,8 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
     await writeProjectConfig({
       ...config,
       apiBaseUrl,
+      appContext: createAppContextConfig(appContext),
+      product: createProductConfigSummary(product),
       productId: product.id,
       recording: {
         ...config.recording,
@@ -133,6 +140,7 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
     logStep("Recording the demo with the guarded AI agent.");
     const recording = await runDemoAgentRecording({
       allowBrowserInstallPrompt: false,
+      appContext,
       guide,
       planner,
       policy,

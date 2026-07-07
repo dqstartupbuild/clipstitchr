@@ -18,6 +18,7 @@ export function createCliDemoAgentPlannerPrompt(
       waitFor:
         '{ "type": "waitFor", "visibleText": "...", "timeoutMs": 5000 }',
     },
+    appContext: request.appContext,
     approvedTestValueKeys: request.approvedTestValueKeys,
     approvedUploadFileKeys: request.approvedUploadFileKeys,
     attemptedActionKeys: request.attemptedActionKeys,
@@ -37,6 +38,13 @@ export function createCliDemoAgentPlannerPrompt(
       "If the current step or overall goal requires an asset, selected clip, connected account, existing project, generated result, or permission that is not visible or reachable from the observation, return stop.",
       "When returning stop for a missing requirement, explain the specific setup needed in plain language.",
       "Do not fake a completed goal when the required screen, asset, or result is not visible.",
+    ],
+    workflowContextRules: [
+      "Use appContext.workflowHints as source-derived hints for what this app can actually do.",
+      "Current observation is still the authority: click and type only visible controls from observation.",
+      "When a step says add, save, create, or update something, match the noun in the step to appContext inputs first, then use a visible matching input from observation.",
+      "If a matching input is visible but approvedTestValueKeys is empty, return stop and name the test value the policy needs.",
+      "Prefer exact labels from observation and appContext over generic controls such as Open, Menu, or Profile.",
     ],
     observation: request.observation,
     step: request.step,

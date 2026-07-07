@@ -4,6 +4,7 @@ import type {
   CliDemoAgentPageObservation,
   CliDemoAgentPlanRequest,
 } from "@/lib/clipstitchr/server/cli/demoAgentPlanner/CliDemoAgentPlanRequest";
+import { readCliDemoAppContext } from "@/lib/clipstitchr/server/cli/appContext/readCliDemoAppContext";
 import { readCliRequiredString } from "@/lib/clipstitchr/server/cli/readCliRequiredString";
 
 const elementRoles = ["button", "heading", "input", "link", "dialog"] as const;
@@ -83,6 +84,14 @@ function readGuideContext(value: unknown): CliDemoAgentGuideContext | undefined 
 
   return {
     goal: goal.slice(0, 500),
+    productId:
+      typeof raw.productId === "string"
+        ? raw.productId.trim().slice(0, 120)
+        : undefined,
+    productName:
+      typeof raw.productName === "string"
+        ? raw.productName.trim().slice(0, 160)
+        : undefined,
     steps: Array.isArray(raw.steps)
       ? raw.steps
           .map((item) => {
@@ -128,6 +137,7 @@ export function readCliDemoAgentPlanRequest(
   const step = rawStep as Record<string, unknown>;
 
   return {
+    appContext: readCliDemoAppContext(body.appContext),
     approvedTestValueKeys: readStringArray(
       body.approvedTestValueKeys,
       50,

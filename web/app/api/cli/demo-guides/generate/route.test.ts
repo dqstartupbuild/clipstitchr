@@ -63,6 +63,24 @@ function createRequest(body: object) {
 function createBody() {
   return {
     appType: "web",
+    appContext: {
+      projectDirectory: "web",
+      projectType: "web",
+      routes: [
+        { confidence: "low", name: "Show /dashboard/hooks", path: "/dashboard/hooks" },
+      ],
+      workflowHints: [
+        {
+          actions: ["Hooks to learn from", "Save Hook Lab"],
+          buttons: ["Save Hook Lab"],
+          inputs: ["Hooks to learn from", "Hooks to avoid"],
+          routePath: "/dashboard/hooks",
+          sourceFiles: ["app/_components/hooks/ProductHookMemoryFields.tsx"],
+          summary: "Inputs: Hooks to learn from. Buttons: Save Hook Lab",
+          title: "Hooks workflow",
+        },
+      ],
+    },
     availableFlows: [
       { confidence: "medium", name: "Open the product", path: "/" },
       { confidence: "medium", name: "Show the main workspace", path: "/dashboard" },
@@ -167,6 +185,14 @@ describe("POST /api/cli/demo-guides/generate", () => {
             },
           ],
           stepCount: 8,
+          appContext: expect.objectContaining({
+            workflowHints: [
+              expect.objectContaining({
+                inputs: ["Hooks to learn from", "Hooks to avoid"],
+                routePath: "/dashboard/hooks",
+              }),
+            ],
+          }),
         }),
         replicate: { provider: "replicate" },
       }),

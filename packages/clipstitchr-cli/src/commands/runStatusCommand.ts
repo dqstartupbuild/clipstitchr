@@ -50,6 +50,12 @@ export async function runStatusCommand() {
   );
   logKeyValue("Local URL", config.target?.url ?? formatWarningText("not set"));
   logKeyValue(
+    "App context",
+    config.appContext?.path
+      ? `${formatSuccessText("captured")} (${config.appContext.workflowHintCount ?? 0} workflows)`
+      : formatWarningText("not captured"),
+  );
+  logKeyValue(
     "Recording browser",
     recordingBrowserInstalled
       ? formatSuccessText("installed")

@@ -23,6 +23,9 @@ creation, library listing, and queueing finished Stitches.
 - `clipstitchr --version` prints the installed CLI version.
 - `clipstitchr link` connects the current repo to a ClipStitchr product.
 - `clipstitchr init` remains as a developer-friendly alias for repo setup.
+- `clipstitchr link` and `clipstitchr init` capture local app context in
+  `.clipstitchr/app-context.json` so AI guide writing and the guarded demo
+  agent can use real routes, fields, and buttons from the app.
 - `clipstitchr unlink` removes the repo link and can optionally remove
   repo-local browser profile and recording files.
 - `clipstitchr status` prints the current account, repo, product, local app,
@@ -183,6 +186,12 @@ a saved checklist from the product, selected local flow, app type, and the
 user's goal. Saved guides live in `.clipstitchr/demo-guides/*.json`, and the
 last used guide ID is stored in `.clipstitchr.yml`.
 
+Repo setup also writes `.clipstitchr/app-context.json`, a source-derived map of
+routes, workflow hints, form labels, and button names. Guide generation and
+model-backed agent planning send a capped version of this context to the API so
+requests like "use Hook Lab to add hooks" can map to visible controls such as
+`Hooks to learn from` and `Save Hook Lab`.
+
 When a guide is active, the CLI prints the full checklist, opens the recording
 target, and steps through the guide in the terminal:
 
@@ -322,6 +331,8 @@ packages/clipstitchr-cli/
   src/interactive/
   src/native/
   src/project/
+    scanAndWriteAppContext.ts
+    scanProjectWorkflowHints.ts
   src/recording/
     defaultLongRecordingWarningSeconds.ts
     defaultRecommendedRecordingDurationSeconds.ts

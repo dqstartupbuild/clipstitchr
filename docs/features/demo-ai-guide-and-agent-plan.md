@@ -46,6 +46,9 @@ Already implemented:
   when the model repeats an already-attempted action.
 - `clipstitchr demo auto` asks what the demo should show when `--goal` is not
   provided, then sends that goal into guide generation and planner prompts.
+- CLI app context capture writes `.clipstitchr/app-context.json` during setup
+  and AI demo phases, then sends capped route/workflow/input/button hints into
+  guide generation and agent planning.
 - Guarded local recording from an agent run with mandatory review before upload.
 - Safe optional `walkthrough.agentRun` metadata parsing.
 
@@ -131,7 +134,8 @@ update and focused tests.
 1. User runs `clipstitchr demo guide generate`.
 2. CLI asks for product, selected flow, target audience, and what the demo
    should show.
-3. CLI sends a small request to ClipStitchr.
+3. CLI sends a small request to ClipStitchr with route context and capped local
+   app workflow hints.
 4. Backend verifies the CLI session, product ownership, and rate limits.
 5. Backend calls the writing provider with a strict JSON prompt.
 6. Backend validates the returned guide shape and returns it to the CLI.
@@ -177,6 +181,10 @@ Request:
   "flowPath": "/dashboard",
   "goal": "Show the upload flow",
   "targetAudience": "busy founders recording product demos",
+  "appContext": {
+    "routes": [],
+    "workflowHints": []
+  },
   "stepCount": 5
 }
 ```

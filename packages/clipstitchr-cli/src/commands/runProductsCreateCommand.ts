@@ -4,6 +4,7 @@ import { ensureCredentialsOrLogin } from "./ensureCredentialsOrLogin.js";
 import { readProjectConfig } from "../config/readProjectConfig.js";
 import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
+import { createProductConfigSummary } from "../config/createProductConfigSummary.js";
 import { logBrandHeader } from "../terminal/logBrandHeader.js";
 import { logKeyValue } from "../terminal/logKeyValue.js";
 import { logSuccess } from "../terminal/logSuccess.js";
@@ -31,6 +32,7 @@ export async function runProductsCreateCommand(options: ProductsCreateOptions) {
   await writeProjectConfig({
     ...config,
     apiBaseUrl,
+    product: createProductConfigSummary(product),
     productId: product.id,
   });
   logSuccess("Saved this product for the repo.");

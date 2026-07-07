@@ -6,6 +6,7 @@ import type { DemoAgentAction } from "../demoAgent/DemoAgentAction.js";
 import type { DemoAgentPageObservation } from "../demoAgent/DemoAgentPageObservation.js";
 import type { DemoAgentPolicy } from "../demoAgent/DemoAgentPolicy.js";
 import type { DemoAgentStepState } from "../demoAgent/DemoAgentStepState.js";
+import type { ScannedAppContext } from "../project/ScannedAppContext.js";
 import { parseDemoAgentPlannerAction } from "../demoAgent/parseDemoAgentPlannerAction.js";
 import { requestJson } from "./requestJson.js";
 
@@ -18,6 +19,7 @@ type PlanDemoAgentActionResponse = {
 export async function planDemoAgentActionWithAi(
   credentials: ClipstitchrCredentials,
   input: {
+    appContext?: ScannedAppContext;
     guide: DemoWalkthroughGuide;
     observation: DemoAgentPageObservation;
     policy: DemoAgentPolicy;
@@ -33,6 +35,7 @@ export async function planDemoAgentActionWithAi(
     "/api/cli/demo-agent/plan",
     {
       body: JSON.stringify({
+        appContext: input.appContext,
         approvedTestValueKeys: Object.keys(input.policy.approvedTestValues),
         approvedUploadFileKeys: input.policy.approvedUploadFiles.map((filePath) =>
           basename(filePath),
@@ -40,6 +43,8 @@ export async function planDemoAgentActionWithAi(
         attemptedActionKeys: Array.from(input.stepState.attemptedActionKeys),
         guide: {
           goal: input.guide.goal,
+          productId: input.guide.productId,
+          productName: input.guide.productName,
           steps: input.guide.steps.map((step) => ({
             id: step.id,
             label: step.label,

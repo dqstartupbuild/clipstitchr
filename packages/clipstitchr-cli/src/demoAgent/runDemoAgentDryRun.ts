@@ -1,6 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import { input } from "@inquirer/prompts";
 import type { DemoWalkthroughGuide } from "../demoGuide/DemoWalkthroughGuide.js";
+import type { ScannedAppContext } from "../project/ScannedAppContext.js";
 import { createBrowserProfileDirectory } from "../recording/createBrowserProfileDirectory.js";
 import { waitForHttpUrl } from "../recording/waitForHttpUrl.js";
 import { logInfo } from "../terminal/logInfo.js";
@@ -20,6 +21,7 @@ import { writeDemoAgentActionLogEntry } from "./writeDemoAgentActionLogEntry.js"
 import { writeDemoAgentRunSummary } from "./writeDemoAgentRunSummary.js";
 
 export async function runDemoAgentDryRun(inputOptions: {
+  appContext?: ScannedAppContext;
   guide: DemoWalkthroughGuide;
   policy: DemoAgentPolicy;
   policyHash: string;
@@ -81,6 +83,7 @@ export async function runDemoAgentDryRun(inputOptions: {
     });
 
     const loopResult = await runDemoAgentLoop({
+      appContext: inputOptions.appContext,
       guide: inputOptions.guide,
       initialActionCount: actionCount,
       initialScreenshotCount: screenshotCount,

@@ -2,6 +2,7 @@ import { mkdir, mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { DemoWalkthroughGuide } from "../demoGuide/DemoWalkthroughGuide.js";
+import type { ScannedAppContext } from "../project/ScannedAppContext.js";
 import { convertVideoToMp4 } from "../recording/convertVideoToMp4.js";
 import { createBrowserProfileDirectory } from "../recording/createBrowserProfileDirectory.js";
 import { installBrowserInteractionCapture } from "../recording/installBrowserInteractionCapture.js";
@@ -28,6 +29,7 @@ import { writeDemoAgentRunSummary } from "./writeDemoAgentRunSummary.js";
 
 export async function runDemoAgentRecording(inputOptions: {
   allowBrowserInstallPrompt?: boolean;
+  appContext?: ScannedAppContext;
   guide: DemoWalkthroughGuide;
   policy: DemoAgentPolicy;
   policyHash: string;
@@ -104,6 +106,7 @@ export async function runDemoAgentRecording(inputOptions: {
     );
 
     const loopResult = await runDemoAgentLoop({
+      appContext: inputOptions.appContext,
       guide: inputOptions.guide,
       initialActionCount: actionCount,
       initialScreenshotCount: screenshotCount,

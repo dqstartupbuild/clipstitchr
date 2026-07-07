@@ -22,6 +22,42 @@ exports[`createCliDemoGuidePrompt > matches the 'auth-required' prompt shape 1`]
     ],
   },
   "demo": {
+    "appContext": {
+      "projectDirectory": "web",
+      "projectType": "web",
+      "routes": [
+        {
+          "confidence": "low",
+          "name": "Show /dashboard/hooks",
+          "path": "/dashboard/hooks",
+        },
+      ],
+      "workflowHints": [
+        {
+          "actions": [
+            "Hooks to learn from",
+            "Save Hook Lab",
+            "Accept hook",
+          ],
+          "buttons": [
+            "Save Hook Lab",
+            "Accept hook",
+          ],
+          "inputs": [
+            "Hooks to learn from",
+            "Hooks to avoid",
+            "Main goal",
+            "Tone",
+          ],
+          "routePath": "/dashboard/hooks",
+          "sourceFiles": [
+            "app/_components/hooks/ProductHookMemoryFields.tsx",
+          ],
+          "summary": "Inputs: Hooks to learn from, Hooks to avoid. Buttons: Save Hook Lab, Accept hook",
+          "title": "Hooks workflow",
+        },
+      ],
+    },
     "appType": "web",
     "availableFlows": [
       {
@@ -109,6 +145,7 @@ exports[`createCliDemoGuidePrompt > matches the 'auth-required' prompt shape 1`]
     "routeChoice": "If demo.goal names a visible tool and a matching route exists in availableFlows, build the guide around that route.",
     "stepCount": 5,
     "stepLabelOnly": true,
+    "useAppContext": "Use appContext workflow hints to choose real routes, field labels, and button names from the app. If the user says to add something and appContext lists a matching input, write a step around that visible input and the matching save/create button instead of inventing a new flow.",
     "useKnownRoutesWhenPossible": true,
   },
   "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",
@@ -137,6 +174,42 @@ exports[`createCliDemoGuidePrompt > matches the 'loading-process' prompt shape 1
     ],
   },
   "demo": {
+    "appContext": {
+      "projectDirectory": "web",
+      "projectType": "web",
+      "routes": [
+        {
+          "confidence": "low",
+          "name": "Show /dashboard/hooks",
+          "path": "/dashboard/hooks",
+        },
+      ],
+      "workflowHints": [
+        {
+          "actions": [
+            "Hooks to learn from",
+            "Save Hook Lab",
+            "Accept hook",
+          ],
+          "buttons": [
+            "Save Hook Lab",
+            "Accept hook",
+          ],
+          "inputs": [
+            "Hooks to learn from",
+            "Hooks to avoid",
+            "Main goal",
+            "Tone",
+          ],
+          "routePath": "/dashboard/hooks",
+          "sourceFiles": [
+            "app/_components/hooks/ProductHookMemoryFields.tsx",
+          ],
+          "summary": "Inputs: Hooks to learn from, Hooks to avoid. Buttons: Save Hook Lab, Accept hook",
+          "title": "Hooks workflow",
+        },
+      ],
+    },
     "appType": "web",
     "availableFlows": [
       {
@@ -224,6 +297,7 @@ exports[`createCliDemoGuidePrompt > matches the 'loading-process' prompt shape 1
     "routeChoice": "If demo.goal names a visible tool and a matching route exists in availableFlows, build the guide around that route.",
     "stepCount": 5,
     "stepLabelOnly": true,
+    "useAppContext": "Use appContext workflow hints to choose real routes, field labels, and button names from the app. If the user says to add something and appContext lists a matching input, write a step around that visible input and the matching save/create button instead of inventing a new flow.",
     "useKnownRoutesWhenPossible": true,
   },
   "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",
@@ -252,6 +326,42 @@ exports[`createCliDemoGuidePrompt > matches the 'minimal-product' prompt shape 1
     ],
   },
   "demo": {
+    "appContext": {
+      "projectDirectory": "web",
+      "projectType": "web",
+      "routes": [
+        {
+          "confidence": "low",
+          "name": "Show /dashboard/hooks",
+          "path": "/dashboard/hooks",
+        },
+      ],
+      "workflowHints": [
+        {
+          "actions": [
+            "Hooks to learn from",
+            "Save Hook Lab",
+            "Accept hook",
+          ],
+          "buttons": [
+            "Save Hook Lab",
+            "Accept hook",
+          ],
+          "inputs": [
+            "Hooks to learn from",
+            "Hooks to avoid",
+            "Main goal",
+            "Tone",
+          ],
+          "routePath": "/dashboard/hooks",
+          "sourceFiles": [
+            "app/_components/hooks/ProductHookMemoryFields.tsx",
+          ],
+          "summary": "Inputs: Hooks to learn from, Hooks to avoid. Buttons: Save Hook Lab, Accept hook",
+          "title": "Hooks workflow",
+        },
+      ],
+    },
     "appType": "web",
     "availableFlows": [
       {
@@ -333,6 +443,7 @@ exports[`createCliDemoGuidePrompt > matches the 'minimal-product' prompt shape 1
     "routeChoice": "If demo.goal names a visible tool and a matching route exists in availableFlows, build the guide around that route.",
     "stepCount": 5,
     "stepLabelOnly": true,
+    "useAppContext": "Use appContext workflow hints to choose real routes, field labels, and button names from the app. If the user says to add something and appContext lists a matching input, write a step around that visible input and the matching save/create button instead of inventing a new flow.",
     "useKnownRoutesWhenPossible": true,
   },
   "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",
@@ -361,6 +472,42 @@ exports[`createCliDemoGuidePrompt > matches the 'mobile' prompt shape 1`] = `
     ],
   },
   "demo": {
+    "appContext": {
+      "projectDirectory": "web",
+      "projectType": "web",
+      "routes": [
+        {
+          "confidence": "low",
+          "name": "Show /dashboard/hooks",
+          "path": "/dashboard/hooks",
+        },
+      ],
+      "workflowHints": [
+        {
+          "actions": [
+            "Hooks to learn from",
+            "Save Hook Lab",
+            "Accept hook",
+          ],
+          "buttons": [
+            "Save Hook Lab",
+            "Accept hook",
+          ],
+          "inputs": [
+            "Hooks to learn from",
+            "Hooks to avoid",
+            "Main goal",
+            "Tone",
+          ],
+          "routePath": "/dashboard/hooks",
+          "sourceFiles": [
+            "app/_components/hooks/ProductHookMemoryFields.tsx",
+          ],
+          "summary": "Inputs: Hooks to learn from, Hooks to avoid. Buttons: Save Hook Lab, Accept hook",
+          "title": "Hooks workflow",
+        },
+      ],
+    },
     "appType": "ios",
     "availableFlows": [
       {
@@ -447,6 +594,7 @@ exports[`createCliDemoGuidePrompt > matches the 'mobile' prompt shape 1`] = `
     "routeChoice": "If demo.goal names a visible tool and a matching route exists in availableFlows, build the guide around that route.",
     "stepCount": 5,
     "stepLabelOnly": true,
+    "useAppContext": "Use appContext workflow hints to choose real routes, field labels, and button names from the app. If the user says to add something and appContext lists a matching input, write a step around that visible input and the matching save/create button instead of inventing a new flow.",
     "useKnownRoutesWhenPossible": true,
   },
   "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",
@@ -475,6 +623,42 @@ exports[`createCliDemoGuidePrompt > matches the 'web' prompt shape 1`] = `
     ],
   },
   "demo": {
+    "appContext": {
+      "projectDirectory": "web",
+      "projectType": "web",
+      "routes": [
+        {
+          "confidence": "low",
+          "name": "Show /dashboard/hooks",
+          "path": "/dashboard/hooks",
+        },
+      ],
+      "workflowHints": [
+        {
+          "actions": [
+            "Hooks to learn from",
+            "Save Hook Lab",
+            "Accept hook",
+          ],
+          "buttons": [
+            "Save Hook Lab",
+            "Accept hook",
+          ],
+          "inputs": [
+            "Hooks to learn from",
+            "Hooks to avoid",
+            "Main goal",
+            "Tone",
+          ],
+          "routePath": "/dashboard/hooks",
+          "sourceFiles": [
+            "app/_components/hooks/ProductHookMemoryFields.tsx",
+          ],
+          "summary": "Inputs: Hooks to learn from, Hooks to avoid. Buttons: Save Hook Lab, Accept hook",
+          "title": "Hooks workflow",
+        },
+      ],
+    },
     "appType": "web",
     "availableFlows": [
       {
@@ -562,6 +746,7 @@ exports[`createCliDemoGuidePrompt > matches the 'web' prompt shape 1`] = `
     "routeChoice": "If demo.goal names a visible tool and a matching route exists in availableFlows, build the guide around that route.",
     "stepCount": 5,
     "stepLabelOnly": true,
+    "useAppContext": "Use appContext workflow hints to choose real routes, field labels, and button names from the app. If the user says to add something and appContext lists a matching input, write a step around that visible input and the matching save/create button instead of inventing a new flow.",
     "useKnownRoutesWhenPossible": true,
   },
   "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",

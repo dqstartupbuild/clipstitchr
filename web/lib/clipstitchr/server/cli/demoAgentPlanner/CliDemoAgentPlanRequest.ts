@@ -1,3 +1,5 @@
+import type { CliDemoAppContext } from "@/lib/clipstitchr/server/cli/appContext/CliDemoAppContext";
+
 export type CliDemoAgentObservedElement = {
   label?: string;
   name: string;
@@ -16,6 +18,8 @@ export type CliDemoAgentPageObservation = {
 
 export type CliDemoAgentGuideContext = {
   goal: string;
+  productId?: string;
+  productName?: string;
   steps: {
     id: string;
     label: string;
@@ -25,6 +29,7 @@ export type CliDemoAgentGuideContext = {
 };
 
 export type CliDemoAgentPlanRequest = {
+  appContext?: CliDemoAppContext;
   approvedTestValueKeys: string[];
   approvedUploadFileKeys: string[];
   attemptedActionKeys: string[];

@@ -1,5 +1,17 @@
 export type ClipstitchrConfig = {
   apiBaseUrl?: string;
+  appContext?: {
+    generatedAt?: string;
+    path?: string;
+    routeCount?: number;
+    workflowHintCount?: number;
+  };
+  product?: {
+    id?: string;
+    name?: string;
+    updatedAt?: string;
+    websiteUrl?: string;
+  };
   productId?: string;
   recording?: {
     demoGuideId?: string;

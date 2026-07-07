@@ -1,4 +1,6 @@
 import type { DemoWalkthroughStep } from "../demoGuide/DemoWalkthroughStep.js";
+import type { DemoWalkthroughGuide } from "../demoGuide/DemoWalkthroughGuide.js";
+import type { ScannedAppContext } from "../project/ScannedAppContext.js";
 import type { DemoAgentAction } from "./DemoAgentAction.js";
 import type { DemoAgentPageObservation } from "./DemoAgentPageObservation.js";
 import type { DemoAgentPolicy } from "./DemoAgentPolicy.js";
@@ -8,6 +10,8 @@ import { findDemoAgentInputTarget } from "./findDemoAgentInputTarget.js";
 import { getDemoAgentObservationHasLoadingState } from "./getDemoAgentObservationHasLoadingState.js";
 
 export function planDemoAgentAction(input: {
+  appContext?: ScannedAppContext;
+  guide?: DemoWalkthroughGuide;
   observation: DemoAgentPageObservation;
   policy: DemoAgentPolicy;
   step: DemoWalkthroughStep;

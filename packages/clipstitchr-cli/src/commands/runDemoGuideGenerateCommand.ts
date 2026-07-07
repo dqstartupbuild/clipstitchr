@@ -6,6 +6,7 @@ import { generateDemoWalkthroughGuide } from "../api/generateDemoWalkthroughGuid
 import { readProjectConfig } from "../config/readProjectConfig.js";
 import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
+import { createProductConfigSummary } from "../config/createProductConfigSummary.js";
 import { createDemoWalkthroughGuide } from "../demoGuide/createDemoWalkthroughGuide.js";
 import { editDemoWalkthroughGuide } from "../demoGuide/editDemoWalkthroughGuide.js";
 import { printDemoWalkthroughGuide } from "../demoGuide/printDemoWalkthroughGuide.js";
@@ -13,6 +14,8 @@ import { readDemoWalkthroughGuideStepCountInput } from "../demoGuide/readDemoWal
 import { writeDemoWalkthroughGuide } from "../demoGuide/writeDemoWalkthroughGuide.js";
 import { selectProduct } from "../interactive/selectProduct.js";
 import { detectProject } from "../project/detectProject.js";
+import { createAppContextConfig } from "../project/createAppContextConfig.js";
+import { scanAndWriteAppContext } from "../project/scanAndWriteAppContext.js";
 import type { ScannedFlow } from "../project/ScannedFlow.js";
 import { scanProjectFlows } from "../project/scanProjectFlows.js";
 import { logBrandHeader } from "../terminal/logBrandHeader.js";
@@ -39,6 +42,12 @@ export async function runDemoGuideGenerateCommand(
     options.product ?? config.productId,
   );
   const flows = await scanProjectFlows(join(process.cwd(), project.directory));
+  const appContext = await scanAndWriteAppContext({ flows, project });
+  const configWithAppContext = {
+    ...config,
+    appContext: createAppContextConfig(appContext),
+  };
+  await writeProjectConfig(configWithAppContext);
   const selectedFlow: ScannedFlow | undefined = flows.length
     ? await select({
         choices: [
@@ -75,6 +84,7 @@ export async function runDemoGuideGenerateCommand(
     shouldRegenerate = false;
 
     const guide = await generateDemoWalkthroughGuide(credentials, {
+      appContext,
       appType: project.type,
       availableFlows: flows,
       flowName: selectedFlow?.name,
@@ -145,8 +155,9 @@ export async function runDemoGuideGenerateCommand(
 
     if (action === "use" || action === "edit") {
       await writeProjectConfig({
-        ...config,
+        ...configWithAppContext,
         apiBaseUrl,
+        product: createProductConfigSummary(product),
         productId: product.id,
         recording: {
           ...config.recording,
