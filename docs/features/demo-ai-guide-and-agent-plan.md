@@ -18,13 +18,13 @@ Already implemented:
 - Web recordings also upload click and cursor timing metadata.
 - `POST /api/cli/uploads/demo/complete` validates and stores `walkthrough`
   metadata in the media job input snapshot.
-
-Not implemented yet:
-
 - AI-generated guide creation.
 - A user-visible guide editor in the CLI.
 - A dedicated `clipstitchr demo guide` command namespace.
 - A downloadable agent instruction export.
+
+Not implemented yet:
+
 - Autonomous browser clicking.
 - Agent action logs, screenshot logs, or review-before-upload enforcement.
 

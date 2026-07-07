@@ -344,6 +344,19 @@ describe("convex rateLimits", () => {
       mutation: rateLimits.consumeCliprHookScript,
     },
     {
+      args: { ownerId: "owner_cli", secret: "secret" },
+      expected: [
+        {
+          key: "owner_cli",
+          name: "cliDemoGuideGenerate",
+          throws: true,
+        },
+        { name: "cliDemoGuideGenerateGlobal", throws: true },
+        { name: "cliprProviderSpendGlobal", throws: true },
+      ],
+      mutation: rateLimits.consumeCliDemoGuideGenerate,
+    },
+    {
       args: { estimatedSeconds: 5.2, secret: "secret" },
       expected: [
         {

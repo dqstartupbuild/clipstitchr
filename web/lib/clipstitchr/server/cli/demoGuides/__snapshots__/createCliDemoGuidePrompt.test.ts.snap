@@ -1,0 +1,199 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`createCliDemoGuidePrompt > matches the 'auth-required' prompt shape 1`] = `
+{
+  "demo": {
+    "appType": "web",
+    "flowName": "Dashboard",
+    "flowPath": "/dashboard",
+    "goal": "Show sign in and the main workspace",
+    "targetAudience": "busy founders recording product demos",
+  },
+  "outputShape": {
+    "goal": "Plain-language demo goal.",
+    "steps": [
+      {
+        "label": "Step label only.",
+      },
+    ],
+    "title": "Short guide title.",
+  },
+  "product": {
+    "audience": "Busy founders who record product demos.",
+    "details": "A tool for turning product recordings into short videos.",
+    "inferredPainPoints": [
+      "Recording demos takes too long.",
+    ],
+    "inferredProblem": "Demo content is slow to make.",
+    "name": "ClipStitchr",
+    "websiteUrl": "https://clipstitchr.test",
+  },
+  "rules": {
+    "maxSteps": 8,
+    "minSteps": 3,
+    "noDestructiveActions": true,
+    "noSecrets": true,
+    "noSelectors": true,
+    "stepCount": 5,
+    "stepLabelOnly": true,
+  },
+  "task": "Create a manual recording checklist for a ClipStitchr demo guide.",
+}
+`;
+
+exports[`createCliDemoGuidePrompt > matches the 'loading-process' prompt shape 1`] = `
+{
+  "demo": {
+    "appType": "web",
+    "flowName": "Dashboard",
+    "flowPath": "/dashboard",
+    "goal": "Show upload processing and review the finished result",
+    "targetAudience": "busy founders recording product demos",
+  },
+  "outputShape": {
+    "goal": "Plain-language demo goal.",
+    "steps": [
+      {
+        "label": "Step label only.",
+      },
+    ],
+    "title": "Short guide title.",
+  },
+  "product": {
+    "audience": "Busy founders who record product demos.",
+    "details": "A tool for turning product recordings into short videos.",
+    "inferredPainPoints": [
+      "Recording demos takes too long.",
+    ],
+    "inferredProblem": "Demo content is slow to make.",
+    "name": "ClipStitchr",
+    "websiteUrl": "https://clipstitchr.test",
+  },
+  "rules": {
+    "maxSteps": 8,
+    "minSteps": 3,
+    "noDestructiveActions": true,
+    "noSecrets": true,
+    "noSelectors": true,
+    "stepCount": 5,
+    "stepLabelOnly": true,
+  },
+  "task": "Create a manual recording checklist for a ClipStitchr demo guide.",
+}
+`;
+
+exports[`createCliDemoGuidePrompt > matches the 'minimal-product' prompt shape 1`] = `
+{
+  "demo": {
+    "appType": "web",
+    "goal": "Show the upload flow",
+    "targetAudience": "people evaluating this product",
+  },
+  "outputShape": {
+    "goal": "Plain-language demo goal.",
+    "steps": [
+      {
+        "label": "Step label only.",
+      },
+    ],
+    "title": "Short guide title.",
+  },
+  "product": {
+    "audience": "",
+    "details": "",
+    "inferredPainPoints": [],
+    "name": "ClipStitchr",
+  },
+  "rules": {
+    "maxSteps": 8,
+    "minSteps": 3,
+    "noDestructiveActions": true,
+    "noSecrets": true,
+    "noSelectors": true,
+    "stepCount": 5,
+    "stepLabelOnly": true,
+  },
+  "task": "Create a manual recording checklist for a ClipStitchr demo guide.",
+}
+`;
+
+exports[`createCliDemoGuidePrompt > matches the 'mobile' prompt shape 1`] = `
+{
+  "demo": {
+    "appType": "ios",
+    "flowName": "Mobile onboarding",
+    "goal": "Show the upload flow",
+    "targetAudience": "busy founders recording product demos",
+  },
+  "outputShape": {
+    "goal": "Plain-language demo goal.",
+    "steps": [
+      {
+        "label": "Step label only.",
+      },
+    ],
+    "title": "Short guide title.",
+  },
+  "product": {
+    "audience": "Busy founders who record product demos.",
+    "details": "A tool for turning product recordings into short videos.",
+    "inferredPainPoints": [
+      "Recording demos takes too long.",
+    ],
+    "inferredProblem": "Demo content is slow to make.",
+    "name": "ClipStitchr",
+    "websiteUrl": "https://clipstitchr.test",
+  },
+  "rules": {
+    "maxSteps": 8,
+    "minSteps": 3,
+    "noDestructiveActions": true,
+    "noSecrets": true,
+    "noSelectors": true,
+    "stepCount": 5,
+    "stepLabelOnly": true,
+  },
+  "task": "Create a manual recording checklist for a ClipStitchr demo guide.",
+}
+`;
+
+exports[`createCliDemoGuidePrompt > matches the 'web' prompt shape 1`] = `
+{
+  "demo": {
+    "appType": "web",
+    "flowName": "Dashboard",
+    "flowPath": "/dashboard",
+    "goal": "Show the upload flow",
+    "targetAudience": "busy founders recording product demos",
+  },
+  "outputShape": {
+    "goal": "Plain-language demo goal.",
+    "steps": [
+      {
+        "label": "Step label only.",
+      },
+    ],
+    "title": "Short guide title.",
+  },
+  "product": {
+    "audience": "Busy founders who record product demos.",
+    "details": "A tool for turning product recordings into short videos.",
+    "inferredPainPoints": [
+      "Recording demos takes too long.",
+    ],
+    "inferredProblem": "Demo content is slow to make.",
+    "name": "ClipStitchr",
+    "websiteUrl": "https://clipstitchr.test",
+  },
+  "rules": {
+    "maxSteps": 8,
+    "minSteps": 3,
+    "noDestructiveActions": true,
+    "noSecrets": true,
+    "noSelectors": true,
+    "stepCount": 5,
+    "stepLabelOnly": true,
+  },
+  "task": "Create a manual recording checklist for a ClipStitchr demo guide.",
+}
+`;

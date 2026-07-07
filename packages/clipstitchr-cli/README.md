@@ -15,6 +15,12 @@ clipstitchr --version
 clipstitchr link
 clipstitchr status
 clipstitchr update
+clipstitchr demo guide generate
+clipstitchr demo guide list
+clipstitchr demo guide show guide_123
+clipstitchr demo guide edit guide_123
+clipstitchr demo guide delete guide_123
+clipstitchr demo guide export-instructions guide_123
 clipstitchr demo make
 clipstitchr demo make --guide guide_123
 clipstitchr demo make --no-guide
@@ -33,7 +39,9 @@ clipstitchr --plain status
 ```
 
 The built-in recorder can create a simple walkthrough checklist before each
-demo. During recording, the terminal walks through each step and records section
+demo. You can also run `clipstitchr demo guide generate` to draft a guide with
+ClipStitchr first, review it, edit it, and save it for the next recording.
+During recording, the terminal walks through each step and records section
 timing metadata for ClipStitchr to use later for chapters, captions, smart
 zooms, and editing decisions. Use `--no-guide` when you want one free-form take,
 or `--guide` when you want to reuse a saved guide from

@@ -1,6 +1,12 @@
 import { Command } from "commander";
 import type { CliGlobalOptions } from "./CliGlobalOptions.js";
 import { runDoctorCommand } from "./runDoctorCommand.js";
+import { runDemoGuideDeleteCommand } from "./runDemoGuideDeleteCommand.js";
+import { runDemoGuideEditCommand } from "./runDemoGuideEditCommand.js";
+import { runDemoGuideExportInstructionsCommand } from "./runDemoGuideExportInstructionsCommand.js";
+import { runDemoGuideGenerateCommand } from "./runDemoGuideGenerateCommand.js";
+import { runDemoGuideListCommand } from "./runDemoGuideListCommand.js";
+import { runDemoGuideShowCommand } from "./runDemoGuideShowCommand.js";
 import { runDemoMakeCommand } from "./runDemoMakeCommand.js";
 import { runDemoUploadCommand } from "./runDemoUploadCommand.js";
 import { runHelpCommand } from "./runHelpCommand.js";
@@ -96,6 +102,66 @@ export async function runCli(argv: string[]) {
     .action(runUpdateCommand);
 
   const demo = program.command("demo").description("Make or upload demos");
+
+  const demoGuide = demo
+    .command("guide")
+    .description("Create and manage walkthrough guides");
+
+  demoGuide
+    .command("generate")
+    .description("Create an AI walkthrough guide")
+    .option("--product <id>", "Use this product ID")
+    .action(async (options) => {
+      await runDemoGuideGenerateCommand({ ...program.opts(), ...options });
+    });
+
+  demoGuide
+    .command("list")
+    .description("List saved walkthrough guides")
+    .option("--all", "Show guides for every product")
+    .action(async (options) => {
+      await runDemoGuideListCommand({ ...program.opts(), ...options });
+    });
+
+  demoGuide
+    .command("show")
+    .argument("<guide>", "Guide ID or guide file path")
+    .description("Show a saved walkthrough guide")
+    .action(async (guide) => {
+      await runDemoGuideShowCommand(guide);
+    });
+
+  demoGuide
+    .command("edit")
+    .argument("<guide>", "Guide ID or guide file path")
+    .description("Edit a walkthrough guide")
+    .action(async (guide) => {
+      await runDemoGuideEditCommand(guide);
+    });
+
+  demoGuide
+    .command("delete")
+    .argument("<guide>", "Guide ID or guide file path")
+    .description("Delete a walkthrough guide")
+    .option("--yes", "Delete without asking")
+    .action(async (guide, options) => {
+      await runDemoGuideDeleteCommand(guide, {
+        ...program.opts(),
+        ...options,
+      });
+    });
+
+  demoGuide
+    .command("export-instructions")
+    .argument("<guide>", "Guide ID or guide file path")
+    .description("Export local-agent instructions for a guide")
+    .option("--output <path>", "Write instructions to this Markdown file")
+    .action(async (guide, options) => {
+      await runDemoGuideExportInstructionsCommand(guide, {
+        ...program.opts(),
+        ...options,
+      });
+    });
 
   demo
     .command("make")

@@ -153,6 +153,28 @@ export const clipstitchrCliDoc = {
       ],
     },
     {
+      title: "Create walkthrough guides",
+      body: [
+        "Guide commands help you prepare the checklist before recording. You can ask ClipStitchr to draft a short guide, review it, edit the steps, save it for the next take, or export simple instructions for a trusted local helper.",
+        "AI guides are still manual. They do not click through your app, ask for passwords, or upload anything by themselves.",
+      ],
+      bullets: [
+        "Generate asks what the demo should show, then saves the guide in this repo.",
+        "List and show help you find a saved guide ID.",
+        "Edit lets you clean up labels before recording.",
+        "Delete removes a guide you do not need anymore.",
+        "Export instructions creates a Markdown checklist you can hand to a local agent or teammate.",
+      ],
+      commands: [
+        "clipstitchr demo guide generate",
+        "clipstitchr demo guide list",
+        "clipstitchr demo guide show guide_123",
+        "clipstitchr demo guide edit guide_123",
+        "clipstitchr demo guide delete guide_123",
+        "clipstitchr demo guide export-instructions guide_123",
+      ],
+    },
+    {
       title: "Upload an existing demo",
       body: [
         "Already have a recording? Upload the file directly and ClipStitchr will process it like any other Demo clip.",

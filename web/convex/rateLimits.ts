@@ -422,6 +422,27 @@ export const consumeCliUploadVideoAnalysis = mutation({
   },
 });
 
+export const consumeCliDemoGuideGenerate = mutation({
+  args: {
+    ownerId: v.string(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { ownerId, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    await rateLimiter.limit(ctx, "cliDemoGuideGenerate", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliDemoGuideGenerateGlobal", {
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      throws: true,
+    });
+  },
+});
+
 export const consumeStitchScoreAnalysis = mutation({
   args: {
     secret: v.string(),

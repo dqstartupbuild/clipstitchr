@@ -181,10 +181,10 @@ Optional Replicate model overrides:
 - `PRODUCT_ENRICHMENT_MODEL_ID` defaults to `openai/gpt-4.1` for hidden product
   strategy enrichment when saving products in Settings.
 - `TEXT_WRITING_MODEL_ID` defaults to `anthropic/claude-sonnet-4.6` for Clipr
-  hook, script, Swipr auto-text, and Stitchr auto-text generation. The legacy
-  `CLIPR_HOOK_MODEL_ID` fallback is still read when the general writing model
-  variable is unset. `anthropic/claude-opus-4.6` is supported for higher-cost
-  writing tests.
+  hook, script, Swipr auto-text, Stitchr auto-text, and CLI AI walkthrough
+  guide generation. The legacy `CLIPR_HOOK_MODEL_ID` fallback is still read
+  when the general writing model variable is unset.
+  `anthropic/claude-opus-4.6` is supported for higher-cost writing tests.
 - Clipr avatar still generation uses `AVATAR_PHOTO_MODEL_ID`, the same model
   configuration and provider input path as avatar photo generation, but creates
   one source still before the final avatar video generation.
@@ -254,6 +254,7 @@ Firecrawl website import:
 | CLI device sign-in start | `POST /api/cli/auth/device` | 20/hour/client fingerprint, burst 5; shared global bucket 1,000/hour, burst 200 across 5 shards. The route stores only a hashed device code and a short user code, and the browser approval must happen through a normal Clerk-authenticated `/cli/connect` session. |
 | CLI device token polling | `POST /api/cli/auth/token` | 120/minute/client fingerprint, burst 30; shared global bucket 10,000/minute, burst 1,000 across 10 shards. Polling returns pending until the Clerk-authenticated browser approval succeeds, then creates one hashed 90-day CLI session token. |
 | CLI product creation | `POST /api/cli/products` | Uses `convexRecordSave` after verifying the CLI bearer token. This path saves a plain product record without provider enrichment or Firecrawl work. |
+| CLI AI guide generation | `POST /api/cli/demo-guides/generate` | 20/hour/user, burst 5; global 1,000/hour, burst 200 across 5 shards; shared provider bucket 10,000 units/hour, burst 2,000. The route verifies the CLI bearer token, confirms the requested product belongs to the session owner, consumes quota, then calls the configured writing model through `TEXT_WRITING_MODEL_ID`. Generated guides are label-only checklists with 3-8 steps, no selectors, no secrets, and no autonomous browser actions. |
 | CLI Demo upload signed URL | `POST /api/cli/uploads/demo` | Uses the normal R2 upload signed URL, daily byte, and monthly byte limits after verifying the CLI bearer token and confirming the product belongs to the session owner. The video file uploads directly to R2 with the signed PUT URL. |
 | CLI Demo upload completion | `POST /api/cli/uploads/demo/complete` | Uses upload video action analysis limits before queueing the existing `upload-normalization` media job. The route verifies the CLI bearer token, product ownership, user-owned R2 object key, and video content type. |
 | CLI Demo upload status | `GET /api/cli/uploads/{clipId}` | Bearer-token authorized only. Reads the owner-scoped media job and normalized clip status without creating storage, provider, or Convex write cost. |
@@ -561,3 +562,7 @@ per-photo or per-object delete limits.
    Replicate limit is exceeded.
 8. Confirm polling, canceling, or proxying output for a prediction created by a
    different user is rejected.
+9. For `POST /api/cli/demo-guides/generate`, confirm a missing bearer token
+   returns `401`, a product from another owner returns `400` before quota or
+   provider work, a reduced `cliDemoGuideGenerate` limit returns `429`, and an
+   accepted response stores only guide title, goal, source, and step labels.

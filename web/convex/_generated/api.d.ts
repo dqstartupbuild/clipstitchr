@@ -57,6 +57,7 @@ import type * as cliLibrary_listCliSwipes from "../cliLibrary/listCliSwipes.js";
 import type * as cliPostBridge_getCliPostBridgeSecret from "../cliPostBridge/getCliPostBridgeSecret.js";
 import type * as cliProducts_createCliProduct from "../cliProducts/createCliProduct.js";
 import type * as cliProducts_getCliProduct from "../cliProducts/getCliProduct.js";
+import type * as cliProducts_getCliProductDocument from "../cliProducts/getCliProductDocument.js";
 import type * as cliProducts_listCliProducts from "../cliProducts/listCliProducts.js";
 import type * as cliRateLimits_consumeCliPostBridgeMediaUpload from "../cliRateLimits/consumeCliPostBridgeMediaUpload.js";
 import type * as cliRateLimits_consumeCliPostBridgeSchedule from "../cliRateLimits/consumeCliPostBridgeSchedule.js";
@@ -317,6 +318,7 @@ declare const fullApi: ApiFromModules<{
   "cliPostBridge/getCliPostBridgeSecret": typeof cliPostBridge_getCliPostBridgeSecret;
   "cliProducts/createCliProduct": typeof cliProducts_createCliProduct;
   "cliProducts/getCliProduct": typeof cliProducts_getCliProduct;
+  "cliProducts/getCliProductDocument": typeof cliProducts_getCliProductDocument;
   "cliProducts/listCliProducts": typeof cliProducts_listCliProducts;
   "cliRateLimits/consumeCliPostBridgeMediaUpload": typeof cliRateLimits_consumeCliPostBridgeMediaUpload;
   "cliRateLimits/consumeCliPostBridgeSchedule": typeof cliRateLimits_consumeCliPostBridgeSchedule;
