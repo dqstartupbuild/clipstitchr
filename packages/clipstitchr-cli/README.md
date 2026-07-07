@@ -1,7 +1,7 @@
 # ClipStitchr CLI
 
-Record product demos from a local app and upload finished demo files to your
-ClipStitchr Demo library.
+Record guided product demos from a local app, upload finished demo files, start
+batch content, and queue finished Stitches in ClipStitchr.
 
 ```bash
 npx clipstitchr
@@ -16,6 +16,8 @@ clipstitchr link
 clipstitchr status
 clipstitchr update
 clipstitchr demo make
+clipstitchr demo make --guide guide_123
+clipstitchr demo make --no-guide
 clipstitchr demo upload ./demo.mp4
 clipstitchr stitchr batch
 clipstitchr swipr batch
@@ -30,8 +32,15 @@ clipstitchr unlink
 clipstitchr --plain status
 ```
 
-The built-in recorder is manual by default: it opens your app in Chromium, you
-click through the demo, then press Enter in the terminal when the take is done.
+The built-in recorder can create a simple walkthrough checklist before each
+demo. During recording, the terminal walks through each step and records section
+timing metadata for ClipStitchr to use later for chapters, captions, smart
+zooms, and editing decisions. Use `--no-guide` when you want one free-form take,
+or `--guide` when you want to reuse a saved guide from
+`.clipstitchr/demo-guides`.
+
+Recording is still manual by default: the CLI opens your app in Chromium, you
+click through the demo, then press Enter in the terminal as each step is done.
 If your app requires login, sign in inside the recorder browser once. The CLI
 keeps that app browser session in `.clipstitchr/browser-profile` so future
 recordings can stay signed in.
@@ -74,5 +83,6 @@ For local development against a preview app:
 CLIPSTITCHR_API_URL=http://localhost:3000 npm run dev
 ```
 
-The CLI stores project settings in `.clipstitchr.yml` and machine credentials in
-`~/.clipstitchr/credentials.json`.
+The CLI stores project settings in `.clipstitchr.yml`, saved walkthroughs in
+`.clipstitchr/demo-guides`, local browser state in `.clipstitchr`, and machine
+credentials in `~/.clipstitchr/credentials.json`.

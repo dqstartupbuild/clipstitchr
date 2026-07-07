@@ -61,7 +61,7 @@ const features: LandingOfferFeature[] = [
   {
     title: "CLI for repo-side work",
     description:
-      "Record demos, start batches, list saved work, and queue ready Stitches from the terminal.",
+      "Follow guided demo checklists, start batches, list saved work, and queue ready Stitches from the terminal.",
     icon: Terminal,
     href: "/docs/clipstitchr-cli",
     actionLabel: "Set up the CLI",

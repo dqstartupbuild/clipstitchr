@@ -2,6 +2,8 @@ import { spawn } from "node:child_process";
 import { stat } from "node:fs/promises";
 import { basename } from "node:path";
 import { input } from "@inquirer/prompts";
+import type { DemoWalkthroughGuide } from "../demoGuide/DemoWalkthroughGuide.js";
+import { runDemoWalkthroughStepper } from "../demoGuide/runDemoWalkthroughStepper.js";
 import type { RecordingResult } from "../recording/RecordingResult.js";
 import { createRecordingOutputPath } from "../recording/createRecordingOutputPath.js";
 import { startLongRecordingWarningTimer } from "../recording/startLongRecordingWarningTimer.js";
@@ -14,6 +16,7 @@ import { waitForChildProcessExit } from "./waitForChildProcessExit.js";
 type RecordAndroidDeviceDemoOptions = {
   longRecordingWarningSeconds?: number;
   outputPath?: string;
+  walkthroughGuide?: DemoWalkthroughGuide;
 };
 
 export async function recordAndroidDeviceDemo(
@@ -47,12 +50,19 @@ export async function recordAndroidDeviceDemo(
   const stopLongRecordingWarning = startLongRecordingWarningTimer(
     options.longRecordingWarningSeconds ?? 0,
   );
+  let walkthroughTimings: RecordingResult["walkthroughTimings"];
 
   try {
-    await input({
-      message:
-        "Walk through the demo on the device, then press Enter here to finish.",
-    });
+    walkthroughTimings = options.walkthroughGuide
+      ? await runDemoWalkthroughStepper(options.walkthroughGuide)
+      : undefined;
+
+    if (!options.walkthroughGuide) {
+      await input({
+        message:
+          "Walk through the demo on the device, then press Enter here to finish.",
+      });
+    }
   } finally {
     stopLongRecordingWarning();
   }
@@ -69,5 +79,6 @@ export async function recordAndroidDeviceDemo(
   return {
     outputPath,
     rawVideoPath: outputPath,
+    walkthroughTimings,
   };
 }

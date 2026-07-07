@@ -100,6 +100,8 @@ export async function runCli(argv: string[]) {
   demo
     .command("make")
     .description("Record a new product demo")
+    .option("--guide <id-or-path>", "Use a saved walkthrough guide")
+    .option("--no-guide", "Record without a walkthrough guide")
     .option("--no-upload", "Record only")
     .option("--output <path>", "Save the MP4 here")
     .option("--product <id>", "Use this product ID")

@@ -3,6 +3,7 @@ import { basename } from "node:path";
 import { completeDemoUpload } from "../api/completeDemoUpload.js";
 import { createDemoUpload } from "../api/createDemoUpload.js";
 import type { ClipstitchrCredentials } from "../config/ClipstitchrCredentials.js";
+import type { DemoWalkthroughUploadMetadata } from "../demoGuide/DemoWalkthroughUploadMetadata.js";
 import type { RecordingInteractionEvent } from "../recording/RecordingInteractionEvent.js";
 import { getVideoContentType } from "./getVideoContentType.js";
 import type { UploadNormalizationLayout } from "./UploadNormalizationLayout.js";
@@ -17,6 +18,7 @@ export async function uploadDemoFile(
     layout?: UploadNormalizationLayout;
     productId: string;
     wait: boolean;
+    walkthrough?: DemoWalkthroughUploadMetadata;
   },
 ) {
   const fileStats = await stat(input.filePath);
@@ -42,6 +44,7 @@ export async function uploadDemoFile(
     originalName: basename(input.filePath),
     productId: input.productId,
     size: fileStats.size,
+    walkthrough: input.walkthrough,
   });
 
   if (!input.wait) {

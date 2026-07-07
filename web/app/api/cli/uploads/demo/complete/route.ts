@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { api } from "@/convex/_generated/api";
 import { createCliAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/cli/createCliAuthenticationRequiredResponse";
 import { getCliSessionFromRequest } from "@/lib/clipstitchr/server/cli/getCliSessionFromRequest";
+import { readCliDemoWalkthroughMetadata } from "@/lib/clipstitchr/server/cli/demoWalkthrough/readCliDemoWalkthroughMetadata";
 import { readCliJsonObject } from "@/lib/clipstitchr/server/cli/readCliJsonObject";
 import { readCliPositiveNumber } from "@/lib/clipstitchr/server/cli/readCliPositiveNumber";
 import { readCliRequiredString } from "@/lib/clipstitchr/server/cli/readCliRequiredString";
@@ -42,6 +43,7 @@ export async function POST(request: Request) {
     const interactionEvents = Array.isArray(body.interactionEvents)
       ? body.interactionEvents.slice(-5000)
       : undefined;
+    const walkthrough = readCliDemoWalkthroughMetadata(body.walkthrough);
     const productId = readCliRequiredString(body, "productId", "product ID");
     const size = readCliPositiveNumber(body, "size", "file size");
 
@@ -88,6 +90,7 @@ export async function POST(request: Request) {
           key,
           size,
         },
+        walkthrough,
       }),
       ownerId: session.ownerId,
       secret,

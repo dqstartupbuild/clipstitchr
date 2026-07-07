@@ -37,6 +37,10 @@ creation, library listing, and queueing finished Stitches.
   product picker when the account has one product, and prefers a localhost URL
   that is already running.
 - `clipstitchr scan` detects likely demo flows from local app routes.
+- `clipstitchr demo make` can create or reuse a saved walkthrough checklist
+  before recording.
+- `clipstitchr demo make --guide <id-or-path>` reuses a saved guide, and
+  `clipstitchr demo make --no-guide` records without the guided stepper.
 - `clipstitchr demo make` records a local web/Expo-web app in a normal desktop
   Chromium window, converts the recording to MP4, and offers to upload it.
 - `clipstitchr demo make` captures click and cursor timing while recording web
@@ -121,6 +125,8 @@ The CLI does not stream large videos through the Next.js server.
 5. The server consumes upload video-analysis limits and queues the same
    `upload-normalization` media job used by browser uploads. CLI web recordings
    can include `layout: "smart-screen-demo"` plus click/cursor timing metadata.
+   Guided recordings can also include walkthrough guide and step timing
+   metadata for future chapters, captions, zooms, and edit decisions.
 6. The CLI polls `GET /api/cli/uploads/{clipId}` until the normalized Demo
    appears in the Library.
 
@@ -172,12 +178,26 @@ When the CLI starts the local app, it runs the start command in its own process
 group and stops that group after recording. This prevents orphaned local dev
 servers from keeping ports like `3000` busy after a recording is canceled.
 
-Recording is manual by default. The CLI opens the app in Chromium, the user
-clicks through the demo, and the user presses Enter in the terminal when the
-take is done. This keeps the first shipped recorder predictable and avoids an AI
-agent clicking through private or destructive flows without explicit guardrails.
-The CLI prints the recording instructions before Chromium opens so the user
-knows to return to the terminal after finishing the browser walkthrough.
+Recording is guided and manual by default. Before recording, the CLI can create
+a saved checklist from the product, selected local flow, app type, and the
+user's goal. Saved guides live in `.clipstitchr/demo-guides/*.json`, and the
+last used guide ID is stored in `.clipstitchr.yml`.
+
+When a guide is active, the CLI prints the full checklist, opens the recording
+target, and steps through the guide in the terminal:
+
+```text
+Step 2 of 5: Upload a sample clip. Press Enter when this step is done.
+```
+
+Each completed step creates timing metadata. The upload completion request sends
+the guide and timings as `walkthrough`, so the media job snapshot has enough
+context for later chapters, captions, smart zooms, and Quick Edit decisions.
+
+The user still clicks manually. This keeps the first shipped recorder
+predictable and avoids an AI agent clicking through private or destructive flows
+without explicit guardrails. `--no-guide` records one free-form take, and
+`--guide <id-or-path>` reuses a guide by saved ID or JSON file path.
 
 Recording duration is guidance, not a hard stop. The CLI saves
 `recommendedDurationSeconds` and `longRecordingWarningSeconds` in
@@ -238,6 +258,29 @@ Color is only applied when stdout is an interactive terminal. `--plain` sets
 shared terminal helpers. `clipstitchr products list` stays tab-separated so it
 remains useful for scripting.
 
+## Guided Demo To Agent Plan
+
+The walkthrough system is the first production-safe layer of the eventual demo
+agent workflow.
+
+1. Walkthrough Guide: the CLI asks what the user wants to show, creates a simple
+   checklist, saves it to `.clipstitchr/demo-guides`, and shows it before
+   recording.
+2. Guided Recorder: the CLI records step timings while the user manually clicks
+   through the app. Web recordings also include click and cursor timing.
+3. AI-Assisted Script: a future server-side writer can generate better guides
+   from product name, target audience, selected route, app type, and user goal.
+   This should still require user review before recording.
+4. Full AI Agent: a future recorder can drive the browser only after guardrails
+   exist for demo/test credentials, route allowlists, app reset or seed data,
+   max recording time, screenshots, action logs, stop-if-stuck behavior,
+   destructive-action blocking, and user approval before upload.
+
+The downloadable-agent option should be treated as a companion path rather than
+the first implementation. ClipStitchr can export the guide as instructions for
+the user's own coding agent, but the CLI-owned guide and timing metadata remains
+the source of truth that upload processing understands.
+
 ## File Tree
 
 ```text
@@ -263,6 +306,13 @@ packages/clipstitchr-cli/
   src/config/
     deleteProjectConfig.ts
     hasProjectConfig.ts
+  src/demoGuide/
+    createDemoWalkthroughGuide.ts
+    createDemoWalkthroughGuideSteps.ts
+    printDemoWalkthroughGuide.ts
+    runDemoWalkthroughStepper.ts
+    selectDemoWalkthroughGuide.ts
+    writeDemoWalkthroughGuide.ts
   src/interactive/
   src/native/
   src/project/
@@ -320,6 +370,9 @@ web/lib/clipstitchr/docs/
   clipstitchrCliDoc.ts
   legacyCustomerDocSlugs.ts
 
+web/lib/clipstitchr/server/cli/demoWalkthrough/
+  readCliDemoWalkthroughMetadata.ts
+
 web/convex/cliAuth/
 web/convex/cliLibrary/
 web/convex/cliPostBridge/
@@ -351,6 +404,7 @@ npm run dev -- login
 npm run dev -- init
 npm run dev -- scan
 npm run dev -- demo make
+npm run dev -- demo make --no-guide
 npm run dev -- demo upload ./demo.mp4
 ```
 
@@ -386,6 +440,9 @@ npm tarball so users receive the license text with the package.
   in production.
 - Confirm `/cli/connect` works after Clerk sign-in redirects.
 - Run `clipstitchr login --api https://your-production-domain`.
+- Run `clipstitchr demo make --api https://your-production-domain --no-upload`
+  and confirm `.clipstitchr/demo-guides/*.json` is created when the guide flow
+  is accepted.
 - Run `clipstitchr demo upload ./demo.mp4` against production.
 - Run `npm pack --dry-run` and inspect the package contents.
 - Publish to npm from `packages/clipstitchr-cli`.

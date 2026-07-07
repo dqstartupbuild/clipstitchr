@@ -2,6 +2,7 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { input } from "@inquirer/prompts";
+import { runDemoWalkthroughStepper } from "../demoGuide/runDemoWalkthroughStepper.js";
 import type { RecordingResult } from "./RecordingResult.js";
 import type { WebRecordingOptions } from "./WebRecordingOptions.js";
 import { convertVideoToMp4 } from "./convertVideoToMp4.js";
@@ -48,11 +49,18 @@ export async function recordWebDemo(
     const stopLongRecordingWarning = startLongRecordingWarningTimer(
       options.longRecordingWarningSeconds ?? 0,
     );
+    let walkthroughTimings: RecordingResult["walkthroughTimings"];
 
     try {
-      await input({
-        message: "Press Enter when you are done recording.",
-      });
+      walkthroughTimings = options.walkthroughGuide
+        ? await runDemoWalkthroughStepper(options.walkthroughGuide)
+        : undefined;
+
+      if (!options.walkthroughGuide) {
+        await input({
+          message: "Press Enter when you are done recording.",
+        });
+      }
     } finally {
       stopLongRecordingWarning();
     }
@@ -75,6 +83,7 @@ export async function recordWebDemo(
       interactionEvents,
       outputPath,
       rawVideoPath,
+      walkthroughTimings,
     };
   } finally {
     stopShellCommand(appProcess);

@@ -5,10 +5,15 @@ import { ensureCredentialsOrLogin } from "./ensureCredentialsOrLogin.js";
 import { readProjectConfig } from "../config/readProjectConfig.js";
 import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
+import { createDemoWalkthroughUploadMetadata } from "../demoGuide/createDemoWalkthroughUploadMetadata.js";
+import type { DemoWalkthroughGuide } from "../demoGuide/DemoWalkthroughGuide.js";
+import { printDemoWalkthroughGuide } from "../demoGuide/printDemoWalkthroughGuide.js";
+import { selectDemoWalkthroughGuide } from "../demoGuide/selectDemoWalkthroughGuide.js";
 import { selectProduct } from "../interactive/selectProduct.js";
 import { detectProject } from "../project/detectProject.js";
 import { findRunningLocalAppUrl } from "../project/findRunningLocalAppUrl.js";
 import { isHttpUrlReachable } from "../project/isHttpUrlReachable.js";
+import type { ScannedFlow } from "../project/ScannedFlow.js";
 import { scanProjectFlows } from "../project/scanProjectFlows.js";
 import { recordNativeDemo } from "../native/recordNativeDemo.js";
 import type { RecordingResult } from "../recording/RecordingResult.js";
@@ -27,6 +32,7 @@ import { logWarning } from "../terminal/logWarning.js";
 import { uploadDemoFile } from "../upload/uploadDemoFile.js";
 
 export type DemoMakeCommandOptions = CliGlobalOptions & {
+  guide?: string | false;
   output?: string;
   product?: string;
   start?: string;
@@ -56,6 +62,7 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
     options.product ?? config.productId,
   );
   let recording: RecordingResult;
+  let walkthroughGuide: DemoWalkthroughGuide | undefined;
   let recordingLayout: "fit-with-background" | "smart-screen-demo" | undefined;
   let startCommand = options.start ?? config.target?.start;
   let url = options.url ?? config.target?.url;
@@ -80,15 +87,30 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
       }));
     const shouldStartApp = !(await isHttpUrlReachable(url));
     const flows = await scanProjectFlows(join(process.cwd(), project.directory));
+    let selectedFlow: ScannedFlow | undefined;
 
     if (flows.length) {
-      await select({
+      selectedFlow = await select({
         choices: flows.map((flow) => ({
           name: `${flow.name}${flow.path ? ` (${flow.path})` : ""}`,
-          value: flow.name,
+          value: flow,
         })),
         message: "Pick the flow you want to record first:",
       });
+    }
+
+    walkthroughGuide = await selectDemoWalkthroughGuide({
+      configGuideId: config.recording?.demoGuideId,
+      disabled: options.guide === false,
+      guideReference:
+        typeof options.guide === "string" ? options.guide : undefined,
+      product,
+      project,
+      selectedFlow,
+    });
+
+    if (walkthroughGuide) {
+      printDemoWalkthroughGuide(walkthroughGuide);
     }
 
     logStep("Opening the recording browser.");
@@ -98,17 +120,32 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
       outputPath: options.output,
       startCommand: shouldStartApp ? startCommand : undefined,
       url,
+      walkthroughGuide,
     });
     recordingLayout = recording.interactionEvents?.length
       ? "smart-screen-demo"
       : "fit-with-background";
   } else {
+    walkthroughGuide = await selectDemoWalkthroughGuide({
+      configGuideId: config.recording?.demoGuideId,
+      disabled: options.guide === false,
+      guideReference:
+        typeof options.guide === "string" ? options.guide : undefined,
+      product,
+      project,
+    });
+
+    if (walkthroughGuide) {
+      printDemoWalkthroughGuide(walkthroughGuide);
+    }
+
     logStep("Starting mobile device recording.");
     recording = await recordNativeDemo({
       longRecordingWarningSeconds:
         recordingGuidance.longRecordingWarningSeconds,
       outputPath: options.output,
       projectType: project.type,
+      walkthroughGuide,
     });
   }
 
@@ -117,6 +154,7 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
     apiBaseUrl,
     productId: product.id,
     recording: {
+      demoGuideId: walkthroughGuide?.id ?? config.recording?.demoGuideId,
       format: "full-size",
       longRecordingWarningSeconds:
         recordingGuidance.longRecordingWarningSeconds,
@@ -171,6 +209,10 @@ export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
     layout: recordingLayout,
     productId: product.id,
     wait: true,
+    walkthrough: createDemoWalkthroughUploadMetadata({
+      guide: walkthroughGuide,
+      timings: recording.walkthroughTimings,
+    }),
   });
   logSuccess("Uploaded to your Demo library.");
 }

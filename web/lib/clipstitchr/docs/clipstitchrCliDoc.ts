@@ -14,7 +14,7 @@ export const clipstitchrCliDoc = {
     {
       title: "What it does",
       body: [
-        "The ClipStitchr CLI brings the parts of ClipStitchr that fit naturally in Terminal into the repo you already have open. You can record local product demos, upload existing demos, start batch content, list saved work, and add finished Stitches to the queue.",
+        "The ClipStitchr CLI brings the parts of ClipStitchr that fit naturally in Terminal into the repo you already have open. You can record guided local product demos, upload existing demos, start batch content, list saved work, and add finished Stitches to the queue.",
         "Use it when you changed the product, need a cleaner walkthrough, want to kick off a batch without opening the dashboard, or need a finished Stitch queued from a script.",
       ],
     },
@@ -130,17 +130,22 @@ export const clipstitchrCliDoc = {
     {
       title: "Record a demo",
       body: [
-        "Choose Make a product demo. The CLI starts your local app, opens the recording browser, and tells you when to walk through the product. When the take is done, return to the terminal and press Enter.",
+        "Choose Make a product demo. The CLI can create a quick walkthrough checklist first, then starts your local app, opens the recording browser, and walks you through the steps while you record.",
+        "Each time a step is done, return to the terminal and press Enter. ClipStitchr saves those step timings with the upload so it can make cleaner chapters, captions, zooms, and edits later.",
         "If the app asks you to sign in, log in inside the recording browser. The CLI keeps that browser session for the same repo, so the next recording is faster.",
         "Most demos work best around 30-90 seconds, but longer recordings are allowed. If your app needs time for loading, AI generation, or processing, keep recording and ClipStitchr can cut waiting time later.",
       ],
       bullets: [
+        "Use --guide when you want to reuse a saved walkthrough.",
+        "Use --no-guide when you want one free-form recording.",
         "Use --no-upload when you only want the local MP4.",
         "Use --output when you want to choose where the MP4 is saved.",
         "Use --product, --start, or --url when you want to skip prompts.",
       ],
       commands: [
         "clipstitchr demo make",
+        "clipstitchr demo make --guide guide_123",
+        "clipstitchr demo make --no-guide",
         "clipstitchr demo make --no-upload",
         "clipstitchr demo make --output ./demo.mp4",
         "clipstitchr demo make --product product_123 --url http://localhost:3000",
@@ -176,7 +181,7 @@ export const clipstitchrCliDoc = {
     {
       title: "What to expect",
       body: [
-        "Web app demos are recorded at a full desktop size, then prepared for vertical ads with a fit-with-background layout. ClipStitchr can also use your clicks to add smooth zooms around the parts of the product you touched.",
+        "Web app demos are recorded at a full desktop size, then prepared for vertical ads with a fit-with-background layout. ClipStitchr can also use your guide steps and clicks to add smooth zooms around the parts of the product you touched.",
         "The CLI warns when a recording gets long, but it does not stop web or iOS recordings for you. Android recording may stop around 3 minutes because of the device recorder.",
         "iOS, Android, and React Native demos record from an already-open simulator, emulator, or device. Open the app where you want to start, then let the CLI start and stop the recording.",
       ],
@@ -184,7 +189,7 @@ export const clipstitchrCliDoc = {
     {
       title: "Where the files go",
       body: [
-        "The CLI saves repo settings in .clipstitchr.yml and local recording files in .clipstitchr. Keep .clipstitchr ignored by Git so recordings and browser login state stay off your repo.",
+        "The CLI saves repo settings in .clipstitchr.yml, saved walkthroughs in .clipstitchr/demo-guides, and local recording files in .clipstitchr. Keep .clipstitchr ignored by Git so recordings and browser login state stay off your repo.",
       ],
     },
   ],

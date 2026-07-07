@@ -9,9 +9,9 @@ const cliSteps = [
     icon: Terminal,
   },
   {
-    title: "Record or create",
+    title: "Follow a demo guide",
     description:
-      "Capture a product demo, start Stitchr batches, or prepare Swipr drafts from the terminal.",
+      "Create a simple checklist, record the product, and save step timing for cleaner edits later.",
     icon: MonitorUp,
   },
   {
@@ -32,9 +32,9 @@ export function LandingCliSection() {
             Run product work from the repo you already have open.
           </h2>
           <p className="mt-5 leading-7 text-text-secondary">
-            The ClipStitchr CLI records local demos, starts batch content, checks
-            your library, and queues finished Stitches without making you jump
-            between tools.
+            The ClipStitchr CLI guides local demo recordings, starts batch
+            content, checks your library, and queues finished Stitches without
+            making you jump between tools.
           </p>
           <Link
             className="mt-7 inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-bold text-text-inverse transition-colors hover:bg-accent-light"
@@ -55,7 +55,7 @@ export function LandingCliSection() {
           <pre className="overflow-x-auto px-5 py-5 text-sm font-semibold leading-7 text-text-primary">
             <code>
               {
-                "npm install -g clipstitchr\nclipstitchr\nclipstitchr stitchr batch"
+                "npm install -g clipstitchr\nclipstitchr demo make\nclipstitchr stitchr batch"
               }
             </code>
           </pre>
