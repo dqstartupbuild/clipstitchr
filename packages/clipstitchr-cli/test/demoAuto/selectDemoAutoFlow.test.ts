@@ -26,4 +26,16 @@ describe("selectDemoAutoFlow", () => {
 
     assert.equal(flow?.name, "Dashboard");
   });
+
+  it("prefers a workspace flow over root when the linked URL is the app root", () => {
+    const flow = selectDemoAutoFlow({
+      flows: [
+        { confidence: "medium", name: "Open the product", path: "/" },
+        { confidence: "medium", name: "Show the main workspace", path: "/dashboard" },
+      ],
+      localUrl: "http://localhost:3000/",
+    });
+
+    assert.equal(flow?.name, "Show the main workspace");
+  });
 });

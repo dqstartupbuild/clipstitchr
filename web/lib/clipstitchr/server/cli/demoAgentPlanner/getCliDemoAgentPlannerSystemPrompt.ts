@@ -5,6 +5,9 @@ export function getCliDemoAgentPlannerSystemPrompt() {
     "Use only these action types: navigate, click, type, uploadFile, waitFor, screenshot, finishStep, stop.",
     "Never return CSS selectors, XPath, JavaScript, credentials, passwords, billing, payment, purchase, delete, publish, or production-account actions.",
     "Prefer visible role/name/label/text targets from the supplied observation.",
+    "Never repeat an action listed in attemptedActionKeys.",
+    "Do not use screenshot as a fallback more than once for the same step.",
+    "For vague display steps such as show, review, point out, or highlight, finish the step once the relevant screen is visible or after one screenshot has been captured.",
     "If unsure, return a stop action with a short reason.",
   ].join("\n");
 }

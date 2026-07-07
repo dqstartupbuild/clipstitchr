@@ -63,6 +63,11 @@ function createRequest(body: object) {
 function createBody() {
   return {
     appType: "web",
+    availableFlows: [
+      { confidence: "medium", name: "Open the product", path: "/" },
+      { confidence: "medium", name: "Show the main workspace", path: "/dashboard" },
+      { confidence: "low", name: "External", path: "https://example.com" },
+    ],
     flowName: "Dashboard",
     flowPath: "/dashboard",
     goal: "Show the upload flow",
@@ -152,7 +157,17 @@ describe("POST /api/cli/demo-guides/generate", () => {
     expect(mocks.createCliDemoGuideGeneration).toHaveBeenCalledWith(
       expect.objectContaining({
         product: expect.objectContaining({ name: "ClipStitchr" }),
-        request: expect.objectContaining({ stepCount: 8 }),
+        request: expect.objectContaining({
+          availableFlows: [
+            { confidence: "medium", name: "Open the product", path: "/" },
+            {
+              confidence: "medium",
+              name: "Show the main workspace",
+              path: "/dashboard",
+            },
+          ],
+          stepCount: 8,
+        }),
         replicate: { provider: "replicate" },
       }),
     );

@@ -93,7 +93,10 @@ the simplified observation only. The server parser rejects unsupported action
 types and CSS selectors, and the CLI policy validator still decides whether the
 proposed action can run. The endpoint uses the shared text-writing provider
 payload helper, including the Replicate Anthropic token minimum guard, before it
-asks the configured writing model for the next action.
+asks the configured writing model for the next action. Planner prompts include
+the action keys already tried during the current step, and the model is told not
+to repeat screenshots or other actions that have already failed to move the
+page forward.
 
 ## One-Command AI Recording
 
@@ -103,7 +106,9 @@ known or running, and the saved browser profile to already be signed into the
 app. It generates a guide with ClipStitchr AI, saves it locally, creates a
 localhost policy if one does not exist, verifies the page in a non-recorded
 browser, records with the model-backed planner, and skips upload prompts by
-default.
+default. The generated guide receives scanned route context and is rejected if
+it asks for presenter-only behavior, such as pointing out or highlighting UI
+without a browser action the agent can perform.
 
 If one of those setup requirements is missing, the command stops with the next
 setup command instead of asking questions.

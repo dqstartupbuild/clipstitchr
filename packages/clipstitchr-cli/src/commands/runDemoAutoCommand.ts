@@ -83,6 +83,7 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
     const guide = (
       await generateDemoWalkthroughGuide(credentials, {
         appType: project.type,
+        availableFlows: flows,
         flowName: selectedFlow?.name,
         flowPath: selectedFlow?.path,
         goal,

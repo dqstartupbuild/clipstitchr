@@ -84,6 +84,18 @@ ${createOutput([
     ).toThrow("AI guide includes an unsafe step.");
   });
 
+  it("rejects presenter-only steps the guarded agent cannot perform", () => {
+    expect(() =>
+      parseCliDemoGuideGenerationOutput(
+        createOutput([
+          { label: "Open the dashboard" },
+          { label: "Point out the main dashboard" },
+          { label: "Review the result" },
+        ]),
+      ),
+    ).toThrow("AI guide includes a non-actionable step.");
+  });
+
   it("rejects overlong text", () => {
     expect(() =>
       parseCliDemoGuideGenerationOutput(

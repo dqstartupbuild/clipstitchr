@@ -17,9 +17,10 @@ with the existing `clipstitchr demo make --guide <id>` stepper.
 
 ## How It Works
 
-The CLI picks the current product, detects the local app type, optionally scans
-local routes, and asks what the demo should show. It sends product, app, flow,
-goal, audience, and desired step count to the web API.
+The CLI picks the current product, detects the local app type, scans local
+routes, and asks what the demo should show. It sends product, app, selected
+flow, available route context, goal, audience, and desired step count to the web
+API.
 
 The API verifies the CLI session, checks that the product belongs to the
 session owner, consumes `cliDemoGuideGenerate`,
@@ -27,11 +28,12 @@ session owner, consumes `cliDemoGuideGenerate`,
 configured writing model through `TEXT_WRITING_MODEL_ID`.
 
 The prompt asks for JSON only: one title, one plain-language goal, and 3-8
-label-only steps. The parser rejects malformed JSON, empty or oversized fields,
-too many or too few steps, duplicate returned step IDs, and unsafe labels. If
-the first output does not parse, the backend asks the model to repair the JSON
-once. If generation still fails, the CLI falls back to the existing local
-checklist builder.
+label-only steps that a guarded browser agent can actually perform. The parser
+rejects malformed JSON, empty or oversized fields, too many or too few steps,
+duplicate returned step IDs, unsafe labels, and presenter-only steps such as
+"point out" or "highlight" instructions. If the first output does not parse, the
+backend asks the model to repair the JSON once. If generation still fails, the
+CLI falls back to the existing local checklist builder.
 
 ## File Tree
 

@@ -5,13 +5,17 @@ export function selectDemoAutoFlow(input: {
   localUrl?: string;
 }) {
   const pathname = input.localUrl ? new URL(input.localUrl).pathname : undefined;
-  const matchingFlow = pathname
+  const matchingFlow = pathname && pathname !== "/"
     ? input.flows.find((flow) => flow.path === pathname)
     : undefined;
+  const workspaceFlow = input.flows.find((flow) =>
+    flow.path ? /dashboard|project|workspace/i.test(flow.path) : false,
+  );
 
   return (
     matchingFlow ??
     input.flows.find((flow) => flow.confidence === "high") ??
+    workspaceFlow ??
     input.flows[0]
   );
 }

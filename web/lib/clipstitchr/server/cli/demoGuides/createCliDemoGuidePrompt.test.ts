@@ -23,6 +23,12 @@ function createRequest(
 ): CliDemoGuideGenerateRequest {
   return {
     appType: "web",
+    availableFlows: [
+      { confidence: "medium", name: "Open the product", path: "/" },
+      { confidence: "medium", name: "Show the main workspace", path: "/dashboard" },
+      { confidence: "low", name: "Show /dashboard/library", path: "/dashboard/library" },
+      { confidence: "low", name: "Show /dashboard/stitchr", path: "/dashboard/stitchr" },
+    ],
     flowName: "Dashboard",
     flowPath: "/dashboard",
     goal: "Show the upload flow",
@@ -78,5 +84,22 @@ describe("createCliDemoGuidePrompt", () => {
     expect(
       JSON.parse(createCliDemoGuidePrompt({ product: product ?? createProduct(), request })),
     ).toMatchSnapshot();
+  });
+
+  it("tells the model to avoid presenter-only steps", () => {
+    const prompt = JSON.parse(
+      createCliDemoGuidePrompt({
+        product: createProduct(),
+        request: createRequest(),
+      }),
+    );
+
+    expect(prompt.agentCapabilities.cannot).toContain("point at the screen");
+    expect(prompt.rules.bannedStepVerbs).toContain("Highlight");
+    expect(prompt.demo.availableFlows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: "/dashboard" }),
+      ]),
+    );
   });
 });

@@ -2,13 +2,70 @@
 
 exports[`createCliDemoGuidePrompt > matches the 'auth-required' prompt shape 1`] = `
 {
+  "agentCapabilities": {
+    "can": [
+      "open allowed local routes",
+      "click visible links or buttons by their accessible name",
+      "type only approved test values",
+      "upload only approved local files",
+      "wait for visible text",
+      "take a screenshot",
+      "finish a step when the requested screen is already visible",
+    ],
+    "cannot": [
+      "point at the screen",
+      "highlight UI",
+      "narrate or explain out loud",
+      "use CSS selectors",
+      "operate hidden controls",
+      "invent screens, blank workspaces, projects, templates, or export presets",
+    ],
+  },
   "demo": {
     "appType": "web",
+    "availableFlows": [
+      {
+        "confidence": "medium",
+        "name": "Open the product",
+        "path": "/",
+      },
+      {
+        "confidence": "medium",
+        "name": "Show the main workspace",
+        "path": "/dashboard",
+      },
+      {
+        "confidence": "low",
+        "name": "Show /dashboard/library",
+        "path": "/dashboard/library",
+      },
+      {
+        "confidence": "low",
+        "name": "Show /dashboard/stitchr",
+        "path": "/dashboard/stitchr",
+      },
+    ],
     "flowName": "Dashboard",
     "flowPath": "/dashboard",
     "goal": "Show sign in and the main workspace",
     "targetAudience": "busy founders recording product demos",
   },
+  "examples": {
+    "bad": [
+      "Point out the main dashboard",
+      "Highlight the template picker",
+      "Show where a creator would upload a clip",
+      "Click to start a new project",
+      "Highlight export preset options",
+    ],
+    "good": [
+      "Open the dashboard",
+      "Click Upload",
+      "Open the Library page",
+      "Open Stitchr from the sidebar",
+      "Review the saved clips on the dashboard",
+    ],
+  },
   "outputShape": {
     "goal": "Plain-language demo goal.",
     "steps": [
@@ -29,26 +86,97 @@ exports[`createCliDemoGuidePrompt > matches the 'auth-required' prompt shape 1`]
     "websiteUrl": "https://clipstitchr.test",
   },
   "rules": {
+    "agentRunnable": true,
+    "allowedStepVerbs": "Prefer Open, Click, Choose, Select, Upload, Wait for, Review, Use, or Finish on.",
+    "bannedStepVerbs": [
+      "Point out",
+      "Highlight",
+      "Explain",
+      "Describe",
+      "Mention",
+      "Talk through",
+      "Show where",
+      "Show how",
+    ],
     "maxSteps": 8,
     "minSteps": 3,
     "noDestructiveActions": true,
+    "noInventedUi": true,
     "noSecrets": true,
     "noSelectors": true,
     "stepCount": 5,
     "stepLabelOnly": true,
+    "useKnownRoutesWhenPossible": true,
   },
-  "task": "Create a manual recording checklist for a ClipStitchr demo guide.",
+  "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",
 }
 `;
 
 exports[`createCliDemoGuidePrompt > matches the 'loading-process' prompt shape 1`] = `
 {
+  "agentCapabilities": {
+    "can": [
+      "open allowed local routes",
+      "click visible links or buttons by their accessible name",
+      "type only approved test values",
+      "upload only approved local files",
+      "wait for visible text",
+      "take a screenshot",
+      "finish a step when the requested screen is already visible",
+    ],
+    "cannot": [
+      "point at the screen",
+      "highlight UI",
+      "narrate or explain out loud",
+      "use CSS selectors",
+      "operate hidden controls",
+      "invent screens, blank workspaces, projects, templates, or export presets",
+    ],
+  },
   "demo": {
     "appType": "web",
+    "availableFlows": [
+      {
+        "confidence": "medium",
+        "name": "Open the product",
+        "path": "/",
+      },
+      {
+        "confidence": "medium",
+        "name": "Show the main workspace",
+        "path": "/dashboard",
+      },
+      {
+        "confidence": "low",
+        "name": "Show /dashboard/library",
+        "path": "/dashboard/library",
+      },
+      {
+        "confidence": "low",
+        "name": "Show /dashboard/stitchr",
+        "path": "/dashboard/stitchr",
+      },
+    ],
     "flowName": "Dashboard",
     "flowPath": "/dashboard",
     "goal": "Show upload processing and review the finished result",
     "targetAudience": "busy founders recording product demos",
+  },
+  "examples": {
+    "bad": [
+      "Point out the main dashboard",
+      "Highlight the template picker",
+      "Show where a creator would upload a clip",
+      "Click to start a new project",
+      "Highlight export preset options",
+    ],
+    "good": [
+      "Open the dashboard",
+      "Click Upload",
+      "Open the Library page",
+      "Open Stitchr from the sidebar",
+      "Review the saved clips on the dashboard",
+    ],
   },
   "outputShape": {
     "goal": "Plain-language demo goal.",
@@ -70,24 +198,95 @@ exports[`createCliDemoGuidePrompt > matches the 'loading-process' prompt shape 1
     "websiteUrl": "https://clipstitchr.test",
   },
   "rules": {
+    "agentRunnable": true,
+    "allowedStepVerbs": "Prefer Open, Click, Choose, Select, Upload, Wait for, Review, Use, or Finish on.",
+    "bannedStepVerbs": [
+      "Point out",
+      "Highlight",
+      "Explain",
+      "Describe",
+      "Mention",
+      "Talk through",
+      "Show where",
+      "Show how",
+    ],
     "maxSteps": 8,
     "minSteps": 3,
     "noDestructiveActions": true,
+    "noInventedUi": true,
     "noSecrets": true,
     "noSelectors": true,
     "stepCount": 5,
     "stepLabelOnly": true,
+    "useKnownRoutesWhenPossible": true,
   },
-  "task": "Create a manual recording checklist for a ClipStitchr demo guide.",
+  "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",
 }
 `;
 
 exports[`createCliDemoGuidePrompt > matches the 'minimal-product' prompt shape 1`] = `
 {
+  "agentCapabilities": {
+    "can": [
+      "open allowed local routes",
+      "click visible links or buttons by their accessible name",
+      "type only approved test values",
+      "upload only approved local files",
+      "wait for visible text",
+      "take a screenshot",
+      "finish a step when the requested screen is already visible",
+    ],
+    "cannot": [
+      "point at the screen",
+      "highlight UI",
+      "narrate or explain out loud",
+      "use CSS selectors",
+      "operate hidden controls",
+      "invent screens, blank workspaces, projects, templates, or export presets",
+    ],
+  },
   "demo": {
     "appType": "web",
+    "availableFlows": [
+      {
+        "confidence": "medium",
+        "name": "Open the product",
+        "path": "/",
+      },
+      {
+        "confidence": "medium",
+        "name": "Show the main workspace",
+        "path": "/dashboard",
+      },
+      {
+        "confidence": "low",
+        "name": "Show /dashboard/library",
+        "path": "/dashboard/library",
+      },
+      {
+        "confidence": "low",
+        "name": "Show /dashboard/stitchr",
+        "path": "/dashboard/stitchr",
+      },
+    ],
     "goal": "Show the upload flow",
     "targetAudience": "people evaluating this product",
+  },
+  "examples": {
+    "bad": [
+      "Point out the main dashboard",
+      "Highlight the template picker",
+      "Show where a creator would upload a clip",
+      "Click to start a new project",
+      "Highlight export preset options",
+    ],
+    "good": [
+      "Open the dashboard",
+      "Click Upload",
+      "Open the Library page",
+      "Open Stitchr from the sidebar",
+      "Review the saved clips on the dashboard",
+    ],
   },
   "outputShape": {
     "goal": "Plain-language demo goal.",
@@ -105,25 +304,96 @@ exports[`createCliDemoGuidePrompt > matches the 'minimal-product' prompt shape 1
     "name": "ClipStitchr",
   },
   "rules": {
+    "agentRunnable": true,
+    "allowedStepVerbs": "Prefer Open, Click, Choose, Select, Upload, Wait for, Review, Use, or Finish on.",
+    "bannedStepVerbs": [
+      "Point out",
+      "Highlight",
+      "Explain",
+      "Describe",
+      "Mention",
+      "Talk through",
+      "Show where",
+      "Show how",
+    ],
     "maxSteps": 8,
     "minSteps": 3,
     "noDestructiveActions": true,
+    "noInventedUi": true,
     "noSecrets": true,
     "noSelectors": true,
     "stepCount": 5,
     "stepLabelOnly": true,
+    "useKnownRoutesWhenPossible": true,
   },
-  "task": "Create a manual recording checklist for a ClipStitchr demo guide.",
+  "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",
 }
 `;
 
 exports[`createCliDemoGuidePrompt > matches the 'mobile' prompt shape 1`] = `
 {
+  "agentCapabilities": {
+    "can": [
+      "open allowed local routes",
+      "click visible links or buttons by their accessible name",
+      "type only approved test values",
+      "upload only approved local files",
+      "wait for visible text",
+      "take a screenshot",
+      "finish a step when the requested screen is already visible",
+    ],
+    "cannot": [
+      "point at the screen",
+      "highlight UI",
+      "narrate or explain out loud",
+      "use CSS selectors",
+      "operate hidden controls",
+      "invent screens, blank workspaces, projects, templates, or export presets",
+    ],
+  },
   "demo": {
     "appType": "ios",
+    "availableFlows": [
+      {
+        "confidence": "medium",
+        "name": "Open the product",
+        "path": "/",
+      },
+      {
+        "confidence": "medium",
+        "name": "Show the main workspace",
+        "path": "/dashboard",
+      },
+      {
+        "confidence": "low",
+        "name": "Show /dashboard/library",
+        "path": "/dashboard/library",
+      },
+      {
+        "confidence": "low",
+        "name": "Show /dashboard/stitchr",
+        "path": "/dashboard/stitchr",
+      },
+    ],
     "flowName": "Mobile onboarding",
     "goal": "Show the upload flow",
     "targetAudience": "busy founders recording product demos",
+  },
+  "examples": {
+    "bad": [
+      "Point out the main dashboard",
+      "Highlight the template picker",
+      "Show where a creator would upload a clip",
+      "Click to start a new project",
+      "Highlight export preset options",
+    ],
+    "good": [
+      "Open the dashboard",
+      "Click Upload",
+      "Open the Library page",
+      "Open Stitchr from the sidebar",
+      "Review the saved clips on the dashboard",
+    ],
   },
   "outputShape": {
     "goal": "Plain-language demo goal.",
@@ -145,26 +415,97 @@ exports[`createCliDemoGuidePrompt > matches the 'mobile' prompt shape 1`] = `
     "websiteUrl": "https://clipstitchr.test",
   },
   "rules": {
+    "agentRunnable": true,
+    "allowedStepVerbs": "Prefer Open, Click, Choose, Select, Upload, Wait for, Review, Use, or Finish on.",
+    "bannedStepVerbs": [
+      "Point out",
+      "Highlight",
+      "Explain",
+      "Describe",
+      "Mention",
+      "Talk through",
+      "Show where",
+      "Show how",
+    ],
     "maxSteps": 8,
     "minSteps": 3,
     "noDestructiveActions": true,
+    "noInventedUi": true,
     "noSecrets": true,
     "noSelectors": true,
     "stepCount": 5,
     "stepLabelOnly": true,
+    "useKnownRoutesWhenPossible": true,
   },
-  "task": "Create a manual recording checklist for a ClipStitchr demo guide.",
+  "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",
 }
 `;
 
 exports[`createCliDemoGuidePrompt > matches the 'web' prompt shape 1`] = `
 {
+  "agentCapabilities": {
+    "can": [
+      "open allowed local routes",
+      "click visible links or buttons by their accessible name",
+      "type only approved test values",
+      "upload only approved local files",
+      "wait for visible text",
+      "take a screenshot",
+      "finish a step when the requested screen is already visible",
+    ],
+    "cannot": [
+      "point at the screen",
+      "highlight UI",
+      "narrate or explain out loud",
+      "use CSS selectors",
+      "operate hidden controls",
+      "invent screens, blank workspaces, projects, templates, or export presets",
+    ],
+  },
   "demo": {
     "appType": "web",
+    "availableFlows": [
+      {
+        "confidence": "medium",
+        "name": "Open the product",
+        "path": "/",
+      },
+      {
+        "confidence": "medium",
+        "name": "Show the main workspace",
+        "path": "/dashboard",
+      },
+      {
+        "confidence": "low",
+        "name": "Show /dashboard/library",
+        "path": "/dashboard/library",
+      },
+      {
+        "confidence": "low",
+        "name": "Show /dashboard/stitchr",
+        "path": "/dashboard/stitchr",
+      },
+    ],
     "flowName": "Dashboard",
     "flowPath": "/dashboard",
     "goal": "Show the upload flow",
     "targetAudience": "busy founders recording product demos",
+  },
+  "examples": {
+    "bad": [
+      "Point out the main dashboard",
+      "Highlight the template picker",
+      "Show where a creator would upload a clip",
+      "Click to start a new project",
+      "Highlight export preset options",
+    ],
+    "good": [
+      "Open the dashboard",
+      "Click Upload",
+      "Open the Library page",
+      "Open Stitchr from the sidebar",
+      "Review the saved clips on the dashboard",
+    ],
   },
   "outputShape": {
     "goal": "Plain-language demo goal.",
@@ -186,14 +527,28 @@ exports[`createCliDemoGuidePrompt > matches the 'web' prompt shape 1`] = `
     "websiteUrl": "https://clipstitchr.test",
   },
   "rules": {
+    "agentRunnable": true,
+    "allowedStepVerbs": "Prefer Open, Click, Choose, Select, Upload, Wait for, Review, Use, or Finish on.",
+    "bannedStepVerbs": [
+      "Point out",
+      "Highlight",
+      "Explain",
+      "Describe",
+      "Mention",
+      "Talk through",
+      "Show where",
+      "Show how",
+    ],
     "maxSteps": 8,
     "minSteps": 3,
     "noDestructiveActions": true,
+    "noInventedUi": true,
     "noSecrets": true,
     "noSelectors": true,
     "stepCount": 5,
     "stepLabelOnly": true,
+    "useKnownRoutesWhenPossible": true,
   },
-  "task": "Create a manual recording checklist for a ClipStitchr demo guide.",
+  "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",
 }
 `;

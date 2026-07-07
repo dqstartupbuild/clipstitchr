@@ -1,3 +1,4 @@
+import { cliDemoGuideNonActionableStepPattern } from "@/lib/clipstitchr/server/cli/demoGuides/cliDemoGuideNonActionableStepPattern";
 import type { CliDemoGuideGenerationOutput } from "@/lib/clipstitchr/server/cli/demoGuides/CliDemoGuideGenerationOutput";
 import {
   cliDemoGuideMaxStepCount,
@@ -70,6 +71,10 @@ export function parseCliDemoGuideGenerationOutput(
 
     if (unsafeStepPattern.test(label)) {
       throw new Error("AI guide includes an unsafe step.");
+    }
+
+    if (cliDemoGuideNonActionableStepPattern.test(label)) {
+      throw new Error("AI guide includes a non-actionable step.");
     }
 
     return { label };
