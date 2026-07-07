@@ -21,6 +21,13 @@ clipstitchr demo guide show guide_123
 clipstitchr demo guide edit guide_123
 clipstitchr demo guide delete guide_123
 clipstitchr demo guide export-instructions guide_123
+clipstitchr demo agent init
+clipstitchr demo agent check
+clipstitchr demo agent run --guide guide_123 --dry-run
+clipstitchr demo agent run --guide guide_123
+clipstitchr demo agent run --guide guide_123 --ai-planner --dry-run
+clipstitchr demo agent run --guide guide_123 --no-upload
+clipstitchr demo agent export-log agent_run_123
 clipstitchr demo make
 clipstitchr demo make --guide guide_123
 clipstitchr demo make --no-guide
@@ -52,6 +59,15 @@ click through the demo, then press Enter in the terminal as each step is done.
 If your app requires login, sign in inside the recorder browser once. The CLI
 keeps that app browser session in `.clipstitchr/browser-profile` so future
 recordings can stay signed in.
+
+The local demo agent beta is opt-in and policy guarded. Use `clipstitchr demo
+agent init` to create a localhost-only policy, then run `clipstitchr demo agent
+run --guide guide_123 --dry-run` to collect screenshots, action logs, and a run
+summary under `.clipstitchr/agent-runs`. When the dry-run looks good, run
+`clipstitchr demo agent run --guide guide_123` to save a guarded recording. The
+CLI asks you to review the recording, screenshots, and action log before any
+upload starts. Add `--ai-planner` only when you want ClipStitchr AI to propose
+each action; the same local policy validator still decides what can run.
 
 Most demos work best around 30-90 seconds. Longer recordings are allowed, and
 the CLI warns after about 2 minutes without stopping the recording. That is

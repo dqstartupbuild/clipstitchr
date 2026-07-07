@@ -1,6 +1,10 @@
 import { Command } from "commander";
 import type { CliGlobalOptions } from "./CliGlobalOptions.js";
 import { runDoctorCommand } from "./runDoctorCommand.js";
+import { runDemoAgentCheckCommand } from "./runDemoAgentCheckCommand.js";
+import { runDemoAgentExportLogCommand } from "./runDemoAgentExportLogCommand.js";
+import { runDemoAgentInitCommand } from "./runDemoAgentInitCommand.js";
+import { runDemoAgentRunCommand } from "./runDemoAgentRunCommand.js";
 import { runDemoGuideDeleteCommand } from "./runDemoGuideDeleteCommand.js";
 import { runDemoGuideEditCommand } from "./runDemoGuideEditCommand.js";
 import { runDemoGuideExportInstructionsCommand } from "./runDemoGuideExportInstructionsCommand.js";
@@ -102,6 +106,50 @@ export async function runCli(argv: string[]) {
     .action(runUpdateCommand);
 
   const demo = program.command("demo").description("Make or upload demos");
+
+  const demoAgent = demo
+    .command("agent")
+    .description("Run the guarded local demo agent");
+
+  demoAgent
+    .command("init")
+    .description("Create a local demo agent policy")
+    .action(async () => {
+      await runDemoAgentInitCommand(program.opts());
+    });
+
+  demoAgent
+    .command("check")
+    .description("Check the local demo agent policy")
+    .action(async () => {
+      await runDemoAgentCheckCommand(program.opts());
+    });
+
+  demoAgent
+    .command("run")
+    .description("Run a guarded local demo agent")
+    .requiredOption("--guide <id-or-path>", "Use a saved walkthrough guide")
+    .option("--ai-planner", "Ask ClipStitchr AI to propose each guarded action")
+    .option("--dry-run", "Validate the run without recording or uploading")
+    .option("--no-upload", "Record only after review")
+    .option("--product <id>", "ClipStitchr product ID for upload")
+    .option("--start <command>", "Start command")
+    .option("--url <url>", "Local app URL")
+    .action(async (options) => {
+      await runDemoAgentRunCommand({ ...program.opts(), ...options });
+    });
+
+  demoAgent
+    .command("export-log")
+    .argument("<runId>", "Agent run ID")
+    .description("Show or export local agent evidence paths")
+    .option("--output <path>", "Write one JSON export file")
+    .action(async (runId, options) => {
+      await runDemoAgentExportLogCommand(runId, {
+        ...program.opts(),
+        ...options,
+      });
+    });
 
   const demoGuide = demo
     .command("guide")

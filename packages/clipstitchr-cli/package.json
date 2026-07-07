@@ -15,6 +15,7 @@
     "build": "node ./scripts/clean-dist.mjs && tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
     "prepack": "npm run build",
+    "test": "npm run build && tsx --test \"test/**/*.test.ts\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "engines": {

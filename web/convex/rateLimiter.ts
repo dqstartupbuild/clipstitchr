@@ -334,6 +334,19 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 200,
     shards: 5,
   },
+  cliDemoAgentPlan: {
+    kind: "token bucket",
+    rate: 120,
+    period: HOUR,
+    capacity: 20,
+  },
+  cliDemoAgentPlanGlobal: {
+    kind: "token bucket",
+    rate: 3000,
+    period: HOUR,
+    capacity: 500,
+    shards: 5,
+  },
   tiktokSoundLookup: {
     kind: "token bucket",
     rate: 60,

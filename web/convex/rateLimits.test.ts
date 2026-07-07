@@ -357,6 +357,19 @@ describe("convex rateLimits", () => {
       mutation: rateLimits.consumeCliDemoGuideGenerate,
     },
     {
+      args: { ownerId: "owner_cli", secret: "secret" },
+      expected: [
+        {
+          key: "owner_cli",
+          name: "cliDemoAgentPlan",
+          throws: true,
+        },
+        { name: "cliDemoAgentPlanGlobal", throws: true },
+        { name: "cliprProviderSpendGlobal", throws: true },
+      ],
+      mutation: rateLimits.consumeCliDemoAgentPlan,
+    },
+    {
       args: { estimatedSeconds: 5.2, secret: "secret" },
       expected: [
         {

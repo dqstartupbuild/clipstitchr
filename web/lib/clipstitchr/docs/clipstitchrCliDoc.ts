@@ -156,7 +156,7 @@ export const clipstitchrCliDoc = {
       title: "Create walkthrough guides",
       body: [
         "Guide commands help you prepare the checklist before recording. You can ask ClipStitchr to draft a short guide, review it, edit the steps, save it for the next take, or export simple instructions for a trusted local helper.",
-        "AI guides are still manual. They do not click through your app, ask for passwords, or upload anything by themselves.",
+        "Guide commands do not click through your app, ask for passwords, or upload anything by themselves. The separate local agent beta is the only command that can try guarded browser actions.",
       ],
       bullets: [
         "Generate asks what the demo should show, then saves the guide in this repo.",
@@ -172,6 +172,27 @@ export const clipstitchrCliDoc = {
         "clipstitchr demo guide edit guide_123",
         "clipstitchr demo guide delete guide_123",
         "clipstitchr demo guide export-instructions guide_123",
+      ],
+    },
+    {
+      title: "Try the local agent beta",
+      body: [
+        "The local demo agent beta helps you check a guide against your local app before using a guarded recording run. It creates a policy for localhost routes, opens the saved recording browser, tries only approved local actions, captures screenshots, and saves a local action log and summary.",
+        "Start with a dry-run. When the evidence looks right, run it without --dry-run to save a recording. ClipStitchr asks you to review the recording, screenshots, and action log before any upload starts. Add --ai-planner only when you want ClipStitchr AI to propose actions.",
+      ],
+      bullets: [
+        "Use a test account when the app asks you to sign in.",
+        "Keep the generated policy and run logs inside .clipstitchr.",
+        "Never use it for account creation, purchases, deletion, publishing, or production accounts.",
+      ],
+      commands: [
+        "clipstitchr demo agent init",
+        "clipstitchr demo agent check",
+        "clipstitchr demo agent run --guide guide_123 --dry-run",
+        "clipstitchr demo agent run --guide guide_123 --ai-planner --dry-run",
+        "clipstitchr demo agent run --guide guide_123",
+        "clipstitchr demo agent run --guide guide_123 --no-upload",
+        "clipstitchr demo agent export-log agent_run_123",
       ],
     },
     {

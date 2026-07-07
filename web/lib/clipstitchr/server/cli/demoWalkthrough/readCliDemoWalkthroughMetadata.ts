@@ -1,4 +1,5 @@
 import type { CliDemoWalkthroughMetadata } from "./CliDemoWalkthroughMetadata";
+import { readCliDemoWalkthroughAgentRunMetadata } from "./readCliDemoWalkthroughAgentRunMetadata";
 import { readCliDemoWalkthroughGuide } from "./readCliDemoWalkthroughGuide";
 import { readCliDemoWalkthroughTiming } from "./readCliDemoWalkthroughTiming";
 
@@ -30,6 +31,7 @@ export function readCliDemoWalkthroughMetadata(
     : undefined;
 
   return {
+    agentRun: readCliDemoWalkthroughAgentRunMetadata(rawMetadata.agentRun),
     guide,
     timings: timings?.length ? timings : undefined,
   };

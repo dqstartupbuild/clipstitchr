@@ -1,0 +1,167 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { POST } from "@/app/api/cli/demo-agent/plan/route";
+import { api } from "@/convex/_generated/api";
+
+const mocks = vi.hoisted(() => {
+  const convex = {
+    mutation: vi.fn(),
+  };
+
+  return {
+    convex,
+    createCliDemoAgentPlannerGeneration: vi.fn(),
+    createConvexHttpClient: vi.fn(() => convex),
+    createReplicateClient: vi.fn(() => ({ provider: "replicate" })),
+    getCliSessionFromRequest: vi.fn(),
+  };
+});
+
+vi.mock("@/convex/_generated/api", () => ({
+  api: {
+    rateLimits: {
+      consumeCliDemoAgentPlan: "rateLimits.consumeCliDemoAgentPlan",
+    },
+  },
+}));
+
+vi.mock(
+  "@/lib/clipstitchr/server/cli/demoAgentPlanner/createCliDemoAgentPlannerGeneration",
+  () => ({
+    createCliDemoAgentPlannerGeneration:
+      mocks.createCliDemoAgentPlannerGeneration,
+  }),
+);
+
+vi.mock("@/lib/clipstitchr/server/cli/getCliSessionFromRequest", () => ({
+  getCliSessionFromRequest: mocks.getCliSessionFromRequest,
+}));
+
+vi.mock("@/lib/clipstitchr/server/convex/createConvexHttpClient", () => ({
+  createConvexHttpClient: mocks.createConvexHttpClient,
+}));
+
+vi.mock("@/lib/clipstitchr/server/createReplicateClient", () => ({
+  createReplicateClient: mocks.createReplicateClient,
+}));
+
+vi.mock("@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret", () => ({
+  getRateLimitApiSecret: () => "rate-limit-secret",
+}));
+
+function createRequest(body: object) {
+  return new Request("https://clipstitchr.test/api/cli/demo-agent/plan", {
+    body: JSON.stringify(body),
+    method: "POST",
+  });
+}
+
+function createBody() {
+  return {
+    approvedTestValueKeys: ["testEmail"],
+    attemptedActionKeys: [],
+    observation: {
+      buttons: [{ name: "Upload", role: "button" }],
+      dialogs: [],
+      headings: [{ name: "Dashboard", role: "heading" }],
+      inputs: [],
+      links: [],
+      title: "Dashboard",
+      url: "http://localhost:3000/dashboard",
+    },
+    step: {
+      id: "step-1",
+      label: "Upload the clip",
+    },
+  };
+}
+
+function createGeneration() {
+  return {
+    action: {
+      reason: "The upload button is visible.",
+      stepId: "step-1",
+      target: { name: "Upload", role: "button" },
+      type: "click",
+    },
+    providerModel: "anthropic/claude-sonnet-4.6",
+    providerPredictionId: "prediction_123",
+  };
+}
+
+describe("POST /api/cli/demo-agent/plan", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getCliSessionFromRequest.mockResolvedValue({ ownerId: "owner_123" });
+    mocks.convex.mutation.mockResolvedValue(null);
+    mocks.createCliDemoAgentPlannerGeneration.mockResolvedValue(
+      createGeneration(),
+    );
+  });
+
+  it("returns 401 when the CLI bearer token is missing", async () => {
+    mocks.getCliSessionFromRequest.mockResolvedValue(null);
+
+    const response = await POST(createRequest(createBody()));
+
+    await expect(response.json()).resolves.toEqual({
+      message: "Run `clipstitchr login` to connect this machine.",
+    });
+    expect(response.status).toBe(401);
+    expect(mocks.convex.mutation).not.toHaveBeenCalled();
+  });
+
+  it("plans an action after consuming quota", async () => {
+    const response = await POST(createRequest(createBody()));
+
+    await expect(response.json()).resolves.toEqual(createGeneration());
+    expect(response.status).toBe(200);
+    expect(mocks.convex.mutation).toHaveBeenCalledWith(
+      api.rateLimits.consumeCliDemoAgentPlan,
+      {
+        ownerId: "owner_123",
+        secret: "rate-limit-secret",
+      },
+    );
+    expect(mocks.createCliDemoAgentPlannerGeneration).toHaveBeenCalledWith({
+      replicate: { provider: "replicate" },
+      request: expect.objectContaining({
+        approvedTestValueKeys: ["testEmail"],
+        step: expect.objectContaining({ id: "step-1" }),
+      }),
+    });
+  });
+
+  it("returns 429 when planner quota is exceeded", async () => {
+    mocks.convex.mutation.mockRejectedValueOnce({
+      data: {
+        kind: "RateLimited",
+        name: "cliDemoAgentPlan",
+        retryAfter: 2500,
+      },
+    });
+
+    const response = await POST(createRequest(createBody()));
+
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({
+        rateLimit: "cliDemoAgentPlan",
+        retryAfterSeconds: 3,
+      }),
+    );
+    expect(response.status).toBe(429);
+    expect(mocks.createCliDemoAgentPlannerGeneration).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 when provider output is invalid", async () => {
+    mocks.createCliDemoAgentPlannerGeneration.mockRejectedValueOnce(
+      new Error("Planner action type is not supported."),
+    );
+
+    const response = await POST(createRequest(createBody()));
+
+    await expect(response.json()).resolves.toEqual({
+      message: "Planner action type is not supported.",
+    });
+    expect(response.status).toBe(500);
+  });
+});

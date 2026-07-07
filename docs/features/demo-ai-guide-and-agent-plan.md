@@ -22,16 +22,34 @@ Already implemented:
 - A user-visible guide editor in the CLI.
 - A dedicated `clipstitchr demo guide` command namespace.
 - A downloadable agent instruction export.
+- Local demo agent policy initialization and validation.
+- Guarded `clipstitchr demo agent run --dry-run` with local screenshots,
+  action logs, run summaries, and a deterministic policy-validated browser
+  action loop.
+- CLI-local observer, planner, validator, and executor tests, including
+  Playwright fixture coverage for approved browser actions.
+- CLI-local full-loop tests for safe multi-step guide flow, blocked observed
+  page text, external navigation, disallowed routes, repeated page state, step
+  timings, screenshots, auth walls, modal flows, long loading waits, 404 page
+  states, and URL before/after action logging.
+- Injectable planner seam and strict JSON planner-action parser for future LLM
+  planning, with tests proving unsafe planner output is blocked before
+  execution.
+- Opt-in `--ai-planner` mode that calls `POST /api/cli/demo-agent/plan` for one
+  model-proposed action at a time, after rate limiting and before local policy
+  validation.
+- Guarded local recording from an agent run with mandatory review before upload.
+- Safe optional `walkthrough.agentRun` metadata parsing.
 
 Not implemented yet:
 
-- Autonomous browser clicking.
-- Agent action logs, screenshot logs, or review-before-upload enforcement.
+- GUI smoke coverage for the recorded browser path.
+- Production smoke coverage for model-backed planning.
 
 ## Product Decision
 
-The next production-safe step is Phase 3, AI-Assisted Script. The AI writes a
-recording checklist, but the user still records manually.
+Phase 3 is the stable assisted layer. The AI writes a recording checklist, but
+the user still records manually.
 
 Phase 4, Full AI Agent, should be local-first and opt-in. The backend should not
 remotely control a user's app. The CLI runs the browser agent on the user's
@@ -295,6 +313,9 @@ Store policy outside the committed repo by default:
     "publish"
   ],
   "allowFileUploads": true,
+  "approvedTestValues": {
+    "testEmail": "demo@example.com"
+  },
   "approvedUploadFiles": [".clipstitchr/samples/demo-sample.mp4"],
   "maxActions": 80,
   "maxRecordingSeconds": 180,
@@ -314,7 +335,7 @@ mention local sample media paths and test-account setup notes.
 
 ### Agent Commands
 
-Add Phase 4 commands only after Phase 3 is stable:
+Phase 4 beta commands:
 
 ```bash
 clipstitchr demo agent init
@@ -324,15 +345,16 @@ clipstitchr demo agent run --guide guide_123 --dry-run
 clipstitchr demo agent export-log agent_run_123
 ```
 
-`--dry-run` should navigate and validate the route/action plan without uploading
-anything. The normal run should still ask for approval before upload.
+`--dry-run` navigates, observes, validates, executes approved local browser
+actions, logs evidence, and stops without uploading anything to ClipStitchr. The
+normal run should still ask for approval before upload.
 
 ### Allowed Browser Actions
 
 The executor should support only a narrow action set:
 
 - `navigate` to an allowed route.
-- `click` visible text, role, label, or approved selector.
+- `click` visible text, role, or label.
 - `type` into non-sensitive fields using test values from policy.
 - `uploadFile` from an approved local file path.
 - `waitFor` visible text, URL, request idle, or a capped timeout.
@@ -430,14 +452,35 @@ Required before the autonomous agent ships:
 - Policy parser tests for allowed routes, blocked words, invalid origins, max
   action bounds, and approved upload paths.
 - Guardrail tests that reject external navigation, destructive button text,
-  payment pages, production domains, and unapproved file uploads.
+  payment pages, production domains, and unapproved file uploads. The first
+  CLI-local validator tests now cover external origins, disallowed local routes,
+  blocked action text, selector-only clicks, unapproved typing, upload approval,
+  approved upload files, and wrong step completion.
+- Observer, planner, and executor tests for the guarded action layer. The first
+  CLI-local tests now cover simplified visible page observation, screenshot-first
+  planning, safe typing, safe clicking, step completion, visible waits, and local
+  file upload execution.
+- Full-loop tests for a safe multi-step guide flow, blocked observed page text,
+  external navigation, disallowed routes, and repeated page state now confirm
+  step timings, screenshots, blocked stops, and URL before/after action-log
+  details. Auth-wall, modal, long-loading, and 404 page-state fixtures are also
+  covered. Time-cap, action-cap, and no-step-progress stops are covered and
+  write explicit stop entries.
+- Planner parser and injected-planner tests now cover supported JSON actions,
+  unsupported action types, selector rejection, approved test-value keys, and
+  policy rejection before execution.
+- `--ai-planner` uses the same action parser and local policy validator after
+  the backend returns one model-proposed action.
 - Playwright fixture app tests for dashboard walkthrough, auth-required flow,
-  modal flow, long loading flow, file-upload flow, stuck loop, 404 route, and
-  external redirect.
+  modal flow, long loading flow, stuck loop, 404 route, and external redirect
+  are now covered by CLI-local tests. Full-loop file-upload coverage should be
+  added before enabling planner-initiated upload flows beyond approved executor
+  fixtures.
 - Action-log tests that confirm every action has timestamp, step ID, URL,
   result, and stop reason when applicable.
 - Upload tests proving the CLI asks for approval before sending any autonomous
-  run.
+  run now cover incomplete runs, `--no-upload`, declined review prompts, and
+  approved uploads with safe `walkthrough.agentRun` metadata.
 - Redaction tests for screenshots or logs before any future cloud upload.
 
 ## Rollout Plan
@@ -445,10 +488,9 @@ Required before the autonomous agent ships:
 1. Ship Phase 3 behind explicit `clipstitchr demo guide generate`.
 2. Add customer docs only after generation works against production.
 3. Keep `clipstitchr demo make` defaulting to manual guided recording.
-4. Add Phase 4 as a private local beta with `clipstitchr demo agent run
-   --dry-run`.
-5. Run fixture-app evals in CI before enabling real recording.
-6. Enable recording with mandatory local review and no automatic upload.
+4. Keep Phase 4 as a private local beta with `clipstitchr demo agent run`.
+5. Run GUI smoke checks for the recorded browser path before broad release.
+6. Keep upload gated by mandatory local review.
 7. Collect failed run summaries from consenting testers, not raw screenshots by
    default.
 8. Only then consider adding the agent option to the normal `demo make` prompt.
@@ -468,7 +510,7 @@ Phase 3 cannot ship until:
 
 Phase 4 cannot ship until:
 
-- Policy file, parser, guardrails, dry-run mode, and approval-before-upload are
+- Policy file, parser, guardrails, dry-run mode, and review-before-upload are
   implemented and tested.
 - Fixture app evals pass for safe and blocked scenarios.
 - The agent records only web/Expo web targets in the first release.

@@ -443,6 +443,27 @@ export const consumeCliDemoGuideGenerate = mutation({
   },
 });
 
+export const consumeCliDemoAgentPlan = mutation({
+  args: {
+    ownerId: v.string(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { ownerId, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    await rateLimiter.limit(ctx, "cliDemoAgentPlan", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliDemoAgentPlanGlobal", {
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      throws: true,
+    });
+  },
+});
+
 export const consumeStitchScoreAnalysis = mutation({
   args: {
     secret: v.string(),
