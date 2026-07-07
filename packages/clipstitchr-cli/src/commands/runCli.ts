@@ -5,6 +5,7 @@ import { runDemoAgentCheckCommand } from "./runDemoAgentCheckCommand.js";
 import { runDemoAgentExportLogCommand } from "./runDemoAgentExportLogCommand.js";
 import { runDemoAgentInitCommand } from "./runDemoAgentInitCommand.js";
 import { runDemoAgentRunCommand } from "./runDemoAgentRunCommand.js";
+import { runDemoAutoCommand } from "./runDemoAutoCommand.js";
 import { runDemoGuideDeleteCommand } from "./runDemoGuideDeleteCommand.js";
 import { runDemoGuideEditCommand } from "./runDemoGuideEditCommand.js";
 import { runDemoGuideExportInstructionsCommand } from "./runDemoGuideExportInstructionsCommand.js";
@@ -106,6 +107,19 @@ export async function runCli(argv: string[]) {
     .action(runUpdateCommand);
 
   const demo = program.command("demo").description("Make or upload demos");
+
+  demo
+    .command("auto")
+    .description("Let AI write and record a local demo")
+    .option("--audience <text>", "Who this demo is for")
+    .option("--goal <text>", "What the demo should show")
+    .option("--product <id>", "ClipStitchr product ID")
+    .option("--start <command>", "Start command")
+    .option("--steps <count>", "Guide step count from 3 to 8")
+    .option("--url <url>", "Local app URL")
+    .action(async (options) => {
+      await runDemoAutoCommand({ ...program.opts(), ...options });
+    });
 
   const demoAgent = demo
     .command("agent")

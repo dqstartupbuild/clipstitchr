@@ -4,6 +4,7 @@ recording:
   format: full-size
   longRecordingWarningSeconds: 120
   recommendedDurationSeconds: 60
+  demoGuideId: guide_mrai9029_3f26e714
 target:
   start: cd web && npm run dev
   type: web

@@ -15,6 +15,7 @@ clipstitchr --version
 clipstitchr link
 clipstitchr status
 clipstitchr update
+clipstitchr demo auto
 clipstitchr demo guide generate
 clipstitchr demo guide list
 clipstitchr demo guide show guide_123
@@ -45,8 +46,14 @@ clipstitchr unlink
 clipstitchr --plain status
 ```
 
-The built-in recorder can create a simple walkthrough checklist before each
-demo. You can also run `clipstitchr demo guide generate` to draft a guide with
+If the repo is linked, your ClipStitchr account is connected, and the saved
+browser profile is already signed into your app, `clipstitchr demo auto` writes
+the guide with ClipStitchr AI and records the demo with the guarded local AI
+agent in one command. It saves the guide, MP4, screenshots, action log, and run
+summary locally without asking questions. It does not upload automatically.
+
+The built-in recorder can also create a simple walkthrough checklist before
+each demo. You can run `clipstitchr demo guide generate` to draft a guide with
 ClipStitchr first, review it, edit it, and save it for the next recording.
 During recording, the terminal walks through each step and records section
 timing metadata for ClipStitchr to use later for chapters, captions, smart
@@ -60,22 +67,20 @@ If your app requires login, sign in inside the recorder browser once. The CLI
 keeps that app browser session in `.clipstitchr/browser-profile` so future
 recordings can stay signed in.
 
-The local demo agent beta is opt-in and policy guarded. Use `clipstitchr demo
-agent init` to create a localhost-only policy, then run `clipstitchr demo agent
-run --guide guide_123 --dry-run` to collect screenshots, action logs, and a run
-summary under `.clipstitchr/agent-runs`. When the dry-run looks good, run
-`clipstitchr demo agent run --guide guide_123` to save a guarded recording. The
-CLI asks you to review the recording, screenshots, and action log before any
-upload starts. Add `--ai-planner` only when you want ClipStitchr AI to propose
-each action; the same local policy validator still decides what can run.
+The local demo agent beta is policy guarded. `clipstitchr demo auto` creates the
+policy automatically when one does not exist. Use the lower-level
+`clipstitchr demo agent init`, `check`, and `run` commands when you want to
+inspect the policy, run a dry-run, or record from an existing guide. The same
+local policy validator always decides what can run.
 
 Most demos work best around 30-90 seconds. Longer recordings are allowed, and
 the CLI warns after about 2 minutes without stopping the recording. That is
 useful for apps with longer loading, AI generation, or processing steps because
 ClipStitchr can cut pauses and waiting time during Quick Edit.
 
-If the recording browser is not installed yet, the CLI asks to install it before
-recording starts.
+If the recording browser is not installed yet, interactive recording commands
+ask to install it before recording starts. `clipstitchr demo auto` is
+non-interactive, so it tells you the install command to run instead.
 
 Batch commands let you start Stitchr and Swipr draft creation from Terminal.
 `clipstitchr stitchr batch` creates today's Stitchr batch from recent UGC and

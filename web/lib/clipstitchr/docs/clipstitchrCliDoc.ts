@@ -128,6 +128,25 @@ export const clipstitchrCliDoc = {
       ],
     },
     {
+      title: "Let AI write and record the demo",
+      body: [
+        "After the repo is linked, your ClipStitchr account is connected, and the saved browser is already signed into your app, one command can write the guide and record the demo.",
+        "The command picks the linked product, uses the local app URL, writes a short AI guide, creates a local safety policy if needed, records with the guarded AI agent, and saves the MP4 plus evidence locally. It does not upload automatically.",
+      ],
+      bullets: [
+        "Use --goal when you want to steer what the demo should show.",
+        "Use --audience when you want the guide written for a specific viewer.",
+        "Use --steps to keep the guide between 3 and 8 steps.",
+        "Use --product, --start, or --url only when the linked repo settings are missing or need an override.",
+      ],
+      commands: [
+        "clipstitchr demo auto",
+        "clipstitchr demo auto --goal \"Show the upload flow\"",
+        "clipstitchr demo auto --audience \"busy founders\" --steps 5",
+        "clipstitchr demo auto --product product_123 --url http://localhost:3000",
+      ],
+    },
+    {
       title: "Record a demo",
       body: [
         "Choose Make a product demo. The CLI can create a quick walkthrough checklist first, then starts your local app, opens the recording browser, and walks you through the steps while you record.",

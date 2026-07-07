@@ -26,10 +26,12 @@ import { writeDemoAgentActionLogEntry } from "./writeDemoAgentActionLogEntry.js"
 import { writeDemoAgentRunSummary } from "./writeDemoAgentRunSummary.js";
 
 export async function runDemoAgentRecording(inputOptions: {
+  allowBrowserInstallPrompt?: boolean;
   guide: DemoWalkthroughGuide;
   policy: DemoAgentPolicy;
   policyHash: string;
   planner?: DemoAgentPlanner;
+  promptForSignIn?: boolean;
   startUrl: string;
 }): Promise<DemoAgentRecordedRun> {
   const runId = createDemoAgentRunId();
@@ -52,7 +54,9 @@ export async function runDemoAgentRecording(inputOptions: {
   assertDemoAgentUrlAllowed(inputOptions.policy, startUrl);
   await waitForHttpUrl(startUrl);
   await prepareDemoAgentRecordingAuth({
+    allowBrowserInstallPrompt: inputOptions.allowBrowserInstallPrompt,
     policy: inputOptions.policy,
+    promptForSignIn: inputOptions.promptForSignIn,
     startUrl,
     userDataDir,
   });
@@ -61,6 +65,7 @@ export async function runDemoAgentRecording(inputOptions: {
   const startedAtMs = Date.now();
 
   const context = await openRecordingBrowserContext({
+    allowInstallPrompt: inputOptions.allowBrowserInstallPrompt,
     userDataDir,
     videoDirectory,
   });

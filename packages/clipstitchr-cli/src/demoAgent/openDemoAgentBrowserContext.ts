@@ -4,6 +4,10 @@ import { installPlaywrightChromium } from "../recording/installPlaywrightChromiu
 import { isMissingPlaywrightBrowserError } from "../recording/isMissingPlaywrightBrowserError.js";
 import { webRecordingViewport } from "../recording/webRecordingViewport.js";
 
+type OpenDemoAgentBrowserContextOptions = {
+  allowInstallPrompt?: boolean;
+};
+
 async function launchDemoAgentBrowserContext(userDataDir: string) {
   return await chromium.launchPersistentContext(userDataDir, {
     args: [
@@ -17,12 +21,21 @@ async function launchDemoAgentBrowserContext(userDataDir: string) {
   });
 }
 
-export async function openDemoAgentBrowserContext(userDataDir: string) {
+export async function openDemoAgentBrowserContext(
+  userDataDir: string,
+  options: OpenDemoAgentBrowserContextOptions = {},
+) {
   try {
     return await launchDemoAgentBrowserContext(userDataDir);
   } catch (error) {
     if (!isMissingPlaywrightBrowserError(error)) {
       throw error;
+    }
+
+    if (options.allowInstallPrompt === false) {
+      throw new Error(
+        "ClipStitchr needs a browser for the local agent. Run `npx playwright install chromium` and try again.",
+      );
     }
 
     const shouldInstall = await confirm({

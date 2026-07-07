@@ -5,6 +5,7 @@ import { isMissingPlaywrightBrowserError } from "./isMissingPlaywrightBrowserErr
 import { webRecordingViewport } from "./webRecordingViewport.js";
 
 type OpenRecordingBrowserContextOptions = {
+  allowInstallPrompt?: boolean;
   userDataDir: string;
   videoDirectory: string;
 };
@@ -36,6 +37,12 @@ export async function openRecordingBrowserContext(
   } catch (error) {
     if (!isMissingPlaywrightBrowserError(error)) {
       throw error;
+    }
+
+    if (options.allowInstallPrompt === false) {
+      throw new Error(
+        "ClipStitchr needs a recording browser. Run `npx playwright install chromium` and try again.",
+      );
     }
 
     const shouldInstall = await confirm({

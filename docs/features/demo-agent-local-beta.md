@@ -11,6 +11,9 @@ Recording upload requires explicit review and approval.
 - Adds `clipstitchr demo agent run --guide <id> --dry-run`.
 - Adds guarded recording with `clipstitchr demo agent run --guide <id>`.
 - Adds `clipstitchr demo agent export-log <run-id>`.
+- Adds `clipstitchr demo auto` for one-command AI guide generation and guarded
+  AI recording when account, repo, local app URL, and saved browser sign-in are
+  already ready.
 - Runs a guarded observe, plan, validate, execute, log, and stop loop.
 - Saves local evidence under `.clipstitchr/agent-runs/<run-id>/`.
 - Keeps screenshots and raw action logs local unless a reviewed recording is
@@ -90,10 +93,24 @@ the simplified observation only. The server parser rejects unsupported action
 types and CSS selectors, and the CLI policy validator still decides whether the
 proposed action can run.
 
+## One-Command AI Recording
+
+`clipstitchr demo auto` is the non-interactive path. It requires the project to
+already be linked, the CLI account session to be valid, the local app URL to be
+known or running, and the saved browser profile to already be signed into the
+app. It generates a guide with ClipStitchr AI, saves it locally, creates a
+localhost policy if one does not exist, verifies the page in a non-recorded
+browser, records with the model-backed planner, and skips upload prompts by
+default.
+
+If one of those setup requirements is missing, the command stops with the next
+setup command instead of asking questions.
+
 ## Test Coverage
 
 The CLI package includes a local `npm test` command. It builds the package, then
-runs Node test files under `packages/clipstitchr-cli/test/demoAgent/`.
+runs Node test files under `packages/clipstitchr-cli/test/demoAgent/` and
+`packages/clipstitchr-cli/test/demoAuto/`.
 
 Current coverage includes:
 
@@ -118,6 +135,8 @@ Current coverage includes:
 - Upload-review tests proving incomplete runs, `--no-upload`, and declined
   review prompts do not upload, while approved uploads include safe
   `walkthrough.agentRun` metadata.
+- Auto-demo helper tests for default goal, audience, step count, and route-flow
+  selection.
 
 Remaining test coverage should focus on GUI recording smoke and production
 smoke for model-backed planning.
@@ -129,5 +148,6 @@ smoke for model-backed planning.
 - `packages/clipstitchr-cli/src/commands/runDemoAgentInitCommand.ts`
 - `packages/clipstitchr-cli/src/commands/runDemoAgentCheckCommand.ts`
 - `packages/clipstitchr-cli/src/commands/runDemoAgentRunCommand.ts`
+- `packages/clipstitchr-cli/src/commands/runDemoAutoCommand.ts`
 - `packages/clipstitchr-cli/src/commands/runDemoAgentExportLogCommand.ts`
 - `web/lib/clipstitchr/server/cli/demoWalkthrough/readCliDemoWalkthroughAgentRunMetadata.ts`

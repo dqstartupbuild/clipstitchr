@@ -1,0 +1,10 @@
+import type { CliGlobalOptions } from "./CliGlobalOptions.js";
+
+export type DemoAutoCommandOptions = CliGlobalOptions & {
+  audience?: string;
+  goal?: string;
+  product?: string;
+  start?: string;
+  steps?: string;
+  url?: string;
+};
