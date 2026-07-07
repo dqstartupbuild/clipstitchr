@@ -20,7 +20,13 @@ export function readCliDemoWalkthroughMetadata(
     ? rawMetadata.timings
         .slice(0, 50)
         .map(readCliDemoWalkthroughTiming)
-        .filter((timing): timing is NonNullable<typeof timing> => timing !== null)
+        .filter((timing): timing is NonNullable<typeof timing> => {
+          if (!timing) {
+            return false;
+          }
+
+          return guide.steps.some((step) => step.id === timing.stepId);
+        })
     : undefined;
 
   return {

@@ -14,7 +14,7 @@ import { readBrowserInteractionEvents } from "./readBrowserInteractionEvents.js"
 import { runShellCommand } from "./runShellCommand.js";
 import { startLongRecordingWarningTimer } from "./startLongRecordingWarningTimer.js";
 import { stopShellCommand } from "./stopShellCommand.js";
-import { logInfo } from "../terminal/logInfo.js";
+import { logRecordingBrowserOpeningMessage } from "./logRecordingBrowserOpeningMessage.js";
 import { logStep } from "../terminal/logStep.js";
 import { warnIfWebRecordingSizeUnexpected } from "./warnIfWebRecordingSizeUnexpected.js";
 import { waitForHttpUrl } from "./waitForHttpUrl.js";
@@ -34,9 +34,7 @@ export async function recordWebDemo(
     logStep("Waiting for the local app to be ready.");
     await waitForHttpUrl(options.url);
 
-    logInfo(
-      "The recording browser is about to open. Walk through your demo there, then come back to this terminal and press Enter to finish.",
-    );
+    logRecordingBrowserOpeningMessage(options.walkthroughGuide);
 
     const context = await openRecordingBrowserContext({
       userDataDir,

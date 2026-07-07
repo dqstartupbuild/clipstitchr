@@ -1,6 +1,7 @@
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import type { DemoWalkthroughGuide } from "./DemoWalkthroughGuide.js";
+import { createDemoWalkthroughGuideSortValue } from "./createDemoWalkthroughGuideSortValue.js";
 import { getDemoWalkthroughGuidesDirectoryPath } from "./getDemoWalkthroughGuidesDirectoryPath.js";
 import { readDemoWalkthroughGuide } from "./readDemoWalkthroughGuide.js";
 
@@ -19,7 +20,11 @@ export async function listDemoWalkthroughGuides(cwd = process.cwd()) {
       }
     }
 
-    return guides.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    return guides.sort(
+      (a, b) =>
+        createDemoWalkthroughGuideSortValue(b) -
+        createDemoWalkthroughGuideSortValue(a),
+    );
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return [];

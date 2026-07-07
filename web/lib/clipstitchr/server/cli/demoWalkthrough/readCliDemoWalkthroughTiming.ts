@@ -1,4 +1,5 @@
 import type { CliDemoWalkthroughTiming } from "./CliDemoWalkthroughTiming";
+import { readCliDemoWalkthroughNonnegativeNumber } from "./readCliDemoWalkthroughNonnegativeNumber";
 import { readCliDemoWalkthroughString } from "./readCliDemoWalkthroughString";
 
 export function readCliDemoWalkthroughTiming(
@@ -11,24 +12,32 @@ export function readCliDemoWalkthroughTiming(
   const rawTiming = value as Record<string, unknown>;
   const stepId = readCliDemoWalkthroughString(rawTiming.stepId, 80);
   const label = readCliDemoWalkthroughString(rawTiming.label, 240);
+  const stepIndex = readCliDemoWalkthroughNonnegativeNumber(rawTiming.stepIndex);
+  const startedAtMs = readCliDemoWalkthroughNonnegativeNumber(
+    rawTiming.startedAtMs,
+  );
+  const completedAtMs = readCliDemoWalkthroughNonnegativeNumber(
+    rawTiming.completedAtMs,
+  );
+  const durationMs = readCliDemoWalkthroughNonnegativeNumber(rawTiming.durationMs);
 
   if (
     !stepId ||
     !label ||
-    typeof rawTiming.stepIndex !== "number" ||
-    typeof rawTiming.startedAtMs !== "number" ||
-    typeof rawTiming.completedAtMs !== "number" ||
-    typeof rawTiming.durationMs !== "number"
+    stepIndex === null ||
+    startedAtMs === null ||
+    completedAtMs === null ||
+    durationMs === null
   ) {
     return null;
   }
 
   return {
-    completedAtMs: Math.max(0, Math.round(rawTiming.completedAtMs)),
-    durationMs: Math.max(0, Math.round(rawTiming.durationMs)),
+    completedAtMs,
+    durationMs,
     label,
-    startedAtMs: Math.max(0, Math.round(rawTiming.startedAtMs)),
+    startedAtMs,
     stepId,
-    stepIndex: Math.max(0, Math.round(rawTiming.stepIndex)),
+    stepIndex,
   };
 }

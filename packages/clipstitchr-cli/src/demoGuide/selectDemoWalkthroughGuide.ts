@@ -5,6 +5,7 @@ import type { ScannedFlow } from "../project/ScannedFlow.js";
 import { logInfo } from "../terminal/logInfo.js";
 import type { DemoWalkthroughGuide } from "./DemoWalkthroughGuide.js";
 import { createDemoWalkthroughGuide } from "./createDemoWalkthroughGuide.js";
+import { filterDemoWalkthroughGuidesForProduct } from "./filterDemoWalkthroughGuidesForProduct.js";
 import { listDemoWalkthroughGuides } from "./listDemoWalkthroughGuides.js";
 import { resolveDemoWalkthroughGuide } from "./resolveDemoWalkthroughGuide.js";
 import { writeDemoWalkthroughGuide } from "./writeDemoWalkthroughGuide.js";
@@ -35,7 +36,10 @@ export async function selectDemoWalkthroughGuide(
     return guide;
   }
 
-  const guides = await listDemoWalkthroughGuides();
+  const guides = filterDemoWalkthroughGuidesForProduct(
+    await listDemoWalkthroughGuides(),
+    options.product.id,
+  );
   const lastGuide = options.configGuideId
     ? guides.find((guide) => guide.id === options.configGuideId)
     : undefined;
@@ -103,13 +107,14 @@ export async function selectDemoWalkthroughGuide(
     }
   }
 
-  const goal = await input({
-    default: options.selectedFlow?.name ?? "Show the main product flow",
+  const defaultGoal = options.selectedFlow?.name ?? "Show the main product flow";
+  const goalInput = await input({
+    default: defaultGoal,
     message: "What do you want this demo to show?",
   });
   const guide = createDemoWalkthroughGuide({
     flow: options.selectedFlow,
-    goal,
+    goal: goalInput.trim() || defaultGoal,
     product: options.product,
     project: options.project,
   });

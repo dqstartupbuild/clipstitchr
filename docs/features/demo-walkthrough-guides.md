@@ -192,16 +192,21 @@ packages/clipstitchr-cli/src/demoGuide/
   DemoWalkthroughUploadMetadata.ts
   createDemoWalkthroughGuide.ts
   createDemoWalkthroughGuideSteps.ts
+  createDemoWalkthroughGuideSortValue.ts
   createDemoWalkthroughUploadMetadata.ts
+  filterDemoWalkthroughGuidesForProduct.ts
   listDemoWalkthroughGuides.ts
   printDemoWalkthroughGuide.ts
   readDemoWalkthroughGuide.ts
+  readDemoWalkthroughGuideStep.ts
+  readDemoWalkthroughGuideString.ts
   resolveDemoWalkthroughGuide.ts
   runDemoWalkthroughStepper.ts
   selectDemoWalkthroughGuide.ts
   writeDemoWalkthroughGuide.ts
 
 packages/clipstitchr-cli/src/recording/
+  logRecordingBrowserOpeningMessage.ts
   recordWebDemo.ts
   RecordingResult.ts
   WebRecordingOptions.ts
@@ -215,6 +220,7 @@ web/app/api/cli/uploads/demo/complete/route.ts
 
 web/lib/clipstitchr/server/cli/demoWalkthrough/
   readCliDemoWalkthroughMetadata.ts
+  readCliDemoWalkthroughNonnegativeNumber.ts
   readCliDemoWalkthroughGuide.ts
   readCliDemoWalkthroughStep.ts
   readCliDemoWalkthroughTiming.ts

@@ -309,6 +309,7 @@ packages/clipstitchr-cli/
   src/demoGuide/
     createDemoWalkthroughGuide.ts
     createDemoWalkthroughGuideSteps.ts
+    filterDemoWalkthroughGuidesForProduct.ts
     printDemoWalkthroughGuide.ts
     runDemoWalkthroughStepper.ts
     selectDemoWalkthroughGuide.ts
@@ -322,6 +323,7 @@ packages/clipstitchr-cli/
     formatRecordingDuration.ts
     getBrowserProfileDirectoryPath.ts
     getRecordingsDirectoryPath.ts
+    logRecordingBrowserOpeningMessage.ts
     readRecordingVideoDuration.ts
     resolveRecordingGuidance.ts
     startLongRecordingWarningTimer.ts
