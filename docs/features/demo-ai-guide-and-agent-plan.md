@@ -42,6 +42,10 @@ Already implemented:
   planning, defaulting to `openai/gpt-5-mini`.
 - CLI fallback from model-backed planning to the deterministic local planner
   after the first provider failure in a run.
+- CLI fallback from model-backed planning to the deterministic local planner
+  when the model repeats an already-attempted action.
+- `clipstitchr demo auto` asks what the demo should show when `--goal` is not
+  provided, then sends that goal into guide generation and planner prompts.
 - Guarded local recording from an agent run with mandatory review before upload.
 - Safe optional `walkthrough.agentRun` metadata parsing.
 
@@ -371,8 +375,13 @@ planner should propose actions, but the policy layer decides what is allowed.
 
 Model-backed planning uses `CLI_DEMO_AGENT_PLANNER_MODEL_ID`, which defaults to
 `openai/gpt-5-mini`. The route still consumes planner quota before calling the
-provider. If the provider call fails during a CLI run, the CLI logs the error
-once and uses the deterministic local planner for the rest of that run.
+provider. Each planner call includes the guide title, guide steps, and user goal
+so the next action stays aligned with the requested demo. If the provider call
+fails during a CLI run, or if the model repeats an already-attempted action, the
+CLI logs the issue once and uses the deterministic local planner for the rest of
+that run. If the requested workflow cannot continue because required clips,
+selected assets, connected accounts, permissions, or generated results are
+missing, the planner can return a stop action with a plain-language reason.
 
 ### Stuck Detection
 

@@ -20,9 +20,9 @@ import { logKeyValue } from "../terminal/logKeyValue.js";
 import { logStep } from "../terminal/logStep.js";
 import { logSuccess } from "../terminal/logSuccess.js";
 import type { DemoAutoCommandOptions } from "./DemoAutoCommandOptions.js";
-import { createDemoAutoGoal } from "./createDemoAutoGoal.js";
 import { createDemoAutoTargetAudience } from "./createDemoAutoTargetAudience.js";
 import { readDemoAutoCredentials } from "./readDemoAutoCredentials.js";
+import { readDemoAutoGoal } from "./readDemoAutoGoal.js";
 import { readDemoAutoStepCount } from "./readDemoAutoStepCount.js";
 import { readOrCreateDemoAutoPolicy } from "./readOrCreateDemoAutoPolicy.js";
 import { resolveDemoAutoProduct } from "./resolveDemoAutoProduct.js";
@@ -62,7 +62,7 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
   }
 
   const selectedFlow = selectDemoAutoFlow({ flows, localUrl: url });
-  const goal = createDemoAutoGoal({
+  const goal = await readDemoAutoGoal({
     flow: selectedFlow,
     goal: options.goal,
   });

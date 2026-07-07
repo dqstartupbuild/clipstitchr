@@ -11,6 +11,16 @@ function createRequest(): CliDemoAgentPlanRequest {
     approvedTestValueKeys: ["testEmail"],
     approvedUploadFileKeys: [],
     attemptedActionKeys: [],
+    guide: {
+      goal: "Demonstrate running a batch Stitch in Stitchr.",
+      steps: [
+        {
+          id: "step-1",
+          label: "Open Stitchr",
+        },
+      ],
+      title: "Batch Stitch demo",
+    },
     observation: {
       buttons: [],
       dialogs: [],

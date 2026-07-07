@@ -1,4 +1,5 @@
 import { createDemoWalkthroughUploadMetadata } from "../demoGuide/createDemoWalkthroughUploadMetadata.js";
+import { getDemoAgentStopReasonIsGuideComplete } from "../demoAgent/getDemoAgentStopReasonIsGuideComplete.js";
 import { createDemoAgentManualUploadCommand } from "./createDemoAgentManualUploadCommand.js";
 import type { DemoAgentRecordingUploadReviewInput } from "./DemoAgentRecordingUploadReviewInput.js";
 import type { DemoAgentRecordingUploadReviewResult } from "./DemoAgentRecordingUploadReviewResult.js";
@@ -16,7 +17,7 @@ export async function reviewDemoAgentRecordingUpload(
 
   const manualUploadCommand = createDemoAgentManualUploadCommand(recordingPath);
 
-  if (input.recording.summary.stopReason !== "dry-run-complete") {
+  if (!getDemoAgentStopReasonIsGuideComplete(input.recording.summary.stopReason)) {
     services.logWarning(
       "The agent stopped before completing the guide. Review the run before uploading.",
     );

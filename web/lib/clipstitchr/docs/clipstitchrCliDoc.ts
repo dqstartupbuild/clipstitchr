@@ -131,10 +131,10 @@ export const clipstitchrCliDoc = {
       title: "Let AI write and record the demo",
       body: [
         "After the repo is linked, your ClipStitchr account is connected, and the saved browser is already signed into your app, one command can write the guide and record the demo.",
-        "The command picks the linked product, uses the local app URL, writes a short AI guide, creates a local safety policy if needed, records with the guarded AI agent, and saves the MP4 plus evidence locally. It does not upload automatically.",
+        "The command asks what you want to demonstrate, picks the linked product, uses the local app URL, writes a short AI guide, creates a local safety policy if needed, records with the guarded AI agent, and saves the MP4 plus evidence locally. It does not upload automatically.",
       ],
       bullets: [
-        "Use --goal when you want to steer what the demo should show.",
+        "Use --goal when you want to skip the prompt and pass the demo request directly.",
         "Use --audience when you want the guide written for a specific viewer.",
         "Use --steps to keep the guide between 3 and 8 steps.",
         "Use --product, --start, or --url only when the linked repo settings are missing or need an override.",

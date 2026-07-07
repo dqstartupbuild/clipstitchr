@@ -14,10 +14,21 @@ export type CliDemoAgentPageObservation = {
   url: string;
 };
 
+export type CliDemoAgentGuideContext = {
+  goal: string;
+  steps: {
+    id: string;
+    label: string;
+    notes?: string;
+  }[];
+  title: string;
+};
+
 export type CliDemoAgentPlanRequest = {
   approvedTestValueKeys: string[];
   approvedUploadFileKeys: string[];
   attemptedActionKeys: string[];
+  guide?: CliDemoAgentGuideContext;
   observation: CliDemoAgentPageObservation;
   step: {
     id: string;

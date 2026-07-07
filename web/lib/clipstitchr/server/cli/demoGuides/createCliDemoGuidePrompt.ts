@@ -38,6 +38,8 @@ export function createCliDemoGuidePrompt({
       },
       rules: {
         stepCount: request.stepCount,
+        primaryGoal:
+          "Treat demo.goal as the main thing to demonstrate. Do not replace a specific user request with a generic workspace tour.",
         stepLabelOnly: true,
         minSteps: 3,
         maxSteps: 8,
@@ -59,6 +61,10 @@ export function createCliDemoGuidePrompt({
         noDestructiveActions: true,
         noInventedUi: true,
         useKnownRoutesWhenPossible: true,
+        routeChoice:
+          "If demo.goal names a visible tool and a matching route exists in availableFlows, build the guide around that route.",
+        missingSetup:
+          "When the goal depends on existing media, connected accounts, saved clips, generated results, or product setup, make steps that open the relevant page and use visible assets. Do not claim unavailable setup exists.",
       },
       examples: {
         good: [

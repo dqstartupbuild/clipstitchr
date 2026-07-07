@@ -8,6 +8,7 @@ import { createDemoAgentActionKey } from "./createDemoAgentActionKey.js";
 import { createDemoAgentActionLogEntry } from "./createDemoAgentActionLogEntry.js";
 import { createDemoAgentStepState } from "./createDemoAgentStepState.js";
 import { createDemoAgentTiming } from "./createDemoAgentTiming.js";
+import { demoAgentGuideCompleteStopReason } from "./demoAgentGuideCompleteStopReason.js";
 import type { DemoAgentLoopResult } from "./DemoAgentLoopResult.js";
 import type { DemoAgentPlanner } from "./DemoAgentPlanner.js";
 import type { DemoAgentPolicy } from "./DemoAgentPolicy.js";
@@ -39,7 +40,7 @@ export async function runDemoAgentLoop(input: {
   const guideStepIds = input.guide.steps.map((guideStep) => guideStep.id);
   let actionCount = input.initialActionCount ?? 0;
   let screenshotCount = input.initialScreenshotCount ?? 0;
-  let stopReason = "dry-run-complete";
+  let stopReason = demoAgentGuideCompleteStopReason;
 
   for (const [index, step] of input.guide.steps.entries()) {
     const stepStartedAtMs = Date.now() - input.startedAtMs;
@@ -180,6 +181,7 @@ export async function runDemoAgentLoop(input: {
       }
 
       const plannedAction = await (input.planner ?? planDemoAgentAction)({
+        guide: input.guide,
         observation,
         policy: input.policy,
         step,
@@ -389,7 +391,7 @@ export async function runDemoAgentLoop(input: {
       }
     }
 
-    if (stopReason !== "dry-run-complete") {
+    if (stopReason !== demoAgentGuideCompleteStopReason) {
       break;
     }
   }

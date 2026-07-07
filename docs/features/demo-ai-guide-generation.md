@@ -35,6 +35,12 @@ duplicate returned step IDs, unsafe labels, and presenter-only steps such as
 backend asks the model to repair the JSON once. If generation still fails, the
 CLI falls back to the existing local checklist builder.
 
+For `clipstitchr demo auto`, the CLI asks what the demo should show unless the
+user passes `--goal`. The guide prompt treats that goal as the primary direction
+and prefers matching scanned routes when available, so specific requests stay
+focused on the requested tool or workflow instead of falling back to a generic
+workspace tour.
+
 ## File Tree
 
 - `packages/clipstitchr-cli/src/commands/runDemoGuideGenerateCommand.ts`

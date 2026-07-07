@@ -16,6 +16,7 @@ import { createDemoAgentActionLogEntry } from "./createDemoAgentActionLogEntry.j
 import { createDemoAgentRunId } from "./createDemoAgentRunId.js";
 import { createDemoAgentRunPaths } from "./createDemoAgentRunPaths.js";
 import { createDemoAgentStartUrl } from "./createDemoAgentStartUrl.js";
+import { demoAgentGuideCompleteStopReason } from "./demoAgentGuideCompleteStopReason.js";
 import type { DemoAgentPlanner } from "./DemoAgentPlanner.js";
 import type { DemoAgentPolicy } from "./DemoAgentPolicy.js";
 import type { DemoAgentRecordedRun } from "./DemoAgentRecordedRun.js";
@@ -41,7 +42,7 @@ export async function runDemoAgentRecording(inputOptions: {
   let actionCount = 0;
   let screenshotCount = 0;
   let stepTimings: DemoAgentRunSummary["stepTimings"] = [];
-  let stopReason = "recording-complete";
+  let stopReason = demoAgentGuideCompleteStopReason;
   let rawVideoPath = "";
 
   await mkdir(runPaths.screenshotsDirectory, { recursive: true });

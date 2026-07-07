@@ -1,4 +1,5 @@
 import type {
+  CliDemoAgentGuideContext,
   CliDemoAgentObservedElement,
   CliDemoAgentPageObservation,
   CliDemoAgentPlanRequest,
@@ -67,6 +68,54 @@ function readObservation(value: unknown): CliDemoAgentPageObservation {
   };
 }
 
+function readGuideContext(value: unknown): CliDemoAgentGuideContext | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const raw = value as Record<string, unknown>;
+  const title = typeof raw.title === "string" ? raw.title.trim() : "";
+  const goal = typeof raw.goal === "string" ? raw.goal.trim() : "";
+
+  if (!title || !goal) {
+    return undefined;
+  }
+
+  return {
+    goal: goal.slice(0, 500),
+    steps: Array.isArray(raw.steps)
+      ? raw.steps
+          .map((item) => {
+            if (!item || typeof item !== "object" || Array.isArray(item)) {
+              return null;
+            }
+
+            const step = item as Record<string, unknown>;
+            const id = typeof step.id === "string" ? step.id.trim() : "";
+            const label =
+              typeof step.label === "string" ? step.label.trim() : "";
+
+            if (!id || !label) {
+              return null;
+            }
+
+            return {
+              id: id.slice(0, 120),
+              label: label.slice(0, 240),
+              ...(typeof step.notes === "string" && step.notes.trim()
+                ? { notes: step.notes.trim().slice(0, 500) }
+                : {}),
+            };
+          })
+          .filter((item): item is CliDemoAgentGuideContext["steps"][number] =>
+            Boolean(item),
+          )
+          .slice(0, 12)
+      : [],
+    title: title.slice(0, 240),
+  };
+}
+
 export function readCliDemoAgentPlanRequest(
   body: Record<string, unknown>,
 ): CliDemoAgentPlanRequest {
@@ -90,6 +139,7 @@ export function readCliDemoAgentPlanRequest(
       180,
     ),
     attemptedActionKeys: readStringArray(body.attemptedActionKeys, 20, 240),
+    guide: readGuideContext(body.guide),
     observation: readObservation(body.observation),
     step: {
       id: readCliRequiredString(step, "id", "step ID").slice(0, 120),

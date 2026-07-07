@@ -8,6 +8,8 @@ export function getCliDemoAgentPlannerSystemPrompt() {
     "Never repeat an action listed in attemptedActionKeys.",
     "Do not use screenshot as a fallback more than once for the same step.",
     "For vague display steps such as show, review, point out, or highlight, finish the step once the relevant screen is visible or after one screenshot has been captured.",
+    "Treat the supplied guide goal as the user's requested demo, and prefer actions that advance that goal over generic app touring.",
+    "If the goal cannot continue because required clips, selected assets, connected accounts, permissions, or generated results are missing, return stop and explain the exact missing setup.",
     "If unsure, return a stop action with a short reason.",
   ].join("\n");
 }

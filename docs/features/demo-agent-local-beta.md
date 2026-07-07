@@ -102,15 +102,24 @@ forward.
 
 ## One-Command AI Recording
 
-`clipstitchr demo auto` is the non-interactive path. It requires the project to
-already be linked, the CLI account session to be valid, the local app URL to be
-known or running, and the saved browser profile to already be signed into the
-app. It generates a guide with ClipStitchr AI, saves it locally, creates a
-localhost policy if one does not exist, verifies the page in a non-recorded
-browser, records with the model-backed planner, and skips upload prompts by
-default. The generated guide receives scanned route context and is rejected if
-it asks for presenter-only behavior, such as pointing out or highlighting UI
-without a browser action the agent can perform.
+`clipstitchr demo auto` is the guided one-command path. It requires the project
+to already be linked, the CLI account session to be valid, the local app URL to
+be known or running, and the saved browser profile to already be signed into the
+app. Before writing the guide, it asks what the demo should show unless the user
+passes `--goal`. That goal is sent to guide generation and to every model-backed
+planner call, so requests such as "create a similar avatar using the latest UGC
+clip" or "demonstrate running a batch stitch in Stitchr" steer both the
+checklist and the browser actions.
+
+It generates a guide with ClipStitchr AI, saves it locally, creates a localhost
+policy if one does not exist, verifies the page in a non-recorded browser,
+records with the model-backed planner, and skips upload prompts by default. The
+generated guide receives scanned route context and is rejected if it asks for
+presenter-only behavior, such as pointing out or highlighting UI without a
+browser action the agent can perform. If the model-backed planner cannot
+continue because required clips, connected accounts, selected assets, generated
+results, or permissions are missing, it can stop with a plain-language reason
+explaining what setup is needed.
 
 If one of those setup requirements is missing, the command stops with the next
 setup command instead of asking questions.
@@ -144,8 +153,8 @@ Current coverage includes:
 - Upload-review tests proving incomplete runs, `--no-upload`, and declined
   review prompts do not upload, while approved uploads include safe
   `walkthrough.agentRun` metadata.
-- Auto-demo helper tests for default goal, audience, step count, and route-flow
-  selection.
+- Auto-demo helper tests for default goal, audience, step count, route-flow
+  selection, planner fallback, and repeated-action fallback.
 
 Remaining test coverage should focus on GUI recording smoke and production
 smoke for model-backed planning.

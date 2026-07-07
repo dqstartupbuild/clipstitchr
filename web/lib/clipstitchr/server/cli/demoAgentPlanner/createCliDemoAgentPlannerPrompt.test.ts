@@ -8,6 +8,20 @@ describe("createCliDemoAgentPlannerPrompt", () => {
         approvedTestValueKeys: [],
         approvedUploadFileKeys: [],
         attemptedActionKeys: ["screenshot:step-3"],
+        guide: {
+          goal: "Demonstrate running a batch Stitch in Stitchr.",
+          steps: [
+            {
+              id: "step-1",
+              label: "Open Stitchr",
+            },
+            {
+              id: "step-2",
+              label: "Run a batch Stitch",
+            },
+          ],
+          title: "Batch Stitch demo",
+        },
         observation: {
           buttons: [{ name: "Upload", role: "button" }],
           dialogs: [],
@@ -25,6 +39,16 @@ describe("createCliDemoAgentPlannerPrompt", () => {
     );
 
     expect(prompt.attemptedActionKeys).toEqual(["screenshot:step-3"]);
+    expect(prompt.guide.goal).toBe(
+      "Demonstrate running a batch Stitch in Stitchr.",
+    );
+    expect(prompt.instruction).toContain("overall demo goal");
+    expect(prompt.missingRequirementRules).toEqual(
+      expect.arrayContaining([
+        "Use guide.goal as the user's requested demo direction.",
+        "When returning stop for a missing requirement, explain the specific setup needed in plain language.",
+      ]),
+    );
     expect(prompt.attemptedActionKeyRules).toEqual(
       expect.arrayContaining([
         "Never return an action whose key already appears in attemptedActionKeys.",

@@ -6,6 +6,7 @@ import type { DemoAgentPlanner } from "../../src/demoAgent/DemoAgentPlanner.js";
 import { createDemoAgentPlannerWithFallback } from "../../dist/demoAgent/createDemoAgentPlannerWithFallback.js";
 import { createDemoAgentStepState } from "../../dist/demoAgent/createDemoAgentStepState.js";
 import { createDemoAgentTestPolicy } from "./createDemoAgentTestPolicy.js";
+import { createDemoAgentTestGuide } from "./createDemoAgentTestGuide.js";
 
 const step: DemoWalkthroughStep = {
   id: "step-1",
@@ -44,6 +45,7 @@ describe("createDemoAgentPlannerWithFallback", () => {
     stepState.hasScreenshot = true;
 
     const firstAction = await planner({
+      guide: createDemoAgentTestGuide([step]),
       observation,
       policy: createDemoAgentTestPolicy(),
       step,
@@ -57,6 +59,58 @@ describe("createDemoAgentPlannerWithFallback", () => {
     stepState.hasClicked = true;
 
     const secondAction = await planner({
+      guide: createDemoAgentTestGuide([step]),
+      observation,
+      policy: createDemoAgentTestPolicy(),
+      step,
+      stepState,
+    });
+
+    assert.equal(secondAction.type, "finishStep");
+    assert.equal(aiPlannerCalls, 1);
+    assert.equal(fallbackErrors.length, 1);
+  });
+
+  it("uses the local planner when the AI planner repeats an attempted action", async () => {
+    const fallbackErrors: unknown[] = [];
+    const stepState = createDemoAgentStepState();
+    let aiPlannerCalls = 0;
+    const aiPlanner: DemoAgentPlanner = async () => {
+      aiPlannerCalls += 1;
+
+      return {
+        reason: "Try the same sidebar link again.",
+        stepId: "step-1",
+        target: {
+          name: "Library",
+          role: "link",
+        },
+        type: "click",
+      };
+    };
+    const planner = createDemoAgentPlannerWithFallback({
+      aiPlanner,
+      onFallback: (error) => fallbackErrors.push(error),
+    });
+
+    stepState.attemptedActionKeys.add("click:link:Library");
+    stepState.hasClicked = true;
+    stepState.hasScreenshot = true;
+
+    const firstAction = await planner({
+      guide: createDemoAgentTestGuide([step]),
+      observation,
+      policy: createDemoAgentTestPolicy(),
+      step,
+      stepState,
+    });
+
+    assert.equal(firstAction.type, "finishStep");
+    assert.equal(aiPlannerCalls, 1);
+    assert.equal(fallbackErrors.length, 1);
+
+    const secondAction = await planner({
+      guide: createDemoAgentTestGuide([step]),
       observation,
       policy: createDemoAgentTestPolicy(),
       step,

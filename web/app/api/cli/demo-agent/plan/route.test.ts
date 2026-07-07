@@ -59,6 +59,16 @@ function createBody() {
   return {
     approvedTestValueKeys: ["testEmail"],
     attemptedActionKeys: [],
+    guide: {
+      goal: "Demonstrate running a batch Stitch in Stitchr.",
+      steps: [
+        {
+          id: "step-1",
+          label: "Upload the clip",
+        },
+      ],
+      title: "Batch Stitch demo",
+    },
     observation: {
       buttons: [{ name: "Upload", role: "button" }],
       dialogs: [],
@@ -126,6 +136,9 @@ describe("POST /api/cli/demo-agent/plan", () => {
       replicate: { provider: "replicate" },
       request: expect.objectContaining({
         approvedTestValueKeys: ["testEmail"],
+        guide: expect.objectContaining({
+          goal: "Demonstrate running a batch Stitch in Stitchr.",
+        }),
         step: expect.objectContaining({ id: "step-1" }),
       }),
     });

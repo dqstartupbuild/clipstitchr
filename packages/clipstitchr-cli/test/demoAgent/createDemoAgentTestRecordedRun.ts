@@ -1,5 +1,6 @@
 import type { DemoAgentRecordedRun } from "../../src/demoAgent/DemoAgentRecordedRun.js";
 import type { DemoAgentRunSummary } from "../../src/demoAgent/DemoAgentRunSummary.js";
+import { demoAgentGuideCompleteStopReason } from "../../dist/demoAgent/demoAgentGuideCompleteStopReason.js";
 
 export function createDemoAgentTestRecordedRun(
   summaryOverrides: Partial<DemoAgentRunSummary> = {},
@@ -21,7 +22,7 @@ export function createDemoAgentTestRecordedRun(
     startUrl: "http://localhost:3000/dashboard",
     startedAt: timestamp,
     stepTimings: [],
-    stopReason: "dry-run-complete",
+    stopReason: demoAgentGuideCompleteStopReason,
     uploaded: false,
     ...summaryOverrides,
   };

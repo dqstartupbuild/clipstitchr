@@ -47,7 +47,7 @@ describe("runDemoAgentLoop", () => {
               runPaths.actionLogPath,
             );
 
-            assert.equal(result.stopReason, "dry-run-complete");
+            assert.equal(result.stopReason, "guide-complete");
             assert.equal(result.screenshotCount, 2);
             assert.equal(result.stepTimings.length, 2);
             assert.equal(
@@ -261,7 +261,7 @@ describe("runDemoAgentLoop", () => {
               runPaths.actionLogPath,
             );
 
-            assert.equal(result.stopReason, "dry-run-complete");
+            assert.equal(result.stopReason, "guide-complete");
             assert.equal(result.screenshotCount, 2);
             assert.equal(result.stepTimings.length, 2);
             assert.equal(await page.evaluate("window.modalConfirmed"), true);
@@ -319,7 +319,7 @@ describe("runDemoAgentLoop", () => {
               runPaths.actionLogPath,
             );
 
-            assert.equal(result.stopReason, "dry-run-complete");
+            assert.equal(result.stopReason, "guide-complete");
             assert.equal(result.screenshotCount, 1);
             assert.equal(result.stepTimings.length, 1);
             assert.deepEqual(

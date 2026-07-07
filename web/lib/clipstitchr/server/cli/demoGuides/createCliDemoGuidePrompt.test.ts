@@ -96,6 +96,9 @@ describe("createCliDemoGuidePrompt", () => {
 
     expect(prompt.agentCapabilities.cannot).toContain("point at the screen");
     expect(prompt.rules.bannedStepVerbs).toContain("Highlight");
+    expect(prompt.rules.primaryGoal).toContain("demo.goal");
+    expect(prompt.rules.routeChoice).toContain("matching route");
+    expect(prompt.rules.missingSetup).toContain("existing media");
     expect(prompt.demo.availableFlows).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ path: "/dashboard" }),
