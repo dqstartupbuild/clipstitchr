@@ -91,7 +91,9 @@ planner remains the default. With `--ai-planner`, the CLI asks
 `POST /api/cli/demo-agent/plan` for one JSON browser-action DSL item based on
 the simplified observation only. The server parser rejects unsupported action
 types and CSS selectors, and the CLI policy validator still decides whether the
-proposed action can run.
+proposed action can run. The endpoint uses the shared text-writing provider
+payload helper, including the Replicate Anthropic token minimum guard, before it
+asks the configured writing model for the next action.
 
 ## One-Command AI Recording
 
@@ -150,4 +152,7 @@ smoke for model-backed planning.
 - `packages/clipstitchr-cli/src/commands/runDemoAgentRunCommand.ts`
 - `packages/clipstitchr-cli/src/commands/runDemoAutoCommand.ts`
 - `packages/clipstitchr-cli/src/commands/runDemoAgentExportLogCommand.ts`
+- `web/app/api/cli/demo-agent/plan/route.ts`
+- `web/lib/clipstitchr/server/cli/demoAgentPlanner/*`
+- `web/lib/clipstitchr/server/createTextWritingPredictionInput.ts`
 - `web/lib/clipstitchr/server/cli/demoWalkthrough/readCliDemoWalkthroughAgentRunMetadata.ts`

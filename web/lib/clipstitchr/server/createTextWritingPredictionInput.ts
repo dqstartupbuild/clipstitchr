@@ -1,3 +1,4 @@
+import { ANTHROPIC_TEXT_WRITING_MINIMUM_MAX_TOKENS } from "@/lib/clipstitchr/constants/anthropicTextWritingMinimumMaxTokens";
 import { getIsAnthropicTextWritingModelId } from "@/lib/clipstitchr/server/getIsAnthropicTextWritingModelId";
 
 type CreateTextWritingPredictionInputOptions = {
@@ -17,7 +18,10 @@ export function createTextWritingPredictionInput({
     return {
       prompt,
       system_prompt: systemPrompt,
-      max_tokens: maxCompletionTokens,
+      max_tokens: Math.max(
+        ANTHROPIC_TEXT_WRITING_MINIMUM_MAX_TOKENS,
+        maxCompletionTokens,
+      ),
     };
   }
 

@@ -17,6 +17,21 @@ describe("createTextWritingPredictionInput", () => {
     });
   });
 
+  it("keeps Anthropic writing requests above Replicate's max token floor", () => {
+    expect(
+      createTextWritingPredictionInput({
+        maxCompletionTokens: 500,
+        modelId: "anthropic/claude-sonnet-4.6",
+        prompt: "Plan one safe action.",
+        systemPrompt: "Return JSON.",
+      }),
+    ).toEqual({
+      max_tokens: 1024,
+      prompt: "Plan one safe action.",
+      system_prompt: "Return JSON.",
+    });
+  });
+
   it("keeps the existing OpenAI-style schema for non-Claude writing models", () => {
     expect(
       createTextWritingPredictionInput({

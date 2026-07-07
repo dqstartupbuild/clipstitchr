@@ -55,8 +55,11 @@ Default: `anthropic/claude-sonnet-4.6`
 | `anthropic/claude-opus-4.6` | Supported | Uses the same Replicate input schema as Sonnet 4.6 for higher-cost writing tests. |
 
 Claude text models on Replicate use `max_tokens`, while the older OpenAI text
-path used `max_completion_tokens`. Keep new writing calls on the shared
-`createTextWritingPredictionInput` helper so future tools inherit the correct
+path used `max_completion_tokens`. The shared
+`createTextWritingPredictionInput` helper also keeps Claude requests at
+Replicate's 1024-token minimum, so small JSON planning calls such as the CLI demo
+agent can ask for compact output without sending an invalid provider payload.
+Keep new writing calls on that helper so future tools inherit the correct
 provider input shape.
 
 ## Other AI Usage
