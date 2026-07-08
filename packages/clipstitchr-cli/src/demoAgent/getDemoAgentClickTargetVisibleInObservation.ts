@@ -17,7 +17,11 @@ export function getDemoAgentClickTargetVisibleInObservation({
     );
   }
 
-  if (target.role === "checkbox") {
+  if (
+    target.role === "checkbox" ||
+    target.role === "combobox" ||
+    target.role === "textbox"
+  ) {
     return observation.inputs.some((element) =>
       getDemoAgentObservedElementMatchesText({ element, text: targetText }),
     );

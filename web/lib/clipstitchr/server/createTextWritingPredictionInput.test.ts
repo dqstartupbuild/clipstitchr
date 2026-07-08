@@ -47,4 +47,21 @@ describe("createTextWritingPredictionInput", () => {
       temperature: 0.65,
     });
   });
+
+  it("allows callers to lower temperature for strict planner output", () => {
+    expect(
+      createTextWritingPredictionInput({
+        maxCompletionTokens: 500,
+        modelId: "openai/gpt-5-mini",
+        prompt: "Plan one safe action.",
+        systemPrompt: "Return JSON.",
+        temperature: 0.2,
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        max_completion_tokens: 500,
+        temperature: 0.2,
+      }),
+    );
+  });
 });

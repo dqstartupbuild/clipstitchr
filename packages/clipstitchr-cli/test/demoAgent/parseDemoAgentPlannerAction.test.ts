@@ -87,6 +87,38 @@ describe("parseDemoAgentPlannerAction", () => {
     }
   });
 
+  it("parses input click roles used by browser accessibility trees", () => {
+    const action = parseDemoAgentPlannerAction(
+      JSON.stringify({
+        target: { name: "Demo product", role: "combobox" },
+        type: "click",
+      }),
+    );
+
+    assert.equal(action.type, "click");
+
+    if (action.type === "click") {
+      assert.equal(action.target.name, "Demo product");
+      assert.equal(action.target.role, "combobox");
+    }
+  });
+
+  it("treats generic input role text as a label-based click", () => {
+    const action = parseDemoAgentPlannerAction(
+      JSON.stringify({
+        target: { label: "Hooks to learn from", role: "input" },
+        type: "click",
+      }),
+    );
+
+    assert.equal(action.type, "click");
+
+    if (action.type === "click") {
+      assert.equal(action.target.label, "Hooks to learn from");
+      assert.equal(action.target.role, undefined);
+    }
+  });
+
   it("rejects type actions without a value key or text", () => {
     assert.throws(
       () =>

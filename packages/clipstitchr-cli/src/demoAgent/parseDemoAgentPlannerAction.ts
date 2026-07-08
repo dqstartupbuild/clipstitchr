@@ -50,11 +50,17 @@ function readClickRole(value: unknown): DemoAgentClickTarget["role"] {
   if (
     value === "button" ||
     value === "checkbox" ||
+    value === "combobox" ||
     value === "link" ||
     value === "menuitem" ||
-    value === "tab"
+    value === "tab" ||
+    value === "textbox"
   ) {
     return value;
+  }
+
+  if (value === "field" || value === "input") {
+    return undefined;
   }
 
   throw new Error("Planner click actions can only use approved roles.");

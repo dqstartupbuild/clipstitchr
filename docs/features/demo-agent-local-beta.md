@@ -100,16 +100,20 @@ planner remains the default. With `--ai-planner`, the CLI asks
 `POST /api/cli/demo-agent/plan` for one JSON browser-action DSL item based on
 the simplified observation only. The server parser rejects unsupported action
 types and CSS selectors, and the CLI policy validator still decides whether the
-proposed action can run. The endpoint uses the shared text-writing provider
-payload helper, but selects a dedicated planner model through
-`CLI_DEMO_AGENT_PLANNER_MODEL_ID`, defaulting to `openai/gpt-5-mini`. If that
-provider call fails, the CLI logs the provider error once and uses the
-deterministic local planner for the rest of the run. Planner prompts include the
-action keys already tried during the current step, and the model is told not to
-repeat screenshots or other actions that have already failed to move the page
-forward. If the model repeats an already-attempted action, the CLI uses the
-deterministic planner for that decision without disabling model planning for the
-rest of the run.
+proposed action can run. The endpoint accepts common browser input roles such as
+`combobox` and `textbox`, asks the model to use exact local paths for
+route-opening steps, and retries once with the invalid output and parse error
+when the model returns malformed JSON or an unsupported action shape. The
+endpoint uses the shared text-writing provider payload helper, but selects a
+dedicated planner model through `CLI_DEMO_AGENT_PLANNER_MODEL_ID`, defaulting to
+`openai/gpt-5-mini`, at a lower planner temperature than creative text
+generation. If that provider call fails after repair, the CLI logs the provider
+error once and uses the deterministic local planner for the rest of the run.
+Planner prompts include the action keys already tried during the current step,
+and the model is told not to repeat screenshots or other actions that have
+already failed to move the page forward. If the model repeats an
+already-attempted action, the CLI uses the deterministic planner for that
+decision without disabling model planning for the rest of the run.
 
 ## One-Command AI Recording
 

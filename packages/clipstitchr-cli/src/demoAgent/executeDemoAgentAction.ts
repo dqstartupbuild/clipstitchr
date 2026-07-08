@@ -1,6 +1,7 @@
 import type { Page } from "playwright";
 import type { DemoAgentValidatedAction } from "./DemoAgentValidatedAction.js";
 import { getDemoAgentLocatorForClickTarget } from "./getDemoAgentLocatorForClickTarget.js";
+import { waitForDemoAgentPageToSettleAfterClick } from "./waitForDemoAgentPageToSettleAfterClick.js";
 
 export async function executeDemoAgentAction(input: {
   action: DemoAgentValidatedAction;
@@ -12,6 +13,7 @@ export async function executeDemoAgentAction(input: {
         input.page,
         input.action.target,
       ).click();
+      await waitForDemoAgentPageToSettleAfterClick(input.page);
       break;
     case "finishStep":
     case "screenshot":

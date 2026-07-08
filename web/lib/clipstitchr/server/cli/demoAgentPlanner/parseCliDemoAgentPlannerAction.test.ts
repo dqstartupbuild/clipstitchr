@@ -20,6 +20,38 @@ describe("parseCliDemoAgentPlannerAction", () => {
     );
   });
 
+  it("parses input click roles used by browser accessibility trees", () => {
+    const action = parseCliDemoAgentPlannerAction(
+      JSON.stringify({
+        target: { name: "Demo product", role: "combobox" },
+        type: "click",
+      }),
+    );
+
+    expect(action).toEqual(
+      expect.objectContaining({
+        target: { name: "Demo product", role: "combobox" },
+        type: "click",
+      }),
+    );
+  });
+
+  it("treats generic input role text as a label-based click", () => {
+    const action = parseCliDemoAgentPlannerAction(
+      JSON.stringify({
+        target: { label: "Hooks to learn from", role: "input" },
+        type: "click",
+      }),
+    );
+
+    expect(action).toEqual(
+      expect.objectContaining({
+        target: { label: "Hooks to learn from", role: undefined },
+        type: "click",
+      }),
+    );
+  });
+
   it("rejects type actions without a value key or text", () => {
     expect(() =>
       parseCliDemoAgentPlannerAction(

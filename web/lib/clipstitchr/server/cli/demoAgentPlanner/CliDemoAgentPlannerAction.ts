@@ -6,7 +6,14 @@ export type CliDemoAgentPlannerAction =
       target: {
         label?: string;
         name?: string;
-        role?: "button" | "checkbox" | "link" | "menuitem" | "tab";
+        role?:
+          | "button"
+          | "checkbox"
+          | "combobox"
+          | "link"
+          | "menuitem"
+          | "tab"
+          | "textbox";
         text?: string;
       };
       type: "click";

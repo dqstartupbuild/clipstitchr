@@ -76,11 +76,65 @@ describe("createCliDemoAgentPlannerGeneration", () => {
         max_completion_tokens: 500,
         prompt: expect.any(String),
         system_prompt: expect.any(String),
+        temperature: 0.2,
       }),
       model: "openai/gpt-5-mini",
     });
     expect(createPrediction.mock.calls[0]?.[0].input).not.toHaveProperty(
       "max_tokens",
+    );
+  });
+
+  it("repairs invalid planner output before returning a primary AI action", async () => {
+    vi.stubEnv("CLI_DEMO_AGENT_PLANNER_MODEL_ID", "");
+
+    const createPrediction = vi
+      .fn()
+      .mockResolvedValueOnce({ id: "prediction_bad" })
+      .mockResolvedValueOnce({ id: "prediction_repaired" });
+    const wait = vi
+      .fn()
+      .mockResolvedValueOnce({
+        output: JSON.stringify({
+          target: { name: "Library", role: "panel" },
+          type: "click",
+        }),
+        status: "succeeded",
+      })
+      .mockResolvedValueOnce({
+        output: JSON.stringify({
+          path: "/dashboard/library",
+          reason: "Repair the invalid click role by navigating directly.",
+          stepId: "step-1",
+          type: "navigate",
+        }),
+        status: "succeeded",
+      });
+    const replicate = {
+      predictions: {
+        create: createPrediction,
+      },
+      wait,
+    } as unknown as CreateGenerationInput["replicate"];
+
+    const generation = await createCliDemoAgentPlannerGeneration({
+      replicate,
+      request: createRequest(),
+    });
+
+    expect(generation.action).toEqual(
+      expect.objectContaining({
+        path: "/dashboard/library",
+        type: "navigate",
+      }),
+    );
+    expect(generation.providerPredictionId).toBe("prediction_repaired");
+    expect(createPrediction).toHaveBeenCalledTimes(2);
+    expect(createPrediction.mock.calls[1]?.[0].input.prompt).toContain(
+      "Repair the invalid planner output",
+    );
+    expect(createPrediction.mock.calls[1]?.[0].input.prompt).toContain(
+      "Planner click actions can only use approved roles.",
     );
   });
 });

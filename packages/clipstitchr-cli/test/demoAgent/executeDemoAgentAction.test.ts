@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { executeDemoAgentAction } from "../../dist/demoAgent/executeDemoAgentAction.js";
 import { withDemoAgentFixturePage } from "./withDemoAgentFixturePage.js";
+import { withDemoAgentFixtureServer } from "./withDemoAgentFixtureServer.js";
 
 describe("executeDemoAgentAction", () => {
   it("clicks visible role targets", async () => {
@@ -28,6 +29,35 @@ describe("executeDemoAgentAction", () => {
         true,
       );
     });
+  });
+
+  it("waits for delayed click navigation to settle", async () => {
+    await withDemoAgentFixtureServer(
+      `
+        <html>
+          <body>
+            <button onclick="setTimeout(() => { window.location.href = '/next'; }, 100)">
+              Continue
+            </button>
+          </body>
+        </html>
+      `,
+      async (origin) => {
+        await withDemoAgentFixturePage(async (page) => {
+          await page.goto(origin);
+
+          await executeDemoAgentAction({
+            action: {
+              target: { name: "Continue", role: "button" },
+              type: "click",
+            },
+            page,
+          });
+
+          assert.equal(page.url(), `${origin}/next`);
+        });
+      },
+    );
   });
 
   it("types only through approved resolved values", async () => {

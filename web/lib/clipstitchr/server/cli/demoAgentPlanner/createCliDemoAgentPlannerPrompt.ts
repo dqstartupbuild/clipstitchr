@@ -6,7 +6,7 @@ export function createCliDemoAgentPlannerPrompt(
   return JSON.stringify({
     allowedActionShape: {
       click:
-        '{ "type": "click", "stepId": "...", "target": { "role": "button", "name": "..." }, "reason": "..." }',
+        '{ "type": "click", "stepId": "...", "target": { "role": "button|link|checkbox|combobox|textbox|menuitem|tab", "name": "..." }, "reason": "..." }',
       finishStep: '{ "type": "finishStep", "stepId": "...", "reason": "..." }',
       navigate: '{ "type": "navigate", "path": "/allowed-local-path" }',
       screenshot: '{ "type": "screenshot", "stepId": "..." }',
@@ -51,6 +51,8 @@ export function createCliDemoAgentPlannerPrompt(
       "Current observation is still the authority: click and type only visible controls from observation.",
       "Click target names must come from observation.buttons or observation.links exactly; appContext cannot supply a click target unless the same label is currently visible.",
       "Type target labels must match a visible observation.inputs label or name.",
+      "If step.label is Open followed by a local path like /dashboard/stitchr, return a navigate action to that exact path unless observation.url is already on that path.",
+      "For steps that say Type X into FIELD, return one type action with target.label set to FIELD and valueText set to X. Do not split focusing the field from typing the value.",
       "When a step says add, save, create, or update something, match the noun in the step to appContext inputs first, then use a visible matching input from observation.",
       "If a matching input is visible, type safe demo text with valueText unless the step requires private, credential, billing, or real customer data.",
       "For Hook Lab requests to add new hooks or hooks to learn from, type safe examples into the visible Hooks to learn from input, then click a visible Save Hook Lab button.",

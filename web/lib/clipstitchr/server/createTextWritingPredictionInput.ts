@@ -6,6 +6,7 @@ type CreateTextWritingPredictionInputOptions = {
   modelId: string;
   prompt: string;
   systemPrompt: string;
+  temperature?: number;
 };
 
 export function createTextWritingPredictionInput({
@@ -13,6 +14,7 @@ export function createTextWritingPredictionInput({
   modelId,
   prompt,
   systemPrompt,
+  temperature = 0.65,
 }: CreateTextWritingPredictionInputOptions) {
   if (getIsAnthropicTextWritingModelId(modelId)) {
     return {
@@ -28,7 +30,7 @@ export function createTextWritingPredictionInput({
   return {
     prompt,
     system_prompt: systemPrompt,
-    temperature: 0.65,
+    temperature,
     max_completion_tokens: maxCompletionTokens,
   };
 }

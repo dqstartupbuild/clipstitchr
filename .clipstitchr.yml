@@ -4,13 +4,13 @@ recording:
   format: full-size
   longRecordingWarningSeconds: 120
   recommendedDurationSeconds: 60
-  demoGuideId: guide_60be45fdb57f
+  demoGuideId: guide_37c17a9d740e
 target:
   start: cd web && npm run dev
   type: web
   url: http://localhost:3000
 appContext:
-  generatedAt: 2026-07-08T01:11:28.286Z
+  generatedAt: 2026-07-08T01:58:47.238Z
   path: .clipstitchr/app-context.json
   routeCount: 8
   workflowHintCount: 24
