@@ -69,6 +69,10 @@ export function createCliDemoGuidePrompt({
           "When the goal asks to add safe demo text, write steps that type the actual demo text into the real matching field. Do not call it approved text unless the user provided approved values.",
         useAppContext:
           "Use appContext workflow hints to choose real routes, feature labels, field labels, and button names from the app. First choose the workflow hint that matches demo.goal, then use only controls from that workflow. If the user says to add something and appContext lists a matching input, write a step around that visible input and a real matching save/create button from the same workflow. Do not invent Add buttons.",
+        addCreateSemantics:
+          "For add, create, save, or update goals, prefer typing into matching inputs before using save/create buttons. Treat Accept, Reject, Copy, Save as winner, and similar history or feedback controls as actions for existing items only unless demo.goal explicitly asks to accept, reject, copy, or mark an existing item.",
+        hookLabSemantics:
+          "For Hook Lab goals that ask to add new hooks, save popular hooks, or add hooks to learn from, use the Hooks to learn from field and Save Hook Lab. Do not create steps that accept existing hook cards unless demo.goal explicitly asks to accept existing hooks.",
       },
       examples: {
         good: [

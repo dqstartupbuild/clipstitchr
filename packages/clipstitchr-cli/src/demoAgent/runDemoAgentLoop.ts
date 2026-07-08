@@ -15,6 +15,7 @@ import type { DemoAgentPolicy } from "./DemoAgentPolicy.js";
 import type { DemoAgentRunPaths } from "./DemoAgentRunPaths.js";
 import type { DemoAgentValidatedAction } from "./DemoAgentValidatedAction.js";
 import type { ScannedAppContext } from "../project/ScannedAppContext.js";
+import { assertDemoAgentActionVisibleInObservation } from "./assertDemoAgentActionVisibleInObservation.js";
 import { executeDemoAgentAction } from "./executeDemoAgentAction.js";
 import { getDemoAgentObservationHasNotFoundState } from "./getDemoAgentObservationHasNotFoundState.js";
 import { getDemoAgentRecordingTimeLimitReached } from "./getDemoAgentRecordingTimeLimitReached.js";
@@ -205,6 +206,10 @@ export async function runDemoAgentLoop(input: {
           currentUrl: urlBefore,
           guideStepIds,
           policy: input.policy,
+        });
+        assertDemoAgentActionVisibleInObservation({
+          action: validatedAction,
+          observation,
         });
       } catch (error) {
         const failureCount = (failureCounts.get(actionKey) ?? 0) + 1;

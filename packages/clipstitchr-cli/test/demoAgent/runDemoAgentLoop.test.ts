@@ -220,6 +220,132 @@ describe("runDemoAgentLoop", () => {
     );
   });
 
+  it("allows an injected planner to type safe text into a visible input", async () => {
+    await withDemoAgentFixtureServer(
+      `
+        <html>
+          <head><title>Hook Lab fixture</title></head>
+          <body>
+            <h1>Hook Lab</h1>
+            <label for="hooks">Hooks to learn from <span>Add one per line</span></label>
+            <textarea id="hooks"></textarea>
+          </body>
+        </html>
+      `,
+      async (origin) => {
+        await withDemoAgentRunPaths(async (runPaths) => {
+          await withDemoAgentFixturePage(async (page) => {
+            await page.goto(`${origin}/dashboard/hooks`);
+            let callCount = 0;
+
+            const result = await runDemoAgentLoop({
+              guide: createDemoAgentTestGuide([
+                { id: "step-1", label: "Add hooks to learn from" },
+              ]),
+              page,
+              planner: () => {
+                callCount += 1;
+
+                if (callCount === 1) {
+                  return {
+                    stepId: "step-1",
+                    target: { label: "Hooks to learn from" },
+                    type: "type",
+                    valueText:
+                      "Stop guessing what to post.\nTurn one clip into a week of ideas.",
+                  };
+                }
+
+                return {
+                  stepId: "step-1",
+                  type: "finishStep",
+                };
+              },
+              policy: createDemoAgentTestPolicy({
+                allowedOrigins: [origin],
+                allowedRoutes: ["/dashboard/hooks"],
+              }),
+              runPaths,
+              startedAtMs: Date.now(),
+            });
+            const entries = await readDemoAgentTestActionLogEntries(
+              runPaths.actionLogPath,
+            );
+
+            assert.equal(result.stopReason, "guide-complete");
+            assert.equal(
+              await page.getByLabel("Hooks to learn from").inputValue(),
+              "Stop guessing what to post.\nTurn one clip into a week of ideas.",
+            );
+            assert.deepEqual(
+              entries.map((entry) => entry.action),
+              ["type", "finishStep"],
+            );
+            assert.deepEqual(
+              entries.map((entry) => entry.result),
+              ["ok", "ok"],
+            );
+          });
+        });
+      },
+    );
+  });
+
+  it("blocks injected planner click targets missing from the observation", async () => {
+    await withDemoAgentFixtureServer(
+      `
+        <html>
+          <head><title>Hook cards fixture</title></head>
+          <body>
+            <h1>Hook Lab</h1>
+            <button onclick="window.accepted = true">Accept hook</button>
+          </body>
+        </html>
+      `,
+      async (origin) => {
+        await withDemoAgentRunPaths(async (runPaths) => {
+          await withDemoAgentFixturePage(async (page) => {
+            await page.goto(`${origin}/dashboard/hooks`);
+
+            const result = await runDemoAgentLoop({
+              guide: createDemoAgentTestGuide([
+                { id: "step-1", label: "Accept saved hook" },
+              ]),
+              page,
+              planner: () => ({
+                stepId: "step-1",
+                target: { name: "Save as winner", role: "button" },
+                type: "click",
+              }),
+              policy: createDemoAgentTestPolicy({
+                allowedOrigins: [origin],
+                allowedRoutes: ["/dashboard/hooks"],
+              }),
+              runPaths,
+              startedAtMs: Date.now(),
+            });
+            const entries = await readDemoAgentTestActionLogEntries(
+              runPaths.actionLogPath,
+            );
+
+            assert.equal(result.stopReason, "same-action-failed");
+            assert.equal(await page.evaluate("window.accepted"), undefined);
+            assert.deepEqual(
+              entries.map((entry) => entry.result),
+              ["blocked", "blocked"],
+            );
+            assert.match(
+              String(entries[0]?.details?.error),
+              /not visible in the current page observation/i,
+            );
+            assert.equal(entries[0]?.details?.policyDecision, "blocked");
+            assertDemoAgentTestEntriesIncludeUrls(entries);
+          });
+        });
+      },
+    );
+  });
+
   it("completes a safe modal flow", async () => {
     await withDemoAgentFixtureServer(
       `

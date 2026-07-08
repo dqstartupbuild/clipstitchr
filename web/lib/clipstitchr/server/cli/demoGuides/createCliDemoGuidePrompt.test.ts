@@ -120,6 +120,8 @@ describe("createCliDemoGuidePrompt", () => {
     expect(prompt.rules.routeChoice).toContain("matching route");
     expect(prompt.rules.missingSetup).toContain("existing media");
     expect(prompt.rules.useAppContext).toContain("feature labels");
+    expect(prompt.rules.addCreateSemantics).toContain("typing into matching inputs");
+    expect(prompt.rules.hookLabSemantics).toContain("Hooks to learn from");
     expect(prompt.demo.appContext.workflowHints[0].inputs).toContain(
       "Hooks to learn from",
     );

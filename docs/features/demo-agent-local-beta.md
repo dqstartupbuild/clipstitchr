@@ -51,8 +51,11 @@ The deterministic planner can capture screenshots, click visible buttons or
 links that match the current guide step, type safe demo text into matching
 visible fields, and finish a step when no more safe action is needed. Policy
 approved test values are still supported for reusable values, but they are no
-longer required for normal local demo copy such as Hook Lab examples. The
-executor also supports local file upload actions, but upload remains blocked
+longer required for normal local demo copy such as Hook Lab examples. The runtime
+checks click, type, and upload targets against the current observation before
+Playwright executes the action, so source-derived context cannot make the agent
+wait on a hidden or missing control. The executor also supports local file
+upload actions, but upload remains blocked
 unless the policy allows uploads, disables pre-upload approval, and names exactly
 one approved local file.
 
@@ -127,9 +130,12 @@ presenter-only behavior, such as pointing out or highlighting UI without a
 browser action the agent can perform. The guide writer and planner also receive
 capped app context from `.clipstitchr/app-context.json`, including source-derived
 feature labels, inputs, and buttons for workflows such as Hook Lab. If the
-model-backed planner cannot continue because required clips, connected accounts,
-selected assets, generated results, or permissions are missing, it can stop with
-a plain-language reason explaining what setup is needed.
+user asks Hook Lab to add new hooks or hooks to learn from, the guide writer is
+instructed to use the `Hooks to learn from` field and `Save Hook Lab` instead of
+history feedback actions such as accepting or rejecting existing hook cards. If
+the model-backed planner cannot continue because required clips, connected
+accounts, selected assets, generated results, or permissions are missing, it can
+stop with a plain-language reason explaining what setup is needed.
 
 If one of those setup requirements is missing, the command stops with the next
 setup command instead of asking questions.

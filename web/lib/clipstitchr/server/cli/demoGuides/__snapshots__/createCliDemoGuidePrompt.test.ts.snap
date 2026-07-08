@@ -125,6 +125,7 @@ exports[`createCliDemoGuidePrompt > matches the 'auth-required' prompt shape 1`]
     "websiteUrl": "https://clipstitchr.test",
   },
   "rules": {
+    "addCreateSemantics": "For add, create, save, or update goals, prefer typing into matching inputs before using save/create buttons. Treat Accept, Reject, Copy, Save as winner, and similar history or feedback controls as actions for existing items only unless demo.goal explicitly asks to accept, reject, copy, or mark an existing item.",
     "agentRunnable": true,
     "allowedStepVerbs": "Prefer Open, Click, Choose, Select, Upload, Wait for, Review, Use, or Finish on.",
     "bannedStepVerbs": [
@@ -137,6 +138,7 @@ exports[`createCliDemoGuidePrompt > matches the 'auth-required' prompt shape 1`]
       "Show where",
       "Show how",
     ],
+    "hookLabSemantics": "For Hook Lab goals that ask to add new hooks, save popular hooks, or add hooks to learn from, use the Hooks to learn from field and Save Hook Lab. Do not create steps that accept existing hook cards unless demo.goal explicitly asks to accept existing hooks.",
     "maxSteps": 8,
     "minSteps": 3,
     "missingSetup": "When the goal depends on existing media, connected accounts, saved clips, generated results, or product setup, make steps that open the relevant page and use visible assets. Do not claim unavailable setup exists.",
@@ -281,6 +283,7 @@ exports[`createCliDemoGuidePrompt > matches the 'loading-process' prompt shape 1
     "websiteUrl": "https://clipstitchr.test",
   },
   "rules": {
+    "addCreateSemantics": "For add, create, save, or update goals, prefer typing into matching inputs before using save/create buttons. Treat Accept, Reject, Copy, Save as winner, and similar history or feedback controls as actions for existing items only unless demo.goal explicitly asks to accept, reject, copy, or mark an existing item.",
     "agentRunnable": true,
     "allowedStepVerbs": "Prefer Open, Click, Choose, Select, Upload, Wait for, Review, Use, or Finish on.",
     "bannedStepVerbs": [
@@ -293,6 +296,7 @@ exports[`createCliDemoGuidePrompt > matches the 'loading-process' prompt shape 1
       "Show where",
       "Show how",
     ],
+    "hookLabSemantics": "For Hook Lab goals that ask to add new hooks, save popular hooks, or add hooks to learn from, use the Hooks to learn from field and Save Hook Lab. Do not create steps that accept existing hook cards unless demo.goal explicitly asks to accept existing hooks.",
     "maxSteps": 8,
     "minSteps": 3,
     "missingSetup": "When the goal depends on existing media, connected accounts, saved clips, generated results, or product setup, make steps that open the relevant page and use visible assets. Do not claim unavailable setup exists.",
@@ -431,6 +435,7 @@ exports[`createCliDemoGuidePrompt > matches the 'minimal-product' prompt shape 1
     "name": "ClipStitchr",
   },
   "rules": {
+    "addCreateSemantics": "For add, create, save, or update goals, prefer typing into matching inputs before using save/create buttons. Treat Accept, Reject, Copy, Save as winner, and similar history or feedback controls as actions for existing items only unless demo.goal explicitly asks to accept, reject, copy, or mark an existing item.",
     "agentRunnable": true,
     "allowedStepVerbs": "Prefer Open, Click, Choose, Select, Upload, Wait for, Review, Use, or Finish on.",
     "bannedStepVerbs": [
@@ -443,6 +448,7 @@ exports[`createCliDemoGuidePrompt > matches the 'minimal-product' prompt shape 1
       "Show where",
       "Show how",
     ],
+    "hookLabSemantics": "For Hook Lab goals that ask to add new hooks, save popular hooks, or add hooks to learn from, use the Hooks to learn from field and Save Hook Lab. Do not create steps that accept existing hook cards unless demo.goal explicitly asks to accept existing hooks.",
     "maxSteps": 8,
     "minSteps": 3,
     "missingSetup": "When the goal depends on existing media, connected accounts, saved clips, generated results, or product setup, make steps that open the relevant page and use visible assets. Do not claim unavailable setup exists.",
@@ -586,6 +592,7 @@ exports[`createCliDemoGuidePrompt > matches the 'mobile' prompt shape 1`] = `
     "websiteUrl": "https://clipstitchr.test",
   },
   "rules": {
+    "addCreateSemantics": "For add, create, save, or update goals, prefer typing into matching inputs before using save/create buttons. Treat Accept, Reject, Copy, Save as winner, and similar history or feedback controls as actions for existing items only unless demo.goal explicitly asks to accept, reject, copy, or mark an existing item.",
     "agentRunnable": true,
     "allowedStepVerbs": "Prefer Open, Click, Choose, Select, Upload, Wait for, Review, Use, or Finish on.",
     "bannedStepVerbs": [
@@ -598,6 +605,7 @@ exports[`createCliDemoGuidePrompt > matches the 'mobile' prompt shape 1`] = `
       "Show where",
       "Show how",
     ],
+    "hookLabSemantics": "For Hook Lab goals that ask to add new hooks, save popular hooks, or add hooks to learn from, use the Hooks to learn from field and Save Hook Lab. Do not create steps that accept existing hook cards unless demo.goal explicitly asks to accept existing hooks.",
     "maxSteps": 8,
     "minSteps": 3,
     "missingSetup": "When the goal depends on existing media, connected accounts, saved clips, generated results, or product setup, make steps that open the relevant page and use visible assets. Do not claim unavailable setup exists.",
@@ -742,6 +750,7 @@ exports[`createCliDemoGuidePrompt > matches the 'web' prompt shape 1`] = `
     "websiteUrl": "https://clipstitchr.test",
   },
   "rules": {
+    "addCreateSemantics": "For add, create, save, or update goals, prefer typing into matching inputs before using save/create buttons. Treat Accept, Reject, Copy, Save as winner, and similar history or feedback controls as actions for existing items only unless demo.goal explicitly asks to accept, reject, copy, or mark an existing item.",
     "agentRunnable": true,
     "allowedStepVerbs": "Prefer Open, Click, Choose, Select, Upload, Wait for, Review, Use, or Finish on.",
     "bannedStepVerbs": [
@@ -754,6 +763,7 @@ exports[`createCliDemoGuidePrompt > matches the 'web' prompt shape 1`] = `
       "Show where",
       "Show how",
     ],
+    "hookLabSemantics": "For Hook Lab goals that ask to add new hooks, save popular hooks, or add hooks to learn from, use the Hooks to learn from field and Save Hook Lab. Do not create steps that accept existing hook cards unless demo.goal explicitly asks to accept existing hooks.",
     "maxSteps": 8,
     "minSteps": 3,
     "missingSetup": "When the goal depends on existing media, connected accounts, saved clips, generated results, or product setup, make steps that open the relevant page and use visible assets. Do not claim unavailable setup exists.",

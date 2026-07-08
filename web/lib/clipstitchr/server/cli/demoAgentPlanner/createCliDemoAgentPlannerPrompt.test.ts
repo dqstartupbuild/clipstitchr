@@ -75,6 +75,9 @@ describe("createCliDemoAgentPlannerPrompt", () => {
     expect(prompt.workflowContextRules).toEqual(
       expect.arrayContaining([
         "Map abstract user wording through appContext featureLabels, actions, inputs, and buttons before choosing a route or field.",
+        "Click target names must come from observation.buttons or observation.links exactly; appContext cannot supply a click target unless the same label is currently visible.",
+        "Type target labels must match a visible observation.inputs label or name.",
+        "For Hook Lab requests to add new hooks or hooks to learn from, type safe examples into the visible Hooks to learn from input, then click a visible Save Hook Lab button.",
         "Prefer exact labels from observation and appContext over generic controls such as Open, Menu, or Profile.",
       ]),
     );

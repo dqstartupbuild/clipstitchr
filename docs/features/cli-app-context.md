@@ -40,6 +40,10 @@ disallowed.
 Guide and planner prompts use feature labels to connect abstract requests such
 as "use the hook tool" or "add saved hooks" to the app's real route and field
 labels. They still have to use exact observed controls when executing.
+For Hook Lab, requests to add new hooks or hooks to learn from map to the
+`Hooks to learn from` input plus `Save Hook Lab`; history feedback controls such
+as `Accept hook`, `Reject hook`, and `Save as winner` are reserved for goals that
+explicitly ask to act on existing hooks.
 
 ## File Tree
 
