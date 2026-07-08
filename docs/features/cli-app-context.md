@@ -23,22 +23,29 @@ app/component source files under common folders such as `app`, `src/app`,
 `node_modules`, build output, `.next`, Git metadata, and `.clipstitchr`.
 
 The scanner extracts user-visible strings from JSX text, common attributes such
-as `label`, `title`, `placeholder`, and object labels. It classifies likely form
-fields, buttons, and workflow actions, then groups them by route. Component
-paths such as `_components/hooks` are mapped back to known routes like
-`/dashboard/hooks`, so a demo request such as "add popular hooks" can be tied
-to visible app labels like `Hooks to learn from`, `Hooks to avoid`, and
-`Save Hook Lab`.
+as `label`, `title`, `placeholder`, and object labels. It classifies likely
+feature labels, form fields, buttons, and workflow actions, then groups them by
+route. Component paths such as `_components/hooks` are mapped back to known
+routes like `/dashboard/hooks`, so a demo request such as "add popular hooks"
+can be tied to visible app labels like `Hook Lab`, `Hooks to learn from`,
+`Hooks to avoid`, and `Save Hook Lab`.
 
 The web API validates and caps this payload before any provider call. Prompts
 treat the context as source-derived hints. The current browser observation still
 wins: the agent can only click and type into controls that are visible in the
 observed page, and the local policy validator still blocks unsafe actions.
+Typing safe demo text is allowed for local app fields. Blocked policy language,
+credentials, billing details, payment details, and real customer data remain
+disallowed.
+Guide and planner prompts use feature labels to connect abstract requests such
+as "use the hook tool" or "add saved hooks" to the app's real route and field
+labels. They still have to use exact observed controls when executing.
 
 ## File Tree
 
 - `packages/clipstitchr-cli/src/project/ScannedAppContext.ts`
 - `packages/clipstitchr-cli/src/project/ScannedWorkflowHint.ts`
+- `packages/clipstitchr-cli/src/project/getAppContextCandidateIsFeatureLabel.ts`
 - `packages/clipstitchr-cli/src/project/scanProjectWorkflowHints.ts`
 - `packages/clipstitchr-cli/src/project/scanAndWriteAppContext.ts`
 - `packages/clipstitchr-cli/src/project/writeScannedAppContext.ts`

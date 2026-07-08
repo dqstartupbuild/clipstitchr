@@ -6,7 +6,7 @@ exports[`createCliDemoGuidePrompt > matches the 'auth-required' prompt shape 1`]
     "can": [
       "open allowed local routes",
       "click visible links or buttons by their accessible name",
-      "type only approved test values",
+      "type safe demo text into visible fields",
       "upload only approved local files",
       "wait for visible text",
       "take a screenshot",
@@ -42,6 +42,9 @@ exports[`createCliDemoGuidePrompt > matches the 'auth-required' prompt shape 1`]
           "buttons": [
             "Save Hook Lab",
             "Accept hook",
+          ],
+          "featureLabels": [
+            "Hook Lab",
           ],
           "inputs": [
             "Hooks to learn from",
@@ -145,7 +148,8 @@ exports[`createCliDemoGuidePrompt > matches the 'auth-required' prompt shape 1`]
     "routeChoice": "If demo.goal names a visible tool and a matching route exists in availableFlows, build the guide around that route.",
     "stepCount": 5,
     "stepLabelOnly": true,
-    "useAppContext": "Use appContext workflow hints to choose real routes, field labels, and button names from the app. If the user says to add something and appContext lists a matching input, write a step around that visible input and the matching save/create button instead of inventing a new flow.",
+    "typing": "When the goal asks to add safe demo text, write steps that type the actual demo text into the real matching field. Do not call it approved text unless the user provided approved values.",
+    "useAppContext": "Use appContext workflow hints to choose real routes, feature labels, field labels, and button names from the app. First choose the workflow hint that matches demo.goal, then use only controls from that workflow. If the user says to add something and appContext lists a matching input, write a step around that visible input and a real matching save/create button from the same workflow. Do not invent Add buttons.",
     "useKnownRoutesWhenPossible": true,
   },
   "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",
@@ -158,7 +162,7 @@ exports[`createCliDemoGuidePrompt > matches the 'loading-process' prompt shape 1
     "can": [
       "open allowed local routes",
       "click visible links or buttons by their accessible name",
-      "type only approved test values",
+      "type safe demo text into visible fields",
       "upload only approved local files",
       "wait for visible text",
       "take a screenshot",
@@ -194,6 +198,9 @@ exports[`createCliDemoGuidePrompt > matches the 'loading-process' prompt shape 1
           "buttons": [
             "Save Hook Lab",
             "Accept hook",
+          ],
+          "featureLabels": [
+            "Hook Lab",
           ],
           "inputs": [
             "Hooks to learn from",
@@ -297,7 +304,8 @@ exports[`createCliDemoGuidePrompt > matches the 'loading-process' prompt shape 1
     "routeChoice": "If demo.goal names a visible tool and a matching route exists in availableFlows, build the guide around that route.",
     "stepCount": 5,
     "stepLabelOnly": true,
-    "useAppContext": "Use appContext workflow hints to choose real routes, field labels, and button names from the app. If the user says to add something and appContext lists a matching input, write a step around that visible input and the matching save/create button instead of inventing a new flow.",
+    "typing": "When the goal asks to add safe demo text, write steps that type the actual demo text into the real matching field. Do not call it approved text unless the user provided approved values.",
+    "useAppContext": "Use appContext workflow hints to choose real routes, feature labels, field labels, and button names from the app. First choose the workflow hint that matches demo.goal, then use only controls from that workflow. If the user says to add something and appContext lists a matching input, write a step around that visible input and a real matching save/create button from the same workflow. Do not invent Add buttons.",
     "useKnownRoutesWhenPossible": true,
   },
   "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",
@@ -310,7 +318,7 @@ exports[`createCliDemoGuidePrompt > matches the 'minimal-product' prompt shape 1
     "can": [
       "open allowed local routes",
       "click visible links or buttons by their accessible name",
-      "type only approved test values",
+      "type safe demo text into visible fields",
       "upload only approved local files",
       "wait for visible text",
       "take a screenshot",
@@ -346,6 +354,9 @@ exports[`createCliDemoGuidePrompt > matches the 'minimal-product' prompt shape 1
           "buttons": [
             "Save Hook Lab",
             "Accept hook",
+          ],
+          "featureLabels": [
+            "Hook Lab",
           ],
           "inputs": [
             "Hooks to learn from",
@@ -443,7 +454,8 @@ exports[`createCliDemoGuidePrompt > matches the 'minimal-product' prompt shape 1
     "routeChoice": "If demo.goal names a visible tool and a matching route exists in availableFlows, build the guide around that route.",
     "stepCount": 5,
     "stepLabelOnly": true,
-    "useAppContext": "Use appContext workflow hints to choose real routes, field labels, and button names from the app. If the user says to add something and appContext lists a matching input, write a step around that visible input and the matching save/create button instead of inventing a new flow.",
+    "typing": "When the goal asks to add safe demo text, write steps that type the actual demo text into the real matching field. Do not call it approved text unless the user provided approved values.",
+    "useAppContext": "Use appContext workflow hints to choose real routes, feature labels, field labels, and button names from the app. First choose the workflow hint that matches demo.goal, then use only controls from that workflow. If the user says to add something and appContext lists a matching input, write a step around that visible input and a real matching save/create button from the same workflow. Do not invent Add buttons.",
     "useKnownRoutesWhenPossible": true,
   },
   "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",
@@ -456,7 +468,7 @@ exports[`createCliDemoGuidePrompt > matches the 'mobile' prompt shape 1`] = `
     "can": [
       "open allowed local routes",
       "click visible links or buttons by their accessible name",
-      "type only approved test values",
+      "type safe demo text into visible fields",
       "upload only approved local files",
       "wait for visible text",
       "take a screenshot",
@@ -492,6 +504,9 @@ exports[`createCliDemoGuidePrompt > matches the 'mobile' prompt shape 1`] = `
           "buttons": [
             "Save Hook Lab",
             "Accept hook",
+          ],
+          "featureLabels": [
+            "Hook Lab",
           ],
           "inputs": [
             "Hooks to learn from",
@@ -594,7 +609,8 @@ exports[`createCliDemoGuidePrompt > matches the 'mobile' prompt shape 1`] = `
     "routeChoice": "If demo.goal names a visible tool and a matching route exists in availableFlows, build the guide around that route.",
     "stepCount": 5,
     "stepLabelOnly": true,
-    "useAppContext": "Use appContext workflow hints to choose real routes, field labels, and button names from the app. If the user says to add something and appContext lists a matching input, write a step around that visible input and the matching save/create button instead of inventing a new flow.",
+    "typing": "When the goal asks to add safe demo text, write steps that type the actual demo text into the real matching field. Do not call it approved text unless the user provided approved values.",
+    "useAppContext": "Use appContext workflow hints to choose real routes, feature labels, field labels, and button names from the app. First choose the workflow hint that matches demo.goal, then use only controls from that workflow. If the user says to add something and appContext lists a matching input, write a step around that visible input and a real matching save/create button from the same workflow. Do not invent Add buttons.",
     "useKnownRoutesWhenPossible": true,
   },
   "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",
@@ -607,7 +623,7 @@ exports[`createCliDemoGuidePrompt > matches the 'web' prompt shape 1`] = `
     "can": [
       "open allowed local routes",
       "click visible links or buttons by their accessible name",
-      "type only approved test values",
+      "type safe demo text into visible fields",
       "upload only approved local files",
       "wait for visible text",
       "take a screenshot",
@@ -643,6 +659,9 @@ exports[`createCliDemoGuidePrompt > matches the 'web' prompt shape 1`] = `
           "buttons": [
             "Save Hook Lab",
             "Accept hook",
+          ],
+          "featureLabels": [
+            "Hook Lab",
           ],
           "inputs": [
             "Hooks to learn from",
@@ -746,7 +765,8 @@ exports[`createCliDemoGuidePrompt > matches the 'web' prompt shape 1`] = `
     "routeChoice": "If demo.goal names a visible tool and a matching route exists in availableFlows, build the guide around that route.",
     "stepCount": 5,
     "stepLabelOnly": true,
-    "useAppContext": "Use appContext workflow hints to choose real routes, field labels, and button names from the app. If the user says to add something and appContext lists a matching input, write a step around that visible input and the matching save/create button instead of inventing a new flow.",
+    "typing": "When the goal asks to add safe demo text, write steps that type the actual demo text into the real matching field. Do not call it approved text unless the user provided approved values.",
+    "useAppContext": "Use appContext workflow hints to choose real routes, feature labels, field labels, and button names from the app. First choose the workflow hint that matches demo.goal, then use only controls from that workflow. If the user says to add something and appContext lists a matching input, write a step around that visible input and a real matching save/create button from the same workflow. Do not invent Add buttons.",
     "useKnownRoutesWhenPossible": true,
   },
   "task": "Create a browser-action checklist for a guarded ClipStitchr demo agent.",

@@ -16,7 +16,12 @@ export function getDemoAgentActionTexts(action: DemoAgentAction) {
     case "stop":
       return [action.reason];
     case "type":
-      return [action.reason, action.target.label, action.valueKey];
+      return [
+        action.reason,
+        action.target.label,
+        action.valueKey,
+        action.valueText,
+      ];
     case "uploadFile":
       return [
         action.fileKey,

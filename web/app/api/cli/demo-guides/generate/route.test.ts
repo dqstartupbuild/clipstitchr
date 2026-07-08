@@ -73,6 +73,7 @@ function createBody() {
         {
           actions: ["Hooks to learn from", "Save Hook Lab"],
           buttons: ["Save Hook Lab"],
+          featureLabels: ["Hook Lab"],
           inputs: ["Hooks to learn from", "Hooks to avoid"],
           routePath: "/dashboard/hooks",
           sourceFiles: ["app/_components/hooks/ProductHookMemoryFields.tsx"],
@@ -188,6 +189,7 @@ describe("POST /api/cli/demo-guides/generate", () => {
           appContext: expect.objectContaining({
             workflowHints: [
               expect.objectContaining({
+                featureLabels: ["Hook Lab"],
                 inputs: ["Hooks to learn from", "Hooks to avoid"],
                 routePath: "/dashboard/hooks",
               }),

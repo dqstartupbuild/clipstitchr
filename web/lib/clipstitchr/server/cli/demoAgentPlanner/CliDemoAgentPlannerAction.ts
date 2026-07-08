@@ -16,7 +16,8 @@ export type CliDemoAgentPlannerAction =
       stepId?: string;
       target: { label: string };
       type: "type";
-      valueKey: string;
+      valueKey?: string;
+      valueText?: string;
     }
   | {
       fileKey: string;

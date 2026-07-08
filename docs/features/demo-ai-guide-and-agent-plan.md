@@ -371,7 +371,8 @@ The executor should support only a narrow action set:
 
 - `navigate` to an allowed route.
 - `click` visible text, role, or label.
-- `type` into non-sensitive fields using test values from policy.
+- `type` safe demo text into non-sensitive fields, or reusable test values from
+  policy when a matching key exists.
 - `uploadFile` from an approved local file path.
 - `waitFor` visible text, URL, request idle, or a capped timeout.
 - `screenshot` for evidence.
@@ -478,10 +479,10 @@ Required before the autonomous agent ships:
 - Policy parser tests for allowed routes, blocked words, invalid origins, max
   action bounds, and approved upload paths.
 - Guardrail tests that reject external navigation, destructive button text,
-  payment pages, production domains, and unapproved file uploads. The first
-  CLI-local validator tests now cover external origins, disallowed local routes,
-  blocked action text, selector-only clicks, unapproved typing, upload approval,
-  approved upload files, and wrong step completion.
+  payment pages, production domains, blocked typing, and unapproved file
+  uploads. The first CLI-local validator tests now cover external origins,
+  disallowed local routes, blocked action text, selector-only clicks, safe demo
+  typing, upload approval, approved upload files, and wrong step completion.
 - Observer, planner, and executor tests for the guarded action layer. The first
   CLI-local tests now cover simplified visible page observation, screenshot-first
   planning, safe typing, safe clicking, step completion, visible waits, and local
@@ -493,8 +494,8 @@ Required before the autonomous agent ships:
   covered. Time-cap, action-cap, and no-step-progress stops are covered and
   write explicit stop entries.
 - Planner parser and injected-planner tests now cover supported JSON actions,
-  unsupported action types, selector rejection, approved test-value keys, and
-  policy rejection before execution.
+  unsupported action types, selector rejection, approved test-value keys, direct
+  safe demo text, and policy rejection before execution.
 - `--ai-planner` uses the same action parser and local policy validator after
   the backend returns one model-proposed action, and CLI tests cover fallback to
   the deterministic planner after a provider failure.

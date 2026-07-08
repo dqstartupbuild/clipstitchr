@@ -110,6 +110,16 @@ export function parseDemoAgentPlannerAction(text: string): DemoAgentAction {
         action.target,
         "Type actions need a target object.",
       );
+      const valueKey = readOptionalString(action.valueKey);
+      const valueText = readOptionalString(action.valueText);
+
+      if (!valueKey && !valueText) {
+        throw new Error("Type actions need a value key or text.");
+      }
+
+      if (valueText && valueText.length > 1000) {
+        throw new Error("Type action text is too long.");
+      }
 
       return {
         reason,
@@ -121,10 +131,8 @@ export function parseDemoAgentPlannerAction(text: string): DemoAgentAction {
           ),
         },
         type,
-        valueKey: readRequiredString(
-          action.valueKey,
-          "Type actions need a value key.",
-        ),
+        valueKey,
+        valueText,
       };
     }
     case "uploadFile": {

@@ -95,7 +95,32 @@ describe("validateDemoAgentAction", () => {
           type: "type",
           valueKey: "realCustomerEmail",
         }),
-      /approved test values/,
+      /text to type/,
+    );
+  });
+
+  it("allows safe direct demo text for typing", () => {
+    const action = validateAction({
+      stepId: "step-1",
+      target: { label: "Hooks to learn from" },
+      type: "type",
+      valueText: "This app makes demo clips easier to reuse.",
+    });
+
+    assert.equal(action.type, "type");
+    assert.equal(action.resolvedValue, "This app makes demo clips easier to reuse.");
+  });
+
+  it("rejects blocked direct demo text for typing", () => {
+    assert.throws(
+      () =>
+        validateAction({
+          stepId: "step-1",
+          target: { label: "Hooks to learn from" },
+          type: "type",
+          valueText: "Here is the secret API key.",
+        }),
+      /blocked action: api key/,
     );
   });
 

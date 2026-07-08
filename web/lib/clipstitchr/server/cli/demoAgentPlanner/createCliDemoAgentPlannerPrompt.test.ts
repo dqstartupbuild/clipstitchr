@@ -19,6 +19,7 @@ describe("createCliDemoAgentPlannerPrompt", () => {
             {
               actions: ["Hooks to learn from", "Save Hook Lab"],
               buttons: ["Save Hook Lab"],
+              featureLabels: ["Hook Lab"],
               inputs: ["Hooks to learn from", "Hooks to avoid"],
               routePath: "/dashboard/hooks",
               sourceFiles: ["app/_components/hooks/ProductHookMemoryFields.tsx"],
@@ -73,7 +74,14 @@ describe("createCliDemoAgentPlannerPrompt", () => {
     );
     expect(prompt.workflowContextRules).toEqual(
       expect.arrayContaining([
+        "Map abstract user wording through appContext featureLabels, actions, inputs, and buttons before choosing a route or field.",
         "Prefer exact labels from observation and appContext over generic controls such as Open, Menu, or Profile.",
+      ]),
+    );
+    expect(prompt.allowedActionShape.type).toContain("valueText");
+    expect(prompt.typingRules).toEqual(
+      expect.arrayContaining([
+        "Typing is allowed for safe demo text in local app fields.",
       ]),
     );
     expect(prompt.missingRequirementRules).toEqual(

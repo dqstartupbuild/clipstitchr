@@ -48,8 +48,10 @@ executes only approved local browser actions, writes an action log, captures
 screenshots, and saves a run summary.
 
 The deterministic planner can capture screenshots, click visible buttons or
-links that match the current guide step, type approved test values into matching
-visible fields, and finish a step when no more safe action is needed. The
+links that match the current guide step, type safe demo text into matching
+visible fields, and finish a step when no more safe action is needed. Policy
+approved test values are still supported for reusable values, but they are no
+longer required for normal local demo copy such as Hook Lab examples. The
 executor also supports local file upload actions, but upload remains blocked
 unless the policy allows uploads, disables pre-upload approval, and names exactly
 one approved local file.
@@ -102,7 +104,9 @@ provider call fails, the CLI logs the provider error once and uses the
 deterministic local planner for the rest of the run. Planner prompts include the
 action keys already tried during the current step, and the model is told not to
 repeat screenshots or other actions that have already failed to move the page
-forward.
+forward. If the model repeats an already-attempted action, the CLI uses the
+deterministic planner for that decision without disabling model planning for the
+rest of the run.
 
 ## One-Command AI Recording
 
@@ -122,10 +126,10 @@ generated guide receives scanned route context and is rejected if it asks for
 presenter-only behavior, such as pointing out or highlighting UI without a
 browser action the agent can perform. The guide writer and planner also receive
 capped app context from `.clipstitchr/app-context.json`, including source-derived
-inputs and buttons for workflows such as Hook Lab. If the model-backed planner cannot
-continue because required clips, connected accounts, selected assets, generated
-results, or permissions are missing, it can stop with a plain-language reason
-explaining what setup is needed.
+feature labels, inputs, and buttons for workflows such as Hook Lab. If the
+model-backed planner cannot continue because required clips, connected accounts,
+selected assets, generated results, or permissions are missing, it can stop with
+a plain-language reason explaining what setup is needed.
 
 If one of those setup requirements is missing, the command stops with the next
 setup command instead of asking questions.
@@ -143,9 +147,9 @@ Current coverage includes:
 - Deterministic planner tests for screenshot-first, safe typing, safe clicking,
   and step completion.
 - Policy validator tests for blocked text, external origins, disallowed routes,
-  selector-only clicks, unapproved typing, upload approval, approved upload
-  files, and wrong step completion.
-- Playwright executor fixture tests for visible clicks, approved typing,
+  selector-only clicks, safe demo typing, upload approval, approved upload files,
+  and wrong step completion.
+- Playwright executor fixture tests for visible clicks, safe typing,
   approved local file upload, and visible-text waits.
 - Full loop fixture tests for a safe multi-step guide flow, blocked observed
   page text, external navigation, disallowed routes, repeated page state, step
@@ -153,7 +157,7 @@ Current coverage includes:
   page states, URL transition logging, time caps, action caps, and no-progress
   stops.
 - Planner parser tests for supported JSON actions, unsupported action types,
-  selector rejection, and approved test-value keys.
+  selector rejection, approved test-value keys, and direct safe demo text.
 - Injected planner tests proving unsafe model-style proposals are blocked before
   execution.
 - Upload-review tests proving incomplete runs, `--no-upload`, and declined

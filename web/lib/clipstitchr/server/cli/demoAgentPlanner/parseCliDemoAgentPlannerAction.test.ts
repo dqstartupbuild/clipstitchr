@@ -1,0 +1,33 @@
+import { describe, expect, it } from "vitest";
+import { parseCliDemoAgentPlannerAction } from "@/lib/clipstitchr/server/cli/demoAgentPlanner/parseCliDemoAgentPlannerAction";
+
+describe("parseCliDemoAgentPlannerAction", () => {
+  it("parses direct safe type text", () => {
+    const action = parseCliDemoAgentPlannerAction(
+      JSON.stringify({
+        target: { label: "Hooks to learn from" },
+        type: "type",
+        valueText: "This app made demo creation finally feel simple.",
+      }),
+    );
+
+    expect(action).toEqual(
+      expect.objectContaining({
+        target: { label: "Hooks to learn from" },
+        type: "type",
+        valueText: "This app made demo creation finally feel simple.",
+      }),
+    );
+  });
+
+  it("rejects type actions without a value key or text", () => {
+    expect(() =>
+      parseCliDemoAgentPlannerAction(
+        JSON.stringify({
+          target: { label: "Hooks to learn from" },
+          type: "type",
+        }),
+      ),
+    ).toThrow(/value key or text/);
+  });
+});

@@ -17,6 +17,7 @@ describe("scanProjectWorkflowHints", () => {
         export function ProductHookMemoryFields() {
           return (
             <section>
+              <h1>Hook Lab</h1>
               <SelectInput label="Main goal" />
               <SelectInput label="Tone" />
               <label>
@@ -41,6 +42,7 @@ describe("scanProjectWorkflowHints", () => {
     const hookHint = hints.find((hint) => hint.routePath === "/dashboard/hooks");
 
     assert.ok(hookHint);
+    assert.ok(hookHint.featureLabels.includes("Hook Lab"));
     assert.ok(hookHint.inputs.includes("Hooks to learn from"));
     assert.ok(hookHint.inputs.includes("Hooks to avoid"));
     assert.ok(hookHint.buttons.includes("Save Hook Lab"));

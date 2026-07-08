@@ -60,11 +60,12 @@ export function validateDemoAgentAction(input: {
     case "stop":
       return input.action;
     case "type": {
-      const resolvedValue =
-        input.policy.approvedTestValues[input.action.valueKey];
+      const resolvedValue = input.action.valueKey
+        ? input.policy.approvedTestValues[input.action.valueKey]
+        : input.action.valueText;
 
       if (!resolvedValue) {
-        throw new Error("The agent can only type approved test values.");
+        throw new Error("Type actions need text to type.");
       }
 
       assertDemoAgentTextAllowed(input.policy, resolvedValue);

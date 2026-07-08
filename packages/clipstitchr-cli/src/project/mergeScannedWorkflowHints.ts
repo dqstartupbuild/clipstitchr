@@ -22,6 +22,10 @@ export function mergeScannedWorkflowHints(hints: ScannedWorkflowHint[]) {
         group.flatMap((hint) => hint.buttons),
         20,
       );
+      const featureLabels = getUniqueAppContextStrings(
+        group.flatMap((hint) => hint.featureLabels),
+        24,
+      );
       const actions = getUniqueAppContextStrings(
         group.flatMap((hint) => hint.actions),
         24,
@@ -30,6 +34,7 @@ export function mergeScannedWorkflowHints(hints: ScannedWorkflowHint[]) {
       return {
         actions,
         buttons,
+        featureLabels,
         inputs,
         routePath,
         sourceFiles: getUniqueAppContextStrings(
@@ -37,6 +42,9 @@ export function mergeScannedWorkflowHints(hints: ScannedWorkflowHint[]) {
           10,
         ),
         summary: [
+          featureLabels.length
+            ? `Features: ${featureLabels.slice(0, 6).join(", ")}`
+            : "",
           inputs.length ? `Inputs: ${inputs.slice(0, 6).join(", ")}` : "",
           buttons.length ? `Buttons: ${buttons.slice(0, 6).join(", ")}` : "",
         ]
@@ -46,7 +54,11 @@ export function mergeScannedWorkflowHints(hints: ScannedWorkflowHint[]) {
       } satisfies ScannedWorkflowHint;
     })
     .filter(
-      (hint) => hint.inputs.length || hint.buttons.length || hint.actions.length,
+      (hint) =>
+        hint.inputs.length ||
+        hint.buttons.length ||
+        hint.featureLabels.length ||
+        hint.actions.length,
     )
     .sort((a, b) => {
       if (a.routePath && !b.routePath) {

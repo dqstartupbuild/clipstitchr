@@ -71,7 +71,7 @@ describe("createDemoAgentPlannerWithFallback", () => {
     assert.equal(fallbackErrors.length, 1);
   });
 
-  it("uses the local planner when the AI planner repeats an attempted action", async () => {
+  it("uses the local planner for a repeated AI action without disabling AI", async () => {
     const fallbackErrors: unknown[] = [];
     const stepState = createDemoAgentStepState();
     let aiPlannerCalls = 0;
@@ -118,7 +118,7 @@ describe("createDemoAgentPlannerWithFallback", () => {
     });
 
     assert.equal(secondAction.type, "finishStep");
-    assert.equal(aiPlannerCalls, 1);
-    assert.equal(fallbackErrors.length, 1);
+    assert.equal(aiPlannerCalls, 2);
+    assert.equal(fallbackErrors.length, 2);
   });
 });

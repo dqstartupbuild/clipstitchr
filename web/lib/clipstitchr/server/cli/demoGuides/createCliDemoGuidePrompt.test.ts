@@ -33,6 +33,7 @@ function createRequest(
         {
           actions: ["Hooks to learn from", "Save Hook Lab", "Accept hook"],
           buttons: ["Save Hook Lab", "Accept hook"],
+          featureLabels: ["Hook Lab"],
           inputs: ["Hooks to learn from", "Hooks to avoid", "Main goal", "Tone"],
           routePath: "/dashboard/hooks",
           sourceFiles: ["app/_components/hooks/ProductHookMemoryFields.tsx"],
@@ -118,9 +119,12 @@ describe("createCliDemoGuidePrompt", () => {
     expect(prompt.rules.primaryGoal).toContain("demo.goal");
     expect(prompt.rules.routeChoice).toContain("matching route");
     expect(prompt.rules.missingSetup).toContain("existing media");
-    expect(prompt.rules.useAppContext).toContain("field labels");
+    expect(prompt.rules.useAppContext).toContain("feature labels");
     expect(prompt.demo.appContext.workflowHints[0].inputs).toContain(
       "Hooks to learn from",
+    );
+    expect(prompt.demo.appContext.workflowHints[0].featureLabels).toContain(
+      "Hook Lab",
     );
     expect(prompt.demo.availableFlows).toEqual(
       expect.arrayContaining([

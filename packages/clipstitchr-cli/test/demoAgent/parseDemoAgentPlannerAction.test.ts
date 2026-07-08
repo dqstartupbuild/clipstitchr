@@ -50,7 +50,7 @@ describe("parseDemoAgentPlannerAction", () => {
     );
   });
 
-  it("requires type values to reference approved test value keys", () => {
+  it("parses type values that reference approved test value keys", () => {
     const action = parseDemoAgentPlannerAction(
       JSON.stringify({
         target: { label: "Email" },
@@ -65,5 +65,38 @@ describe("parseDemoAgentPlannerAction", () => {
       assert.equal(action.target.label, "Email");
       assert.equal(action.valueKey, "testEmail");
     }
+  });
+
+  it("parses direct safe type text", () => {
+    const action = parseDemoAgentPlannerAction(
+      JSON.stringify({
+        target: { label: "Hooks to learn from" },
+        type: "type",
+        valueText: "This app made demo creation finally feel simple.",
+      }),
+    );
+
+    assert.equal(action.type, "type");
+
+    if (action.type === "type") {
+      assert.equal(action.target.label, "Hooks to learn from");
+      assert.equal(
+        action.valueText,
+        "This app made demo creation finally feel simple.",
+      );
+    }
+  });
+
+  it("rejects type actions without a value key or text", () => {
+    assert.throws(
+      () =>
+        parseDemoAgentPlannerAction(
+          JSON.stringify({
+            target: { label: "Hooks to learn from" },
+            type: "type",
+          }),
+        ),
+      /value key or text/,
+    );
   });
 });

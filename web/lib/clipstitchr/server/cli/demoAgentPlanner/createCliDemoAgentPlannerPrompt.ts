@@ -12,7 +12,7 @@ export function createCliDemoAgentPlannerPrompt(
       screenshot: '{ "type": "screenshot", "stepId": "..." }',
       stop: '{ "type": "stop", "reason": "..." }',
       type:
-        '{ "type": "type", "target": { "label": "..." }, "valueKey": "approved-key" }',
+        '{ "type": "type", "target": { "label": "..." }, "valueText": "safe demo text" }',
       uploadFile:
         '{ "type": "uploadFile", "target": { "label": "..." }, "fileKey": "approved-file-key" }',
       waitFor:
@@ -39,11 +39,18 @@ export function createCliDemoAgentPlannerPrompt(
       "When returning stop for a missing requirement, explain the specific setup needed in plain language.",
       "Do not fake a completed goal when the required screen, asset, or result is not visible.",
     ],
+    typingRules: [
+      "Typing is allowed for safe demo text in local app fields.",
+      "Use valueText when the step needs new demo content and approvedTestValueKeys does not already provide an exact reusable value.",
+      "Use valueKey only when an approved key clearly matches the requested field.",
+      "Never type passwords, API keys, billing details, payment details, real customer data, or anything that matches blocked policy language.",
+    ],
     workflowContextRules: [
       "Use appContext.workflowHints as source-derived hints for what this app can actually do.",
+      "Map abstract user wording through appContext featureLabels, actions, inputs, and buttons before choosing a route or field.",
       "Current observation is still the authority: click and type only visible controls from observation.",
       "When a step says add, save, create, or update something, match the noun in the step to appContext inputs first, then use a visible matching input from observation.",
-      "If a matching input is visible but approvedTestValueKeys is empty, return stop and name the test value the policy needs.",
+      "If a matching input is visible, type safe demo text with valueText unless the step requires private, credential, billing, or real customer data.",
       "Prefer exact labels from observation and appContext over generic controls such as Open, Menu, or Profile.",
     ],
     observation: request.observation,

@@ -108,6 +108,16 @@ export function parseCliDemoAgentPlannerAction(
       };
     case "type": {
       const target = readObject(action.target, "Type actions need a target.");
+      const valueKey = readOptionalString(action.valueKey);
+      const valueText = readOptionalString(action.valueText);
+
+      if (!valueKey && !valueText) {
+        throw new Error("Type actions need a value key or text.");
+      }
+
+      if (valueText && valueText.length > 1000) {
+        throw new Error("Type action text is too long.");
+      }
 
       return {
         reason,
@@ -119,7 +129,8 @@ export function parseCliDemoAgentPlannerAction(
           ),
         },
         type,
-        valueKey: readRequiredString(action.valueKey, "Type actions need a key."),
+        valueKey,
+        valueText,
       };
     }
     case "uploadFile": {

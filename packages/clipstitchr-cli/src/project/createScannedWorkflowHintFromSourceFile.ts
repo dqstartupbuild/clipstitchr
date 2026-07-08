@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { basename, relative } from "node:path";
 import { extractAppContextStringCandidates } from "./extractAppContextStringCandidates.js";
 import { createAppContextRouteTitle } from "./createAppContextRouteTitle.js";
+import { getAppContextCandidateIsFeatureLabel } from "./getAppContextCandidateIsFeatureLabel.js";
 import { getAppContextCandidateIsInput } from "./getAppContextCandidateIsInput.js";
 import { getAppContextRoutePathForFile } from "./getAppContextRoutePathForFile.js";
 import { getAppContextTextIsButton } from "./getAppContextTextIsButton.js";
@@ -34,18 +35,36 @@ export async function createScannedWorkflowHintFromSourceFile(
       .map((candidate) => candidate.text),
     16,
   );
+  const featureLabels = getUniqueAppContextStrings(
+    candidates
+      .filter(getAppContextCandidateIsFeatureLabel)
+      .map((candidate) => candidate.text),
+    16,
+  ).filter(
+    (value) =>
+      !buttons.some((button) => button.toLowerCase() === value.toLowerCase()) &&
+      !inputs.some((input) => input.toLowerCase() === value.toLowerCase()),
+  );
   const actions = getUniqueAppContextStrings(
-    [...buttons, ...inputs].filter((value) => value.length <= 120),
+    [...featureLabels, ...buttons, ...inputs].filter(
+      (value) => value.length <= 120,
+    ),
     20,
   );
 
-  if (!actions.length && !buttons.length && !inputs.length) {
+  if (
+    !actions.length &&
+    !buttons.length &&
+    !featureLabels.length &&
+    !inputs.length
+  ) {
     return null;
   }
 
   return {
     actions,
     buttons,
+    featureLabels,
     inputs,
     ...(routePath ? { routePath } : {}),
     sourceFiles: [relativeFilePath],

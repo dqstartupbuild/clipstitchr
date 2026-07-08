@@ -21,7 +21,7 @@ export function createCliDemoGuidePrompt({
         can: [
           "open allowed local routes",
           "click visible links or buttons by their accessible name",
-          "type only approved test values",
+          "type safe demo text into visible fields",
           "upload only approved local files",
           "wait for visible text",
           "take a screenshot",
@@ -65,8 +65,10 @@ export function createCliDemoGuidePrompt({
           "If demo.goal names a visible tool and a matching route exists in availableFlows, build the guide around that route.",
         missingSetup:
           "When the goal depends on existing media, connected accounts, saved clips, generated results, or product setup, make steps that open the relevant page and use visible assets. Do not claim unavailable setup exists.",
+        typing:
+          "When the goal asks to add safe demo text, write steps that type the actual demo text into the real matching field. Do not call it approved text unless the user provided approved values.",
         useAppContext:
-          "Use appContext workflow hints to choose real routes, field labels, and button names from the app. If the user says to add something and appContext lists a matching input, write a step around that visible input and the matching save/create button instead of inventing a new flow.",
+          "Use appContext workflow hints to choose real routes, feature labels, field labels, and button names from the app. First choose the workflow hint that matches demo.goal, then use only controls from that workflow. If the user says to add something and appContext lists a matching input, write a step around that visible input and a real matching save/create button from the same workflow. Do not invent Add buttons.",
       },
       examples: {
         good: [

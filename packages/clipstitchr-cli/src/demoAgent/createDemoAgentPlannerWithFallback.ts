@@ -21,7 +21,6 @@ export function createDemoAgentPlannerWithFallback({
       const actionKey = createDemoAgentActionKey(action);
 
       if (input.stepState.attemptedActionKeys.has(actionKey)) {
-        aiPlannerAvailable = false;
         onFallback?.(
           new Error("AI planner repeated an action. Using the local planner."),
         );

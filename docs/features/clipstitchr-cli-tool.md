@@ -25,7 +25,7 @@ creation, library listing, and queueing finished Stitches.
 - `clipstitchr init` remains as a developer-friendly alias for repo setup.
 - `clipstitchr link` and `clipstitchr init` capture local app context in
   `.clipstitchr/app-context.json` so AI guide writing and the guarded demo
-  agent can use real routes, fields, and buttons from the app.
+  agent can use real routes, feature labels, fields, and buttons from the app.
 - `clipstitchr unlink` removes the repo link and can optionally remove
   repo-local browser profile and recording files.
 - `clipstitchr status` prints the current account, repo, product, local app,

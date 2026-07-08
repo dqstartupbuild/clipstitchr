@@ -13,7 +13,7 @@ export function createDemoAgentActionKey(action: DemoAgentAction) {
     case "stop":
       return `${action.type}:${action.reason}`;
     case "type":
-      return `${action.type}:${action.target.label}:${action.valueKey}`;
+      return `${action.type}:${action.target.label}:${action.valueKey ?? action.valueText?.slice(0, 80) ?? ""}`;
     case "uploadFile":
       return `${action.type}:${action.target.label ?? action.target.text ?? ""}:${action.fileKey}`;
     case "waitFor":
