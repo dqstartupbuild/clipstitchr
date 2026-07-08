@@ -24,14 +24,14 @@ hook, and the remaining slides should pay it off with simple supporting points.
 ## Product Rules
 
 - Product name: `Clipr`.
-- Current visible modes: `Reaction` and `B-roll`.
+- Current visible modes: `Reaction`, `B-roll`, and `Demo`.
 - Script mode exists behind `web/lib/clipstitchr/constants/isCliprScriptModeEnabled.ts`.
   Set that flag to `true` to show Script mode again in manual and automation UI.
 - Non-demo Clipr outputs are UGC-compatible source clips with separate Clipr
   provenance. They appear in the Library `UGC` tab, count toward UGC,
   and remain selectable in Stitchr.
-- Clipr Demo remixes remain supported in backend/finalization paths and save as
-  Demo clips, but Demo mode is not shown in the current Clipr mode picker.
+- Clipr Demo remixes are available in the manual Clipr mode picker, require one
+  selected saved Demo clip, and save as Demo clips with Clipr provenance.
 - Clipr clips must not promote ClipStitchr.
 - Clipr clips must not directly promote the user's product. All content is for
   audience engagement in a non-promotional way.
@@ -55,8 +55,8 @@ hook, and the remaining slides should pay it off with simple supporting points.
 - Clipr does not expose a duration control.
 - Generated scripts should be as long as needed to express the full idea without
   padding or forcing a fixed 30 or 60 second target.
-- Clipr currently supports two visible generation choices: `Reaction` and
-  `B-roll`.
+- Clipr currently supports three visible generation choices: `Reaction`,
+  `B-roll`, and `Demo`.
 - Script mode keeps the existing talking-avatar script flow when the feature
   flag is enabled. While the flag is disabled, direct or saved Script requests
   resolve to Reaction or B-roll before provider work.
@@ -1009,10 +1009,10 @@ The current implementation uses `cliprJobs` for user-facing job state and
 `providerJobs` or automation tasks for durable provider execution. `POST
 /api/clipr/jobs` handles request parsing, quota consumption, Convex input
 loading, queued job persistence, provider job creation, analytics, and failure
-cleanup. The provider worker owns text planning, avatar still generation, video
-generation, and media-job creation. The media worker normalizes the final video,
-strips audio for Reaction and B-roll, attaches any selected sound, creates
-the poster, and saves the final library Clip.
+cleanup. The provider worker owns text planning, avatar still generation for
+non-Demo modes, video generation, and media-job creation. The media worker
+normalizes the final video, strips audio for silent visual modes, attaches any
+selected sound, creates the poster, and saves the final library Clip or Demo.
 
 The durable job should track:
 
