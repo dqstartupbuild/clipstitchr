@@ -220,13 +220,15 @@ Manual Clipr is now a server-owned workflow with recoverable steps:
 
 1. Create a `clipr` automation run with product/avatar/mode/model/voice/duration
    and selected sound snapshots.
-2. Consume Clipr job, avatar still, and video limits before provider calls.
-   Script mode also consumes hook/script and voice limits. Script mode is
-   currently hidden unless `isCliprScriptModeEnabled` is `true`.
+2. Consume Clipr job and video limits before provider calls. Reaction, B-roll,
+   and Script also consume avatar still limits. Script mode consumes hook/script
+   and voice limits when `isCliprScriptModeEnabled` is `true`. Demo mode skips
+   avatar still, voice, music, and lip-sync limits.
 3. Generate hook/script as a provider task for Script mode, or create a local
-   visual plan for Reaction and B-roll.
-4. Generate the avatar source still as a provider task and copy it to R2.
-5. Generate avatar video as a provider task.
+   visual plan for Reaction, B-roll, and Demo.
+4. Generate the avatar source still as a provider task and copy it to R2 for
+   non-Demo modes.
+5. Generate avatar video or Demo remix video as a provider task.
 6. Copy provider outputs to R2 from a server-owned finalizer.
 7. Create a `clipr-finalization` media job.
 8. Mark the Clipr run complete only after the final `videoClips` record exists.
@@ -236,8 +238,9 @@ consumption, Convex input loading, queued job persistence, and creation of one
 `manual-clipr` provider job. The provider worker owns Script-mode planning when
 enabled, visual-mode local plan creation, avatar still generation, avatar
 video generation, sound metadata handling, and creation of the
-`clipr-finalization` media job. The media worker saves non-demo Clipr output as
-UGC, strips audio for Reaction and B-roll, and marks the provider job complete.
+`clipr-finalization` media job. The media worker saves Reaction and B-roll as
+UGC, saves Demo mode as a Demo clip, strips audio for silent visual modes, and
+marks the provider job complete.
 
 ## Swipr Durable Target
 
@@ -369,8 +372,9 @@ Before autopilot is exposed to users, add an explicit preferences model:
 - enabled/disabled;
 - tools enabled: Clipr, Swipr, later Stitchr/Longr;
 - Clipr mode preference: Any, Reaction, or B-roll; Script appears only when
-  `isCliprScriptModeEnabled` is `true`; Any resolves to one enabled visual mode
-  before provider work while Script is hidden;
+  `isCliprScriptModeEnabled` is `true`; Demo remains manual-only because it
+  needs a specific saved Demo source clip; Any resolves to one enabled visual
+  mode before provider work while Script is hidden;
 - product selection mode;
 - avatar selection mode;
 - generation frequency;

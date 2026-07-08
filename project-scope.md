@@ -180,17 +180,18 @@ main product promise.
 | 2 | Avatar photo generation creates additional reusable source photos | ✅ | ✅ |
 | 3 | Swapr generates UGC-style video clips that can be saved back into the UGC library | ✅ | ✅ |
 | 4 | AI features use rate limits, credit budgeting, and speed profiles because they create external provider cost | ✅ | ✅ |
-| 5 | Clipr generates non-promotional reaction and product-relevant b-roll UGC from saved product and avatar context; script mode stays hidden behind the Clipr script flag until re-enabled | ✅ | ✅ |
+| 5 | Clipr generates non-promotional reaction and product-relevant b-roll UGC from saved product and avatar context, and remixes saved Demo videos into new Demo clips; script mode stays hidden behind the Clipr script flag until re-enabled | ✅ | ✅ |
 | 6 | Clipr can select reusable shared-library music or upload a separate background music asset for export-time mixing | ✅ | ✅ |
 
 Clipr uses hidden non-promotional hook templates only. Broader internal hook
 assets can support Swipr and Stitchr auto-text, but direct product/ad hook
 patterns must not leak into Clipr outputs.
 
-Clipr currently shows Reaction and B-roll modes. Script mode stays hidden behind
-the Clipr script flag until re-enabled. Reaction and B-roll create one
+Clipr currently shows Reaction, B-roll, and Demo modes. Script mode stays hidden
+behind the Clipr script flag until re-enabled. Reaction and B-roll create one
 silent 4-10 second single-shot visual clip from the selected avatar and saved
-product context.
+product context. Demo mode creates one silent 4-10 second generated Demo remix
+from the selected saved Demo clip and saved product context.
 
 Clipr music is optional and off by default. Users can select an existing shared
 music-library track or upload a music file. Uploaded music is saved to the shared

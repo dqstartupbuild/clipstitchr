@@ -13,4 +13,5 @@ export const cliprGenerationModeOptions: {
   ...(isCliprScriptModeEnabled ? [cliprScriptGenerationModeOption] : []),
   { label: "Reaction", value: "reaction" },
   { label: "B-roll", value: "broll" },
+  { label: "Demo", value: "demo" },
 ];

@@ -4,14 +4,13 @@ Clipr Demo mode creates one short silent clip from an existing saved Demo video.
 It is meant for testing whether Seedance can remix a screen recording into a
 phone-in-hand UGC-style product shot.
 
-> Current status: the backend and finalization path remain supported for
-> existing/generated Demo remixes, but Demo mode is not shown in the current
-> Clipr mode picker.
+> Current status: Demo mode is available in the Clipr mode picker for manual
+> generation. Automation does not use Demo mode because it needs a specific
+> saved Demo source clip.
 
 ## Behavior
 
-- When Demo mode is re-enabled in the UI, the user chooses Demo mode manually on
-  the Clipr page.
+- The user chooses Demo mode manually on the Clipr page.
 - The user selects one saved Demo clip from the content library.
 - Clipr validates the selected Demo clip on the server before queuing provider
   work.
@@ -25,8 +24,8 @@ phone-in-hand UGC-style product shot.
   prompt-derived detail fields so the library can still show that Clipr created
   it.
 
-Demo mode is not shown in the current mode picker and is not available to Clipr
-automation because it needs a specific Demo source clip.
+Demo mode is available in the manual Clipr mode picker and is not available to
+Clipr automation because it needs a specific Demo source clip.
 
 ## Provider Notes
 
@@ -42,10 +41,12 @@ environment override such as Veo 3.1.
 ## File Tree
 
 - `web/app/_components/clipr/CliprDemoClipPanel.tsx`
-  - Manual Demo source selector used when Demo mode is re-enabled.
+  - Manual Demo source selector used when Demo mode is active.
 - `web/app/dashboard/clipr/CliprPageClient.tsx`
-  - Keeps the Demo controls branch available, but current mode options do not
-    expose Demo mode.
+  - Shows the Demo controls branch, sends the selected `demoClipId`, and saves
+    the result as a generated Demo.
+- `web/lib/clipstitchr/constants/cliprGenerationModeOptions.ts`
+  - Exposes Demo in the manual Clipr mode picker.
 - `web/lib/clipstitchr/server/clipr/readCliprJobCreateRequest.ts`
   - Reads `demoClipId` only for Demo mode.
 - `web/lib/clipstitchr/server/clipr/loadCliprJobInputDocuments.ts`

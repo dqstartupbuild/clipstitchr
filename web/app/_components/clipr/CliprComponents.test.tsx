@@ -406,9 +406,9 @@ describe("Clipr components", () => {
     expect(textarea.props.maxLength).toBe(cliprScriptIdeaMaxLength);
     expect(modeMarkup).toContain("Reaction");
     expect(modeMarkup).toContain("B-roll");
+    expect(modeMarkup).toContain("Demo");
     expect(modeMarkup).not.toContain("Any");
     expect(modeMarkup).not.toContain("Script");
-    expect(modeMarkup).not.toContain("Demo");
     expect(markup).toContain("Founder confession");
   });
 });

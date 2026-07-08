@@ -155,8 +155,8 @@ not like social. Say that directly.
 Source material helpers:
 
 Clipr, Swapr, and Avatars exist because sometimes the library is thin and the
-user does not want another shoot. Position them as helpers, not the reason to
-buy.
+user does not want another shoot. Clipr can also remix a saved demo into a
+fresh Product demo. Position them as helpers, not the reason to buy.
 
 Swipr:
 

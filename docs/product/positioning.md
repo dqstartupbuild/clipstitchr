@@ -127,7 +127,8 @@ Core supporting features:
 - Templates: save a structure so the next ad does not start from zero.
 - Daily drafts: keep new drafts appearing when social falls off the real work
   list.
-- Clipr and Swapr: create extra Hook/UGC clips when the library is thin.
+- Clipr and Swapr: create extra Hook/UGC clips when the library is thin, and
+  use Clipr Demo mode to remix a saved demo into a fresh Product demo.
 - Avatars: keep reusable people or characters ready for generated Hook/UGC
   clips.
 - Swipr: create carousel drafts when slides fit the idea better than another
@@ -176,7 +177,7 @@ Use this order for the public landing page:
 | Scores | Nobody wants to learn the clip was wrong after posting or running the ad. |
 | Templates | Rebuilding the same structure every time makes the next session feel heavy. |
 | Daily drafts | Showing up consistently on social is hard when the user does not like social. |
-| Clipr | The library needs more Hook/UGC clips and the user does not want another shoot. |
+| Clipr | The library needs more Hook/UGC clips or a fresh take on a saved demo without another shoot. |
 | Swapr | The user needs another usable Hook/UGC clip from material they already have. |
 | Swipr | Some ideas need slides, not another video timeline. |
 | Library | The user needs clips, demos, drafts, and finished ads somewhere findable. |
