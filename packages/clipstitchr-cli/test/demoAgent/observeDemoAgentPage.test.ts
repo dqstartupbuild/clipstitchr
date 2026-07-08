@@ -44,6 +44,34 @@ describe("observeDemoAgentPage", () => {
         observation.dialogs.map((element) => element.name),
         ["Confirm upload"],
       );
+      assert.equal(observation.canScrollDown, false);
+      assert.equal(observation.canScrollUp, false);
+    });
+  });
+
+  it("captures page scroll availability", async () => {
+    await withDemoAgentFixturePage(async (page) => {
+      await page.setViewportSize({ height: 400, width: 800 });
+      await page.setContent(`
+        <html>
+          <body>
+            <main style="height: 1400px">
+              <h1>Top</h1>
+              <button style="margin-top: 1200px">Hidden lower action</button>
+            </main>
+          </body>
+        </html>
+      `);
+
+      const topObservation = await observeDemoAgentPage(page);
+
+      assert.equal(topObservation.canScrollDown, true);
+      assert.equal(topObservation.canScrollUp, false);
+
+      await page.evaluate(() => window.scrollTo(0, 900));
+      const lowerObservation = await observeDemoAgentPage(page);
+
+      assert.equal(lowerObservation.canScrollUp, true);
     });
   });
 });

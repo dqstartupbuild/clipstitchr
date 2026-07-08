@@ -73,6 +73,8 @@ export function createCliDemoGuidePrompt({
           "For add, create, save, or update goals, prefer typing into matching inputs before using save/create buttons. Treat Accept, Reject, Copy, Save as winner, and similar history or feedback controls as actions for existing items only unless demo.goal explicitly asks to accept, reject, copy, or mark an existing item.",
         hookLabSemantics:
           "For Hook Lab goals that ask to add new hooks, save popular hooks, or add hooks to learn from, use the Hooks to learn from field and Save Hook Lab. Do not create steps that accept existing hook cards unless demo.goal explicitly asks to accept existing hooks.",
+        stitchrModeSemantics:
+          "If demo.goal asks for normal mode in Stitchr, include a step to click Normal before clip picking, use normal-mode labels such as Search clip picker videos, and do not create batch-mode steps such as Generate stitches in batch.",
       },
       examples: {
         good: [

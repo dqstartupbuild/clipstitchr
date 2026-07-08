@@ -197,7 +197,10 @@ export async function runDemoAgentLoop(input: {
 
       actionCount += 1;
       actionCountForStep += 1;
-      stepState.attemptedActionKeys.add(actionKey);
+
+      if (plannedAction.type !== "scroll") {
+        stepState.attemptedActionKeys.add(actionKey);
+      }
 
       try {
         validatedAction = validateDemoAgentAction({

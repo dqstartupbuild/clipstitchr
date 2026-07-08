@@ -15,6 +15,8 @@ const step: DemoWalkthroughStep = {
 
 const observation: DemoAgentPageObservation = {
   buttons: [],
+  canScrollDown: false,
+  canScrollUp: false,
   dialogs: [],
   headings: [],
   inputs: [],

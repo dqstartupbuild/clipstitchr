@@ -52,6 +52,24 @@ describe("parseCliDemoAgentPlannerAction", () => {
     );
   });
 
+  it("parses scroll actions", () => {
+    expect(
+      parseCliDemoAgentPlannerAction(
+        JSON.stringify({
+          direction: "down",
+          reason: "The picker is below the current viewport.",
+          stepId: "step-3",
+          type: "scroll",
+        }),
+      ),
+    ).toEqual({
+      direction: "down",
+      reason: "The picker is below the current viewport.",
+      stepId: "step-3",
+      type: "scroll",
+    });
+  });
+
   it("rejects type actions without a value key or text", () => {
     expect(() =>
       parseCliDemoAgentPlannerAction(

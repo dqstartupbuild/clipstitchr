@@ -49,7 +49,8 @@ screenshots, and saves a run summary.
 
 The deterministic planner can capture screenshots, click visible buttons or
 links that match the current guide step, type safe demo text into matching
-visible fields, and finish a step when no more safe action is needed. Policy
+visible fields, scroll the page to reach lower workflow controls, and finish a
+step when no more safe action is needed. Policy
 approved test values are still supported for reusable values, but they are no
 longer required for normal local demo copy such as Hook Lab examples. The runtime
 checks click, type, and upload targets against the current observation before
@@ -102,8 +103,10 @@ the simplified observation only. The server parser rejects unsupported action
 types and CSS selectors, and the CLI policy validator still decides whether the
 proposed action can run. The endpoint accepts common browser input roles such as
 `combobox` and `textbox`, asks the model to use exact local paths for
-route-opening steps, and retries once with the invalid output and parse error
-when the model returns malformed JSON or an unsupported action shape. The
+route-opening steps, gives the model current page scroll availability, and
+supports guarded `scroll` actions when the needed field or section is below the
+current viewport. It retries once with the invalid output and parse error when
+the model returns malformed JSON or an unsupported action shape. The
 endpoint uses the shared text-writing provider payload helper, but selects a
 dedicated planner model through `CLI_DEMO_AGENT_PLANNER_MODEL_ID`, defaulting to
 `openai/gpt-5-mini`, at a lower planner temperature than creative text

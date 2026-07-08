@@ -9,6 +9,8 @@ export function createCliDemoAgentPlannerPrompt(
         '{ "type": "click", "stepId": "...", "target": { "role": "button|link|checkbox|combobox|textbox|menuitem|tab", "name": "..." }, "reason": "..." }',
       finishStep: '{ "type": "finishStep", "stepId": "...", "reason": "..." }',
       navigate: '{ "type": "navigate", "path": "/allowed-local-path" }',
+      scroll:
+        '{ "type": "scroll", "stepId": "...", "direction": "down", "reason": "..." }',
       screenshot: '{ "type": "screenshot", "stepId": "..." }',
       stop: '{ "type": "stop", "reason": "..." }',
       type:
@@ -28,7 +30,7 @@ export function createCliDemoAgentPlannerPrompt(
       "A click action key is click:<role>:<name>.",
       "A finishStep action key is finishStep:<stepId>.",
       "If screenshot:<stepId> was already attempted and the current screen satisfies a show, review, point-out, or highlight-style step, return finishStep.",
-      "If screenshot:<stepId> was already attempted and the current screen does not satisfy the step, choose a visible click, navigate to an allowed local path, wait for visible text, or stop.",
+      "If screenshot:<stepId> was already attempted and the current screen does not satisfy the step, choose a visible click, scroll toward the needed field or section, navigate to an allowed local path, wait for visible text, or stop.",
     ],
     guide: request.guide,
     instruction:
@@ -52,7 +54,10 @@ export function createCliDemoAgentPlannerPrompt(
       "Click target names must come from observation.buttons or observation.links exactly; appContext cannot supply a click target unless the same label is currently visible.",
       "Type target labels must match a visible observation.inputs label or name.",
       "If step.label is Open followed by a local path like /dashboard/stitchr, return a navigate action to that exact path unless observation.url is already on that path.",
+      "If the step names a field, picker, section, or button that is not in observation but observation.canScrollDown is true, return one scroll down action before stopping or guessing.",
       "For steps that say Type X into FIELD, return one type action with target.label set to FIELD and valueText set to X. Do not split focusing the field from typing the value.",
+      "For Stitchr normal mode goals, click the visible Normal mode button before selecting clips or generating a stitch.",
+      "For normal Stitchr clip selection, use the visible Search clip picker videos input and clip cards after scrolling; do not click text-style controls like Any or labels like Hook.",
       "When a step says add, save, create, or update something, match the noun in the step to appContext inputs first, then use a visible matching input from observation.",
       "If a matching input is visible, type safe demo text with valueText unless the step requires private, credential, billing, or real customer data.",
       "For Hook Lab requests to add new hooks or hooks to learn from, type safe examples into the visible Hooks to learn from input, then click a visible Save Hook Lab button.",

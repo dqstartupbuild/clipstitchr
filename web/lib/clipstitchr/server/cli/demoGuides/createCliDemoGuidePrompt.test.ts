@@ -122,6 +122,7 @@ describe("createCliDemoGuidePrompt", () => {
     expect(prompt.rules.useAppContext).toContain("feature labels");
     expect(prompt.rules.addCreateSemantics).toContain("typing into matching inputs");
     expect(prompt.rules.hookLabSemantics).toContain("Hooks to learn from");
+    expect(prompt.rules.stitchrModeSemantics).toContain("normal mode");
     expect(prompt.demo.appContext.workflowHints[0].inputs).toContain(
       "Hooks to learn from",
     );

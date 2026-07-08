@@ -81,6 +81,28 @@ describe("executeDemoAgentAction", () => {
     });
   });
 
+  it("scrolls the page", async () => {
+    await withDemoAgentFixturePage(async (page) => {
+      await page.setViewportSize({ height: 400, width: 800 });
+      await page.setContent(`
+        <main style="height: 1400px">
+          <h1>Top</h1>
+          <button style="margin-top: 1200px">Lower action</button>
+        </main>
+      `);
+
+      await executeDemoAgentAction({
+        action: {
+          direction: "down",
+          type: "scroll",
+        },
+        page,
+      });
+
+      assert.ok((await page.evaluate(() => window.scrollY)) > 0);
+    });
+  });
+
   it("uploads resolved local files through visible file labels", async () => {
     const directory = await mkdtemp(join(tmpdir(), "clipstitchr-agent-test-"));
     const filePath = join(directory, "demo-sample.mp4");

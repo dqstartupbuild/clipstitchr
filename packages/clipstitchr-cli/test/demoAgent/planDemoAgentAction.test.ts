@@ -17,6 +17,8 @@ function createObservation(
 ): DemoAgentPageObservation {
   return {
     buttons: [],
+    canScrollDown: false,
+    canScrollUp: false,
     dialogs: [],
     headings: [],
     inputs: [],

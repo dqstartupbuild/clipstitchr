@@ -11,6 +11,7 @@ export function getDemoAgentActionTexts(action: DemoAgentAction) {
       ];
     case "finishStep":
     case "navigate":
+    case "scroll":
     case "screenshot":
       return [action.reason];
     case "stop":

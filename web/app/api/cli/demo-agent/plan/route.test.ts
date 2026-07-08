@@ -92,6 +92,8 @@ function createBody() {
     },
     observation: {
       buttons: [{ name: "Upload", role: "button" }],
+      canScrollDown: false,
+      canScrollUp: false,
       dialogs: [],
       headings: [{ name: "Dashboard", role: "heading" }],
       inputs: [],

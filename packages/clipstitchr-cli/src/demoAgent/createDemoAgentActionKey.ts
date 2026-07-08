@@ -8,6 +8,8 @@ export function createDemoAgentActionKey(action: DemoAgentAction) {
       return `${action.type}:${action.stepId}`;
     case "navigate":
       return `${action.type}:${action.path}`;
+    case "scroll":
+      return `${action.type}:${action.direction}`;
     case "screenshot":
       return `${action.type}:${action.stepId ?? ""}`;
     case "stop":

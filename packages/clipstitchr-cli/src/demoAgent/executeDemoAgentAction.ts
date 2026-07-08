@@ -19,6 +19,13 @@ export async function executeDemoAgentAction(input: {
     case "screenshot":
     case "stop":
       break;
+    case "scroll":
+      await input.page.mouse.wheel(
+        0,
+        input.action.direction === "down" ? 700 : -700,
+      );
+      await input.page.waitForTimeout(300);
+      break;
     case "navigate":
       await input.page.goto(input.action.resolvedUrl ?? input.action.path, {
         waitUntil: "domcontentloaded",

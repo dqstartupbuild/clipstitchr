@@ -57,6 +57,7 @@ export function validateDemoAgentAction(input: {
       };
     }
     case "screenshot":
+    case "scroll":
     case "stop":
       return input.action;
     case "type": {

@@ -119,6 +119,24 @@ describe("parseDemoAgentPlannerAction", () => {
     }
   });
 
+  it("parses scroll actions", () => {
+    const action = parseDemoAgentPlannerAction(
+      JSON.stringify({
+        direction: "down",
+        reason: "The picker is below the current viewport.",
+        stepId: "step-3",
+        type: "scroll",
+      }),
+    );
+
+    assert.deepEqual(action, {
+      direction: "down",
+      reason: "The picker is below the current viewport.",
+      stepId: "step-3",
+      type: "scroll",
+    });
+  });
+
   it("rejects type actions without a value key or text", () => {
     assert.throws(
       () =>

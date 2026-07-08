@@ -23,6 +23,8 @@ function createRequest(): CliDemoAgentPlanRequest {
     },
     observation: {
       buttons: [],
+      canScrollDown: false,
+      canScrollUp: false,
       dialogs: [],
       headings: [{ name: "Dashboard", role: "heading" }],
       inputs: [],

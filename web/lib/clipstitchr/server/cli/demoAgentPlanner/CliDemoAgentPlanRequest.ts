@@ -8,6 +8,8 @@ export type CliDemoAgentObservedElement = {
 
 export type CliDemoAgentPageObservation = {
   buttons: CliDemoAgentObservedElement[];
+  canScrollDown: boolean;
+  canScrollUp: boolean;
   dialogs: CliDemoAgentObservedElement[];
   headings: CliDemoAgentObservedElement[];
   inputs: CliDemoAgentObservedElement[];

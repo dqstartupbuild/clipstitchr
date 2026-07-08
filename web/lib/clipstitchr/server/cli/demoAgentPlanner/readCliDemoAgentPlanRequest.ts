@@ -60,6 +60,8 @@ function readObservation(value: unknown): CliDemoAgentPageObservation {
 
   return {
     buttons: readObservedElements(raw.buttons),
+    canScrollDown: raw.canScrollDown === true,
+    canScrollUp: raw.canScrollUp === true,
     dialogs: readObservedElements(raw.dialogs),
     headings: readObservedElements(raw.headings),
     inputs: readObservedElements(raw.inputs),

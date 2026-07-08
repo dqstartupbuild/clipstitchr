@@ -33,6 +33,14 @@ function readRequiredString(value: unknown, message: string) {
   return text;
 }
 
+function readScrollDirection(value: unknown) {
+  if (value === "down" || value === "up") {
+    return value;
+  }
+
+  throw new Error("Scroll actions need direction down or up.");
+}
+
 function readRole(value: unknown) {
   if (value === undefined) {
     return undefined;
@@ -106,6 +114,13 @@ export function parseCliDemoAgentPlannerAction(
       };
     case "screenshot":
       return { reason, stepId, type };
+    case "scroll":
+      return {
+        direction: readScrollDirection(action.direction),
+        reason,
+        stepId,
+        type,
+      };
     case "stop":
       return {
         reason: readRequiredString(action.reason, "Stop actions need a reason."),

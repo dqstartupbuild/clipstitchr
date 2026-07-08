@@ -25,7 +25,7 @@ function normalizeObservedElements(
 export async function observeDemoAgentPage(
   page: Page,
 ): Promise<DemoAgentPageObservation> {
-  const [title, elements] = await Promise.all([
+  const [title, elements, scrollState] = await Promise.all([
     page.title(),
     page.evaluate(() => {
       const getText = (element: Element) =>
@@ -110,10 +110,18 @@ export async function observeDemoAgentPage(
 
       return observed;
     }),
+    page.evaluate(() => ({
+      canScrollDown:
+        window.scrollY + window.innerHeight <
+        document.documentElement.scrollHeight - 4,
+      canScrollUp: window.scrollY > 4,
+    })),
   ]);
 
   return {
     buttons: normalizeObservedElements(elements, "button"),
+    canScrollDown: scrollState.canScrollDown,
+    canScrollUp: scrollState.canScrollUp,
     dialogs: normalizeObservedElements(elements, "dialog"),
     headings: normalizeObservedElements(elements, "heading"),
     inputs: normalizeObservedElements(elements, "input"),

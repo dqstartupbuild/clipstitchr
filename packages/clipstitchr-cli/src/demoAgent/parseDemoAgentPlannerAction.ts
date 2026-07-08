@@ -27,6 +27,14 @@ function readOptionalNumber(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
+function readScrollDirection(value: unknown) {
+  if (value === "down" || value === "up") {
+    return value;
+  }
+
+  throw new Error("Scroll actions need direction down or up.");
+}
+
 function readClickTarget(value: unknown): DemoAgentClickTarget {
   const target = readObject(value, "Planner click actions need a target object.");
 
@@ -101,6 +109,13 @@ export function parseDemoAgentPlannerAction(text: string): DemoAgentAction {
       };
     case "screenshot":
       return {
+        reason,
+        stepId,
+        type,
+      };
+    case "scroll":
+      return {
+        direction: readScrollDirection(action.direction),
         reason,
         stepId,
         type,

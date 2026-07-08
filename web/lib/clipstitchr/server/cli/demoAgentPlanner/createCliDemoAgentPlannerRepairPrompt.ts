@@ -25,10 +25,11 @@ export function createCliDemoAgentPlannerRepairPrompt({
       instruction:
         "Repair the invalid planner output. Return exactly one valid JSON action object and no prose.",
       rules: [
-        "Use only action types: navigate, click, type, uploadFile, waitFor, screenshot, finishStep, stop.",
+        "Use only action types: navigate, click, type, uploadFile, waitFor, scroll, screenshot, finishStep, stop.",
         "Use only allowedClickRoles for click.target.role, or omit role and use label/name/text.",
         "For route-opening steps like Open /dashboard/stitchr, return navigate with that exact local path.",
         "For typing steps, return type with target.label and valueText in the same action.",
+        "If the needed control is likely below the current viewport and observation.canScrollDown is true, return { \"type\": \"scroll\", \"direction\": \"down\" }.",
         "Use the supplied observation as the authority for visible controls.",
       ],
       guide: request.guide,

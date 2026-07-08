@@ -41,6 +41,12 @@ export type CliDemoAgentPlannerAction =
       type: "waitFor";
       visibleText?: string;
     }
+  | {
+      direction: "down" | "up";
+      reason?: string;
+      stepId?: string;
+      type: "scroll";
+    }
   | { reason?: string; stepId?: string; type: "screenshot" }
   | { reason?: string; stepId: string; type: "finishStep" }
   | { reason: string; stepId?: string; type: "stop" };
