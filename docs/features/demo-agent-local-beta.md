@@ -120,8 +120,12 @@ malformed JSON or an unsupported action shape. The
 endpoint uses the shared text-writing provider payload helper, but selects a
 dedicated planner model through `CLI_DEMO_AGENT_PLANNER_MODEL_ID`, defaulting to
 `openai/gpt-5-mini`, at a lower planner temperature than creative text
-generation. If that provider call fails after repair, the CLI logs the provider
-error once and uses the deterministic local planner for the rest of the run.
+generation. The CLI spaces model-backed planning requests apart and retries
+retryable provider backpressure, including `ExpiredInQueue`, before treating the
+planner as unavailable. The API returns `429` with `Retry-After` when the
+planner provider queue is busy. If that provider call still fails after retry or
+repair, the CLI logs the provider error once and uses the deterministic local
+planner for the rest of the run.
 Planner prompts include the action keys already tried during the current step,
 and the model is told not to repeat screenshots or other actions that have
 already failed to move the page forward. If the model repeats an

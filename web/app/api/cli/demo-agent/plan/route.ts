@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { api } from "@/convex/_generated/api";
 import { createCliAuthenticationRequiredResponse } from "@/lib/clipstitchr/server/cli/createCliAuthenticationRequiredResponse";
 import { createCliDemoAgentPlannerGeneration } from "@/lib/clipstitchr/server/cli/demoAgentPlanner/createCliDemoAgentPlannerGeneration";
+import { createCliDemoAgentPlannerProviderBackpressureResponse } from "@/lib/clipstitchr/server/cli/demoAgentPlanner/createCliDemoAgentPlannerProviderBackpressureResponse";
 import { readCliDemoAgentPlanRequest } from "@/lib/clipstitchr/server/cli/demoAgentPlanner/readCliDemoAgentPlanRequest";
 import { getCliSessionFromRequest } from "@/lib/clipstitchr/server/cli/getCliSessionFromRequest";
 import { readCliJsonObject } from "@/lib/clipstitchr/server/cli/readCliJsonObject";
@@ -41,6 +42,13 @@ export async function POST(request: Request) {
 
     if (rateLimitResponse) {
       return rateLimitResponse;
+    }
+
+    const providerBackpressureResponse =
+      createCliDemoAgentPlannerProviderBackpressureResponse(error);
+
+    if (providerBackpressureResponse) {
+      return providerBackpressureResponse;
     }
 
     return NextResponse.json(

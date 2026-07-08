@@ -210,4 +210,23 @@ describe("POST /api/cli/demo-agent/plan", () => {
     });
     expect(response.status).toBe(500);
   });
+
+  it("returns retry timing when the planner provider queue is busy", async () => {
+    mocks.createCliDemoAgentPlannerGeneration.mockRejectedValueOnce(
+      new Error(
+        '{"code":"ExpiredInQueue","message":"Too many concurrent requests in a short period of time."}',
+      ),
+    );
+
+    const response = await POST(createRequest(createBody()));
+
+    await expect(response.json()).resolves.toEqual({
+      error: "Planner provider is busy. Try again in 6 seconds.",
+      message: "Planner provider is busy. Try again in 6 seconds.",
+      providerBackpressure: true,
+      retryAfterSeconds: 6,
+    });
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("6");
+  });
 });
