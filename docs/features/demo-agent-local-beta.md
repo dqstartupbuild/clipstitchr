@@ -54,18 +54,19 @@ step when no more safe action is needed. The model-backed planner can also
 return the full guarded browser-action DSL for app demos: select options, press
 approved keys, clear fields, scroll to text or controls, click the first
 matching visible target, click an action inside a matching card, wait for jobs
-or enabled controls, choose files from visible library cards, toggle switches,
-set modes, open menus, choose menu items, close dialogs, drag visible items,
-set sliders, play or pause media, seek media, trigger downloads, and click copy
-buttons. Policy
+or enabled controls, select visible cards through checkbox controls, choose
+files from visible library cards, toggle switches, set modes, open menus, choose
+menu items, close dialogs, drag visible items, set sliders, play or pause media,
+seek media, trigger downloads, and click copy buttons. Policy
 approved test values are still supported for reusable values, but they are no
-longer required for normal local demo copy such as Hook Lab examples. The runtime
-checks user-visible targets against the current observation before Playwright
-executes policy-sensitive actions, so source-derived context cannot make the
-agent wait on a hidden or missing control. The executor also supports local file
-upload actions, but upload remains blocked
-unless the policy allows uploads, disables pre-upload approval, and names exactly
-one approved local file.
+longer required for normal local demo copy. The runtime checks user-visible
+targets against the current observation before Playwright executes
+policy-sensitive actions, so source-derived context cannot make the agent wait
+on a hidden or missing control. The executor centers controls, fields, and
+selectable cards in the recorded viewport before interaction so the captured
+demo shows the workflow area being used. The executor also supports local file
+upload actions, but upload remains blocked unless the policy allows uploads,
+disables pre-upload approval, and names exactly one approved local file.
 
 Dry-run does not record video, upload media to ClipStitchr, create accounts,
 purchase anything, delete data, publish content, use production accounts, or run
@@ -130,7 +131,9 @@ Planner prompts include the action keys already tried during the current step,
 and the model is told not to repeat screenshots or other actions that have
 already failed to move the page forward. If the model repeats an
 already-attempted action, the CLI uses the deterministic planner for that
-decision without disabling model planning for the rest of the run.
+decision without disabling model planning for the rest of the run. The CLI also
+rejects actions whose `stepId` points at a different guide step, so the planner
+cannot work ahead and leave the current step half-finished.
 
 ## One-Command AI Recording
 
@@ -139,9 +142,9 @@ to already be linked, the CLI account session to be valid, the local app URL to
 be known or running, and the saved browser profile to already be signed into the
 app. Before writing the guide, it asks what the demo should show unless the user
 passes `--goal`. That goal is sent to guide generation and to every model-backed
-planner call, so requests such as "create a similar avatar using the latest UGC
-clip" or "demonstrate running a batch stitch in Stitchr" steer both the
-checklist and the browser actions.
+planner call, so requests such as "create a customer profile from the latest
+import" or "demonstrate running a batch export in the reports tool" steer both
+the checklist and the browser actions.
 
 It generates a guide with ClipStitchr AI, saves it locally, creates a localhost
 policy if one does not exist, verifies the page in a non-recorded browser,
@@ -150,13 +153,14 @@ generated guide receives scanned route context and is rejected if it asks for
 presenter-only behavior, such as pointing out or highlighting UI without a
 browser action the agent can perform. The guide writer and planner also receive
 capped app context from `.clipstitchr/app-context.json`, including source-derived
-feature labels, inputs, and buttons for workflows such as Hook Lab. If the
-user asks Hook Lab to add new hooks or hooks to learn from, the guide writer is
-instructed to use the `Hooks to learn from` field and `Save Hook Lab` instead of
-history feedback actions such as accepting or rejecting existing hook cards. If
-the model-backed planner cannot continue because required clips, connected
-accounts, selected assets, generated results, or permissions are missing, it can
-stop with a plain-language reason explaining what setup is needed.
+feature labels, inputs, buttons, modes, and picker actions from the linked app.
+Those hints are intentionally generic: when a workflow has paired positive and
+negative fields, the model chooses the one whose label matches the user's goal;
+when a workflow uses selectable cards, rows, tiles, or media items, the planner
+uses the generic card-selection action instead of an app-specific rule. If the
+model-backed planner cannot continue because required clips, connected accounts,
+selected assets, generated results, or permissions are missing, it can stop with
+a plain-language reason explaining what setup is needed.
 
 If one of those setup requirements is missing, the command stops with the next
 setup command instead of asking questions.
@@ -177,9 +181,10 @@ Current coverage includes:
 - Policy validator tests for blocked text, external origins, disallowed routes,
   selector-only clicks, safe demo typing, upload approval, approved upload files,
   and wrong step completion.
-- Playwright executor fixture tests for visible clicks, safe typing,
-  approved local file upload, visible-text waits, selects, key presses, field
-  clearing, scroll-to actions, card actions, library choices, toggles, mode
+- Playwright executor fixture tests for visible clicks, select-button fallback
+  to checkbox controls, safe typing, approved local file upload, visible-text
+  waits, selects, key presses, field clearing, scroll-to actions, card actions,
+  card selection with viewport centering, library choices, toggles, mode
   switches, menus, dialogs, drag/drop, sliders, media controls, downloads, copy
   buttons, job waits, and enabled-control waits.
 - Full loop fixture tests for a safe multi-step guide flow, blocked observed

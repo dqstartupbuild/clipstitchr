@@ -18,6 +18,7 @@ export type DemoAgentActionType =
   | "scrollToControl"
   | "scrollToText"
   | "seekMedia"
+  | "selectCard"
   | "selectOption"
   | "setMode"
   | "setSlider"

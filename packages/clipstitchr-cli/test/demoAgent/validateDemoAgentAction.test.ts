@@ -182,4 +182,16 @@ describe("validateDemoAgentAction", () => {
       /wrong guide step/,
     );
   });
+
+  it("rejects non-finish actions for the wrong guide step", () => {
+    assert.throws(
+      () =>
+        validateAction({
+          stepId: "step-2",
+          target: { name: "Normal", role: "button" },
+          type: "click",
+        }),
+      /wrong guide step/,
+    );
+  });
 });

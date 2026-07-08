@@ -1,6 +1,7 @@
 import type { DemoAgentAction } from "./DemoAgentAction.js";
 import type { DemoAgentPolicy } from "./DemoAgentPolicy.js";
 import type { DemoAgentValidatedAction } from "./DemoAgentValidatedAction.js";
+import { assertDemoAgentActionStepMatchesCurrentStep } from "./assertDemoAgentActionStepMatchesCurrentStep.js";
 import { assertDemoAgentTextAllowed } from "./assertDemoAgentTextAllowed.js";
 import { assertDemoAgentUrlAllowed } from "./assertDemoAgentUrlAllowed.js";
 import { createDemoAgentUrlFromPath } from "./createDemoAgentUrlFromPath.js";
@@ -15,6 +16,11 @@ export function validateDemoAgentAction(input: {
   policy: DemoAgentPolicy;
 }): DemoAgentValidatedAction {
   assertDemoAgentUrlAllowed(input.policy, input.currentUrl);
+  assertDemoAgentActionStepMatchesCurrentStep({
+    action: input.action,
+    currentStepId: input.currentStepId,
+    guideStepIds: input.guideStepIds,
+  });
 
   for (const text of getDemoAgentActionTexts(input.action)) {
     if (text) {
@@ -68,6 +74,7 @@ export function validateDemoAgentAction(input: {
     case "pressKey":
     case "scrollToText":
     case "seekMedia":
+    case "selectCard":
     case "selectOption":
     case "setMode":
     case "setSlider":

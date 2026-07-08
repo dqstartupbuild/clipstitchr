@@ -121,8 +121,9 @@ describe("createCliDemoGuidePrompt", () => {
     expect(prompt.rules.missingSetup).toContain("existing media");
     expect(prompt.rules.useAppContext).toContain("feature labels");
     expect(prompt.rules.addCreateSemantics).toContain("typing into matching inputs");
-    expect(prompt.rules.hookLabSemantics).toContain("Hooks to learn from");
-    expect(prompt.rules.stitchrModeSemantics).toContain("normal mode");
+    expect(prompt.rules.pairedInputSemantics).toContain("paired positive");
+    expect(prompt.rules.modeWorkflowSemantics).toContain("mode");
+    expect(prompt.rules.cardSelectionSemantics).toContain("picker item");
     expect(prompt.demo.appContext.workflowHints[0].inputs).toContain(
       "Hooks to learn from",
     );

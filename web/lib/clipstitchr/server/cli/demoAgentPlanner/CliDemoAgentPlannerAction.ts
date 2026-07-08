@@ -102,6 +102,13 @@ export type CliDemoAgentPlannerAction =
       type: "clickCardAction";
     }
   | {
+      cardText: string;
+      checked: boolean;
+      reason?: string;
+      stepId?: string;
+      type: "selectCard";
+    }
+  | {
       reason?: string;
       statusText?: string;
       stepId?: string;
@@ -117,7 +124,19 @@ export type CliDemoAgentPlannerAction =
       type: "waitForElementEnabled";
     }
   | {
-      mediaType: "any" | "avatar" | "demo" | "stitch" | "template" | "ugc";
+      mediaType:
+        | "any"
+        | "audio"
+        | "avatar"
+        | "demo"
+        | "document"
+        | "file"
+        | "image"
+        | "media"
+        | "stitch"
+        | "template"
+        | "ugc"
+        | "video";
       reason?: string;
       searchText?: string;
       stepId?: string;

@@ -1,11 +1,13 @@
 import type { Page } from "playwright";
 import { chooseDemoAgentLibraryFile } from "./chooseDemoAgentLibraryFile.js";
 import { clickDemoAgentCardAction } from "./clickDemoAgentCardAction.js";
+import { clickDemoAgentSelectableCard } from "./clickDemoAgentSelectableCard.js";
 import { clickDemoAgentTargetAndSettle } from "./clickDemoAgentTargetAndSettle.js";
 import { clickFirstAvailable } from "./clickFirstAvailable.js";
 import type { DemoAgentValidatedAction } from "./DemoAgentValidatedAction.js";
 import { getDemoAgentLocatorForClickTarget } from "./getDemoAgentLocatorForClickTarget.js";
 import { runDemoAgentMediaAction } from "./runDemoAgentMediaAction.js";
+import { scrollDemoAgentLocatorIntoRecordedView } from "./scrollDemoAgentLocatorIntoRecordedView.js";
 import { setDemoAgentSliderValue } from "./setDemoAgentSliderValue.js";
 import { waitForDemoAgentPageToSettleAfterClick } from "./waitForDemoAgentPageToSettleAfterClick.js";
 
@@ -34,7 +36,10 @@ export async function executeDemoAgentAction(input: {
       await waitForDemoAgentPageToSettleAfterClick(input.page);
       break;
     case "clearField":
-      await input.page.getByLabel(input.action.target.label).fill("");
+      await scrollDemoAgentLocatorIntoRecordedView(
+        input.page.getByLabel(input.action.target.label).first(),
+      );
+      await input.page.getByLabel(input.action.target.label).first().fill("");
       break;
     case "clickCardAction":
       await clickDemoAgentCardAction({
@@ -57,11 +62,13 @@ export async function executeDemoAgentAction(input: {
       const downloadPromise = input.page
         .waitForEvent("download", { timeout: 15_000 })
         .catch(() => undefined);
-
-      await getDemoAgentLocatorForClickTarget(
+      const target = getDemoAgentLocatorForClickTarget(
         input.page,
         input.action.target,
-      ).click();
+      );
+
+      await scrollDemoAgentLocatorIntoRecordedView(target);
+      await target.click();
       await downloadPromise;
       await waitForDemoAgentPageToSettleAfterClick(input.page);
       break;
@@ -93,7 +100,10 @@ export async function executeDemoAgentAction(input: {
       break;
     case "pressKey":
       if (input.action.target?.label) {
-        await input.page.getByLabel(input.action.target.label).focus();
+        const target = input.page.getByLabel(input.action.target.label).first();
+
+        await scrollDemoAgentLocatorIntoRecordedView(target);
+        await target.focus();
       }
 
       await input.page.keyboard.press(input.action.key);
@@ -106,14 +116,14 @@ export async function executeDemoAgentAction(input: {
       await input.page.waitForTimeout(300);
       break;
     case "scrollToControl":
-      await getDemoAgentLocatorForClickTarget(input.page, input.action.target)
-        .scrollIntoViewIfNeeded({ timeout: 5000 });
+      await scrollDemoAgentLocatorIntoRecordedView(
+        getDemoAgentLocatorForClickTarget(input.page, input.action.target),
+      );
       break;
     case "scrollToText":
-      await input.page
-        .getByText(input.action.text, { exact: false })
-        .first()
-        .scrollIntoViewIfNeeded({ timeout: 5000 });
+      await scrollDemoAgentLocatorIntoRecordedView(
+        input.page.getByText(input.action.text, { exact: false }).first(),
+      );
       break;
     case "seekMedia":
       await input.page
@@ -125,13 +135,13 @@ export async function executeDemoAgentAction(input: {
       break;
     case "selectOption": {
       const action = input.action;
+      const target = input.page.getByLabel(action.target.label).first();
 
-      await input.page
-        .getByLabel(action.target.label)
-        .first()
+      await scrollDemoAgentLocatorIntoRecordedView(target);
+      await target
         .selectOption({ label: action.optionLabel })
         .catch(async () => {
-          await input.page.getByLabel(action.target.label).click();
+          await target.click();
           await input.page
             .getByRole("option", { name: action.optionLabel })
             .first()
@@ -140,6 +150,13 @@ export async function executeDemoAgentAction(input: {
       await waitForDemoAgentPageToSettleAfterClick(input.page);
       break;
     }
+    case "selectCard":
+      await clickDemoAgentSelectableCard({
+        cardText: input.action.cardText,
+        checked: input.action.checked,
+        page: input.page,
+      });
+      break;
     case "setMode":
       await clickFirstAvailable([
         input.page.getByRole("tab", { name: input.action.mode }),
@@ -157,12 +174,13 @@ export async function executeDemoAgentAction(input: {
       break;
     case "toggle": {
       const action = input.action;
+      const target = input.page.getByLabel(action.target.label).first();
 
-      await input.page
-        .getByLabel(action.target.label)
+      await scrollDemoAgentLocatorIntoRecordedView(target);
+      await target
         .setChecked(action.checked)
         .catch(async () => {
-          await input.page.getByLabel(action.target.label).click();
+          await target.click();
         });
       await waitForDemoAgentPageToSettleAfterClick(input.page);
       break;
@@ -176,8 +194,12 @@ export async function executeDemoAgentAction(input: {
         .catch(() => {});
       break;
     case "type":
+      await scrollDemoAgentLocatorIntoRecordedView(
+        input.page.getByLabel(input.action.target.label).first(),
+      );
       await input.page
         .getByLabel(input.action.target.label)
+        .first()
         .fill(input.action.resolvedValue ?? "");
       break;
     case "uploadFile":
@@ -214,8 +236,13 @@ export async function executeDemoAgentAction(input: {
       }
       break;
     case "waitForElementEnabled":
-      await getDemoAgentLocatorForClickTarget(input.page, input.action.target)
-        .click({ timeout: input.action.timeoutMs, trial: true });
+      await scrollDemoAgentLocatorIntoRecordedView(
+        getDemoAgentLocatorForClickTarget(input.page, input.action.target),
+      );
+      await getDemoAgentLocatorForClickTarget(
+        input.page,
+        input.action.target,
+      ).click({ timeout: input.action.timeoutMs, trial: true });
       break;
     case "waitForJob":
       if (input.action.visibleText) {

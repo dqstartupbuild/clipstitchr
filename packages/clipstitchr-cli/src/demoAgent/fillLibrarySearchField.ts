@@ -1,4 +1,5 @@
 import type { Page } from "playwright";
+import { scrollDemoAgentLocatorIntoRecordedView } from "./scrollDemoAgentLocatorIntoRecordedView.js";
 
 export async function fillLibrarySearchField(page: Page, searchText: string) {
   const searchFields = [
@@ -10,6 +11,7 @@ export async function fillLibrarySearchField(page: Page, searchText: string) {
 
   for (const searchField of searchFields) {
     try {
+      await scrollDemoAgentLocatorIntoRecordedView(searchField);
       await searchField.fill(searchText, { timeout: 2000 });
 
       return;

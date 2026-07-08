@@ -50,6 +50,8 @@ export function getDemoAgentActionTexts(action: DemoAgentAction) {
       return [action.reason, action.text];
     case "seekMedia":
       return [action.reason, action.targetLabel];
+    case "selectCard":
+      return [action.cardText, action.reason];
     case "selectOption":
       return [action.optionLabel, action.reason, action.target.label];
     case "setMode":

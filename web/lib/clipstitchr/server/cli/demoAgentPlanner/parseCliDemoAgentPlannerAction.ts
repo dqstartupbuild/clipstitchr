@@ -87,11 +87,17 @@ function readPressKey(value: unknown) {
 function readMediaType(value: unknown) {
   if (
     value === "any" ||
+    value === "audio" ||
     value === "avatar" ||
     value === "demo" ||
+    value === "document" ||
+    value === "file" ||
+    value === "image" ||
+    value === "media" ||
     value === "stitch" ||
     value === "template" ||
-    value === "ugc"
+    value === "ugc" ||
+    value === "video"
   ) {
     return value;
   }
@@ -275,6 +281,20 @@ export function parseCliDemoAgentPlannerAction(
         cardText: readRequiredString(
           action.cardText,
           "Card actions need card text.",
+        ),
+        reason,
+        stepId,
+        type,
+      };
+    case "selectCard":
+      return {
+        cardText: readRequiredString(
+          action.cardText,
+          "Card selection actions need card text.",
+        ),
+        checked: readBoolean(
+          action.checked,
+          "Card selection actions need checked true or false.",
         ),
         reason,
         stepId,

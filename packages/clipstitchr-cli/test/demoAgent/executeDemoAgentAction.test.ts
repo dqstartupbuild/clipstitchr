@@ -31,6 +31,39 @@ describe("executeDemoAgentAction", () => {
     });
   });
 
+  it("falls back to checkbox controls for select-button targets", async () => {
+    await withDemoAgentFixturePage(async (page) => {
+      await page.setContent(`
+        <button
+          aria-checked="false"
+          aria-label="Select Expressive Blonde Woman Close Up"
+          onclick="window.selected = true; this.setAttribute('aria-checked', 'true')"
+          role="checkbox"
+        >
+          Select
+        </button>
+      `);
+
+      await executeDemoAgentAction({
+        action: {
+          target: {
+            name: "Select Expressive Blonde Woman Close Up",
+            role: "button",
+          },
+          type: "click",
+        },
+        page,
+      });
+
+      assert.equal(
+        await page.evaluate(
+          () => (window as Window & { selected?: boolean }).selected,
+        ),
+        true,
+      );
+    });
+  });
+
   it("waits for delayed click navigation to settle", async () => {
     await withDemoAgentFixtureServer(
       `
@@ -239,6 +272,17 @@ describe("executeDemoAgentAction", () => {
             <h2>Demo clip</h2>
             <button onclick="window.cardAction = true">Use</button>
           </article>
+          <article style="margin-top: 600px">
+            <h2>Expressive Blonde Woman Close Up</h2>
+            <button
+              aria-checked="false"
+              aria-label="Select Expressive Blonde Woman Close Up"
+              onclick="window.cardSelected = true; this.setAttribute('aria-checked', 'true')"
+              role="checkbox"
+            >
+              Select
+            </button>
+          </article>
           <article>
             <h2>latest clip</h2>
             <button onclick="window.libraryChoice = true">Select</button>
@@ -289,7 +333,16 @@ describe("executeDemoAgentAction", () => {
       });
       await executeDemoAgentAction({
         action: {
-          mediaType: "ugc",
+          cardText: "Expressive Blonde Woman Close Up",
+          checked: true,
+          type: "selectCard",
+        },
+        page,
+      });
+      const scrollAfterCardSelect = await page.evaluate(() => window.scrollY);
+      await executeDemoAgentAction({
+        action: {
+          mediaType: "video",
           searchText: "latest clip",
           type: "chooseFileFromLibrary",
         },
@@ -320,6 +373,13 @@ describe("executeDemoAgentAction", () => {
       assert.equal(
         await page.evaluate(
           () => (window as Window & { cardAction?: boolean }).cardAction,
+        ),
+        true,
+      );
+      assert.ok(scrollAfterCardSelect > scrollAfterText);
+      assert.equal(
+        await page.evaluate(
+          () => (window as Window & { cardSelected?: boolean }).cardSelected,
         ),
         true,
       );

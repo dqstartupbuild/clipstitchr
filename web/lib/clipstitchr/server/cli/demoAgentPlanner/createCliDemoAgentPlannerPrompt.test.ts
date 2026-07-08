@@ -79,17 +79,21 @@ describe("createCliDemoAgentPlannerPrompt", () => {
         "Map abstract user wording through appContext featureLabels, actions, inputs, and buttons before choosing a route or field.",
         "Click target names must come from observation.buttons or observation.links exactly; appContext cannot supply a click target unless the same label is currently visible.",
         "Type, clearField, selectOption, toggle, and setSlider labels must match a visible observation.inputs label or name.",
-        "Prefer semantic actions when they directly match the UI task: selectOption for selects, toggle for switches, setMode for modes, openMenu and chooseMenuItem for menus, downloadFile for downloads, copyToClipboard for copy buttons, and waitForJob for generation or processing.",
-        "If step.label is Open followed by a local path like /dashboard/stitchr, return a navigate action to that exact path unless observation.url is already on that path.",
+        "Prefer semantic actions when they directly match the UI task: selectCard for card selection, selectOption for selects, toggle for switches, setMode for modes, openMenu and chooseMenuItem for menus, downloadFile for downloads, copyToClipboard for copy buttons, and waitForJob for generation or processing.",
+        "If step.label is Open followed by a local path like /dashboard/tool, return a navigate action to that exact path unless observation.url is already on that path.",
         "If the step names a field, picker, section, or button that is not in observation but observation.canScrollDown is true, return one scroll down action before stopping or guessing.",
         "For steps that say Type X into FIELD, return one type action with target.label set to FIELD and valueText set to X. Do not split focusing the field from typing the value.",
-        "For Stitchr normal mode goals, click the visible Normal mode button before selecting clips or generating a stitch.",
-        "For normal Stitchr clip selection, use the visible Search clip picker videos input and clip cards after scrolling; do not click text-style controls like Any or labels like Hook.",
-        "For Hook Lab requests to add new hooks or hooks to learn from, type safe examples into the visible Hooks to learn from input, then click a visible Save Hook Lab button.",
+        "If the goal or step names a mode, choose that visible mode before using mode-specific inputs, pickers, or create buttons.",
+        "For card, tile, row, media, file, or picker selection, use visible search or filter inputs when helpful, scroll to the relevant item, then use selectCard with stable visible card text and checked true when the item exposes a selectable checkbox.",
+        "Use clickCardAction only when the card contains a separately named visible action button.",
+        "Before interacting with a lower main workflow section, card, row, tile, or picker, use scrollToText, scrollToControl, or scroll so the relevant area is visible in the recording.",
+        "When a workflow has paired positive and negative inputs, such as learn from and avoid, include and exclude, use and block, choose the input whose label matches the user's wording.",
         "Prefer exact labels from observation and appContext over generic controls such as Open, Menu, or Profile.",
       ]),
     );
     expect(prompt.allowedActionShape.type).toContain("valueText");
+    expect(prompt.allowedActionShape.chooseFileFromLibrary).toContain("video");
+    expect(prompt.allowedActionShape.selectCard).toContain("cardText");
     expect(prompt.allowedActionShape.selectOption).toContain("optionLabel");
     expect(prompt.allowedActionShape.downloadFile).toContain("Download");
     expect(prompt.allowedActionShape.copyToClipboard).toContain("Copy");
@@ -109,6 +113,7 @@ describe("createCliDemoAgentPlannerPrompt", () => {
       expect.arrayContaining([
         "Never return an action whose key already appears in attemptedActionKeys.",
         "A screenshot action key is screenshot:<stepId>.",
+        "A selectCard action key is selectCard:<cardText>:<checked>.",
       ]),
     );
   });

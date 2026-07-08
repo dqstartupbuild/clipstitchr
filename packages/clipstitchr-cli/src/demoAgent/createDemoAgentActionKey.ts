@@ -53,6 +53,8 @@ export function createDemoAgentActionKey(action: DemoAgentAction) {
       return `${action.type}:${action.stepId ?? ""}`;
     case "seekMedia":
       return `${action.type}:${action.targetLabel ?? ""}:${action.seconds}`;
+    case "selectCard":
+      return `${action.type}:${action.cardText}:${action.checked}`;
     case "selectOption":
       return `${action.type}:${action.target.label}:${action.optionLabel}`;
     case "setMode":

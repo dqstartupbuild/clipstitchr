@@ -6,7 +6,7 @@ export function createCliDemoAgentPlannerPrompt(
   return JSON.stringify({
     allowedActionShape: {
       chooseFileFromLibrary:
-        '{ "type": "chooseFileFromLibrary", "mediaType": "any|avatar|demo|stitch|template|ugc", "searchText": "optional visible file name or query", "reason": "..." }',
+        '{ "type": "chooseFileFromLibrary", "mediaType": "any|file|media|image|video|audio|document|avatar|demo|template", "searchText": "optional visible file name or query", "reason": "..." }',
       chooseMenuItem:
         '{ "type": "chooseMenuItem", "name": "visible menu item name", "reason": "..." }',
       clearField:
@@ -41,6 +41,8 @@ export function createCliDemoAgentPlannerPrompt(
       screenshot: '{ "type": "screenshot", "stepId": "..." }',
       seekMedia:
         '{ "type": "seekMedia", "seconds": 12, "targetLabel": "optional visible media label", "reason": "..." }',
+      selectCard:
+        '{ "type": "selectCard", "cardText": "visible card title or stable visible card text", "checked": true, "reason": "..." }',
       selectOption:
         '{ "type": "selectOption", "target": { "label": "visible select label" }, "optionLabel": "visible option label", "reason": "..." }',
       setMode: '{ "type": "setMode", "mode": "visible mode name" }',
@@ -68,6 +70,7 @@ export function createCliDemoAgentPlannerPrompt(
       "Never return an action whose key already appears in attemptedActionKeys.",
       "A screenshot action key is screenshot:<stepId>.",
       "A click action key is click:<role>:<name>.",
+      "A selectCard action key is selectCard:<cardText>:<checked>.",
       "A finishStep action key is finishStep:<stepId>.",
       "Every action type has a key made from its visible target text or primary value; do not repeat the same target/value pair after it failed.",
       "If screenshot:<stepId> was already attempted and the current screen satisfies a show, review, point-out, or highlight-style step, return finishStep.",
@@ -94,16 +97,18 @@ export function createCliDemoAgentPlannerPrompt(
       "Current observation is still the authority: click and type only visible controls from observation.",
       "Click target names must come from observation.buttons or observation.links exactly; appContext cannot supply a click target unless the same label is currently visible.",
       "Type, clearField, selectOption, toggle, and setSlider labels must match a visible observation.inputs label or name.",
-      "Prefer semantic actions when they directly match the UI task: selectOption for selects, toggle for switches, setMode for modes, openMenu and chooseMenuItem for menus, downloadFile for downloads, copyToClipboard for copy buttons, and waitForJob for generation or processing.",
+      "Prefer semantic actions when they directly match the UI task: selectCard for card selection, selectOption for selects, toggle for switches, setMode for modes, openMenu and chooseMenuItem for menus, downloadFile for downloads, copyToClipboard for copy buttons, and waitForJob for generation or processing.",
       "Use waitForElementEnabled when the right button is visible but disabled while the app finishes loading or validating inputs.",
-      "If step.label is Open followed by a local path like /dashboard/stitchr, return a navigate action to that exact path unless observation.url is already on that path.",
+      "If step.label is Open followed by a local path like /dashboard/tool, return a navigate action to that exact path unless observation.url is already on that path.",
       "If the step names a field, picker, section, or button that is not in observation but observation.canScrollDown is true, return one scroll down action before stopping or guessing.",
       "For steps that say Type X into FIELD, return one type action with target.label set to FIELD and valueText set to X. Do not split focusing the field from typing the value.",
-      "For Stitchr normal mode goals, click the visible Normal mode button before selecting clips or generating a stitch.",
-      "For normal Stitchr clip selection, use the visible Search clip picker videos input and clip cards after scrolling; do not click text-style controls like Any or labels like Hook.",
+      "If the goal or step names a mode, choose that visible mode before using mode-specific inputs, pickers, or create buttons.",
+      "For card, tile, row, media, file, or picker selection, use visible search or filter inputs when helpful, scroll to the relevant item, then use selectCard with stable visible card text and checked true when the item exposes a selectable checkbox.",
+      "Use clickCardAction only when the card contains a separately named visible action button.",
+      "Before interacting with a lower main workflow section, card, row, tile, or picker, use scrollToText, scrollToControl, or scroll so the relevant area is visible in the recording.",
       "When a step says add, save, create, or update something, match the noun in the step to appContext inputs first, then use a visible matching input from observation.",
+      "When a workflow has paired positive and negative inputs, such as learn from and avoid, include and exclude, use and block, choose the input whose label matches the user's wording.",
       "If a matching input is visible, type safe demo text with valueText unless the step requires private, credential, billing, or real customer data.",
-      "For Hook Lab requests to add new hooks or hooks to learn from, type safe examples into the visible Hooks to learn from input, then click a visible Save Hook Lab button.",
       "Do not click Accept, Reject, Copy, Save as winner, or similar history feedback controls unless the guide explicitly asks to act on existing items.",
       "Prefer exact labels from observation and appContext over generic controls such as Open, Menu, or Profile.",
     ],

@@ -25,10 +25,9 @@ app/component source files under common folders such as `app`, `src/app`,
 The scanner extracts user-visible strings from JSX text, common attributes such
 as `label`, `title`, `placeholder`, and object labels. It classifies likely
 feature labels, form fields, buttons, and workflow actions, then groups them by
-route. Component paths such as `_components/hooks` are mapped back to known
-routes like `/dashboard/hooks`, so a demo request such as "add popular hooks"
-can be tied to visible app labels like `Hook Lab`, `Hooks to learn from`,
-`Hooks to avoid`, and `Save Hook Lab`.
+route. Component paths are mapped back to known routes when possible, so a demo
+request can be tied to visible app labels, form fields, picker sections, and
+buttons instead of generic or invented controls.
 
 The web API validates and caps this payload before any provider call. Prompts
 treat the context as source-derived hints. The current browser observation still
@@ -37,13 +36,13 @@ observed page, and the local policy validator still blocks unsafe actions.
 Typing safe demo text is allowed for local app fields. Blocked policy language,
 credentials, billing details, payment details, and real customer data remain
 disallowed.
-Guide and planner prompts use feature labels to connect abstract requests such
-as "use the hook tool" or "add saved hooks" to the app's real route and field
-labels. They still have to use exact observed controls when executing.
-For Hook Lab, requests to add new hooks or hooks to learn from map to the
-`Hooks to learn from` input plus `Save Hook Lab`; history feedback controls such
-as `Accept hook`, `Reject hook`, and `Save as winner` are reserved for goals that
-explicitly ask to act on existing hooks.
+Guide and planner prompts use feature labels to connect abstract requests to the
+app's real routes, field labels, card titles, mode controls, and buttons. They
+still have to use exact observed controls when executing. For paired inputs such
+as learn-from versus avoid, include versus exclude, or use versus block, the
+planner chooses the field whose label matches the user's wording. Feedback
+controls such as accept, reject, copy, or save-as-winner are reserved for goals
+that explicitly ask to act on existing suggestions or items.
 
 ## File Tree
 

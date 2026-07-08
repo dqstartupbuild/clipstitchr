@@ -1,7 +1,8 @@
 import type { Page } from "playwright";
+import { clickDemoAgentLocatorAndSettle } from "./clickDemoAgentLocatorAndSettle.js";
 import { fillLibrarySearchField } from "./fillLibrarySearchField.js";
 import { getDemoAgentLibraryCardLocator } from "./getDemoAgentLibraryCardLocator.js";
-import { waitForDemoAgentPageToSettleAfterClick } from "./waitForDemoAgentPageToSettleAfterClick.js";
+import { scrollDemoAgentLocatorIntoRecordedView } from "./scrollDemoAgentLocatorIntoRecordedView.js";
 
 export async function chooseDemoAgentLibraryFile(input: {
   mediaType: string;
@@ -18,11 +19,11 @@ export async function chooseDemoAgentLibraryFile(input: {
     .getByRole("button", { name: /add|choose|open|select|use/i })
     .first();
 
-  if ((await actionButton.count()) > 0) {
-    await actionButton.click();
-  } else {
-    await card.click();
-  }
+  await scrollDemoAgentLocatorIntoRecordedView(card);
 
-  await waitForDemoAgentPageToSettleAfterClick(input.page);
+  if ((await actionButton.count()) > 0) {
+    await clickDemoAgentLocatorAndSettle(input.page, actionButton);
+  } else {
+    await clickDemoAgentLocatorAndSettle(input.page, card);
+  }
 }
