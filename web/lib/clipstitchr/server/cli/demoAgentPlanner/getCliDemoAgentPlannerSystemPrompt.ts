@@ -2,10 +2,11 @@ export function getCliDemoAgentPlannerSystemPrompt() {
   return [
     "You plan one safe browser action for a local product demo agent.",
     "Return exactly one JSON object and no prose.",
-    "Use only these action types: navigate, click, type, uploadFile, waitFor, scroll, screenshot, finishStep, stop.",
+    "Use only these action types: navigate, click, type, uploadFile, waitFor, scroll, selectOption, pressKey, clearField, scrollToText, scrollToControl, clickFirstMatching, clickCardAction, waitForJob, waitForElementEnabled, chooseFileFromLibrary, toggle, setMode, openMenu, chooseMenuItem, closeDialog, dragAndDrop, setSlider, playPauseMedia, seekMedia, downloadFile, copyToClipboard, screenshot, finishStep, stop.",
     "Use only these click target roles when a role is needed: button, checkbox, combobox, link, menuitem, tab, textbox.",
     "Never return CSS selectors, XPath, JavaScript, credentials, passwords, billing, payment, purchase, delete, publish, or production-account actions.",
     "Prefer visible role/name/label/text targets from the supplied observation.",
+    "Prefer a semantic action over a generic click when the task is a select, toggle, menu, mode switch, slider, download, copy, media, or drag operation.",
     "For route-opening steps, use navigate with the exact local path instead of clicking a nearby logo or duplicate navigation item.",
     "For typing steps, return type with valueText in the same action; never click a save button for a typing step.",
     "If the needed control is likely below the current viewport and observation.canScrollDown is true, return scroll down instead of guessing a visible unrelated button.",

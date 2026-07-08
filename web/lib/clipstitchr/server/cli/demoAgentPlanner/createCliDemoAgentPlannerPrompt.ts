@@ -5,20 +5,60 @@ export function createCliDemoAgentPlannerPrompt(
 ) {
   return JSON.stringify({
     allowedActionShape: {
+      chooseFileFromLibrary:
+        '{ "type": "chooseFileFromLibrary", "mediaType": "any|avatar|demo|stitch|template|ugc", "searchText": "optional visible file name or query", "reason": "..." }',
+      chooseMenuItem:
+        '{ "type": "chooseMenuItem", "name": "visible menu item name", "reason": "..." }',
+      clearField:
+        '{ "type": "clearField", "target": { "label": "visible field label" }, "reason": "..." }',
       click:
         '{ "type": "click", "stepId": "...", "target": { "role": "button|link|checkbox|combobox|textbox|menuitem|tab", "name": "..." }, "reason": "..." }',
+      clickCardAction:
+        '{ "type": "clickCardAction", "cardText": "visible card text", "actionName": "visible button name in that card", "reason": "..." }',
+      clickFirstMatching:
+        '{ "type": "clickFirstMatching", "target": { "role": "button|link|checkbox|combobox|textbox|menuitem|tab", "name": "..." }, "reason": "..." }',
+      closeDialog: '{ "type": "closeDialog", "reason": "..." }',
+      copyToClipboard:
+        '{ "type": "copyToClipboard", "target": { "role": "button", "name": "Copy" }, "reason": "..." }',
+      downloadFile:
+        '{ "type": "downloadFile", "target": { "role": "button|link", "name": "Download" }, "reason": "..." }',
+      dragAndDrop:
+        '{ "type": "dragAndDrop", "sourceText": "visible draggable text", "targetText": "visible drop target text", "reason": "..." }',
       finishStep: '{ "type": "finishStep", "stepId": "...", "reason": "..." }',
       navigate: '{ "type": "navigate", "path": "/allowed-local-path" }',
+      openMenu:
+        '{ "type": "openMenu", "target": { "role": "button", "name": "visible menu button" }, "reason": "..." }',
+      playPauseMedia:
+        '{ "type": "playPauseMedia", "mediaAction": "play|pause", "targetLabel": "optional visible media button label", "reason": "..." }',
+      pressKey:
+        '{ "type": "pressKey", "key": "ArrowDown|ArrowLeft|ArrowRight|ArrowUp|Backspace|Enter|Escape|Space|Tab", "target": { "label": "optional visible field label" }, "reason": "..." }',
       scroll:
         '{ "type": "scroll", "stepId": "...", "direction": "down", "reason": "..." }',
+      scrollToControl:
+        '{ "type": "scrollToControl", "target": { "role": "button|link|checkbox|combobox|textbox|menuitem|tab", "name": "..." }, "reason": "..." }',
+      scrollToText:
+        '{ "type": "scrollToText", "text": "visible text to bring into view", "reason": "..." }',
       screenshot: '{ "type": "screenshot", "stepId": "..." }',
+      seekMedia:
+        '{ "type": "seekMedia", "seconds": 12, "targetLabel": "optional visible media label", "reason": "..." }',
+      selectOption:
+        '{ "type": "selectOption", "target": { "label": "visible select label" }, "optionLabel": "visible option label", "reason": "..." }',
+      setMode: '{ "type": "setMode", "mode": "visible mode name" }',
+      setSlider:
+        '{ "type": "setSlider", "target": { "label": "visible slider label" }, "value": 50, "reason": "..." }',
       stop: '{ "type": "stop", "reason": "..." }',
+      toggle:
+        '{ "type": "toggle", "target": { "label": "visible toggle label" }, "checked": true, "reason": "..." }',
       type:
         '{ "type": "type", "target": { "label": "..." }, "valueText": "safe demo text" }',
       uploadFile:
         '{ "type": "uploadFile", "target": { "label": "..." }, "fileKey": "approved-file-key" }',
       waitFor:
         '{ "type": "waitFor", "visibleText": "...", "timeoutMs": 5000 }',
+      waitForElementEnabled:
+        '{ "type": "waitForElementEnabled", "target": { "role": "button", "name": "..." }, "timeoutMs": 5000, "reason": "..." }',
+      waitForJob:
+        '{ "type": "waitForJob", "visibleText": "result text", "statusText": "optional progress text", "timeoutMs": 30000, "reason": "..." }',
     },
     appContext: request.appContext,
     approvedTestValueKeys: request.approvedTestValueKeys,
@@ -29,6 +69,7 @@ export function createCliDemoAgentPlannerPrompt(
       "A screenshot action key is screenshot:<stepId>.",
       "A click action key is click:<role>:<name>.",
       "A finishStep action key is finishStep:<stepId>.",
+      "Every action type has a key made from its visible target text or primary value; do not repeat the same target/value pair after it failed.",
       "If screenshot:<stepId> was already attempted and the current screen satisfies a show, review, point-out, or highlight-style step, return finishStep.",
       "If screenshot:<stepId> was already attempted and the current screen does not satisfy the step, choose a visible click, scroll toward the needed field or section, navigate to an allowed local path, wait for visible text, or stop.",
     ],
@@ -52,7 +93,9 @@ export function createCliDemoAgentPlannerPrompt(
       "Map abstract user wording through appContext featureLabels, actions, inputs, and buttons before choosing a route or field.",
       "Current observation is still the authority: click and type only visible controls from observation.",
       "Click target names must come from observation.buttons or observation.links exactly; appContext cannot supply a click target unless the same label is currently visible.",
-      "Type target labels must match a visible observation.inputs label or name.",
+      "Type, clearField, selectOption, toggle, and setSlider labels must match a visible observation.inputs label or name.",
+      "Prefer semantic actions when they directly match the UI task: selectOption for selects, toggle for switches, setMode for modes, openMenu and chooseMenuItem for menus, downloadFile for downloads, copyToClipboard for copy buttons, and waitForJob for generation or processing.",
+      "Use waitForElementEnabled when the right button is visible but disabled while the app finishes loading or validating inputs.",
       "If step.label is Open followed by a local path like /dashboard/stitchr, return a navigate action to that exact path unless observation.url is already on that path.",
       "If the step names a field, picker, section, or button that is not in observation but observation.canScrollDown is true, return one scroll down action before stopping or guessing.",
       "For steps that say Type X into FIELD, return one type action with target.label set to FIELD and valueText set to X. Do not split focusing the field from typing the value.",

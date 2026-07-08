@@ -39,12 +39,22 @@ function readObservedElements(value: unknown): CliDemoAgentObservedElement[] {
       }
 
       return {
+        disabled: raw.disabled === true ? true : undefined,
         label:
           typeof raw.label === "string"
             ? raw.label.trim().slice(0, 160)
             : undefined,
         name: name.slice(0, 160),
+        placeholder:
+          typeof raw.placeholder === "string"
+            ? raw.placeholder.trim().slice(0, 160)
+            : undefined,
         role,
+        selected: raw.selected === true ? true : undefined,
+        value:
+          typeof raw.value === "string"
+            ? raw.value.trim().slice(0, 160)
+            : undefined,
       };
     })
     .filter((item): item is CliDemoAgentObservedElement => Boolean(item))

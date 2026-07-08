@@ -33,6 +33,46 @@ export function validateDemoAgentAction(input: {
       }
 
       return input.action;
+    case "clickFirstMatching":
+    case "copyToClipboard":
+    case "downloadFile":
+    case "openMenu":
+    case "scrollToControl":
+    case "waitForElementEnabled":
+      if (
+        !input.action.target.label &&
+        !input.action.target.text &&
+        !input.action.target.name
+      ) {
+        throw new Error("Targeted actions need a user-visible target.");
+      }
+
+      if (input.action.type === "waitForElementEnabled") {
+        return {
+          ...input.action,
+          timeoutMs: Math.min(
+            10_000,
+            Math.max(500, input.action.timeoutMs ?? 5000),
+          ),
+        };
+      }
+
+      return input.action;
+    case "chooseFileFromLibrary":
+    case "chooseMenuItem":
+    case "clearField":
+    case "clickCardAction":
+    case "closeDialog":
+    case "dragAndDrop":
+    case "playPauseMedia":
+    case "pressKey":
+    case "scrollToText":
+    case "seekMedia":
+    case "selectOption":
+    case "setMode":
+    case "setSlider":
+    case "toggle":
+      return input.action;
     case "finishStep":
       if (!input.guideStepIds.includes(input.action.stepId)) {
         throw new Error("The agent tried to finish an unknown guide step.");
@@ -118,5 +158,13 @@ export function validateDemoAgentAction(input: {
         timeoutMs,
       };
     }
+    case "waitForJob":
+      return {
+        ...input.action,
+        timeoutMs: Math.min(
+          60_000,
+          Math.max(500, input.action.timeoutMs ?? 15_000),
+        ),
+      };
   }
 }

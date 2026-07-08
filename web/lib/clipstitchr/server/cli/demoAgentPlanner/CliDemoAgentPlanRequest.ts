@@ -1,9 +1,13 @@
 import type { CliDemoAppContext } from "@/lib/clipstitchr/server/cli/appContext/CliDemoAppContext";
 
 export type CliDemoAgentObservedElement = {
+  disabled?: boolean;
   label?: string;
   name: string;
+  placeholder?: string;
   role: "button" | "heading" | "input" | "link" | "dialog";
+  selected?: boolean;
+  value?: string;
 };
 
 export type CliDemoAgentPageObservation = {

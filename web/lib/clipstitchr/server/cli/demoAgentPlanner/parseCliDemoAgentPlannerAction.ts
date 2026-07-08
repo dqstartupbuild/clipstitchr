@@ -1,4 +1,7 @@
-import type { CliDemoAgentPlannerAction } from "@/lib/clipstitchr/server/cli/demoAgentPlanner/CliDemoAgentPlannerAction";
+import type {
+  CliDemoAgentPlannerAction,
+  CliDemoAgentPlannerActionClickTarget,
+} from "@/lib/clipstitchr/server/cli/demoAgentPlanner/CliDemoAgentPlannerAction";
 
 function getJsonText(outputText: string) {
   const trimmed = outputText.trim();
@@ -33,6 +36,28 @@ function readRequiredString(value: unknown, message: string) {
   return text;
 }
 
+function readOptionalNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function readRequiredNumber(value: unknown, message: string) {
+  const number = readOptionalNumber(value);
+
+  if (number === undefined) {
+    throw new Error(message);
+  }
+
+  return number;
+}
+
+function readBoolean(value: unknown, message: string) {
+  if (typeof value !== "boolean") {
+    throw new Error(message);
+  }
+
+  return value;
+}
+
 function readScrollDirection(value: unknown) {
   if (value === "down" || value === "up") {
     return value;
@@ -41,7 +66,50 @@ function readScrollDirection(value: unknown) {
   throw new Error("Scroll actions need direction down or up.");
 }
 
-function readRole(value: unknown) {
+function readPressKey(value: unknown) {
+  if (
+    value === "ArrowDown" ||
+    value === "ArrowLeft" ||
+    value === "ArrowRight" ||
+    value === "ArrowUp" ||
+    value === "Backspace" ||
+    value === "Enter" ||
+    value === "Escape" ||
+    value === "Space" ||
+    value === "Tab"
+  ) {
+    return value;
+  }
+
+  throw new Error("Press-key actions need an approved key.");
+}
+
+function readMediaType(value: unknown) {
+  if (
+    value === "any" ||
+    value === "avatar" ||
+    value === "demo" ||
+    value === "stitch" ||
+    value === "template" ||
+    value === "ugc"
+  ) {
+    return value;
+  }
+
+  throw new Error("Library file choices need an approved media type.");
+}
+
+function readMediaAction(value: unknown) {
+  if (value === "pause" || value === "play") {
+    return value;
+  }
+
+  throw new Error("Media actions need play or pause.");
+}
+
+function readRole(
+  value: unknown,
+): CliDemoAgentPlannerActionClickTarget["role"] {
   if (value === undefined) {
     return undefined;
   }
@@ -65,6 +133,21 @@ function readRole(value: unknown) {
   throw new Error("Planner click actions can only use approved roles.");
 }
 
+function readClickTarget(value: unknown): CliDemoAgentPlannerActionClickTarget {
+  const target = readObject(value, "Planner click actions need a target object.");
+
+  if ("selector" in target) {
+    throw new Error("Planner actions cannot use CSS selectors.");
+  }
+
+  return {
+    label: readOptionalString(target.label),
+    name: readOptionalString(target.name),
+    role: readRole(target.role),
+    text: readOptionalString(target.text),
+  };
+}
+
 export function parseCliDemoAgentPlannerAction(
   outputText: string,
 ): CliDemoAgentPlannerAction {
@@ -78,24 +161,10 @@ export function parseCliDemoAgentPlannerAction(
 
   switch (type) {
     case "click": {
-      const target = readObject(
-        action.target,
-        "Click actions need a target object.",
-      );
-
-      if ("selector" in target) {
-        throw new Error("Planner actions cannot use CSS selectors.");
-      }
-
       return {
         reason,
         stepId,
-        target: {
-          label: readOptionalString(target.label),
-          name: readOptionalString(target.name),
-          role: readRole(target.role),
-          text: readOptionalString(target.text),
-        },
+        target: readClickTarget(action.target),
         type,
       };
     }
@@ -119,6 +188,227 @@ export function parseCliDemoAgentPlannerAction(
         direction: readScrollDirection(action.direction),
         reason,
         stepId,
+        type,
+      };
+    case "selectOption": {
+      const target = readObject(
+        action.target,
+        "Select-option actions need a target.",
+      );
+
+      return {
+        optionLabel: readRequiredString(
+          action.optionLabel,
+          "Select-option actions need an option label.",
+        ),
+        reason,
+        stepId,
+        target: {
+          label: readRequiredString(
+            target.label,
+            "Select-option actions need a visible label.",
+          ),
+        },
+        type,
+      };
+    }
+    case "pressKey": {
+      const target =
+        action.target === undefined
+          ? undefined
+          : readObject(action.target, "Press-key target must be an object.");
+
+      return {
+        key: readPressKey(action.key),
+        reason,
+        stepId,
+        target: target
+          ? {
+              label: readOptionalString(target.label),
+            }
+          : undefined,
+        type,
+      };
+    }
+    case "clearField": {
+      const target = readObject(action.target, "Clear-field actions need a target.");
+
+      return {
+        reason,
+        stepId,
+        target: {
+          label: readRequiredString(
+            target.label,
+            "Clear-field actions need a visible label.",
+          ),
+        },
+        type,
+      };
+    }
+    case "scrollToText":
+      return {
+        reason,
+        stepId,
+        text: readRequiredString(action.text, "Scroll-to-text actions need text."),
+        type,
+      };
+    case "scrollToControl":
+      return {
+        reason,
+        stepId,
+        target: readClickTarget(action.target),
+        type,
+      };
+    case "clickFirstMatching":
+      return {
+        reason,
+        stepId,
+        target: readClickTarget(action.target),
+        type,
+      };
+    case "clickCardAction":
+      return {
+        actionName: readRequiredString(
+          action.actionName,
+          "Card actions need an action name.",
+        ),
+        cardText: readRequiredString(
+          action.cardText,
+          "Card actions need card text.",
+        ),
+        reason,
+        stepId,
+        type,
+      };
+    case "waitForJob":
+      return {
+        reason,
+        statusText: readOptionalString(action.statusText),
+        stepId,
+        timeoutMs: readOptionalNumber(action.timeoutMs),
+        type,
+        visibleText: readOptionalString(action.visibleText),
+      };
+    case "waitForElementEnabled":
+      return {
+        reason,
+        stepId,
+        target: readClickTarget(action.target),
+        timeoutMs: readOptionalNumber(action.timeoutMs),
+        type,
+      };
+    case "chooseFileFromLibrary":
+      return {
+        mediaType: readMediaType(action.mediaType),
+        reason,
+        searchText: readOptionalString(action.searchText),
+        stepId,
+        type,
+      };
+    case "toggle": {
+      const target = readObject(action.target, "Toggle actions need a target.");
+
+      return {
+        checked: readBoolean(
+          action.checked,
+          "Toggle actions need checked true or false.",
+        ),
+        reason,
+        stepId,
+        target: {
+          label: readRequiredString(
+            target.label,
+            "Toggle actions need a visible label.",
+          ),
+        },
+        type,
+      };
+    }
+    case "setMode":
+      return {
+        mode: readRequiredString(action.mode, "Set-mode actions need a mode."),
+        reason,
+        stepId,
+        type,
+      };
+    case "openMenu":
+      return {
+        reason,
+        stepId,
+        target: readClickTarget(action.target),
+        type,
+      };
+    case "chooseMenuItem":
+      return {
+        name: readRequiredString(action.name, "Menu item actions need a name."),
+        reason,
+        stepId,
+        type,
+      };
+    case "closeDialog":
+      return {
+        reason,
+        stepId,
+        type,
+      };
+    case "dragAndDrop":
+      return {
+        reason,
+        sourceText: readRequiredString(
+          action.sourceText,
+          "Drag actions need source text.",
+        ),
+        stepId,
+        targetText: readRequiredString(
+          action.targetText,
+          "Drag actions need target text.",
+        ),
+        type,
+      };
+    case "setSlider": {
+      const target = readObject(action.target, "Slider actions need a target.");
+
+      return {
+        reason,
+        stepId,
+        target: {
+          label: readRequiredString(
+            target.label,
+            "Slider actions need a visible label.",
+          ),
+        },
+        type,
+        value: readRequiredNumber(action.value, "Slider actions need a value."),
+      };
+    }
+    case "playPauseMedia":
+      return {
+        mediaAction: readMediaAction(action.mediaAction),
+        reason,
+        stepId,
+        targetLabel: readOptionalString(action.targetLabel),
+        type,
+      };
+    case "seekMedia":
+      return {
+        reason,
+        seconds: readRequiredNumber(action.seconds, "Seek actions need seconds."),
+        stepId,
+        targetLabel: readOptionalString(action.targetLabel),
+        type,
+      };
+    case "downloadFile":
+      return {
+        reason,
+        stepId,
+        target: readClickTarget(action.target),
+        type,
+      };
+    case "copyToClipboard":
+      return {
+        reason,
+        stepId,
+        target: readClickTarget(action.target),
         type,
       };
     case "stop":

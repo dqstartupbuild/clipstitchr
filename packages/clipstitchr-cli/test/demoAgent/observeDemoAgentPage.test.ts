@@ -74,4 +74,23 @@ describe("observeDemoAgentPage", () => {
       assert.equal(lowerObservation.canScrollUp, true);
     });
   });
+
+  it("captures control state details for planner decisions", async () => {
+    await withDemoAgentFixturePage(async (page) => {
+      await page.setContent(`
+        <button disabled>Generate</button>
+        <label for="hook">Hooks to learn from</label>
+        <input id="hook" placeholder="Paste hooks" value="Try this" />
+        <label for="loop">Loop clip</label>
+        <input id="loop" type="checkbox" checked />
+      `);
+
+      const observation = await observeDemoAgentPage(page);
+
+      assert.equal(observation.buttons[0]?.disabled, true);
+      assert.equal(observation.inputs[0]?.placeholder, "Paste hooks");
+      assert.equal(observation.inputs[0]?.value, "Try this");
+      assert.equal(observation.inputs[1]?.selected, true);
+    });
+  });
 });

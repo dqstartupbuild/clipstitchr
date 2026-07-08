@@ -156,6 +156,22 @@ describe("validateDemoAgentAction", () => {
     assert.equal(action.resolvedFilePath, approvedFile);
   });
 
+  it("clamps expanded wait action timeouts", () => {
+    const enabledWait = validateAction({
+      target: { name: "Generate", role: "button" },
+      timeoutMs: 50_000,
+      type: "waitForElementEnabled",
+    });
+    const jobWait = validateAction({
+      timeoutMs: 100_000,
+      type: "waitForJob",
+      visibleText: "Finished stitch",
+    });
+
+    assert.equal(enabledWait.timeoutMs, 10_000);
+    assert.equal(jobWait.timeoutMs, 60_000);
+  });
+
   it("rejects finishing the wrong guide step", () => {
     assert.throws(
       () =>

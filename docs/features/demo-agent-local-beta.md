@@ -50,12 +50,19 @@ screenshots, and saves a run summary.
 The deterministic planner can capture screenshots, click visible buttons or
 links that match the current guide step, type safe demo text into matching
 visible fields, scroll the page to reach lower workflow controls, and finish a
-step when no more safe action is needed. Policy
+step when no more safe action is needed. The model-backed planner can also
+return the full guarded browser-action DSL for app demos: select options, press
+approved keys, clear fields, scroll to text or controls, click the first
+matching visible target, click an action inside a matching card, wait for jobs
+or enabled controls, choose files from visible library cards, toggle switches,
+set modes, open menus, choose menu items, close dialogs, drag visible items,
+set sliders, play or pause media, seek media, trigger downloads, and click copy
+buttons. Policy
 approved test values are still supported for reusable values, but they are no
 longer required for normal local demo copy such as Hook Lab examples. The runtime
-checks click, type, and upload targets against the current observation before
-Playwright executes the action, so source-derived context cannot make the agent
-wait on a hidden or missing control. The executor also supports local file
+checks user-visible targets against the current observation before Playwright
+executes policy-sensitive actions, so source-derived context cannot make the
+agent wait on a hidden or missing control. The executor also supports local file
 upload actions, but upload remains blocked
 unless the policy allows uploads, disables pre-upload approval, and names exactly
 one approved local file.
@@ -104,9 +111,12 @@ types and CSS selectors, and the CLI policy validator still decides whether the
 proposed action can run. The endpoint accepts common browser input roles such as
 `combobox` and `textbox`, asks the model to use exact local paths for
 route-opening steps, gives the model current page scroll availability, and
-supports guarded `scroll` actions when the needed field or section is below the
-current viewport. It retries once with the invalid output and parse error when
-the model returns malformed JSON or an unsupported action shape. The
+supports guarded `scroll`, `scrollToText`, and `scrollToControl` actions when
+the needed field or section is below the current viewport. Observations include
+control labels, disabled state, selected state, placeholders, and current field
+values so the planner can avoid disabled controls and repeated data entry. It
+retries once with the invalid output and parse error when the model returns
+malformed JSON or an unsupported action shape. The
 endpoint uses the shared text-writing provider payload helper, but selects a
 dedicated planner model through `CLI_DEMO_AGENT_PLANNER_MODEL_ID`, defaulting to
 `openai/gpt-5-mini`, at a lower planner temperature than creative text
@@ -156,21 +166,26 @@ runs Node test files under `packages/clipstitchr-cli/test/demoAgent/` and
 Current coverage includes:
 
 - Observer fixture coverage for visible headings, buttons, links, labels,
-  inputs, and dialogs.
+  inputs, dialogs, disabled controls, selected controls, placeholders, and
+  current field values.
 - Deterministic planner tests for screenshot-first, safe typing, safe clicking,
   and step completion.
 - Policy validator tests for blocked text, external origins, disallowed routes,
   selector-only clicks, safe demo typing, upload approval, approved upload files,
   and wrong step completion.
 - Playwright executor fixture tests for visible clicks, safe typing,
-  approved local file upload, and visible-text waits.
+  approved local file upload, visible-text waits, selects, key presses, field
+  clearing, scroll-to actions, card actions, library choices, toggles, mode
+  switches, menus, dialogs, drag/drop, sliders, media controls, downloads, copy
+  buttons, job waits, and enabled-control waits.
 - Full loop fixture tests for a safe multi-step guide flow, blocked observed
   page text, external navigation, disallowed routes, repeated page state, step
   timings, screenshot counts, auth walls, modal flows, long loading waits, 404
   page states, URL transition logging, time caps, action caps, and no-progress
   stops.
-- Planner parser tests for supported JSON actions, unsupported action types,
-  selector rejection, approved test-value keys, and direct safe demo text.
+- Planner parser tests for supported JSON actions, the full expanded browser
+  action set, unsupported action types, selector rejection, approved test-value
+  keys, and direct safe demo text.
 - Injected planner tests proving unsafe model-style proposals are blocked before
   execution.
 - Upload-review tests proving incomplete runs, `--no-upload`, and declined

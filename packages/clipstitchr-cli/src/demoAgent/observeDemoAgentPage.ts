@@ -3,9 +3,13 @@ import type { DemoAgentPageObservation } from "./DemoAgentPageObservation.js";
 import { truncateDemoAgentText } from "./truncateDemoAgentText.js";
 
 type RawObservedElement = {
+  disabled?: boolean;
   label?: string;
   name: string;
+  placeholder?: string;
   role: "button" | "heading" | "input" | "link" | "dialog";
+  selected?: boolean;
+  value?: string;
 };
 
 function normalizeObservedElements(
@@ -18,6 +22,10 @@ function normalizeObservedElements(
       ...element,
       label: element.label ? truncateDemoAgentText(element.label) : undefined,
       name: truncateDemoAgentText(element.name),
+      placeholder: element.placeholder
+        ? truncateDemoAgentText(element.placeholder)
+        : undefined,
+      value: element.value ? truncateDemoAgentText(element.value) : undefined,
     }))
     .slice(0, 50);
 }
@@ -66,6 +74,41 @@ export async function observeDemoAgentPage(
 
         return element.closest("label")?.textContent ?? undefined;
       };
+      const getDisabled = (element: Element) =>
+        element.getAttribute("aria-disabled") === "true" ||
+        ((element instanceof HTMLButtonElement ||
+          element instanceof HTMLInputElement ||
+          element instanceof HTMLSelectElement ||
+          element instanceof HTMLTextAreaElement) &&
+          element.disabled);
+      const getSelected = (element: Element) => {
+        if (
+          element.getAttribute("aria-selected") === "true" ||
+          element.getAttribute("aria-checked") === "true"
+        ) {
+          return true;
+        }
+
+        if (
+          element instanceof HTMLInputElement &&
+          (element.type === "checkbox" || element.type === "radio")
+        ) {
+          return element.checked;
+        }
+
+        return undefined;
+      };
+      const getValue = (element: Element) => {
+        if (
+          element instanceof HTMLInputElement ||
+          element instanceof HTMLSelectElement ||
+          element instanceof HTMLTextAreaElement
+        ) {
+          return element.value;
+        }
+
+        return undefined;
+      };
       const observed: RawObservedElement[] = [];
 
       document
@@ -81,12 +124,21 @@ export async function observeDemoAgentPage(
         )
         .forEach((element) => {
           if (isVisible(element)) {
-            observed.push({ name: getText(element), role: "button" });
+            observed.push({
+              disabled: getDisabled(element),
+              name: getText(element),
+              role: "button",
+              selected: getSelected(element),
+            });
           }
         });
       document.querySelectorAll("a[href],[role='link']").forEach((element) => {
         if (isVisible(element)) {
-          observed.push({ name: getText(element), role: "link" });
+          observed.push({
+            disabled: getDisabled(element),
+            name: getText(element),
+            role: "link",
+          });
         }
       });
       document
@@ -96,9 +148,13 @@ export async function observeDemoAgentPage(
             const label = getInputLabel(element);
 
             observed.push({
+              disabled: getDisabled(element),
               label: label?.trim(),
               name: label?.trim() || getText(element),
+              placeholder: element.getAttribute("placeholder") ?? undefined,
               role: "input",
+              selected: getSelected(element),
+              value: getValue(element),
             });
           }
         });
