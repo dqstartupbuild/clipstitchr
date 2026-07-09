@@ -27,11 +27,11 @@ export async function runInteractiveCommand(options: CliGlobalOptions) {
         value: "upload",
       },
       {
-        name: "Run a Stitchr batch",
+        name: "Start new Stitchr work",
         value: "stitchr",
       },
       {
-        name: "Run a Swipr batch",
+        name: "Start new Swipr drafts",
         value: "swipr",
       },
       {

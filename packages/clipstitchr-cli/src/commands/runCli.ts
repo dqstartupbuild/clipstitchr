@@ -1,5 +1,7 @@
 import { Command } from "commander";
 import { addDemoManualCommandOptions } from "./addDemoManualCommandOptions.js";
+import { addStitchrNewCommandOptions } from "./addStitchrNewCommandOptions.js";
+import { addSwiprNewCommandOptions } from "./addSwiprNewCommandOptions.js";
 import type { CliGlobalOptions } from "./CliGlobalOptions.js";
 import { runDoctorCommand } from "./runDoctorCommand.js";
 import { runDemoAgentCommand } from "./runDemoAgentCommand.js";
@@ -396,26 +398,35 @@ export async function runCli(argv: string[]) {
 
   const stitchr = program.command("stitchr").description("Create Stitch drafts");
 
-  stitchr
-    .command("batch")
-    .description("Start a Stitchr batch")
-    .option("--product <id>", "Use this product ID")
-    .option("--sound <id>", "Use a saved sound ID")
-    .option("--template <id>", "Use a saved Stitch template ID")
-    .option("--time-zone <name>", "Use this time zone for today's batch")
-    .action(async (options) => {
-      await runStitchrBatchCommand({ ...program.opts(), ...options });
-    });
+  addStitchrNewCommandOptions(
+    stitchr.command("new").description("Start new Stitchr work"),
+  ).action(async (options) => {
+    await runStitchrBatchCommand({ ...program.opts(), ...options });
+  });
+
+  addStitchrNewCommandOptions(
+    stitchr
+      .command("batch", { hidden: true })
+      .description("Legacy alias for stitchr new"),
+  ).action(async (options) => {
+    await runStitchrBatchCommand({ ...program.opts(), ...options });
+  });
 
   const swipr = program.command("swipr").description("Create Swipe drafts");
 
-  swipr
-    .command("batch")
-    .description("Queue Swipr batch drafts")
-    .option("--product <id>", "Use this product ID")
-    .action(async (options) => {
-      await runSwiprBatchCommand({ ...program.opts(), ...options });
-    });
+  addSwiprNewCommandOptions(
+    swipr.command("new").description("Start new Swipr drafts"),
+  ).action(async (options) => {
+    await runSwiprBatchCommand({ ...program.opts(), ...options });
+  });
+
+  addSwiprNewCommandOptions(
+    swipr
+      .command("batch", { hidden: true })
+      .description("Legacy alias for swipr new"),
+  ).action(async (options) => {
+    await runSwiprBatchCommand({ ...program.opts(), ...options });
+  });
 
   const library = program
     .command("library", { hidden: true })

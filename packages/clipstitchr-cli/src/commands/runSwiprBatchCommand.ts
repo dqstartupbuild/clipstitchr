@@ -15,7 +15,7 @@ export async function runSwiprBatchCommand(options: SwiprBatchCommandOptions) {
   const productId = options.product ?? (await getProjectProductId());
   const result = await createSwiprBatch(credentials, { productId });
 
-  logSuccess("Swipr batch queued.");
+  logSuccess("Swipr drafts queued.");
   logKeyValue("Date", result.automationDate);
   logKeyValue("Status", result.status);
   logKeyValue("Queued Swipes", String(result.count));

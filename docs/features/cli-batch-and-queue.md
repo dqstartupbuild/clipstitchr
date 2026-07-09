@@ -1,13 +1,13 @@
 # CLI Batch And Queue Commands
 
-The CLI can start batch content creation and add ready active Stitches or
+The CLI can start new content creation and add ready active Stitches or
 Swipes to the Post Bridge queue without opening the dashboard first.
 
 ## User Commands
 
 ```bash
-clipstitchr stitchr batch --product product_123
-clipstitchr swipr batch
+clipstitchr stitchr new --product product_123
+clipstitchr swipr new
 clipstitchr queue list
 clipstitchr queue stitch
 clipstitchr queue stitch stitch_123
@@ -18,17 +18,20 @@ clipstitchr queue swipe --all
 clipstitchr queue --all
 ```
 
-`clipstitchr stitchr batch` starts today's Stitchr Batch for the connected
+`clipstitchr stitchr new` starts today's Stitchr Batch for the connected
 account and product. It uses the existing backend Stitchr Batch planner, recent
 UGC/Demo clips from that product, optional template/sound IDs, the user's local
 time zone, and the provider worker to finish text and media. The command uses
 the saved project product from `clipstitchr init` or `clipstitchr products use`;
 `--product` overrides it for one run.
 
-`clipstitchr swipr batch` starts Swipr draft creation through an on-demand
+`clipstitchr swipr new` starts Swipr draft creation through an on-demand
 durable CLI planner. This uses the user's saved dashboard batch settings for
 Pexels packs, draft count, and text styling. The CLI can pass a product ID, but
 it does not ask for manual slide details because the agreed UX is batch-only.
+Existing scripts can keep using `clipstitchr stitchr batch` and
+`clipstitchr swipr batch`; those commands are hidden compatibility aliases for
+the new command names.
 
 CLI-started Stitchr and Swipr batches appear in the dashboard background-work
 banner and job tray while they are active. The banner reuses the same active job

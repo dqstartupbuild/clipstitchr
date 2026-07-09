@@ -1,7 +1,7 @@
 # ClipStitchr CLI
 
 Record guided product demos from a local or live app, upload finished demo
-files, start batch content, and queue ready content in ClipStitchr.
+files, start new content, and queue ready content in ClipStitchr.
 
 ```bash
 npx clipstitchr
@@ -45,8 +45,8 @@ clipstitchr demo manual
 clipstitchr demo manual --guide "Checkout flow"
 clipstitchr demo manual --no-guide
 clipstitchr demo upload ./demo.mp4
-clipstitchr stitchr batch
-clipstitchr swipr batch
+clipstitchr stitchr new
+clipstitchr swipr new
 clipstitchr queue
 clipstitchr queue list
 clipstitchr queue stitch
@@ -122,13 +122,14 @@ If the recording browser is not installed yet, interactive recording commands
 ask to install it before recording starts. `clipstitchr demo agent` is
 non-interactive, so it tells you the install command to run instead.
 
-Batch commands let you start Stitchr and Swipr draft creation from Terminal.
-`clipstitchr stitchr batch` creates today's Stitchr batch from recent UGC and
-Demo clips. `clipstitchr swipr batch` queues Swipr drafts using your dashboard
-batch settings. Queue commands add ready active content to your Post Bridge
-queue without asking for a date or time. `clipstitchr queue list` shows queued
-Stitches and Swipes coming up in the next 24 hours. `clipstitchr queue stitch`
-picks the latest ready active Stitch unless you pass an ID,
+Creation commands let you start Stitchr and Swipr draft work from Terminal.
+`clipstitchr stitchr new` creates today's Stitchr batch from recent UGC and
+Demo clips. `clipstitchr swipr new` queues Swipr drafts using your dashboard
+batch settings. Existing scripts can keep using the hidden `stitchr batch` and
+`swipr batch` aliases. Queue commands add ready active content to your Post
+Bridge queue without asking for a date or time. `clipstitchr queue list` shows
+queued Stitches and Swipes coming up in the next 24 hours.
+`clipstitchr queue stitch` picks the latest ready active Stitch unless you pass an ID,
 `clipstitchr queue swipe` picks the latest ready active Swipe, and `--all`
 queues active items one at a time. Dashboard browsing remains the best way to
 inspect your whole Library. CLI Swipe queueing uses the saved rendered Swipe

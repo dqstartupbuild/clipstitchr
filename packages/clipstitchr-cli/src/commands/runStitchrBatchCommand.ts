@@ -29,7 +29,7 @@ export async function runStitchrBatchCommand(
     timeZone: options.timeZone ?? getLocalTimeZone(),
   });
 
-  logSuccess("Stitchr batch started.");
+  logSuccess("Stitchr work started.");
   logKeyValue("Date", result.batchDate);
   logKeyValue("Status", result.status);
   logKeyValue("Queued Stitches", String(result.count));

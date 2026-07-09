@@ -1,7 +1,7 @@
 # ClipStitchr CLI Tool
 
 The ClipStitchr CLI lets a user type one command from a product repo, record or
-upload a product demo, start batch content creation, and add ready work to the
+upload a product demo, start new content creation, and add ready work to the
 Post Bridge queue.
 
 ```bash
@@ -16,7 +16,7 @@ creation, bounded library reads for queue selection, and queueing ready content.
 ## What It Does
 
 - `clipstitchr` opens a guided prompt for making a demo, uploading an existing
-  demo, connecting the repo, starting batch work, queueing ready content, or
+  demo, connecting the repo, starting new work, queueing ready content, or
   checking setup.
 - `clipstitchr --help`, `clipstitchr help`, and
   `clipstitchr help demo manual` show the available command options.
@@ -53,9 +53,11 @@ creation, bounded library reads for queue selection, and queueing ready content.
   Android device/emulator for iOS, Android, and React Native projects.
 - `clipstitchr demo upload ./demo.mp4` uploads an existing MP4/MOV/WebM file to
   the Demo library.
-- `clipstitchr stitchr batch` starts today's Stitchr Batch from the terminal.
-- `clipstitchr swipr batch` queues Swipr draft creation from the user's saved
+- `clipstitchr stitchr new` starts today's Stitchr Batch from the terminal.
+- `clipstitchr swipr new` queues Swipr draft creation from the user's saved
   dashboard batch settings.
+- `clipstitchr stitchr batch` and `clipstitchr swipr batch` remain hidden
+  compatibility aliases for existing scripts.
 - `clipstitchr queue stitch`, `clipstitchr queue swipe`, and
   `clipstitchr queue --all` add ready active work to the user's Post Bridge
   queue without asking for a date or time.
@@ -77,7 +79,7 @@ The CLI is now part of the public product offer, not only a terminal tool for
 existing users.
 
 - The main landing page includes `LandingCliSection`, which explains the CLI as
-  the repo-side way to record demos, start batches, and queue finished work.
+  the repo-side way to record demos, start new work, and queue finished work.
 - The toolkit grid includes a "CLI for repo-side work" feature card that points
   to the same guide.
 - `/docs/clipstitchr-cli` is backed by `clipstitchrCliDoc` in the customer docs
@@ -140,18 +142,22 @@ The CLI does not stream large videos through the Next.js server.
 Batch and queue commands are documented in
 `docs/features/cli-batch-and-queue.md`.
 
-`clipstitchr stitchr batch` calls `POST /api/cli/stitchr/batches`, which
+`clipstitchr stitchr new` calls `POST /api/cli/stitchr/batches`, which
 verifies the CLI bearer token, requires the saved or passed product ID, creates
 product-scoped Stitchr Batch tasks through `stitchrBatch.plan`, and dispatches
 the provider worker. The CLI route does not run the browser-session foreground
 hook planner; the provider worker still creates fallback hook text and
 finalization jobs for tasks that need text.
 
-`clipstitchr swipr batch` calls `POST /api/cli/swipr/batches`, which verifies
+`clipstitchr swipr new` calls `POST /api/cli/swipr/batches`, which verifies
 the CLI bearer token, creates a unique on-demand Swipr batch through
 `cliSwipr.planCliSwiprBatch`, and dispatches the provider worker. This keeps
 Swipr CLI creation aligned with the dashboard's saved batch settings instead of
 asking the user to hand-build slides in the terminal.
+
+`clipstitchr stitchr batch` and `clipstitchr swipr batch` still call the same
+routes, but they are hidden from primary help so new users see the clearer
+`new` commands first.
 
 `clipstitchr queue stitch` calls `POST /api/cli/queue/stitches`. The route
 verifies the Stitch belongs to the CLI session owner, requires a finished saved

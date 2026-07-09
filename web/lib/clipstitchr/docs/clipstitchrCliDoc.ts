@@ -4,7 +4,7 @@ export const clipstitchrCliDoc = {
   slug: "clipstitchr-cli",
   title: "ClipStitchr CLI",
   description:
-    "Record demos, start batch content, and queue ready work from your terminal.",
+    "Record demos, start new content, and queue ready work from your terminal.",
   summary:
     "Install one command, connect your account, capture demos, create batches, and send ready work to the queue.",
   category: "start",
@@ -14,7 +14,7 @@ export const clipstitchrCliDoc = {
     {
       title: "What it does",
       body: [
-        "The ClipStitchr CLI brings the parts of ClipStitchr that fit naturally in Terminal into the repo you already have open. You can record guided local product demos, upload existing demos, start batch content, and add ready work to the queue.",
+        "The ClipStitchr CLI brings the parts of ClipStitchr that fit naturally in Terminal into the repo you already have open. You can record guided local product demos, upload existing demos, start new content, and add ready work to the queue.",
         "Use it when you changed the product, need a cleaner walkthrough, want to kick off a batch without opening the dashboard, or need ready content queued from a script.",
       ],
     },
@@ -91,9 +91,9 @@ export const clipstitchrCliDoc = {
       ],
     },
     {
-      title: "Create batch drafts",
+      title: "Start new drafts",
       body: [
-        "You can start batch content from Terminal after your clips, demos, products, and batch settings are ready in ClipStitchr. Stitchr uses recent Hook/UGC clips and Demo clips. Swipr uses your saved dashboard batch settings.",
+        "You can start new content from Terminal after your clips, demos, products, and saved settings are ready in ClipStitchr. Stitchr uses recent Hook/UGC clips and Demo clips. Swipr uses your saved dashboard settings.",
       ],
       bullets: [
         "Stitchr creates finished Stitch tasks in the background.",
@@ -101,11 +101,11 @@ export const clipstitchrCliDoc = {
         "Open the dashboard to review, edit, and approve the finished drafts.",
       ],
       commands: [
-        "clipstitchr stitchr batch",
-        "clipstitchr stitchr batch --product product_123",
-        "clipstitchr stitchr batch --template template_123 --product product_123",
-        "clipstitchr swipr batch",
-        "clipstitchr swipr batch --product product_123",
+        "clipstitchr stitchr new",
+        "clipstitchr stitchr new --product product_123",
+        "clipstitchr stitchr new --template template_123 --product product_123",
+        "clipstitchr swipr new",
+        "clipstitchr swipr new --product product_123",
       ],
     },
     {
