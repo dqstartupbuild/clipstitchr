@@ -46,18 +46,13 @@ Swipes can schedule either as a rendered image carousel or as a 9:16 MP4
 slideshow. When the user schedules to TikTok and Instagram without sound,
 ClipStitchr renders each Swipe slide to a PNG and uploads the ordered images to
 Post Bridge, matching the carousel approach used by SlideSmith. When a sound is
-selected, automatic sound resolves, or YouTube Shorts is selected, ClipStitchr
-renders the Swipe as a 9:16 MP4 instead so the post has a video asset and any
-sound is baked in.
+chosen manually or YouTube Shorts is selected, ClipStitchr renders the Swipe as
+a 9:16 MP4 instead so the post has a video asset and any sound is baked in.
 
-Swipe scheduling defaults to automatic sound. It first uses a matching saved
-sound. If no saved sound is available and the one-time sound confirmation has
-been accepted, it searches TikTok from the Swipe title, product context, and
-caption, imports the best result, and mixes it into the rendered Swipe video in
-the browser before upload. If automatic sound cannot resolve a usable track, the
-post can still continue without sound and use the image-carousel path when the
-selected platforms allow images. The user can still switch to choosing a sound
-manually or using no sound.
+Swipe scheduling defaults to no sound. The user can still choose a saved sound,
+search TikTok-style sounds, paste a TikTok link, or upload an audio file from
+the sound picker before sending the post. ClipStitchr only searches or imports
+sound after the user opens that picker and chooses that action.
 
 For saved Swipes, the TikTok and YouTube post title comes from the first
 non-empty line of the Swipe's combined caption, description, and hashtag copy.
@@ -130,8 +125,8 @@ The Post Bridge API uses bearer-token authentication. Because each request uses
 the saved user's key, account lists, posts, analytics, media uploads, and
 scheduled posts are scoped to that user's Post Bridge account.
 
-Automatic Swipe sounds use the existing TikTok sound search and import routes,
-which are separately authenticated and rate-limited before Apify and R2 work.
+Manual Swipe sounds use the existing sound picker. TikTok sound search and import
+routes are separately authenticated and rate-limited before Apify and R2 work.
 
 Dashboard bulk queue is intentionally sequential. Each selected item opens in the
 same schedule dialog as the single-card action. After the user sends that item,
@@ -176,7 +171,6 @@ posted post status counts.
 - `web/app/_components/dashboard/LibraryBatchActionBar.tsx`
 - `web/app/_components/dashboard/StitchesSection.tsx`
 - `web/app/_components/dashboard/SwiprSwipesSection.tsx`
-- `web/app/_components/postBridge/PostBridgeAutomaticSoundStatus.tsx`
 - `web/app/_components/postBridge/PostBridgeSoundModePicker.tsx`
 - `web/app/_components/settings/SettingsPostBridgePanel.tsx`
 - `web/app/_components/settings/SettingsPostBridgeProductConfigDialog.tsx`
@@ -210,7 +204,6 @@ posted post status counts.
 - `web/lib/clipstitchr/utils/getLibraryBatchScheduleStatusMessage.ts`
 - `web/lib/clipstitchr/client/createStitchPostBridgeScheduleMedia.ts`
 - `web/lib/clipstitchr/client/createSwiprPostBridgeScheduleMedia.ts`
-- `web/lib/clipstitchr/hooks/useAutomaticPostBridgeSound.ts`
 - `web/lib/clipstitchr/server/postBridge/`
 - `web/convex/postBridgeSettings.ts`
 - `web/convex/products.ts`

@@ -4,7 +4,6 @@ import { X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { MusicSelectorButton } from "@/app/_components/music/MusicSelectorButton";
 import { PostBridgeAccountCheckbox } from "@/app/_components/postBridge/PostBridgeAccountCheckbox";
-import { PostBridgeAutomaticSoundStatus } from "@/app/_components/postBridge/PostBridgeAutomaticSoundStatus";
 import { PostBridgePublishModePicker } from "@/app/_components/postBridge/PostBridgePublishModePicker";
 import { PostBridgeSoundModePicker } from "@/app/_components/postBridge/PostBridgeSoundModePicker";
 import { Button } from "@/app/_components/ui/Button";
@@ -12,7 +11,6 @@ import { IconButton } from "@/app/_components/ui/IconButton";
 import { ProgressBar } from "@/app/_components/ui/ProgressBar";
 import { fetchPostBridgeAccountOptions } from "@/lib/clipstitchr/client/fetchPostBridgeAccountOptions";
 import { schedulePostBridgePost } from "@/lib/clipstitchr/client/schedulePostBridgePost";
-import { useAutomaticPostBridgeSound } from "@/lib/clipstitchr/hooks/useAutomaticPostBridgeSound";
 import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
 import type { PostBridgePublishMode } from "@/lib/clipstitchr/types/PostBridgePublishMode";
 import type { PostBridgeScheduleRenderOptions } from "@/lib/clipstitchr/types/PostBridgeScheduleRenderOptions";
@@ -21,13 +19,11 @@ import type { PostBridgeSoundMode } from "@/lib/clipstitchr/types/PostBridgeSoun
 import type { PostBridgeSocialAccount } from "@/lib/clipstitchr/types/PostBridgeSocialAccount";
 import type { PostBridgeSourceType } from "@/lib/clipstitchr/types/PostBridgeSourceType";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
-import { createAutomaticSoundSearchQuery } from "@/lib/clipstitchr/utils/createAutomaticSoundSearchQuery";
 
 type PostBridgeScheduleDialogProps = {
   allowMusic?: boolean;
   contextLabel?: string;
   defaultCaption?: string;
-  soundSearchContext?: string;
   sourceId: string;
   sourceProductId?: string;
   sourceTitle: string;
@@ -43,7 +39,6 @@ export function PostBridgeScheduleDialog({
   allowMusic = false,
   contextLabel = "Post",
   defaultCaption = "",
-  soundSearchContext = "",
   sourceId,
   sourceProductId,
   sourceTitle,
@@ -58,35 +53,16 @@ export function PostBridgeScheduleDialog({
   const [publishMode, setPublishMode] =
     useState<PostBridgePublishMode>("schedule");
   const [musicTrack, setMusicTrack] = useState<SharedMusicTrack | null>(null);
-  const [soundMode, setSoundMode] = useState<PostBridgeSoundMode>(
-    allowMusic ? "automatic" : "none",
-  );
+  const [soundMode, setSoundMode] = useState<PostBridgeSoundMode>("none");
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<
-    "loading" | "idle" | "findingSound" | "rendering" | "sending" | "complete"
+    "loading" | "idle" | "rendering" | "sending" | "complete"
   >("loading");
   const [error, setError] = useState<string | null>(null);
-  const automaticSoundSearchQuery = useMemo(
-    () =>
-      createAutomaticSoundSearchQuery({
-        caption,
-        context: soundSearchContext,
-        sourceTitle,
-      }),
-    [caption, soundSearchContext, sourceTitle],
-  );
-  const automaticSound = useAutomaticPostBridgeSound({
-    enabled: allowMusic && soundMode === "automatic",
-    searchQuery: automaticSoundSearchQuery,
-  });
-  const isSoundBusy =
-    automaticSound.isAcceptingRights || automaticSound.isResolving;
   const isBusy =
     status === "loading" ||
-    status === "findingSound" ||
     status === "rendering" ||
-    status === "sending" ||
-    isSoundBusy;
+    status === "sending";
   const selectedAccountIdSet = useMemo(
     () => new Set(selectedAccountIds),
     [selectedAccountIds],
@@ -101,8 +77,6 @@ export function PostBridgeScheduleDialog({
   const statusMessage =
     status === "loading"
       ? "Loading connected accounts..."
-      : status === "findingSound"
-        ? "Finding a sound..."
       : status === "rendering"
         ? "Getting the post ready..."
         : status === "sending"
@@ -169,20 +143,7 @@ export function PostBridgeScheduleDialog({
 
       let selectedMusicTrack: SharedMusicTrack | null = null;
 
-      if (
-        allowMusic &&
-        soundMode === "automatic" &&
-        automaticSound.canResolve
-      ) {
-        setStatus("findingSound");
-        setProgress(0.05);
-
-        try {
-          selectedMusicTrack = await automaticSound.resolveSound();
-        } catch {
-          selectedMusicTrack = null;
-        }
-      } else if (allowMusic && soundMode === "manual") {
+      if (allowMusic && soundMode === "manual") {
         selectedMusicTrack = musicTrack;
       }
 
@@ -309,16 +270,6 @@ export function PostBridgeScheduleDialog({
                 value={soundMode}
                 onChange={setSoundMode}
               />
-              {soundMode === "automatic" ? (
-                <PostBridgeAutomaticSoundStatus
-                  hasAcceptedRights={automaticSound.hasAcceptedRights}
-                  isAcceptingRights={automaticSound.isAcceptingRights}
-                  isLoading={automaticSound.isLoading}
-                  selectedSource={automaticSound.selectedSource}
-                  selectedTrack={automaticSound.selectedTrack}
-                  onAcceptRights={automaticSound.acceptRights}
-                />
-              ) : null}
               {soundMode === "manual" ? (
                 <div className="flex flex-wrap items-center gap-3">
                   <MusicSelectorButton

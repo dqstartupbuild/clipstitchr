@@ -479,13 +479,6 @@ export function SwiprSwipeCard({
         <PostBridgeScheduleDialog
           allowMusic
           defaultCaption={swipe.socialCaption ?? socialDescription}
-          soundSearchContext={[
-            swipe.productName,
-            swipe.productContext,
-            socialDescription,
-          ]
-            .filter(Boolean)
-            .join("\n")}
           sourceId={swipe.id}
           sourceProductId={swipe.productSourceId}
           sourceTitle={postBridgeTitle}

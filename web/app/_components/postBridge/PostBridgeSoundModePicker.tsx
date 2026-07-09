@@ -8,7 +8,6 @@ type PostBridgeSoundModePickerProps = {
 };
 
 const postBridgeSoundModeLabels: Record<PostBridgeSoundMode, string> = {
-  automatic: "Automatic",
   manual: "Choose",
   none: "No sound",
 };
@@ -21,19 +20,17 @@ export function PostBridgeSoundModePicker({
   return (
     <fieldset className="grid gap-2">
       <legend className="text-sm font-bold text-text-primary">Sound</legend>
-      <div className="grid gap-2 sm:grid-cols-3">
-        {(["automatic", "manual", "none"] as PostBridgeSoundMode[]).map(
-          (mode) => (
-            <PostBridgeSoundModeOption
-              key={mode}
-              checked={value === mode}
-              disabled={disabled}
-              label={postBridgeSoundModeLabels[mode]}
-              value={mode}
-              onChange={onChange}
-            />
-          ),
-        )}
+      <div className="grid gap-2 sm:grid-cols-2">
+        {(["manual", "none"] as PostBridgeSoundMode[]).map((mode) => (
+          <PostBridgeSoundModeOption
+            key={mode}
+            checked={value === mode}
+            disabled={disabled}
+            label={postBridgeSoundModeLabels[mode]}
+            value={mode}
+            onChange={onChange}
+          />
+        ))}
       </div>
     </fieldset>
   );

@@ -1,1 +1,1 @@
-export type PostBridgeSoundMode = "automatic" | "manual" | "none";
+export type PostBridgeSoundMode = "manual" | "none";

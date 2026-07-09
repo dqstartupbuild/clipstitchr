@@ -32,10 +32,10 @@ through the existing temporary R2 and Post Bridge media upload flow.
 ## Swipe Queueing
 
 Each selected Swipe uses the dashboard renderer and the same music controls as
-individual scheduling. Automatic sound, manual sound, and no-sound modes are
-available inside each review dialog. Without music, Swipes render as image
-carousels for supported platform choices. If the user selects YouTube or chooses
-a sound, the Swipe renders as a 9:16 MP4 so the post can include video and audio.
+individual scheduling. Manual sound and no-sound modes are available inside each
+review dialog. Without music, Swipes render as image carousels for supported
+platform choices. If the user selects YouTube or chooses a sound, the Swipe
+renders as a 9:16 MP4 so the post can include video and audio.
 
 ## Rate Limits
 

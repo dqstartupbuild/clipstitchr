@@ -196,13 +196,6 @@ export function SwiprSwipesSection({
             activeBatchSwipe.socialCaption ??
             createSwiprSwipeSocialDescription(activeBatchSwipe)
           }
-          soundSearchContext={[
-            activeBatchSwipe.productName,
-            activeBatchSwipe.productContext,
-            createSwiprSwipeSocialDescription(activeBatchSwipe),
-          ]
-            .filter(Boolean)
-            .join("\n")}
           sourceId={activeBatchSwipe.id}
           sourceProductId={activeBatchSwipe.productSourceId}
           sourceTitle={getSwiprPostBridgeTitle(activeBatchSwipe)}
