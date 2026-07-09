@@ -7,6 +7,10 @@ files, start batch content, and queue finished Stitches in ClipStitchr.
 npx clipstitchr
 ```
 
+Running `clipstitchr` opens the main menu. Choose `Record a demo`, then pick
+`Record it myself` for manual recording or `Let AI record it for me` for a
+policy-guarded AI run with a saved guide.
+
 Useful commands:
 
 ```bash

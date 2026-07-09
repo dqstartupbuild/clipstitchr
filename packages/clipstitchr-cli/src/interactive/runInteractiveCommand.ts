@@ -1,6 +1,5 @@
 import { input, select } from "@inquirer/prompts";
 import type { CliGlobalOptions } from "../commands/CliGlobalOptions.js";
-import { runDemoMakeCommand } from "../commands/runDemoMakeCommand.js";
 import { runDemoUploadCommand } from "../commands/runDemoUploadCommand.js";
 import { runInitCommand } from "../commands/runInitCommand.js";
 import { runDoctorCommand } from "../commands/runDoctorCommand.js";
@@ -8,7 +7,11 @@ import { runQueueStitchCommand } from "../commands/runQueueStitchCommand.js";
 import { runStitchrBatchCommand } from "../commands/runStitchrBatchCommand.js";
 import { runSwiprBatchCommand } from "../commands/runSwiprBatchCommand.js";
 import { clipstitchrCliDescription } from "../config/clipstitchrCliDescription.js";
+import { createDemoMenuServices } from "../demoMenu/createDemoMenuServices.js";
 import { logBrandHeader } from "../terminal/logBrandHeader.js";
+import { logWarning } from "../terminal/logWarning.js";
+import { createDemoCreationChoices } from "./createDemoCreationChoices.js";
+import { runDemoCreationMode } from "./runDemoCreationMode.js";
 
 export async function runInteractiveCommand(options: CliGlobalOptions) {
   logBrandHeader(clipstitchrCliDescription);
@@ -16,7 +19,7 @@ export async function runInteractiveCommand(options: CliGlobalOptions) {
   const action = await select({
     choices: [
       {
-        name: "Make a product demo",
+        name: "Record a demo",
         value: "make",
       },
       {
@@ -48,7 +51,23 @@ export async function runInteractiveCommand(options: CliGlobalOptions) {
   });
 
   if (action === "make") {
-    await runDemoMakeCommand(options);
+    const mode = await select({
+      choices: createDemoCreationChoices(),
+      message: "How do you want to record this demo?",
+    });
+
+    if (mode === "agent") {
+      logWarning(
+        "AI recording follows your saved safety policy. Use test accounts for live sites and review the run before upload.",
+      );
+    }
+
+    await runDemoCreationMode({
+      mode,
+      options,
+      readText: (message) => input({ message }),
+      services: createDemoMenuServices(),
+    });
     return;
   }
 

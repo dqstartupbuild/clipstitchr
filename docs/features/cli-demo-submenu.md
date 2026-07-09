@@ -5,6 +5,10 @@ direct command surface unchanged while giving users one place to find manual
 recording, AI recording, guide work, policy setup, uploads, run logs, and macOS
 window setup when available.
 
+The root `clipstitchr` menu also uses the same demo routing. Choosing
+`Record a demo` asks whether the user wants to record manually or let AI record
+with a saved guide.
+
 ## How It Works
 
 - `runCli` gives the `demo` command an action for the no-subcommand case.

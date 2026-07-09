@@ -149,7 +149,7 @@ export const clipstitchrCliDoc = {
     {
       title: "Record a demo",
       body: [
-        "Run clipstitchr demo when you want a focused menu for recording, AI recording, guides, safety policy setup, uploads, and logs. Choose Record it myself when you want the manual recorder.",
+        "Run clipstitchr to open the main menu, choose Record a demo, then pick Record it myself or Let AI record it for me. Run clipstitchr demo when you want the focused demo menu for recording, AI recording, guides, safety policy setup, uploads, and logs.",
         "The CLI can create a quick walkthrough checklist first, then starts your local app, opens the recording browser, and walks you through the steps while you record.",
         "Each time a step is done, return to the terminal and press Enter. ClipStitchr saves those step timings with the upload so it can make cleaner chapters, captions, zooms, and edits later.",
         "If the app asks you to sign in, log in inside the recording browser. The CLI keeps that browser session for the same repo, so the next recording is faster.",
