@@ -32,6 +32,8 @@ replaced by the action menu. Use Page Up or Page Down for longer results, then
 choose Back, Main menu, Type a slash command, or Exit. Menu height also follows
 the terminal height so the ClipStitchr header stays visible in shorter windows.
 Result pages reserve room for several lines before paging on a typical terminal.
+Menu mode uses one compact shortcut line instead of a separate prompt and
+bordered shortcut box, leaving room for several choices in shorter terminals.
 Run `clipstitchr queue` when you want a focused queue menu for latest, all, or
 specific Stitch and Swipe queue actions.
 

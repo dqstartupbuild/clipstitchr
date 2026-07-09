@@ -26,6 +26,10 @@ navigation continues to follow the selected action. Result mode removes the
 larger keyboard status box and always shows all result controls, leaving room
 for multiple result lines before paging.
 
+Menu mode uses the same compact layout principle: shortcut help takes one line,
+and the command editor appears only after `/` is pressed. The menu row budget
+leaves six visible choices on a 16-row terminal and up to nine on larger ones.
+
 ## Runtime Design
 
 `captureInteractiveTuiActionOutput` temporarily wraps `console.log`,

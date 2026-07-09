@@ -198,7 +198,9 @@ bounded page visible after completion, supports Page Up and Page Down for longer
 output, and offers Back to the originating menu, Main menu, slash command, and
 Exit controls. Choosing Back restores the action list; the list is not restored
 automatically. Menu choice count adapts to terminal rows so the brand header
-remains visible in shorter windows.
+remains visible in shorter windows. Menu mode uses one shortcut line and waits
+to show the command editor until `/` is pressed, allowing six visible choices
+in a 16-row terminal and up to nine in larger terminals.
 
 Slash commands are parsed locally, support quoted values, and dispatch to the
 same command handlers as direct commands. The composer is available from every

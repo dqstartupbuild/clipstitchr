@@ -4,7 +4,8 @@ import { getInteractiveTuiMaximumVisibleChoices } from "../../dist/interactiveTu
 
 describe("getInteractiveTuiMaximumVisibleChoices", () => {
   it("reserves terminal rows for the header and controls", () => {
-    assert.equal(getInteractiveTuiMaximumVisibleChoices(18), 3);
+    assert.equal(getInteractiveTuiMaximumVisibleChoices(16), 6);
+    assert.equal(getInteractiveTuiMaximumVisibleChoices(18), 8);
     assert.equal(getInteractiveTuiMaximumVisibleChoices(24), 9);
     assert.equal(getInteractiveTuiMaximumVisibleChoices(40), 9);
   });

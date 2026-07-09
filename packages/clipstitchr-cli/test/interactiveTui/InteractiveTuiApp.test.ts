@@ -24,7 +24,7 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
     await waitForTuiUpdate();
 
     assert.match(tui.lastFrame() ?? "", /Record it myself/);
-    assert.match(tui.lastFrame() ?? "", /Press \/ to type a command/);
+    assert.match(tui.lastFrame() ?? "", /\/ command/);
     tui.unmount();
   });
 
@@ -56,7 +56,7 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
     await waitForTuiUpdate();
 
     assert.match(tui.lastFrame() ?? "", /Demos/);
-    assert.match(tui.lastFrame() ?? "", /Press \/ to type a command/);
+    assert.match(tui.lastFrame() ?? "", /\/ command/);
     tui.unmount();
   });
 

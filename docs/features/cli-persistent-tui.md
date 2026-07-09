@@ -33,6 +33,9 @@ a fresh frame and creating another top-level prompt.
   Exit remain directly available.
 - Menu height follows the current terminal row count. Shorter terminals show a
   smaller moving choice window so the ClipStitchr header remains on screen.
+- Menu mode keeps shortcuts on one compact line and does not render a separate
+  command prompt until `/` is pressed. A 16-row terminal can therefore show six
+  menu choices instead of one.
 - The interactive workspace uses the terminal's alternate screen. It starts at
   the top, keeps one header above menus and results, and restores the previous
   terminal screen when the CLI exits.

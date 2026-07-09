@@ -1,4 +1,4 @@
-import { Box, Text } from "ink";
+import { Text } from "ink";
 import type { InteractiveTuiMode } from "./InteractiveTuiMode.js";
 
 export function InteractiveTuiStatusBar(input: {
@@ -11,9 +11,5 @@ export function InteractiveTuiStatusBar(input: {
         ? "PgUp/PgDn results | Enter choose | / command | Esc back"
         : "Up/Down move | Enter choose | / command | Esc back | Ctrl+C exit";
 
-  return (
-    <Box borderColor="gray" borderStyle="single" marginTop={1} paddingX={1}>
-      <Text dimColor>{message}</Text>
-    </Box>
-  );
+  return <Text dimColor>{message}</Text>;
 }

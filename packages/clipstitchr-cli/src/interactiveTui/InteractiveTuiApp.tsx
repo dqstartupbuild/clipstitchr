@@ -48,13 +48,13 @@ export function InteractiveTuiApp(input: InteractiveTuiInput) {
               suggestions={controller.suggestions}
             />
           ) : null}
-          {controller.mode === "result" ? null : (
+          {controller.mode === "command" ? (
             <InteractiveTuiComposer
               commandText={controller.commandText}
               cursorIndex={controller.cursorIndex}
-              isCommandMode={controller.mode === "command"}
+              isCommandMode
             />
-          )}
+          ) : null}
           {controller.mode === "result" ? null : (
             <InteractiveTuiStatusBar mode={controller.mode} />
           )}
