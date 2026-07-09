@@ -149,7 +149,8 @@ export const clipstitchrCliDoc = {
     {
       title: "Record a demo",
       body: [
-        "Choose Make a product demo. The CLI can create a quick walkthrough checklist first, then starts your local app, opens the recording browser, and walks you through the steps while you record.",
+        "Run clipstitchr demo when you want a focused menu for recording, AI recording, guides, safety policy setup, uploads, and logs. Choose Record it myself when you want the manual recorder.",
+        "The CLI can create a quick walkthrough checklist first, then starts your local app, opens the recording browser, and walks you through the steps while you record.",
         "Each time a step is done, return to the terminal and press Enter. ClipStitchr saves those step timings with the upload so it can make cleaner chapters, captions, zooms, and edits later.",
         "If the app asks you to sign in, log in inside the recording browser. The CLI keeps that browser session for the same repo, so the next recording is faster.",
         "Most demos work best around 30-90 seconds, but longer recordings are allowed. If your app needs time for loading, AI generation, or processing, keep recording and ClipStitchr can cut waiting time later.",
@@ -162,6 +163,7 @@ export const clipstitchrCliDoc = {
         "Use --product, --start, or --url when you want to skip prompts.",
       ],
       commands: [
+        "clipstitchr demo",
         "clipstitchr demo make",
         "clipstitchr demo make --guide guide_123",
         "clipstitchr demo make --no-guide",

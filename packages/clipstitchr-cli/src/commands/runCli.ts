@@ -37,6 +37,7 @@ import { runUnlinkCommand } from "./runUnlinkCommand.js";
 import { runUpdateCommand } from "./runUpdateCommand.js";
 import { clipstitchrCliDescription } from "../config/clipstitchrCliDescription.js";
 import { readCliPackageVersion } from "../config/readCliPackageVersion.js";
+import { runDemoMenuCommand } from "../demoMenu/runDemoMenuCommand.js";
 import { runInteractiveCommand } from "../interactive/runInteractiveCommand.js";
 
 export async function runCli(argv: string[]) {
@@ -110,7 +111,12 @@ export async function runCli(argv: string[]) {
     .description("Check for a newer ClipStitchr CLI")
     .action(runUpdateCommand);
 
-  const demo = program.command("demo").description("Make or upload demos");
+  const demo = program
+    .command("demo")
+    .description("Make or upload demos")
+    .action(async () => {
+      await runDemoMenuCommand(program.opts());
+    });
 
   demo
     .command("auto")

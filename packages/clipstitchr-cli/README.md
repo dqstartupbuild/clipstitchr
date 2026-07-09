@@ -15,6 +15,7 @@ clipstitchr --version
 clipstitchr link
 clipstitchr status
 clipstitchr update
+clipstitchr demo
 clipstitchr demo auto
 clipstitchr demo auto --driver openai-computer
 clipstitchr demo auto --driver openai-computer --openai-mode relay
@@ -65,7 +66,9 @@ one command. It can use localhost by default, or a live/staging URL with
 summary locally without asking questions. It does not upload automatically.
 
 The built-in recorder can also create a simple walkthrough checklist before
-each demo. You can run `clipstitchr demo guide create` to draft a guide with
+each demo. Run `clipstitchr demo` when you want a focused menu for recording,
+AI recording, guides, safety policy setup, uploads, and logs. You can run
+`clipstitchr demo guide create` directly to draft a guide with
 ClipStitchr first, review it, edit it, and save it for the next recording.
 Saved guides get readable names like `Checkout flow`, and `demo guide list`
 shows those names first. You can use a guide name, ID, or file path with
