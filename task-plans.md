@@ -759,3 +759,57 @@ Acceptance:
 - The version bump is the final separate commit after all task commits.
 
 Suggested commit: `Bump CLI to 0.2.0`
+
+## 21. Add Deterministic Slash Command Autocomplete
+
+Goal: Slash commands in the persistent CLI shell suggest command names,
+subcommands, and option names while the user types.
+
+Implementation:
+
+- Add a local slash-command suggestion registry for primary commands,
+  subcommands, and common option names.
+- Use deterministic prefix matching. Do not call AI, the server, or account
+  APIs for command-name suggestions.
+- Keep typed commands with IDs or values runnable even when they are not in the
+  static suggestion list.
+- Preserve direct command behavior.
+
+Docs:
+
+- Update README, customer CLI docs, and CLI feature docs to explain local
+  autocomplete and that it has no AI/server cost.
+
+Tests:
+
+- Add tests for top-level suggestions, subcommand suggestions, option
+  suggestions, typed-value fallback, and slash-command dispatch.
+
+Acceptance:
+
+- The slash command prompt autocompletes commands such as `/demo`,
+  `/demo guide`, `/queue stitch`, `/products use`, `/stitchr new`, and
+  option names like `--guide`, `--product`, and `--time-zone`.
+- Suggestions are local and deterministic.
+
+Suggested commit: `Add slash command autocomplete`
+
+## 22. Bump CLI To `1.2.1`
+
+Goal: Publish the autocomplete-ready CLI metadata as version `1.2.1`.
+
+Implementation:
+
+- Bump `packages/clipstitchr-cli/package.json` to `1.2.1`.
+- Update the matching package lockfile entry or entries.
+- Keep this as a separate metadata-only commit.
+
+Tests:
+
+- Run `npm run typecheck` and `npm test` from `packages/clipstitchr-cli`.
+
+Acceptance:
+
+- CLI package metadata reports version `1.2.1`.
+
+Suggested commit: `Bump CLI to 1.2.1`

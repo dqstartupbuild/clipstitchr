@@ -194,6 +194,12 @@ command handlers as direct commands. If an action fails, the shell shows the
 error and lets the user try again, go back, return to the main menu, or exit.
 Ctrl+C exits without printing a stack trace.
 
+Slash command autocomplete uses a local static registry of command names,
+subcommands, and option names. It does deterministic prefix matching and keeps
+typed values runnable through a "run exactly what you typed" fallback. It does
+not use AI, call ClipStitchr APIs, or fetch account data for command-name
+suggestions.
+
 ## Products Menu Flow
 
 `clipstitchr products` opens a small menu with `Show my products`,
@@ -303,10 +309,11 @@ and connected Android device.
 ## Terminal UX
 
 The interactive shell uses a dependency-free terminal frame around the existing
-Inquirer menus. The frame shows the ClipStitchr brand, current menu, recent
-status or error, keyboard hints, slash-command examples, and Back/Main/Exit
-reminders. It is not a full-screen alternate renderer, so normal command output
-remains visible and readable.
+Inquirer menus and the search prompt already bundled with `@inquirer/prompts`.
+The frame shows the ClipStitchr brand, current menu, recent status or error,
+keyboard hints, slash-command examples, and Back/Main/Exit reminders. It is not
+a full-screen alternate renderer, so normal command output remains visible and
+readable.
 
 Guided flows still show progress states, setup key/value rows, success
 confirmations, warnings, and copyable next commands. Direct commands do not use

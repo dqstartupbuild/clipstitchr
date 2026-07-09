@@ -31,6 +31,7 @@ export const clipstitchrCliDoc = {
         "Use the styled menu when you want to browse what ClipStitchr can do. Use direct commands when you already know the exact action or need something script-friendly.",
         "The menu shows where you are, what just happened, keyboard hints, and quick slash-command examples. If your terminal is too narrow, not interactive, or set to plain output, ClipStitchr uses a simpler prompt instead.",
         "Inside the menu, choose Type a slash command to run a direct command without leaving the shell. For example, type /demo manual, /demo agent --guide \"Checkout flow\", /queue stitch --all, /products use product_123, or /status.",
+        "The slash prompt suggests command names, subcommands, and option names as you type. Those suggestions are built into the CLI, so they do not use AI or call the server.",
       ],
       bullets: [
         "Back returns to the previous menu.",

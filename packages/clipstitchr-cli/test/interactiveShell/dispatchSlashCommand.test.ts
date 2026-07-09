@@ -71,4 +71,17 @@ describe("dispatchSlashCommand", () => {
 
     assert.deepEqual(result, { menu: "products" });
   });
+
+  it("runs commands returned by slash autocomplete", async () => {
+    const calls: string[] = [];
+
+    await dispatchSlashCommand({
+      commandLine: "/products use product_123",
+      currentMenu: "products",
+      options: {},
+      services: createInteractiveShellTestServices(calls),
+    });
+
+    assert.deepEqual(calls, ["products-use:product_123"]);
+  });
 });

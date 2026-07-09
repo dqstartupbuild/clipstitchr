@@ -15,7 +15,10 @@ a saved guide.
 Every menu also has Back, Main menu, Exit, and Type a slash command actions.
 Slash commands let you stay in the interactive shell while running direct
 commands, such as `/demo manual`, `/demo agent --guide "Checkout flow"`,
-`/queue stitch --all`, `/products use product_123`, and `/status`.
+`/queue stitch --all`, `/products use product_123`, and `/status`. The slash
+prompt suggests command names, subcommands, and option names as you type. Those
+suggestions are local and deterministic; they do not use AI or call the
+ClipStitchr server.
 Run `clipstitchr queue` when you want a focused queue menu for latest, all, or
 specific Stitch and Swipe queue actions.
 

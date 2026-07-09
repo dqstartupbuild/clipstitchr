@@ -12,7 +12,7 @@ export async function runInteractiveShellSlashCommand(input: {
   services: InteractiveShellServices;
 }): Promise<InteractiveShellTransition> {
   return await dispatchSlashCommand({
-    commandLine: await input.prompts.input("Slash command:"),
+    commandLine: await input.prompts.slashCommand("Slash command:"),
     currentMenu: input.currentMenu,
     options: input.options,
     services: input.services,
