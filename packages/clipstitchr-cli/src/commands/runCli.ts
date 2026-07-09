@@ -2,6 +2,7 @@ import { Command } from "commander";
 import type { CliGlobalOptions } from "./CliGlobalOptions.js";
 import { runDoctorCommand } from "./runDoctorCommand.js";
 import { runDemoAgentCheckCommand } from "./runDemoAgentCheckCommand.js";
+import { runDemoAgentEditCommand } from "./runDemoAgentEditCommand.js";
 import { runDemoAgentExportLogCommand } from "./runDemoAgentExportLogCommand.js";
 import { runDemoAgentInitCommand } from "./runDemoAgentInitCommand.js";
 import { runDemoAgentRunCommand } from "./runDemoAgentRunCommand.js";
@@ -134,6 +135,24 @@ export async function runCli(argv: string[]) {
   const demoAgent = demo
     .command("agent")
     .description("Run the guarded demo agent");
+
+  const demoPolicy = demo
+    .command("policy")
+    .description("Set up the local safety policy for AI demo recording");
+
+  demoPolicy
+    .command("init")
+    .description("Create and review the local safety policy")
+    .action(async () => {
+      await runDemoAgentInitCommand(program.opts());
+    });
+
+  demoPolicy
+    .command("edit")
+    .description("Review and update the local safety policy")
+    .action(async () => {
+      await runDemoAgentEditCommand(program.opts());
+    });
 
   demoAgent
     .command("init")

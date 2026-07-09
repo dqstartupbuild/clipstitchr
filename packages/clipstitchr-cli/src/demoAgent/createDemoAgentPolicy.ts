@@ -8,7 +8,7 @@ export function createDemoAgentPolicy(input: {
   flows: ScannedFlow[];
 }): DemoAgentPolicy {
   return {
-    allowFileUploads: true,
+    allowFileUploads: false,
     allowLiveOrigins: input.allowLiveOrigins ? true : undefined,
     allowedOrigins: [input.allowedOrigin],
     allowedRoutes: Array.from(

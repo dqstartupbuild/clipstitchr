@@ -4,8 +4,8 @@ import type { CliGlobalOptions } from "./CliGlobalOptions.js";
 import { readProjectConfig } from "../config/readProjectConfig.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
 import { createDemoAgentPolicy } from "../demoAgent/createDemoAgentPolicy.js";
-import { getIsDemoAgentLocalOrigin } from "../demoAgent/getIsDemoAgentLocalOrigin.js";
 import { writeDemoAgentPolicy } from "../demoAgent/writeDemoAgentPolicy.js";
+import { editDemoAgentPolicy } from "../demoAgentPolicyEditor/editDemoAgentPolicy.js";
 import { createAppContextConfig } from "../project/createAppContextConfig.js";
 import { detectProject } from "../project/detectProject.js";
 import { scanAndWriteAppContext } from "../project/scanAndWriteAppContext.js";
@@ -21,22 +21,19 @@ export async function runDemoAgentInitCommand(_options: CliGlobalOptions) {
   const project = await detectProject();
   const url = await input({
     default: config.target?.url ?? "http://localhost:3000",
-    message: "What local URL is the agent allowed to use?",
+    message: "What app URL is the agent allowed to use?",
   });
   const allowedOrigin = new URL(url).origin;
 
-  if (!getIsDemoAgentLocalOrigin(allowedOrigin)) {
-    throw new Error("The local demo agent only supports localhost app URLs.");
-  }
-
   const flows = await scanProjectFlows(join(process.cwd(), project.directory));
   const appContext = await scanAndWriteAppContext({ flows, project });
-  const policyPath = await writeDemoAgentPolicy(
+  const policy = await editDemoAgentPolicy(
     createDemoAgentPolicy({
       allowedOrigin,
       flows,
     }),
   );
+  const policyPath = await writeDemoAgentPolicy(policy);
 
   await writeProjectConfig({
     ...config,

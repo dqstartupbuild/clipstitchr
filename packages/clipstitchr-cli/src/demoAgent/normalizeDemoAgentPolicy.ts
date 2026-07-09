@@ -64,15 +64,18 @@ export function normalizeDemoAgentPolicy(
     throw new Error("Demo agent policy needs at least one allowed route.");
   }
 
+  const approvedUploadFiles = readStringArray(rawPolicy.approvedUploadFiles).map(
+    (filePath) => resolve(cwd, filePath),
+  );
+
   return {
-    allowFileUploads: rawPolicy.allowFileUploads !== false,
+    allowFileUploads:
+      rawPolicy.allowFileUploads !== false && approvedUploadFiles.length > 0,
     allowLiveOrigins: allowLiveOrigins ? true : undefined,
     allowedOrigins,
     allowedRoutes,
     approvedTestValues: readStringRecord(rawPolicy.approvedTestValues),
-    approvedUploadFiles: readStringArray(rawPolicy.approvedUploadFiles).map(
-      (filePath) => resolve(cwd, filePath),
-    ),
+    approvedUploadFiles,
     blockedTextPatterns: readStringArray(rawPolicy.blockedTextPatterns),
     maxActions: readNumber(rawPolicy.maxActions, 80, 1, 200),
     maxRecordingSeconds: readNumber(

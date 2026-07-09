@@ -196,7 +196,8 @@ export const clipstitchrCliDoc = {
     {
       title: "Try the local agent beta",
       body: [
-        "The local demo agent beta helps you check a guide against your local app before using a guarded recording run. It creates a policy for localhost routes, opens the saved recording browser, tries only approved local actions, captures screenshots, and saves a local action log and summary.",
+        "The local demo agent beta helps you check a guide against your app before using a guarded recording run. Start with the safety policy. The CLI shows the current settings, lets you accept safe defaults, and lets you edit allowed app URLs, pages, test values, blocked words, upload files, and recording limits.",
+        "Localhost app URLs are allowed by default. Live or staging URLs need a separate yes before they are allowed. File uploads stay off unless you choose the exact local files the agent may use.",
         "Start with a dry-run. When the evidence looks right, run it without --dry-run to save a recording. ClipStitchr asks you to review the recording, screenshots, and action log before any upload starts. Add --ai-planner only when you want ClipStitchr AI to propose actions.",
       ],
       bullets: [
@@ -205,6 +206,8 @@ export const clipstitchrCliDoc = {
         "Never use it for account creation, purchases, deletion, publishing, or production accounts.",
       ],
       commands: [
+        "clipstitchr demo policy init",
+        "clipstitchr demo policy edit",
         "clipstitchr demo agent init",
         "clipstitchr demo agent check",
         "clipstitchr demo agent run --guide guide_123 --dry-run",

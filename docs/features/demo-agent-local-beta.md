@@ -8,6 +8,8 @@ run. Recording upload requires explicit review and approval.
 
 - Adds `clipstitchr demo agent init`.
 - Adds `clipstitchr demo agent check`.
+- Adds `clipstitchr demo policy init` and `clipstitchr demo policy edit` for
+  reviewing and changing the local safety policy without editing JSON.
 - Adds `clipstitchr demo agent run --guide <id> --dry-run`.
 - Adds guarded recording with `clipstitchr demo agent run --guide <id>`.
 - Adds `clipstitchr demo agent export-log <run-id>`.
@@ -30,21 +32,25 @@ run. Recording upload requires explicit review and approval.
 
 ## Policy File
 
-`clipstitchr demo agent init` creates:
+`clipstitchr demo policy init` creates:
 
 ```text
 .clipstitchr/demo-agent-policy.json
 ```
 
-The policy allows localhost origins by default. Live or staging origins require
-an explicit live target selection, which writes `allowLiveOrigins: true` into
-the policy for the selected origin. The policy stores allowed routes, blocked
-text patterns, upload settings, action caps, recording caps, and whether
-approval is required before upload. It can also store approved test values for
-safe form typing. `.clipstitchr/` is ignored by Git, so local sample paths and
-test-account notes stay out of the repository.
+The policy allows localhost origins by default. The setup flow shows the current
+settings and lets the user accept safe defaults or edit them in Terminal. Live
+or staging origins require a separate approval, which writes
+`allowLiveOrigins: true` into the policy for the selected origin. File uploads
+stay disabled unless the policy names at least one approved local file. The
+policy stores allowed routes, blocked text patterns, upload settings, action
+caps, recording caps, and whether approval is required before upload. It can
+also store approved test values for safe form typing and test-account notes.
+`.clipstitchr/` is ignored by Git, so local sample paths and notes stay out of
+the repository. Run `clipstitchr demo policy edit` when app URLs, routes, test
+values, blocked words, files, or limits change.
 
-`clipstitchr demo agent init` also refreshes `.clipstitchr/app-context.json`.
+`clipstitchr demo policy init` also refreshes `.clipstitchr/app-context.json`.
 That file gives the planner source-derived route, field, and button hints before
 the browser run starts.
 

@@ -47,4 +47,39 @@ describe("normalizeDemoAgentPolicy", () => {
     assert.deepEqual(policy.allowedOrigins, ["https://example.com"]);
     assert.equal(policy.allowLiveOrigins, true);
   });
+
+  it("disables uploads unless files are approved", () => {
+    const policy = normalizeDemoAgentPolicy({
+      ...basePolicy,
+      allowFileUploads: true,
+      allowedOrigins: ["http://localhost:3000"],
+      approvedUploadFiles: [],
+    });
+
+    assert.equal(policy.allowFileUploads, false);
+  });
+
+  it("keeps uploads enabled when files are approved", () => {
+    const policy = normalizeDemoAgentPolicy({
+      ...basePolicy,
+      allowFileUploads: true,
+      allowedOrigins: ["http://localhost:3000"],
+      approvedUploadFiles: ["fixtures/demo.mp4"],
+    });
+
+    assert.equal(policy.allowFileUploads, true);
+    assert.match(policy.approvedUploadFiles[0], /fixtures\/demo\.mp4$/);
+  });
+
+  it("clamps risky action and recording limits", () => {
+    const policy = normalizeDemoAgentPolicy({
+      ...basePolicy,
+      allowedOrigins: ["http://localhost:3000"],
+      maxActions: 500,
+      maxRecordingSeconds: 2,
+    });
+
+    assert.equal(policy.maxActions, 200);
+    assert.equal(policy.maxRecordingSeconds, 10);
+  });
 });

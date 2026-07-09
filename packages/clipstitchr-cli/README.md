@@ -26,6 +26,8 @@ clipstitchr demo guide show guide_123
 clipstitchr demo guide edit guide_123
 clipstitchr demo guide delete guide_123
 clipstitchr demo guide export-instructions guide_123
+clipstitchr demo policy init
+clipstitchr demo policy edit
 clipstitchr demo agent init
 clipstitchr demo agent check
 clipstitchr demo agent run --guide guide_123 --dry-run
@@ -76,18 +78,22 @@ If your app requires login, sign in inside the recorder browser once. The CLI
 keeps that app browser session in `.clipstitchr/browser-profile` so future
 recordings can stay signed in.
 
-The demo agent beta is policy guarded. `clipstitchr demo auto` creates the
-policy automatically when one does not exist. Localhost origins are the default;
-live origins must be selected with `--target live`. The automatic agent uses
-OpenAI Computer Use when `OPENAI_API_KEY` is available locally, or the hosted
-ClipStitchr relay when you are logged in and no local key is available. Relay
-mode sends screenshots through ClipStitchr servers and never sends a server
-OpenAI key back to the CLI. If neither direct nor relay mode is available, it
-falls back to the structured planner.
-Use the lower-level
-`clipstitchr demo agent init`, `check`, and `run` commands when you want to
-inspect the policy, run a dry-run, or record from an existing guide. The same
-policy validator always decides what can run.
+The demo agent beta is policy guarded. `clipstitchr demo policy init` creates
+the local safety settings and lets you review them before saving. Localhost app
+URLs are the default. Live or staging URLs need a separate yes before they are
+allowed. File uploads stay off unless you name the exact local files the agent
+may use. Run `clipstitchr demo policy edit` when routes, test values, blocked
+words, upload files, or time limits need to change. `clipstitchr demo auto`
+creates the same safe policy automatically when one does not exist.
+
+The automatic agent uses OpenAI Computer Use when `OPENAI_API_KEY` is available
+locally, or the hosted ClipStitchr relay when you are logged in and no local key
+is available. Relay mode sends screenshots through ClipStitchr servers and
+never sends a server OpenAI key back to the CLI. If neither direct nor relay
+mode is available, it falls back to the structured planner. Use the lower-level
+`clipstitchr demo agent init`, `check`, and `run` commands when you want the
+legacy aliases, a dry-run, or recording from an existing guide. The same policy
+validator always decides what can run.
 
 Most demos work best around 30-90 seconds. Longer recordings are allowed, and
 the CLI warns after about 2 minutes without stopping the recording. That is
