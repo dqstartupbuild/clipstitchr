@@ -47,6 +47,7 @@ import { clipstitchrCliDescription } from "../config/clipstitchrCliDescription.j
 import { readCliPackageVersion } from "../config/readCliPackageVersion.js";
 import { runDemoMenuCommand } from "../demoMenu/runDemoMenuCommand.js";
 import { runInteractiveCommand } from "../interactive/runInteractiveCommand.js";
+import { runProductsMenuCommand } from "../productsMenu/runProductsMenuCommand.js";
 import { runQueueMenuCommand } from "../queueMenu/runQueueMenuCommand.js";
 
 export async function runCli(argv: string[]) {
@@ -509,7 +510,12 @@ export async function runCli(argv: string[]) {
       await runQueueSwipeCommand(swipeId, { ...program.opts(), ...options });
     });
 
-  const products = program.command("products").description("Manage products");
+  const products = program
+    .command("products")
+    .description("Manage products")
+    .action(async () => {
+      await runProductsMenuCommand(program.opts());
+    });
 
   products
     .command("list")

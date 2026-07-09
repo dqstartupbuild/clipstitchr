@@ -54,6 +54,7 @@ clipstitchr queue stitch --all
 clipstitchr queue swipe
 clipstitchr queue swipe --all
 clipstitchr queue --all
+clipstitchr products
 clipstitchr products list
 clipstitchr products create --use
 clipstitchr products use
@@ -144,6 +145,11 @@ or screenshots.
 Setup detects common nested app folders like `web/`, infers the start command,
 skips the product picker when your account only has one product, and prefers a
 localhost URL that is already running.
+
+Run `clipstitchr products` when you want a focused menu for listing products,
+creating a new product, or choosing the product this repo should use. Direct
+commands such as `clipstitchr products list`, `clipstitchr products create`,
+and `clipstitchr products use` still work for scripts.
 
 `clipstitchr link` connects the current repo to a product. `clipstitchr init`
 does the same thing for developers who expect an init command. `clipstitchr

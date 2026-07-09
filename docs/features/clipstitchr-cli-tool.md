@@ -65,6 +65,7 @@ creation, bounded library reads for queue selection, and queueing ready content.
   next 24 hours.
 - `clipstitchr library ...` commands remain hidden compatibility aliases for
   old scripts; browsing belongs in the dashboard.
+- `clipstitchr products` opens a focused product menu.
 - `clipstitchr products list` prints saved product IDs and names for scripting.
 - `clipstitchr products create` creates a product from the terminal, and
   `clipstitchr products create --use` also saves it to the repo config.
@@ -176,6 +177,13 @@ in the dashboard because that output is browser-rendered before upload.
 the CLI bearer token, consumes the CLI Post Bridge read limit, loads Post Bridge
 posts, filters them to queued or scheduled posts within 24 hours, and joins each
 post to local Stitch/Swipe source mapping when available.
+
+## Products Menu Flow
+
+`clipstitchr products` opens a small menu with `Show my products`,
+`Create a product`, and `Use a product for this repo`. The menu calls the same
+handlers as `products list`, `products create`, and `products use`, so scripts
+and direct terminal commands keep the same behavior.
 
 ## Recording Behavior
 

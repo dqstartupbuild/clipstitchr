@@ -80,9 +80,10 @@ export const clipstitchrCliDoc = {
     {
       title: "Manage products",
       body: [
-        "List products when you need the IDs for scripting. Create adds a new product to your ClipStitchr account. Use saves the product this repo should record against.",
+        "Run clipstitchr products when you want a small menu for product work. List products when you need the IDs for scripting. Create adds a new product to your ClipStitchr account. Use saves the product this repo should record against.",
       ],
       commands: [
+        "clipstitchr products",
         "clipstitchr products list",
         "clipstitchr products create",
         "clipstitchr products create --use",
