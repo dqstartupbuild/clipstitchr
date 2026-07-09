@@ -20,6 +20,8 @@ Recording upload requires explicit review and approval.
   explicitly uploaded.
 - Preserves safe optional `walkthrough.agentRun` metadata on upload snapshots.
 - Supports opt-in model-backed planning with `--ai-planner`.
+- Supports `--driver openai-computer` for OpenAI Computer Use browser control,
+  with `structured-planner` kept as the default and fallback.
 
 ## Policy File
 
@@ -71,6 +73,13 @@ disables pre-upload approval, and names exactly one approved local file.
 Dry-run does not record video, upload media to ClipStitchr, create accounts,
 purchase anything, delete data, publish content, use production accounts, or run
 an LLM planner.
+
+When `--driver openai-computer` is selected, dry-run uses the same local
+browser and evidence directory, but the next visual action comes from OpenAI
+Computer Use. The CLI executes returned computer actions through Playwright,
+captures a screenshot, sends it back to OpenAI as `computer_call_output`, and
+repeats until the current guide step is done. If `OPENAI_API_KEY` is missing,
+the CLI falls back to the structured planner before the run starts.
 
 ## Recording Behavior
 
@@ -135,6 +144,12 @@ decision without disabling model planning for the rest of the run. The CLI also
 rejects actions whose `stepId` points at a different guide step, so the planner
 cannot work ahead and leave the current step half-finished.
 
+With `--driver openai-computer`, the browser-control loop bypasses the
+server-side JSON action planner and calls OpenAI directly from the CLI. The
+current guide step, local origin policy, allowed routes, blocked-action rules,
+and capped app context are sent with the task. Screenshots are sent from the
+user's machine to OpenAI and are not proxied through ClipStitchr.
+
 ## One-Command AI Recording
 
 `clipstitchr demo auto` is the guided one-command path. It requires the project
@@ -148,7 +163,7 @@ the checklist and the browser actions.
 
 It generates a guide with ClipStitchr AI, saves it locally, creates a localhost
 policy if one does not exist, verifies the page in a non-recorded browser,
-records with the model-backed planner, and skips upload prompts by default. The
+records with the selected driver, and skips upload prompts by default. The
 generated guide receives scanned route context and is rejected if it asks for
 presenter-only behavior, such as pointing out or highlighting UI without a
 browser action the agent can perform. The guide writer and planner also receive

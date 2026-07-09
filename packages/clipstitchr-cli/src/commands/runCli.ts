@@ -112,6 +112,10 @@ export async function runCli(argv: string[]) {
     .command("auto")
     .description("Let AI write and record a local demo")
     .option("--audience <text>", "Who this demo is for")
+    .option(
+      "--driver <driver>",
+      "Use structured-planner or openai-computer for browser control",
+    )
     .option("--goal <text>", "What the demo should show")
     .option("--product <id>", "ClipStitchr product ID")
     .option("--start <command>", "Start command")
@@ -144,6 +148,10 @@ export async function runCli(argv: string[]) {
     .description("Run a guarded local demo agent")
     .requiredOption("--guide <id-or-path>", "Use a saved walkthrough guide")
     .option("--ai-planner", "Ask ClipStitchr AI to propose each guarded action")
+    .option(
+      "--driver <driver>",
+      "Use structured-planner or openai-computer for browser control",
+    )
     .option("--dry-run", "Validate the run without recording or uploading")
     .option("--no-upload", "Record only after review")
     .option("--product <id>", "ClipStitchr product ID for upload")

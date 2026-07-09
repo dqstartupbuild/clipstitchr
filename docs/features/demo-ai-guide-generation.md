@@ -25,7 +25,8 @@ workflow context, goal, audience, and desired step count to the web API.
 The API verifies the CLI session, checks that the product belongs to the
 session owner, consumes `cliDemoGuideGenerate`,
 `cliDemoGuideGenerateGlobal`, and the shared provider bucket, then calls the
-configured writing model through `TEXT_WRITING_MODEL_ID`.
+configured guide-writing model through `CLI_DEMO_GUIDE_MODEL_ID`, defaulting to
+`openai/gpt-5-mini`.
 
 The prompt asks for JSON only: one title, one plain-language goal, and 3-8
 label-only steps that a guarded browser agent can actually perform. The parser
@@ -59,6 +60,8 @@ saves with `Save Hook Lab` when those controls exist.
 - `web/app/api/cli/demo-guides/generate/route.ts`
 - `web/lib/clipstitchr/server/cli/appContext/*`
 - `web/lib/clipstitchr/server/cli/demoGuides/*`
+- `web/lib/clipstitchr/server/getCliDemoGuideModelId.ts`
+- `web/lib/clipstitchr/constants/defaultCliDemoGuideModelId.ts`
 - `web/convex/cliProducts/getCliProductDocument.ts`
 - `web/convex/rateLimiter.ts`
 - `web/convex/rateLimits.ts`

@@ -18,19 +18,23 @@ import { createDemoAgentRunId } from "./createDemoAgentRunId.js";
 import { createDemoAgentRunPaths } from "./createDemoAgentRunPaths.js";
 import { createDemoAgentStartUrl } from "./createDemoAgentStartUrl.js";
 import { demoAgentGuideCompleteStopReason } from "./demoAgentGuideCompleteStopReason.js";
+import type { DemoAgentDriver } from "./DemoAgentDriver.js";
+import type { DemoAgentOpenAiComputerOptions } from "./DemoAgentOpenAiComputerOptions.js";
 import type { DemoAgentPlanner } from "./DemoAgentPlanner.js";
 import type { DemoAgentPolicy } from "./DemoAgentPolicy.js";
 import type { DemoAgentRecordedRun } from "./DemoAgentRecordedRun.js";
 import type { DemoAgentRunSummary } from "./DemoAgentRunSummary.js";
 import { prepareDemoAgentRecordingAuth } from "./prepareDemoAgentRecordingAuth.js";
-import { runDemoAgentLoop } from "./runDemoAgentLoop.js";
+import { runDemoAgentDriverLoop } from "./runDemoAgentDriverLoop.js";
 import { writeDemoAgentActionLogEntry } from "./writeDemoAgentActionLogEntry.js";
 import { writeDemoAgentRunSummary } from "./writeDemoAgentRunSummary.js";
 
 export async function runDemoAgentRecording(inputOptions: {
   allowBrowserInstallPrompt?: boolean;
   appContext?: ScannedAppContext;
+  driver?: DemoAgentDriver;
   guide: DemoWalkthroughGuide;
+  openAiComputer?: DemoAgentOpenAiComputerOptions;
   policy: DemoAgentPolicy;
   policyHash: string;
   planner?: DemoAgentPlanner;
@@ -105,11 +109,13 @@ export async function runDemoAgentRecording(inputOptions: {
       }),
     );
 
-    const loopResult = await runDemoAgentLoop({
+    const loopResult = await runDemoAgentDriverLoop({
       appContext: inputOptions.appContext,
+      driver: inputOptions.driver ?? "structured-planner",
       guide: inputOptions.guide,
       initialActionCount: actionCount,
       initialScreenshotCount: screenshotCount,
+      openAiComputer: inputOptions.openAiComputer,
       page,
       policy: inputOptions.policy,
       planner: inputOptions.planner,

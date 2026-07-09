@@ -181,10 +181,14 @@ Optional Replicate model overrides:
 - `PRODUCT_ENRICHMENT_MODEL_ID` defaults to `openai/gpt-4.1` for hidden product
   strategy enrichment when saving products in Settings.
 - `TEXT_WRITING_MODEL_ID` defaults to `anthropic/claude-sonnet-4.6` for Clipr
-  hook, script, Swipr auto-text, Stitchr auto-text, and CLI AI walkthrough
-  guide generation. The legacy `CLIPR_HOOK_MODEL_ID` fallback is still read
-  when the general writing model variable is unset.
+  hook, script, Swipr auto-text, and Stitchr auto-text. The legacy
+  `CLIPR_HOOK_MODEL_ID` fallback is still read when the general writing model
+  variable is unset.
   `anthropic/claude-opus-4.6` is supported for higher-cost writing tests.
+- `CLI_DEMO_GUIDE_MODEL_ID` defaults to `openai/gpt-5-mini` for CLI AI guide
+  generation. This is separate from `TEXT_WRITING_MODEL_ID` so demo guide
+  writing can stay on an OpenAI text model without changing Clipr, Swipr, or
+  Stitchr writing.
 - `CLI_DEMO_AGENT_PLANNER_MODEL_ID` defaults to `openai/gpt-5-mini` for
   per-action CLI demo agent planning. This is separate from
   `TEXT_WRITING_MODEL_ID` so local demo recording can use a faster, cheaper
@@ -258,7 +262,7 @@ Firecrawl website import:
 | CLI device sign-in start | `POST /api/cli/auth/device` | 20/hour/client fingerprint, burst 5; shared global bucket 1,000/hour, burst 200 across 5 shards. The route stores only a hashed device code and a short user code, and the browser approval must happen through a normal Clerk-authenticated `/cli/connect` session. |
 | CLI device token polling | `POST /api/cli/auth/token` | 120/minute/client fingerprint, burst 30; shared global bucket 10,000/minute, burst 1,000 across 10 shards. Polling returns pending until the Clerk-authenticated browser approval succeeds, then creates one hashed 90-day CLI session token. |
 | CLI product creation | `POST /api/cli/products` | Uses `convexRecordSave` after verifying the CLI bearer token. This path saves a plain product record without provider enrichment or Firecrawl work. |
-| CLI AI guide generation | `POST /api/cli/demo-guides/generate` | 20/hour/user, burst 5; global 1,000/hour, burst 200 across 5 shards; shared provider bucket 10,000 units/hour, burst 2,000. The route verifies the CLI bearer token, confirms the requested product belongs to the session owner, consumes quota, then calls the configured writing model through `TEXT_WRITING_MODEL_ID`. Generated guides are label-only checklists with 3-8 steps, no selectors, no secrets, and no autonomous browser actions. Optional local app context is capped by the request reader before the provider call and can only add route, workflow, input, and button hints to the prompt. |
+| CLI AI guide generation | `POST /api/cli/demo-guides/generate` | 20/hour/user, burst 5; global 1,000/hour, burst 200 across 5 shards; shared provider bucket 10,000 units/hour, burst 2,000. The route verifies the CLI bearer token, confirms the requested product belongs to the session owner, consumes quota, then calls the configured guide-writing model through `CLI_DEMO_GUIDE_MODEL_ID`, defaulting to `openai/gpt-5-mini`. Generated guides are label-only checklists with 3-8 steps, no selectors, no secrets, and no autonomous browser actions. Optional local app context is capped by the request reader before the provider call and can only add route, workflow, input, and button hints to the prompt. |
 | CLI demo agent AI planning | `POST /api/cli/demo-agent/plan` | 120/hour/user, burst 20; global 3,000/hour, burst 500 across 5 shards; shared provider bucket 10,000 units/hour, burst 2,000. The route verifies the CLI bearer token, consumes quota, then calls the configured planner model through `CLI_DEMO_AGENT_PLANNER_MODEL_ID`, defaulting to `openai/gpt-5-mini`, to propose one JSON browser-action DSL item from simplified page observation, current guide step, guide goal context, and optional capped local app context. The server parser rejects unsupported action types and CSS selectors, and the CLI policy validator still decides whether the proposed action can run. Provider queue backpressure such as `ExpiredInQueue` returns HTTP `429` with `Retry-After`, and the CLI spaces planner requests apart and retries retryable planner pressure before falling back. If the planner provider still fails or repeats an already-attempted action during a CLI run, the CLI switches to the deterministic local planner for the rest of that run. |
 | CLI Demo upload signed URL | `POST /api/cli/uploads/demo` | Uses the normal R2 upload signed URL, daily byte, and monthly byte limits after verifying the CLI bearer token and confirming the product belongs to the session owner. The video file uploads directly to R2 with the signed PUT URL. |
 | CLI Demo upload completion | `POST /api/cli/uploads/demo/complete` | Uses upload video action analysis limits before queueing the existing `upload-normalization` media job. The route verifies the CLI bearer token, product ownership, user-owned R2 object key, and video content type. |

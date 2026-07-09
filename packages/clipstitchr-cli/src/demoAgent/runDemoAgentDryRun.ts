@@ -12,17 +12,21 @@ import { createDemoAgentRunId } from "./createDemoAgentRunId.js";
 import { createDemoAgentRunPaths } from "./createDemoAgentRunPaths.js";
 import { createDemoAgentStartUrl } from "./createDemoAgentStartUrl.js";
 import { demoAgentGuideCompleteStopReason } from "./demoAgentGuideCompleteStopReason.js";
+import type { DemoAgentDriver } from "./DemoAgentDriver.js";
+import type { DemoAgentOpenAiComputerOptions } from "./DemoAgentOpenAiComputerOptions.js";
 import type { DemoAgentPlanner } from "./DemoAgentPlanner.js";
 import type { DemoAgentPolicy } from "./DemoAgentPolicy.js";
 import type { DemoAgentRunSummary } from "./DemoAgentRunSummary.js";
 import { openDemoAgentBrowserContext } from "./openDemoAgentBrowserContext.js";
-import { runDemoAgentLoop } from "./runDemoAgentLoop.js";
+import { runDemoAgentDriverLoop } from "./runDemoAgentDriverLoop.js";
 import { writeDemoAgentActionLogEntry } from "./writeDemoAgentActionLogEntry.js";
 import { writeDemoAgentRunSummary } from "./writeDemoAgentRunSummary.js";
 
 export async function runDemoAgentDryRun(inputOptions: {
   appContext?: ScannedAppContext;
+  driver?: DemoAgentDriver;
   guide: DemoWalkthroughGuide;
+  openAiComputer?: DemoAgentOpenAiComputerOptions;
   policy: DemoAgentPolicy;
   policyHash: string;
   planner?: DemoAgentPlanner;
@@ -82,11 +86,13 @@ export async function runDemoAgentDryRun(inputOptions: {
         "Sign in with a test account if needed, then press Enter to run the safe dry-run.",
     });
 
-    const loopResult = await runDemoAgentLoop({
+    const loopResult = await runDemoAgentDriverLoop({
       appContext: inputOptions.appContext,
+      driver: inputOptions.driver ?? "structured-planner",
       guide: inputOptions.guide,
       initialActionCount: actionCount,
       initialScreenshotCount: screenshotCount,
+      openAiComputer: inputOptions.openAiComputer,
       page,
       policy: inputOptions.policy,
       planner: inputOptions.planner,

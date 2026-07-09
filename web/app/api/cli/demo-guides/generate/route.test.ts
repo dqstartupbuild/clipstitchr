@@ -127,7 +127,7 @@ function createGeneration() {
       updatedAt: "2026-07-06T00:00:00.000Z",
       version: 1,
     },
-    providerModel: "anthropic/claude-sonnet-4.6",
+    providerModel: "openai/gpt-5-mini",
     providerPredictionId: "prediction_123",
   };
 }

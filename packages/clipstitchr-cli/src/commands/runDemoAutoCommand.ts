@@ -7,6 +7,7 @@ import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
 import { createProductConfigSummary } from "../config/createProductConfigSummary.js";
 import { createDemoAgentPlannerWithFallback } from "../demoAgent/createDemoAgentPlannerWithFallback.js";
+import { resolveDemoAgentCommandDriver } from "../demoAgent/resolveDemoAgentCommandDriver.js";
 import { runDemoAgentRecording } from "../demoAgent/runDemoAgentRecording.js";
 import { writeDemoWalkthroughGuide } from "../demoGuide/writeDemoWalkthroughGuide.js";
 import { detectProject } from "../project/detectProject.js";
@@ -75,7 +76,13 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
     product,
   });
   const stepCount = readDemoAutoStepCount(options.steps);
-  const startCommand = options.start ?? config.target?.start ?? project.startCommand;
+  const startCommand =
+    options.start ?? config.target?.start ?? project.startCommand;
+  const resolvedDriver = resolveDemoAgentCommandDriver({
+    configDriver: config.demoAgent?.driver,
+    configOpenAiModel: config.demoAgent?.openai?.model,
+    optionDriver: options.driver,
+  });
   let appProcess: ChildProcess | null = null;
 
   try {
@@ -137,12 +144,21 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
       },
     });
 
+    if (resolvedDriver.fallbackReason) {
+      logWarning(resolvedDriver.fallbackReason);
+    } else if (resolvedDriver.driver === "openai-computer") {
+      logInfo("Using OpenAI Computer Use for browser control.");
+    }
+
     logStep("Recording the demo with the guarded AI agent.");
     const recording = await runDemoAgentRecording({
       allowBrowserInstallPrompt: false,
       appContext,
+      driver: resolvedDriver.driver,
       guide,
-      planner,
+      openAiComputer: resolvedDriver.openAiComputer,
+      planner:
+        resolvedDriver.driver === "structured-planner" ? planner : undefined,
       policy,
       policyHash: hash,
       promptForSignIn: false,

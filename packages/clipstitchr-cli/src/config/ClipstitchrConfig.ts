@@ -6,6 +6,12 @@ export type ClipstitchrConfig = {
     routeCount?: number;
     workflowHintCount?: number;
   };
+  demoAgent?: {
+    driver?: string;
+    openai?: {
+      model?: string;
+    };
+  };
   product?: {
     id?: string;
     name?: string;

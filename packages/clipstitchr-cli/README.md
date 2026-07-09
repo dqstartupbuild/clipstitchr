@@ -16,6 +16,7 @@ clipstitchr link
 clipstitchr status
 clipstitchr update
 clipstitchr demo auto
+clipstitchr demo auto --driver openai-computer
 clipstitchr demo guide generate
 clipstitchr demo guide list
 clipstitchr demo guide show guide_123
@@ -27,6 +28,7 @@ clipstitchr demo agent check
 clipstitchr demo agent run --guide guide_123 --dry-run
 clipstitchr demo agent run --guide guide_123
 clipstitchr demo agent run --guide guide_123 --ai-planner --dry-run
+clipstitchr demo agent run --guide guide_123 --driver openai-computer
 clipstitchr demo agent run --guide guide_123 --no-upload
 clipstitchr demo agent export-log agent_run_123
 clipstitchr demo make

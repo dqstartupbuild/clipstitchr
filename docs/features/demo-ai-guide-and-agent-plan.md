@@ -51,6 +51,10 @@ Already implemented:
   guide generation and agent planning.
 - Guarded local recording from an agent run with mandatory review before upload.
 - Safe optional `walkthrough.agentRun` metadata parsing.
+- OpenAI Computer Use driver for local visual browser control, selected through
+  `demoAgent.driver` or `--driver openai-computer`.
+- Dedicated CLI guide-writing model setting through `CLI_DEMO_GUIDE_MODEL_ID`,
+  defaulting to `openai/gpt-5-mini`.
 
 Not implemented yet:
 
@@ -201,7 +205,7 @@ Response:
     "source": "ai-assisted",
     "steps": []
   },
-  "providerModel": "anthropic/claude-sonnet-4.6",
+  "providerModel": "openai/gpt-5-mini",
   "providerPredictionId": "prediction_123"
 }
 ```
@@ -211,7 +215,7 @@ Implementation notes:
 - Use `getCliSessionFromRequest` for bearer-token auth.
 - Query the product by `productId` and session owner before any provider call.
 - Consume a writing-provider rate limit before calling Replicate.
-- Use the existing `TEXT_WRITING_MODEL_ID` path through
+- Use the dedicated `CLI_DEMO_GUIDE_MODEL_ID` path through
   `createTextWritingPredictionInput`.
 - Add one prompt file, one parser file, one route reader file, and focused
   tests for each. Do not place prompt construction and response parsing in the

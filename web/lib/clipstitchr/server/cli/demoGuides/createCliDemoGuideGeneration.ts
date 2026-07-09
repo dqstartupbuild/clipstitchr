@@ -8,7 +8,7 @@ import { parseCliDemoGuideGenerationOutput } from "@/lib/clipstitchr/server/cli/
 import { createReplicateClient } from "@/lib/clipstitchr/server/createReplicateClient";
 import { createTextWritingPredictionInput } from "@/lib/clipstitchr/server/createTextWritingPredictionInput";
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
-import { getTextWritingModelId } from "@/lib/clipstitchr/server/getTextWritingModelId";
+import { getCliDemoGuideModelId } from "@/lib/clipstitchr/server/getCliDemoGuideModelId";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
@@ -24,7 +24,7 @@ export async function createCliDemoGuideGeneration({
   replicate: ReplicateClient;
   request: CliDemoGuideGenerateRequest;
 }) {
-  const providerModel = getTextWritingModelId();
+  const providerModel = getCliDemoGuideModelId();
   const systemPrompt = getCliDemoGuideSystemPrompt();
   const prediction = await replicate.predictions.create({
     model: providerModel,

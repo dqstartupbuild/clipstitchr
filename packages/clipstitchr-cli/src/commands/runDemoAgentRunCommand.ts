@@ -8,6 +8,7 @@ import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
 import { createDemoAgentPlannerWithFallback } from "../demoAgent/createDemoAgentPlannerWithFallback.js";
 import { readDemoAgentPolicy } from "../demoAgent/readDemoAgentPolicy.js";
+import { resolveDemoAgentCommandDriver } from "../demoAgent/resolveDemoAgentCommandDriver.js";
 import { runDemoAgentDryRun } from "../demoAgent/runDemoAgentDryRun.js";
 import { runDemoAgentRecording } from "../demoAgent/runDemoAgentRecording.js";
 import { resolveDemoWalkthroughGuide } from "../demoGuide/resolveDemoWalkthroughGuide.js";
@@ -32,6 +33,7 @@ import { writeDemoAgentRunSummary } from "../demoAgent/writeDemoAgentRunSummary.
 
 type DemoAgentRunOptions = CliGlobalOptions & {
   aiPlanner?: boolean;
+  driver?: string;
   dryRun?: boolean;
   guide?: string;
   product?: string;
@@ -78,10 +80,16 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
   }
 
   const startCommand = options.start ?? config.target?.start;
+  const resolvedDriver = resolveDemoAgentCommandDriver({
+    configDriver: config.demoAgent?.driver,
+    configOpenAiModel: config.demoAgent?.openai?.model,
+    optionDriver: options.driver,
+  });
   let appProcess: ChildProcess | null = null;
-  const plannerCredentials = options.aiPlanner
-    ? await ensureCredentialsOrLogin(apiBaseUrl)
-    : undefined;
+  const plannerCredentials =
+    options.aiPlanner && resolvedDriver.driver === "structured-planner"
+      ? await ensureCredentialsOrLogin(apiBaseUrl)
+      : undefined;
   const planner = plannerCredentials
     ? createDemoAgentPlannerWithFallback({
         aiPlanner: (plannerInput) =>
@@ -97,6 +105,12 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
       })
     : undefined;
 
+  if (resolvedDriver.fallbackReason) {
+    logWarning(resolvedDriver.fallbackReason);
+  } else if (resolvedDriver.driver === "openai-computer") {
+    logInfo("Using OpenAI Computer Use for browser control.");
+  }
+
   try {
     if (startCommand && !(await isHttpUrlReachable(url))) {
       logStep("Starting the local app.");
@@ -106,7 +120,9 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
     if (options.dryRun) {
       const summary = await runDemoAgentDryRun({
         appContext,
+        driver: resolvedDriver.driver,
         guide,
+        openAiComputer: resolvedDriver.openAiComputer,
         policy,
         policyHash: hash,
         planner,
@@ -123,7 +139,9 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
 
     const recording = await runDemoAgentRecording({
       appContext,
+      driver: resolvedDriver.driver,
       guide,
+      openAiComputer: resolvedDriver.openAiComputer,
       policy,
       policyHash: hash,
       planner,
