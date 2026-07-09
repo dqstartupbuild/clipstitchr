@@ -5,6 +5,7 @@ import { InteractiveTuiComposer } from "./InteractiveTuiComposer.js";
 import { InteractiveTuiHeader } from "./InteractiveTuiHeader.js";
 import { InteractiveTuiMenu } from "./InteractiveTuiMenu.js";
 import { InteractiveTuiNotice } from "./InteractiveTuiNotice.js";
+import { InteractiveTuiRunningView } from "./InteractiveTuiRunningView.js";
 import { InteractiveTuiStatusBar } from "./InteractiveTuiStatusBar.js";
 import { InteractiveTuiSuggestions } from "./InteractiveTuiSuggestions.js";
 import { useInteractiveTuiController } from "./useInteractiveTuiController.js";
@@ -15,30 +16,35 @@ export function InteractiveTuiApp(input: InteractiveTuiInput) {
   return (
     <>
       <InteractiveTuiActivityLog entries={controller.activities} />
-      <Box flexDirection="column">
-        <InteractiveTuiHeader menu={controller.currentMenu} />
-        <InteractiveTuiNotice notice={controller.notice} />
-        {controller.mode === "menu" ? (
-          <InteractiveTuiMenu
-            choices={controller.choices}
-            isActive
-            selectedIndex={controller.selectedIndex}
+      {controller.mode === "running" ? (
+        <InteractiveTuiRunningView activeLabel={controller.activeLabel} />
+      ) : (
+        <Box flexDirection="column">
+          <InteractiveTuiHeader menu={controller.currentMenu} />
+          <InteractiveTuiNotice notice={controller.notice} />
+          {controller.mode === "menu" ? (
+            <InteractiveTuiMenu
+              choices={controller.choices}
+              isActive
+              selectedIndex={controller.selectedIndex}
+            />
+          ) : null}
+          {controller.mode === "command" ? (
+            <InteractiveTuiSuggestions
+              selectedIndex={controller.suggestionIndex}
+              suggestions={controller.suggestions}
+            />
+          ) : null}
+          <InteractiveTuiComposer
+            commandText={controller.commandText}
+            cursorIndex={controller.cursorIndex}
+            isCommandMode={controller.mode === "command"}
           />
-        ) : null}
-        {controller.mode === "command" ? (
-          <InteractiveTuiSuggestions
-            selectedIndex={controller.suggestionIndex}
-            suggestions={controller.suggestions}
+          <InteractiveTuiStatusBar
+            isCommandMode={controller.mode === "command"}
           />
-        ) : null}
-        <InteractiveTuiComposer
-          activeLabel={controller.activeLabel}
-          commandText={controller.commandText}
-          cursorIndex={controller.cursorIndex}
-          mode={controller.mode}
-        />
-        <InteractiveTuiStatusBar mode={controller.mode} />
-      </Box>
+        </Box>
+      )}
     </>
   );
 }

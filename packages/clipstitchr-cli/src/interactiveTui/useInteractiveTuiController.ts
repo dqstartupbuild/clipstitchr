@@ -11,6 +11,7 @@ import { waitForMilliseconds } from "../utils/waitForMilliseconds.js";
 import type { InteractiveTuiInput } from "./InteractiveTuiInput.js";
 import type { InteractiveTuiMode } from "./InteractiveTuiMode.js";
 import { runInteractiveTuiMenuAction } from "./runInteractiveTuiMenuAction.js";
+import { setInteractiveTuiStdinIsReferenced } from "./setInteractiveTuiStdinIsReferenced.js";
 import { useInteractiveTuiActivity } from "./useInteractiveTuiActivity.js";
 import { useInteractiveTuiCommandComposer } from "./useInteractiveTuiCommandComposer.js";
 import { useInteractiveTuiExitInput } from "./useInteractiveTuiExitInput.js";
@@ -41,6 +42,7 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
   const finishTransition = useCallback(
     (transition: InteractiveShellTransition, successMessage: string) => {
       if (transition.exit) {
+        setInteractiveTuiStdinIsReferenced({ isReferenced: false });
         exit();
         return;
       }
@@ -89,6 +91,7 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
       setNotice(undefined);
       appendActivity("command", commandLine);
       await waitForMilliseconds(0);
+      setInteractiveTuiStdinIsReferenced({ isReferenced: true });
 
       try {
         const transition = await dispatchSlashCommand({
@@ -173,6 +176,7 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
       setNotice(undefined);
       appendActivity("command", choice.name);
       await waitForMilliseconds(0);
+      setInteractiveTuiStdinIsReferenced({ isReferenced: true });
 
       try {
         const transition = await runInteractiveTuiMenuAction({

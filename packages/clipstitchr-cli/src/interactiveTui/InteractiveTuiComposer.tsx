@@ -1,21 +1,11 @@
 import { Box, Text } from "ink";
-import type { InteractiveTuiMode } from "./InteractiveTuiMode.js";
 
 export function InteractiveTuiComposer(input: {
-  activeLabel?: string;
   commandText: string;
   cursorIndex: number;
-  mode: InteractiveTuiMode;
+  isCommandMode: boolean;
 }) {
-  if (input.mode === "running") {
-    return (
-      <Box marginTop={1}>
-        <Text color="yellow">[working] {input.activeLabel}</Text>
-      </Box>
-    );
-  }
-
-  if (input.mode === "menu") {
+  if (!input.isCommandMode) {
     return (
       <Box marginTop={1}>
         <Text color="cyan">{"> "}</Text>

@@ -40,8 +40,9 @@ run. Recording upload requires explicit review and approval.
 ```
 
 The policy allows localhost origins by default. The setup flow shows the current
-settings and lets the user accept safe defaults or edit them in Terminal. Live
-or staging origins require a separate approval, which writes
+settings and asks whether they should change. Pressing Enter keeps every shown
+setting and saves immediately; choosing yes opens the individual fields. Live
+or staging origins require a separate approval while editing, which writes
 `allowLiveOrigins: true` into the policy for the selected origin. File uploads
 stay disabled unless the policy names at least one approved local file. The
 policy stores allowed routes, blocked text patterns, upload settings, action

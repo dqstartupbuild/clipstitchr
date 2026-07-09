@@ -13,6 +13,8 @@ light branded output for direct commands and guided flows.
 - Prints useful next commands after important actions.
 - Keeps `clipstitchr products list` tab-separated for scripting.
 - Supports plain output with `clipstitchr --plain ...` and `NO_COLOR=1`.
+- Avoids repeating the `ClipStitchr` brand when a command already runs inside
+  the persistent TUI; the command subtitle remains visible.
 
 ## How It Works
 

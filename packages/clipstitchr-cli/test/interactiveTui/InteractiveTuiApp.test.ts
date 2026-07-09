@@ -70,4 +70,35 @@ describe("InteractiveTuiApp", () => {
     assert.match(tui.lastFrame() ?? "", /\/queue/);
     tui.unmount();
   });
+
+  it("gives prompt-backed actions a clean terminal handoff", async () => {
+    let finishAction: (() => void) | undefined;
+    const action = new Promise<void>((resolve) => {
+      finishAction = resolve;
+    });
+    const services = createInteractiveShellTestServices([]);
+    services.runStatus = async () => await action;
+    const tui = render(
+      createElement(InteractiveTuiApp, {
+        options: {},
+        prompts: createInteractiveShellTestPrompts({}),
+        services,
+      }),
+    );
+
+    tui.stdin.write("/status");
+    await waitForTuiUpdate();
+    tui.stdin.write("\r");
+    await waitForTuiUpdate();
+
+    assert.match(tui.lastFrame() ?? "", /\[working\] \/status/);
+    assert.match(tui.lastFrame() ?? "", /Complete any question below/);
+    assert.doesNotMatch(tui.lastFrame() ?? "", /ClipStitchr Interactive/);
+    assert.doesNotMatch(tui.lastFrame() ?? "", /Action in progress/);
+
+    finishAction?.();
+    await waitForTuiUpdate();
+    assert.match(tui.lastFrame() ?? "", /ClipStitchr/);
+    tui.unmount();
+  });
 });

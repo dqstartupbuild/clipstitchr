@@ -151,9 +151,11 @@ or video version.
 The interactive shell keeps one mounted terminal workspace with the current
 menu, completed activity, recent status, a slash-command composer, suggestions,
 and keyboard hints. Existing guided questions temporarily take input while an
-action runs, then return control to the same workspace. When the terminal is too
-narrow, is not interactive, or uses `--plain` or `NO_COLOR=1`, the CLI falls
-back to simple prompt output. Direct commands stay plain and script-friendly.
+action runs. The menu collapses to one working line during that handoff, keeps
+the question alive until it is answered, then returns control to the same
+workspace. When the terminal is too narrow, is not interactive, or uses
+`--plain` or `NO_COLOR=1`, the CLI falls back to simple prompt output. Direct
+commands stay plain and script-friendly.
 
 Setup detects common nested app folders like `web/`, infers the start command,
 skips the product picker when your account only has one product, and prefers a

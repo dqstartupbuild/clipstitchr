@@ -317,7 +317,11 @@ activity, command composer, deterministic suggestions, recent status, and
 keyboard hints. It uses Ink's normal terminal rendering instead of an alternate
 screen, so completed command output remains visible in terminal scrollback.
 Existing focused questions from recording and setup workflows temporarily take
-input while their action runs, then return to the same mounted workspace.
+input while their action runs, then return to the same mounted workspace. The
+menu collapses to one working line during this handoff, and the controller keeps
+stdin referenced after Ink releases raw mode so an unanswered Inquirer prompt
+cannot let the process exit. Command helpers also avoid printing a second
+ClipStitchr brand while the persistent workspace is active.
 
 Guided flows still show progress states, setup key/value rows, success
 confirmations, warnings, and copyable next commands. Direct commands do not use

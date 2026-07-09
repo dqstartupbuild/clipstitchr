@@ -20,6 +20,8 @@ a fresh frame and creating another top-level prompt.
 - Focused questions inside recording, setup, and destructive workflows keep
   using their existing prompts. The TUI yields input while those questions are
   open and resumes the same workspace afterward.
+- While an action has control, the menu collapses to one working line so the
+  action output and question are not surrounded by a duplicate interface.
 
 The composer uses the existing deterministic slash-command registry. It does
 not call AI or the ClipStitchr backend to generate suggestions.
@@ -39,7 +41,15 @@ not call AI or the ClipStitchr backend to generate suggestions.
 The Ink application owns menu, composer, cursor, suggestion, history, notice,
 and running-action state. Menu actions and slash commands still call the same
 services as direct CLI commands. Ink's console patching keeps normal command
-logs readable above the live renderer.
+logs readable above the live renderer. Before a delegated action starts, the
+controller waits for Ink to release raw mode and then references and resumes
+stdin. This keeps Inquirer questions alive instead of allowing Node to exit on
+an unresolved prompt. The TUI runner unreferences stdin only when the workspace
+actually closes.
+
+Command helpers skip the repeated `ClipStitchr` brand while the TUI is active,
+but retain their useful action subtitle and normal output. Direct commands keep
+the complete brand header.
 
 ## Source References
 
@@ -55,6 +65,8 @@ logs readable above the live renderer.
   owns menu selection and keyboard navigation.
 - `packages/clipstitchr-cli/src/interactiveTui/runInteractiveTuiMenuAction.ts`
   dispatches menu actions through existing services.
+- `packages/clipstitchr-cli/src/interactiveTui/setInteractiveTuiStdinIsReferenced.ts`
+  keeps delegated prompt input alive and releases it on exit.
 - `packages/clipstitchr-cli/src/interactiveShell/dispatchSlashCommand.ts`
   remains the shared slash-command dispatcher.
 - `packages/clipstitchr-cli/src/interactiveShell/getInteractiveTuiIsSupported.ts`
@@ -74,6 +86,7 @@ packages/clipstitchr-cli/src/interactiveTui/
   InteractiveTuiMenu.tsx
   InteractiveTuiMode.ts
   InteractiveTuiNotice.tsx
+  InteractiveTuiRunningView.tsx
   InteractiveTuiStatusBar.tsx
   InteractiveTuiSuggestions.tsx
   getInteractiveTuiMenuChoices.ts
@@ -81,6 +94,7 @@ packages/clipstitchr-cli/src/interactiveTui/
   getNextInteractiveTuiSelectionIndex.ts
   runInteractiveTui.tsx
   runInteractiveTuiMenuAction.ts
+  setInteractiveTuiStdinIsReferenced.ts
   useInteractiveTuiActivity.ts
   useInteractiveTuiCommandComposer.ts
   useInteractiveTuiController.ts
@@ -92,9 +106,10 @@ packages/clipstitchr-cli/src/interactiveTui/
 
 The interactive TUI tests render the real Ink app, send terminal input, and
 verify that menu navigation, slash execution, and Tab completion return to the
-same workspace. Pure tests cover menu reuse, selection wrapping, and action
-dispatch. The full CLI suite continues covering the plain shell and direct
-commands.
+same workspace. Running-state tests verify that delegated questions get a clean
+terminal handoff, and stdin lifecycle tests cover the prompt keepalive. Pure
+tests cover menu reuse, selection wrapping, and action dispatch. The full CLI
+suite continues covering the plain shell and direct commands.
 
 This capability changes only local terminal interaction. It does not add or
 change a backend operation, external provider call, or rate limit.
