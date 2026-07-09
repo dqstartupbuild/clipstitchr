@@ -3,7 +3,7 @@
 import { CheckCircle2, KeyRound, Settings2, Trash2 } from "lucide-react";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import { SettingsPostBridgeProductConfigDropdown } from "@/app/_components/settings/SettingsPostBridgeProductConfigDropdown";
+import { SettingsPostBridgeProductConfigDialog } from "@/app/_components/settings/SettingsPostBridgeProductConfigDialog";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { deletePostBridgeSettings } from "@/lib/clipstitchr/client/deletePostBridgeSettings";
@@ -144,7 +144,7 @@ export function SettingsPostBridgePanel({
               size="sm"
               icon={<Settings2 aria-hidden className="h-4 w-4" />}
               disabled={isLoading}
-              onClick={() => setIsConfigOpen((isOpen) => !isOpen)}
+              onClick={() => setIsConfigOpen(true)}
             >
               Config
             </Button>
@@ -213,13 +213,15 @@ export function SettingsPostBridgePanel({
             Save and test
           </Button>
         </div>
-        <SettingsPostBridgeProductConfigDropdown
+      </form>
+      {isConfigOpen ? (
+        <SettingsPostBridgeProductConfigDialog
           hasApiKey={settings.hasApiKey}
           isDisabled={isBusy || isProductActionDisabled}
-          isOpen={isConfigOpen}
           products={products}
+          onClose={() => setIsConfigOpen(false)}
         />
-      </form>
+      ) : null}
     </Panel>
   );
 }

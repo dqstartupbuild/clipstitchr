@@ -6,11 +6,11 @@ every product's posting defaults in one place.
 ## How It Works
 
 The Post Bridge card in Account settings still owns the user's API key. Its
-`Config` button opens a dropdown for product account links. The dropdown lists
+`Config` button opens a dialog for product account links. The dialog lists
 all saved products, not only the active dashboard product, and each product row
 shows the currently selected Post Bridge accounts.
 
-When the dropdown opens, the browser calls the existing
+When the dialog opens, the browser calls the existing
 `GET /api/post-bridge/accounts` route once to load supported TikTok, Instagram,
 and YouTube accounts. The saved product links come from the local product list.
 Saving a product row calls `products.updatePostBridgeSocialAccountIds`, which
@@ -29,7 +29,7 @@ queued Post Bridge posts for the active product.
 ## Source Files
 
 - `web/app/_components/settings/SettingsPostBridgePanel.tsx`
-- `web/app/_components/settings/SettingsPostBridgeProductConfigDropdown.tsx`
+- `web/app/_components/settings/SettingsPostBridgeProductConfigDialog.tsx`
 - `web/app/_components/settings/PostBridgeProductAccountConfigRow.tsx`
 - `web/lib/clipstitchr/utils/createPostBridgeProductAccountSelections.ts`
 - `web/app/api/post-bridge/accounts/route.ts`

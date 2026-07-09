@@ -15,7 +15,7 @@ queue in one sequential run.
 Users add their own Post Bridge API key in Account settings. The key is tested
 against Post Bridge, encrypted server-side, and stored in Convex with only the
 last four characters shown back to the browser. The Settings page's Post Bridge
-`Config` dropdown lets the user link default TikTok, Instagram, and YouTube
+`Config` dialog lets the user link default TikTok, Instagram, and YouTube
 accounts to any saved product, no matter which product is currently active.
 
 Disconnecting Post Bridge removes the saved key and clears product-linked
@@ -179,7 +179,7 @@ posted post status counts.
 - `web/app/_components/postBridge/PostBridgeAutomaticSoundStatus.tsx`
 - `web/app/_components/postBridge/PostBridgeSoundModePicker.tsx`
 - `web/app/_components/settings/SettingsPostBridgePanel.tsx`
-- `web/app/_components/settings/SettingsPostBridgeProductConfigDropdown.tsx`
+- `web/app/_components/settings/SettingsPostBridgeProductConfigDialog.tsx`
 - `web/app/_components/settings/PostBridgeProductAccountConfigRow.tsx`
 - `web/app/_components/schedule/`
 - `web/app/dashboard/schedule/SchedulePageClient.tsx`
