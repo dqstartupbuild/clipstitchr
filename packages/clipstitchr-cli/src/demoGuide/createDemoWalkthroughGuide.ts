@@ -3,6 +3,7 @@ import type { DetectedProject } from "../project/DetectedProject.js";
 import type { ScannedFlow } from "../project/ScannedFlow.js";
 import type { DemoWalkthroughGuide } from "./DemoWalkthroughGuide.js";
 import { createDemoWalkthroughGuideId } from "./createDemoWalkthroughGuideId.js";
+import { createDemoWalkthroughGuideName } from "./createDemoWalkthroughGuideName.js";
 import { createDemoWalkthroughGuideSteps } from "./createDemoWalkthroughGuideSteps.js";
 import { demoWalkthroughGuideVersion } from "./demoWalkthroughGuideVersion.js";
 
@@ -22,6 +23,10 @@ export function createDemoWalkthroughGuide(input: {
     flowPath: input.flow?.path,
     goal,
     id: createDemoWalkthroughGuideId(),
+    name: createDemoWalkthroughGuideName({
+      flowName: input.flow?.name,
+      goal,
+    }),
     productId: input.product.id,
     productName: input.product.name,
     source: "cli-template",

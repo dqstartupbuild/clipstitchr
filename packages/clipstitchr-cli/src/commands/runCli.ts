@@ -178,7 +178,7 @@ export async function runCli(argv: string[]) {
   demoAgent
     .command("run")
     .description("Run a guarded demo agent")
-    .requiredOption("--guide <id-or-path>", "Use a saved walkthrough guide")
+    .requiredOption("--guide <name-id-or-path>", "Use a saved walkthrough guide")
     .option("--ai-planner", "Ask ClipStitchr AI to propose each guarded action")
     .option(
       "--driver <driver>",
@@ -230,7 +230,7 @@ export async function runCli(argv: string[]) {
 
   demoGuide
     .command("show")
-    .argument("<guide>", "Guide ID or guide file path")
+    .argument("<guide>", "Guide name, ID, or guide file path")
     .description("Show a saved walkthrough guide")
     .action(async (guide) => {
       await runDemoGuideShowCommand(guide);
@@ -238,7 +238,7 @@ export async function runCli(argv: string[]) {
 
   demoGuide
     .command("edit")
-    .argument("<guide>", "Guide ID or guide file path")
+    .argument("<guide>", "Guide name, ID, or guide file path")
     .description("Edit a walkthrough guide")
     .action(async (guide) => {
       await runDemoGuideEditCommand(guide);
@@ -246,7 +246,7 @@ export async function runCli(argv: string[]) {
 
   demoGuide
     .command("delete")
-    .argument("<guide>", "Guide ID or guide file path")
+    .argument("<guide>", "Guide name, ID, or guide file path")
     .description("Delete a walkthrough guide")
     .option("--yes", "Delete without asking")
     .action(async (guide, options) => {
@@ -258,7 +258,7 @@ export async function runCli(argv: string[]) {
 
   demoGuide
     .command("export-instructions")
-    .argument("<guide>", "Guide ID or guide file path")
+    .argument("<guide>", "Guide name, ID, or guide file path")
     .description("Export local-agent instructions for a guide")
     .option("--output <path>", "Write instructions to this Markdown file")
     .action(async (guide, options) => {
@@ -271,7 +271,7 @@ export async function runCli(argv: string[]) {
   demo
     .command("make")
     .description("Record a new product demo")
-    .option("--guide <id-or-path>", "Use a saved walkthrough guide")
+    .option("--guide <name-id-or-path>", "Use a saved walkthrough guide")
     .option("--no-guide", "Record without a walkthrough guide")
     .option("--no-upload", "Record only")
     .option("--output <path>", "Save the MP4 here")

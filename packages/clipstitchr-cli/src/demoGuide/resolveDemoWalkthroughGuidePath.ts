@@ -1,6 +1,9 @@
 import { stat } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
+import { createDemoWalkthroughGuideAmbiguousNameError } from "./createDemoWalkthroughGuideAmbiguousNameError.js";
 import { getDemoWalkthroughGuideFilePath } from "./getDemoWalkthroughGuideFilePath.js";
+import { getDemoWalkthroughGuideMatchesName } from "./getDemoWalkthroughGuideMatchesName.js";
+import { readDemoWalkthroughGuideEntries } from "./readDemoWalkthroughGuideEntries.js";
 
 export async function resolveDemoWalkthroughGuidePath(
   reference: string,
@@ -25,10 +28,21 @@ export async function resolveDemoWalkthroughGuidePath(
 
     return savedPath;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return null;
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      throw error;
     }
-
-    throw error;
   }
+
+  const nameMatches = (await readDemoWalkthroughGuideEntries(cwd)).filter(
+    (entry) => getDemoWalkthroughGuideMatchesName(entry.guide, reference),
+  );
+
+  if (nameMatches.length > 1) {
+    throw createDemoWalkthroughGuideAmbiguousNameError(
+      reference,
+      nameMatches.map((entry) => entry.guide),
+    );
+  }
+
+  return nameMatches[0]?.path ?? null;
 }

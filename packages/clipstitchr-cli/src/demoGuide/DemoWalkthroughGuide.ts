@@ -8,6 +8,7 @@ export type DemoWalkthroughGuide = {
   flowPath?: string;
   goal: string;
   id: string;
+  name: string;
   productId?: string;
   productName?: string;
   source: DemoWalkthroughGuideSource;

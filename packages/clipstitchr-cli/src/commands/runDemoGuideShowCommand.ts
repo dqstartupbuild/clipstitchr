@@ -14,6 +14,7 @@ export async function runDemoGuideShowCommand(reference: string) {
 
   printDemoWalkthroughGuide(guide);
   logKeyValue("Guide ID", guide.id);
+  logKeyValue("Guide name", guide.name);
   logKeyValue("Source", guide.source);
 
   if (guide.productName) {

@@ -1,5 +1,6 @@
 import { confirm, input } from "@inquirer/prompts";
 import type { DemoWalkthroughGuide } from "./DemoWalkthroughGuide.js";
+import { createDemoWalkthroughGuideName } from "./createDemoWalkthroughGuideName.js";
 
 export async function editDemoWalkthroughGuide(
   guide: DemoWalkthroughGuide,
@@ -7,6 +8,10 @@ export async function editDemoWalkthroughGuide(
   const title = await input({
     default: guide.title,
     message: "Guide title:",
+  });
+  const name = await input({
+    default: guide.name,
+    message: "Guide name:",
   });
   const goal = await input({
     default: guide.goal,
@@ -52,6 +57,9 @@ export async function editDemoWalkthroughGuide(
   return {
     ...guide,
     goal: goal.trim() || guide.goal,
+    name:
+      createDemoWalkthroughGuideName({ title: name }) ||
+      createDemoWalkthroughGuideName({ goal: goal.trim() || guide.goal }),
     steps: editedLabels.map((label, index) => ({
       id: `step-${index + 1}`,
       label,

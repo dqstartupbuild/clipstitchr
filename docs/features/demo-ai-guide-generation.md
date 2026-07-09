@@ -4,11 +4,15 @@ Demo AI guide generation adds a manual-first guide workflow to the ClipStitchr
 CLI. Users can ask ClipStitchr to draft a short walkthrough checklist, review
 or edit it locally, save it under `.clipstitchr/demo-guides`, and then record
 with the existing `clipstitchr demo make --guide <id>` stepper.
+Saved guides also get a readable `name` so users can run commands with a
+memorable guide name instead of copying an ID.
 
 ## What It Does
 
 - Adds `clipstitchr demo guide generate`, `list`, `show`, `edit`, `delete`, and
   `export-instructions`.
+- Shows readable guide names in `demo guide list` and resolves guides by name,
+  ID, or file path.
 - Adds `POST /api/cli/demo-guides/generate` for bearer-token CLI sessions.
 - Keeps recording manual. The generated guide never includes selectors,
   passwords, billing steps, destructive actions, or autonomous browser actions.
@@ -57,6 +61,8 @@ saves with `Save Hook Lab` when those controls exist.
 - `packages/clipstitchr-cli/src/project/scanAndWriteAppContext.ts`
 - `packages/clipstitchr-cli/src/project/scanProjectWorkflowHints.ts`
 - `packages/clipstitchr-cli/src/demoGuide/*`
+- `packages/clipstitchr-cli/src/demoGuide/createDemoWalkthroughGuideName.ts`
+- `packages/clipstitchr-cli/src/demoGuide/resolveDemoWalkthroughGuide.ts`
 - `web/app/api/cli/demo-guides/generate/route.ts`
 - `web/lib/clipstitchr/server/cli/appContext/*`
 - `web/lib/clipstitchr/server/cli/demoGuides/*`

@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import type { DemoWalkthroughGuide } from "./DemoWalkthroughGuide.js";
+import { createDemoWalkthroughGuideName } from "./createDemoWalkthroughGuideName.js";
 import { demoWalkthroughGuideVersion } from "./demoWalkthroughGuideVersion.js";
 import { readDemoWalkthroughGuideSource } from "./readDemoWalkthroughGuideSource.js";
 import { readDemoWalkthroughGuideStep } from "./readDemoWalkthroughGuideStep.js";
@@ -21,6 +22,7 @@ export async function readDemoWalkthroughGuide(filePath: string) {
   const id = readDemoWalkthroughGuideString(guide.id);
   const title = readDemoWalkthroughGuideString(guide.title);
   const goal = readDemoWalkthroughGuideString(guide.goal);
+  const name = readDemoWalkthroughGuideString(guide.name);
   const createdAt = readDemoWalkthroughGuideString(guide.createdAt);
   const updatedAt = readDemoWalkthroughGuideString(guide.updatedAt) ?? createdAt;
   const steps = (guide.steps as unknown[])
@@ -38,6 +40,13 @@ export async function readDemoWalkthroughGuide(filePath: string) {
     flowPath: readDemoWalkthroughGuideString(guide.flowPath),
     goal,
     id,
+    name:
+      name ??
+      createDemoWalkthroughGuideName({
+        flowName: readDemoWalkthroughGuideString(guide.flowName),
+        goal,
+        title,
+      }),
     productId: readDemoWalkthroughGuideString(guide.productId),
     productName: readDemoWalkthroughGuideString(guide.productName),
     source: readDemoWalkthroughGuideSource(guide.source),

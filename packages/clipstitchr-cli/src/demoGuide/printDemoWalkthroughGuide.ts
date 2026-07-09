@@ -1,12 +1,16 @@
 import type { DemoWalkthroughGuide } from "./DemoWalkthroughGuide.js";
 import { logKeyValue } from "../terminal/logKeyValue.js";
 import { logSection } from "../terminal/logSection.js";
+import { ensureDemoWalkthroughGuideName } from "./ensureDemoWalkthroughGuideName.js";
 
 export function printDemoWalkthroughGuide(guide: DemoWalkthroughGuide) {
-  logSection("Demo walkthrough");
-  logKeyValue("Goal", guide.goal);
+  const guideWithName = ensureDemoWalkthroughGuideName(guide);
 
-  guide.steps.forEach((step, index) => {
+  logSection("Demo walkthrough");
+  logKeyValue("Name", guideWithName.name);
+  logKeyValue("Goal", guideWithName.goal);
+
+  guideWithName.steps.forEach((step, index) => {
     console.log(`${index + 1}. ${step.label}`);
   });
 }

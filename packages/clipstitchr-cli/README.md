@@ -22,8 +22,8 @@ clipstitchr demo auto --driver openai-computer --target live --url https://examp
 clipstitchr demo auto --driver openai-computer --surface macos-window --openai-mode relay
 clipstitchr demo guide generate
 clipstitchr demo guide list
-clipstitchr demo guide show guide_123
-clipstitchr demo guide edit guide_123
+clipstitchr demo guide show "Checkout flow"
+clipstitchr demo guide edit "Checkout flow"
 clipstitchr demo guide delete guide_123
 clipstitchr demo guide export-instructions guide_123
 clipstitchr demo policy init
@@ -31,15 +31,15 @@ clipstitchr demo policy check
 clipstitchr demo policy edit
 clipstitchr demo agent init
 clipstitchr demo agent check
-clipstitchr demo agent run --guide guide_123 --dry-run
-clipstitchr demo agent run --guide guide_123
+clipstitchr demo agent run --guide "Checkout flow" --dry-run
+clipstitchr demo agent run --guide "Checkout flow"
 clipstitchr demo agent run --guide guide_123 --ai-planner --dry-run
 clipstitchr demo agent run --guide guide_123 --driver openai-computer
 clipstitchr demo agent run --guide guide_123 --driver openai-computer --target live --url https://example.com
 clipstitchr demo agent run --guide guide_123 --no-upload
 clipstitchr demo agent export-log agent_run_123
 clipstitchr demo make
-clipstitchr demo make --guide guide_123
+clipstitchr demo make --guide "Checkout flow"
 clipstitchr demo make --no-guide
 clipstitchr demo upload ./demo.mp4
 clipstitchr stitchr batch
@@ -67,6 +67,10 @@ summary locally without asking questions. It does not upload automatically.
 The built-in recorder can also create a simple walkthrough checklist before
 each demo. You can run `clipstitchr demo guide generate` to draft a guide with
 ClipStitchr first, review it, edit it, and save it for the next recording.
+Saved guides get readable names like `Checkout flow`, and `demo guide list`
+shows those names first. You can use a guide name, ID, or file path with
+`demo guide show`, `edit`, `delete`, `export-instructions`, `demo make
+--guide`, and `demo agent run --guide`.
 During recording, the terminal walks through each step and records section
 timing metadata for ClipStitchr to use later for chapters, captions, smart
 zooms, and editing decisions. Use `--no-guide` when you want one free-form take,

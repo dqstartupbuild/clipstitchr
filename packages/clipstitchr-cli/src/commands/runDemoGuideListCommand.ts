@@ -28,6 +28,6 @@ export async function runDemoGuideListCommand(options: DemoGuideListOptions) {
   }
 
   for (const guide of guides) {
-    logKeyValue(guide.id, `${guide.title} (${guide.source})`);
+    logKeyValue(guide.name, `${guide.title} - ${guide.id} (${guide.source})`);
   }
 }

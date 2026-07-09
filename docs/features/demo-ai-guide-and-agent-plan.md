@@ -12,7 +12,8 @@ Already implemented:
 - `clipstitchr demo make` can create, save, reuse, and upload walkthrough
   guides.
 - Guides are saved in `.clipstitchr/demo-guides/*.json`.
-- The last used guide ID is saved in `.clipstitchr.yml`.
+- The last used guide ID is saved in `.clipstitchr.yml`, while users can refer
+  to saved guides by readable name, ID, or file path.
 - Web, iOS, Android, and React Native recording paths can show the stepper and
   capture step timings.
 - Web recordings also upload click and cursor timing metadata.
@@ -156,8 +157,8 @@ Add a dedicated guide namespace:
 ```bash
 clipstitchr demo guide generate
 clipstitchr demo guide list
-clipstitchr demo guide show guide_123
-clipstitchr demo guide edit guide_123
+clipstitchr demo guide show "Checkout flow"
+clipstitchr demo guide edit "Checkout flow"
 clipstitchr demo guide delete guide_123
 clipstitchr demo guide export-instructions guide_123
 ```

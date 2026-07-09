@@ -10,6 +10,7 @@ const guide: DemoWalkthroughGuide = {
   flowPath: "/",
   goal: "Show the homepage",
   id: "guide_test",
+  name: "Open the product",
   productId: "product_test",
   productName: "ClipStitchr",
   source: "ai-assisted",

@@ -48,7 +48,7 @@ export async function selectDemoWalkthroughGuide(
     const action = await select({
       choices: [
         {
-          name: `Use saved guide: ${lastGuide.title}`,
+          name: `Use saved guide: ${lastGuide.name}`,
           value: lastGuide.id,
         },
         {
@@ -74,7 +74,7 @@ export async function selectDemoWalkthroughGuide(
     const action = await select({
       choices: [
         ...guides.slice(0, 5).map((guide) => ({
-          name: `Use ${guide.title}`,
+          name: `Use ${guide.name}`,
           value: guide.id,
         })),
         {

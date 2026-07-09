@@ -13,6 +13,7 @@ export function createDemoAgentTestGuide(
     flowPath: "/dashboard",
     goal: "Verify the guarded agent loop",
     id: "guide_fixture",
+    name: "Fixture flow",
     source: "cli-template",
     steps,
     title: "Fixture guide",
