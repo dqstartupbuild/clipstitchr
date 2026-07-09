@@ -111,7 +111,7 @@ export const clipstitchrCliDoc = {
     {
       title: "Find and queue content",
       body: [
-        "Queue adds ready active work to your Post Bridge queue, using the connected accounts saved on the product unless you pass account IDs yourself. Dashboard Library browsing remains the best way to inspect saved clips, Stitches, and Swipes.",
+        "Run clipstitchr queue when you want the focused queue menu. Queue adds ready active work to your Post Bridge queue, using the connected accounts saved on the product unless you pass account IDs yourself. Dashboard Library browsing remains the best way to inspect saved clips, Stitches, and Swipes.",
       ],
       bullets: [
         "Queue does not ask for a date or time.",
@@ -121,6 +121,7 @@ export const clipstitchrCliDoc = {
         "Open the dashboard when you need to review the full Library or render and queue the full Swipe carousel or video version.",
       ],
       commands: [
+        "clipstitchr queue",
         "clipstitchr queue stitch",
         "clipstitchr queue stitch stitch_123 --caption \"New demo is live\"",
         "clipstitchr queue stitch --all",

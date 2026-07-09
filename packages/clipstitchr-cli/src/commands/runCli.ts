@@ -44,6 +44,7 @@ import { clipstitchrCliDescription } from "../config/clipstitchrCliDescription.j
 import { readCliPackageVersion } from "../config/readCliPackageVersion.js";
 import { runDemoMenuCommand } from "../demoMenu/runDemoMenuCommand.js";
 import { runInteractiveCommand } from "../interactive/runInteractiveCommand.js";
+import { runQueueMenuCommand } from "../queueMenu/runQueueMenuCommand.js";
 
 export async function runCli(argv: string[]) {
   const packageVersion = await readCliPackageVersion();
@@ -460,7 +461,7 @@ export async function runCli(argv: string[]) {
         return;
       }
 
-      queue.help();
+      await runQueueMenuCommand(program.opts());
     });
 
   queue

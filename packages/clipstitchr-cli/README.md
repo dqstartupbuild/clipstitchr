@@ -10,6 +10,8 @@ npx clipstitchr
 Running `clipstitchr` opens the main menu. Choose `Record a demo`, then pick
 `Record it myself` for manual recording or `Let AI record it for me` for a
 policy-guarded AI run with a saved guide.
+Run `clipstitchr queue` when you want a focused queue menu for latest, all, or
+specific Stitch and Swipe queue actions.
 
 Useful commands:
 
@@ -45,6 +47,7 @@ clipstitchr demo manual --no-guide
 clipstitchr demo upload ./demo.mp4
 clipstitchr stitchr batch
 clipstitchr swipr batch
+clipstitchr queue
 clipstitchr queue stitch
 clipstitchr queue stitch --all
 clipstitchr queue swipe
