@@ -28,4 +28,5 @@ name, so older local guides keep working.
 Readable names make saved guides easier to scan and reuse from Terminal. Users
 can run commands like `clipstitchr demo guide show "Checkout flow"` or
 `clipstitchr demo agent run --guide "Checkout flow"` while scripts can keep
-using stable IDs and file paths.
+using stable IDs and file paths. `demo guide create` is the primary creation
+command, with `demo guide generate` kept as an alias for older scripts.

@@ -188,12 +188,12 @@ export const clipstitchrCliDoc = {
         "Keep exported instructions with the safety policy when another recorder or local tool will follow them.",
       ],
       commands: [
-        "clipstitchr demo guide generate",
+        "clipstitchr demo guide create",
         "clipstitchr demo guide list",
         "clipstitchr demo guide show \"Checkout flow\"",
         "clipstitchr demo guide edit \"Checkout flow\"",
         "clipstitchr demo guide delete guide_123",
-        "clipstitchr demo guide export-instructions guide_123",
+        "clipstitchr demo guide save-instructions guide_123",
       ],
     },
     {

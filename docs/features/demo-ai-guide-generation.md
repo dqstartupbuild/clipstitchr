@@ -9,8 +9,10 @@ memorable guide name instead of copying an ID.
 
 ## What It Does
 
-- Adds `clipstitchr demo guide generate`, `list`, `show`, `edit`, `delete`, and
-  `export-instructions`.
+- Adds `clipstitchr demo guide create`, `list`, `show`, `edit`, `delete`, and
+  `save-instructions`.
+- Keeps `demo guide generate` and `demo guide export-instructions` as legacy
+  aliases.
 - Shows readable guide names in `demo guide list` and resolves guides by name,
   ID, or file path.
 - Adds `POST /api/cli/demo-guides/generate` for bearer-token CLI sessions.

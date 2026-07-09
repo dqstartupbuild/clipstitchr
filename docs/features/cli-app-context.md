@@ -11,7 +11,7 @@ how the target app is actually used.
 - Stores the selected product summary in `.clipstitchr.yml` so repo status has
   product context without another API call.
 - Refreshes context during `clipstitchr link`, `clipstitchr init`,
-  `clipstitchr demo agent init`, `clipstitchr demo guide generate`,
+  `clipstitchr demo agent init`, `clipstitchr demo guide create`,
   `clipstitchr demo agent run`, and `clipstitchr demo auto`.
 - Sends the capped context to AI guide generation and per-action agent planning.
 

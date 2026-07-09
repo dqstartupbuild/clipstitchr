@@ -136,7 +136,7 @@ update and focused tests.
 
 ### User Flow
 
-1. User runs `clipstitchr demo guide generate`.
+1. User runs `clipstitchr demo guide create`.
 2. CLI asks for product, selected flow, target audience, and what the demo
    should show.
 3. CLI sends a small request to ClipStitchr with route context and capped local
@@ -155,18 +155,18 @@ update and focused tests.
 Add a dedicated guide namespace:
 
 ```bash
-clipstitchr demo guide generate
+clipstitchr demo guide create
 clipstitchr demo guide list
 clipstitchr demo guide show "Checkout flow"
 clipstitchr demo guide edit "Checkout flow"
 clipstitchr demo guide delete guide_123
-clipstitchr demo guide export-instructions guide_123
+clipstitchr demo guide save-instructions guide_123
 ```
 
 `clipstitchr demo make` should stay simple. It can offer "Create an AI
 walkthrough" in the existing guide prompt after Phase 3 is stable, but the
 first implementation should keep AI generation behind the explicit
-`demo guide generate` command.
+`demo guide create` command.
 
 ### Backend API
 
@@ -473,7 +473,7 @@ made.
 Add this after the internal policy format exists:
 
 ```bash
-clipstitchr demo guide export-instructions guide_123
+clipstitchr demo guide save-instructions guide_123
 ```
 
 The export should produce a Markdown instruction file and JSON policy that a
@@ -532,7 +532,7 @@ Required before the autonomous agent ships:
 
 ## Rollout Plan
 
-1. Ship Phase 3 behind explicit `clipstitchr demo guide generate`.
+1. Ship Phase 3 behind explicit `clipstitchr demo guide create`.
 2. Add customer docs only after generation works against production.
 3. Keep `clipstitchr demo make` defaulting to manual guided recording.
 4. Keep Phase 4 as a private local beta with `clipstitchr demo agent run`.

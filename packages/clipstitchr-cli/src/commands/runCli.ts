@@ -213,8 +213,16 @@ export async function runCli(argv: string[]) {
     .description("Create and manage walkthrough guides");
 
   demoGuide
-    .command("generate")
-    .description("Create an AI walkthrough guide")
+    .command("create")
+    .description("Create a walkthrough guide")
+    .option("--product <id>", "Use this product ID")
+    .action(async (options) => {
+      await runDemoGuideGenerateCommand({ ...program.opts(), ...options });
+    });
+
+  demoGuide
+    .command("generate", { hidden: true })
+    .description("Legacy alias for demo guide create")
     .option("--product <id>", "Use this product ID")
     .action(async (options) => {
       await runDemoGuideGenerateCommand({ ...program.opts(), ...options });
@@ -257,9 +265,21 @@ export async function runCli(argv: string[]) {
     });
 
   demoGuide
-    .command("export-instructions")
+    .command("save-instructions")
     .argument("<guide>", "Guide name, ID, or guide file path")
-    .description("Export local-agent instructions for a guide")
+    .description("Save local instructions for a guide")
+    .option("--output <path>", "Write instructions to this Markdown file")
+    .action(async (guide, options) => {
+      await runDemoGuideExportInstructionsCommand(guide, {
+        ...program.opts(),
+        ...options,
+      });
+    });
+
+  demoGuide
+    .command("export-instructions", { hidden: true })
+    .argument("<guide>", "Guide name, ID, or guide file path")
+    .description("Legacy alias for demo guide save-instructions")
     .option("--output <path>", "Write instructions to this Markdown file")
     .action(async (guide, options) => {
       await runDemoGuideExportInstructionsCommand(guide, {

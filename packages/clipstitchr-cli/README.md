@@ -20,12 +20,12 @@ clipstitchr demo auto --driver openai-computer
 clipstitchr demo auto --driver openai-computer --openai-mode relay
 clipstitchr demo auto --driver openai-computer --target live --url https://example.com
 clipstitchr demo auto --driver openai-computer --surface macos-window --openai-mode relay
-clipstitchr demo guide generate
+clipstitchr demo guide create
 clipstitchr demo guide list
 clipstitchr demo guide show "Checkout flow"
 clipstitchr demo guide edit "Checkout flow"
 clipstitchr demo guide delete guide_123
-clipstitchr demo guide export-instructions guide_123
+clipstitchr demo guide save-instructions guide_123
 clipstitchr demo policy init
 clipstitchr demo policy check
 clipstitchr demo policy edit
@@ -65,11 +65,11 @@ one command. It can use localhost by default, or a live/staging URL with
 summary locally without asking questions. It does not upload automatically.
 
 The built-in recorder can also create a simple walkthrough checklist before
-each demo. You can run `clipstitchr demo guide generate` to draft a guide with
+each demo. You can run `clipstitchr demo guide create` to draft a guide with
 ClipStitchr first, review it, edit it, and save it for the next recording.
 Saved guides get readable names like `Checkout flow`, and `demo guide list`
 shows those names first. You can use a guide name, ID, or file path with
-`demo guide show`, `edit`, `delete`, `export-instructions`, `demo make
+`demo guide show`, `edit`, `delete`, `save-instructions`, `demo make
 --guide`, and `demo agent run --guide`.
 During recording, the terminal walks through each step and records section
 timing metadata for ClipStitchr to use later for chapters, captions, smart
