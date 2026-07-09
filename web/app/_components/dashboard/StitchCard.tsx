@@ -25,6 +25,7 @@ import {
 } from "@/app/_components/ui/MediaCardActionMenu";
 import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
 import { createStitchExportBlob } from "@/lib/clipstitchr/client/createStitchExportBlob";
+import { createStitchPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createStitchPostBridgeScheduleMedia";
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { createVideoBlobWithPosterMetadata } from "@/lib/clipstitchr/media/createVideoBlobWithPosterMetadata";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
@@ -50,7 +51,6 @@ import { getReuseStitchHref } from "@/lib/clipstitchr/utils/getReuseStitchHref";
 import { getQuickEditSuggestionsHasActionableChange } from "@/lib/clipstitchr/utils/getQuickEditSuggestionsHasActionableChange";
 import { getStitchIsLongr } from "@/lib/clipstitchr/utils/getStitchIsLongr";
 import { getStitchrHookPlanMatchesStitch } from "@/lib/clipstitchr/utils/getStitchrHookPlanMatchesStitch";
-import { getPostBridgeMediaFileName } from "@/lib/clipstitchr/utils/getPostBridgeMediaFileName";
 import { capturePostHogException } from "@/lib/clipstitchr/analytics/capturePostHogException";
 import { trackPostHogEvent } from "@/lib/clipstitchr/analytics/trackPostHogEvent";
 
@@ -357,30 +357,13 @@ export function StitchCard({
   }: {
     onProgress: (progress: number) => void;
   }) => {
-    const renderedBlob =
-      (await onLoadVideo?.(stitch)) ??
-      (await createStitchExportBlob(stitch, {
-        includePosterMetadata: false,
-        loadClip: onLoadClip,
-        onProgress,
-      }));
-
-    setStitchVideoBlob(renderedBlob);
-
-    return {
-      hasAudio: Boolean(
-        stitch.music?.enabled ||
-          stitch.includeUgcAudio !== false ||
-          stitch.includeDemoAudio !== false,
-      ),
-      mediaFiles: [
-        {
-          blob: renderedBlob,
-          fileName: getPostBridgeMediaFileName(stitch.name, "video"),
-          mediaKind: "video" as const,
-        },
-      ],
-    };
+    return await createStitchPostBridgeScheduleMedia({
+      loadClip: onLoadClip,
+      loadVideo: onLoadVideo,
+      onProgress,
+      onRenderedVideo: setStitchVideoBlob,
+      stitch,
+    });
   };
   const handleScore = async () => {
     if (!onScore) {

@@ -1,14 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
 import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { StatusFilterTabs } from "@/app/_components/ui/StatusFilterTabs";
+import { createPostBridgeDefaultAccountResolver } from "@/lib/clipstitchr/client/createPostBridgeDefaultAccountResolver";
+import { createStitchPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createStitchPostBridgeScheduleMedia";
+import { schedulePostBridgePost } from "@/lib/clipstitchr/client/schedulePostBridgePost";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
+import { useLibraryBatchQueue } from "@/lib/clipstitchr/hooks/useLibraryBatchQueue";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
@@ -135,6 +139,49 @@ export function StitchesSection({
     itemPluralName: "stitches",
     onDelete,
   });
+  const resolvePostBridgeDefaultAccounts = useMemo(
+    () => createPostBridgeDefaultAccountResolver(),
+    [],
+  );
+  const selectedStitches = useMemo(
+    () => stitches.filter((stitch) => batchDelete.selectedIds.has(stitch.id)),
+    [batchDelete.selectedIds, stitches],
+  );
+  const queueStitch = useCallback(
+    async (stitch: Stitch) => {
+      const accountSelection = await resolvePostBridgeDefaultAccounts(
+        stitch.productId,
+      );
+      const renderResult = await createStitchPostBridgeScheduleMedia({
+        loadClip: onLoadClip,
+        loadVideo: onLoadVideo,
+        onProgress: () => undefined,
+        stitch,
+      });
+
+      await schedulePostBridgePost({
+        caption: stitch.socialCaption ?? "",
+        hasAudio: renderResult.hasAudio,
+        mediaFiles: renderResult.mediaFiles,
+        socialAccountIds: accountSelection.socialAccountIds,
+        sourceId: stitch.id,
+        sourceType: "stitch",
+        title: stitch.name,
+        useQueue: true,
+      });
+    },
+    [onLoadClip, onLoadVideo, resolvePostBridgeDefaultAccounts],
+  );
+  const batchQueue = useLibraryBatchQueue({
+    itemName: "stitch",
+    itemPluralName: "stitches",
+    items: selectedStitches,
+    onComplete: async () => {
+      batchDelete.stopSelecting();
+      await onPostBridgeScheduled?.();
+    },
+    onQueueItem: queueStitch,
+  });
   const statusFilterOptions: {
     label: string;
     value: StitchLibraryStatusFilter;
@@ -167,12 +214,17 @@ export function StitchesSection({
             <LibraryBatchActionBar
               areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
               isDeletingSelected={batchDelete.isDeletingSelected}
+              isQueueingSelected={batchQueue.isQueueingSelected}
               isSelecting={batchDelete.isSelecting}
+              queueStatusMessage={batchQueue.queueStatusMessage}
               selectedCount={batchDelete.selectedCount}
               visibleItemCount={batchDelete.visibleItemCount}
               onClearSelection={batchDelete.clearSelection}
               onDeleteSelected={() => {
                 void batchDelete.deleteSelectedItems();
+              }}
+              onQueueSelected={() => {
+                void batchQueue.queueSelectedItems();
               }}
               onSelectVisible={batchDelete.selectVisibleItems}
               onStartSelecting={batchDelete.startSelecting}
@@ -192,7 +244,9 @@ export function StitchesSection({
                 hookPlans={hookPlans}
                 savingHookPlanId={savingHookPlanId}
                 isSelected={batchDelete.selectedIds.has(stitch.id)}
-                isSelectionDisabled={batchDelete.isDeletingSelected}
+                isSelectionDisabled={
+                  batchDelete.isDeletingSelected || batchQueue.isQueueingSelected
+                }
                 isSavingTemplate={savingTemplateStitchId === stitch.id}
                 onDelete={onDelete}
                 onAcceptHookVariant={onAcceptHookVariant}

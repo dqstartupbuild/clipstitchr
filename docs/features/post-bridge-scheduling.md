@@ -9,6 +9,9 @@ API source reference: `https://api.post-bridge.com/reference#description/introdu
 ## How It Works
 
 Saved Stitches and Swipes show a `Schedule post` action in their card menu.
+Their Library sections also expose `Queue selected` while selection mode is
+active, letting users add several saved Stitches or Swipes to the Post Bridge
+queue in one sequential run.
 Users add their own Post Bridge API key in Account settings. The key is tested
 against Post Bridge, encrypted server-side, and stored in Convex with only the
 last four characters shown back to the browser. The Schedule page's
@@ -27,6 +30,13 @@ to the source product, and still lets the user adjust accounts for that one
 post before choosing whether to post now or add it to their Post Bridge queue.
 Queued posts use Post Bridge's saved queue settings instead of a ClipStitchr
 date picker.
+
+Bulk queue uses the product-linked default Post Bridge accounts for each
+selected item. It does not open the schedule dialog for every card. If a product
+has no saved account defaults, the bulk run stops and asks the user to save
+Post Bridge accounts for that product first. Swipes queued in bulk do not resolve
+automatic sounds; they render as image carousels unless the default accounts
+include YouTube, where the dashboard renders a 9:16 MP4.
 
 Stitches use the same browser export path as downloads. If the saved stitch has
 an existing rendered video, that video is used. Otherwise the browser renders
@@ -124,6 +134,11 @@ scheduled posts are scoped to that user's Post Bridge account.
 Automatic Swipe sounds use the existing TikTok sound search and import routes,
 which are separately authenticated and rate-limited before Apify and R2 work.
 
+Dashboard bulk queue is intentionally sequential. Each selected item uses the
+same browser media rendering, temporary R2 upload, Post Bridge media upload, and
+`POST /api/post-bridge/schedule` flow as the single-card action, then moves to
+the next item only after the previous one succeeds.
+
 ## Analytics
 
 The dashboard sidebar includes `Schedule` at `/dashboard/schedule` and
@@ -158,6 +173,9 @@ posted post status counts.
 ## Source Files
 
 - `web/app/_components/postBridge/PostBridgeScheduleDialog.tsx`
+- `web/app/_components/dashboard/LibraryBatchActionBar.tsx`
+- `web/app/_components/dashboard/StitchesSection.tsx`
+- `web/app/_components/dashboard/SwiprSwipesSection.tsx`
 - `web/app/_components/postBridge/PostBridgeAutomaticSoundStatus.tsx`
 - `web/app/_components/postBridge/PostBridgeSoundModePicker.tsx`
 - `web/app/_components/settings/SettingsPostBridgePanel.tsx`
@@ -187,6 +205,10 @@ posted post status counts.
 - `docs/features/post-bridge-analytics.md`
 - `web/lib/clipstitchr/media/renderSwiprSlideBlob.ts`
 - `web/lib/clipstitchr/media/renderSwiprSwipeVideoBlob.ts`
+- `web/lib/clipstitchr/hooks/useLibraryBatchQueue.ts`
+- `web/lib/clipstitchr/client/createStitchPostBridgeScheduleMedia.ts`
+- `web/lib/clipstitchr/client/createSwiprPostBridgeScheduleMedia.ts`
+- `web/lib/clipstitchr/client/createPostBridgeDefaultAccountResolver.ts`
 - `web/lib/clipstitchr/hooks/useAutomaticPostBridgeSound.ts`
 - `web/lib/clipstitchr/server/postBridge/`
 - `web/convex/postBridgeSettings.ts`

@@ -14,25 +14,14 @@ import { fetchPostBridgeAccountOptions } from "@/lib/clipstitchr/client/fetchPos
 import { schedulePostBridgePost } from "@/lib/clipstitchr/client/schedulePostBridgePost";
 import { useAutomaticPostBridgeSound } from "@/lib/clipstitchr/hooks/useAutomaticPostBridgeSound";
 import type { PostBridgePostReference } from "@/lib/clipstitchr/types/PostBridgePostReference";
-import type { PostBridgePlatform } from "@/lib/clipstitchr/types/PostBridgePlatform";
 import type { PostBridgePublishMode } from "@/lib/clipstitchr/types/PostBridgePublishMode";
-import type { PostBridgeScheduleMediaFile } from "@/lib/clipstitchr/types/PostBridgeScheduleMediaFile";
+import type { PostBridgeScheduleRenderOptions } from "@/lib/clipstitchr/types/PostBridgeScheduleRenderOptions";
+import type { PostBridgeScheduleRenderResult } from "@/lib/clipstitchr/types/PostBridgeScheduleRenderResult";
 import type { PostBridgeSoundMode } from "@/lib/clipstitchr/types/PostBridgeSoundMode";
 import type { PostBridgeSocialAccount } from "@/lib/clipstitchr/types/PostBridgeSocialAccount";
 import type { PostBridgeSourceType } from "@/lib/clipstitchr/types/PostBridgeSourceType";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import { createAutomaticSoundSearchQuery } from "@/lib/clipstitchr/utils/createAutomaticSoundSearchQuery";
-
-type PostBridgeScheduleRenderOptions = {
-  musicTrack: SharedMusicTrack | null;
-  onProgress: (progress: number) => void;
-  platforms: PostBridgePlatform[];
-};
-
-type PostBridgeScheduleRenderResult = {
-  hasAudio: boolean;
-  mediaFiles: PostBridgeScheduleMediaFile[];
-};
 
 type PostBridgeScheduleDialogProps = {
   allowMusic?: boolean;

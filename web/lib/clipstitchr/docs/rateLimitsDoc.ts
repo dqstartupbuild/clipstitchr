@@ -9,7 +9,7 @@ export const rateLimitsDoc = {
     "See how often you can run common actions before ClipStitchr asks you to wait.",
   category: "limits",
   order: 100,
-  updated: "2026-06-22",
+  updated: "2026-07-09",
   sections: [
     {
       title: "Why limits exist",
@@ -175,6 +175,30 @@ export const rateLimitsDoc = {
           action: "Avatar delete",
           limit: "100 per hour; up to 20 at once",
           note: "Covers one confirmed avatar delete and its photos.",
+        },
+      ],
+    },
+    {
+      title: "Post Bridge",
+      rows: [
+        {
+          action: "Post Bridge reads",
+          limit: "120 per hour; up to 30 at once",
+          note: "Used for connected accounts, scheduled posts, analytics, and key checks.",
+        },
+        {
+          action: "Post Bridge media uploads",
+          limit: "2 GB per day",
+          note: "Counts rendered media sent from ClipStitchr to Post Bridge.",
+        },
+        {
+          action: "Post Bridge post creates",
+          limit: "600 per minute and 1,000 per day",
+          note: "Uses your saved Post Bridge key. Bulk queue sends selected posts one at a time.",
+        },
+        {
+          action: "Post Bridge analytics sync",
+          limit: "12 per hour; up to 3 at once",
         },
       ],
     },

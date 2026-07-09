@@ -413,15 +413,15 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
   },
   postBridgeSchedule: {
     kind: "token bucket",
-    rate: 10,
-    period: HOUR,
-    capacity: 5,
+    rate: 600,
+    period: MINUTE,
+    capacity: 60,
   },
   postBridgeScheduleDaily: {
     kind: "token bucket",
-    rate: 30,
+    rate: 1000,
     period: DAY,
-    capacity: 30,
+    capacity: 1000,
   },
   postBridgeUploadBytesDaily: {
     kind: "token bucket",
@@ -431,10 +431,10 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
   },
   postBridgeScheduleGlobalDaily: {
     kind: "token bucket",
-    rate: 1000,
+    rate: 10000,
     period: DAY,
-    capacity: 200,
-    shards: 5,
+    capacity: 1000,
+    shards: 10,
   },
   postBridgeUploadBytesGlobalDaily: {
     kind: "token bucket",

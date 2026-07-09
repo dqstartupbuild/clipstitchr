@@ -21,25 +21,19 @@ import {
 } from "@/app/_components/ui/MediaCardActionMenu";
 import { Panel } from "@/app/_components/ui/Panel";
 import { SelectionCheckboxButton } from "@/app/_components/ui/SelectionCheckboxButton";
+import { createSwiprPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createSwiprPostBridgeScheduleMedia";
 import { useLazyBlobObjectUrl } from "@/lib/clipstitchr/hooks/useLazyBlobObjectUrl";
 import { useObjectUrl } from "@/lib/clipstitchr/hooks/useObjectUrl";
 import { useSwiprExport } from "@/lib/clipstitchr/hooks/useSwiprExport";
-import { downloadMusicBlob } from "@/lib/clipstitchr/client/r2/downloadMusicBlob";
-import { renderSwiprSlideBlob } from "@/lib/clipstitchr/media/renderSwiprSlideBlob";
-import { renderSwiprSwipeVideoBlob } from "@/lib/clipstitchr/media/renderSwiprSwipeVideoBlob";
 import type { PostBridgePlatform } from "@/lib/clipstitchr/types/PostBridgePlatform";
-import type { PostBridgeScheduleMediaFile } from "@/lib/clipstitchr/types/PostBridgeScheduleMediaFile";
 import type { SharedMusicTrack } from "@/lib/clipstitchr/types/SharedMusicTrack";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import { createSwiprSwipeSocialDescription } from "@/lib/clipstitchr/utils/createSwiprSwipeSocialDescription";
 import { formatDate } from "@/lib/clipstitchr/utils/formatDate";
-import { getPostBridgeMediaFileName } from "@/lib/clipstitchr/utils/getPostBridgeMediaFileName";
 import { getSwiprBackgroundFromAsset } from "@/lib/clipstitchr/utils/getSwiprBackgroundFromAsset";
-import { getSwiprPostBridgeMediaKind } from "@/lib/clipstitchr/utils/getSwiprPostBridgeMediaKind";
 import { getSwiprPostBridgeTitle } from "@/lib/clipstitchr/utils/getSwiprPostBridgeTitle";
 import { getSwiprSlideBackgroundId } from "@/lib/clipstitchr/utils/getSwiprSlideBackgroundId";
-import { getSwiprSlideFileName } from "@/lib/clipstitchr/utils/getSwiprSlideFileName";
 import { getSwiprSwipeEditHref } from "@/lib/clipstitchr/utils/getSwiprSwipeEditHref";
 
 type SwiprSwipeCardProps = {
@@ -251,91 +245,24 @@ export function SwiprSwipeCard({
     onProgress: (progress: number) => void;
     platforms: PostBridgePlatform[];
   }) => {
-    const currentBackground = background;
-
-    if (hasMissingBackground || !currentBackground) {
+    if (hasMissingBackground) {
       throw new Error("This Swipe is missing a photo.");
     }
 
-    const primaryBlob =
-      backgroundBlob ?? (await onLoadBackgroundBlob(currentBackground.id));
-    const slideBackgroundBlobs: Record<string, Blob> = {};
-
-    setLoadedBackground({
-      id: currentBackground.id,
-      blob: primaryBlob,
-    });
-
-    for (const slide of swipe.slides) {
-      const backgroundId = getSwiprSlideBackgroundId(slide, swipe.backgroundId);
-      const slideBackgroundAsset =
-        backgroundId === currentBackground.id
-          ? currentBackground
-          : backgroundsById.get(backgroundId);
-
-      if (!slideBackgroundAsset) {
-        throw new Error("Unable to load this Swipe photo.");
-      }
-
-      slideBackgroundBlobs[slide.id] =
-        backgroundId === currentBackground.id
-          ? primaryBlob
-          : slideBackgroundAsset.blob ??
-            (await onLoadBackgroundBlob(slideBackgroundAsset.id));
-    }
-
-    if (
-      getSwiprPostBridgeMediaKind({
-        hasMusic: Boolean(musicTrack),
-        platforms,
-      }) === "image"
-    ) {
-      const mediaFiles: PostBridgeScheduleMediaFile[] = [];
-
-      for (let index = 0; index < swipe.slides.length; index += 1) {
-        const slide = swipe.slides[index];
-        const slideBlob = await renderSwiprSlideBlob(
-          slideBackgroundBlobs[slide.id],
-          slide,
-        );
-
-        mediaFiles.push({
-          blob: slideBlob,
-          fileName: getSwiprSlideFileName(index),
-          mediaKind: "image",
+    return await createSwiprPostBridgeScheduleMedia({
+      backgroundsById,
+      loadBackgroundBlob: onLoadBackgroundBlob,
+      musicTrack,
+      onPrimaryBackgroundLoaded: (id, blob) => {
+        setLoadedBackground({
+          blob,
+          id,
         });
-        onProgress((index + 1) / swipe.slides.length);
-      }
-
-      return {
-        hasAudio: false,
-        mediaFiles,
-      };
-    }
-
-    const musicBlob = musicTrack
-      ? await downloadMusicBlob({
-          audioObject: musicTrack.audioObject,
-          sharedTrackId: musicTrack.id,
-        })
-      : null;
-    const renderResult = await renderSwiprSwipeVideoBlob({
-      musicBlob,
+      },
       onProgress,
-      slideBackgroundBlobs,
-      slides: swipe.slides,
+      platforms,
+      swipe,
     });
-
-    return {
-      hasAudio: Boolean(musicTrack),
-      mediaFiles: [
-        {
-          blob: renderResult.blob,
-          fileName: getPostBridgeMediaFileName(swipe.name, "video"),
-          mediaKind: "video" as const,
-        },
-      ],
-    };
   };
   const handleUpdatePostedStatus = async (nextIsPosted: boolean) => {
     if (!onUpdatePostedStatus) {

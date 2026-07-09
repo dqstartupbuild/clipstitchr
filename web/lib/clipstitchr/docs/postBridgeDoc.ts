@@ -9,7 +9,7 @@ export const postBridgeDoc = {
     "Schedule finished work through Post Bridge, then check how posted content is doing without making scheduling the whole point.",
   category: "feature",
   order: 80,
-  updated: "2026-07-06",
+  updated: "2026-07-09",
   sections: [
     {
       title: "What Post Bridge adds",
@@ -35,11 +35,13 @@ export const postBridgeDoc = {
       title: "Schedule finished work",
       body: [
         "When a saved Stitch or Swipe is ready, open the post options and choose whether it should go out now or later. ClipStitchr sends the media, caption, and account choices to Post Bridge.",
+        "When you have several ready drafts, use Select in the Library and choose Queue selected. ClipStitchr adds them to Post Bridge one at a time using each product's saved account defaults.",
         "This is meant to remove the last annoying step, not take away your judgment. Score the clip, edit the copy, and only schedule the version you would be okay seeing live.",
       ],
       bullets: [
         "Post a saved Stitch after you have reviewed the finished video.",
         "Post a saved Swipe when the carousel text and slides feel ready.",
+        "Queue several selected Stitches or Swipes after product account defaults are saved.",
         "Use scheduled posts when you want the content queue handled ahead of time.",
         "Use post-now when you are ready to publish immediately.",
       ],

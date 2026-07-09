@@ -47,4 +47,27 @@ describe("LibraryBatchActionBar", () => {
     expect(markup).toContain("Delete selected");
     expect(markup).toContain("Done");
   });
+
+  it("renders optional bulk queue controls", () => {
+    const markup = renderToStaticMarkup(
+      <LibraryBatchActionBar
+        areAllVisibleItemsSelected={false}
+        isDeletingSelected={false}
+        isQueueingSelected
+        isSelecting
+        queueStatusMessage="Queued 2 of 4."
+        selectedCount={4}
+        visibleItemCount={4}
+        onClearSelection={vi.fn()}
+        onDeleteSelected={vi.fn()}
+        onQueueSelected={vi.fn()}
+        onSelectVisible={vi.fn()}
+        onStartSelecting={vi.fn()}
+        onStopSelecting={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain("Queueing...");
+    expect(markup).toContain("Queued 2 of 4.");
+  });
 });
