@@ -59,6 +59,8 @@ creation, bounded library reads for queue selection, and queueing ready content.
 - `clipstitchr queue stitch`, `clipstitchr queue swipe`, and
   `clipstitchr queue --all` add ready active work to the user's Post Bridge
   queue without asking for a date or time.
+- `clipstitchr queue list` shows queued Stitches and Swipes coming up in the
+  next 24 hours.
 - `clipstitchr library ...` commands remain hidden compatibility aliases for
   old scripts; browsing belongs in the dashboard.
 - `clipstitchr products list` prints saved product IDs and names for scripting.
@@ -163,6 +165,11 @@ Swipe image, uploads that image to Post Bridge without deleting the saved R2
 asset, creates a queued Post Bridge post with `useQueue`, and attaches the post
 reference back to the Swipe. Full Swipe carousel or video rendering still stays
 in the dashboard because that output is browser-rendered before upload.
+
+`clipstitchr queue list` calls `GET /api/cli/queue/list`. The route verifies
+the CLI bearer token, consumes the CLI Post Bridge read limit, loads Post Bridge
+posts, filters them to queued or scheduled posts within 24 hours, and joins each
+post to local Stitch/Swipe source mapping when available.
 
 ## Recording Behavior
 

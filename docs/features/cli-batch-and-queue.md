@@ -8,6 +8,7 @@ Swipes to the Post Bridge queue without opening the dashboard first.
 ```bash
 clipstitchr stitchr batch --product product_123
 clipstitchr swipr batch
+clipstitchr queue list
 clipstitchr queue stitch
 clipstitchr queue stitch stitch_123
 clipstitchr queue stitch --all
@@ -35,6 +36,11 @@ UI as uploads, but the rows are read from automation task summaries and grouped
 by batch run. Progress is the share of batch tasks that have reached a terminal
 state.
 
+`clipstitchr queue list` shows queued Stitches and Swipes that are queued now
+or scheduled within the next 24 hours. The CLI does not expose a wider window.
+Rows include the content type, queue position or scheduled time, status, title,
+product context when available, and Post Bridge account IDs.
+
 `clipstitchr queue stitch` adds the latest ready active Stitch to the user's
 Post Bridge queue. Passing a Stitch ID keeps the old script-friendly behavior.
 `clipstitchr queue stitch --all` queues all ready active Stitches sequentially.
@@ -58,6 +64,7 @@ web/app/api/cli/stitchr/batches/route.ts
 web/app/api/cli/swipr/batches/route.ts
 web/app/api/cli/queue/stitches/route.ts
 web/app/api/cli/queue/swipes/route.ts
+web/app/api/cli/queue/list/route.ts
 
 web/convex/createActiveAutomationBatchJobSummary.ts
 web/convex/getAutomationBatchJobProgress.ts
@@ -106,3 +113,7 @@ Post Bridge returns a post, the route records the post reference on the Stitch
 or Swipe and marks it posted. It also stores the local Post Bridge
 post-to-product mapping so Schedule and Analytics can show the queued post under
 the source product.
+
+`clipstitchr queue list` uses a CLI-specific Post Bridge read limiter before it
+calls Post Bridge. It filters to the next 24 hours and joins each Post Bridge
+post to local Stitch/Swipe source mapping when that mapping exists.

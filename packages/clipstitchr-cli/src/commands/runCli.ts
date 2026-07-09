@@ -32,6 +32,7 @@ import { runProductsCreateCommand } from "./runProductsCreateCommand.js";
 import { runProductsListCommand } from "./runProductsListCommand.js";
 import { runProductsUseCommand } from "./runProductsUseCommand.js";
 import { runQueueAllCommand } from "./runQueueAllCommand.js";
+import { runQueueListCommand } from "./runQueueListCommand.js";
 import { runQueueStitchCommand } from "./runQueueStitchCommand.js";
 import { runQueueSwipeCommand } from "./runQueueSwipeCommand.js";
 import { runScanCommand } from "./runScanCommand.js";
@@ -462,6 +463,13 @@ export async function runCli(argv: string[]) {
       }
 
       await runQueueMenuCommand(program.opts());
+    });
+
+  queue
+    .command("list")
+    .description("Show queued Stitches and Swipes for the next 24 hours")
+    .action(async () => {
+      await runQueueListCommand(program.opts());
     });
 
   queue

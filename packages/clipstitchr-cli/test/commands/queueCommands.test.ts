@@ -7,6 +7,7 @@ describe("queue commands", () => {
     const output = readCliOutput(["queue", "--help"]);
 
     assert.match(output, /--all\s+Queue all active Stitches and Swipes/);
+    assert.match(output, /list\s+Show queued Stitches and Swipes/);
     assert.match(output, /stitch \[options\] \[stitchId\]/);
     assert.match(output, /swipe \[options\] \[swipeId\]/);
   });

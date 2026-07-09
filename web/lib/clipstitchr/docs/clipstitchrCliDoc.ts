@@ -115,6 +115,7 @@ export const clipstitchrCliDoc = {
       ],
       bullets: [
         "Queue does not ask for a date or time.",
+        "Queue list shows queued Stitches and Swipes coming up in the next 24 hours.",
         "A Stitch needs a finished rendered video before it can be queued.",
         "A Swipe needs a saved rendered image before the CLI can queue it.",
         "Use --all to queue active items one at a time. If one item fails, the CLI shows what queued and what needs attention.",
@@ -122,6 +123,7 @@ export const clipstitchrCliDoc = {
       ],
       commands: [
         "clipstitchr queue",
+        "clipstitchr queue list",
         "clipstitchr queue stitch",
         "clipstitchr queue stitch stitch_123 --caption \"New demo is live\"",
         "clipstitchr queue stitch --all",

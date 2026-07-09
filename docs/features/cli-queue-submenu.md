@@ -6,7 +6,7 @@ actions. Direct commands such as `clipstitchr queue stitch --all` and
 
 ## Menu Actions
 
-- Show upcoming queue.
+- Show upcoming queue for the next 24 hours.
 - Queue latest Stitch.
 - Queue all Stitches.
 - Queue latest Swipe.
@@ -15,9 +15,9 @@ actions. Direct commands such as `clipstitchr queue stitch --all` and
 - Queue a specific Stitch by ID.
 - Queue a specific Swipe by ID.
 
-The submenu routes to the same command runners as the direct commands. Bulk
-queue actions stay sequential and report partial failures through the shared
-queue result logger.
+The submenu routes to the same command runners as the direct commands.
+`Show upcoming queue` uses `clipstitchr queue list`. Bulk queue actions stay
+sequential and report partial failures through the shared queue result logger.
 
 ## Relevant Files
 
