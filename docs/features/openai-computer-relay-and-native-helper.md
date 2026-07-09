@@ -15,7 +15,15 @@ ClipStitchr can run OpenAI Computer Use in two modes for CLI demo recording.
   ClipStitchr servers before they reach OpenAI.
 - `--surface browser` uses the existing Playwright browser adapter.
 - `--surface macos-window` uses a local Swift helper to capture and control a
-  selected visible macOS window.
+  selected visible window on macOS, including iOS Simulator, iPhone Mirroring,
+  Android emulator windows, and selected desktop apps.
+- Browser demos remain available on Windows and other platforms where the
+  recorder browser can run.
+- Android manual recording is separate from AI window control. It uses
+  `adb screenrecord` through the existing manual recording path.
+- Future adapter notes use `android-adb` for direct Android ADB AI control and
+  `windows-window` for Windows visible-window control. Those adapters do not
+  exist today.
 
 ## Mode Selection
 
@@ -70,6 +78,21 @@ Limits:
 - A run must stay within 20 minutes of its start time.
 - Convex enforces per-user hourly, per-user daily, per-run, global hourly, and
   shared provider-spend buckets.
+
+## Platform Support
+
+Browser automation uses Playwright and works on supported desktop platforms.
+Native visible-window automation is macOS-only today because it depends on the
+bundled Swift helper and macOS Screen Recording and Accessibility permissions.
+On Windows, `clipstitchr native init` and `clipstitchr native check` explain
+that native visible-window automation is not available yet while browser demos
+remain available.
+
+iOS Simulator, iPhone Mirroring, Android emulator windows, and selected desktop
+apps are all treated as visible macOS windows when `--surface macos-window` is
+used. That is different from Android manual recording, which uses
+`adb screenrecord` and does not let OpenAI click or type through ADB. Direct
+Android ADB AI control is reserved for a future `android-adb` adapter.
 
 ## macOS Helper
 

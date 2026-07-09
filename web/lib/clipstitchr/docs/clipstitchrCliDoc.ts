@@ -9,7 +9,7 @@ export const clipstitchrCliDoc = {
     "Install one command, connect your account, capture demos, create batches, and send ready work to the queue.",
   category: "start",
   order: 1,
-  updated: "2026-07-06",
+  updated: "2026-07-09",
   sections: [
     {
       title: "What it does",
@@ -61,7 +61,7 @@ export const clipstitchrCliDoc = {
     {
       title: "Check and update setup",
       body: [
-        "Status shows the account, repo, product, local app, and recording browser in one quick view. Scan looks for likely product flows in the local app. Doctor checks the pieces the recorder needs, including native recording tools when the repo looks like iOS, Android, or React Native. Run clipstitchr native init once per Mac when you want visible-window recording, then clipstitchr native check when you need to verify permissions. Update checks npm for a newer CLI.",
+        "Status shows the account, repo, product, local app, and recording browser in one quick view. Scan looks for likely product flows in the local app. Doctor checks the pieces the recorder needs, including native recording tools when the repo looks like iOS, Android, or React Native. Run clipstitchr native init once per Mac when you want AI to control a visible macOS window, then clipstitchr native check when you need to verify permissions. On Windows, browser demos still work, but native visible-window control is not available yet. Update checks npm for a newer CLI.",
       ],
       commands: [
         "clipstitchr status",
@@ -252,8 +252,9 @@ export const clipstitchrCliDoc = {
       title: "What to expect",
       body: [
         "Web app demos are recorded at a full desktop size, then prepared for vertical ads with a fit-with-background layout. ClipStitchr can also use your guide steps and clicks to add smooth zooms around the parts of the product you touched.",
-        "The CLI warns when a recording gets long, but it does not stop web or iOS recordings for you. Android recording may stop around 3 minutes because of the device recorder.",
-        "iOS, Android, and React Native demos record from an already-open simulator, emulator, or device. Open the app where you want to start, then let the CLI start and stop the recording.",
+        "The CLI warns when a recording gets long, but it does not stop web or iOS recordings for you. Android manual recording may stop around 3 minutes because it uses the device recorder through adb screenrecord.",
+        "iOS, Android, and React Native manual demos record from an already-open simulator, emulator, or device. Open the app where you want to start, then let the CLI start and stop the recording.",
+        "AI native control is different from manual recording. Today it can control visible iOS Simulator, iPhone Mirroring, Android emulator, and desktop app windows on macOS through the macOS window helper. Direct Android ADB AI control and Windows native window control are future adapter plans, not current features.",
       ],
     },
     {

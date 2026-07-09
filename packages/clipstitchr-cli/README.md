@@ -136,15 +136,21 @@ localhost URL that is already running.
 does the same thing for developers who expect an init command. `clipstitchr
 unlink` removes the repo connection without logging the whole machine out.
 
-For native demos, the CLI can manually record an already-running iOS Simulator
-or Android device/emulator. Automatic OpenAI demos can also use
-`--surface macos-window` to select a visible macOS window such as Simulator,
-iPhone Mirroring, or an emulator. Run `clipstitchr native init` once per Mac to
-install the helper under `~/Library/Application Support/ClipStitchr/`, and run
-`clipstitchr native init --force` to repair it. `clipstitchr native check`
-verifies the helper plus Screen Recording and Accessibility permissions. Window
-runs currently save screenshots/action logs; full helper-owned MP4 capture is
-still handled by the manual native recorder path.
+For native demos, browser recording works everywhere the recorder browser runs.
+Manual native recording can capture an already-running iOS Simulator or Android
+device/emulator; Android manual recording uses `adb screenrecord` when Android
+tools are installed. Automatic OpenAI demos can use `--surface macos-window` on
+macOS to select and control a visible window such as iOS Simulator, iPhone
+Mirroring, an Android emulator window, or a selected desktop app. Run
+`clipstitchr native init` once per Mac to install the helper under
+`~/Library/Application Support/ClipStitchr/`, and run `clipstitchr native init
+--force` to repair it. `clipstitchr native check` verifies the helper plus
+Screen Recording and Accessibility permissions. On Windows, native
+visible-window automation is not available yet, but browser demos still work.
+Future adapter notes use `windows-window` for Windows visible-window control and
+`android-adb` for direct Android ADB AI control; those adapters are not shipped
+today. Window runs currently save screenshots/action logs; full helper-owned
+MP4 capture is still handled by the manual native recorder path.
 
 For local development against a preview app:
 

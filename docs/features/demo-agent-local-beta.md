@@ -177,12 +177,16 @@ routes, blocked-action rules, and capped app context are sent with the task.
 `--openai-mode relay` calls ClipStitchr's protected relay route.
 
 Local iOS Simulator, Android emulator windows, iPhone Mirroring, and other
-desktop windows can use `--surface macos-window`. The helper checks Screen
-Recording and Accessibility before any model actions. Run `clipstitchr native
-init` once per Mac to install or update the helper, and `clipstitchr native
-check` to verify permissions. macOS window runs save screenshots and action
-logs; full helper-owned MP4 capture is still a boundary, so `clipstitchr demo
-manual` remains the full-video path for native devices.
+desktop windows can use `--surface macos-window` on macOS. The helper checks
+Screen Recording and Accessibility before any model actions. Run `clipstitchr
+native init` once per Mac to install or update the helper, and `clipstitchr
+native check` to verify permissions. On Windows, browser demos still work, but
+native visible-window automation is not available yet. macOS window runs save
+screenshots and action logs; full helper-owned MP4 capture is still a boundary,
+so `clipstitchr demo manual` remains the full-video path for native devices.
+Manual Android recording uses `adb screenrecord`; future direct Android ADB AI
+control would use a separate `android-adb` adapter, and future Windows
+visible-window control would use `windows-window`.
 
 ## One-Command AI Recording
 

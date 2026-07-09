@@ -16,8 +16,9 @@ instead of the structured JSON action planner.
   In relay mode, screenshots pass through ClipStitchr servers before OpenAI.
 - Uses Playwright as the local browser "hands" for clicks, typing, scrolling,
   keypresses, drag, move, wait, and screenshots.
-- Can use a local macOS window helper for selected desktop windows with
-  `--surface macos-window`.
+- Can use a local macOS window helper for selected visible windows with
+  `--surface macos-window`, including iOS Simulator, iPhone Mirroring, Android
+  emulator windows, and selected desktop apps.
 - Can target either a localhost app or an explicitly selected live/staging site.
 - Logs every executed action, screenshot, URL before/after value, and policy
   decision under `.clipstitchr/agent-runs/<run-id>/`.
@@ -134,6 +135,12 @@ selected visible macOS window:
 The helper requires Screen Recording and Accessibility permissions. macOS
 window runs currently save screenshots and action logs; full helper-owned MP4
 capture is still a documented boundary.
+
+This is not the same as Android manual recording. Manual Android demos use
+`adb screenrecord` to capture an already-running device or emulator. The future
+`android-adb` adapter would be direct Android ADB AI control, and the future
+`windows-window` adapter would be Windows visible-window control. Neither
+adapter exists today.
 
 ## File Tree
 
