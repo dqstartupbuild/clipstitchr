@@ -176,13 +176,15 @@ export const clipstitchrCliDoc = {
       body: [
         "Guide commands help you prepare the checklist before recording. You can ask ClipStitchr to draft a short guide, review it, edit the steps, save it for the next take, or export simple instructions for a trusted local helper.",
         "Guide commands do not click through your app, ask for passwords, or upload anything by themselves. The separate local agent beta is the only command that can try guarded browser actions.",
+        "Exported instructions are local Markdown files only. They are not uploaded, published, or sent anywhere. Use them when a teammate is recording for you, when another trusted local tool needs the plan, when you want to review the steps before recording, when you need to share the guide without sharing account access, or when you want to archive the plan next to the matching safety policy.",
       ],
       bullets: [
         "Generate asks what the demo should show, then saves the guide in this repo.",
         "List and show help you find a saved guide ID.",
         "Edit lets you clean up labels before recording.",
         "Delete removes a guide you do not need anymore.",
-        "Export instructions creates a Markdown checklist you can hand to a local agent or teammate.",
+        "Export instructions creates one Markdown checklist file from the saved guide.",
+        "Keep exported instructions with the safety policy when another recorder or local tool will follow them.",
       ],
       commands: [
         "clipstitchr demo guide generate",
