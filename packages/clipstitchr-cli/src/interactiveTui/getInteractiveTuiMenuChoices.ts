@@ -7,11 +7,17 @@ import { createInteractiveShellQueueChoices } from "../interactiveShell/createIn
 import type { InteractiveShellChoice } from "../interactiveShell/InteractiveShellChoice.js";
 import type { InteractiveShellContext } from "../interactiveShell/InteractiveShellContext.js";
 import type { InteractiveShellMenu } from "../interactiveShell/InteractiveShellMenu.js";
+import { createInteractiveTuiResultChoices } from "./createInteractiveTuiResultChoices.js";
 
 export function getInteractiveTuiMenuChoices(
   menu: InteractiveShellMenu,
   context?: InteractiveShellContext,
+  view: "menu" | "result" = "menu",
 ): InteractiveShellChoice<string>[] {
+  if (view === "result") {
+    return createInteractiveTuiResultChoices(menu);
+  }
+
   if (menu === "demo") {
     return createInteractiveShellDemoChoices();
   }

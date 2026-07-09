@@ -1,5 +1,6 @@
-import { Box, Text } from "ink";
+import { Box, Text, useStdout } from "ink";
 import type { InteractiveShellChoice } from "../interactiveShell/InteractiveShellChoice.js";
+import { getInteractiveTuiMaximumVisibleChoices } from "./getInteractiveTuiMaximumVisibleChoices.js";
 import { getInteractiveTuiVisibleChoices } from "./getInteractiveTuiVisibleChoices.js";
 
 export function InteractiveTuiMenu(input: {
@@ -7,8 +8,10 @@ export function InteractiveTuiMenu(input: {
   isActive: boolean;
   selectedIndex: number;
 }) {
+  const { stdout } = useStdout();
   const visible = getInteractiveTuiVisibleChoices({
     choices: input.choices,
+    maximumVisibleChoices: getInteractiveTuiMaximumVisibleChoices(stdout.rows),
     selectedIndex: input.selectedIndex,
   });
 

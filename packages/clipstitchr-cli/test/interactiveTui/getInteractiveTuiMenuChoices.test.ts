@@ -37,4 +37,13 @@ describe("getInteractiveTuiMenuChoices", () => {
       ["unlink", "logout"],
     );
   });
+
+  it("shows result controls instead of restoring the action list", () => {
+    assert.deepEqual(
+      getInteractiveTuiMenuChoices("products", undefined, "result").map(
+        (choice) => choice.value,
+      ),
+      ["result:back", "nav:main", "nav:slash", "nav:exit"],
+    );
+  });
 });

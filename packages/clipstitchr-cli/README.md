@@ -14,6 +14,7 @@ menu keeps everyday creation and queue actions first. Completed activity stays
 above the live menu instead of printing a new ClipStitchr frame. Choose `Demos`,
 then pick `Record it myself` for manual recording or `Let AI record it for me`
 for a policy-guarded AI run with a saved guide.
+
 Slash commands let you stay in the interactive shell while running direct
 commands, such as `/demo manual`, `/demo agent --guide "Checkout flow"`,
 `/queue stitch --all`, `/products use product_123`, and `/status`. The slash
@@ -25,6 +26,11 @@ runs a complete command or expands a command group so you can keep typing.
 Ctrl+P or Ctrl+N moves through command history, and Escape returns to the
 current menu. Suggestions and header context are local and deterministic; they
 do not use AI or call the ClipStitchr server.
+
+After an action finishes, its output stays in a result view instead of being
+replaced by the action menu. Use Page Up or Page Down for longer results, then
+choose Back, Main menu, Type a slash command, or Exit. Menu height also follows
+the terminal height so the ClipStitchr header stays visible in shorter windows.
 Run `clipstitchr queue` when you want a focused queue menu for latest, all, or
 specific Stitch and Swipe queue actions.
 
@@ -155,10 +161,11 @@ or video version.
 
 The interactive shell keeps one mounted terminal workspace with the current
 menu, local product/repo/account context, completed activity, a slash-command
-composer, suggestions, and keyboard hints. Existing guided questions
-temporarily take input while an action runs. The menu collapses to one working
-line during that handoff, keeps the question alive until it is answered, then
-returns control to the same workspace. When the terminal is too narrow, is not interactive, or uses
+composer, suggestions, action results, and keyboard hints. Existing guided
+questions temporarily take input while an action runs. The menu collapses to
+one working line during that handoff, keeps the question alive until it is
+answered, then opens the completed result in the same workspace. When the
+terminal is too narrow, is not interactive, or uses
 `--plain` or `NO_COLOR=1`, the CLI falls back to simple prompt output. Direct
 commands stay plain and script-friendly.
 

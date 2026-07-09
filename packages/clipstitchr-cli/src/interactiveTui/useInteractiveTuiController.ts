@@ -1,5 +1,5 @@
-import { useApp } from "ink";
-import { useCallback, useState } from "react";
+import { useApp, useStdout } from "ink";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { dispatchSlashCommand } from "../interactiveShell/dispatchSlashCommand.js";
 import { getInteractiveShellMenuTitle } from "../interactiveShell/getInteractiveShellMenuTitle.js";
 import { getIsInteractivePromptCancelError } from "../interactiveShell/getIsInteractivePromptCancelError.js";
@@ -10,15 +10,19 @@ import type { InteractiveShellTransition } from "../interactiveShell/Interactive
 import { waitForMilliseconds } from "../utils/waitForMilliseconds.js";
 import type { InteractiveTuiInput } from "./InteractiveTuiInput.js";
 import type { InteractiveTuiMode } from "./InteractiveTuiMode.js";
+import { captureInteractiveTuiActionOutput } from "./captureInteractiveTuiActionOutput.js";
+import { getInteractiveTuiResultPageSize } from "./getInteractiveTuiResultPageSize.js";
 import { runInteractiveTuiMenuAction } from "./runInteractiveTuiMenuAction.js";
 import { setInteractiveTuiStdinIsReferenced } from "./setInteractiveTuiStdinIsReferenced.js";
 import { useInteractiveTuiActivity } from "./useInteractiveTuiActivity.js";
 import { useInteractiveTuiCommandComposer } from "./useInteractiveTuiCommandComposer.js";
 import { useInteractiveTuiExitInput } from "./useInteractiveTuiExitInput.js";
 import { useInteractiveTuiMenuNavigation } from "./useInteractiveTuiMenuNavigation.js";
+import { useInteractiveTuiResultOutputNavigation } from "./useInteractiveTuiResultOutputNavigation.js";
 
 export function useInteractiveTuiController(input: InteractiveTuiInput) {
   const { exit } = useApp();
+  const { stdout } = useStdout();
   const [currentMenu, setCurrentMenu] = useState<InteractiveShellMenu>(
     input.initialMenu ?? "main",
   );
@@ -26,6 +30,8 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
   const [notice, setNotice] = useState<InteractiveShellNotice>();
   const [activeLabel, setActiveLabel] = useState<string>();
   const [context, setContext] = useState(input.context);
+  const [resultLines, setResultLines] = useState<string[]>([]);
+  const commandReturnMode = useRef<"menu" | "result">("menu");
   const { activities, appendActivity } = useInteractiveTuiActivity();
 
   const refreshContext = useCallback(async () => {
@@ -56,7 +62,7 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
 
       setInteractiveTuiStdinIsReferenced({ isReferenced: true });
       setCurrentMenu(transition.menu);
-      setMode("menu");
+      setMode("result");
       setActiveLabel(undefined);
       setNotice(
         transition.notice ?? {
@@ -79,12 +85,17 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
           : String(error);
 
       setInteractiveTuiStdinIsReferenced({ isReferenced: true });
-      setMode("menu");
+      setMode("result");
       setActiveLabel(undefined);
       setNotice({
         kind: isCanceled ? "info" : "error",
         message,
       });
+      setResultLines((currentLines) => [
+        ...currentLines,
+        ...(currentLines.length > 0 ? [""] : []),
+        `${isCanceled ? "[info]" : "[error]"} ${message}`,
+      ]);
 
       if (!isCanceled) {
         appendActivity("error", message);
@@ -98,16 +109,21 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
       setMode("running");
       setActiveLabel(commandLine);
       setNotice(undefined);
+      setResultLines([]);
       appendActivity("command", commandLine);
       await waitForMilliseconds(0);
       setInteractiveTuiStdinIsReferenced({ isReferenced: true });
 
       try {
-        const transition = await dispatchSlashCommand({
-          commandLine,
-          currentMenu,
-          options: input.options,
-          services: input.services,
+        const transition = await captureInteractiveTuiActionOutput({
+          onOutput: setResultLines,
+          run: async () =>
+            await dispatchSlashCommand({
+              commandLine,
+              currentMenu,
+              options: input.options,
+              services: input.services,
+            }),
         });
 
         await refreshContext();
@@ -130,7 +146,7 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
   const commandComposer = useInteractiveTuiCommandComposer({
     isActive: mode === "command",
     onCancel: () => {
-      setMode("menu");
+      setMode(commandReturnMode.current);
       setNotice(undefined);
     },
     onEmpty: () => {
@@ -146,15 +162,22 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
 
   const openCommandComposer = useCallback(
     (initialCommand = "/") => {
+      commandReturnMode.current = mode === "result" ? "result" : "menu";
       commandComposer.openCommandComposer(initialCommand);
       setMode("command");
       setNotice(undefined);
     },
-    [commandComposer.openCommandComposer],
+    [commandComposer.openCommandComposer, mode],
   );
 
   const executeMenuChoice = useCallback(
     async (choice: InteractiveShellChoice<string>) => {
+      if (choice.value === "result:back") {
+        setMode("menu");
+        setNotice(undefined);
+        return;
+      }
+
       if (choice.value === "nav:slash") {
         openCommandComposer();
         return;
@@ -185,17 +208,22 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
       setMode("running");
       setActiveLabel(choice.name);
       setNotice(undefined);
+      setResultLines([]);
       appendActivity("command", choice.name);
       await waitForMilliseconds(0);
       setInteractiveTuiStdinIsReferenced({ isReferenced: true });
 
       try {
-        const transition = await runInteractiveTuiMenuAction({
-          action: choice.value,
-          menu: currentMenu,
-          options: input.options,
-          prompts: input.prompts,
-          services: input.services,
+        const transition = await captureInteractiveTuiActionOutput({
+          onOutput: setResultLines,
+          run: async () =>
+            await runInteractiveTuiMenuAction({
+              action: choice.value,
+              menu: currentMenu,
+              options: input.options,
+              prompts: input.prompts,
+              services: input.services,
+            }),
         });
 
         await refreshContext();
@@ -222,12 +250,35 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
   const menuNavigation = useInteractiveTuiMenuNavigation({
     context,
     currentMenu,
-    isActive: mode === "menu",
-    onBack: () => openMenu("main"),
+    isActive: mode === "menu" || mode === "result",
+    onBack: () => {
+      if (mode === "result") {
+        setMode("menu");
+        setNotice(undefined);
+        return;
+      }
+
+      openMenu("main");
+    },
     onChoose: (choice) => {
       void executeMenuChoice(choice);
     },
     onOpenCommand: openCommandComposer,
+    view: mode === "result" ? "result" : "menu",
+  });
+
+  const resultPageSize = getInteractiveTuiResultPageSize(stdout.rows);
+  const resultLinesForDisplay = useMemo(
+    () =>
+      resultLines.length > 0
+        ? resultLines
+        : [notice?.message ?? "Finished without additional output."],
+    [notice?.message, resultLines],
+  );
+  const resultStartIndex = useInteractiveTuiResultOutputNavigation({
+    isActive: mode === "result",
+    lines: resultLinesForDisplay,
+    pageSize: resultPageSize,
   });
 
   useInteractiveTuiExitInput({
@@ -245,6 +296,9 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
     cursorIndex: commandComposer.cursorIndex,
     mode,
     notice,
+    resultLines: resultLinesForDisplay,
+    resultPageSize,
+    resultStartIndex,
     selectedIndex: menuNavigation.selectedIndex,
     suggestionIndex: commandComposer.suggestionIndex,
     suggestions: commandComposer.suggestions,

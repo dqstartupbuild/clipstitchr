@@ -13,16 +13,22 @@ export function useInteractiveTuiMenuNavigation(input: {
   onBack: () => void;
   onChoose: (choice: InteractiveShellChoice<string>) => void;
   onOpenCommand: (initialCommand?: string) => void;
+  view: "menu" | "result";
 }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const choices = useMemo(
-    () => getInteractiveTuiMenuChoices(input.currentMenu, input.context),
-    [input.context, input.currentMenu],
+    () =>
+      getInteractiveTuiMenuChoices(
+        input.currentMenu,
+        input.context,
+        input.view,
+      ),
+    [input.context, input.currentMenu, input.view],
   );
 
   useEffect(() => {
     setSelectedIndex(0);
-  }, [input.context, input.currentMenu]);
+  }, [input.context, input.currentMenu, input.view]);
 
   useInput(
     (typedInput, key) => {
@@ -51,7 +57,10 @@ export function useInteractiveTuiMenuNavigation(input: {
         return;
       }
 
-      if (key.escape && input.currentMenu !== "main") {
+      if (
+        key.escape &&
+        (input.view === "result" || input.currentMenu !== "main")
+      ) {
         input.onBack();
       }
     },

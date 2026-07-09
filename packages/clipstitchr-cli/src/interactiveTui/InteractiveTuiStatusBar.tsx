@@ -1,11 +1,15 @@
 import { Box, Text } from "ink";
+import type { InteractiveTuiMode } from "./InteractiveTuiMode.js";
 
 export function InteractiveTuiStatusBar(input: {
-  isCommandMode: boolean;
+  mode: InteractiveTuiMode;
 }) {
-  const message = input.isCommandMode
-    ? "Tab complete | Enter use | Esc menu | Ctrl+P history"
-    : "Up/Down move | Enter choose | / command | Esc back | Ctrl+C exit";
+  const message =
+    input.mode === "command"
+      ? "Tab complete | Enter use | Esc back | Ctrl+P history"
+      : input.mode === "result"
+        ? "PgUp/PgDn results | Enter choose | / command | Esc back"
+        : "Up/Down move | Enter choose | / command | Esc back | Ctrl+C exit";
 
   return (
     <Box borderColor="gray" borderStyle="single" marginTop={1} paddingX={1}>

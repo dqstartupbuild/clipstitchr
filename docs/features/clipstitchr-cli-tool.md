@@ -18,9 +18,9 @@ creation, bounded library reads for queue selection, and queueing ready content.
 - `clipstitchr` opens a persistent main menu for demos, products, queueing,
   Stitchr, Swipr, native setup/checks, account/repo setup, status, doctor, and
   updates.
-- Each interactive menu includes Back, Main menu, Exit, and a slash-command
-  entry for direct commands such as `/demo manual`, `/queue stitch --all`,
-  `/products use product_123`, and `/status`.
+- Completed actions keep their output in a result view with Back, Main menu,
+  Exit, and slash-command controls for direct commands such as `/demo manual`,
+  `/queue stitch --all`, `/products use product_123`, and `/status`.
 - `clipstitchr --help`, `clipstitchr help`, and
   `clipstitchr help demo manual` show the available command options.
 - `clipstitchr --version` prints the installed CLI version.
@@ -191,7 +191,14 @@ account or repo setup appears first on the main menu. Once setup exists, the
 routine creation, queue, product, and demo actions stay first. Native setup,
 doctor, and update remain under Setup and account. Selecting an action runs the
 same command handler used by the direct command path, refreshes local context,
-then returns input to the same mounted workspace.
+then opens a retained result view in the same mounted workspace.
+
+The result view captures normal command output while still printing it during
+the action. It keeps a bounded page visible after completion, supports Page Up
+and Page Down for longer output, and offers Back to the originating menu, Main
+menu, slash command, and Exit controls. Choosing Back restores the action list;
+the list is not restored automatically. Menu choice count adapts to terminal
+rows so the brand header remains visible in shorter windows.
 
 Slash commands are parsed locally, support quoted values, and dispatch to the
 same command handlers as direct commands. The composer is available from every

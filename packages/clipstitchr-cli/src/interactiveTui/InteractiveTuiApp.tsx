@@ -5,6 +5,7 @@ import { InteractiveTuiComposer } from "./InteractiveTuiComposer.js";
 import { InteractiveTuiHeader } from "./InteractiveTuiHeader.js";
 import { InteractiveTuiMenu } from "./InteractiveTuiMenu.js";
 import { InteractiveTuiNotice } from "./InteractiveTuiNotice.js";
+import { InteractiveTuiResultOutput } from "./InteractiveTuiResultOutput.js";
 import { InteractiveTuiRunningView } from "./InteractiveTuiRunningView.js";
 import { InteractiveTuiStatusBar } from "./InteractiveTuiStatusBar.js";
 import { InteractiveTuiSuggestions } from "./InteractiveTuiSuggestions.js";
@@ -24,8 +25,16 @@ export function InteractiveTuiApp(input: InteractiveTuiInput) {
             context={controller.context}
             menu={controller.currentMenu}
           />
-          <InteractiveTuiNotice notice={controller.notice} />
-          {controller.mode === "menu" ? (
+          {controller.mode === "result" ? (
+            <InteractiveTuiResultOutput
+              lines={controller.resultLines}
+              pageSize={controller.resultPageSize}
+              startIndex={controller.resultStartIndex}
+            />
+          ) : (
+            <InteractiveTuiNotice notice={controller.notice} />
+          )}
+          {controller.mode === "menu" || controller.mode === "result" ? (
             <InteractiveTuiMenu
               choices={controller.choices}
               isActive
@@ -38,14 +47,14 @@ export function InteractiveTuiApp(input: InteractiveTuiInput) {
               suggestions={controller.suggestions}
             />
           ) : null}
-          <InteractiveTuiComposer
-            commandText={controller.commandText}
-            cursorIndex={controller.cursorIndex}
-            isCommandMode={controller.mode === "command"}
-          />
-          <InteractiveTuiStatusBar
-            isCommandMode={controller.mode === "command"}
-          />
+          {controller.mode === "result" ? null : (
+            <InteractiveTuiComposer
+              commandText={controller.commandText}
+              cursorIndex={controller.cursorIndex}
+              isCommandMode={controller.mode === "command"}
+            />
+          )}
+          <InteractiveTuiStatusBar mode={controller.mode} />
         </Box>
       )}
     </>

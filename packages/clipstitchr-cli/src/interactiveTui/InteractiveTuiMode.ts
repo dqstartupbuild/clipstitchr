@@ -1,1 +1,1 @@
-export type InteractiveTuiMode = "command" | "menu" | "running";
+export type InteractiveTuiMode = "command" | "menu" | "result" | "running";
