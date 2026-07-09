@@ -4,7 +4,7 @@ import { slashCommandSuggestions } from "./slashCommandSuggestions.js";
 export function getSlashCommandSuggestionMatches(term: string | undefined) {
   const normalizedTerm = normalizeSlashCommandSearchTerm(term);
 
-  if (!normalizedTerm) {
+  if (!normalizedTerm || normalizedTerm === "/") {
     return slashCommandSuggestions.filter(
       (suggestion) => !suggestion.value.slice(1).includes(" "),
     );

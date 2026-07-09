@@ -1,11 +1,13 @@
 # CLI Branded Output
 
-The ClipStitchr CLI uses light branded terminal output for guided flows without
-becoming a full-screen terminal app.
+The ClipStitchr CLI uses a persistent branded workspace for interactive use and
+light branded output for direct commands and guided flows.
 
 ## What It Does
 
 - Shows a small `ClipStitchr` header at the start of guided commands.
+- Keeps one mounted menu and slash-command composer for the root `clipstitchr`
+  experience.
 - Marks progress with `[info]`, `[..]`, `[ok]`, and `[warn]` labels.
 - Prints setup details as key/value rows for `status` and `doctor`.
 - Prints useful next commands after important actions.

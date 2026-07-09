@@ -1,3 +1,5 @@
+import { getTerminalColumnCount } from "./getTerminalColumnCount.js";
+
 export function getInteractiveTuiIsSupported(input: {
   columns?: number;
   isTty?: boolean;
@@ -5,7 +7,7 @@ export function getInteractiveTuiIsSupported(input: {
   plain?: boolean;
   plainEnv?: boolean;
 }) {
-  const columns = input.columns ?? process.stdout.columns ?? 80;
+  const columns = getTerminalColumnCount(input.columns);
   const isTty = input.isTty ?? Boolean(process.stdout.isTTY);
   const noColor = input.noColor ?? Boolean(process.env.NO_COLOR);
   const plainEnv =

@@ -15,6 +15,19 @@ describe("getInteractiveTuiIsSupported", () => {
     );
   });
 
+  it("uses the default width when a PTY reports zero columns", () => {
+    assert.equal(
+      getInteractiveTuiIsSupported({
+        columns: 0,
+        isTty: true,
+        noColor: false,
+        plain: false,
+        plainEnv: false,
+      }),
+      true,
+    );
+  });
+
   it("falls back for plain, no-color, non-interactive, and narrow terminals", () => {
     assert.equal(
       getInteractiveTuiIsSupported({

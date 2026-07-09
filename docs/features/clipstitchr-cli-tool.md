@@ -183,16 +183,20 @@ post to local Stitch/Swipe source mapping when available.
 
 ## Interactive Shell Flow
 
-The root `clipstitchr` command opens a persistent shell instead of a one-action
-prompt. The shell keeps a current menu state (`main`, `demo`, `products`,
-`queue`, `native`, or `account`). Selecting an action runs the same command
-handler used by the direct command path, then returns to the current menu.
+The root `clipstitchr` command mounts one persistent Ink workspace instead of a
+sequence of one-action prompts. The workspace keeps a current menu state
+(`main`, `demo`, `products`, `queue`, `native`, or `account`), completed
+activity, command history, and recent status. Selecting an action runs the same
+command handler used by the direct command path, then returns input to the same
+mounted workspace.
 
 Submenus add Back, Main menu, Exit, and Type a slash command actions. Slash
 commands are parsed locally, support quoted values, and dispatch to the same
-command handlers as direct commands. If an action fails, the shell shows the
-error and lets the user try again, go back, return to the main menu, or exit.
-Ctrl+C exits without printing a stack trace.
+command handlers as direct commands. The composer is available from every menu,
+Tab accepts the selected completion, Ctrl+P and Ctrl+N move through command
+history, and Escape returns to menu navigation. If an action fails, the error
+stays visible in the activity history and the current menu remains usable.
+Ctrl+C exits without printing a stack trace while the workspace is idle.
 
 Slash command autocomplete uses a local static registry of command names,
 subcommands, and option names. It does deterministic prefix matching and keeps
@@ -308,18 +312,19 @@ and connected Android device.
 
 ## Terminal UX
 
-The interactive shell uses a dependency-free terminal frame around the existing
-Inquirer menus and the search prompt already bundled with `@inquirer/prompts`.
-The frame shows the ClipStitchr brand, current menu, recent status or error,
-keyboard hints, slash-command examples, and Back/Main/Exit reminders. It is not
-a full-screen alternate renderer, so normal command output remains visible and
-readable.
+The interactive shell uses one Ink/React renderer for its header, menus,
+activity, command composer, deterministic suggestions, recent status, and
+keyboard hints. It uses Ink's normal terminal rendering instead of an alternate
+screen, so completed command output remains visible in terminal scrollback.
+Existing focused questions from recording and setup workflows temporarily take
+input while their action runs, then return to the same mounted workspace.
 
 Guided flows still show progress states, setup key/value rows, success
 confirmations, warnings, and copyable next commands. Direct commands do not use
 the TUI frame, which keeps scripting output stable.
 
-Color is only applied when stdout is an interactive terminal. `--plain` sets
+The persistent renderer only starts when stdout is an interactive terminal.
+`--plain` sets
 `CLIPSTITCHR_PLAIN=1` inside the process, and `NO_COLOR=1` is respected by the
 shared terminal helpers. The interactive shell also falls back to the plain
 prompt when stdout is not a TTY or the terminal is narrower than 56 columns.

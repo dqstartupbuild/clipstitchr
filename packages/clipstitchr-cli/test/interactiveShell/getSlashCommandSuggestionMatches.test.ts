@@ -14,6 +14,16 @@ describe("getSlashCommandSuggestionMatches", () => {
     assert(values.includes("/stitchr"));
   });
 
+  it("keeps the first slash focused on top-level commands", () => {
+    const values = getSlashCommandSuggestionMatches("/").map(
+      (suggestion) => suggestion.value,
+    );
+
+    assert(values.includes("/demo"));
+    assert(values.includes("/queue"));
+    assert(!values.includes("/demo manual"));
+  });
+
   it("matches command and subcommand prefixes", () => {
     assert.deepEqual(
       getSlashCommandSuggestionMatches("/demo guide s").map(

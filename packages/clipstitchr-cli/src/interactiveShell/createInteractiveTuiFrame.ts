@@ -4,13 +4,14 @@ import { createInteractiveTuiBorder } from "./createInteractiveTuiBorder.js";
 import { createInteractiveTuiLine } from "./createInteractiveTuiLine.js";
 import { createInteractiveTuiNoticeText } from "./createInteractiveTuiNoticeText.js";
 import { getInteractiveShellMenuTitle } from "./getInteractiveShellMenuTitle.js";
+import { getTerminalColumnCount } from "./getTerminalColumnCount.js";
 
 export function createInteractiveTuiFrame(input: {
   columns?: number;
   menu: InteractiveShellMenu;
   notice?: InteractiveShellNotice;
 }) {
-  const terminalColumns = input.columns ?? process.stdout.columns ?? 80;
+  const terminalColumns = getTerminalColumnCount(input.columns);
   const width = Math.max(56, Math.min(terminalColumns, 92));
   const border = createInteractiveTuiBorder(width);
   const menuTitle = getInteractiveShellMenuTitle(input.menu);

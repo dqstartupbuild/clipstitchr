@@ -7,18 +7,20 @@ files, start new content, and queue ready content in ClipStitchr.
 npx clipstitchr
 ```
 
-Running `clipstitchr` opens a persistent main menu. You can move between Demo,
-Products, Queue, Native, and Account menus, run an action, and land back in the
-same menu when it finishes. Choose `Demos`, then pick `Record it myself` for
-manual recording or `Let AI record it for me` for a policy-guarded AI run with
-a saved guide.
+Running `clipstitchr` opens one persistent terminal workspace. You can move
+between Demo, Products, Queue, Native, and Account menus, run actions, and keep
+using the same screen when each action finishes. Completed activity stays above
+the live menu instead of printing a new ClipStitchr frame. Choose `Demos`, then
+pick `Record it myself` for manual recording or `Let AI record it for me` for a
+policy-guarded AI run with a saved guide.
 Every menu also has Back, Main menu, Exit, and Type a slash command actions.
 Slash commands let you stay in the interactive shell while running direct
 commands, such as `/demo manual`, `/demo agent --guide "Checkout flow"`,
 `/queue stitch --all`, `/products use product_123`, and `/status`. The slash
-prompt suggests command names, subcommands, and option names as you type. Those
-suggestions are local and deterministic; they do not use AI or call the
-ClipStitchr server.
+composer suggests command names, subcommands, and option names as you type.
+Press Tab to complete a suggestion, Ctrl+P or Ctrl+N to move through command
+history, and Escape to return to the current menu. Suggestions are local and
+deterministic; they do not use AI or call the ClipStitchr server.
 Run `clipstitchr queue` when you want a focused queue menu for latest, all, or
 specific Stitch and Swipe queue actions.
 
@@ -146,11 +148,12 @@ inspect your whole Library. CLI Swipe queueing uses the saved rendered Swipe
 image; open the dashboard when you need to render and queue the full carousel
 or video version.
 
-The interactive shell uses a styled terminal frame with the current menu,
-recent status, keyboard hints, slash-command examples, and navigation reminders.
-When the terminal is too narrow, is not interactive, or uses `--plain` or
-`NO_COLOR=1`, the CLI falls back to simple prompt output. Direct commands stay
-plain and script-friendly.
+The interactive shell keeps one mounted terminal workspace with the current
+menu, completed activity, recent status, a slash-command composer, suggestions,
+and keyboard hints. Existing guided questions temporarily take input while an
+action runs, then return control to the same workspace. When the terminal is too
+narrow, is not interactive, or uses `--plain` or `NO_COLOR=1`, the CLI falls
+back to simple prompt output. Direct commands stay plain and script-friendly.
 
 Setup detects common nested app folders like `web/`, infers the start command,
 skips the product picker when your account only has one product, and prefers a
