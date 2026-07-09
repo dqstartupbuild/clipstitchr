@@ -37,6 +37,10 @@ export async function runInteractiveAccountShellAction(input: {
     });
   }
 
+  if (input.action === "native") {
+    return { menu: "native" };
+  }
+
   return await runInteractiveShellActionWithRecovery({
     backMenu: "main",
     currentMenu: "account",
@@ -50,6 +54,10 @@ export async function runInteractiveAccountShellAction(input: {
         await input.services.runLogout();
       } else if (input.action === "unlink") {
         await input.services.runUnlink();
+      } else if (input.action === "doctor") {
+        await input.services.runDoctor();
+      } else if (input.action === "update") {
+        await input.services.runUpdate();
       } else {
         await input.services.runStatus();
       }

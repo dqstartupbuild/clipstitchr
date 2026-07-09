@@ -20,7 +20,10 @@ export function InteractiveTuiApp(input: InteractiveTuiInput) {
         <InteractiveTuiRunningView activeLabel={controller.activeLabel} />
       ) : (
         <Box flexDirection="column">
-          <InteractiveTuiHeader menu={controller.currentMenu} />
+          <InteractiveTuiHeader
+            context={controller.context}
+            menu={controller.currentMenu}
+          />
           <InteractiveTuiNotice notice={controller.notice} />
           {controller.mode === "menu" ? (
             <InteractiveTuiMenu

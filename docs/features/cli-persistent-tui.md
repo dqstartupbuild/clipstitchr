@@ -10,11 +10,21 @@ a fresh frame and creating another top-level prompt.
 - Long menus stay inside a bounded window and follow the selected action.
 - `/` opens the command composer from any menu. Pasted slash commands are
   accepted in one input event.
-- Suggestions update locally while the user types. Tab accepts the highlighted
-  command, subcommand, or option.
+- Suggestions update locally while the user types. Command tokens can be
+  entered without their full parent path, so `/policy edit` finds
+  `/demo policy edit`. Natural option tokens such as `/queue all` work without
+  typing option punctuation, and a nearby typo in a longer token is tolerated.
+- Tab accepts the highlighted command, subcommand, or option. Enter runs a
+  complete highlighted command. For a command group or required-value option,
+  Enter completes the group and leaves the composer open for the next token.
 - Ctrl+P and Ctrl+N move backward and forward through commands used during the
   current session.
+- Home, End, Ctrl+A, and Ctrl+E move within the command line. Arrow keys move
+  through suggestions, then through history when no suggestions are available.
 - Escape leaves the composer or returns from a submenu to the main menu.
+- The header shows the selected product plus local repo and account connection
+  state. The main menu puts missing account or repo setup first and refreshes
+  that local context after each action.
 - Completed commands and errors remain visible while the live menu and composer
   continue accepting input.
 - Focused questions inside recording, setup, and destructive workflows keep
@@ -23,8 +33,11 @@ a fresh frame and creating another top-level prompt.
 - While an action has control, the menu collapses to one working line so the
   action output and question are not surrounded by a duplicate interface.
 
-The composer uses the existing deterministic slash-command registry. It does
-not call AI or the ClipStitchr backend to generate suggestions.
+The composer uses one deterministic command registry shared by suggestion and
+completion behavior. Search ranks exact commands, prefixes, ordered command
+tokens, meaningful aliases, and limited typo matches. It does not call AI or
+the ClipStitchr backend to generate suggestions. Header context reads only the
+local project config and saved CLI credentials.
 
 ## Runtime Design
 
@@ -61,6 +74,12 @@ the complete brand header.
   coordinates action transitions, notices, and running state.
 - `packages/clipstitchr-cli/src/interactiveTui/useInteractiveTuiCommandComposer.ts`
   owns command editing, completion selection, and session history.
+- `packages/clipstitchr-cli/src/interactiveShell/interactiveCommandDefinitions.ts`
+  defines canonical interactive commands and completion behavior.
+- `packages/clipstitchr-cli/src/interactiveShell/scoreInteractiveCommandDefinition.ts`
+  ranks deterministic command matches.
+- `packages/clipstitchr-cli/src/interactiveShell/readInteractiveShellContext.ts`
+  reads local product, repo, and account context.
 - `packages/clipstitchr-cli/src/interactiveTui/useInteractiveTuiMenuNavigation.ts`
   owns menu selection and keyboard navigation.
 - `packages/clipstitchr-cli/src/interactiveTui/runInteractiveTuiMenuAction.ts`
@@ -89,11 +108,14 @@ packages/clipstitchr-cli/src/interactiveTui/
   InteractiveTuiRunningView.tsx
   InteractiveTuiStatusBar.tsx
   InteractiveTuiSuggestions.tsx
+  createInteractiveTuiSuggestionCompletionText.ts
+  getInteractiveTuiContextText.ts
   getInteractiveTuiMenuChoices.ts
   getInteractiveTuiVisibleChoices.ts
   getNextInteractiveTuiSelectionIndex.ts
   runInteractiveTui.tsx
   runInteractiveTuiMenuAction.ts
+  resolveInteractiveTuiCommandSubmission.ts
   setInteractiveTuiStdinIsReferenced.ts
   useInteractiveTuiActivity.ts
   useInteractiveTuiCommandComposer.ts
@@ -105,11 +127,12 @@ packages/clipstitchr-cli/src/interactiveTui/
 ## Verification
 
 The interactive TUI tests render the real Ink app, send terminal input, and
-verify that menu navigation, slash execution, and Tab completion return to the
-same workspace. Running-state tests verify that delegated questions get a clean
-terminal handoff, and stdin lifecycle tests cover the prompt keepalive. Pure
-tests cover menu reuse, selection wrapping, and action dispatch. The full CLI
-suite continues covering the plain shell and direct commands.
+verify menu navigation, ranked token lookup, canonical Enter execution, Tab
+completion, context refresh, and return to the same workspace. Running-state
+tests verify that delegated questions get a clean terminal handoff, and stdin
+lifecycle tests cover the prompt keepalive. Pure tests cover ranking, typo
+distance, local context, menu reuse, selection wrapping, and action dispatch.
+The full CLI suite continues covering the plain shell and direct commands.
 
 This capability changes only local terminal interaction. It does not add or
 change a backend operation, external provider call, or rate limit.

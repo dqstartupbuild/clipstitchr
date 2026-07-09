@@ -1,5 +1,6 @@
 import type { CliGlobalOptions } from "../commands/CliGlobalOptions.js";
 import type { InteractiveShellMenu } from "./InteractiveShellMenu.js";
+import type { InteractiveShellContext } from "./InteractiveShellContext.js";
 import type { InteractiveShellPrompts } from "./InteractiveShellPrompts.js";
 import type { InteractiveShellServices } from "./InteractiveShellServices.js";
 import type { InteractiveShellTransition } from "./InteractiveShellTransition.js";
@@ -17,6 +18,7 @@ import { runInteractiveProductsShellAction } from "./runInteractiveProductsShell
 import { runInteractiveQueueShellAction } from "./runInteractiveQueueShellAction.js";
 
 export async function runInteractiveShellMenu(input: {
+  context?: InteractiveShellContext;
   menu: InteractiveShellMenu;
   options: CliGlobalOptions;
   prompts: InteractiveShellPrompts;
@@ -73,7 +75,7 @@ export async function runInteractiveShellMenu(input: {
   if (input.menu === "account") {
     return await runInteractiveAccountShellAction({
       action: await input.prompts.select({
-        choices: createInteractiveShellAccountChoices(),
+        choices: createInteractiveShellAccountChoices(input.context),
         message: "What do you want to do?",
       }),
       options: input.options,
@@ -84,7 +86,7 @@ export async function runInteractiveShellMenu(input: {
 
   return await runInteractiveMainMenuAction({
     action: await input.prompts.select({
-      choices: createInteractiveShellMainChoices(),
+      choices: createInteractiveShellMainChoices({ context: input.context }),
       message: "What do you want to do?",
     }),
     options: input.options,

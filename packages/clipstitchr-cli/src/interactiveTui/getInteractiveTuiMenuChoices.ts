@@ -5,10 +5,12 @@ import { createInteractiveShellNativeChoices } from "../interactiveShell/createI
 import { createInteractiveShellProductsChoices } from "../interactiveShell/createInteractiveShellProductsChoices.js";
 import { createInteractiveShellQueueChoices } from "../interactiveShell/createInteractiveShellQueueChoices.js";
 import type { InteractiveShellChoice } from "../interactiveShell/InteractiveShellChoice.js";
+import type { InteractiveShellContext } from "../interactiveShell/InteractiveShellContext.js";
 import type { InteractiveShellMenu } from "../interactiveShell/InteractiveShellMenu.js";
 
 export function getInteractiveTuiMenuChoices(
   menu: InteractiveShellMenu,
+  context?: InteractiveShellContext,
 ): InteractiveShellChoice<string>[] {
   if (menu === "demo") {
     return createInteractiveShellDemoChoices();
@@ -27,8 +29,11 @@ export function getInteractiveTuiMenuChoices(
   }
 
   if (menu === "account") {
-    return createInteractiveShellAccountChoices();
+    return createInteractiveShellAccountChoices(context);
   }
 
-  return createInteractiveShellMainChoices();
+  return createInteractiveShellMainChoices({
+    context,
+    includeSlashCommand: false,
+  });
 }

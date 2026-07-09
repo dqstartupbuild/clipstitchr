@@ -50,6 +50,10 @@ export async function runInteractiveMainMenuAction(input: {
         await input.services.runStitchrNew(input.options);
       } else if (input.action === "swipr-new") {
         await input.services.runSwiprNew(input.options);
+      } else if (input.action === "link") {
+        await input.services.runLink(input.options);
+      } else if (input.action === "login") {
+        await input.services.runLogin(input.options);
       } else if (input.action === "status") {
         await input.services.runStatus();
       } else if (input.action === "doctor") {

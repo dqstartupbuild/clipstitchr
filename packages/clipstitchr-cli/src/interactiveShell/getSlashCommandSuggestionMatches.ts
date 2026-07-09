@@ -1,20 +1,34 @@
+import { interactiveCommandDefinitions } from "./interactiveCommandDefinitions.js";
 import { normalizeSlashCommandSearchTerm } from "./normalizeSlashCommandSearchTerm.js";
-import { slashCommandSuggestions } from "./slashCommandSuggestions.js";
+import { scoreInteractiveCommandDefinition } from "./scoreInteractiveCommandDefinition.js";
 
 export function getSlashCommandSuggestionMatches(term: string | undefined) {
   const normalizedTerm = normalizeSlashCommandSearchTerm(term);
 
   if (!normalizedTerm || normalizedTerm === "/") {
-    return slashCommandSuggestions.filter(
-      (suggestion) => !suggestion.value.slice(1).includes(" "),
+    return interactiveCommandDefinitions.filter(
+      (definition) => !definition.value.slice(1).includes(" "),
     );
   }
 
-  const termWithSlash = normalizedTerm.startsWith("/")
-    ? normalizedTerm
-    : `/${normalizedTerm}`;
+  const hasTrailingSpace = normalizedTerm.endsWith(" ");
+  const query = normalizedTerm.trim();
 
-  return slashCommandSuggestions
-    .filter((suggestion) => suggestion.value.startsWith(termWithSlash))
+  return interactiveCommandDefinitions
+    .map((definition, index) => ({
+      definition,
+      index,
+      score: scoreInteractiveCommandDefinition({ definition, query }),
+    }))
+    .filter(
+      (match) =>
+        match.score > 0 &&
+        !(hasTrailingSpace && match.definition.value === query),
+    )
+    .sort(
+      (left, right) =>
+        right.score - left.score || left.index - right.index,
+    )
+    .map((match) => match.definition)
     .slice(0, 12);
 }

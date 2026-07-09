@@ -42,6 +42,10 @@ export async function runInteractiveTuiMenuAction(input: {
       await input.services.runStitchrNew(input.options);
     } else if (input.action === "swipr-new") {
       await input.services.runSwiprNew(input.options);
+    } else if (input.action === "link") {
+      await input.services.runLink(input.options);
+    } else if (input.action === "login") {
+      await input.services.runLogin(input.options);
     } else if (input.action === "status") {
       await input.services.runStatus();
     } else if (input.action === "doctor") {
@@ -91,6 +95,10 @@ export async function runInteractiveTuiMenuAction(input: {
     return { menu: "native" };
   }
 
+  if (input.action === "native") {
+    return { menu: "native" };
+  }
+
   if (input.action === "link") {
     await input.services.runLink(input.options);
   } else if (input.action === "login") {
@@ -99,6 +107,10 @@ export async function runInteractiveTuiMenuAction(input: {
     await input.services.runLogout();
   } else if (input.action === "unlink") {
     await input.services.runUnlink();
+  } else if (input.action === "doctor") {
+    await input.services.runDoctor();
+  } else if (input.action === "update") {
+    await input.services.runUpdate();
   } else {
     await input.services.runStatus();
   }

@@ -25,7 +25,14 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
   const [mode, setMode] = useState<InteractiveTuiMode>("menu");
   const [notice, setNotice] = useState<InteractiveShellNotice>();
   const [activeLabel, setActiveLabel] = useState<string>();
+  const [context, setContext] = useState(input.context);
   const { activities, appendActivity } = useInteractiveTuiActivity();
+
+  const refreshContext = useCallback(async () => {
+    if (input.readContext) {
+      setContext(await input.readContext());
+    }
+  }, [input.readContext]);
 
   const openMenu = useCallback((menu: InteractiveShellMenu) => {
     setCurrentMenu(menu);
@@ -101,6 +108,7 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
           services: input.services,
         });
 
+        await refreshContext();
         finishTransition(transition, `Finished ${commandLine}.`);
       } catch (error) {
         finishError(error, commandLine);
@@ -113,6 +121,7 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
       finishTransition,
       input.options,
       input.services,
+      refreshContext,
     ],
   );
 
@@ -187,6 +196,7 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
           services: input.services,
         });
 
+        await refreshContext();
         finishTransition(transition, `Finished ${choice.name}.`);
       } catch (error) {
         finishError(error, choice.name);
@@ -203,10 +213,12 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
       input.services,
       openCommandComposer,
       openMenu,
+      refreshContext,
     ],
   );
 
   const menuNavigation = useInteractiveTuiMenuNavigation({
+    context,
     currentMenu,
     isActive: mode === "menu",
     onBack: () => openMenu("main"),
@@ -226,6 +238,7 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
     activities,
     choices: menuNavigation.choices,
     commandText: commandComposer.commandText,
+    context,
     currentMenu,
     cursorIndex: commandComposer.cursorIndex,
     mode,

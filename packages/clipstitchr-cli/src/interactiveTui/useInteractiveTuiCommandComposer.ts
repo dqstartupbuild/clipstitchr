@@ -1,7 +1,9 @@
 import { useInput } from "ink";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSlashCommandSuggestionMatches } from "../interactiveShell/getSlashCommandSuggestionMatches.js";
+import { createInteractiveTuiSuggestionCompletionText } from "./createInteractiveTuiSuggestionCompletionText.js";
 import { getNextInteractiveTuiSelectionIndex } from "./getNextInteractiveTuiSelectionIndex.js";
+import { resolveInteractiveTuiCommandSubmission } from "./resolveInteractiveTuiCommandSubmission.js";
 
 export function useInteractiveTuiCommandComposer(input: {
   isActive: boolean;
@@ -79,18 +81,31 @@ export function useInteractiveTuiCommandComposer(input: {
       }
 
       if (key.return) {
-        const commandLine = commandText.trim();
+        const submission = resolveInteractiveTuiCommandSubmission({
+          commandText,
+          suggestion: suggestions[suggestionIndex],
+        });
 
-        if (!commandLine || commandLine === "/") {
+        if (submission.kind === "empty") {
           input.onEmpty();
           return;
         }
 
+        if (submission.kind === "complete") {
+          updateCommandText(
+            submission.commandText,
+            submission.commandText.length,
+          );
+          return;
+        }
+
         setCommandHistory((current) =>
-          current.at(-1) === commandLine ? current : [...current, commandLine],
+          current.at(-1) === submission.commandLine
+            ? current
+            : [...current, submission.commandLine],
         );
         resetCommandComposer();
-        input.onRun(commandLine);
+        input.onRun(submission.commandLine);
         return;
       }
 
@@ -98,7 +113,9 @@ export function useInteractiveTuiCommandComposer(input: {
         const completion = suggestions[suggestionIndex];
 
         if (completion) {
-          updateCommandText(completion.value, completion.value.length);
+          const completedText =
+            createInteractiveTuiSuggestionCompletionText(completion);
+          updateCommandText(completedText, completedText.length);
         }
         return;
       }
@@ -114,6 +131,11 @@ export function useInteractiveTuiCommandComposer(input: {
       }
 
       if (key.upArrow || key.downArrow) {
+        if (historyIndex !== undefined || suggestions.length === 0) {
+          showCommandHistory(key.downArrow ? "next" : "previous");
+          return;
+        }
+
         setSuggestionIndex((currentIndex) =>
           getNextInteractiveTuiSelectionIndex({
             currentIndex,
@@ -133,6 +155,16 @@ export function useInteractiveTuiCommandComposer(input: {
         setCursorIndex((currentIndex) =>
           Math.min(commandText.length, currentIndex + 1),
         );
+        return;
+      }
+
+      if (key.home) {
+        setCursorIndex(0);
+        return;
+      }
+
+      if (key.end) {
+        setCursorIndex(commandText.length);
         return;
       }
 

@@ -10,6 +10,11 @@ describe("createSlashCommandSearchChoices", () => {
         name: "/products use",
         value: "/products use",
       },
+      {
+        description: "Create and use a product",
+        name: "/products create --use",
+        value: "/products create --use",
+      },
     ]);
   });
 

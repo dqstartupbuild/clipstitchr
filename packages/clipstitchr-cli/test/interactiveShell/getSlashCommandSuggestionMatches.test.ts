@@ -57,4 +57,66 @@ describe("getSlashCommandSuggestionMatches", () => {
       ],
     );
   });
+
+  it("finds nested commands from meaningful command tokens", () => {
+    assert.deepEqual(
+      getSlashCommandSuggestionMatches("policy").map(
+        (suggestion) => suggestion.value,
+      ),
+      [
+        "/demo policy",
+        "/demo policy init",
+        "/demo policy check",
+        "/demo policy edit",
+      ],
+    );
+    assert.equal(
+      getSlashCommandSuggestionMatches("policy edit")[0]?.value,
+      "/demo policy edit",
+    );
+    assert.equal(
+      getSlashCommandSuggestionMatches("guide save")[0]?.value,
+      "/demo guide save-instructions",
+    );
+  });
+
+  it("matches option names without requiring punctuation", () => {
+    const values = getSlashCommandSuggestionMatches("queue all").map(
+      (suggestion) => suggestion.value,
+    );
+
+    assert(values.includes("/queue stitch --all"));
+    assert(values.includes("/queue swipe --all"));
+    assert(values.includes("/queue --all"));
+  });
+
+  it("keeps setup aliases and nested init commands discoverable", () => {
+    const values = getSlashCommandSuggestionMatches("init").map(
+      (suggestion) => suggestion.value,
+    );
+
+    assert.equal(values[0], "/init");
+    assert(values.includes("/demo policy init"));
+    assert(values.includes("/native init"));
+  });
+
+  it("tolerates one nearby typo in a command token", () => {
+    assert.equal(
+      getSlashCommandSuggestionMatches("polciy")[0]?.value,
+      "/demo policy",
+    );
+  });
+
+  it("shows subcommands after a completed parent command", () => {
+    assert.deepEqual(
+      getSlashCommandSuggestionMatches("/demo policy ").map(
+        (suggestion) => suggestion.value,
+      ),
+      [
+        "/demo policy init",
+        "/demo policy check",
+        "/demo policy edit",
+      ],
+    );
+  });
 });

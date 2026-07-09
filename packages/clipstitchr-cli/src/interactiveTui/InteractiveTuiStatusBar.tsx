@@ -4,7 +4,7 @@ export function InteractiveTuiStatusBar(input: {
   isCommandMode: boolean;
 }) {
   const message = input.isCommandMode
-    ? "Tab complete | Enter run | Esc menu | Ctrl+P history"
+    ? "Tab complete | Enter use | Esc menu | Ctrl+P history"
     : "Up/Down move | Enter choose | / command | Esc back | Ctrl+C exit";
 
   return (

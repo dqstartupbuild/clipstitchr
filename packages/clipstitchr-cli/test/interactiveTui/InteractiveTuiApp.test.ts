@@ -7,7 +7,7 @@ import { createInteractiveShellTestPrompts } from "../interactiveShell/createInt
 import { createInteractiveShellTestServices } from "../interactiveShell/createInteractiveShellTestServices.js";
 import { waitForTuiUpdate } from "./waitForTuiUpdate.js";
 
-describe("InteractiveTuiApp", () => {
+describe("InteractiveTuiApp", { concurrency: false }, () => {
   it("navigates menus without unmounting the workspace", async () => {
     const tui = render(
       createElement(InteractiveTuiApp, {
@@ -68,6 +68,58 @@ describe("InteractiveTuiApp", () => {
     await waitForTuiUpdate();
 
     assert.match(tui.lastFrame() ?? "", /\/queue/);
+    tui.unmount();
+  });
+
+  it("runs a nested command found from its meaningful tokens", async () => {
+    const calls: string[] = [];
+    const tui = render(
+      createElement(InteractiveTuiApp, {
+        options: {},
+        prompts: createInteractiveShellTestPrompts({}),
+        services: createInteractiveShellTestServices(calls),
+      }),
+    );
+
+    tui.stdin.write("/policy edit");
+    await waitForTuiUpdate();
+    assert.match(tui.lastFrame() ?? "", /\/demo policy edit/);
+
+    tui.stdin.write("\r");
+    await waitForTuiUpdate();
+
+    assert.deepEqual(calls, ["policy-edit"]);
+    assert.match(tui.lastFrame() ?? "", /Finished \/demo policy edit\./);
+    tui.unmount();
+  });
+
+  it("refreshes local context after setup actions", async () => {
+    const calls: string[] = [];
+    const tui = render(
+      createElement(InteractiveTuiApp, {
+        context: {
+          isAccountConnected: false,
+          isRepoLinked: false,
+        },
+        options: {},
+        prompts: createInteractiveShellTestPrompts({}),
+        readContext: async () => ({
+          isAccountConnected: true,
+          isRepoLinked: false,
+        }),
+        services: createInteractiveShellTestServices(calls),
+      }),
+    );
+
+    assert.match(tui.lastFrame() ?? "", /Connect my account/);
+    assert.match(tui.lastFrame() ?? "", /Account: not connected/);
+
+    tui.stdin.write("\r");
+    await waitForTuiUpdate();
+
+    assert.deepEqual(calls, ["login"]);
+    assert.match(tui.lastFrame() ?? "", /Account: connected/);
+    assert.match(tui.lastFrame() ?? "", /> Set up this repo/);
     tui.unmount();
   });
 

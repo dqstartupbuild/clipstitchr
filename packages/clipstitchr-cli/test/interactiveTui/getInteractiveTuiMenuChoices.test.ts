@@ -11,4 +11,30 @@ describe("getInteractiveTuiMenuChoices", () => {
     assert.equal(getInteractiveTuiMenuChoices("native")[0]?.value, "native-init");
     assert.equal(getInteractiveTuiMenuChoices("account")[0]?.value, "link");
   });
+
+  it("puts missing local setup first and omits the redundant slash action", () => {
+    const choices = getInteractiveTuiMenuChoices("main", {
+      isAccountConnected: false,
+      isRepoLinked: false,
+    });
+
+    assert.deepEqual(
+      choices.slice(0, 2).map((choice) => choice.value),
+      ["login", "link"],
+    );
+    assert(!choices.some((choice) => choice.value === "nav:slash"));
+  });
+
+  it("shows disconnect actions for connected local context", () => {
+    const choices = getInteractiveTuiMenuChoices("account", {
+      isAccountConnected: true,
+      isRepoLinked: true,
+      productLabel: "Demo product",
+    });
+
+    assert.deepEqual(
+      choices.slice(0, 2).map((choice) => choice.value),
+      ["unlink", "logout"],
+    );
+  });
 });

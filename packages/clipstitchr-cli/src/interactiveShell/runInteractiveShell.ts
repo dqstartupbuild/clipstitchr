@@ -1,5 +1,6 @@
 import type { CliGlobalOptions } from "../commands/CliGlobalOptions.js";
 import type { InteractiveShellMenu } from "./InteractiveShellMenu.js";
+import type { InteractiveShellContext } from "./InteractiveShellContext.js";
 import type { InteractiveShellNotice } from "./InteractiveShellNotice.js";
 import type { InteractiveShellPrompts } from "./InteractiveShellPrompts.js";
 import type { InteractiveShellServices } from "./InteractiveShellServices.js";
@@ -9,12 +10,15 @@ import { logInteractiveShellMenuHeader } from "./logInteractiveShellMenuHeader.j
 import { runInteractiveShellMenu } from "./runInteractiveShellMenu.js";
 
 export async function runInteractiveShell(input: {
+  context?: InteractiveShellContext;
   initialMenu?: InteractiveShellMenu;
   options: CliGlobalOptions;
   prompts: InteractiveShellPrompts;
+  readContext?: () => Promise<InteractiveShellContext>;
   services: InteractiveShellServices;
 }) {
   let currentMenu = input.initialMenu ?? "main";
+  let context = input.context;
   let notice: InteractiveShellNotice | undefined;
 
   try {
@@ -26,6 +30,7 @@ export async function runInteractiveShell(input: {
       });
 
       const transition = await runInteractiveShellMenu({
+        context,
         menu: currentMenu,
         options: input.options,
         prompts: input.prompts,
@@ -35,6 +40,8 @@ export async function runInteractiveShell(input: {
       if (transition.exit) {
         return;
       }
+
+      context = input.readContext ? await input.readContext() : context;
 
       notice =
         transition.notice ??

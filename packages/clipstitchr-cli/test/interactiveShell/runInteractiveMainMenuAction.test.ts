@@ -35,6 +35,19 @@ describe("runInteractiveMainMenuAction", () => {
     assert.deepEqual(calls, ["stitchr-new::"]);
   });
 
+  it("runs recommended setup actions from the main menu", async () => {
+    const calls: string[] = [];
+    const result = await runInteractiveMainMenuAction({
+      action: "login",
+      options: {},
+      prompts: createInteractiveShellTestPrompts({}),
+      services: createInteractiveShellTestServices(calls),
+    });
+
+    assert.equal(result.menu, "main");
+    assert.deepEqual(calls, ["login"]);
+  });
+
   it("runs slash commands from the main menu", async () => {
     const result = await runInteractiveMainMenuAction({
       action: "nav:slash",

@@ -2,6 +2,8 @@ export type InteractiveShellMainAction =
   | "account"
   | "demo"
   | "doctor"
+  | "link"
+  | "login"
   | "native"
   | "products"
   | "queue"

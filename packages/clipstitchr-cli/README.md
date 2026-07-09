@@ -7,20 +7,24 @@ files, start new content, and queue ready content in ClipStitchr.
 npx clipstitchr
 ```
 
-Running `clipstitchr` opens one persistent terminal workspace. You can move
-between Demo, Products, Queue, Native, and Account menus, run actions, and keep
-using the same screen when each action finishes. Completed activity stays above
-the live menu instead of printing a new ClipStitchr frame. Choose `Demos`, then
-pick `Record it myself` for manual recording or `Let AI record it for me` for a
-policy-guarded AI run with a saved guide.
-Every menu also has Back, Main menu, Exit, and Type a slash command actions.
+Running `clipstitchr` opens one persistent terminal workspace. Its header shows
+the current product, repo connection, and account connection from local CLI
+settings. Missing account or repo setup appears first; after setup, the main
+menu keeps everyday creation and queue actions first. Completed activity stays
+above the live menu instead of printing a new ClipStitchr frame. Choose `Demos`,
+then pick `Record it myself` for manual recording or `Let AI record it for me`
+for a policy-guarded AI run with a saved guide.
 Slash commands let you stay in the interactive shell while running direct
 commands, such as `/demo manual`, `/demo agent --guide "Checkout flow"`,
 `/queue stitch --all`, `/products use product_123`, and `/status`. The slash
-composer suggests command names, subcommands, and option names as you type.
-Press Tab to complete a suggestion, Ctrl+P or Ctrl+N to move through command
-history, and Escape to return to the current menu. Suggestions are local and
-deterministic; they do not use AI or call the ClipStitchr server.
+composer ranks command names, subcommands, option names, and meaningful command
+tokens as you type. For example, `/policy edit` finds `/demo policy edit`, and
+`/queue all` finds the queue-all choices. One nearby typo is tolerated for
+longer command tokens. Press Tab to complete the highlighted suggestion. Enter
+runs a complete command or expands a command group so you can keep typing.
+Ctrl+P or Ctrl+N moves through command history, and Escape returns to the
+current menu. Suggestions and header context are local and deterministic; they
+do not use AI or call the ClipStitchr server.
 Run `clipstitchr queue` when you want a focused queue menu for latest, all, or
 specific Stitch and Swipe queue actions.
 
@@ -149,11 +153,11 @@ image; open the dashboard when you need to render and queue the full carousel
 or video version.
 
 The interactive shell keeps one mounted terminal workspace with the current
-menu, completed activity, recent status, a slash-command composer, suggestions,
-and keyboard hints. Existing guided questions temporarily take input while an
-action runs. The menu collapses to one working line during that handoff, keeps
-the question alive until it is answered, then returns control to the same
-workspace. When the terminal is too narrow, is not interactive, or uses
+menu, local product/repo/account context, completed activity, a slash-command
+composer, suggestions, and keyboard hints. Existing guided questions
+temporarily take input while an action runs. The menu collapses to one working
+line during that handoff, keeps the question alive until it is answered, then
+returns control to the same workspace. When the terminal is too narrow, is not interactive, or uses
 `--plain` or `NO_COLOR=1`, the CLI falls back to simple prompt output. Direct
 commands stay plain and script-friendly.
 

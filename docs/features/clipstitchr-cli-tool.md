@@ -186,23 +186,30 @@ post to local Stitch/Swipe source mapping when available.
 The root `clipstitchr` command mounts one persistent Ink workspace instead of a
 sequence of one-action prompts. The workspace keeps a current menu state
 (`main`, `demo`, `products`, `queue`, `native`, or `account`), completed
-activity, command history, and recent status. Selecting an action runs the same
-command handler used by the direct command path, then returns input to the same
-mounted workspace.
+activity, command history, and local product/repo/account context. Missing
+account or repo setup appears first on the main menu. Once setup exists, the
+routine creation, queue, product, and demo actions stay first. Native setup,
+doctor, and update remain under Setup and account. Selecting an action runs the
+same command handler used by the direct command path, refreshes local context,
+then returns input to the same mounted workspace.
 
-Submenus add Back, Main menu, Exit, and Type a slash command actions. Slash
-commands are parsed locally, support quoted values, and dispatch to the same
-command handlers as direct commands. The composer is available from every menu,
-Tab accepts the selected completion, Ctrl+P and Ctrl+N move through command
-history, and Escape returns to menu navigation. If an action fails, the error
-stays visible in the activity history and the current menu remains usable.
-Ctrl+C exits without printing a stack trace while the workspace is idle.
+Slash commands are parsed locally, support quoted values, and dispatch to the
+same command handlers as direct commands. The composer is available from every
+menu. Tab accepts the selected completion. Enter runs complete commands and
+expands command groups or options that still need a value. Ctrl+P and Ctrl+N
+move through command history, and Escape returns to menu navigation. If an
+action fails, the error stays visible in the activity history and the current
+menu remains usable. Ctrl+C exits without printing a stack trace while the
+workspace is idle.
 
-Slash command autocomplete uses a local static registry of command names,
-subcommands, and option names. It does deterministic prefix matching and keeps
-typed values runnable through a "run exactly what you typed" fallback. It does
-not use AI, call ClipStitchr APIs, or fetch account data for command-name
-suggestions.
+Slash command autocomplete uses a shared local registry of command names,
+subcommands, option names, completion behavior, and meaningful search terms.
+Deterministic ranking handles exact values, prefixes, ordered or partial command
+tokens, natural option tokens, and limited typo tolerance. This lets
+`/policy edit` find `/demo policy edit` without hiding the canonical command.
+Typed values remain runnable through a "run exactly what you typed" fallback.
+Suggestions do not use AI or call ClipStitchr APIs. The workspace header reads
+only `.clipstitchr.yml` and saved local CLI credentials.
 
 ## Products Menu Flow
 

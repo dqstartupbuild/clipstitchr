@@ -1,11 +1,13 @@
 import { useInput } from "ink";
 import { useEffect, useMemo, useState } from "react";
 import type { InteractiveShellChoice } from "../interactiveShell/InteractiveShellChoice.js";
+import type { InteractiveShellContext } from "../interactiveShell/InteractiveShellContext.js";
 import type { InteractiveShellMenu } from "../interactiveShell/InteractiveShellMenu.js";
 import { getInteractiveTuiMenuChoices } from "./getInteractiveTuiMenuChoices.js";
 import { getNextInteractiveTuiSelectionIndex } from "./getNextInteractiveTuiSelectionIndex.js";
 
 export function useInteractiveTuiMenuNavigation(input: {
+  context?: InteractiveShellContext;
   currentMenu: InteractiveShellMenu;
   isActive: boolean;
   onBack: () => void;
@@ -14,13 +16,13 @@ export function useInteractiveTuiMenuNavigation(input: {
 }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const choices = useMemo(
-    () => getInteractiveTuiMenuChoices(input.currentMenu),
-    [input.currentMenu],
+    () => getInteractiveTuiMenuChoices(input.currentMenu, input.context),
+    [input.context, input.currentMenu],
   );
 
   useEffect(() => {
     setSelectedIndex(0);
-  }, [input.currentMenu]);
+  }, [input.context, input.currentMenu]);
 
   useInput(
     (typedInput, key) => {
