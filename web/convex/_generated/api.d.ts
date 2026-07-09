@@ -62,8 +62,8 @@ import type * as cliProducts_getCliProduct from "../cliProducts/getCliProduct.js
 import type * as cliProducts_getCliProductDocument from "../cliProducts/getCliProductDocument.js";
 import type * as cliProducts_listCliProducts from "../cliProducts/listCliProducts.js";
 import type * as cliQueue_listCliQueueSourceSummaries from "../cliQueue/listCliQueueSourceSummaries.js";
-import type * as cliRateLimits_consumeCliPostBridgeRead from "../cliRateLimits/consumeCliPostBridgeRead.js";
 import type * as cliRateLimits_consumeCliPostBridgeMediaUpload from "../cliRateLimits/consumeCliPostBridgeMediaUpload.js";
+import type * as cliRateLimits_consumeCliPostBridgeRead from "../cliRateLimits/consumeCliPostBridgeRead.js";
 import type * as cliRateLimits_consumeCliPostBridgeSchedule from "../cliRateLimits/consumeCliPostBridgeSchedule.js";
 import type * as cliSwipr_getIsCliSwiprBatchRunId from "../cliSwipr/getIsCliSwiprBatchRunId.js";
 import type * as cliSwipr_planCliSwiprBatch from "../cliSwipr/planCliSwiprBatch.js";
@@ -327,8 +327,8 @@ declare const fullApi: ApiFromModules<{
   "cliProducts/getCliProductDocument": typeof cliProducts_getCliProductDocument;
   "cliProducts/listCliProducts": typeof cliProducts_listCliProducts;
   "cliQueue/listCliQueueSourceSummaries": typeof cliQueue_listCliQueueSourceSummaries;
-  "cliRateLimits/consumeCliPostBridgeRead": typeof cliRateLimits_consumeCliPostBridgeRead;
   "cliRateLimits/consumeCliPostBridgeMediaUpload": typeof cliRateLimits_consumeCliPostBridgeMediaUpload;
+  "cliRateLimits/consumeCliPostBridgeRead": typeof cliRateLimits_consumeCliPostBridgeRead;
   "cliRateLimits/consumeCliPostBridgeSchedule": typeof cliRateLimits_consumeCliPostBridgeSchedule;
   "cliSwipr/getIsCliSwiprBatchRunId": typeof cliSwipr_getIsCliSwiprBatchRunId;
   "cliSwipr/planCliSwiprBatch": typeof cliSwipr_planCliSwiprBatch;
