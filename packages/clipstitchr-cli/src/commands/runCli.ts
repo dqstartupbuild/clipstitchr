@@ -204,10 +204,22 @@ export async function runCli(argv: string[]) {
     });
 
   demoAgent
-    .command("export-log")
+    .command("export-log", { hidden: true })
     .argument("<runId>", "Agent run ID")
-    .description("Show or export local agent evidence paths")
+    .description("Legacy alias for demo logs")
     .option("--output <path>", "Write one JSON export file")
+    .action(async (runId, options) => {
+      await runDemoAgentExportLogCommand(runId, {
+        ...program.opts(),
+        ...options,
+      });
+    });
+
+  demo
+    .command("logs")
+    .argument("<runId>", "Agent run ID")
+    .description("Show local logs for an automated demo run")
+    .option("--output <path>", "Write one compact JSON file")
     .action(async (runId, options) => {
       await runDemoAgentExportLogCommand(runId, {
         ...program.opts(),

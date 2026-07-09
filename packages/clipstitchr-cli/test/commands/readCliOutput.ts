@@ -1,9 +1,10 @@
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 
-export function readCliOutput(args: string[]) {
-  const result = spawnSync(process.execPath, [join("dist", "cli.js"), ...args], {
-    cwd: process.cwd(),
+export function readCliOutput(args: string[], cwd = process.cwd()) {
+  const cliPath = join(process.cwd(), "dist", "cli.js");
+  const result = spawnSync(process.execPath, [cliPath, ...args], {
+    cwd,
     encoding: "utf8",
   });
 

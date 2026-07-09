@@ -42,7 +42,7 @@ clipstitchr demo agent run --guide guide_123 --ai-planner --dry-run
 clipstitchr demo agent run --guide guide_123 --driver openai-computer
 clipstitchr demo agent run --guide guide_123 --driver openai-computer --target live --url https://example.com
 clipstitchr demo agent run --guide guide_123 --no-upload
-clipstitchr demo agent export-log agent_run_123
+clipstitchr demo logs agent_run_123
 clipstitchr demo manual
 clipstitchr demo manual --guide "Checkout flow"
 clipstitchr demo manual --no-guide

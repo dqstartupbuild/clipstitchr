@@ -220,7 +220,7 @@ export const clipstitchrCliDoc = {
         "clipstitchr demo agent run --guide guide_123 --ai-planner --dry-run",
         "clipstitchr demo agent run --guide guide_123",
         "clipstitchr demo agent run --guide guide_123 --no-upload",
-        "clipstitchr demo agent export-log agent_run_123",
+        "clipstitchr demo logs agent_run_123",
       ],
     },
     {

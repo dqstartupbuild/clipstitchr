@@ -15,7 +15,7 @@ export async function runDemoAgentExportLogCommand(
   runId: string,
   options: DemoAgentExportLogOptions,
 ) {
-  logBrandHeader("Export local agent log");
+  logBrandHeader("Demo agent logs");
 
   const summary = await readDemoAgentRunSummary(runId);
   const actionLogPath = join(
@@ -38,6 +38,6 @@ export async function runDemoAgentExportLogCommand(
     `${JSON.stringify({ actionLog, summary }, null, 2)}\n`,
     "utf8",
   );
-  logSuccess("Exported local agent log.");
+  logSuccess("Saved local agent log.");
   logKeyValue("File", options.output);
 }

@@ -13,7 +13,8 @@ run. Recording upload requires explicit review and approval.
   legacy aliases.
 - Adds `clipstitchr demo agent run --guide <id> --dry-run`.
 - Adds guarded recording with `clipstitchr demo agent run --guide <id>`.
-- Adds `clipstitchr demo agent export-log <run-id>`.
+- Adds `clipstitchr demo logs <run-id>`.
+- Keeps `clipstitchr demo agent export-log <run-id>` as a legacy alias.
 - Adds `clipstitchr demo auto` for one-command AI guide generation and guarded
   AI recording when account, repo, and a local or live app URL are already
   ready.

@@ -377,7 +377,7 @@ clipstitchr demo policy check
 clipstitchr demo policy edit
 clipstitchr demo agent run --guide guide_123
 clipstitchr demo agent run --guide guide_123 --dry-run
-clipstitchr demo agent export-log agent_run_123
+clipstitchr demo logs agent_run_123
 ```
 
 `--dry-run` navigates, observes, validates, executes approved local browser
