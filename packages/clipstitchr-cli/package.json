@@ -1,6 +1,6 @@
 {
   "name": "clipstitchr",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "description": "Record demos, start batch content, and queue finished Stitches in ClipStitchr from your terminal.",
   "type": "module",
   "bin": {
@@ -8,12 +8,15 @@
   },
   "files": [
     "dist",
+    "native",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "build": "node ./scripts/clean-dist.mjs && tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
+    "native:macos:build": "swift build -c release --package-path native/macos-window-helper",
+    "native:macos:check": "npm run build && node dist/cli.js native helper check",
     "prepack": "npm run build",
     "test": "npm run build && tsx --test \"test/**/*.test.ts\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"

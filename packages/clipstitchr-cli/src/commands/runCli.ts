@@ -21,6 +21,9 @@ import { runLibraryStitchesCommand } from "./runLibraryStitchesCommand.js";
 import { runLibrarySwipesCommand } from "./runLibrarySwipesCommand.js";
 import { runLoginCommand } from "./runLoginCommand.js";
 import { runLogoutCommand } from "./runLogoutCommand.js";
+import { runNativeHelperBuildCommand } from "./runNativeHelperBuildCommand.js";
+import { runNativeHelperCheckCommand } from "./runNativeHelperCheckCommand.js";
+import { runNativeHelperInstallCommand } from "./runNativeHelperInstallCommand.js";
 import { runProductsCreateCommand } from "./runProductsCreateCommand.js";
 import { runProductsListCommand } from "./runProductsListCommand.js";
 import { runProductsUseCommand } from "./runProductsUseCommand.js";
@@ -117,8 +120,10 @@ export async function runCli(argv: string[]) {
       "Use structured-planner or openai-computer for browser control",
     )
     .option("--goal <text>", "What the demo should show")
+    .option("--openai-mode <mode>", "Use direct or relay for OpenAI Computer Use")
     .option("--product <id>", "ClipStitchr product ID")
     .option("--start <command>", "Start command")
+    .option("--surface <surface>", "Use browser or macos-window")
     .option("--steps <count>", "Guide step count from 3 to 8")
     .option("--target <local-or-live>", "Use local or live as the recording target")
     .option("--url <url>", "App URL")
@@ -154,9 +159,11 @@ export async function runCli(argv: string[]) {
       "Use structured-planner or openai-computer for browser control",
     )
     .option("--dry-run", "Validate the run without recording or uploading")
+    .option("--openai-mode <mode>", "Use direct or relay for OpenAI Computer Use")
     .option("--no-upload", "Record only after review")
     .option("--product <id>", "ClipStitchr product ID for upload")
     .option("--start <command>", "Start command")
+    .option("--surface <surface>", "Use browser or macos-window")
     .option("--target <local-or-live>", "Use local or live as the recording target")
     .option("--url <url>", "App URL")
     .action(async (options) => {
@@ -258,6 +265,26 @@ export async function runCli(argv: string[]) {
     .action(async (filePath, options) => {
       await runDemoUploadCommand(filePath, { ...program.opts(), ...options });
     });
+
+  const native = program.command("native").description("Manage native helpers");
+  const nativeHelper = native
+    .command("helper")
+    .description("Build and check the macOS window helper");
+
+  nativeHelper
+    .command("build")
+    .description("Build the macOS window helper")
+    .action(runNativeHelperBuildCommand);
+
+  nativeHelper
+    .command("install")
+    .description("Build the macOS window helper for local use")
+    .action(runNativeHelperInstallCommand);
+
+  nativeHelper
+    .command("check")
+    .description("Check macOS helper permissions")
+    .action(runNativeHelperCheckCommand);
 
   const stitchr = program.command("stitchr").description("Create Stitch drafts");
 

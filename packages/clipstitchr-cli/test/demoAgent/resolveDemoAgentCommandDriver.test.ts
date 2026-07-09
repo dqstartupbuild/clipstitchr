@@ -13,6 +13,7 @@ describe("resolveDemoAgentCommandDriver", () => {
 
       assert.equal(resolvedDriver.driver, "openai-computer");
       assert.equal(resolvedDriver.openAiComputer?.apiKey, "test-openai-key");
+      assert.equal(resolvedDriver.openAiComputer?.mode, "direct");
       assert.equal(resolvedDriver.fallbackReason, undefined);
     } finally {
       if (previousApiKey === undefined) {
@@ -78,6 +79,7 @@ describe("resolveDemoAgentCommandDriver", () => {
 
       assert.equal(resolvedDriver.driver, "openai-computer");
       assert.equal(resolvedDriver.openAiComputer?.apiKey, "test-openai-key");
+      assert.equal(resolvedDriver.openAiComputer?.mode, "direct");
       assert.equal(resolvedDriver.openAiComputer?.model, "gpt-5.5");
       assert.equal(resolvedDriver.fallbackReason, undefined);
     } finally {
@@ -97,5 +99,37 @@ describe("resolveDemoAgentCommandDriver", () => {
         }),
       /structured-planner or --driver openai-computer/,
     );
+  });
+
+  it("uses relay when ClipStitchr credentials exist and no local key is available", () => {
+    const previousApiKey = process.env.OPENAI_API_KEY;
+
+    delete process.env.OPENAI_API_KEY;
+
+    try {
+      const resolvedDriver = resolveDemoAgentCommandDriver({
+        relayCredentials: {
+          accessToken: "clipstitchr-token",
+          apiBaseUrl: "https://clipstitchr.test",
+          expiresAt: "2999-01-01T00:00:00.000Z",
+          savedAt: "2026-07-09T00:00:00.000Z",
+          sessionId: "session_123",
+        },
+      });
+
+      assert.equal(resolvedDriver.driver, "openai-computer");
+      assert.equal(resolvedDriver.openAiComputer?.mode, "relay");
+      assert.equal(
+        resolvedDriver.openAiComputer?.credentials?.accessToken,
+        "clipstitchr-token",
+      );
+      assert.equal(resolvedDriver.openAiComputer?.apiKey, undefined);
+    } finally {
+      if (previousApiKey === undefined) {
+        delete process.env.OPENAI_API_KEY;
+      } else {
+        process.env.OPENAI_API_KEY = previousApiKey;
+      }
+    }
   });
 });

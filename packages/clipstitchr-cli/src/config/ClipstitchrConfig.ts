@@ -10,8 +10,11 @@ export type ClipstitchrConfig = {
     driver?: string;
     liveUrl?: string;
     openai?: {
+      mode?: string;
       model?: string;
     };
+    macosWindowMatch?: string;
+    surface?: string;
     target?: string;
   };
   product?: {

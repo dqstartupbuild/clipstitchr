@@ -464,6 +464,38 @@ export const consumeCliDemoAgentPlan = mutation({
   },
 });
 
+export const consumeCliOpenAiComputerRelay = mutation({
+  args: {
+    ownerId: v.string(),
+    runId: v.string(),
+    secret: v.string(),
+  },
+  handler: async (ctx, { ownerId, runId, secret }) => {
+    assertRateLimitApiSecret(secret);
+
+    const runKey = `${ownerId}:${runId}`;
+
+    await rateLimiter.limit(ctx, "cliOpenAiComputerRelay", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliOpenAiComputerRelayDaily", {
+      key: ownerId,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliOpenAiComputerRelayRun", {
+      key: runKey,
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliOpenAiComputerRelayGlobal", {
+      throws: true,
+    });
+    await rateLimiter.limit(ctx, "cliprProviderSpendGlobal", {
+      throws: true,
+    });
+  },
+});
+
 export const consumeStitchScoreAnalysis = mutation({
   args: {
     secret: v.string(),

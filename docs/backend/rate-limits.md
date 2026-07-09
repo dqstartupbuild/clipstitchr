@@ -52,6 +52,15 @@ npx convex dev --once
 - Must be a high-entropy random secret.
 - Must not be prefixed with `NEXT_PUBLIC_`.
 
+`OPENAI_API_KEY`
+
+- Required in the Next.js runtime environment to use
+  `POST /api/cli/openai/computer`.
+- Used only server-side for hosted OpenAI Computer Use relay mode.
+- Must not be returned to the CLI, logged, or prefixed with `NEXT_PUBLIC_`.
+- Direct CLI mode still uses a local shell `OPENAI_API_KEY` and does not depend
+  on this server variable.
+
 `INDEXNOW_SUBMIT_SECRET`
 
 - Required in the Next.js runtime environment to use `POST /api/indexnow`.
@@ -264,6 +273,7 @@ Firecrawl website import:
 | CLI product creation | `POST /api/cli/products` | Uses `convexRecordSave` after verifying the CLI bearer token. This path saves a plain product record without provider enrichment or Firecrawl work. |
 | CLI AI guide generation | `POST /api/cli/demo-guides/generate` | 20/hour/user, burst 5; global 1,000/hour, burst 200 across 5 shards; shared provider bucket 10,000 units/hour, burst 2,000. The route verifies the CLI bearer token, confirms the requested product belongs to the session owner, consumes quota, then calls the configured guide-writing model through `CLI_DEMO_GUIDE_MODEL_ID`, defaulting to `openai/gpt-5-mini`. Generated guides are label-only checklists with 3-8 steps, no selectors, no secrets, and no autonomous browser actions. Optional local app context is capped by the request reader before the provider call and can only add route, workflow, input, and button hints to the prompt. |
 | CLI demo agent AI planning | `POST /api/cli/demo-agent/plan` | 120/hour/user, burst 20; global 3,000/hour, burst 500 across 5 shards; shared provider bucket 10,000 units/hour, burst 2,000. The route verifies the CLI bearer token, consumes quota, then calls the configured planner model through `CLI_DEMO_AGENT_PLANNER_MODEL_ID`, defaulting to `openai/gpt-5-mini`, to propose one JSON browser-action DSL item from simplified page observation, current guide step, guide goal context, and optional capped local app context. The server parser rejects unsupported action types and CSS selectors, and the CLI policy validator still decides whether the proposed action can run. Provider queue backpressure such as `ExpiredInQueue` returns HTTP `429` with `Retry-After`, and the CLI spaces planner requests apart and retries retryable planner pressure before falling back. If the planner provider still fails or repeats an already-attempted action during a CLI run, the CLI switches to the deterministic local planner for the rest of that run. |
+| CLI OpenAI Computer Use relay | `POST /api/cli/openai/computer` | 160/hour/user, burst 40; 300/day/user; 80 calls/run over 30 minutes; global 3,000/hour, burst 500 across 5 shards; shared provider bucket 10,000 units/hour, burst 2,000. The route verifies the CLI bearer token, validates the minimal task-or-screenshot payload, consumes quota, then calls OpenAI Responses with the `computer` tool using server-side `OPENAI_API_KEY`. Requests are capped to 20,000 prompt characters or one PNG screenshot data URL with at most 8,000,000 base64 characters. The CLI also sends `runStartedAt` and `callIndex`; the route rejects runs older than 20 minutes or calls above 80 before consuming quota. The response is filtered to the OpenAI response id and computer-call actions only, and the OpenAI key is never returned to the CLI. |
 | CLI Demo upload signed URL | `POST /api/cli/uploads/demo` | Uses the normal R2 upload signed URL, daily byte, and monthly byte limits after verifying the CLI bearer token and confirming the product belongs to the session owner. The video file uploads directly to R2 with the signed PUT URL. |
 | CLI Demo upload completion | `POST /api/cli/uploads/demo/complete` | Uses upload video action analysis limits before queueing the existing `upload-normalization` media job. The route verifies the CLI bearer token, product ownership, user-owned R2 object key, and video content type. |
 | CLI Demo upload status | `GET /api/cli/uploads/{clipId}` | Bearer-token authorized only. Reads the owner-scoped media job and normalized clip status without creating storage, provider, or Convex write cost. |

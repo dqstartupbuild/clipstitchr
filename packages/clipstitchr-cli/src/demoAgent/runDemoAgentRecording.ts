@@ -119,7 +119,9 @@ export async function runDemoAgentRecording(inputOptions: {
       page,
       policy: inputOptions.policy,
       planner: inputOptions.planner,
+      runId,
       runPaths,
+      runStartedAt: startedAt,
       startedAtMs,
     });
 

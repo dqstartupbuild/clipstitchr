@@ -347,6 +347,31 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 500,
     shards: 5,
   },
+  cliOpenAiComputerRelay: {
+    kind: "token bucket",
+    rate: 160,
+    period: HOUR,
+    capacity: 40,
+  },
+  cliOpenAiComputerRelayDaily: {
+    kind: "token bucket",
+    rate: 300,
+    period: DAY,
+    capacity: 300,
+  },
+  cliOpenAiComputerRelayRun: {
+    kind: "token bucket",
+    rate: 80,
+    period: 30 * MINUTE,
+    capacity: 80,
+  },
+  cliOpenAiComputerRelayGlobal: {
+    kind: "token bucket",
+    rate: 3000,
+    period: HOUR,
+    capacity: 500,
+    shards: 5,
+  },
   tiktokSoundLookup: {
     kind: "token bucket",
     rate: 60,

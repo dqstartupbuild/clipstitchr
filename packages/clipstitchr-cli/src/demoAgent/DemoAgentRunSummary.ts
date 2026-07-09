@@ -8,7 +8,7 @@ export type DemoAgentRunSummary = {
   guideId: string;
   guideSource: string;
   id: string;
-  mode: "guided-browser";
+  mode: "guided-browser" | "guided-macos-window";
   policyHash: string;
   recordingPath?: string;
   runDirectory: string;

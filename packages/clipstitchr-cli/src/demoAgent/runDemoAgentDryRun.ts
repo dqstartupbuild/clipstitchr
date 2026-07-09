@@ -96,7 +96,9 @@ export async function runDemoAgentDryRun(inputOptions: {
       page,
       policy: inputOptions.policy,
       planner: inputOptions.planner,
+      runId,
       runPaths,
+      runStartedAt: startedAt,
       startedAtMs,
     });
 

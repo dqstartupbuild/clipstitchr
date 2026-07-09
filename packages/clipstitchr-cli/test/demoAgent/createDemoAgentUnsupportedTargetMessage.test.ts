@@ -9,17 +9,17 @@ describe("createDemoAgentUnsupportedTargetMessage", () => {
         projectType: "ios",
         targetMode: "live",
       }),
-      /OPENAI_API_KEY/,
+      /openai-mode relay/,
     );
   });
 
-  it("explains local native targets need device-control support", () => {
+  it("explains local native targets can use the macOS window surface", () => {
     assert.match(
       createDemoAgentUnsupportedTargetMessage({
         projectType: "android",
         targetMode: "local",
       }),
-      /device-control support/,
+      /--surface macos-window/,
     );
   });
 });

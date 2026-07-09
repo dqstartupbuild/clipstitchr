@@ -7,6 +7,7 @@ import type { DemoAgentOpenAiComputerOptions } from "./DemoAgentOpenAiComputerOp
 import type { DemoAgentPlanner } from "./DemoAgentPlanner.js";
 import type { DemoAgentPolicy } from "./DemoAgentPolicy.js";
 import type { DemoAgentRunPaths } from "./DemoAgentRunPaths.js";
+import { createOpenAiComputerRelayRequester } from "./createOpenAiComputerRelayRequester.js";
 import { runDemoAgentLoop } from "./runDemoAgentLoop.js";
 import { runOpenAiComputerDemoAgentLoop } from "./runOpenAiComputerDemoAgentLoop.js";
 
@@ -20,13 +21,28 @@ export async function runDemoAgentDriverLoop(input: {
   page: Page;
   planner?: DemoAgentPlanner;
   policy: DemoAgentPolicy;
+  runId: string;
   runPaths: Pick<DemoAgentRunPaths, "actionLogPath" | "screenshotsDirectory">;
+  runStartedAt: string;
   startedAtMs: number;
 }): Promise<DemoAgentLoopResult> {
   if (input.driver === "openai-computer") {
     if (!input.openAiComputer) {
-      throw new Error("OPENAI_API_KEY is required for --driver openai-computer.");
+      throw new Error(
+        "OpenAI Computer Use settings are required for --driver openai-computer.",
+      );
     }
+
+    const requester =
+      input.openAiComputer.requester ??
+      (input.openAiComputer.mode === "relay" &&
+      input.openAiComputer.credentials
+        ? createOpenAiComputerRelayRequester({
+            credentials: input.openAiComputer.credentials,
+            runId: input.runId,
+            runStartedAt: input.runStartedAt,
+          })
+        : undefined);
 
     return await runOpenAiComputerDemoAgentLoop({
       apiKey: input.openAiComputer.apiKey,
@@ -37,7 +53,7 @@ export async function runDemoAgentDriverLoop(input: {
       model: input.openAiComputer.model,
       page: input.page,
       policy: input.policy,
-      requester: input.openAiComputer.requester,
+      requester,
       runPaths: input.runPaths,
       startedAtMs: input.startedAtMs,
     });

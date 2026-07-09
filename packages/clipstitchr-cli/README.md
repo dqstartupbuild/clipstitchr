@@ -17,7 +17,9 @@ clipstitchr status
 clipstitchr update
 clipstitchr demo auto
 clipstitchr demo auto --driver openai-computer
+clipstitchr demo auto --driver openai-computer --openai-mode relay
 clipstitchr demo auto --driver openai-computer --target live --url https://example.com
+clipstitchr demo auto --driver openai-computer --surface macos-window --openai-mode relay
 clipstitchr demo guide generate
 clipstitchr demo guide list
 clipstitchr demo guide show guide_123
@@ -46,6 +48,8 @@ clipstitchr queue stitch
 clipstitchr products list
 clipstitchr products create --use
 clipstitchr products use
+clipstitchr native helper build
+clipstitchr native helper check
 clipstitchr unlink
 clipstitchr --plain status
 ```
@@ -75,8 +79,11 @@ recordings can stay signed in.
 The demo agent beta is policy guarded. `clipstitchr demo auto` creates the
 policy automatically when one does not exist. Localhost origins are the default;
 live origins must be selected with `--target live`. The automatic agent uses
-OpenAI Computer Use when `OPENAI_API_KEY` is available locally, including for
-localhost demos. If the key is missing, it falls back to the structured planner.
+OpenAI Computer Use when `OPENAI_API_KEY` is available locally, or the hosted
+ClipStitchr relay when you are logged in and no local key is available. Relay
+mode sends screenshots through ClipStitchr servers and never sends a server
+OpenAI key back to the CLI. If neither direct nor relay mode is available, it
+falls back to the structured planner.
 Use the lower-level
 `clipstitchr demo agent init`, `check`, and `run` commands when you want to
 inspect the policy, run a dry-run, or record from an existing guide. The same
@@ -110,13 +117,12 @@ localhost URL that is already running.
 does the same thing for developers who expect an init command. `clipstitchr
 unlink` removes the repo connection without logging the whole machine out.
 
-For native demos, the CLI records an already-running iOS Simulator or Android
-device/emulator. Open the app to the screen you want, then let the CLI start and
-stop the recording. Android recording depends on `adb screenrecord`, which may
-stop around 3 minutes. Automatic OpenAI demos for native, desktop, or backend
-projects should use `--target live --url <live-or-staging-url>` when there is a
-web surface to show. Direct simulator, mirrored phone, and device control still
-needs native device-control support in the CLI.
+For native demos, the CLI can manually record an already-running iOS Simulator
+or Android device/emulator. Automatic OpenAI demos can also use
+`--surface macos-window` to select a visible macOS window such as Simulator,
+iPhone Mirroring, or an emulator. The helper needs Screen Recording and
+Accessibility permissions and currently saves screenshots/action logs; full
+helper-owned MP4 capture is still handled by the manual native recorder path.
 
 For local development against a preview app:
 

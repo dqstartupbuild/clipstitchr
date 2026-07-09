@@ -7,11 +7,15 @@ import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
 import { createProductConfigSummary } from "../config/createProductConfigSummary.js";
 import { createDemoAgentPlannerWithFallback } from "../demoAgent/createDemoAgentPlannerWithFallback.js";
+import { createDemoAgentPolicyHash } from "../demoAgent/createDemoAgentPolicyHash.js";
 import { createDemoAgentUnsupportedTargetMessage } from "../demoAgent/createDemoAgentUnsupportedTargetMessage.js";
+import { createNativeDemoAgentPolicy } from "../demoAgent/createNativeDemoAgentPolicy.js";
 import { getDemoAgentProjectCanUseTarget } from "../demoAgent/getDemoAgentProjectCanUseTarget.js";
 import { resolveDemoAgentCommandDriver } from "../demoAgent/resolveDemoAgentCommandDriver.js";
+import { resolveDemoAgentSurface } from "../demoAgent/resolveDemoAgentSurface.js";
 import { resolveDemoAgentTargetMode } from "../demoAgent/resolveDemoAgentTargetMode.js";
 import { resolveDemoAgentTargetUrl } from "../demoAgent/resolveDemoAgentTargetUrl.js";
+import { runMacosWindowDemoAgentRecording } from "../demoAgent/runMacosWindowDemoAgentRecording.js";
 import { runDemoAgentRecording } from "../demoAgent/runDemoAgentRecording.js";
 import { writeDemoWalkthroughGuide } from "../demoGuide/writeDemoWalkthroughGuide.js";
 import { detectProject } from "../project/detectProject.js";
@@ -54,8 +58,15 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
   const project = await detectProject();
   const resolvedDriver = resolveDemoAgentCommandDriver({
     configDriver: config.demoAgent?.driver,
+    configOpenAiMode: config.demoAgent?.openai?.mode,
     configOpenAiModel: config.demoAgent?.openai?.model,
     optionDriver: options.driver,
+    optionOpenAiMode: options.openaiMode,
+    relayCredentials: credentials,
+  });
+  const surface = resolveDemoAgentSurface({
+    configSurface: config.demoAgent?.surface,
+    optionSurface: options.surface,
   });
   const targetMode = resolveDemoAgentTargetMode({
     configTarget: config.demoAgent?.target,
@@ -64,6 +75,7 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
   });
 
   if (
+    surface === "browser" &&
     !getDemoAgentProjectCanUseTarget({
       driver: resolvedDriver.driver,
       projectType: project.type,
@@ -84,6 +96,104 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
   });
   const flows = await scanProjectFlows(join(process.cwd(), project.directory));
   const appContext = await scanAndWriteAppContext({ flows, project });
+
+  if (surface === "macos-window") {
+    if (resolvedDriver.driver !== "openai-computer" || !resolvedDriver.openAiComputer) {
+      throw new Error(
+        "macOS window demos need --driver openai-computer with direct or relay OpenAI mode.",
+      );
+    }
+
+    const goal = await readDemoAutoGoal({ goal: options.goal });
+    const targetAudience = createDemoAutoTargetAudience({
+      audience: options.audience,
+      product,
+    });
+    const stepCount = readDemoAutoStepCount(options.steps);
+
+    logStep("Writing the guide with ClipStitchr AI.");
+    const guide = sanitizeDemoAutoGuide({
+      guide: (
+        await generateDemoWalkthroughGuide(credentials, {
+          appContext,
+          appType: project.type,
+          availableFlows: flows,
+          goal: `${goal} Record the selected macOS app window. Keep the demo inside that window.`,
+          productId: product.id,
+          stepCount,
+          targetAudience,
+        })
+      ).guide,
+      targetMode: "local",
+    });
+    const guidePath = await writeDemoWalkthroughGuide(guide);
+    const policy = createNativeDemoAgentPolicy();
+    const policyHash = createDemoAgentPolicyHash(policy);
+
+    await writeProjectConfig({
+      ...config,
+      apiBaseUrl,
+      appContext: createAppContextConfig(appContext),
+      demoAgent: {
+        ...config.demoAgent,
+        openai: {
+          ...config.demoAgent?.openai,
+          mode: resolvedDriver.openAiComputer.mode,
+        },
+        surface,
+      },
+      product: createProductConfigSummary(product),
+      productId: product.id,
+      recording: {
+        ...config.recording,
+        demoGuideId: guide.id,
+      },
+      target: {
+        ...config.target,
+        type: project.type,
+      },
+    });
+
+    logInfo(
+      resolvedDriver.openAiComputer.mode === "relay"
+        ? "Using OpenAI Computer Use through ClipStitchr relay. Screenshots are sent through ClipStitchr servers."
+        : "Using OpenAI Computer Use with your local OpenAI key.",
+    );
+
+    const recording = await runMacosWindowDemoAgentRecording({
+      appContext,
+      guide,
+      onWindowSelected: async (window) => {
+        const currentConfig = await readProjectConfig();
+
+        await writeProjectConfig({
+          ...currentConfig,
+          demoAgent: {
+            ...currentConfig.demoAgent,
+            macosWindowMatch:
+              window.preferredMatch ?? config.demoAgent?.macosWindowMatch,
+            surface,
+          },
+        });
+      },
+      openAiComputer: resolvedDriver.openAiComputer,
+      policy,
+      policyHash,
+      preferredWindowMatch: config.demoAgent?.macosWindowMatch,
+    });
+
+    logSuccess("AI macOS window demo run complete.");
+    logKeyValue("Guide ID", guide.id);
+    logKeyValue("Guide", guidePath);
+    logKeyValue("Run ID", recording.summary.id);
+    logKeyValue("Stop reason", recording.summary.stopReason);
+    logKeyValue("Evidence", recording.summary.runDirectory);
+    logInfo(
+      "macOS window runs currently save screenshots and action logs. MP4 capture is still handled by the browser and manual native recorders.",
+    );
+    return;
+  }
+
   const runningUrl =
     targetMode === "local"
       ? await findRunningLocalAppUrl(options.url ?? config.target?.url)
@@ -152,6 +262,13 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
       demoAgent: {
         ...config.demoAgent,
         liveUrl: targetMode === "live" ? url : config.demoAgent?.liveUrl,
+        openai: {
+          ...config.demoAgent?.openai,
+          mode:
+            resolvedDriver.openAiComputer?.mode ??
+            config.demoAgent?.openai?.mode,
+        },
+        surface,
         target: targetMode,
       },
       product: createProductConfigSummary(product),
@@ -197,7 +314,11 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
     if (resolvedDriver.fallbackReason) {
       logWarning(resolvedDriver.fallbackReason);
     } else if (resolvedDriver.driver === "openai-computer") {
-      logInfo("Using OpenAI Computer Use for browser control.");
+      logInfo(
+        resolvedDriver.openAiComputer?.mode === "relay"
+          ? "Using OpenAI Computer Use through ClipStitchr relay. Screenshots are sent through ClipStitchr servers."
+          : "Using OpenAI Computer Use with your local OpenAI key.",
+      );
     }
 
     logStep("Recording the demo with the guarded AI agent.");

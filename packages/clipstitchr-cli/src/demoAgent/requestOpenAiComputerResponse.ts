@@ -9,6 +9,10 @@ export async function requestOpenAiComputerResponse({
   model,
   previousResponseId,
 }: OpenAiComputerRequestInput): Promise<OpenAiComputerResponse> {
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is required for direct OpenAI Computer Use.");
+  }
+
   let response: Response;
 
   try {

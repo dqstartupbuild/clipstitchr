@@ -2,18 +2,25 @@ import { join } from "node:path";
 import type { ChildProcess } from "node:child_process";
 import { confirm } from "@inquirer/prompts";
 import type { CliGlobalOptions } from "./CliGlobalOptions.js";
+import type { ClipstitchrCredentials } from "../config/ClipstitchrCredentials.js";
 import { ensureCredentialsOrLogin } from "./ensureCredentialsOrLogin.js";
+import { getClipstitchrCredentialsAreUsable } from "../config/getClipstitchrCredentialsAreUsable.js";
+import { readCredentials } from "../config/readCredentials.js";
 import { planDemoAgentActionWithAi } from "../api/planDemoAgentActionWithAi.js";
 import { readProjectConfig } from "../config/readProjectConfig.js";
 import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
 import { createDemoAgentPlannerWithFallback } from "../demoAgent/createDemoAgentPlannerWithFallback.js";
+import { createDemoAgentPolicyHash } from "../demoAgent/createDemoAgentPolicyHash.js";
 import { createDemoAgentUnsupportedTargetMessage } from "../demoAgent/createDemoAgentUnsupportedTargetMessage.js";
+import { createNativeDemoAgentPolicy } from "../demoAgent/createNativeDemoAgentPolicy.js";
 import { getDemoAgentProjectCanUseTarget } from "../demoAgent/getDemoAgentProjectCanUseTarget.js";
 import { resolveDemoAgentCommandDriver } from "../demoAgent/resolveDemoAgentCommandDriver.js";
+import { resolveDemoAgentSurface } from "../demoAgent/resolveDemoAgentSurface.js";
 import { resolveDemoAgentTargetMode } from "../demoAgent/resolveDemoAgentTargetMode.js";
 import { resolveDemoAgentTargetUrl } from "../demoAgent/resolveDemoAgentTargetUrl.js";
 import { runDemoAgentDryRun } from "../demoAgent/runDemoAgentDryRun.js";
+import { runMacosWindowDemoAgentRecording } from "../demoAgent/runMacosWindowDemoAgentRecording.js";
 import { runDemoAgentRecording } from "../demoAgent/runDemoAgentRecording.js";
 import { resolveDemoWalkthroughGuide } from "../demoGuide/resolveDemoWalkthroughGuide.js";
 import { selectProduct } from "../interactive/selectProduct.js";
@@ -42,8 +49,10 @@ type DemoAgentRunOptions = CliGlobalOptions & {
   driver?: string;
   dryRun?: boolean;
   guide?: string;
+  openaiMode?: string;
   product?: string;
   start?: string;
+  surface?: string;
   target?: string;
   upload?: boolean;
   url?: string;
@@ -59,10 +68,32 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
   const config = await readProjectConfig();
   const apiBaseUrl = resolveApiBaseUrl(config, options.api);
   const project = await detectProject();
+  const savedCredentials = await readCredentials();
+  const shouldUseRelayCredentials =
+    options.openaiMode === "relay" ||
+    config.demoAgent?.openai?.mode === "relay";
+  let relayCredentials: ClipstitchrCredentials | undefined =
+    getClipstitchrCredentialsAreUsable({
+    apiBaseUrl,
+    credentials: savedCredentials,
+  }) && savedCredentials
+      ? savedCredentials
+      : undefined;
+
+  if (!relayCredentials && shouldUseRelayCredentials) {
+    relayCredentials = await ensureCredentialsOrLogin(apiBaseUrl);
+  }
   const resolvedDriver = resolveDemoAgentCommandDriver({
     configDriver: config.demoAgent?.driver,
+    configOpenAiMode: config.demoAgent?.openai?.mode,
     configOpenAiModel: config.demoAgent?.openai?.model,
     optionDriver: options.driver,
+    optionOpenAiMode: options.openaiMode,
+    relayCredentials,
+  });
+  const surface = resolveDemoAgentSurface({
+    configSurface: config.demoAgent?.surface,
+    optionSurface: options.surface,
   });
   const targetMode = resolveDemoAgentTargetMode({
     configTarget: config.demoAgent?.target,
@@ -71,6 +102,7 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
   });
 
   if (
+    surface === "browser" &&
     !getDemoAgentProjectCanUseTarget({
       driver: resolvedDriver.driver,
       projectType: project.type,
@@ -92,6 +124,71 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
 
   if (!guide) {
     throw new Error(`No walkthrough guide found for ${options.guide}.`);
+  }
+
+  if (surface === "macos-window") {
+    if (resolvedDriver.driver !== "openai-computer" || !resolvedDriver.openAiComputer) {
+      throw new Error(
+        "macOS window demos need --driver openai-computer with direct or relay OpenAI mode.",
+      );
+    }
+
+    const policy = createNativeDemoAgentPolicy();
+    const policyHash = createDemoAgentPolicyHash(policy);
+
+    await writeProjectConfig({
+      ...config,
+      appContext: createAppContextConfig(appContext),
+      demoAgent: {
+        ...config.demoAgent,
+        openai: {
+          ...config.demoAgent?.openai,
+          mode: resolvedDriver.openAiComputer.mode,
+        },
+        surface,
+      },
+      target: {
+        ...config.target,
+        type: project.type,
+      },
+    });
+
+    logInfo(
+      resolvedDriver.openAiComputer.mode === "relay"
+        ? "Using OpenAI Computer Use through ClipStitchr relay. Screenshots are sent through ClipStitchr servers."
+        : "Using OpenAI Computer Use with your local OpenAI key.",
+    );
+
+    const recording = await runMacosWindowDemoAgentRecording({
+      appContext,
+      guide,
+      onWindowSelected: async (window) => {
+        const currentConfig = await readProjectConfig();
+
+        await writeProjectConfig({
+          ...currentConfig,
+          demoAgent: {
+            ...currentConfig.demoAgent,
+            macosWindowMatch:
+              window.preferredMatch ?? config.demoAgent?.macosWindowMatch,
+            surface,
+          },
+        });
+      },
+      openAiComputer: resolvedDriver.openAiComputer,
+      policy,
+      policyHash,
+      preferredWindowMatch: config.demoAgent?.macosWindowMatch,
+    });
+
+    logSuccess("Saved the macOS window agent evidence.");
+    logKeyValue("Run ID", recording.summary.id);
+    logKeyValue("Stop reason", recording.summary.stopReason);
+    logKeyValue("Evidence", recording.summary.runDirectory);
+    logInfo(
+      "macOS window runs currently save screenshots and action logs. MP4 capture is still handled by the browser and manual native recorders.",
+    );
+    return;
   }
 
   const runningUrl =
@@ -120,6 +217,12 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
     demoAgent: {
       ...config.demoAgent,
       liveUrl: targetMode === "live" ? url : config.demoAgent?.liveUrl,
+      openai: {
+        ...config.demoAgent?.openai,
+        mode:
+          resolvedDriver.openAiComputer?.mode ?? config.demoAgent?.openai?.mode,
+      },
+      surface,
       target: targetMode,
     },
     target:
@@ -160,7 +263,11 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
   if (resolvedDriver.fallbackReason) {
     logWarning(resolvedDriver.fallbackReason);
   } else if (resolvedDriver.driver === "openai-computer") {
-    logInfo("Using OpenAI Computer Use for browser control.");
+    logInfo(
+      resolvedDriver.openAiComputer?.mode === "relay"
+        ? "Using OpenAI Computer Use through ClipStitchr relay. Screenshots are sent through ClipStitchr servers."
+        : "Using OpenAI Computer Use with your local OpenAI key.",
+    );
   }
 
   try {

@@ -22,8 +22,11 @@ run. Recording upload requires explicit review and approval.
 - Preserves safe optional `walkthrough.agentRun` metadata on upload snapshots.
 - Supports opt-in model-backed planning with `--ai-planner`.
 - Supports `--driver openai-computer` for OpenAI Computer Use browser control.
-  OpenAI is the default when `OPENAI_API_KEY` is available, and
-  `structured-planner` remains the no-key fallback and explicit cheap mode.
+  OpenAI is the default when `OPENAI_API_KEY` is available, or when a valid
+  ClipStitchr login can use hosted relay mode. `structured-planner` remains the
+  fallback and explicit cheap mode.
+- Supports `--surface macos-window` for selected visible macOS windows through
+  the local helper.
 
 ## Policy File
 
@@ -82,9 +85,12 @@ When `openai-computer` is selected or used by default, dry-run uses the same
 local browser and evidence directory, but the next visual action comes from
 OpenAI Computer Use. The CLI executes returned computer actions through
 Playwright, captures a screenshot, sends it back to OpenAI as
-`computer_call_output`, and repeats until the current guide step is done. If
-`OPENAI_API_KEY` is missing, the CLI falls back to the structured planner before
-the run starts.
+`computer_call_output`, and repeats until the current guide step is done. Direct
+mode sends screenshots from the user's machine to OpenAI. Relay mode sends
+screenshots through ClipStitchr's protected API, which calls OpenAI with the
+server-side key and never returns that key to the CLI. If direct mode is
+selected and `OPENAI_API_KEY` is missing, the CLI falls back to the structured
+planner before the run starts.
 
 With `--target live`, the browser starts at the selected live or staging URL and
 skips the local start command. This lets the OpenAI Computer Use driver record
@@ -156,16 +162,16 @@ rejects actions whose `stepId` points at a different guide step, so the planner
 cannot work ahead and leave the current step half-finished.
 
 With `--driver openai-computer`, the browser-control loop bypasses the
-server-side JSON action planner and calls OpenAI directly from the CLI. The
-current guide step, origin policy, allowed routes, blocked-action rules, and
-capped app context are sent with the task. Screenshots are sent from the user's
-machine to OpenAI and are not proxied through ClipStitchr.
+server-side JSON action planner. The current guide step, origin policy, allowed
+routes, blocked-action rules, and capped app context are sent with the task.
+`--openai-mode direct` calls OpenAI from the CLI with a local key.
+`--openai-mode relay` calls ClipStitchr's protected relay route.
 
-Local iOS Simulator, Android device/emulator, iPhone Mirroring, and other
-screen-mirrored native demos are not yet driven directly by OpenAI. The working
-automatic path for non-web projects is `--target live` with a browser URL.
-Simulator and device demos continue to use `clipstitchr demo make` until native
-device-control adapters are added.
+Local iOS Simulator, Android emulator windows, iPhone Mirroring, and other
+desktop windows can use `--surface macos-window`. The helper checks Screen
+Recording and Accessibility before any model actions. macOS window runs save
+screenshots and action logs; full helper-owned MP4 capture is still a boundary,
+so `clipstitchr demo make` remains the full-video path for native devices.
 
 ## One-Command AI Recording
 

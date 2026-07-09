@@ -1,5 +1,5 @@
 export type OpenAiComputerRequestInput = {
-  apiKey: string;
+  apiKey?: string;
   input: unknown;
   model: string;
   previousResponseId?: string;
