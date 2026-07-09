@@ -19,7 +19,7 @@ creation, library listing, and queueing finished Stitches.
   demo, connecting the repo, starting batch work, queueing a Stitch, or checking
   setup.
 - `clipstitchr --help`, `clipstitchr help`, and
-  `clipstitchr help demo make` show the available command options.
+  `clipstitchr help demo manual` show the available command options.
 - `clipstitchr --version` prints the installed CLI version.
 - `clipstitchr link` connects the current repo to a ClipStitchr product.
 - `clipstitchr init` remains as a developer-friendly alias for repo setup.
@@ -40,16 +40,16 @@ creation, library listing, and queueing finished Stitches.
   product picker when the account has one product, and prefers a localhost URL
   that is already running.
 - `clipstitchr scan` detects likely demo flows from local app routes.
-- `clipstitchr demo make` can create or reuse a saved walkthrough checklist
+- `clipstitchr demo manual` can create or reuse a saved walkthrough checklist
   before recording.
-- `clipstitchr demo make --guide <id-or-path>` reuses a saved guide, and
-  `clipstitchr demo make --no-guide` records without the guided stepper.
-- `clipstitchr demo make` records a local web/Expo-web app in a normal desktop
+- `clipstitchr demo manual --guide <id-or-path>` reuses a saved guide, and
+  `clipstitchr demo manual --no-guide` records without the guided stepper.
+- `clipstitchr demo manual` records a local web/Expo-web app in a normal desktop
   Chromium window, converts the recording to MP4, and offers to upload it.
-- `clipstitchr demo make` captures click and cursor timing while recording web
+- `clipstitchr demo manual` captures click and cursor timing while recording web
   demos so the media worker can add smart zooms around the parts the user
   interacts with.
-- `clipstitchr demo make` can also record an already-running iOS Simulator or
+- `clipstitchr demo manual` can also record an already-running iOS Simulator or
   Android device/emulator for iOS, Android, and React Native projects.
 - `clipstitchr demo upload ./demo.mp4` uploads an existing MP4/MOV/WebM file to
   the Demo library.
@@ -232,7 +232,7 @@ login, the user can sign in during the first recording and reuse that browser
 session on later recordings. The `.clipstitchr/` folder is ignored by Git so
 target-app cookies and local browser state stay off the repo.
 
-If Playwright's Chromium browser is missing, `clipstitchr demo make` asks the
+If Playwright's Chromium browser is missing, `clipstitchr demo manual` asks the
 user whether to install the recording browser now, runs the matching Playwright
 install command, then retries browser launch. `clipstitchr doctor` also reports
 whether the recording browser is installed.
@@ -421,8 +421,8 @@ Useful direct commands:
 npm run dev -- login
 npm run dev -- init
 npm run dev -- scan
-npm run dev -- demo make
-npm run dev -- demo make --no-guide
+npm run dev -- demo manual
+npm run dev -- demo manual --no-guide
 npm run dev -- demo upload ./demo.mp4
 ```
 
@@ -458,7 +458,7 @@ npm tarball so users receive the license text with the package.
   in production.
 - Confirm `/cli/connect` works after Clerk sign-in redirects.
 - Run `clipstitchr login --api https://your-production-domain`.
-- Run `clipstitchr demo make --api https://your-production-domain --no-upload`
+- Run `clipstitchr demo manual --api https://your-production-domain --no-upload`
   and confirm `.clipstitchr/demo-guides/*.json` is created when the guide flow
   is accepted.
 - Run `clipstitchr demo upload ./demo.mp4` against production.

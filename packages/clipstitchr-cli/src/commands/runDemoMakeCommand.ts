@@ -41,7 +41,7 @@ export type DemoMakeCommandOptions = CliGlobalOptions & {
 };
 
 export async function runDemoMakeCommand(options: DemoMakeCommandOptions) {
-  logBrandHeader("Make a product demo");
+  logBrandHeader("Record a demo");
 
   const config = await readProjectConfig();
   const recordingGuidance = resolveRecordingGuidance(config.recording);

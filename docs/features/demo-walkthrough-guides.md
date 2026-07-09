@@ -6,7 +6,7 @@ metadata that later AI-assisted editing and full browser automation can reuse.
 
 ## What It Does
 
-`clipstitchr demo make` can create or reuse a simple checklist before recording:
+`clipstitchr demo manual` can create or reuse a simple checklist before recording:
 
 ```text
 1. Open the dashboard
@@ -30,7 +30,7 @@ Quick Edit decisions.
 
 ## Current User Flow
 
-1. The user runs `clipstitchr demo make`.
+1. The user runs `clipstitchr demo manual`.
 2. The CLI selects the product and local app target.
 3. For web apps, the CLI scans local routes and lets the user pick the flow.
 4. The CLI asks whether to create or reuse a walkthrough guide.
@@ -47,11 +47,11 @@ Quick Edit decisions.
 ## Commands
 
 ```bash
-clipstitchr demo make
-clipstitchr demo make --guide guide_123
-clipstitchr demo make --guide .clipstitchr/demo-guides/guide_123.json
-clipstitchr demo make --no-guide
-clipstitchr demo make --no-upload
+clipstitchr demo manual
+clipstitchr demo manual --guide guide_123
+clipstitchr demo manual --guide .clipstitchr/demo-guides/guide_123.json
+clipstitchr demo manual --no-guide
+clipstitchr demo manual --no-upload
 ```
 
 `--guide` is useful for repeat demos and scripted product release recordings.
@@ -253,7 +253,7 @@ through user apps. The remaining production work is mostly release work:
 
 - Deploy the web app so the upload completion route accepts `walkthrough`.
 - Publish the bumped CLI package to npm.
-- Run an end-to-end `clipstitchr demo make` against production with a guided
+- Run an end-to-end `clipstitchr demo manual` against production with a guided
   upload.
 - Confirm the created media job snapshot includes `walkthrough`.
 - Decide when the media worker should start using walkthrough timings for

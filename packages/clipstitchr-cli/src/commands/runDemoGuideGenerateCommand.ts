@@ -175,6 +175,6 @@ export async function runDemoGuideGenerateCommand(
 
     logKeyValue("Guide ID", savedGuide.id);
     logKeyValue("File", guidePath);
-    logInfo(`Record with clipstitchr demo make --guide ${savedGuide.id}`);
+    logInfo(`Record with clipstitchr demo manual --guide ${savedGuide.id}`);
   }
 }

@@ -40,7 +40,7 @@ export async function login(apiBaseUrl: string) {
       });
 
       logSuccess("Connected to ClipStitchr.");
-      logNextCommand("clipstitchr demo make");
+      logNextCommand("clipstitchr demo manual");
       return;
     }
 

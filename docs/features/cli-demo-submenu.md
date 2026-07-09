@@ -29,5 +29,6 @@ with a saved guide.
 
 Users can run `clipstitchr demo`, choose `Record it myself`, `Let AI record it
 for me`, `Create a guide`, `Check my safety policy`, `Upload a demo`, or
-`Show AI run logs`. Direct commands such as `clipstitchr demo guide create`
-continue to work for scripts.
+`Show AI run logs`. Direct commands such as `clipstitchr demo manual` and
+`clipstitchr demo guide create` continue to work for scripts. `clipstitchr
+demo make` remains a hidden alias for older scripts.

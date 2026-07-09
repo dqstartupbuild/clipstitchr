@@ -43,9 +43,9 @@ clipstitchr demo agent run --guide guide_123 --driver openai-computer
 clipstitchr demo agent run --guide guide_123 --driver openai-computer --target live --url https://example.com
 clipstitchr demo agent run --guide guide_123 --no-upload
 clipstitchr demo agent export-log agent_run_123
-clipstitchr demo make
-clipstitchr demo make --guide "Checkout flow"
-clipstitchr demo make --no-guide
+clipstitchr demo manual
+clipstitchr demo manual --guide "Checkout flow"
+clipstitchr demo manual --no-guide
 clipstitchr demo upload ./demo.mp4
 clipstitchr stitchr batch
 clipstitchr swipr batch
@@ -76,7 +76,7 @@ AI recording, guides, safety policy setup, uploads, and logs. You can run
 ClipStitchr first, review it, edit it, and save it for the next recording.
 Saved guides get readable names like `Checkout flow`, and `demo guide list`
 shows those names first. You can use a guide name, ID, or file path with
-`demo guide show`, `edit`, `delete`, `save-instructions`, `demo make
+`demo guide show`, `edit`, `delete`, `save-instructions`, `demo manual
 --guide`, and `demo agent run --guide`.
 During recording, the terminal walks through each step and records section
 timing metadata for ClipStitchr to use later for chapters, captions, smart

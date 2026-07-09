@@ -3,7 +3,7 @@
 Demo AI guide generation adds a manual-first guide workflow to the ClipStitchr
 CLI. Users can ask ClipStitchr to draft a short walkthrough checklist, review
 or edit it locally, save it under `.clipstitchr/demo-guides`, and then record
-with the existing `clipstitchr demo make --guide <id>` stepper.
+with the existing `clipstitchr demo manual --guide <id>` stepper.
 Saved guides also get a readable `name` so users can run commands with a
 memorable guide name instead of copying an ID.
 

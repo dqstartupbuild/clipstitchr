@@ -9,7 +9,7 @@ the AI and autonomous layers have enough safeguards.
 
 Already implemented:
 
-- `clipstitchr demo make` can create, save, reuse, and upload walkthrough
+- `clipstitchr demo manual` can create, save, reuse, and upload walkthrough
   guides.
 - Guides are saved in `.clipstitchr/demo-guides/*.json`.
 - The last used guide ID is saved in `.clipstitchr.yml`, while users can refer
@@ -147,7 +147,7 @@ update and focused tests.
 7. CLI shows the guide and asks whether to use it, edit it, regenerate it, or
    save without recording.
 8. Accepted guide is saved to `.clipstitchr/demo-guides/*.json`.
-9. `clipstitchr demo make --guide <id>` records with the same manual stepper
+9. `clipstitchr demo manual --guide <id>` records with the same manual stepper
    that already works.
 
 ### CLI Commands
@@ -163,7 +163,7 @@ clipstitchr demo guide delete guide_123
 clipstitchr demo guide save-instructions guide_123
 ```
 
-`clipstitchr demo make` should stay simple. It can offer "Create an AI
+`clipstitchr demo manual` should stay simple. It can offer "Create an AI
 walkthrough" in the existing guide prompt after Phase 3 is stable, but the
 first implementation should keep AI generation behind the explicit
 `demo guide create` command.
@@ -485,7 +485,7 @@ instructions should say:
 - Which actions are forbidden.
 - When to stop and ask the user.
 - How to produce a compatible action log.
-- How to hand control back to `clipstitchr demo make --guide <id>`.
+- How to hand control back to `clipstitchr demo manual --guide <id>`.
 
 This is useful for users who already trust their own local agent, but
 ClipStitchr should still treat imported action logs as untrusted data and
@@ -534,13 +534,13 @@ Required before the autonomous agent ships:
 
 1. Ship Phase 3 behind explicit `clipstitchr demo guide create`.
 2. Add customer docs only after generation works against production.
-3. Keep `clipstitchr demo make` defaulting to manual guided recording.
+3. Keep `clipstitchr demo manual` defaulting to manual guided recording.
 4. Keep Phase 4 as a private local beta with `clipstitchr demo agent run`.
 5. Run GUI smoke checks for the recorded browser path before broad release.
 6. Keep upload gated by mandatory local review.
 7. Collect failed run summaries from consenting testers, not raw screenshots by
    default.
-8. Only then consider adding the agent option to the normal `demo make` prompt.
+8. Only then consider adding the agent option to the normal `demo manual` prompt.
 
 ## Production Ship Checklist
 

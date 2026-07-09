@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { addDemoManualCommandOptions } from "./addDemoManualCommandOptions.js";
 import type { CliGlobalOptions } from "./CliGlobalOptions.js";
 import { runDoctorCommand } from "./runDoctorCommand.js";
 import { runDemoAgentCheckCommand } from "./runDemoAgentCheckCommand.js";
@@ -294,19 +295,19 @@ export async function runCli(argv: string[]) {
       });
     });
 
-  demo
-    .command("make")
-    .description("Record a new product demo")
-    .option("--guide <name-id-or-path>", "Use a saved walkthrough guide")
-    .option("--no-guide", "Record without a walkthrough guide")
-    .option("--no-upload", "Record only")
-    .option("--output <path>", "Save the MP4 here")
-    .option("--product <id>", "Use this product ID")
-    .option("--start <command>", "Start command")
-    .option("--url <url>", "Local app URL")
-    .action(async (options) => {
-      await runDemoMakeCommand({ ...program.opts(), ...options });
-    });
+  addDemoManualCommandOptions(
+    demo.command("manual").description("Record a demo yourself"),
+  ).action(async (options) => {
+    await runDemoMakeCommand({ ...program.opts(), ...options });
+  });
+
+  addDemoManualCommandOptions(
+    demo
+      .command("make", { hidden: true })
+      .description("Legacy alias for demo manual"),
+  ).action(async (options) => {
+    await runDemoMakeCommand({ ...program.opts(), ...options });
+  });
 
   demo
     .command("upload")

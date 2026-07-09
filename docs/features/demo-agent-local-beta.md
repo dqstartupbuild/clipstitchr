@@ -180,7 +180,7 @@ Local iOS Simulator, Android emulator windows, iPhone Mirroring, and other
 desktop windows can use `--surface macos-window`. The helper checks Screen
 Recording and Accessibility before any model actions. macOS window runs save
 screenshots and action logs; full helper-owned MP4 capture is still a boundary,
-so `clipstitchr demo make` remains the full-video path for native devices.
+so `clipstitchr demo manual` remains the full-video path for native devices.
 
 ## One-Command AI Recording
 

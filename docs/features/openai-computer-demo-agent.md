@@ -128,7 +128,7 @@ selected visible macOS window:
   desktop app windows.
 - `clipstitchr demo auto --target live --url <live-or-staging-url>` when the
   product has a web surface to demonstrate.
-- `clipstitchr demo make` when a full native MP4 is more important than
+- `clipstitchr demo manual` when a full native MP4 is more important than
   automatic screenshots/actions.
 
 The helper requires Screen Recording and Accessibility permissions. macOS

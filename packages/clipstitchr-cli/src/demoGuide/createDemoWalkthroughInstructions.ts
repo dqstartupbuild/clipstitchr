@@ -30,7 +30,7 @@ export function createDemoWalkthroughInstructions(guide: DemoWalkthroughGuide) {
     "",
     "## Hand Back To ClipStitchr",
     "",
-    `After the recording is ready, use clipstitchr demo make --guide ${guide.id} for the normal guided recording flow.`,
+    `After the recording is ready, use clipstitchr demo manual --guide ${guide.id} for the normal guided recording flow.`,
     "",
   ]
     .filter((line): line is string => line !== undefined)
