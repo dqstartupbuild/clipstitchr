@@ -1,11 +1,5 @@
-import { join } from "node:path";
-import { getMacosWindowHelperPackagePath } from "./getMacosWindowHelperPackagePath.js";
+import { getInstalledMacosWindowHelperExecutablePath } from "./getInstalledMacosWindowHelperExecutablePath.js";
 
 export function getMacosWindowHelperExecutablePath() {
-  return join(
-    getMacosWindowHelperPackagePath(),
-    ".build",
-    "release",
-    "macos-window-helper",
-  );
+  return getInstalledMacosWindowHelperExecutablePath();
 }

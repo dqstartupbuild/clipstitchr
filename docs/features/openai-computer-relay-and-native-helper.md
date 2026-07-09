@@ -33,9 +33,9 @@ demoAgent:
 The command line can override it:
 
 ```bash
-clipstitchr demo auto --driver openai-computer --openai-mode relay
-clipstitchr demo auto --driver openai-computer --openai-mode direct
-clipstitchr demo auto --driver openai-computer --surface macos-window --openai-mode relay
+clipstitchr demo agent --driver openai-computer --openai-mode relay
+clipstitchr demo agent --driver openai-computer --openai-mode direct
+clipstitchr demo agent --driver openai-computer --surface macos-window --openai-mode relay
 ```
 
 When no mode is supplied, the CLI uses direct mode if a local OpenAI key exists.
@@ -73,19 +73,24 @@ Limits:
 
 ## macOS Helper
 
-The helper lives under:
+The bundled helper source lives under:
 
 ```text
 packages/clipstitchr-cli/native/macos-window-helper/
 ```
 
-Build and check it with:
+Install and check the helper with:
 
 ```bash
-cd packages/clipstitchr-cli
-npm run native:macos:build
-npm run native:macos:check
+clipstitchr native init
+clipstitchr native check
 ```
+
+`clipstitchr native init` builds the bundled Swift helper and installs it to
+`~/Library/Application Support/ClipStitchr/macos-window-helper` with metadata
+for the current bundled source hash. Re-running the command is idempotent.
+`clipstitchr native init --force` repairs or reinstalls the helper. Hidden
+`native helper ...` commands remain available for older scripts.
 
 The helper uses JSON over stdio. Supported commands are `check_permissions`,
 `list_windows`, `select_window`, `capture_window`, `click`, `double_click`,

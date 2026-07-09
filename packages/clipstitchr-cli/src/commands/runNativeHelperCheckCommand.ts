@@ -1,6 +1,6 @@
 import { MacosWindowHelperClient } from "../native/macosWindowHelper/MacosWindowHelperClient.js";
 import { assertMacosWindowHelperPermissions } from "../native/macosWindowHelper/assertMacosWindowHelperPermissions.js";
-import { ensureMacosWindowHelperBuilt } from "../native/macosWindowHelper/ensureMacosWindowHelperBuilt.js";
+import { ensureMacosWindowHelperInstalled } from "../native/macosWindowHelper/ensureMacosWindowHelperInstalled.js";
 import { logKeyValue } from "../terminal/logKeyValue.js";
 import { logStep } from "../terminal/logStep.js";
 import { logSuccess } from "../terminal/logSuccess.js";
@@ -9,7 +9,7 @@ export async function runNativeHelperCheckCommand() {
   const helper = new MacosWindowHelperClient();
 
   logStep("Checking the macOS window helper.");
-  await ensureMacosWindowHelperBuilt();
+  await ensureMacosWindowHelperInstalled();
   await helper.start();
 
   try {

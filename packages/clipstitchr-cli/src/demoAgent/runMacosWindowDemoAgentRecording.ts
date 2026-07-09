@@ -4,7 +4,7 @@ import type { MacosWindowInfo } from "../native/macosWindowHelper/MacosWindowInf
 import { MacosWindowHelperClient } from "../native/macosWindowHelper/MacosWindowHelperClient.js";
 import { assertMacosWindowHelperPermissions } from "../native/macosWindowHelper/assertMacosWindowHelperPermissions.js";
 import { createMacosWindowOpenAiComputerSurfaceAdapter } from "../native/macosWindowHelper/createMacosWindowOpenAiComputerSurfaceAdapter.js";
-import { ensureMacosWindowHelperBuilt } from "../native/macosWindowHelper/ensureMacosWindowHelperBuilt.js";
+import { ensureMacosWindowHelperInstalled } from "../native/macosWindowHelper/ensureMacosWindowHelperInstalled.js";
 import { selectMacosWindow } from "../native/macosWindowHelper/selectMacosWindow.js";
 import type { ScannedAppContext } from "../project/ScannedAppContext.js";
 import { logInfo } from "../terminal/logInfo.js";
@@ -49,7 +49,7 @@ export async function runMacosWindowDemoAgentRecording(input: {
 
   await mkdir(runPaths.screenshotsDirectory, { recursive: true });
   logStep("Preparing the macOS window helper.");
-  await ensureMacosWindowHelperBuilt();
+  await ensureMacosWindowHelperInstalled();
   await helper.start();
 
   try {

@@ -1,5 +1,8 @@
-import { runNativeHelperBuildCommand } from "./runNativeHelperBuildCommand.js";
+import type { NativeInitCommandOptions } from "./NativeInitCommandOptions.js";
+import { runNativeInitCommand } from "./runNativeInitCommand.js";
 
-export async function runNativeHelperInstallCommand() {
-  await runNativeHelperBuildCommand();
+export async function runNativeHelperInstallCommand(
+  options: NativeInitCommandOptions = {},
+) {
+  await runNativeInitCommand(options);
 }

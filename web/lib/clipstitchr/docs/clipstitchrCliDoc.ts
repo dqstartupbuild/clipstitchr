@@ -61,7 +61,7 @@ export const clipstitchrCliDoc = {
     {
       title: "Check and update setup",
       body: [
-        "Status shows the account, repo, product, local app, and recording browser in one quick view. Scan looks for likely product flows in the local app. Doctor checks the pieces the recorder needs, including native recording tools when the repo looks like iOS, Android, or React Native. Update checks npm for a newer CLI.",
+        "Status shows the account, repo, product, local app, and recording browser in one quick view. Scan looks for likely product flows in the local app. Doctor checks the pieces the recorder needs, including native recording tools when the repo looks like iOS, Android, or React Native. Run clipstitchr native init once per Mac when you want visible-window recording, then clipstitchr native check when you need to verify permissions. Update checks npm for a newer CLI.",
       ],
       commands: [
         "clipstitchr status",

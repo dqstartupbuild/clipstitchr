@@ -52,8 +52,9 @@ clipstitchr queue stitch
 clipstitchr products list
 clipstitchr products create --use
 clipstitchr products use
-clipstitchr native helper build
-clipstitchr native helper check
+clipstitchr native init
+clipstitchr native init --force
+clipstitchr native check
 clipstitchr unlink
 clipstitchr --plain status
 ```
@@ -138,9 +139,12 @@ unlink` removes the repo connection without logging the whole machine out.
 For native demos, the CLI can manually record an already-running iOS Simulator
 or Android device/emulator. Automatic OpenAI demos can also use
 `--surface macos-window` to select a visible macOS window such as Simulator,
-iPhone Mirroring, or an emulator. The helper needs Screen Recording and
-Accessibility permissions and currently saves screenshots/action logs; full
-helper-owned MP4 capture is still handled by the manual native recorder path.
+iPhone Mirroring, or an emulator. Run `clipstitchr native init` once per Mac to
+install the helper under `~/Library/Application Support/ClipStitchr/`, and run
+`clipstitchr native init --force` to repair it. `clipstitchr native check`
+verifies the helper plus Screen Recording and Accessibility permissions. Window
+runs currently save screenshots/action logs; full helper-owned MP4 capture is
+still handled by the manual native recorder path.
 
 For local development against a preview app:
 

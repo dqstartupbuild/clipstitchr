@@ -27,6 +27,7 @@ import { runLogoutCommand } from "./runLogoutCommand.js";
 import { runNativeHelperBuildCommand } from "./runNativeHelperBuildCommand.js";
 import { runNativeHelperCheckCommand } from "./runNativeHelperCheckCommand.js";
 import { runNativeHelperInstallCommand } from "./runNativeHelperInstallCommand.js";
+import { runNativeInitCommand } from "./runNativeInitCommand.js";
 import { runProductsCreateCommand } from "./runProductsCreateCommand.js";
 import { runProductsListCommand } from "./runProductsListCommand.js";
 import { runProductsUseCommand } from "./runProductsUseCommand.js";
@@ -354,23 +355,39 @@ export async function runCli(argv: string[]) {
     });
 
   const native = program.command("native").description("Manage native helpers");
+  native
+    .command("init")
+    .description("Prepare this Mac for native and window demos")
+    .option("--force", "Repair or reinstall the native helper")
+    .action(async (options) => {
+      await runNativeInitCommand(options);
+    });
+
+  native
+    .command("check")
+    .description("Check native helper setup and permissions")
+    .action(runNativeHelperCheckCommand);
+
   const nativeHelper = native
-    .command("helper")
-    .description("Build and check the macOS window helper");
+    .command("helper", { hidden: true })
+    .description("Legacy native helper commands");
 
   nativeHelper
-    .command("build")
+    .command("build", { hidden: true })
     .description("Build the macOS window helper")
     .action(runNativeHelperBuildCommand);
 
   nativeHelper
-    .command("install")
-    .description("Build the macOS window helper for local use")
-    .action(runNativeHelperInstallCommand);
+    .command("install", { hidden: true })
+    .description("Legacy alias for native init")
+    .option("--force", "Repair or reinstall the native helper")
+    .action(async (options) => {
+      await runNativeHelperInstallCommand(options);
+    });
 
   nativeHelper
-    .command("check")
-    .description("Check macOS helper permissions")
+    .command("check", { hidden: true })
+    .description("Legacy alias for native check")
     .action(runNativeHelperCheckCommand);
 
   const stitchr = program.command("stitchr").description("Create Stitch drafts");
