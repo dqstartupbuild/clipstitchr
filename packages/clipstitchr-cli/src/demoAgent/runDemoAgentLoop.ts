@@ -20,6 +20,7 @@ import { executeDemoAgentAction } from "./executeDemoAgentAction.js";
 import { getDemoAgentObservationHasNotFoundState } from "./getDemoAgentObservationHasNotFoundState.js";
 import { getDemoAgentRecordingTimeLimitReached } from "./getDemoAgentRecordingTimeLimitReached.js";
 import { getDemoAgentUrlPolicyStopReason } from "./getDemoAgentUrlPolicyStopReason.js";
+import { maxDemoAgentScrollActionsPerStep } from "./maxDemoAgentScrollActionsPerStep.js";
 import { observeDemoAgentPage } from "./observeDemoAgentPage.js";
 import { planDemoAgentAction } from "./planDemoAgentAction.js";
 import { validateDemoAgentAction } from "./validateDemoAgentAction.js";
@@ -183,7 +184,7 @@ export async function runDemoAgentLoop(input: {
         break;
       }
 
-      const plannedAction = await (input.planner ?? planDemoAgentAction)({
+      let plannedAction = await (input.planner ?? planDemoAgentAction)({
         appContext: input.appContext,
         guide: input.guide,
         observation,
@@ -191,6 +192,18 @@ export async function runDemoAgentLoop(input: {
         step,
         stepState,
       });
+
+      if (
+        plannedAction.type === "scroll" &&
+        stepState.scrollCount >= maxDemoAgentScrollActionsPerStep
+      ) {
+        plannedAction = {
+          reason: "The page was scrolled enough for this guide step.",
+          stepId: step.id,
+          type: "finishStep",
+        };
+      }
+
       const actionKey = createDemoAgentActionKey(plannedAction);
       const urlBefore = input.page.url();
       let validatedAction: DemoAgentValidatedAction;
@@ -335,6 +348,10 @@ export async function runDemoAgentLoop(input: {
 
         if (validatedAction.type === "waitFor") {
           stepState.hasWaited = true;
+        }
+
+        if (validatedAction.type === "scroll") {
+          stepState.scrollCount += 1;
         }
 
         await writeDemoAgentActionLogEntry(

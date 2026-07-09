@@ -7,5 +7,6 @@ export function createDemoAgentStepState(): DemoAgentStepState {
     hasScreenshot: false,
     hasTyped: false,
     hasWaited: false,
+    scrollCount: 0,
   };
 }

@@ -110,7 +110,7 @@ export async function runCli(argv: string[]) {
 
   demo
     .command("auto")
-    .description("Let AI write and record a local demo")
+    .description("Let AI write and record a demo")
     .option("--audience <text>", "Who this demo is for")
     .option(
       "--driver <driver>",
@@ -120,32 +120,33 @@ export async function runCli(argv: string[]) {
     .option("--product <id>", "ClipStitchr product ID")
     .option("--start <command>", "Start command")
     .option("--steps <count>", "Guide step count from 3 to 8")
-    .option("--url <url>", "Local app URL")
+    .option("--target <local-or-live>", "Use local or live as the recording target")
+    .option("--url <url>", "App URL")
     .action(async (options) => {
       await runDemoAutoCommand({ ...program.opts(), ...options });
     });
 
   const demoAgent = demo
     .command("agent")
-    .description("Run the guarded local demo agent");
+    .description("Run the guarded demo agent");
 
   demoAgent
     .command("init")
-    .description("Create a local demo agent policy")
+    .description("Create a demo agent policy")
     .action(async () => {
       await runDemoAgentInitCommand(program.opts());
     });
 
   demoAgent
     .command("check")
-    .description("Check the local demo agent policy")
+    .description("Check the demo agent policy")
     .action(async () => {
       await runDemoAgentCheckCommand(program.opts());
     });
 
   demoAgent
     .command("run")
-    .description("Run a guarded local demo agent")
+    .description("Run a guarded demo agent")
     .requiredOption("--guide <id-or-path>", "Use a saved walkthrough guide")
     .option("--ai-planner", "Ask ClipStitchr AI to propose each guarded action")
     .option(
@@ -156,7 +157,8 @@ export async function runCli(argv: string[]) {
     .option("--no-upload", "Record only after review")
     .option("--product <id>", "ClipStitchr product ID for upload")
     .option("--start <command>", "Start command")
-    .option("--url <url>", "Local app URL")
+    .option("--target <local-or-live>", "Use local or live as the recording target")
+    .option("--url <url>", "App URL")
     .action(async (options) => {
       await runDemoAgentRunCommand({ ...program.opts(), ...options });
     });

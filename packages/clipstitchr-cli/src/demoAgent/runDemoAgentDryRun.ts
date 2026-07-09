@@ -57,7 +57,7 @@ export async function runDemoAgentDryRun(inputOptions: {
   try {
     const page = await context.newPage();
 
-    logStep("Opening the local app with the guarded agent.");
+    logStep("Opening the app with the guarded agent.");
     const initialUrlBefore = page.url();
 
     await page.goto(startUrl, { waitUntil: "domcontentloaded" });

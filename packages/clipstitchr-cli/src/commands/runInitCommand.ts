@@ -11,7 +11,6 @@ import { findRunningLocalAppUrl } from "../project/findRunningLocalAppUrl.js";
 import { createAppContextConfig } from "../project/createAppContextConfig.js";
 import { scanAndWriteAppContext } from "../project/scanAndWriteAppContext.js";
 import { resolveRecordingGuidance } from "../recording/resolveRecordingGuidance.js";
-import { defaultDemoAgentDriver } from "../demoAgent/defaultDemoAgentDriver.js";
 import { readOpenAiApiKey } from "../demoAgent/readOpenAiApiKey.js";
 import { resolveOpenAiComputerModel } from "../demoAgent/resolveOpenAiComputerModel.js";
 import { logBrandHeader } from "../terminal/logBrandHeader.js";
@@ -49,12 +48,29 @@ export async function runInitCommand(options: CliGlobalOptions) {
     message: "What local URL should I record?",
   });
   const useOpenAiComputer = await confirm({
-    default: config.demoAgent?.driver === "openai-computer",
+    default: config.demoAgent?.driver
+      ? config.demoAgent.driver === "openai-computer"
+      : true,
     message: "Use OpenAI Computer Use for automatic demos?",
   });
   const demoAgentDriver = useOpenAiComputer
     ? "openai-computer"
-    : defaultDemoAgentDriver;
+    : "structured-planner";
+  const useLiveTarget =
+    useOpenAiComputer &&
+    (await confirm({
+      default: config.demoAgent?.target === "live",
+      message: "Use the live site for automatic demos by default?",
+    }));
+  const liveUrl = useLiveTarget
+    ? await input({
+        default:
+          config.demoAgent?.liveUrl ??
+          product.websiteUrl ??
+          "https://your-product.com",
+        message: "What live site URL should I record?",
+      })
+    : config.demoAgent?.liveUrl;
 
   if (useOpenAiComputer && !readOpenAiApiKey()) {
     logWarning(
@@ -68,11 +84,13 @@ export async function runInitCommand(options: CliGlobalOptions) {
     appContext: createAppContextConfig(appContext),
     demoAgent: {
       driver: demoAgentDriver,
+      liveUrl,
       openai: useOpenAiComputer
         ? {
             model: resolveOpenAiComputerModel(config.demoAgent?.openai?.model),
           }
         : config.demoAgent?.openai,
+      target: useLiveTarget ? "live" : "local",
     },
     product: createProductConfigSummary(product),
     productId: product.id,

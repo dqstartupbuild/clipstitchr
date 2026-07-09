@@ -7,5 +7,6 @@ export type DemoAutoCommandOptions = CliGlobalOptions & {
   product?: string;
   start?: string;
   steps?: string;
+  target?: string;
   url?: string;
 };

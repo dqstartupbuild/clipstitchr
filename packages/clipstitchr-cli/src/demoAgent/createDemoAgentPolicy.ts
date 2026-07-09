@@ -3,11 +3,13 @@ import type { DemoAgentPolicy } from "./DemoAgentPolicy.js";
 import { defaultDemoAgentBlockedTextPatterns } from "./defaultDemoAgentBlockedTextPatterns.js";
 
 export function createDemoAgentPolicy(input: {
+  allowLiveOrigins?: boolean;
   allowedOrigin: string;
   flows: ScannedFlow[];
 }): DemoAgentPolicy {
   return {
     allowFileUploads: true,
+    allowLiveOrigins: input.allowLiveOrigins ? true : undefined,
     allowedOrigins: [input.allowedOrigin],
     allowedRoutes: Array.from(
       new Set([

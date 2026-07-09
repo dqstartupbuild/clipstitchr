@@ -11,8 +11,15 @@ export function createOpenAiComputerInitialInput(input: {
   step: DemoWalkthroughStep;
   stepIndex: number;
 }) {
+  const targetDescription = input.policy.allowLiveOrigins
+    ? "product demo in an isolated browser"
+    : "local product demo in an isolated browser";
+  const originDescription = input.policy.allowLiveOrigins
+    ? "allowed origins"
+    : "local origins";
+
   return [
-    "You are recording a local product demo in an isolated browser.",
+    `You are recording a ${targetDescription}.`,
     "Use the computer tool to complete only the current guide step, then stop calling the computer tool and say the step is done.",
     "",
     `Demo title: ${input.guide.title}`,
@@ -21,7 +28,7 @@ export function createOpenAiComputerInitialInput(input: {
     input.step.notes ? `Step notes: ${input.step.notes}` : "",
     "",
     "Hard rules:",
-    `- Stay inside these local origins: ${input.policy.allowedOrigins.join(", ")}.`,
+    `- Stay inside these ${originDescription}: ${input.policy.allowedOrigins.join(", ")}.`,
     `- Stay on these allowed routes when possible: ${input.policy.allowedRoutes.join(", ")}.`,
     "- Do not enter passwords, API keys, secrets, payment details, production account data, or private customer data.",
     "- Do not delete data, change billing, publish content, send email, or take any irreversible action.",

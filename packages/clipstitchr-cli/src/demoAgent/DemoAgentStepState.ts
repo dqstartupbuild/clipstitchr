@@ -4,4 +4,5 @@ export type DemoAgentStepState = {
   hasScreenshot: boolean;
   hasTyped: boolean;
   hasWaited: boolean;
+  scrollCount: number;
 };

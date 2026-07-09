@@ -1,8 +1,8 @@
-# Demo Agent Local Beta
+# Demo Agent Beta
 
-The Demo Agent local beta adds the guarded Phase 4 foundation. It is local-only,
-policy-first, and starts with dry-run validation before allowing a recorded run.
-Recording upload requires explicit review and approval.
+The Demo Agent beta adds the guarded Phase 4 foundation. It is policy-first,
+local by default, and starts with dry-run validation before allowing a recorded
+run. Recording upload requires explicit review and approval.
 
 ## What It Does
 
@@ -12,16 +12,18 @@ Recording upload requires explicit review and approval.
 - Adds guarded recording with `clipstitchr demo agent run --guide <id>`.
 - Adds `clipstitchr demo agent export-log <run-id>`.
 - Adds `clipstitchr demo auto` for one-command AI guide generation and guarded
-  AI recording when account, repo, local app URL, and saved browser sign-in are
-  already ready.
+  AI recording when account, repo, and a local or live app URL are already
+  ready.
+- Supports `--target live` for explicitly selected live or staging URLs.
 - Runs a guarded observe, plan, validate, execute, log, and stop loop.
 - Saves local evidence under `.clipstitchr/agent-runs/<run-id>/`.
 - Keeps screenshots and raw action logs local unless a reviewed recording is
   explicitly uploaded.
 - Preserves safe optional `walkthrough.agentRun` metadata on upload snapshots.
 - Supports opt-in model-backed planning with `--ai-planner`.
-- Supports `--driver openai-computer` for OpenAI Computer Use browser control,
-  with `structured-planner` kept as the default and fallback.
+- Supports `--driver openai-computer` for OpenAI Computer Use browser control.
+  OpenAI is the default when `OPENAI_API_KEY` is available, and
+  `structured-planner` remains the no-key fallback and explicit cheap mode.
 
 ## Policy File
 
@@ -31,11 +33,13 @@ Recording upload requires explicit review and approval.
 .clipstitchr/demo-agent-policy.json
 ```
 
-The policy allows only localhost origins in the first beta. It stores allowed
-routes, blocked text patterns, upload settings, action caps, recording caps, and
-whether approval is required before upload. It can also store approved test
-values for safe form typing. `.clipstitchr/` is ignored by Git, so local sample
-paths and test-account notes stay out of the repository.
+The policy allows localhost origins by default. Live or staging origins require
+an explicit live target selection, which writes `allowLiveOrigins: true` into
+the policy for the selected origin. The policy stores allowed routes, blocked
+text patterns, upload settings, action caps, recording caps, and whether
+approval is required before upload. It can also store approved test values for
+safe form typing. `.clipstitchr/` is ignored by Git, so local sample paths and
+test-account notes stay out of the repository.
 
 `clipstitchr demo agent init` also refreshes `.clipstitchr/app-context.json`.
 That file gives the planner source-derived route, field, and button hints before
@@ -44,10 +48,10 @@ the browser run starts.
 ## Dry-Run Behavior
 
 The dry-run opens the saved Playwright browser profile, navigates to the guide
-start URL, asks the user to sign in with a test account if needed, observes the
-page, plans one narrow action at a time, validates that action against policy,
-executes only approved local browser actions, writes an action log, captures
-screenshots, and saves a run summary.
+start URL, pauses for a test-account sign-in only when the app shows a sign-in
+screen, observes the page, plans one narrow action at a time, validates that
+action against policy, executes only approved local browser actions, writes an
+action log, captures screenshots, and saves a run summary.
 
 The deterministic planner can capture screenshots, click visible buttons or
 links that match the current guide step, type safe demo text into matching
@@ -74,18 +78,25 @@ Dry-run does not record video, upload media to ClipStitchr, create accounts,
 purchase anything, delete data, publish content, use production accounts, or run
 an LLM planner.
 
-When `--driver openai-computer` is selected, dry-run uses the same local
-browser and evidence directory, but the next visual action comes from OpenAI
-Computer Use. The CLI executes returned computer actions through Playwright,
-captures a screenshot, sends it back to OpenAI as `computer_call_output`, and
-repeats until the current guide step is done. If `OPENAI_API_KEY` is missing,
-the CLI falls back to the structured planner before the run starts.
+When `openai-computer` is selected or used by default, dry-run uses the same
+local browser and evidence directory, but the next visual action comes from
+OpenAI Computer Use. The CLI executes returned computer actions through
+Playwright, captures a screenshot, sends it back to OpenAI as
+`computer_call_output`, and repeats until the current guide step is done. If
+`OPENAI_API_KEY` is missing, the CLI falls back to the structured planner before
+the run starts.
+
+With `--target live`, the browser starts at the selected live or staging URL and
+skips the local start command. This lets the OpenAI Computer Use driver record
+apps whose repository is not a web app, as long as there is a browser URL to
+demonstrate.
 
 ## Recording Behavior
 
-Running without `--dry-run` first opens a non-recorded browser preflight so the
-user can sign in with a test account. After that preflight closes, the CLI opens
-a video-recorded browser context, captures interaction events, runs the same
+Running without `--dry-run` first opens a non-recorded browser preflight. If the
+app asks for sign-in, the CLI asks the user to sign in with a test account and
+waits before recording. After that preflight closes, the CLI opens a
+video-recorded browser context, captures interaction events, runs the same
 guarded loop, saves `recording.mp4` beside the run evidence, and writes the
 recording path into `run-summary.json`.
 
@@ -146,20 +157,26 @@ cannot work ahead and leave the current step half-finished.
 
 With `--driver openai-computer`, the browser-control loop bypasses the
 server-side JSON action planner and calls OpenAI directly from the CLI. The
-current guide step, local origin policy, allowed routes, blocked-action rules,
-and capped app context are sent with the task. Screenshots are sent from the
-user's machine to OpenAI and are not proxied through ClipStitchr.
+current guide step, origin policy, allowed routes, blocked-action rules, and
+capped app context are sent with the task. Screenshots are sent from the user's
+machine to OpenAI and are not proxied through ClipStitchr.
+
+Local iOS Simulator, Android device/emulator, iPhone Mirroring, and other
+screen-mirrored native demos are not yet driven directly by OpenAI. The working
+automatic path for non-web projects is `--target live` with a browser URL.
+Simulator and device demos continue to use `clipstitchr demo make` until native
+device-control adapters are added.
 
 ## One-Command AI Recording
 
 `clipstitchr demo auto` is the guided one-command path. It requires the project
-to already be linked, the CLI account session to be valid, the local app URL to
-be known or running, and the saved browser profile to already be signed into the
-app. Before writing the guide, it asks what the demo should show unless the user
-passes `--goal`. That goal is sent to guide generation and to every model-backed
-planner call, so requests such as "create a customer profile from the latest
-import" or "demonstrate running a batch export in the reports tool" steer both
-the checklist and the browser actions.
+to already be linked, the CLI account session to be valid, and either a known
+local app URL or an explicitly selected live URL. Before writing the guide, it
+asks what the demo should show unless the user passes `--goal`. That goal is
+sent to guide generation and to every model-backed planner call, so requests
+such as "create a customer profile from the latest import" or "demonstrate
+running a batch export in the reports tool" steer both the checklist and the
+browser actions.
 
 It generates a guide with ClipStitchr AI, saves it locally, creates a localhost
 policy if one does not exist, verifies the page in a non-recorded browser,

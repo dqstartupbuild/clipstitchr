@@ -1,7 +1,7 @@
 # ClipStitchr CLI
 
-Record guided product demos from a local app, upload finished demo files, start
-batch content, and queue finished Stitches in ClipStitchr.
+Record guided product demos from a local or live app, upload finished demo
+files, start batch content, and queue finished Stitches in ClipStitchr.
 
 ```bash
 npx clipstitchr
@@ -17,6 +17,7 @@ clipstitchr status
 clipstitchr update
 clipstitchr demo auto
 clipstitchr demo auto --driver openai-computer
+clipstitchr demo auto --driver openai-computer --target live --url https://example.com
 clipstitchr demo guide generate
 clipstitchr demo guide list
 clipstitchr demo guide show guide_123
@@ -29,6 +30,7 @@ clipstitchr demo agent run --guide guide_123 --dry-run
 clipstitchr demo agent run --guide guide_123
 clipstitchr demo agent run --guide guide_123 --ai-planner --dry-run
 clipstitchr demo agent run --guide guide_123 --driver openai-computer
+clipstitchr demo agent run --guide guide_123 --driver openai-computer --target live --url https://example.com
 clipstitchr demo agent run --guide guide_123 --no-upload
 clipstitchr demo agent export-log agent_run_123
 clipstitchr demo make
@@ -50,8 +52,9 @@ clipstitchr --plain status
 
 If the repo is linked, your ClipStitchr account is connected, and the saved
 browser profile is already signed into your app, `clipstitchr demo auto` writes
-the guide with ClipStitchr AI and records the demo with the guarded local AI
-agent in one command. It saves the guide, MP4, screenshots, action log, and run
+the guide with ClipStitchr AI and records the demo with the guarded AI agent in
+one command. It can use localhost by default, or a live/staging URL with
+`--target live`. It saves the guide, MP4, screenshots, action log, and run
 summary locally without asking questions. It does not upload automatically.
 
 The built-in recorder can also create a simple walkthrough checklist before
@@ -69,11 +72,15 @@ If your app requires login, sign in inside the recorder browser once. The CLI
 keeps that app browser session in `.clipstitchr/browser-profile` so future
 recordings can stay signed in.
 
-The local demo agent beta is policy guarded. `clipstitchr demo auto` creates the
-policy automatically when one does not exist. Use the lower-level
+The demo agent beta is policy guarded. `clipstitchr demo auto` creates the
+policy automatically when one does not exist. Localhost origins are the default;
+live origins must be selected with `--target live`. The automatic agent uses
+OpenAI Computer Use when `OPENAI_API_KEY` is available locally, including for
+localhost demos. If the key is missing, it falls back to the structured planner.
+Use the lower-level
 `clipstitchr demo agent init`, `check`, and `run` commands when you want to
 inspect the policy, run a dry-run, or record from an existing guide. The same
-local policy validator always decides what can run.
+policy validator always decides what can run.
 
 Most demos work best around 30-90 seconds. Longer recordings are allowed, and
 the CLI warns after about 2 minutes without stopping the recording. That is
@@ -106,7 +113,10 @@ unlink` removes the repo connection without logging the whole machine out.
 For native demos, the CLI records an already-running iOS Simulator or Android
 device/emulator. Open the app to the screen you want, then let the CLI start and
 stop the recording. Android recording depends on `adb screenrecord`, which may
-stop around 3 minutes.
+stop around 3 minutes. Automatic OpenAI demos for native, desktop, or backend
+projects should use `--target live --url <live-or-staging-url>` when there is a
+web surface to show. Direct simulator, mirrored phone, and device control still
+needs native device-control support in the CLI.
 
 For local development against a preview app:
 

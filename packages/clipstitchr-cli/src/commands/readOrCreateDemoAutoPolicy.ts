@@ -5,6 +5,7 @@ import { writeDemoAgentPolicy } from "../demoAgent/writeDemoAgentPolicy.js";
 import type { ScannedFlow } from "../project/ScannedFlow.js";
 
 export async function readOrCreateDemoAutoPolicy(input: {
+  allowLiveOrigins?: boolean;
   allowedOrigin: string;
   flows: ScannedFlow[];
   startPath?: string;
@@ -13,8 +14,42 @@ export async function readOrCreateDemoAutoPolicy(input: {
   path: string;
   policy: DemoAgentPolicy;
 }> {
+  const startPath =
+    input.startPath && input.startPath.startsWith("/")
+      ? input.startPath
+      : undefined;
+
   try {
-    return await readDemoAgentPolicy();
+    const savedPolicy = await readDemoAgentPolicy();
+    const hasAllowedOrigin = savedPolicy.policy.allowedOrigins.includes(
+      input.allowedOrigin,
+    );
+    const hasLiveAccess =
+      !input.allowLiveOrigins || savedPolicy.policy.allowLiveOrigins === true;
+    const hasStartPath =
+      !startPath || savedPolicy.policy.allowedRoutes.includes(startPath);
+
+    if (hasAllowedOrigin && hasLiveAccess && hasStartPath) {
+      return savedPolicy;
+    }
+
+    if (hasAllowedOrigin) {
+      await writeDemoAgentPolicy({
+        ...savedPolicy.policy,
+        allowLiveOrigins:
+          input.allowLiveOrigins || savedPolicy.policy.allowLiveOrigins
+            ? true
+            : undefined,
+        allowedRoutes:
+          startPath && !savedPolicy.policy.allowedRoutes.includes(startPath)
+            ? Array.from(
+                new Set([...savedPolicy.policy.allowedRoutes, startPath]),
+              )
+            : savedPolicy.policy.allowedRoutes,
+      });
+
+      return await readDemoAgentPolicy();
+    }
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
       throw error;
@@ -22,13 +57,10 @@ export async function readOrCreateDemoAutoPolicy(input: {
   }
 
   const policy = createDemoAgentPolicy({
+    allowLiveOrigins: input.allowLiveOrigins,
     allowedOrigin: input.allowedOrigin,
     flows: input.flows,
   });
-  const startPath =
-    input.startPath && input.startPath.startsWith("/")
-      ? input.startPath
-      : undefined;
   const policyWithStartPath =
     startPath && !policy.allowedRoutes.includes(startPath)
       ? {

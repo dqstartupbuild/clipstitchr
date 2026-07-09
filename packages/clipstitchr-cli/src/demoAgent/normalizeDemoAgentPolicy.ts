@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 import type { DemoAgentPolicy } from "./DemoAgentPolicy.js";
+import { getDemoAgentOriginIsHttp } from "./getDemoAgentOriginIsHttp.js";
 import { getIsDemoAgentLocalOrigin } from "./getIsDemoAgentLocalOrigin.js";
 
 function readStringArray(value: unknown) {
@@ -43,9 +44,16 @@ export function normalizeDemoAgentPolicy(
   const allowedOrigins = readStringArray(rawPolicy.allowedOrigins).map(
     (origin) => new URL(origin).origin,
   );
+  const allowLiveOrigins = rawPolicy.allowLiveOrigins === true;
 
-  if (!allowedOrigins.length || !allowedOrigins.every(getIsDemoAgentLocalOrigin)) {
-    throw new Error("Demo agent policy can only allow local app origins.");
+  if (!allowedOrigins.length || !allowedOrigins.every(getDemoAgentOriginIsHttp)) {
+    throw new Error("Demo agent policy needs at least one HTTP app origin.");
+  }
+
+  if (!allowLiveOrigins && !allowedOrigins.every(getIsDemoAgentLocalOrigin)) {
+    throw new Error(
+      "Demo agent policy can only allow local app origins unless live origins are explicitly enabled.",
+    );
   }
 
   const allowedRoutes = readStringArray(rawPolicy.allowedRoutes).map((route) =>
@@ -58,6 +66,7 @@ export function normalizeDemoAgentPolicy(
 
   return {
     allowFileUploads: rawPolicy.allowFileUploads !== false,
+    allowLiveOrigins: allowLiveOrigins ? true : undefined,
     allowedOrigins,
     allowedRoutes,
     approvedTestValues: readStringRecord(rawPolicy.approvedTestValues),

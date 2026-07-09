@@ -6,6 +6,7 @@ export function createDemoAgentTestPolicy(
 ): DemoAgentPolicy {
   return {
     allowFileUploads: true,
+    allowLiveOrigins: undefined,
     allowedOrigins: ["http://localhost:3000"],
     allowedRoutes: ["/", "/dashboard", "/upload"],
     approvedTestValues: {

@@ -7,7 +7,11 @@ import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
 import { createProductConfigSummary } from "../config/createProductConfigSummary.js";
 import { createDemoAgentPlannerWithFallback } from "../demoAgent/createDemoAgentPlannerWithFallback.js";
+import { createDemoAgentUnsupportedTargetMessage } from "../demoAgent/createDemoAgentUnsupportedTargetMessage.js";
+import { getDemoAgentProjectCanUseTarget } from "../demoAgent/getDemoAgentProjectCanUseTarget.js";
 import { resolveDemoAgentCommandDriver } from "../demoAgent/resolveDemoAgentCommandDriver.js";
+import { resolveDemoAgentTargetMode } from "../demoAgent/resolveDemoAgentTargetMode.js";
+import { resolveDemoAgentTargetUrl } from "../demoAgent/resolveDemoAgentTargetUrl.js";
 import { runDemoAgentRecording } from "../demoAgent/runDemoAgentRecording.js";
 import { writeDemoWalkthroughGuide } from "../demoGuide/writeDemoWalkthroughGuide.js";
 import { detectProject } from "../project/detectProject.js";
@@ -32,12 +36,14 @@ import { readOrCreateDemoAutoPolicy } from "./readOrCreateDemoAutoPolicy.js";
 import { resolveDemoAutoProduct } from "./resolveDemoAutoProduct.js";
 import { reviewDemoAgentRecordingUpload } from "./reviewDemoAgentRecordingUpload.js";
 import { selectDemoAutoFlow } from "./selectDemoAutoFlow.js";
+import { sanitizeDemoAutoGuide } from "./sanitizeDemoAutoGuide.js";
 import { ensureCredentialsOrLogin } from "./ensureCredentialsOrLogin.js";
 import { selectProduct } from "../interactive/selectProduct.js";
 import { uploadDemoFile } from "../upload/uploadDemoFile.js";
 import { writeDemoAgentRunSummary } from "../demoAgent/writeDemoAgentRunSummary.js";
 import { logNextCommand } from "../terminal/logNextCommand.js";
 import { logWarning } from "../terminal/logWarning.js";
+import { createDemoAutoGuideGenerationGoal } from "./createDemoAutoGuideGenerationGoal.js";
 
 export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
   logBrandHeader("AI record a demo");
@@ -46,9 +52,30 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
   const apiBaseUrl = resolveApiBaseUrl(config, options.api);
   const credentials = await readDemoAutoCredentials(apiBaseUrl);
   const project = await detectProject();
+  const resolvedDriver = resolveDemoAgentCommandDriver({
+    configDriver: config.demoAgent?.driver,
+    configOpenAiModel: config.demoAgent?.openai?.model,
+    optionDriver: options.driver,
+  });
+  const targetMode = resolveDemoAgentTargetMode({
+    configTarget: config.demoAgent?.target,
+    optionTarget: options.target,
+    optionUrl: options.url,
+  });
 
-  if (!["expo", "web"].includes(project.type)) {
-    throw new Error("AI demo recording only supports web and Expo web apps.");
+  if (
+    !getDemoAgentProjectCanUseTarget({
+      driver: resolvedDriver.driver,
+      projectType: project.type,
+      targetMode,
+    })
+  ) {
+    throw new Error(
+      createDemoAgentUnsupportedTargetMessage({
+        projectType: project.type,
+        targetMode,
+      }),
+    );
   }
 
   const product = await resolveDemoAutoProduct({
@@ -57,16 +84,24 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
   });
   const flows = await scanProjectFlows(join(process.cwd(), project.directory));
   const appContext = await scanAndWriteAppContext({ flows, project });
-  const runningUrl = await findRunningLocalAppUrl(
-    options.url ?? config.target?.url,
-  );
-  const url = options.url ?? runningUrl ?? config.target?.url;
+  const runningUrl =
+    targetMode === "local"
+      ? await findRunningLocalAppUrl(options.url ?? config.target?.url)
+      : undefined;
+  const url = resolveDemoAgentTargetUrl({
+    configLiveUrl: config.demoAgent?.liveUrl,
+    configUrl: config.target?.url,
+    optionUrl: options.url,
+    productWebsiteUrl: product.websiteUrl,
+    runningUrl,
+    targetMode,
+  });
 
-  if (!url) {
-    throw new Error("Run `clipstitchr link` with a local app URL first.");
-  }
-
-  const selectedFlow = selectDemoAutoFlow({ flows, localUrl: url });
+  const selectedFlow = selectDemoAutoFlow({
+    flows,
+    localUrl: url,
+    preferUrlPath: targetMode === "live",
+  });
   const goal = await readDemoAutoGoal({
     flow: selectedFlow,
     goal: options.goal,
@@ -76,57 +111,72 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
     product,
   });
   const stepCount = readDemoAutoStepCount(options.steps);
+  const guideGoal = createDemoAutoGuideGenerationGoal({ goal, targetMode });
+  const availableFlows =
+    targetMode === "live" && selectedFlow ? [selectedFlow] : flows;
   const startCommand =
-    options.start ?? config.target?.start ?? project.startCommand;
-  const resolvedDriver = resolveDemoAgentCommandDriver({
-    configDriver: config.demoAgent?.driver,
-    configOpenAiModel: config.demoAgent?.openai?.model,
-    optionDriver: options.driver,
-  });
+    targetMode === "local"
+      ? options.start ?? config.target?.start ?? project.startCommand
+      : undefined;
   let appProcess: ChildProcess | null = null;
 
   try {
-    if (startCommand && !(await isHttpUrlReachable(url))) {
+    if (targetMode === "local" && startCommand && !(await isHttpUrlReachable(url))) {
       logStep("Starting the local app.");
       appProcess = runShellCommand(startCommand);
     }
 
     logStep("Writing the guide with ClipStitchr AI.");
-    const guide = (
-      await generateDemoWalkthroughGuide(credentials, {
-        appContext,
-        appType: project.type,
-        availableFlows: flows,
-        flowName: selectedFlow?.name,
-        flowPath: selectedFlow?.path,
-        goal,
-        productId: product.id,
-        stepCount,
-        targetAudience,
-      })
-    ).guide;
+    const guide = sanitizeDemoAutoGuide({
+      guide: (
+        await generateDemoWalkthroughGuide(credentials, {
+          appContext,
+          appType: project.type,
+          availableFlows,
+          flowName: selectedFlow?.name,
+          flowPath: selectedFlow?.path,
+          goal: guideGoal,
+          productId: product.id,
+          stepCount,
+          targetAudience,
+        })
+      ).guide,
+      targetMode,
+    });
     const guidePath = await writeDemoWalkthroughGuide(guide);
 
     await writeProjectConfig({
       ...config,
       apiBaseUrl,
       appContext: createAppContextConfig(appContext),
+      demoAgent: {
+        ...config.demoAgent,
+        liveUrl: targetMode === "live" ? url : config.demoAgent?.liveUrl,
+        target: targetMode,
+      },
       product: createProductConfigSummary(product),
       productId: product.id,
       recording: {
         ...config.recording,
         demoGuideId: guide.id,
       },
-      target: {
-        ...config.target,
-        start: startCommand,
-        type: project.type,
-        url,
-      },
+      target:
+        targetMode === "local"
+          ? {
+              ...config.target,
+              start: startCommand,
+              type: project.type,
+              url,
+            }
+          : {
+              ...config.target,
+              type: project.type,
+            },
     });
 
     const startUrl = new URL(url);
     const { hash, policy } = await readOrCreateDemoAutoPolicy({
+      allowLiveOrigins: targetMode === "live",
       allowedOrigin: startUrl.origin,
       flows,
       startPath: startUrl.pathname,
@@ -161,7 +211,7 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
         resolvedDriver.driver === "structured-planner" ? planner : undefined,
       policy,
       policyHash: hash,
-      promptForSignIn: false,
+      promptForSignIn: true,
       startUrl: url,
     });
 

@@ -83,7 +83,7 @@ export async function runDemoAgentRecording(inputOptions: {
     const page = await context.newPage();
 
     await installBrowserInteractionCapture(page);
-    logStep("Opening the local app with the guarded recording agent.");
+    logStep("Opening the app with the guarded recording agent.");
 
     const initialUrlBefore = page.url();
 

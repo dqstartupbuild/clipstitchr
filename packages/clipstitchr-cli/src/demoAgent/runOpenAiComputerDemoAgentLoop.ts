@@ -17,8 +17,11 @@ import { executeOpenAiComputerAction } from "./executeOpenAiComputerAction.js";
 import { findOpenAiComputerCall } from "./findOpenAiComputerCall.js";
 import { getDemoAgentObservationHasNotFoundState } from "./getDemoAgentObservationHasNotFoundState.js";
 import { getDemoAgentRecordingTimeLimitReached } from "./getDemoAgentRecordingTimeLimitReached.js";
+import { getDemoAgentStepIsScrollTour } from "./getDemoAgentStepIsScrollTour.js";
 import { getDemoAgentUrlPolicyStopReason } from "./getDemoAgentUrlPolicyStopReason.js";
 import { getOpenAiComputerActionLogType } from "./getOpenAiComputerActionLogType.js";
+import { getOpenAiComputerActionIsPageScroll } from "./getOpenAiComputerActionIsPageScroll.js";
+import { maxDemoAgentScrollActionsPerStep } from "./maxDemoAgentScrollActionsPerStep.js";
 import { observeDemoAgentPage } from "./observeDemoAgentPage.js";
 import type { OpenAiComputerRequester } from "./OpenAiComputerRequester.js";
 import type { OpenAiComputerResponse } from "./OpenAiComputerResponse.js";
@@ -49,6 +52,8 @@ export async function runOpenAiComputerDemoAgentLoop(input: {
   for (const [index, step] of input.guide.steps.entries()) {
     const stepStartedAtMs = Date.now() - input.startedAtMs;
     let actionCountForStep = 0;
+    let pageScrollCountForStep = 0;
+    let shouldFinishStep = false;
     let response: OpenAiComputerResponse;
 
     try {
@@ -338,6 +343,15 @@ export async function runOpenAiComputerDemoAgentLoop(input: {
               url: urlAfter,
             }),
           );
+
+          if (
+            getDemoAgentStepIsScrollTour(step) &&
+            getOpenAiComputerActionIsPageScroll(action)
+          ) {
+            pageScrollCountForStep += 1;
+            shouldFinishStep =
+              pageScrollCountForStep >= maxDemoAgentScrollActionsPerStep;
+          }
         } catch (error) {
           const urlAfter = input.page.url();
 
@@ -365,9 +379,45 @@ export async function runOpenAiComputerDemoAgentLoop(input: {
           );
           break;
         }
+
+        if (shouldFinishStep) {
+          break;
+        }
       }
 
       if (stopReason !== demoAgentGuideCompleteStopReason) {
+        break;
+      }
+
+      if (shouldFinishStep) {
+        actionCount += 1;
+        actionCountForStep += 1;
+
+        await writeDemoAgentActionLogEntry(
+          input.runPaths.actionLogPath,
+          createDemoAgentActionLogEntry({
+            action: "finishStep",
+            details: {
+              driver: "openai-computer",
+              policyDecision: "approved",
+              responseId: response.id,
+              urlAfter: input.page.url(),
+              urlBefore: input.page.url(),
+            },
+            result: "ok",
+            stepId: step.id,
+            url: input.page.url(),
+          }),
+        );
+
+        stepTimings.push(
+          createDemoAgentTiming({
+            completedAtMs: Date.now() - input.startedAtMs,
+            startedAtMs: stepStartedAtMs,
+            step,
+            stepIndex: index,
+          }),
+        );
         break;
       }
 

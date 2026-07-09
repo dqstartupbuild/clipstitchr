@@ -5,7 +5,7 @@ import { logKeyValue } from "../terminal/logKeyValue.js";
 import { logSuccess } from "../terminal/logSuccess.js";
 
 export async function runDemoAgentCheckCommand(_options: CliGlobalOptions) {
-  logBrandHeader("Check local demo agent policy");
+  logBrandHeader("Check demo agent policy");
 
   const { hash, path, policy } = await readDemoAgentPolicy();
 

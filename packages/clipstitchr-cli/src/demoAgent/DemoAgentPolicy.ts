@@ -1,5 +1,6 @@
 export type DemoAgentPolicy = {
   allowFileUploads: boolean;
+  allowLiveOrigins?: boolean;
   allowedOrigins: string[];
   allowedRoutes: string[];
   approvedTestValues: Record<string, string>;

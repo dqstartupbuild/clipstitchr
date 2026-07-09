@@ -3,6 +3,46 @@ import { describe, it } from "node:test";
 import { resolveDemoAgentCommandDriver } from "../../dist/demoAgent/resolveDemoAgentCommandDriver.js";
 
 describe("resolveDemoAgentCommandDriver", () => {
+  it("uses OpenAI Computer Use by default when the API key is available", () => {
+    const previousApiKey = process.env.OPENAI_API_KEY;
+
+    process.env.OPENAI_API_KEY = "test-openai-key";
+
+    try {
+      const resolvedDriver = resolveDemoAgentCommandDriver({});
+
+      assert.equal(resolvedDriver.driver, "openai-computer");
+      assert.equal(resolvedDriver.openAiComputer?.apiKey, "test-openai-key");
+      assert.equal(resolvedDriver.fallbackReason, undefined);
+    } finally {
+      if (previousApiKey === undefined) {
+        delete process.env.OPENAI_API_KEY;
+      } else {
+        process.env.OPENAI_API_KEY = previousApiKey;
+      }
+    }
+  });
+
+  it("falls back by default when the API key is missing", () => {
+    const previousApiKey = process.env.OPENAI_API_KEY;
+
+    delete process.env.OPENAI_API_KEY;
+
+    try {
+      const resolvedDriver = resolveDemoAgentCommandDriver({});
+
+      assert.equal(resolvedDriver.driver, "structured-planner");
+      assert.match(String(resolvedDriver.fallbackReason), /OPENAI_API_KEY/);
+      assert.equal(resolvedDriver.openAiComputer, undefined);
+    } finally {
+      if (previousApiKey === undefined) {
+        delete process.env.OPENAI_API_KEY;
+      } else {
+        process.env.OPENAI_API_KEY = previousApiKey;
+      }
+    }
+  });
+
   it("falls back when OpenAI Computer Use is selected without an API key", () => {
     const previousApiKey = process.env.OPENAI_API_KEY;
 
@@ -17,7 +57,11 @@ describe("resolveDemoAgentCommandDriver", () => {
       assert.match(String(resolvedDriver.fallbackReason), /OPENAI_API_KEY/);
       assert.equal(resolvedDriver.openAiComputer, undefined);
     } finally {
-      process.env.OPENAI_API_KEY = previousApiKey;
+      if (previousApiKey === undefined) {
+        delete process.env.OPENAI_API_KEY;
+      } else {
+        process.env.OPENAI_API_KEY = previousApiKey;
+      }
     }
   });
 
@@ -37,7 +81,11 @@ describe("resolveDemoAgentCommandDriver", () => {
       assert.equal(resolvedDriver.openAiComputer?.model, "gpt-5.5");
       assert.equal(resolvedDriver.fallbackReason, undefined);
     } finally {
-      process.env.OPENAI_API_KEY = previousApiKey;
+      if (previousApiKey === undefined) {
+        delete process.env.OPENAI_API_KEY;
+      } else {
+        process.env.OPENAI_API_KEY = previousApiKey;
+      }
     }
   });
 

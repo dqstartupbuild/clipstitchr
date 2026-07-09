@@ -748,6 +748,56 @@ describe("runDemoAgentLoop", () => {
     );
   });
 
+  it("finishes a repeated generic scroll step after enough scrolling", async () => {
+    await withDemoAgentFixtureServer(
+      `
+        <html>
+          <head><title>Scroll fixture</title></head>
+          <body style="height: 4000px">
+            <h1>Homepage</h1>
+            <section style="margin-top: 3000px">Lower page content</section>
+          </body>
+        </html>
+      `,
+      async (origin) => {
+        await withDemoAgentRunPaths(async (runPaths) => {
+          await withDemoAgentFixturePage(async (page) => {
+            await page.goto(`${origin}/`);
+
+            const result = await runDemoAgentLoop({
+              guide: createDemoAgentTestGuide([
+                { id: "step-1", label: "Scroll through the page" },
+              ]),
+              page,
+              planner: () => ({
+                direction: "down",
+                reason: "Keep scrolling through the page.",
+                stepId: "step-1",
+                type: "scroll",
+              }),
+              policy: createDemoAgentTestPolicy({
+                allowedOrigins: [origin],
+                allowedRoutes: ["/"],
+              }),
+              runPaths,
+              startedAtMs: Date.now(),
+            });
+            const entries = await readDemoAgentTestActionLogEntries(
+              runPaths.actionLogPath,
+            );
+
+            assert.equal(result.stopReason, "guide-complete");
+            assert.equal(result.stepTimings.length, 1);
+            assert.deepEqual(
+              entries.map((entry) => entry.action),
+              ["scroll", "scroll", "scroll", "scroll", "finishStep"],
+            );
+          });
+        });
+      },
+    );
+  });
+
   it("stops when a guide step makes no progress", async () => {
     await withDemoAgentFixtureServer(
       `

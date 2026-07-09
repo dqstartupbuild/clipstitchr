@@ -38,4 +38,17 @@ describe("selectDemoAutoFlow", () => {
 
     assert.equal(flow?.name, "Show the main workspace");
   });
+
+  it("can prefer the exact root path for live targets", () => {
+    const flow = selectDemoAutoFlow({
+      flows: [
+        { confidence: "medium", name: "Open the product", path: "/" },
+        { confidence: "medium", name: "Show the main workspace", path: "/dashboard" },
+      ],
+      localUrl: "https://example.com/",
+      preferUrlPath: true,
+    });
+
+    assert.equal(flow?.name, "Open the product");
+  });
 });

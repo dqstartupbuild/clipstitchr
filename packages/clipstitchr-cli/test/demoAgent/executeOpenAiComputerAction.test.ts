@@ -50,4 +50,30 @@ describe("executeOpenAiComputerAction", () => {
       assert.equal(await page.getByLabel("Title").inputValue(), "");
     });
   });
+
+  it("normalizes page navigation key names from OpenAI", async () => {
+    await withDemoAgentFixturePage(async (page) => {
+      await page.setContent(`
+        <html>
+          <body>
+            <script>
+              window.lastKey = "";
+              window.addEventListener("keydown", (event) => {
+                window.lastKey = event.key;
+              });
+            </script>
+            <button autofocus>Ready</button>
+          </body>
+        </html>
+      `);
+
+      await executeOpenAiComputerAction({
+        action: { keys: ["PAGEDOWN"], type: "keypress" },
+        page,
+        policy: createDemoAgentTestPolicy(),
+      });
+
+      assert.equal(await page.evaluate("window.lastKey"), "PageDown");
+    });
+  });
 });

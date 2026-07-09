@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import type { ChildProcess } from "node:child_process";
 import { confirm } from "@inquirer/prompts";
 import type { CliGlobalOptions } from "./CliGlobalOptions.js";
@@ -7,8 +8,11 @@ import { readProjectConfig } from "../config/readProjectConfig.js";
 import { resolveApiBaseUrl } from "../config/resolveApiBaseUrl.js";
 import { writeProjectConfig } from "../config/writeProjectConfig.js";
 import { createDemoAgentPlannerWithFallback } from "../demoAgent/createDemoAgentPlannerWithFallback.js";
-import { readDemoAgentPolicy } from "../demoAgent/readDemoAgentPolicy.js";
+import { createDemoAgentUnsupportedTargetMessage } from "../demoAgent/createDemoAgentUnsupportedTargetMessage.js";
+import { getDemoAgentProjectCanUseTarget } from "../demoAgent/getDemoAgentProjectCanUseTarget.js";
 import { resolveDemoAgentCommandDriver } from "../demoAgent/resolveDemoAgentCommandDriver.js";
+import { resolveDemoAgentTargetMode } from "../demoAgent/resolveDemoAgentTargetMode.js";
+import { resolveDemoAgentTargetUrl } from "../demoAgent/resolveDemoAgentTargetUrl.js";
 import { runDemoAgentDryRun } from "../demoAgent/runDemoAgentDryRun.js";
 import { runDemoAgentRecording } from "../demoAgent/runDemoAgentRecording.js";
 import { resolveDemoWalkthroughGuide } from "../demoGuide/resolveDemoWalkthroughGuide.js";
@@ -18,6 +22,7 @@ import { createAppContextConfig } from "../project/createAppContextConfig.js";
 import { findRunningLocalAppUrl } from "../project/findRunningLocalAppUrl.js";
 import { isHttpUrlReachable } from "../project/isHttpUrlReachable.js";
 import { scanAndWriteAppContext } from "../project/scanAndWriteAppContext.js";
+import { scanProjectFlows } from "../project/scanProjectFlows.js";
 import { runShellCommand } from "../recording/runShellCommand.js";
 import { stopShellCommand } from "../recording/stopShellCommand.js";
 import { logBrandHeader } from "../terminal/logBrandHeader.js";
@@ -29,6 +34,7 @@ import { logSuccess } from "../terminal/logSuccess.js";
 import { logWarning } from "../terminal/logWarning.js";
 import { uploadDemoFile } from "../upload/uploadDemoFile.js";
 import { reviewDemoAgentRecordingUpload } from "./reviewDemoAgentRecordingUpload.js";
+import { readOrCreateDemoAutoPolicy } from "./readOrCreateDemoAutoPolicy.js";
 import { writeDemoAgentRunSummary } from "../demoAgent/writeDemoAgentRunSummary.js";
 
 type DemoAgentRunOptions = CliGlobalOptions & {
@@ -38,12 +44,13 @@ type DemoAgentRunOptions = CliGlobalOptions & {
   guide?: string;
   product?: string;
   start?: string;
+  target?: string;
   upload?: boolean;
   url?: string;
 };
 
 export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
-  logBrandHeader("Run the local demo agent");
+  logBrandHeader("Run the demo agent");
 
   if (!options.guide) {
     throw new Error("Choose a walkthrough guide with --guide.");
@@ -52,16 +59,34 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
   const config = await readProjectConfig();
   const apiBaseUrl = resolveApiBaseUrl(config, options.api);
   const project = await detectProject();
+  const resolvedDriver = resolveDemoAgentCommandDriver({
+    configDriver: config.demoAgent?.driver,
+    configOpenAiModel: config.demoAgent?.openai?.model,
+    optionDriver: options.driver,
+  });
+  const targetMode = resolveDemoAgentTargetMode({
+    configTarget: config.demoAgent?.target,
+    optionTarget: options.target,
+    optionUrl: options.url,
+  });
 
-  if (!["expo", "web"].includes(project.type)) {
-    throw new Error("The local demo agent only supports web and Expo web apps.");
+  if (
+    !getDemoAgentProjectCanUseTarget({
+      driver: resolvedDriver.driver,
+      projectType: project.type,
+      targetMode,
+    })
+  ) {
+    throw new Error(
+      createDemoAgentUnsupportedTargetMessage({
+        projectType: project.type,
+        targetMode,
+      }),
+    );
   }
 
-  const appContext = await scanAndWriteAppContext({ project });
-  await writeProjectConfig({
-    ...config,
-    appContext: createAppContextConfig(appContext),
-  });
+  const flows = await scanProjectFlows(join(process.cwd(), project.directory));
+  const appContext = await scanAndWriteAppContext({ flows, project });
 
   const guide = await resolveDemoWalkthroughGuide(options.guide);
 
@@ -69,22 +94,49 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
     throw new Error(`No walkthrough guide found for ${options.guide}.`);
   }
 
-  const { hash, policy } = await readDemoAgentPolicy();
-  const runningUrl = await findRunningLocalAppUrl(
-    options.url ?? config.target?.url,
-  );
-  const url = options.url ?? runningUrl ?? config.target?.url;
-
-  if (!url) {
-    throw new Error("Set a local URL with --url or run `clipstitchr link` first.");
-  }
-
-  const startCommand = options.start ?? config.target?.start;
-  const resolvedDriver = resolveDemoAgentCommandDriver({
-    configDriver: config.demoAgent?.driver,
-    configOpenAiModel: config.demoAgent?.openai?.model,
-    optionDriver: options.driver,
+  const runningUrl =
+    targetMode === "local"
+      ? await findRunningLocalAppUrl(options.url ?? config.target?.url)
+      : undefined;
+  const url = resolveDemoAgentTargetUrl({
+    configLiveUrl: config.demoAgent?.liveUrl,
+    configUrl: config.target?.url,
+    optionUrl: options.url,
+    productWebsiteUrl: config.product?.websiteUrl,
+    runningUrl,
+    targetMode,
   });
+  const startUrl = new URL(url);
+  const { hash, policy } = await readOrCreateDemoAutoPolicy({
+    allowLiveOrigins: targetMode === "live",
+    allowedOrigin: startUrl.origin,
+    flows,
+    startPath: startUrl.pathname,
+  });
+
+  await writeProjectConfig({
+    ...config,
+    appContext: createAppContextConfig(appContext),
+    demoAgent: {
+      ...config.demoAgent,
+      liveUrl: targetMode === "live" ? url : config.demoAgent?.liveUrl,
+      target: targetMode,
+    },
+    target:
+      targetMode === "local"
+        ? {
+            ...config.target,
+            start: options.start ?? config.target?.start,
+            type: project.type,
+            url,
+          }
+        : {
+            ...config.target,
+            type: project.type,
+          },
+  });
+  const startCommand =
+    targetMode === "local" ? options.start ?? config.target?.start : undefined;
   let appProcess: ChildProcess | null = null;
   const plannerCredentials =
     options.aiPlanner && resolvedDriver.driver === "structured-planner"
@@ -112,7 +164,7 @@ export async function runDemoAgentRunCommand(options: DemoAgentRunOptions) {
   }
 
   try {
-    if (startCommand && !(await isHttpUrlReachable(url))) {
+    if (targetMode === "local" && startCommand && !(await isHttpUrlReachable(url))) {
       logStep("Starting the local app.");
       appProcess = runShellCommand(startCommand);
     }

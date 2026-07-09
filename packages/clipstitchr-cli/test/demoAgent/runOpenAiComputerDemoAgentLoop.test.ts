@@ -111,4 +111,84 @@ describe("runOpenAiComputerDemoAgentLoop", () => {
       },
     );
   });
+
+  it("finishes a scroll-tour step after enough OpenAI page scroll actions", async () => {
+    await withDemoAgentFixtureServer(
+      `
+        <html>
+          <body style="height: 5000px">
+            <h1>Homepage</h1>
+            <section style="margin-top: 4000px">Footer</section>
+          </body>
+        </html>
+      `,
+      async (origin) => {
+        await withDemoAgentRunPaths(async (runPaths) => {
+          await withDemoAgentFixturePage(async (page) => {
+            await page.goto(`${origin}/`);
+
+            const requests: OpenAiComputerRequestInput[] = [];
+            const result = await runOpenAiComputerDemoAgentLoop({
+              apiKey: "test-key",
+              guide: createDemoAgentTestGuide([
+                { id: "step-1", label: "Scroll through the page" },
+              ]),
+              model: "gpt-5.5",
+              page,
+              policy: createDemoAgentTestPolicy({
+                allowedOrigins: [origin],
+                allowedRoutes: ["/"],
+              }),
+              requester: async (request) => {
+                requests.push(request);
+
+                return {
+                  id: "resp_1",
+                  output: [
+                    {
+                      actions: [
+                        {
+                          scrollX: 0,
+                          scrollY: 400,
+                          type: "scroll",
+                          x: 500,
+                          y: 500,
+                        },
+                        { type: "wait" },
+                        { keys: ["PAGEDOWN"], type: "keypress" },
+                        {
+                          scrollX: 0,
+                          scrollY: 400,
+                          type: "scroll",
+                          x: 500,
+                          y: 500,
+                        },
+                        { keys: ["PAGEDOWN"], type: "keypress" },
+                      ],
+                      call_id: "call_1",
+                      type: "computer_call",
+                    },
+                  ],
+                };
+              },
+              runPaths,
+              startedAtMs: Date.now(),
+            });
+            const entries = await readDemoAgentTestActionLogEntries(
+              runPaths.actionLogPath,
+            );
+
+            assert.equal(result.stopReason, "guide-complete");
+            assert.equal(result.screenshotCount, 0);
+            assert.equal(result.stepTimings.length, 1);
+            assert.equal(requests.length, 1);
+            assert.deepEqual(
+              entries.map((entry) => entry.action),
+              ["scroll", "wait", "pressKey", "scroll", "pressKey", "finishStep"],
+            );
+          });
+        });
+      },
+    );
+  });
 });

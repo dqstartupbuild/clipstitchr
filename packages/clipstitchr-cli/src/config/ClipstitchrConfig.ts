@@ -8,9 +8,11 @@ export type ClipstitchrConfig = {
   };
   demoAgent?: {
     driver?: string;
+    liveUrl?: string;
     openai?: {
       model?: string;
     };
+    target?: string;
   };
   product?: {
     id?: string;
