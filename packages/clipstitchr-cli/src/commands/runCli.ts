@@ -154,16 +154,23 @@ export async function runCli(argv: string[]) {
       await runDemoAgentEditCommand(program.opts());
     });
 
+  demoPolicy
+    .command("check")
+    .description("Check the saved local safety policy")
+    .action(async () => {
+      await runDemoAgentCheckCommand(program.opts());
+    });
+
   demoAgent
-    .command("init")
-    .description("Create a demo agent policy")
+    .command("init", { hidden: true })
+    .description("Legacy alias for demo policy init")
     .action(async () => {
       await runDemoAgentInitCommand(program.opts());
     });
 
   demoAgent
-    .command("check")
-    .description("Check the demo agent policy")
+    .command("check", { hidden: true })
+    .description("Legacy alias for demo policy check")
     .action(async () => {
       await runDemoAgentCheckCommand(program.opts());
     });

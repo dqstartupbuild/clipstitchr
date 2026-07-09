@@ -207,6 +207,7 @@ export const clipstitchrCliDoc = {
       ],
       commands: [
         "clipstitchr demo policy init",
+        "clipstitchr demo policy check",
         "clipstitchr demo policy edit",
         "clipstitchr demo agent init",
         "clipstitchr demo agent check",
