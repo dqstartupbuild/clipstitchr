@@ -88,7 +88,7 @@ export function LibraryBatchActionBar({
           disabled={selectedCount === 0 || isDeletingSelected}
           onClick={onQueueSelected}
         >
-          {isQueueingSelected ? "Queueing..." : "Queue selected"}
+          {isQueueingSelected ? "Reviewing..." : "Queue selected"}
         </Button>
       ) : null}
       <Button

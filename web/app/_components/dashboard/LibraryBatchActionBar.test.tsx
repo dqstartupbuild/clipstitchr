@@ -55,7 +55,7 @@ describe("LibraryBatchActionBar", () => {
         isDeletingSelected={false}
         isQueueingSelected
         isSelecting
-        queueStatusMessage="Queued 2 of 4."
+        queueStatusMessage="Reviewing 2 of 4."
         selectedCount={4}
         visibleItemCount={4}
         onClearSelection={vi.fn()}
@@ -67,7 +67,7 @@ describe("LibraryBatchActionBar", () => {
       />,
     );
 
-    expect(markup).toContain("Queueing...");
-    expect(markup).toContain("Queued 2 of 4.");
+    expect(markup).toContain("Reviewing...");
+    expect(markup).toContain("Reviewing 2 of 4.");
   });
 });

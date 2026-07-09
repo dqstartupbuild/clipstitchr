@@ -1,17 +1,16 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { SwiprSwipeCard } from "@/app/_components/dashboard/SwiprSwipeCard";
+import { PostBridgeScheduleDialog } from "@/app/_components/postBridge/PostBridgeScheduleDialog";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { StatusFilterTabs } from "@/app/_components/ui/StatusFilterTabs";
-import { createPostBridgeDefaultAccountResolver } from "@/lib/clipstitchr/client/createPostBridgeDefaultAccountResolver";
 import { createSwiprPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createSwiprPostBridgeScheduleMedia";
-import { schedulePostBridgePost } from "@/lib/clipstitchr/client/schedulePostBridgePost";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
-import { useLibraryBatchQueue } from "@/lib/clipstitchr/hooks/useLibraryBatchQueue";
+import { useLibraryBatchScheduleDialog } from "@/lib/clipstitchr/hooks/useLibraryBatchScheduleDialog";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { LibraryPostedStatusFilter } from "@/lib/clipstitchr/types/LibraryPostedStatusFilter";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
@@ -72,42 +71,11 @@ export function SwiprSwipesSection({
     itemPluralName: "Swipes",
     onDelete,
   });
-  const resolvePostBridgeDefaultAccounts = useMemo(
-    () => createPostBridgeDefaultAccountResolver(),
-    [],
-  );
   const selectedSwipes = useMemo(
     () => swipes.filter((swipe) => batchDelete.selectedIds.has(swipe.id)),
     [batchDelete.selectedIds, swipes],
   );
-  const queueSwipe = useCallback(
-    async (swipe: SwiprSwipe) => {
-      const accountSelection = await resolvePostBridgeDefaultAccounts(
-        swipe.productSourceId,
-      );
-      const renderResult = await createSwiprPostBridgeScheduleMedia({
-        backgroundsById,
-        loadBackgroundBlob: onLoadBackgroundBlob,
-        musicTrack: null,
-        onProgress: () => undefined,
-        platforms: accountSelection.platforms,
-        swipe,
-      });
-
-      await schedulePostBridgePost({
-        caption: swipe.socialCaption ?? createSwiprSwipeSocialDescription(swipe),
-        hasAudio: renderResult.hasAudio,
-        mediaFiles: renderResult.mediaFiles,
-        socialAccountIds: accountSelection.socialAccountIds,
-        sourceId: swipe.id,
-        sourceType: "swipe",
-        title: getSwiprPostBridgeTitle(swipe),
-        useQueue: true,
-      });
-    },
-    [backgroundsById, onLoadBackgroundBlob, resolvePostBridgeDefaultAccounts],
-  );
-  const batchQueue = useLibraryBatchQueue({
+  const batchSchedule = useLibraryBatchScheduleDialog({
     itemName: "Swipe",
     itemPluralName: "Swipes",
     items: selectedSwipes,
@@ -115,8 +83,8 @@ export function SwiprSwipesSection({
       batchDelete.stopSelecting();
       await onPostBridgeScheduled?.();
     },
-    onQueueItem: queueSwipe,
   });
+  const activeBatchSwipe = batchSchedule.activeItem;
   const statusFilterOptions: {
     label: string;
     value: LibraryPostedStatusFilter;
@@ -149,9 +117,9 @@ export function SwiprSwipesSection({
             <LibraryBatchActionBar
               areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
               isDeletingSelected={batchDelete.isDeletingSelected}
-              isQueueingSelected={batchQueue.isQueueingSelected}
+              isQueueingSelected={batchSchedule.isSchedulingSelected}
               isSelecting={batchDelete.isSelecting}
-              queueStatusMessage={batchQueue.queueStatusMessage}
+              queueStatusMessage={batchSchedule.scheduleStatusMessage}
               selectedCount={batchDelete.selectedCount}
               visibleItemCount={batchDelete.visibleItemCount}
               onClearSelection={batchDelete.clearSelection}
@@ -159,7 +127,7 @@ export function SwiprSwipesSection({
                 void batchDelete.deleteSelectedItems();
               }}
               onQueueSelected={() => {
-                void batchQueue.queueSelectedItems();
+                batchSchedule.startSchedulingSelectedItems();
               }}
               onSelectVisible={batchDelete.selectVisibleItems}
               onStartSelecting={batchDelete.startSelecting}
@@ -180,7 +148,8 @@ export function SwiprSwipesSection({
                   swipe={swipe}
                   isSelected={batchDelete.selectedIds.has(swipe.id)}
                   isSelectionDisabled={
-                    batchDelete.isDeletingSelected || batchQueue.isQueueingSelected
+                    batchDelete.isDeletingSelected ||
+                    batchSchedule.isSchedulingSelected
                   }
                   onLoadBackgroundBlob={onLoadBackgroundBlob}
                   onLoadPoster={onLoadPoster}
@@ -216,6 +185,44 @@ export function SwiprSwipesSection({
           description={emptyDescription}
         />
       )}
+      {activeBatchSwipe ? (
+        <PostBridgeScheduleDialog
+          key={activeBatchSwipe.id}
+          allowMusic
+          contextLabel={`Post ${batchSchedule.activeIndex + 1} of ${
+            batchSchedule.selectedScheduleCount
+          }`}
+          defaultCaption={
+            activeBatchSwipe.socialCaption ??
+            createSwiprSwipeSocialDescription(activeBatchSwipe)
+          }
+          soundSearchContext={[
+            activeBatchSwipe.productName,
+            activeBatchSwipe.productContext,
+            createSwiprSwipeSocialDescription(activeBatchSwipe),
+          ]
+            .filter(Boolean)
+            .join("\n")}
+          sourceId={activeBatchSwipe.id}
+          sourceProductId={activeBatchSwipe.productSourceId}
+          sourceTitle={getSwiprPostBridgeTitle(activeBatchSwipe)}
+          sourceType="swipe"
+          onClose={batchSchedule.closeCurrentScheduleDialog}
+          onRenderMedia={({ musicTrack, onProgress, platforms }) =>
+            createSwiprPostBridgeScheduleMedia({
+              backgroundsById,
+              loadBackgroundBlob: onLoadBackgroundBlob,
+              musicTrack,
+              onProgress,
+              platforms,
+              swipe: activeBatchSwipe,
+            })
+          }
+          onScheduled={() => {
+            batchSchedule.markCurrentItemScheduled();
+          }}
+        />
+      ) : null}
     </section>
   );
 }

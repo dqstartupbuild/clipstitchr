@@ -25,6 +25,7 @@ import { createAutomaticSoundSearchQuery } from "@/lib/clipstitchr/utils/createA
 
 type PostBridgeScheduleDialogProps = {
   allowMusic?: boolean;
+  contextLabel?: string;
   defaultCaption?: string;
   soundSearchContext?: string;
   sourceId: string;
@@ -40,6 +41,7 @@ type PostBridgeScheduleDialogProps = {
 
 export function PostBridgeScheduleDialog({
   allowMusic = false,
+  contextLabel = "Post",
   defaultCaption = "",
   soundSearchContext = "",
   sourceId,
@@ -151,6 +153,10 @@ export function PostBridgeScheduleDialog({
   };
 
   const handleSchedule = async () => {
+    if (status === "complete") {
+      return;
+    }
+
     setError(null);
 
     try {
@@ -234,7 +240,9 @@ export function PostBridgeScheduleDialog({
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-accent-dark">Post</p>
+            <p className="text-sm font-semibold text-accent-dark">
+              {contextLabel}
+            </p>
             <h2
               id="post-bridge-schedule-dialog-title"
               className="mt-1 truncate text-xl font-bold text-text-primary"
@@ -369,7 +377,11 @@ export function PostBridgeScheduleDialog({
             <Button
               type="button"
               isLoading={isBusy}
-              disabled={!accounts.length || !selectedAccountIds.length}
+              disabled={
+                status === "complete" ||
+                !accounts.length ||
+                !selectedAccountIds.length
+              }
               onClick={() => void handleSchedule()}
             >
               {publishMode === "now" ? "Post now" : "Add to queue"}

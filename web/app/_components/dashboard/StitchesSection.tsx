@@ -1,18 +1,17 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { DashboardEmptyState } from "@/app/_components/dashboard/DashboardEmptyState";
 import { LibraryBatchActionBar } from "@/app/_components/dashboard/LibraryBatchActionBar";
 import { StitchCard } from "@/app/_components/dashboard/StitchCard";
+import { PostBridgeScheduleDialog } from "@/app/_components/postBridge/PostBridgeScheduleDialog";
 import { Button } from "@/app/_components/ui/Button";
 import { PaginationControls } from "@/app/_components/ui/PaginationControls";
 import { StatusFilterTabs } from "@/app/_components/ui/StatusFilterTabs";
-import { createPostBridgeDefaultAccountResolver } from "@/lib/clipstitchr/client/createPostBridgeDefaultAccountResolver";
 import { createStitchPostBridgeScheduleMedia } from "@/lib/clipstitchr/client/createStitchPostBridgeScheduleMedia";
-import { schedulePostBridgePost } from "@/lib/clipstitchr/client/schedulePostBridgePost";
 import { uploadLibraryPageSize } from "@/lib/clipstitchr/constants/uploadLibraryPageSize";
 import { useLibraryBatchDelete } from "@/lib/clipstitchr/hooks/useLibraryBatchDelete";
-import { useLibraryBatchQueue } from "@/lib/clipstitchr/hooks/useLibraryBatchQueue";
+import { useLibraryBatchScheduleDialog } from "@/lib/clipstitchr/hooks/useLibraryBatchScheduleDialog";
 import { usePagination } from "@/lib/clipstitchr/hooks/usePagination";
 import type { QuickEditCrop } from "@/lib/clipstitchr/types/QuickEditCrop";
 import type { QuickEditRemoveRange } from "@/lib/clipstitchr/types/QuickEditRemoveRange";
@@ -139,40 +138,11 @@ export function StitchesSection({
     itemPluralName: "stitches",
     onDelete,
   });
-  const resolvePostBridgeDefaultAccounts = useMemo(
-    () => createPostBridgeDefaultAccountResolver(),
-    [],
-  );
   const selectedStitches = useMemo(
     () => stitches.filter((stitch) => batchDelete.selectedIds.has(stitch.id)),
     [batchDelete.selectedIds, stitches],
   );
-  const queueStitch = useCallback(
-    async (stitch: Stitch) => {
-      const accountSelection = await resolvePostBridgeDefaultAccounts(
-        stitch.productId,
-      );
-      const renderResult = await createStitchPostBridgeScheduleMedia({
-        loadClip: onLoadClip,
-        loadVideo: onLoadVideo,
-        onProgress: () => undefined,
-        stitch,
-      });
-
-      await schedulePostBridgePost({
-        caption: stitch.socialCaption ?? "",
-        hasAudio: renderResult.hasAudio,
-        mediaFiles: renderResult.mediaFiles,
-        socialAccountIds: accountSelection.socialAccountIds,
-        sourceId: stitch.id,
-        sourceType: "stitch",
-        title: stitch.name,
-        useQueue: true,
-      });
-    },
-    [onLoadClip, onLoadVideo, resolvePostBridgeDefaultAccounts],
-  );
-  const batchQueue = useLibraryBatchQueue({
+  const batchSchedule = useLibraryBatchScheduleDialog({
     itemName: "stitch",
     itemPluralName: "stitches",
     items: selectedStitches,
@@ -180,8 +150,8 @@ export function StitchesSection({
       batchDelete.stopSelecting();
       await onPostBridgeScheduled?.();
     },
-    onQueueItem: queueStitch,
   });
+  const activeBatchStitch = batchSchedule.activeItem;
   const statusFilterOptions: {
     label: string;
     value: StitchLibraryStatusFilter;
@@ -214,9 +184,9 @@ export function StitchesSection({
             <LibraryBatchActionBar
               areAllVisibleItemsSelected={batchDelete.areAllVisibleItemsSelected}
               isDeletingSelected={batchDelete.isDeletingSelected}
-              isQueueingSelected={batchQueue.isQueueingSelected}
+              isQueueingSelected={batchSchedule.isSchedulingSelected}
               isSelecting={batchDelete.isSelecting}
-              queueStatusMessage={batchQueue.queueStatusMessage}
+              queueStatusMessage={batchSchedule.scheduleStatusMessage}
               selectedCount={batchDelete.selectedCount}
               visibleItemCount={batchDelete.visibleItemCount}
               onClearSelection={batchDelete.clearSelection}
@@ -224,7 +194,7 @@ export function StitchesSection({
                 void batchDelete.deleteSelectedItems();
               }}
               onQueueSelected={() => {
-                void batchQueue.queueSelectedItems();
+                batchSchedule.startSchedulingSelectedItems();
               }}
               onSelectVisible={batchDelete.selectVisibleItems}
               onStartSelecting={batchDelete.startSelecting}
@@ -245,7 +215,8 @@ export function StitchesSection({
                 savingHookPlanId={savingHookPlanId}
                 isSelected={batchDelete.selectedIds.has(stitch.id)}
                 isSelectionDisabled={
-                  batchDelete.isDeletingSelected || batchQueue.isQueueingSelected
+                  batchDelete.isDeletingSelected ||
+                  batchSchedule.isSchedulingSelected
                 }
                 isSavingTemplate={savingTemplateStitchId === stitch.id}
                 onDelete={onDelete}
@@ -307,6 +278,31 @@ export function StitchesSection({
             Load more stitches
           </Button>
         </div>
+      ) : null}
+      {activeBatchStitch ? (
+        <PostBridgeScheduleDialog
+          key={activeBatchStitch.id}
+          contextLabel={`Post ${batchSchedule.activeIndex + 1} of ${
+            batchSchedule.selectedScheduleCount
+          }`}
+          defaultCaption={activeBatchStitch.socialCaption}
+          sourceId={activeBatchStitch.id}
+          sourceProductId={activeBatchStitch.productId}
+          sourceTitle={activeBatchStitch.name}
+          sourceType="stitch"
+          onClose={batchSchedule.closeCurrentScheduleDialog}
+          onRenderMedia={({ onProgress }) =>
+            createStitchPostBridgeScheduleMedia({
+              loadClip: onLoadClip,
+              loadVideo: onLoadVideo,
+              onProgress,
+              stitch: activeBatchStitch,
+            })
+          }
+          onScheduled={() => {
+            batchSchedule.markCurrentItemScheduled();
+          }}
+        />
       ) : null}
     </section>
   );

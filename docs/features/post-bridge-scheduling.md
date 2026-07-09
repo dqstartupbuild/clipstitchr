@@ -31,12 +31,11 @@ post before choosing whether to post now or add it to their Post Bridge queue.
 Queued posts use Post Bridge's saved queue settings instead of a ClipStitchr
 date picker.
 
-Bulk queue uses the product-linked default Post Bridge accounts for each
-selected item. It does not open the schedule dialog for every card. If a product
-has no saved account defaults, the bulk run stops and asks the user to save
-Post Bridge accounts for that product first. Swipes queued in bulk do not resolve
-automatic sounds; they render as image carousels unless the default accounts
-include YouTube, where the dashboard renders a 9:16 MP4.
+Bulk queue opens the same schedule dialog for each selected item one at a time.
+The dialog preselects product-linked Post Bridge accounts when defaults exist,
+but the user can change accounts, edit captions, choose post-now or queue mode,
+and use the same Swipe sound controls as individual scheduling. If the user
+cancels a dialog, the remaining selected items are not sent.
 
 Stitches use the same browser export path as downloads. If the saved stitch has
 an existing rendered video, that video is used. Otherwise the browser renders
@@ -134,10 +133,11 @@ scheduled posts are scoped to that user's Post Bridge account.
 Automatic Swipe sounds use the existing TikTok sound search and import routes,
 which are separately authenticated and rate-limited before Apify and R2 work.
 
-Dashboard bulk queue is intentionally sequential. Each selected item uses the
-same browser media rendering, temporary R2 upload, Post Bridge media upload, and
-`POST /api/post-bridge/schedule` flow as the single-card action, then moves to
-the next item only after the previous one succeeds.
+Dashboard bulk queue is intentionally sequential. Each selected item opens in the
+same schedule dialog as the single-card action. After the user sends that item,
+it uses the same browser media rendering, temporary R2 upload, Post Bridge media
+upload, and `POST /api/post-bridge/schedule` flow, then moves to the next item
+only after the previous one succeeds.
 
 ## Analytics
 
@@ -206,10 +206,10 @@ posted post status counts.
 - `docs/features/post-bridge-analytics.md`
 - `web/lib/clipstitchr/media/renderSwiprSlideBlob.ts`
 - `web/lib/clipstitchr/media/renderSwiprSwipeVideoBlob.ts`
-- `web/lib/clipstitchr/hooks/useLibraryBatchQueue.ts`
+- `web/lib/clipstitchr/hooks/useLibraryBatchScheduleDialog.ts`
+- `web/lib/clipstitchr/utils/getLibraryBatchScheduleStatusMessage.ts`
 - `web/lib/clipstitchr/client/createStitchPostBridgeScheduleMedia.ts`
 - `web/lib/clipstitchr/client/createSwiprPostBridgeScheduleMedia.ts`
-- `web/lib/clipstitchr/client/createPostBridgeDefaultAccountResolver.ts`
 - `web/lib/clipstitchr/hooks/useAutomaticPostBridgeSound.ts`
 - `web/lib/clipstitchr/server/postBridge/`
 - `web/convex/postBridgeSettings.ts`
