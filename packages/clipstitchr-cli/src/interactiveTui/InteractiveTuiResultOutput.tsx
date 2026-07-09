@@ -10,7 +10,7 @@ export function InteractiveTuiResultOutput(input: {
 
   return (
     <Box flexDirection="column" marginTop={1}>
-      <Text bold>Result</Text>
+      <Text bold>Result (Page Up/Page Down)</Text>
       {visible.hasMoreAbove ? <Text dimColor>More above</Text> : null}
       {visible.lines.map((line, index) => (
         <Text key={`${visible.startIndex + index}:${line}`} wrap="truncate-end">

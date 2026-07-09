@@ -13,19 +13,16 @@ export async function captureInteractiveTuiActionOutput<T>(input: {
     lines.push(
       ...stripVTControlCharacters(format(...values)).split(/\r?\n/),
     );
-    originalError(...values);
   };
   console.log = (...values: unknown[]) => {
     lines.push(
       ...stripVTControlCharacters(format(...values)).split(/\r?\n/),
     );
-    originalLog(...values);
   };
   console.warn = (...values: unknown[]) => {
     lines.push(
       ...stripVTControlCharacters(format(...values)).split(/\r?\n/),
     );
-    originalWarn(...values);
   };
 
   try {

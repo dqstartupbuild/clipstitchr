@@ -1,6 +1,5 @@
 import { Box } from "ink";
 import type { InteractiveTuiInput } from "./InteractiveTuiInput.js";
-import { InteractiveTuiActivityLog } from "./InteractiveTuiActivityLog.js";
 import { InteractiveTuiComposer } from "./InteractiveTuiComposer.js";
 import { InteractiveTuiHeader } from "./InteractiveTuiHeader.js";
 import { InteractiveTuiMenu } from "./InteractiveTuiMenu.js";
@@ -15,16 +14,15 @@ export function InteractiveTuiApp(input: InteractiveTuiInput) {
   const controller = useInteractiveTuiController(input);
 
   return (
-    <>
-      <InteractiveTuiActivityLog entries={controller.activities} />
+    <Box flexDirection="column">
+      <InteractiveTuiHeader
+        context={controller.context}
+        menu={controller.currentMenu}
+      />
       {controller.mode === "running" ? (
         <InteractiveTuiRunningView activeLabel={controller.activeLabel} />
       ) : (
-        <Box flexDirection="column">
-          <InteractiveTuiHeader
-            context={controller.context}
-            menu={controller.currentMenu}
-          />
+        <>
           {controller.mode === "result" ? (
             <InteractiveTuiResultOutput
               lines={controller.resultLines}
@@ -38,6 +36,9 @@ export function InteractiveTuiApp(input: InteractiveTuiInput) {
             <InteractiveTuiMenu
               choices={controller.choices}
               isActive
+              maximumVisibleChoices={
+                controller.mode === "result" ? 4 : undefined
+              }
               selectedIndex={controller.selectedIndex}
             />
           ) : null}
@@ -54,9 +55,11 @@ export function InteractiveTuiApp(input: InteractiveTuiInput) {
               isCommandMode={controller.mode === "command"}
             />
           )}
-          <InteractiveTuiStatusBar mode={controller.mode} />
-        </Box>
+          {controller.mode === "result" ? null : (
+            <InteractiveTuiStatusBar mode={controller.mode} />
+          )}
+        </>
       )}
-    </>
+    </Box>
   );
 }

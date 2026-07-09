@@ -214,7 +214,7 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
 
     assert.match(tui.lastFrame() ?? "", /\[working\] \/status/);
     assert.match(tui.lastFrame() ?? "", /Complete any question below/);
-    assert.doesNotMatch(tui.lastFrame() ?? "", /ClipStitchr Interactive/);
+    assert.match(tui.lastFrame() ?? "", /ClipStitchr Interactive/);
     assert.doesNotMatch(tui.lastFrame() ?? "", /Action in progress/);
 
     finishAction?.();

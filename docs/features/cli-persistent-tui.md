@@ -33,6 +33,9 @@ a fresh frame and creating another top-level prompt.
   Exit remain directly available.
 - Menu height follows the current terminal row count. Shorter terminals show a
   smaller moving choice window so the ClipStitchr header remains on screen.
+- The interactive workspace uses the terminal's alternate screen. It starts at
+  the top, keeps one header above menus and results, and restores the previous
+  terminal screen when the CLI exits.
 - Focused questions inside recording, setup, and destructive workflows keep
   using their existing prompts. The TUI yields input while those questions are
   open and resumes the same workspace afterward.
@@ -60,8 +63,9 @@ local project config and saved CLI credentials.
 The Ink application owns menu, result, composer, cursor, suggestion, history,
 notice, and running-action state. Menu actions and slash commands still call the
 same services as direct CLI commands. While an action runs, normal console
-output continues to stream and is also captured without terminal color codes.
-After completion, that captured output is rendered in a bounded result page.
+output is buffered without terminal color codes instead of being printed above
+the header. After completion, the alternate screen resets to the top and that
+captured output is rendered in a bounded result page.
 Before a delegated action starts, the controller waits for Ink to release raw
 mode and then references and resumes stdin. It references and resumes stdin
 again after the action succeeds, fails, or is canceled because Inquirer may
@@ -89,6 +93,12 @@ the complete brand header.
   defines result navigation.
 - `packages/clipstitchr-cli/src/interactiveTui/getInteractiveTuiMaximumVisibleChoices.ts`
   keeps menus inside the available terminal rows.
+- `packages/clipstitchr-cli/src/interactiveTui/enterInteractiveTuiScreen.ts`
+  opens and clears the alternate terminal screen.
+- `packages/clipstitchr-cli/src/interactiveTui/resetInteractiveTuiScreen.ts`
+  anchors a completed result at the top of the screen.
+- `packages/clipstitchr-cli/src/interactiveTui/exitInteractiveTuiScreen.ts`
+  restores the user's original terminal screen.
 - `packages/clipstitchr-cli/src/interactiveTui/useInteractiveTuiCommandComposer.ts`
   owns command editing, completion selection, and session history.
 - `packages/clipstitchr-cli/src/interactiveShell/interactiveCommandDefinitions.ts`
@@ -113,15 +123,13 @@ the complete brand header.
 ```text
 packages/clipstitchr-cli/src/interactiveTui/
   InteractiveTuiApp.tsx
-  InteractiveTuiActivityEntry.ts
-  InteractiveTuiActivityItem.tsx
-  InteractiveTuiActivityLog.tsx
   InteractiveTuiComposer.tsx
   InteractiveTuiHeader.tsx
   InteractiveTuiInput.ts
   InteractiveTuiMenu.tsx
   InteractiveTuiMode.ts
   InteractiveTuiNotice.tsx
+  InteractiveTuiOutputStream.ts
   InteractiveTuiRunningView.tsx
   InteractiveTuiResultAction.ts
   InteractiveTuiResultOutput.tsx
@@ -130,6 +138,8 @@ packages/clipstitchr-cli/src/interactiveTui/
   captureInteractiveTuiActionOutput.ts
   createInteractiveTuiSuggestionCompletionText.ts
   createInteractiveTuiResultChoices.ts
+  enterInteractiveTuiScreen.ts
+  exitInteractiveTuiScreen.ts
   getInteractiveTuiContextText.ts
   getInteractiveTuiMaximumVisibleChoices.ts
   getInteractiveTuiMenuChoices.ts
@@ -140,8 +150,8 @@ packages/clipstitchr-cli/src/interactiveTui/
   runInteractiveTui.tsx
   runInteractiveTuiMenuAction.ts
   resolveInteractiveTuiCommandSubmission.ts
+  resetInteractiveTuiScreen.ts
   setInteractiveTuiStdinIsReferenced.ts
-  useInteractiveTuiActivity.ts
   useInteractiveTuiCommandComposer.ts
   useInteractiveTuiController.ts
   useInteractiveTuiExitInput.ts

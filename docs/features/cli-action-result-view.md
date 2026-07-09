@@ -22,15 +22,22 @@ and `/` opens the command composer without first restoring the action list.
 
 The ordinary action list is also bounded by terminal height. This keeps the
 ClipStitchr header visible when the terminal has fewer rows while arrow-key
-navigation continues to follow the selected action.
+navigation continues to follow the selected action. Result mode removes the
+larger keyboard status box and always shows all result controls, leaving room
+for multiple result lines before paging.
 
 ## Runtime Design
 
 `captureInteractiveTuiActionOutput` temporarily wraps `console.log`,
-`console.warn`, and `console.error` for one action. It forwards every call to the
-normal Ink-aware console so live output still appears during work, while saving
-a plain-text copy with terminal control codes removed. The original console
-methods are restored in `finally`, including when the action fails.
+`console.warn`, and `console.error` for one action. It buffers a plain-text copy
+with terminal control codes removed instead of printing output above the live
+header. The original console methods are restored in `finally`, including when
+the action fails.
+
+The TUI enters the terminal's alternate screen when it starts. After an action,
+the controller clears that screen and moves the cursor home before rendering
+the retained result, which keeps the header anchored above every result. Exit
+restores the terminal screen that was visible before ClipStitchr launched.
 
 The controller stores the captured lines and changes from `running` to `result`
 instead of changing directly back to `menu`. Result controls are supplied by
@@ -40,8 +47,8 @@ retain their existing meanings.
 
 Result lines and menu choices have separate bounded windows. Result Page Up and
 Page Down input changes only the output page; Up and Down continue selecting a
-result control. Terminal row calculations reserve space for the header and
-keyboard status bar.
+result control. Terminal row calculations reserve space for the header and all
+result controls while prioritizing multiple output lines.
 
 ## Source References
 
@@ -57,6 +64,12 @@ keyboard status bar.
   handles Page Up and Page Down.
 - `packages/clipstitchr-cli/src/interactiveTui/getInteractiveTuiMaximumVisibleChoices.ts`
   adjusts action-menu height to terminal rows.
+- `packages/clipstitchr-cli/src/interactiveTui/enterInteractiveTuiScreen.ts`
+  anchors the full-screen workspace.
+- `packages/clipstitchr-cli/src/interactiveTui/resetInteractiveTuiScreen.ts`
+  clears prompt or action output before a retained result renders.
+- `packages/clipstitchr-cli/src/interactiveTui/exitInteractiveTuiScreen.ts`
+  restores the original terminal screen.
 
 ## File Tree
 
@@ -64,11 +77,15 @@ keyboard status bar.
 packages/clipstitchr-cli/src/interactiveTui/
   InteractiveTuiResultAction.ts
   InteractiveTuiResultOutput.tsx
+  InteractiveTuiOutputStream.ts
   captureInteractiveTuiActionOutput.ts
   createInteractiveTuiResultChoices.ts
+  enterInteractiveTuiScreen.ts
+  exitInteractiveTuiScreen.ts
   getInteractiveTuiMaximumVisibleChoices.ts
   getInteractiveTuiResultPageSize.ts
   getInteractiveTuiVisibleResultLines.ts
+  resetInteractiveTuiScreen.ts
   useInteractiveTuiResultOutputNavigation.ts
 ```
 

@@ -6,12 +6,15 @@ import { getInteractiveTuiVisibleChoices } from "./getInteractiveTuiVisibleChoic
 export function InteractiveTuiMenu(input: {
   choices: InteractiveShellChoice<string>[];
   isActive: boolean;
+  maximumVisibleChoices?: number;
   selectedIndex: number;
 }) {
   const { stdout } = useStdout();
   const visible = getInteractiveTuiVisibleChoices({
     choices: input.choices,
-    maximumVisibleChoices: getInteractiveTuiMaximumVisibleChoices(stdout.rows),
+    maximumVisibleChoices:
+      input.maximumVisibleChoices ??
+      getInteractiveTuiMaximumVisibleChoices(stdout.rows),
     selectedIndex: input.selectedIndex,
   });
 

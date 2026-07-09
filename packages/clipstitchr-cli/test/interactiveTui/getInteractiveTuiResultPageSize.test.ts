@@ -4,8 +4,8 @@ import { getInteractiveTuiResultPageSize } from "../../dist/interactiveTui/getIn
 
 describe("getInteractiveTuiResultPageSize", () => {
   it("uses remaining terminal rows without hiding the header", () => {
-    assert.equal(getInteractiveTuiResultPageSize(18), 1);
-    assert.equal(getInteractiveTuiResultPageSize(24), 7);
+    assert.equal(getInteractiveTuiResultPageSize(18), 5);
+    assert.equal(getInteractiveTuiResultPageSize(24), 10);
     assert.equal(getInteractiveTuiResultPageSize(40), 10);
   });
 });

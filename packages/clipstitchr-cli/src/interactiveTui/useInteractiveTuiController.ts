@@ -12,9 +12,9 @@ import type { InteractiveTuiInput } from "./InteractiveTuiInput.js";
 import type { InteractiveTuiMode } from "./InteractiveTuiMode.js";
 import { captureInteractiveTuiActionOutput } from "./captureInteractiveTuiActionOutput.js";
 import { getInteractiveTuiResultPageSize } from "./getInteractiveTuiResultPageSize.js";
+import { resetInteractiveTuiScreen } from "./resetInteractiveTuiScreen.js";
 import { runInteractiveTuiMenuAction } from "./runInteractiveTuiMenuAction.js";
 import { setInteractiveTuiStdinIsReferenced } from "./setInteractiveTuiStdinIsReferenced.js";
-import { useInteractiveTuiActivity } from "./useInteractiveTuiActivity.js";
 import { useInteractiveTuiCommandComposer } from "./useInteractiveTuiCommandComposer.js";
 import { useInteractiveTuiExitInput } from "./useInteractiveTuiExitInput.js";
 import { useInteractiveTuiMenuNavigation } from "./useInteractiveTuiMenuNavigation.js";
@@ -32,7 +32,6 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
   const [context, setContext] = useState(input.context);
   const [resultLines, setResultLines] = useState<string[]>([]);
   const commandReturnMode = useRef<"menu" | "result">("menu");
-  const { activities, appendActivity } = useInteractiveTuiActivity();
 
   const refreshContext = useCallback(async () => {
     if (input.readContext) {
@@ -61,6 +60,7 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
       }
 
       setInteractiveTuiStdinIsReferenced({ isReferenced: true });
+      resetInteractiveTuiScreen();
       setCurrentMenu(transition.menu);
       setMode("result");
       setActiveLabel(undefined);
@@ -70,9 +70,8 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
           message: successMessage,
         },
       );
-      appendActivity("success", successMessage);
     },
-    [appendActivity, exit],
+    [exit],
   );
 
   const finishError = useCallback(
@@ -85,6 +84,7 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
           : String(error);
 
       setInteractiveTuiStdinIsReferenced({ isReferenced: true });
+      resetInteractiveTuiScreen();
       setMode("result");
       setActiveLabel(undefined);
       setNotice({
@@ -96,12 +96,8 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
         ...(currentLines.length > 0 ? [""] : []),
         `${isCanceled ? "[info]" : "[error]"} ${message}`,
       ]);
-
-      if (!isCanceled) {
-        appendActivity("error", message);
-      }
     },
-    [appendActivity],
+    [],
   );
 
   const executeCommand = useCallback(
@@ -110,7 +106,6 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
       setActiveLabel(commandLine);
       setNotice(undefined);
       setResultLines([]);
-      appendActivity("command", commandLine);
       await waitForMilliseconds(0);
       setInteractiveTuiStdinIsReferenced({ isReferenced: true });
 
@@ -133,7 +128,6 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
       }
     },
     [
-      appendActivity,
       currentMenu,
       finishError,
       finishTransition,
@@ -209,7 +203,6 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
       setActiveLabel(choice.name);
       setNotice(undefined);
       setResultLines([]);
-      appendActivity("command", choice.name);
       await waitForMilliseconds(0);
       setInteractiveTuiStdinIsReferenced({ isReferenced: true });
 
@@ -233,7 +226,6 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
       }
     },
     [
-      appendActivity,
       currentMenu,
       exit,
       finishError,
@@ -288,7 +280,6 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
 
   return {
     activeLabel,
-    activities,
     choices: menuNavigation.choices,
     commandText: commandComposer.commandText,
     context,

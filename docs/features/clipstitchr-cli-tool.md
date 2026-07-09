@@ -185,29 +185,28 @@ post to local Stitch/Swipe source mapping when available.
 
 The root `clipstitchr` command mounts one persistent Ink workspace instead of a
 sequence of one-action prompts. The workspace keeps a current menu state
-(`main`, `demo`, `products`, `queue`, `native`, or `account`), completed
-activity, command history, and local product/repo/account context. Missing
-account or repo setup appears first on the main menu. Once setup exists, the
-routine creation, queue, product, and demo actions stay first. Native setup,
-doctor, and update remain under Setup and account. Selecting an action runs the
-same command handler used by the direct command path, refreshes local context,
-then opens a retained result view in the same mounted workspace.
+(`main`, `demo`, `products`, `queue`, `native`, or `account`), command history,
+and local product/repo/account context. Missing account or repo setup appears
+first on the main menu. Once setup exists, the routine creation, queue, product,
+and demo actions stay first. Native setup, doctor, and update remain under Setup
+and account. Selecting an action runs the same command handler used by the
+direct command path, refreshes local context, then opens a retained result view
+in the same mounted workspace.
 
-The result view captures normal command output while still printing it during
-the action. It keeps a bounded page visible after completion, supports Page Up
-and Page Down for longer output, and offers Back to the originating menu, Main
-menu, slash command, and Exit controls. Choosing Back restores the action list;
-the list is not restored automatically. Menu choice count adapts to terminal
-rows so the brand header remains visible in shorter windows.
+The result view buffers normal command output while the action runs. It keeps a
+bounded page visible after completion, supports Page Up and Page Down for longer
+output, and offers Back to the originating menu, Main menu, slash command, and
+Exit controls. Choosing Back restores the action list; the list is not restored
+automatically. Menu choice count adapts to terminal rows so the brand header
+remains visible in shorter windows.
 
 Slash commands are parsed locally, support quoted values, and dispatch to the
 same command handlers as direct commands. The composer is available from every
 menu. Tab accepts the selected completion. Enter runs complete commands and
 expands command groups or options that still need a value. Ctrl+P and Ctrl+N
 move through command history, and Escape returns to menu navigation. If an
-action fails, the error stays visible in the activity history and the current
-menu remains usable. Ctrl+C exits without printing a stack trace while the
-workspace is idle.
+action fails, the error stays visible in the result and the current menu remains
+usable. Ctrl+C exits without printing a stack trace while the workspace is idle.
 
 Slash command autocomplete uses a shared local registry of command names,
 subcommands, option names, completion behavior, and meaningful search terms.
@@ -327,17 +326,17 @@ and connected Android device.
 ## Terminal UX
 
 The interactive shell uses one Ink/React renderer for its header, menus,
-activity, command composer, deterministic suggestions, recent status, and
-keyboard hints. It uses Ink's normal terminal rendering instead of an alternate
-screen, so completed command output remains visible in terminal scrollback.
-Existing focused questions from recording and setup workflows temporarily take
-input while their action runs, then return to the same mounted workspace. The
-menu collapses to one working line during this handoff, and the controller keeps
-stdin referenced after Ink releases raw mode so an unanswered Inquirer prompt
-cannot let the process exit. It references and resumes stdin again when the
-prompt-backed action returns because prompt cleanup may pause the stream.
-Command helpers also avoid printing a second ClipStitchr brand while the
-persistent workspace is active.
+command composer, deterministic suggestions, retained results, and keyboard
+hints. It uses the terminal's alternate screen and resets completed results to
+the top, so output never appears on both sides of the header. Exiting restores
+the previous terminal screen. Existing focused questions from recording and
+setup workflows temporarily take input while their action runs, then return to
+the same mounted workspace. The menu collapses to one working line during this
+handoff, and the controller keeps stdin referenced after Ink releases raw mode
+so an unanswered Inquirer prompt cannot let the process exit. It references and
+resumes stdin again when the prompt-backed action returns because prompt cleanup
+may pause the stream. Command helpers also avoid printing a second ClipStitchr
+brand while the persistent workspace is active.
 
 Guided flows still show progress states, setup key/value rows, success
 confirmations, warnings, and copyable next commands. Direct commands do not use

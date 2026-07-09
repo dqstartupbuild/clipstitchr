@@ -10,10 +10,10 @@ npx clipstitchr
 Running `clipstitchr` opens one persistent terminal workspace. Its header shows
 the current product, repo connection, and account connection from local CLI
 settings. Missing account or repo setup appears first; after setup, the main
-menu keeps everyday creation and queue actions first. Completed activity stays
-above the live menu instead of printing a new ClipStitchr frame. Choose `Demos`,
-then pick `Record it myself` for manual recording or `Let AI record it for me`
-for a policy-guarded AI run with a saved guide.
+menu keeps everyday creation and queue actions first. The full-screen workspace
+keeps the header at the top instead of adding new frames to terminal history.
+Choose `Demos`, then pick `Record it myself` for manual recording or `Let AI
+record it for me` for a policy-guarded AI run with a saved guide.
 
 Slash commands let you stay in the interactive shell while running direct
 commands, such as `/demo manual`, `/demo agent --guide "Checkout flow"`,
@@ -31,6 +31,7 @@ After an action finishes, its output stays in a result view instead of being
 replaced by the action menu. Use Page Up or Page Down for longer results, then
 choose Back, Main menu, Type a slash command, or Exit. Menu height also follows
 the terminal height so the ClipStitchr header stays visible in shorter windows.
+Result pages reserve room for several lines before paging on a typical terminal.
 Run `clipstitchr queue` when you want a focused queue menu for latest, all, or
 specific Stitch and Swipe queue actions.
 
@@ -160,12 +161,12 @@ image; open the dashboard when you need to render and queue the full carousel
 or video version.
 
 The interactive shell keeps one mounted terminal workspace with the current
-menu, local product/repo/account context, completed activity, a slash-command
-composer, suggestions, action results, and keyboard hints. Existing guided
-questions temporarily take input while an action runs. The menu collapses to
-one working line during that handoff, keeps the question alive until it is
-answered, then opens the completed result in the same workspace. When the
-terminal is too narrow, is not interactive, or uses
+menu, local product/repo/account context, a slash-command composer, suggestions,
+action results, and keyboard hints. Existing guided questions temporarily take
+input while an action runs. The menu collapses to one working line during that
+handoff, keeps the question alive until it is answered, then opens the completed
+result in the same workspace. When the terminal is too narrow, is not
+interactive, or uses
 `--plain` or `NO_COLOR=1`, the CLI falls back to simple prompt output. Direct
 commands stay plain and script-friendly.
 
