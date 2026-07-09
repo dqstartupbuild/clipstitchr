@@ -22,7 +22,13 @@ describe("runInteractiveShellActionWithRecovery", () => {
     });
 
     assert.equal(attempts, 2);
-    assert.deepEqual(result, { menu: "demo" });
+    assert.deepEqual(result, {
+      menu: "demo",
+      notice: {
+        kind: "success",
+        message: "Pick another action when you are ready.",
+      },
+    });
   });
 
   it("can return to the main menu after a failed action", async () => {
@@ -35,6 +41,12 @@ describe("runInteractiveShellActionWithRecovery", () => {
       },
     });
 
-    assert.deepEqual(result, { menu: "main" });
+    assert.deepEqual(result, {
+      menu: "main",
+      notice: {
+        kind: "error",
+        message: "Queue is empty.",
+      },
+    });
   });
 });

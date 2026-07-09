@@ -143,11 +143,11 @@ inspect your whole Library. CLI Swipe queueing uses the saved rendered Swipe
 image; open the dashboard when you need to render and queue the full carousel
 or video version.
 
-The CLI uses light branded terminal output for guided flows, setup checks,
-recording progress, upload progress, success states, warnings, persistent menu
-navigation, and next commands. Use `--plain` or `NO_COLOR=1` when you want
-uncolored output for logs or screenshots. Direct commands still work for
-scripts and automation.
+The interactive shell uses a styled terminal frame with the current menu,
+recent status, keyboard hints, slash-command examples, and navigation reminders.
+When the terminal is too narrow, is not interactive, or uses `--plain` or
+`NO_COLOR=1`, the CLI falls back to simple prompt output. Direct commands stay
+plain and script-friendly.
 
 Setup detects common nested app folders like `web/`, infers the start command,
 skips the product picker when your account only has one product, and prefers a

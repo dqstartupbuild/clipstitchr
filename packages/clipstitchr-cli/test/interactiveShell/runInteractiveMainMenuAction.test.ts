@@ -25,7 +25,13 @@ describe("runInteractiveMainMenuAction", () => {
       services: createInteractiveShellTestServices(calls),
     });
 
-    assert.deepEqual(result, { menu: "main" });
+    assert.deepEqual(result, {
+      menu: "main",
+      notice: {
+        kind: "success",
+        message: "Pick another action when you are ready.",
+      },
+    });
     assert.deepEqual(calls, ["stitchr-new::"]);
   });
 
@@ -37,6 +43,12 @@ describe("runInteractiveMainMenuAction", () => {
       services: createInteractiveShellTestServices([]),
     });
 
-    assert.deepEqual(result, { menu: "products" });
+    assert.deepEqual(result, {
+      menu: "products",
+      notice: {
+        kind: "success",
+        message: "Pick another action when you are ready.",
+      },
+    });
   });
 });

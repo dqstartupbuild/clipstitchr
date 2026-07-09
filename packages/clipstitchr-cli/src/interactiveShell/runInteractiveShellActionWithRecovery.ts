@@ -12,7 +12,15 @@ export async function runInteractiveShellActionWithRecovery(input: {
 }): Promise<InteractiveShellTransition> {
   while (true) {
     try {
-      return await input.run();
+      const transition = await input.run();
+
+      return {
+        ...transition,
+        notice: transition.notice ?? {
+          kind: "success",
+          message: "Pick another action when you are ready.",
+        },
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       logError(message);
@@ -27,14 +35,24 @@ export async function runInteractiveShellActionWithRecovery(input: {
       }
 
       if (recoveryAction === "back") {
-        return { menu: input.backMenu };
+        return {
+          menu: input.backMenu,
+          notice: { kind: "error", message },
+        };
       }
 
       if (recoveryAction === "main") {
-        return { menu: "main" };
+        return {
+          menu: "main",
+          notice: { kind: "error", message },
+        };
       }
 
-      return { exit: true, menu: input.currentMenu };
+      return {
+        exit: true,
+        menu: input.currentMenu,
+        notice: { kind: "error", message },
+      };
     }
   }
 }

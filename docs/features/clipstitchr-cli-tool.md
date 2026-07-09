@@ -302,16 +302,22 @@ and connected Android device.
 
 ## Terminal UX
 
-The CLI uses light branded terminal output and persistent menus instead of a
-full-screen terminal UI. Guided flows show a ClipStitchr header, progress
-states, setup key/value rows, success confirmations, warnings, and copyable
-next commands. This makes normal flows easier to follow while keeping command
-output readable.
+The interactive shell uses a dependency-free terminal frame around the existing
+Inquirer menus. The frame shows the ClipStitchr brand, current menu, recent
+status or error, keyboard hints, slash-command examples, and Back/Main/Exit
+reminders. It is not a full-screen alternate renderer, so normal command output
+remains visible and readable.
+
+Guided flows still show progress states, setup key/value rows, success
+confirmations, warnings, and copyable next commands. Direct commands do not use
+the TUI frame, which keeps scripting output stable.
 
 Color is only applied when stdout is an interactive terminal. `--plain` sets
 `CLIPSTITCHR_PLAIN=1` inside the process, and `NO_COLOR=1` is respected by the
-shared terminal helpers. `clipstitchr products list` stays tab-separated so it
-remains useful for scripting.
+shared terminal helpers. The interactive shell also falls back to the plain
+prompt when stdout is not a TTY or the terminal is narrower than 56 columns.
+`clipstitchr products list` stays tab-separated so it remains useful for
+scripting.
 
 ## Guided Demo To Agent Plan
 

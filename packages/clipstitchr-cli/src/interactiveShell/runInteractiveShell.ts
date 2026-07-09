@@ -1,11 +1,11 @@
 import type { CliGlobalOptions } from "../commands/CliGlobalOptions.js";
-import { clipstitchrCliDescription } from "../config/clipstitchrCliDescription.js";
-import { logBrandHeader } from "../terminal/logBrandHeader.js";
 import type { InteractiveShellMenu } from "./InteractiveShellMenu.js";
+import type { InteractiveShellNotice } from "./InteractiveShellNotice.js";
 import type { InteractiveShellPrompts } from "./InteractiveShellPrompts.js";
 import type { InteractiveShellServices } from "./InteractiveShellServices.js";
 import { getInteractiveShellMenuTitle } from "./getInteractiveShellMenuTitle.js";
 import { getIsInteractivePromptCancelError } from "./getIsInteractivePromptCancelError.js";
+import { logInteractiveShellMenuHeader } from "./logInteractiveShellMenuHeader.js";
 import { runInteractiveShellMenu } from "./runInteractiveShellMenu.js";
 
 export async function runInteractiveShell(input: {
@@ -15,14 +15,15 @@ export async function runInteractiveShell(input: {
   services: InteractiveShellServices;
 }) {
   let currentMenu = input.initialMenu ?? "main";
+  let notice: InteractiveShellNotice | undefined;
 
   try {
     while (true) {
-      logBrandHeader(
-        currentMenu === "main"
-          ? clipstitchrCliDescription
-          : getInteractiveShellMenuTitle(currentMenu),
-      );
+      logInteractiveShellMenuHeader({
+        menu: currentMenu,
+        notice,
+        options: input.options,
+      });
 
       const transition = await runInteractiveShellMenu({
         menu: currentMenu,
@@ -35,6 +36,14 @@ export async function runInteractiveShell(input: {
         return;
       }
 
+      notice =
+        transition.notice ??
+        (transition.menu === currentMenu
+          ? undefined
+          : {
+              kind: "info",
+              message: `Opened ${getInteractiveShellMenuTitle(transition.menu)}.`,
+            });
       currentMenu = transition.menu;
     }
   } catch (error) {
