@@ -1,16 +1,26 @@
 "use client";
 
-import { CheckCircle2, KeyRound, Trash2 } from "lucide-react";
+import { CheckCircle2, KeyRound, Settings2, Trash2 } from "lucide-react";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
+import { SettingsPostBridgeProductConfigDropdown } from "@/app/_components/settings/SettingsPostBridgeProductConfigDropdown";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { deletePostBridgeSettings } from "@/lib/clipstitchr/client/deletePostBridgeSettings";
 import { fetchPostBridgeSettings } from "@/lib/clipstitchr/client/fetchPostBridgeSettings";
 import { savePostBridgeSettings } from "@/lib/clipstitchr/client/savePostBridgeSettings";
 import type { PostBridgeSettings } from "@/lib/clipstitchr/types/PostBridgeSettings";
+import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 
-export function SettingsPostBridgePanel() {
+type SettingsPostBridgePanelProps = {
+  isProductActionDisabled: boolean;
+  products: ProductProfile[];
+};
+
+export function SettingsPostBridgePanel({
+  isProductActionDisabled,
+  products,
+}: SettingsPostBridgePanelProps) {
   const [apiKey, setApiKey] = useState("");
   const [settings, setSettings] = useState<PostBridgeSettings>({
     hasApiKey: false,
@@ -21,6 +31,7 @@ export function SettingsPostBridgePanel() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const isBusy = isLoading || isSaving || isDeleting;
@@ -91,6 +102,7 @@ export function SettingsPostBridgePanel() {
       setSettings(await deletePostBridgeSettings());
       setConnectedAccountCount(null);
       setApiKey("");
+      setIsConfigOpen(false);
       setMessage("Post Bridge was disconnected.");
     } catch (nextError) {
       setError(
@@ -105,7 +117,7 @@ export function SettingsPostBridgePanel() {
 
   return (
     <Panel className="p-4">
-      <form className="flex flex-col gap-4" onSubmit={handleSave}>
+      <form className="relative flex flex-col gap-4" onSubmit={handleSave}>
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-accent-dark">
@@ -119,12 +131,24 @@ export function SettingsPostBridgePanel() {
               Instagram, and YouTube accounts.
             </p>
           </div>
-          {settings.hasApiKey ? (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
-              <CheckCircle2 aria-hidden className="h-3.5 w-3.5" />
-              Connected
-            </span>
-          ) : null}
+          <div className="flex shrink-0 flex-wrap justify-end gap-2">
+            {settings.hasApiKey ? (
+              <span className="inline-flex h-9 items-center gap-1 rounded-full bg-emerald-50 px-2.5 text-xs font-bold text-emerald-700">
+                <CheckCircle2 aria-hidden className="h-3.5 w-3.5" />
+                Connected
+              </span>
+            ) : null}
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              icon={<Settings2 aria-hidden className="h-4 w-4" />}
+              disabled={isLoading}
+              onClick={() => setIsConfigOpen((isOpen) => !isOpen)}
+            >
+              Config
+            </Button>
+          </div>
         </div>
 
         <label className="block">
@@ -189,6 +213,12 @@ export function SettingsPostBridgePanel() {
             Save and test
           </Button>
         </div>
+        <SettingsPostBridgeProductConfigDropdown
+          hasApiKey={settings.hasApiKey}
+          isDisabled={isBusy || isProductActionDisabled}
+          isOpen={isConfigOpen}
+          products={products}
+        />
       </form>
     </Panel>
   );

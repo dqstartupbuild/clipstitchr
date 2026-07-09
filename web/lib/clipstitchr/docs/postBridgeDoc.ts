@@ -21,13 +21,13 @@ export const postBridgeDoc = {
     {
       title: "Before you use it",
       body: [
-        "Connect your Post Bridge key in Account settings first. Then choose the TikTok, Instagram, or YouTube accounts you want each saved product to use by default.",
+        "Connect your Post Bridge key in Account settings first. Then open Config in that same Post Bridge card to choose the TikTok, Instagram, or YouTube accounts each saved product should use by default.",
         "These defaults save time, but they do not lock you in. You can still review the post, change the account choices, and decide whether to post now or schedule it for later.",
       ],
       bullets: [
         "Add your Post Bridge key in Account settings.",
         "Connect social accounts inside Post Bridge.",
-        "Pick default accounts for each saved product in product settings.",
+        "Use Config to pick default accounts for each saved product.",
         "Review the post before it leaves ClipStitchr.",
       ],
     },

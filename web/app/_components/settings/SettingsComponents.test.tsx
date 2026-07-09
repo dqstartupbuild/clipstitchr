@@ -185,7 +185,10 @@ describe("settings components", () => {
           onSetActiveProduct={async () => undefined}
           onUpdateProduct={async () => undefined}
         />
-        <SettingsAccountSection />
+        <SettingsAccountSection
+          isProductActionDisabled={false}
+          products={[createProduct()]}
+        />
       </>,
     );
     const populatedMarkup = renderToStaticMarkup(
@@ -209,6 +212,7 @@ describe("settings components", () => {
     expect(emptyMarkup).toContain("Swipr");
     expect(emptyMarkup).toContain("Product settings");
     expect(emptyMarkup).toContain("Account settings");
+    expect(emptyMarkup).toContain("Config");
     expect(emptyMarkup).toContain("Run ClipStitchr from your product repo");
     expect(emptyMarkup).toContain("npm install -g clipstitchr");
     expect(emptyMarkup).toContain("Copy");

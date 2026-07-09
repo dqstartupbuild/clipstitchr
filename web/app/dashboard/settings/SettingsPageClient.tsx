@@ -49,7 +49,10 @@ export function SettingsPageClient() {
           onSetActiveProduct={products.setActiveProduct}
           onUpdateProduct={products.updateProduct}
         />
-        <SettingsAccountSection />
+        <SettingsAccountSection
+          isProductActionDisabled={products.isLoading || products.isSaving}
+          products={products.products}
+        />
       </div>
     </DashboardShell>
   );

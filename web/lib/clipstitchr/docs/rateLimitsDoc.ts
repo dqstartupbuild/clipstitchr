@@ -184,7 +184,7 @@ export const rateLimitsDoc = {
         {
           action: "Post Bridge reads",
           limit: "120 per hour; up to 30 at once",
-          note: "Used for connected accounts, scheduled posts, analytics, and key checks.",
+          note: "Used for connected accounts, Settings config, scheduled posts, analytics, and key checks.",
         },
         {
           action: "Post Bridge media uploads",

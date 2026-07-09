@@ -14,9 +14,9 @@ active, letting users add several saved Stitches or Swipes to the Post Bridge
 queue in one sequential run.
 Users add their own Post Bridge API key in Account settings. The key is tested
 against Post Bridge, encrypted server-side, and stored in Convex with only the
-last four characters shown back to the browser. The Schedule page's
-`Config/accounts` tab lets the user link default TikTok, Instagram, and YouTube
-accounts to each product.
+last four characters shown back to the browser. The Settings page's Post Bridge
+`Config` dropdown lets the user link default TikTok, Instagram, and YouTube
+accounts to any saved product, no matter which product is currently active.
 
 Disconnecting Post Bridge removes the saved key and clears product-linked
 account defaults from products and product cards. That keeps old account IDs
@@ -150,7 +150,7 @@ through the local post-to-product mapping saved when ClipStitchr schedules the
 post. Queued posts display the `scheduled_at` time returned by Post Bridge when
 a queue slot is assigned. Immediate post-now rows display the Post Bridge
 `created_at` time, because those posts intentionally have `scheduled_at: null`.
-Its `Config/accounts` tab owns the product-level default posting account picker.
+Settings owns the product-level default posting account picker.
 
 The page shows:
 
@@ -179,7 +179,8 @@ posted post status counts.
 - `web/app/_components/postBridge/PostBridgeAutomaticSoundStatus.tsx`
 - `web/app/_components/postBridge/PostBridgeSoundModePicker.tsx`
 - `web/app/_components/settings/SettingsPostBridgePanel.tsx`
-- `web/app/_components/settings/ProductPostBridgeAccountsPanel.tsx`
+- `web/app/_components/settings/SettingsPostBridgeProductConfigDropdown.tsx`
+- `web/app/_components/settings/PostBridgeProductAccountConfigRow.tsx`
 - `web/app/_components/schedule/`
 - `web/app/dashboard/schedule/SchedulePageClient.tsx`
 - `web/lib/clipstitchr/utils/getPostBridgePostTimeLabel.ts`

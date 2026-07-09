@@ -552,6 +552,6 @@ describe("dashboard page clients", () => {
 
     expect(markup).toContain("Schedule");
     expect(markup).toContain("Scheduled content");
-    expect(markup).toContain("Config/accounts");
+    expect(markup).not.toContain("Config/accounts");
   });
 });
