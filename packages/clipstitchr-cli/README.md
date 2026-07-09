@@ -7,9 +7,15 @@ files, start new content, and queue ready content in ClipStitchr.
 npx clipstitchr
 ```
 
-Running `clipstitchr` opens the main menu. Choose `Record a demo`, then pick
-`Record it myself` for manual recording or `Let AI record it for me` for a
-policy-guarded AI run with a saved guide.
+Running `clipstitchr` opens a persistent main menu. You can move between Demo,
+Products, Queue, Native, and Account menus, run an action, and land back in the
+same menu when it finishes. Choose `Demos`, then pick `Record it myself` for
+manual recording or `Let AI record it for me` for a policy-guarded AI run with
+a saved guide.
+Every menu also has Back, Main menu, Exit, and Type a slash command actions.
+Slash commands let you stay in the interactive shell while running direct
+commands, such as `/demo manual`, `/demo agent --guide "Checkout flow"`,
+`/queue stitch --all`, `/products use product_123`, and `/status`.
 Run `clipstitchr queue` when you want a focused queue menu for latest, all, or
 specific Stitch and Swipe queue actions.
 
@@ -138,9 +144,10 @@ image; open the dashboard when you need to render and queue the full carousel
 or video version.
 
 The CLI uses light branded terminal output for guided flows, setup checks,
-recording progress, upload progress, success states, warnings, and next
-commands. Use `--plain` or `NO_COLOR=1` when you want uncolored output for logs
-or screenshots.
+recording progress, upload progress, success states, warnings, persistent menu
+navigation, and next commands. Use `--plain` or `NO_COLOR=1` when you want
+uncolored output for logs or screenshots. Direct commands still work for
+scripts and automation.
 
 Setup detects common nested app folders like `web/`, infers the start command,
 skips the product picker when your account only has one product, and prefers a

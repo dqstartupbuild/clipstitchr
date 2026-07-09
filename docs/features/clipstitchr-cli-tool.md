@@ -15,9 +15,12 @@ creation, bounded library reads for queue selection, and queueing ready content.
 
 ## What It Does
 
-- `clipstitchr` opens a guided prompt for making a demo, uploading an existing
-  demo, connecting the repo, starting new work, queueing ready content, or
-  checking setup.
+- `clipstitchr` opens a persistent main menu for demos, products, queueing,
+  Stitchr, Swipr, native setup/checks, account/repo setup, status, doctor, and
+  updates.
+- Each interactive menu includes Back, Main menu, Exit, and a slash-command
+  entry for direct commands such as `/demo manual`, `/queue stitch --all`,
+  `/products use product_123`, and `/status`.
 - `clipstitchr --help`, `clipstitchr help`, and
   `clipstitchr help demo manual` show the available command options.
 - `clipstitchr --version` prints the installed CLI version.
@@ -178,6 +181,19 @@ the CLI bearer token, consumes the CLI Post Bridge read limit, loads Post Bridge
 posts, filters them to queued or scheduled posts within 24 hours, and joins each
 post to local Stitch/Swipe source mapping when available.
 
+## Interactive Shell Flow
+
+The root `clipstitchr` command opens a persistent shell instead of a one-action
+prompt. The shell keeps a current menu state (`main`, `demo`, `products`,
+`queue`, `native`, or `account`). Selecting an action runs the same command
+handler used by the direct command path, then returns to the current menu.
+
+Submenus add Back, Main menu, Exit, and Type a slash command actions. Slash
+commands are parsed locally, support quoted values, and dispatch to the same
+command handlers as direct commands. If an action fails, the shell shows the
+error and lets the user try again, go back, return to the main menu, or exit.
+Ctrl+C exits without printing a stack trace.
+
 ## Products Menu Flow
 
 `clipstitchr products` opens a small menu with `Show my products`,
@@ -286,10 +302,11 @@ and connected Android device.
 
 ## Terminal UX
 
-The CLI uses light branded terminal output instead of a full-screen terminal UI.
-Guided flows show a ClipStitchr header, progress states, setup key/value rows,
-success confirmations, warnings, and copyable next commands. This makes normal
-flows easier to follow while keeping command output readable.
+The CLI uses light branded terminal output and persistent menus instead of a
+full-screen terminal UI. Guided flows show a ClipStitchr header, progress
+states, setup key/value rows, success confirmations, warnings, and copyable
+next commands. This makes normal flows easier to follow while keeping command
+output readable.
 
 Color is only applied when stdout is an interactive terminal. `--plain` sets
 `CLIPSTITCHR_PLAIN=1` inside the process, and `NO_COLOR=1` is respected by the
@@ -353,6 +370,7 @@ packages/clipstitchr-cli/
     selectDemoWalkthroughGuide.ts
     writeDemoWalkthroughGuide.ts
   src/interactive/
+  src/interactiveShell/
   src/native/
   src/project/
     scanAndWriteAppContext.ts

@@ -6,7 +6,7 @@ export const clipstitchrCliDoc = {
   description:
     "Record demos, start new content, and queue ready work from your terminal.",
   summary:
-    "Install one command, connect your account, capture demos, create batches, and send ready work to the queue.",
+    "Install one command, connect your account, capture demos, start new drafts, and send ready work to the queue.",
   category: "start",
   order: 1,
   updated: "2026-07-09",
@@ -21,9 +21,22 @@ export const clipstitchrCliDoc = {
     {
       title: "Install and open it",
       body: [
-        "Install the command once from npm. After that, run clipstitchr from any product repo you want to connect.",
+        "Install the command once from npm. After that, run clipstitchr from any product repo you want to connect. The main menu stays open after each action, so you can keep moving without restarting the command.",
       ],
       commands: ["npm install -g clipstitchr", "clipstitchr"],
+    },
+    {
+      title: "Use menus or commands",
+      body: [
+        "Use the menus when you want to browse what ClipStitchr can do. Use direct commands when you already know the exact action or need something script-friendly.",
+        "Inside the menu, choose Type a slash command to run a direct command without leaving the shell. For example, type /demo manual, /demo agent --guide \"Checkout flow\", /queue stitch --all, /products use product_123, or /status.",
+      ],
+      bullets: [
+        "Back returns to the previous menu.",
+        "Main menu takes you home.",
+        "Exit closes the shell cleanly.",
+        "If something fails, you can try again, go back, return home, or exit.",
+      ],
     },
     {
       title: "Help and version",
@@ -157,7 +170,7 @@ export const clipstitchrCliDoc = {
     {
       title: "Record a demo",
       body: [
-        "Run clipstitchr to open the main menu, choose Record a demo, then pick Record it myself or Let AI record it for me. Run clipstitchr demo when you want the focused demo menu for recording, AI recording, guides, safety policy setup, uploads, and logs.",
+        "Run clipstitchr to open the main menu, choose Demos, then pick Record it myself or Let AI record it for me. Run clipstitchr demo when you want the focused demo menu for recording, AI recording, guides, safety policy setup, uploads, and logs.",
         "The CLI can create a quick walkthrough checklist first, then starts your local app, opens the recording browser, and walks you through the steps while you record.",
         "Each time a step is done, return to the terminal and press Enter. ClipStitchr saves those step timings with the upload so it can make cleaner chapters, captions, zooms, and edits later.",
         "If the app asks you to sign in, log in inside the recording browser. The CLI keeps that browser session for the same repo, so the next recording is faster.",

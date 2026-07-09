@@ -1,7 +1,7 @@
 {
   "name": "clipstitchr",
   "version": "0.1.32",
-  "description": "Record demos, start batch content, and queue finished Stitches in ClipStitchr from your terminal.",
+  "description": "Record demos, start new content, and queue finished Stitches in ClipStitchr from your terminal.",
   "type": "module",
   "bin": {
     "clipstitchr": "dist/cli.js"
