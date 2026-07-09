@@ -57,4 +57,35 @@ describe("editDemoAgentPolicy", () => {
     assert.equal(result.allowFileUploads, false);
     assert.equal(result.testAccountNotes, "Use the demo account");
   });
+
+  it("keeps uploads off when no approved files are added", async () => {
+    const calls: string[] = [];
+    const policy = createDemoAgentPolicy({
+      allowedOrigin: "http://localhost:3000",
+      flows: [],
+    });
+    const result = await editDemoAgentPolicy(
+      policy,
+      createDemoAgentPolicyEditorTestPrompts({
+        calls,
+        confirmAnswers: [true, true],
+        inputAnswers: [
+          "http://localhost:3000",
+          "/",
+          "80",
+          "180",
+          "",
+          "",
+          "",
+          "",
+        ],
+      }),
+    );
+
+    assert.equal(result.allowFileUploads, false);
+    assert.deepEqual(result.approvedUploadFiles, []);
+    assert(
+      !calls.some((call) => call.includes("Ask before every upload?")),
+    );
+  });
 });

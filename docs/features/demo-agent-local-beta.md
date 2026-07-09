@@ -44,7 +44,9 @@ settings and asks whether they should change. Pressing Enter keeps every shown
 setting and saves immediately; choosing yes opens the individual fields. Live
 or staging origins require a separate approval while editing, which writes
 `allowLiveOrigins: true` into the policy for the selected origin. File uploads
-stay disabled unless the policy names at least one approved local file. The
+stay disabled unless the policy names at least one approved local file. If the
+user enables uploads but leaves the file list empty, setup keeps uploads off and
+continues saving the rest of the policy instead of discarding the flow. The
 policy stores allowed routes, blocked text patterns, upload settings, action
 caps, recording caps, and whether approval is required before upload. It can
 also store approved test values for safe form typing and test-account notes.

@@ -54,6 +54,7 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
         return;
       }
 
+      setInteractiveTuiStdinIsReferenced({ isReferenced: true });
       setCurrentMenu(transition.menu);
       setMode("menu");
       setActiveLabel(undefined);
@@ -77,6 +78,7 @@ export function useInteractiveTuiController(input: InteractiveTuiInput) {
           ? error.message
           : String(error);
 
+      setInteractiveTuiStdinIsReferenced({ isReferenced: true });
       setMode("menu");
       setActiveLabel(undefined);
       setNotice({

@@ -116,7 +116,8 @@ the local safety settings and lets you review them before saving.
 `clipstitchr demo policy check` confirms the saved policy is valid. Localhost
 app URLs are the default. Live or staging URLs need a separate yes before they
 are allowed. File uploads stay off unless you name the exact local files the
-agent may use. Run `clipstitchr demo policy edit` when routes, test values,
+agent may use. If you turn uploads on but leave the file list empty, uploads
+stay off and the rest of the policy is still saved. Run `clipstitchr demo policy edit` when routes, test values,
 blocked words, upload files, or time limits need to change. `clipstitchr demo
 auto` creates the same safe policy automatically when one does not exist.
 

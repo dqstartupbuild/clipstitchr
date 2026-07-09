@@ -85,11 +85,11 @@ export async function editDemoAgentPolicy(
       message: "Blocked text patterns:",
     }),
   );
-  const allowFileUploads = await prompts.confirm({
+  const requestedFileUploads = await prompts.confirm({
     default: policy.allowFileUploads,
     message: "Allow file uploads?",
   });
-  const approvedUploadFiles = allowFileUploads
+  const approvedUploadFiles = requestedFileUploads
     ? parseDemoAgentPolicyList(
         await prompts.input({
           default: formatDemoAgentPolicyList(policy.approvedUploadFiles),
@@ -97,9 +97,11 @@ export async function editDemoAgentPolicy(
         }),
       )
     : [];
+  const allowFileUploads =
+    requestedFileUploads && approvedUploadFiles.length > 0;
 
-  if (allowFileUploads && approvedUploadFiles.length === 0) {
-    throw new Error("File uploads need at least one approved file.");
+  if (requestedFileUploads && !allowFileUploads) {
+    logInfo("Uploads will stay off because no files were added.");
   }
 
   const requiresApprovalBeforeUpload = allowFileUploads

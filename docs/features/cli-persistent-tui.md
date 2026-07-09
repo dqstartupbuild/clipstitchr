@@ -56,9 +56,10 @@ and running-action state. Menu actions and slash commands still call the same
 services as direct CLI commands. Ink's console patching keeps normal command
 logs readable above the live renderer. Before a delegated action starts, the
 controller waits for Ink to release raw mode and then references and resumes
-stdin. This keeps Inquirer questions alive instead of allowing Node to exit on
-an unresolved prompt. The TUI runner unreferences stdin only when the workspace
-actually closes.
+stdin. It references and resumes stdin again after the action succeeds, fails,
+or is canceled because Inquirer may pause the stream while cleaning up its
+prompt. This keeps both the question and the restored menu alive. The TUI
+runner unreferences stdin only when the workspace actually closes.
 
 Command helpers skip the repeated `ClipStitchr` brand while the TUI is active,
 but retain their useful action subtitle and normal output. Direct commands keep
