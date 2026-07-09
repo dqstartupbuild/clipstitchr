@@ -1,17 +1,20 @@
 # CLI Batch And Queue Commands
 
-The CLI can now start batch content creation and add finished Stitches to the
-Post Bridge queue without opening the dashboard first.
+The CLI can start batch content creation and add ready active Stitches or
+Swipes to the Post Bridge queue without opening the dashboard first.
 
 ## User Commands
 
 ```bash
 clipstitchr stitchr batch --product product_123
 clipstitchr swipr batch
-clipstitchr library clips --kind demo
-clipstitchr library stitches --ready
-clipstitchr library swipes
 clipstitchr queue stitch
+clipstitchr queue stitch stitch_123
+clipstitchr queue stitch --all
+clipstitchr queue swipe
+clipstitchr queue swipe swipe_123
+clipstitchr queue swipe --all
+clipstitchr queue --all
 ```
 
 `clipstitchr stitchr batch` starts today's Stitchr Batch for the connected
@@ -32,10 +35,18 @@ UI as uploads, but the rows are read from automation task summaries and grouped
 by batch run. Progress is the share of batch tasks that have reached a terminal
 state.
 
-`clipstitchr queue stitch` adds a finished Stitch to the user's Post Bridge
-queue. If no Stitch ID is passed, the CLI lists ready, unposted Stitches and
-lets the user pick one. The command never asks for a date or time; the backend
-sends `use_queue: true` to Post Bridge.
+`clipstitchr queue stitch` adds the latest ready active Stitch to the user's
+Post Bridge queue. Passing a Stitch ID keeps the old script-friendly behavior.
+`clipstitchr queue stitch --all` queues all ready active Stitches sequentially.
+
+`clipstitchr queue swipe` adds the latest ready active Swipe with a saved
+rendered image to the user's Post Bridge queue. Passing a Swipe ID queues that
+specific Swipe, and `clipstitchr queue swipe --all` queues all ready active
+Swipes sequentially. `clipstitchr queue --all` mixes ready Stitches and Swipes
+in a randomized order, then queues them one at a time. Bulk commands report each
+success and each failure so the user can see what still needs attention. None
+of the queue commands ask for a date or time; the backend sends
+`use_queue: true` to Post Bridge.
 
 ## Backend Surfaces
 
@@ -46,6 +57,7 @@ web/app/api/cli/library/swipes/route.ts
 web/app/api/cli/stitchr/batches/route.ts
 web/app/api/cli/swipr/batches/route.ts
 web/app/api/cli/queue/stitches/route.ts
+web/app/api/cli/queue/swipes/route.ts
 
 web/convex/createActiveAutomationBatchJobSummary.ts
 web/convex/getAutomationBatchJobProgress.ts
@@ -77,21 +89,20 @@ so the user gets a notification when the whole batch finishes.
 ## Queue Behavior
 
 The dashboard normally uploads a temporary R2 object to Post Bridge and deletes
-that temporary object after upload. CLI queueing starts from a saved Stitch
-video, so `uploadPostBridgeMediaFromR2Object` now accepts
-`deleteSourceObject: false`. This preserves the user's saved Stitch after Post
-Bridge receives the media.
+that temporary object after upload. CLI queueing starts from saved media, so
+`uploadPostBridgeMediaFromR2Object` accepts `deleteSourceObject: false`. This
+preserves the user's saved Stitch video or Swipe image after Post Bridge
+receives the media.
 
-The queue route consumes the same Post Bridge upload-byte and schedule-create
-limits as the dashboard before the expensive external calls. After Post Bridge
-returns a post, the route records the post reference on the Stitch and marks it
-posted. It also stores the local Post Bridge post-to-product mapping so
-Schedule and Analytics can show the queued post under the Stitch's product.
+The Stitch queue route requires a finished saved R2 video. The Swipe queue
+route requires a saved rendered image, which is currently the saved Swipe
+preview image. Full carousel or music-backed video rendering still happens in
+the dashboard because it uses browser canvas rendering. If a user needs the full
+Swipe carousel/video output, they should open the dashboard and queue it there.
 
-## Current Swipe Limitation
-
-Swipr queueing still belongs in the dashboard for now. Saved Swipes are slide
-data and background references; the dashboard renders the final images/video in
-the browser before scheduling. The CLI can create editable Swipe drafts in
-batch, but queueing Swipes from the CLI needs a server-side Swipe renderer so
-the backend can produce the same rendered media without a browser DOM.
+The queue routes consume the same Post Bridge upload-byte and schedule-create
+limits as the dashboard before the expensive external upload/create calls. After
+Post Bridge returns a post, the route records the post reference on the Stitch
+or Swipe and marks it posted. It also stores the local Post Bridge
+post-to-product mapping so Schedule and Analytics can show the queued post under
+the source product.

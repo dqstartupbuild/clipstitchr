@@ -4,7 +4,7 @@ export const clipstitchrCliDoc = {
   slug: "clipstitchr-cli",
   title: "ClipStitchr CLI",
   description:
-    "Record demos, start batch content, check your library, and queue finished Stitches from your terminal.",
+    "Record demos, start batch content, and queue ready work from your terminal.",
   summary:
     "Install one command, connect your account, capture demos, create batches, and send ready work to the queue.",
   category: "start",
@@ -14,8 +14,8 @@ export const clipstitchrCliDoc = {
     {
       title: "What it does",
       body: [
-        "The ClipStitchr CLI brings the parts of ClipStitchr that fit naturally in Terminal into the repo you already have open. You can record guided local product demos, upload existing demos, start batch content, list saved work, and add finished Stitches to the queue.",
-        "Use it when you changed the product, need a cleaner walkthrough, want to kick off a batch without opening the dashboard, or need a finished Stitch queued from a script.",
+        "The ClipStitchr CLI brings the parts of ClipStitchr that fit naturally in Terminal into the repo you already have open. You can record guided local product demos, upload existing demos, start batch content, and add ready work to the queue.",
+        "Use it when you changed the product, need a cleaner walkthrough, want to kick off a batch without opening the dashboard, or need ready content queued from a script.",
       ],
     },
     {
@@ -111,19 +111,23 @@ export const clipstitchrCliDoc = {
     {
       title: "Find and queue content",
       body: [
-        "Library commands show the IDs you need for scripts. Queue adds a finished Stitch to your Post Bridge queue, using the connected accounts saved on the product unless you pass account IDs yourself.",
+        "Queue adds ready active work to your Post Bridge queue, using the connected accounts saved on the product unless you pass account IDs yourself. Dashboard Library browsing remains the best way to inspect saved clips, Stitches, and Swipes.",
       ],
       bullets: [
         "Queue does not ask for a date or time.",
-        "The Stitch needs a finished rendered video before it can be queued.",
-        "Swipe queueing still happens in the dashboard because Swipes are rendered in the browser before posting.",
+        "A Stitch needs a finished rendered video before it can be queued.",
+        "A Swipe needs a saved rendered image before the CLI can queue it.",
+        "Use --all to queue active items one at a time. If one item fails, the CLI shows what queued and what needs attention.",
+        "Open the dashboard when you need to review the full Library or render and queue the full Swipe carousel or video version.",
       ],
       commands: [
-        "clipstitchr library clips --kind demo",
-        "clipstitchr library stitches --ready",
-        "clipstitchr library swipes",
         "clipstitchr queue stitch",
         "clipstitchr queue stitch stitch_123 --caption \"New demo is live\"",
+        "clipstitchr queue stitch --all",
+        "clipstitchr queue swipe",
+        "clipstitchr queue swipe swipe_123 --accounts 123,456",
+        "clipstitchr queue swipe --all",
+        "clipstitchr queue --all",
         "clipstitchr queue stitch stitch_123 --accounts 123,456",
       ],
     },

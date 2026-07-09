@@ -1,8 +1,8 @@
 # ClipStitchr CLI Tool
 
 The ClipStitchr CLI lets a user type one command from a product repo, record or
-upload a product demo, start batch content creation, inspect saved library
-items, and add finished Stitches to the Post Bridge queue.
+upload a product demo, start batch content creation, and add ready work to the
+Post Bridge queue.
 
 ```bash
 clipstitchr
@@ -11,13 +11,13 @@ clipstitchr
 The npm package lives outside the web app at `packages/clipstitchr-cli`. The web
 app owns the production API surfaces the CLI needs: machine login, product
 selection/creation, R2 upload signing, upload completion, upload status, batch
-creation, library listing, and queueing finished Stitches.
+creation, bounded library reads for queue selection, and queueing ready content.
 
 ## What It Does
 
 - `clipstitchr` opens a guided prompt for making a demo, uploading an existing
-  demo, connecting the repo, starting batch work, queueing a Stitch, or checking
-  setup.
+  demo, connecting the repo, starting batch work, queueing ready content, or
+  checking setup.
 - `clipstitchr --help`, `clipstitchr help`, and
   `clipstitchr help demo manual` show the available command options.
 - `clipstitchr --version` prints the installed CLI version.
@@ -56,11 +56,11 @@ creation, library listing, and queueing finished Stitches.
 - `clipstitchr stitchr batch` starts today's Stitchr Batch from the terminal.
 - `clipstitchr swipr batch` queues Swipr draft creation from the user's saved
   dashboard batch settings.
-- `clipstitchr library clips`, `clipstitchr library stitches`, and
-  `clipstitchr library swipes` list saved assets for scripts and queue
-  selection.
-- `clipstitchr queue stitch` adds a finished Stitch to the user's Post Bridge
+- `clipstitchr queue stitch`, `clipstitchr queue swipe`, and
+  `clipstitchr queue --all` add ready active work to the user's Post Bridge
   queue without asking for a date or time.
+- `clipstitchr library ...` commands remain hidden compatibility aliases for
+  old scripts; browsing belongs in the dashboard.
 - `clipstitchr products list` prints saved product IDs and names for scripting.
 - `clipstitchr products create` creates a product from the terminal, and
   `clipstitchr products create --use` also saves it to the repo config.
@@ -157,9 +157,12 @@ Stitch video, uploads that video to Post Bridge without deleting the saved R2
 asset, creates a queued Post Bridge post with `useQueue`, and attaches the post
 reference back to the Stitch.
 
-Saved Swipes are still queued from the dashboard because Swipr media is rendered
-in the browser before scheduling. CLI Swipr queueing needs a server-side Swipe
-renderer before it can faithfully match the dashboard output.
+`clipstitchr queue swipe` calls `POST /api/cli/queue/swipes`. The route
+verifies the Swipe belongs to the CLI session owner, requires a saved rendered
+Swipe image, uploads that image to Post Bridge without deleting the saved R2
+asset, creates a queued Post Bridge post with `useQueue`, and attaches the post
+reference back to the Swipe. Full Swipe carousel or video rendering still stays
+in the dashboard because that output is browser-rendered before upload.
 
 ## Recording Behavior
 

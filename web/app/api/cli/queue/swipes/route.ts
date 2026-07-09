@@ -7,6 +7,7 @@ import { readCliOptionalString } from "@/lib/clipstitchr/server/cli/readCliOptio
 import { readCliRequiredString } from "@/lib/clipstitchr/server/cli/readCliRequiredString";
 import { readCliSocialAccountIds } from "@/lib/clipstitchr/server/cli/readCliSocialAccountIds";
 import { createConvexHttpClient } from "@/lib/clipstitchr/server/convex/createConvexHttpClient";
+import { assertPostBridgePlatformMediaKind } from "@/lib/clipstitchr/server/postBridge/assertPostBridgePlatformMediaKind";
 import { createPostBridgeMediaUploadDescriptor } from "@/lib/clipstitchr/server/postBridge/createPostBridgeMediaUploadDescriptor";
 import { createPostBridgePost } from "@/lib/clipstitchr/server/postBridge/createPostBridgePost";
 import { createPostBridgePostReference } from "@/lib/clipstitchr/server/postBridge/createPostBridgePostReference";
@@ -14,10 +15,13 @@ import { decryptPostBridgeApiKey } from "@/lib/clipstitchr/server/postBridge/dec
 import { getPostBridgeAccountPlatforms } from "@/lib/clipstitchr/server/postBridge/getPostBridgeAccountPlatforms";
 import { getSelectedPostBridgeAccounts } from "@/lib/clipstitchr/server/postBridge/getSelectedPostBridgeAccounts";
 import { listPostBridgeSocialAccounts } from "@/lib/clipstitchr/server/postBridge/listPostBridgeSocialAccounts";
+import { removePostBridgeTitleLineFromCaption } from "@/lib/clipstitchr/server/postBridge/removePostBridgeTitleLineFromCaption";
 import { uploadPostBridgeMediaFromR2Object } from "@/lib/clipstitchr/server/postBridge/uploadPostBridgeMediaFromR2Object";
 import { createRateLimitExceededResponse } from "@/lib/clipstitchr/server/rateLimits/createRateLimitExceededResponse";
 import { getRateLimitApiSecret } from "@/lib/clipstitchr/server/rateLimits/getRateLimitApiSecret";
+import { createSwiprSwipeSocialDescription } from "@/lib/clipstitchr/utils/createSwiprSwipeSocialDescription";
 import { getPostBridgeMediaFileName } from "@/lib/clipstitchr/utils/getPostBridgeMediaFileName";
+import { getSwiprPostBridgeTitle } from "@/lib/clipstitchr/utils/getSwiprPostBridgeTitle";
 
 export const runtime = "nodejs";
 
@@ -30,21 +34,23 @@ export async function POST(request: Request) {
 
   try {
     const body = await readCliJsonObject(request);
-    const stitchId = readCliRequiredString(body, "stitchId", "Stitch ID");
+    const swipeId = readCliRequiredString(body, "swipeId", "Swipe ID");
     const convex = createConvexHttpClient();
     const secret = getRateLimitApiSecret();
-    const stitch = await convex.query(api.cliLibrary.getCliStitch.getCliStitch, {
-      id: stitchId,
+    const swipe = await convex.query(api.cliLibrary.getCliSwipe.getCliSwipe, {
+      id: swipeId,
       ownerId: session.ownerId,
       secret,
     });
 
-    if (!stitch) {
-      throw new Error("Stitch not found.");
+    if (!swipe) {
+      throw new Error("Swipe not found.");
     }
 
-    if (!stitch.stitchObject) {
-      throw new Error("That Stitch is still rendering. Try again when it is ready.");
+    if (!swipe.posterObject) {
+      throw new Error(
+        "Open this Swipe in the dashboard and save it with photos before queueing from the CLI.",
+      );
     }
 
     const postBridgeSecret = await convex.query(
@@ -62,13 +68,14 @@ export async function POST(request: Request) {
     }
 
     const apiKey = decryptPostBridgeApiKey(postBridgeSecret.encryptedApiKey);
-    const product = stitch.productId
-      ? await convex.query(api.cliProducts.getCliProduct.getCliProduct, {
-          id: stitch.productId,
-          ownerId: session.ownerId,
-          secret,
-        })
-      : null;
+    const product = await convex.query(
+      api.cliProducts.getCliProduct.getCliProduct,
+      {
+        id: swipe.productSourceId,
+        ownerId: session.ownerId,
+        secret,
+      },
+    );
     const requestedAccountIds = readCliSocialAccountIds(body);
     const selectedAccounts = getSelectedPostBridgeAccounts(
       await listPostBridgeSocialAccounts(apiKey),
@@ -78,14 +85,16 @@ export async function POST(request: Request) {
     );
     const platforms = getPostBridgeAccountPlatforms(selectedAccounts);
     const media = createPostBridgeMediaUploadDescriptor({
-      mimeType: stitch.stitchObject.contentType,
-      name: getPostBridgeMediaFileName(stitch.name, "video"),
-      sizeBytes: stitch.stitchObject.size,
+      mimeType: swipe.posterObject.contentType,
+      name: getPostBridgeMediaFileName(swipe.name, "image"),
+      sizeBytes: swipe.posterObject.size,
     });
 
-    if (media.mediaKind !== "video") {
-      throw new Error("Stitches need a finished video before queueing.");
+    if (media.mediaKind !== "image") {
+      throw new Error("Swipes need a saved image before queueing.");
     }
+
+    assertPostBridgePlatformMediaKind(media.mediaKind, platforms);
 
     await convex.mutation(
       api.cliRateLimits.consumeCliPostBridgeMediaUpload
@@ -101,7 +110,7 @@ export async function POST(request: Request) {
       apiKey,
       deleteSourceObject: false,
       media,
-      sourceObject: stitch.stitchObject,
+      sourceObject: swipe.posterObject,
       userId: session.ownerId,
     });
 
@@ -114,8 +123,10 @@ export async function POST(request: Request) {
     );
 
     const caption =
-      readCliOptionalString(body, "caption") ?? stitch.socialCaption ?? "";
-    const title = readCliOptionalString(body, "title") ?? stitch.name;
+      readCliOptionalString(body, "caption") ??
+      createSwiprSwipeSocialDescription(swipe);
+    const title =
+      readCliOptionalString(body, "title") ?? getSwiprPostBridgeTitle(swipe);
     const post = await createPostBridgePost({
       apiKey,
       caption,
@@ -123,28 +134,25 @@ export async function POST(request: Request) {
       platforms,
       scheduledAt: null,
       socialAccountIds: selectedAccounts.map((account) => account.id),
+      tiktokCaption: removePostBridgeTitleLineFromCaption({ caption, title }),
       title,
       useQueue: true,
     });
     const postReference = createPostBridgePostReference({
-      hasAudio: Boolean(
-        stitch.music?.enabled ||
-          stitch.includeUgcAudio !== false ||
-          stitch.includeDemoAudio !== false,
-      ),
+      hasAudio: false,
       mediaIds: [uploadedMedia.mediaId],
-      mediaKind: "video",
+      mediaKind: "image",
       platforms,
       post,
       scheduledAt: null,
       socialAccountIds: selectedAccounts.map((account) => account.id),
-      sourceType: "stitch",
+      sourceType: "swipe",
     });
 
     await convex.mutation(
-      api.cliLibrary.addCliStitchPostBridgePost.addCliStitchPostBridgePost,
+      api.cliLibrary.addCliSwipePostBridgePost.addCliSwipePostBridgePost,
       {
-        id: stitch.id,
+        id: swipe.id,
         ownerId: session.ownerId,
         post: postReference,
         secret,
@@ -168,7 +176,7 @@ export async function POST(request: Request) {
         message:
           error instanceof Error
             ? error.message
-            : "Unable to add this Stitch to your queue.",
+            : "Unable to add this Swipe to your queue.",
       },
       { status: 400 },
     );

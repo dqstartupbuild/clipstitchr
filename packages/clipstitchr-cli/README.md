@@ -1,7 +1,7 @@
 # ClipStitchr CLI
 
 Record guided product demos from a local or live app, upload finished demo
-files, start batch content, and queue finished Stitches in ClipStitchr.
+files, start batch content, and queue ready content in ClipStitchr.
 
 ```bash
 npx clipstitchr
@@ -45,10 +45,11 @@ clipstitchr demo manual --no-guide
 clipstitchr demo upload ./demo.mp4
 clipstitchr stitchr batch
 clipstitchr swipr batch
-clipstitchr library clips --kind demo
-clipstitchr library stitches --ready
-clipstitchr library swipes
 clipstitchr queue stitch
+clipstitchr queue stitch --all
+clipstitchr queue swipe
+clipstitchr queue swipe --all
+clipstitchr queue --all
 clipstitchr products list
 clipstitchr products create --use
 clipstitchr products use
@@ -120,8 +121,13 @@ non-interactive, so it tells you the install command to run instead.
 Batch commands let you start Stitchr and Swipr draft creation from Terminal.
 `clipstitchr stitchr batch` creates today's Stitchr batch from recent UGC and
 Demo clips. `clipstitchr swipr batch` queues Swipr drafts using your dashboard
-batch settings. `clipstitchr queue stitch` adds a finished Stitch to your Post
-Bridge queue without asking for a date or time.
+batch settings. Queue commands add ready active content to your Post Bridge
+queue without asking for a date or time. `clipstitchr queue stitch` picks the
+latest ready active Stitch unless you pass an ID, `clipstitchr queue swipe`
+picks the latest ready active Swipe, and `--all` queues active items one at a
+time. Dashboard browsing remains the best way to inspect your whole Library.
+CLI Swipe queueing uses the saved rendered Swipe image; open the dashboard when
+you need to render and queue the full carousel or video version.
 
 The CLI uses light branded terminal output for guided flows, setup checks,
 recording progress, upload progress, success states, warnings, and next

@@ -31,6 +31,7 @@ export const listCliSwipes = query({
       .slice(0, requestedLimit)
       .map((swipe) => ({
         createdAt: swipe.createdAt,
+        hasRenderedImage: Boolean(swipe.posterObject),
         id: swipe.id,
         isPosted: swipe.isPosted,
         name: swipe.name,

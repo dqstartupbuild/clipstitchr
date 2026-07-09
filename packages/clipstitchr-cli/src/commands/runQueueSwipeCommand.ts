@@ -1,45 +1,44 @@
 import type { QueueContentCommandOptions } from "./QueueContentCommandOptions.js";
-import { listLibraryStitches } from "../api/listLibraryStitches.js";
-import { queueStitch } from "../api/queueStitch.js";
-import { getActiveQueueableStitches } from "../queue/getActiveQueueableStitches.js";
-import { getLatestQueueableStitch } from "../queue/getLatestQueueableStitch.js";
+import { getCommandCredentials } from "./getCommandCredentials.js";
+import { parseSocialAccountIdsOption } from "./parseSocialAccountIdsOption.js";
+import { listLibrarySwipes } from "../api/listLibrarySwipes.js";
+import { queueSwipe } from "../api/queueSwipe.js";
+import { getActiveQueueableSwipes } from "../queue/getActiveQueueableSwipes.js";
+import { getLatestQueueableSwipe } from "../queue/getLatestQueueableSwipe.js";
 import { logQueueContentExecutionResults } from "../queue/logQueueContentExecutionResults.js";
 import { queueContentItemsSequentially } from "../queue/queueContentItemsSequentially.js";
 import { throwIfQueueContentExecutionFailed } from "../queue/throwIfQueueContentExecutionFailed.js";
 import { logKeyValue } from "../terminal/logKeyValue.js";
 import { logInfo } from "../terminal/logInfo.js";
 import { logSuccess } from "../terminal/logSuccess.js";
-import { getCommandCredentials } from "./getCommandCredentials.js";
-import { parseSocialAccountIdsOption } from "./parseSocialAccountIdsOption.js";
 
-export async function runQueueStitchCommand(
-  stitchId: string | undefined,
+export async function runQueueSwipeCommand(
+  swipeId: string | undefined,
   options: QueueContentCommandOptions,
 ) {
   const credentials = await getCommandCredentials(options);
   const socialAccountIds = parseSocialAccountIdsOption(options.accounts);
 
   if (options.all) {
-    const { stitches } = await listLibraryStitches(credentials, {
+    const { swipes } = await listLibrarySwipes(credentials, {
       limit: 50,
       productId: options.product,
-      readyOnly: true,
     });
-    const items = getActiveQueueableStitches(stitches).map((stitch) => ({
-      item: stitch,
-      type: "stitch" as const,
+    const items = getActiveQueueableSwipes(swipes).map((swipe) => ({
+      item: swipe,
+      type: "swipe" as const,
     }));
 
     if (!items.length) {
-      logInfo("No ready active Stitches found.");
+      logInfo("No ready active Swipes found.");
       return;
     }
 
     const results = await queueContentItemsSequentially(items, async (item) => {
-      return await queueStitch(credentials, {
+      return await queueSwipe(credentials, {
         caption: options.caption,
         socialAccountIds,
-        stitchId: item.item.id,
+        swipeId: item.item.id,
         title: options.title,
       });
     });
@@ -49,21 +48,20 @@ export async function runQueueStitchCommand(
     return;
   }
 
-  const selectedStitchId =
-    stitchId ??
-    getLatestQueueableStitch(
+  const selectedSwipeId =
+    swipeId ??
+    getLatestQueueableSwipe(
       (
-        await listLibraryStitches(credentials, {
+        await listLibrarySwipes(credentials, {
           limit: 50,
           productId: options.product,
-          readyOnly: true,
         })
-      ).stitches,
+      ).swipes,
     ).id;
-  const result = await queueStitch(credentials, {
+  const result = await queueSwipe(credentials, {
     caption: options.caption,
     socialAccountIds,
-    stitchId: selectedStitchId,
+    swipeId: selectedSwipeId,
     title: options.title,
   });
 

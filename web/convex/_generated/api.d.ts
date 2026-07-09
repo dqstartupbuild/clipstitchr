@@ -49,8 +49,10 @@ import type * as cliAuth_exchangeDeviceAuthorization from "../cliAuth/exchangeDe
 import type * as cliAuth_getActiveSessionByTokenHash from "../cliAuth/getActiveSessionByTokenHash.js";
 import type * as cliAuth_revokeSessionByTokenHash from "../cliAuth/revokeSessionByTokenHash.js";
 import type * as cliLibrary_addCliStitchPostBridgePost from "../cliLibrary/addCliStitchPostBridgePost.js";
+import type * as cliLibrary_addCliSwipePostBridgePost from "../cliLibrary/addCliSwipePostBridgePost.js";
 import type * as cliLibrary_cliLibraryListLimit from "../cliLibrary/cliLibraryListLimit.js";
 import type * as cliLibrary_getCliStitch from "../cliLibrary/getCliStitch.js";
+import type * as cliLibrary_getCliSwipe from "../cliLibrary/getCliSwipe.js";
 import type * as cliLibrary_listCliClips from "../cliLibrary/listCliClips.js";
 import type * as cliLibrary_listCliStitches from "../cliLibrary/listCliStitches.js";
 import type * as cliLibrary_listCliSwipes from "../cliLibrary/listCliSwipes.js";
@@ -310,8 +312,10 @@ declare const fullApi: ApiFromModules<{
   "cliAuth/getActiveSessionByTokenHash": typeof cliAuth_getActiveSessionByTokenHash;
   "cliAuth/revokeSessionByTokenHash": typeof cliAuth_revokeSessionByTokenHash;
   "cliLibrary/addCliStitchPostBridgePost": typeof cliLibrary_addCliStitchPostBridgePost;
+  "cliLibrary/addCliSwipePostBridgePost": typeof cliLibrary_addCliSwipePostBridgePost;
   "cliLibrary/cliLibraryListLimit": typeof cliLibrary_cliLibraryListLimit;
   "cliLibrary/getCliStitch": typeof cliLibrary_getCliStitch;
+  "cliLibrary/getCliSwipe": typeof cliLibrary_getCliSwipe;
   "cliLibrary/listCliClips": typeof cliLibrary_listCliClips;
   "cliLibrary/listCliStitches": typeof cliLibrary_listCliStitches;
   "cliLibrary/listCliSwipes": typeof cliLibrary_listCliSwipes;

@@ -31,7 +31,9 @@ import { runNativeInitCommand } from "./runNativeInitCommand.js";
 import { runProductsCreateCommand } from "./runProductsCreateCommand.js";
 import { runProductsListCommand } from "./runProductsListCommand.js";
 import { runProductsUseCommand } from "./runProductsUseCommand.js";
+import { runQueueAllCommand } from "./runQueueAllCommand.js";
 import { runQueueStitchCommand } from "./runQueueStitchCommand.js";
+import { runQueueSwipeCommand } from "./runQueueSwipeCommand.js";
 import { runScanCommand } from "./runScanCommand.js";
 import { runStatusCommand } from "./runStatusCommand.js";
 import { runStitchrBatchCommand } from "./runStitchrBatchCommand.js";
@@ -413,7 +415,9 @@ export async function runCli(argv: string[]) {
       await runSwiprBatchCommand({ ...program.opts(), ...options });
     });
 
-  const library = program.command("library").description("List saved assets");
+  const library = program
+    .command("library", { hidden: true })
+    .description("Legacy library listing commands");
 
   library
     .command("clips")
@@ -444,17 +448,45 @@ export async function runCli(argv: string[]) {
       await runLibrarySwipesCommand({ ...program.opts(), ...options });
     });
 
-  const queue = program.command("queue").description("Add content to your queue");
+  const queue = program
+    .command("queue")
+    .description("Add content to your queue")
+    .option("--accounts <ids>", "Comma-separated Post Bridge account IDs")
+    .option("--all", "Queue all active Stitches and Swipes")
+    .option("--product <id>", "Filter by product ID")
+    .action(async (options) => {
+      if (options.all) {
+        await runQueueAllCommand({ ...program.opts(), ...options });
+        return;
+      }
+
+      queue.help();
+    });
 
   queue
     .command("stitch")
     .argument("[stitchId]", "Finished Stitch ID")
     .description("Add a finished Stitch to your Post Bridge queue")
     .option("--accounts <ids>", "Comma-separated Post Bridge account IDs")
+    .option("--all", "Queue all ready active Stitches")
     .option("--caption <text>", "Post caption")
+    .option("--product <id>", "Filter by product ID")
     .option("--title <text>", "Post title")
     .action(async (stitchId, options) => {
       await runQueueStitchCommand(stitchId, { ...program.opts(), ...options });
+    });
+
+  queue
+    .command("swipe")
+    .argument("[swipeId]", "Swipe ID")
+    .description("Add a saved Swipe to your Post Bridge queue")
+    .option("--accounts <ids>", "Comma-separated Post Bridge account IDs")
+    .option("--all", "Queue all ready active Swipes")
+    .option("--caption <text>", "Post caption")
+    .option("--product <id>", "Filter by product ID")
+    .option("--title <text>", "Post title")
+    .action(async (swipeId, options) => {
+      await runQueueSwipeCommand(swipeId, { ...program.opts(), ...options });
     });
 
   const products = program.command("products").description("Manage products");
