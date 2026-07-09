@@ -15,9 +15,13 @@ export async function runDemoMenuAction(input: {
   }
 
   if (input.action === "agent") {
+    const guide = await input.readText(
+      "Guide name, ID, or path (leave blank to create one):",
+    );
+
     await input.services.runAgent({
       ...input.options,
-      guide: await input.readText("Guide name, ID, or path:"),
+      guide: guide.trim() || undefined,
     });
     return;
   }

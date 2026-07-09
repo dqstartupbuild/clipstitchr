@@ -2,6 +2,7 @@ import type { CliGlobalOptions } from "./CliGlobalOptions.js";
 
 export type DemoAutoCommandOptions = CliGlobalOptions & {
   audience?: string;
+  confirmUpload?: boolean;
   driver?: string;
   goal?: string;
   openaiMode?: string;
@@ -10,5 +11,6 @@ export type DemoAutoCommandOptions = CliGlobalOptions & {
   surface?: string;
   steps?: string;
   target?: string;
+  upload?: boolean;
   url?: string;
 };

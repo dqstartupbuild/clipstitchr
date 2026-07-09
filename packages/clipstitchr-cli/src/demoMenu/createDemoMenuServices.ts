@@ -2,7 +2,7 @@ import { runDemoAgentCheckCommand } from "../commands/runDemoAgentCheckCommand.j
 import { runDemoAgentEditCommand } from "../commands/runDemoAgentEditCommand.js";
 import { runDemoAgentExportLogCommand } from "../commands/runDemoAgentExportLogCommand.js";
 import { runDemoAgentInitCommand } from "../commands/runDemoAgentInitCommand.js";
-import { runDemoAgentRunCommand } from "../commands/runDemoAgentRunCommand.js";
+import { runDemoAgentCommand } from "../commands/runDemoAgentCommand.js";
 import { runDemoGuideDeleteCommand } from "../commands/runDemoGuideDeleteCommand.js";
 import { runDemoGuideEditCommand } from "../commands/runDemoGuideEditCommand.js";
 import { runDemoGuideGenerateCommand } from "../commands/runDemoGuideGenerateCommand.js";
@@ -15,7 +15,7 @@ import type { DemoMenuServices } from "./DemoMenuServices.js";
 
 export function createDemoMenuServices(): DemoMenuServices {
   return {
-    runAgent: runDemoAgentRunCommand,
+    runAgent: runDemoAgentCommand,
     runGuideCreate: runDemoGuideGenerateCommand,
     runGuideDelete: runDemoGuideDeleteCommand,
     runGuideEdit: runDemoGuideEditCommand,

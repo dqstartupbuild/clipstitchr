@@ -39,7 +39,8 @@ export async function reviewDemoAgentRecordingUpload(
     };
   }
 
-  const approvedForUpload = await services.confirmUpload();
+  const approvedForUpload =
+    input.upload === true ? true : await services.confirmUpload();
   const reviewedSummary = {
     ...input.recording.summary,
     approvedForUpload,

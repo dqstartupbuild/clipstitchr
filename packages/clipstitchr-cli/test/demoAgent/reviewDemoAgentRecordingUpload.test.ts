@@ -147,4 +147,32 @@ describe("reviewDemoAgentRecordingUpload", () => {
     assert.equal(state.summaries[1]?.approvedForUpload, true);
     assert.equal(state.summaries[1]?.uploaded, true);
   });
+
+  it("uploads without prompting when upload is already approved", async () => {
+    const { credentials, services, state } =
+      createDemoAgentUploadReviewTestServices({
+        approvedForUpload: false,
+        productId: "product_approved",
+      });
+    const result = await reviewDemoAgentRecordingUpload(
+      {
+        apiBaseUrl: "https://example.test",
+        existingCredentials: credentials,
+        guide: createDemoAgentTestGuide([
+          { id: "step-1", label: "Dashboard" },
+        ]),
+        preferredProductId: "product_approved",
+        recording: createDemoAgentTestRecordedRun(),
+        upload: true,
+      },
+      services,
+    );
+
+    assert.deepEqual(result, {
+      approvedForUpload: true,
+      uploaded: true,
+    });
+    assert.equal(state.confirmationCount, 0);
+    assert.equal(state.uploadInputs.length, 1);
+  });
 });

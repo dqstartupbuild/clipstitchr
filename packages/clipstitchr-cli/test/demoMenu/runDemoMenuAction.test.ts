@@ -30,6 +30,19 @@ describe("runDemoMenuAction", () => {
     assert.deepEqual(calls, ["agent:Checkout flow"]);
   });
 
+  it("can start automated recording without an existing guide", async () => {
+    const calls: string[] = [];
+
+    await runDemoMenuAction({
+      action: "agent",
+      options: {},
+      readText: async () => "",
+      services: createDemoMenuTestServices(calls),
+    });
+
+    assert.deepEqual(calls, ["agent:new"]);
+  });
+
   it("prompts for run IDs before showing logs", async () => {
     const calls: string[] = [];
 

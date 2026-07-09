@@ -11,13 +11,12 @@ run. Recording upload requires explicit review and approval.
   local safety policy without editing JSON.
 - Keeps `clipstitchr demo agent init` and `clipstitchr demo agent check` as
   legacy aliases.
-- Adds `clipstitchr demo agent run --guide <id> --dry-run`.
-- Adds guarded recording with `clipstitchr demo agent run --guide <id>`.
+- Adds `clipstitchr demo agent` for AI guide creation and guarded recording.
+- Adds guarded recording with `clipstitchr demo agent --guide <id>`.
 - Adds `clipstitchr demo logs <run-id>`.
 - Keeps `clipstitchr demo agent export-log <run-id>` as a legacy alias.
-- Adds `clipstitchr demo auto` for one-command AI guide generation and guarded
-  AI recording when account, repo, and a local or live app URL are already
-  ready.
+- Keeps `clipstitchr demo auto` and `clipstitchr demo agent run --guide <id>`
+  as legacy aliases.
 - Supports `--target live` for explicitly selected live or staging URLs.
 - Runs a guarded observe, plan, validate, execute, log, and stop loop.
 - Saves local evidence under `.clipstitchr/agent-runs/<run-id>/`.
@@ -109,7 +108,7 @@ demonstrate.
 
 ## Recording Behavior
 
-Running without `--dry-run` first opens a non-recorded browser preflight. If the
+Running the agent opens a non-recorded browser preflight. If the
 app asks for sign-in, the CLI asks the user to sign in with a test account and
 waits before recording. After that preflight closes, the CLI opens a
 video-recorded browser context, captures interaction events, runs the same
@@ -185,7 +184,7 @@ so `clipstitchr demo manual` remains the full-video path for native devices.
 
 ## One-Command AI Recording
 
-`clipstitchr demo auto` is the guided one-command path. It requires the project
+`clipstitchr demo agent` is the guided one-command path. It requires the project
 to already be linked, the CLI account session to be valid, and either a known
 local app URL or an explicitly selected live URL. Before writing the guide, it
 asks what the demo should show unless the user passes `--goal`. That goal is

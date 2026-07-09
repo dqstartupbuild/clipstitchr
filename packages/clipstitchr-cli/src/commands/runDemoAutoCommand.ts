@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import type { ChildProcess } from "node:child_process";
+import { confirm } from "@inquirer/prompts";
 import { generateDemoWalkthroughGuide } from "../api/generateDemoWalkthroughGuide.js";
 import { planDemoAgentActionWithAi } from "../api/planDemoAgentActionWithAi.js";
 import { readProjectConfig } from "../config/readProjectConfig.js";
@@ -343,10 +344,17 @@ export async function runDemoAutoCommand(options: DemoAutoCommandOptions) {
         guide,
         preferredProductId: product.id,
         recording,
-        upload: false,
+        upload: options.upload,
       },
       {
-        confirmUpload: async () => false,
+        confirmUpload: () =>
+          options.confirmUpload
+            ? confirm({
+                default: false,
+                message:
+                  "I reviewed the recording, screenshots, and action log. Upload this demo to ClipStitchr?",
+              })
+            : Promise.resolve(false),
         ensureCredentialsOrLogin,
         logInfo,
         logNextCommand,

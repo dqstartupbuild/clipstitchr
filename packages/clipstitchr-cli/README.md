@@ -20,11 +20,12 @@ clipstitchr link
 clipstitchr status
 clipstitchr update
 clipstitchr demo
-clipstitchr demo auto
-clipstitchr demo auto --driver openai-computer
-clipstitchr demo auto --driver openai-computer --openai-mode relay
-clipstitchr demo auto --driver openai-computer --target live --url https://example.com
-clipstitchr demo auto --driver openai-computer --surface macos-window --openai-mode relay
+clipstitchr demo agent
+clipstitchr demo agent --guide "Checkout flow"
+clipstitchr demo agent --driver openai-computer
+clipstitchr demo agent --driver openai-computer --openai-mode relay
+clipstitchr demo agent --driver openai-computer --target live --url https://example.com
+clipstitchr demo agent --driver openai-computer --surface macos-window --openai-mode relay
 clipstitchr demo guide create
 clipstitchr demo guide list
 clipstitchr demo guide show "Checkout flow"
@@ -34,14 +35,9 @@ clipstitchr demo guide save-instructions guide_123
 clipstitchr demo policy init
 clipstitchr demo policy check
 clipstitchr demo policy edit
-clipstitchr demo agent init
-clipstitchr demo agent check
-clipstitchr demo agent run --guide "Checkout flow" --dry-run
-clipstitchr demo agent run --guide "Checkout flow"
-clipstitchr demo agent run --guide guide_123 --ai-planner --dry-run
-clipstitchr demo agent run --guide guide_123 --driver openai-computer
-clipstitchr demo agent run --guide guide_123 --driver openai-computer --target live --url https://example.com
-clipstitchr demo agent run --guide guide_123 --no-upload
+clipstitchr demo agent --guide guide_123 --driver openai-computer
+clipstitchr demo agent --guide guide_123 --driver openai-computer --target live --url https://example.com
+clipstitchr demo agent --guide guide_123 --no-upload
 clipstitchr demo logs agent_run_123
 clipstitchr demo manual
 clipstitchr demo manual --guide "Checkout flow"
@@ -63,11 +59,14 @@ clipstitchr --plain status
 ```
 
 If the repo is linked, your ClipStitchr account is connected, and the saved
-browser profile is already signed into your app, `clipstitchr demo auto` writes
-the guide with ClipStitchr AI and records the demo with the guarded AI agent in
-one command. It can use localhost by default, or a live/staging URL with
-`--target live`. It saves the guide, MP4, screenshots, action log, and run
-summary locally without asking questions. It does not upload automatically.
+browser profile is already signed into your app, `clipstitchr demo agent`
+writes a guide with ClipStitchr AI and records the demo with the guarded AI
+agent in one command. Use `clipstitchr demo agent --guide "Checkout flow"` when
+you want to record from an existing guide. It can use localhost by default, or
+a live/staging URL with `--target live`. It saves the guide, MP4, screenshots,
+action log, and run summary locally. By default it asks you to review before
+upload. Use `--no-upload` to keep the MP4 local or `--upload` to upload without
+the review prompt.
 
 The built-in recorder can also create a simple walkthrough checklist before
 each demo. Run `clipstitchr demo` when you want a focused menu for recording,
@@ -77,7 +76,7 @@ ClipStitchr first, review it, edit it, and save it for the next recording.
 Saved guides get readable names like `Checkout flow`, and `demo guide list`
 shows those names first. You can use a guide name, ID, or file path with
 `demo guide show`, `edit`, `delete`, `save-instructions`, `demo manual
---guide`, and `demo agent run --guide`.
+--guide`, and `demo agent --guide`.
 During recording, the terminal walks through each step and records section
 timing metadata for ClipStitchr to use later for chapters, captions, smart
 zooms, and editing decisions. Use `--no-guide` when you want one free-form take,
@@ -114,7 +113,7 @@ useful for apps with longer loading, AI generation, or processing steps because
 ClipStitchr can cut pauses and waiting time during Quick Edit.
 
 If the recording browser is not installed yet, interactive recording commands
-ask to install it before recording starts. `clipstitchr demo auto` is
+ask to install it before recording starts. `clipstitchr demo agent` is
 non-interactive, so it tells you the install command to run instead.
 
 Batch commands let you start Stitchr and Swipr draft creation from Terminal.

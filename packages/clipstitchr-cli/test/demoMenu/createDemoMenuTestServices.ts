@@ -3,7 +3,7 @@ import type { DemoMenuServices } from "../../src/demoMenu/DemoMenuServices.js";
 export function createDemoMenuTestServices(calls: string[]) {
   return {
     runAgent: async (options) => {
-      calls.push(`agent:${options.guide}`);
+      calls.push(`agent:${options.guide ?? "new"}`);
     },
     runGuideCreate: async () => {
       calls.push("guide-create");

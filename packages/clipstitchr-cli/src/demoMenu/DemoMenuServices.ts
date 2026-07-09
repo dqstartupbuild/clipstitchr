@@ -1,7 +1,7 @@
 import type { CliGlobalOptions } from "../commands/CliGlobalOptions.js";
 
 export type DemoMenuServices = {
-  runAgent: (options: CliGlobalOptions & { guide: string }) => Promise<void>;
+  runAgent: (options: CliGlobalOptions & { guide?: string }) => Promise<void>;
   runGuideCreate: (options: CliGlobalOptions) => Promise<void>;
   runGuideDelete: (reference: string, options: CliGlobalOptions) => Promise<void>;
   runGuideEdit: (reference: string) => Promise<void>;

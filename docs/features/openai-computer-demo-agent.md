@@ -1,7 +1,7 @@
 # OpenAI Computer Demo Agent
 
-The OpenAI Computer demo agent lets `clipstitchr demo auto` and
-`clipstitchr demo agent run` control a browser with OpenAI Computer Use
+The OpenAI Computer demo agent lets `clipstitchr demo agent` control a browser
+with OpenAI Computer Use
 instead of the structured JSON action planner.
 
 ## What It Does
@@ -38,12 +38,12 @@ demoAgent:
 The same driver can be selected for a single run:
 
 ```bash
-clipstitchr demo auto --driver openai-computer
-clipstitchr demo auto --driver openai-computer --openai-mode relay
-clipstitchr demo auto --driver openai-computer --target live --url https://example.com
-clipstitchr demo auto --driver openai-computer --surface macos-window --openai-mode relay
-clipstitchr demo agent run --guide guide_123 --driver openai-computer
-clipstitchr demo agent run --guide guide_123 --driver openai-computer --target live --url https://example.com
+clipstitchr demo agent --driver openai-computer
+clipstitchr demo agent --driver openai-computer --openai-mode relay
+clipstitchr demo agent --driver openai-computer --target live --url https://example.com
+clipstitchr demo agent --driver openai-computer --surface macos-window --openai-mode relay
+clipstitchr demo agent --guide guide_123 --driver openai-computer
+clipstitchr demo agent --guide guide_123 --driver openai-computer --target live --url https://example.com
 ```
 
 `clipstitchr init` asks whether to use OpenAI Computer Use for automatic demos.
@@ -123,10 +123,10 @@ OpenAI can guide a native app only when the CLI provides both screenshots and a
 safe way to execute returned actions. The current native helper path supports a
 selected visible macOS window:
 
-- `clipstitchr demo auto --surface macos-window --openai-mode relay` for iOS
+- `clipstitchr demo agent --surface macos-window --openai-mode relay` for iOS
   Simulator, iPhone Mirroring, Android emulator windows, and other selected
   desktop app windows.
-- `clipstitchr demo auto --target live --url <live-or-staging-url>` when the
+- `clipstitchr demo agent --target live --url <live-or-staging-url>` when the
   product has a web surface to demonstrate.
 - `clipstitchr demo manual` when a full native MP4 is more important than
   automatic screenshots/actions.
@@ -160,9 +160,9 @@ capture is still a documented boundary.
 
 ## Use Cases
 
-- Run `clipstitchr demo auto --driver openai-computer` when the existing
+- Run `clipstitchr demo agent --driver openai-computer` when the existing
   structured planner is too rigid for a visual workflow.
 - Keep `structured-planner` for cheap deterministic local runs by selecting it
   explicitly.
-- Use `clipstitchr demo agent run --guide <id> --driver openai-computer
-  --dry-run` to inspect screenshots and logs before recording.
+- Use `clipstitchr demo agent --guide <id> --driver openai-computer` when you
+  want to record from an existing saved guide.

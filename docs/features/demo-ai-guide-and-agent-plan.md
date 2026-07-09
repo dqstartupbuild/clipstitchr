@@ -24,7 +24,7 @@ Already implemented:
 - A dedicated `clipstitchr demo guide` command namespace.
 - A downloadable agent instruction export.
 - Local demo agent policy initialization and validation.
-- Guarded `clipstitchr demo agent run --dry-run` with local screenshots,
+- Guarded `clipstitchr demo agent` runs with local screenshots,
   action logs, run summaries, and a deterministic policy-validated browser
   action loop.
 - CLI-local observer, planner, validator, and executor tests, including
@@ -45,7 +45,7 @@ Already implemented:
   after the first provider failure in a run.
 - CLI fallback from model-backed planning to the deterministic local planner
   when the model repeats an already-attempted action.
-- `clipstitchr demo auto` asks what the demo should show when `--goal` is not
+- `clipstitchr demo agent` asks what the demo should show when `--goal` is not
   provided, then sends that goal into guide generation and planner prompts.
 - CLI app context capture writes `.clipstitchr/app-context.json` during setup
   and AI demo phases, then sends capped route/workflow/input/button hints into
@@ -375,14 +375,13 @@ clipstitchr demo agent check
 clipstitchr demo policy init
 clipstitchr demo policy check
 clipstitchr demo policy edit
-clipstitchr demo agent run --guide guide_123
-clipstitchr demo agent run --guide guide_123 --dry-run
+clipstitchr demo agent --guide guide_123
+clipstitchr demo agent --guide guide_123 --no-upload
 clipstitchr demo logs agent_run_123
 ```
 
-`--dry-run` navigates, observes, validates, executes approved local browser
-actions, logs evidence, and stops without uploading anything to ClipStitchr. The
-normal run should still ask for approval before upload.
+`--no-upload` records locally without starting upload. The normal run still asks
+for approval before upload.
 
 ### Allowed Browser Actions
 
@@ -535,7 +534,7 @@ Required before the autonomous agent ships:
 1. Ship Phase 3 behind explicit `clipstitchr demo guide create`.
 2. Add customer docs only after generation works against production.
 3. Keep `clipstitchr demo manual` defaulting to manual guided recording.
-4. Keep Phase 4 as a private local beta with `clipstitchr demo agent run`.
+4. Keep Phase 4 as a private local beta with `clipstitchr demo agent`.
 5. Run GUI smoke checks for the recorded browser path before broad release.
 6. Keep upload gated by mandatory local review.
 7. Collect failed run summaries from consenting testers, not raw screenshots by

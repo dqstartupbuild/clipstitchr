@@ -2,6 +2,7 @@ import { Command } from "commander";
 import { addDemoManualCommandOptions } from "./addDemoManualCommandOptions.js";
 import type { CliGlobalOptions } from "./CliGlobalOptions.js";
 import { runDoctorCommand } from "./runDoctorCommand.js";
+import { runDemoAgentCommand } from "./runDemoAgentCommand.js";
 import { runDemoAgentCheckCommand } from "./runDemoAgentCheckCommand.js";
 import { runDemoAgentEditCommand } from "./runDemoAgentEditCommand.js";
 import { runDemoAgentExportLogCommand } from "./runDemoAgentExportLogCommand.js";
@@ -120,8 +121,8 @@ export async function runCli(argv: string[]) {
     });
 
   demo
-    .command("auto")
-    .description("Let AI write and record a demo")
+    .command("auto", { hidden: true })
+    .description("Legacy alias for demo agent")
     .option("--audience <text>", "Who this demo is for")
     .option(
       "--driver <driver>",
@@ -141,7 +142,27 @@ export async function runCli(argv: string[]) {
 
   const demoAgent = demo
     .command("agent")
-    .description("Run the guarded demo agent");
+    .description("Record a demo with the guarded AI agent")
+    .option("--audience <text>", "Who this demo is for")
+    .option("--ai-planner", "Ask ClipStitchr AI to propose each guarded action")
+    .option(
+      "--driver <driver>",
+      "Use structured-planner or openai-computer for browser control",
+    )
+    .option("--goal <text>", "What the demo should show")
+    .option("--guide <name-id-or-path>", "Use a saved walkthrough guide")
+    .option("--openai-mode <mode>", "Use direct or relay for OpenAI Computer Use")
+    .option("--upload", "Upload after recording without asking")
+    .option("--no-upload", "Record only")
+    .option("--product <id>", "ClipStitchr product ID")
+    .option("--start <command>", "Start command")
+    .option("--steps <count>", "Guide step count from 3 to 8")
+    .option("--surface <surface>", "Use browser or macos-window")
+    .option("--target <local-or-live>", "Use local or live as the recording target")
+    .option("--url <url>", "App URL")
+    .action(async (options) => {
+      await runDemoAgentCommand({ ...program.opts(), ...options });
+    });
 
   const demoPolicy = demo
     .command("policy")
@@ -183,8 +204,8 @@ export async function runCli(argv: string[]) {
     });
 
   demoAgent
-    .command("run")
-    .description("Run a guarded demo agent")
+    .command("run", { hidden: true })
+    .description("Legacy alias for demo agent --guide")
     .requiredOption("--guide <name-id-or-path>", "Use a saved walkthrough guide")
     .option("--ai-planner", "Ask ClipStitchr AI to propose each guarded action")
     .option(
@@ -193,6 +214,7 @@ export async function runCli(argv: string[]) {
     )
     .option("--dry-run", "Validate the run without recording or uploading")
     .option("--openai-mode <mode>", "Use direct or relay for OpenAI Computer Use")
+    .option("--upload", "Upload after recording without asking")
     .option("--no-upload", "Record only after review")
     .option("--product <id>", "ClipStitchr product ID for upload")
     .option("--start <command>", "Start command")
