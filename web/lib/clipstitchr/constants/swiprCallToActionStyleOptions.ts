@@ -1,4 +1,4 @@
-import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
+import type { SwiprCallToActionStyle } from "../types/SwiprCallToActionStyle";
 
 export const swiprCallToActionStyleOptions: Array<{
   id: SwiprCallToActionStyle;

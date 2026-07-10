@@ -1,6 +1,6 @@
-import { defaultSwiprCallToActionStyle } from "@/lib/clipstitchr/constants/defaultSwiprCallToActionStyle";
-import { swiprCallToActionStyleOptions } from "@/lib/clipstitchr/constants/swiprCallToActionStyleOptions";
-import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
+import { defaultSwiprCallToActionStyle } from "../constants/defaultSwiprCallToActionStyle";
+import { swiprCallToActionStyleOptions } from "../constants/swiprCallToActionStyleOptions";
+import type { SwiprCallToActionStyle } from "../types/SwiprCallToActionStyle";
 
 export function getSwiprCallToActionStyle(
   value: unknown,
