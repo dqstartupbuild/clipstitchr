@@ -142,7 +142,7 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).not.toContain("Candidate templates");
   });
 
-  it("defines Swipr as an audience-first hook payoff carousel with a soft CTA", () => {
+  it("defines Swipr as an audience-first carousel with natural product placement", () => {
     const prompt = createCliprTextGenerationPrompt({
       candidates: [candidate],
       durationSeconds: 30,
@@ -150,6 +150,8 @@ describe("createCliprTextGenerationPrompt", () => {
       product,
       purpose: "swipr",
       slideCount: 4,
+      swiprCallToActionStyle: "save",
+      swiprCreativeContext: "Focus on launch-day anxiety for solo founders.",
     });
 
     expect(prompt).toContain("You write short-form social media carousel slideshows");
@@ -158,25 +160,33 @@ describe("createCliprTextGenerationPrompt", () => {
     expect(prompt).toContain("The product is context, not the main character");
     expect(prompt).toContain("hook, why it happens, what it costs");
     expect(prompt).toContain("the hook again as slide 1");
-    expect(prompt).toContain("last is a soft CTA");
+    expect(prompt).toContain("last follows the requested CTA style");
     expect(prompt).toContain("description must be 1000-4000 characters");
-    expect(prompt).toContain("Do not default to a bookmark-style CTA");
+    expect(prompt).toContain("Focus on launch-day anxiety for solo founders.");
+    expect(prompt).toContain(
+      "Exactly one non-final slide must mention LaunchKit by name",
+    );
+    expect(prompt).toContain(
+      "The final slide must ask the viewer to save or bookmark the post",
+    );
     expect(prompt).toContain("Return only the JSON object");
   });
 
-  it("includes Swipr creative direction when provided", () => {
+  it("includes Swipr creative context when provided", () => {
     const prompt = createCliprTextGenerationPrompt({
       candidates: [candidate],
       durationSeconds: 30,
       fillers: { topic: ["launches"] },
       product,
       purpose: "swipr",
-      scriptIdea: "Use a myth-busting angle for this automation draft.",
       slideCount: 4,
+      swiprCallToActionStyle: "product",
+      swiprCreativeContext: "Use a myth-busting angle for this draft.",
     });
 
     expect(prompt).toContain(
-      "User creative direction: Use a myth-busting angle for this automation draft.",
+      "User creative context:\nUse a myth-busting angle for this draft.",
     );
+    expect(prompt).toContain("must directly promote LaunchKit");
   });
 });

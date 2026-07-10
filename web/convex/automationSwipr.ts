@@ -19,6 +19,8 @@ import { getAutomationGenerationCount } from "../lib/clipstitchr/utils/getAutoma
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { normalizeAutomationSwiprSelectedLibraryPackNames } from "../lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
+import { getSwiprCallToActionStyle } from "../lib/clipstitchr/utils/getSwiprCallToActionStyle";
+import { normalizeSwiprCreativeContext } from "../lib/clipstitchr/utils/normalizeSwiprCreativeContext";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 const AUTOMATION_SWIPR_SELECTED_PRODUCT_LOOKUP_LIMIT = 20;
@@ -104,6 +106,12 @@ export const planDaily = mutation({
     const swiprGenerationCount = getAutomationGenerationCount(
       preferences.swiprGenerationCount ?? defaultAutomationGenerationCount,
     );
+    const swiprCallToActionStyle = getSwiprCallToActionStyle(
+      preferences.swiprCallToActionStyle,
+    );
+    const swiprCreativeContext = normalizeSwiprCreativeContext(
+      preferences.swiprCreativeContext,
+    );
     const swiprSelectedLibraryPackNames =
       normalizeAutomationSwiprSelectedLibraryPackNames(
         preferences.swiprSelectedLibraryPackNames ?? [],
@@ -166,6 +174,8 @@ export const planDaily = mutation({
           hookEdgeLevel: product.hookEdgeLevel,
           productCreatedAt: product.createdAt,
           productUpdatedAt: product.updatedAt,
+          swiprCallToActionStyle,
+          swiprCreativeContext,
           swiprSelectedLibraryPackNames,
           swiprTextStyleChoice,
           swiprTextColorChoice,

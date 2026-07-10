@@ -49,6 +49,8 @@ describe("createSwiprAutomationTextGeneration", () => {
 
     await expect(
       createSwiprAutomationTextGeneration({
+        callToActionStyle: "engagement",
+        creativeContext: "Focus on launch-day anxiety.",
         product,
         replicate,
         slideCount: 8,
@@ -59,7 +61,9 @@ describe("createSwiprAutomationTextGeneration", () => {
       providerPredictionId: "prediction_1",
     });
     expect(mocks.createSwiprBatchTextGeneration).toHaveBeenCalledWith({
+      callToActionStyle: "engagement",
       count: 1,
+      creativeContext: "Focus on launch-day anxiety.",
       product,
       replicate,
       slideCount: 8,
@@ -75,6 +79,8 @@ describe("createSwiprAutomationTextGeneration", () => {
 
     await expect(
       createSwiprAutomationTextGeneration({
+        callToActionStyle: "any",
+        creativeContext: "",
         product,
         replicate: {} as Parameters<
           typeof createSwiprAutomationTextGeneration

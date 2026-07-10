@@ -8,6 +8,7 @@ import { defaultAutomationCliprGenerationMode } from "@/lib/clipstitchr/constant
 import { defaultAutomationGenerationCount } from "@/lib/clipstitchr/constants/defaultAutomationGenerationCount";
 import { defaultAutomationStitchrColorChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
+import { defaultSwiprCallToActionStyle } from "@/lib/clipstitchr/constants/defaultSwiprCallToActionStyle";
 import type { AutomationPreferencesInput } from "@/lib/clipstitchr/types/AutomationPreferencesInput";
 import { getAutomationGenerationCount } from "@/lib/clipstitchr/utils/getAutomationGenerationCount";
 import { getAutomationCliprGenerationMode } from "@/lib/clipstitchr/utils/getAutomationCliprGenerationMode";
@@ -16,6 +17,8 @@ import { getAutomationStitchrColorChoice } from "@/lib/clipstitchr/utils/getAuto
 import { getAutomationStitchrTextStyleChoice } from "@/lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { normalizeAutomationSwiprSelectedLibraryPackNames } from "@/lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
 import { normalizeAutomationStitchrTemplateAllocations } from "@/lib/clipstitchr/utils/normalizeAutomationStitchrTemplateAllocations";
+import { getSwiprCallToActionStyle } from "@/lib/clipstitchr/utils/getSwiprCallToActionStyle";
+import { normalizeSwiprCreativeContext } from "@/lib/clipstitchr/utils/normalizeSwiprCreativeContext";
 
 function getDefaultPreferences(productId?: string): AutomationPreferencesInput {
   return {
@@ -30,6 +33,8 @@ function getDefaultPreferences(productId?: string): AutomationPreferencesInput {
     stitchrTextStrokeColorChoice: defaultAutomationStitchrColorChoice,
     stitchrTemplateAllocations: [],
     swiprGenerationCount: defaultAutomationGenerationCount,
+    swiprCallToActionStyle: defaultSwiprCallToActionStyle,
+    swiprCreativeContext: "",
     swiprSelectedLibraryPackNames: [],
     swiprTextStyleChoice: defaultAutomationStitchrTextStyleChoice,
     swiprTextColorChoice: defaultAutomationStitchrColorChoice,
@@ -86,6 +91,12 @@ export function useAutomationPreferences(productId?: string) {
               ),
             swiprGenerationCount: getAutomationGenerationCount(
               preferencesDocument.swiprGenerationCount,
+            ),
+            swiprCallToActionStyle: getSwiprCallToActionStyle(
+              preferencesDocument.swiprCallToActionStyle,
+            ),
+            swiprCreativeContext: normalizeSwiprCreativeContext(
+              preferencesDocument.swiprCreativeContext,
             ),
             swiprSelectedLibraryPackNames:
               normalizeAutomationSwiprSelectedLibraryPackNames(
@@ -152,6 +163,12 @@ export function useAutomationPreferences(productId?: string) {
             ),
           swiprGenerationCount: getAutomationGenerationCount(
             nextPreferences.swiprGenerationCount,
+          ),
+          swiprCallToActionStyle: getSwiprCallToActionStyle(
+            nextPreferences.swiprCallToActionStyle,
+          ),
+          swiprCreativeContext: normalizeSwiprCreativeContext(
+            nextPreferences.swiprCreativeContext,
           ),
           swiprSelectedLibraryPackNames:
             normalizeAutomationSwiprSelectedLibraryPackNames(

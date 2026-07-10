@@ -11,10 +11,12 @@ version at any time.
 
 1. The user opens `/dashboard/swipr`.
 2. Swipr opens in Batch mode by default. The user chooses a saved Settings
-   product, chooses at least one saved Pexels pack, and generates 10 editable
-   draft Swipes at once. Batch draft generation always creates 10 draft Swipes,
-   always requests the max Swipr slide count of 8, and the backend enforces
-   both values even if an older client sends a different count or slide count.
+   product, chooses at least one saved Pexels pack, optionally adds a topic or
+   creative direction, chooses the final-slide CTA style, and generates 10
+   editable draft Swipes at once. Batch draft generation always creates 10
+   draft Swipes, always requests the max Swipr slide count of 8, and the backend
+   enforces both values even if an older client sends a different count or slide
+   count.
 3. The user can switch to Manual mode to build one Swipe by hand.
 4. In Manual mode, the user starts with the default slides, adds slides up to
    the max of 8, and can remove slides they do not need.
@@ -37,7 +39,9 @@ version at any time.
    `anthropic/claude-sonnet-4.6`; `anthropic/claude-opus-4.6` is supported for
    higher-cost writing tests. The default generator mode writes text for all
    slides. The user can switch to selected-slide mode, which sends the previous
-   and next slide text as context and updates only the selected slide.
+   and next slide text as context and updates only the selected slide. Manual
+   generation accepts the same optional topic/direction and final-slide CTA
+   choice as Batch mode.
 9. Swipr auto-text and batch-generated Swipes also generate one editable post
    text block containing the caption, a 1000-4000 character description, and
    hashtags. Manual saves keep this single field editable and copyable.
@@ -45,6 +49,30 @@ version at any time.
 11. The saved Swipe appears in the Library under the Swipes tab.
 12. From the library, the user can open the Swipe detail view, swipe through its
    images, download the current saved version, or continue editing it in Swipr.
+
+## Carousel Writing Behavior
+
+Full-carousel generation keeps the audience problem or desired outcome as the
+main topic. Exactly one non-final slide mentions the saved product by name as a
+subtle part of a useful list, routine, recommendation, example, or set of
+steps. The product is not the hook or the whole carousel, and the prompt bans
+invented personal use, results, testimonials, medical claims, statistics, and
+studies.
+
+The user controls the final slide independently:
+
+- `Any` lets Swipr choose and vary a fitting CTA.
+- `Save this` asks the viewer to save or bookmark the carousel.
+- `Follow` asks the viewer to follow for more.
+- `Engagement` asks for a natural comment, answer, like, share, or question.
+- `Promote product` gives the saved product a direct final action.
+
+Only `Promote product` may repeat the product on the final slide. The other CTA
+styles keep the product mention to its single non-final placement.
+
+The optional topic/direction field is a creative brief, not a source of verified
+facts. It can steer topic, point of view, audience situation, and examples, but
+cannot override output, safety, product-placement, or CTA rules.
 
 ## Saved Swipe Model
 
@@ -292,8 +320,9 @@ saved Pexels packs. It requires a saved Settings product and at least one
 account-added Pexels pack with saved photos.
 
 The Batch tab is the default UI for this route. It does not expose manual slide
-controls or a draft-count input. It sends the selected pack names, and the
-server creates 10 generated draft Swipes with the max Swipr slide count of 8.
+controls or a draft-count input. It sends the selected pack names, bounded
+creative context, and CTA choice, and the server creates 10 generated draft
+Swipes with the max Swipr slide count of 8.
 
 The route:
 
@@ -302,6 +331,7 @@ The route:
 - Requires selected Pexels query packs.
 - Generates multiple slideshow text drafts with a SlideSmith-style prompt that
   writes complete, distinct slide decks without exposing internal template IDs.
+  Every deck follows the shared product-placement and final-slide CTA rules.
 - Randomizes saved Pexels background IDs for each deck. The batch first picks a
   random preview-photo order, then each Swipe uses a shuffled non-repeating
   background cycle. If a selected pack has fewer photos than the slide count,
@@ -324,6 +354,9 @@ backgrounds are available, it searches a larger Pexels candidate set from the
 product and audience context, randomly picks the max 8 photos, saves private
 one-off Pexels photo records, generates text with the same carousel-writing
 prompt used by Swipr page Batch mode, and saves an editable Swipe draft.
+Automation Settings persist the optional Swipr topic/direction and final-slide
+CTA style. Daily and CLI-triggered task snapshots carry those bounded values to
+the provider worker so delayed work uses the choices captured at planning time.
 
 ## Abuse Protection
 

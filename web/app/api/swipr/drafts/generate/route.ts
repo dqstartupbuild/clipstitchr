@@ -17,11 +17,15 @@ import { getProductSwiprContext } from "@/lib/clipstitchr/utils/getProductSwiprC
 import { getSwiprSwipeName } from "@/lib/clipstitchr/utils/getSwiprSwipeName";
 import { normalizeSwiprLibraryQueryKey } from "@/lib/clipstitchr/utils/normalizeSwiprLibraryQueryKey";
 import { createId } from "@/lib/clipstitchr/utils/createId";
+import { getSwiprCallToActionStyle } from "@/lib/clipstitchr/utils/getSwiprCallToActionStyle";
+import { normalizeSwiprCreativeContext } from "@/lib/clipstitchr/utils/normalizeSwiprCreativeContext";
 
 export const runtime = "nodejs";
 
 type SwiprDraftGenerationRequest = {
+  callToActionStyle?: unknown;
   count?: unknown;
+  creativeContext?: unknown;
   productId?: unknown;
   selectedLibraryQueries?: unknown;
 };
@@ -52,6 +56,12 @@ export async function POST(request: Request) {
 
     const body = (await request.json()) as SwiprDraftGenerationRequest;
     const count = SWIPR_BATCH_DRAFT_COUNT;
+    const callToActionStyle = getSwiprCallToActionStyle(
+      body.callToActionStyle,
+    );
+    const creativeContext = normalizeSwiprCreativeContext(
+      body.creativeContext,
+    );
     const productId = readProductId(body.productId);
     const slideCount = SWIPR_MAX_SLIDE_COUNT;
     const selectedLibraryQueries = readSwiprLibraryQueries(
@@ -96,7 +106,9 @@ export async function POST(request: Request) {
 
     const product = createProductProfileFromConvexDocument(productDocument);
     const textGeneration = await createSwiprBatchTextGeneration({
+      callToActionStyle,
       count,
+      creativeContext,
       product,
       replicate: createReplicateClient(),
       slideCount,

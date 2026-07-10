@@ -6,6 +6,7 @@ import { createSwiprSlides } from "@/lib/clipstitchr/utils/createSwiprSlides";
 import type { PexelsPhotoResult } from "@/lib/clipstitchr/types/PexelsPhotoResult";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
+import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import type { TextOverlay } from "@/lib/clipstitchr/types/TextOverlay";
 
@@ -368,6 +369,8 @@ function queueSwiprState(
     socialCopyMessage?: string | null;
     socialDescription?: string;
     slides?: ReturnType<typeof createSwiprSlides>;
+    swiprCallToActionStyle?: SwiprCallToActionStyle;
+    swiprCreativeContext?: string;
     swiprMode?: "batch" | "manual";
     textGenerationScope?: "all" | "selected";
     pexelsPage?: number;
@@ -397,6 +400,8 @@ function queueSwiprState(
     overrides.isLoadingMorePexels ?? false,
     overrides.isGeneratingDrafts ?? false,
     overrides.isGeneratingAutoText ?? false,
+    overrides.swiprCallToActionStyle ?? "any",
+    overrides.swiprCreativeContext ?? "",
     overrides.textGenerationScope ?? "all",
     overrides.loadedSwipeId ?? null,
     overrides.savedSwipeSnapshot ?? null,
@@ -549,6 +554,8 @@ describe("SwiprPageClient", () => {
     ];
     queueSwiprState({
       selectedLibraryQueries: ["coffee desk"],
+      swiprCallToActionStyle: "follow",
+      swiprCreativeContext: "Focus on launch-day anxiety.",
       swiprMode: "batch",
     });
 
@@ -558,6 +565,8 @@ describe("SwiprPageClient", () => {
 
     expect(mocks.generateSwiprDrafts).toHaveBeenCalledWith(
       expect.objectContaining({
+        callToActionStyle: "follow",
+        creativeContext: "Focus on launch-day anxiety.",
         productId: "product_2",
       }),
     );
@@ -584,6 +593,8 @@ describe("SwiprPageClient", () => {
 
     const manualControlsProps = mocks.manualControlsProps as {
       onAddSlide: () => void;
+      onCallToActionStyleChange: (value: SwiprCallToActionStyle) => void;
+      onCreativeContextChange: (value: string) => void;
       onGenerateText: () => void;
       onTextGenerationScopeChange: (scope: "all" | "selected") => void;
     };
@@ -623,6 +634,8 @@ describe("SwiprPageClient", () => {
     };
 
     manualControlsProps.onAddSlide();
+    manualControlsProps.onCallToActionStyleChange("product");
+    manualControlsProps.onCreativeContextChange("Focus on launch mistakes.");
     manualControlsProps.onTextGenerationScopeChange("selected");
     manualControlsProps.onGenerateText();
     backgroundPanelProps.onGenerationPromptChange("sunny counter");
@@ -646,6 +659,8 @@ describe("SwiprPageClient", () => {
       expect.objectContaining({
         productId: "product_1",
         purpose: "swipr",
+        swiprCallToActionStyle: "any",
+        swiprCreativeContext: "",
       }),
     );
     expect(mocks.generateSwiprDrafts).not.toHaveBeenCalled();
@@ -730,7 +745,9 @@ describe("SwiprPageClient", () => {
       query: "coffee desk",
     });
     expect(mocks.generateSwiprDrafts).toHaveBeenCalledWith({
+      callToActionStyle: "any",
       count: 10,
+      creativeContext: "",
       productId: "product_1",
       selectedLibraryQueries: ["coffee desk"],
       slideCount: 8,

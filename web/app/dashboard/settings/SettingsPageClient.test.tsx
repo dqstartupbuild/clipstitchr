@@ -161,6 +161,8 @@ function createAutomationState(
       stitchrTextStrokeColorChoice: "any",
       stitchrTemplateAllocations: [],
       swiprGenerationCount: 10,
+      swiprCallToActionStyle: "any",
+      swiprCreativeContext: "",
       swiprSelectedLibraryPackNames: [],
       swiprTextStyleChoice: "any",
       swiprTextColorChoice: "any",

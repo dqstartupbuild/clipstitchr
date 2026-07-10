@@ -122,6 +122,8 @@ describe("POST /api/clipr/text", () => {
         productId: " product_1 ",
         purpose: "swipr",
         slideCount: 99,
+        swiprCallToActionStyle: "follow",
+        swiprCreativeContext: "  Focus on launch-day anxiety.  ",
         stitchrClipContexts: [
           {
             id: "ugc_1",
@@ -176,6 +178,8 @@ describe("POST /api/clipr/text", () => {
             videoDescription: "The creator looks surprised.",
           }),
         ],
+        swiprCallToActionStyle: "follow",
+        swiprCreativeContext: "Focus on launch-day anxiety.",
       }),
     );
   });
@@ -194,6 +198,8 @@ describe("POST /api/clipr/text", () => {
         purpose: "clipr",
         slideCount: 4,
         stitchrClipContexts: [],
+        swiprCallToActionStyle: "any",
+        swiprCreativeContext: "",
       }),
     );
   });

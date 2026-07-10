@@ -9,7 +9,7 @@ export const swiprDoc = {
     "Build a Swipe with editable photos and text when slides make more sense than another video.",
   category: "feature",
   order: 30,
-  updated: "2026-06-17",
+  updated: "2026-07-10",
   sections: [
     {
       title: "What Swipr creates",
@@ -34,7 +34,7 @@ export const swiprDoc = {
     {
       title: "Auto text",
       body: [
-        "Swipr can draft slide text from your product settings. The first slide opens the idea, and the rest of the slides support it. Edit the text before you save so it still sounds like you.",
+        "Swipr can draft slide text from your product settings. Add an optional topic or direction when you want to steer the idea. Swipr keeps the carousel useful, works one natural product mention into a slide before the end, and lets you choose whether the last slide asks people to save, follow, respond, or check out the product. Edit the text before you save so it still sounds like you.",
       ],
     },
     {

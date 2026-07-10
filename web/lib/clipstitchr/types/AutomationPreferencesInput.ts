@@ -4,6 +4,7 @@ import type { AutomationGenerationCount } from "./AutomationGenerationCount";
 import type { AutomationStitchrTemplateAllocation } from "./AutomationStitchrTemplateAllocation";
 import type { AutomationTool } from "./AutomationTool";
 import type { CliprGenerationMode } from "./CliprGenerationMode";
+import type { SwiprCallToActionStyle } from "./SwiprCallToActionStyle";
 
 export type AutomationCliprGenerationMode = Exclude<
   CliprGenerationMode,
@@ -22,6 +23,8 @@ export type AutomationPreferencesInput = {
   stitchrTextStrokeColorChoice: AutomationStitchrColorChoice;
   stitchrTemplateAllocations: AutomationStitchrTemplateAllocation[];
   swiprGenerationCount: AutomationGenerationCount;
+  swiprCallToActionStyle: SwiprCallToActionStyle;
+  swiprCreativeContext: string;
   swiprSelectedLibraryPackNames: string[];
   swiprTextStyleChoice: AutomationStitchrTextStyleChoice;
   swiprTextColorChoice: AutomationStitchrColorChoice;

@@ -28,6 +28,10 @@ appearance, support, and subscription remain shared across the whole account.
   selected pack image is available, it falls back to Pexels search.
 - Swipr automation uses the same carousel-writing prompt as Swipr page Batch
   mode, so automatic and on-demand drafts follow the same writing standard.
+- Swipr Config lets the user save an optional topic/direction and choose the
+  final-slide CTA: Any, Save this, Follow, Engagement, or Promote product.
+- Generated Swipes include exactly one natural product mention on a non-final
+  slide. Only the Promote product CTA repeats the product on the final slide.
 
 ## Product Scope
 
@@ -55,7 +59,8 @@ The shared count type is `3 | 5 | 10`. The default remains 10.
 
 - Stitchr uses the selected count when choosing Hook/UGC and Demo pairs.
 - Swipr creates one provider task per selected draft count. Each task delegates
-  text writing to the same batch generator used by the Swipr page.
+  text writing to the same batch generator used by the Swipr page and snapshots
+  the saved topic/direction and CTA choice.
 - Counts are capped by the existing maximum so new settings cannot exceed the
   current automation limit.
 
@@ -90,12 +95,15 @@ before it creates the final overlay.
 - `web/app/_components/settings/AutomationGenerationCountPicker.tsx`
 - `web/app/_components/settings/AutomationStitchrTemplateAllocationPicker.tsx`
 - `web/app/_components/settings/AutomationSwiprPackPicker.tsx`
+- `web/app/_components/swipr/SwiprCreativeContextField.tsx`
+- `web/app/_components/swipr/SwiprCallToActionStylePicker.tsx`
 - `web/app/_components/settings/AutomationToolConfigDisclosure.tsx`
 - `web/app/dashboard/settings/SettingsPageClient.tsx`
 - `web/lib/clipstitchr/hooks/useAutomationPreferences.ts`
 - `web/lib/clipstitchr/types/AutomationPreferencesInput.ts`
 - `web/lib/clipstitchr/types/AutomationGenerationCount.ts`
 - `web/lib/clipstitchr/types/AutomationStitchrTemplateAllocation.ts`
+- `web/lib/clipstitchr/types/SwiprCallToActionStyle.ts`
 - `web/lib/clipstitchr/utils/normalizeAutomationStitchrTemplateAllocations.ts`
 - `web/convex/automationPreferences.ts`
 - `web/convex/validators/automationStitchrTemplateAllocation.ts`
@@ -113,7 +121,9 @@ before it creates the final overlay.
 
 Tool-generation quotas are keyed by owner and product, so each product can use
 its selected daily count. Provider spend and automatic asset-save limits remain
-owner/global protections and still apply across all products.
+owner/global protections and still apply across all products. Swipr creative
+context is capped at 1,000 characters before it is saved or copied into a task
+snapshot.
 
 ## Source References
 

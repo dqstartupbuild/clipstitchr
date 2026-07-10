@@ -82,6 +82,8 @@ describe("planCliSwiprBatch", () => {
       enabledTools: [],
       preferenceVersion: 2,
       swiprGenerationCount: 1,
+      swiprCallToActionStyle: "follow",
+      swiprCreativeContext: "Focus on launch-day anxiety.",
       swiprSelectedLibraryPackNames: [],
     });
     mocks.getDefaultProductForOwner.mockResolvedValue(product);
@@ -120,6 +122,16 @@ describe("planCliSwiprBatch", () => {
         skipAutomationPreferenceCheck: true,
         taskType: "swipr-draft",
         tool: "swipr",
+      }),
+    );
+    const taskInput = JSON.parse(
+      mocks.createAutomationTask.mock.calls[0]?.[1].inputSnapshotJson,
+    ) as Record<string, unknown>;
+
+    expect(taskInput).toEqual(
+      expect.objectContaining({
+        swiprCallToActionStyle: "follow",
+        swiprCreativeContext: "Focus on launch-day anxiety.",
       }),
     );
   });

@@ -344,7 +344,9 @@ describe("client API wrappers", () => {
     });
     await expect(
       generateSwiprDrafts({
+        callToActionStyle: "follow",
         count: 2,
+        creativeContext: "Focus on launch-day anxiety.",
         productId: "product_1",
         selectedLibraryQueries: ["desk setup"],
         slideCount: 8,
@@ -360,7 +362,9 @@ describe("client API wrappers", () => {
     ).rejects.toThrow("Import failed");
     await expect(
       generateSwiprDrafts({
+        callToActionStyle: "any",
         count: 1,
+        creativeContext: "",
         productId: "product_1",
         selectedLibraryQueries: [],
         slideCount: 8,
@@ -378,7 +382,9 @@ describe("client API wrappers", () => {
       "/api/swipr/drafts/generate",
       expect.objectContaining({
         body: JSON.stringify({
+          callToActionStyle: "follow",
           count: 2,
+          creativeContext: "Focus on launch-day anxiety.",
           productId: "product_1",
           selectedLibraryQueries: ["desk setup"],
           slideCount: 8,

@@ -13,6 +13,8 @@ import { readStitchrTextGenerationClipContexts } from "@/lib/clipstitchr/server/
 import { readSwiprSelectedSlideTextContext } from "@/lib/clipstitchr/server/readSwiprSelectedSlideTextContext";
 import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose";
 import { getCliprDurationSeconds } from "@/lib/clipstitchr/utils/getCliprDurationSeconds";
+import { getSwiprCallToActionStyle } from "@/lib/clipstitchr/utils/getSwiprCallToActionStyle";
+import { normalizeSwiprCreativeContext } from "@/lib/clipstitchr/utils/normalizeSwiprCreativeContext";
 
 export const runtime = "nodejs";
 
@@ -22,6 +24,8 @@ type CliprTextRequestBody = {
   purpose?: unknown;
   slideCount?: unknown;
   stitchrClipContexts?: unknown;
+  swiprCallToActionStyle?: unknown;
+  swiprCreativeContext?: unknown;
   swiprSelectedSlideTextContext?: unknown;
 };
 
@@ -75,6 +79,12 @@ export async function POST(request: Request) {
           : 4,
       stitchrClipContexts: readStitchrTextGenerationClipContexts(
         body.stitchrClipContexts,
+      ),
+      swiprCallToActionStyle: getSwiprCallToActionStyle(
+        body.swiprCallToActionStyle,
+      ),
+      swiprCreativeContext: normalizeSwiprCreativeContext(
+        body.swiprCreativeContext,
       ),
       swiprSelectedSlideTextContext: readSwiprSelectedSlideTextContext(
         body.swiprSelectedSlideTextContext,

@@ -3,6 +3,7 @@ import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose"
 import type { StitchrHookVariant } from "@/lib/clipstitchr/types/StitchrHookVariant";
 import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
 import type { SwiprSelectedSlideTextContext } from "@/lib/clipstitchr/types/SwiprSelectedSlideTextContext";
+import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
 
 type GenerateCliprTextOptions = {
   durationSeconds?: CliprDurationSeconds;
@@ -10,6 +11,8 @@ type GenerateCliprTextOptions = {
   purpose: CliprTextPurpose;
   slideCount?: number;
   stitchrClipContexts?: StitchrTextGenerationClipContext[];
+  swiprCallToActionStyle?: SwiprCallToActionStyle;
+  swiprCreativeContext?: string;
   swiprSelectedSlideTextContext?: SwiprSelectedSlideTextContext;
 };
 

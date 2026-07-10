@@ -5,12 +5,15 @@ import { getIsAutomationToolEnabled } from "../lib/clipstitchr/constants/automat
 import { defaultAutomationGenerationCount } from "../lib/clipstitchr/constants/defaultAutomationGenerationCount";
 import { defaultAutomationStitchrColorChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrColorChoice";
 import { defaultAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/constants/defaultAutomationStitchrTextStyleChoice";
+import { defaultSwiprCallToActionStyle } from "../lib/clipstitchr/constants/defaultSwiprCallToActionStyle";
 import { getAutomationGenerationCount } from "../lib/clipstitchr/utils/getAutomationGenerationCount";
 import { getAutomationCliprGenerationMode } from "../lib/clipstitchr/utils/getAutomationCliprGenerationMode";
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { normalizeAutomationStitchrTemplateAllocations } from "../lib/clipstitchr/utils/normalizeAutomationStitchrTemplateAllocations";
 import { normalizeAutomationSwiprSelectedLibraryPackNames } from "../lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
+import { getSwiprCallToActionStyle } from "../lib/clipstitchr/utils/getSwiprCallToActionStyle";
+import { normalizeSwiprCreativeContext } from "../lib/clipstitchr/utils/normalizeSwiprCreativeContext";
 import { assertProductBelongsToOwner } from "./assertProductBelongsToOwner";
 import { getAutomationPreferenceForProduct } from "./getAutomationPreferenceForProduct";
 import { rateLimiter } from "./rateLimiter";
@@ -20,6 +23,7 @@ import { automationStitchrTemplateAllocationValidator } from "./validators/autom
 import { automationStitchrTextStyleChoiceValidator } from "./validators/automationStitchrTextStyleChoice";
 import { automationToolValidator } from "./validators/automationTool";
 import { automationCliprGenerationModeValidator } from "./validators/automationCliprGenerationMode";
+import { swiprCallToActionStyleValidator } from "./validators/swiprCallToActionStyle";
 import type { AutomationTool } from "../lib/clipstitchr/types/AutomationTool";
 
 function filterEnabledAutomationTools(tools: AutomationTool[]) {
@@ -72,6 +76,12 @@ export const get = query({
           swiprGenerationCount: getAutomationGenerationCount(
             preferences.swiprGenerationCount,
           ),
+          swiprCallToActionStyle: getSwiprCallToActionStyle(
+            preferences.swiprCallToActionStyle,
+          ),
+          swiprCreativeContext: normalizeSwiprCreativeContext(
+            preferences.swiprCreativeContext,
+          ),
           swiprSelectedLibraryPackNames:
             normalizeAutomationSwiprSelectedLibraryPackNames(
               preferences.swiprSelectedLibraryPackNames ?? [],
@@ -110,6 +120,8 @@ export const save = mutation({
       v.array(automationStitchrTemplateAllocationValidator),
     ),
     swiprGenerationCount: v.optional(automationGenerationCountValidator),
+    swiprCallToActionStyle: v.optional(swiprCallToActionStyleValidator),
+    swiprCreativeContext: v.optional(v.string()),
     swiprSelectedLibraryPackNames: v.optional(v.array(v.string())),
     swiprTextStyleChoice: v.optional(automationStitchrTextStyleChoiceValidator),
     swiprTextColorChoice: v.optional(v.string()),
@@ -222,6 +234,11 @@ export const save = mutation({
       swiprGenerationCount: getAutomationGenerationCount(
         args.swiprGenerationCount ?? defaultAutomationGenerationCount,
       ),
+      swiprCallToActionStyle: getSwiprCallToActionStyle(
+        args.swiprCallToActionStyle ?? defaultSwiprCallToActionStyle,
+      ),
+      swiprCreativeContext:
+        normalizeSwiprCreativeContext(args.swiprCreativeContext) || undefined,
       swiprSelectedLibraryPackNames:
         normalizeAutomationSwiprSelectedLibraryPackNames(
           args.swiprSelectedLibraryPackNames ?? [],

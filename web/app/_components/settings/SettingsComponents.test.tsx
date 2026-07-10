@@ -107,6 +107,8 @@ function createAutomationPreferences(
     stitchrTextStrokeColorChoice: "any",
     stitchrTemplateAllocations: [],
     swiprGenerationCount: 10,
+    swiprCallToActionStyle: "any",
+    swiprCreativeContext: "",
     swiprSelectedLibraryPackNames: [],
     swiprTextStyleChoice: "any",
     swiprTextColorChoice: "any",
@@ -239,7 +241,7 @@ describe("settings components", () => {
   it("drafts automation setting changes without saving", () => {
     const onSave = vi.fn(async () => undefined);
     const preferences = createAutomationPreferences({
-      enabledTools: ["stitchr"],
+      enabledTools: ["stitchr", "swipr"],
     });
     const tree = SettingsAutomationPanel({
       error: null,
@@ -278,6 +280,18 @@ describe("settings components", () => {
         typeof element.type === "function" &&
         element.type.name === "AutomationStitchrTemplateAllocationPicker",
     );
+    const [ctaPicker] = findElements(
+      tree,
+      (element) =>
+        typeof element.type === "function" &&
+        element.type.name === "SwiprCallToActionStylePicker",
+    );
+    const [creativeContextField] = findElements(
+      tree,
+      (element) =>
+        typeof element.type === "function" &&
+        element.type.name === "SwiprCreativeContextField",
+    );
 
     (enableButton.props.onClick as () => void)();
     (stitchrCheckbox.props.onChange as () => void)();
@@ -286,6 +300,10 @@ describe("settings components", () => {
     (templatePicker.props.onChange as (value: unknown) => void)([
       { templateId: "template_1", count: 2 },
     ]);
+    (ctaPicker.props.onChange as (value: "product") => void)("product");
+    (creativeContextField.props.onChange as (value: string) => void)(
+      "Focus on launch-day anxiety.",
+    );
 
     expect(onSave).not.toHaveBeenCalled();
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(
@@ -295,7 +313,7 @@ describe("settings components", () => {
     );
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(
       expect.objectContaining({
-        preferences: expect.objectContaining({ enabledTools: [] }),
+        preferences: expect.objectContaining({ enabledTools: ["swipr"] }),
       }),
     );
     expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(
@@ -314,6 +332,20 @@ describe("settings components", () => {
       expect.objectContaining({
         preferences: expect.objectContaining({
           stitchrTemplateAllocations: [{ templateId: "template_1", count: 2 }],
+        }),
+      }),
+    );
+    expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(
+      expect.objectContaining({
+        preferences: expect.objectContaining({
+          swiprCallToActionStyle: "product",
+        }),
+      }),
+    );
+    expect(mocks.setStateCalls[0]).toHaveBeenCalledWith(
+      expect.objectContaining({
+        preferences: expect.objectContaining({
+          swiprCreativeContext: "Focus on launch-day anxiety.",
         }),
       }),
     );

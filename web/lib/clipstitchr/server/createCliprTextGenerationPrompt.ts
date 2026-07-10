@@ -5,6 +5,7 @@ import type { CliprTextPurpose } from "@/lib/clipstitchr/types/CliprTextPurpose"
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
 import type { StitchrTextGenerationClipContext } from "@/lib/clipstitchr/types/StitchrTextGenerationClipContext";
 import type { SwiprSelectedSlideTextContext } from "@/lib/clipstitchr/types/SwiprSelectedSlideTextContext";
+import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
 import { createStitchrHookGenerationPrompt } from "@/lib/clipstitchr/server/createStitchrHookGenerationPrompt";
 import { createSwiprTextGenerationPrompt } from "@/lib/clipstitchr/server/createSwiprTextGenerationPrompt";
 
@@ -17,6 +18,8 @@ type CreateCliprTextGenerationPromptOptions = {
   scriptIdea?: string;
   slideCount: number;
   stitchrClipContexts?: StitchrTextGenerationClipContext[];
+  swiprCallToActionStyle?: SwiprCallToActionStyle;
+  swiprCreativeContext?: string;
   swiprSelectedSlideTextContext?: SwiprSelectedSlideTextContext;
 };
 
@@ -98,6 +101,8 @@ export function createCliprTextGenerationPrompt({
   scriptIdea,
   slideCount,
   stitchrClipContexts = [],
+  swiprCallToActionStyle,
+  swiprCreativeContext,
   swiprSelectedSlideTextContext,
 }: CreateCliprTextGenerationPromptOptions) {
   if (purpose === "stitchr") {
@@ -113,8 +118,9 @@ export function createCliprTextGenerationPrompt({
       candidates,
       fillers,
       product,
-      scriptIdea,
       slideCount,
+      swiprCallToActionStyle,
+      swiprCreativeContext: swiprCreativeContext ?? scriptIdea,
       swiprSelectedSlideTextContext,
     });
   }

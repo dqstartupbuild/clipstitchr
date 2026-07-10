@@ -6,16 +6,21 @@ import { getCliprTextSystemPrompt } from "@/lib/clipstitchr/server/getCliprTextS
 import { getCompletedReplicatePredictionOutputText } from "@/lib/clipstitchr/server/getCompletedReplicatePredictionOutputText";
 import { parseSwiprGeneratedSlideshows } from "@/lib/clipstitchr/server/parseSwiprGeneratedSlideshows";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
 
 type ReplicateClient = ReturnType<typeof createReplicateClient>;
 
 export async function createSwiprBatchTextGeneration({
+  callToActionStyle = "any",
   count,
+  creativeContext = "",
   product,
   replicate,
   slideCount,
 }: {
+  callToActionStyle?: SwiprCallToActionStyle;
   count: number;
+  creativeContext?: string;
   product: ProductProfile;
   replicate: ReplicateClient;
   slideCount: number;
@@ -27,7 +32,9 @@ export async function createSwiprBatchTextGeneration({
       maxCompletionTokens: Math.min(24000, Math.max(6000, count * 2500)),
       modelId: providerModel,
       prompt: createSwiprBatchTextGenerationPrompt({
+        callToActionStyle,
         count,
+        creativeContext,
         product,
         slideCount,
       }),

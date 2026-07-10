@@ -40,6 +40,7 @@ import type { PexelsPhotoResult } from "@/lib/clipstitchr/types/PexelsPhotoResul
 import type { PhotoAssetMetadata } from "@/lib/clipstitchr/types/PhotoAssetMetadata";
 import type { SwiprBackground } from "@/lib/clipstitchr/types/SwiprBackground";
 import type { SwiprBackgroundAsset } from "@/lib/clipstitchr/types/SwiprBackgroundAsset";
+import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
 import type { SwiprMode } from "@/lib/clipstitchr/types/SwiprMode";
 import type { SwiprSwipe } from "@/lib/clipstitchr/types/SwiprSwipe";
 import type { SwiprTextGenerationScope } from "@/lib/clipstitchr/types/SwiprTextGenerationScope";
@@ -100,6 +101,9 @@ export function SwiprPageClient() {
   const [isLoadingMorePexels, setIsLoadingMorePexels] = useState(false);
   const [isGeneratingDrafts, setIsGeneratingDrafts] = useState(false);
   const [isGeneratingAutoText, setIsGeneratingAutoText] = useState(false);
+  const [swiprCallToActionStyle, setSwiprCallToActionStyle] =
+    useState<SwiprCallToActionStyle>("any");
+  const [swiprCreativeContext, setSwiprCreativeContext] = useState("");
   const [textGenerationScope, setTextGenerationScope] =
     useState<SwiprTextGenerationScope>("all");
   const editingSwipeId = requestedSwipeId;
@@ -744,7 +748,9 @@ export function SwiprPageClient() {
     setAutoTextMessage(null);
 
     void generateSwiprDrafts({
+      callToActionStyle: swiprCallToActionStyle,
       count: SWIPR_BATCH_DRAFT_COUNT,
+      creativeContext: swiprCreativeContext,
       productId: selectedSavedProductId,
       selectedLibraryQueries,
       slideCount: SWIPR_MAX_SLIDE_COUNT,
@@ -786,6 +792,8 @@ export function SwiprPageClient() {
       productId: selectedSavedProductId,
       purpose: "swipr",
       slideCount: textGenerationScope === "selected" ? 1 : slideCount,
+      swiprCallToActionStyle,
+      swiprCreativeContext,
       swiprSelectedSlideTextContext:
         textGenerationScope === "selected" && activeSlide
           ? {
@@ -1099,18 +1107,26 @@ export function SwiprPageClient() {
                 )}
                 {activeSwiprMode === "batch" ? (
                   <SwiprBatchControls
+                    callToActionStyle={swiprCallToActionStyle}
+                    creativeContext={swiprCreativeContext}
                     isDisabled={!selectedSavedProduct}
                     isGeneratingDrafts={isGeneratingDrafts}
+                    onCallToActionStyleChange={setSwiprCallToActionStyle}
+                    onCreativeContextChange={setSwiprCreativeContext}
                     onGenerateDrafts={handleGenerateDrafts}
                   />
                 ) : (
                   <SwiprManualControls
+                    callToActionStyle={swiprCallToActionStyle}
                     canAddSlide={slideCount < SWIPR_MAX_SLIDE_COUNT}
+                    creativeContext={swiprCreativeContext}
                     isDisabled={!selectedSavedProduct}
                     isGeneratingText={isGeneratingAutoText}
                     slideCount={slideCount}
                     textGenerationScope={textGenerationScope}
                     onAddSlide={handleAddSlide}
+                    onCallToActionStyleChange={setSwiprCallToActionStyle}
+                    onCreativeContextChange={setSwiprCreativeContext}
                     onGenerateText={handleGenerateAutoText}
                     onTextGenerationScopeChange={setTextGenerationScope}
                   />

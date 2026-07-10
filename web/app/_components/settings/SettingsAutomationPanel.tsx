@@ -9,6 +9,8 @@ import { AutomationStitchrColorChoicePicker } from "@/app/_components/settings/A
 import { AutomationStitchrTextStylePicker } from "@/app/_components/settings/AutomationStitchrTextStylePicker";
 import { AutomationSwiprPackPicker } from "@/app/_components/settings/AutomationSwiprPackPicker";
 import { AutomationToolConfigDisclosure } from "@/app/_components/settings/AutomationToolConfigDisclosure";
+import { SwiprCallToActionStylePicker } from "@/app/_components/swipr/SwiprCallToActionStylePicker";
+import { SwiprCreativeContextField } from "@/app/_components/swipr/SwiprCreativeContextField";
 import { Button } from "@/app/_components/ui/Button";
 import { Panel } from "@/app/_components/ui/Panel";
 import { automationToolOptions } from "@/lib/clipstitchr/constants/automationToolOptions";
@@ -23,6 +25,7 @@ import type {
 import type { AutomationTool } from "@/lib/clipstitchr/types/AutomationTool";
 import type { StitchTemplate } from "@/lib/clipstitchr/types/StitchTemplate";
 import type { SwiprLibraryPack } from "@/lib/clipstitchr/types/SwiprLibraryPack";
+import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
 import { getCssColorHex } from "@/lib/clipstitchr/utils/getCssColorHex";
 import { normalizeAutomationStitchrTemplateAllocations } from "@/lib/clipstitchr/utils/normalizeAutomationStitchrTemplateAllocations";
 
@@ -207,6 +210,22 @@ export function SettingsAutomationPanel({
     updateDraftPreferences({
       ...draftPreferences,
       swiprGenerationCount,
+    });
+  };
+  const handleSwiprCallToActionStyleChange = (
+    swiprCallToActionStyle: SwiprCallToActionStyle,
+  ) => {
+    updateDraftPreferences({
+      ...draftPreferences,
+      swiprCallToActionStyle,
+    });
+  };
+  const handleSwiprCreativeContextChange = (
+    swiprCreativeContext: string,
+  ) => {
+    updateDraftPreferences({
+      ...draftPreferences,
+      swiprCreativeContext,
     });
   };
   const handleSwiprTextStyleChange = (
@@ -433,6 +452,16 @@ export function SettingsAutomationPanel({
                 onChange={handleSwiprPackNamesChange}
               />
             </div>
+            <SwiprCreativeContextField
+              disabled={isLoading || isSaving}
+              value={draftPreferences.swiprCreativeContext}
+              onChange={handleSwiprCreativeContextChange}
+            />
+            <SwiprCallToActionStylePicker
+              disabled={isLoading || isSaving}
+              value={draftPreferences.swiprCallToActionStyle}
+              onChange={handleSwiprCallToActionStyleChange}
+            />
             <div className="flex flex-col gap-2">
               <p className="text-sm font-semibold text-text-primary">
                 Swipr text style

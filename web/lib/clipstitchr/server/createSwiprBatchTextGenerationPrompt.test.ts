@@ -19,7 +19,9 @@ function createProductProfile(): ProductProfile {
 describe("createSwiprBatchTextGenerationPrompt", () => {
   it("keeps the batch prompt simple and requires the requested slide count", () => {
     const prompt = createSwiprBatchTextGenerationPrompt({
+      callToActionStyle: "engagement",
       count: 4,
+      creativeContext: "Focus on launch-day anxiety for solo founders.",
       product: createProductProfile(),
       slideCount: 8,
     });
@@ -37,5 +39,27 @@ describe("createSwiprBatchTextGenerationPrompt", () => {
     expect(prompt).toContain("1000-4000 character TikTok post description");
     expect(prompt).toContain("Each description must be 1000-4000 characters");
     expect(prompt).toContain("Return ONLY the JSON object.");
+    expect(prompt).toContain("User creative context:");
+    expect(prompt).toContain("Focus on launch-day anxiety for solo founders.");
+    expect(prompt).toContain(
+      "Exactly one non-final slide must mention Launch Kit by name",
+    );
+    expect(prompt).toContain(
+      "The final slide must invite a natural comment, answer, like, share, or question",
+    );
+    expect(prompt).toContain("Do not repeat the product mention on the final slide");
+  });
+
+  it("lets Any vary CTA styles without contradicting product promotion", () => {
+    const prompt = createSwiprBatchTextGenerationPrompt({
+      count: 3,
+      product: createProductProfile(),
+      slideCount: 8,
+    });
+
+    expect(prompt).toContain("Vary the final-slide CTA styles across the batch");
+    expect(prompt).toContain(
+      "If you choose a direct product CTA, the final slide may mention the product again",
+    );
   });
 });

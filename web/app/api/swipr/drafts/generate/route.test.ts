@@ -178,7 +178,9 @@ describe("POST /api/swipr/drafts/generate", () => {
   it("generates saved draft Swipes from selected Pexels library queries", async () => {
     const response = await POST(
       createRequest({
+        callToActionStyle: "engagement",
         count: 1,
+        creativeContext: "  Focus on launch-day anxiety.  ",
         productId: " product_1 ",
         selectedLibraryQueries: ["desk setup"],
         slideCount: 2,
@@ -197,7 +199,9 @@ describe("POST /api/swipr/drafts/generate", () => {
       { count: 10, secret: "rate-limit-secret" },
     );
     expect(mocks.createSwiprBatchTextGeneration).toHaveBeenCalledWith({
+      callToActionStyle: "engagement",
       count: 10,
+      creativeContext: "Focus on launch-day anxiety.",
       product: expect.objectContaining({ id: "product_1", name: "Launch Kit" }),
       replicate: { provider: "replicate" },
       slideCount: 8,

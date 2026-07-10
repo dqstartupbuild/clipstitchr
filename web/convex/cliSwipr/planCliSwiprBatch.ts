@@ -17,6 +17,8 @@ import { getAutomationGenerationCount } from "../../lib/clipstitchr/utils/getAut
 import { getAutomationStitchrColorChoice } from "../../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { normalizeAutomationSwiprSelectedLibraryPackNames } from "../../lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
+import { getSwiprCallToActionStyle } from "../../lib/clipstitchr/utils/getSwiprCallToActionStyle";
+import { normalizeSwiprCreativeContext } from "../../lib/clipstitchr/utils/normalizeSwiprCreativeContext";
 
 export const planCliSwiprBatch = mutation({
   args: {
@@ -65,6 +67,12 @@ export const planCliSwiprBatch = mutation({
 
     const swiprGenerationCount = getAutomationGenerationCount(
       preferences?.swiprGenerationCount ?? defaultAutomationGenerationCount,
+    );
+    const swiprCallToActionStyle = getSwiprCallToActionStyle(
+      preferences?.swiprCallToActionStyle,
+    );
+    const swiprCreativeContext = normalizeSwiprCreativeContext(
+      preferences?.swiprCreativeContext,
     );
     const swiprSelectedLibraryPackNames =
       normalizeAutomationSwiprSelectedLibraryPackNames(
@@ -145,6 +153,8 @@ export const planCliSwiprBatch = mutation({
           hookEdgeLevel: product.hookEdgeLevel,
           productCreatedAt: product.createdAt,
           productUpdatedAt: product.updatedAt,
+          swiprCallToActionStyle,
+          swiprCreativeContext,
           swiprSelectedLibraryPackNames,
           swiprTextStyleChoice,
           swiprTextColorChoice,

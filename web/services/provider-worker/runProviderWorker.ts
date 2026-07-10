@@ -59,6 +59,7 @@ import type { CliprDurationSeconds } from "@/lib/clipstitchr/types/CliprDuration
 import type { CliprTextGeneration } from "@/lib/clipstitchr/types/CliprTextGeneration";
 import type { CliprGenerationMode } from "@/lib/clipstitchr/types/CliprGenerationMode";
 import type { ProductProfile } from "@/lib/clipstitchr/types/ProductProfile";
+import type { SwiprCallToActionStyle } from "@/lib/clipstitchr/types/SwiprCallToActionStyle";
 import type { QuickEditCandidateSignal } from "@/lib/clipstitchr/types/QuickEditCandidateSignal";
 import type { QuickEditSuggestions } from "@/lib/clipstitchr/types/QuickEditSuggestions";
 import type { CliprLipSyncModelId } from "@/lib/clipstitchr/types/CliprLipSyncModelId";
@@ -94,6 +95,8 @@ import { mergeQuickEditDetectorCandidatesIntoUploadAssetAnalysis } from "@/lib/c
 import { getResolvedCliprVideoModelId } from "@/lib/clipstitchr/utils/getResolvedCliprVideoModelId";
 import { getUploadFallbackName } from "@/lib/clipstitchr/utils/getUploadFallbackName";
 import { stripWebsiteSourcedProductDetails } from "@/lib/clipstitchr/utils/stripWebsiteSourcedProductDetails";
+import { getSwiprCallToActionStyle } from "@/lib/clipstitchr/utils/getSwiprCallToActionStyle";
+import { normalizeSwiprCreativeContext } from "@/lib/clipstitchr/utils/normalizeSwiprCreativeContext";
 import type { AvatarLightingOption } from "@/lib/clipstitchr/types/AvatarLightingOption";
 import type { AvatarPhotoGenerationCount } from "@/lib/clipstitchr/types/AvatarPhotoGenerationCount";
 import type { AvatarStyleOption } from "@/lib/clipstitchr/types/AvatarStyleOption";
@@ -297,6 +300,8 @@ type SwiprAutomationTaskInput = {
   automationDate: string;
   draftIndex: number;
   product: ProductProfile;
+  swiprCallToActionStyle: SwiprCallToActionStyle;
+  swiprCreativeContext: string;
   swiprSelectedLibraryPackNames: string[];
   swiprTextBackgroundColorChoice: AutomationStitchrColorChoice;
   swiprTextColorChoice: AutomationStitchrColorChoice;
@@ -914,6 +919,12 @@ function parseSwiprAutomationTaskInput(
       createdAt: productCreatedAt,
       updatedAt: productUpdatedAt,
     },
+    swiprCallToActionStyle: getSwiprCallToActionStyle(
+      input.swiprCallToActionStyle,
+    ),
+    swiprCreativeContext: normalizeSwiprCreativeContext(
+      input.swiprCreativeContext,
+    ),
     swiprSelectedLibraryPackNames: getStringArray(
       input.swiprSelectedLibraryPackNames,
     ),
@@ -2186,6 +2197,8 @@ async function processSwipr({
 
   const replicate = createReplicateClient();
   const textGeneration = await createSwiprAutomationTextGeneration({
+    callToActionStyle: input.swiprCallToActionStyle,
+    creativeContext: input.swiprCreativeContext,
     product,
     replicate,
     slideCount: SWIPR_MAX_SLIDE_COUNT,

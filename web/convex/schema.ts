@@ -48,6 +48,7 @@ import { stitchSequenceSegmentValidator } from "./validators/stitchSequenceSegme
 import { swiprBackgroundSourceValidator } from "./validators/swiprBackgroundSource";
 import { swiprProductSourceTypeValidator } from "./validators/swiprProductSourceType";
 import { swiprSlideValidator } from "./validators/swiprSlide";
+import { swiprCallToActionStyleValidator } from "./validators/swiprCallToActionStyle";
 import { swaprMetadataValidator } from "./validators/swaprMetadata";
 import { stitchMusicMetadataValidator } from "./validators/stitchMusicMetadata";
 import {
@@ -981,6 +982,8 @@ export default defineSchema({
       v.array(automationStitchrTemplateAllocationValidator),
     ),
     swiprGenerationCount: v.optional(automationGenerationCountValidator),
+    swiprCallToActionStyle: v.optional(swiprCallToActionStyleValidator),
+    swiprCreativeContext: v.optional(v.string()),
     swiprSelectedLibraryPackNames: v.optional(v.array(v.string())),
     swiprTextStyleChoice: v.optional(automationStitchrTextStyleChoiceValidator),
     swiprTextColorChoice: v.optional(v.string()),
