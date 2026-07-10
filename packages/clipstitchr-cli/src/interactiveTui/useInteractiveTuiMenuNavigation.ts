@@ -5,6 +5,7 @@ import type { InteractiveShellContext } from "../interactiveShell/InteractiveShe
 import type { InteractiveShellMenu } from "../interactiveShell/InteractiveShellMenu.js";
 import { getInteractiveTuiMenuChoices } from "./getInteractiveTuiMenuChoices.js";
 import { getNextInteractiveTuiSelectionIndex } from "./getNextInteractiveTuiSelectionIndex.js";
+import { useStableInteractiveTuiInputHandler } from "./useStableInteractiveTuiInputHandler.js";
 
 export function useInteractiveTuiMenuNavigation(input: {
   context?: InteractiveShellContext;
@@ -30,9 +31,28 @@ export function useInteractiveTuiMenuNavigation(input: {
     setSelectedIndex(0);
   }, [input.context, input.currentMenu, input.view]);
 
-  useInput(
+  const handleInput = useStableInteractiveTuiInputHandler(
     (typedInput, key) => {
+      if (
+        input.view === "result" &&
+        (key.tab || key.leftArrow || key.rightArrow)
+      ) {
+        setSelectedIndex((currentIndex) =>
+          getNextInteractiveTuiSelectionIndex({
+            currentIndex,
+            direction:
+              key.leftArrow || (key.tab && key.shift) ? "up" : "down",
+            itemCount: choices.length,
+          }),
+        );
+        return;
+      }
+
       if (key.upArrow || key.downArrow) {
+        if (input.view === "result") {
+          return;
+        }
+
         setSelectedIndex((currentIndex) =>
           getNextInteractiveTuiSelectionIndex({
             currentIndex,
@@ -64,8 +84,8 @@ export function useInteractiveTuiMenuNavigation(input: {
         input.onBack();
       }
     },
-    { isActive: input.isActive },
   );
+  useInput(handleInput, { isActive: input.isActive });
 
   return { choices, selectedIndex };
 }

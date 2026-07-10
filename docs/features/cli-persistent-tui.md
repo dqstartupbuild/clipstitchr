@@ -28,9 +28,10 @@ a fresh frame and creating another top-level prompt.
 - Completed commands and errors remain visible while the live menu and composer
   continue accepting input.
 - A completed action opens a result view instead of immediately replacing its
-  output with the action list. Page Up and Page Down move through longer output.
-  Back returns to the originating action menu; Main menu, slash command, and
-  Exit remain directly available.
+  output with the action list. Up/Down or `j`/`k` scroll longer output without
+  moving the selected action. Home/End and Page Up/Page Down provide faster
+  movement when available. Tab/Shift+Tab or Left/Right select Back, Main menu,
+  slash command, or Exit, and Enter runs that action.
 - Menu height follows the current terminal row count. Shorter terminals show a
   smaller moving choice window so the ClipStitchr header remains on screen.
 - Menu mode keeps shortcuts on one compact line and does not render a separate
@@ -76,6 +77,12 @@ pause the stream while cleaning up its prompt. This keeps both the question and
 the restored menu alive. The TUI runner unreferences stdin only when the
 workspace actually closes.
 
+Each active input hook passes Ink a stable listener and forwards key presses to
+its latest React callback. Ordinary state updates therefore do not create a
+brief unsubscribe/resubscribe gap where a fast Enter or arrow press can be
+lost. Hooks still become inactive during delegated prompt work so Ink releases
+raw mode normally.
+
 Command helpers skip the repeated `ClipStitchr` brand while the TUI is active,
 but retain their useful action subtitle and normal output. Direct commands keep
 the complete brand header.
@@ -112,6 +119,10 @@ the complete brand header.
   reads local product, repo, and account context.
 - `packages/clipstitchr-cli/src/interactiveTui/useInteractiveTuiMenuNavigation.ts`
   owns menu selection and keyboard navigation.
+- `packages/clipstitchr-cli/src/interactiveTui/getNextInteractiveTuiResultStartIndex.ts`
+  calculates bounded result scrolling.
+- `packages/clipstitchr-cli/src/interactiveTui/useStableInteractiveTuiInputHandler.ts`
+  keeps active Ink listeners stable across React renders.
 - `packages/clipstitchr-cli/src/interactiveTui/runInteractiveTuiMenuAction.ts`
   dispatches menu actions through existing services.
 - `packages/clipstitchr-cli/src/interactiveTui/setInteractiveTuiStdinIsReferenced.ts`
@@ -150,6 +161,7 @@ packages/clipstitchr-cli/src/interactiveTui/
   getInteractiveTuiVisibleChoices.ts
   getInteractiveTuiVisibleResultLines.ts
   getNextInteractiveTuiSelectionIndex.ts
+  getNextInteractiveTuiResultStartIndex.ts
   runInteractiveTui.tsx
   runInteractiveTuiMenuAction.ts
   resolveInteractiveTuiCommandSubmission.ts
@@ -160,18 +172,20 @@ packages/clipstitchr-cli/src/interactiveTui/
   useInteractiveTuiExitInput.ts
   useInteractiveTuiMenuNavigation.ts
   useInteractiveTuiResultOutputNavigation.ts
+  useStableInteractiveTuiInputHandler.ts
 ```
 
 ## Verification
 
 The interactive TUI tests render the real Ink app, send terminal input, and
 verify menu navigation, ranked token lookup, canonical Enter execution, Tab
-completion, retained results, result navigation, context refresh, and return to
-the same workspace. Running-state tests verify that delegated questions get a
-clean terminal handoff, and stdin lifecycle tests cover the prompt keepalive.
-Pure tests cover ranking, typo distance, local context, menu reuse, selection
-wrapping, and action dispatch. The full CLI suite continues covering the plain
-shell and direct commands.
+completion, retained results, Mac-friendly line scrolling, result-action
+navigation, context refresh, and return to the same workspace. Running-state
+tests verify that delegated questions get a clean terminal handoff, and stdin
+lifecycle tests cover the prompt keepalive. Pure tests cover ranking, typo
+distance, local context, menu reuse, selection wrapping, every result-scroll
+direction, and every menu action dispatch path. The full CLI suite continues
+covering the plain shell and direct commands.
 
 This capability changes only local terminal interaction. It does not add or
 change a backend operation, external provider call, or rate limit.

@@ -8,7 +8,7 @@ export function InteractiveTuiStatusBar(input: {
     input.mode === "command"
       ? "Tab complete | Enter use | Esc back | Ctrl+P history"
       : input.mode === "result"
-        ? "PgUp/PgDn results | Enter choose | / command | Esc back"
+        ? "Up/Down scroll | Tab actions | Enter choose | / command | Esc back"
         : "Up/Down move | Enter choose | / command | Esc back | Ctrl+C exit";
 
   return <Text dimColor>{message}</Text>;

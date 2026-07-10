@@ -5,7 +5,7 @@ import { createElement } from "react";
 import { InteractiveTuiApp } from "../../dist/interactiveTui/InteractiveTuiApp.js";
 import { createInteractiveShellTestPrompts } from "../interactiveShell/createInteractiveShellTestPrompts.js";
 import { createInteractiveShellTestServices } from "../interactiveShell/createInteractiveShellTestServices.js";
-import { waitForTuiUpdate } from "./waitForTuiUpdate.js";
+import { waitForTuiFrame } from "./waitForTuiFrame.js";
 
 describe("InteractiveTuiApp", { concurrency: false }, () => {
   it("navigates menus without unmounting the workspace", async () => {
@@ -21,7 +21,10 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
     assert.match(tui.lastFrame() ?? "", /Demos/);
 
     tui.stdin.write("\r");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({
+      pattern: /Record it myself/,
+      readFrame: tui.lastFrame,
+    });
 
     assert.match(tui.lastFrame() ?? "", /Record it myself/);
     assert.match(tui.lastFrame() ?? "", /\/ command/);
@@ -39,12 +42,15 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
     );
 
     tui.stdin.write("/status");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({ pattern: /\/status/, readFrame: tui.lastFrame });
 
     assert.match(tui.lastFrame() ?? "", /\/status/);
 
     tui.stdin.write("\r");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({
+      pattern: /Finished \/status\./,
+      readFrame: tui.lastFrame,
+    });
 
     assert.deepEqual(calls, ["status"]);
     assert.match(tui.lastFrame() ?? "", /ClipStitchr/);
@@ -53,7 +59,7 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
     assert.doesNotMatch(tui.lastFrame() ?? "", /Demos/);
 
     tui.stdin.write("\r");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({ pattern: /Demos/, readFrame: tui.lastFrame });
 
     assert.match(tui.lastFrame() ?? "", /Demos/);
     assert.match(tui.lastFrame() ?? "", /\/ command/);
@@ -77,7 +83,10 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
     );
 
     tui.stdin.write("\r");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({
+      pattern: /product_123\s+ClipStitchr/,
+      readFrame: tui.lastFrame,
+    });
 
     assert.deepEqual(calls, ["list"]);
     assert.match(tui.lastFrame() ?? "", /product_123\s+ClipStitchr/);
@@ -86,9 +95,65 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
     assert.doesNotMatch(tui.lastFrame() ?? "", /Create a product/);
 
     tui.stdin.write("\r");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({
+      pattern: /Create a product/,
+      readFrame: tui.lastFrame,
+    });
 
     assert.match(tui.lastFrame() ?? "", /Create a product/);
+    tui.unmount();
+  });
+
+  it("scrolls long results with Mac-friendly keys without moving actions", async () => {
+    const services = createInteractiveShellTestServices([]);
+    services.queue.runList = async () => {
+      for (let index = 1; index <= 12; index += 1) {
+        console.log(`Post ${String(index).padStart(2, "0")}`);
+      }
+    };
+    const tui = render(
+      createElement(InteractiveTuiApp, {
+        initialMenu: "queue",
+        options: {},
+        prompts: createInteractiveShellTestPrompts({}),
+        services,
+      }),
+    );
+
+    tui.stdin.write("\r");
+    await waitForTuiFrame({
+      pattern: /Result \(Up\/Down scroll, Tab actions\)/,
+      readFrame: tui.lastFrame,
+    });
+
+    assert.match(tui.lastFrame() ?? "", /Post 01/);
+    assert.match(tui.lastFrame() ?? "", /Post 10/);
+    assert.match(tui.lastFrame() ?? "", /More below/);
+    assert.match(tui.lastFrame() ?? "", /> Back to Queue/);
+
+    tui.stdin.write("\u001B[B");
+    await waitForTuiFrame({ pattern: /Post 11/, readFrame: tui.lastFrame });
+
+    assert.doesNotMatch(tui.lastFrame() ?? "", /Post 01/);
+    assert.match(tui.lastFrame() ?? "", /Post 02/);
+    assert.match(tui.lastFrame() ?? "", /Post 11/);
+    assert.match(tui.lastFrame() ?? "", /More above/);
+    assert.match(tui.lastFrame() ?? "", /> Back to Queue/);
+
+    tui.stdin.write("k");
+    await waitForTuiFrame({ pattern: /Post 01/, readFrame: tui.lastFrame });
+
+    assert.match(tui.lastFrame() ?? "", /Post 01/);
+    assert.doesNotMatch(tui.lastFrame() ?? "", /More above/);
+
+    tui.stdin.write("\t");
+    await waitForTuiFrame({ pattern: /> Main menu/, readFrame: tui.lastFrame });
+
+    assert.match(tui.lastFrame() ?? "", /> Main menu/);
+    tui.stdin.write("\r");
+    await waitForTuiFrame({ pattern: /Demos/, readFrame: tui.lastFrame });
+
+    assert.match(tui.lastFrame() ?? "", /Demos/);
     tui.unmount();
   });
 
@@ -107,9 +172,12 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
     );
 
     tui.stdin.write("/status");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({ pattern: /\/status/, readFrame: tui.lastFrame });
     tui.stdin.write("\r");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({
+      pattern: /\[error\] Account check failed/,
+      readFrame: tui.lastFrame,
+    });
 
     assert.match(tui.lastFrame() ?? "", /Checked local settings/);
     assert.match(tui.lastFrame() ?? "", /\[error\] Account check failed/);
@@ -127,9 +195,9 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
     );
 
     tui.stdin.write("/que");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({ pattern: /\/que/, readFrame: tui.lastFrame });
     tui.stdin.write("\t");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({ pattern: /\/queue/, readFrame: tui.lastFrame });
 
     assert.match(tui.lastFrame() ?? "", /\/queue/);
     tui.unmount();
@@ -146,11 +214,17 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
     );
 
     tui.stdin.write("/policy edit");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({
+      pattern: /\/demo policy edit/,
+      readFrame: tui.lastFrame,
+    });
     assert.match(tui.lastFrame() ?? "", /\/demo policy edit/);
 
     tui.stdin.write("\r");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({
+      pattern: /Finished \/demo policy edit\./,
+      readFrame: tui.lastFrame,
+    });
 
     assert.deepEqual(calls, ["policy-edit"]);
     assert.match(tui.lastFrame() ?? "", /Finished \/demo policy edit\./);
@@ -179,14 +253,20 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
     assert.match(tui.lastFrame() ?? "", /Account: not connected/);
 
     tui.stdin.write("\r");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({
+      pattern: /Account: connected/,
+      readFrame: tui.lastFrame,
+    });
 
     assert.deepEqual(calls, ["login"]);
     assert.match(tui.lastFrame() ?? "", /Account: connected/);
     assert.match(tui.lastFrame() ?? "", /Back to Main menu/);
 
     tui.stdin.write("\r");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({
+      pattern: /> Set up this repo/,
+      readFrame: tui.lastFrame,
+    });
 
     assert.match(tui.lastFrame() ?? "", /> Set up this repo/);
     tui.unmount();
@@ -208,9 +288,12 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
     );
 
     tui.stdin.write("/status");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({ pattern: /\/status/, readFrame: tui.lastFrame });
     tui.stdin.write("\r");
-    await waitForTuiUpdate();
+    await waitForTuiFrame({
+      pattern: /\[working\] \/status/,
+      readFrame: tui.lastFrame,
+    });
 
     assert.match(tui.lastFrame() ?? "", /\[working\] \/status/);
     assert.match(tui.lastFrame() ?? "", /Complete any question below/);
@@ -218,7 +301,10 @@ describe("InteractiveTuiApp", { concurrency: false }, () => {
     assert.doesNotMatch(tui.lastFrame() ?? "", /Action in progress/);
 
     finishAction?.();
-    await waitForTuiUpdate();
+    await waitForTuiFrame({
+      pattern: /Back to Main menu/,
+      readFrame: tui.lastFrame,
+    });
     assert.match(tui.lastFrame() ?? "", /ClipStitchr/);
     assert.match(tui.lastFrame() ?? "", /Back to Main menu/);
     tui.unmount();

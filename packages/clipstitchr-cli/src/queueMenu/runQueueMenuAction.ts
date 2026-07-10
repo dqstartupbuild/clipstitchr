@@ -56,5 +56,10 @@ export async function runQueueMenuAction(input: {
     return;
   }
 
-  await input.services.runAll(input.options);
+  if (input.action === "all") {
+    await input.services.runAll(input.options);
+    return;
+  }
+
+  throw new Error(`Unknown queue menu action: ${input.action}.`);
 }

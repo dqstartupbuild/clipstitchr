@@ -50,8 +50,10 @@ export async function runInteractiveTuiMenuAction(input: {
       await input.services.runStatus();
     } else if (input.action === "doctor") {
       await input.services.runDoctor();
-    } else {
+    } else if (input.action === "update") {
       await input.services.runUpdate();
+    } else {
+      throw new Error(`Unknown main menu action: ${input.action}.`);
     }
 
     return { menu: "main" };
@@ -89,8 +91,10 @@ export async function runInteractiveTuiMenuAction(input: {
   if (input.menu === "native") {
     if (input.action === "native-init") {
       await input.services.runNativeInit();
-    } else {
+    } else if (input.action === "native-check") {
       await input.services.runNativeCheck();
+    } else {
+      throw new Error(`Unknown native menu action: ${input.action}.`);
     }
     return { menu: "native" };
   }
@@ -111,8 +115,10 @@ export async function runInteractiveTuiMenuAction(input: {
     await input.services.runDoctor();
   } else if (input.action === "update") {
     await input.services.runUpdate();
-  } else {
+  } else if (input.action === "status") {
     await input.services.runStatus();
+  } else {
+    throw new Error(`Unknown account menu action: ${input.action}.`);
   }
 
   return { menu: "account" };

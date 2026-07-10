@@ -1,15 +1,16 @@
 import { useInput } from "ink";
+import { useStableInteractiveTuiInputHandler } from "./useStableInteractiveTuiInputHandler.js";
 
 export function useInteractiveTuiExitInput(input: {
   isActive: boolean;
   onExit: () => void;
 }) {
-  useInput(
+  const handleInput = useStableInteractiveTuiInputHandler(
     (typedInput, key) => {
       if (key.ctrl && typedInput === "c") {
         input.onExit();
       }
     },
-    { isActive: input.isActive },
   );
+  useInput(handleInput, { isActive: input.isActive });
 }

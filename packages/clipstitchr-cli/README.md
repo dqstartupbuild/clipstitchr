@@ -28,10 +28,12 @@ current menu. Suggestions and header context are local and deterministic; they
 do not use AI or call the ClipStitchr server.
 
 After an action finishes, its output stays in a result view instead of being
-replaced by the action menu. Use Page Up or Page Down for longer results, then
-choose Back, Main menu, Type a slash command, or Exit. Menu height also follows
-the terminal height so the ClipStitchr header stays visible in shorter windows.
-Result pages reserve room for several lines before paging on a typical terminal.
+replaced by the action menu. Use Up/Down or `j`/`k` to scroll longer results.
+Home/End and Page Up/Page Down move faster when those keys are available. Use
+Tab, Shift+Tab, or Left/Right to choose Back, Main menu, Type a slash command,
+or Exit, then press Enter. Menu height also follows the terminal height so the
+ClipStitchr header stays visible in shorter windows. Result pages reserve room
+for several lines before scrolling on a typical terminal.
 Menu mode uses one compact shortcut line instead of a separate prompt and
 bordered shortcut box, leaving room for several choices in shorter terminals.
 Run `clipstitchr queue` when you want a focused queue menu for latest, all, or

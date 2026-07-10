@@ -14,7 +14,7 @@ After a menu action or slash command finishes, the workspace shows:
 - `Back to <menu>` to restore the originating action list;
 - `Main menu` when the result came from a submenu;
 - `Type a slash command` and `Exit`;
-- Page Up and Page Down navigation when the result has more lines.
+- Up/Down and `j`/`k` scrolling when the result has more lines.
 
 Errors use the same result state. Any output produced before the failure stays
 visible, followed by the error message. Escape returns to the originating menu,
@@ -49,10 +49,17 @@ instead of changing directly back to `menu`. Result controls are supplied by
 restores the originating action menu. Main menu, slash command, Escape, and Exit
 retain their existing meanings.
 
-Result lines and menu choices have separate bounded windows. Result Page Up and
-Page Down input changes only the output page; Up and Down continue selecting a
-result control. Terminal row calculations reserve space for the header and all
-result controls while prioritizing multiple output lines.
+Result lines and menu choices have separate bounded windows. Up/Down and
+`j`/`k` move through output one line at a time. Page Up/Page Down move a full
+page, and Home/End jump to the first or last page. Tab/Shift+Tab and Left/Right
+move between result controls, so scrolling never changes the pending action.
+Terminal row calculations reserve space for the header and all result controls
+while prioritizing multiple output lines.
+
+All TUI input hooks use one stable callback identity while active. React can
+update the callback's current behavior without making Ink remove and add its
+terminal listener during an ordinary render. Input is still released while a
+prompt-backed action runs.
 
 ## Source References
 
@@ -65,7 +72,11 @@ result controls while prioritizing multiple output lines.
 - `packages/clipstitchr-cli/src/interactiveTui/createInteractiveTuiResultChoices.ts`
   defines result controls.
 - `packages/clipstitchr-cli/src/interactiveTui/useInteractiveTuiResultOutputNavigation.ts`
-  handles Page Up and Page Down.
+  maps output navigation keys to result movement.
+- `packages/clipstitchr-cli/src/interactiveTui/getNextInteractiveTuiResultStartIndex.ts`
+  calculates and bounds each result scroll movement.
+- `packages/clipstitchr-cli/src/interactiveTui/useStableInteractiveTuiInputHandler.ts`
+  prevents input-listener gaps during ordinary rerenders.
 - `packages/clipstitchr-cli/src/interactiveTui/getInteractiveTuiMaximumVisibleChoices.ts`
   adjusts action-menu height to terminal rows.
 - `packages/clipstitchr-cli/src/interactiveTui/enterInteractiveTuiScreen.ts`
@@ -87,18 +98,21 @@ packages/clipstitchr-cli/src/interactiveTui/
   enterInteractiveTuiScreen.ts
   exitInteractiveTuiScreen.ts
   getInteractiveTuiMaximumVisibleChoices.ts
+  getNextInteractiveTuiResultStartIndex.ts
   getInteractiveTuiResultPageSize.ts
   getInteractiveTuiVisibleResultLines.ts
   resetInteractiveTuiScreen.ts
   useInteractiveTuiResultOutputNavigation.ts
+  useStableInteractiveTuiInputHandler.ts
 ```
 
 ## Verification
 
 Pure tests cover console restoration, retained output on success and failure,
-result controls, page bounds, and terminal-row menu limits. Ink tests run the
-real persistent app, print product output, verify that the action list stays
-hidden, and confirm Back restores the originating menu.
+result controls, every scroll direction, page bounds, terminal-row menu limits,
+and every menu action dispatcher. Ink tests run the real persistent app, print
+product and multi-page queue output, verify arrow-key scrolling does not change
+the selected result action, and confirm Tab plus Enter can return to a menu.
 
 This feature changes only local terminal behavior. It adds no backend operation
 and does not change any rate limit.

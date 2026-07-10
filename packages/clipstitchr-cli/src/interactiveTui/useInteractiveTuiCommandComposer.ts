@@ -4,6 +4,7 @@ import { getSlashCommandSuggestionMatches } from "../interactiveShell/getSlashCo
 import { createInteractiveTuiSuggestionCompletionText } from "./createInteractiveTuiSuggestionCompletionText.js";
 import { getNextInteractiveTuiSelectionIndex } from "./getNextInteractiveTuiSelectionIndex.js";
 import { resolveInteractiveTuiCommandSubmission } from "./resolveInteractiveTuiCommandSubmission.js";
+import { useStableInteractiveTuiInputHandler } from "./useStableInteractiveTuiInputHandler.js";
 
 export function useInteractiveTuiCommandComposer(input: {
   isActive: boolean;
@@ -72,7 +73,7 @@ export function useInteractiveTuiCommandComposer(input: {
     [commandHistory, historyIndex],
   );
 
-  useInput(
+  const handleInput = useStableInteractiveTuiInputHandler(
     (typedInput, key) => {
       if (key.escape) {
         resetCommandComposer();
@@ -201,8 +202,8 @@ export function useInteractiveTuiCommandComposer(input: {
         );
       }
     },
-    { isActive: input.isActive },
   );
+  useInput(handleInput, { isActive: input.isActive });
 
   return {
     commandText,

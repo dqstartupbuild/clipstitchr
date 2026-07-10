@@ -85,5 +85,10 @@ export async function runDemoMenuAction(input: {
     return;
   }
 
-  await input.services.runNativeSetup();
+  if (input.action === "native-setup") {
+    await input.services.runNativeSetup();
+    return;
+  }
+
+  throw new Error(`Unknown demo menu action: ${input.action}.`);
 }

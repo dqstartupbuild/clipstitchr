@@ -1,5 +1,7 @@
 import { useInput } from "ink";
 import { useEffect, useState } from "react";
+import { getNextInteractiveTuiResultStartIndex } from "./getNextInteractiveTuiResultStartIndex.js";
+import { useStableInteractiveTuiInputHandler } from "./useStableInteractiveTuiInputHandler.js";
 
 export function useInteractiveTuiResultOutputNavigation(input: {
   isActive: boolean;
@@ -12,26 +14,38 @@ export function useInteractiveTuiResultOutputNavigation(input: {
     setStartIndex(0);
   }, [input.lines]);
 
-  useInput(
-    (_typedInput, key) => {
-      if (!key.pageDown && !key.pageUp) {
+  const handleInput = useStableInteractiveTuiInputHandler(
+    (typedInput, key) => {
+      const direction =
+        key.downArrow || typedInput === "j"
+          ? "down"
+          : key.upArrow || typedInput === "k"
+            ? "up"
+            : key.pageDown
+              ? "page-down"
+              : key.pageUp
+                ? "page-up"
+                : key.home
+                  ? "home"
+                  : key.end
+                    ? "end"
+                    : undefined;
+
+      if (!direction) {
         return;
       }
 
-      setStartIndex((currentIndex) => {
-        const maximumStartIndex = Math.max(
-          0,
-          input.lines.length - input.pageSize,
-        );
-        const nextIndex = key.pageDown
-          ? currentIndex + input.pageSize
-          : currentIndex - input.pageSize;
-
-        return Math.min(maximumStartIndex, Math.max(0, nextIndex));
-      });
+      setStartIndex((currentIndex) =>
+        getNextInteractiveTuiResultStartIndex({
+          currentIndex,
+          direction,
+          lineCount: input.lines.length,
+          pageSize: input.pageSize,
+        }),
+      );
     },
-    { isActive: input.isActive },
   );
+  useInput(handleInput, { isActive: input.isActive });
 
   return startIndex;
 }

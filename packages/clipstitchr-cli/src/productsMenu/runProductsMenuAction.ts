@@ -17,5 +17,10 @@ export async function runProductsMenuAction(input: {
     return;
   }
 
-  await input.services.runUse(undefined, input.options);
+  if (input.action === "use") {
+    await input.services.runUse(undefined, input.options);
+    return;
+  }
+
+  throw new Error(`Unknown products menu action: ${input.action}.`);
 }

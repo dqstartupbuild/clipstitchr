@@ -194,13 +194,15 @@ direct command path, refreshes local context, then opens a retained result view
 in the same mounted workspace.
 
 The result view buffers normal command output while the action runs. It keeps a
-bounded page visible after completion, supports Page Up and Page Down for longer
-output, and offers Back to the originating menu, Main menu, slash command, and
-Exit controls. Choosing Back restores the action list; the list is not restored
-automatically. Menu choice count adapts to terminal rows so the brand header
-remains visible in shorter windows. Menu mode uses one shortcut line and waits
-to show the command editor until `/` is pressed, allowing six visible choices
-in a 16-row terminal and up to nine in larger terminals.
+bounded page visible after completion. Up/Down or `j`/`k` scroll output one line
+at a time, with Home/End and Page Up/Page Down available for faster movement.
+Tab/Shift+Tab or Left/Right selects Back to the originating menu, Main menu,
+slash command, or Exit; Enter runs the selected action. Choosing Back restores
+the action list; the list is not restored automatically. Menu choice count
+adapts to terminal rows so the brand header remains visible in shorter windows.
+Menu mode uses one shortcut line and waits to show the command editor until `/`
+is pressed, allowing six visible choices in a 16-row terminal and up to nine in
+larger terminals.
 
 Slash commands are parsed locally, support quoted values, and dispatch to the
 same command handlers as direct commands. The composer is available from every
@@ -339,6 +341,10 @@ so an unanswered Inquirer prompt cannot let the process exit. It references and
 resumes stdin again when the prompt-backed action returns because prompt cleanup
 may pause the stream. Command helpers also avoid printing a second ClipStitchr
 brand while the persistent workspace is active.
+
+Active TUI input hooks keep one Ink listener across ordinary React rerenders,
+so rapid Enter, arrow, and Tab presses are not dropped between frames. The
+listeners still deactivate while prompt-backed actions have terminal control.
 
 Guided flows still show progress states, setup key/value rows, success
 confirmations, warnings, and copyable next commands. Direct commands do not use
