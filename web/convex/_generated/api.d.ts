@@ -254,6 +254,7 @@ import type * as validators_stitchrHookVariant from "../validators/stitchrHookVa
 import type * as validators_stitchrMode from "../validators/stitchrMode.js";
 import type * as validators_swaprMetadata from "../validators/swaprMetadata.js";
 import type * as validators_swiprBackgroundSource from "../validators/swiprBackgroundSource.js";
+import type * as validators_swiprCallToActionStyle from "../validators/swiprCallToActionStyle.js";
 import type * as validators_swiprProductSourceType from "../validators/swiprProductSourceType.js";
 import type * as validators_swiprSlide from "../validators/swiprSlide.js";
 import type * as validators_textOverlay from "../validators/textOverlay.js";
@@ -519,6 +520,7 @@ declare const fullApi: ApiFromModules<{
   "validators/stitchrMode": typeof validators_stitchrMode;
   "validators/swaprMetadata": typeof validators_swaprMetadata;
   "validators/swiprBackgroundSource": typeof validators_swiprBackgroundSource;
+  "validators/swiprCallToActionStyle": typeof validators_swiprCallToActionStyle;
   "validators/swiprProductSourceType": typeof validators_swiprProductSourceType;
   "validators/swiprSlide": typeof validators_swiprSlide;
   "validators/textOverlay": typeof validators_textOverlay;
