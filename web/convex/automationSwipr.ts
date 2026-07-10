@@ -19,7 +19,6 @@ import { getAutomationGenerationCount } from "../lib/clipstitchr/utils/getAutoma
 import { getAutomationStitchrColorChoice } from "../lib/clipstitchr/utils/getAutomationStitchrColorChoice";
 import { getAutomationStitchrTextStyleChoice } from "../lib/clipstitchr/utils/getAutomationStitchrTextStyleChoice";
 import { normalizeAutomationSwiprSelectedLibraryPackNames } from "../lib/clipstitchr/utils/normalizeAutomationSwiprSelectedLibraryPackNames";
-import { getSwiprAutomationCreativeDirection } from "../lib/clipstitchr/utils/getSwiprAutomationCreativeDirection";
 import { isWithinAutomationGlobalWindow } from "./isWithinAutomationGlobalWindow";
 
 const AUTOMATION_SWIPR_SELECTED_PRODUCT_LOOKUP_LIMIT = 20;
@@ -167,7 +166,6 @@ export const planDaily = mutation({
           hookEdgeLevel: product.hookEdgeLevel,
           productCreatedAt: product.createdAt,
           productUpdatedAt: product.updatedAt,
-          swiprCreativeDirection: getSwiprAutomationCreativeDirection(index + 1),
           swiprSelectedLibraryPackNames,
           swiprTextStyleChoice,
           swiprTextColorChoice,

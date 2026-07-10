@@ -19,6 +19,7 @@ import { createCliprJobTextGeneration } from "@/lib/clipstitchr/server/createCli
 import { createCliprJobVideoOutput } from "@/lib/clipstitchr/server/createCliprJobVideoOutput";
 import { createCliprSceneAvatarImage } from "@/lib/clipstitchr/server/createCliprSceneAvatarImage";
 import { createCliprTextGeneration } from "@/lib/clipstitchr/server/createCliprTextGeneration";
+import { createSwiprAutomationTextGeneration } from "@/lib/clipstitchr/server/createSwiprAutomationTextGeneration";
 import { pickSwiprDraftBackgroundIds } from "@/lib/clipstitchr/server/pickSwiprDraftBackgroundIds";
 import { createStitchrTemplateTextOverlay } from "./createStitchrTemplateTextOverlay";
 import { getOptionalStitchrTextOverlay } from "./getOptionalStitchrTextOverlay";
@@ -82,7 +83,6 @@ import { getImageNeedsSwaprOutpaint } from "@/lib/clipstitchr/utils/getImageNeed
 import { getMimeTypeFileExtension } from "@/lib/clipstitchr/utils/getMimeTypeFileExtension";
 import { getQuickEditPlaybackDuration } from "@/lib/clipstitchr/utils/getQuickEditPlaybackDuration";
 import { getSeededIndex } from "@/lib/clipstitchr/utils/getSeededIndex";
-import { getSwiprAutomationCreativeDirection } from "@/lib/clipstitchr/utils/getSwiprAutomationCreativeDirection";
 import { getStitchScoreSourceClipIds } from "@/lib/clipstitchr/utils/getStitchScoreSourceClipIds";
 import { getSwaprPredictionOutputUrl } from "@/lib/clipstitchr/utils/getSwaprPredictionOutputUrl";
 import { getSwaprSegmentDurationLimit } from "@/lib/clipstitchr/utils/getSwaprSegmentDurationLimit";
@@ -297,7 +297,6 @@ type SwiprAutomationTaskInput = {
   automationDate: string;
   draftIndex: number;
   product: ProductProfile;
-  swiprCreativeDirection: string;
   swiprSelectedLibraryPackNames: string[];
   swiprTextBackgroundColorChoice: AutomationStitchrColorChoice;
   swiprTextColorChoice: AutomationStitchrColorChoice;
@@ -915,9 +914,6 @@ function parseSwiprAutomationTaskInput(
       createdAt: productCreatedAt,
       updatedAt: productUpdatedAt,
     },
-    swiprCreativeDirection:
-      getOptionalString(input.swiprCreativeDirection) ??
-      getSwiprAutomationCreativeDirection(draftIndex),
     swiprSelectedLibraryPackNames: getStringArray(
       input.swiprSelectedLibraryPackNames,
     ),
@@ -2189,12 +2185,9 @@ async function processSwipr({
     : [];
 
   const replicate = createReplicateClient();
-  const textGeneration = await createCliprTextGeneration({
-    durationSeconds: 30,
+  const textGeneration = await createSwiprAutomationTextGeneration({
     product,
-    purpose: "swipr",
     replicate,
-    scriptIdea: input.swiprCreativeDirection,
     slideCount: SWIPR_MAX_SLIDE_COUNT,
   });
 

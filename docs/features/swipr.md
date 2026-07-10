@@ -322,7 +322,8 @@ packs are available, the provider worker randomizes those saved background IDs
 with the same non-repeating cycle used by batch generation. If no selected pack
 backgrounds are available, it searches a larger Pexels candidate set from the
 product and audience context, randomly picks the max 8 photos, saves private
-one-off Pexels photo records, generates text, and saves an editable Swipe draft.
+one-off Pexels photo records, generates text with the same carousel-writing
+prompt used by Swipr page Batch mode, and saves an editable Swipe draft.
 
 ## Abuse Protection
 
@@ -337,10 +338,9 @@ Swipr persistence adds new cost surfaces:
   background saves.
 - Batch Swipr draft generation, including counted text-writing provider calls
   and Convex Swipe saves.
-- Provider-worker Pexels searches and private Swipr photo saves for
-  automatic Swipr drafts. Automatic draft tasks store a per-draft creative
-  direction so each saved Swipe has a different angle instead of repeating the
-  same product prompt.
+- Provider-worker Pexels searches and private Swipr photo saves for automatic
+  Swipr drafts. Automatic draft text uses the same shared batch generator as
+  Swipr page Batch mode.
 - Convex record saves for private and global Swipr photos.
 - Convex record saves, updates, and deletes for user-owned Swipes.
 

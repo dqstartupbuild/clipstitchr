@@ -26,9 +26,8 @@ appearance, support, and subscription remain shared across the whole account.
 - Swipr automation can use selected saved Pexels packs. If selected packs have
   usable images, the provider worker reuses those saved backgrounds. If no
   selected pack image is available, it falls back to Pexels search.
-- Swipr automation assigns each daily draft a different creative direction, so
-  a multi-draft run avoids asking the text model for the same carousel idea over
-  and over.
+- Swipr automation uses the same carousel-writing prompt as Swipr page Batch
+  mode, so automatic and on-demand drafts follow the same writing standard.
 
 ## Product Scope
 
@@ -55,8 +54,8 @@ belong to the same product.
 The shared count type is `3 | 5 | 10`. The default remains 10.
 
 - Stitchr uses the selected count when choosing Hook/UGC and Demo pairs.
-- Swipr creates one provider task per selected draft count and stores a
-  repeatable creative direction in each task snapshot.
+- Swipr creates one provider task per selected draft count. Each task delegates
+  text writing to the same batch generator used by the Swipr page.
 - Counts are capped by the existing maximum so new settings cannot exceed the
   current automation limit.
 
@@ -107,6 +106,7 @@ before it creates the final overlay.
 - `web/convex/automationClipr.ts`
 - `web/convex/automationSwapr.ts`
 - `web/convex/automationAvatarPhoto.ts`
+- `web/lib/clipstitchr/server/createSwiprAutomationTextGeneration.ts`
 - `web/services/provider-worker/runProviderWorker.ts`
 
 ## Abuse Protection

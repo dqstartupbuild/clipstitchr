@@ -249,11 +249,10 @@ only save path.
 
 Target flow:
 
-1. Create an automatic Swipr provider job with a full product snapshot and a
-   repeatable per-draft creative direction.
+1. Create an automatic Swipr provider job with a full product snapshot.
 2. Consume Swipr generation limits before provider work.
-3. Generate editable carousel text for the maximum 8-slide Swipe using that
-   creative direction so same-day drafts vary by angle.
+3. Generate editable carousel text for the maximum 8-slide Swipe with the same
+   shared batch prompt used by the Swipr page.
 4. Search Pexels from the product and audience context.
 5. Copy selected Pexels photos to owner-scoped R2 objects server-side.
 6. Save owner-owned `swiprBackgrounds` records for those photos.
