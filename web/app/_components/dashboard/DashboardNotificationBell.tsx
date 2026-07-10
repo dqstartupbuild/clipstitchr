@@ -1,15 +1,17 @@
 "use client";
 
 import { Bell } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { NotificationDetailDialog } from "@/app/_components/dashboard/NotificationDetailDialog";
 import { NotificationListPopover } from "@/app/_components/dashboard/NotificationListPopover";
 import { NotificationUnreadBadge } from "@/app/_components/dashboard/NotificationUnreadBadge";
 import { useDashboardNotifications } from "@/lib/clipstitchr/hooks/useDashboardNotifications";
+import { useDismissOnOutsidePointer } from "@/lib/clipstitchr/hooks/useDismissOnOutsidePointer";
 import type { DashboardNotification } from "@/lib/clipstitchr/types/DashboardNotification";
 
 export function DashboardNotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const {
     clearAll,
     isLoading,
@@ -21,9 +23,16 @@ export function DashboardNotificationBell() {
   } = useDashboardNotifications(isOpen);
   const [selectedNotification, setSelectedNotification] =
     useState<DashboardNotification | null>(null);
+  const closeNotificationCenter = useCallback(() => setIsOpen(false), []);
+
+  useDismissOnOutsidePointer({
+    containerRef,
+    isEnabled: isOpen,
+    onDismiss: closeNotificationCenter,
+  });
 
   return (
-    <div className="relative">
+    <div ref={containerRef} className="relative">
       <button
         type="button"
         aria-label="Notifications"
@@ -36,32 +45,24 @@ export function DashboardNotificationBell() {
         <NotificationUnreadBadge count={unreadCount} />
       </button>
       {isOpen ? (
-        <>
-          <button
-            type="button"
-            aria-label="Close notifications"
-            className="fixed inset-0 z-40 cursor-default bg-transparent"
-            onClick={() => setIsOpen(false)}
-          />
-          <NotificationListPopover
-            isLoading={isLoading}
-            notifications={notifications}
-            onClearAll={() => {
-              setSelectedNotification(null);
-              void clearAll();
-            }}
-            onMarkAllRead={() => {
-              void markAllRead();
-            }}
-            onOpenNotification={(notification) => {
-              setSelectedNotification(notification);
-              setIsOpen(false);
-              if (!notification.isRead) {
-                void markRead(notification.id);
-              }
-            }}
-          />
-        </>
+        <NotificationListPopover
+          isLoading={isLoading}
+          notifications={notifications}
+          onClearAll={() => {
+            setSelectedNotification(null);
+            void clearAll();
+          }}
+          onMarkAllRead={() => {
+            void markAllRead();
+          }}
+          onOpenNotification={(notification) => {
+            setSelectedNotification(notification);
+            setIsOpen(false);
+            if (!notification.isRead) {
+              void markRead(notification.id);
+            }
+          }}
+        />
       ) : null}
       {selectedNotification ? (
         <NotificationDetailDialog

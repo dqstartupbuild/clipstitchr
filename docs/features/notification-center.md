@@ -10,7 +10,8 @@ Users see a red count on the bell when unread notifications exist. Opening the
 bell shows a small inbox with each notification title and preview, plus actions
 to mark everything read or clear everything. Opening one message marks it read
 and shows the full message in a dialog. Users can dismiss the dialog, click
-outside it, or delete the message.
+outside it, or delete the message. Tapping anywhere outside the open Notification
+Center closes it, while taps on the bell or inside the inbox continue to work.
 
 ## When Notifications Are Created
 
@@ -49,6 +50,8 @@ create a normal automation run document.
 
 - `web/lib/clipstitchr/hooks/useDashboardNotifications.ts` loads inbox data and
   wraps notification mutations.
+- `web/lib/clipstitchr/hooks/useDismissOnOutsidePointer.ts` closes the open inbox
+  when a mouse, touch, or pen press starts outside the bell and popover.
 - `web/app/_components/dashboard/DashboardNotificationBell.tsx` owns the bell,
   popover state, and selected message state.
 - `web/app/_components/dashboard/NotificationListPopover.tsx` renders the
